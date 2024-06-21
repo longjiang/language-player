@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, FlatList, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
@@ -10,10 +10,11 @@ export const ThemedSearchableSelect = ({
   onSelect,
   placeholder,
   style,
-  renderItem,
+  renderItem: customRenderItem,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedLabel, setSelectedLabel] = useState(''); // State to hold the selected label
   const borderColor = useThemeColor({}, 'secondaryStroke');
   const backgroundColor = useThemeColor({}, 'secondaryBackground');
   const inputColor = useThemeColor({}, 'primaryBackground');
@@ -22,11 +23,24 @@ export const ThemedSearchableSelect = ({
 
   const filteredOptions = options.filter(option => option.label.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const defaultRenderItem = ({ item }) => (
-    <TouchableOpacity style={styles.item} onPress={() => onSelect(item.value)}>
-      <ThemedText style={{ color: textColor }}>{item.label}</ThemedText>
-    </TouchableOpacity>
-  );
+  const handleSelect = (value, label) => {
+    onSelect(value);
+    setSelectedLabel(label); // Update the input field with the selected label
+    setIsOpen(false); // Close the dropdown when an item is selected
+  };
+
+  const renderItemWrapper = ({ item }) => {
+    const itemPress = () => handleSelect(item.value, item.label);
+    if (customRenderItem) {
+      // Pass all necessary props to the custom renderItem, along with the modified onPress
+      return React.cloneElement(customRenderItem({ item }), { onPress: itemPress });
+    }
+    return (
+      <TouchableOpacity style={styles.item} onPress={itemPress}>
+        <ThemedText style={{ color: textColor }}>{item.label}</ThemedText>
+      </TouchableOpacity>
+    );
+  };
 
   const renderHeader = () => (
     <ThemedInput
@@ -39,21 +53,26 @@ export const ThemedSearchableSelect = ({
   );
 
   return (
-    <View style={[styles.container, { borderColor, backgroundColor }, style]}>
-      <TouchableOpacity style={styles.input} onPress={() => setIsOpen(!isOpen)}>
-        <ThemedText style={{ color: textColor }} variant="secondary">{placeholder}</ThemedText>
-        <Icon name={isOpen ? "chevron-up" : "chevron-down"} size={24} color={placeholderTextColor} />
-      </TouchableOpacity>
-      {isOpen && (
-        <FlatList
-          data={filteredOptions}
-          renderItem={renderItem || defaultRenderItem}
-          keyExtractor={item => item.value}
-          ListHeaderComponent={renderHeader}
-          style={[styles.dropdown, { borderColor, backgroundColor, maxHeight: 350 }]} // Set the height to 500px
-        />
-      )}
-    </View>
+    <TouchableWithoutFeedback onPress={() => isOpen && setIsOpen(false)}>
+      <View style={[styles.container, { borderColor, backgroundColor }, style]}>
+        <TouchableOpacity style={styles.input} onPress={() => setIsOpen(!isOpen)}>
+          {/* Display the selected label or the placeholder text */}
+          <ThemedText style={{ color: textColor }} variant="secondary">
+            {selectedLabel || placeholder}
+          </ThemedText>
+          <Icon name={isOpen ? "chevron-up" : "chevron-down"} size={24} color={placeholderTextColor} />
+        </TouchableOpacity>
+        {isOpen && (
+          <FlatList
+            data={filteredOptions}
+            renderItem={renderItemWrapper}
+            keyExtractor={item => item.value}
+            ListHeaderComponent={renderHeader}
+            style={[styles.dropdown, { borderColor, backgroundColor, height: 500 }]}
+          />
+        )}
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 

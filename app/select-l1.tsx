@@ -21,7 +21,7 @@ const SelectL2Screen = () => {
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
     >
-      <ThemedLanguageSelect />
+      <ThemedLanguageSelect onSelect={onSelect} />
 
 
       <ThemedButton
