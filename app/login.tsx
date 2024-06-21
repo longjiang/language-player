@@ -1,15 +1,14 @@
 // @/app/LoginScreen.tsx
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedButton } from '@/components/ThemedButton';
 import { ThemedInput } from '@/components/ThemedInput';
+import { ThemedScreen } from '@/components/ThemedScreen';
 import { router } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Link } from 'expo-router';
 
-import splashImage from "../assets/images/splash-image.png";
 import { useThemeColor } from '@/hooks/useThemeColor';
 
 const LoginScreen = () => {
@@ -17,15 +16,15 @@ const LoginScreen = () => {
     const [password, setPassword] = useState('');
 
     return (
-        <ThemedView style={styles.container}>
-            <Image source={splashImage} style={styles.image} />
-            <View style={styles.contentContainer}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20, position: 'relative', marginLeft: -15  }}>
-                  <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="chevron-left" />} onPress={() => router.navigate("/")} />
-                  <ThemedText type="title" style={{ marginLeft: 10 }}>Login</ThemedText>
-                </View>
+        <ThemedScreen
+          title="Login"
+          onBackPress={() => router.navigate("/")}
+          imageName={require("../assets/images/splash-image.png")}
+          imageStyle={{ top: -170 }}  
+        >
+            
 
-                <ThemedInput
+            <ThemedInput
                     style={styles.input}
                     onChangeText={setEmail}
                     value={email}
@@ -56,8 +55,7 @@ const LoginScreen = () => {
                 </View>
 
                 <ThemedText style={{textAlign: 'center', marginTop: 10 }}>Don't have an account? <Link href='/register' style={{ color: useThemeColor({}, 'primaryLink'), fontWeight: 'bold' }}>Register</Link></ThemedText>
-            </View>
-        </ThemedView>
+        </ThemedScreen>
     );
 };
 
@@ -67,18 +65,6 @@ const styles = StyleSheet.create({
       marginBottom: 20,
       position: 'relative',
       top: -170,
-    },
-    container: {
-      flex: 1,
-      backgroundColor: "#000",
-      paddingBottom: 20,
-    },
-    contentContainer: {
-      flex: 1,
-      justifyContent: "flex-end",
-      padding: 26,
-      textAlign: "left",
-      width: "100%", // Ensure this container is full width
     },
     input: {
         marginBottom: 10,
