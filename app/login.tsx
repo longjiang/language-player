@@ -20,7 +20,7 @@ const LoginScreen = () => {
         <ThemedView style={styles.container}>
             <Image source={splashImage} style={styles.image} />
             <View style={styles.contentContainer}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20, position: 'relative', left: -15  }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20, position: 'relative', marginLeft: -15  }}>
                   <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="chevron-left" />} onPress={() => router.navigate("/")} />
                   <ThemedText type="title" style={{ marginLeft: 10 }}>Login</ThemedText>
                 </View>
@@ -38,6 +38,7 @@ const LoginScreen = () => {
                     value={password}
                     placeholder="Password"
                     secureTextEntry
+                    icon="lock"
                 />
 
                 <ThemedButton title="Login" style={styles.button} />

@@ -21,7 +21,7 @@ export const ThemedInput = ({
   return (
     <View style={containerStyles}>
       <TextInput
-        style={[styles.input, {color: useThemeColor({}, 'primaryText')}]}
+        style={[styles.input, {color: useThemeColor({}, 'primaryText'), width: '100%'}]}
         placeholder={placeholder}
         placeholderTextColor={ placeholderTextColor }
         {...rest}
