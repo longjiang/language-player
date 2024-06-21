@@ -4,6 +4,7 @@ import { StyleSheet, View, Text, ImageBackground, TouchableOpacity } from 'react
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Ensure this library is properly installed
 import Button from '@/components/Button';
 import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
 
 import splashImage from '../assets/images/splash-image.png';
 
@@ -13,10 +14,10 @@ const Index = () => {
     <ThemedView style={styles.container}>
       <ImageBackground source={splashImage} style={styles.backgroundImage}>
         <View style={styles.contentContainer}>
-          <Text style={styles.title}>Enrich your language-learning journey</Text>
-          <Text style={styles.description}>
+          <ThemedText type="title" style={{ marginBottom: 20 }}>Enrich your language-learning journey</ThemedText>
+          <ThemedText style={styles.description}>
             Discover the power of Comprehensible Input through hundreds of thousands of videos in over 100 languages.
-          </Text>
+          </ThemedText>
           <Button title="Start Learning" trailingIcon={<Icon name="chevron-right" size={24} />} />
         </View>
       </ImageBackground>

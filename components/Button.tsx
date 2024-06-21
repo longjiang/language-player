@@ -59,11 +59,11 @@ const styles = StyleSheet.create({
   },
   textBase: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
   },
   text: {
-    large: { fontSize: 18 },
-    small: { fontSize: 14 },
+    large: { fontSize: 20 },
+    small: { fontSize: 16 },
   },
   contentContainer: {
     flexDirection: 'row',

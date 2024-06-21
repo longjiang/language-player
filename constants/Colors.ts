@@ -23,10 +23,10 @@ export const Colors = {
     semanticError: Swatches.alert[600],
     semanticWarning: Swatches.warning[600],
     semanticInfo: Swatches.neutral[300],
-    strokeSecondary: Swatches.neutral[100],
-    strokePrimary: Swatches.neutral[200],
-    linkPrimary: Swatches.primary[400],
-    linkSecondary: Swatches.primary[700],
+    primaryStroke: Swatches.neutral[200],
+    secondaryStroke: Swatches.neutral[100],
+    primaryLink: Swatches.primary[400],
+    secondaryLink: Swatches.primary[700],
   },
   dark: {
     primaryText: Swatches.neutral[0],
@@ -45,10 +45,10 @@ export const Colors = {
     semanticError: Swatches.alert[500],
     semanticWarning: Swatches.warning[500],
     semanticInfo: Swatches.neutral[300],
-    strokeSecondary: Swatches.neutral[400],
-    strokePrimary: Swatches.neutral[300],
-    linkPrimary: Swatches.primary[300],
-    linkSecondary: Swatches.primary[600],
+    primaryStroke: Swatches.neutral[300],
+    secondaryStroke: Swatches.neutral[400],
+    primaryLink: Swatches.primary[300],
+    secondaryLink: Swatches.primary[600],
   }
 };
 
