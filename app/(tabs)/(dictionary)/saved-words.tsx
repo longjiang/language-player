@@ -19,7 +19,7 @@ const SavedWordsScreen = () => {
         trailingIcon={<Icon name="chevron-right" />}
         style={styles.button}
         onPress={() => {
-          router.navigate("/dictionary/index");
+          router.navigate("/(tabs)/(dictionary)");
         }}
       />
     </ThemedScreen>

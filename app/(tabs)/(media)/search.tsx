@@ -19,7 +19,7 @@ const SearchScreen = () => {
         trailingIcon={<Icon name="chevron-right" />}
         style={styles.button}
         onPress={() => {
-          router.navigate("/media/index");
+          router.navigate("/(tabs)/(media)");
         }}
       />
     </ThemedScreen>
