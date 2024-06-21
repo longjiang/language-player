@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, FlatList, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
@@ -11,15 +11,25 @@ export const ThemedSearchableSelect = ({
   placeholder,
   style,
   renderItem: customRenderItem,
+  initialValue
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLabel, setSelectedLabel] = useState(''); // State to hold the selected label
+  const [selectedLabel, setSelectedLabel] = useState(initialValue?.label || ''); // Initialize with initialValue label
   const borderColor = useThemeColor({}, 'secondaryStroke');
   const backgroundColor = useThemeColor({}, 'secondaryBackground');
   const inputColor = useThemeColor({}, 'primaryBackground');
   const textColor = useThemeColor({}, 'primaryText');
   const placeholderTextColor = useThemeColor({}, 'secondaryText');
+
+  // Update selectedLabel when initialValue changes
+  useEffect(() => {
+    if (initialValue) {
+      const initialItem = options.find(option => option.value == initialValue)
+
+      if (initialItem) setSelectedLabel(initialItem.label);
+    }
+  }, [initialValue]);
 
   const filteredOptions = options.filter(option => option.label.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -56,7 +66,6 @@ export const ThemedSearchableSelect = ({
     <TouchableWithoutFeedback onPress={() => isOpen && setIsOpen(false)}>
       <View style={[styles.container, { borderColor, backgroundColor }, style]}>
         <TouchableOpacity style={styles.input} onPress={() => setIsOpen(!isOpen)}>
-          {/* Display the selected label or the placeholder text */}
           <ThemedText style={{ color: textColor }} variant="secondary">
             {selectedLabel || placeholder}
           </ThemedText>

@@ -1,18 +1,28 @@
 // @/app/select-l2.tsx
 import React, { useState } from "react";
-import { StyleSheet } from "react-native";
-import { ThemedLanguageSelect } from "@/components/ThemedLanguageSelect";
-import { ThemedButton } from "@/components/ThemedButton";
-import { ThemedScreen } from "@/components/ThemedScreen";
+import { StyleSheet, View, ScrollView } from "react-native";
+import {ThemedLanguageSelect} from "@/components/ThemedLanguageSelect";
+import {ThemedButton} from "@/components/ThemedButton";
+import {ThemedScreen} from "@/components/ThemedScreen";
+import {LanguageIcon} from "@/components/LanguageIcon"; // Make sure the import path is correct
 import { router } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 const SelectL2Screen = () => {
-  const [code, setCode] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("");
 
-  const onSelect = (value) => {
-    console.log('Selected:', value);
-  }
+  const languageOptions = [
+    { code: 'zh', label: 'Chinese', icon: require('@/assets/flags/china.png') },
+    { code: 'en', label: 'English', icon: require('@/assets/flags/uk.png') },
+    { code: 'ja', label: 'Japanese', icon: require('@/assets/flags/japan.png') },
+    { code: 'fr', label: 'French', icon: require('@/assets/flags/france.png') },
+    { code: 'ko', label: 'Korean', icon: require('@/assets/flags/korea.png') },
+    { code: 'es', label: 'Spanish', icon: require('@/assets/flags/spain.png') }
+  ];
+
+  const onSelect = (code) => {
+    setSelectedLanguage(code);
+  };
 
   return (
     <ThemedScreen
@@ -21,8 +31,18 @@ const SelectL2Screen = () => {
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
     >
-      <ThemedLanguageSelect onSelect={onSelect} />
-
+      <ScrollView contentContainerStyle={styles.iconLayout}>
+        {languageOptions.map(lang => (
+          <LanguageIcon
+            key={lang.code}
+            icon={lang.icon}
+            label={lang.label}
+            onPress={() => onSelect(lang.code)}
+            selected={selectedLanguage === lang.code}
+          />
+        ))}
+      </ScrollView>
+      <ThemedLanguageSelect onSelect={onSelect} initialValue={selectedLanguage} placeholder="100+ more languages" />
 
       <ThemedButton
         title="Next"
@@ -37,17 +57,12 @@ const SelectL2Screen = () => {
 };
 
 const styles = StyleSheet.create({
-  item: {
-    padding: 16,
-  },
-  image: {
-    width: "100%",
-    marginBottom: 20,
-    position: "relative",
-    top: -230,
-  },
-  instructions: {
-    marginBottom: 20,
+  iconLayout: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-evenly',
+    padding: 10,
+    alignSelf: 'center',
   },
   button: {
     marginTop: 20,

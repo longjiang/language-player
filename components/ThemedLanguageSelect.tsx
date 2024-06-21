@@ -3,7 +3,11 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedSearchableSelect } from "@/components/ThemedSearchableSelect";
 
-export const ThemedLanguageSelect = ({ onSelect }) => {
+export const ThemedLanguageSelect = ({
+  onSelect,
+  placeholder='Select a language',
+  initialValue
+}) => {
   const options = [
     { label: 'English', value: 'en', flag: '🇬🇧' },
     { label: 'Spanish', value: 'es', flag: '🇪🇸' },
@@ -21,7 +25,8 @@ export const ThemedLanguageSelect = ({ onSelect }) => {
     <ThemedSearchableSelect
       options={options}
       onSelect={onSelect}
-      placeholder="Select a language"
+      placeholder={placeholder}
+      initialValue={initialValue}  // Pass initialValue to ThemedSearchableSelect
       renderItem={({ item }) => (
         <TouchableOpacity style={styles.item} onPress={() => onSelect(item.value)}>
           <ThemedText>{item.flag} {item.label}</ThemedText>
