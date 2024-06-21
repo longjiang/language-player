@@ -2,24 +2,36 @@ import React from 'react';
 import { Text, TouchableOpacity, StyleSheet, View } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Swatches } from '@/constants/Swatches';
+import { Typography } from '@/constants/Typography';
 
 type ButtonProps = {
-  type: 'primary' | 'neutral' | 'ghost' | 'accent';
-  size: 'large' | 'small';
-  title: string;
-  onPress: () => void;
+  type?: 'primary' | 'neutral' | 'ghost' | 'accent';
+  size?: 'title' | 'large' | 'small';
+  title?: string;
+  style?: any;
+  onPress?: () => void;
   leadingIcon?: React.ReactNode; // Optional leading icon
   trailingIcon?: React.ReactNode; // Optional trailing icon
 };
 
-const Button = ({ type = 'primary', size, title, onPress, leadingIcon, trailingIcon }: ButtonProps) => {
+
+const fontSize = {
+  title: Typography.fontSize.large,
+  large: Typography.fontSize.medium,
+  small: Typography.fontSize.small,
+};
+
+export function ThemedButton({ type = 'primary', size = 'large', title, onPress, leadingIcon, trailingIcon, style }: ButtonProps) {
   const backgroundColor = useThemeColor({}, `${type}Brand`);
   const textColor = type === 'ghost' ? useThemeColor({}, 'primaryText') : Swatches.neutral[0];
+  const secondaryTextColor = useThemeColor({}, 'secondaryText')
 
   const buttonStyle = [
+    style,
     styles.base,
     styles[size],
-    { backgroundColor: backgroundColor, borderColor: type === 'ghost' ? textColor : 'transparent' },
+    styles[type],
+    { backgroundColor: backgroundColor, borderColor: type === 'neutral' ? secondaryTextColor : 'transparent' },
   ];
 
   const textStyle = [
@@ -31,9 +43,9 @@ const Button = ({ type = 'primary', size, title, onPress, leadingIcon, trailingI
   return (
     <TouchableOpacity style={buttonStyle} onPress={onPress}>
       <View style={styles.contentContainer}>
-        {leadingIcon && <View style={styles.iconContainer}>{React.cloneElement(leadingIcon, { color: textColor })}</View>}
+        {leadingIcon && <View style={styles.iconContainer}>{React.cloneElement(leadingIcon, { color: textColor, size: fontSize[size] })}</View>}
         <Text style={textStyle}>{title}</Text>
-        {trailingIcon && <View style={styles.iconContainer}>{React.cloneElement(trailingIcon, { color: textColor })}</View>}
+        {trailingIcon && <View style={styles.iconContainer}>{React.cloneElement(trailingIcon, { color: textColor, size: fontSize[size] })}</View>}
       </View>
     </TouchableOpacity>
   );
@@ -41,29 +53,30 @@ const Button = ({ type = 'primary', size, title, onPress, leadingIcon, trailingI
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 4,
+    borderRadius: 8,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    margin: 4,
   },
   large: {
-    height: 50,
-    minWidth: 140,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
   },
   small: {
-    height: 40,
-    minWidth: 100,
+
+  },
+  ghost: {
+    paddingHorizontal: 0,
   },
   textBase: {
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: 'Nunito',
   },
   text: {
-    large: { fontSize: 20 },
-    small: { fontSize: 16 },
+    title: { fontSize: fontSize.title },
+    large: { fontSize: fontSize.large },
+    small: { fontSize: fontSize.small },
   },
   contentContainer: {
     flexDirection: 'row',
@@ -74,5 +87,3 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   }
 });
-
-export default Button;

@@ -3,6 +3,7 @@ import { Text, type TextProps, StyleSheet } from 'react-native';
 import { useFonts, Nunito_400Regular, Nunito_700Bold } from '@expo-google-fonts/nunito';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { Typography } from '@/constants/Typography';
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
@@ -46,27 +47,27 @@ const fontFamilyBold = 'Nunito_700Bold';
 const styles = StyleSheet.create({
   default: {
     fontFamily: fontFamilyRegular,
-    fontSize: 16,
-    lineHeight: 16 * 1.33,
+    fontSize: Typography.fontSize.small,
+    lineHeight: Typography.fontSize.small * 1.33,
   },
   defaultBold: {
     fontFamily: fontFamilyBold,
-    fontSize: 16,
-    lineHeight: 16 * 1.33,
+    fontSize: Typography.fontSize.small,
+    lineHeight:  Typography.fontSize.small * 1.33,
   },
   subtitle: {
     fontFamily: fontFamilyBold,
-    fontSize: 20,
-    lineHeight: 20 * 1.33,
+    fontSize: Typography.fontSize.medium,
+    lineHeight: Typography.fontSize.medium * 1.33,
   },
   title: {
     fontFamily: fontFamilyBold,
-    fontSize: 26,
-    lineHeight: 26 * 1.33,
+    fontSize: Typography.fontSize.large,
+    lineHeight: Typography.fontSize.large * 1.33,
   },
   link: {
     fontFamily: fontFamilyRegular,
-    fontSize: 16,
-    lineHeight: 16 * 1.33,
+    fontSize: Typography.fontSize.small,
+    lineHeight: Typography.fontSize.small * 1.33,
   },
 });
