@@ -37,6 +37,8 @@ export default function RootLayout() {
         <Stack.Screen name="register" options={{ headerShown: false }} />
         <Stack.Screen name="verify-email" options={{ headerShown: false }} />
         <Stack.Screen name="acquisition-survey" options={{ headerShown: false }} />
+        <Stack.Screen name="select-l2" options={{ headerShown: false }} />
+        <Stack.Screen name="select-l1" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>

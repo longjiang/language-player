@@ -21,7 +21,7 @@ const RegisterScreen = () => {
           title="Register"
           onBackPress={() => router.navigate("/")}
           imageName={require("../assets/images/splash-image.png")}
-          imageStyle={{ top: -230 }}
+          imageStyle={{ marginTop: -400 }}
         >
 
             <View style={styles.row}>

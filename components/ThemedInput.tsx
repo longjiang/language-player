@@ -1,3 +1,4 @@
+// @/components/ThemedInput.tsx
 import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';

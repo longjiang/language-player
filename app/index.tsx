@@ -4,7 +4,7 @@ import {
   View,
   Image,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons"; // Ensure this library is properly installed
+import Icon from "react-native-vector-icons/MaterialIcons";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
@@ -29,7 +29,9 @@ const Index = () => {
         <ThemedButton
           title="Start Learning"
           trailingIcon={<Icon name="chevron-right" />}
-          onPress={() => router.push("login")} // Assuming 'Login' is the name of your route to login.tsx
+          onPress={() => router.push("select-l2")}
+          // onPress={() => router.push("login")}
+          
         />
       </View>
     </ThemedView>

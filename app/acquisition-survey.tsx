@@ -33,7 +33,7 @@ const AcquisitionSurveyScreen = () => {
       title="How did you hear about us?"
       onBackPress={() => router.navigate("/register")}
       imageName={require("../assets/images/splash-image.png")}
-      imageStyle={{ top: -230 }}
+      imageStyle={{ marginTop: -400 }}
     >
       <View>
         {options.map((option, index) => (
@@ -56,7 +56,10 @@ const AcquisitionSurveyScreen = () => {
       <ThemedButton
         title="Start Learning"
         onPress={() =>
-          console.log("Survey results:", selectedOption, otherText)
+          { 
+            console.log("Survey results:", selectedOption, otherText)
+            router.push("select-l2")
+          }
         }
         style={{ marginTop: 20 }}
       />
@@ -65,12 +68,6 @@ const AcquisitionSurveyScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  image: {
-    width: "100%",
-    marginBottom: -290,
-    position: "relative",
-    top: -300,
-  },
   container: {
     flex: 1,
   },

@@ -32,17 +32,15 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   contentContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
     padding: 26,
     textAlign: "left",
     width: "100%", // Full width container
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 20,
     marginLeft: -15,
+    alignItems: "flex-start",
   },
   title: {
     marginLeft: 10,

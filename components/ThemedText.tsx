@@ -9,6 +9,7 @@ export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
   type?: 'default' | 'title' | 'defaultBold' | 'subtitle' | 'link';
+  variant?: 'primary' | 'secondary';
 };
 
 export function ThemedText({
@@ -16,6 +17,7 @@ export function ThemedText({
   lightColor,
   darkColor,
   type = 'default',
+  variant = 'primary',
   ...rest
 }: ThemedTextProps) {
   useFonts({
@@ -23,7 +25,8 @@ export function ThemedText({
     Nunito_700Bold,
   });
 
-  const primaryTextColor = useThemeColor({ light: lightColor, dark: darkColor }, 'primaryText');
+  const primaryTextColor = useThemeColor({ light: lightColor, dark: darkColor }, `${variant}Text`);
+
   const primaryLinkColor = useThemeColor({}, 'primaryLink');
 
   return (

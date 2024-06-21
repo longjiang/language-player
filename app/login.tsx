@@ -20,7 +20,7 @@ const LoginScreen = () => {
           title="Login"
           onBackPress={() => router.navigate("/")}
           imageName={require("../assets/images/splash-image.png")}
-          imageStyle={{ top: -170 }}  
+          imageStyle={{ marginTop: -400 }}
         >
             
 
@@ -60,12 +60,6 @@ const LoginScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    image: {
-      width: "100%",
-      marginBottom: 20,
-      position: 'relative',
-      top: -170,
-    },
     input: {
         marginBottom: 10,
     },

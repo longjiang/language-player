@@ -1,34 +1,32 @@
+// @/app/select-l2.tsx
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
+import { ThemedLanguageSelect } from "@/components/ThemedLanguageSelect";
 import { ThemedButton } from "@/components/ThemedButton";
-import { ThemedCodeInput } from "@/components/ThemedCodeInput";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router } from "expo-router";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
-const VerifyEmailScreen = () => {
+const SelectL2Screen = () => {
   const [code, setCode] = useState("");
 
-  const handleVerify = () => {
-    console.log("Verification code entered:", code);
-    // Add your verification logic here
-  };
+  const onSelect = (value) => {
+    console.log('Selected:', value);
+  }
 
   return (
     <ThemedScreen
-      title="Verify Your Email"
-      onBackPress={() => router.navigate("/register")}
+      title="What’s your first language?"
+      onBackPress={() => router.navigate("/select-l2")}
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
     >
-      <ThemedText style={styles.instructions}>
-        Please enter the verification code sent to the email name***@gmail.com
-      </ThemedText>
+      <ThemedLanguageSelect />
 
-      <ThemedCodeInput codeLength={6} onCodeFilled={setCode} />
 
       <ThemedButton
-        title="Verify"
+        title="Next"
+        trailingIcon={<Icon name="chevron-right" />}
         style={styles.button}
         onPress={() => {
           router.navigate("/acquisition-survey");
@@ -39,6 +37,15 @@ const VerifyEmailScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  item: {
+    padding: 16,
+  },
+  image: {
+    width: "100%",
+    marginBottom: 20,
+    position: "relative",
+    top: -230,
+  },
   instructions: {
     marginBottom: 20,
   },
@@ -49,4 +56,4 @@ const styles = StyleSheet.create({
   // Add or adjust other styles as necessary
 });
 
-export default VerifyEmailScreen;
+export default SelectL2Screen;
