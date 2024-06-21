@@ -6,22 +6,19 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { ThemedButton } from "@/components/ThemedButton";
-import { ThemedView } from "@/components/ThemedView";
+import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedText } from "@/components/ThemedText";
 import { router } from 'expo-router';
-
-
-import splashImage from "../assets/images/splash-image.png";
 
 const Index = () => {
 
   return (
-    <ThemedView style={styles.container}>
-      <Image source={splashImage} style={styles.image} />
+    <ThemedScreen
+      title="Enrich your language-learning journey"
+      imageName={require("../assets/images/splash-image.png")}
+      imageStyle={{ marginTop: -30}}
+    >
       <View style={styles.contentContainer}>
-        <ThemedText type="title" style={{ marginBottom: 20 }}>
-          Enrich your language-learning journey
-        </ThemedText>
         <ThemedText style={styles.description}>
           Discover the power of Comprehensible Input through hundreds of
           thousands of videos in over 100 languages.
@@ -29,12 +26,12 @@ const Index = () => {
         <ThemedButton
           title="Start Learning"
           trailingIcon={<Icon name="chevron-right" />}
-          onPress={() => router.push("select-l2")}
+          onPress={() => router.push("/(tabs)/(media)")}
           // onPress={() => router.push("login")}
           
         />
       </View>
-    </ThemedView>
+    </ThemedScreen>
   );
 };
 
@@ -47,13 +44,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000",
     paddingBottom: 20,
-  },
-  contentContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-    padding: 26,
-    textAlign: "left",
-    width: "100%", // Ensure this container is full width
   },
   title: {
     fontSize: 24,

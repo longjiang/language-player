@@ -77,7 +77,7 @@ export const ThemedSearchableSelect = ({
             renderItem={renderItemWrapper}
             keyExtractor={item => item.value}
             ListHeaderComponent={renderHeader}
-            style={[styles.dropdown, { borderColor, backgroundColor, height: 500 }]}
+            style={[styles.dropdown, { borderColor, backgroundColor, height: 300 }]}
           />
         )}
       </View>

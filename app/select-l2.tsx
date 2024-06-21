@@ -28,8 +28,6 @@ const SelectL2Screen = () => {
     <ThemedScreen
       title="What language would you like to learn?"
       onBackPress={() => router.navigate("/acquisition-survey")}
-      imageName={require("../assets/images/splash-image.png")}
-      imageStyle={{ marginTop: -400 }}
     >
       <ScrollView contentContainerStyle={styles.iconLayout}>
         {languageOptions.map(lang => (

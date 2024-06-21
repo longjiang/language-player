@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, SafeAreaProvider, SafeAreaView, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedButton } from '@/components/ThemedButton';
@@ -11,17 +11,25 @@ export const ThemedScreen = ({
   onBackPress,
   imageName,
   imageStyle
+}: {
+  title: string,
+  children: React.ReactNode,
+  onBackPress?: () => void,
+  imageName?: any,
+  imageStyle?: any
 }) => {
   return (
     <ThemedView style={styles.container}>
       {imageName && <Image source={imageName} style={[styles.image, imageStyle]} />}
-      <View style={styles.contentContainer}>
-        <View style={styles.header}>
-          <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="chevron-left" />} onPress={onBackPress} />
-          <ThemedText type="title" style={styles.title}>{title}</ThemedText>
+      <SafeAreaView>
+        <View style={styles.contentContainer}>
+          <View style={styles.header}>
+            {onBackPress && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="chevron-left" />} onPress={onBackPress} />}
+            <ThemedText type="title" style={styles.title}>{title}</ThemedText>
+          </View>
+          {children}
         </View>
-        {children}
-      </View>
+      </SafeAreaView>
     </ThemedView>
   );
 };
