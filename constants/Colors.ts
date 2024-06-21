@@ -27,6 +27,15 @@ export const Colors = {
     secondaryStroke: Swatches.neutral[100],
     primaryLink: Swatches.primary[400],
     secondaryLink: Swatches.primary[700],
+    level: {
+      1: Swatches.warning[500],
+      2: '#1E7E94',
+      3: '#FA6234',
+      4: Swatches.alert[500],
+      5: '#FA6234',
+      6: Swatches.primary[400],
+      7: Swatches.success[600],
+    }
   },
   dark: {
     primaryText: Swatches.neutral[0],
@@ -49,6 +58,15 @@ export const Colors = {
     secondaryStroke: Swatches.neutral[400],
     primaryLink: Swatches.primary[300],
     secondaryLink: Swatches.primary[600],
+    level: {
+      1: Swatches.warning[500],
+      2: '#1E7E94',
+      3: '#FA6234',
+      4: Swatches.alert[500],
+      5: '#FA6234',
+      6: Swatches.primary[400],
+      7: Swatches.success[600],
+    }
   }
 };
 

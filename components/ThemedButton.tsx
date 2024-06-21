@@ -22,16 +22,28 @@ const fontSize = {
 };
 
 export function ThemedButton({ type = 'primary', size = 'large', title, onPress, leadingIcon, trailingIcon, style }: ButtonProps) {
-  const backgroundColor = useThemeColor({}, `${type}Brand`);
+  
   const textColor = type === 'ghost' ? useThemeColor({}, 'primaryText') : Swatches.neutral[0];
   const secondaryTextColor = useThemeColor({}, 'secondaryText')
 
+  const getBackgroundColor = (type) => {
+    const colorMap = {
+      neutral: 'transparent',
+      accent: useThemeColor({}, 'secondaryBackground'),
+      primary: useThemeColor({}, 'primaryBrand'),
+      ghost: 'transparent',
+    };
+    return colorMap[type] || useThemeColor({}, 'primaryBrand'); // Default to 'primaryBrand' if type is not specified
+  };
+
+  const backgroundColor = getBackgroundColor(type);
+
   const buttonStyle = [
-    style,
     styles.base,
     styles[size],
     styles[type],
-    { backgroundColor: backgroundColor, borderColor: type === 'neutral' ? secondaryTextColor : 'transparent' },
+    { backgroundColor, borderColor: type === 'neutral' ? secondaryTextColor : 'transparent' },
+    style,
   ];
 
   const textStyle = [
@@ -42,11 +54,9 @@ export function ThemedButton({ type = 'primary', size = 'large', title, onPress,
 
   return (
     <TouchableOpacity style={buttonStyle} onPress={onPress}>
-      <View style={styles.contentContainer}>
         {leadingIcon && <View style={styles.iconContainer}>{React.cloneElement(leadingIcon, { color: textColor, size: fontSize[size] })}</View>}
         <Text style={textStyle}>{title}</Text>
         {trailingIcon && <View style={styles.iconContainer}>{React.cloneElement(trailingIcon, { color: textColor, size: fontSize[size] })}</View>}
-      </View>
     </TouchableOpacity>
   );
 };
@@ -57,6 +67,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
+    display: 'flex',
+    flexDirection: 'row',
   },
   large: {
     paddingVertical: 12,
@@ -77,11 +89,6 @@ const styles = StyleSheet.create({
     title: { fontSize: fontSize.title },
     large: { fontSize: fontSize.large },
     small: { fontSize: fontSize.small },
-  },
-  contentContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   iconContainer: {
     marginHorizontal: 4,
