@@ -57,9 +57,9 @@ export function ThemedButton({ type = 'primary', size = 'large', title, onPress,
 
   return (
     <TouchableOpacity style={buttonStyle} onPress={onPress}>
-        {leadingIcon && <View style={styles.iconContainer}>{React.cloneElement(leadingIcon, { color: textColor, size: fontSize[size] })}</View>}
+        {leadingIcon && <View style={styles.iconContainer}>{React.cloneElement(leadingIcon, { color: textColor, size: fontSize[size] * 1.2 })}</View>}
         <Text style={textStyle}>{title}</Text>
-        {trailingIcon && <View style={styles.iconContainer}>{React.cloneElement(trailingIcon, { color: textColor, size: fontSize[size] })}</View>}
+        {trailingIcon && <View style={styles.iconContainer}>{React.cloneElement(trailingIcon, { color: textColor, size: fontSize[size] * 1.2 })}</View>}
     </TouchableOpacity>
   );
 };

@@ -32,6 +32,10 @@ export const VideoHero = ({ videoId, title, height }) => {
         colors={["transparent", "rgba(0,0,0,1)"]} // Gradual transparency to a darker shade
         style={{ position: "absolute", width: "100%", height: 100, bottom: 0 }}
       />
+      <LinearGradient
+        colors={["rgba(0,0,0,1)", "transparent"]} // Gradual transparency to a darker shade
+        style={{ position: "absolute", width: "100%", height: 200, top: 0 }}
+      />
       <View style={overlayStyles}>
         <ThemedText style={styles.title} type="defaultBold">{title}</ThemedText>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
