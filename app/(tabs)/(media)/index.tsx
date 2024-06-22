@@ -5,16 +5,18 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
+import { YouTubePlayer } from "@/components/YouTubePlayer";
 
 const MediaHomeScreen = () => {
 
   return (
     <ThemedScreen
-      title="Media Home"
-      imageName={require("@/assets/images/splash-image.png")}
-      imageStyle={{ marginTop: -400 }}
     >
-      
+
+      <YouTubePlayer
+        videoId={"iee2TATGMyI"}
+      />
+
       <ThemedButton
         title="Search"
         trailingIcon={<Icon name="chevron-right" />}
@@ -23,11 +25,15 @@ const MediaHomeScreen = () => {
           router.navigate("/(tabs)/(media)/search");
         }}
       />
+
     </ThemedScreen>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   button: {
     marginTop: 20,
     marginBottom: 110,

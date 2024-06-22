@@ -8,7 +8,7 @@ import { Typography } from '@/constants/Typography';
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: 'default' | 'title' | 'defaultBold' | 'subtitle' | 'link';
+  type?: 'small' | 'default' | 'title' | 'defaultBold' | 'subtitle' | 'link';
   variant?: 'primary' | 'secondary';
 };
 
@@ -48,6 +48,11 @@ const fontFamilyBold = 'Nunito_700Bold';
 
 
 const styles = StyleSheet.create({
+  small: {
+    fontFamily: fontFamilyRegular,
+    fontSize: Typography.fontSize.xsmall,
+    lineHeight: Typography.fontSize.xsmall * 1.33,
+  },
   default: {
     fontFamily: fontFamilyRegular,
     fontSize: Typography.fontSize.small,

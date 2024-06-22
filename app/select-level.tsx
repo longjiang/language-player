@@ -5,6 +5,7 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { ThemedText } from "@/components/ThemedText";
 
 const levels = [
   { level: 1, title: "HSK 1", label: "Beginner (HSK 1)" },
@@ -19,11 +20,9 @@ const levels = [
 
 const SelectLevelScreen = () => {
   const onSelect = (level) => {
-    console.log('Selected:', level);
     router.navigate("/(tabs)/(media)");
   };
   const levelColors = useThemeColor({}, 'level'); 
-  console.log(levelColors);
 
   return (
     <ThemedScreen
@@ -41,6 +40,9 @@ const SelectLevelScreen = () => {
           style={[styles.item]}
         />
       ))}
+      <ThemedText style={{ marginTop: 20, textAlign: "center" }}  >
+        “HSK” is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.
+      </ThemedText>
     </ThemedScreen>
   );
 };
