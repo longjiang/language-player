@@ -1,10 +1,10 @@
 import React from "react";
 import YoutubePlayer from "react-native-youtube-iframe";
 
-export const YouTubeVideo = ({ videoId, autoplay, mute, height = 300, controls = true }) => {
+export const YouTubeVideo = ({ youtubeId, autoplay, mute, height = 300, controls = true }) => {
   return (
     <YoutubePlayer
-      videoId={videoId}
+      videoId={youtubeId}
       play={autoplay} // Control playback of video with true/false
       mute={mute} // Control sound
       height={height}
