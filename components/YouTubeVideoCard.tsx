@@ -9,8 +9,11 @@ import {
 } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { router } from "expo-router";
+import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 
 export const YouTubeVideoCard = ({ video, style }) => {
+  const { showVideoPlayer, toggleMiniPlayer, hideVideoPlayer } = useVideoPlayer();
+
   // Convert ISO 8601 duration to a readable format
   const formatDuration = (duration) => {
     const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
@@ -21,11 +24,6 @@ export const YouTubeVideoCard = ({ video, style }) => {
       seconds < 10 ? `0${seconds}` : seconds
     }`;
   };
-
-  // Calculating width and height based on screen width for 16:9 aspect ratio
-  const screenWidth = Dimensions.get("window").width;
-  const thumbnailWidth = screenWidth - 20; // considering margin
-  const thumbnailHeight = (thumbnailWidth * 9) / 16; // 16:9 aspect ratio
 
   const handlePress = () => {
     // Navigate to the YouTube video screen

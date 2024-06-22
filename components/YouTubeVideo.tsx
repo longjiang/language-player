@@ -1,7 +1,7 @@
 import React from "react";
 import YoutubePlayer from "react-native-youtube-iframe";
 
-export const YouTubePlayer = ({ videoId, autoplay, mute, height = 300, controls = true }) => {
+export const YouTubeVideo = ({ videoId, autoplay, mute, height = 300, controls = true }) => {
   return (
     <YoutubePlayer
       videoId={videoId}

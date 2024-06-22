@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -30,21 +31,24 @@ export default function RootLayout() {
   }
 
   return (
+    
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }}/>
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="register" options={{ headerShown: false }} />
-        <Stack.Screen name="verify-email" options={{ headerShown: false }} />
-        <Stack.Screen name="acquisition-survey" options={{ headerShown: false }} />
-        <Stack.Screen name="select-l2" options={{ headerShown: false }} />
-        <Stack.Screen name="select-l1" options={{ headerShown: false }} />
-        <Stack.Screen name="select-level" options={{ headerShown: false }} />
-        <Stack.Screen name="account" options={{ headerShown: false }} />
-        <Stack.Screen name="go-pro" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <VideoPlayerProvider>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }}/>
+          <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen name="register" options={{ headerShown: false }} />
+          <Stack.Screen name="verify-email" options={{ headerShown: false }} />
+          <Stack.Screen name="acquisition-survey" options={{ headerShown: false }} />
+          <Stack.Screen name="select-l2" options={{ headerShown: false }} />
+          <Stack.Screen name="select-l1" options={{ headerShown: false }} />
+          <Stack.Screen name="select-level" options={{ headerShown: false }} />
+          <Stack.Screen name="account" options={{ headerShown: false }} />
+          <Stack.Screen name="go-pro" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </VideoPlayerProvider>
     </ThemeProvider>
   );
 }

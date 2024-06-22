@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { LinearGradient } from "expo-linear-gradient";
-import { YouTubePlayer } from "@/components/YouTubePlayer";
+import { YouTubeVideo } from "@/components/YouTubeVideo";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 
@@ -21,7 +21,7 @@ export const VideoHero = ({ videoId, title, height }) => {
 
   return (
     <View style={styles.container}>
-      <YouTubePlayer
+      <YouTubeVideo
         videoId={videoId}
         height={height}
         autoplay={true}

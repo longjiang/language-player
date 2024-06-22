@@ -38,6 +38,7 @@
     "react-native-screens": "3.31.1",
     "react-native-vector-icons": "^10.1.0",
     "react-native-web": "~0.19.10",
+    "react-native-web-webview": "^1.0.2",
     "react-native-webview": "^13.10.4",
     "react-native-youtube-iframe": "^2.3.0"
   },
