@@ -17,7 +17,7 @@ export const VideoHero = ({ videoId, title, height }) => {
     left: (videoWidth - screenWidth) / 2 + padding, // Note the left edige of the video is off the screen
   };
   // Add a mute state
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true); // Default to muted
 
   return (
     <View style={styles.container}>
@@ -51,7 +51,7 @@ export const VideoHero = ({ videoId, title, height }) => {
           <ThemedButton
             size="medium"
             type="ghost"
-            leadingIcon={isMuted ? <Icon name="volume-high" /> : <Icon name="volume-mute" />}
+            leadingIcon={isMuted ? <Icon name="volume-mute" /> : <Icon name="volume-high" />}
             style={styles.button}
             onPress={() => {
               setIsMuted(!isMuted);
