@@ -39,12 +39,13 @@ export function ThemedButton({ type = 'primary', size = 'large', title, onPress,
   };
 
   const backgroundColor = getBackgroundColor(type);
+  const borderColor = type === 'neutral' ? secondaryTextColor : 'transparent';
 
   const buttonStyle = [
     styles.base,
     styles[size],
     styles[type],
-    { backgroundColor, borderColor: type === 'neutral' ? secondaryTextColor : 'transparent' },
+    { backgroundColor, borderColor },
     style,
   ];
 

@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from "expo-linear-gradient";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
@@ -16,6 +16,8 @@ export const VideoHero = ({ videoId, title, height }) => {
     top: height - 90,
     left: (videoWidth - screenWidth) / 2 + padding, // Note the left edige of the video is off the screen
   };
+  // Add a mute state
+  const [isMuted, setIsMuted] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -23,26 +25,35 @@ export const VideoHero = ({ videoId, title, height }) => {
         videoId={videoId}
         height={height}
         autoplay={true}
-        mute={false}
+        mute={isMuted}
         controls={false}
       />
       <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,1)']} // Gradual transparency to a darker shade
-        style={{ position: 'absolute', width: '100%', height: 100, bottom: 0 }}
+        colors={["transparent", "rgba(0,0,0,1)"]} // Gradual transparency to a darker shade
+        style={{ position: "absolute", width: "100%", height: 100, bottom: 0 }}
       />
       <View style={overlayStyles}>
-        <ThemedText style={styles.title}>
-          {title}
-        </ThemedText>
-        <ThemedButton
-          title="Watch"
-          size="medium"
-          leadingIcon={<Icon name="play" />}
-          style={styles.button}
-          onPress={() => {
-            console.log("Video playing...");
-          }}
-        />
+        <ThemedText style={styles.title} type="defaultBold">{title}</ThemedText>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <ThemedButton
+            title="Watch"
+            size="medium"
+            leadingIcon={<Icon name="play" />}
+            style={styles.button}
+            onPress={() => {
+              console.log("Video playing...");
+            }}
+          />
+          <ThemedButton
+            size="medium"
+            type="ghost"
+            leadingIcon={isMuted ? <Icon name="volume-high" /> : <Icon name="volume-mute" />}
+            style={styles.button}
+            onPress={() => {
+              setIsMuted(!isMuted);
+            }}
+          />
+        </View>
       </View>
     </View>
   );
@@ -57,11 +68,10 @@ const styles = StyleSheet.create({
   },
   title: {
     marginBottom: 10,
-    color: 'white',
+    color: "white",
   },
   button: {
     alignSelf: "left",
-    backgroundColor: '#6a32af',  // Consistent theming with the gradient
   },
 });
 
