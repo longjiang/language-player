@@ -3,9 +3,9 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { router } from "expo-router";
-import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { VideoHero } from "@/components/VideoHero";
+import {YouTubeVideoCard} from '@/components/YouTubeVideoCard';
+import videoData from '@/data/recommended-videos.json'; // Importing the JSON data
 
 const MediaHomeScreen = () => {
   const videoHeight = 300;
@@ -26,13 +26,24 @@ const MediaHomeScreen = () => {
           title="As Long As You Love Me"
           height={videoHeight}
         />
-        {/* <YouTubePlayer
-          videoId="t6fPzVNIEB0"
-          height={videoHeight}
-          autoplay={true} // Start playing automatically
-          mute={false} // Start with sound on
-          controls={false} // Hide the controls
-        /> */}
+      </View>
+      <View style={styles.container}>
+        <ThemedButton
+          title="TV Shows"
+          size="medium"
+          type="neutral"
+          leadingIcon={<Icon name="youtube-tv" />}
+          trailingIcon={<Icon name="chevron-right" />}
+          style={{ justifyContent: "space-between", marginBottom: 26 }}
+          onPress={() => {
+            // Go to TV shows.
+          }}
+        />
+
+
+        { videoData.map((video, index) => (
+          <YouTubeVideoCard key={index} video={video} style={{marginBottom: 16 }} />
+        )) }
       </View>
     </View>
   );
@@ -40,7 +51,7 @@ const MediaHomeScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    padding: 26
   },
 });
 
