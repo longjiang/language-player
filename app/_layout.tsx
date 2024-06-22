@@ -45,6 +45,7 @@ export default function RootLayout() {
           <Stack.Screen name="select-level" options={{ headerShown: false }} />
           <Stack.Screen name="account" options={{ headerShown: false }} />
           <Stack.Screen name="go-pro" options={{ headerShown: false }} />
+          <Stack.Screen name="video/youtube/[youtube_id]" options={{ headerShown: false, presentation: 'modal' }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
