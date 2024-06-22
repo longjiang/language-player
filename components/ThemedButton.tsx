@@ -1,3 +1,4 @@
+// @/components/ThemedButton.tsx
 import React from 'react';
 import { Text, TouchableOpacity, StyleSheet, View } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -6,7 +7,7 @@ import { Typography } from '@/constants/Typography';
 
 type ButtonProps = {
   type?: 'primary' | 'neutral' | 'ghost' | 'accent';
-  size?: 'title' | 'large' | 'small';
+  size?: 'title' | 'large' | 'medium' | 'small';
   title?: string;
   style?: any;
   onPress?: () => void;
@@ -18,6 +19,7 @@ type ButtonProps = {
 const fontSize = {
   title: Typography.fontSize.large,
   large: Typography.fontSize.medium,
+  medium: Typography.fontSize.medium,
   small: Typography.fontSize.small,
 };
 
@@ -74,8 +76,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 20,
   },
+  medium: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
   small: {
-
+    paddingVertical: 3,
+    paddingHorizontal: 5,
   },
   ghost: {
     paddingHorizontal: 0,
