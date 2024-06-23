@@ -1,9 +1,15 @@
+// @/contexts/VideoWithTranscriptContext.tsx
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define the shape of the context
 interface VideoWithTranscriptContextType {
   playbackState: string;
   currentTime: number;
+  playVideo: boolean;
+  updatePlaybackState: (state: string) => void;
+  updateCurrentTime: (time: number) => void;
+  updatePlayVideo: (newVal: boolean) => void;
 }
 
 // Create the context with a default value
@@ -22,6 +28,7 @@ export const useVideoWithTranscriptContext = () => {
 export const VideoWithTranscriptProvider: React.FC = ({ children }) => {
   const [playbackState, setPlaybackState] = useState('stopped');
   const [currentTime, setCurrentTime] = useState(0);
+  const [playVideo, setPlayVideo] = useState(false); // Set to tru to play, false to pause
 
   // Function to update playbackState
   const updatePlaybackState = (state: string) => {
@@ -33,8 +40,13 @@ export const VideoWithTranscriptProvider: React.FC = ({ children }) => {
     setCurrentTime(time);
   };
 
+  // Function to update playVideo directly
+  const updatePlayVideo = (newVal: boolean) => {
+    setPlayVideo(newVal);
+  }
+
   return (
-    <VideoWithTranscriptContext.Provider value={{ playbackState, currentTime, updatePlaybackState, updateCurrentTime }}>
+    <VideoWithTranscriptContext.Provider value={{ playbackState, currentTime, updatePlaybackState, updateCurrentTime, playVideo, updatePlayVideo }}>
       {children}
     </VideoWithTranscriptContext.Provider>
   );

@@ -1,4 +1,6 @@
-import { useRef, useEffect } from "react";
+// @/components/YouTubeVideo.tsx
+
+import { useRef, useEffect, useCallback } from "react";
 import YoutubePlayer from "react-native-youtube-iframe";
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
 
@@ -30,11 +32,12 @@ export const YouTubeVideo = ({
   let updatePlaybackState: (state: PlayerState) => void;
   let updateCurrentTime: (time: number) => void;
   let inVideoWithTranscriptProvider = false;
+  let playVideo = autoplay;
 
   // Determine if I'm in the VideoWithTranscriptProvider with try/catch
   // If in the provider, get the playbackState currentTime values, and the updatePlaybackState, and updateCurrentTime functions
   try {
-    ({ playbackState, currentTime, updatePlaybackState, updateCurrentTime } =
+    ({ playbackState, currentTime, updatePlaybackState, updateCurrentTime, playVideo } =
       useVideoWithTranscriptContext());
     inVideoWithTranscriptProvider = true;
   } catch (error) {
@@ -78,7 +81,7 @@ export const YouTubeVideo = ({
   return (
     <YoutubePlayer
       videoId={youtubeId}
-      play={autoplay} // Control playback of video with true/false
+      play={playVideo} // Control playback of video with true/false
       mute={mute} // Control sound
       height={height}
       ref={playerRef}

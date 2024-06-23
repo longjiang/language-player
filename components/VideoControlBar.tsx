@@ -1,3 +1,4 @@
+// @/components/VideoControlBar.tsx
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedButton } from './ThemedButton'; // Assuming you have this component
@@ -6,9 +7,12 @@ import Ionicon from 'react-native-vector-icons/Ionicons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Swatches } from '@/constants/Swatches';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
 
 export const VideoControlBar = () => {
   const primaryBrandColor = useThemeColor({}, 'primaryBrand')
+  const { updatePlayVideo, playVideo } = useVideoWithTranscriptContext()
+
   return (
     <View style={styles.container}>
       <View style={styles.progressBarContainer}>
@@ -34,7 +38,7 @@ export const VideoControlBar = () => {
           trailingIcon={<Icon name="arrow-left" />}
         />
         <TouchableOpacity>
-          <Ionicon name="play" size={51} style={{ color: primaryBrandColor }} />
+          <Ionicon name={playVideo ? "pause" : "play"} size={51} style={{ color: primaryBrandColor }} onPress={() => updatePlayVideo(!playVideo) } />
         </TouchableOpacity>
         <ThemedButton
           type="ghost"
