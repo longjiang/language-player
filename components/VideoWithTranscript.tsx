@@ -10,17 +10,11 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import { Dimensions } from 'react-native';
 import { VideoWithTranscriptProvider } from '@/contexts/VideoWithTranscriptContext';
-
-interface YouTubeVideo {
-  youtube_id: string; // The ID of the video on YouTube
-  id?: string; // The ID in our own database
-  title?: string;
-  subs_l2?: string; // The transcript of the video in the second language in CSV format
-}
+import { YouTubeVideo as YouTubeVideoType } from '@/types';
 
 interface VideoWithTranscriptProps {
   router: any; // Adjust the type according to your router's type
-  video: YouTubeVideo;
+  initialVideo: YouTubeVideoType;
 }
 
 export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({ video }) => {
@@ -32,7 +26,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({ video 
   return (
     
 
-    <VideoWithTranscriptProvider>
+    <VideoWithTranscriptProvider initialVideo={video}>
     
       <SafeAreaView
         style={{ flexDirection: "row", justifyContent: "space-between" }}

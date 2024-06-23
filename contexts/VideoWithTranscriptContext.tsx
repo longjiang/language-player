@@ -1,9 +1,11 @@
 // @/contexts/VideoWithTranscriptContext.tsx
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { YouTubeVideo } from '@/types';
 
 // Define the shape of the context
 interface VideoWithTranscriptContextType {
+  video: YouTubeVideo;
   playbackState: string;
   currentTime: number;
   seekTime?: number;
@@ -12,6 +14,8 @@ interface VideoWithTranscriptContextType {
   updatePlaybackState: (state: string) => void;
   updateCurrentTime: (time: number, seekTime?: boolean) => void;
   seekTo: (time: number) => void;
+  seekToNextLine: () => void;
+  seekToPreviousLine: () => void;
   skipToNextVideo: () => void;
   skipToPreviousVideo: () => void;
   updatePlayVideo: (newVal: boolean) => void;
@@ -31,13 +35,17 @@ export const useVideoWithTranscriptContext = () => {
   return context;
 };
 
-
-
-export const VideoWithTranscriptProvider: React.FC = ({ children }) => {
+export const VideoWithTranscriptProvider: React.FC<{ initialVideo: YouTubeVideo }> = ({ initialVideo, children }) => {
   const [playbackState, setPlaybackState] = useState('stopped');
   const [currentTime, setCurrentTime] = useState(0);
   const [seekTime, setSeekTime] = useState(0); // Watched for seeking
   const [playVideo, setPlayVideo] = useState(false); // Set to true to play, false to pause
+  const [video, setVideo] = useState<YouTubeVideo>(initialVideo);
+
+  useEffect(() => {
+    // Reset context state when the initialVideo changes
+    setVideo(initialVideo);
+  }, [initialVideo]);
 
   const updatePlaybackState = (state: string) => {
     setPlaybackState(state);
@@ -55,6 +63,14 @@ export const VideoWithTranscriptProvider: React.FC = ({ children }) => {
     setSeekTime(time);
     setCurrentTime(time);
   };
+
+  const seekToNextLine = () => {
+    // Logic to seek to the next line in the transcript goes here
+  }
+
+  const seekToPreviousLine = () => {
+    // Logic to seek to the previous line in the transcript goes here
+  }
 
   const skipToNextVideo = () => {
     if (currentVideoIndex < videoList.length - 1) {
@@ -82,11 +98,14 @@ export const VideoWithTranscriptProvider: React.FC = ({ children }) => {
 
   return (
     <VideoWithTranscriptContext.Provider value={{
+      video,
       playbackState, 
       currentTime, 
       seekTime,
-      playVideo, 
+      playVideo,
       resetSeekTime,
+      seekToNextLine,
+      seekToPreviousLine,
       updatePlaybackState, 
       updateCurrentTime, 
       seekTo, 

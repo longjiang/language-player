@@ -3,17 +3,7 @@ import {View, Text, StyleSheet} from 'react-native';
 import Papa from 'papaparse';
 import { ThemedText } from './ThemedText';
 import { VideoWithTranscriptProvider, useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext"
-
-interface Line {
-  line: string;
-  starttime: string;
-}
-
-interface SyncedLine {
-  starttime: number;
-  l1Line: string;
-  l2Line: string;
-}
+import { Line, SyncedLine } from '@/types';
 
 function syncLines(l1Lines: Line[], l2Lines: Line[]): SyncedLine[] {
   // Convert starttime to numbers and sort both arrays
