@@ -12,10 +12,16 @@ import { YouTubeVideoCard } from "@/components/YouTubeVideoCard";
 import { FlatList } from "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator } from 'react-native';
+import { useThemeColor } from "@/hooks/useThemeColor";
+
 
 const SearchScreen = () => {
   const [items, setItems] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const primaryBrandColor = useThemeColor({}, "primaryBrand");
+
 
   useEffect(() => {
     // Search screen mounted
@@ -35,6 +41,8 @@ const SearchScreen = () => {
   };
 
   const loadItems = async () => {
+    setItems([]); // Clear items
+    setIsLoading(true); // Start loading
     try {
       const data = await getCollectionItems("youtube_videos_4", {
         filter: { title: { contains: searchQuery } },
@@ -44,7 +52,9 @@ const SearchScreen = () => {
     } catch (error) {
       console.error("Failed to load items:", error);
     }
+    setIsLoading(false); // Stop loading
   };
+  
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -65,6 +75,11 @@ const SearchScreen = () => {
           <ThemedText type="default" variant="secondary">
             You can also paste in YouTube URL to import.
           </ThemedText>
+          {isLoading && (
+            <View style={styles.spinnerContainer}>
+              <ActivityIndicator size="large" color="#a772d0" />
+            </View>
+          )}
         </ThemedScreen>
       )}
       {items.length > 0 && (
@@ -101,8 +116,14 @@ const SearchScreen = () => {
             style={{ padding: 26 }}
             keyExtractor={(item) => item.id}
           />
+          {isLoading && (
+            <View style={styles.spinnerContainer}>
+              <ActivityIndicator size="large" color={primaryBrandColor} />
+            </View>
+          )}
         </SafeAreaView>
       )}
+
     </GestureHandlerRootView>
   );
 };
@@ -122,6 +143,12 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "space-between",
     paddingHorizontal: 26,
+  },
+  spinnerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 100,
   },
 });
 

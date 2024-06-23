@@ -11,6 +11,7 @@ export const ThemedInput = ({
   icon,
   iconOnPress,
   style,
+  onSubmitEditing,
   ...rest
 }) => {
   const borderColor = useThemeColor({}, 'secondaryStroke');
@@ -25,11 +26,12 @@ export const ThemedInput = ({
         style={[styles.input, {color: useThemeColor({}, 'primaryText'), width: '100%'}]}
         placeholder={placeholder}
         placeholderTextColor={ placeholderTextColor }
+        onSubmitEditing={onSubmitEditing}
         {...rest}
       />
       {icon && (
         <TouchableOpacity onPress={iconOnPress} style={styles.icon}>
-          <Icon name={icon} size={iconSize} color={ placeholderTextColor } />
+          <Icon name={icon} size={iconSize} color={ placeholderTextColor } onPress={onSubmitEditing} />
         </TouchableOpacity>
       )}
     </View>
