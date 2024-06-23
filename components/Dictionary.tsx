@@ -1,36 +1,56 @@
-import React, { useEffect, useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
-import { Worker } from 'react-native-worker-thread';
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Text, ScrollView } from 'react-native';
+import { Dictionary } from '@/src/dictionary';
+import axios from 'axios';
+import Papa from 'papaparse';
 
-const Dictionary = () => {
-  const [worker, setWorker] = useState(null);
-  const [input, setInput] = useState('');
-  const [definition, setDefinition] = useState('');
+const DictionaryComponent = () => {
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState([]);
+    const [dictionary, setDictionary] = useState<Dictionary | null>(null);
 
-  useEffect(() => {
-    const newWorker = new Worker(require.resolve('./worker.js'));
-    setWorker(newWorker);
-    newWorker.postMessage({ type: 'load', payload: 'https://example.com/dictionary.csv' });
+    useEffect(() => {
+        const fetchDictionaryData = async () => {
+            try {
+                const response = await axios.get('https://server.chinesezerotohero.com/data/hsk-cedict/hsk_cedict.csv.txt');
+                const parsedData = Papa.parse(response.data, { header: true });
+                const entries = parsedData.data;
+                const newDictionary = new Dictionary(entries);
+                console.log('Dictionary loaded.');
+                setDictionary(newDictionary);
+            } catch (error) {
+                console.error('Failed to fetch dictionary data:', error);
+            }
+        };
 
-    newWorker.onmessage = (event) => {
-      if (event.data.type === 'results') {
-        setDefinition(event.data.payload.definitions || 'No definition found.');
-      }
+        fetchDictionaryData();
+    }, []);
+
+    const handleSearch = (text: string) => {
+        setQuery(text);
+        if (dictionary) {
+            const searchResults = dictionary.search(text);
+            setResults(searchResults);
+        }
     };
 
-    return () => newWorker.terminate();
-  }, []);
-
-  const search = (word) => {
-    worker.postMessage({ type: 'search', payload: word });
-  };
-
-  return (
-    <View>
-      <TextInput value={input} onChangeText={setInput} onSubmitEditing={() => search(input)} />
-      <Text>Definition: {definition}</Text>
-    </View>
-  );
+    return (
+        <View>
+            <TextInput
+                placeholder="Search here..."
+                value={query}
+                onChangeText={handleSearch}
+                style={{ height: 40, borderColor: 'gray', borderWidth: 1, padding: 10 }}
+            />
+            <ScrollView>
+                {results.map((entry, index) => (
+                    <Text key={index}>
+                        {entry.simplified} ({entry.pinyin}) - {entry.definitions}
+                    </Text>
+                ))}
+            </ScrollView>
+        </View>
+    );
 };
 
-export default Dictionary;
+export default DictionaryComponent;
