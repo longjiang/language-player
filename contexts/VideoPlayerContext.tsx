@@ -1,4 +1,4 @@
-// VideoPlayerContext.js
+// @/contexts/VideoPlayerContext.tsx
 import React, { createContext, useContext, useState } from 'react';
 
 const VideoPlayerContext = createContext();
@@ -7,28 +7,41 @@ export const useVideoPlayer = () => useContext(VideoPlayerContext);
 
 export const VideoPlayerProvider = ({ children }) => {
   const [videoPlayerState, setVideoPlayerState] = useState({
-    isVisible: false,
-    uri: '',
+    youtubeId: '',
     isMini: false
   });
 
-  const showVideoPlayer = (uri) => {
-    setVideoPlayerState({ isVisible: true, uri, isMini: false });
+  const openPlayer = (youtubeId) => {
+    setVideoPlayerState({ youtubeId, isMini: false });
   };
 
-  const toggleMiniPlayer = () => {
+  const closePlayer = () => {
+    setVideoPlayerState({ youtubeId: '', isMini: false }); // Setting youtubeId to an empty string closes the player
+  };
+
+  const setYouTubeId = (youtubeId) => {
     setVideoPlayerState(prevState => ({
       ...prevState,
-      isMini: !prevState.isMini
+      youtubeId
     }));
   };
 
-  const hideVideoPlayer = () => {
-    setVideoPlayerState({ isVisible: false, uri: '', isMini: false });
+  const minimizePlayer = () => {
+    setVideoPlayerState(prevState => ({
+      ...prevState,
+      isMini: true
+    }));
+  };
+
+  const maximizePlayer = () => {
+    setVideoPlayerState(prevState => ({
+      ...prevState,
+      isMini: false
+    }));
   };
 
   return (
-    <VideoPlayerContext.Provider value={{ showVideoPlayer, toggleMiniPlayer, hideVideoPlayer, videoPlayerState }}>
+    <VideoPlayerContext.Provider value={{ openPlayer, closePlayer, minimizePlayer, maximizePlayer, setYouTubeId, videoPlayerState }}>
       {children}
     </VideoPlayerContext.Provider>
   );

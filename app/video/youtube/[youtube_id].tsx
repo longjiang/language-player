@@ -1,3 +1,4 @@
+// @/app/video/youtube/[youtube_id].tsx
 import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, SafeAreaView, Dimensions, BackHandler } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -8,6 +9,7 @@ import { YouTubeVideo } from "@/components/YouTubeVideo";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useFocusEffect } from 'expo-router';
 import { useRoute } from '@react-navigation/native';
+import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -15,7 +17,11 @@ const screenWidth = Dimensions.get('window').width;
 const YouTubeVideoScreen = () => {
   const params = useLocalSearchParams();
   const youtubeId = params?.youtube_id;
-  const [playerMode, setPlayerMode] = useState("full"); // 'full', 'mini', 'closed'
+
+  const { openPlayer, closePlayer, minimizePlayer, maximizePlayer, setYouTubeId, videoPlayerState } = useVideoPlayer();
+  
+  if (videoPlayerState.youtubeId !== youtubeId) setYouTubeId(youtubeId); // Set the youtubeId in the context
+  if (videoPlayerState.isMini !== false) maximizePlayer(); // Set isMini to false in the context
 
   const navigation = useNavigation();
   const route = useRoute();  // This hook fetches information about the current route
@@ -24,23 +30,18 @@ const YouTubeVideoScreen = () => {
   const position = useSharedValue({ x: 0, y: 0 });
   const size = useSharedValue({ width: screenWidth, height: screenHeight });
 
-  const minimizePlayer = () => {
-    size.value = withSpring({ width: screenWidth / 2, height: screenHeight / 4 });
-    position.value = withSpring({ x: screenWidth / 2, y: screenHeight - (screenHeight / 4) });
-    setPlayerMode('mini');
-  };
 
-  // Prevent the screen from being removed when the player mode is 'full'
+  // Hooks called when the component is focused or unfocused
   useFocusEffect(
     useCallback(() => {
       // Log route information when the component is focused
       console.log(`Hello, I am focused! Current route is: ${route.name}`);
-      setPlayerMode('full');
+
 
       return () => {
         // This code runs when the component loses focus
         console.log(`This route '${route.name}' is now unfocused.`);
-        if (route.name === 'video/youtube/[youtube_id]' && playerMode === 'full') {
+        if (route.name === 'video/youtube/[youtube_id]') {
           minimizePlayer();
         }
       };
