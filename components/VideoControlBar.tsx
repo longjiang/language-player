@@ -11,7 +11,7 @@ import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptCon
 
 export const VideoControlBar = () => {
   const primaryBrandColor = useThemeColor({}, 'primaryBrand')
-  const { updatePlayVideo, playVideo } = useVideoWithTranscriptContext()
+  const { updatePlayVideo, playVideo, seekTo, skipToNextVideo, skipToPreviousVideo } = useVideoWithTranscriptContext()
 
   return (
     <View style={styles.container}>
@@ -43,6 +43,7 @@ export const VideoControlBar = () => {
         <ThemedButton
           type="ghost"
           trailingIcon={<Icon name="arrow-right" />}
+          onPress={() => seekTo(30)}
         />
         <ThemedButton
           type="ghost"

@@ -29,16 +29,24 @@ export const YouTubeVideo = ({
   const playerRef = useRef();
   let playbackState: PlayerState;
   let currentTime: number;
+  let resetSeekTime: () => void;
   let updatePlaybackState: (state: PlayerState) => void;
-  let updateCurrentTime: (time: number) => void;
+  let updateCurrentTime: (time: number, isSeeking?: boolean) => void;
   let inVideoWithTranscriptProvider = false;
   let playVideo = autoplay;
 
   // Determine if I'm in the VideoWithTranscriptProvider with try/catch
   // If in the provider, get the playbackState currentTime values, and the updatePlaybackState, and updateCurrentTime functions
   try {
-    ({ playbackState, currentTime, updatePlaybackState, updateCurrentTime, playVideo } =
-      useVideoWithTranscriptContext());
+    ({
+      playbackState,
+      currentTime,
+      seekTime,
+      resetSeekTime,
+      updatePlaybackState,
+      updateCurrentTime,
+      playVideo,
+    } = useVideoWithTranscriptContext());
     inVideoWithTranscriptProvider = true;
   } catch (error) {
     // not in the VideoWithTranscriptProvider
@@ -53,30 +61,37 @@ export const YouTubeVideo = ({
   const intervalRef = useRef(null); // To store the interval ID
 
   // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
-  useEffect(
-    () => {
+  useEffect(() => {
+    if (!inVideoWithTranscriptProvider) return;
+
+    // Set the interval and store its ID
+    intervalRef.current = setInterval(async () => {
+      if (!playerRef.current) return;
       if (!inVideoWithTranscriptProvider) return;
+      const newTime = await playerRef.current.getCurrentTime();
+      if (playbackState === "playing" && newTime !== currentTime) {
+        // console.log("NT ", newTime);
+        updateCurrentTime(newTime); // Use newTime to reflect the updated value
+      }
+    }, 200);
 
-      // Set the interval and store its ID
-      intervalRef.current = setInterval(async () => {
-        if (!playerRef.current) return;
-        if (!inVideoWithTranscriptProvider) return;
-        const newTime = await playerRef.current.getCurrentTime();
-        if (playbackState === "playing" && newTime !== currentTime) {
-          // console.log("NT ", newTime);
-          updateCurrentTime(newTime); // Use newTime to reflect the updated value
-        }
-      }, 200);
+    // Cleanup function to clear the interval
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [playbackState]);
 
-      // Cleanup function to clear the interval
-      return () => {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
-      };
-    },
-    [playbackState]
-  );
+  // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
+  useEffect(() => {
+    if (seekTime && playerRef.current.seekTo) {
+      // Only seek if the currentTime is different from the current time of the video by 100ms
+
+      playerRef.current.seekTo(currentTime, true); // The second allowSeekAhead parameter determines whether the player will make a new request to the server if the seconds parameter specifies a time outside of the currently buffered video data.
+      resetSeekTime();
+    }
+  }, [seekTime]);
 
   return (
     <YoutubePlayer
