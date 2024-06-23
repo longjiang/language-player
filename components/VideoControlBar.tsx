@@ -12,7 +12,7 @@ import { Dimensions } from "react-native";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
-import { formatDuration } from "@/lib/utils";
+import { formatDuration } from "@/src/utils";
 
 export const VideoControlBar = () => {
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
@@ -133,7 +133,7 @@ export const VideoControlBar = () => {
         <View style={{ padding: 20 }}>
           <ThemedText type="subtitle">{video.title}</ThemedText>
           <ThemedText variant="secondary" style={{ marginTop: 10 }}>
-            {`${new Date(video.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} /  Duration: ${formatDuration(video.duration)}  / ${video.locale}`}
+            {`${video.date ? new Date(video.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No Date' } /  Duration: ${formatDuration(video.duration)}  / ${video.locale}`}
           </ThemedText>
           <ThemedText variant="secondary" style={{ marginTop: 10 }}>
             {`${video.views.toLocaleString()} Views / ${video.likes} likes / ${

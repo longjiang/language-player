@@ -10,7 +10,7 @@ import {
 import { ThemedText } from "./ThemedText";
 import { router } from "expo-router";
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
-import { formatDuration } from '@/lib/utils';
+import { formatDuration } from '@/src/utils';
 
 export const YouTubeVideoCard = ({ video, style }) => {
   const { showVideoPlayer, toggleMiniPlayer, hideVideoPlayer } = useVideoPlayer();
@@ -36,9 +36,9 @@ export const YouTubeVideoCard = ({ video, style }) => {
             {video.title}
           </ThemedText>
           <ThemedText style={styles.details} type="small" variant="secondary">
-            {`${video.views.toLocaleString()} Views / ${formatDuration(
+            {`${video.views ? video.views.toLocaleString() : 'No'} Views / ${video.duration ? formatDuration(
               video.duration
-            )} / ${video.locale}`}
+            ) : '--:--'} / ${video.locale}`}
           </ThemedText>
         </View>
       </View>
