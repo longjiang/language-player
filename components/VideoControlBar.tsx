@@ -8,21 +8,31 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { Swatches } from '@/constants/Swatches';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
+import { Dimensions } from 'react-native';
 
 export const VideoControlBar = () => {
   const primaryBrandColor = useThemeColor({}, 'primaryBrand')
   const { playVideo, duration, currentTime, fullscreen, updateFullscreen, updatePlayVideo, seekTo, rewind, seekToNextLine, seekToPreviousLine, skipToNextVideo, skipToPreviousVideo } = useVideoWithTranscriptContext()
 
+  const handlePress = (evt) => {
+    const { locationX } = evt.nativeEvent;
+    const progressBarWidth = Dimensions.get('window').width; // Assuming full width, adjust as necessary
+    const newTime = (locationX / progressBarWidth) * duration;
+    seekTo(newTime);
+  };
+  
   return (
     <View style={styles.container}>
       <View style={styles.progressBarContainer}>
         <View />
+        <TouchableOpacity activeOpacity={1} onPress={handlePress}>
           <LinearGradient
-            colors={[Swatches.primary[700], Swatches.primary[400]]} // Colors for the gradient
-            start={{x: 0, y: 0}} // Starting point of the gradient
-            end={{x: 1, y: 0}} // Ending point of the gradient
+            colors={[Swatches.primary[700], Swatches.primary[400]]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
             style={[styles.progressBar, { width: currentTime && duration ? `${(currentTime / duration) * 100}%` : '0%' }]}
           />
+        </TouchableOpacity>
       </View>
       <View style={styles.controls}>
         <ThemedButton
