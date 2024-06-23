@@ -11,7 +11,7 @@ import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptCon
 
 export const VideoControlBar = () => {
   const primaryBrandColor = useThemeColor({}, 'primaryBrand')
-  const { updatePlayVideo, playVideo, seekTo, skipToNextVideo, skipToPreviousVideo } = useVideoWithTranscriptContext()
+  const { updatePlayVideo, playVideo, seekTo, seekToNextLine, seekToPreviousLine, skipToNextVideo, skipToPreviousVideo } = useVideoWithTranscriptContext()
 
   return (
     <View style={styles.container}>
@@ -32,10 +32,12 @@ export const VideoControlBar = () => {
         <ThemedButton
           type="ghost"
           trailingIcon={<Icon name="skip-previous" />}
+          onPress={skipToPreviousVideo}
         />
         <ThemedButton
           type="ghost"
           trailingIcon={<Icon name="arrow-left" />}
+          onPress={seekToPreviousLine}
         />
         <TouchableOpacity>
           <Ionicon name={playVideo ? "pause" : "play"} size={51} style={{ color: primaryBrandColor }} onPress={() => updatePlayVideo(!playVideo) } />
@@ -43,11 +45,12 @@ export const VideoControlBar = () => {
         <ThemedButton
           type="ghost"
           trailingIcon={<Icon name="arrow-right" />}
-          onPress={() => seekTo(30)}
+          onPress={seekToNextLine}
         />
         <ThemedButton
           type="ghost"
           trailingIcon={<Icon name="skip-next" />}
+          onPress={skipToNextVideo}
         />
         <ThemedButton
           type="ghost"

@@ -171,11 +171,26 @@ export const VideoWithTranscriptProvider: React.FC<{
   };
 
   const seekToNextLine = () => {
-    // Logic to seek to the next line in the transcript goes here
+    // Find the start time of the next line
+    const nextLine = syncedLines.find((line) => line.starttime > currentTime);
+    if (nextLine) {
+      seekTo(nextLine.starttime);
+    }
   };
 
   const seekToPreviousLine = () => {
-    // Logic to seek to the previous line in the transcript goes here
+    // Find the start time of the previous line
+    const previousLine = syncedLines
+      .slice()
+      .reverse()
+      .find((line) => line.starttime < currentTime - 0.2);
+    // We go to the line before the previous line so that we don't keep seeking to the same line
+    if (!previousLine) return;
+    const indexBeforePrevious = syncedLines.findIndex((line) => line.starttime === previousLine.starttime) - 1;
+    const previousPreviousLine = syncedLines[Math.max(0, indexBeforePrevious)];
+    if (previousPreviousLine) {
+      seekTo(previousPreviousLine.starttime);
+    }
   };
 
   const skipToNextVideo = () => {
