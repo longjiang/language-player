@@ -53,7 +53,7 @@ const MediaHomeScreen = () => {
               <ThemedText style={styles.headerTitle} type="defaultBold">Language Player</ThemedText>
             </View>
             <View style={styles.iconsContainer}>
-              <ThemedButton type="ghost" size="large" leadingIcon={<Icon name="magnify" />} onPress={ () => { router.navigate('/(tabs)/(media)/search') }} />
+              <ThemedButton type="ghost" size="large" leadingIcon={<Icon name="magnify" />} onPress={ () => { router.navigate('/search') }} />
               <TouchableOpacity onPress={() => { router.navigate('/select-l2') }}>
                 <CountryFlag isoCode="cn" size={16} style={{ marginLeft: 10, borderRadius: 3 }} />
               </TouchableOpacity>
@@ -68,7 +68,7 @@ const MediaHomeScreen = () => {
               trailingIcon={<Icon name="chevron-right" />}
               style={{ justifyContent: "space-between", marginBottom: 20 }}
               onPress={() => {
-                // Go to TV shows.
+                router.navigate('/tv-shows')
               }}
             />
           </View>

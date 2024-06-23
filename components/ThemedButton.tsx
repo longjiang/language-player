@@ -98,7 +98,4 @@ const styles = StyleSheet.create({
     large: { fontSize: fontSize.large },
     small: { fontSize: fontSize.small },
   },
-  iconContainer: {
-    marginHorizontal: 4,
-  }
 });

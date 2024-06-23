@@ -1,4 +1,4 @@
-// @/app/select-l2.tsx
+// @/app/search.tsx
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -94,7 +94,8 @@ const SearchScreen = () => {
               />
               <ThemedInput
                 placeholder="Search all Chinese content"
-                style={{ flex: 1, paddingVertical: 8 }}
+                style={{ flex: 1, marginRight: 8 }}
+                size="small"
                 icon="magnify"
                 onChangeText={handleInputChange}
                 onSubmitEditing={handleSearch}

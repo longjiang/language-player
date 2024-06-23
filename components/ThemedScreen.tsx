@@ -12,29 +12,34 @@ export const ThemedScreen = ({
   onBackPress,
   imageName,
   imageStyle,
-  showFlag
+  showFlag,
+  showHeader = true,
+  onAction
 }: {
   title: string,
   children: React.ReactNode,
   onBackPress?: () => void,
   imageName?: any,
-  imageStyle?: any
-  showFlag?: boolean
+  imageStyle?: any,
+  showFlag?: boolean,
+  showHeader?: boolean,
+  onAction?: () => void
 }) => {
   return (
     <ThemedView style={styles.container}>
       {imageName && <Image source={imageName} style={[styles.image, imageStyle]} />}
       <SafeAreaView>
         <View style={styles.contentContainer}>
-          <View style={styles.header}>
+          {(showHeader && <View style={styles.header}>
             <View style={styles.headerLeft}>
               {onBackPress && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="chevron-left" />} onPress={onBackPress} />}
               <ThemedText type="title" style={styles.title}>{title}</ThemedText>
             </View>
+            {(onAction && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="dots-horizontal-circle" />} onPress={onAction} />)}
             {(showFlag && <TouchableOpacity onPress={() => { router.navigate('/select-l2') }}>
               <CountryFlag isoCode="cn" size={16} style={{ marginTop: 10, borderRadius: 3 }} />
             </TouchableOpacity>)}
-          </View>
+          </View>)}
           {children}
         </View>
       </SafeAreaView>
