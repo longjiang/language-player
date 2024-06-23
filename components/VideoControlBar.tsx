@@ -11,7 +11,7 @@ import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptCon
 
 export const VideoControlBar = () => {
   const primaryBrandColor = useThemeColor({}, 'primaryBrand')
-  const { updatePlayVideo, playVideo, seekTo, seekToNextLine, seekToPreviousLine, skipToNextVideo, skipToPreviousVideo } = useVideoWithTranscriptContext()
+  const { playVideo, fullscreen, updateFullscreen, updatePlayVideo, seekTo, rewind, seekToNextLine, seekToPreviousLine, skipToNextVideo, skipToPreviousVideo } = useVideoWithTranscriptContext()
 
   return (
     <View style={styles.container}>
@@ -54,8 +54,14 @@ export const VideoControlBar = () => {
         />
         <ThemedButton
           type="ghost"
-          trailingIcon={<Icon name="fullscreen" />}
+          trailingIcon={<Icon name="rotate-left" />}
+          onPress={rewind}
         />
+        {/* <ThemedButton
+          type="ghost"
+          trailingIcon={<Icon name={ fullscreen ? "fullscreen-exit" : "fullscreen" } />}
+          onPress={() => updateFullscreen(!fullscreen)}
+        /> */}
       </View>
     </View>
   );

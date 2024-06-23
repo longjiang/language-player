@@ -13,15 +13,18 @@ interface VideoWithTranscriptContextType {
   playVideo: boolean;
   syncedLines: SyncedLine[];
   currentLine: SyncedLine;
-  resetSeekTime: () => void;
+  fullscreen: boolean;
+  updatePlayVideo: (newVal: boolean) => void;
   updatePlaybackState: (state: string) => void;
   updateCurrentTime: (time: number, seekTime?: boolean) => void;
+  updateFullscreen: (state: boolean) => void;
+  resetSeekTime: () => void;
   seekTo: (time: number) => void;
+  rewind: () => void;
   seekToNextLine: () => void;
   seekToPreviousLine: () => void;
   skipToNextVideo: () => void;
   skipToPreviousVideo: () => void;
-  updatePlayVideo: (newVal: boolean) => void;
 }
 
 const videoList = []; // To be implemented later
@@ -126,6 +129,7 @@ export const VideoWithTranscriptProvider: React.FC<{
   const [video, setVideo] = useState<YouTubeVideo>(initialVideo);
   const [syncedLines, setSyncedLines] = useState([]);
   const [currentLine, setCurrentLine] = useState(null);
+  const [fullscreen, setFullscreen] = useState(false);
 
   useEffect(() => {
     // Reset context state when the initialVideo changes
@@ -160,6 +164,10 @@ export const VideoWithTranscriptProvider: React.FC<{
   const updateCurrentTime = (time: number) => {
     setCurrentTime(time);
   };
+
+  const updateFullscreen = (state: boolean) => {
+    setFullscreen(state);
+  }
 
   const resetSeekTime = () => {
     setSeekTime(null);
@@ -217,6 +225,17 @@ export const VideoWithTranscriptProvider: React.FC<{
     setPlayVideo(newVal);
   };
 
+  const rewind = () => {
+    // Find the start time of the previous line
+    const previousLine = syncedLines
+      .slice()
+      .reverse()
+      .find((line) => line.starttime < currentTime);
+    if (previousLine) {
+      seekTo(previousLine.starttime);
+    }
+  }
+
   return (
     <VideoWithTranscriptContext.Provider
       value={{
@@ -227,15 +246,18 @@ export const VideoWithTranscriptProvider: React.FC<{
         playVideo,
         syncedLines,
         currentLine,
+        fullscreen,
+        updatePlaybackState,
+        updateCurrentTime,
+        updatePlayVideo,
+        updateFullscreen,
         resetSeekTime,
         seekToNextLine,
         seekToPreviousLine,
-        updatePlaybackState,
-        updateCurrentTime,
+        rewind,
         seekTo,
         skipToNextVideo,
         skipToPreviousVideo,
-        updatePlayVideo,
       }}
     >
       {children}
