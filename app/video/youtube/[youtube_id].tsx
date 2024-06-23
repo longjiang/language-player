@@ -11,6 +11,7 @@ import { useFocusEffect } from 'expo-router';
 import { useRoute } from '@react-navigation/native';
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { VideoWithTranscript } from "@/components/VideoWithTranscript";
+import video from "@/data/video.json";
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -54,7 +55,7 @@ const YouTubeVideoScreen = () => {
 
   return (
     <View>
-      <VideoWithTranscript youtubeId={youtubeId} key={`video-player-${youtubeId}`} />
+      <VideoWithTranscript video={video} key={`video-player-${video.youtube_id}`} />
     </View>
   );
 };

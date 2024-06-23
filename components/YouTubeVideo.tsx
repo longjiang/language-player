@@ -1,13 +1,88 @@
-import React from "react";
+import { useRef, useEffect } from "react";
 import YoutubePlayer from "react-native-youtube-iframe";
+import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
 
-export const YouTubeVideo = ({ youtubeId, autoplay, mute, height = 300, controls = true }) => {
+// Define a PlayerState string type with the following possible values:
+// unstarted - fired before the first video is loaded
+// video cue- next video cue
+// buffering - current video is in playing state but stopped for buffering
+// playing - current video is playing
+// paused	- current video is paused
+// ended - video has finished playing the video
+type PlayerState =
+  | "unstarted"
+  | "video cue"
+  | "buffering"
+  | "playing"
+  | "paused"
+  | "ended";
+
+export const YouTubeVideo = ({
+  youtubeId,
+  autoplay,
+  mute,
+  height = 300,
+  controls = true,
+}) => {
+  const playerRef = useRef();
+  let playbackState: PlayerState;
+  let currentTime: number;
+  let updatePlaybackState: (state: PlayerState) => void;
+  let updateCurrentTime: (time: number) => void;
+  let inVideoWithTranscriptProvider = false;
+
+  // Determine if I'm in the VideoWithTranscriptProvider with try/catch
+  // If in the provider, get the playbackState currentTime values, and the updatePlaybackState, and updateCurrentTime functions
+  try {
+    ({ playbackState, currentTime, updatePlaybackState, updateCurrentTime } =
+      useVideoWithTranscriptContext());
+    inVideoWithTranscriptProvider = true;
+  } catch (error) {
+    // not in the VideoWithTranscriptProvider
+  }
+
+  const onChangeState = (newState: PlayerState) => {
+    if (!inVideoWithTranscriptProvider) return;
+    if (newState !== playbackState) updatePlaybackState(newState);
+  };
+
+  // Assuming playerRef and other state variables are defined here
+  const intervalRef = useRef(null); // To store the interval ID
+
+  // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
+  useEffect(
+    () => {
+      if (!inVideoWithTranscriptProvider) return;
+
+      // Set the interval and store its ID
+      intervalRef.current = setInterval(async () => {
+        if (!playerRef.current) return;
+        if (!inVideoWithTranscriptProvider) return;
+        const newTime = await playerRef.current.getCurrentTime();
+        if (playbackState === "playing" && newTime !== currentTime) {
+          // console.log("NT ", newTime);
+          updateCurrentTime(newTime); // Use newTime to reflect the updated value
+        }
+      }, 200);
+
+      // Cleanup function to clear the interval
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+      };
+    },
+    [playbackState]
+  );
+
   return (
     <YoutubePlayer
       videoId={youtubeId}
       play={autoplay} // Control playback of video with true/false
       mute={mute} // Control sound
       height={height}
+      ref={playerRef}
+      onChangeState={onChangeState}
       webViewProps={{
         allowsFullscreenVideo: true,
         allowsInlineMediaPlayback: true,
