@@ -1,12 +1,12 @@
 import React from 'react';
 import { SafeAreaView, View } from 'react-native';
-import { ThemedButton } from '@/components/ThemedButton';
-import { YouTubeVideo } from '@/components/YouTubeVideo';
+import { ThemedButton } from './ThemedButton';
+import { YouTubeVideo } from './YouTubeVideo';
+import { VideoControlBar } from './VideoControlBar';
+import { SyncedTranscript } from './SyncedTranscript';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import { ThemedText } from '@/components/ThemedText';
 import { Dimensions } from 'react-native';
-import { SyncedTranscript } from '@/components/SyncedTranscript';
 import { VideoWithTranscriptProvider } from '@/contexts/VideoWithTranscriptContext';
 
 interface YouTubeVideo {
@@ -56,7 +56,8 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({ video 
         </View>
       </SafeAreaView>
       <View style={{ marginBottom: 26 }}>
-        <YouTubeVideo youtubeId={video.youtube_id} height={videoHeight} />
+        <YouTubeVideo youtubeId={video.youtube_id} height={videoHeight} controls={false} />
+        <VideoControlBar />
       </View>
       <SyncedTranscript video={video} />
     </VideoWithTranscriptProvider>
