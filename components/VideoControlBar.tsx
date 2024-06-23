@@ -11,7 +11,7 @@ import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptCon
 
 export const VideoControlBar = () => {
   const primaryBrandColor = useThemeColor({}, 'primaryBrand')
-  const { playVideo, fullscreen, updateFullscreen, updatePlayVideo, seekTo, rewind, seekToNextLine, seekToPreviousLine, skipToNextVideo, skipToPreviousVideo } = useVideoWithTranscriptContext()
+  const { playVideo, duration, currentTime, fullscreen, updateFullscreen, updatePlayVideo, seekTo, rewind, seekToNextLine, seekToPreviousLine, skipToNextVideo, skipToPreviousVideo } = useVideoWithTranscriptContext()
 
   return (
     <View style={styles.container}>
@@ -21,7 +21,7 @@ export const VideoControlBar = () => {
             colors={[Swatches.primary[700], Swatches.primary[400]]} // Colors for the gradient
             start={{x: 0, y: 0}} // Starting point of the gradient
             end={{x: 1, y: 0}} // Ending point of the gradient
-            style={styles.progressBar}
+            style={[styles.progressBar, { width: currentTime && duration ? `${(currentTime / duration) * 100}%` : '0%' }]}
           />
       </View>
       <View style={styles.controls}>

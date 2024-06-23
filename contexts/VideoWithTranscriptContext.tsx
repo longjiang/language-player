@@ -14,6 +14,8 @@ interface VideoWithTranscriptContextType {
   syncedLines: SyncedLine[];
   currentLine: SyncedLine;
   fullscreen: boolean;
+  duration: number;
+  updateDuration: (duration: number) => void;
   updatePlayVideo: (newVal: boolean) => void;
   updatePlaybackState: (state: string) => void;
   updateCurrentTime: (time: number, seekTime?: boolean) => void;
@@ -130,6 +132,7 @@ export const VideoWithTranscriptProvider: React.FC<{
   const [syncedLines, setSyncedLines] = useState([]);
   const [currentLine, setCurrentLine] = useState(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     // Reset context state when the initialVideo changes
@@ -167,6 +170,10 @@ export const VideoWithTranscriptProvider: React.FC<{
 
   const updateFullscreen = (state: boolean) => {
     setFullscreen(state);
+  }
+
+  const updateDuration = (duration: number) => {
+    setDuration(duration);
   }
 
   const resetSeekTime = () => {
@@ -247,10 +254,12 @@ export const VideoWithTranscriptProvider: React.FC<{
         syncedLines,
         currentLine,
         fullscreen,
+        duration,
         updatePlaybackState,
         updateCurrentTime,
         updatePlayVideo,
         updateFullscreen,
+        updateDuration,
         resetSeekTime,
         seekToNextLine,
         seekToPreviousLine,

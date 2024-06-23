@@ -29,11 +29,12 @@ export const YouTubeVideo = ({
   const playerRef = useRef();
   let playbackState: PlayerState;
   let currentTime: number;
+  let inVideoWithTranscriptProvider = false;
+  let playVideo = autoplay;
   let resetSeekTime: () => void;
   let updatePlaybackState: (state: PlayerState) => void;
   let updateCurrentTime: (time: number, isSeeking?: boolean) => void;
-  let inVideoWithTranscriptProvider = false;
-  let playVideo = autoplay;
+  let updateDuration: (duration: number) => void;
 
   // Determine if I'm in the VideoWithTranscriptProvider with try/catch
   // If in the provider, get the playbackState currentTime values, and the updatePlaybackState, and updateCurrentTime functions
@@ -42,10 +43,11 @@ export const YouTubeVideo = ({
       playbackState,
       currentTime,
       seekTime,
+      playVideo,
       resetSeekTime,
       updatePlaybackState,
       updateCurrentTime,
-      playVideo,
+      updateDuration,
     } = useVideoWithTranscriptContext());
     inVideoWithTranscriptProvider = true;
   } catch (error) {
@@ -93,6 +95,14 @@ export const YouTubeVideo = ({
     }
   }, [seekTime]);
 
+  // Update the duration of the video once it's loaded
+  const onReady = async () => {
+    if (!inVideoWithTranscriptProvider) return;
+    if (!playerRef.current) return;
+    const duration = await playerRef.current.getDuration();
+    updateDuration(duration);
+  };
+
   return (
     <YoutubePlayer
       videoId={youtubeId}
@@ -100,6 +110,7 @@ export const YouTubeVideo = ({
       mute={mute} // Control sound
       height={height}
       ref={playerRef}
+      onReady={onReady}
       onChangeState={onChangeState}
       webViewProps={{
         allowsFullscreenVideo: true,
