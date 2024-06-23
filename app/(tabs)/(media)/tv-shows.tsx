@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { ShowCard } from "@/components/ShowCard";
 
 
 const TVShowsScreen = () => {
@@ -96,7 +97,7 @@ const TVShowsScreen = () => {
           <FlatList
             data={items}
             renderItem={({ item }) => (
-              <YouTubeVideoCard video={item} style={{ marginBottom: 26 }} />
+              <ShowCard show={item} style={{ marginBottom: 26 }} />
             )}
             keyExtractor={(item) => item.id}
           />
