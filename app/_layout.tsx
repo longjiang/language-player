@@ -13,6 +13,8 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { VideoPlayerProvider } from "@/contexts/VideoPlayerContext";
 import { MiniPlayer } from "@/components/MiniPlayer";
+import { useNavigation } from "expo-router";
+import { useRoute } from "@react-navigation/native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -22,6 +24,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const navigation = useNavigation();
 
   useEffect(() => {
     if (loaded) {

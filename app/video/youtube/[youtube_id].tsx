@@ -10,6 +10,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-na
 import { useFocusEffect } from 'expo-router';
 import { useRoute } from '@react-navigation/native';
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
+import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -20,8 +21,7 @@ const YouTubeVideoScreen = () => {
 
   const { openPlayer, closePlayer, minimizePlayer, maximizePlayer, setYouTubeId, videoPlayerState } = useVideoPlayer();
   
-  if (videoPlayerState.youtubeId !== youtubeId) setYouTubeId(youtubeId); // Set the youtubeId in the context
-  if (videoPlayerState.isMini !== false) maximizePlayer(); // Set isMini to false in the context
+
 
   const navigation = useNavigation();
   const route = useRoute();  // This hook fetches information about the current route
@@ -36,6 +36,8 @@ const YouTubeVideoScreen = () => {
     useCallback(() => {
       // Log route information when the component is focused
       console.log(`Hello, I am focused! Current route is: ${route.name}`);
+      if (videoPlayerState.youtubeId !== youtubeId) setYouTubeId(youtubeId); // Set the youtubeId in the context
+      if (videoPlayerState.isMini !== false) maximizePlayer(); // Set isMini to false in the context
 
 
       return () => {
@@ -48,34 +50,11 @@ const YouTubeVideoScreen = () => {
     }, [route])  // Include `route` in the dependency array if you need to react to changes in the route
   );
 
+
+
   return (
     <View>
-      <SafeAreaView
-        style={{ flexDirection: "row", justifyContent: "space-between" }}
-      >
-        <View>
-          <ThemedButton
-            type="ghost"
-            trailingIcon={<Icon name="chevron-down" />}
-            onPress={() => router.push("../")}
-          />
-        </View>
-        <View style={{ flexDirection: "row" }}>
-          <ThemedButton
-            type="ghost"
-            trailingIcon={<Icon name="text-long" />}
-            onPress={() => router.push("/(tabs)/(media)/youtube-video")}
-          />
-          <ThemedButton
-            type="ghost"
-            trailingIcon={<Icon name="cog-outline" />}
-            onPress={() => router.push("/(tabs)/(media)/youtube-video")}
-          />
-        </View>
-      </SafeAreaView>
-      <View>
-        <YouTubeVideo youtubeId={youtubeId} />
-      </View>
+      <VideoWithTranscript youtubeId={youtubeId} key={`video-player-${youtubeId}`} />
     </View>
   );
 };

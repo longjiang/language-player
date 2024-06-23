@@ -3,6 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
+import { VideoWithTranscript } from '@/components/VideoWithTranscript';
 
 export const MiniPlayer = () => {
   const { closePlayer, maximizePlayer, videoPlayerState } = useVideoPlayer();
@@ -13,7 +14,7 @@ export const MiniPlayer = () => {
   return (
     <SafeAreaView style={{position: 'absolute', top: 0, backgroundColor: 'white', width: '100%'}}>
       <View style={styles.container}>
-        <Text style={styles.text}>Mini Player</Text>
+        <VideoWithTranscript youtubeId={videoPlayerState.youtubeId} key={`video-player-${videoPlayerState.youtubeId}`} />
         
         {/* Display JSON form of videoPlayerState for debugging */}
         <Text style={styles.debugText}>{JSON.stringify(videoPlayerState, null, 2)}</Text>
