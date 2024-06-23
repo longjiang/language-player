@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
+import Dictionary from "@/components/Dictionary";
 
 
 const DictionaryScreen = () => {
@@ -52,20 +53,13 @@ const DictionaryScreen = () => {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {searchQuery.length === 0 && (
+      {true && (
         <ThemedScreen
           title="Dictionary"
-          onBackPress={() => router.back()}
           showFlag={true}
         >
-          <ThemedInput
-            placeholder="Chinese, pinyin, or English"
-            style={{ marginBottom: 20 }}
-            icon="magnify"
-            onChangeText={handleInputChange}
-            onSubmitEditing={handleSearch}
-            value={searchQuery}
-          />
+          
+          <Dictionary />
           {isLoading && (
             <View style={styles.spinnerContainer}>
               <ActivityIndicator size="large" color="#a772d0" />
@@ -73,7 +67,7 @@ const DictionaryScreen = () => {
           )}
         </ThemedScreen>
       )}
-      {searchQuery.length > 0 && (
+      {false && (
         <SafeAreaView style={styles.resultsContainer}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>

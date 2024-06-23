@@ -3,6 +3,8 @@ import { View, TextInput, Text, ScrollView } from 'react-native';
 import { Dictionary } from '@/src/dictionary';
 import axios from 'axios';
 import Papa from 'papaparse';
+import { ThemedInput } from './ThemedInput';
+import { ThemedText } from './ThemedText';
 
 const DictionaryComponent = () => {
     const [query, setQuery] = useState('');
@@ -36,17 +38,19 @@ const DictionaryComponent = () => {
 
     return (
         <View>
-            <TextInput
-                placeholder="Search here..."
-                value={query}
-                onChangeText={handleSearch}
-                style={{ height: 40, borderColor: 'gray', borderWidth: 1, padding: 10 }}
+            <ThemedInput
+              placeholder="Chinese, pinyin or English..."
+              value={query}
+              onChangeText={handleSearch}
+              style={{ width: '100%' }}
             />
             <ScrollView>
                 {results.map((entry, index) => (
-                    <Text key={index}>
-                        {entry.simplified} ({entry.pinyin}) - {entry.definitions}
-                    </Text>
+                    <View key={index} style={{marginTop: 16}}>
+                        <ThemedText><ThemedText type="title">{entry.simplified}</ThemedText>
+                        <ThemedText type="defaultBold"> ({entry.pinyin})</ThemedText>
+                        <ThemedText type="default"> - {entry.definitions}</ThemedText></ThemedText>
+                    </View>
                 ))}
             </ScrollView>
         </View>
