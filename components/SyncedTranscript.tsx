@@ -11,7 +11,7 @@ export const SyncedTranscript = ({video}) => {
 
   return (
       <View style={styles.container}>
-        <ThemedText style={styles.subtitle} type="subtitle">{currentLine?.l2Line}</ThemedText>
+        <ThemedText style={styles.subtitle} type="title">{currentLine?.l2Line}</ThemedText>
         <ThemedText style={styles.subtitle} type="default" variant="secondary" >{currentLine?.l1Line}</ThemedText>
       </View>
   );
@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
+    textAlign: 'center',
   },
   subtitle: {
     paddingHorizontal: 10,

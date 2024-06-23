@@ -19,7 +19,7 @@ export const YouTubeVideoCard = ({ video, style }) => {
   const handlePress = () => {
     // Navigate to the YouTube video screen
     // Replace 'YouTubeVideoScreen' with the actual name of your screen
-    router.navigate("/(tabs)/(media)/youtube-video", { videoId: video.youtube_id });
+    router.navigate(`/video/youtube/${video.youtube_id}`);
   };
 
   return (

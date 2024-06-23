@@ -62,38 +62,38 @@ export const YouTubeVideo = ({
   // Assuming playerRef and other state variables are defined here
   const intervalRef = useRef(null); // To store the interval ID
 
-  // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
-  useEffect(() => {
-    if (!inVideoWithTranscriptProvider) return;
+  if (inVideoWithTranscriptProvider) {
+    // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
+    useEffect(() => {
+      // Set the interval and store its ID
+      intervalRef.current = setInterval(async () => {
+        if (!playerRef.current) return;
+        if (!inVideoWithTranscriptProvider) return;
+        const newTime = await playerRef.current.getCurrentTime();
+        if (playbackState === "playing" && newTime !== currentTime) {
+          // console.log("NT ", newTime);
+          updateCurrentTime(newTime); // Use newTime to reflect the updated value
+        }
+      }, 200);
 
-    // Set the interval and store its ID
-    intervalRef.current = setInterval(async () => {
-      if (!playerRef.current) return;
-      if (!inVideoWithTranscriptProvider) return;
-      const newTime = await playerRef.current.getCurrentTime();
-      if (playbackState === "playing" && newTime !== currentTime) {
-        // console.log("NT ", newTime);
-        updateCurrentTime(newTime); // Use newTime to reflect the updated value
+      // Cleanup function to clear the interval
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+      };
+    }, [playbackState]);
+
+    // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
+    useEffect(() => {
+      if (seekTime && playerRef.current.seekTo) {
+        // Only seek if the currentTime is different from the current time of the video by 100ms
+
+        playerRef.current.seekTo(currentTime, true); // The second allowSeekAhead parameter determines whether the player will make a new request to the server if the seconds parameter specifies a time outside of the currently buffered video data.
+        resetSeekTime();
       }
-    }, 200);
-
-    // Cleanup function to clear the interval
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [playbackState]);
-
-  // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
-  useEffect(() => {
-    if (seekTime && playerRef.current.seekTo) {
-      // Only seek if the currentTime is different from the current time of the video by 100ms
-
-      playerRef.current.seekTo(currentTime, true); // The second allowSeekAhead parameter determines whether the player will make a new request to the server if the seconds parameter specifies a time outside of the currently buffered video data.
-      resetSeekTime();
-    }
-  }, [seekTime]);
+    }, [seekTime]);
+  }
 
   // Update the duration of the video once it's loaded
   const onReady = async () => {

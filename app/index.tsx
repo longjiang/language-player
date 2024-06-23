@@ -26,7 +26,8 @@ const Index = () => {
         <ThemedButton
           title="Start Learning"
           trailingIcon={<Icon name="chevron-right" />}
-          onPress={() => router.push("/video/youtube/Ky23ai4vvX4")}
+          onPress={() => router.push("/(tabs)/(media)")}
+          
         />
       </View>
     </ThemedScreen>
