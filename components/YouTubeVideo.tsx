@@ -127,6 +127,7 @@ export const YouTubeVideo = ({
         rel: false, // This ensures that related videos are not shown from other channels.
         modestbranding: true, // This limits YouTube branding as much as possible
       }}
+      key={youtubeId}
     />
   );
 };

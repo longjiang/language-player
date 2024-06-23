@@ -8,3 +8,15 @@ export const formatDuration = (duration) => {
     seconds < 10 ? `0${seconds}` : seconds
   }`;
 };
+
+// Format number of seconds to a readable format
+export const formatSeconds = (seconds) => {
+  // Round the seconds to an int
+  seconds = Math.round(seconds);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const sec = seconds % 60;
+  return `${hours ? `${hours}:` : ""}${minutes}:${
+    sec < 10 ? `0${sec}` : sec
+  }`;
+};

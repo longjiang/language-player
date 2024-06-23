@@ -1,14 +1,17 @@
 // @/app/components/MiniPlayer.tsx
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
-import { VideoWithTranscript } from '@/components/VideoWithTranscript';
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
+import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 import video from "@/data/video.json";
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { YouTubeVideo } from "@/components/YouTubeVideo";
+import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
 
 export const MiniPlayer = () => {
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+  const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
   const { closePlayer, maximizePlayer, videoPlayerState } = useVideoPlayer();
   // Only render the component if youtubeId is truthy and isMini is true
@@ -16,9 +19,16 @@ export const MiniPlayer = () => {
     return null; // Or any other fallback UI
   }
   return (
-    <SafeAreaView style={{position: 'absolute', bottom: 0, backgroundColor: secondaryBackgroundColor, width: '100%'}}>
-      <View style={styles.container}>
-        <VideoWithTranscript video={video} key={`video-player-${video.youtube_id}`} />
+    <SafeAreaView style={styles.safeArea}>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: primaryBrandColor },
+        ]}
+      >
+        <VideoWithTranscriptProvider initialVideo={video}>
+          <VideoWithTranscript video={video} isMini={true} />
+        </VideoWithTranscriptProvider>
       </View>
     </SafeAreaView>
   );
@@ -26,10 +36,10 @@ export const MiniPlayer = () => {
 
 const styles = StyleSheet.create({
   container: {
-
   },
-  text: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  safeArea: {
+    position: "absolute",
+    bottom: 65,
+    width: "100%"
   },
 });
