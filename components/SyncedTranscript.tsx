@@ -4,6 +4,53 @@ import Papa from 'papaparse';
 import { ThemedText } from './ThemedText';
 import { VideoWithTranscriptProvider, useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext"
 
+interface Line {
+  line: string;
+  starttime: string;
+}
+
+interface SyncedLine {
+  starttime: number;
+  l1Line: string;
+  l2Line: string;
+}
+
+function syncLines(l1Lines: Line[], l2Lines: Line[]): SyncedLine[] {
+  // Convert starttime to numbers and sort both arrays
+  l1Lines = l1Lines.map(line => ({ ...line, starttime: parseFloat(line.starttime) })).sort((a, b) => a.starttime - b.starttime);
+  l2Lines = l2Lines.map(line => ({ ...line, starttime: parseFloat(line.starttime) })).sort((a, b) => a.starttime - b.starttime);
+
+  const syncedLines: SyncedLine[] = [];
+  const usedIndexes = new Set<number>(); // To track used l2Lines
+
+  // Find the closest l2Line for each l1Line
+  l1Lines.forEach(l1Line => {
+    let closestIndex = -1;
+    let smallestDifference = Infinity;
+
+    for (let i = 0; i < l2Lines.length; i++) {
+      if (!usedIndexes.has(i)) {
+        const timeDifference = Math.abs(l1Line.starttime - l2Lines[i].starttime);
+        if (timeDifference < smallestDifference) {
+          smallestDifference = timeDifference;
+          closestIndex = i;
+        }
+      }
+    }
+
+    if (closestIndex !== -1) {
+      usedIndexes.add(closestIndex);
+      syncedLines.push({
+        starttime: l1Line.starttime,
+        l1Line: l1Line.line,
+        l2Line: l2Lines[closestIndex].line
+      });
+    }
+  });
+
+  return syncedLines;
+}
+
 const parseSubtitles = (csvData) => {
   return Papa.parse(csvData, {
     header: true,
@@ -11,52 +58,55 @@ const parseSubtitles = (csvData) => {
   }).data;
 };
 
-export const SyncedTranscript = ({video}) => {
-  if (!video?.subs_l2) return
-
-  const [currentSubtitle, setCurrentSubtitle] = useState('');
-  const [subtitles, setSubtitles] = useState([]);
-
-  const { playbackState, currentTime } = useVideoWithTranscriptContext();
-
-  const findSubtitle = (currentTime) => {
-    // Find the nearest subtitle
-    let nearestSubtitle = '';
-    for (let i = 0; i < subtitles.length; i++) {
-      if (currentTime >= subtitles[i].starttime) {
-        nearestSubtitle = subtitles[i];
-        // Continue searching until finding the last subtitle that meets the condition
-        if (i + 1 < subtitles.length && currentTime >= subtitles[i + 1].starttime) {
-          continue;
-        } else {
-          break;
-        }
+const findSubtitle = (currentTime, syncedLines) => {
+  // Find the nearest subtitle
+  let nearestSubtitle = '';
+  for (let i = 0; i < syncedLines.length; i++) {
+    if (currentTime >= syncedLines[i].starttime) {
+      nearestSubtitle = syncedLines[i];
+      // Continue searching until finding the last subtitle that meets the condition
+      if (i + 1 < syncedLines.length && currentTime >= syncedLines[i + 1].starttime) {
+        continue;
+      } else {
+        break;
       }
     }
-    return nearestSubtitle;
   }
+  return nearestSubtitle;
+}
 
-  useEffect(() => {
-    const parsedSubtitles = parseSubtitles(video.subs_l2);
-    setSubtitles(parsedSubtitles);
-    setCurrentSubtitle(parsedSubtitles[0].line)
-  }, [video.subs_l2]);
+export const SyncedTranscript = ({video}) => {
+  
+  const [currentLine, setCurrentLine] = useState(null);
+  const [syncedLines, setSyncedLines] = useState([]);
+
+  const { playbackState, currentTime } = useVideoWithTranscriptContext();
 
   // Handle currentTime changes
   useEffect(() => {
     // console.log("ST ", currentTime);
-    const subtitle = findSubtitle(currentTime);
+    const subtitle = findSubtitle(currentTime, syncedLines);
+
     if (subtitle) {
-      setCurrentSubtitle(subtitle.line);
+      setCurrentLine(subtitle);
     } else {
-      setCurrentSubtitle('');
+      setCurrentLine(null);
     }
   }, [currentTime]);
 
+  useEffect(() => {
+    if (!video?.subs_l2) return;
+    const l1Lines = parseSubtitles(video.subs_l1);
+    const l2Lines = parseSubtitles(video.subs_l2);
+    const syncedLines = syncLines(l1Lines, l2Lines);
+    setSyncedLines(syncedLines);
+  }, [video]);
+
+
   return (
       <View style={styles.container}>
-        <ThemedText style={styles.subtitle} type="subtitle">{currentSubtitle}</ThemedText>
-        <ThemedText style={styles.subtitle} type="default" variant="secondary" >{currentSubtitle}</ThemedText>
+        <ThemedText style={styles.subtitle} type="subtitle">{currentLine?.l2Line}</ThemedText>
+        <ThemedText style={styles.subtitle} type="default" variant="secondary" >{currentLine?.l1Line}</ThemedText>
       </View>
   );
 };
