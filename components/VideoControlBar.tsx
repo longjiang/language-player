@@ -1,26 +1,47 @@
 // @/components/VideoControlBar.tsx
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { ThemedButton } from './ThemedButton'; // Assuming you have this component
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import Ionicon from 'react-native-vector-icons/Ionicons';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { Swatches } from '@/constants/Swatches';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useRef } from "react";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { ThemedButton } from "./ThemedButton"; // Assuming you have this component
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Ionicon from "react-native-vector-icons/Ionicons";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { Swatches } from "@/constants/Swatches";
+import { LinearGradient } from "expo-linear-gradient";
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
-import { Dimensions } from 'react-native';
+import { Dimensions } from "react-native";
+import RBSheet from "react-native-raw-bottom-sheet";
+import { ThemedText } from "./ThemedText";
+import { ThemedView } from "./ThemedView";
+import { formatDuration } from "@/lib/utils";
 
 export const VideoControlBar = () => {
-  const primaryBrandColor = useThemeColor({}, 'primaryBrand')
-  const { playVideo, duration, currentTime, fullscreen, updateFullscreen, updatePlayVideo, seekTo, rewind, seekToNextLine, seekToPreviousLine, skipToNextVideo, skipToPreviousVideo } = useVideoWithTranscriptContext()
+  const primaryBrandColor = useThemeColor({}, "primaryBrand");
+  const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+  const {
+    video,
+    playVideo,
+    duration,
+    currentTime,
+    fullscreen,
+    updateFullscreen,
+    updatePlayVideo,
+    seekTo,
+    rewind,
+    seekToNextLine,
+    seekToPreviousLine,
+    skipToNextVideo,
+    skipToPreviousVideo,
+  } = useVideoWithTranscriptContext();
 
   const handlePress = (evt) => {
     const { locationX } = evt.nativeEvent;
-    const progressBarWidth = Dimensions.get('window').width; // Assuming full width, adjust as necessary
+    const progressBarWidth = Dimensions.get("window").width; // Assuming full width, adjust as necessary
     const newTime = (locationX / progressBarWidth) * duration;
     seekTo(newTime);
   };
-  
+
+  const refRBSheet = useRef();
+
   return (
     <View style={styles.container}>
       <View style={styles.progressBarContainer}>
@@ -30,7 +51,15 @@ export const VideoControlBar = () => {
             colors={[Swatches.primary[700], Swatches.primary[400]]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={[styles.progressBar, { width: currentTime && duration ? `${(currentTime / duration) * 100}%` : '0%' }]}
+            style={[
+              styles.progressBar,
+              {
+                width:
+                  currentTime && duration
+                    ? `${(currentTime / duration) * 100}%`
+                    : "0%",
+              },
+            ]}
           />
         </TouchableOpacity>
       </View>
@@ -38,6 +67,7 @@ export const VideoControlBar = () => {
         <ThemedButton
           type="ghost"
           trailingIcon={<Icon name="information" />}
+          onPress={() => refRBSheet.current.open()}
         />
         <ThemedButton
           type="ghost"
@@ -50,7 +80,12 @@ export const VideoControlBar = () => {
           onPress={seekToPreviousLine}
         />
         <TouchableOpacity>
-          <Ionicon name={playVideo ? "pause" : "play"} size={51} style={{ color: primaryBrandColor }} onPress={() => updatePlayVideo(!playVideo) } />
+          <Ionicon
+            name={playVideo ? "pause" : "play"}
+            size={51}
+            style={{ color: primaryBrandColor }}
+            onPress={() => updatePlayVideo(!playVideo)}
+          />
         </TouchableOpacity>
         <ThemedButton
           type="ghost"
@@ -73,32 +108,66 @@ export const VideoControlBar = () => {
           onPress={() => updateFullscreen(!fullscreen)}
         /> */}
       </View>
+      <RBSheet
+        ref={refRBSheet}
+        closeOnDragDown={true}
+        closeOnPressMask={false}
+        style={{
+          height: 300,
+          backgroundColor: primaryBrandColor,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+        }}
+        customStyles={{
+          wrapper: {
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+          },
+          container: {
+            backgroundColor: secondaryBackgroundColor,
+          },
+          draggableIcon: {
+            backgroundColor: "#000",
+          },
+        }}
+      >
+        <View style={{ padding: 20 }}>
+          <ThemedText type="subtitle">{video.title}</ThemedText>
+          <ThemedText variant="secondary" style={{ marginTop: 10 }}>
+            {`${new Date(video.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} /  Duration: ${formatDuration(video.duration)}  / ${video.locale}`}
+          </ThemedText>
+          <ThemedText variant="secondary" style={{ marginTop: 10 }}>
+            {`${video.views.toLocaleString()} Views / ${video.likes} likes / ${
+              video.comments
+            } comments`}
+          </ThemedText>
+        </View>
+      </RBSheet>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    alignItems: "center",
   },
   progressBarContainer: {
-    width: '100%',
+    width: "100%",
     height: 10,
     backgroundColor: Swatches.neutral[500], // Light grey background for the progress bar container
     borderRadius: 5,
   },
   progressBar: {
-    height: '100%',
-    width: '50%', // Example progress: 50%
+    height: "100%",
+    width: "50%", // Example progress: 50%
     borderRadius: 5,
   },
   controls: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    width: "100%",
     marginTop: 10,
   },
 });

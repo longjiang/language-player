@@ -1,30 +1,34 @@
-import React, { useState, useCallback, useRef } from "react";
-import { Button, View, Alert } from "react-native";
-import YoutubePlayer from "react-native-youtube-iframe";
+import React, { useRef } from "react";
+import { View, Button } from "react-native";
+import RBSheet from "react-native-raw-bottom-sheet";
 
-export default function App() {
-  const [playing, setPlaying] = useState(false);
-
-  const onStateChange = useCallback((state) => {
-    if (state === "ended") {
-      setPlaying(false);
-      Alert.alert("video has finished playing!");
-    }
-  }, []);
-
-  const togglePlaying = useCallback(() => {
-    setPlaying((prev) => !prev);
-  }, []);
-
+export default function Example() {
+  const refRBSheet = useRef();
   return (
-    <View>
-      <YoutubePlayer
-        height={300}
-        play={playing}
-        videoId={"iee2TATGMyI"}
-        onChangeState={onStateChange}
-      />
-      <Button title={playing ? "pause" : "play"} onPress={togglePlaying} />
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#000"
+      }}
+    >
+      <Button title="OPEN BOTTOM SHEET" onPress={() => refRBSheet.current.open()} />
+      <RBSheet
+        ref={refRBSheet}
+        closeOnDragDown={true}
+        closeOnPressMask={false}
+        customStyles={{
+          wrapper: {
+            backgroundColor: "transparent"
+          },
+          draggableIcon: {
+            backgroundColor: "#000"
+          }
+        }}
+      >
+        
+      </RBSheet>
     </View>
   );
 }

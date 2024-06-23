@@ -10,20 +10,11 @@ import {
 import { ThemedText } from "./ThemedText";
 import { router } from "expo-router";
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
+import { formatDuration } from '@/lib/utils';
 
 export const YouTubeVideoCard = ({ video, style }) => {
   const { showVideoPlayer, toggleMiniPlayer, hideVideoPlayer } = useVideoPlayer();
 
-  // Convert ISO 8601 duration to a readable format
-  const formatDuration = (duration) => {
-    const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-    const hours = parseInt(match[1]) || 0;
-    const minutes = parseInt(match[2]) || 0;
-    const seconds = parseInt(match[3]) || 0;
-    return `${hours ? `${hours}:` : ""}${minutes}:${
-      seconds < 10 ? `0${seconds}` : seconds
-    }`;
-  };
 
   const handlePress = () => {
     // Navigate to the YouTube video screen
