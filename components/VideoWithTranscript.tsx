@@ -22,10 +22,12 @@ import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 
 interface VideoWithTranscriptProps {
   isMini: boolean
+  showHeader: boolean
 }
 
 export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   isMini,
+  showHeader = false,
 }) => {
   const screenWidth = Dimensions.get("window").width;
   const videoHeight = screenWidth * 0.5625; // 16:9 aspect ratio
@@ -49,7 +51,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
     <View>
       {!isMini && (
         <View>
-          <SafeAreaView style={styles.header}>
+          {(showHeader && <SafeAreaView style={styles.header}>
             <View>
               <ThemedButton
                 type="ghost"
@@ -69,7 +71,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
                 onPress={() => router.push("/(tabs)/(media)/youtube-video")}
               />
             </View>
-          </SafeAreaView>
+          </SafeAreaView>)}
           <View style={styles.fullPlayerContainer}>
             <YouTubeVideo
               youtubeId={video.youtube_id}
