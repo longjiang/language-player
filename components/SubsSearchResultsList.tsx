@@ -5,31 +5,24 @@ import { ThemedInput } from "./ThemedInput";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 import { Image } from "react-native";
 
-export const SubsSearchResultsList = ({ results }) => {
+export const SubsSearchResultsList = ({ results, term }) => {
   const handleSubtitlePress = (item) => {
     // Handle press
   }
 
 
-  const findLine = (line) => {
-    if (line.l2Line.includes(term)) {
-      // We need to find the index of the line in the playlist
-      const foundLine = syncedLines.find((item) => item.l2Line?.includes(term));
-
-      if (foundLine) {
-        // If the term is found, proceed
-        const { starttime, l1Line, l2Line } = foundLine;
-
-      }
-    }
-  }
+  results.forEach(item => {
+    const targetLineIndex = item.subs_l2.findIndex(sub => {
+      return typeof sub.line === 'string' && sub.line.includes(term);
+    });
+    item.targetLineIndex = targetLineIndex;
+  })
 
 
   return (
     <GestureHandlerRootView style={styles.fullContainer}>
       {results && results.length > 0 && (
         <View style={styles.fullContainer}>
-          <ThemedText>{results.length} results</ThemedText>
           <ThemedInput placeholder="Search..." icon="magnify" style={{marginBottom: 26}}/>
           <FlatList
             data={results}
@@ -41,7 +34,7 @@ export const SubsSearchResultsList = ({ results }) => {
                   }}
                   style={[styles.thumbnail]}
                 />
-                <ThemedText style={{ width: '100%', textAlign: 'left', paddingLeft: 16, paddingRight: 50 }}>{item.subs_l2[0].line}</ThemedText>
+                <ThemedText style={{ width: '100%', textAlign: 'left', paddingLeft: 16, paddingRight: 50 }}>{item.subs_l2[item.targetLineIndex]?.line}</ThemedText>
               </TouchableOpacity>
             )}
             keyExtractor={(item, index) => index.toString()}

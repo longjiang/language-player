@@ -47,7 +47,7 @@ export const SubsSearch = ({ term }) => {
     //     </VideoWithTranscriptProvider>
     //   )}
     // </View>
-    <SubsSearchResultsList results={results}/>
+    <SubsSearchResultsList results={results} term={term} />
   );
 };
 
