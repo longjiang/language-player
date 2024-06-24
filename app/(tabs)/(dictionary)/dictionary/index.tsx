@@ -27,6 +27,7 @@ const DictionaryScreen = () => {
 
 
   useEffect(() => {
+    console.log('DictionaryScreen - Mounted');
     // Search screen mounted
     if (searchQuery) {
       // Load items based on search query

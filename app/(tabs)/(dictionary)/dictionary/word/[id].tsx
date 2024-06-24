@@ -14,14 +14,15 @@ const DictionaryEntryScreen = () => {
   const [entry, setEntry] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { dictionary } = useDictionary(); // Custom hook to access the dictionary
-  const route = useRoute(); // Hook to access the current route parameters
+  const { dictionary } = useDictionary();
+  const route = useRoute();
+  const id = decodeURIComponent(route.params.id);
 
   useEffect(() => {
     if (dictionary) {
       loadEntry();
     }
-  }, [dictionary]); // Effect will rerun when `dictionary` changes
+  }, [dictionary, id]);
 
   const handleInputChange = (text) => {
     setSearchQuery(text);
@@ -33,14 +34,11 @@ const DictionaryEntryScreen = () => {
 
   const loadEntry = async () => {
     setIsLoading(true);
-    const id = decodeURIComponent(route.params.id); // Assuming `id` is passed as a route parameter
+    
     try {
       if (dictionary) {
-        // url decode the id
-        // console.log('Getting entry:', id);
-        const entryData = dictionary.getEntry(id); // Hypothetical method to get data
+        const entryData = dictionary.getEntry(id);
         setEntry(entryData);
-        // console.log('Loaded entry:', entryData);
       } else {
         console.log('Dictionary not loaded yet');
       }
@@ -89,10 +87,11 @@ const DictionaryEntryScreen = () => {
             onPress={() => router.navigate("/(tabs)/(media)")}
           />
         </View>
-        {/* Display the entry if it's loaded */}
         {entry && (
           <View style={styles.entryContainer}>
-            <ThemedText>{entry.description}</ThemedText>
+            <ThemedText type="subtitle" style={styles.character}>{entry.simplified} {entry.traditional}</ThemedText>
+            <ThemedText type="defaultBold">{entry.pinyin}</ThemedText>
+            <ThemedText type="default">{entry.definitions}</ThemedText>
           </View>
         )}
       </ThemedScreen>
@@ -107,9 +106,9 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
+  character: {
+    fontSize: 24, // Adjust as needed
+    fontWeight: 'bold',
   },
   spinnerContainer: {
     flex: 1,
