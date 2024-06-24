@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { YouTubeVideo } from "@/components/YouTubeVideo";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export const VideoHero = ({ videoId, title, height }) => {
   const screenWidth = Dimensions.get("window").width;
@@ -18,6 +19,7 @@ export const VideoHero = ({ videoId, title, height }) => {
   };
   // Add a mute state
   const [isMuted, setIsMuted] = useState(true); // Default to muted
+  const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
   return (
     <View style={styles.container}>
@@ -29,11 +31,11 @@ export const VideoHero = ({ videoId, title, height }) => {
         controls={false}
       />
       <LinearGradient
-        colors={["transparent", "rgba(0,0,0,1)"]} // Gradual transparency to a darker shade
+        colors={["transparent", primaryBackgroundColor]} // Gradual transparency to a darker shade
         style={{ position: "absolute", width: "100%", height: 100, bottom: 0 }}
       />
       <LinearGradient
-        colors={["rgba(0,0,0,1)", "transparent"]} // Gradual transparency to a darker shade
+        colors={[primaryBackgroundColor, "transparent"]} // Gradual transparency to a darker shade
         style={{ position: "absolute", width: "100%", height: 200, top: 0 }}
       />
       <View style={overlayStyles}>

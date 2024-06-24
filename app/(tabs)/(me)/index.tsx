@@ -24,7 +24,7 @@ const LanguageProgressScreen = () => {
           type="accent"
           style={styles.button}
           onPress={() => {
-            router.navigate("/account");
+            router.navigate("/saved-words");
           }}
         />
         <ThemedButton
@@ -33,7 +33,7 @@ const LanguageProgressScreen = () => {
           type="accent"
           style={styles.button}
           onPress={() => {
-            router.navigate("/account");
+            router.navigate("/watch-history");
           }}
         />
         <ThemedButton
@@ -42,7 +42,7 @@ const LanguageProgressScreen = () => {
           type="accent"
           style={styles.button}
           onPress={() => {
-            router.navigate("/account");
+            router.navigate("/settings");
           }}
         />
         <ThemedButton
@@ -60,7 +60,7 @@ const LanguageProgressScreen = () => {
           type="accent"
           style={styles.button}
           onPress={() => {
-            router.navigate("/account");
+            router.navigate("/logout");
           }}
         />
       </View>

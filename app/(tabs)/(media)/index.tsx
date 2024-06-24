@@ -10,6 +10,7 @@ import { FlatList } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import CountryFlag from "react-native-country-flag";
 import { router } from "expo-router";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 
 const MediaHomeScreen = () => {
@@ -24,10 +25,12 @@ const MediaHomeScreen = () => {
       <YouTubeVideoCard key={index} video={item} />
     </View>
   );
-  
+
+  const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
   return (
     <FlatList
+    style={{backgroundColor: primaryBackgroundColor }}
       ListHeaderComponent={
         <View>
           <View

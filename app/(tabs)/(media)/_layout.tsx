@@ -7,6 +7,7 @@ export default function MediaLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="search" options={{ headerShown: false }} />
       <Stack.Screen name="tv-shows" options={{ headerShown: false }} />
+      <Stack.Screen name="watch-history" options={{ headerShown: false }} />
     </Stack>
   );
 }

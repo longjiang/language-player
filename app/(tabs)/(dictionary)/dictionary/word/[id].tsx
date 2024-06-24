@@ -61,9 +61,10 @@ const DictionaryEntryScreen = () => {
 
   const tertiaryBackgroundColor = useThemeColor({}, 'tertiaryBackground');
   const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
+  const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: primaryBackgroundColor }}>
       <SafeAreaView style={{ marginTop: 16 }}>
         <View style={styles.header}>
           <ThemedButton
