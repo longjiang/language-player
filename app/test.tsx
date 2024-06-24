@@ -3,12 +3,13 @@ import { View, StyleSheet } from "react-native";
 import { SubsSearch } from '@/components/SubsSearch';  // Import the SubsSearch component
 import { ThemedView } from "@/components/ThemedView";
 import { SubsSearchResultsList } from "@/components/SubsSearchResultsList";
+import { TokenizedText } from "@/components/TokenizedText";
 
 function Test() {
   const refRBSheet = useRef();
   return (
     <ThemedView style={styles.fullscreen}>
-      <SubsSearch term="你好" />
+      <TokenizedText text="猫咪说，我不是猫，我是一只狮子，只是大小有点儿不一样。" />
     </ThemedView>
   );
 }
