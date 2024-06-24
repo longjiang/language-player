@@ -4,6 +4,7 @@ import axios from 'axios';  // You need to install axios for HTTP requests
 import { YouTubeVideo } from './YouTubeVideo';
 import { VideoWithTranscript } from './VideoWithTranscript';
 import { VideoWithTranscriptProvider } from '@/contexts/VideoWithTranscriptContext';
+import { ThemedText } from './ThemedText';
 
 export const SubsSearch = ({ term }) => {
   const [results, setResults] = useState([]);
@@ -32,8 +33,8 @@ export const SubsSearch = ({ term }) => {
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
-        <VideoWithTranscriptProvider initialVideo={results[0]} startFromFirstLine={true}>
-          <VideoWithTranscript />
+        <VideoWithTranscriptProvider initialVideo={results[0]} startFromFirstLine={true} initialPlaylist={results}>
+          <VideoWithTranscript isMini={false} showHeader={false} />
         </VideoWithTranscriptProvider>
       )}
     </View>

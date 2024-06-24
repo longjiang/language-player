@@ -1,18 +1,16 @@
-// @/contexts/VideoWithTranscriptContext.tsx
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { YouTubeVideo, Line, SyncedLine } from "@/types";
 import Papa from "papaparse";
 
-// Define the shape of the context
 interface VideoWithTranscriptContextType {
   video: YouTubeVideo;
+  playlist: YouTubeVideo[];
   playbackState: string;
   currentTime: number;
   seekTime?: number;
   playVideo: boolean;
   syncedLines: SyncedLine[];
-  currentLine: SyncedLine;
+  currentLine: SyncedLine | null;
   fullscreen: boolean;
   duration: number;
   startTime: number;
@@ -30,13 +28,10 @@ interface VideoWithTranscriptContextType {
   skipToPreviousVideo: () => void;
 }
 
-const videoList = []; // To be implemented later
-let currentVideoIndex = 0;
 
-// Create the context with a default value
-const VideoWithTranscriptContext = createContext<
-  VideoWithTranscriptContextType | undefined
->(undefined);
+const VideoWithTranscriptContext = createContext<VideoWithTranscriptContextType | undefined>(undefined);
+
+let currentVideoIndex = 0;
 
 
 
@@ -125,9 +120,7 @@ const parseSubtitles = (csvData) => {
 export const useVideoWithTranscriptContext = () => {
   const context = useContext(VideoWithTranscriptContext);
   if (!context) {
-    throw new Error(
-      "useVideoWithTranscriptContext must be used within a YouTubeVideoProvider"
-    );
+    throw new Error("useVideoWithTranscriptContext must be used within a VideoWithTranscriptProvider");
   }
   return context;
 };
@@ -135,22 +128,39 @@ export const useVideoWithTranscriptContext = () => {
 export const VideoWithTranscriptProvider: React.FC<{
   initialVideo: YouTubeVideo;
   startFromFirstLine: boolean;
-}> = ({ initialVideo, startFromFirstLine, children }) => {
+  initialPlaylist: YouTubeVideo[];
+  children: React.ReactNode;
+}> = ({ initialVideo, initialPlaylist, startFromFirstLine, children }) => {
+  initialPlaylist = initialPlaylist || [initialVideo];
   const [playbackState, setPlaybackState] = useState("stopped");
   const [currentTime, setCurrentTime] = useState(0);
-  const [seekTime, setSeekTime] = useState(0); // Watched for seeking
-  const [playVideo, setPlayVideo] = useState(false); // Set to true to play, false to pause
+  const [seekTime, setSeekTime] = useState(0);
+  const [playVideo, setPlayVideo] = useState(false);
   const [video, setVideo] = useState<YouTubeVideo>(initialVideo);
-  const [syncedLines, setSyncedLines] = useState([]);
-  const [currentLine, setCurrentLine] = useState(null);
+  const [playlist, setPlaylist] = useState<YouTubeVideo[]>(initialPlaylist);
+  const [syncedLines, setSyncedLines] = useState<SyncedLine[]>([]);
+  const [currentLine, setCurrentLine] = useState<SyncedLine | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [duration, setDuration] = useState(0);
   const [startTime, setStartTime] = useState(0);
 
+  // Logic for managing playlist navigation
   useEffect(() => {
-    // Reset context state when the initialVideo changes
-    setVideo(initialVideo);
-  }, [initialVideo]);
+    if (currentVideoIndex < playlist.length) {
+      const newVideo = playlist[currentVideoIndex];
+      setVideo(newVideo);
+      setPlaybackState("stopped");
+      setCurrentTime(0);
+      // Sync subtitles when video changes
+      if (newVideo.subs_l1 && newVideo.subs_l2) {
+        const l1Lines = parseSubtitles(newVideo.subs_l1);
+        const l2Lines = parseSubtitles(newVideo.subs_l2);
+        setSyncedLines(syncLines(l1Lines, l2Lines));
+        const initialStartTime = syncedLines[0]?.starttime || 0;
+        if (startFromFirstLine) setStartTime(initialStartTime);
+      }
+    }
+  }, [currentVideoIndex, playlist]);
 
   useEffect(() => {
     if (!video?.subs_l2) return;
@@ -161,6 +171,8 @@ export const VideoWithTranscriptProvider: React.FC<{
     if (startFromFirstLine) setStartTime(startTimeLocalVar);
     setSyncedLines(syncedLines);
   }, [video]);
+
+
 
 
   // Handle currentTime changes
@@ -224,22 +236,20 @@ export const VideoWithTranscriptProvider: React.FC<{
   };
 
   const skipToNextVideo = () => {
-    if (currentVideoIndex < videoList.length - 1) {
+    if (currentVideoIndex < playlist.length - 1) {
       currentVideoIndex += 1;
-      // Simulate loading the next video
       setCurrentTime(0);
       setPlaybackState("stopped");
-      // Logic to change the video source goes here
+      setVideo(playlist[currentVideoIndex]);
     }
   };
 
   const skipToPreviousVideo = () => {
     if (currentVideoIndex > 0) {
       currentVideoIndex -= 1;
-      // Simulate loading the previous video
       setCurrentTime(0);
       setPlaybackState("stopped");
-      // Logic to change the video source goes here
+      setVideo(playlist[currentVideoIndex]);
     }
   };
 
@@ -258,10 +268,12 @@ export const VideoWithTranscriptProvider: React.FC<{
     }
   }
 
+  
   return (
     <VideoWithTranscriptContext.Provider
       value={{
         video,
+        playlist,
         playbackState,
         currentTime,
         seekTime,
@@ -271,18 +283,18 @@ export const VideoWithTranscriptProvider: React.FC<{
         fullscreen,
         duration,
         startTime,
+        updateDuration,
+        updatePlayVideo,
         updatePlaybackState,
         updateCurrentTime,
-        updatePlayVideo,
         updateFullscreen,
-        updateDuration,
         resetSeekTime,
+        seekTo,
+        rewind,
         seekToNextLine,
         seekToPreviousLine,
-        rewind,
-        seekTo,
         skipToNextVideo,
-        skipToPreviousVideo,
+        skipToPreviousVideo
       }}
     >
       {children}
