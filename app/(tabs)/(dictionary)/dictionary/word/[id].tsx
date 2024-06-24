@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, ActivityIndicator, Text } from "react-native";
+import { StyleSheet, View, ActivityIndicator, Text, ScrollView } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedInput } from "@/components/ThemedInput";
 import { ThemedScreen } from "@/components/ThemedScreen";
@@ -89,7 +89,7 @@ const DictionaryEntryScreen = () => {
           />
         </View>
         {entry && (
-          <View style={styles.entryContainer}>
+          <ScrollView style={styles.entryContainer}>
             <View style={styles.entryHeader}>
               <View style={{ flexDirection: "row", alignItems: "flex-end", marginBottom: 12 }}>
                 <Text>
@@ -111,7 +111,7 @@ const DictionaryEntryScreen = () => {
               </View>
               <SubsSearch term={entry.simplified} />
             </View>
-          </View>
+          </ScrollView>
         )}
       </SafeAreaView>
     </GestureHandlerRootView>

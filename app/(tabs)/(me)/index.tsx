@@ -1,35 +1,76 @@
 // @/app/select-l2.tsx
 import React from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
+import { ThemedText } from "@/components/ThemedText";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
 
 const LanguageProgressScreen = () => {
   return (
     <ThemedScreen
-      title="Language Progress"
-      imageName={require("@/assets/images/splash-image.png")}
-      imageStyle={{ marginTop: -400 }}
+      title="My Progress"
+      showFlag={true}
     >
-      
-      <ThemedButton
-        title="Account"
-        trailingIcon={<Icon name="chevron-right" />}
-        style={styles.button}
-        onPress={() => {
-          router.navigate("/account");
-        }}
-      />
+      <View style={{ flexDirection: "column" }}>
+        <View style={{ flexDirection: "column", justifyContent: "space-between", alignItems: 'center', marginTop: 14, marginBottom: 42 }}>
+          <ThemedText type="xlarge">22 hours 2 min 15 sec</ThemedText>
+          <ThemedText style={{ marginTop: 8}}>Spent learning Chinese in Language Player</ThemedText>
+        </View>
+        <ThemedButton
+          title="Saved Words"
+          trailingIcon={<Icon name="chevron-right" />}
+          type="accent"
+          style={styles.button}
+          onPress={() => {
+            router.navigate("/account");
+          }}
+        />
+        <ThemedButton
+          title="Watch History"
+          trailingIcon={<Icon name="chevron-right" />}
+          type="accent"
+          style={styles.button}
+          onPress={() => {
+            router.navigate("/account");
+          }}
+        />
+        <ThemedButton
+          title="Settings"
+          trailingIcon={<Icon name="chevron-right" />}
+          type="accent"
+          style={styles.button}
+          onPress={() => {
+            router.navigate("/account");
+          }}
+        />
+        <ThemedButton
+          title="Account"
+          trailingIcon={<Icon name="chevron-right" />}
+          type="accent"
+          style={styles.button}
+          onPress={() => {
+            router.navigate("/account");
+          }}
+        />
+        <ThemedButton
+          title="Logout"
+          trailingIcon={<Icon name="chevron-right" />}
+          type="accent"
+          style={styles.button}
+          onPress={() => {
+            router.navigate("/account");
+          }}
+        />
+      </View>
     </ThemedScreen>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    marginTop: 20,
-    marginBottom: 110,
+    marginBottom: 8,
   },
 });
 

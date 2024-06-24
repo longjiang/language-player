@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     lineHeight: Typography.fontSize.medium * 1.33,
   },
   xlarge: {
-    fontFamily: fontFamilyRegular,
+    fontFamily: fontFamilyBold,
     fontSize: Typography.fontSize.large,
     lineHeight: Typography.fontSize.large * 1.33,
   },

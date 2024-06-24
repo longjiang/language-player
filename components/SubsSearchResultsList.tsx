@@ -27,9 +27,9 @@ const HighlightSearchTerm = ({ line, searchTerm }) => {
   );
 }
 
-export const SubsSearchResultsList = ({ results, term }) => {
-  const handleSubtitlePress = (item) => {
-    // Handle press
+export const SubsSearchResultsList = ({ results, term, onSelect }) => {
+  const handleSubtitlePress = (index) => {
+    onSelect(index);
   }
 
 
@@ -48,8 +48,8 @@ export const SubsSearchResultsList = ({ results, term }) => {
           <ThemedInput placeholder="Search..." icon="magnify" style={{marginBottom: 26}}/>
           <FlatList
             data={results}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.item} onPress={() => handleSubtitlePress(item)}>
+            renderItem={({ item, index }) => (
+              <TouchableOpacity style={styles.item} onPress={() => handleSubtitlePress(index)}>
                 <Image
                   source={{
                     uri: `https://img.youtube.com/vi/${item.youtube_id}/0.jpg`,

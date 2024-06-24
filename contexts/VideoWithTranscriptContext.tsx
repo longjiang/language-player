@@ -28,6 +28,7 @@ interface VideoWithTranscriptContextType {
   seekToPreviousLine: () => void;
   skipToNextVideo: () => void;
   skipToPreviousVideo: () => void;
+  skipToVideo: (index: number) => void;
 }
 
 
@@ -178,7 +179,6 @@ export const VideoWithTranscriptProvider: React.FC<{
     if (currentVideoIndex < playlist.length - 1) {
       setCurrentVideoIndex(currentVideoIndex + 1); // Use state setter function
       setCurrentTime(0);
-      setPlaybackState("stopped");
       setVideo(playlist[currentVideoIndex + 1]); // Access the next video correctly
     }
   };
@@ -187,10 +187,17 @@ export const VideoWithTranscriptProvider: React.FC<{
     if (currentVideoIndex > 0) {
       setCurrentVideoIndex(currentVideoIndex - 1); // Use state setter function
       setCurrentTime(0);
-      setPlaybackState("stopped");
       setVideo(playlist[currentVideoIndex - 1]); // Access the previous video correctly
     }
   };
+
+  const skipToVideo = (index: number) => {
+    if (index >= 0 && index < playlist.length) {
+      setCurrentVideoIndex(index);
+      setCurrentTime(0);
+      setVideo(playlist[index]);
+    }
+  }
 
   const updatePlayVideo = (newVal: boolean) => {
     setPlayVideo(newVal);
@@ -235,7 +242,8 @@ export const VideoWithTranscriptProvider: React.FC<{
         seekToNextLine,
         seekToPreviousLine,
         skipToNextVideo,
-        skipToPreviousVideo
+        skipToPreviousVideo,
+        skipToVideo
       }}
     >
       {children}

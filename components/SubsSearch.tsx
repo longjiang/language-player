@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import axios from 'axios';  // You need to install axios for HTTP requests
 import { YouTubeVideo } from './YouTubeVideo';
@@ -9,6 +9,8 @@ import { SubsSearchResults } from './SubsSearchResults';
 import { SubsSearchResultsList } from "@/components/SubsSearchResultsList";
 import { parse } from '@babel/core';
 import { parseSubtitles } from '@/src/subs';
+import RBSheet from 'react-native-raw-bottom-sheet';
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export const SubsSearch = ({ term }) => {
   const [results, setResults] = useState([]);
@@ -23,7 +25,7 @@ export const SubsSearch = ({ term }) => {
   const fetchResults = async (searchTerm) => {
     setLoading(true);
     try {
-      const response = await axios.get(`https://python.zerotohero.ca/subs-search?l2=zh&terms=${searchTerm}&limit=50&sort=-views`);
+      const response = await axios.get(`https://python.zerotohero.ca/subs-search?l2=zh&terms=${searchTerm}&limit=50&tv_show=nnull&sort=-views`);
       const data = response.data;
       data.forEach(item => {
         item.subs_l1 = parseSubtitles(item.subs_l2);
@@ -37,17 +39,18 @@ export const SubsSearch = ({ term }) => {
     }
   };
 
+
   return (
-    // <View style={styles.container}>
-    //   {loading ? (
-    //     <ActivityIndicator size="large" color="#0000ff" />
-    //   ) : (
-    //     <VideoWithTranscriptProvider initialVideo={results[0]} initialPlaylist={results}>
-    //       <SubsSearchResults term={term} />
-    //     </VideoWithTranscriptProvider>
-    //   )}
-    // </View>
-    <SubsSearchResultsList results={results} term={term} />
+    <View style={styles.container}>
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <VideoWithTranscriptProvider initialVideo={results[0]} initialPlaylist={results}>
+          <SubsSearchResults term={term} />
+        </VideoWithTranscriptProvider>
+      )}
+    </View>
+    
   );
 };
 

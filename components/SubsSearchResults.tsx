@@ -1,14 +1,20 @@
-import React from "react";
+import React, { useRef}  from "react";
 import { View, Text } from "react-native";
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
 import { VideoWithTranscript } from "./VideoWithTranscript";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import RBSheet from "react-native-raw-bottom-sheet";
+import { SubsSearchResultsList } from "./SubsSearchResultsList";
 
 export const SubsSearchResults = ({ term }: { term: string }) => {
-  const { video, syncedLines, playlist, updateStartTime, currentVideoIndex } =
+  const { video, syncedLines, playlist, updateStartTime, currentVideoIndex, skipToVideo } =
     useVideoWithTranscriptContext();
+  const primaryBrandColor = useThemeColor({}, "primaryBrand");
+  const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+  const refRBSheet = useRef();
 
   // We need to skip to the line containing the `term`
   // We watch change of `video`, then find the l2 line containing the result
@@ -30,7 +36,15 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
     }
   });
 
-  const openModal = () => {};
+  const openModal = () => {
+    refRBSheet.current.open();
+  };
+
+  const onSelect = (index: number) => {
+    updateStartTime(playlist[index].starttime);
+    skipToVideo(index);
+    refRBSheet.current.close();
+  }
 
   return (
     <View>
@@ -48,6 +62,33 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
         />
       </View>
       <VideoWithTranscript isMini={false} showHeader={false} />
+      <RBSheet
+        ref={refRBSheet}
+        closeOnDragDown={true}
+        closeOnPressMask={false}
+        height={700}
+        style={{
+          backgroundColor: primaryBrandColor,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+        }}
+        customStyles={{
+          wrapper: {
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+          },
+          container: {
+            backgroundColor: secondaryBackgroundColor,
+            paddingHorizontal: 26,
+          },
+          draggableIcon: {
+            backgroundColor: "#000",
+          },
+        }}
+      >
+        <View style={{ marginTop: 16, flex: 1 }}>
+          <SubsSearchResultsList results={playlist} term={term} onSelect={onSelect} />
+        </View>
+      </RBSheet>
     </View>
   );
 };
