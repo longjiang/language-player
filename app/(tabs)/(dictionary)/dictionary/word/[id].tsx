@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, ActivityIndicator } from "react-native";
+import { StyleSheet, View, ActivityIndicator, Text } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedInput } from "@/components/ThemedInput";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useTheme } from "@react-navigation/native";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { ThemedText } from "@/components/ThemedText";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const DictionaryEntryScreen = () => {
   const [entry, setEntry] = useState(null);
@@ -34,16 +36,16 @@ const DictionaryEntryScreen = () => {
 
   const loadEntry = async () => {
     setIsLoading(true);
-    
+
     try {
       if (dictionary) {
         const entryData = dictionary.getEntry(id);
         setEntry(entryData);
       } else {
-        console.log('Dictionary not loaded yet');
+        console.log("Dictionary not loaded yet");
       }
     } catch (error) {
-      console.error('Failed to load entry:', error);
+      console.error("Failed to load entry:", error);
     }
     setIsLoading(false);
   };
@@ -56,14 +58,11 @@ const DictionaryEntryScreen = () => {
     );
   }
 
+  const tertiaryBackgroundColor = useThemeColor({}, 'tertiaryBackground');
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemedScreen
-        onBackPress={() => router.back()}
-        showFlag={false}
-        onAction={() => router.navigate("/select-l2")}
-        showHeader={false}
-      >
+      <SafeAreaView style={{ marginTop: 16 }}>
         <View style={styles.header}>
           <ThemedButton
             type="ghost"
@@ -78,7 +77,7 @@ const DictionaryEntryScreen = () => {
             size="small"
             onChangeText={handleInputChange}
             onSubmitEditing={handleSearch}
-            value={searchQuery}
+            value={entry.simplified}
           />
           <ThemedButton
             type="ghost"
@@ -89,12 +88,25 @@ const DictionaryEntryScreen = () => {
         </View>
         {entry && (
           <View style={styles.entryContainer}>
-            <ThemedText type="subtitle" style={styles.character}>{entry.simplified} {entry.traditional}</ThemedText>
-            <ThemedText type="defaultBold">{entry.pinyin}</ThemedText>
-            <ThemedText type="default">{entry.definitions}</ThemedText>
+            <View style={styles.entryHeader}>
+              <View style={{ flexDirection: "row", alignItems: "flex-end", marginBottom: 12 }}>
+                <Text>
+                  <ThemedText type="display" style={styles.character} level={entry.hsk}>
+                    {entry.simplified}
+                  </ThemedText>
+                </Text>
+                <ThemedText type="subtitle" style={{ marginLeft: 4, fontWeight: 'normal' }} variant="secondary">
+                  {entry.traditional}
+                </ThemedText>
+              </View>
+              <ThemedText type="defaultBold">{entry.pinyin}</ThemedText>
+            </View>
+            <View style={[styles.detailsContainer, {backgroundColor: tertiaryBackgroundColor}]}>
+              <ThemedText type="default">{entry.definitions}</ThemedText> 
+            </View>
           </View>
         )}
-      </ThemedScreen>
+      </SafeAreaView>
     </GestureHandlerRootView>
   );
 };
@@ -102,23 +114,29 @@ const DictionaryEntryScreen = () => {
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
-    marginBottom: 26,
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
   character: {
-    fontSize: 24, // Adjust as needed
-    fontWeight: 'bold',
+
   },
   spinnerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 100,
   },
   entryContainer: {
-    padding: 20,
+
   },
+  entryHeader: {
+    padding: 26
+  },
+  detailsContainer: {
+    borderRadius: 24,
+    padding: 26,
+    minHeight: 600,
+  }
 });
 
 export default DictionaryEntryScreen;
