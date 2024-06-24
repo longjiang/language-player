@@ -10,7 +10,7 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedText } from "@/components/ThemedText";
 import { router } from 'expo-router';
 
-const Index = () => {
+const Index = () => {  // 中国
 
   return (
     <ThemedScreen
@@ -26,7 +26,7 @@ const Index = () => {
         <ThemedButton
           title="Start Learning"
           trailingIcon={<Icon name="chevron-right" />}
-          onPress={() => router.push("/test")}
+          onPress={() => router.push("/dictionary")}
           
         />
       </View>

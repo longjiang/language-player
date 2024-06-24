@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, type TextProps, StyleSheet } from 'react-native';
-import { useFonts, Nunito } from '@expo-google-fonts/nunito';
+import { useFonts, Nunito_400Regular, Nunito_700Bold } from '@expo-google-fonts/nunito';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Typography } from '@/constants/Typography';
@@ -10,7 +10,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: 'small' | 'default' | 'title' | 'defaultBold' | 'subtitle' | 'link';
+  type?: 'small' | 'smallBold' | 'default' | 'defaultBold' | 'link' | 'linkBold' | 'large' | 'subtitle' | 'xlarge' | 'title' | 'xxlarge';
   variant?: 'primary' | 'secondary';
   level?: 1 | 2 | 3 | 4 | 5 | 6;
 };
@@ -24,8 +24,9 @@ export function ThemedText({
   level,
   ...rest
 }: ThemedTextProps) {
+  
   useFonts({
-    Nunito
+    Nunito_400Regular, Nunito_700Bold
   });
 
   const colorScheme = useColorScheme();
@@ -61,46 +62,66 @@ export function ThemedText({
 
 // Design system: use fonts of the following sizes: 12, 16, 20, 26, 32, 42, 51, 67
 
-const fontFamily = 'Nunito';
+const fontFamilyRegular = 'Nunito_400Regular';
+const fontFamilyBold = 'Nunito_700Bold';
 
 
 const styles = StyleSheet.create({
   small: {
-    fontFamily: fontFamily,
+    fontFamily: fontFamilyRegular,
     fontSize: Typography.fontSize.xsmall,
     lineHeight: Typography.fontSize.xsmall * 1.33,
   },
+  smallBold: {
+    fontFamily: fontFamilyBold,
+    fontSize: Typography.fontSize.xsmall,
+    lineHeight: Typography.fontSize.xsmall * 1.33,
+    fontWeight: 'bold',
+  },
   default: {
-    fontFamily: fontFamily,
+    fontFamily: fontFamilyRegular,
     fontSize: Typography.fontSize.small,
     lineHeight: Typography.fontSize.small * 1.33,
   },
   defaultBold: {
-    fontFamily: fontFamily,
+    fontFamily: fontFamilyBold,
     fontSize: Typography.fontSize.small,
-    lineHeight:  Typography.fontSize.small * 1.33,
-    fontWeight: 'bold',
-  },
-  subtitle: {
-    fontFamily: fontFamily,
-    fontSize: Typography.fontSize.medium,
-    lineHeight: Typography.fontSize.medium * 1.33,
-  },
-  title: {
-    fontFamily: fontFamily,
-    fontSize: Typography.fontSize.large,
-    lineHeight: Typography.fontSize.large * 1.33,
-    fontWeight: 'bold',
-  },
-  display: {
-    fontFamily: fontFamily,
-    fontSize: Typography.fontSize.xlarge,
-    lineHeight: Typography.fontSize.xlarge * 1.33,
+    lineHeight: Typography.fontSize.small * 1.33,
     fontWeight: 'bold',
   },
   link: {
-    fontFamily: fontFamily,
+    fontFamily: fontFamilyRegular, // Assuming regular font for non-bold link
     fontSize: Typography.fontSize.small,
     lineHeight: Typography.fontSize.small * 1.33,
+  },
+  linkBold: {
+    fontFamily: fontFamilyBold,
+    fontSize: Typography.fontSize.small,
+    lineHeight: Typography.fontSize.small * 1.33,
+  },
+  large: {
+    fontFamily: fontFamilyRegular,
+    fontSize: Typography.fontSize.medium,
+    lineHeight: Typography.fontSize.medium * 1.33,
+  },
+  subtitle: {
+    fontFamily: fontFamilyBold,
+    fontSize: Typography.fontSize.medium,
+    lineHeight: Typography.fontSize.medium * 1.33,
+  },
+  xlarge: {
+    fontFamily: fontFamilyRegular,
+    fontSize: Typography.fontSize.large,
+    lineHeight: Typography.fontSize.large * 1.33,
+  },
+  title: {
+    fontFamily: fontFamilyBold,
+    fontSize: Typography.fontSize.large,
+    lineHeight: Typography.fontSize.large * 1.33,
+  },
+  xxlarge: {
+    fontFamily: fontFamilyBold,
+    fontSize: Typography.fontSize.xlarge,
+    lineHeight: Typography.fontSize.xlarge * 1.33,
   },
 });

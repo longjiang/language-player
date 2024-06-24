@@ -49,21 +49,5 @@ const handleSubtitlePress = (time) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'center'
   },
-  ResultsContainer: {
-    flex: 1,
-    paddingHorizontal: 10,
-  },
-  subtitleText: {
-    fontSize: 16,
-    color: '#000',
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    marginBottom: 5
-  }
 });

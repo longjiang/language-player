@@ -11,6 +11,7 @@ interface VideoWithTranscriptContextType {
   playVideo: boolean;
   syncedLines: SyncedLine[];
   currentLine: SyncedLine | null;
+  currentVideoIndex: number;
   fullscreen: boolean;
   duration: number;
   startTime: number;
@@ -31,8 +32,6 @@ interface VideoWithTranscriptContextType {
 
 
 const VideoWithTranscriptContext = createContext<VideoWithTranscriptContextType | undefined>(undefined);
-
-let currentVideoIndex = 0;
 
 
 
@@ -143,6 +142,7 @@ export const VideoWithTranscriptProvider: React.FC<{
   const [fullscreen, setFullscreen] = useState(false);
   const [duration, setDuration] = useState(0);
   const [startTime, setStartTime] = useState(0);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 
   // Logic for managing playlist navigation
   useEffect(() => {
@@ -237,19 +237,19 @@ export const VideoWithTranscriptProvider: React.FC<{
 
   const skipToNextVideo = () => {
     if (currentVideoIndex < playlist.length - 1) {
-      currentVideoIndex += 1;
+      setCurrentVideoIndex(currentVideoIndex + 1); // Use state setter function
       setCurrentTime(0);
       setPlaybackState("stopped");
-      setVideo(playlist[currentVideoIndex]);
+      setVideo(playlist[currentVideoIndex + 1]); // Access the next video correctly
     }
   };
 
   const skipToPreviousVideo = () => {
     if (currentVideoIndex > 0) {
-      currentVideoIndex -= 1;
+      setCurrentVideoIndex(currentVideoIndex - 1); // Use state setter function
       setCurrentTime(0);
       setPlaybackState("stopped");
-      setVideo(playlist[currentVideoIndex]);
+      setVideo(playlist[currentVideoIndex - 1]); // Access the previous video correctly
     }
   };
 
@@ -276,10 +276,11 @@ export const VideoWithTranscriptProvider: React.FC<{
         playlist,
         playbackState,
         currentTime,
+        currentLine,
+        currentVideoIndex,
         seekTime,
         playVideo,
         syncedLines,
-        currentLine,
         fullscreen,
         duration,
         startTime,

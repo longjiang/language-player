@@ -11,6 +11,7 @@ import { useDictionary } from "@/contexts/DictionaryContext";
 import { ThemedText } from "@/components/ThemedText";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SubsSearch } from "@/components/SubsSearch";
 
 const DictionaryEntryScreen = () => {
   const [entry, setEntry] = useState(null);
@@ -59,6 +60,7 @@ const DictionaryEntryScreen = () => {
   }
 
   const tertiaryBackgroundColor = useThemeColor({}, 'tertiaryBackground');
+  const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -91,7 +93,7 @@ const DictionaryEntryScreen = () => {
             <View style={styles.entryHeader}>
               <View style={{ flexDirection: "row", alignItems: "flex-end", marginBottom: 12 }}>
                 <Text>
-                  <ThemedText type="display" style={styles.character} level={entry.hsk}>
+                  <ThemedText type="xxlarge" style={styles.character} level={entry.hsk}>
                     {entry.simplified}
                   </ThemedText>
                 </Text>
@@ -99,10 +101,15 @@ const DictionaryEntryScreen = () => {
                   {entry.traditional}
                 </ThemedText>
               </View>
-              <Text><ThemedText type="default">{entry.pinyin} • </ThemedText><ThemedText type="defaultBold" level={entry.hsk}>HSK {entry.hsk}</ThemedText></Text>
+              <Text><ThemedText type="default">{entry.pinyin} • </ThemedText><ThemedText type="smallBold" level={entry.hsk}>HSK {entry.hsk}</ThemedText></Text>
             </View>
-            <View style={[styles.detailsContainer, {backgroundColor: tertiaryBackgroundColor}]}>
-              <ThemedText type="default">{entry.definitions}</ThemedText>
+            <View style={[styles.detailsContainer, { backgroundColor: tertiaryBackgroundColor }]}>
+              <View style={{ paddingBottom: 16, paddingHorizontal: 26 }}>
+                <ThemedText type="large">{entry.definitions}</ThemedText>
+                <View style={{ borderBottomColor: secondaryStrokeColor, borderBottomWidth: 2, paddingBottom: 16 }}></View>
+                <ThemedText type="defaultBold" style={{ marginTop: 26 }}>EXAMPLES FROM VIDEOS</ThemedText>
+              </View>
+              <SubsSearch term={entry.simplified} />
             </View>
           </View>
         )}
@@ -134,7 +141,7 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     borderRadius: 24,
-    padding: 26,
+    paddingTop: 26,
     minHeight: 600,
   }
 });

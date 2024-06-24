@@ -1,11 +1,15 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React from "react";
+import { View, Text } from "react-native";
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
-import { VideoWithTranscript } from './VideoWithTranscript';
+import { VideoWithTranscript } from "./VideoWithTranscript";
+import { ThemedText } from "./ThemedText";
+import { ThemedButton } from "./ThemedButton";
+import Icon from "react-native-vector-icons/FontAwesome";
 
-export const SubsSearchResults = ({term}: {term: string}) => {
-  const { video, syncedLines,  playlist, updateStartTime } = useVideoWithTranscriptContext()
-  
+export const SubsSearchResults = ({ term }: { term: string }) => {
+  const { video, syncedLines, playlist, updateStartTime, currentVideoIndex } =
+    useVideoWithTranscriptContext();
+
   // We need to skip to the line containing the `term`
   // We watch change of `video`, then find the l2 line containing the result
   // Then set startTime
@@ -25,9 +29,26 @@ export const SubsSearchResults = ({term}: {term: string}) => {
         // You can also set a default state or perform other actions here
       }
     }
-  })
+  });
+
+  const openModal = () => {};
 
   return (
-    <VideoWithTranscript isMini={false} showHeader={false} />
+    <View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: "space-between", paddingHorizontal: 26, paddingBottom: 16 }}>
+        <ThemedText>
+          {currentVideoIndex + 1} of {playlist.length}
+        </ThemedText>
+        <ThemedButton
+          type="ghost"
+          size="small"
+          title="List All"
+          trailingIcon={<Icon name="caret-down" />}
+          onPress={openModal}
+          style={{ fontWeight: "regular" }}
+        />
+      </View>
+      <VideoWithTranscript isMini={false} showHeader={false} />
+    </View>
   );
 };
