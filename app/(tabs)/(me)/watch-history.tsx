@@ -1,4 +1,4 @@
-// @/app/select-l2.tsx
+// @/app/watch-history.tsx
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";

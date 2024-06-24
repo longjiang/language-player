@@ -1,21 +1,11 @@
 // @/app/select-l2.tsx
-import React, { useState } from "react";
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import React from "react";
+import { StyleSheet, View, Image } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { ThemedButton } from "@/components/ThemedButton";
+import { ThemedText } from "@/components/ThemedText";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router } from "expo-router";
-
-const PricingBlock = ({ price, duration, current, recommended, onPress }) => {
-  return (
-    <TouchableOpacity onPress={onPress} style={[styles.pricingBlock, current && styles.current, recommended && styles.recommended]}>
-      {current && <View style={styles.currentTag}><Text style={styles.tagText}>Current Plan</Text></View>}
-      <Text style={styles.price}>{price}</Text>
-      <Text style={styles.duration}>{duration}</Text>
-      {recommended && <View style={styles.recommendedTag}><Text style={styles.tagText}>Best Value</Text></View>}
-    </TouchableOpacity>
-  );
-};
+import { PricingBlock } from "@/components/PricingBlock";
 
 const GoProScreen = () => {
   const onSelect = (value) => {
@@ -27,22 +17,34 @@ const GoProScreen = () => {
       title="Go Pro"
       onBackPress={() => router.back()}
     >
-      <Text style={styles.subHeader}>With Pro, you can:</Text>
+      <Image
+        source={require('@/assets/images/pro-rocket.png')}
+        style={{ width: 59, height: 51, position: 'absolute', top: 20, right: 20 }}
+      />
+      
+      <ThemedText style={styles.subHeader}>With Pro, you can:</ThemedText>
       <View style={styles.features}>
         <View style={styles.feature}>
-          <Icon name="chat" size={24} color="#00aced" />
-          <Text style={styles.featureText}>View entire transcripts beyond the first ten lines.</Text>
+          <Image
+            source={require('@/assets/images/go-pro-icon-speech.png')}
+          />
+          <ThemedText style={styles.featureText}>View entire transcripts beyond the first ten lines.</ThemedText>
         </View>
         <View style={styles.feature}>
-          <Icon name="search" size={24} color="#00aced" />
-          <Text style={styles.featureText}>See all subtitles search results beyond the first three.</Text>
+          <Image
+            source={require('@/assets/images/go-pro-icon-bubble.png')}
+          />
+          <ThemedText style={styles.featureText}>See all subtitles search results beyond the first three.</ThemedText>
         </View>
         <View style={styles.feature}>
-          <Icon name="lightbulb" size={24} color="#00aced" />
-          <Text style={styles.featureText}>Use all AI features throughout the app.</Text>
+          <Image
+            source={require('@/assets/images/go-pro-icon-light.png')}
+            style={{marginLeft: 4}}
+          />
+          <ThemedText style={styles.featureText}>Use all AI features throughout the app.</ThemedText>
         </View>
       </View>
-      <Text style={styles.choosePlan}>Choose Your Plan</Text>
+      <ThemedText style={styles.choosePlan} type="subtitle">Choose Your Plan</ThemedText>
       <PricingBlock
         price="$12/mo"
         duration="Auto-renews each month."
@@ -60,8 +62,8 @@ const GoProScreen = () => {
         recommended
         onPress={() => onSelect('Lifetime plan')}
       />
-      <Text style={styles.footerText}>1. Assuming you will live longer than 2.4 years.</Text>
-      <Text style={styles.footerText}>2. All currencies in US dollars (USD).</Text>
+      <ThemedText style={styles.footerText} type="small">1. Assuming you will live longer than 2.4 years.</ThemedText>
+      <ThemedText style={styles.footerText} type="small">2. All currencies in US dollars (USD).</ThemedText>
     </ThemedScreen>
   );
 };
@@ -69,74 +71,28 @@ const GoProScreen = () => {
 const styles = StyleSheet.create({
   subHeader: {
     fontSize: 18,
-    color: '#fff',
     marginBottom: 20,
   },
   features: {
     alignItems: 'flex-start',
-    marginBottom: 20,
+    marginBottom: 0,
   },
   feature: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
+    justifyContent: 'space-between',
+    width: '100%'
   },
   featureText: {
-    color: '#fff',
     marginLeft: 10,
+    width: 290
   },
   choosePlan: {
-    fontSize: 20,
-    color: '#fff',
+    alignSelf: "center",
     marginBottom: 20,
   },
-  pricingBlock: {
-    width: '100%',
-    padding: 20,
-    borderRadius: 10,
-    borderColor: '#fff',
-    borderWidth: 1,
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  current: {
-    borderColor: '#ff6347',
-  },
-  recommended: {
-    borderColor: '#32cd32',
-  },
-  currentTag: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    backgroundColor: '#ff6347',
-    padding: 5,
-    borderTopLeftRadius: 10,
-    borderBottomRightRadius: 10,
-  },
-  recommendedTag: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: '#32cd32',
-    padding: 5,
-    borderTopRightRadius: 10,
-    borderBottomLeftRadius: 10,
-  },
-  tagText: {
-    color: '#fff',
-  },
-  price: {
-    fontSize: 24,
-    color: '#fff',
-    marginBottom: 10,
-  },
-  duration: {
-    fontSize: 16,
-    color: '#fff',
-  },
   footerText: {
-    color: '#fff',
     marginTop: 10,
   },
 });

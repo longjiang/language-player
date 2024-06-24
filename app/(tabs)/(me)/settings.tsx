@@ -1,4 +1,4 @@
-// @/app/select-l2.tsx
+// @/app/settings.tsx
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ThemedScreen } from "@/components/ThemedScreen";

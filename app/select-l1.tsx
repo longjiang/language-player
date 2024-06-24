@@ -1,4 +1,4 @@
-// @/app/select-l2.tsx
+// @/app/select-l1.tsx
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { ThemedLanguageSelect } from "@/components/ThemedLanguageSelect";

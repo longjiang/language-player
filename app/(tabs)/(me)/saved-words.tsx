@@ -1,4 +1,4 @@
-// @/app/select-l2.tsx
+// @/app/(tabs)/(me)/saved-words.tsx
 import React from "react";
 import { StyleSheet } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
