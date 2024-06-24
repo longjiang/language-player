@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { DictionaryProvider } from '@/contexts/DictionaryContext';
 
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
@@ -12,44 +13,46 @@ export default function TabLayout() {
   const tabBackgroundColor = Colors[colorScheme ?? 'light'].secondaryBackground;
 
   return (
-    <Tabs
-      
-      screenOptions={{
-        tabBarActiveTintColor: activeColor,
-        tabBarStyle: { backgroundColor: tabBackgroundColor, paddingTop: 12, height:100},
-          tabBarLabelStyle: {
-          fontSize: Typography.fontSize.xsmall,
-          fontWeight: "bold",
-        },
-        headerShown: false,
-      }}>
-      <Tabs.Screen
-        name="(media)"
-        options={{
-          title: 'Media',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'movie' : 'movie-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="(dictionary)"
-        options={{
-          title: 'Dictionary',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'book' : 'book-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="(me)"
-        options={{
-          title: 'Me',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'account' : 'account-outline'} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    <DictionaryProvider>
+      <Tabs
+        
+        screenOptions={{
+          tabBarActiveTintColor: activeColor,
+          tabBarStyle: { backgroundColor: tabBackgroundColor, paddingTop: 12, height:100},
+            tabBarLabelStyle: {
+            fontSize: Typography.fontSize.xsmall,
+            fontWeight: "bold",
+          },
+          headerShown: false,
+        }}>
+        <Tabs.Screen
+          name="(media)"
+          options={{
+            title: 'Media',
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon name={focused ? 'movie' : 'movie-outline'} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="(dictionary)"
+          options={{
+            title: 'Dictionary',
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon name={focused ? 'book' : 'book-outline'} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="(me)"
+          options={{
+            title: 'Me',
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon name={focused ? 'account' : 'account-outline'} color={color} />
+            ),
+          }}
+        />
+      </Tabs>
+    </DictionaryProvider>
   );
 }

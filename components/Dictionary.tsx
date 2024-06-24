@@ -47,7 +47,7 @@ const DictionaryComponent = () => {
             <ScrollView>
                 {results.map((entry, index) => (
                     <View key={index} style={{marginTop: 16}}>
-                        <ThemedText><ThemedText type="title">{entry.simplified}</ThemedText>
+                        <ThemedText><ThemedText type="subtitle">{entry.simplified}</ThemedText>
                         <ThemedText type="defaultBold"> ({entry.pinyin})</ThemedText>
                         <ThemedText type="default"> - {entry.definitions}</ThemedText></ThemedText>
                     </View>

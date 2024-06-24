@@ -6,6 +6,7 @@ export default function DictionaryLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="saved-words" options={{ headerShown: false }} />
+      <Stack.Screen name="dictionary/[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }
