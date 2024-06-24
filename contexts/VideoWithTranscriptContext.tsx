@@ -15,6 +15,7 @@ interface VideoWithTranscriptContextType {
   currentLine: SyncedLine;
   fullscreen: boolean;
   duration: number;
+  startTime: number;
   updateDuration: (duration: number) => void;
   updatePlayVideo: (newVal: boolean) => void;
   updatePlaybackState: (state: string) => void;
@@ -41,26 +42,22 @@ const VideoWithTranscriptContext = createContext<
 
 function syncLines(l1Lines: Line[], l2Lines: Line[]): SyncedLine[] {
   // Convert starttime to numbers and sort both arrays
-  l1Lines = l1Lines
-    .map((line) => ({ ...line, starttime: parseFloat(line.starttime) }))
-    .sort((a, b) => a.starttime - b.starttime);
-  l2Lines = l2Lines
-    .map((line) => ({ ...line, starttime: parseFloat(line.starttime) }))
-    .sort((a, b) => a.starttime - b.starttime);
+  l1Lines = l1Lines.map(line => ({ ...line, starttime: parseFloat(line.starttime) }))
+                   .sort((a, b) => a.starttime - b.starttime);
+  l2Lines = l2Lines.map(line => ({ ...line, starttime: parseFloat(line.starttime) }))
+                   .sort((a, b) => a.starttime - b.starttime);
 
   const syncedLines: SyncedLine[] = [];
   const usedIndexes = new Set<number>(); // To track used l2Lines
 
   // Find the closest l2Line for each l1Line
-  l1Lines.forEach((l1Line) => {
+  l1Lines.forEach(l1Line => {
     let closestIndex = -1;
     let smallestDifference = Infinity;
 
     for (let i = 0; i < l2Lines.length; i++) {
       if (!usedIndexes.has(i)) {
-        const timeDifference = Math.abs(
-          l1Line.starttime - l2Lines[i].starttime
-        );
+        const timeDifference = Math.abs(l1Line.starttime - l2Lines[i].starttime);
         if (timeDifference < smallestDifference) {
           smallestDifference = timeDifference;
           closestIndex = i;
@@ -73,10 +70,24 @@ function syncLines(l1Lines: Line[], l2Lines: Line[]): SyncedLine[] {
       syncedLines.push({
         starttime: l1Line.starttime,
         l1Line: l1Line.line,
-        l2Line: l2Lines[closestIndex].line,
+        l2Line: l2Lines[closestIndex].line
       });
     }
   });
+
+  // Add remaining l2Lines that were not used
+  l2Lines.forEach((l2Line, index) => {
+    if (!usedIndexes.has(index)) {
+      syncedLines.push({
+        starttime: l2Line.starttime,
+        l1Line: null,
+        l2Line: l2Line.line
+      });
+    }
+  });
+
+  // Sort the final array by starttime for consistent ordering
+  syncedLines.sort((a, b) => a.starttime - b.starttime);
 
   return syncedLines;
 }
@@ -123,7 +134,8 @@ export const useVideoWithTranscriptContext = () => {
 
 export const VideoWithTranscriptProvider: React.FC<{
   initialVideo: YouTubeVideo;
-}> = ({ initialVideo, children }) => {
+  startFromFirstLine: boolean;
+}> = ({ initialVideo, startFromFirstLine, children }) => {
   const [playbackState, setPlaybackState] = useState("stopped");
   const [currentTime, setCurrentTime] = useState(0);
   const [seekTime, setSeekTime] = useState(0); // Watched for seeking
@@ -133,6 +145,7 @@ export const VideoWithTranscriptProvider: React.FC<{
   const [currentLine, setCurrentLine] = useState(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [duration, setDuration] = useState(0);
+  const [startTime, setStartTime] = useState(0);
 
   useEffect(() => {
     // Reset context state when the initialVideo changes
@@ -141,9 +154,11 @@ export const VideoWithTranscriptProvider: React.FC<{
 
   useEffect(() => {
     if (!video?.subs_l2) return;
-    const l1Lines = parseSubtitles(video.subs_l1);
-    const l2Lines = parseSubtitles(video.subs_l2);
+    const l1Lines = video.subs_l1 ? parseSubtitles(video.subs_l1) : [];
+    const l2Lines = video.subs_l2 ? parseSubtitles(video.subs_l2) : [];
     const syncedLines = syncLines(l1Lines, l2Lines);
+    const startTimeLocalVar = syncedLines[0]?.starttime || 0
+    if (startFromFirstLine) setStartTime(startTimeLocalVar);
     setSyncedLines(syncedLines);
   }, [video]);
 
@@ -255,6 +270,7 @@ export const VideoWithTranscriptProvider: React.FC<{
         currentLine,
         fullscreen,
         duration,
+        startTime,
         updatePlaybackState,
         updateCurrentTime,
         updatePlayVideo,

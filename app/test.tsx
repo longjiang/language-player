@@ -1,20 +1,21 @@
 import React, { useRef } from "react";
 import { View, Button } from "react-native";
-import RBSheet from "react-native-raw-bottom-sheet";
-import Dictionary from "@/components/DictionaryComponent";
+import { SubsSearch } from '@/components/SubsSearch';  // Import the SubsSearch component
+import { ThemedView } from "@/components/ThemedView";
 
-export default function Example() {
+function Test() {
   const refRBSheet = useRef();
   return (
-    <View
+    <ThemedView
       style={{
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "white",
       }}
     >
-      <Dictionary />
-    </View>
+      <SubsSearch term="你好" />
+    </ThemedView>
   );
 }
+
+export default Test;

@@ -3,6 +3,8 @@
 import { useRef, useEffect, useCallback } from "react";
 import YoutubePlayer from "react-native-youtube-iframe";
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
+import { View } from "react-native";
+import { ThemedText } from "./ThemedText";
 
 // Define a PlayerState string type with the following possible values:
 // unstarted - fired before the first video is loaded
@@ -23,6 +25,7 @@ export const YouTubeVideo = ({
   youtubeId,
   autoplay,
   mute,
+  startTime = 0,
   height = 300,
   controls = true,
 }) => {
@@ -121,13 +124,14 @@ export const YouTubeVideo = ({
       }}
       // Additional player options can be set here
       initialPlayerParams={{
+        start: parseInt(startTime), // Must be integer otherwise won't work
         cc_lang_pref: "us", // Closed captions language
         showClosedCaptions: true,
         controls, // Use the controls prop to toggle visibility
         rel: false, // This ensures that related videos are not shown from other channels.
         modestbranding: true, // This limits YouTube branding as much as possible
       }}
-      key={youtubeId}
+      key={`${youtubeId}-${startTime}`}
     />
   );
 };

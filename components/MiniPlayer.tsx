@@ -27,7 +27,7 @@ export const MiniPlayer = () => {
         ]}
       >
         <VideoWithTranscriptProvider initialVideo={video}>
-          <VideoWithTranscript video={video} isMini={true} />
+          <VideoWithTranscript isMini={true} />
         </VideoWithTranscriptProvider>
       </View>
     </SafeAreaView>

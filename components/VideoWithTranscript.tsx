@@ -21,8 +21,7 @@ import { formatSeconds } from "@/src/utils";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 
 interface VideoWithTranscriptProps {
-  router: any; // Adjust the type according to your router's type
-  initialVideo: YouTubeVideoType;
+  isMini: boolean
 }
 
 export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
@@ -32,7 +31,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   const videoHeight = screenWidth * 0.5625; // 16:9 aspect ratio
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
-  const { video, playVideo, updatePlayVideo, currentTime } = useVideoWithTranscriptContext();
+  const { video, playVideo, updatePlayVideo, currentTime, startTime } = useVideoWithTranscriptContext();
   const { closePlayer } = useVideoPlayer();
 
   function removeTextInBrackets(text) {
@@ -76,6 +75,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
               youtubeId={video.youtube_id}
               height={videoHeight}
               controls={false}
+              startTime={startTime}
             />
             <VideoControlBar isMini={isMini} />
             <SyncedTranscript video={video} />
@@ -89,6 +89,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
               youtubeId={video.youtube_id}
               height={70}
               controls={false}
+              startTime={startTime}
             />
           </View>
           <View style={styles.miniPlayerVideoInfo}>

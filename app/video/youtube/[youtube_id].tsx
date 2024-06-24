@@ -57,7 +57,7 @@ const YouTubeVideoScreen = () => {
   return (
     <View>
       <VideoWithTranscriptProvider initialVideo={video}>
-        <VideoWithTranscript video={video} isMini={false} key={`video-player-${video.youtube_id}`} />
+        <VideoWithTranscript isMini={false} key={`video-player-${video.youtube_id}`} />
       </VideoWithTranscriptProvider>
     </View>
   );
