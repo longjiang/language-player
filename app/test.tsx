@@ -9,7 +9,7 @@ function Test() {
   const refRBSheet = useRef();
   return (
     <ThemedView style={styles.fullscreen}>
-      <TokenizedText text="猫咪说，我不是猫，我是一只狮子，只是大小有点儿不一样。" />
+      <TokenizedText text="猫咪说，我不是猫，我是一只狮子，只是大小有点儿不一样。" textScale={3} textWeight="bold" />
     </ThemedView>
   );
 }
