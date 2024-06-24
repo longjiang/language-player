@@ -33,7 +33,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   const videoHeight = screenWidth * 0.5625; // 16:9 aspect ratio
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
-  const { video, playVideo, updatePlayVideo, currentTime, startTime, playlist } = useVideoWithTranscriptContext();
+  const { video, playVideo, updatePlayVideo, currentTime, startTime } = useVideoWithTranscriptContext();
   const { closePlayer } = useVideoPlayer();
 
   function removeTextInBrackets(text) {

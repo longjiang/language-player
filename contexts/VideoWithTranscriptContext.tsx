@@ -19,6 +19,7 @@ interface VideoWithTranscriptContextType {
   updatePlaybackState: (state: string) => void;
   updateCurrentTime: (time: number, seekTime?: boolean) => void;
   updateFullscreen: (state: boolean) => void;
+  updateStartTime: (time: number) => void;
   resetSeekTime: () => void;
   seekTo: (time: number) => void;
   rewind: () => void;
@@ -127,10 +128,9 @@ export const useVideoWithTranscriptContext = () => {
 
 export const VideoWithTranscriptProvider: React.FC<{
   initialVideo: YouTubeVideo;
-  startFromFirstLine: boolean;
   initialPlaylist: YouTubeVideo[];
   children: React.ReactNode;
-}> = ({ initialVideo, initialPlaylist, startFromFirstLine, children }) => {
+}> = ({ initialVideo, initialPlaylist, children }) => {
   initialPlaylist = initialPlaylist || [initialVideo];
   const [playbackState, setPlaybackState] = useState("stopped");
   const [currentTime, setCurrentTime] = useState(0);
@@ -156,8 +156,6 @@ export const VideoWithTranscriptProvider: React.FC<{
         const l1Lines = parseSubtitles(newVideo.subs_l1);
         const l2Lines = parseSubtitles(newVideo.subs_l2);
         setSyncedLines(syncLines(l1Lines, l2Lines));
-        const initialStartTime = syncedLines[0]?.starttime || 0;
-        if (startFromFirstLine) setStartTime(initialStartTime);
       }
     }
   }, [currentVideoIndex, playlist]);
@@ -167,8 +165,6 @@ export const VideoWithTranscriptProvider: React.FC<{
     const l1Lines = video.subs_l1 ? parseSubtitles(video.subs_l1) : [];
     const l2Lines = video.subs_l2 ? parseSubtitles(video.subs_l2) : [];
     const syncedLines = syncLines(l1Lines, l2Lines);
-    const startTimeLocalVar = syncedLines[0]?.starttime || 0
-    if (startFromFirstLine) setStartTime(startTimeLocalVar);
     setSyncedLines(syncedLines);
   }, [video]);
 
@@ -201,6 +197,10 @@ export const VideoWithTranscriptProvider: React.FC<{
 
   const updateDuration = (duration: number) => {
     setDuration(duration);
+  }
+
+  const updateStartTime = (time: number) => {
+    setStartTime(time);
   }
 
   const resetSeekTime = () => {
@@ -288,6 +288,7 @@ export const VideoWithTranscriptProvider: React.FC<{
         updatePlaybackState,
         updateCurrentTime,
         updateFullscreen,
+        updateStartTime,
         resetSeekTime,
         seekTo,
         rewind,

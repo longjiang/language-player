@@ -5,6 +5,7 @@ import { YouTubeVideo } from './YouTubeVideo';
 import { VideoWithTranscript } from './VideoWithTranscript';
 import { VideoWithTranscriptProvider } from '@/contexts/VideoWithTranscriptContext';
 import { ThemedText } from './ThemedText';
+import { SubsSearchResults } from './SubsSearchResults';
 
 export const SubsSearch = ({ term }) => {
   const [results, setResults] = useState([]);
@@ -33,8 +34,8 @@ export const SubsSearch = ({ term }) => {
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
-        <VideoWithTranscriptProvider initialVideo={results[0]} startFromFirstLine={true} initialPlaylist={results}>
-          <VideoWithTranscript isMini={false} showHeader={false} />
+        <VideoWithTranscriptProvider initialVideo={results[0]} initialPlaylist={results}>
+          <SubsSearchResults term={term} />
         </VideoWithTranscriptProvider>
       )}
     </View>
