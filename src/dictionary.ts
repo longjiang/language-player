@@ -64,7 +64,7 @@ class Dictionary {
     return pinyin.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '_').toLowerCase();
   }
 
-  search(query: string): DictionaryEntry[] {
+  async search(query: string): Promise<DictionaryEntry[]> {
     // console.log('searching for:', query);
     query = query.toLowerCase();
     const results = new Set<DictionaryEntry>();

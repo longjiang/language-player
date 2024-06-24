@@ -25,11 +25,11 @@ export const DictionaryComponent = () => {
         return () => clearInterval(checkIfLoaded);
     }, [dictionary]);
 
-    const handleSearch = (text: string) => {
+    const handleSearch = async (text: string) => {
         // console.log("Dictionary Component: Searching for", text);
         setQuery(text);
         if (dictionary && dictionary.entries) {
-            const searchResults = dictionary.search(text);
+            const searchResults = await dictionary.search(text);
             setResults(searchResults);
         }
     };

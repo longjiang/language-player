@@ -77,7 +77,7 @@ const DictionaryEntryScreen = () => {
             size="small"
             onChangeText={handleInputChange}
             onSubmitEditing={handleSearch}
-            value={entry.simplified}
+            value={searchQuery || entry?.simplified}
           />
           <ThemedButton
             type="ghost"
@@ -99,7 +99,7 @@ const DictionaryEntryScreen = () => {
                   {entry.traditional}
                 </ThemedText>
               </View>
-              <ThemedText type="defaultBold">{entry.pinyin}</ThemedText>
+              <Text><ThemedText type="default">{entry.pinyin} • </ThemedText><ThemedText type="defaultBold" level={entry.hsk}>HSK {entry.hsk}</ThemedText></Text>
             </View>
             <View style={[styles.detailsContainer, {backgroundColor: tertiaryBackgroundColor}]}>
               <ThemedText type="default">{entry.definitions}</ThemedText> 
