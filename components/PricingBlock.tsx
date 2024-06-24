@@ -5,7 +5,7 @@ import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { ThemedText, ThemedButton, ThemedView } from "@/components";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import ThemedRBSheet from "./ThemedRBSheet"; // Import the ThemedRBSheet
+import { ThemedRBSheet } from "./ThemedRBSheet"; // Import the ThemedRBSheet
 import { router } from "expo-router";
 
 export const PricingBlock = ({ price, duration, current, recommended, onPress, showButtons }) => {
