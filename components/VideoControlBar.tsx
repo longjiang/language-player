@@ -13,6 +13,7 @@ import RBSheet from "react-native-raw-bottom-sheet";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 import { formatDuration } from "@/src/utils";
+import { ThemedRBSheet } from "./ThemedRBSheet";
 
 export const VideoControlBar = () => {
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
@@ -108,29 +109,10 @@ export const VideoControlBar = () => {
           onPress={() => updateFullscreen(!fullscreen)}
         /> */}
       </View>
-      <RBSheet
+      <ThemedRBSheet
         ref={refRBSheet}
-        closeOnDragDown={true}
-        closeOnPressMask={false}
-        style={{
-          height: 300,
-          backgroundColor: primaryBrandColor,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-        }}
-        customStyles={{
-          wrapper: {
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-          },
-          container: {
-            backgroundColor: secondaryBackgroundColor,
-          },
-          draggableIcon: {
-            backgroundColor: "#000",
-          },
-        }}
       >
-        <View style={{ padding: 20 }}>
+        <View>
           <ThemedText type="subtitle">{video.title}</ThemedText>
           <ThemedText variant="secondary" style={{ marginTop: 10 }}>
             {`${video.date ? new Date(video.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No Date' } /  Duration: ${formatDuration(video.duration)}  / ${video.locale}`}
@@ -141,7 +123,7 @@ export const VideoControlBar = () => {
             } comments`}
           </ThemedText>
         </View>
-      </RBSheet>
+      </ThemedRBSheet>
     </View>
   );
 };

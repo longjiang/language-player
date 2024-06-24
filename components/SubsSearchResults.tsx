@@ -1,7 +1,7 @@
 // @/components/SubsSearchResults.tsx
 
 import React, { useRef}  from "react";
-import { View, Text } from "react-native";
+import { View, Text, Dimensions } from "react-native";
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
 import { VideoWithTranscript } from "./VideoWithTranscript";
 import { ThemedText } from "./ThemedText";
@@ -10,6 +10,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { SubsSearchResultsList } from "./SubsSearchResultsList";
+import { ThemedRBSheet } from "./ThemedRBSheet";
 
 export const SubsSearchResults = ({ term }: { term: string }) => {
   const { video, syncedLines, playlist, updateStartTime, currentVideoIndex, skipToVideo } =
@@ -48,6 +49,8 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
     refRBSheet.current.close();
   }
 
+  const screenHeight = Dimensions.get("screen").height;
+
   return (
     <View>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: "space-between", paddingHorizontal: 26, paddingBottom: 16 }}>
@@ -64,32 +67,12 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
         />
       </View>
       <VideoWithTranscript isMini={false} showHeader={false} />
-      <RBSheet
+      <ThemedRBSheet
         ref={refRBSheet}
-        closeOnDragDown={true}
-        closeOnPressMask={false}
-        height={700}
-        style={{
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-        }}
-        customStyles={{
-          wrapper: {
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-          },
-          container: {
-            backgroundColor: secondaryBackgroundColor,
-            paddingHorizontal: 26,
-          },
-          draggableIcon: {
-            backgroundColor: "#000",
-          },
-        }}
+        height={screenHeight - 200}
       >
-        <View style={{ marginTop: 16, flex: 1 }}>
-          <SubsSearchResultsList results={playlist} term={term} onSelect={onSelect} />
-        </View>
-      </RBSheet>
+        <SubsSearchResultsList results={playlist} term={term} onSelect={onSelect} />
+      </ThemedRBSheet>
     </View>
   );
 };

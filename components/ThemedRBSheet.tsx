@@ -3,7 +3,7 @@ import RBSheet from 'react-native-raw-bottom-sheet';
 import { SafeAreaView, StyleSheet } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";  // Assuming the hook is defined as seen in your file
 
-const ThemedRBSheet = forwardRef(({ children, ...props }, ref) => {
+export const ThemedRBSheet = forwardRef(({ children, ...props }, ref) => {
   const sheetRef = useRef(null);
   
   // Theme colors extraction using your custom hook
@@ -57,8 +57,7 @@ const ThemedRBSheet = forwardRef(({ children, ...props }, ref) => {
 
 const styles = StyleSheet.create({
   sheetContent: {
+    marginTop: 16, 
     flex: 1,
   },
 });
-
-export default ThemedRBSheet;
