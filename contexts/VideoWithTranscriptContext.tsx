@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { YouTubeVideo, Line, SyncedLine } from "@/types";
-import { syncLines, parseSubtitles } from "@/src/subs";
+import { syncLines } from "@/src/subs";
 
 interface VideoWithTranscriptContextType {
   video: YouTubeVideo;
@@ -94,17 +94,15 @@ export const VideoWithTranscriptProvider: React.FC<{
       setCurrentTime(0);
       // Sync subtitles when video changes
       if (newVideo.subs_l1 && newVideo.subs_l2) {
-        const l1Lines = parseSubtitles(newVideo.subs_l1);
-        const l2Lines = parseSubtitles(newVideo.subs_l2);
-        setSyncedLines(syncLines(l1Lines, l2Lines));
+        setSyncedLines(syncLines(newVideo.subs_l1, newVideo.subs_l2));
       }
     }
   }, [currentVideoIndex, playlist]);
 
   useEffect(() => {
     if (!video?.subs_l2) return;
-    const l1Lines = video.subs_l1 ? parseSubtitles(video.subs_l1) : [];
-    const l2Lines = video.subs_l2 ? parseSubtitles(video.subs_l2) : [];
+    const l1Lines = video.subs_l1 || [];
+    const l2Lines = video.subs_l2 || [];
     const syncedLines = syncLines(l1Lines, l2Lines);
     setSyncedLines(syncedLines);
   }, [video]);

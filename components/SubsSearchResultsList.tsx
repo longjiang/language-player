@@ -4,7 +4,6 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedInput } from "./ThemedInput";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 import { Image } from "react-native";
-import { parseSubtitles } from "@/src/subs";
 
 export const SubsSearchResultsList = ({ results }) => {
   const handleSubtitlePress = (item) => {
@@ -25,12 +24,6 @@ export const SubsSearchResultsList = ({ results }) => {
     }
   }
 
-  // Parse lines in the results
-  // Ideally this can be done before results are loaded
-  // But React complains that nested objects can't be react child
-  // So we have to keep them as csv strings until we need them
-
-
 
   return (
     <GestureHandlerRootView style={styles.fullContainer}>
@@ -48,7 +41,7 @@ export const SubsSearchResultsList = ({ results }) => {
                   }}
                   style={[styles.thumbnail]}
                 />
-                <ThemedText style={{ width: '100%', textAlign: 'left', paddingLeft: 16, paddingRight: 50 }}>{item.title}</ThemedText>
+                <ThemedText style={{ width: '100%', textAlign: 'left', paddingLeft: 16, paddingRight: 50 }}>{item.subs_l2[0].line}</ThemedText>
               </TouchableOpacity>
             )}
             keyExtractor={(item, index) => index.toString()}

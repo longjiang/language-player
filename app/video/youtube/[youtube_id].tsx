@@ -12,7 +12,11 @@ import { useRoute } from '@react-navigation/native';
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
+import { parseSubtitles } from "@/src/subs";
 import video from "@/data/video.json";
+
+video.subs_l1 = parseSubtitles(video.subs_l1);
+video.subs_l2 = parseSubtitles(video.subs_l2);
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;

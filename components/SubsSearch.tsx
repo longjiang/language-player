@@ -7,6 +7,8 @@ import { VideoWithTranscriptProvider } from '@/contexts/VideoWithTranscriptConte
 import { ThemedText } from './ThemedText';
 import { SubsSearchResults } from './SubsSearchResults';
 import { SubsSearchResultsList } from "@/components/SubsSearchResultsList";
+import { parse } from '@babel/core';
+import { parseSubtitles } from '@/src/subs';
 
 export const SubsSearch = ({ term }) => {
   const [results, setResults] = useState([]);
@@ -22,7 +24,12 @@ export const SubsSearch = ({ term }) => {
     setLoading(true);
     try {
       const response = await axios.get(`https://python.zerotohero.ca/subs-search?l2=zh&terms=${searchTerm}&limit=50&sort=-views`);
-      setResults(response.data);
+      const data = response.data;
+      data.forEach(item => {
+        item.subs_l1 = parseSubtitles(item.subs_l2);
+        item.subs_l2 = parseSubtitles(item.subs_l2);
+      })
+      setResults(data);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch Results:', error);
