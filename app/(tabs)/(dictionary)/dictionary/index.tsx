@@ -14,7 +14,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
-import Dictionary from "@/components/Dictionary";
+import { useDictionary } from "@/contexts/DictionaryContext";
+import { DictionaryComponent } from "@/components/DictionaryComponent";
 
 
 const DictionaryScreen = () => {
@@ -22,6 +23,7 @@ const DictionaryScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
+  const { dictionary } = useDictionary(); // Custom hook to access the dictionary
 
 
   useEffect(() => {
@@ -44,8 +46,10 @@ const DictionaryScreen = () => {
   const loadItems = async () => {
     setItems([]); // Clear items
     setIsLoading(true); // Start loading
-
-    // Dictionary search logic here...
+    // console.log('Screen - Searching for:', searchQuery);
+    dictionary.search(searchQuery).then((results) => {
+      setItems(results);
+    })
 
     setIsLoading(false); // Stop loading
   };
@@ -59,7 +63,7 @@ const DictionaryScreen = () => {
           showFlag={true}
         >
           
-          <Dictionary />
+          <DictionaryComponent />
           {isLoading && (
             <View style={styles.spinnerContainer}>
               <ActivityIndicator size="large" color="#a772d0" />

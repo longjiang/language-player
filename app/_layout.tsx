@@ -15,6 +15,7 @@ import { VideoPlayerProvider } from "@/contexts/VideoPlayerContext";
 import { MiniPlayer } from "@/components/MiniPlayer";
 import { useNavigation } from "expo-router";
 import { useRoute } from "@react-navigation/native";
+import { DictionaryProvider } from "@/contexts/DictionaryContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -37,31 +38,33 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <VideoPlayerProvider>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-          <Stack.Screen name="register" options={{ headerShown: false }} />
-          <Stack.Screen name="verify-email" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="acquisition-survey"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="select-l2" options={{ headerShown: false }} />
-          <Stack.Screen name="select-l1" options={{ headerShown: false }} />
-          <Stack.Screen name="select-level" options={{ headerShown: false }} />
-          <Stack.Screen name="account" options={{ headerShown: false }} />
-          <Stack.Screen name="go-pro" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="video/youtube/[youtube_id]"
-            options={{ headerShown: false, presentation: "modal" }}
-          />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <MiniPlayer />
-      </VideoPlayerProvider>
-    </ThemeProvider>
+    <DictionaryProvider>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <VideoPlayerProvider>
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="login" options={{ headerShown: false }} />
+            <Stack.Screen name="register" options={{ headerShown: false }} />
+            <Stack.Screen name="verify-email" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="acquisition-survey"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="select-l2" options={{ headerShown: false }} />
+            <Stack.Screen name="select-l1" options={{ headerShown: false }} />
+            <Stack.Screen name="select-level" options={{ headerShown: false }} />
+            <Stack.Screen name="account" options={{ headerShown: false }} />
+            <Stack.Screen name="go-pro" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="video/youtube/[youtube_id]"
+              options={{ headerShown: false, presentation: "modal" }}
+            />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <MiniPlayer />
+        </VideoPlayerProvider>
+      </ThemeProvider>
+    </DictionaryProvider>
   );
 }
