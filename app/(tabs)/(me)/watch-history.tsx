@@ -5,6 +5,8 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
+import { YouTubeVideoList } from "@/components/YouTubeVideoList";
+import videoData from '@/data/recommended-videos.json'; // Importing the JSON data
 
 const WatchHistoryScreen = () => {
   const [code, setCode] = useState("");
@@ -19,14 +21,7 @@ const WatchHistoryScreen = () => {
       onBackPress={() => router.navigate('/(tabs)/(me)')}
     >
       
-      <ThemedButton
-        title="Go Pro"
-        trailingIcon={<Icon name="chevron-right" />}
-        style={styles.button}
-        onPress={() => {
-          router.navigate("/go-pro");
-        }}
-      />
+      <YouTubeVideoList videos={videoData} />
     </ThemedScreen>
   );
 };
