@@ -80,5 +80,3 @@ const styles = StyleSheet.create({
     alignSelf: "left",
   },
 });
-
-export default VideoHero;

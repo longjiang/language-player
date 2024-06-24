@@ -1,3 +1,5 @@
+// @/components/SubsSearchResults.tsx
+
 import React, { useRef}  from "react";
 import { View, Text } from "react-native";
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
@@ -68,7 +70,6 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
         closeOnPressMask={false}
         height={700}
         style={{
-          backgroundColor: primaryBrandColor,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
         }}

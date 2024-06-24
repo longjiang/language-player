@@ -1,26 +1,104 @@
 // @/components/PricingBlock.tsx
-import React from "react";
-import { StyleSheet, View, TouchableOpacity } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { useThemeColor } from "@/hooks/useThemeColor";
 
-export const PricingBlock = ({ price, duration, current, recommended, onPress }) => {
+import React, { useRef } from "react";
+import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
+import { ThemedText, ThemedButton, ThemedView } from "@/components";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import RBSheet from "react-native-raw-bottom-sheet";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export const PricingBlock = ({ price, duration, current, recommended, onPress, showButtons }) => {
   const secondaryBrandColor = useThemeColor({}, 'semanticSuccess');
   const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
   const primaryTextColor = useThemeColor({}, 'primaryText');
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
+  const buttonTextColor = useThemeColor({}, 'buttonText');
+  const buttonBackgroundColor = useThemeColor({}, 'buttonBackground');
+  const secondaryBackgroundColor = useThemeColor({}, 'secondaryBackground');
+
+  // Ref for the RBSheet
+  const refRBSheet = useRef();
+
+  // Function to handle Cancel button press
+  const handleCancelPress = () => {
+    refRBSheet.current.open(); // Open the RBSheet
+  };
 
   return (
     <TouchableOpacity onPress={onPress} style={[styles.pricingBlock, { borderColor: secondaryStrokeColor }, current && {...styles.current, borderColor: primaryTextColor, borderWidth: 5 }, recommended && { borderColor: secondaryBrandColor }]}>
       {current && <View style={[styles.currentTag, { borderColor: primaryTextColor, backgroundColor: primaryTextColor }]}><ThemedText style={{...styles.tagText, color: primaryBackgroundColor}} type="defaultBold">Current Plan</ThemedText></View>}
       <ThemedText style={styles.price} type="title">{price}</ThemedText>
       <ThemedText style={styles.duration} variant="secondary">{duration}</ThemedText>
-      {recommended && <View style={[styles.recommendedTag, { backgroundColor: secondaryBrandColor }]}><ThemedText style={styles.tagText}>Best Value¹ </ThemedText></View>}
+      {recommended && <View style={[styles.recommendedTag, { backgroundColor: secondaryBrandColor }]}><ThemedText style={styles.tagText}>Best Value¹</ThemedText></View>}
+      {showButtons && (
+        <View style={styles.buttonContainer}>
+          <ThemedButton
+            title="Upgrade"
+            size="small"
+            trailingIcon={<Icon name="chevron-right" />}
+            style={{ marginRight: 8 }}
+            onPress={() => console.log("Upgrade pressed")}
+            />
+          <ThemedButton
+            title="Cancel"
+            size="small"
+            type="neutral"
+            trailingIcon={<Icon name="chevron-right" />}
+            onPress={handleCancelPress}
+            />
+        </View>
+      )}
+      <RBSheet
+        ref={refRBSheet}
+        closeOnDragDown={true}
+        closeOnPressMask={true}
+        customStyles={{
+          wrapper: {
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+          },
+          draggableIcon: {
+            backgroundColor: "#000"
+          },
+          container: {
+            backgroundColor: secondaryBackgroundColor,
+            paddingHorizontal: 26,
+          },
+        }}
+        height={400}
+      >
+        <SafeAreaView style={styles.sheetContent}>
+          <ThemedText style={styles.sheetText} type="subtitle">Are you sure you want to cancel your subscription?</ThemedText>
+          <ThemedButton
+            title="Keep Subscription"
+            type="primary"
+            onPress={() => refRBSheet.current.close()}
+            style={{
+              marginBottom: 10
+            }}
+          />
+          <ThemedButton
+            title="Confirm Cancellation"
+            type="neutral"
+            onPress={() => {
+              console.log("Subscription cancelled");
+              refRBSheet.current.close();
+            }}
+          />
+        </SafeAreaView>
+      </RBSheet>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  sheetContent: {
+    flex: 1,
+  },
+  sheetText: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
   pricingBlock: {
     width: '100%',
     padding: 20,
@@ -30,13 +108,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   current: {
-    
+
   },
   currentTag: {
     position: 'absolute',
     top: 0,
     left: 0,
-    
     padding: 5,
     borderTopLeftRadius: 5,
     borderBottomRightRadius: 5,
@@ -50,11 +127,22 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 8,
   },
   tagText: {
-    color: 'white', // Replace with appropriate color using useThemeColor
+    color: 'white',
   },
   price: {
     paddingTop: 0
   },
   duration: {
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    marginTop: 10,
+  },
+  button: {
+    padding: 10,
+    borderRadius: 5,
   },
 });

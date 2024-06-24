@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedText } from "@/components/ThemedText";
-import ThemedSwitch from '@/components/ThemedSwitch';
+import { ThemedSwitch } from '@/components/ThemedSwitch';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
 

@@ -7,7 +7,7 @@ import { Typography } from '@/constants/Typography';
 
 type ButtonProps = {
   type?: 'primary' | 'neutral' | 'ghost' | 'accent';
-  textColor: string;
+  textColor?: string;
   size?: 'title' | 'large' | 'medium' | 'small';
   title?: string;
   style?: any;
@@ -55,7 +55,7 @@ export function ThemedButton({ type = 'primary', size = 'large', title, onPress,
   const textStyle = [
     styles.textBase,
     styles.text[size],
-    { color: textColor }
+    { color: textColor },
   ];
 
   return (
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   small: {
     paddingVertical: 3,
-    paddingHorizontal: 5,
+    paddingHorizontal: 16,
   },
   ghost: {
     paddingHorizontal: 0,

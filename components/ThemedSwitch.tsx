@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 
-const CustomSwitch = ({ isEnabled, toggleSwitch }) => {
+export const ThemedSwitch = ({ isEnabled, toggleSwitch }) => {
   // Retrieve theme colors
   const primaryBrandColor = useThemeColor({}, 'primaryBrand');
   const secondaryBackgroundColor = useThemeColor({}, 'secondaryBackground');
@@ -46,5 +46,3 @@ const styles = StyleSheet.create({
     transition: 'all 0.3s ease', // Note: Transition is for web. React Native doesn't support this out of the box.
   },
 });
-
-export default CustomSwitch;

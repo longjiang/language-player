@@ -1,3 +1,5 @@
+// @/components/ThemedText.tsxs
+
 import React from 'react';
 import { Text, type TextProps, StyleSheet } from 'react-native';
 import { useFonts, Nunito_400Regular, Nunito_700Bold } from '@expo-google-fonts/nunito';

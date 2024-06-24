@@ -26,7 +26,7 @@ const Index = () => {  // 中国
         <ThemedButton
           title="Start Learning"
           trailingIcon={<Icon name="chevron-right" />}
-          onPress={() => router.push("/go-pro")} // 中国
+          onPress={() => router.push("/account")} // 中国
           
         />
       </View>
