@@ -6,6 +6,7 @@ import { VideoWithTranscript } from './VideoWithTranscript';
 import { VideoWithTranscriptProvider } from '@/contexts/VideoWithTranscriptContext';
 import { ThemedText } from './ThemedText';
 import { SubsSearchResults } from './SubsSearchResults';
+import { SubsSearchResultsList } from "@/components/SubsSearchResultsList";
 
 export const SubsSearch = ({ term }) => {
   const [results, setResults] = useState([]);
@@ -30,15 +31,16 @@ export const SubsSearch = ({ term }) => {
   };
 
   return (
-    <View style={styles.container}>
-      {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
-        <VideoWithTranscriptProvider initialVideo={results[0]} initialPlaylist={results}>
-          <SubsSearchResults term={term} />
-        </VideoWithTranscriptProvider>
-      )}
-    </View>
+    // <View style={styles.container}>
+    //   {loading ? (
+    //     <ActivityIndicator size="large" color="#0000ff" />
+    //   ) : (
+    //     <VideoWithTranscriptProvider initialVideo={results[0]} initialPlaylist={results}>
+    //       <SubsSearchResults term={term} />
+    //     </VideoWithTranscriptProvider>
+    //   )}
+    // </View>
+    <SubsSearchResultsList results={results}/>
   );
 };
 

@@ -20,13 +20,12 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
       const foundLine = syncedLines.find((item) => item.l2Line?.includes(term));
 
       if (foundLine) {
-        // If the term is found, proceed with your logic
+        // If the term is found, proceed
         const { starttime, l1Line, l2Line } = foundLine;
         updateStartTime(starttime);
       } else {
         // Handle the case where the term is not found
         console.log(`Term "${term}" not found in synced lines.`);
-        // You can also set a default state or perform other actions here
       }
     }
   });

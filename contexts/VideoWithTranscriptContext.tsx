@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { YouTubeVideo, Line, SyncedLine } from "@/types";
-import Papa from "papaparse";
+import { syncLines, parseSubtitles } from "@/src/subs";
 
 interface VideoWithTranscriptContextType {
   video: YouTubeVideo;
@@ -35,58 +35,6 @@ const VideoWithTranscriptContext = createContext<VideoWithTranscriptContextType 
 
 
 
-function syncLines(l1Lines: Line[], l2Lines: Line[]): SyncedLine[] {
-  // Convert starttime to numbers and sort both arrays
-  l1Lines = l1Lines.map(line => ({ ...line, starttime: parseFloat(line.starttime) }))
-                   .sort((a, b) => a.starttime - b.starttime);
-  l2Lines = l2Lines.map(line => ({ ...line, starttime: parseFloat(line.starttime) }))
-                   .sort((a, b) => a.starttime - b.starttime);
-
-  const syncedLines: SyncedLine[] = [];
-  const usedIndexes = new Set<number>(); // To track used l2Lines
-
-  // Find the closest l2Line for each l1Line
-  l1Lines.forEach(l1Line => {
-    let closestIndex = -1;
-    let smallestDifference = Infinity;
-
-    for (let i = 0; i < l2Lines.length; i++) {
-      if (!usedIndexes.has(i)) {
-        const timeDifference = Math.abs(l1Line.starttime - l2Lines[i].starttime);
-        if (timeDifference < smallestDifference) {
-          smallestDifference = timeDifference;
-          closestIndex = i;
-        }
-      }
-    }
-
-    if (closestIndex !== -1) {
-      usedIndexes.add(closestIndex);
-      syncedLines.push({
-        starttime: l1Line.starttime,
-        l1Line: l1Line.line,
-        l2Line: l2Lines[closestIndex].line
-      });
-    }
-  });
-
-  // Add remaining l2Lines that were not used
-  l2Lines.forEach((l2Line, index) => {
-    if (!usedIndexes.has(index)) {
-      syncedLines.push({
-        starttime: l2Line.starttime,
-        l1Line: null,
-        l2Line: l2Line.line
-      });
-    }
-  });
-
-  // Sort the final array by starttime for consistent ordering
-  syncedLines.sort((a, b) => a.starttime - b.starttime);
-
-  return syncedLines;
-}
-
 
 
 const findSubtitle = (currentTime, syncedLines) => {
@@ -105,13 +53,6 @@ const findSubtitle = (currentTime, syncedLines) => {
   }
   return nearestSubtitle;
 }
-
-const parseSubtitles = (csvData) => {
-  return Papa.parse(csvData, {
-    header: true,
-    dynamicTyping: true,
-  }).data;
-};
 
 
 
