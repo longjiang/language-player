@@ -4,9 +4,8 @@ import React, { useRef } from "react";
 import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { ThemedText, ThemedButton, ThemedView } from "@/components";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import RBSheet from "react-native-raw-bottom-sheet";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { SafeAreaView } from "react-native-safe-area-context";
+import ThemedRBSheet from "./ThemedRBSheet"; // Import the ThemedRBSheet
 import { router } from "expo-router";
 
 export const PricingBlock = ({ price, duration, current, recommended, onPress, showButtons }) => {
@@ -18,12 +17,12 @@ export const PricingBlock = ({ price, duration, current, recommended, onPress, s
   const buttonBackgroundColor = useThemeColor({}, 'buttonBackground');
   const secondaryBackgroundColor = useThemeColor({}, 'secondaryBackground');
 
-  // Ref for the RBSheet
+  // Ref for the ThemedRBSheet
   const refRBSheet = useRef();
 
   // Function to handle Cancel button press
   const handleCancelPress = () => {
-    refRBSheet.current.open(); // Open the RBSheet
+    refRBSheet.current.open(); // Open the ThemedRBSheet
   };
 
   return (
@@ -31,7 +30,7 @@ export const PricingBlock = ({ price, duration, current, recommended, onPress, s
       {current && <View style={[styles.currentTag, { borderColor: primaryTextColor, backgroundColor: primaryTextColor }]}><ThemedText style={{...styles.tagText, color: primaryBackgroundColor}} type="defaultBold">Current Plan</ThemedText></View>}
       <ThemedText style={styles.price} type="title">{price}</ThemedText>
       <ThemedText style={styles.duration} variant="secondary">{duration}</ThemedText>
-      {recommended && <View style={[styles.recommendedTag, { backgroundColor: secondaryBrandColor }]}><ThemedText style={styles.tagText}>Best Value¹</ThemedText></View>}
+      {recommended && <View style={[styles.recommendedTag, { backgroundColor: secondaryBrandColor }]}><ThemedText style={styles.tagText}>Best Value</ThemedText></View>}
       {showButtons && (
         <View style={styles.buttonContainer}>
           <ThemedButton
@@ -40,62 +39,43 @@ export const PricingBlock = ({ price, duration, current, recommended, onPress, s
             trailingIcon={<Icon name="chevron-right" />}
             style={{ marginRight: 8 }}
             onPress={() => router.navigate('/go-pro')}
-            />
+          />
           <ThemedButton
             title="Cancel"
             size="small"
             type="neutral"
             trailingIcon={<Icon name="chevron-right" />}
             onPress={handleCancelPress}
-            />
+          />
         </View>
       )}
-      <RBSheet
+      <ThemedRBSheet
         ref={refRBSheet}
-        closeOnDragDown={true}
-        closeOnPressMask={true}
-        customStyles={{
-          wrapper: {
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-          },
-          draggableIcon: {
-            backgroundColor: "#000"
-          },
-          container: {
-            backgroundColor: secondaryBackgroundColor,
-            paddingHorizontal: 26,
-          },
-        }}
-        height={400}
       >
-        <SafeAreaView style={styles.sheetContent}>
-          <ThemedText style={styles.sheetText} type="subtitle">Are you sure you want to cancel your subscription?</ThemedText>
-          <ThemedButton
-            title="Keep Subscription"
-            type="primary"
-            onPress={() => refRBSheet.current.close()}
-            style={{
-              marginBottom: 10
-            }}
-          />
-          <ThemedButton
-            title="Confirm Cancellation"
-            type="neutral"
-            onPress={() => {
-              console.log("Subscription cancelled");
-              refRBSheet.current.close();
-            }}
-          />
-        </SafeAreaView>
-      </RBSheet>
+        <ThemedText style={styles.sheetText} type="subtitle">Are you sure you want to cancel your subscription?</ThemedText>
+        <ThemedButton
+          title="Keep Subscription"
+          type="primary"
+          onPress={() => refRBSheet.current.close()}
+          style={{
+            marginBottom: 10
+          }}
+        />
+        <ThemedButton
+          title="Confirm Cancellation"
+          type="neutral"
+          onPress={() => {
+            console.log("Subscription cancelled");
+            refRBSheet.current.close();
+          }}
+        />
+      </ThemedRBSheet>
     </TouchableOpacity>
   );
 };
 
+
 const styles = StyleSheet.create({
-  sheetContent: {
-    flex: 1,
-  },
   sheetText: {
     marginTop: 20,
     marginBottom: 20,
