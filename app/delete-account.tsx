@@ -11,65 +11,46 @@ const AccountScreen = () => {
   const [code, setCode] = useState("");
 
   const onSelect = (value) => {
-    console.log('Selected:', value);
-  }
+    console.log("Selected:", value);
+  };
 
-  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const secondaryTextColor = useThemeColor({}, "secondaryText");
+  const semanticErrorColor = useThemeColor({}, "semanticError");
 
   return (
     <ThemedScreen
-      title="Account"
-      imageName={require("../assets/images/splash-image.png")}
-      imageStyle={{ marginTop: -400 }}
+      title="Delete Account"
       onBackPress={() => {
         router.back();
       }}
     >
-      <ThemedText style={{ alignSelf: 'center', marginTop: 16 }} type="xxlarge">
-        Tim Burton
+      <ThemedText
+        style={styles.sheetText}
+        type="subtitle"
+        style={{ marginBottom: 26 }}
+      >
+        Are you sure you want to permanently delete your account? You will lose
+        all your saved words and progress. This action cannot be undone.
       </ThemedText>
-      <ThemedText style={{ alignSelf: 'center', marginBottom: 32+16 }} variant="secondary">
-        tim.burton@example.com
-      </ThemedText>
-      <PricingBlock
-        price="$89/yr"
-        duration="Auto renews in 5 months 10 days."
-        current
-        showButtons
-        onPress={() => onSelect('Yearly plan')}
-      />
-      
       <ThemedButton
-        title="Logout"
-        leadingIcon={<Icon name="logout" size={20} />}
-        style={styles.button}
-        type="ghost"
-        onPress={() => {
-          router.navigate("/logout");
+        title="Keep Account"
+        type="accent"
+        onPress={() => refRBSheet.current.close()}
+        style={{
+          marginBottom: 10,
         }}
       />
-
-      <View style={styles.buttonRow}>
-        <ThemedButton
-          title="Delete My Account"
-          size="small"
-          type="ghost"
-          onPress={() => {
-            router.navigate("/delete-account");
-          }}
-          textColor={secondaryTextColor}
-        />
-        <ThemedButton
-          title="Privacy Policy"
-          size="small"
-          type="ghost"
-          onPress={() => {
-            router.navigate("/privacy-policy");
-          }}
-          textColor={secondaryTextColor}
-        />
-      </View>
-      
+      <ThemedButton
+        title="Confirm Deletion"
+        type="primary"
+        onPress={() => {
+          console.log("Subscription cancelled");
+          refRBSheet.current.close();
+        }}
+        style={{
+          backgroundColor: semanticErrorColor,
+        }}
+      />
     </ThemedScreen>
   );
 };
@@ -83,8 +64,8 @@ const styles = StyleSheet.create({
     marginBottom: 110,
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: 16, // Add padding to the sides if needed
     marginTop: 16, // Add top margin to separate from the content above
   },

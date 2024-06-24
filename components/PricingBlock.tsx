@@ -7,6 +7,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 
 export const PricingBlock = ({ price, duration, current, recommended, onPress, showButtons }) => {
   const secondaryBrandColor = useThemeColor({}, 'semanticSuccess');
@@ -38,7 +39,7 @@ export const PricingBlock = ({ price, duration, current, recommended, onPress, s
             size="small"
             trailingIcon={<Icon name="chevron-right" />}
             style={{ marginRight: 8 }}
-            onPress={() => console.log("Upgrade pressed")}
+            onPress={() => router.navigate('/go-pro')}
             />
           <ThemedButton
             title="Cancel"

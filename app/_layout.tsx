@@ -55,6 +55,8 @@ export default function RootLayout() {
             <Stack.Screen name="select-level" options={{ headerShown: false }} />
             <Stack.Screen name="account" options={{ headerShown: false }} />
             <Stack.Screen name="go-pro" options={{ headerShown: false }} />
+            <Stack.Screen name="delete-account" options={{ headerShown: false }} />
+            <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
             <Stack.Screen
               name="video/youtube/[youtube_id]"
               options={{ headerShown: false, presentation: "modal" }}
