@@ -10,8 +10,9 @@ const SavedWordsScreen = () => {
   return (
     <ThemedScreen
       title="Saved Words"
-      imageName={require("@/assets/images/splash-image.png")}
-      imageStyle={{ marginTop: -400 }}
+      onBackPress={() => {
+        router.navigate('/(tabs)/(me)')
+      }}
     >
       
       <ThemedButton

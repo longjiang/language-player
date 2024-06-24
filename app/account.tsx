@@ -18,6 +18,9 @@ const AccountScreen = () => {
       title="Account"
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
+      onBackPress={() => {
+        router.back();
+      }}
     >
       
       <ThemedButton

@@ -25,7 +25,7 @@ const SettingsScreen = () => {
   return (
     <ThemedScreen
       title="Settings"
-      onBackPress={() => {router.pop();}}
+      onBackPress={() => {router.back();}}
     >
       
       <View style={styles.container}>
