@@ -5,6 +5,8 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
+import { DictionaryProvider } from "@/contexts/DictionaryContext";
+import { SavedWords } from "@/components/SavedWords";
 
 const SavedWordsScreen = () => {
   return (
@@ -14,10 +16,15 @@ const SavedWordsScreen = () => {
         router.navigate('/(tabs)/(me)')
       }}
     >
+      <DictionaryProvider>
+        <SavedWords />
+      </DictionaryProvider>
       
       <ThemedButton
-        title="Dictionary"
-        trailingIcon={<Icon name="chevron-right" />}
+        title="Clear"
+        type="neutral"
+        size="medium"
+        leadingIcon={<Icon name="delete-outline" />}
         style={styles.button}
         onPress={() => {
           router.navigate("/(tabs)/(dictionary)");
