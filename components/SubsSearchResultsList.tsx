@@ -4,6 +4,28 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedInput } from "./ThemedInput";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 import { Image } from "react-native";
+import { Swatches } from "@/constants/Swatches";
+
+const HighlightSearchTerm = ({ line, searchTerm }) => {
+  if (!line) return null;
+
+  const termIndex = line.toLowerCase().indexOf(searchTerm.toLowerCase());
+  if (termIndex === -1) {
+    return <ThemedText style={styles.line}>{line}</ThemedText>;
+  }
+
+  const beforeTerm = line.substring(0, termIndex);
+  const term = line.substring(termIndex, termIndex + searchTerm.length);
+  const afterTerm = line.substring(termIndex + searchTerm.length);
+
+  return (
+    <ThemedText style={{ width: '100%', textAlign: 'left', paddingLeft: 16, paddingRight: 50 }}>
+      {beforeTerm}
+      <ThemedText style={styles.highlight}>{term}</ThemedText>
+      {afterTerm}
+    </ThemedText>
+  );
+}
 
 export const SubsSearchResultsList = ({ results, term }) => {
   const handleSubtitlePress = (item) => {
@@ -34,7 +56,9 @@ export const SubsSearchResultsList = ({ results, term }) => {
                   }}
                   style={[styles.thumbnail]}
                 />
-                <ThemedText style={{ width: '100%', textAlign: 'left', paddingLeft: 16, paddingRight: 50 }}>{item.subs_l2[item.targetLineIndex]?.line}</ThemedText>
+                <ThemedText style={{ width: '100%', textAlign: 'left', paddingLeft: 16, paddingRight: 50 }}>
+                  <HighlightSearchTerm line={item.subs_l2[item.targetLineIndex]?.line} searchTerm={term} />
+                </ThemedText>
               </TouchableOpacity>
             )}
             keyExtractor={(item, index) => index.toString()}
@@ -53,6 +77,10 @@ const styles = StyleSheet.create({
   },
   fullContainer: {
     flex: 1, // This will make the container fill the entire space of its parent
+  },
+  highlight: {
+    color: Swatches.warning[500], // Example highlight style
+    fontFamily: 'Nunito_700Bold',
   },
   item: {
     paddingBottom: 26,
