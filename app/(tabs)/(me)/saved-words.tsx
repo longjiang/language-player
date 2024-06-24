@@ -20,16 +20,6 @@ const SavedWordsScreen = () => {
         <SavedWords />
       </DictionaryProvider>
       
-      <ThemedButton
-        title="Clear"
-        type="neutral"
-        size="medium"
-        leadingIcon={<Icon name="delete-outline" />}
-        style={styles.button}
-        onPress={() => {
-          router.navigate("/(tabs)/(dictionary)");
-        }}
-      />
     </ThemedScreen>
   );
 };
