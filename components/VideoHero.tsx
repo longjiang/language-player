@@ -7,7 +7,7 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
-export const VideoHero = ({ videoId, title, height }) => {
+export const VideoHero = ({ youtubeId, title, height }) => {
   const screenWidth = Dimensions.get("window").width;
   const videoWidth = (height * 16) / 9;
   const padding = 26;
@@ -24,7 +24,7 @@ export const VideoHero = ({ videoId, title, height }) => {
   return (
     <View style={styles.container}>
       <YouTubeVideo
-        videoId={videoId}
+        youtubeId={youtubeId}
         height={height}
         autoplay={true}
         mute={isMuted}

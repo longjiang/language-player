@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactElement, ReactNode } from "react";
 import { FlatList, View, StyleSheet, ViewStyle } from "react-native";
 import { YouTubeVideoCard } from '@/components/YouTubeVideoCard';
 import { useThemeColor } from "@/hooks/useThemeColor";
@@ -6,7 +6,7 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface YouTubeVideoListProps {
   videos: Array<any>;
-  header: React.ReactNode;
+  header?: ReactElement | null;  // Adjusted type
   style?: ViewStyle;
 }
 
@@ -24,6 +24,7 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({ videos, head
       style={{ backgroundColor: primaryBackgroundColor }}
       data={videos}
       renderItem={renderVideoCard}
+      ListHeaderComponent={header} // Directly passed; will not render if undefined
       keyExtractor={(item, index) => index.toString()}
     />
   );

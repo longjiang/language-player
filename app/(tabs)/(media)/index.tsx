@@ -41,7 +41,7 @@ const MediaHomeScreen = () => {
         }}
       >
         <VideoHero
-          videoId="t6fPzVNIEB0"
+          youtubeId="t6fPzVNIEB0"
           title="As Long As You Love Me"
           height={videoHeight}
         />
