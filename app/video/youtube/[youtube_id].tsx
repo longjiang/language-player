@@ -7,6 +7,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router, useNavigation, useLocalSearchParams } from "expo-router";
 import { YouTubeVideo } from "@/components/YouTubeVideo";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFocusEffect } from 'expo-router';
 import { useRoute } from '@react-navigation/native';
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
@@ -59,11 +60,13 @@ const YouTubeVideoScreen = () => {
 
 
   return (
-    <View>
-      <VideoWithTranscriptProvider initialVideo={video}>
-        <VideoWithTranscript isMini={false} showHeader={true} key={`video-player-${video.youtube_id}`} />
-      </VideoWithTranscriptProvider>
-    </View>
+    <GestureHandlerRootView>
+      <View>
+        <VideoWithTranscriptProvider initialVideo={video}>
+          <VideoWithTranscript isMini={false} showHeader={true} key={`video-player-${video.youtube_id}`} />
+        </VideoWithTranscriptProvider>
+      </View>
+    </GestureHandlerRootView>
   );
 };
 
