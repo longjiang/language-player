@@ -11,6 +11,7 @@ import {
 import { PopupDictionaryHeader } from "@/components/PopupDictionaryHeader";
 import { PopupDictionaryContent } from "@/components/PopupDictionaryContent";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 function Test() {
   const refRBSheet = useRef();
@@ -22,7 +23,17 @@ function Test() {
   const context = "我吃不下睡不着";
   const translatedContext = "I can't eat, I can't sleep";
   const wordTranslation = "can't sleep";
+  const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
 
+
+  const styles = StyleSheet.create({
+    fullscreen: {
+      flex: 1, // Use flex to expand to the full screen
+      padding: 26,
+      backgroundColor: secondaryBackgroundColor,
+    },
+  });
+  
   return (
     <GestureHandlerRootView>
       <SafeAreaView style={styles.fullscreen}>
@@ -39,13 +50,7 @@ function Test() {
       </SafeAreaView>
     </GestureHandlerRootView>
   );
-}
 
-const styles = StyleSheet.create({
-  fullscreen: {
-    flex: 1, // Use flex to expand to the full screen
-    padding: 26,
-  },
-});
+}
 
 export default Test;

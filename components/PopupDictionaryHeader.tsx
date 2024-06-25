@@ -20,7 +20,7 @@ export const PopupDictionaryHeader = ({ word, pronunciation, translation, contex
       </View>
       <ThemedText style={styles.translationText}>{pronunciation} • {translation}</ThemedText>
       <ThemedButton type="ghost" style={{marginBottom: 26}}  title="Let AI Explain" onPress={onExplainPress} type="pro" leadingIcon={<Icon name="lightbulb-outline" size={20} style={styles.iconStyle} />} />
-      <ThemedText style={styles.contextText}>{context}</ThemedText>
+      <ThemedText style={styles.contextText}  type="large">{context}</ThemedText>
       <ThemedText style={styles.translatedContextText} variant="secondary">{translatedContext}</ThemedText>
     </View>
   );
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 20,
   },
   contextText: {
     marginVertical: 4,
