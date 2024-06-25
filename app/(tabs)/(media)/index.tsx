@@ -11,17 +11,10 @@ import { YouTubeVideoList } from "@/components/YouTubeVideoList";
 import videoData from '@/data/recommended-videos.json'; // Importing the JSON data
 import { parseDuration } from '@/src/utils';
 import { YouTubeVideo } from '@/types';
+import { normalizeVideoData } from "@/src/directus-video"
 
-const normalizeVideoData = (data: any[]): YouTubeVideo[] => {
-  return data.map((video) => {
-    return {
-      ...video,
-      duration: parseDuration(video.duration),
-    };
-  });
-}
 
-const videos = normalizeVideoData(videoData);
+const videos = videoData.map((video: any) => normalizeVideoData(video))
 
 const MediaHomeScreen = () => {
   const videoHeight = 300;

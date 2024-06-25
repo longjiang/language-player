@@ -15,6 +15,7 @@ import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
 import { parseSubtitles } from "@/src/subs";
 import { getCollectionItems } from "@/src/api/directus";
+import { normalizeVideoData } from "@/src/directus-video"
 
 
 const screenHeight = Dimensions.get('window').height;
@@ -47,11 +48,7 @@ const YouTubeVideoScreen = () => {
           }
         })
         if (!videos) return
-        const newVideo = {
-          ...videos[0],
-          subs_l1: videos[0].subs_l1 ? parseSubtitles(videos[0].subs_l1) : [],
-          subs_l2: videos[0].subs_l2 ? parseSubtitles(videos[0].subs_l2) : [],
-        }
+        const newVideo = normalizeVideoData(videos[0])
         setVideo(newVideo);
 
       } catch (error) {

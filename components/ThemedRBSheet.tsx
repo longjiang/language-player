@@ -1,10 +1,23 @@
-import React, { useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useRef, forwardRef, useImperativeHandle, ReactNode } from 'react';
 import RBSheet from 'react-native-raw-bottom-sheet';
-import { SafeAreaView, StyleSheet } from 'react-native';
+import { SafeAreaView, StyleSheet, ViewStyle } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";  // Assuming the hook is defined as seen in your file
 
-export const ThemedRBSheet = forwardRef(({ children, ...props }, ref) => {
-  const sheetRef = useRef(null);
+// Define the types for the props of the ThemedRBSheet
+interface ThemedRBSheetProps {
+  children?: ReactNode;
+  customStyles?: {
+    wrapper?: ViewStyle;
+    draggableIcon?: ViewStyle;
+    container?: ViewStyle;
+  };
+  // Include other props from RBSheet if needed, or use an intersection type with RBSheet's props
+}
+
+// Define the component with type definitions for the props and the ref
+export const ThemedRBSheet = forwardRef<RBSheet, ThemedRBSheetProps>((props, ref) => {
+  const { children, customStyles = {} } = props;
+  const sheetRef = useRef<RBSheet>(null);
   
   // Theme colors extraction using your custom hook
   const secondaryBackgroundColor = useThemeColor({}, 'secondaryBackground');
@@ -26,7 +39,7 @@ export const ThemedRBSheet = forwardRef(({ children, ...props }, ref) => {
   // Merge custom styles with default styles
   const mergedStyles = {
     ...defaultStyles,
-    ...props.customStyles,
+    ...customStyles,
   };
 
   const defaultProps = {
@@ -38,8 +51,8 @@ export const ThemedRBSheet = forwardRef(({ children, ...props }, ref) => {
 
   // Expose RBSheet methods to the parent component
   useImperativeHandle(ref, () => ({
-    open: () => sheetRef.current.open(),
-    close: () => sheetRef.current.close(),
+    open: () => sheetRef.current?.open(),
+    close: () => sheetRef.current?.close(),
   }));
 
   return (

@@ -34,15 +34,15 @@ export const VideoControlBar: React.FC = () => {
     skipToPreviousVideo,
   } = useVideoWithTranscriptContext();
 
-  const handlePress = (evt) => {
+  const handlePress = (evt: { nativeEvent: { locationX: any; }; }) => {
     const { locationX } = evt.nativeEvent;
     const progressBarWidth = Dimensions.get("window").width; // Assuming full width, adjust as necessary
     const newTime = (locationX / progressBarWidth) * duration;
     seekTo(newTime);
   };
 
-  const refRBSheet = useRef();
-
+  const refRBSheet = useRef<typeof ThemedRBSheet>(null);
+  
   return (
     <View style={styles.container}>
       <View style={styles.progressBarContainer}>
@@ -68,7 +68,7 @@ export const VideoControlBar: React.FC = () => {
         <ThemedButton
           type="ghost"
           trailingIcon={<Icon name="information" />}
-          onPress={() => refRBSheet.current.open()}
+          onPress={() => refRBSheet.current ? refRBSheet.current.open() : null}
         />
         <ThemedButton
           type="ghost"
@@ -115,10 +115,10 @@ export const VideoControlBar: React.FC = () => {
         <View>
           <ThemedText type="subtitle">{video.title}</ThemedText>
           <ThemedText variant="secondary" style={{ marginTop: 10 }}>
-            {`${video.date ? new Date(video.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No Date' } /  Duration: ${formatDuration(video.duration)}  / ${video.locale}`}
+            {`${video.date ? video.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No Date' } /  Duration: ${formatDuration(video.duration)}  / ${video.locale}`}
           </ThemedText>
           <ThemedText variant="secondary" style={{ marginTop: 10 }}>
-            {`${video.views.toLocaleString()} Views / ${video.likes} likes / ${
+            {`${video.views ? video.views.toLocaleString() : '0'} Views / ${video.likes ? video.likes : '0'} likes / ${
               video.comments
             } comments`}
           </ThemedText>

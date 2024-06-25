@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Dimensions } from "react-native";
+import { View, StyleSheet, Dimensions, FlexAlignType } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { YouTubeVideo } from "@/components/YouTubeVideo";
@@ -7,13 +7,17 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
-export const VideoHero = ({ youtubeId, title, height }) => {
+export const VideoHero: React.FC<{
+  youtubeId: string;
+  title: string;
+  height: number;
+}> = ({ youtubeId, title, height }) => {
   const screenWidth = Dimensions.get("window").width;
   const videoWidth = (height * 16) / 9;
   const padding = 26;
   const overlayStyles = {
     width: screenWidth - padding * 2, // 26px padding on each side
-    position: "absolute",
+    position: "absolute" as "absolute", // Explicitly setting the type to "absolute"
     top: height - 90,
     left: (videoWidth - screenWidth) / 2 + padding, // Note the left edige of the video is off the screen
   };
@@ -77,6 +81,6 @@ const styles = StyleSheet.create({
     color: "white",
   },
   button: {
-    alignSelf: "left",
+    alignSelf: "flex-start",
   },
 });
