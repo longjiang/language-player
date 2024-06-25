@@ -90,12 +90,13 @@ export const VideoWithTranscriptProvider: React.FC<{
   useEffect(() => {
     if (currentVideoIndex < playlist.length) {
       const newVideo = playlist[currentVideoIndex];
+      if (!newVideo) return
       setVideo(newVideo);
       setPlaybackState("stopped");
       setCurrentTime(0);
       // Sync subtitles when video changes
       if (newVideo.subs_l1 && newVideo.subs_l2) {
-        setSyncedLines(syncLines(newVideo.subs_l1, newVideo.subs_l2));
+        setSyncedLines(syncLines(newVideo.subs_l1 || [], newVideo.subs_l2 || []));
       }
     }
   }, [currentVideoIndex, playlist]);

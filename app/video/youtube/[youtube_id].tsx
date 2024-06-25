@@ -14,15 +14,14 @@ import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
 import { parseSubtitles } from "@/src/subs";
-import video from "@/data/video.json";
+import { getCollectionItems } from "@/src/api/directus";
 
-video.subs_l1 = parseSubtitles(video.subs_l1);
-video.subs_l2 = parseSubtitles(video.subs_l2);
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
 const YouTubeVideoScreen = () => {
+  const [video, setVideo] = useState(null);
   const params = useLocalSearchParams();
   const youtubeId = params?.youtube_id;
 
@@ -32,6 +31,38 @@ const YouTubeVideoScreen = () => {
 
   const navigation = useNavigation();
   const route = useRoute();  // This hook fetches information about the current route
+  
+  
+
+  // Fetch the video data from the API
+  useEffect(() => {
+    const fetchVideo = async () => {
+      try {
+        
+        const videos = await getCollectionItems('youtube_videos_4', {
+          filter: {
+            youtube_id: {
+              eq: youtubeId
+            }
+          }
+        })
+        if (!videos) return
+        const newVideo = {
+          ...videos[0],
+          subs_l1: videos[0].subs_l1 ? parseSubtitles(videos[0].subs_l1) : [],
+          subs_l2: videos[0].subs_l2 ? parseSubtitles(videos[0].subs_l2) : [],
+        }
+        setVideo(newVideo);
+
+      } catch (error) {
+        console.error('Failed to fetch video', error);
+      }
+    };
+
+    if (youtubeId) {
+      fetchVideo();
+    }
+  }, [youtubeId]);
 
 
   const position = useSharedValue({ x: 0, y: 0 });
@@ -57,13 +88,16 @@ const YouTubeVideoScreen = () => {
     }, [route])  // Include `route` in the dependency array if you need to react to changes in the route
   );
 
-
+  if (!video) {
+    return <Text>Loading...</Text>; // This will display a loading message until the video is fetched
+  }
+  
 
   return (
     <GestureHandlerRootView>
       <View>
         <VideoWithTranscriptProvider initialVideo={video}>
-          <VideoWithTranscript isMini={false} showHeader={true} key={`video-player-${video.youtube_id}`} />
+          <VideoWithTranscript isMini={false} showHeader={true} key={`video-player-${video?.youtube_id}`} />
         </VideoWithTranscriptProvider>
       </View>
     </GestureHandlerRootView>

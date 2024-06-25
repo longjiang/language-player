@@ -140,7 +140,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
 
 // Create stylesheet
 const styles = StyleSheet.create({
-  header: { flexDirection: "row", justifyContent: "space-between" },
+  header: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 8 },
   miniPlayerVideoInfo: {
     overflow: "hidden", // Ensures overflow is hidden
   },

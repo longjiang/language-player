@@ -42,10 +42,10 @@ const TVShowsScreen = () => {
     setItems([]); // Clear items
     setIsLoading(true); // Start loading
     try {
-      const data = await getCollectionItems("tv_shows", {
+      const tvShows = await getCollectionItems("tv_shows", {
         filter: { l2: { eq: 7731 } }, // 7731 is Chinese
       });
-      setItems(data.data);
+      setItems(tvShows);
     } catch (error) {
       console.error("Failed to load items:", error);
     }

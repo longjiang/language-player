@@ -11,7 +11,7 @@ const getCollectionItems = async (collectionName, queryParams = {}) => {
     const url = `/items/${collectionName}${queryString ? `?${queryString}` : ''}`;
 
     const response = await API.get(url);
-    return response.data;
+    return response.data.data; // Directus API returns data in the `data` field
   } catch (error) {
     console.error('Error fetching collection items:', error);
     throw error;

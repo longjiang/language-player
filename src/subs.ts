@@ -11,6 +11,8 @@ export const  parseSubtitles = (csvData) => {
 
 
 export const syncLines = (l1Lines: Line[], l2Lines: Line[]): SyncedLine[] => {
+  l1Lines = Array.isArray(l1Lines) ? l1Lines : [];
+  l2Lines = Array.isArray(l2Lines) ? l2Lines : [];
   // Convert starttime to numbers and sort both arrays
   l1Lines = l1Lines.map(line => ({ ...line, starttime: parseFloat(line.starttime) }))
                    .sort((a, b) => a.starttime - b.starttime);
