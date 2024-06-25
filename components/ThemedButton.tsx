@@ -1,12 +1,14 @@
 // @/components/ThemedButton.tsx
 import React from "react";
 import { Text, TouchableOpacity, StyleSheet, View } from "react-native";
+import { LinearGradient } from 'expo-linear-gradient'; // Ensure to import LinearGradient
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Swatches } from "@/constants/Swatches";
 import { Typography } from "@/constants/Typography";
+import { ThemedText } from "./ThemedText";
 
 type ButtonProps = {
-  type?: "primary" | "neutral" | "ghost" | "accent";
+  type?: "primary" | "neutral" | "ghost" | "accent" | "pro";  // Added 'pro' type here
   textColor?: string;
   size?: "title" | "large" | "medium" | "small";
   title?: string;
@@ -45,6 +47,7 @@ export function ThemedButton({
       accent: useThemeColor({}, "secondaryBackground"),
       primary: useThemeColor({}, "primaryBrand"),
       ghost: "transparent",
+      pro: null, // Gradient handled separately for 'pro' type
     };
     return colorMap[type] || useThemeColor({}, "primaryBrand"); // Default to 'primaryBrand' if type is not specified
   };
@@ -52,16 +55,14 @@ export function ThemedButton({
   const backgroundColor = getBackgroundColor(type);
   const borderColor = type === "neutral" ? secondaryTextColor : "transparent";
 
-  const buttonStyle = [
-    style,
-  ];
 
   const buttonContainerStyle = {
     alignItems: "center",
     justifyContent: "center",
     display: "flex",
     flexDirection: "row",
-  }
+    ...style, // From the props
+  };
 
   const buttonFillStyle = {
     flex: 1,
@@ -70,7 +71,7 @@ export function ThemedButton({
     borderColor,
     borderWidth: 2,
     ...fillStyles[type],
-  }
+  };
 
   const buttonContentStyle = {
     alignItems: "center",
@@ -78,14 +79,47 @@ export function ThemedButton({
     display: "flex",
     flexDirection: "row",
     ...contentStyles[size],
-  }
+  };
 
   const textStyle = [styles.textBase, styles.text[size], { color: textColor }];
 
+  const gradientColors = ['#00C853', '#72C30B', '#2EC0FF', '#6C7CDE', '#D20EA7'];
+  const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
+
   return (
-    <TouchableOpacity style={buttonContainerStyle} onPress={onPress}>
-      <View style={buttonFillStyle}>
-        <View style={buttonContentStyle}>
+    <TouchableOpacity style={[buttonContainerStyle]} onPress={onPress}>
+      {type === 'pro' ? (
+        <View style={{flex: 1}}>
+          <ThemedText type="smallBold" style={{color: '#00C853'}}>PRO FEATURE</ThemedText>
+          <LinearGradient
+            colors={gradientColors}
+            style={[buttonFillStyle, {padding: 2}]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <View style={{ ...buttonContentStyle, backgroundColor: primaryBackgroundColor }}>
+              {leadingIcon && (
+                <View style={{ marginRight: 5 }}>
+                  {React.cloneElement(leadingIcon, {
+                    color: textColor,
+                    size: fontSize[size] * 1.2,
+                  })}
+                </View>
+              )}
+              <Text style={textStyle}>{title}</Text>
+              {trailingIcon && (
+                <View style={{ marginLeft: 5 }}>
+                  {React.cloneElement(trailingIcon, {
+                    color: textColor,
+                    size: fontSize[size] * 1.2,
+                  })}
+                </View>
+              )}
+            </View>
+          </LinearGradient>
+        </View>
+      ) : (
+        <View style={[buttonFillStyle, buttonContentStyle]}>
           {leadingIcon && (
             <View style={{ marginRight: 5 }}>
               {React.cloneElement(leadingIcon, {
@@ -104,7 +138,7 @@ export function ThemedButton({
             </View>
           )}
         </View>
-      </View>
+      )}
     </TouchableOpacity>
   );
 }
@@ -135,7 +169,7 @@ const contentStyles = {
     paddingVertical: 3,
     paddingHorizontal: 16,
   },
-}
+};
 
 const fillStyles = StyleSheet.create({
   ghost: {
