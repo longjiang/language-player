@@ -80,7 +80,7 @@ export const DictionaryProvider = ({ children }) => {
             {state.token && (
               
               <GestureHandlerRootView>
-                <ScrollView>
+                <ScrollView style={{backgroundColor: 'red'}}>
                   <PopupDictionaryHeader  word={state.token.word}  pronunciation={state.token.pronunciation} translation={state.translation} context={state.context} translatedContext={state.translatedContext}/>
                   <PopupDictionaryContent token={state.token} />
                 </ScrollView>

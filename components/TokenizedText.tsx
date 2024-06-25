@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Token } from './Token';
+import { PYTHON_SERVER } from '@/src/api/python'
 
 export const TokenizedText = ({ text, translation, textScale, textWeight, align = "left" }) => {
   const [tokens, setTokens] = useState([]);
@@ -8,7 +9,7 @@ export const TokenizedText = ({ text, translation, textScale, textWeight, align 
   useEffect(() => {
     const tokenizeText = async () => {
       try {
-        const response = await fetch(`https://pythonvps.zerotohero.ca/lemmatize-chinese?text=${encodeURIComponent(text)}`);
+        const response = await fetch(`${PYTHON_SERVER}/lemmatize-chinese?text=${encodeURIComponent(text)}`);
         const data = await response.json();
         setTokens(data);
       } catch (error) {

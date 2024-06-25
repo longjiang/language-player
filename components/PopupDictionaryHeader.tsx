@@ -4,6 +4,7 @@ import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Typography } from "@/constants/Typography";
+import { Translate } from "@/components/Translate";
 
 export const PopupDictionaryHeader = ({ word, pronunciation, translation, context, translatedContext }) => {
   const onExplainPress = () => {
@@ -18,7 +19,7 @@ export const PopupDictionaryHeader = ({ word, pronunciation, translation, contex
           <Icon name="bookmark-outline" size={26} style={styles.iconStyle} />
         </View>
       </View>
-      <ThemedText style={styles.translationText}>{pronunciation} • {translation}</ThemedText>
+      <Text style={styles.translationText}><ThemedText>{pronunciation} • </ThemedText><Translate l1Code="en" l2Code="zh" text={word} /></Text>
       <ThemedButton type="ghost" style={{marginBottom: 26}}  title="Let ChatGPT Explain" onPress={onExplainPress} type="pro" leadingIcon={<Icon name="chat-outline" size={20} style={styles.iconStyle} />} />
       <View style={{flexDirection: 'row', alignItems: 'flex-start'}}>
         <View style={{flex: 1}}>
@@ -28,7 +29,6 @@ export const PopupDictionaryHeader = ({ word, pronunciation, translation, contex
         <ThemedButton
             type="ghost"
             trailingIcon={<Icon name="dots-vertical" size={20} />}
-            style={{  }}
           />
       </View>
     </View>
