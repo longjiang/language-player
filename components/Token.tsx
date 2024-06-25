@@ -26,7 +26,9 @@ export const Token = ({
   const modalRef = useRef();
 
   const handleTokenPress = () => {
-    modalRef.current.open();
+    console.log("Token pressed", token);
+    console.log("modalRef", modalRef);
+    modalRef.current?.open();
   };
 
   return (
@@ -63,7 +65,7 @@ export const Token = ({
           </Text>
         </View>
       </TouchableOpacity>
-      <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} />
+      <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} key={token.word} />
     </>
   );
 };

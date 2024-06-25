@@ -7,10 +7,16 @@ import { PopupDictionaryHeader } from '@/components/PopupDictionaryHeader';
 
 export const PopupDictionaryModal = forwardRef((state, ref) => {
     const refRBSheet = useRef();
-    state = state.state
+    state = state.state // { token, context, translatedContext }
 
-    const openModal = () => refRBSheet.current?.open();
-    const closeModal = () => refRBSheet.current?.close();
+    const openModal = () => {
+      console.log("Opening modal", state, refRBSheet);
+      refRBSheet.current?.open();
+    }
+    const closeModal = () => {
+      console.log("Closing modal", state, refRBSheet);
+      refRBSheet.current?.close();
+    }
 
     // Use useImperativeHandle to expose methods to the parent component
     useImperativeHandle(ref, () => ({
@@ -24,7 +30,7 @@ export const PopupDictionaryModal = forwardRef((state, ref) => {
         <ThemedRBSheet
             ref={refRBSheet}
             height={screenHeight - 200}
-            onClose={closeModal}
+            closeOnPressMask={true}
         >
             {state.token && (
                 <GestureHandlerRootView>
