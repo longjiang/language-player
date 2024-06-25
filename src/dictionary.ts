@@ -7,7 +7,7 @@ type DictionaryEntry = {
   simplified: string;
   traditional: string;
   pinyin: string;
-  definitions: string;
+  definitions: string[];
 };
 
 class Dictionary {
@@ -24,13 +24,24 @@ class Dictionary {
       console.log('Dictionary: Loading data...');
       const response = await axios.get('https://server.chinesezerotohero.com/data/hsk-cedict/hsk_cedict.csv.txt');
       const parsedData = Papa.parse(response.data, { header: true });
+      parsedData.data = parsedData.data.map(this.normalizeEntry);
       this.entries.clear();
       this.index.clear();
+      
       this.buildIndex(parsedData.data as DictionaryEntry[]);
       console.log('Dictionary: Data loaded.');
     } catch (error) {
       console.error('Failed to load dictionary data:', error);
     }
+  }
+
+  private normalizeEntry(entry: DictionaryEntry): DictionaryEntry {
+    return {
+      ...entry,
+      head: entry.simplified,
+      pronunciation: entry.pinyin,
+      definitions: entry.definitions ? entry.definitions.split('/').map(def => def.trim()) : [],
+    };
   }
 
   private buildIndex(entries: DictionaryEntry[]): void {
@@ -47,7 +58,7 @@ class Dictionary {
       this.addToIndex(entry.simplified, entry);
       this.addToIndex(entry.traditional, entry);
       this.addToIndex(this.normalizePinyin(entry.pinyin), entry);
-      this.addToIndex(entry.definitions.toLowerCase(), entry);
+      entry.definitions.forEach(def => this.addToIndex(def, entry));
     });
   }
 
