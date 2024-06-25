@@ -3,18 +3,10 @@ import { Dictionary } from '@/src/dictionary';
 
 export const DictionaryContext = createContext({
   dictionary: null,
-  state: null,
-  setState: () => {}
 });
 
 export const DictionaryProvider = ({ children }) => {
     const [dictionary, setDictionary] = useState<Dictionary | null>(null);
-    const [state, setState] = useState({
-        token: null,
-        translation: null,
-        context: null,
-        translatedContext: null
-    });
 
     useEffect(() => {
         const newDictionary = new Dictionary();
@@ -27,7 +19,7 @@ export const DictionaryProvider = ({ children }) => {
     }, []);
 
     return (
-        <DictionaryContext.Provider value={{ dictionary, state, setState }}>
+        <DictionaryContext.Provider value={{ dictionary }}>
             {children}
         </DictionaryContext.Provider>
     );

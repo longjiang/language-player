@@ -1,21 +1,22 @@
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useRef, useImperativeHandle, forwardRef } from 'react';
 import { ScrollView, Dimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemedRBSheet } from '@/components/ThemedRBSheet';
 import { PopupDictionaryContent } from '@/components/PopupDictionaryContent';
 import { PopupDictionaryHeader } from '@/components/PopupDictionaryHeader';
-import { DictionaryContext } from '@/contexts/DictionaryContext'; // Adjust the path as necessary
 
-const PopupDictionaryModal = () => {
-    const { state, setState } = useContext(DictionaryContext);
+export const PopupDictionaryModal = forwardRef((state, ref) => {
     const refRBSheet = useRef();
+    state = state.state
 
     const openModal = () => refRBSheet.current?.open();
-    const closeModal = () => {
-        refRBSheet.current?.close();
-        // Optionally reset the state when closing the modal
-        setState({ token: null, translation: null, context: null, translatedContext: null });
-    };
+    const closeModal = () => refRBSheet.current?.close();
+
+    // Use useImperativeHandle to expose methods to the parent component
+    useImperativeHandle(ref, () => ({
+        open: openModal,
+        close: closeModal,
+    }));
 
     const screenHeight = Dimensions.get("screen").height;
 
@@ -27,7 +28,7 @@ const PopupDictionaryModal = () => {
         >
             {state.token && (
                 <GestureHandlerRootView>
-                    <ScrollView style={{ backgroundColor: 'red' }}>
+                    <ScrollView>
                         <PopupDictionaryHeader {...state} />
                         <PopupDictionaryContent token={state.token} />
                     </ScrollView>
@@ -35,6 +36,4 @@ const PopupDictionaryModal = () => {
             )}
         </ThemedRBSheet>
     );
-};
-
-export default PopupDictionaryModal;
+});
