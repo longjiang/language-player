@@ -15,7 +15,7 @@ export const ThemedRBSheet = forwardRef(({ children, ...props }, ref) => {
       backgroundColor: "rgba(0, 0, 0, 0.8)",
     },
     draggableIcon: {
-      backgroundColor: "#000"
+      backgroundColor: "#000",
     },
     container: {
       backgroundColor: secondaryBackgroundColor,
@@ -30,8 +30,7 @@ export const ThemedRBSheet = forwardRef(({ children, ...props }, ref) => {
   };
 
   const defaultProps = {
-    closeOnDragDown: true,
-    closeOnPressMask: true,
+    draggable: true,
     customStyles: mergedStyles,
     height: 400,
     ...props, // This spreads additional props last so they can override defaults
