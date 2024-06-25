@@ -4,13 +4,28 @@ import { SubsSearch } from '@/components/SubsSearch';  // Import the SubsSearch 
 import { ThemedView } from "@/components/ThemedView";
 import { SubsSearchResultsList } from "@/components/SubsSearchResultsList";
 import { TokenizedText } from "@/components/TokenizedText";
+import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
+import { PopupDictionaryHeader } from "@/components/PopupDictionaryHeader";
+import { PopupDictionaryContent } from "@/components/PopupDictionaryContent";
 
 function Test() {
   const refRBSheet = useRef();
+  const wordData={
+    "word": "睡不着",
+    "pos": "v",
+    "pronunciation": "shuì bù zhe"
+  }
+  const context = "我吃不下睡不着";
+  const translatedContext = "I can't eat, I can't sleep";
+  const wordTranslation = "can't sleep";
+
   return (
-    <ThemedView style={styles.fullscreen}>
-      <TokenizedText text="猫咪说，我不是猫，我是一只狮子，只是大小有点儿不一样。" textScale={3} textWeight="bold" />
-    </ThemedView>
+    <GestureHandlerRootView>
+      <ScrollView contentContainerStyle={styles.fullscreen}>
+        <PopupDictionaryHeader word={wordData.word} pronunciation={wordData.pronunciation} translation={wordTranslation} />
+        <PopupDictionaryContent wordData={wordData} context={context} translatedContext={translatedContext} />
+      </ScrollView>
+    </GestureHandlerRootView>
   );
 }
 

@@ -80,6 +80,17 @@ class Dictionary {
   getEntry(id: string): DictionaryEntry | undefined {
     return this.entries.get(id);
   }
+
+  findWordsInPhrase(phrase: string): DictionaryEntry[] {
+    // Find any word with `head` property that `phrase` contains
+    const results = new Set<DictionaryEntry>();
+    this.entries.forEach(entry => {
+      if (phrase.includes(entry.simplified) || phrase.includes(entry.traditional)) {
+        results.add(entry);
+      }
+    });
+    return Array.from(results);
+  }
 }
 
 export { Dictionary, DictionaryEntry };
