@@ -65,20 +65,20 @@ export function ThemedButton({
   };
 
   const buttonFillStyle = {
-    flex: 1,
     backgroundColor,
     borderRadius: 8,
     borderColor,
     borderWidth: 2,
-    ...fillStyles[type],
   };
+
+  const paddingStyles = type === 'ghost' ? {} : contentStyles[size];
 
   const buttonContentStyle = {
     alignItems: "center",
     justifyContent: "center",
     display: "flex",
     flexDirection: "row",
-    ...contentStyles[size],
+    ...paddingStyles,
   };
 
   const textStyle = [styles.textBase, styles.text[size], { color: textColor }];
@@ -170,9 +170,3 @@ const contentStyles = {
     paddingHorizontal: 16,
   },
 };
-
-const fillStyles = StyleSheet.create({
-  ghost: {
-    paddingHorizontal: 0,
-  },
-});

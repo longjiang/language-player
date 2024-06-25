@@ -2,7 +2,7 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Typography } from "@/constants/Typography";
 
 export const PopupDictionaryHeader = ({ word, pronunciation, translation, context, translatedContext }) => {
@@ -14,14 +14,23 @@ export const PopupDictionaryHeader = ({ word, pronunciation, translation, contex
       <View style={{ flexDirection: "row", justifyContent: 'space-between' }}>
         <ThemedText type="xxlarge" style={{flex: 1}}>{word}</ThemedText>
         <View style={{ flexDirection: "row", justifyContent: 'space-between' }}>
-          <Icon name="volume-up" size={26} style={styles.iconStyle} />
+          <Icon name="volume-high" size={26} style={styles.iconStyle} />
           <Icon name="bookmark-outline" size={26} style={styles.iconStyle} />
         </View>
       </View>
       <ThemedText style={styles.translationText}>{pronunciation} • {translation}</ThemedText>
       <ThemedButton type="ghost" style={{marginBottom: 26}}  title="Let AI Explain" onPress={onExplainPress} type="pro" leadingIcon={<Icon name="lightbulb-outline" size={20} style={styles.iconStyle} />} />
-      <ThemedText style={styles.contextText}  type="large">{context}</ThemedText>
-      <ThemedText style={styles.translatedContextText} variant="secondary">{translatedContext}</ThemedText>
+      <View style={{flexDirection: 'row', alignItems: 'flex-start'}}>
+        <View style={{flex: 1}}>
+          <ThemedText style={styles.contextText}  type="large">{context}</ThemedText>
+          <ThemedText style={styles.translatedContextText} variant="secondary">{translatedContext}</ThemedText>
+        </View>
+        <ThemedButton
+            type="ghost"
+            trailingIcon={<Icon name="dots-vertical" size={20} />}
+            style={{  }}
+          />
+      </View>
     </View>
   );
 };
