@@ -87,7 +87,7 @@ export function ThemedButton({
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
 
   return (
-    <TouchableOpacity style={[buttonContainerStyle]} onPress={onPress}>
+    <TouchableOpacity style={[type==="pro" ? buttonContainerStyle : {}]} onPress={onPress}>
       {type === 'pro' ? (
         <View style={{flex: 1}}>
           <ThemedText type="smallBold" style={{color: '#00C853'}}>PRO FEATURE</ThemedText>
@@ -119,7 +119,7 @@ export function ThemedButton({
           </LinearGradient>
         </View>
       ) : (
-        <View style={[buttonFillStyle, buttonContentStyle]}>
+        <View style={[buttonContainerStyle, buttonFillStyle, buttonContentStyle]}>
           {leadingIcon && (
             <View style={{ marginRight: 5 }}>
               {React.cloneElement(leadingIcon, {
