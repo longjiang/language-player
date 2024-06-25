@@ -78,6 +78,13 @@ export const YouTubeVideo = ({
           updateCurrentTime(newTime); // Use newTime to reflect the updated value
         }
       }, 200);
+      
+      if (seekTime && playerRef.current.seekTo) {
+        // Only seek if the currentTime is different from the current time of the video by 100ms
+
+        playerRef.current.seekTo(currentTime, true); // The second allowSeekAhead parameter determines whether the player will make a new request to the server if the seconds parameter specifies a time outside of the currently buffered video data.
+        resetSeekTime();
+      }
 
       // Cleanup function to clear the interval
       return () => {
@@ -85,17 +92,9 @@ export const YouTubeVideo = ({
           clearInterval(intervalRef.current);
         }
       };
-    }, [playbackState]);
 
-    // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
-    useEffect(() => {
-      if (seekTime && playerRef.current.seekTo) {
-        // Only seek if the currentTime is different from the current time of the video by 100ms
+    }, [playbackState, seekTime]);
 
-        playerRef.current.seekTo(currentTime, true); // The second allowSeekAhead parameter determines whether the player will make a new request to the server if the seconds parameter specifies a time outside of the currently buffered video data.
-        resetSeekTime();
-      }
-    }, [seekTime]);
   }
 
   // Update the duration of the video once it's loaded
