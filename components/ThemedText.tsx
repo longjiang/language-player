@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Text, type TextProps, StyleSheet } from 'react-native';
-import { useFonts, Nunito_400Regular, Nunito_700Bold } from '@expo-google-fonts/nunito';
+import { useFonts, Nunito_400Regular, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Typography } from '@/constants/Typography';
@@ -28,7 +28,7 @@ export function ThemedText({
 }: ThemedTextProps) {
   
   useFonts({
-    Nunito_400Regular, Nunito_700Bold
+    Nunito_400Regular, Nunito_800ExtraBold
   });
 
   const colorScheme = useColorScheme();
@@ -65,7 +65,7 @@ export function ThemedText({
 // Design system: use fonts of the following sizes: 12, 16, 20, 26, 32, 42, 51, 67
 
 const fontFamilyRegular = 'Nunito_400Regular';
-const fontFamilyBold = 'Nunito_700Bold';
+const fontFamilyBold = 'Nunito_800ExtraBold';
 
 
 const styles = StyleSheet.create({

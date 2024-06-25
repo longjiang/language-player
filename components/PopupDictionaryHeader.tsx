@@ -1,37 +1,55 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { ThemedText } from './ThemedText';
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import { ThemedText } from "./ThemedText";
+import { ThemedButton } from "./ThemedButton";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { Typography } from '@/constants/Typography';
+import { Typography } from "@/constants/Typography";
 
-export const PopupDictionaryHeader = ({ word, pronunciation, translation }) => {
+export const PopupDictionaryHeader = ({ word, pronunciation, translation, context, translatedContext }) => {
+  const onExplainPress = () => {
+    // Implement the logic to explain the word using AI
+  }
   return (
     <View style={styles.headerContainer}>
-      <ThemedText style={styles.wordText}>{word}</ThemedText>
-      <Icon name="volume-up" size={20} style={styles.iconStyle} />
-      <Icon name="volume-up" size={20} style={styles.iconStyle} />
-      <ThemedText style={styles.translationText}>{translation}</ThemedText>
+      <View style={{ flexDirection: "row", justifyContent: 'space-between' }}>
+        <ThemedText type="xxlarge" style={{flex: 1}}>{word}</ThemedText>
+        <View style={{ flexDirection: "row", justifyContent: 'space-between' }}>
+          <Icon name="volume-up" size={26} style={styles.iconStyle} />
+          <Icon name="bookmark-outline" size={26} style={styles.iconStyle} />
+        </View>
+      </View>
+      <ThemedText style={styles.translationText}>{pronunciation} • {translation}</ThemedText>
+      <ThemedButton type="ghost" title="Let AI Explain" onPress={onExplainPress} type="primary" />
+      <ThemedText style={styles.contextText}>{context}</ThemedText>
+      <ThemedText style={styles.translatedContextText} variant="secondary">{translatedContext}</ThemedText>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
-  wordText: {
-    fontSize: Typography.fontSize.medium,
-    fontWeight: 'bold',
+  contextText: {
+    marginVertical: 4,
+    textAlign: 'left',
+    width: '100%'
+  },
+  translatedContextText: {
+    marginVertical: 4,
+    textAlign: 'left',
+    width: '100%'
   },
   translationText: {
-    fontSize: Typography.fontSize.small,
+    textAlign: 'left',
+    width: '100%'
   },
   iconStyle: {
     marginHorizontal: 5,
-    color: 'white', // Adjust based on theme if needed
+    color: "white", // Adjust based on theme if needed
   },
 });
