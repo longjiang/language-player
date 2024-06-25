@@ -10,7 +10,7 @@ export { ExternalLink } from './ExternalLink';
 export { HelloWave } from './HelloWave';
 export { LanguageIcon } from './LanguageIcon';
 export { MiniPlayer } from './MiniPlayer';
-export { PricingBlock } from './PricingBlock';
+// export { PricingBlock } from './PricingBlock'; // Circular dependency
 export { SavedWords } from './SavedWords';
 export { ShowCard } from './ShowCard';
 export { SubsSearch } from './SubsSearch';
