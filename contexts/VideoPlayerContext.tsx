@@ -8,6 +8,7 @@ type VideoPlayerState = {
 type VideoPlayerContextType = {
   videoPlayerState: VideoPlayerState;
   setVideoPlayerState: Dispatch<SetStateAction<VideoPlayerState>>;
+  closePlayer: () => void; // Assuming closePlayer is a function with no parameters and no return value
 };
 
 const initialVideoPlayerState: VideoPlayerState = {

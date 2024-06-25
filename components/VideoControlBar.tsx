@@ -15,7 +15,7 @@ import { ThemedView } from "./ThemedView";
 import { formatDuration } from "@/src/utils";
 import { ThemedRBSheet } from "./ThemedRBSheet";
 
-export const VideoControlBar = () => {
+export const VideoControlBar: React.FC = () => {
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const {

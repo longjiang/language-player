@@ -17,7 +17,6 @@ const getCollectionItems = async <T = GenericCollectionItem>(
   const url = `/items/${collectionName}${queryString ? `?${queryString}` : ""}`;
 
   const response: AxiosResponse<{ data: T[] }> = await API.get(url);
-  console.log(response.data.data);
   return response.data.data;
 };
 

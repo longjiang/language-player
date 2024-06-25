@@ -11,8 +11,8 @@ import { PLAYER_STATES } from "react-native-youtube-iframe";
 
 export const YouTubeVideo: React.FC<{
   youtubeId: string;
-  autoplay: boolean;
-  mute: boolean;
+  autoplay?: boolean;
+  mute?: boolean;
   startTime?: number;
   height?: number;
   controls?: boolean;

@@ -41,7 +41,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
     useVideoWithTranscriptContext();
   const { closePlayer } = useVideoPlayer();
 
-  function removeTextInBrackets(text) {
+  function removeTextInBrackets(text: string) {
     // Regular expression to match content inside various brackets
     const regex = /[\(\[\{［【｛].*?[\)\]\}］】｝]/g;
     return text.replace(regex, "");
@@ -85,7 +85,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
               controls={false}
               startTime={startTime}
             />
-            <VideoControlBar isMini={isMini} />
+            <VideoControlBar />
             <SyncedTranscript video={video} />
           </View>
         </View>
@@ -102,13 +102,13 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
           </View>
           <Link href={`/video/youtube/${video.youtube_id}`} style={{ marginLeft: 10, flex: 1 }}>
             <View style={styles.miniPlayerVideoInfo}>
-              <ThemedText
+              {video.title && <ThemedText
                 style={styles.miniPlayerVideoTitle}
                 numberOfLines={1}
                 type="defaultBold"
               >
                 {removeTextInBrackets(video.title)}
-              </ThemedText>
+              </ThemedText>}
               <ThemedText
                 style={styles.miniPlayerVideoSubTitle}
                 numberOfLines={1}
