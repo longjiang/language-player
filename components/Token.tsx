@@ -3,8 +3,10 @@ import { View, Text } from 'react-native';
 import { ThemedText } from './ThemedText'; // Assuming this is already defined
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Typography } from '@/constants/Typography';
+import { useDictionary } from '@/contexts/DictionaryContext';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
-export const Token = ({ token, textScale = 1, textWeight = 'regular' }) => {
+export const Token = ({ token, textScale = 1, textWeight = 'regular', context = '', translatedContext = '' }) => {
   const defaultFontSize = 16;
   const primaryTextColor = useThemeColor({}, 'primaryText');
   const fontFamily = textWeight === 'bold' ? Typography.fontFamilyBold : Typography.fontFamilyRegular;
@@ -12,27 +14,39 @@ export const Token = ({ token, textScale = 1, textWeight = 'regular' }) => {
   // Render pronunciation only if it is different from the word
   const renderPronunciation = token.pronunciation !== token.word;
 
+  const { dictionary, openModal, closeModal, updateToken, updateTranslation, updateContext, updateTranslatedContext } = useDictionary();
+
+  const handleTokenPress = () => {
+    updateToken(token);
+    updateTranslation('');
+    updateContext(context);
+    updateTranslatedContext(translatedContext);
+    openModal();
+  }
+
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'flex-end', padding: 5 }}>
-      {renderPronunciation && (
+    <TouchableOpacity onPress={handleTokenPress}>
+      <View style={{ alignItems: 'center', justifyContent: 'flex-end', padding: 5 }}>
+        {renderPronunciation && (
+          <Text style={{
+            fontFamily,
+            color: primaryTextColor,
+            fontSize: defaultFontSize * textScale * 0.618,
+            lineHeight: defaultFontSize * textScale * 0.618 * 1.14
+          }}>
+            {token.pronunciation}
+          </Text>
+        )}
         <Text style={{
           fontFamily,
           color: primaryTextColor,
-          fontSize: defaultFontSize * textScale * 0.618,
-          lineHeight: defaultFontSize * textScale * 0.618 * 1.14
+          fontSize: defaultFontSize * textScale,
+          lineHeight: defaultFontSize * textScale * 1.14
         }}>
-          {token.pronunciation}
+          {token.word}
         </Text>
-      )}
-      <Text style={{
-        fontFamily,
-        color: primaryTextColor,
-        fontSize: defaultFontSize * textScale,
-        lineHeight: defaultFontSize * textScale * 1.14
-      }}>
-        {token.word}
-      </Text>
-    </View>
+      </View>
+    </TouchableOpacity>
   );
 };
 

@@ -1,6 +1,6 @@
 export const Typography = {
   fontFamilyRegular: 'Nunito_400Regular',
-  fontFamilyBold: 'Nunito_700Bold',
+  fontFamilyBold: 'Nunito_800ExtraBold',
   fontSize: {
     xsmall: 12,
     small: 16,

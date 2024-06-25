@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -19,7 +19,7 @@ export const PopupDictionaryHeader = ({ word, pronunciation, translation, contex
         </View>
       </View>
       <ThemedText style={styles.translationText}>{pronunciation} • {translation}</ThemedText>
-      <ThemedButton type="ghost" style={{marginBottom: 26}}  title="Let AI Explain" onPress={onExplainPress} type="pro" leadingIcon={<Icon name="lightbulb-outline" size={20} style={styles.iconStyle} />} />
+      <ThemedButton type="ghost" style={{marginBottom: 26}}  title="Let ChatGPT Explain" onPress={onExplainPress} type="pro" leadingIcon={<Icon name="chat-outline" size={20} style={styles.iconStyle} />} />
       <View style={{flexDirection: 'row', alignItems: 'flex-start'}}>
         <View style={{flex: 1}}>
           <ThemedText style={styles.contextText}  type="large">{context}</ThemedText>

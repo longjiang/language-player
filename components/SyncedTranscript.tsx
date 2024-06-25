@@ -4,6 +4,7 @@ import Papa from 'papaparse';
 import { ThemedText } from './ThemedText';
 import { VideoWithTranscriptProvider, useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext"
 import { Line, SyncedLine } from '@/types';
+import { TokenizedText } from './TokenizedText';
 
 export const SyncedTranscript = ({video}) => {
   
@@ -11,8 +12,8 @@ export const SyncedTranscript = ({video}) => {
 
   return (
       <View style={styles.container}>
-        <ThemedText style={styles.subtitle} type="title">{currentLine?.l2Line}</ThemedText>
-        <ThemedText style={styles.subtitle} type="default" variant="secondary" >{currentLine?.l1Line}</ThemedText>
+        {currentLine?.l2Line && <TokenizedText text={currentLine?.l2Line} translation={currentLine?.l1Line} textScale={1.5} textWeight="bold" align='center' />}
+        {currentLine?.l1Line && <ThemedText style={styles.subtitle} type="default" variant="secondary" >{currentLine?.l1Line}</ThemedText>}
       </View>
   );
 };

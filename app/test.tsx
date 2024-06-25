@@ -38,14 +38,7 @@ function Test() {
     <GestureHandlerRootView>
       <SafeAreaView style={styles.fullscreen}>
         <ScrollView>
-          <PopupDictionaryHeader
-            word={wordData.word}
-            pronunciation={wordData.pronunciation}
-            translation={wordTranslation}
-            context={context}
-            translatedContext={translatedContext}
-          />
-          <PopupDictionaryContent wordData={wordData} />
+          <TokenizedText text="我吃不下睡不着" />
         </ScrollView>
       </SafeAreaView>
     </GestureHandlerRootView>

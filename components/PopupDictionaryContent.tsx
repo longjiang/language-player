@@ -8,16 +8,15 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 export const PopupDictionaryContent = ({
-  wordData,
-  context,
-  translatedContext,
+  token,
 }) => {
+  if (!token) return
   const { dictionary } = useDictionary();
   // Wait for the dictionary to load
   if (!dictionary) {
     return null;
   }
-  const dictionaryEntries = dictionary.findWordsInPhrase(wordData.word) || [];
+  const dictionaryEntries = dictionary.findWordsInPhrase(token.word) || [];
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
 
   const styles = StyleSheet.create({

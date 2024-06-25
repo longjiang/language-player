@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Token } from './Token';
 
-export const TokenizedText = ({ text, textScale, textWeight }) => {
+export const TokenizedText = ({ text, translation, textScale, textWeight, align = "left" }) => {
   const [tokens, setTokens] = useState([]);
 
   useEffect(() => {
@@ -20,9 +20,9 @@ export const TokenizedText = ({ text, textScale, textWeight }) => {
   }, [text]);
 
   return (
-    <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+    <View style={{flexDirection: 'row', flexWrap: 'wrap', justifyContent: align }}>
       {tokens.map((token, index) => (
-        <Token key={index} token={token} textScale={textScale} textWeight={textWeight} />
+        <Token key={index} token={token} textScale={textScale} textWeight={textWeight} context={text} translatedContext={translation} />
       ))}
     </View>
   );
