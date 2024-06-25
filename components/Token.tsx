@@ -26,8 +26,6 @@ export const Token = ({
   const modalRef = useRef();
 
   const handleTokenPress = () => {
-    console.log("Token pressed", token);
-    console.log("modalRef", modalRef);
     modalRef.current?.open();
   };
 

@@ -10,11 +10,9 @@ export const PopupDictionaryModal = forwardRef((state, ref) => {
     state = state.state // { token, context, translatedContext }
 
     const openModal = () => {
-      console.log("Opening modal", state, refRBSheet);
       refRBSheet.current?.open();
     }
     const closeModal = () => {
-      console.log("Closing modal", state, refRBSheet);
       refRBSheet.current?.close();
     }
 
