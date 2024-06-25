@@ -9,6 +9,19 @@ import CountryFlag from "react-native-country-flag";
 import { router } from "expo-router";
 import { YouTubeVideoList } from "@/components/YouTubeVideoList";
 import videoData from '@/data/recommended-videos.json'; // Importing the JSON data
+import { parseDuration } from '@/src/utils';
+import { YouTubeVideo } from '@/types';
+
+const normalizeVideoData = (data: any[]): YouTubeVideo[] => {
+  return data.map((video) => {
+    return {
+      ...video,
+      duration: parseDuration(video.duration),
+    };
+  });
+}
+
+const videos = normalizeVideoData(videoData);
 
 const MediaHomeScreen = () => {
   const videoHeight = 300;
@@ -65,7 +78,7 @@ const MediaHomeScreen = () => {
   );
 
   return (
-    <YouTubeVideoList videos={videoData} header={headerComponent} style={{ marginHorizontal: 26, marginBottom: 26 }} />
+    <YouTubeVideoList videos={videos} header={headerComponent} style={{ marginHorizontal: 26, marginBottom: 26 }} />
   );
 };
 

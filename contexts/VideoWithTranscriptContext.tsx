@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { YouTubeVideo, Line, SyncedLine } from "@/types";
 import { syncLines } from "@/src/subs";
+import { PLAYER_STATES } from "react-native-youtube-iframe";
 
-interface VideoWithTranscriptContextType {
+export interface VideoWithTranscriptContextType {
   video: YouTubeVideo;
   playlist: YouTubeVideo[];
-  playbackState: string;
+  playbackState: PLAYER_STATES;
   currentTime: number;
   seekTime?: number;
   playVideo: boolean;
@@ -38,9 +39,9 @@ const VideoWithTranscriptContext = createContext<VideoWithTranscriptContextType 
 
 
 
-const findSubtitle = (currentTime, syncedLines) => {
+const findSubtitle = (currentTime: number, syncedLines: SyncedLine[]) => {
   // Find the nearest subtitle
-  let nearestSubtitle = '';
+  let nearestSubtitle = null;
   for (let i = 0; i < syncedLines.length; i++) {
     if (currentTime >= syncedLines[i].starttime) {
       nearestSubtitle = syncedLines[i];
@@ -145,7 +146,7 @@ export const VideoWithTranscriptProvider: React.FC<{
   }
 
   const resetSeekTime = () => {
-    setSeekTime(null);
+    setSeekTime(0);
   };
 
   const seekTo = (time: number) => {

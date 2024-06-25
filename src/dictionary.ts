@@ -3,12 +3,27 @@ import Papa from 'papaparse';
 
 type DictionaryEntry = {
   id: string;
-  hskId: string;
+  hskId?: string; // Make the 'hskId' property optional
+  head: string; // Alias to `simplified`
+  pronunciation: string; // Alias to `pinyin`
   simplified: string;
   traditional: string;
   pinyin: string;
   definitions: string[];
 };
+
+
+interface RawEntry {
+  id?: string;
+  hskId?: string;
+  head?: string; // Alias to `simplified`
+  pronunciation?: string; // Alias to `pinyin`
+  simplified?: string;
+  traditional?: string | undefined; // Make the 'traditional' property optional
+  pinyin?: string;
+  definitions?: string;
+}
+
 
 class Dictionary {
   private index: Map<string, DictionaryEntry[]>;
@@ -19,12 +34,25 @@ class Dictionary {
     this.entries = new Map();
   }
 
+  private normalizeEntry(entry: RawEntry): DictionaryEntry {
+    return {
+      hskId: entry.hskId,
+      pinyin: entry.pinyin || '',
+      id: entry.id || '', // Add a default value for the 'id' property
+      head: entry.simplified || '',
+      pronunciation: entry.pinyin || '',
+      simplified: entry.simplified || '',
+      traditional: entry.traditional || '',
+      definitions: entry.definitions ? entry.definitions.split('/').map(def => def.trim()) : [],
+    };
+  }
+
   async loadData() {
     try {
       console.log('Dictionary: Loading data...');
       const response = await axios.get('https://server.chinesezerotohero.com/data/hsk-cedict/hsk_cedict.csv.txt');
       const parsedData = Papa.parse(response.data, { header: true });
-      parsedData.data = parsedData.data.map(this.normalizeEntry);
+      parsedData.data = parsedData.data.map((entry) => this.normalizeEntry(entry as RawEntry));
       this.entries.clear();
       this.index.clear();
       
@@ -33,15 +61,6 @@ class Dictionary {
     } catch (error) {
       console.error('Failed to load dictionary data:', error);
     }
-  }
-
-  private normalizeEntry(entry: DictionaryEntry): DictionaryEntry {
-    return {
-      ...entry,
-      head: entry.simplified,
-      pronunciation: entry.pinyin,
-      definitions: entry.definitions ? entry.definitions.split('/').map(def => def.trim()) : [],
-    };
   }
 
   private buildIndex(entries: DictionaryEntry[]): void {

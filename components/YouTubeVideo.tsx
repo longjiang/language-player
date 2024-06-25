@@ -1,69 +1,65 @@
 // @/components/YouTubeVideo.tsx
 
 import { useRef, useEffect, useCallback } from "react";
-import YoutubePlayer from "react-native-youtube-iframe";
-import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
+import YoutubePlayer, { YoutubeIframeRef } from "react-native-youtube-iframe";
+import { useVideoWithTranscriptContext, VideoWithTranscriptContextType } from "@/contexts/VideoWithTranscriptContext";
 import { View } from "react-native";
 import { ThemedText } from "./ThemedText";
+import { PLAYER_STATES } from "react-native-youtube-iframe";
 
-// Define a PlayerState string type with the following possible values:
-// unstarted - fired before the first video is loaded
-// video cue- next video cue
-// buffering - current video is in playing state but stopped for buffering
-// playing - current video is playing
-// paused	- current video is paused
-// ended - video has finished playing the video
-type PlayerState =
-  | "unstarted"
-  | "video cue"
-  | "buffering"
-  | "playing"
-  | "paused"
-  | "ended";
 
-export const YouTubeVideo = ({
+
+export const YouTubeVideo: React.FC<{
+  youtubeId: string;
+  autoplay: boolean;
+  mute: boolean;
+  startTime?: number;
+  height?: number;
+  controls?: boolean;
+}> = ({
   youtubeId,
-  autoplay,
-  mute,
+  autoplay = false,
+  mute = false,
   startTime = 0,
   height = 300,
   controls = true,
 }) => {
-  const playerRef = useRef();
-  let playbackState: PlayerState;
+  const playerRef = useRef<YoutubeIframeRef>(null); // Correctly type the ref with YoutubeIframeRef
+  let playbackState: PLAYER_STATES = PLAYER_STATES.UNSTARTED;
   let currentTime: number;
   let inVideoWithTranscriptProvider = false;
   let playVideo = autoplay;
+  let seekTime: number | undefined;
   let resetSeekTime: () => void;
-  let updatePlaybackState: (state: PlayerState) => void;
+  let updatePlaybackState: (state: PLAYER_STATES) => void;
   let updateCurrentTime: (time: number, isSeeking?: boolean) => void;
   let updateDuration: (duration: number) => void;
 
   // Determine if I'm in the VideoWithTranscriptProvider with try/catch
   // If in the provider, get the playbackState currentTime values, and the updatePlaybackState, and updateCurrentTime functions
   try {
-    ({
-      playbackState,
-      currentTime,
-      seekTime,
-      playVideo,
-      resetSeekTime,
-      updatePlaybackState,
-      updateCurrentTime,
-      updateDuration,
-    } = useVideoWithTranscriptContext());
+
+    const context = useVideoWithTranscriptContext();
+    playbackState = context.playbackState;
+    currentTime = context.currentTime;
+    resetSeekTime = context.resetSeekTime;
+    updatePlaybackState = context.updatePlaybackState;
+    updateCurrentTime = context.updateCurrentTime;
+    updateDuration = context.updateDuration;
+    playVideo = context.playVideo;
     inVideoWithTranscriptProvider = true;
+    seekTime = context.seekTime;
   } catch (error) {
     // not in the VideoWithTranscriptProvider
   }
 
-  const onChangeState = (newState: PlayerState) => {
+  const onChangeState = (newState: PLAYER_STATES) => {
     if (!inVideoWithTranscriptProvider) return;
     if (newState !== playbackState) updatePlaybackState(newState);
   };
 
   // Assuming playerRef and other state variables are defined here
-  const intervalRef = useRef(null); // To store the interval ID
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null); // To store the interval ID
 
   if (inVideoWithTranscriptProvider) {
     // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
@@ -79,7 +75,7 @@ export const YouTubeVideo = ({
         }
       }, 200);
       
-      if (seekTime && playerRef.current.seekTo) {
+      if (seekTime && playerRef.current?.seekTo) {
         // Only seek if the currentTime is different from the current time of the video by 100ms
 
         playerRef.current.seekTo(currentTime, true); // The second allowSeekAhead parameter determines whether the player will make a new request to the server if the seconds parameter specifies a time outside of the currently buffered video data.
@@ -123,7 +119,7 @@ export const YouTubeVideo = ({
       }}
       // Additional player options can be set here
       initialPlayerParams={{
-        start: parseInt(startTime), // Must be integer otherwise won't work
+        start: Math.floor(startTime), // Must be integer otherwise won't work
         cc_lang_pref: "us", // Closed captions language
         showClosedCaptions: true,
         controls, // Use the controls prop to toggle visibility

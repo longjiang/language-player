@@ -2,7 +2,13 @@ export interface YouTubeVideo {
   youtube_id: string; // The ID of the video on YouTube
   id?: string; // The ID in our own database
   title?: string;
-  subs_l2?: string; // The transcript of the video in the second language in CSV format
+  subs_l1?: Line[];
+  subs_l2?: Line[];
+  views?: number;
+  comments?: number;
+  likes?: number;
+  duration?: number; // Duration in seconds
+  locale?: string;
 }
 
 export interface VideoWithTranscriptProps {
@@ -10,13 +16,12 @@ export interface VideoWithTranscriptProps {
   video: YouTubeVideo;
 }
 
-
-interface Line {
+export interface Line {
   line: string;
-  starttime: string;
+  starttime: number;
 }
 
-interface SyncedLine {
+export interface SyncedLine {
   starttime: number;
   l1Line: string;
   l2Line: string;

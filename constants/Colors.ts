@@ -1,9 +1,26 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+import { Swatches } from './Swatches';
 
-import { Swatches } from './Swatches';  // Assuming Swatches are defined in the same file or imported appropriately
+const LevelColors = {
+  light: [
+    Swatches.warning[500],
+    '#1E7E94',
+    '#FA6234',
+    Swatches.alert[500],
+    '#FA6234',
+    Swatches.primary[400],
+    Swatches.success[600],
+  ],
+  dark: [
+    Swatches.warning[500],
+    '#1E7E94',
+    '#FA6234',
+    Swatches.alert[500],
+    '#FA6234',
+    Swatches.primary[400],
+    Swatches.success[600],
+  ]
+};
+
 
 export const Colors = {
   light: {
@@ -28,15 +45,6 @@ export const Colors = {
     secondaryStroke: Swatches.neutral[100],
     primaryLink: Swatches.primary[400],
     secondaryLink: Swatches.primary[700],
-    level: {
-      1: Swatches.warning[500],
-      2: '#1E7E94',
-      3: '#FA6234',
-      4: Swatches.alert[500],
-      5: '#FA6234',
-      6: Swatches.primary[400],
-      7: Swatches.success[600],
-    }
   },
   dark: {
     primaryText: Swatches.neutral[0],
@@ -60,16 +68,10 @@ export const Colors = {
     secondaryStroke: Swatches.neutral[400],
     primaryLink: Swatches.primary[300],
     secondaryLink: Swatches.primary[600],
-    level: {
-      1: Swatches.warning[500],
-      2: '#1E7E94',
-      3: '#FA6234',
-      4: Swatches.alert[500],
-      5: '#FA6234',
-      6: Swatches.primary[400],
-      7: Swatches.success[600],
-    }
   }
 };
+
+// Export Levels separately
+export { LevelColors };
 
 export default Colors;

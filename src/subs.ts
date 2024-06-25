@@ -1,7 +1,8 @@
 // @/src/subs.ts
 import Papa from 'papaparse';
+import { Line, SyncedLine } from '@/types';
 
-export const  parseSubtitles = (csvData) => {
+export const  parseSubtitles = (csvData: string) => {
   return Papa.parse(csvData, {
     header: true,
     dynamicTyping: true,
@@ -14,10 +15,8 @@ export const syncLines = (l1Lines: Line[], l2Lines: Line[]): SyncedLine[] => {
   l1Lines = Array.isArray(l1Lines) ? l1Lines : [];
   l2Lines = Array.isArray(l2Lines) ? l2Lines : [];
   // Convert starttime to numbers and sort both arrays
-  l1Lines = l1Lines.map(line => ({ ...line, starttime: parseFloat(line.starttime) }))
-                   .sort((a, b) => a.starttime - b.starttime);
-  l2Lines = l2Lines.map(line => ({ ...line, starttime: parseFloat(line.starttime) }))
-                   .sort((a, b) => a.starttime - b.starttime);
+  l1Lines = l1Lines.sort((a, b) => a.starttime - b.starttime);
+  l2Lines = l2Lines.sort((a, b) => a.starttime - b.starttime);
 
   const syncedLines: SyncedLine[] = [];
   const usedIndexes = new Set<number>(); // To track used l2Lines
@@ -52,7 +51,7 @@ export const syncLines = (l1Lines: Line[], l2Lines: Line[]): SyncedLine[] => {
     if (!usedIndexes.has(index)) {
       syncedLines.push({
         starttime: l2Line.starttime,
-        l1Line: null,
+        l1Line: '',
         l2Line: l2Line.line
       });
     }

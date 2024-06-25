@@ -17,7 +17,7 @@ import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptCon
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Swatches } from "@/constants/Swatches";
 import { ThemedText } from "./ThemedText";
-import { formatSeconds } from "@/src/utils";
+import { formatDuration } from "@/src/utils";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import {
   GestureHandlerRootView,
@@ -114,7 +114,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
                 numberOfLines={1}
                 type="small"
               >
-                {formatSeconds(currentTime)}
+                {formatDuration(currentTime)}
               </ThemedText>
             </View>
           </Link>

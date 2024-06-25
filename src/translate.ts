@@ -13,7 +13,7 @@ export const LANGS_WITH_AZURE_TRANSLATE = 'af am ar as az ba bg bn bo bs ca cs c
  * @param {string} params.l2Code Language code to translate from
  * @returns {Promise<string>} Translated text
  */
-export async function translateWithBing({ text, l1Code, l2Code }) {
+export const translateWithBing = async ({ text, l1Code, l2Code }: { text: string; l1Code: string; l2Code: string }): Promise<string> => {
   let initialDashes = '';
 
   // Handle texts starting with dashes to avoid API issues

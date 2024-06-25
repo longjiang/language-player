@@ -11,9 +11,9 @@ import { ThemedText } from "./ThemedText";
 import { router } from "expo-router";
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { formatDuration } from '@/src/utils';
+import { YouTubeVideo } from '@/types';
 
-export const YouTubeVideoCard = ({ video, style }) => {
-  const { showVideoPlayer, toggleMiniPlayer, hideVideoPlayer } = useVideoPlayer();
+export const YouTubeVideoCard = ({ video }: { video: YouTubeVideo; style?: object }) => {
 
 
   const handlePress = () => {
@@ -24,7 +24,7 @@ export const YouTubeVideoCard = ({ video, style }) => {
 
   return (
     <TouchableOpacity onPress={handlePress} style={{ flex: 1 }}>
-      <View style={[styles.card, style]}>
+      <View style={[styles.card]}>
         <Image
           source={{
             uri: `https://img.youtube.com/vi/${video.youtube_id}/0.jpg`,
@@ -47,6 +47,8 @@ export const YouTubeVideoCard = ({ video, style }) => {
 };
 
 const styles = StyleSheet.create({
+  details: {
+  },
   card: {
     overflow: "hidden",
     elevation: 3,

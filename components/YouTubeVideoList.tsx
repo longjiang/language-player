@@ -1,12 +1,19 @@
 import React from "react";
-import { FlatList, View, StyleSheet } from "react-native";
+import { FlatList, View, StyleSheet, ViewStyle } from "react-native";
 import { YouTubeVideoCard } from '@/components/YouTubeVideoCard';
 import { useThemeColor } from "@/hooks/useThemeColor";
 
-export const YouTubeVideoList = ({ videos, header, style = {} }) => {
+
+interface YouTubeVideoListProps {
+  videos: Array<any>;
+  header: React.ReactNode;
+  style?: ViewStyle;
+}
+
+export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({ videos, header, style = {} }) => {
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
-  const renderVideoCard = ({ item, index }) => (
+  const renderVideoCard = ({ item, index }: { item: any, index: number }) => (
     <View style={style}>
       <YouTubeVideoCard key={index} video={item} />
     </View>
@@ -15,7 +22,6 @@ export const YouTubeVideoList = ({ videos, header, style = {} }) => {
   return (
     <FlatList
       style={{ backgroundColor: primaryBackgroundColor }}
-      ListHeaderComponent={header}
       data={videos}
       renderItem={renderVideoCard}
       keyExtractor={(item, index) => index.toString()}
