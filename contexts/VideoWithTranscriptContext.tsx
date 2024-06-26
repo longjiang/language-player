@@ -18,7 +18,7 @@ export interface VideoWithTranscriptContextType {
   startTime: number;
   updateDuration: (duration: number) => void;
   updatePlayVideo: (newVal: boolean) => void;
-  updatePlaybackState: (state: string) => void;
+  updatePlaybackState: (state: PLAYER_STATES) => void;
   updateCurrentTime: (time: number, seekTime?: boolean) => void;
   updateFullscreen: (state: boolean) => void;
   updateStartTime: (time: number) => void;
@@ -74,7 +74,7 @@ export const VideoWithTranscriptProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ initialVideo, initialPlaylist, children }) => {
   initialPlaylist = initialPlaylist || [initialVideo];
-  const [playbackState, setPlaybackState] = useState("stopped");
+  const [playbackState, setPlaybackState] = useState(PLAYER_STATES.UNSTARTED);
   const [currentTime, setCurrentTime] = useState(0);
   const [seekTime, setSeekTime] = useState(0);
   const [playVideo, setPlayVideo] = useState(false);
@@ -93,7 +93,7 @@ export const VideoWithTranscriptProvider: React.FC<{
       const newVideo = playlist[currentVideoIndex];
       if (!newVideo) return
       setVideo(newVideo);
-      setPlaybackState("stopped");
+      setPlaybackState(PLAYER_STATES.UNSTARTED);
       setCurrentTime(0);
       // Sync subtitles when video changes
       if (newVideo.subs_l1 && newVideo.subs_l2) {
@@ -125,7 +125,7 @@ export const VideoWithTranscriptProvider: React.FC<{
     }
   }, [currentTime]);
 
-  const updatePlaybackState = (state: string) => {
+  const updatePlaybackState = (state: PLAYER_STATES) => {
     setPlaybackState(state);
   };
 

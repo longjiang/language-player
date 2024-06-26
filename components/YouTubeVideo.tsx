@@ -69,7 +69,7 @@ export const YouTubeVideo: React.FC<{
         if (!playerRef.current) return;
         if (!inVideoWithTranscriptProvider) return;
         const newTime = await playerRef.current.getCurrentTime();
-        if (playbackState === "playing" && newTime !== currentTime) {
+        if (playbackState === PLAYER_STATES.PLAYING && newTime !== currentTime) {
           // console.log("NT ", newTime);
           updateCurrentTime(newTime); // Use newTime to reflect the updated value
         }

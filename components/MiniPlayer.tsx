@@ -12,10 +12,10 @@ export const MiniPlayer = () => {
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
-  const { video, closePlayer, videoPlayerState } = useVideoPlayer();
-  // Only render the component if youtubeId is truthy and isMini is true
-  if (!videoPlayerState.youtubeId || !videoPlayerState.isMini) {
-    return null; // Or any other fallback UI
+  const { videoPlayerState } = useVideoPlayer();
+  // Only render the component if video is loaded in context and isMini is true
+  if (!videoPlayerState.video || !videoPlayerState.isMini) {
+    return null;
   }
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -25,7 +25,7 @@ export const MiniPlayer = () => {
           { backgroundColor: primaryBrandColor },
         ]}
       >
-        <VideoWithTranscriptProvider initialVideo={videoPlayerState.video}>
+        <VideoWithTranscriptProvider initialVideo={videoPlayerState.video} initialPlaylist={[videoPlayerState.video]}>
           <VideoWithTranscript isMini={true} />
         </VideoWithTranscriptProvider>
       </View>
