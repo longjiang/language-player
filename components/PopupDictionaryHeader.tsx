@@ -35,7 +35,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
         <Translate l1Code="en" l2Code="zh" text={token.word} />
       </Text>
       <ThemedButton
-        type="ghost"
+        type="pro"
         style={{ marginBottom: 26 }}
         title="Let ChatGPT Explain"
         onPress={onExplainPress}

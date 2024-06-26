@@ -37,7 +37,7 @@ export const SavedWords = () => {
   const renderItem = ({ item }: { item: { id: string, head: string, pronunciation: string, definitions: string[] } }) => (
     <View style={styles.item}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <ThemedButton type="ghost" size="small" style={{ marginRight: 10 }} textColor={bookmarkColor} trailingIcon={<Ionicons name="bookmark" size={24}  />} />
+        <ThemedButton type="ghost" size="small" style={{ marginRight: 10, color: bookmarkColor }} trailingIcon={<Ionicons name="bookmark" size={24}  />} />
         <TouchableOpacity onPress={() => router.navigate('/dictionary/word/' + item.id)}>
           <Text>
             <ThemedText style={styles.chinese} type="subtitle">{item.head}</ThemedText>

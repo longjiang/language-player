@@ -60,7 +60,7 @@ const LanguageProgressScreen = () => {
           type="accent"
           style={styles.button}
           onPress={() => {
-            router.navigate("/logout");
+            router.navigate("/login");
           }}
         />
       </View>

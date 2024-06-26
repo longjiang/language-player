@@ -45,7 +45,7 @@ const AccountScreen = () => {
         style={styles.button}
         type="ghost"
         onPress={() => {
-          router.navigate("/logout");
+          router.navigate("/login");
         }}
       />
 
