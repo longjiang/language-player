@@ -78,7 +78,7 @@ const YouTubeVideoScreen = () => {
       
       // Set the video in the context to match youtubeId in the param
       if (!youtubeIdFromParams) return;
-      if (videoPlayerState.video.youtube_id !== youtubeIdFromParams) {
+      if (videoPlayerState?.video?.youtube_id !== youtubeIdFromParams) {
         setVideoPlayerState((prev) => ({
           ...prev,
           video: {
