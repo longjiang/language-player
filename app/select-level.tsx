@@ -6,6 +6,8 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { ThemedText } from "@/components/ThemedText";
+import { LevelColors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
 const levels = [
   { level: 1, title: "HSK 1", label: "Beginner (HSK 1)" },
@@ -19,27 +21,31 @@ const levels = [
 
 
 const SelectLevelScreen = () => {
-  const onSelect = (level) => {
+  const onSelect = (level: number) => {
     router.navigate("/(tabs)/(media)");
   };
-  const levelColors = useThemeColor({}, 'level'); 
+  
+  const colorScheme = useColorScheme();
 
   return (
     <ThemedScreen
       title="What's your current Chinese level?"
       onBackPress={() => router.navigate("/select-l1")}
     >
-      {levels.map(({ level, label }) => (
-        <ThemedButton
-          key={level}
-          title={label}
-          leadingIcon={<Icon name="circle" style={{ color: levelColors[level] }} />}
-          trailingIcon={<Icon name="chevron-right" />}
-          onPress={() => onSelect(level)}
-          type="accent"
-          style={[styles.item]}
-        />
-      ))}
+      {levels.map(({ level, label }) => 
+        {
+          const levelColor = LevelColors[colorScheme || 'light'][level]
+          return <ThemedButton
+            key={level}
+            title={label}
+            leadingIcon={<Icon name="circle" style={{ color: levelColor }} />}
+            trailingIcon={<Icon name="chevron-right" />}
+            onPress={() => onSelect(level)}
+            type="accent"
+            style={[styles.item]}
+          />
+        }
+      )}
       <ThemedText style={{ marginTop: 20, textAlign: "center" }}  >
         “HSK” is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.
       </ThemedText>

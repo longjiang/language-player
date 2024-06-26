@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, SafeAreaProvider, SafeAreaView, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, SafeAreaView, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedButton } from '@/components/ThemedButton';

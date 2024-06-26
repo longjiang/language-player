@@ -6,6 +6,8 @@ import { useThemeColor } from "@/hooks/useThemeColor";  // Assuming the hook is 
 // Define the types for the props of the ThemedRBSheet
 interface ThemedRBSheetProps {
   children?: ReactNode;
+  height?: number;
+  closeOnPressMask?: boolean;
   customStyles?: {
     wrapper?: ViewStyle;
     draggableIcon?: ViewStyle;

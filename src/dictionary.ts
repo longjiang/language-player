@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Papa from 'papaparse';
 
-type DictionaryEntry = {
+export interface DictionaryEntry {
   id: string;
   hskId?: string; // Make the 'hskId' property optional
   head: string; // Alias to `simplified`

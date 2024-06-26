@@ -6,8 +6,15 @@ import { Typography } from "@/constants/Typography";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { PopupDictionaryModal } from "./PopupDictionaryModal";
+import { Token as TokenType } from "@/types/tokenTypes";
 
-export const Token = ({
+export const Token: React.FC<{
+  token: TokenType,
+  textScale?: number,
+  textWeight?: "regular" | "bold",
+  context?: string,
+  translatedContext?: string,
+}> = ({
   token,
   textScale = 1,
   textWeight = "regular",

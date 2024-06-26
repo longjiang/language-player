@@ -2,7 +2,10 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 
-export const ThemedSwitch = ({ isEnabled, toggleSwitch }) => {
+export const ThemedSwitch: React.FC<{
+  isEnabled: boolean;
+  toggleSwitch: () => void;
+}> = ({ isEnabled, toggleSwitch }) => {
   // Retrieve theme colors
   const primaryBrandColor = useThemeColor({}, 'primaryBrand');
   const secondaryBackgroundColor = useThemeColor({}, 'secondaryBackground');
@@ -43,6 +46,5 @@ const styles = StyleSheet.create({
     width: 16,
     borderRadius: 8,
     borderWidth: 1, // Added border width
-    transition: 'all 0.3s ease', // Note: Transition is for web. React Native doesn't support this out of the box.
   },
 });

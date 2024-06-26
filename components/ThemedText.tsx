@@ -6,7 +6,7 @@ import { useFonts, Nunito_400Regular, Nunito_800ExtraBold } from '@expo-google-f
 
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Typography } from '@/constants/Typography';
-import { Colors } from '@/constants/Colors';
+import { LevelColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export type ThemedTextProps = TextProps & {
@@ -39,7 +39,7 @@ export function ThemedText({
 
   const determineFontColor = () => {
     if (level) {
-      const levelColor = Colors[colorScheme].level[level]
+      const levelColor = LevelColors[colorScheme || 'light'][level]
       return levelColor || primaryTextColor;
     }
 

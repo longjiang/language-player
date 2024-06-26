@@ -1,11 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactElement } from 'react';
 import { View, StyleSheet, TouchableOpacity, FlatList, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-export const ThemedSearchableSelect = ({
+type Option = {
+  value: string;
+  label: string;
+};
+
+type ThemedSearchableSelectProps = {
+  options: Option[];
+  onSelect: (value: string) => void;
+  placeholder: string;
+  style?: object;
+  renderItem?: (info: { item: Option }) => ReactElement;
+  initialValue?: Option;
+};
+
+export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
   options,
   onSelect,
   placeholder,
@@ -15,37 +29,31 @@ export const ThemedSearchableSelect = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLabel, setSelectedLabel] = useState(initialValue?.label || ''); // Initialize with initialValue label
+  const [selectedLabel, setSelectedLabel] = useState(initialValue?.label || '');
   const borderColor = useThemeColor({}, 'secondaryStroke');
   const backgroundColor = useThemeColor({}, 'secondaryBackground');
   const inputColor = useThemeColor({}, 'primaryBackground');
   const textColor = useThemeColor({}, 'primaryText');
   const placeholderTextColor = useThemeColor({}, 'secondaryText');
 
-  // Update selectedLabel when initialValue changes
   useEffect(() => {
     if (initialValue) {
-      const initialItem = options.find(option => option.value == initialValue)
-
+      const initialItem = options.find(option => option.value === initialValue.value);
       if (initialItem) setSelectedLabel(initialItem.label);
     }
-  }, [initialValue]);
+  }, [initialValue, options]);
 
   const filteredOptions = options.filter(option => option.label.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const handleSelect = (value, label) => {
+  const handleSelect = (value: string, label: string) => {
     onSelect(value);
-    setSelectedLabel(label); // Update the input field with the selected label
-    setIsOpen(false); // Close the dropdown when an item is selected
+    setSelectedLabel(label);
+    setIsOpen(false);
   };
 
-  const renderItemWrapper = ({ item }) => {
+  const renderItemWrapper = ({ item }: { item: Option }) => {
     const itemPress = () => handleSelect(item.value, item.label);
-    if (customRenderItem) {
-      // Pass all necessary props to the custom renderItem, along with the modified onPress
-      return React.cloneElement(customRenderItem({ item }), { onPress: itemPress });
-    }
-    return (
+    return customRenderItem ? React.cloneElement(customRenderItem({ item }), { onPress: itemPress }) : (
       <TouchableOpacity style={styles.item} onPress={itemPress}>
         <ThemedText style={{ color: textColor }}>{item.label}</ThemedText>
       </TouchableOpacity>
@@ -105,7 +113,7 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 8,
     borderRadius: 8,
-    overflow: 'hidden', // Ensures that the content is clipped to the bounds of the list
+    overflow: 'hidden',
   },
   item: {
     padding: 10,

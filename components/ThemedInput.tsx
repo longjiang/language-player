@@ -1,16 +1,30 @@
 // @/components/ThemedInput.tsx
 import React from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Typography } from '@/constants/Typography';
 
-export const ThemedInput = ({
+// Define the type for the props of ThemedInput component
+interface ThemedInputProps {
+  placeholder: string;
+  size?: 'small' | 'medium';
+  icon?: string;
+  iconOnPress?: () => void;
+  style?: ViewStyle;
+  value?: string;
+  onChangeText?: (text: string) => void;
+  onSubmitEditing?: () => void;
+}
+
+export const ThemedInput: React.FC<ThemedInputProps> = ({
   placeholder,
   size = 'medium',
   icon,
   iconOnPress,
   style,
+  value,
+  onChangeText,
   onSubmitEditing,
   ...rest
 }) => {
@@ -25,13 +39,13 @@ export const ThemedInput = ({
       <TextInput
         style={[styles.input, {color: useThemeColor({}, 'primaryText'), width: '100%'}]}
         placeholder={placeholder}
-        placeholderTextColor={ placeholderTextColor }
+        placeholderTextColor={placeholderTextColor}
         onSubmitEditing={onSubmitEditing}
         {...rest}
       />
       {icon && (
         <TouchableOpacity onPress={iconOnPress} style={styles.icon}>
-          <Icon name={icon} size={iconSize} color={ placeholderTextColor } onPress={onSubmitEditing} />
+          <Icon name={icon} size={iconSize} color={placeholderTextColor} onPress={onSubmitEditing} />
         </TouchableOpacity>
       )}
     </View>
@@ -56,5 +70,8 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: Typography.fontSize.small,
+  },
+  icon: {
+    padding: 10,
   },
 });

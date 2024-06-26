@@ -1,35 +1,55 @@
 import React from "react";
 import { View, StyleSheet, Text } from "react-native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Typography } from "@/constants/Typography";
 import { Translate } from "@/components/Translate";
+import { Token } from "@/types/tokenTypes";
 
-export const PopupDictionaryHeader = ({ token, context, translatedContext }) => {
+interface PopupDictionaryHeaderProps {
+  token: Token;
+  context?: string;
+  translatedContext?: string;
+}
+
+export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
+  token,
+  context,
+  translatedContext,
+}) => {
   const onExplainPress = () => {
     // Implement the logic to explain the word using AI
-  }
+  };
+
   return (
     <View style={styles.headerContainer}>
-      <View style={{ flexDirection: "row", justifyContent: 'space-between' }}>
-        <ThemedText type="xxlarge" style={{flex: 1}}>{token.word}</ThemedText>
-        <View style={{ flexDirection: "row", justifyContent: 'space-between' }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <ThemedText type="xxlarge" style={{ flex: 1 }}>{token.word}</ThemedText>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Icon name="volume-high" size={26} style={styles.iconStyle} />
           <Icon name="bookmark-outline" size={26} style={styles.iconStyle} />
         </View>
       </View>
-      <Text style={styles.translationText}><ThemedText>{token.pronunciation} • </ThemedText><Translate l1Code="en" l2Code="zh" text={token.word} /></Text>
-      <ThemedButton type="ghost" style={{marginBottom: 26}}  title="Let ChatGPT Explain" onPress={onExplainPress} type="pro" leadingIcon={<Icon name="chat-outline" size={20} style={styles.iconStyle} />} />
-      <View style={{flexDirection: 'row', alignItems: 'flex-start'}}>
-        <View style={{flex: 1}}>
-          <ThemedText style={styles.contextText}  type="large">{context}</ThemedText>
+      <Text style={styles.translationText}>
+        <ThemedText>{token.pronunciation} • </ThemedText>
+        <Translate l1Code="en" l2Code="zh" text={token.word} />
+      </Text>
+      <ThemedButton
+        type="ghost"
+        style={{ marginBottom: 26 }}
+        title="Let ChatGPT Explain"
+        onPress={onExplainPress}
+        leadingIcon={<Icon name="chat-outline" size={20} style={styles.iconStyle} />}
+      />
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+        <View style={{ flex: 1 }}>
+          <ThemedText style={styles.contextText} type="large">{context}</ThemedText>
           <ThemedText style={styles.translatedContextText} variant="secondary">{translatedContext}</ThemedText>
         </View>
         <ThemedButton
-            type="ghost"
-            trailingIcon={<Icon name="dots-vertical" size={20} />}
-          />
+          type="ghost"
+          trailingIcon={<Icon name="dots-vertical" size={20} />}
+        />
       </View>
     </View>
   );

@@ -6,8 +6,12 @@ import { Typography } from "@/constants/Typography";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { Token } from "@/types/tokenTypes";
+import { DictionaryEntry } from "@/src/dictionary";
 
-export const PopupDictionaryContent = ({
+export const PopupDictionaryContent: React.FC<{
+  token: Token;
+}> = ({
   token,
 }) => {
   if (!token) return
@@ -37,7 +41,7 @@ export const PopupDictionaryContent = ({
 
   return (
     <View style={styles.container}>
-      {dictionaryEntries.map((entry, index) => (
+      {dictionaryEntries.map((entry: DictionaryEntry, index: number) => (
         <View key={index} style={styles.entryContainer}>
           <ThemedText
             style={[styles.entryText]}
