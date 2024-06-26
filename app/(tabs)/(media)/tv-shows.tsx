@@ -5,7 +5,7 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import { getCollectionItems, buildFilterQueryParams } from "@/src/api/directus";
+import { getCollectionItems } from "@/src/api/directus";
 import { ThemedInput } from "@/components/ThemedInput";
 import { ThemedText } from "@/components/ThemedText";
 import { YouTubeVideoCard } from "@/components/YouTubeVideoCard";
@@ -14,11 +14,11 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { ShowCard } from "@/components/ShowCard";
+import { ShowCard, Show } from "@/components/ShowCard";
 
 
 const TVShowsScreen = () => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<Show[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
@@ -29,7 +29,7 @@ const TVShowsScreen = () => {
     loadItems();
   }, []);
 
-  const handleInputChange = (text) => {
+  const handleInputChange = (text: string) => {
     setSearchQuery(text);
   };
 
@@ -45,7 +45,7 @@ const TVShowsScreen = () => {
       const tvShows = await getCollectionItems("tv_shows", {
         filter: { l2: { eq: 7731 } }, // 7731 is Chinese
       });
-      setItems(tvShows);
+      setItems(tvShows as Show[]);
     } catch (error) {
       console.error("Failed to load items:", error);
     }
@@ -99,7 +99,7 @@ const TVShowsScreen = () => {
             renderItem={({ item }) => (
               <ShowCard show={item} style={{ marginBottom: 26 }} />
             )}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.id.toString()}
           />
           {isLoading && (
             <View style={styles.spinnerContainer}>

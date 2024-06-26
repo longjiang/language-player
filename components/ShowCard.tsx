@@ -13,6 +13,7 @@ import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { formatDuration } from "@/src/utils";
 
 export interface Show {
+  id: number;
   youtube_id: string;
   title: string;
   avg_views: number;

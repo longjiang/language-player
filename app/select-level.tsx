@@ -42,7 +42,7 @@ const SelectLevelScreen = () => {
             trailingIcon={<Icon name="chevron-right" />}
             onPress={() => onSelect(level)}
             type="accent"
-            style={[styles.item]}
+            style={styles.item}
           />
         }
       )}

@@ -158,7 +158,7 @@ export function ThemedButton({
           {title && (
             <ThemedText
               type="title"
-              style={{ fontSize: stylesBasedOnSize[size].fontSize }}
+              style={{ fontSize: stylesBasedOnSize[size].fontSize, color: style?.color || mergedViewStyle.color }}
             >
               {title}
             </ThemedText>

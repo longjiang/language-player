@@ -5,7 +5,6 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import { getCollectionItems, buildFilterQueryParams } from "@/src/api/directus";
 import { ThemedInput } from "@/components/ThemedInput";
 import { ThemedText } from "@/components/ThemedText";
 import { YouTubeVideoCard } from "@/components/YouTubeVideoCard";
@@ -16,10 +15,11 @@ import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { DictionaryComponent } from "@/components/DictionaryComponent";
+import { DictionaryEntry } from "@/src/dictionary";
 
 
 const DictionaryScreen = () => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<DictionaryEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
@@ -35,7 +35,7 @@ const DictionaryScreen = () => {
     }
   }, []);
 
-  const handleInputChange = (text) => {
+  const handleInputChange = (text: string) => {
     setSearchQuery(text);
   };
 
@@ -47,6 +47,7 @@ const DictionaryScreen = () => {
   const loadItems = async () => {
     setItems([]); // Clear items
     setIsLoading(true); // Start loading
+    if (!dictionary) return;
     // console.log('Screen - Searching for:', searchQuery);
     dictionary.search(searchQuery).then((results) => {
       setItems(results);
@@ -99,14 +100,6 @@ const DictionaryScreen = () => {
               />
             </View>
           </View>
-          <FlatList
-            data={items}
-            renderItem={({ item }) => (
-              <YouTubeVideoCard video={item} style={{ marginBottom: 20 }} />
-            )}
-            style={{ padding: 26 }}
-            keyExtractor={(item) => item.id}
-          />
           {isLoading && (
             <View style={styles.spinnerContainer}>
               <ActivityIndicator size="large" color={primaryBrandColor} />

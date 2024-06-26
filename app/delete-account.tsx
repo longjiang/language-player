@@ -10,7 +10,7 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 const AccountScreen = () => {
   const [code, setCode] = useState("");
 
-  const onSelect = (value) => {
+  const onSelect = (value: string) => {
     console.log("Selected:", value);
   };
 
@@ -25,7 +25,6 @@ const AccountScreen = () => {
       }}
     >
       <ThemedText
-        style={styles.sheetText}
         type="subtitle"
         style={{ marginBottom: 26 }}
       >
@@ -35,7 +34,6 @@ const AccountScreen = () => {
       <ThemedButton
         title="Keep Account"
         type="accent"
-        onPress={() => refRBSheet.current.close()}
         style={{
           marginBottom: 10,
         }}
@@ -43,10 +41,6 @@ const AccountScreen = () => {
       <ThemedButton
         title="Confirm Deletion"
         type="primary"
-        onPress={() => {
-          console.log("Subscription cancelled");
-          refRBSheet.current.close();
-        }}
         style={{
           backgroundColor: semanticErrorColor,
         }}

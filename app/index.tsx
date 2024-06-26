@@ -17,7 +17,7 @@ const Index = () => {
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -30}}
     >
-      <View style={styles.contentContainer}>
+      <View>
         <ThemedText style={styles.description}>
           Discover the power of Comprehensible Input through hundreds of
           thousands of videos in over 100 languages.

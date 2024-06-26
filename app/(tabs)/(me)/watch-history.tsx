@@ -11,7 +11,7 @@ import videoData from '@/data/recommended-videos.json'; // Importing the JSON da
 const WatchHistoryScreen = () => {
   const [code, setCode] = useState("");
 
-  const onSelect = (value) => {
+  const onSelect = (value: string) => {
     console.log('Selected:', value);
   }
 

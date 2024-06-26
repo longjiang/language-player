@@ -10,7 +10,10 @@ type VideoPlayerState = {
 type VideoPlayerContextType = {
   videoPlayerState: VideoPlayerState;
   setVideoPlayerState: Dispatch<SetStateAction<VideoPlayerState>>;
-  closePlayer: () => void; // Assuming closePlayer is a function with no parameters and no return value
+  setYouTubeId: (youtubeId: string) => void;
+  closePlayer: () => void;
+  minimizePlayer: () => void;
+  maximizePlayer:  () => void;
 };
 
 const initialVideoPlayerState: VideoPlayerState = {
@@ -21,10 +24,21 @@ const initialVideoPlayerState: VideoPlayerState = {
 
 const VideoPlayerContext = createContext<VideoPlayerContextType>({
   videoPlayerState: initialVideoPlayerState,
-  setVideoPlayerState: () => { }, // Initial stub
+  setVideoPlayerState: function (): void {
+    throw new Error('Function not implemented.');
+  },
   closePlayer: function (): void {
     throw new Error('Function not implemented.');
-  }
+  },
+  minimizePlayer: function (): void {
+    throw new Error('Function not implemented.');
+  },
+  maximizePlayer: function (): void {
+    throw new Error('Function not implemented.');
+  },
+  setYouTubeId: function (youtubeId: string): void {
+    throw new Error('Function not implemented.');
+  },
 });
 
 export const useVideoPlayer = () => useContext(VideoPlayerContext);

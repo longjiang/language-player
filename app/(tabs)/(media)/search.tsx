@@ -5,7 +5,7 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import { getCollectionItems, buildFilterQueryParams } from "@/src/api/directus";
+import { getCollectionItems } from "@/src/api/directus";
 import { ThemedInput } from "@/components/ThemedInput";
 import { ThemedText } from "@/components/ThemedText";
 import { YouTubeVideoCard } from "@/components/YouTubeVideoCard";
@@ -14,10 +14,12 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { YouTubeVideo } from "@/types/videoTypes";
+import { normalizeVideoData } from "@/src/directus-video";
 
 
 const SearchScreen = () => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<YouTubeVideo[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
@@ -31,7 +33,7 @@ const SearchScreen = () => {
     }
   }, []);
 
-  const handleInputChange = (text) => {
+  const handleInputChange = (text: string) => {
     setSearchQuery(text);
   };
 
@@ -48,7 +50,7 @@ const SearchScreen = () => {
         filter: { title: { contains: searchQuery } },
         fields: 'id,l2,title,youtube_id,tv_show,talk,date,lex_div,word_freq,difficulty,views,tags,category,locale,duration,made_for_kids,views,likes,comments,type'
       });
-      setItems(data.data);
+      if (data) setItems(data.map(item => normalizeVideoData(item)));
     } catch (error) {
       console.error("Failed to load items:", error);
     }
@@ -115,7 +117,7 @@ const SearchScreen = () => {
               <YouTubeVideoCard video={item} style={{ marginBottom: 20 }} />
             )}
             style={{ padding: 26 }}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item, index) => item.youtube_id}
           />
           {isLoading && (
             <View style={styles.spinnerContainer}>

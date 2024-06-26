@@ -13,13 +13,13 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { Linking } from 'react-native';
 
 const GoProScreen = () => {
-  const [paymentError, setPaymentError] = React.useState(true);
-  const [selectedPlan, setSelectedPlan] = React.useState(null);
+  const [paymentError, setPaymentError] = React.useState<boolean>(true);
+  const [selectedPlan, setSelectedPlan] = React.useState<string | null>(null);
 
-  const onSelect = (value) => {
+  const onSelect = (value: string) => {
     console.log("Selected:", value);
     setSelectedPlan(value);
-    refRBSheet.current.open(); // Open the ThemedRBSheet
+    if (refRBSheet.current) refRBSheet.current.open(); // Open the ThemedRBSheet
   };
 
   const refRBSheet = useRef();
@@ -123,7 +123,7 @@ const GoProScreen = () => {
 
   const Failure = () => (
     <View>
-      <Icon name="alert-outline" size={67} color={semanticWarningColor} style={styles.icon} style={{alignSelf: 'center', marginBottom: 26}} />
+      <Icon name="alert-outline" size={67} color={semanticWarningColor} style={{alignSelf: 'center', marginBottom: 26}} />
       <ThemedText type="subtitle" style={{marginBottom: 26, textAlign: 'center'}}>There was a problem with your payment.</ThemedText>
       <ThemedText style={{marginBottom: 26, textAlign: 'center'}}>
         If you have encountered issues, please contact support.

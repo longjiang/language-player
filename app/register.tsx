@@ -26,13 +26,13 @@ const RegisterScreen = () => {
 
             <View style={styles.row}>
                 <ThemedInput
-                    style={[styles.input, styles.flex1]}
+                    style={{...styles.input, flex: 1}}
                     onChangeText={setFirstName}
                     value={firstName}
                     placeholder="First"
                 />
                 <ThemedInput
-                    style={[styles.input, styles.flex1]}
+                    style={{...styles.input, flex: 1}}
                     onChangeText={setLastName}
                     value={lastName}
                     placeholder="Last"
@@ -106,9 +106,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         columnGap: 10,
-    },
-    flex1: {
-        flex: 1,
     },
     // Make sure to adjust or add other styles as necessary
 });

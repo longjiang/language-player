@@ -8,13 +8,7 @@ import { PricingBlock } from "@/components/PricingBlock";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 const AccountScreen = () => {
-  const [code, setCode] = useState("");
-
-  const onSelect = (value) => {
-    console.log('Selected:', value);
-  }
-
-  const secondaryTextColor = useThemeColor({}, 'secondaryText');
+  const secondaryTextColor = useThemeColor({}, "secondaryText");
 
   return (
     <ThemedScreen
@@ -25,10 +19,13 @@ const AccountScreen = () => {
         router.back();
       }}
     >
-      <ThemedText style={{ alignSelf: 'center', marginTop: 16 }} type="xxlarge">
+      <ThemedText style={{ alignSelf: "center", marginTop: 16 }} type="xxlarge">
         Tim Burton
       </ThemedText>
-      <ThemedText style={{ alignSelf: 'center', marginBottom: 32+16 }} variant="secondary">
+      <ThemedText
+        style={{ alignSelf: "center", marginBottom: 32 + 16 }}
+        variant="secondary"
+      >
         tim.burton@example.com
       </ThemedText>
       <PricingBlock
@@ -36,9 +33,8 @@ const AccountScreen = () => {
         duration="Auto renews in 5 months 10 days."
         current
         showButtons
-        onPress={() => onSelect('Yearly plan')}
       />
-      
+
       <ThemedButton
         title="Logout"
         leadingIcon={<Icon name="logout" size={20} />}
@@ -57,7 +53,7 @@ const AccountScreen = () => {
           onPress={() => {
             router.navigate("/delete-account");
           }}
-          textColor={secondaryTextColor}
+          style={{ color: secondaryTextColor }}
         />
         <ThemedButton
           title="Privacy Policy"
@@ -66,10 +62,9 @@ const AccountScreen = () => {
           onPress={() => {
             router.navigate("/privacy-policy");
           }}
-          textColor={secondaryTextColor}
+          style={{ color: secondaryTextColor }}
         />
       </View>
-      
     </ThemedScreen>
   );
 };
@@ -83,8 +78,8 @@ const styles = StyleSheet.create({
     marginBottom: 110,
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: 16, // Add padding to the sides if needed
     marginTop: 16, // Add top margin to separate from the content above
   },

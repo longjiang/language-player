@@ -23,7 +23,7 @@ const AcquisitionSurveyScreen = () => {
     "Other",
   ];
 
-  const handleSelectOption = (option) => {
+  const handleSelectOption = (option: string) => {
     setSelectedOption(option);
     if (option !== "Other") setOtherText("");
   };
