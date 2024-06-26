@@ -60,6 +60,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
               <View>
                 <ThemedButton
                   type="ghost"
+                  style={styles.headerButton}
                   trailingIcon={<Icon name="chevron-down" />}
                   onPress={() => router.push("../")}
                 />
@@ -67,11 +68,13 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
               <View style={{ flexDirection: "row" }}>
                 <ThemedButton
                   type="ghost"
+                  style={styles.headerButton}
                   trailingIcon={<Icon name="text-long" />}
                   onPress={() => router.push("/(tabs)/(media)/youtube-video")}
                 />
                 <ThemedButton
                   type="ghost"
+                  style={styles.headerButton}
                   trailingIcon={<Icon name="cog-outline" />}
                   onPress={() => router.push("/(tabs)/(media)/youtube-video")}
                 />
@@ -140,6 +143,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
 
 // Create stylesheet
 const styles = StyleSheet.create({
+  headerButton: { padding: 8 },
   header: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 8 },
   miniPlayerVideoInfo: {
     overflow: "hidden", // Ensures overflow is hidden
