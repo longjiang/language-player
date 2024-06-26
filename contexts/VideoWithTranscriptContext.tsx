@@ -178,7 +178,10 @@ export const VideoWithTranscriptProvider: React.FC<{
   };
 
   const skipToNextVideo = () => {
+    console.log('Context: NPL ', playlist.length)
+    console.log('context: Skipping to next video', currentVideoIndex, playlist.length);
     if (currentVideoIndex < playlist.length - 1) {
+      
       setCurrentVideoIndex(currentVideoIndex + 1); // Use state setter function
       setCurrentTime(0);
       setVideo(playlist[currentVideoIndex + 1]); // Access the next video correctly
@@ -215,6 +218,7 @@ export const VideoWithTranscriptProvider: React.FC<{
       seekTo(previousLine.starttime);
     }
   }
+
 
   
   return (

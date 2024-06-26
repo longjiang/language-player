@@ -13,12 +13,19 @@ import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { formatDuration } from '@/src/utils';
 import { YouTubeVideo } from '@/types';
 
-export const YouTubeVideoCard = ({ video }: { video: YouTubeVideo; style?: object }) => {
-
+export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; videos: YouTubeVideo[]; style?: object }) => {
+  if (videos.length === 0) videos = [video];
+  const { setVideoPlayerState } = useVideoPlayer();
 
   const handlePress = () => {
+    // Set the current video and queue in the global state
+    setVideoPlayerState(state => ({
+      ...state,
+      video: video, // set the current video
+      queue: videos // set the full list of videos
+    }));
+  
     // Navigate to the YouTube video screen
-    // Replace 'YouTubeVideoScreen' with the actual name of your screen
     router.navigate(`/video/youtube/${video.youtube_id}`);
   };
 

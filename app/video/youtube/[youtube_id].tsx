@@ -113,8 +113,8 @@ const YouTubeVideoScreen = () => {
     <GestureHandlerRootView>
       <View>
         <VideoWithTranscriptProvider
-          initialVideo={{ youtube_id: youtubeIdFromParams }}
-          initialPlaylist={[ { youtube_id: youtubeIdFromParams }]}
+          initialVideo={ youtubeVideoFromParams }
+          initialPlaylist={ videoPlayerState.queue }
         >
           <VideoWithTranscript
             isMini={false}

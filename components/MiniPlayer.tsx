@@ -25,7 +25,7 @@ export const MiniPlayer = () => {
           { backgroundColor: primaryBrandColor },
         ]}
       >
-        <VideoWithTranscriptProvider initialVideo={videoPlayerState.video} initialPlaylist={[videoPlayerState.video]}>
+        <VideoWithTranscriptProvider initialVideo={videoPlayerState.video} initialPlaylist={videoPlayerState.queue}>
           <VideoWithTranscript isMini={true} />
         </VideoWithTranscriptProvider>
       </View>

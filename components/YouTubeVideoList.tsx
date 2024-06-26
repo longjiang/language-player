@@ -1,3 +1,4 @@
+// @/components/YouTubeVideoList.tsx
 import React, { ReactElement, ReactNode } from "react";
 import { FlatList, View, StyleSheet, ViewStyle } from "react-native";
 import { YouTubeVideoCard } from '@/components/YouTubeVideoCard';
@@ -15,7 +16,7 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({ videos, head
 
   const renderVideoCard = ({ item, index }: { item: any, index: number }) => (
     <View style={style}>
-      <YouTubeVideoCard key={index} video={item} />
+      <YouTubeVideoCard key={index} video={item} videos={videos} />
     </View>
   );
 
