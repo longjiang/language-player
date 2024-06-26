@@ -90,6 +90,7 @@ export const VideoWithTranscriptProvider: React.FC<{
   // Logic for managing playlist navigation
   useEffect(() => {
     if (currentVideoIndex < playlist.length) {
+      // console.log('vwtContext', currentVideoIndex)
       const newVideo = playlist[currentVideoIndex];
       if (!newVideo) return
       setVideo(newVideo);
@@ -101,6 +102,12 @@ export const VideoWithTranscriptProvider: React.FC<{
       }
     }
   }, [currentVideoIndex, playlist]);
+
+  useEffect(() => {
+    // Find the current index
+    const index = playlist.findIndex((video) => video.youtube_id === initialVideo.youtube_id);
+    setCurrentVideoIndex(index);
+  }, [initialVideo])
 
   useEffect(() => {
     if (!video?.subs_l2) return;

@@ -12,7 +12,6 @@ type VideoPlayerContextType = {
   videoPlayerState: VideoPlayerState;
   setVideoPlayerState: Dispatch<SetStateAction<VideoPlayerState>>;
   setYouTubeId: (youtubeId: string) => void;
-  openPlayerWithQueue: (video: YouTubeVideo, queue: YouTubeVideo[]) => void;
   playNext: () => void;
   playPrevious: () => void;
   closePlayer: () => void;
@@ -44,9 +43,6 @@ const VideoPlayerContext = createContext<VideoPlayerContextType>({
   setYouTubeId: function (youtubeId: string): void {
     throw new Error('Function not implemented.');
   },
-  openPlayerWithQueue: function (video: YouTubeVideo, queue: YouTubeVideo[]): void {
-    throw new Error('Function not implemented.');
-  },
   playNext: function (): void {
     throw new Error('Function not implemented.');
   },
@@ -65,10 +61,6 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const setYouTubeId = (youtubeId: string) => setVideoPlayerState(prev => ({ ...prev, youtubeId }));
   const minimizePlayer = () => setVideoPlayerState(prev => ({ ...prev, isMini: true }));
   const maximizePlayer = () => setVideoPlayerState(prev => ({ ...prev, isMini: false }));
-
-  const openPlayerWithQueue = (video: YouTubeVideo, queue: YouTubeVideo[]) => {
-    setVideoPlayerState({ ...initialVideoPlayerState, youtubeId: video.youtube_id, video, queue });
-  };
 
   const playNext = () => {
     const currentIndex = videoPlayerState.queue.findIndex(v => v.youtube_id === videoPlayerState.youtubeId);
@@ -93,7 +85,6 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     videoPlayerState,
     setVideoPlayerState,
     setYouTubeId,
-    openPlayerWithQueue,
     playNext,
     playPrevious,
     closePlayer,
@@ -101,7 +92,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     maximizePlayer,
   };
 
-  console.log('vp Context: videoPlayerState.queue=', videoPlayerState.queue.length)
+  // console.log('vp Context: videoPlayerState.queue=', videoPlayerState.queue.length)
 
   return (
     <VideoPlayerContext.Provider value={value}>

@@ -3,20 +3,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  SafeAreaView,
   Dimensions,
-  BackHandler,
 } from "react-native";
-import { ThemedButton } from "@/components/ThemedButton";
-import { ThemedText } from "@/components/ThemedText";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router, useNavigation, useLocalSearchParams } from "expo-router";
-import { YouTubeVideo } from "@/components/YouTubeVideo";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useFocusEffect } from "expo-router";
 import { useRoute } from "@react-navigation/native";
@@ -85,9 +74,6 @@ const YouTubeVideoScreen = () => {
     }
   }, [youtubeIdFromParams]);
 
-  const position = useSharedValue({ x: 0, y: 0 });
-  const size = useSharedValue({ width: screenWidth, height: screenHeight });
-
   // Hooks called when the component is focused or unfocused
   useFocusEffect(
     useCallback(() => {
@@ -111,7 +97,7 @@ const YouTubeVideoScreen = () => {
 
   return (
     <GestureHandlerRootView>
-      <View>
+      <View><Text style={{color: 'white'}}>{youtubeVideoFromParams.youtube_id}</Text>
         <VideoWithTranscriptProvider
           initialVideo={ youtubeVideoFromParams }
           initialPlaylist={ videoPlayerState.queue }
