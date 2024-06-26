@@ -2,7 +2,11 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 
-export const ThemedRadio = ({
+export const ThemedRadio: React.FC<{
+  label: string;
+  isSelected: boolean;
+  onPress: () => void
+}> = ({
   label,
   isSelected,
   onPress,

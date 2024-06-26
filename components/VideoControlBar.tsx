@@ -115,7 +115,7 @@ export const VideoControlBar: React.FC = () => {
         <View>
           <ThemedText type="subtitle">{video.title}</ThemedText>
           <ThemedText variant="secondary" style={{ marginTop: 10 }}>
-            {`${video.date ? video.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No Date' } /  Duration: ${ video.duration ? formatDuration(video.duration) : '--:--'}  / ${video.locale}`}
+            {`${video.date instanceof Date ? video.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No Date' } /  Duration: ${ video.duration ? formatDuration(video.duration) : '--:--'}  / ${video.locale}`}
           </ThemedText>
           <ThemedText variant="secondary" style={{ marginTop: 10 }}>
             {`${video.views ? video.views.toLocaleString() : '0'} Views / ${video.likes ? video.likes : '0'} likes / ${

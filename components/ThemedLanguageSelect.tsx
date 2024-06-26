@@ -1,11 +1,15 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedSearchableSelect } from "@/components/ThemedSearchableSelect";
+import { ThemedSearchableSelect, Option } from "@/components/ThemedSearchableSelect";
 
-export const ThemedLanguageSelect = ({
+export const ThemedLanguageSelect: React.FC<{
+  onSelect: (value: string) => void;
+  placeholder?: string;
+  initialValue?: Option;
+}> = ({
   onSelect,
-  placeholder='Select a language',
+  placeholder = 'Select a language',
   initialValue
 }) => {
   const options = [

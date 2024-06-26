@@ -6,7 +6,7 @@ import { VideoWithTranscriptProvider, useVideoWithTranscriptContext } from "@/co
 import { Line, SyncedLine } from '@/types';
 import { TokenizedText } from './TokenizedText';
 
-export const SyncedTranscript = ({video}) => {
+export const SyncedTranscript = () => {
   
   const { playbackState, currentTime, syncedLines, currentLine } = useVideoWithTranscriptContext();
 

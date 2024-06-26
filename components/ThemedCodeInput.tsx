@@ -2,11 +2,14 @@ import React, { useState, useRef } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Keyboard } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 
-export const ThemedCodeInput = ({ onCodeFilled, codeLength = 6 }) => {
+export const ThemedCodeInput:React.FC<{
+  onCodeFilled: (code: string) => void;
+  codeLength: number;
+}> = ({ onCodeFilled, codeLength = 6 }) => {
   const [code, setCode] = useState(new Array(codeLength).fill(''));
   const inputsRef = useRef([]);
 
-  const handleInput = (text, index) => {
+  const handleInput = (text: string, index: number) => {
     const newCode = [...code];
     newCode[index] = text;
     setCode(newCode);

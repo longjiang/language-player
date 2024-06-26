@@ -41,6 +41,7 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
         placeholder={placeholder}
         placeholderTextColor={placeholderTextColor}
         onSubmitEditing={onSubmitEditing}
+        onChangeText={onChangeText}
         {...rest}
       />
       {icon && (

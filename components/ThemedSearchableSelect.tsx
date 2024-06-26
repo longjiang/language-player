@@ -5,9 +5,10 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-type Option = {
+export type Option = {
   value: string;
   label: string;
+  flag?: string;
 };
 
 type ThemedSearchableSelectProps = {

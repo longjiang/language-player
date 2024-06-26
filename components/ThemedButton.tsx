@@ -7,10 +7,14 @@ import { Swatches } from "@/constants/Swatches";
 import { Typography } from "@/constants/Typography";
 import { ThemedText } from "./ThemedText";
 
+type ButtonType = 'neutral' | 'accent' | 'primary' | 'ghost' | 'pro';
+
+type Size = "title" | "large" | "medium" | "small";
+
 type ButtonProps = {
-  type?: "primary" | "neutral" | "ghost" | "accent" | "pro";  // Added 'pro' type here
+  type?: ButtonType;
   textColor?: string;
-  size?: "title" | "large" | "medium" | "small";
+  size?: Size;
   title?: string;
   style?: any;
   onPress?: () => void;
@@ -41,7 +45,7 @@ export function ThemedButton({
   }
   const secondaryTextColor = useThemeColor({}, "secondaryText");
 
-  const getBackgroundColor = (type) => {
+  const getBackgroundColor = (type: ButtonType) => {
     const colorMap = {
       neutral: "transparent",
       accent: useThemeColor({}, "secondaryBackground"),
@@ -71,17 +75,18 @@ export function ThemedButton({
     borderWidth: 2,
   };
 
-  const paddingStyles = type === 'ghost' ? {} : contentStyles[size];
+  const paddingStyles = type === 'ghost' ? {} : contentStyles[size as Size];
 
   const buttonContentStyle = {
     alignItems: "center",
     justifyContent: "center",
-    display: "flex",
     flexDirection: "row",
     ...paddingStyles,
   };
 
-  const textStyle = [styles.textBase, styles.text[size], { color: textColor }];
+
+
+  const textStyle = [styles.textBase, { fontSize: fontSize[size]}, { color: textColor }];
 
   const gradientColors = ['#00C853', '#72C30B', '#2EC0FF', '#6C7CDE', '#D20EA7'];
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
@@ -97,7 +102,7 @@ export function ThemedButton({
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           >
-            <View style={{ ...buttonContentStyle, backgroundColor: primaryBackgroundColor }}>
+            <View style={[buttonContentStyle, { backgroundColor: primaryBackgroundColor }]}>
               {leadingIcon && (
                 <View style={{ marginRight: 5 }}>
                   {React.cloneElement(leadingIcon, {
@@ -149,14 +154,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontFamily: "Nunito",
   },
-  text: {
-    title: { fontSize: fontSize.title },
-    large: { fontSize: fontSize.large },
-    small: { fontSize: fontSize.small },
-  },
 });
 
 const contentStyles = {
+  title: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
   large: {
     paddingVertical: 12,
     paddingHorizontal: 20,
