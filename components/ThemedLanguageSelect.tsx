@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedSearchableSelect, Option } from "@/components/ThemedSearchableSelect";
+export { Option } from "@/components/ThemedSearchableSelect";
+
 
 export const ThemedLanguageSelect: React.FC<{
   onSelect: (value: string) => void;

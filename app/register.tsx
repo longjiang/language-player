@@ -63,7 +63,7 @@ const RegisterScreen = () => {
                 icon="lock"
             />
 
-            <ThemedButton title="Register" style={styles.button} onPress={() => { router.push('/verify-email'); }} />
+            <ThemedButton title="Register" onPress={() => { router.push('/verify-email'); }} />
 
             <ThemedText style={styles.orText}>Or register with:</ThemedText>
             <View style={styles.socialButtons}>
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     },
     textButton: {
         marginTop: 10,
-        alignSelf: 'left',
+        alignSelf: 'flex-start',
     },
     orText: {
         textAlign: 'center',

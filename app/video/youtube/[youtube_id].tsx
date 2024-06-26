@@ -36,6 +36,7 @@ const YouTubeVideoScreen = () => {
 
   // Fetch the video data from the API
   useEffect(() => {
+
     const fetchVideo = async () => {
       try {
         
@@ -48,8 +49,7 @@ const YouTubeVideoScreen = () => {
         })
         if (!videos) return
         const newVideo = normalizeVideoData(videos[0])
-        setVideoPlayerState(prev => ({ ...prev, video: newVideo }));
-
+        setVideoPlayerState(prev => ({ ...prev, isMini: false, video: newVideo }));
       } catch (error) {
         console.error('Failed to fetch video', error);
       }

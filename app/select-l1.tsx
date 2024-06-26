@@ -8,9 +8,8 @@ import { router } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 const SelectL2Screen = () => {
-  const [code, setCode] = useState("");
 
-  const onSelect = (value) => {
+  const onSelect = (value: string) => {
     console.log('Selected:', value);
   }
 

@@ -1,13 +1,11 @@
 // @/components/index.ts
 
 // Export from the root of the components directory
-export { Collapsible } from './Collapsible';
 export { ParallaxScrollView } from './ParallaxScrollView';
 export { ThemedSwitch } from './ThemedSwitch';
 export { VideoHero } from './VideoHero';
 export { DictionaryComponent } from './DictionaryComponent';
 export { ExternalLink } from './ExternalLink';
-export { HelloWave } from './HelloWave';
 export { LanguageIcon } from './LanguageIcon';
 export { MiniPlayer } from './MiniPlayer';
 // export { PricingBlock } from './PricingBlock'; // Circular dependency

@@ -40,7 +40,7 @@ const LoginScreen = () => {
                     icon="lock"
                 />
 
-                <ThemedButton title="Login" style={styles.button} />
+                <ThemedButton title="Login" />
 
                 <TouchableOpacity style={styles.textButton}>
                     <ThemedText>Forgot Password?</ThemedText>
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     },
     textButton: {
         marginTop: 10,
-        alignSelf: 'left',
+        alignSelf: 'flex-start',
     },
     orText: {
         textAlign: 'center',

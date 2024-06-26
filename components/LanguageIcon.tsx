@@ -3,13 +3,24 @@ import { TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 
-export const LanguageIcon = ({ icon, label, onPress, selected }) => {
+export interface LanguageIconProps {
+  icon: any;  // Accept any type for flexibility
+  label: string;
+  onPress: () => void;
+  selected: boolean;
+}
+
+export const LanguageIcon: React.FC<LanguageIconProps> = ({ icon, label, onPress, selected }) => {
   const selectedColor = useThemeColor({}, 'secondaryBrand');
   const primaryTextColor = useThemeColor({}, 'primaryText');
+
+  // Check if icon is a string and assume it's a URL
+  const imageSource = typeof icon === 'string' ? { uri: icon } : icon;
+
   return (
     <TouchableOpacity style={styles.iconContainer} onPress={onPress}>
       <Image 
-        source={icon} 
+        source={imageSource} 
         style={[
           styles.iconImage,
           selected ? { borderColor: selectedColor, borderWidth: 5 } : null  // Apply the selected style if the icon is selected

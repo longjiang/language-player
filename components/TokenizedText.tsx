@@ -6,8 +6,8 @@ import { PYTHON_SERVER } from '@/src/api/python';
 // Define an interface for the props
 interface TokenizedTextProps {
   text: string;
-  translation: string;
-  textScale: number;
+  translation?: string;
+  textScale?: number;
   textWeight?: 'bold' | 'regular';
   align?: 'left' | 'center' | 'right';
 }
@@ -22,7 +22,7 @@ interface TokenData {
 export const TokenizedText: React.FC<TokenizedTextProps> = ({
   text,
   translation,
-  textScale,
+  textScale = 1,
   textWeight,
   align = "left"
 }) => {

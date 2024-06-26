@@ -2,7 +2,6 @@
 import {
   StyleSheet,
   View,
-  Image,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -10,7 +9,7 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedText } from "@/components/ThemedText";
 import { router } from 'expo-router';
 
-const Index = () => {  // 中国
+const Index = () => {
 
   return (
     <ThemedScreen

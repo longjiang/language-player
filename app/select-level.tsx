@@ -38,7 +38,7 @@ const SelectLevelScreen = () => {
           return <ThemedButton
             key={level}
             title={label}
-            leadingIcon={<Icon name="circle" style={{ color: levelColor }} />}
+            leadingIcon={<Icon name="circle" style={{ color: levelColor || 'rgba(0,0,0,0)' }} />}
             trailingIcon={<Icon name="chevron-right" />}
             onPress={() => onSelect(level)}
             type="accent"

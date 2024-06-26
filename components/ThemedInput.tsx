@@ -15,6 +15,7 @@ interface ThemedInputProps {
   value?: string;
   onChangeText?: (text: string) => void;
   onSubmitEditing?: () => void;
+  secureTextEntry?: boolean;
 }
 
 export const ThemedInput: React.FC<ThemedInputProps> = ({
@@ -26,6 +27,7 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
   value,
   onChangeText,
   onSubmitEditing,
+  secureTextEntry = true,
   ...rest
 }) => {
   const borderColor = useThemeColor({}, 'secondaryStroke');

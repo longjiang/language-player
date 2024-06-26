@@ -8,7 +8,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 export type Option = {
   value: string;
   label: string;
-  flag?: string;
+  flag?: string; // Flag emoji
+  icon?: string; // Circular png icon
 };
 
 type ThemedSearchableSelectProps = {

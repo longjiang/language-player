@@ -112,7 +112,7 @@ If you would like to: access, correct, amend or delete any personal information 
 const PrivacyPolicyScreen = () => {
   const [code, setCode] = useState("");
 
-  const onSelect = (value) => {
+  const onSelect = (value: string) => {
     console.log("Selected:", value);
   };
 
