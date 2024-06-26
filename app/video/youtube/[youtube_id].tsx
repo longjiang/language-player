@@ -26,15 +26,19 @@ import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptConte
 import { parseSubtitles } from "@/src/subs";
 import { getCollectionItems } from "@/src/api/directus";
 import { normalizeVideoData } from "@/src/directus-video";
+import { YouTubeVideo as YouTubeVideoType } from "@/types/videoTypes";
 
 const screenHeight = Dimensions.get("window").height;
 const screenWidth = Dimensions.get("window").width;
 
 const YouTubeVideoScreen = () => {
   const params = useLocalSearchParams();
-  let youtubeId = Array.isArray(params?.youtube_id)
+  let youtubeIdFromParams = Array.isArray(params?.youtube_id)
     ? params?.youtube_id[0]
     : params?.youtube_id; // params can sometimes return an array
+  
+  if (!youtubeIdFromParams) return
+  const youtubeVideoFromParams: YouTubeVideoType = { youtube_id: youtubeIdFromParams }
 
   const {
     minimizePlayer,
@@ -54,12 +58,18 @@ const YouTubeVideoScreen = () => {
         const videos = await getCollectionItems("youtube_videos_4", {
           filter: {
             youtube_id: {
-              eq: youtubeId,
+              eq: youtubeIdFromParams,
             },
           },
         });
         if (!videos) return;
         const newVideo = normalizeVideoData(videos[0]);
+        
+        for (let key in newVideo) {
+          const videoKey = key as keyof YouTubeVideoType;
+          youtubeVideoFromParams[videoKey] = newVideo[videoKey] // Update the video with new data (e.g. subs)
+        }
+        
         setVideoPlayerState((prev) => ({
           ...prev,
           isMini: false,
@@ -70,10 +80,10 @@ const YouTubeVideoScreen = () => {
       }
     };
 
-    if (youtubeId) {
+    if (youtubeIdFromParams) {
       fetchVideo();
     }
-  }, [youtubeId]);
+  }, [youtubeIdFromParams]);
 
   const position = useSharedValue({ x: 0, y: 0 });
   const size = useSharedValue({ width: screenWidth, height: screenHeight });
@@ -82,8 +92,8 @@ const YouTubeVideoScreen = () => {
   useFocusEffect(
     useCallback(() => {
       // Log route information when the component is focused
-      if (!youtubeId) return;
-      if (videoPlayerState.youtubeId !== youtubeId) setYouTubeId(youtubeId); // Set the youtubeId in the context
+      if (!youtubeIdFromParams) return;
+      if (videoPlayerState.youtubeId !== youtubeIdFromParams) setYouTubeId(youtubeIdFromParams); // Set the youtubeId in the context
       if (videoPlayerState.isMini !== false) maximizePlayer(); // Set isMini to false in the context
 
       return () => {
@@ -103,13 +113,13 @@ const YouTubeVideoScreen = () => {
     <GestureHandlerRootView>
       <View>
         <VideoWithTranscriptProvider
-          initialVideo={videoPlayerState.video}
-          initialPlaylist={[videoPlayerState.video]}
+          initialVideo={{ youtube_id: youtubeIdFromParams }}
+          initialPlaylist={[ { youtube_id: youtubeIdFromParams }]}
         >
           <VideoWithTranscript
             isMini={false}
             showHeader={true}
-            key={`video-player-${videoPlayerState.video?.youtube_id}`}
+            key={`video-player-${youtubeIdFromParams}`}
           />
         </VideoWithTranscriptProvider>
       </View>
