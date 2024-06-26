@@ -74,14 +74,14 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     socialButton: {
-        flex: 1, // Each button will take equal space
         marginHorizontal: 4, // Add some space between buttons
         marginBottom: 10,
+        flex: 1,
     },
     socialButtons: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
       marginTop: 10,
+
     }
 });
 

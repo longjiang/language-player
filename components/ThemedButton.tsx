@@ -107,7 +107,7 @@ export function ThemedButton({
   };
 
   const styledLeadingIcon = leadingIcon && (
-    <View style={{ marginRight: 5 }}>
+    <View style={{ marginRight: title ? 5 : 0, alignItems: "center" }}>
       {React.cloneElement(leadingIcon, {
         color: style?.color || stylesBasedOnType[type].color,
         size: stylesBasedOnSize[size].fontSize * 1.2,
@@ -116,7 +116,7 @@ export function ThemedButton({
   );
 
   const styledTrailingIcon = trailingIcon && (
-    <View style={{ marginRight: 5 }}>
+    <View style={{ marginLeft: title ? 5 : 0, alignItems: "center" }}>
       {React.cloneElement(trailingIcon, {
         color: style?.color || stylesBasedOnType[type].color,
         size: stylesBasedOnSize[size].fontSize * 1.2,
@@ -132,7 +132,10 @@ export function ThemedButton({
     "#D20EA7",
   ];
   return (
-    <TouchableOpacity onPress={onPress}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={{ ...style }}
+    >
       {type === "pro" && (
         <ThemedText
           type="smallBold"
@@ -146,19 +149,20 @@ export function ThemedButton({
         style={{
           padding: type === "pro" ? 2 : 0,
           borderRadius: universalStyles.borderRadius,
-          ...style,
         }}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       >
-        <View style={mergedViewStyle}>
+        <View style={{ ...mergedViewStyle, justifyContent: title && trailingIcon ? 'space-between' : 'space-evenly' }}>
           {styledLeadingIcon}
-          <ThemedText
-            type="title"
-            style={{ fontSize: stylesBasedOnSize[size].fontSize }}
-          >
-            {title}
-          </ThemedText>
+          {title && (
+            <ThemedText
+              type="title"
+              style={{ fontSize: stylesBasedOnSize[size].fontSize }}
+            >
+              {title}
+            </ThemedText>
+          )}
           {styledTrailingIcon}
         </View>
       </LinearGradient>
