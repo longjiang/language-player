@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { YouTubeVideo, Line, SyncedLine } from "@/types";
 import { syncLines } from "@/src/subs";
 import { PLAYER_STATES } from "react-native-youtube-iframe";
+import { router } from "expo-router";
 
 export interface VideoWithTranscriptContextType {
   video: YouTubeVideo;
@@ -72,7 +73,8 @@ export const VideoWithTranscriptProvider: React.FC<{
   initialVideo: YouTubeVideo;
   initialPlaylist: YouTubeVideo[];
   children: React.ReactNode;
-}> = ({ initialVideo, initialPlaylist, children }) => {
+  isMainPlayer: boolean;
+}> = ({ initialVideo, initialPlaylist, children, isMainPlayer = false }) => {
   initialPlaylist = initialPlaylist || [initialVideo];
   const [playbackState, setPlaybackState] = useState(PLAYER_STATES.UNSTARTED);
   const [currentTime, setCurrentTime] = useState(0);
@@ -96,10 +98,6 @@ export const VideoWithTranscriptProvider: React.FC<{
       setVideo(newVideo);
       setPlaybackState(PLAYER_STATES.UNSTARTED);
       setCurrentTime(0);
-      // Sync subtitles when video changes
-      if (newVideo.subs_l1 && newVideo.subs_l2) {
-        setSyncedLines(syncLines(newVideo.subs_l1 || [], newVideo.subs_l2 || []));
-      }
     }
   }, [currentVideoIndex, playlist]);
 
@@ -110,12 +108,12 @@ export const VideoWithTranscriptProvider: React.FC<{
   }, [initialVideo])
 
   useEffect(() => {
-    if (!video?.subs_l2) return;
+    if (! video?.subs_l2?.length) return;
     const l1Lines = video.subs_l1 || [];
     const l2Lines = video.subs_l2 || [];
     const syncedLines = syncLines(l1Lines, l2Lines);
     setSyncedLines(syncedLines);
-  }, [video]);
+  }, [video.subs_l2]);
 
 
 
@@ -185,26 +183,24 @@ export const VideoWithTranscriptProvider: React.FC<{
   };
 
   const skipToNextVideo = () => {
-    console.log('Context: NPL ', playlist.length)
-    console.log('context: Skipping to next video', currentVideoIndex, playlist.length);
     if (currentVideoIndex < playlist.length - 1) {
-      
-      setCurrentVideoIndex(currentVideoIndex + 1); // Use state setter function
-      setCurrentTime(0);
-      setVideo(playlist[currentVideoIndex + 1]); // Access the next video correctly
+      skipToVideo(currentVideoIndex + 1);
     }
   };
 
   const skipToPreviousVideo = () => {
     if (currentVideoIndex > 0) {
-      setCurrentVideoIndex(currentVideoIndex - 1); // Use state setter function
-      setCurrentTime(0);
-      setVideo(playlist[currentVideoIndex - 1]); // Access the previous video correctly
+      skipToVideo(currentVideoIndex - 1);
     }
   };
 
   const skipToVideo = (index: number) => {
     if (index >= 0 && index < playlist.length) {
+      const nextVideo = playlist[index]
+      if (isMainPlayer) {
+        router.navigate('/video/youtube/' + nextVideo.youtube_id)
+        return;
+      }
       setCurrentVideoIndex(index);
       setCurrentTime(0);
       setVideo(playlist[index]);

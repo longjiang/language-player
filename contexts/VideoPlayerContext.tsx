@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, ReactNode, Dispatch, SetSta
 import { YouTubeVideo } from "@/types/videoTypes"
 
 type VideoPlayerState = {
-  youtubeId?: string;
   isMini: boolean;
   video?: YouTubeVideo;
   queue: YouTubeVideo[];
@@ -11,7 +10,6 @@ type VideoPlayerState = {
 type VideoPlayerContextType = {
   videoPlayerState: VideoPlayerState;
   setVideoPlayerState: Dispatch<SetStateAction<VideoPlayerState>>;
-  setYouTubeId: (youtubeId: string) => void;
   playNext: () => void;
   playPrevious: () => void;
   closePlayer: () => void;
@@ -20,7 +18,6 @@ type VideoPlayerContextType = {
 };
 
 const initialVideoPlayerState: VideoPlayerState = {
-  youtubeId: '',
   isMini: false,
   video: undefined,
   queue: [],
@@ -40,9 +37,6 @@ const VideoPlayerContext = createContext<VideoPlayerContextType>({
   maximizePlayer: function (): void {
     throw new Error('Function not implemented.');
   },
-  setYouTubeId: function (youtubeId: string): void {
-    throw new Error('Function not implemented.');
-  },
   playNext: function (): void {
     throw new Error('Function not implemented.');
   },
@@ -56,27 +50,25 @@ export const useVideoPlayer = () => useContext(VideoPlayerContext);
 export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [videoPlayerState, setVideoPlayerState] = useState(initialVideoPlayerState);
   // Helper functions to modify state
-  const openPlayer = (youtubeId: string) => setVideoPlayerState({ youtubeId, isMini: false, video: { youtube_id: youtubeId }, queue: []});
-  const closePlayer = () => setVideoPlayerState({ youtubeId: '', isMini: false, video: undefined, queue: [] });
-  const setYouTubeId = (youtubeId: string) => setVideoPlayerState(prev => ({ ...prev, youtubeId }));
+  const closePlayer = () => setVideoPlayerState({ isMini: false, video: undefined, queue: [] });
   const minimizePlayer = () => setVideoPlayerState(prev => ({ ...prev, isMini: true }));
   const maximizePlayer = () => setVideoPlayerState(prev => ({ ...prev, isMini: false }));
 
   const playNext = () => {
-    const currentIndex = videoPlayerState.queue.findIndex(v => v.youtube_id === videoPlayerState.youtubeId);
+    const currentIndex = videoPlayerState.queue.findIndex(v => v.youtube_id === videoPlayerState.video.youtube_id);
     const nextIndex = currentIndex + 1;
     if (nextIndex < videoPlayerState.queue.length) {
       const nextVideo = videoPlayerState.queue[nextIndex];
-      setVideoPlayerState({ ...videoPlayerState, youtubeId: nextVideo.youtube_id, video: nextVideo });
+      setVideoPlayerState({ ...videoPlayerState, video: nextVideo });
     }
   };
 
   const playPrevious = () => {
-    const currentIndex = videoPlayerState.queue.findIndex(v => v.youtube_id === videoPlayerState.youtubeId);
+    const currentIndex = videoPlayerState.queue.findIndex(v => v.youtube_id === videoPlayerState.video.youtube_id);
     const prevIndex = currentIndex - 1;
     if (prevIndex >= 0) {
       const previousVideo = videoPlayerState.queue[prevIndex];
-      setVideoPlayerState({ ...videoPlayerState, youtubeId: previousVideo.youtube_id, video: previousVideo });
+      setVideoPlayerState({ ...videoPlayerState, video: previousVideo });
     }
   };
 
@@ -84,7 +76,6 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const value = {
     videoPlayerState,
     setVideoPlayerState,
-    setYouTubeId,
     playNext,
     playPrevious,
     closePlayer,

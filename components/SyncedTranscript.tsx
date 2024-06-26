@@ -8,7 +8,7 @@ import { TokenizedText } from './TokenizedText';
 
 export const SyncedTranscript = () => {
   
-  const { playbackState, currentTime, syncedLines, currentLine } = useVideoWithTranscriptContext();
+  const { syncedLines, currentLine } = useVideoWithTranscriptContext();
 
   return (
       <View style={styles.container}>

@@ -27,12 +27,11 @@ const YouTubeVideoScreen = () => {
     : params?.youtube_id; // params can sometimes return an array
   
   if (!youtubeIdFromParams) return
-  const youtubeVideoFromParams: YouTubeVideoType = { youtube_id: youtubeIdFromParams }
+
 
   const {
     minimizePlayer,
     maximizePlayer,
-    setYouTubeId,
     setVideoPlayerState,
     videoPlayerState,
   } = useVideoPlayer();
@@ -54,33 +53,39 @@ const YouTubeVideoScreen = () => {
         if (!videos) return;
         const newVideo = normalizeVideoData(videos[0]);
         
-        for (let key in newVideo) {
-          const videoKey = key as keyof YouTubeVideoType;
-          youtubeVideoFromParams[videoKey] = newVideo[videoKey] // Update the video with new data (e.g. subs)
-        }
-        
         setVideoPlayerState((prev) => ({
           ...prev,
-          isMini: false,
           video: newVideo,
+          isMini: false,
         }));
       } catch (error) {
         console.error("Failed to fetch video", error);
       }
     };
 
-    if (youtubeIdFromParams) {
+    if (videoPlayerState.video && !videoPlayerState.video.subs_l2) { // Skeletal video needs to be fleshed
       fetchVideo();
     }
-  }, [youtubeIdFromParams]);
+  }, [videoPlayerState.video]);
 
   // Hooks called when the component is focused or unfocused
   useFocusEffect(
     useCallback(() => {
-      // Log route information when the component is focused
+      // When the component is focused
+
+      // Set isMini to false in the context
+      if (videoPlayerState.isMini !== false) maximizePlayer(); 
+      
+      // Set the video in the context to match youtubeId in the param
       if (!youtubeIdFromParams) return;
-      if (videoPlayerState.youtubeId !== youtubeIdFromParams) setYouTubeId(youtubeIdFromParams); // Set the youtubeId in the context
-      if (videoPlayerState.isMini !== false) maximizePlayer(); // Set isMini to false in the context
+      if (videoPlayerState.video.youtube_id !== youtubeIdFromParams) {
+        setVideoPlayerState((prev) => ({
+          ...prev,
+          video: {
+            youtube_id: youtubeIdFromParams,
+          },
+        }));
+      }
 
       return () => {
         // This code runs when the component loses focus
@@ -97,15 +102,17 @@ const YouTubeVideoScreen = () => {
 
   return (
     <GestureHandlerRootView>
-      <View><Text style={{color: 'white'}}>{youtubeVideoFromParams.youtube_id}</Text>
+      <View>
         <VideoWithTranscriptProvider
-          initialVideo={ youtubeVideoFromParams }
+          initialVideo={ videoPlayerState.video }
           initialPlaylist={ videoPlayerState.queue }
+          isMainPlayer={true}
+          key={`video-player-${videoPlayerState.video.youtube_id}-${videoPlayerState?.video?.subs_l2?.length}`}
+
         >
           <VideoWithTranscript
             isMini={false}
             showHeader={true}
-            key={`video-player-${youtubeIdFromParams}`}
           />
         </VideoWithTranscriptProvider>
       </View>

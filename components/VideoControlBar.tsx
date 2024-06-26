@@ -96,7 +96,7 @@ export const VideoControlBar: React.FC = () => {
         <ThemedButton
           type="ghost"
           trailingIcon={<Icon name="skip-next" />}
-          onPress={() => { console.log('skipToNextVideo', skipToNextVideo); skipToNextVideo()}}
+          onPress={() => { skipToNextVideo()}}
         />
         <ThemedButton
           type="ghost"

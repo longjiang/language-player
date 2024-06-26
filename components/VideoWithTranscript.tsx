@@ -37,7 +37,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   const videoHeight = screenWidth * 0.5625; // 16:9 aspect ratio
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
-  const { video, playVideo, updatePlayVideo, currentTime, startTime } =
+  const { video, playVideo, updatePlayVideo, currentTime, startTime, syncedLines } =
     useVideoWithTranscriptContext();
   const { closePlayer } = useVideoPlayer();
 
@@ -89,7 +89,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
               startTime={startTime}
             />
             <VideoControlBar />
-            <SyncedTranscript video={video} />
+            <SyncedTranscript />
           </View>
         </View>
       )}

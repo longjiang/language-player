@@ -56,6 +56,7 @@ export class Dictionary {
 
   async loadData() {
     try {
+      return
       console.log('Dictionary: Loading data...');
       const response = await axios.get('https://server.chinesezerotohero.com/data/hsk-cedict/hsk_cedict.csv.txt');
       const parsedData = Papa.parse(response.data, { header: true });
