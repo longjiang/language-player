@@ -12,9 +12,19 @@ import { router } from "expo-router";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { formatDuration } from "@/src/utils";
 
-export const ShowCard = ({ show, style }) => {
-  const { showVideoPlayer, toggleMiniPlayer, hideVideoPlayer } =
-    useVideoPlayer();
+export interface Show {
+  youtube_id: string;
+  title: string;
+  avg_views: number;
+  locale: string;
+}
+
+interface ShowCardProps {
+  show: Show;
+  style?: any;
+}
+
+export const ShowCard: React.FC<ShowCardProps> = ({ show, style }) => {
 
   const handlePress = () => {
     // Navigate to the YouTube video screen
@@ -87,7 +97,7 @@ export const ShowCard = ({ show, style }) => {
           <ThemedText style={styles.title} type="defaultBold">
             {show.title}
           </ThemedText>
-          <ThemedText style={styles.details} type="small" variant="secondary">
+          <ThemedText variant="secondary">
             {`${
               show.avg_views ? show.avg_views.toLocaleString() : "No"
             } Views / ${show.locale}`}

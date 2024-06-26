@@ -33,13 +33,21 @@ const HighlightSearchTerm = ({
   );
 };
 
-export const SubsSearchResultsList = ({ results, term, onSelect }) => {
-  const handleSubtitlePress = (index) => {
+export const SubsSearchResultsList = ({
+  results,
+  term,
+  onSelect,
+}: {
+  results: any[];
+  term: string;
+  onSelect: (index: number) => void;
+}) => {
+  const handleSubtitlePress = (index: number) => {
     onSelect(index);
   };
 
   results.forEach((item) => {
-    const targetLineIndex = item.subs_l2.findIndex((sub) => {
+    const targetLineIndex = item.subs_l2.findIndex((sub: any) => {
       return typeof sub.line === "string" && sub.line.includes(term);
     });
     item.targetLineIndex = targetLineIndex;
@@ -67,14 +75,7 @@ export const SubsSearchResultsList = ({ results, term, onSelect }) => {
                   }}
                   style={[styles.thumbnail]}
                 />
-                <ThemedText
-                  style={{
-                    width: "100%",
-                    textAlign: "left",
-                    paddingLeft: 16,
-                    paddingRight: 50,
-                  }}
-                >
+                <ThemedText style={styles.line}>
                   <HighlightSearchTerm
                     line={item.subs_l2[item.targetLineIndex]?.line}
                     searchTerm={term}

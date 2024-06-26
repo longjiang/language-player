@@ -1,24 +1,29 @@
 import React, { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from 'react';
+import { YouTubeVideo } from "@/types/videoTypes"
 
 type VideoPlayerState = {
   youtubeId: string;
   isMini: boolean;
+  video?: YouTubeVideo;
 };
 
 type VideoPlayerContextType = {
   videoPlayerState: VideoPlayerState;
   setVideoPlayerState: Dispatch<SetStateAction<VideoPlayerState>>;
   closePlayer: () => void; // Assuming closePlayer is a function with no parameters and no return value
+  video: YouTubeVideo | null;
 };
 
 const initialVideoPlayerState: VideoPlayerState = {
   youtubeId: '',
   isMini: false,
+  video: undefined,
 };
 
 const VideoPlayerContext = createContext<VideoPlayerContextType>({
   videoPlayerState: initialVideoPlayerState,
   setVideoPlayerState: () => {}, // Initial stub
+  video: null,
 });
 
 export const useVideoPlayer = () => useContext(VideoPlayerContext);

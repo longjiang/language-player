@@ -2,6 +2,7 @@ import { Swatches } from './Swatches';
 
 const LevelColors = {
   light: [
+    null, // Levels are 1-indexed
     Swatches.warning[500],
     '#1E7E94',
     '#FA6234',
@@ -11,6 +12,7 @@ const LevelColors = {
     Swatches.success[600],
   ],
   dark: [
+    null, // Levels are 1-indexed
     Swatches.warning[500],
     '#1E7E94',
     '#FA6234',

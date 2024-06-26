@@ -12,14 +12,26 @@ import { ThemedText } from "@/components/ThemedText";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SubsSearch } from "@/components/SubsSearch";
+import { DictionaryEntry } from "@/src/dictionary";
+import { RouteProp } from '@react-navigation/native';
+
+type DictionaryEntryScreenRouteParams = {
+  id: string;
+};
+
+
 
 const DictionaryEntryScreen = () => {
-  const [entry, setEntry] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const route = useRoute<RouteProp<{
+    DictionaryEntryScreen: DictionaryEntryScreenRouteParams;
+  }, 'DictionaryEntryScreen'>>();
+  if (!route.params) return;
+  const id = decodeURIComponent(route.params.id) 
+
+  const [entry, setEntry] = useState<null | DictionaryEntry>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { dictionary } = useDictionary();
-  const route = useRoute();
-  const id = decodeURIComponent(route.params.id);
 
   useEffect(() => {
     if (dictionary) {
@@ -27,7 +39,7 @@ const DictionaryEntryScreen = () => {
     }
   }, [dictionary, id]);
 
-  const handleInputChange = (text) => {
+  const handleInputChange = (text: string) => {
     setSearchQuery(text);
   };
 
@@ -41,7 +53,7 @@ const DictionaryEntryScreen = () => {
     try {
       if (dictionary) {
         const entryData = dictionary.getEntry(id);
-        setEntry(entryData);
+        if (entryData) setEntry(entryData);
       } else {
         console.log("Dictionary not loaded yet");
       }
@@ -80,7 +92,7 @@ const DictionaryEntryScreen = () => {
             size="small"
             onChangeText={handleInputChange}
             onSubmitEditing={handleSearch}
-            value={searchQuery || entry?.simplified}
+            value={searchQuery || entry?.head}
           />
           <ThemedButton
             type="ghost"
@@ -94,23 +106,23 @@ const DictionaryEntryScreen = () => {
             <View style={styles.entryHeader}>
               <View style={{ flexDirection: "row", alignItems: "flex-end", marginBottom: 12 }}>
                 <Text>
-                  <ThemedText type="xxlarge" style={styles.character} level={entry.hsk}>
-                    {entry.simplified}
+                  <ThemedText type="xxlarge" style={styles.character} level={entry.level}>
+                    {entry.head}
                   </ThemedText>
                 </Text>
                 <ThemedText type="subtitle" style={{ marginLeft: 4, fontWeight: 'normal' }} variant="secondary">
-                  {entry.traditional}
+                  {entry.alternate}
                 </ThemedText>
               </View>
-              <Text><ThemedText type="default">{entry.pinyin} • </ThemedText><ThemedText type="smallBold" level={entry.hsk}>HSK {entry.hsk}</ThemedText></Text>
+              <Text><ThemedText type="default">{entry.pronunciation} • </ThemedText><ThemedText type="smallBold" level={entry.level}>HSK {entry.level}</ThemedText></Text>
             </View>
             <View style={[styles.detailsContainer, { backgroundColor: tertiaryBackgroundColor }]}>
               <View style={{ paddingBottom: 16, paddingHorizontal: 26 }}>
-                <ThemedText type="large">{entry.definitions}</ThemedText>
+                <ThemedText type="large">{entry.definitions.join('; ')}</ThemedText>
                 <View style={{ borderBottomColor: secondaryStrokeColor, borderBottomWidth: 2, paddingBottom: 16 }}></View>
                 <ThemedText type="defaultBold" style={{ marginTop: 26 }}>EXAMPLES FROM VIDEOS</ThemedText>
               </View>
-              <SubsSearch term={entry.simplified} />
+              <SubsSearch term={entry.head} />
             </View>
           </ScrollView>
         )}

@@ -1,22 +1,22 @@
 // @/components/DictionaryComponent.tsx
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView } from 'react-native';
-import { Dictionary } from '@/src/dictionary';
 import { ThemedInput } from './ThemedInput';
 import { ThemedText } from './ThemedText';
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
+import { DictionaryEntry } from '@/src/dictionary';
 
 export const DictionaryComponent = () => {
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState([]);
+    const [results, setResults] = useState<DictionaryEntry[]>([]);
     const { dictionary } = useDictionary();
 
 
     useEffect(() => {
         const checkIfLoaded = setInterval(() => {
-            if (dictionary && dictionary.entries.length > 0) {
+            if (dictionary && dictionary.loaded) {
                 clearInterval(checkIfLoaded);
                 console.log("Dictionary is ready to use.");
             }
@@ -28,7 +28,7 @@ export const DictionaryComponent = () => {
     const handleSearch = async (text: string) => {
         // console.log("Dictionary Component: Searching for", text);
         setQuery(text);
-        if (dictionary && dictionary.entries) {
+        if (dictionary && dictionary.loaded) {
             const searchResults = await dictionary.search(text);
             setResults(searchResults);
         }
@@ -47,9 +47,9 @@ export const DictionaryComponent = () => {
                     <View key={index} style={{marginTop: 16}}>
                         <TouchableOpacity onPress={() => router.navigate(`/dictionary/word/${entry.id}`)}>
                           <ThemedText>
-                              <ThemedText type="subtitle">{entry.simplified}</ThemedText>
-                              <ThemedText type="defaultBold"> ({entry.pinyin})</ThemedText>
-                              <ThemedText type="default"> - {entry.definitions}</ThemedText>
+                              <ThemedText type="subtitle">{entry.head}</ThemedText>
+                              <ThemedText type="defaultBold"> ({entry.pronunciation})</ThemedText>
+                              <ThemedText type="default"> - {entry.definitions.join('; ')}</ThemedText>
                           </ThemedText>
                         </TouchableOpacity>
                     </View>

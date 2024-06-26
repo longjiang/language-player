@@ -14,7 +14,7 @@ export type ThemedTextProps = TextProps & {
   darkColor?: string;
   type?: 'small' | 'smallBold' | 'default' | 'defaultBold' | 'link' | 'linkBold' | 'large' | 'subtitle' | 'xlarge' | 'title' | 'xxlarge';
   variant?: 'primary' | 'secondary';
-  level?: 1 | 2 | 3 | 4 | 5 | 6;
+  level?: 1 | 2 | 3 | 4 | 5 | 6 | 7;
 };
 
 export function ThemedText({

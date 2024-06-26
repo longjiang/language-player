@@ -1,21 +1,23 @@
 import axios from 'axios';
 import Papa from 'papaparse';
 
+export type Level = 1 | 2 | 3 | 4 | 5 | 6 | 7 | undefined;
+
 export interface DictionaryEntry {
   id: string;
   hskId?: string; // Make the 'hskId' property optional
   head: string; // Alias to `simplified`
   pronunciation: string; // Alias to `pinyin`
-  simplified: string;
-  traditional: string;
-  pinyin: string;
+  alternate?: string; // Traditional character
   definitions: string[];
+  level: Level;
 };
 
 
 interface RawEntry {
   id?: string;
   hskId?: string;
+  hsk: string;
   head?: string; // Alias to `simplified`
   pronunciation?: string; // Alias to `pinyin`
   simplified?: string;
@@ -25,24 +27,29 @@ interface RawEntry {
 }
 
 
-class Dictionary {
+export class Dictionary {
   private index: Map<string, DictionaryEntry[]>;
   private entries: Map<string, DictionaryEntry>;
+  public loaded: boolean;
 
   constructor() {
     this.index = new Map();
     this.entries = new Map();
+    this.loaded = false;
   }
 
   private normalizeEntry(entry: RawEntry): DictionaryEntry {
+    let level: Level;
+    if (["1", "2", "3", "4", "5", "6", "7"].includes(entry.hsk)) {
+      level = parseInt(entry.hsk) as Level;
+    }
     return {
-      hskId: entry.hskId,
-      pinyin: entry.pinyin || '',
       id: entry.id || '', // Add a default value for the 'id' property
+      hskId: entry.hskId,
+      level,
       head: entry.simplified || '',
       pronunciation: entry.pinyin || '',
-      simplified: entry.simplified || '',
-      traditional: entry.traditional || '',
+      alternate: entry.traditional || '',
       definitions: entry.definitions ? entry.definitions.split('/').map(def => def.trim()) : [],
     };
   }
@@ -57,6 +64,7 @@ class Dictionary {
       this.index.clear();
       
       this.buildIndex(parsedData.data as DictionaryEntry[]);
+      this.loaded = true;
       console.log('Dictionary: Data loaded.');
     } catch (error) {
       console.error('Failed to load dictionary data:', error);
@@ -67,16 +75,16 @@ class Dictionary {
     const entryCount: Record<string, number> = {};
 
     entries.forEach((entry, index) => {
-      const baseId = `${entry.traditional},${this.normalizePinyin(entry.pinyin)}`;
+      const baseId = `${entry.alternate},${this.normalizePinyin(entry.pronunciation)}`;
       const count = entryCount[baseId] = (entryCount[baseId] || 0) + 1;
       const uniqueId = `${baseId},${count - 1}`;
 
       entry.id = uniqueId; // Assign unique ID
       this.entries.set(uniqueId, entry);
 
-      this.addToIndex(entry.simplified, entry);
-      this.addToIndex(entry.traditional, entry);
-      this.addToIndex(this.normalizePinyin(entry.pinyin), entry);
+      this.addToIndex(entry.head, entry);
+      if (entry.alternate) this.addToIndex(entry.alternate, entry);
+      this.addToIndex(this.normalizePinyin(entry.pronunciation), entry);
       entry.definitions.forEach(def => this.addToIndex(def, entry));
     });
   }
@@ -115,12 +123,10 @@ class Dictionary {
     // Find any word with `head` property that `phrase` contains
     const results = new Set<DictionaryEntry>();
     this.entries.forEach(entry => {
-      if (phrase.includes(entry.simplified) || phrase.includes(entry.traditional)) {
+      if (phrase.includes(entry.head) || (entry.alternate && phrase.includes(entry.alternate))) {
         results.add(entry);
       }
     });
     return Array.from(results);
   }
 }
-
-export { Dictionary, DictionaryEntry };

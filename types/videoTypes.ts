@@ -1,4 +1,5 @@
 export interface YouTubeVideo {
+  starttime?: number; // Used for subs search results
   date?: Date;
   youtube_id: string; // The ID of the video on YouTube
   id?: string; // The ID in our own database

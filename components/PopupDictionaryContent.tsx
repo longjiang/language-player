@@ -20,6 +20,7 @@ export const PopupDictionaryContent: React.FC<{
   if (!dictionary) {
     return null;
   }
+  if (!token.word) return
   const dictionaryEntries = dictionary.findWordsInPhrase(token.word) || [];
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
 
@@ -46,7 +47,7 @@ export const PopupDictionaryContent: React.FC<{
           <ThemedText
             style={[styles.entryText]}
             type="subtitle"
-            level={entry.hsk}
+            level={entry.level}
           >
             {entry.head}
           </ThemedText>
@@ -57,8 +58,8 @@ export const PopupDictionaryContent: React.FC<{
           />
           <ThemedText style={styles.entryText}>
             {entry.pronunciation}{" "}
-            <ThemedText type="smallBold" level={entry.hsk}>
-              {entry.hsk ? " • HSK " + entry.hsk : ""}
+            <ThemedText type="smallBold" level={entry.level}>
+              {entry.level ? " • HSK " + entry.level : ""}
             </ThemedText>{" "}
             • {entry.definitions.join("; ")}
           </ThemedText>

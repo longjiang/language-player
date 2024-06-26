@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Dictionary } from '@/src/dictionary';
 
-export const DictionaryContext = createContext<{
+interface DictionaryContextProps {
   dictionary: Dictionary | null;
-}>({
+}
+
+export const DictionaryContext = createContext<DictionaryContextProps>({
   dictionary: null,
 });
 

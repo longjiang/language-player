@@ -8,29 +8,67 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { ThemedRBSheet } from "./ThemedRBSheet"; // Import the ThemedRBSheet
 import { router } from "expo-router";
 
-export const PricingBlock = ({ price, duration, current, recommended, onPress, showButtons }) => {
+export interface PricingBlockProps {
+  price: string;
+  duration: string;
+  current?: boolean;
+  recommended?: boolean;
+  onPress?: () => void;
+  showButtons?: boolean;
+}
+
+export const PricingBlock: React.FC<PricingBlockProps> = ({
+  price,
+  duration,
+  current,
+  recommended,
+  onPress,
+  showButtons,
+}) => {
   const secondaryBrandColor = useThemeColor({}, 'semanticSuccess');
   const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
   const primaryTextColor = useThemeColor({}, 'primaryText');
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
-  const buttonTextColor = useThemeColor({}, 'buttonText');
-  const buttonBackgroundColor = useThemeColor({}, 'buttonBackground');
-  const secondaryBackgroundColor = useThemeColor({}, 'secondaryBackground');
 
-  // Ref for the ThemedRBSheet
-  const refRBSheet = useRef();
+  const refRBSheet = useRef<ThemedRBSheet>(null);
 
-  // Function to handle Cancel button press
   const handleCancelPress = () => {
-    refRBSheet.current.open(); // Open the ThemedRBSheet
+    refRBSheet.current?.open();
   };
 
   return (
-    <TouchableOpacity onPress={onPress} style={[styles.pricingBlock, { borderColor: secondaryStrokeColor }, current && {...styles.current, borderColor: primaryTextColor, borderWidth: 5 }, recommended && { borderColor: secondaryBrandColor }]}>
-      {current && <View style={[styles.currentTag, { borderColor: primaryTextColor, backgroundColor: primaryTextColor }]}><ThemedText style={{...styles.tagText, color: primaryBackgroundColor}} type="defaultBold">Current Plan</ThemedText></View>}
-      <ThemedText style={styles.price} type="title">{price}</ThemedText>
-      <ThemedText style={styles.duration} variant="secondary">{duration}</ThemedText>
-      {recommended && <View style={[styles.recommendedTag, { backgroundColor: secondaryBrandColor }]}><ThemedText style={styles.tagText}>Best Value</ThemedText></View>}
+    <TouchableOpacity
+      onPress={onPress}
+      style={[
+        styles.pricingBlock,
+        { borderColor: secondaryStrokeColor },
+        current && { ...styles.current, borderColor: primaryTextColor, borderWidth: 5 },
+        recommended && { borderColor: secondaryBrandColor },
+      ]}
+    >
+      {current && (
+        <View
+          style={[
+            styles.currentTag,
+            { borderColor: primaryTextColor, backgroundColor: primaryTextColor },
+          ]}
+        >
+          <ThemedText style={{ ...styles.tagText, color: primaryBackgroundColor }} type="defaultBold">
+            Current Plan
+          </ThemedText>
+        </View>
+      )}
+      <ThemedText style={styles.price} type="title">
+        {price}
+      </ThemedText>
+      <ThemedText style={styles.duration} variant="secondary">
+        {duration}
+      </ThemedText>
+      {recommended && (
+        <View style={[styles.recommendedTag, { backgroundColor: secondaryBrandColor }]}>
+          <ThemedText style={styles.tagText}>Best Value</ThemedText>
+        </View>
+      )}
       {showButtons && (
         <View style={styles.buttonContainer}>
           <ThemedButton

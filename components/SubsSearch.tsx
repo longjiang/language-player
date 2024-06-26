@@ -13,9 +13,9 @@ import RBSheet from 'react-native-raw-bottom-sheet';
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { PYTHON_SERVER } from '@/src/api/python'
 
-export const SubsSearch = ({ term }) => {
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
+export const SubsSearch = ({ term }: { term: string }): JSX.Element => {
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (term) {
@@ -23,15 +23,15 @@ export const SubsSearch = ({ term }) => {
     }
   }, [term]);
 
-  const fetchResults = async (searchTerm) => {
+  const fetchResults = async (searchTerm: string): Promise<void> => {
     setLoading(true);
     try {
       const response = await axios.get(`${PYTHON_SERVER}/subs-search?l2=zh&terms=${searchTerm}&limit=50&tv_show=nnull&sort=-views`);
       const data = response.data;
-      data.forEach(item => {
+      data.forEach((item: any) => {
         item.subs_l1 = parseSubtitles(item.subs_l2);
         item.subs_l2 = parseSubtitles(item.subs_l2);
-      })
+      });
       setResults(data);
       setLoading(false);
     } catch (error) {
@@ -39,7 +39,6 @@ export const SubsSearch = ({ term }) => {
       setLoading(false);
     }
   };
-
 
   return (
     <View style={styles.container}>
@@ -51,7 +50,6 @@ export const SubsSearch = ({ term }) => {
         </VideoWithTranscriptProvider>
       )}
     </View>
-    
   );
 };
 

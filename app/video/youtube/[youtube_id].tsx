@@ -22,11 +22,10 @@ const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
 const YouTubeVideoScreen = () => {
-  const [video, setVideo] = useState(null);
   const params = useLocalSearchParams();
   const youtubeId = params?.youtube_id;
 
-  const { openPlayer, closePlayer, minimizePlayer, maximizePlayer, setYouTubeId, videoPlayerState } = useVideoPlayer();
+  const { minimizePlayer, maximizePlayer, setYouTubeId, setVideoPlayerState, videoPlayerState } = useVideoPlayer();
   
 
 
@@ -49,7 +48,7 @@ const YouTubeVideoScreen = () => {
         })
         if (!videos) return
         const newVideo = normalizeVideoData(videos[0])
-        setVideo(newVideo);
+        setVideoPlayerState(prev => ({ ...prev, video: newVideo }));
 
       } catch (error) {
         console.error('Failed to fetch video', error);
@@ -85,7 +84,7 @@ const YouTubeVideoScreen = () => {
     }, [route])  // Include `route` in the dependency array if you need to react to changes in the route
   );
 
-  if (!video) {
+  if (!videoPlayerState.video) {
     return <Text>Loading...</Text>; // This will display a loading message until the video is fetched
   }
   
@@ -93,8 +92,8 @@ const YouTubeVideoScreen = () => {
   return (
     <GestureHandlerRootView>
       <View>
-        <VideoWithTranscriptProvider initialVideo={video}>
-          <VideoWithTranscript isMini={false} showHeader={true} key={`video-player-${video?.youtube_id}`} />
+        <VideoWithTranscriptProvider initialVideo={videoPlayerState.video}>
+          <VideoWithTranscript isMini={false} showHeader={true} key={`video-player-${videoPlayerState.video?.youtube_id}`} />
         </VideoWithTranscriptProvider>
       </View>
     </GestureHandlerRootView>

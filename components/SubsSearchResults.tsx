@@ -24,7 +24,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   // Then set startTime
 
   syncedLines.find((line) => {
-    if (line.l2Line.includes(term)) {
+    if (typeof line.l2Line === 'string' && line.l2Line.includes(term)) {
       // We need to find the index of the line in the playlist
       const foundLine = syncedLines.find((item) => item.l2Line?.includes(term));
 
@@ -44,7 +44,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   };
 
   const onSelect = (index: number) => {
-    updateStartTime(playlist[index].starttime);
+    updateStartTime(playlist[index].starttime || 0);
     skipToVideo(index);
     refRBSheet.current.close();
   }

@@ -26,7 +26,7 @@ import {
 
 interface VideoWithTranscriptProps {
   isMini: boolean;
-  showHeader: boolean;
+  showHeader?: boolean;
 }
 
 export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
