@@ -58,6 +58,13 @@ export class Dictionary {
         search TEXT
       );
     `);
+
+    // If there are records, return
+    const countResult = await this.db!.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM hsk_cedict');
+    if (countResult && countResult.count > 0) {
+      console.log('Dictionary: Database already loaded.');
+      return;
+    }
     
     console.log('Dictionary: Fetching...')
     const response = await axios.get('https://server.chinesezerotohero.com/data/hsk-cedict/hsk_cedict.csv.txt');
@@ -68,15 +75,13 @@ export class Dictionary {
     const entryCount: Record<string, number> = {};
     const entries = parsedData.data.map(entry => this.normalizeEntry(entry as RawEntry, entryCount));
 
-    console.log(entries.slice(0, 5));
-
     console.log('Dictionary: Inserting records...')
     // Inserting records in batches
     const batchSize = 50;
     for (let i = 0; i < entries.length; i += batchSize) {
       const batch = entries.slice(i, i + batchSize);
       const values = batch.map(entry => {
-        const search = `${entry.head} ${entry.alternate || ''} ${this.stripAccents(entry.pronunciation).toLowerCase().replace(/\s+/g, ' ')} ${entry.definitions.join(' ').toLowerCase()}`
+        const search = `${entry.head} ${entry.alternate || ''} ${this.stripAccents(entry.pronunciation).toLowerCase().replace(/\s+/g, '')} ${entry.definitions.join(' ').toLowerCase()}`
         return `(${this.escapeSQLValue(entry.id)}, ${entry.hskId || 'NULL'}, ${this.escapeSQLValue(entry.head)}, ${this.escapeSQLValue(entry.pronunciation)}, ${this.escapeSQLValue(entry.alternate || '')}, ${this.escapeSQLValue(entry.definitions.join(' | '))}, ${entry.level || 'NULL'}, ${this.escapeSQLValue(search)})`
       }).join(',');
 
@@ -84,8 +89,8 @@ export class Dictionary {
     }
 
     // After the loop that inserts the records
-    const countResult = await this.db!.getAllSync('SELECT COUNT(*) AS count FROM hsk_cedict');
-    console.log(`Dictionary: ${countResult.count} entries inserted.`);
+    const newCountResult = await this.db!.getAllSync('SELECT COUNT(*) AS count FROM hsk_cedict');
+    console.log(`Dictionary: ${newCountResult.count} entries inserted.`);
 
     // Give a preview of the first few records
     const preview = await this.db!.getAllAsync('SELECT * FROM hsk_cedict LIMIT 5');
@@ -137,10 +142,8 @@ export class Dictionary {
   }
   
   async search(query: string): Promise<DictionaryEntry[]> {
-    console.log('Dictionary class - search. Searching for:', query);
     query = this.stripAccents(query.toLowerCase()).replace(/\s+/g, ' ');
     const results = await this.db!.getAllAsync('SELECT * FROM hsk_cedict WHERE search LIKE ?', [`%${query}%`]);
-    console.log('Dictionary class - search', results.length);
   
     const entries = results.map(this.transformToDictionaryEntry);
     return this.sortEntries(entries, query);

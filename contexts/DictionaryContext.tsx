@@ -15,7 +15,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
   useEffect(() => {
     const newDictionary = new Dictionary();
     console.log('DictionaryContext: Loading the dictionary...');
-    newDictionary.loadData(true).then(() => {
+    newDictionary.loadData(false).then(() => {
       setDictionary(newDictionary);
       console.log('DictionaryContext: Dictionary is ready and loaded.');
     }).catch(error => {
