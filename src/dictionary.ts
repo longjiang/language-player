@@ -1,4 +1,3 @@
-// @/src/dictionary
 import * as SQLite from 'expo-sqlite';
 import axios from 'axios';
 import Papa from 'papaparse';
@@ -34,12 +33,19 @@ export class Dictionary {
     this.db = await SQLite.openDatabaseAsync('hsk_cedict.db');
   }
 
+  private escapeSQLValue(value: string) {
+    if (value === null || value === undefined) {
+      return 'NULL';
+    }
+    return `'${value.replace(/'/g, "''")}'`; // Single quote escaping
+  }
+
   async loadData(forceRebuild: boolean = false): Promise<void> {
     await this.openDB();
     if (forceRebuild) {
       await this.db!.execAsync('DROP TABLE IF EXISTS hsk_cedict');
     }
-    
+
     await this.db!.execAsync(`
       CREATE TABLE IF NOT EXISTS hsk_cedict (
         id TEXT PRIMARY KEY,
@@ -51,42 +57,52 @@ export class Dictionary {
         level INTEGER,
         search TEXT
       );
-      CREATE INDEX IF NOT EXISTS idx_search ON hsk_cedict(search);
-      CREATE INDEX IF NOT EXISTS idx_hskId ON hsk_cedict(hskId);
-      CREATE INDEX IF NOT EXISTS idx_head ON hsk_cedict(head);
-      CREATE INDEX IF NOT EXISTS idx_pronunciation ON hsk_cedict(pronunciation);
-      CREATE INDEX IF NOT EXISTS idx_alternate ON hsk_cedict(alternate);
-      CREATE INDEX IF NOT EXISTS idx_definitions ON hsk_cedict(definitions);
     `);
-
-    const countResult = await this.db!.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM hsk_cedict');
-    if (countResult && countResult.count > 0) {
-      console.log('Database already loaded.');
-      return;
-    }
-
+    
+    console.log('Dictionary: Fetching...')
     const response = await axios.get('https://server.chinesezerotohero.com/data/hsk-cedict/hsk_cedict.csv.txt');
+    
+    console.log('Dictionary: Parsing...')
     const parsedData = Papa.parse(response.data, { header: true });
+    
     const entryCount: Record<string, number> = {};
     const entries = parsedData.data.map(entry => this.normalizeEntry(entry as RawEntry, entryCount));
 
-    for (const entry of entries) {
-      await this.db!.runAsync('INSERT INTO hsk_cedict (id, hskId, head, pronunciation, alternate, definitions, level, search) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [
-          entry.id,
-          entry.hskId ?? null, // Provide a fallback value of null if entry.hskId is undefined
-          entry.head,
-          entry.pronunciation,
-          entry.alternate ?? null, // Provide a fallback value of null if entry.alternate is undefined
-          entry.definitions.join(' | '),
-          entry.level ?? null, // Provide a fallback value of null if entry.level is undefined
-          `${entry.head} ${entry.alternate || ''} ${this.stripAccents(entry.pronunciation.toLowerCase()).replace(/\s+/g, '')} ${entry.definitions.join(' ')}`
-        ]
-      );
+    console.log(entries.slice(0, 5));
+
+    console.log('Dictionary: Inserting records...')
+    // Inserting records in batches
+    const batchSize = 50;
+    for (let i = 0; i < entries.length; i += batchSize) {
+      const batch = entries.slice(i, i + batchSize);
+      const values = batch.map(entry => {
+        const search = `${entry.head} ${entry.alternate || ''} ${this.stripAccents(entry.pronunciation).toLowerCase().replace(/\s+/g, ' ')} ${entry.definitions.join(' ').toLowerCase()}`
+        return `(${this.escapeSQLValue(entry.id)}, ${entry.hskId || 'NULL'}, ${this.escapeSQLValue(entry.head)}, ${this.escapeSQLValue(entry.pronunciation)}, ${this.escapeSQLValue(entry.alternate || '')}, ${this.escapeSQLValue(entry.definitions.join(' | '))}, ${entry.level || 'NULL'}, ${this.escapeSQLValue(search)})`
+      }).join(',');
+
+      await this.db!.execAsync(`INSERT INTO hsk_cedict (id, hskId, head, pronunciation, alternate, definitions, level, search) VALUES ${values}`);
     }
 
-    console.log('Data loaded and normalized.');
+    // After the loop that inserts the records
+    const countResult = await this.db!.getAllSync('SELECT COUNT(*) AS count FROM hsk_cedict');
+    console.log(`Dictionary: ${countResult.count} entries inserted.`);
+
+    // Give a preview of the first few records
+    const preview = await this.db!.getAllAsync('SELECT * FROM hsk_cedict LIMIT 5');
+    console.log('Dictionary: Preview of the first 5 records:', preview);
+
+    // Create indices after all data has been inserted
+    await this.db!.execAsync('CREATE INDEX IF NOT EXISTS idx_search ON hsk_cedict(search)');
+    await this.db!.execAsync('CREATE INDEX IF NOT EXISTS idx_hskId ON hsk_cedict(hskId)');
+    await this.db!.execAsync('CREATE INDEX IF NOT EXISTS idx_head ON hsk_cedict(head)');
+    await this.db!.execAsync('CREATE INDEX IF NOT EXISTS idx_pronunciation ON hsk_cedict(pronunciation)');
+    await this.db!.execAsync('CREATE INDEX IF NOT EXISTS idx_alternate ON hsk_cedict(alternate)');
+    await this.db!.execAsync('CREATE INDEX IF NOT EXISTS idx_definitions ON hsk_cedict(definitions)');
+
+    console.log('Dictionary: Data loaded and normalized.');
   }
+
+  
 
   private normalizeEntry(entry: RawEntry, entryCount: Record<string, number>): DictionaryEntry {
     const level: Level = parseInt(entry.hsk) as Level || undefined;
