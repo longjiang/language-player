@@ -13,22 +13,11 @@ export const DictionaryComponent = () => {
     const [results, setResults] = useState<DictionaryEntry[]>([]);
     const { dictionary } = useDictionary();
 
-
-    useEffect(() => {
-        const checkIfLoaded = setInterval(() => {
-            if (dictionary && dictionary.loaded) {
-                clearInterval(checkIfLoaded);
-                console.log("Dictionary is ready to use.");
-            }
-        }, 1000);
-
-        return () => clearInterval(checkIfLoaded);
-    }, [dictionary]);
-
     const handleSearch = async (text: string) => {
-        // console.log("Dictionary Component: Searching for", text);
+        
+        console.log("Dictionary Component: Searching for", text);
         setQuery(text);
-        if (dictionary && dictionary.loaded) {
+        if (dictionary) {
             const searchResults = await dictionary.search(text);
             setResults(searchResults);
         }

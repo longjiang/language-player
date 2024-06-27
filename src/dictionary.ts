@@ -1,132 +1,143 @@
+// @/src/dictionary
+import * as SQLite from 'expo-sqlite';
 import axios from 'axios';
 import Papa from 'papaparse';
 
 export type Level = 1 | 2 | 3 | 4 | 5 | 6 | 7 | undefined;
 
 export interface DictionaryEntry {
-  id: string;
-  hskId?: string; // Make the 'hskId' property optional
-  head: string; // Alias to `simplified`
-  pronunciation: string; // Alias to `pinyin`
-  alternate?: string; // Traditional character
+  id: string; // HSK CEDICT's IDs take the form of "traditional,pinyin,index" e.g. "中國,zhōng_guó,0"
+  hskId?: number;
+  head: string;
+  pronunciation: string;
+  alternate?: string;
   definitions: string[];
   level: Level;
 };
-
 
 interface RawEntry {
   id?: string;
   hskId?: string;
   hsk: string;
-  head?: string; // Alias to `simplified`
-  pronunciation?: string; // Alias to `pinyin`
+  head?: string;
+  pronunciation?: string;
   simplified?: string;
-  traditional?: string | undefined; // Make the 'traditional' property optional
+  traditional?: string | undefined;
   pinyin?: string;
   definitions?: string;
 }
 
-
 export class Dictionary {
-  private index: Map<string, DictionaryEntry[]>;
-  private entries: Map<string, DictionaryEntry>;
-  public loaded: boolean;
+  private db: SQLite.SQLiteDatabase | null = null;
 
-  constructor() {
-    this.index = new Map();
-    this.entries = new Map();
-    this.loaded = false;
+  async openDB(): Promise<void> {
+    this.db = await SQLite.openDatabaseAsync('hsk_cedict.db');
   }
 
-  private normalizeEntry(entry: RawEntry): DictionaryEntry {
-    let level: Level;
-    if (["1", "2", "3", "4", "5", "6", "7"].includes(entry.hsk)) {
-      level = parseInt(entry.hsk) as Level;
+  async loadData(): Promise<void> {
+    await this.openDB();
+    await this.db!.execAsync(`
+      CREATE TABLE IF NOT EXISTS hsk_cedict (
+        id TEXT PRIMARY KEY,
+        hskId INTEGER,
+        head TEXT,
+        pronunciation TEXT,
+        alternate TEXT,
+        definitions TEXT,
+        level INTEGER,
+        search TEXT
+      );
+      CREATE INDEX IF NOT EXISTS idx_search ON hsk_cedict(search);
+      CREATE INDEX IF NOT EXISTS idx_hskId ON hsk_cedict(hskId);
+      CREATE INDEX IF NOT EXISTS idx_head ON hsk_cedict(head);
+      CREATE INDEX IF NOT EXISTS idx_pronunciation ON hsk_cedict(pronunciation);
+      CREATE INDEX IF NOT EXISTS idx_alternate ON hsk_cedict(alternate);
+      CREATE INDEX IF NOT EXISTS idx_definitions ON hsk_cedict(definitions);
+    `);
+
+    const countResult = await this.db!.getFirstAsync<{ count: number }>('SELECT COUNT(*) AS count FROM hsk_cedict');
+    if (countResult && countResult.count > 0) {
+      console.log('Database already loaded.');
+      return;
     }
+
+    const response = await axios.get('https://server.chinesezerotohero.com/data/hsk-cedict/hsk_cedict.csv.txt');
+    const parsedData = Papa.parse(response.data, { header: true });
+    const entryCount: Record<string, number> = {};
+    const entries = parsedData.data.map(entry => this.normalizeEntry(entry as RawEntry, entryCount));
+
+    for (const entry of entries) {
+      await this.db!.runAsync('INSERT INTO hsk_cedict (id, hskId, head, pronunciation, alternate, definitions, level, search) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          entry.id,
+          entry.hskId ?? null, // Provide a fallback value of null if entry.hskId is undefined
+          entry.head,
+          entry.pronunciation,
+          entry.alternate ?? null, // Provide a fallback value of null if entry.alternate is undefined
+          entry.definitions.join(' | '),
+          entry.level ?? null, // Provide a fallback value of null if entry.level is undefined
+          `${entry.head} ${entry.alternate || ''} ${entry.pronunciation} ${entry.definitions.join(' ')}`
+        ]
+      );
+    }
+
+    console.log('Data loaded and normalized.');
+  }
+
+  private normalizeEntry(entry: RawEntry, entryCount: Record<string, number>): DictionaryEntry {
+    const level: Level = parseInt(entry.hsk) as Level || undefined;
+    const definitionsArray = entry.definitions ? entry.definitions.split('/').map(def => def.trim()) : [];
     return {
-      id: entry.id || '', // Add a default value for the 'id' property
-      hskId: entry.hskId,
-      level,
+      id: this.generateUniqueId(entry, entryCount),
+      hskId: entry.hskId ? parseInt(entry.hskId) : undefined,
       head: entry.simplified || '',
       pronunciation: entry.pinyin || '',
-      alternate: entry.traditional || '',
-      definitions: entry.definitions ? entry.definitions.split('/').map(def => def.trim()) : [],
+      alternate: entry.traditional,
+      definitions: definitionsArray,
+      level
     };
   }
 
-  async loadData() {
-    try {
-      console.log('Dictionary: Loading data...');
-      const response = await axios.get('https://server.chinesezerotohero.com/data/hsk-cedict/hsk_cedict.csv.txt');
-      const parsedData = Papa.parse(response.data, { header: true });
-      parsedData.data = parsedData.data.map((entry) => this.normalizeEntry(entry as RawEntry));
-      this.entries.clear();
-      this.index.clear();
-      
-      this.buildIndex(parsedData.data as DictionaryEntry[]);
-      this.loaded = true;
-      console.log('Dictionary: Data loaded.');
-    } catch (error) {
-      console.error('Failed to load dictionary data:', error);
-    }
-  }
-
-  private buildIndex(entries: DictionaryEntry[]): void {
-    const entryCount: Record<string, number> = {};
-
-    entries.forEach((entry, index) => {
-      const baseId = `${entry.alternate},${this.normalizePinyin(entry.pronunciation)}`;
-      const count = entryCount[baseId] = (entryCount[baseId] || 0) + 1;
-      const uniqueId = `${baseId},${count - 1}`;
-
-      entry.id = uniqueId; // Assign unique ID
-      this.entries.set(uniqueId, entry);
-
-      this.addToIndex(entry.head, entry);
-      if (entry.alternate) this.addToIndex(entry.alternate, entry);
-      this.addToIndex(this.normalizePinyin(entry.pronunciation), entry);
-      entry.definitions.forEach(def => this.addToIndex(def, entry));
-    });
-  }
-
-  private addToIndex(key: string, entry: DictionaryEntry): void {
-    key.split(/\s+/).forEach(word => {
-      if (!this.index.has(word)) {
-        this.index.set(word, []);
-      }
-      this.index.get(word)!.push(entry);
-    });
-  }
-
-  private normalizePinyin(pinyin: string): string {
-    return pinyin.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '_').toLowerCase();
+  private generateUniqueId(entry: RawEntry, entryCount: Record<string, number>): string {
+    const baseId = `${entry.traditional},${(entry.pronunciation || '').replace(/\s+/g, '_')}`;
+    const count = entryCount[baseId] = (entryCount[baseId] || 0) + 1;
+    return `${baseId},${count - 1}`;
   }
 
   async search(query: string): Promise<DictionaryEntry[]> {
-    // console.log('searching for:', query);
-    query = query.toLowerCase();
+    console.log('Dictionary class - search. Searching for:', query);
+    query = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
+    const results = await this.db!.getAllAsync('SELECT * FROM hsk_cedict WHERE search LIKE ?', [`%${query}%`]);
+    console.log('Dictionary class - search', results.length)
+    return results.map(this.transformToDictionaryEntry);
+  }
+
+  async getEntry(id: string): Promise<DictionaryEntry | undefined> {
+    const result = await this.db!.getFirstAsync('SELECT * FROM hsk_cedict WHERE id = ?', [id]);
+    return result ? this.transformToDictionaryEntry(result) : undefined;
+  }
+
+  async findWordsInPhrase(phrase: string): Promise<DictionaryEntry[]> {
+    const words = phrase.toLowerCase().split(/\s+/);
     const results = new Set<DictionaryEntry>();
-    query.split(/\s+/).forEach(word => {
-      if (this.index.has(word)) {
-        this.index.get(word)!.forEach(entry => results.add(entry));
-      }
-    });
-    // console.log('found results:', Array.from(results));
+
+    for (const word of words) {
+      const matches = await this.db!.getAllAsync('SELECT * FROM hsk_cedict WHERE search LIKE ?', [`%${word}%`]);
+      matches.forEach(match => results.add(this.transformToDictionaryEntry(match)));
+    }
+
     return Array.from(results);
   }
 
-  getEntry(id: string): DictionaryEntry | undefined {
-    return this.entries.get(id);
-  }
-
-  findWordsInPhrase(phrase: string): DictionaryEntry[] {
-    // Find any word with `head` property that `phrase` contains
-    const results = new Set<DictionaryEntry>();
-    this.entries.forEach(entry => {
-      if (phrase.includes(entry.head) || (entry.alternate && phrase.includes(entry.alternate))) {
-        results.add(entry);
-      }
-    });
-    return Array.from(results);
+  private transformToDictionaryEntry(entry: any): DictionaryEntry {
+    return {
+      id: entry.id,
+      hskId: entry.hskId ? parseInt(entry.hskId) : undefined,
+      head: entry.head,
+      pronunciation: entry.pronunciation,
+      alternate: entry.alternate,
+      definitions: entry.definitions.split(' | '),
+      level: entry.level as Level
+    };
   }
 }

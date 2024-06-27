@@ -118,7 +118,7 @@ const DictionaryEntryScreen = () => {
             </View>
             <View style={[styles.detailsContainer, { backgroundColor: tertiaryBackgroundColor }]}>
               <View style={{ paddingBottom: 16, paddingHorizontal: 26 }}>
-                <ThemedText type="large">{entry.definitions.join('; ')}</ThemedText>
+                <ThemedText type="large">{entry.definitions ? entry.definitions.join('; ') : ''}</ThemedText>
                 <View style={{ borderBottomColor: secondaryStrokeColor, borderBottomWidth: 2, paddingBottom: 16 }}></View>
                 <ThemedText type="defaultBold" style={{ marginTop: 26 }}>EXAMPLES FROM VIDEOS</ThemedText>
               </View>
