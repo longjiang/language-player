@@ -32,18 +32,15 @@ const AccountScreen = () => {
         all your saved words and progress. This action cannot be undone.
       </ThemedText>
       <ThemedButton
-        title="Keep Account"
-        type="accent"
+        title="Confirm Deletion"
+        type="primary"
         style={{
           marginBottom: 10,
         }}
       />
       <ThemedButton
-        title="Confirm Deletion"
-        type="primary"
-        style={{
-          backgroundColor: semanticErrorColor,
-        }}
+        title="Keep Account"
+        type="accent"
       />
     </ThemedScreen>
   );

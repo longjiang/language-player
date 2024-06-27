@@ -92,20 +92,20 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
       >
         <ThemedText style={styles.sheetText} type="subtitle">Are you sure you want to cancel your subscription?</ThemedText>
         <ThemedButton
-          title="Keep Subscription"
-          type="primary"
-          onPress={() => refRBSheet.current.close()}
-          style={{
-            marginBottom: 10
-          }}
-        />
-        <ThemedButton
           title="Confirm Cancellation"
-          type="neutral"
+          type="primary"
           onPress={() => {
             console.log("Subscription cancelled");
             refRBSheet.current.close();
           }}
+          style={{
+            marginBottom: 10,
+          }}
+        />
+        <ThemedButton
+          title="Keep Subscription"
+          type="neutral"
+          onPress={() => refRBSheet.current.close()}
         />
       </ThemedRBSheet>
     </TouchableOpacity>
