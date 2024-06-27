@@ -34,8 +34,12 @@ export class Dictionary {
     this.db = await SQLite.openDatabaseAsync('hsk_cedict.db');
   }
 
-  async loadData(): Promise<void> {
+  async loadData(forceRebuild: boolean = false): Promise<void> {
     await this.openDB();
+    if (forceRebuild) {
+      await this.db!.execAsync('DROP TABLE IF EXISTS hsk_cedict');
+    }
+    
     await this.db!.execAsync(`
       CREATE TABLE IF NOT EXISTS hsk_cedict (
         id TEXT PRIMARY KEY,
@@ -76,7 +80,7 @@ export class Dictionary {
           entry.alternate ?? null, // Provide a fallback value of null if entry.alternate is undefined
           entry.definitions.join(' | '),
           entry.level ?? null, // Provide a fallback value of null if entry.level is undefined
-          `${entry.head} ${entry.alternate || ''} ${entry.pronunciation} ${entry.definitions.join(' ')}`
+          `${entry.head} ${entry.alternate || ''} ${this.stripAccents(entry.pronunciation.toLowerCase()).replace(/\s+/g, '')} ${entry.definitions.join(' ')}`
         ]
       );
     }
@@ -99,17 +103,31 @@ export class Dictionary {
   }
 
   private generateUniqueId(entry: RawEntry, entryCount: Record<string, number>): string {
-    const baseId = `${entry.traditional},${(entry.pronunciation || '').replace(/\s+/g, '_')}`;
+    const baseId = `${entry.traditional},${(entry.pinyin || '').replace(/\s+/g, '_')}`;
     const count = entryCount[baseId] = (entryCount[baseId] || 0) + 1;
     return `${baseId},${count - 1}`;
   }
+  
+  private sortEntries(entries: DictionaryEntry[], query: string): DictionaryEntry[] {
+    const exactMatches = entries.filter(entry => entry.head === query || entry.alternate === query);
+    const otherMatches = entries
+      .filter(entry => entry.head !== query && entry.alternate !== query)
+      .sort((a, b) => a.head.length - b.head.length);
+    return [...exactMatches, ...otherMatches];
+  }
 
+  private stripAccents(str: string): string {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+  
   async search(query: string): Promise<DictionaryEntry[]> {
     console.log('Dictionary class - search. Searching for:', query);
-    query = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
+    query = this.stripAccents(query.toLowerCase()).replace(/\s+/g, ' ');
     const results = await this.db!.getAllAsync('SELECT * FROM hsk_cedict WHERE search LIKE ?', [`%${query}%`]);
-    console.log('Dictionary class - search', results.length)
-    return results.map(this.transformToDictionaryEntry);
+    console.log('Dictionary class - search', results.length);
+  
+    const entries = results.map(this.transformToDictionaryEntry);
+    return this.sortEntries(entries, query);
   }
 
   async getEntry(id: string): Promise<DictionaryEntry | undefined> {

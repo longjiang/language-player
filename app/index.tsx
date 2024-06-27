@@ -25,7 +25,7 @@ const Index = () => {
         <ThemedButton
           title="Start Learning"
           trailingIcon={<Icon name="chevron-right" />}
-          onPress={() => router.push("/dictionary/word/你好,ni_hao,0")} // 中国
+          onPress={() => router.push("/dictionary")} // 你好
           
         />
       </View>

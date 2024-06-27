@@ -25,13 +25,17 @@ const DictionaryEntryScreen = () => {
   const route = useRoute<RouteProp<{
     DictionaryEntryScreen: DictionaryEntryScreenRouteParams;
   }, 'DictionaryEntryScreen'>>();
-  if (!route.params) return;
+  if (!route.params) return ;
   const id = decodeURIComponent(route.params.id) 
 
   const [entry, setEntry] = useState<null | DictionaryEntry>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { dictionary } = useDictionary();
+
+  const tertiaryBackgroundColor = useThemeColor({}, 'tertiaryBackground');
+  const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
+  const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
   useEffect(() => {
     if (dictionary) {
@@ -49,31 +53,33 @@ const DictionaryEntryScreen = () => {
 
   const loadEntry = async () => {
     setIsLoading(true);
+    setEntry(null); // Reset entry state for new searches
 
-    try {
-      if (dictionary) {
-        const entryData = dictionary.getEntry(id);
-        if (entryData) setEntry(entryData);
-      } else {
-        console.log("Dictionary not loaded yet");
-      }
-    } catch (error) {
-      console.error("Failed to load entry:", error);
+    if (dictionary) {
+      const entryData = await dictionary.getEntry(id);
+      // entryData will be null if not found, which is handled in rendering logic
+      setEntry(entryData || null);  // Convert undefined to null if entryData is undefined
+    } else {
+      console.log("Dictionary not loaded yet");
     }
     setIsLoading(false);
   };
 
   if (isLoading) {
     return (
-      <View style={styles.spinnerContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
       </View>
     );
   }
 
-  const tertiaryBackgroundColor = useThemeColor({}, 'tertiaryBackground');
-  const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
-  const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
+  if (!entry) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ThemedText>Entry not found or dictionary not loaded</ThemedText>
+      </View>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: primaryBackgroundColor }}>

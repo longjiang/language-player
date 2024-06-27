@@ -14,13 +14,9 @@ export const DictionaryComponent = () => {
     const { dictionary } = useDictionary();
 
     const handleSearch = async (text: string) => {
-        
-        console.log("Dictionary Component: Searching for", text);
+        console.log("dc - Searching for", text);
         setQuery(text);
-        if (dictionary) {
-            const searchResults = await dictionary.search(text);
-            setResults(searchResults);
-        }
+        if (dictionary) setResults((await dictionary.search(text)).slice(0, 50));
     };
 
     return (
