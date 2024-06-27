@@ -34,12 +34,12 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
   const backgroundColor = useThemeColor({}, 'secondaryBackground');
   const placeholderTextColor = useThemeColor({}, 'secondaryText');
   const containerStyles = [styles.container, size === 'small' ? styles.small : styles.medium, { borderColor, backgroundColor }, style];
-  const iconSize = size === 'small' ? Typography.fontSize.small : Typography.fontSize.medium;
+  const iconSize = Typography.fontSize.medium;
 
   return (
     <View style={containerStyles}>
       <TextInput
-        style={[styles.input, {color: useThemeColor({}, 'primaryText'), width: '100%'}]}
+        style={{ flex: 1, fontSize: Typography.fontSize[size], color: useThemeColor({}, 'primaryText'), width: '100%' }}
         placeholder={placeholder}
         placeholderTextColor={placeholderTextColor}
         onSubmitEditing={onSubmitEditing}
@@ -47,7 +47,7 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
         {...rest}
       />
       {icon && (
-        <TouchableOpacity onPress={iconOnPress} style={styles.icon}>
+        <TouchableOpacity onPress={iconOnPress} style={{ padding: size === 'small' ? 2 : 6 }}>
           <Icon name={icon} size={iconSize} color={placeholderTextColor} onPress={onSubmitEditing} />
         </TouchableOpacity>
       )}
@@ -69,12 +69,5 @@ const styles = StyleSheet.create({
   small: {
     paddingVertical: 8,
     paddingHorizontal: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: Typography.fontSize.small,
-  },
-  icon: {
-    padding: 10,
   },
 });
