@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SubsSearch } from "@/components/SubsSearch";
 import { DictionaryEntry } from "@/src/dictionary";
 import { RouteProp } from '@react-navigation/native';
+import { debounce } from 'lodash';
 
 type DictionaryEntryScreenRouteParams = {
   id: string;
@@ -43,6 +44,7 @@ const DictionaryEntryScreen = () => {
     }
   }, [dictionary, id]);
 
+  // This is for 'search suggest': as the user types in the search bar, we want to show suggestions
   const handleInputChange = (text: string) => {
     setSearchQuery(text);
   };
@@ -96,7 +98,7 @@ const DictionaryEntryScreen = () => {
             style={{ flex: 1, marginRight: 6 }}
             icon="magnify"
             size="small"
-            onChangeText={handleInputChange}
+            onChangeText={debounce(handleInputChange, 300)}
             onSubmitEditing={handleSearch}
             value={searchQuery || entry?.head}
           />
