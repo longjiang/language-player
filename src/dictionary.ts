@@ -129,13 +129,25 @@ export class Dictionary {
     return `${baseId},${count - 1}`;
   }
   
-  private sortEntries(entries: DictionaryEntry[], query: string): DictionaryEntry[] {
-    const exactMatches = entries.filter(entry => entry.head === query || entry.alternate === query);
-    const otherMatches = entries
-      .filter(entry => entry.head !== query && entry.alternate !== query)
-      .sort((a, b) => a.head.length - b.head.length);
-    return [...exactMatches, ...otherMatches];
-  }
+private sortEntries(entries: DictionaryEntry[], query: string): DictionaryEntry[] {
+  const exactMatches = entries.filter(entry => entry.head === query || entry.alternate === query);
+  const otherMatches = entries
+    .filter(entry => entry.head !== query && entry.alternate !== query)
+    .sort((a, b) => {
+      // Prioritize entries with a 'level' value
+      if (a.level && b.level) {
+        return a.level - b.level; // Ascending order by 'level'
+      } else if (a.level) {
+        return -1; // Entries with a 'level' come first
+      } else if (b.level) {
+        return 1; // Entries without a 'level' come after
+      }
+
+      // Fallback to original sorting criteria if 'level' is the same or not present
+      return a.head.length - b.head.length;
+    });
+  return [...exactMatches, ...otherMatches];
+}
 
   private stripAccents(str: string): string {
     return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
