@@ -61,6 +61,7 @@ const DictionaryEntryScreen = () => {
       const entryData = await dictionary.getEntry(id);
       // entryData will be null if not found, which is handled in rendering logic
       setEntry(entryData || null);  // Convert undefined to null if entryData is undefined
+      setSearchQuery(entryData?.head || "");
     } else {
       console.log("Dictionary not loaded yet");
     }
@@ -95,12 +96,11 @@ const DictionaryEntryScreen = () => {
           />
           <ThemedInput
             placeholder="Chinese, pinyin or English..."
-            style={{ flex: 1, marginRight: 6 }}
+            style={{ flex: 1, marginHorizontal: 16 }}
             icon="magnify"
             size="small"
             onChangeText={debounce(handleInputChange, 300)}
             onSubmitEditing={handleSearch}
-            value={searchQuery || entry?.head}
           />
           <ThemedButton
             type="ghost"
@@ -142,8 +142,9 @@ const DictionaryEntryScreen = () => {
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: 16,
   },
   character: {
 
