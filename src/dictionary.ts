@@ -10,13 +10,13 @@ import { normalizeEntry, sortEntries, transformToDictionaryEntry } from '@/src/d
 export class Dictionary {
   private dictionaryDB: DictionaryDB;
   private dbName: string;
-  private l1: string;
+  private l1Code: string;
   private sourceUrl: string;
 
-  constructor(l2: string) {
-    const { dbName, l1, sourceUrl } = getDictionaryProfile(l2);
+  constructor(l2Code: string) {
+    const { dbName, l1Code, sourceUrl } = getDictionaryProfile(l2Code);
     this.dbName = dbName;
-    this.l1 = l1;
+    this.l1Code = l1Code;
     this.sourceUrl = sourceUrl;
     this.dictionaryDB = new DictionaryDB(this.dbName);
   }
