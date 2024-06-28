@@ -13,7 +13,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
   const [dictionary, setDictionary] = useState<Dictionary | null>(null);
 
   useEffect(() => {
-    const newDictionary = new Dictionary();
+    const newDictionary = new Dictionary('zh');
     console.log('DictionaryContext: Loading the dictionary...');
     newDictionary.loadData(false).then(() => {
       setDictionary(newDictionary);

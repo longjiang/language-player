@@ -22,3 +22,7 @@ export const formatDuration = (totalSeconds: number): string => {
 
   return `${hours ? `${hours}:` : ""}${minutes < 10 ? `0${minutes}` : minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
 };
+
+export const stripAccents = (str: string): string => {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
