@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+from glob import glob
 
 def nested_dict_insert(nested_dict, keys, value):
     """ Recursively insert nested keys into a dictionary """
@@ -7,8 +8,10 @@ def nested_dict_insert(nested_dict, keys, value):
         nested_dict = nested_dict.setdefault(key, {})
     nested_dict[keys[-1]] = value
 
-# Load the CSV file
-data = pd.read_csv("data/lp3-translations.csv")  # Update with the path to your CSV file
+# Find all CSV files in the 'data/' directory
+csv_files = glob("data/translations/*.csv")
+# Merge all CSV files into a single DataFrame
+data = pd.concat([pd.read_csv(f) for f in csv_files], ignore_index=True)
 
 # Iterate through each language column (except the first 'key' column)
 for column in data.columns[1:]:

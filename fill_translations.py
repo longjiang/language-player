@@ -28,4 +28,4 @@ def fill_translations(file_path):
     print("All missing translations have been updated.")
 
 # Example usage
-fill_translations('data/lp3-translations.csv')
+fill_translations('data/lp3-trans-langs.csv')
