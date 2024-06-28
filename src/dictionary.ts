@@ -8,7 +8,7 @@ import { DictionaryEntry, RawEntry, Level } from '@/src/dictionary-types';
 import { normalizeEntry, sortEntries, transformToDictionaryEntry } from '@/src/dictionary-utils';
 
 export class Dictionary {
-  private dbManager: DictionaryDB;
+  private dictionaryDB: DictionaryDB;
   private dbName: string;
   private l1: string;
   private sourceUrl: string;
@@ -18,14 +18,14 @@ export class Dictionary {
     this.dbName = dbName;
     this.l1 = l1;
     this.sourceUrl = sourceUrl;
-    this.dbManager = new DictionaryDB(this.dbName);
+    this.dictionaryDB = new DictionaryDB(this.dbName);
   }
 
   async loadData(forceRebuild: boolean = false): Promise<void> {
-    await this.dbManager.openDB();
-    await this.dbManager.createTable(forceRebuild);
+    await this.dictionaryDB.openDB();
+    await this.dictionaryDB.createTable(forceRebuild);
 
-    const loaded = await this.dbManager.loaded()
+    const loaded = await this.dictionaryDB.loaded()
 
     if (loaded) {
       console.log('Dictionary: Database already loaded.');
@@ -40,29 +40,29 @@ export class Dictionary {
     const entries = parsedData.data.map(entry => normalizeEntry(entry as RawEntry, entryCount));
 
     console.log('Dictionary: Inserting records...')
-    await this.dbManager.insertEntries(entries);
+    await this.dictionaryDB.insertEntries(entries);
 
-    const newCountResult = await this.dbManager.db!.getFirstAsync<{ count: number }>(`SELECT COUNT(*) AS count FROM ${this.dbName}`);
+    const newCountResult = await this.dictionaryDB.db!.getFirstAsync<{ count: number }>(`SELECT COUNT(*) AS count FROM ${this.dbName}`);
     console.log(`Dictionary: ${newCountResult?.count || 0} entries inserted.`);
 
-    const preview = await this.dbManager.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} LIMIT 5`);
+    const preview = await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} LIMIT 5`);
     console.log('Dictionary: Preview of the first 5 records:', preview);
 
-    await this.dbManager.createIndexes();
+    await this.dictionaryDB.createIndexes();
 
     console.log('Dictionary: Data loaded and normalized.');
   }
 
   async search(query: string): Promise<DictionaryEntry[]> {
     query = stripAccents(query.toLowerCase()).replace(/\s+/g, ' ');
-    const results = await this.dbManager.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} WHERE search LIKE ?`, [`%${query}%`]);
+    const results = await this.dictionaryDB.search(query);
   
     const entries = results.map(transformToDictionaryEntry);
     return sortEntries(entries, query);
   }
 
   async getEntry(id: string): Promise<DictionaryEntry | undefined> {
-    const result = await this.dbManager.db!.getFirstAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} WHERE id = ?`, [id]).catch((err) => { console.log(err) });
+    const result = await this.dictionaryDB.get(id);
     return result ? transformToDictionaryEntry(result) : undefined;
   }
 
@@ -71,7 +71,7 @@ export class Dictionary {
     const results = new Set<DictionaryEntry>();
 
     for (const word of words) {
-      const matches = await this.dbManager.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} WHERE search LIKE ?`, [ `%${word}%` ]);
+      const matches = await this.dictionaryDB.fieldContains('head', word);
       matches.forEach(match => results.add(transformToDictionaryEntry(match)));
     }
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -7,7 +7,7 @@ import { useDictionary } from "@/contexts/DictionaryContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Token } from "@/types/tokenTypes";
-import { DictionaryEntry } from "@/src/dictionary";
+import { DictionaryEntry } from "@/src/dictionary-types";
 
 export const PopupDictionaryContent: React.FC<{
   token: Token;
@@ -15,14 +15,31 @@ export const PopupDictionaryContent: React.FC<{
   token,
 }) => {
   if (!token) return
+  
+  const [dictionaryEntries, setDictionaryEntries] = useState<DictionaryEntry[]>([]);
   const { dictionary } = useDictionary();
+  const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
+
   // Wait for the dictionary to load
   if (!dictionary) {
     return null;
   }
   if (!token.word) return
-  const dictionaryEntries = dictionary.findWordsInPhrase(token.word) || [];
-  const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
+
+
+  useEffect(() => {
+    const fetchDictionaryEntries = async () => {
+      if (!token || !token.word || !dictionary) {
+        setDictionaryEntries([]);
+        return;
+      }
+      const entries = await dictionary.findWordsInPhrase(token.word) || [];
+      setDictionaryEntries(entries);
+    };
+
+    fetchDictionaryEntries();
+  }, [token, dictionary]); // Re-run this effect if `token` or `dictionary` changes
+
 
   const styles = StyleSheet.create({
     container: {},

@@ -67,4 +67,22 @@ export class DictionaryDB {
     await this.db!.execAsync(`CREATE INDEX IF NOT EXISTS idx_alternate ON ${this.dbName}(alternate)`);
     await this.db!.execAsync(`CREATE INDEX IF NOT EXISTS idx_definitions ON ${this.dbName}(definitions)`);
   }
+
+  async get(id: string): Promise<any> {
+    return await this.db!.getFirstAsync(`SELECT * FROM ${this.dbName} WHERE id = ?`, [id]).catch((err) => { console.log(err) });
+  }
+
+  async search(query: string): Promise<any[]> {
+    return await this.db!.getAllAsync(`SELECT * FROM ${this.dbName} WHERE search LIKE ?`, [`%${query}%`]);
+  }
+
+  // match any records where the `field` contains any part of the input `phrase`
+  async fieldContains(field: string, phrase: string): Promise<any[]> {
+    return await this.db!.getAllAsync(
+      `SELECT * FROM ${this.dbName} WHERE ? LIKE '%' ||${field} || '%' AND ${field} <> '%'`,
+      [phrase]
+    );
+  }  
+
+
 }

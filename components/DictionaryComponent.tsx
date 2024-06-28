@@ -6,7 +6,7 @@ import { ThemedText } from './ThemedText';
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
-import { DictionaryEntry } from '@/src/dictionary';
+import { DictionaryEntry } from '@/src/dictionary-types';
 import { debounce } from 'lodash';
 
 export const DictionaryComponent = () => {
@@ -15,7 +15,6 @@ export const DictionaryComponent = () => {
     const { dictionary } = useDictionary();
 
     const handleSearch = async (text: string) => {
-        console.log("dc - Searching for", text);
         setQuery(text);
         if (dictionary) setResults((await dictionary.search(text)).slice(0, 50));
     };
