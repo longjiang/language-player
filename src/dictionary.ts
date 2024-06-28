@@ -35,16 +35,17 @@ export class Dictionary {
     console.log('Dictionary: Fetching...')
     const response = await axios.get(this.sourceUrl);
     const parsedData = Papa.parse(response.data, { header: true });
+
     const entryCount: Record<string, number> = {};
     const entries = parsedData.data.map(entry => normalizeEntry(entry as RawEntry, entryCount));
 
     console.log('Dictionary: Inserting records...')
     await this.dbManager.insertEntries(entries);
 
-    const newCountResult = await this.dbManager.getFirstAsync<{ count: number }>(`SELECT COUNT(*) AS count FROM ${this.dbName}`);
+    const newCountResult = await this.dbManager.db!.getFirstAsync<{ count: number }>(`SELECT COUNT(*) AS count FROM ${this.dbName}`);
     console.log(`Dictionary: ${newCountResult?.count || 0} entries inserted.`);
 
-    const preview = await this.dbManager.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} LIMIT 5`);
+    const preview = await this.dbManager.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} LIMIT 5`);
     console.log('Dictionary: Preview of the first 5 records:', preview);
 
     await this.dbManager.createIndexes();
@@ -54,15 +55,14 @@ export class Dictionary {
 
   async search(query: string): Promise<DictionaryEntry[]> {
     query = stripAccents(query.toLowerCase()).replace(/\s+/g, ' ');
-    const results = await this.dbManager.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} WHERE search LIKE '%${query}%'`);
-    console.log('d', results)
+    const results = await this.dbManager.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} WHERE search LIKE ?`, [`%${query}%`]);
   
     const entries = results.map(transformToDictionaryEntry);
     return sortEntries(entries, query);
   }
 
   async getEntry(id: string): Promise<DictionaryEntry | undefined> {
-    const result = await this.dbManager.getFirstAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} WHERE id = '${id}'`);
+    const result = await this.dbManager.db!.getFirstAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} WHERE id = ?`, [id]).catch((err) => { console.log(err) });
     return result ? transformToDictionaryEntry(result) : undefined;
   }
 
@@ -71,7 +71,7 @@ export class Dictionary {
     const results = new Set<DictionaryEntry>();
 
     for (const word of words) {
-      const matches = await this.dbManager.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} WHERE search LIKE '${word}'`);
+      const matches = await this.dbManager.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} WHERE search LIKE ?`, [ `%${word}%` ]);
       matches.forEach(match => results.add(transformToDictionaryEntry(match)));
     }
 
