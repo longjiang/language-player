@@ -1,0 +1,16 @@
+{
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Odkryj moc zrozumiałego wprowadzania danych dzięki setkom tysięcy filmów w ponad 100 językach.",
+        "dont_have_an_account": "Nie masz konta?",
+        "enrich_your_language_learning_journey": "Wzbogać swoją podróż do nauki języka",
+        "forgot_password": "Nie pamiętasz hasła?",
+        "or_login_with": "Lub zaloguj się za pomocą:"
+    },
+    "title": {
+        "login": "Login",
+        "email": "E-mail",
+        "password": "Hasło",
+        "register": "Rejestrować",
+        "start_learning": "Rozpocznij naukę"
+    }
+}

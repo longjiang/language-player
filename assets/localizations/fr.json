@@ -1,0 +1,16 @@
+{
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Découvrez la puissance de l’entrée compréhensible à travers des centaines de milliers de vidéos dans plus de 100 langues.",
+        "dont_have_an_account": "Vous n’avez pas de compte ?",
+        "enrich_your_language_learning_journey": "Enrichissez votre parcours d’apprentissage des langues",
+        "forgot_password": "Mot de passe oublié ?",
+        "or_login_with": "Ou connectez-vous avec :"
+    },
+    "title": {
+        "login": "Connectez-vous",
+        "email": "Messagerie électronique",
+        "password": "Mot de passe",
+        "register": "Registre",
+        "start_learning": "Commencez à apprendre"
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Entdecken Sie die Leistungsfähigkeit von Comprehensible Input durch Hunderttausende von Videos in über 100 Sprachen.",
+        "dont_have_an_account": "Sie haben noch kein Konto?",
+        "enrich_your_language_learning_journey": "Bereichern Sie Ihre Sprachlernreise",
+        "forgot_password": "Passwort vergessen?",
+        "or_login_with": "Oder melden Sie sich an mit:"
+    },
+    "title": {
+        "login": "Einloggen",
+        "email": "E-Mail",
+        "password": "Passwort",
+        "register": "Registrieren",
+        "start_learning": "Beginnen Sie zu lernen"
+    }
+}

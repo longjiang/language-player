@@ -1,0 +1,16 @@
+{
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "通過100多種語言的數十萬個視頻發現可理解輸入的強大功能。",
+        "dont_have_an_account": "沒有帳戶？",
+        "enrich_your_language_learning_journey": "豐富您的語言學習之旅",
+        "forgot_password": "忘記密碼？",
+        "or_login_with": "或使用以下方式登入："
+    },
+    "title": {
+        "login": "登錄",
+        "email": "電子郵件",
+        "password": "密碼",
+        "register": "註冊",
+        "start_learning": "開始學習"
+    }
+}
