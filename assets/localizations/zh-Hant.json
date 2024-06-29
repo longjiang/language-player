@@ -218,18 +218,22 @@
         "zu": "祖魯語",
         "hsh": "匈牙利手語",
         "svk": "斯洛伐克手語",
-        "eso": "愛沙尼亞手語"
+        "eso": "愛沙尼亞手語",
+        "zh-Hans": "中文（簡體）",
+        "zh-Hant": "中文（繁體）"
     },
     "msg": {
         "discover_the_power_of_comprehensible_input": "通過100多種語言的數十萬個視頻發現可理解輸入的強大功能。",
         "dont_have_an_account": "沒有帳戶？",
         "enrich_your_language_learning_journey": "豐富您的語言學習之旅",
         "forgot_password": "忘記密碼？",
-        "or_login_with": "或使用以下方式登入："
+        "or_login_with": "或使用以下方式登入：",
+        "what_your_first_language": "你的第一語言是什麼？"
     },
     "title": {
-        "login": "登錄",
         "email": "電子郵件",
+        "login": "登錄",
+        "next": "下一個",
         "password": "密碼",
         "register": "註冊",
         "start_learning": "開始學習"

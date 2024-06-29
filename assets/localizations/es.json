@@ -218,18 +218,22 @@
         "zu": "Zulú",
         "hsh": "Lengua de señas húngara",
         "svk": "Lengua de señas eslovaca",
-        "eso": "Lengua de señas estonia"
+        "eso": "Lengua de señas estonia",
+        "zh-Hans": "Chino (simplificado)",
+        "zh-Hant": "Chino (Tradicional)"
     },
     "msg": {
         "discover_the_power_of_comprehensible_input": "Descubra el poder de la entrada comprensible a través de cientos de miles de videos en más de 100 idiomas.",
         "dont_have_an_account": "¿No tienes una cuenta?",
         "enrich_your_language_learning_journey": "Enriquezca su viaje de aprendizaje de idiomas",
         "forgot_password": "¿Olvidó su contraseña?",
-        "or_login_with": "O inicie sesión con:"
+        "or_login_with": "O inicie sesión con:",
+        "what_your_first_language": "¿Cuál es tu lengua materna?"
     },
     "title": {
-        "login": "Iniciar sesión",
         "email": "Correo electrónico",
+        "login": "Iniciar sesión",
+        "next": "Próximo",
         "password": "Contraseña",
         "register": "Registro",
         "start_learning": "Empieza a aprender"

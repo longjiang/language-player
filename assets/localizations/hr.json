@@ -218,6 +218,8 @@
         "zu": "Zulu",
         "hsh": "Mađarski znakovni jezik",
         "svk": "Slovački znakovni jezik",
-        "eso": "Estonski znakovni jezik"
+        "eso": "Estonski znakovni jezik",
+        "zh-Hans": "Kineski (pojednostavljeni)",
+        "zh-Hant": "Kineski (tradicionalni)"
     }
 }

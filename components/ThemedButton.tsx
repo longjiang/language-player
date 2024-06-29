@@ -10,6 +10,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Swatches, Typography } from "@/constants";
 import { ThemedText } from "./ThemedText";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type ButtonProps = {
   type?: "neutral" | "accent" | "primary" | "ghost" | "pro";
@@ -36,6 +37,7 @@ export function ThemedButton({
   const secondaryTextColor = useThemeColor({}, "secondaryText");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+  const { i18n } = useLanguage();
 
   const universalStyles = {
     flexDirection: "row",
@@ -171,7 +173,7 @@ export function ThemedButton({
               type="title"
               style={{ fontSize: stylesBasedOnSize[size].fontSize, color: style?.color || mergedViewStyle.color }} // Ignore the lint error here
             >
-              {title}
+              {i18n.t(title, { missingBehavior: "guess"})}
             </ThemedText>
           )}
           {styledTrailingIcon}

@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, FlatList, TouchableWithoutFeedback,
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
+import { useLanguage } from '@/contexts/LanguageContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type Option = {
@@ -11,6 +12,7 @@ export type Option = {
   flag?: string; // Flag emoji
   icon?: string; // Circular png icon
 };
+const { i18n } = useLanguage();
 
 type ThemedSearchableSelectProps = {
   options: Option[];
@@ -81,7 +83,7 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
       <View style={[styles.container, { borderColor, backgroundColor }, style]}>
         <TouchableOpacity style={styles.input} onPress={() => setIsOpen(!isOpen)}>
           <ThemedText style={{ color: textColor }} variant="secondary">
-            {selectedLabel || placeholder}
+          {i18n.t(selectedLabel || placeholder, { missingBehavior: "guess"})}
           </ThemedText>
           <Icon name={isOpen ? "chevron-up" : "chevron-down"} size={24} color={placeholderTextColor} />
         </TouchableOpacity>

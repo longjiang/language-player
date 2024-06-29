@@ -218,6 +218,8 @@
         "zu": "Zulu",
         "hsh": "Ungarsk tegnspråk",
         "svk": "Slovakisk tegnspråk",
-        "eso": "Estisk tegnspråk"
+        "eso": "Estisk tegnspråk",
+        "zh-Hans": "Kinesisk (forenklet)",
+        "zh-Hant": "Kinesisk (tradisjonell)"
     }
 }

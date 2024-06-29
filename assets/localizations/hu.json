@@ -218,6 +218,8 @@
         "zu": "Zulu",
         "hsh": "Magyar jelnyelv",
         "svk": "Szlovák jelnyelv",
-        "eso": "Észt jelnyelv"
+        "eso": "Észt jelnyelv",
+        "zh-Hans": "Kínai (egyszerűsített)",
+        "zh-Hant": "Kínai (hagyományos)"
     }
 }

@@ -218,6 +218,8 @@
         "zu": "Zulu",
         "hsh": "Unkarilainen viittomakieli",
         "svk": "Slovakialainen viittomakieli",
-        "eso": "Viron viittomakieli"
+        "eso": "Viron viittomakieli",
+        "zh-Hans": "kiina (yksinkertaistettu)",
+        "zh-Hant": "kiina (perinteinen)"
     }
 }

@@ -218,18 +218,22 @@
         "zu": "Zulu dili",
         "hsh": "Macar İşaret Dili",
         "svk": "Slovak İşaret Dili",
-        "eso": "Estonya İşaret Dili"
+        "eso": "Estonya İşaret Dili",
+        "zh-Hans": "Çince (Basitleştirilmiş)",
+        "zh-Hant": "Çince (Geleneksel)"
     },
     "msg": {
         "discover_the_power_of_comprehensible_input": "100'den fazla dilde yüz binlerce video aracılığıyla Anlaşılabilir Girişin gücünü keşfedin.",
         "dont_have_an_account": "Hesabınız yok mu?",
         "enrich_your_language_learning_journey": "Dil öğrenme yolculuğunuzu zenginleştirin",
         "forgot_password": "Şifrenizi mi unuttunuz?",
-        "or_login_with": "Veya şununla giriş yapın:"
+        "or_login_with": "Veya şununla giriş yapın:",
+        "what_your_first_language": "İlk diliniz nedir?"
     },
     "title": {
-        "login": "Oturum açma",
         "email": "E-posta",
+        "login": "Oturum açma",
+        "next": "Önümüzdeki",
         "password": "Parola",
         "register": "Kaydolmak",
         "start_learning": "Öğrenmeye Başla"

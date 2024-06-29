@@ -218,18 +218,22 @@
         "zu": "Zulu",
         "hsh": "Węgierski Język Migowy",
         "svk": "Słowacki Język Migowy",
-        "eso": "Estoński język migowy"
+        "eso": "Estoński język migowy",
+        "zh-Hans": "Chiński (uproszczony)",
+        "zh-Hant": "Chiński (tradycyjny)"
     },
     "msg": {
         "discover_the_power_of_comprehensible_input": "Odkryj moc zrozumiałego wprowadzania danych dzięki setkom tysięcy filmów w ponad 100 językach.",
         "dont_have_an_account": "Nie masz konta?",
         "enrich_your_language_learning_journey": "Wzbogać swoją podróż do nauki języka",
         "forgot_password": "Nie pamiętasz hasła?",
-        "or_login_with": "Lub zaloguj się za pomocą:"
+        "or_login_with": "Lub zaloguj się za pomocą:",
+        "what_your_first_language": "Jaki jest Twój pierwszy język?"
     },
     "title": {
-        "login": "Login",
         "email": "E-mail",
+        "login": "Login",
+        "next": "Następny",
         "password": "Hasło",
         "register": "Rejestrować",
         "start_learning": "Rozpocznij naukę"

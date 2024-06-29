@@ -19,13 +19,13 @@ export const ThemedLanguageSelect: React.FC<{
   scope = 'l2',
   initialValue
 }) => {
-  const { languages } = useLanguage();
+  const { languages, i18n } = useLanguage();
 
   const langToOption = (lang: any): Option => {
     const country = languages?.getCountry(lang)
     return {
-      value: lang.iso639_1 || lang.iso639_3,
-      label: lang.name,
+      value: lang.code,
+      label: 'lang.' + lang.code, // Will be translated in the app
       flag: country ? getUnicodeFlagIcon(country.alpha2Code) : '',
     };
   }
@@ -40,12 +40,12 @@ export const ThemedLanguageSelect: React.FC<{
     .concat([
       {
         value: "zh-Hans",
-        label: "Chinese (Simplified)",
+        label: "lang.zh-Hans",  // Will be translated in the app
         flag: getUnicodeFlagIcon("CN"),
       },
       {
         value: "zh-Hant",
-        label: "Chinese (Traditional)",
+        label: "lang.zh-Hant", // Will be translated in the app
         flag: getUnicodeFlagIcon("TW"),
       },
     ]);
@@ -59,7 +59,7 @@ export const ThemedLanguageSelect: React.FC<{
       initialValue={initialValue}  // Pass initialValue to ThemedSearchableSelect
       renderItem={({ item }) => (
         <TouchableOpacity style={styles.item} onPress={() => onSelect(item.value)}>
-          <ThemedText>{item.flag} {item.label}</ThemedText>
+          <ThemedText>{item.flag} {i18n.t('lang.' + item.value, { missingBehavior: "guess"})}</ThemedText>
         </TouchableOpacity>
       )}
     />

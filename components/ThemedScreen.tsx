@@ -6,6 +6,7 @@ import { ThemedButton } from '@/components/ThemedButton';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CountryFlag from 'react-native-country-flag';
 import { router } from "expo-router";
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const ThemedScreen = ({
   title,
@@ -26,6 +27,7 @@ export const ThemedScreen = ({
   showHeader?: boolean,
   onAction?: () => void
 }) => {
+  const { i18n } = useLanguage();
   return (
     <ThemedView style={styles.container}>
       {imageName && <Image source={imageName} style={[styles.image, imageStyle]} />}
@@ -34,7 +36,7 @@ export const ThemedScreen = ({
           {(showHeader && <View style={styles.header}>
             <View style={styles.headerLeft}>
               {onBackPress && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="chevron-left" />} onPress={onBackPress} />}
-              <ThemedText type="title" style={styles.title}>{title}</ThemedText>
+              <ThemedText type="title" style={styles.title}>{i18n.t(title, { missingBehavior: "guess"})}</ThemedText>
             </View>
             {(onAction && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="dots-horizontal-circle" />} onPress={onAction} />)}
             {(showFlag && <TouchableOpacity onPress={() => { router.navigate('/select-l2') }}>

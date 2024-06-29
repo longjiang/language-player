@@ -1,5 +1,5 @@
 // @/app/select-l1.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet } from "react-native";
 import { ThemedLanguageSelect } from "@/components/ThemedLanguageSelect";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -11,7 +11,7 @@ import { ThemedText } from "@/components";
 import { SUPPORTED_L1S } from "@/constants/LanguageConstants";
 
 const SelectL2Screen = () => {
-  const { l1Lang, setL1Lang, languages } = useLanguage();
+  const { l1Lang, setL1Lang, languages, i18n } = useLanguage();
 
   const onSelect = (value: string) => {
     if (!languages) return;
@@ -20,7 +20,7 @@ const SelectL2Screen = () => {
 
   return (
     <ThemedScreen
-      title="What’s your first language?"
+      title='msg.what_your_first_language'
       onBackPress={() => router.navigate("/select-l2")}
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
@@ -29,7 +29,7 @@ const SelectL2Screen = () => {
       <ThemedLanguageSelect onSelect={onSelect} initialValue={l1Lang?.code} scope="l1" />
 
       <ThemedButton
-        title="Next"
+        title="title.next"
         trailingIcon={<Icon name="chevron-right" />}
         style={styles.button}
         onPress={() => {

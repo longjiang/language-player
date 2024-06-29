@@ -218,6 +218,8 @@
         "zu": "Zulu",
         "hsh": "Hongaarse gebarentaal",
         "svk": "Slowaakse gebarentaal",
-        "eso": "Estse gebarentaal"
+        "eso": "Estse gebarentaal",
+        "zh-Hans": "Chinees (vereenvoudigd)",
+        "zh-Hant": "Chinees (traditioneel)"
     }
 }

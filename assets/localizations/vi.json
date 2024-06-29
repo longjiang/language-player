@@ -218,6 +218,8 @@
         "zu": "Zulu",
         "hsh": "Ngôn ngữ ký hiệu Hungary",
         "svk": "Ngôn ngữ ký hiệu Slovakia",
-        "eso": "Ngôn ngữ ký hiệu Estonia"
+        "eso": "Ngôn ngữ ký hiệu Estonia",
+        "zh-Hans": "Tiếng Trung (giản thể)",
+        "zh-Hant": "Tiếng Trung (Phồn thể)"
     }
 }
