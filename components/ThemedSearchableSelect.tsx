@@ -14,6 +14,7 @@ export type Option = {
   alternateLabel?: string; // In language select, this is the vernacular name of the language
   flag?: string; // Flag emoji
   icon?: string; // Circular png icon
+  [key: string]: any; // Index signature to allow accessing properties using a string index
 };
 const { i18n } = useLanguage();
 
