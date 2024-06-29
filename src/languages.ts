@@ -17,9 +17,10 @@ export type Language = {
   level: string;
   lat: number;
   long: number;
-  country: string;
+  country: string; // Space-separated list of country codes
   iso639_3: string;
   iso639_1: string;
+  code: string; // Either iso639_1 or iso639_3
   scope: string;
   type: string;
   speakers: number;
@@ -33,6 +34,28 @@ export type Language = {
     levels: boolean;
   };
 };
+
+const preferredCountryCodes = {
+  af: "ZA",
+  az: "AZ",
+  ar: "SA",
+  en: "GB",
+  eu: "ES",
+  da: "DK",
+  gl: "ES",
+  pa: "IN",
+  ta: "LK",
+  hak: "CN",
+  bn: "BD",
+  yue: "HK",
+  ca: "ES",
+  nan: "CN",
+  nn: "NO",
+  ko: "KR",
+  he: "IL",
+  hi: "IN",
+  urd: "PK",
+}
 
 class Languages {
   private static instance: Languages;
@@ -57,6 +80,7 @@ class Languages {
     this.languages = languages.map((lang: any, index: number) => {
       return {
         ...lang,
+        code: lang.iso639_1 || lang.iso639_3,
         has: {
           content: LANGS_WITH_CONTENT.includes(lang.iso639_3),
           youtube: LANGS_YOUTUBE_SUPPORTS.includes(lang.iso639_3),
@@ -103,19 +127,26 @@ class Languages {
   }
 
 
-  public static getLocales(lang: Language) {
+  public getLocales(lang: Language) {
     return Languages.locales.filter(locale => locale.code === lang.iso639_3);
   }
 
-  public static getCountries(lang: Language) {
-    return Languages.countries.filter(country => country.languages.split(',').includes(lang.iso639_3));
+  public getCountries(lang: Language) {
+    const countryCodes = lang.country.split(" ")
+    return Languages.countries.filter(country => countryCodes.includes(country.alpha2Code));
   }
 
-  public static getHours(lang: Language) {
+  public getCountry(lang: Language) {
+    const countryCodes = lang.country.split(" ")
+    const countryCode = preferredCountryCodes[lang.code] || countryCodes[0]
+    return Languages.countries.find(country => country.alpha2Code === countryCode);
+  }
+
+  public getHours(lang: Language) {
     return Languages.hours.find(hour => hour['iso639-3'] === lang.iso639_3);
   }
 
-  public static getScripts(lang: Language) {
+  public getScripts(lang: Language) {
     return Languages.scripts.filter(script => script.lang === lang.iso639_3);
   }
 }

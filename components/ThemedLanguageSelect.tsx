@@ -4,6 +4,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedSearchableSelect, Option } from "@/components/ThemedSearchableSelect";
 export { Option } from "@/components/ThemedSearchableSelect";
 import { useLanguage } from "@/contexts/LanguageContext";
+import getUnicodeFlagIcon from 'country-flag-icons/unicode'
+
 
 export const ThemedLanguageSelect: React.FC<{
   onSelect: (value: string) => void;
@@ -20,14 +22,14 @@ export const ThemedLanguageSelect: React.FC<{
   const options: Option[] = languages
     ?.getLanguages()
     .map((lang: any) => {
+      const country = languages?.getCountry(lang)
+      console.log(lang.iso639_1, lang.country, country?.name)
       return {
         value: lang.iso639_1 || lang.iso639_3,
         label: lang.name,
-        flag: '🇬🇧',
+        flag: country ? getUnicodeFlagIcon(country.alpha2Code) : '',
       };
-    }) || [];
-
-  console.log(options, 'tls')
+    }).sort((a, b) => a.label.localeCompare(b.label)) || [];
 
   return (
     <ThemedSearchableSelect

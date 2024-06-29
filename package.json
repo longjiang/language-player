@@ -18,7 +18,9 @@
     "@expo-google-fonts/nunito": "^0.2.3",
     "@expo/vector-icons": "^14.0.0",
     "@react-navigation/native": "^6.0.2",
+    "add": "^2.0.6",
     "axios": "^1.7.2",
+    "country-flag-icons": "^1.5.12",
     "expo": "~51.0.14",
     "expo-constants": "~16.0.2",
     "expo-font": "~12.0.7",
@@ -48,7 +50,8 @@
     "react-native-web-webview": "^1.0.2",
     "react-native-webview": "^13.10.4",
     "react-native-youtube-iframe": "^2.3.0",
-    "string-hash": "^1.1.3"
+    "string-hash": "^1.1.3",
+    "yarn": "^1.22.22"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
