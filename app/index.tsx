@@ -25,7 +25,7 @@ const Index = () => {
         <ThemedButton
           title="Start Learning"
           trailingIcon={<Icon name="chevron-right" />}
-          onPress={() => router.push("/login")}
+          onPress={() => router.push("/select-l1")}
           
         />
       </View>

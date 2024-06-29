@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactElement } from 'react';
+import React, { useState, useEffect, ReactElement, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, FlatList, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
@@ -53,6 +53,10 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
     setIsOpen(false);
   };
 
+  const handleChangeText = useCallback((text) => {
+    setSearchTerm(text);
+  }, []);
+
   const renderItemWrapper = ({ item }: { item: Option }) => {
     const itemPress = () => handleSelect(item.value, item.label);
     return customRenderItem ? React.cloneElement(customRenderItem({ item }), { onPress: itemPress }) : (
@@ -62,15 +66,27 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
     );
   };
 
-  const renderHeader = () => (
-    <ThemedInput
+  // Memoized the search header so it doesn't re-render on every state change
+  const SearchHeader = React.memo(({ onChangeText, placeholder, inputColor, borderColor }) => {
+    return (
+      <ThemedInput
+        placeholder={placeholder}
+        onChangeText={onChangeText}
+        style={{ backgroundColor: inputColor, borderColor, marginBottom: 8 }}
+        icon="magnify"
+      />
+    );
+  });
+
+  // Use useCallback to memoize the header component
+  const renderHeader = useCallback(() => (
+    <SearchHeader
+      onChangeText={handleChangeText}
       placeholder="Search..."
-      value={searchTerm}
-      onChangeText={setSearchTerm}
-      style={{ backgroundColor: inputColor, borderColor, marginBottom: 8 }}
-      icon="magnify"
+      inputColor={inputColor}
+      borderColor={borderColor}
     />
-  );
+  ), [handleChangeText, inputColor, borderColor]);
 
   return (
     <TouchableWithoutFeedback onPress={() => isOpen && setIsOpen(false)}>
