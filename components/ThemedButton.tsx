@@ -19,6 +19,7 @@ type ButtonProps = {
   leadingIcon?: React.ReactNode;
   trailingIcon?: React.ReactNode;
   style?: ViewStyle; // ViewStyle
+  disabled?: boolean;
 };
 
 export function ThemedButton({
@@ -28,6 +29,7 @@ export function ThemedButton({
   onPress,
   leadingIcon,
   trailingIcon,
+  disabled,
   style,
 }: ButtonProps) {
   const primaryTextColor = useThemeColor({}, "primaryText");
@@ -76,21 +78,29 @@ export function ThemedButton({
       justifyContent: "space-between",
       backgroundColor: secondaryBackgroundColor,
       color: primaryTextColor,
+      borderColor: "transparent",
+      borderWidth: 0,
     },
     primary: {
       justifyContent: "space-between",
       backgroundColor: primaryBrandColor,
       color: Swatches.neutral[0], // White
+      borderColor: "transparent",
+      borderWidth: 0,
     },
     ghost: {
       justifyContent: "center",
       backgroundColor: "transparent",
       color: primaryTextColor,
+      borderColor: "transparent",
+      borderWidth: 0,
     },
     pro: {
       justifyContent: "space-between",
       backgroundColor: secondaryBackgroundColor,
       color: primaryTextColor,
+      borderColor: "transparent",
+      borderWidth: 0,
     },
   };
 
@@ -106,23 +116,23 @@ export function ThemedButton({
       type !== "ghost" ? stylesBasedOnSize[size].paddingHorizontal : 0,
   };
 
-  const styledLeadingIcon = leadingIcon && (
+  const styledLeadingIcon = leadingIcon && React.isValidElement(leadingIcon) ? (
     <View style={{ marginRight: title ? 5 : 0, alignItems: "center" }}>
       {React.cloneElement(leadingIcon, {
-        color: style?.color || stylesBasedOnType[type].color,
+        color: style?.color || stylesBasedOnType[type].color, // Ignore the lint error here
         size: stylesBasedOnSize[size].fontSize * 1.2,
       })}
     </View>
-  );
-
-  const styledTrailingIcon = trailingIcon && (
+  ) : null;
+  
+  const styledTrailingIcon = trailingIcon && React.isValidElement(trailingIcon) ? (
     <View style={{ marginLeft: title ? 5 : 0, alignItems: "center" }}>
       {React.cloneElement(trailingIcon, {
-        color: style?.color || stylesBasedOnType[type].color,
+        color: style?.color || stylesBasedOnType[type].color, // Ignore the lint error here
         size: stylesBasedOnSize[size].fontSize * 1.2,
       })}
     </View>
-  );
+  ) : null;
 
   const gradientColors = [
     "#00C853",
@@ -134,7 +144,8 @@ export function ThemedButton({
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={{ ...style }}
+      disabled={disabled}
+      style={{ opacity: disabled ? 0.5 : 1, ...style }}
     >
       {type === "pro" && (
         <ThemedText
@@ -158,7 +169,7 @@ export function ThemedButton({
           {title && (
             <ThemedText
               type="title"
-              style={{ fontSize: stylesBasedOnSize[size].fontSize, color: style?.color || mergedViewStyle.color }}
+              style={{ fontSize: stylesBasedOnSize[size].fontSize, color: style?.color || mergedViewStyle.color }} // Ignore the lint error here
             >
               {title}
             </ThemedText>

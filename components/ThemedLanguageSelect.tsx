@@ -23,7 +23,6 @@ export const ThemedLanguageSelect: React.FC<{
     ?.getLanguages()
     .map((lang: any) => {
       const country = languages?.getCountry(lang)
-      console.log(lang.iso639_1, lang.country, country?.name)
       return {
         value: lang.iso639_1 || lang.iso639_3,
         label: lang.name,

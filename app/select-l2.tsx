@@ -2,33 +2,42 @@
 import React, { useState } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { Option, ThemedLanguageSelect } from "@/components/ThemedLanguageSelect";
-import { ThemedButton } from "@/components/ThemedButton";
-import { ThemedScreen } from "@/components/ThemedScreen";
-import { LanguageIcon } from "@/components/LanguageIcon"; // Make sure the import path is correct
+import { ThemedButton, ThemedScreen, LanguageIcon, ThemedText } from "@/components";
 import { router } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useLanguage } from "@/contexts/LanguageContext";
+import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 
 const SelectL2Screen = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("");
-  const { languages } = useLanguage();
+  const { l2Lang, setL2Lang, languages } = useLanguage();
 
+  const languageCircleIcons: { [key: string]: string } = {
+    zh: require("@/assets/flags/china.png"),
+    en: require("@/assets/flags/uk.png"),
+    ja: require("@/assets/flags/japan.png"),
+    fr: require("@/assets/flags/france.png"),
+    ko: require("@/assets/flags/korea.png"),
+    es: require("@/assets/flags/spain.png"),
+  }
 
-  const languageOptions: Option[] = [
-    { value: "zh", label: "Chinese", icon: require("@/assets/flags/china.png") },
-    { value: "en", label: "English", icon: require("@/assets/flags/uk.png") },
-    {
-      value: "ja",
-      label: "Japanese",
-      icon: require("@/assets/flags/japan.png"),
-    },
-    { value: "fr", label: "French", icon: require("@/assets/flags/france.png") },
-    { value: "ko", label: "Korean", icon: require("@/assets/flags/korea.png") },
-    { value: "es", label: "Spanish", icon: require("@/assets/flags/spain.png") },
-  ];
+  const languageOptions: Option[] = languages
+    ?.getLanguages()
+    .map((lang: any) => {
+      const country = languages?.getCountry(lang)
+      const icon = languageCircleIcons[lang.iso639_1];
+      return {
+        icon,
+        value: lang.iso639_1 || lang.iso639_3,
+        label: lang.name,
+        flag: country ? getUnicodeFlagIcon(country.alpha2Code) : '',
+      };
+    }).sort((a, b) => a.label.localeCompare(b.label)) || [];
 
   const onSelect = (value: string) => {
+    if (!languages) return;
     setSelectedLanguage(value);
+    setL2Lang(languages.getLangByCode(value));
   };
 
   // Function to get an option based on the value
@@ -41,8 +50,9 @@ const SelectL2Screen = () => {
       title="What language would you like to learn?"
       onBackPress={() => router.navigate("/acquisition-survey")}
     >
+      <ThemedText>{l2Lang?.name}</ThemedText>
       <ScrollView contentContainerStyle={styles.iconLayout}>
-        {languageOptions.map((lang: Option) => (
+        {languageOptions.filter(lang => lang.icon).map((lang: Option) => (
           <LanguageIcon
             key={lang.value}
             icon={lang.icon}
@@ -55,13 +65,14 @@ const SelectL2Screen = () => {
       <ThemedLanguageSelect
         onSelect={onSelect}
         initialValue={getOption(selectedLanguage)}
-        placeholder={`${languages.getLanguages().length - languageOptions.length} more languages`}
+        placeholder={`More languages (${languageOptions.length})`}
       />
 
       <ThemedButton
         title="Next"
         trailingIcon={<Icon name="chevron-right" />}
         style={styles.button}
+        disabled={!selectedLanguage}
         onPress={() => {
           router.navigate("/select-l1");
         }}

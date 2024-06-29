@@ -117,6 +117,10 @@ class Languages {
     return language || null;
   }
 
+  public getLangByCode(code: string) {
+    return this.getLangByCode1(code) || this.getLangByCode3(code);
+  }
+
   public getLangById(id: number) {
     const language = Languages.languages.find(lang => lang.id === id);
     return language || null;
@@ -125,7 +129,6 @@ class Languages {
   public getLanguages() {
     return Languages.languages;
   }
-
 
   public getLocales(lang: Language) {
     return Languages.locales.filter(locale => locale.code === lang.iso639_3);
