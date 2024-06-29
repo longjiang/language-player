@@ -10,7 +10,7 @@ import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 export const ThemedLanguageSelect: React.FC<{
   onSelect: (value: string) => void;
   placeholder?: string;
-  initialValue?: Option;
+  initialValue?: string; // Change the type of initialValue prop to string
 }> = ({
   onSelect,
   placeholder = 'Select a language',

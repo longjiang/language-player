@@ -18,7 +18,7 @@ type ThemedSearchableSelectProps = {
   placeholder: string;
   style?: object;
   renderItem?: (info: { item: Option }) => ReactElement;
-  initialValue?: Option;
+  initialValue?: string;
 };
 
 export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
@@ -31,7 +31,7 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLabel, setSelectedLabel] = useState(initialValue?.label || '');
+  const [selectedLabel, setSelectedLabel] = useState('');
   const borderColor = useThemeColor({}, 'secondaryStroke');
   const backgroundColor = useThemeColor({}, 'secondaryBackground');
   const inputColor = useThemeColor({}, 'primaryBackground');
@@ -40,7 +40,7 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
 
   useEffect(() => {
     if (initialValue) {
-      const initialItem = options.find(option => option.value === initialValue.value);
+      const initialItem = options.find(option => option.value === initialValue);
       if (initialItem) setSelectedLabel(initialItem.label);
     }
   }, [initialValue, options]);

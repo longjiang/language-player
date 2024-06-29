@@ -50,7 +50,6 @@ const SelectL2Screen = () => {
       title="What language would you like to learn?"
       onBackPress={() => router.navigate("/acquisition-survey")}
     >
-      <ThemedText>{l2Lang?.name}</ThemedText>
       <ScrollView contentContainerStyle={styles.iconLayout}>
         {languageOptions.filter(lang => lang.icon).map((lang: Option) => (
           <LanguageIcon
@@ -64,7 +63,7 @@ const SelectL2Screen = () => {
       </ScrollView>
       <ThemedLanguageSelect
         onSelect={onSelect}
-        initialValue={getOption(selectedLanguage)}
+        initialValue={getOption(selectedLanguage)?.value}
         placeholder={`More languages (${languageOptions.length})`}
       />
 
