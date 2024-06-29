@@ -221,5 +221,21 @@
         "eso": "Bahasa Isyarat Estonia",
         "zh-Hans": "Tionghoa (Sederhana)",
         "zh-Hant": "Tionghoa (Tradisional)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Temukan kekuatan Comprehensible Input melalui ratusan ribu video dalam lebih dari 100 bahasa.",
+        "dont_have_an_account": "Belum punya akun?",
+        "enrich_your_language_learning_journey": "Perkaya perjalanan belajar bahasa Anda",
+        "forgot_password": "Lupa kata sandi?",
+        "or_login_with": "Atau login dengan:",
+        "what_your_first_language": "Apa bahasa pertama Anda?"
+    },
+    "title": {
+        "email": "Email",
+        "login": "Login",
+        "next": "Depan",
+        "password": "Kata sandi",
+        "register": "Daftar",
+        "start_learning": "Mulai Belajar"
     }
 }

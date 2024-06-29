@@ -221,5 +221,21 @@
         "eso": "Észt jelnyelv",
         "zh-Hans": "Kínai (egyszerűsített)",
         "zh-Hant": "Kínai (hagyományos)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Fedezze fel az érthető bevitel erejét több százezer videón keresztül több mint 100 nyelven.",
+        "dont_have_an_account": "Még nincs fiókja?",
+        "enrich_your_language_learning_journey": "Gazdagítsa nyelvtanulási útját",
+        "forgot_password": "Elfelejtett jelszó?",
+        "or_login_with": "Vagy jelentkezzen be:",
+        "what_your_first_language": "Mi az első nyelve?"
+    },
+    "title": {
+        "email": "E-mail",
+        "login": "Bejelentkezés",
+        "next": "Következő",
+        "password": "Jelszó",
+        "register": "Regisztráció",
+        "start_learning": "Kezdje el a tanulást"
     }
 }

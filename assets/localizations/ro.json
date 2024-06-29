@@ -221,5 +221,21 @@
         "eso": "Limbajul semnelor estonian",
         "zh-Hans": "Chineză (simplificată)",
         "zh-Hant": "Chineză (tradițională)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Descoperiți puterea informațiilor de intrare inteligibile prin sute de mii de videoclipuri în peste 100 de limbi.",
+        "dont_have_an_account": "Nu aveți un cont?",
+        "enrich_your_language_learning_journey": "Îmbogățiți-vă călătoria de învățare a limbilor străine",
+        "forgot_password": "Ai uitat parola?",
+        "or_login_with": "Sau conectați-vă cu:",
+        "what_your_first_language": "Care este prima ta limbă?"
+    },
+    "title": {
+        "email": "E-mail",
+        "login": "Login",
+        "next": "Următor",
+        "password": "Parolă",
+        "register": "Înregistrează-te",
+        "start_learning": "Începeți să învățați"
     }
 }

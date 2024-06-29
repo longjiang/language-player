@@ -221,5 +221,21 @@
         "eso": "Ngôn ngữ ký hiệu Estonia",
         "zh-Hans": "Tiếng Trung (giản thể)",
         "zh-Hant": "Tiếng Trung (Phồn thể)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Khám phá sức mạnh của Nhập liệu dễ hiểu thông qua hàng trăm nghìn video bằng hơn 100 ngôn ngữ.",
+        "dont_have_an_account": "Bạn chưa có tài khoản?",
+        "enrich_your_language_learning_journey": "Làm phong phú thêm hành trình học ngôn ngữ của bạn",
+        "forgot_password": "Quên mật khẩu?",
+        "or_login_with": "Hoặc đăng nhập bằng:",
+        "what_your_first_language": "Ngôn ngữ đầu tiên của bạn là gì?"
+    },
+    "title": {
+        "email": "Email",
+        "login": "Đăng nhập",
+        "next": "Sau",
+        "password": "Mật khẩu",
+        "register": "Đăng ký",
+        "start_learning": "Bắt đầu học"
     }
 }

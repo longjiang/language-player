@@ -221,5 +221,21 @@
         "eso": "ภาษามือเอสโตเนีย",
         "zh-Hans": "จีน (ประยุกต์)",
         "zh-Hant": "จีน (ดั้งเดิม)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "ค้นพบพลังของ Comprehensible Input ผ่านวิดีโอหลายแสนรายการในกว่า 100 ภาษา",
+        "dont_have_an_account": "ยังไม่มีบัญชี?",
+        "enrich_your_language_learning_journey": "เติมเต็มเส้นทางการเรียนภาษาของคุณ",
+        "forgot_password": "ลืมรหัสผ่าน?",
+        "or_login_with": "หรือเข้าสู่ระบบด้วย:",
+        "what_your_first_language": "ภาษาแรกของคุณคืออะไร?"
+    },
+    "title": {
+        "email": "อีเมล",
+        "login": "เข้า สู่ ระบบ",
+        "next": "ต่อไป",
+        "password": "รหัสผ่าน",
+        "register": "ลงทะเบียน",
+        "start_learning": "เริ่มเรียนรู้"
     }
 }

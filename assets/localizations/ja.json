@@ -221,5 +221,21 @@
         "eso": "エストニア手話",
         "zh-Hans": "中国語(簡体字)",
         "zh-Hant": "中国語(繁体字)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "100以上の言語で書かれた何十万ものビデオを通して、Comprehensible Inputの力を発見してください。",
+        "dont_have_an_account": "アカウントをお持ちではありませんか?",
+        "enrich_your_language_learning_journey": "語学学習の旅を豊かに",
+        "forgot_password": "パスワードをお忘れですか?",
+        "or_login_with": "または、以下でログインします。",
+        "what_your_first_language": "あなたの母国語は何ですか?"
+    },
+    "title": {
+        "email": "電子メール",
+        "login": "ログイン",
+        "next": "次に",
+        "password": "パスワード",
+        "register": "登録する",
+        "start_learning": "学習を始める"
     }
 }

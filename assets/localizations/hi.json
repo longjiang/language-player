@@ -221,5 +221,21 @@
         "eso": "एस्टोनियाई सांकेतिक भाषा",
         "zh-Hans": "चीनी (सरलीकृत)",
         "zh-Hant": "चीनी (पारंपरिक)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "100 से अधिक भाषाओं में सैकड़ों हजारों वीडियो के माध्यम से बोधगम्य इनपुट की शक्ति की खोज करें।",
+        "dont_have_an_account": "क्या आपके पास खाता नहीं है?",
+        "enrich_your_language_learning_journey": "अपनी भाषा-सीखने की यात्रा को समृद्ध करें",
+        "forgot_password": "पासवर्ड भूल गए?",
+        "or_login_with": "या इसके साथ लॉगिन करें:",
+        "what_your_first_language": "आपकी पहली भाषा क्या है?"
+    },
+    "title": {
+        "email": "ईमेल",
+        "login": "लॉगिन",
+        "next": "अगला",
+        "password": "पासवर्ड",
+        "register": "पंजीकृत करें",
+        "start_learning": "सीखना शुरू करें"
     }
 }

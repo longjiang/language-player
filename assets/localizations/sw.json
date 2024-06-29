@@ -221,5 +221,21 @@
         "eso": "Lugha ya Ishara ya Estonia",
         "zh-Hans": "Kichina (Rahisi)",
         "zh-Hant": "Kichina (Kijadi)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Gundua nguvu ya Ingizo linaloeleweka kupitia mamia ya maelfu ya video katika lugha zaidi ya 100.",
+        "dont_have_an_account": "Huna account?",
+        "enrich_your_language_learning_journey": "Boresha safari yako ya kujifunza lugha",
+        "forgot_password": "Umesahau nywila?",
+        "or_login_with": "Au kuingia na:",
+        "what_your_first_language": "Lugha yako ya kwanza ni ipi?"
+    },
+    "title": {
+        "email": "Barua pepe",
+        "login": "Kuingia",
+        "next": "Ijayo",
+        "password": "Nywila",
+        "register": "Kujiandikisha",
+        "start_learning": "Anza Kujifunza"
     }
 }

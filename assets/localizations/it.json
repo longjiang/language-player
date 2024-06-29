@@ -221,5 +221,21 @@
         "eso": "Lingua dei segni estone",
         "zh-Hans": "Cinese (semplificato)",
         "zh-Hant": "Cinese (tradizionale)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Scopri la potenza di Comprehensible Input attraverso centinaia di migliaia di video in oltre 100 lingue.",
+        "dont_have_an_account": "Non hai un account?",
+        "enrich_your_language_learning_journey": "Arricchisci il tuo percorso di apprendimento linguistico",
+        "forgot_password": "Hai dimenticato la password?",
+        "or_login_with": "Oppure accedi con:",
+        "what_your_first_language": "Qual è la tua prima lingua?"
+    },
+    "title": {
+        "email": "E-mail",
+        "login": "Accesso",
+        "next": "Prossimo",
+        "password": "Parola d’ordine",
+        "register": "Registro",
+        "start_learning": "Inizia a imparare"
     }
 }

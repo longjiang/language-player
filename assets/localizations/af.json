@@ -221,5 +221,21 @@
         "eso": "Estlandse Gebaretaal",
         "zh-Hans": "Sjinees (Vereenvoudig)",
         "zh-Hant": "Sjinees (tradisioneel)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Ontdek die krag van verstaanbare insette deur honderdduisende video's in meer as 100 tale.",
+        "dont_have_an_account": "Het jy nie 'n rekening nie?",
+        "enrich_your_language_learning_journey": "Verryk jou taalleerreis",
+        "forgot_password": "Wagwoord vergeet?",
+        "or_login_with": "Of meld aan met:",
+        "what_your_first_language": "Wat is jou eerste taal?"
+    },
+    "title": {
+        "email": "E-pos",
+        "login": "Aanteken",
+        "next": "Volgende",
+        "password": "Wagwoord",
+        "register": "Register",
+        "start_learning": "Begin leer"
     }
 }

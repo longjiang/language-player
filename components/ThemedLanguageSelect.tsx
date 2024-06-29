@@ -26,6 +26,9 @@ export const ThemedLanguageSelect: React.FC<{
     return {
       value: lang.code,
       label: 'lang.' + lang.code, // Will be translated in the app
+      translatedLabel: i18n.t('lang.' + lang.code, { missingBehavior: "guess"}),
+      alternateLabel: lang.vernacularName,
+      englishLabel: lang.name,
       flag: country ? getUnicodeFlagIcon(country.alpha2Code) : '',
     };
   }
@@ -41,11 +44,17 @@ export const ThemedLanguageSelect: React.FC<{
       {
         value: "zh-Hans",
         label: "lang.zh-Hans",  // Will be translated in the app
+        translatedLabel: i18n.t('lang.zh-Hant', { missingBehavior: "guess"}),
+        alternateLabel: '简体中文',
+        englishLabel: 'Chinese (Simplified)',
         flag: getUnicodeFlagIcon("CN"),
       },
       {
         value: "zh-Hant",
         label: "lang.zh-Hant", // Will be translated in the app
+        translatedLabel: i18n.t('lang.zh-Hans', { missingBehavior: "guess"}),
+        alternateLabel: '繁體中文',
+        englishLabel: 'Chinese (Traditional)',
         flag: getUnicodeFlagIcon("TW"),
       },
     ]);

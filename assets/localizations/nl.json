@@ -221,5 +221,21 @@
         "eso": "Estse gebarentaal",
         "zh-Hans": "Chinees (vereenvoudigd)",
         "zh-Hant": "Chinees (traditioneel)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Ontdek de kracht van Comprehensible Input door middel van honderdduizenden video's in meer dan 100 talen.",
+        "dont_have_an_account": "Heb je nog geen account?",
+        "enrich_your_language_learning_journey": "Verrijk uw taalleertraject",
+        "forgot_password": "Wachtwoord vergeten?",
+        "or_login_with": "Of log in met:",
+        "what_your_first_language": "Wat is je eerste taal?"
+    },
+    "title": {
+        "email": "E-mail",
+        "login": "Inloggen",
+        "next": "Volgend",
+        "password": "Wachtwoord",
+        "register": "Registreren",
+        "start_learning": "Begin met leren"
     }
 }

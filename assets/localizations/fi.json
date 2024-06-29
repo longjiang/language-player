@@ -221,5 +221,21 @@
         "eso": "Viron viittomakieli",
         "zh-Hans": "kiina (yksinkertaistettu)",
         "zh-Hant": "kiina (perinteinen)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Tutustu ymmärrettävän syötteen voimaan satojen tuhansien videoiden avulla yli 100 kielellä.",
+        "dont_have_an_account": "Eikö sinulla ole tiliä?",
+        "enrich_your_language_learning_journey": "Rikastuta kieltenoppimismatkaasi",
+        "forgot_password": "Unohtuiko salasana?",
+        "or_login_with": "Tai kirjaudu sisään:",
+        "what_your_first_language": "Mikä on ensimmäinen kielesi?"
+    },
+    "title": {
+        "email": "Sähköposti",
+        "login": "Sisäänkirjautuminen",
+        "next": "Seuraava",
+        "password": "Salasana",
+        "register": "Rekisteröidy",
+        "start_learning": "Aloita oppiminen"
     }
 }

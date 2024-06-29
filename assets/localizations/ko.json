@@ -221,5 +221,21 @@
         "eso": "에스토니아 수화",
         "zh-Hans": "중국어(간체)",
         "zh-Hant": "중국어(번체)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "100개 이상의 언어로 된 수십만 개의 비디오를 통해 Comprehensible Input의 힘을 발견하십시오.",
+        "dont_have_an_account": "계정이 없으신가요?",
+        "enrich_your_language_learning_journey": "언어 학습 여정 풍요로움",
+        "forgot_password": "비밀번호를 잊으셨나요?",
+        "or_login_with": "또는 다음으로 로그인하십시오.",
+        "what_your_first_language": "당신의 모국어는 무엇입니까?"
+    },
+    "title": {
+        "email": "메일 주소",
+        "login": "로그인",
+        "next": "다음",
+        "password": "암호",
+        "register": "등록기",
+        "start_learning": "학습 시작하기"
     }
 }

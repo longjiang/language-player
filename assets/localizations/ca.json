@@ -221,5 +221,21 @@
         "eso": "Llengua de signes estoniana",
         "zh-Hans": "Xinès (simplificat)",
         "zh-Hant": "Xinès (tradicional)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Descobreix el poder de l'entrada comprensible a través de centenars de milers de vídeos en més de 100 idiomes.",
+        "dont_have_an_account": "No tens compte?",
+        "enrich_your_language_learning_journey": "Enriqueix el teu viatge d'aprenentatge d'idiomes",
+        "forgot_password": "Has oblidat la contrasenya?",
+        "or_login_with": "O inicieu sessió amb:",
+        "what_your_first_language": "Quin és el teu primer idioma?"
+    },
+    "title": {
+        "email": "Correu electrònic",
+        "login": "Connexió",
+        "next": "Proper",
+        "password": "Contrasenya",
+        "register": "Registrar",
+        "start_learning": "Comença a aprendre"
     }
 }

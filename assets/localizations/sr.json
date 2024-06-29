@@ -221,5 +221,21 @@
         "eso": "Estonski znakovni jezik",
         "zh-Hans": "kineski (pojednostavljeni)",
         "zh-Hant": "kineski (tradicionalni)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Otkrijte moć razumljivog unosa kroz stotine hiljada video zapisa na preko 100 jezika.",
+        "dont_have_an_account": "Nemate nalog?",
+        "enrich_your_language_learning_journey": "Obogatite svoje putovanje učenjem jezika",
+        "forgot_password": "Zaboravili ste lozinku?",
+        "or_login_with": "Ili se prijavite sa:",
+        "what_your_first_language": "Koji ti je prvi jezik?"
+    },
+    "title": {
+        "email": "E-pošta",
+        "login": "Prijavljivanje",
+        "next": "Sledeжi",
+        "password": "Lozinku",
+        "register": "Registrujete",
+        "start_learning": "Započni učenje"
     }
 }

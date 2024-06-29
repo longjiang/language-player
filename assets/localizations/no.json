@@ -221,5 +221,21 @@
         "eso": "Estisk tegnspråk",
         "zh-Hans": "Kinesisk (forenklet)",
         "zh-Hant": "Kinesisk (tradisjonell)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Oppdag kraften i forståelige inndata gjennom hundretusenvis av videoer på over 100 språk.",
+        "dont_have_an_account": "Har du ikke en konto?",
+        "enrich_your_language_learning_journey": "Berik språklæringsreisen din",
+        "forgot_password": "Glemt passord?",
+        "or_login_with": "Eller logg inn med:",
+        "what_your_first_language": "Hva er ditt morsmål?"
+    },
+    "title": {
+        "email": "E-post",
+        "login": "Pålogging",
+        "next": "Neste",
+        "password": "Passord",
+        "register": "Registrering",
+        "start_learning": "Begynn å lære"
     }
 }

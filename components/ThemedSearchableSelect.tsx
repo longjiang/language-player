@@ -8,7 +8,10 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type Option = {
   value: string;
-  label: string;
+  label: string; // The translation string key
+  translatedLabel?: string; // The translated label
+  englishLabel?: string; // The English label
+  alternateLabel?: string; // In language select, this is the vernacular name of the language
   flag?: string; // Flag emoji
   icon?: string; // Circular png icon
 };
@@ -47,7 +50,17 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
     }
   }, [initialValue, options]);
 
-  const filteredOptions = options.filter(option => option.label?.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filter = (option: Option) => {
+    for (let key in option) {
+      if (typeof option[key] === 'string') {
+        if (option[key].toLowerCase().includes(searchTerm.toLowerCase())) {
+          return true;
+        }
+      }
+    }
+  }
+
+  const filteredOptions = options.filter(filter);
 
   const handleSelect = (value: string, label: string) => {
     onSelect(value);

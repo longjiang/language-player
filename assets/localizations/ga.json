@@ -221,5 +221,21 @@
         "eso": "Teanga Chomharthaíochta na hEastóine",
         "zh-Hans": "Sínis (Simplithe)",
         "zh-Hant": "Sínis (Traidisiúnta)"
+    },
+    "msg": {
+        "discover_the_power_of_comprehensible_input": "Faigh amach an chumhacht ionchur sothuigthe trí na céadta mílte físeán i níos mó ná 100 teanga.",
+        "dont_have_an_account": "Nach bhfuil cuntas agat?",
+        "enrich_your_language_learning_journey": "Saibhrigh do thuras foghlama teanga",
+        "forgot_password": "Dearmad déanta ar phasfhocal?",
+        "or_login_with": "Nó logáil isteach le:",
+        "what_your_first_language": "Cad í do chéad teanga?"
+    },
+    "title": {
+        "email": "Ríomhphost",
+        "login": "Logáil isteach",
+        "next": "Ar Aghaidh",
+        "password": "Pasfhocal",
+        "register": "Cláraigh",
+        "start_learning": "Tosaigh Foghlaim"
     }
 }
