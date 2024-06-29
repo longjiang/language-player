@@ -45,7 +45,7 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
     }
   }, [initialValue, options]);
 
-  const filteredOptions = options.filter(option => option.label.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredOptions = options.filter(option => option.label?.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const handleSelect = (value: string, label: string) => {
     onSelect(value);

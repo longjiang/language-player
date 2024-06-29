@@ -3,7 +3,7 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedSearchableSelect, Option } from "@/components/ThemedSearchableSelect";
 export { Option } from "@/components/ThemedSearchableSelect";
-
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const ThemedLanguageSelect: React.FC<{
   onSelect: (value: string) => void;
@@ -14,18 +14,20 @@ export const ThemedLanguageSelect: React.FC<{
   placeholder = 'Select a language',
   initialValue
 }) => {
-  const options = [
-    { label: 'English', value: 'en', flag: '🇬🇧' },
-    { label: 'Spanish', value: 'es', flag: '🇪🇸' },
-    { label: 'French', value: 'fr', flag: '🇫🇷' },
-    { label: 'German', value: 'de', flag: '🇩🇪' },
-    { label: 'Italian', value: 'it', flag: '🇮🇹' },
-    { label: 'Portuguese', value: 'pt', flag: '🇵🇹' },
-    { label: 'Dutch', value: 'nl', flag: '🇳🇱' },
-    { label: 'Russian', value: 'ru', flag: '🇷🇺' },
-    { label: 'Japanese', value: 'ja', flag: '🇯🇵' },
-    { label: 'Chinese', value: 'zh', flag: '🇨🇳' },
-  ];
+  const { languages } = useLanguage();
+
+
+  const options: Option[] = languages
+    ?.getLanguages()
+    .map((lang: any) => {
+      return {
+        value: lang.iso639_1 || lang.iso639_3,
+        label: lang.name,
+        flag: '🇬🇧',
+      };
+    }) || [];
+
+  console.log(options, 'tls')
 
   return (
     <ThemedSearchableSelect

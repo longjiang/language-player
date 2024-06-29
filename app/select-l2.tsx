@@ -7,9 +7,12 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import { LanguageIcon } from "@/components/LanguageIcon"; // Make sure the import path is correct
 import { router } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const SelectL2Screen = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("");
+  const { languages } = useLanguage();
+
 
   const languageOptions: Option[] = [
     { value: "zh", label: "Chinese", icon: require("@/assets/flags/china.png") },
@@ -52,7 +55,7 @@ const SelectL2Screen = () => {
       <ThemedLanguageSelect
         onSelect={onSelect}
         initialValue={getOption(selectedLanguage)}
-        placeholder="100+ more languages"
+        placeholder={`${languages.getLanguages().length - languageOptions.length} more languages`}
       />
 
       <ThemedButton
