@@ -65,6 +65,7 @@ const SelectL2Screen = () => {
         onSelect={onSelect}
         initialValue={getOption(selectedLanguage)?.value}
         placeholder={`More languages (${languageOptions.length})`}
+        scope="l2"
       />
 
       <ThemedButton

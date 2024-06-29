@@ -118,7 +118,14 @@ class Languages {
   }
 
   public getLangByCode(code: string) {
-    return this.getLangByCode1(code) || this.getLangByCode3(code);
+    let language = Languages.languages.find(lang => lang.iso639_1 === code);
+    // Make an except for the case of 'zh-Hans' and 'zh-Hant', which only has 'zh' in the languages list
+    if (code === 'zh-Hans' || code === 'zh-Hant') {
+      language = Languages.languages.find(lang => lang.iso639_3 === 'zho');
+      // Add the code to a copy of the language object so that the original object is not modified
+      language = { ...language, code, name: code === 'zh-Hans' ? 'Chinese (Simplified)' : 'Chinese (Traditional)' };
+    }
+    return language || null;
   }
 
   public getLangById(id: number) {

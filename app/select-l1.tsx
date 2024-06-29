@@ -8,6 +8,7 @@ import { router } from "expo-router";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { ThemedText } from "@/components";
+import { SUPPORTED_L1S } from "@/constants/LanguageConstants";
 
 const SelectL2Screen = () => {
   const { l1Lang, setL1Lang, languages } = useLanguage();
@@ -24,7 +25,8 @@ const SelectL2Screen = () => {
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
     >
-      <ThemedLanguageSelect onSelect={onSelect} initialValue={l1Lang?.code} />
+      {/* <ThemedText>{l1Lang?.name}</ThemedText> */}
+      <ThemedLanguageSelect onSelect={onSelect} initialValue={l1Lang?.code} scope="l1" />
 
       <ThemedButton
         title="Next"

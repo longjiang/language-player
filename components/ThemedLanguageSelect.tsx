@@ -5,34 +5,55 @@ import { ThemedSearchableSelect, Option } from "@/components/ThemedSearchableSel
 export { Option } from "@/components/ThemedSearchableSelect";
 import { useLanguage } from "@/contexts/LanguageContext";
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
+import { SUPPORTED_L1S } from "@/constants/LanguageConstants";
 
 
 export const ThemedLanguageSelect: React.FC<{
   onSelect: (value: string) => void;
   placeholder?: string;
+  scope: 'l1' | 'l2';
   initialValue?: string; // Change the type of initialValue prop to string
 }> = ({
   onSelect,
   placeholder = 'Select a language',
+  scope = 'l2',
   initialValue
 }) => {
   const { languages } = useLanguage();
 
+  const langToOption = (lang: any): Option => {
+    const country = languages?.getCountry(lang)
+    return {
+      value: lang.iso639_1 || lang.iso639_3,
+      label: lang.name,
+      flag: country ? getUnicodeFlagIcon(country.alpha2Code) : '',
+    };
+  }
 
-  const options: Option[] = languages
-    ?.getLanguages()
-    .map((lang: any) => {
-      const country = languages?.getCountry(lang)
-      return {
-        value: lang.iso639_1 || lang.iso639_3,
-        label: lang.name,
-        flag: country ? getUnicodeFlagIcon(country.alpha2Code) : '',
-      };
-    }).sort((a, b) => a.label.localeCompare(b.label)) || [];
+  const langs = languages?.getLanguages();
+  let l2Options: Option[] = langs?.map(langToOption) || [];
+  l2Options = l2Options.sort((a, b) => a.label.localeCompare(b.label));
+
+  let l1Options = l2Options
+    .filter((option) => SUPPORTED_L1S.includes(option.value))
+    // Add simplified and traditional Chinese as options
+    .concat([
+      {
+        value: "zh-Hans",
+        label: "Chinese (Simplified)",
+        flag: getUnicodeFlagIcon("CN"),
+      },
+      {
+        value: "zh-Hant",
+        label: "Chinese (Traditional)",
+        flag: getUnicodeFlagIcon("TW"),
+      },
+    ]);
+  l1Options = l1Options.sort((a, b) => a.label.localeCompare(b.label));
 
   return (
     <ThemedSearchableSelect
-      options={options}
+      options={scope === 'l1' ? l1Options : l2Options}
       onSelect={onSelect}
       placeholder={placeholder}
       initialValue={initialValue}  // Pass initialValue to ThemedSearchableSelect
