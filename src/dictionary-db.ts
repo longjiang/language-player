@@ -51,11 +51,11 @@ export class DictionaryDB {
     for (let i = 0; i < entries.length; i += batchSize) {
       const batch = entries.slice(i, i + batchSize);
       const values = batch.map(entry => {
-        const search = `${entry.head} ${entry.alternate || ''} ${stripAccents(entry.pronunciation).toLowerCase().replace(/\s+/g, '')} ${entry.definitions.join(' ').toLowerCase()}`
+        const search = `${entry.head} ${entry.alternate || ''} ${stripAccents(entry.pronunciation || '').toLowerCase().replace(/\s+/g, '')} ${entry.definitions.join(' ').toLowerCase()}`
         return `('${escapeSQLValue(entry.id)}', ${entry.hskId || 'NULL'}, '${escapeSQLValue(entry.head)}', '${escapeSQLValue(entry.pronunciation)}', '${escapeSQLValue(entry.alternate || '')}', '${escapeSQLValue(entry.definitions.join(' | '))}', ${entry.level || 'NULL'}, '${escapeSQLValue(search)}')`
       }).join(',');
 
-      await this.db!.execAsync(`INSERT INTO ${this.dbName} (id, hskId, head, pronunciation, alternate, definitions, level, search) VALUES ${values}`);
+      await this.db!.execAsync(`INSERT OR IGNORE INTO ${this.dbName} (id, hskId, head, pronunciation, alternate, definitions, level, search) VALUES ${values}`);
     }
   }
 

@@ -5,20 +5,22 @@ import { DictionaryDB } from '@/src/dictionary-db';
 import { getDictionaryProfile } from '@/src/dictionary-profile';
 import { stripAccents } from '@/src/utils';
 import { DictionaryEntry, RawEntry, Level } from '@/src/dictionary-types';
-import { normalizeEntry, sortEntries, transformToDictionaryEntry } from '@/src/dictionary-utils';
+import { sortEntries, transformToDictionaryEntry } from '@/src/dictionary-utils';
 
 export class Dictionary {
   private dictionaryDB: DictionaryDB;
   private dbName: string;
   private l1Code: string;
   private sourceUrl: string;
+  private normalizeEntry: (entry: RawEntry, entryCount: Record<string, number>) => DictionaryEntry;
 
   constructor(l2Code: string) {
-    const { dbName, l1Code, sourceUrl } = getDictionaryProfile(l2Code);
-    this.dbName = dbName;
+    const { dbName, l1Code, sourceUrl, normalizeEntry } = getDictionaryProfile(l2Code);    this.dbName = dbName;
     this.l1Code = l1Code;
     this.sourceUrl = sourceUrl;
+    console.log('Dictionary: Initialized with', { dbName, l1Code, sourceUrl, normalizeEntry });
     this.dictionaryDB = new DictionaryDB(this.dbName);
+    this.normalizeEntry = normalizeEntry;
   }
 
   async loadData(forceRebuild: boolean = false): Promise<void> {
@@ -37,7 +39,7 @@ export class Dictionary {
     const parsedData = Papa.parse(response.data, { header: true });
 
     const entryCount: Record<string, number> = {};
-    const entries = parsedData.data.map(entry => normalizeEntry(entry as RawEntry, entryCount));
+    const entries = parsedData.data.map(entry => this.normalizeEntry(entry as RawEntry, entryCount));
 
     console.log('Dictionary: Inserting records...')
     await this.dictionaryDB.insertEntries(entries);

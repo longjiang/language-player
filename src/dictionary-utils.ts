@@ -1,24 +1,5 @@
 import { DictionaryEntry, RawEntry, Level } from "@/src/dictionary-types";
 
-export const normalizeEntry = (
-  entry: RawEntry,
-  entryCount: Record<string, number>
-): DictionaryEntry => {
-  const level: Level = (parseInt(entry.hsk) as Level) || undefined;
-  const definitionsArray = entry.definitions
-    ? entry.definitions.split("/").map((def) => def.trim())
-    : [];
-  return {
-    id: generateUniqueId(entry, entryCount),
-    hskId: entry.hskId ? parseInt(entry.hskId) : undefined,
-    head: entry.simplified || "",
-    pronunciation: entry.pinyin || "",
-    alternate: entry.traditional,
-    definitions: definitionsArray,
-    level,
-  };
-};
-
 export const generateUniqueId = (
   entry: RawEntry,
   entryCount: Record<string, number>
