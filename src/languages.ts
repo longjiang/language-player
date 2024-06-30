@@ -134,7 +134,12 @@ class Languages {
             }
         });
     });
-}
+  }
+
+  public getLangIdByCode(code: string) {
+    const language = Languages.languages.find(lang => lang.iso639_1 === code || lang.iso639_3 === code);
+    return language ? language.id : null;
+  }
 
   public getLangByCode1(code: string) {
     const language = Languages.languages.find(lang => lang.iso639_1 === code);

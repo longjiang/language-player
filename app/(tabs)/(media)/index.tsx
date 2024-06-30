@@ -11,7 +11,7 @@ import { YouTubeVideoList } from "@/components/YouTubeVideoList";
 import videoData from '@/data/recommended-videos.json'; // Importing the JSON data
 import { parseDuration } from '@/src/utils';
 import { YouTubeVideo } from '@/types';
-import { normalizeVideoData } from "@/src/directus-video"
+import { normalizeVideoData } from "@/src/api/directus/youtube-video"
 import { recommendVideos } from "@/src/api/python/video";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -71,6 +71,7 @@ const MediaHomeScreen = () => {
           alignSelf: "center",
           height: videoHeight,
           marginTop: -50,
+          marginBottom: 26
         }}
       >
         {(items?.length > 0 && <VideoHero

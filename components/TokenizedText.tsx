@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Token } from './Token';
 import { PYTHON_SERVER } from '@/src/api/python';
+import { tokenize, TokenData } from '@/src/tokenizer';
 
 // Define an interface for the props
 interface TokenizedTextProps {
@@ -12,12 +13,6 @@ interface TokenizedTextProps {
   align?: 'left' | 'center' | 'right';
 }
 
-// Define an interface for the token structure, adjust according to actual data structure
-interface TokenData {
-  // Example properties, modify according to the actual structure you expect
-  word?: string;
-  pronunciation?: string;
-}
 
 export const TokenizedText: React.FC<TokenizedTextProps> = ({
   text,
@@ -29,17 +24,11 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [tokens, setTokens] = useState<TokenData[]>([]);
 
   useEffect(() => {
-    const tokenizeText = async () => {
-      try {
-        const response = await fetch(`${PYTHON_SERVER}/lemmatize-chinese?text=${encodeURIComponent(text)}`);
-        const data: TokenData[] = await response.json();
-        setTokens(data);
-      } catch (error) {
-        console.error('Error fetching tokens:', error);
-      }
+    const fetchTokens = async () => {
+      const tokens = await tokenize(text);
+      setTokens(tokens || []);
     };
-
-    tokenizeText();
+    fetchTokens();
   }, [text]);
 
   return (

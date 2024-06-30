@@ -14,14 +14,16 @@ import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
 import { parseSubtitles } from "@/src/subs";
 import { getCollectionItems } from "@/src/api/directus";
-import { normalizeVideoData } from "@/src/directus-video";
+import { normalizeVideoData, getVideosByL2Code } from "@/src/api/directus/youtube-video";
 import { YouTubeVideo as YouTubeVideoType } from "@/types/videoTypes";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const screenHeight = Dimensions.get("window").height;
 const screenWidth = Dimensions.get("window").width;
 
 const YouTubeVideoScreen = () => {
   const params = useLocalSearchParams();
+  const { l2Lang } = useLanguage();
   let youtubeIdFromParams = Array.isArray(params?.youtube_id)
     ? params?.youtube_id[0]
     : params?.youtube_id; // params can sometimes return an array
@@ -42,8 +44,9 @@ const YouTubeVideoScreen = () => {
   // Fetch the video data from the API
   useEffect(() => {
     const fetchVideo = async () => {
+      if (!l2Lang) return;
       try {
-        const videos = await getCollectionItems("youtube_videos_4", {
+        const videos = await getVideosByL2Code(l2Lang, true, {
           filter: {
             youtube_id: {
               eq: youtubeIdFromParams,
@@ -51,7 +54,8 @@ const YouTubeVideoScreen = () => {
           },
         });
         if (!videos) return;
-        const newVideo = normalizeVideoData(videos[0]);
+        const newVideo = videos[0];
+        console.log(newVideo) 
         
         setVideoPlayerState((prev) => ({
           ...prev,
@@ -63,7 +67,7 @@ const YouTubeVideoScreen = () => {
       }
     };
 
-    if (videoPlayerState.video && !videoPlayerState.video.subs_l2) { // Skeletal video needs to be fleshed
+    if (videoPlayerState.video && !videoPlayerState.video.subs_l2?.length) { // Skeletal video needs to be fleshed
       fetchVideo();
     }
   }, [videoPlayerState.video]);

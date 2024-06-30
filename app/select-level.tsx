@@ -14,11 +14,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const SelectLevelScreen = () => {
 
-  const { l1Lang } = useLanguage();
+  const { l2Lang } = useLanguage();
 
-  if (!l1Lang) return;;
+  if (!l2Lang) return;;
 
-  const levels = languageLevelsByL2Code(l1Lang.code);
+  const levels = languageLevelsByL2Code(l2Lang.code);
 
   const onSelect = (level: number) => {
     router.navigate("/(tabs)/(media)");
@@ -28,7 +28,7 @@ const SelectLevelScreen = () => {
 
   return (
     <ThemedScreen
-      title={`What's your current ${l1Lang.name} level?`}
+      title={`What's your current ${l2Lang.name} level?`}
       onBackPress={() => router.navigate("/select-l1")}
     >
       <View>

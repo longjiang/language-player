@@ -15,7 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { YouTubeVideo } from "@/types/videoTypes";
-import { normalizeVideoData } from "@/src/directus-video";
+import { normalizeVideoData } from "@/src/api/directus/youtube-video";
 
 
 const SearchScreen = () => {

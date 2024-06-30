@@ -1,3 +1,4 @@
+// @/components/ThemedSearchableSelect
 import React, { useState, useEffect, ReactElement, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, FlatList, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -16,7 +17,6 @@ export type Option = {
   icon?: string; // Circular png icon
   [key: string]: any; // Index signature to allow accessing properties using a string index
 };
-const { i18n } = useLanguage();
 
 type ThemedSearchableSelectProps = {
   options: Option[];
@@ -43,6 +43,8 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
   const inputColor = useThemeColor({}, 'primaryBackground');
   const textColor = useThemeColor({}, 'primaryText');
   const placeholderTextColor = useThemeColor({}, 'secondaryText');
+
+  const { i18n } = useLanguage();
 
   useEffect(() => {
     if (initialValue) {
