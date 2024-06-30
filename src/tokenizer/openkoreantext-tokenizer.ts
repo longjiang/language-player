@@ -44,6 +44,7 @@ function normalizeToken(token: Token): Token {
   return {
       text: token.text,
       pos: token.pos,
+      stem: token.stem,
       lemmas: token.lemmas,
   };
 }

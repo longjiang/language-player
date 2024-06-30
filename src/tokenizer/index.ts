@@ -14,12 +14,13 @@ import PyidaungsuTokenizer from './pyidaungsu-tokenizer';
 
 export interface Lemma {
   lemma: string;
-  pos: string;
+  pos?: string;
+  morphologies?: string[];
 }
 
 export interface Token {
   text: string;
-  pos: string;
+  pos?: string;
   stem?: string;
   lemmas?: Lemma[];
   pronunciation?: string;
@@ -133,9 +134,8 @@ export class TokenizerService {
       const tokenData = await response.json();
 
       const tokens = tokenizer.module.normalizeTokens(tokenData, text);
-      console.log(text);
-      console.log(tokens);
-
+      console.log(tokenData)
+      console.log(tokens)
       // Cache the results
       this.cache.set(cacheKey, tokens);
       return tokens;

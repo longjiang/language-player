@@ -5,7 +5,7 @@ export const normalizeTokens = (tokens: Token[], text: string): Token[] => {
   return tokens.map(normalizeToken);
 }
 
-function normalizeToken(token: { word: string, pos: string, pronunciation: string }): Token {
+function normalizeToken(token: any): Token {
   return {
     text: token.word,
     pos: token.pos,
