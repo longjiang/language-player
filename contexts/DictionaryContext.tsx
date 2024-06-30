@@ -14,13 +14,18 @@ export const DictionaryContext = createContext<DictionaryContextProps>({
 
 export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [dictionary, setDictionary] = useState<Dictionary | null>(null);
-  const tokenizer = TokenizerService.getInstance();
+  const [tokenizer, setTokenizer] = useState<TokenizerService | null>(null);
   
   useEffect(() => {
     const newDictionary = new Dictionary('zh');
     console.log('DictionaryContext: Loading the dictionary...');
     newDictionary.loadData(false).then(() => {
       setDictionary(newDictionary);
+      const initializeTokenizer = async () => {
+        const tokenizer = TokenizerService.getInstance(await newDictionary.getWordSet());
+        setTokenizer(tokenizer);
+      }
+      initializeTokenizer();
       console.log('DictionaryContext: Dictionary is ready and loaded.');
     }).catch(error => {
       console.error('DictionaryContext: Failed to load dictionary:', error);

@@ -72,6 +72,10 @@ export class DictionaryDB {
     return await this.db!.getFirstAsync(`SELECT * FROM ${this.dbName} WHERE id = ?`, [id]).catch((err) => { console.log(err) });
   }
 
+  async getWordList(): Promise<string[]> {
+    return await this.db!.getAllAsync(`SELECT DISTINCT head FROM ${this.dbName}`).then((results) => results.map((r: any) => r.head));
+  }
+
   async search(query: string): Promise<any[]> {
     return await this.db!.getAllAsync(`SELECT * FROM ${this.dbName} WHERE search LIKE ?`, [`%${query}%`]);
   }

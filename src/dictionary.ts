@@ -53,6 +53,11 @@ export class Dictionary {
     console.log('Dictionary: Data loaded and normalized.');
   }
 
+  async getWordSet(): Promise<Set<string>> {
+    const words = await this.dictionaryDB.getWordList();
+    return new Set(words);
+  }    
+
   async search(query: string): Promise<DictionaryEntry[]> {
     query = stripAccents(query.toLowerCase()).replace(/\s+/g, ' ');
     const results = await this.dictionaryDB.search(query);

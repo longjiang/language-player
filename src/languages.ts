@@ -3,7 +3,15 @@
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
 import * as Papa from 'papaparse';
-import { LANGS_WITH_CONTENT, LANGS_YOUTUBE_SUPPORTS, LANGS_WITH_LIVE_TV, LANGS_WITH_AZURE_TRANSLATE, LANGS_WITH_LEVELS } from '@/constants/LanguageConstants';
+import {
+  LANGS_WITH_CONTENT,
+  LANGS_YOUTUBE_SUPPORTS,
+  LANGS_WITH_LIVE_TV,
+  LANGS_WITH_AZURE_TRANSLATE,
+  LANGS_WITH_LEVELS,
+  PREFERRED_COUNTRY_CODES,
+  CONTINUA_LANGUAGES
+} from "@/constants/LanguageConstants";
 
 export type Language = {
   id: number;
@@ -26,6 +34,7 @@ export type Language = {
   speakers: number;
   logo: string;
   logoDesc: string;
+  continua: boolean;
   has: {
     content: boolean;
     youtube: boolean;
@@ -33,59 +42,6 @@ export type Language = {
     azureTranslate: boolean;
     levels: boolean;
   };
-};
-
-const preferredCountryCodes = {
-  af: "ZA",
-  ar: "SA",
-  az: "AZ",
-  bg: "BG",
-  bn: "BD",
-  bs: "BS",
-  ca: "ES",
-  cy: "CY",
-  da: "DK",
-  de: "DE",
-  en: "GB",
-  es: "ES",
-  et: "ET",
-  eu: "ES",
-  fi: "FI",
-  fr: "FR",
-  ga: "GA",
-  gl: "ES",
-  hak: "CN",
-  he: "IL",
-  hi: "IN",
-  hr: "HR",
-  hu: "HU",
-  id: "ID",
-  ie: "IE",
-  is: "IS",
-  it: "IT",
-  ko: "KR",
-  la: "LA",
-  lv: "LV",
-  md: "MD",
-  mt: "MT",
-  nan: "CN",
-  nl: "NL",
-  nn: "NO",
-  no: "NO",
-  pa: "IN",
-  pl: "PL",
-  pt: "PT",
-  ro: "RO",
-  ru: "RU",
-  sl: "SL",
-  sm: "SM",
-  sn: "SN",
-  sv: "SV",
-  ta: "LK",
-  to: "TO",
-  tr: "TR",
-  urd: "PK",
-  yue: "HK",
 };
 
 class Languages {
@@ -108,9 +64,12 @@ class Languages {
   private static async loadData() {
     const languages = await this.loadCSV(require('@/data/languages/json-export/languages.json')) || []
     this.languages = languages.map((lang: any, index: number) => {
+      const code = lang.iso639_1 || lang.iso639_3;
+      const continua = CONTINUA_LANGUAGES.includes(code);
       return {
         ...lang,
-        code: lang.iso639_1 || lang.iso639_3,
+        code,
+        continua,
         has: {
           content: LANGS_WITH_CONTENT.includes(lang.iso639_3),
           youtube: LANGS_YOUTUBE_SUPPORTS.includes(lang.iso639_3),
@@ -182,12 +141,12 @@ class Languages {
 
   public getCountry(lang: Language) {
     const countryCodes = lang.country.split(" ")
-    const countryCode = preferredCountryCodes[lang.code] || countryCodes[0]
+    const countryCode = PREFERRED_COUNTRY_CODES[lang.code] || countryCodes[0]
     return Languages.countries.find(country => country.alpha2Code === countryCode);
   }
 
   public getScripts(lang: Language) {
-    return Languages.scripts.filter(script => script.lang === lang.iso639_3);
+    return Languages.scripts.filter(script => script.lang === lang.code);
   }
 }
 

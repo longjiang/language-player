@@ -34,7 +34,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   useEffect(() => {
     const fetchTokens = async () => {
-      const tokens = await tokenizer.tokenize(text, l2Lang.code);
+      const tokens = await tokenizer.tokenize(text, l2Lang);
       setTokens(tokens || []);
     };
     fetchTokens();

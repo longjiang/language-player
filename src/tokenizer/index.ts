@@ -1,16 +1,8 @@
 // @/src/tokenizer.ts
 import { PYTHON_SERVER } from "@/src/api/python"
-import OpenKoreanTextTokenizer from './openkoreantext-tokenizer';
-import JiebaTokenizer from './jieba-tokenizer';
-import Pymorphy2Tokenizer from './pymorphy2-tokenizer';
-import MeCabTokenizer from './mecab-tokenizer';
-import HazmTokenizer from './hazm-tokenizer';
-import Zeyrek from './zeyrek-tokenizer';
-import Qalsadi from './qalsadi-tokenizer';
-import SpacyTokenizer from './spacy-tokenizer';
-import SimplemmaTokenizer from './simplemma-tokenizer';
-import LemmatizationListTokenizer from './lemmatizationlist-tokenizer';
-import PyidaungsuTokenizer from './pyidaungsu-tokenizer';
+import { Language } from '@/src/languages';
+import LocalTokenizer from './local-tokenizer';
+import { tokenizers } from './tokenizer-list';
 
 export interface Lemma {
   lemma: string;
@@ -26,73 +18,15 @@ export interface Token {
   pronunciation?: string;
 }
 
-interface TokenizerModule {
+export interface TokenizerModule {
   normalizeTokens: (tokens: Token[], text: string) => Token[];
 }
 
-interface Tokenizer {
+export interface Tokenizer {
   module: TokenizerModule,
   endPoint: string;
   languages: string[];
 }
-
-export const tokenizers: Tokenizer[] = [
-  {
-    module: OpenKoreanTextTokenizer,
-    endPoint: 'lemmatize-korean',
-    languages: ['ko'],
-  },
-  {
-    module: JiebaTokenizer,
-    endPoint: 'lemmatize-chinese',
-    languages: ['zh'],
-  },
-  {
-    module: Pymorphy2Tokenizer,
-    endPoint: 'lemmatize-russian',
-    languages: ['ru'],
-  },
-  {
-    module: PyidaungsuTokenizer,
-    endPoint: 'lemmatize-burmese',
-    languages: ['my'],
-  },
-  {
-    module: MeCabTokenizer,
-    endPoint: 'lemmatize-japanese',
-    languages: ['ja'],
-  },
-  {
-    module: HazmTokenizer,
-    endPoint: 'lemmatize-persian',
-    languages: ['fa'],
-  },
-  {
-    module: Zeyrek,
-    endPoint: 'lemmatize-turkish',
-    languages: ['tr'],
-  },
-  {
-    module: Qalsadi,
-    endPoint: 'lemmatize-arabic',
-    languages: ['ar'],
-  },
-  {
-    module: SpacyTokenizer,
-    endPoint: 'lemmatize-spacy',
-    languages: ['es'],
-  },
-  {
-    module: SimplemmaTokenizer,
-    endPoint: 'lemmatize-simple',
-    languages: ['ast', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'enm', 'et', 'fi', 'gd', 'ga', 'gl', 'gv', 'sh', 'hu', 'hy', 'id', 'is', 'it', 'ka', 'la', 'lv', 'lt', 'lb', 'mk', 'ms', 'nl', 'nn', 'no', 'nb', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'se', 'es', 'sq', 'sw', 'sv', 'tl', 'tr', 'uk'],
-  },
-  {
-    module: LemmatizationListTokenizer,
-    endPoint: 'lemmatization-lists',
-    languages: ['ast', 'bg', 'ca', 'cs', 'cy', 'de', 'en', 'et', 'fa', 'fr', 'gd', 'ga', 'gl', 'gv', 'hu', 'it', 'pt', 'ro', 'ru', 'sk', 'sl', 'es', 'sv', 'uk'],
-  },
-]
 
 export const getTokenizer = (languageCode: string): Tokenizer | null => {
   for (let tokenizer of tokenizers) {
@@ -106,38 +40,43 @@ export const getTokenizer = (languageCode: string): Tokenizer | null => {
 export class TokenizerService {
   private static instance: TokenizerService;
   private cache: Map<string, Token[]>;
+  private localTokenizer: LocalTokenizer;
 
-  private constructor() {
+  private constructor(wordset?: Set<string>) {
     this.cache = new Map();
+    this.localTokenizer = new LocalTokenizer(wordset);
   }
 
-  public static getInstance(): TokenizerService {
+  public static getInstance(wordset?: Set<string>): TokenizerService {
     if (!TokenizerService.instance) {
-      TokenizerService.instance = new TokenizerService();
+      TokenizerService.instance = new TokenizerService(wordset);
     }
     return TokenizerService.instance;
   }
 
-  public async tokenize(text: string, l2Code: string): Promise<Token[] | undefined> {
-    const cacheKey = `${l2Code}:${text}`;
+  public async fetchTokens(tokenizer: Tokenizer, text: string, l2Lang: Language): Promise<Token[]> {
+    const uri = `${PYTHON_SERVER}/${tokenizer.endPoint}?text=${encodeURIComponent(text)}&lang=${l2Lang.iso639_3}`
+    console.log(uri)
+    const response = await fetch(uri);
+    const tokenData = await response.json();
+
+    return tokenizer.module.normalizeTokens(tokenData, text);
+  }
+
+  public async tokenize(text: string, l2Lang: Language): Promise<Token[] | undefined> {
+    const cacheKey = `${l2Lang.code}:${text}`;
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey);
     }
 
     try {
-      const tokenizer = getTokenizer(l2Code);
-      if (!tokenizer) {
-        throw new Error(`No tokenizer found for language code: ${l2Code}`);
-      }
+      let tokens: Token[] | undefined = undefined;
+      const remoteTokenizer = getTokenizer(l2Lang.code)
+      if (remoteTokenizer) tokens = await this.fetchTokens(remoteTokenizer, text, l2Lang);
+      else tokens = await this.localTokenizer.tokenize(text, l2Lang);
 
-      const response = await fetch(`${PYTHON_SERVER}/${tokenizer.endPoint}?text=${encodeURIComponent(text)}`);
-      const tokenData = await response.json();
-
-      const tokens = tokenizer.module.normalizeTokens(tokenData, text);
-      console.log(tokenData)
-      console.log(tokens)
       // Cache the results
-      this.cache.set(cacheKey, tokens);
+      this.cache.set(cacheKey, tokens || []);
       return tokens;
     } catch (error) {
       console.error("Error fetching tokens:", error);

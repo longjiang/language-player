@@ -37,7 +37,9 @@ const SelectL2Screen = () => {
   const onSelect = (value: string) => {
     if (!languages) return;
     setSelectedLanguage(value);
-    setL2Lang(languages.getLangByCode(value));
+    const language = languages.getLangByCode(value)
+    console.log(languages.getScripts(language))
+    setL2Lang(language);
   };
 
   // Function to get an option based on the value
