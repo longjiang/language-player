@@ -1,47 +1,42 @@
-import langs from 'langs';
 import hash from 'string-hash';
 import { edictPOS } from '@/src/edict-pos';
+import { Language } from '@/src/languages';
+import { CZH_SERVER_DATA } from '@/src/api/czh-server';
 
 import { RawEntry, DictionaryEntry, Level } from '@/src/dictionary-types';
 
-export const iso1To3 = (code: string) => {
-  const language = langs.where("1", code);  // Find language by ISO 639-1 code
-  if (language) {
-      return language['3'];  // Return ISO 639-3 code if found
-  }
-  return code;  // Return original code if not found
-}
-
-export const getDictionaryProfile = (l2Code: string) => {
+export const getDictionaryProfile = (l2Lang: Language) => {
+  const l2Code = l2Lang.code;
   let dbName, l1Code, sourceUrl, normalizeEntry
   if (['zh', 'ltc', 'lzh'].includes(l2Code)) {
     dbName = `hsk_cedict_${l2Code}`;
     l1Code = 'en';
-    sourceUrl = 'https://server.chinesezerotohero.com/data/hsk-cedict/hsk_cedict.csv.txt';
+    sourceUrl = CZH_SERVER_DATA + '/hsk-cedict/hsk_cedict.csv.txt';
     normalizeEntry = normalizeCedictEntry;
   } else if (['hak', 'nan'].includes(l2Code)) {
     dbName = `chinese_dialect_${l2Code}`;
     l1Code = 'zh';
-    sourceUrl = 'https://server.chinesezerotohero.com/data/chinese-dialect/chinese_dialect.csv.txt';
+    sourceUrl = CZH_SERVER_DATA + '/' + { hak: 'dict-hakka/dict-hakka.csv.txt', nan: 'dict-twblg/dict-twblg.csv.txt' }[l2Code];
     normalizeEntry = normalizeDialectDictEntry
   } else if (l2Code === 'yue') {
     dbName = `cc_canto_${l2Code}`;
     l1Code = 'en';
-    sourceUrl = 'https://server.chinesezerotohero.com/data/cc-canto/cccanto-webdist.csv.txt';
+    sourceUrl = CZH_SERVER_DATA + '/cc-canto/cccanto-webdist.csv.txt';
     normalizeEntry = normalizeCCCantoEntry;
   } else if (l2Code === 'ja') {
     dbName = `edict_${l2Code}`;
     l1Code = 'en';
-    sourceUrl = 'https://server.chinesezerotohero.com/data/edict/edict.tsv.txt';
+    sourceUrl = CZH_SERVER_DATA + '/edict/edict.tsv.txt';
     normalizeEntry = normalizeEdictEntry;
   } else if (l2Code === 'ko') {
     dbName = `kengdic_${l2Code}`;
     l1Code = 'en';
-    sourceUrl = 'https://server.chinesezerotohero.com/data/kengdic/kengdic_2011.tsv.txt';
+    sourceUrl = CZH_SERVER_DATA + '/kengdic/kengdic_2011.tsv.txt';
+    normalizeEntry = normalizeKengdicEntry;
   } else {
     dbName = `wiktionary_${l2Code}`;
     l1Code = 'en';
-    sourceUrl = `https://server.chinesezerotohero.com/data/wiktionary-csv/${iso1To3(l2Code)}-eng.csv.txt`;
+    sourceUrl = CZH_SERVER_DATA + `/wiktionary-csv/${l2Lang.iso639_3}-eng.csv.txt`;
     normalizeEntry = normalizeWiktionaryEntry;
   }
   return { dbName, l1Code, sourceUrl, normalizeEntry}
@@ -51,7 +46,7 @@ export const normalizeCedictEntry = (
   entry: RawEntry,
   entryCount: Record<string, number>
 ): DictionaryEntry => {
-  const level: Level = (parseInt(entry.hsk) as Level) || undefined;
+  const level: Level = entry.hsk ? parseInt(entry.hsk) as Level : undefined;
   const definitionsArray = entry.definitions
     ? entry.definitions.split("/").map((def) => def.trim())
     : [];
@@ -98,8 +93,8 @@ export const normalizeEdictEntry = (entry: RawEntry):DictionaryEntry => {
   return {
     id: entry.id || "",
     head: entry.kanji || entry.kana || "",
-    alternate: entry.traditional,
-    pronunciation: entry.jyutping,
+    alternate: entry.kana,
+    pronunciation: entry.kana,
     definitions,
     level: undefined,
     pos: posKey ? edictPOS[posKey] || posKey : posKey
@@ -108,7 +103,7 @@ export const normalizeEdictEntry = (entry: RawEntry):DictionaryEntry => {
 
 }
 export const normalizeKengdicEntry = (entry: RawEntry): DictionaryEntry => {
-  const hangul = entry.hangul.replace(/^\-/, ''); // Normalize Hangul: Remove leading hyphen if present
+  const hangul = entry.hangul ? entry.hangul.replace(/^\-/, '') : ""; // Normalize Hangul: Remove leading hyphen if present
   const definitions = entry.english ? [entry.english] : []; // Definitions are based on the English translations
 
   const normalizedEntry: DictionaryEntry = {

@@ -38,7 +38,6 @@ const SelectL2Screen = () => {
     if (!languages) return;
     setSelectedLanguage(value);
     const language = languages.getLangByCode(value)
-    console.log(languages.getScripts(language))
     setL2Lang(language);
   };
 

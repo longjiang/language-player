@@ -37,11 +37,12 @@ export const sortEntries = (
 export const transformToDictionaryEntry = (entry: any): DictionaryEntry => {
   return {
     id: entry.id,
-    hskId: entry.hskId ? parseInt(entry.hskId) : undefined,
     head: entry.head,
-    pronunciation: entry.pronunciation,
-    alternate: entry.alternate,
-    definitions: entry.definitions.split(" | "),
-    level: entry.level as Level,
+    definitions: entry.definitions?.split(" | ") || [],
+    ...(entry.pronunciation && {pronunciation: entry.pronunciation}),
+    ...(entry.alternate && {alternate: entry.alternate}),
+    ...(entry.level && {level: entry.level as Level}),
+    ...(entry.pos && {pos: entry.pos}),
+    ...(entry.hskId && {hskId: parseInt(entry.hskId)}),
   };
 };

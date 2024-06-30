@@ -20,7 +20,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
   
   useEffect(() => {
     if (!l2Lang) return;
-    const newDictionary = new Dictionary(l2Lang.code);
+    const newDictionary = new Dictionary(l2Lang);
     console.log('DictionaryContext: Loading the dictionary...');
     newDictionary.loadData(true).then(() => {
       setDictionary(newDictionary);

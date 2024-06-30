@@ -6,6 +6,7 @@ import { getDictionaryProfile } from '@/src/dictionary-profile';
 import { stripAccents } from '@/src/utils';
 import { DictionaryEntry, RawEntry, Level } from '@/src/dictionary-types';
 import { sortEntries, transformToDictionaryEntry } from '@/src/dictionary-utils';
+import { Language } from '@/src/languages';
 
 export class Dictionary {
   private dictionaryDB: DictionaryDB;
@@ -14,11 +15,11 @@ export class Dictionary {
   private sourceUrl: string;
   private normalizeEntry: (entry: RawEntry, entryCount: Record<string, number>) => DictionaryEntry;
 
-  constructor(l2Code: string) {
-    const { dbName, l1Code, sourceUrl, normalizeEntry } = getDictionaryProfile(l2Code);    this.dbName = dbName;
+  constructor(l2Lang: Language) {
+    const { dbName, l1Code, sourceUrl, normalizeEntry } = getDictionaryProfile(l2Lang);
+    this.dbName = dbName;
     this.l1Code = l1Code;
     this.sourceUrl = sourceUrl;
-    console.log('Dictionary: Initialized with', { dbName, l1Code, sourceUrl, normalizeEntry });
     this.dictionaryDB = new DictionaryDB(this.dbName);
     this.normalizeEntry = normalizeEntry;
   }
@@ -47,8 +48,11 @@ export class Dictionary {
     const newCountResult = await this.dictionaryDB.db!.getFirstAsync<{ count: number }>(`SELECT COUNT(*) AS count FROM ${this.dbName}`);
     console.log(`Dictionary: ${newCountResult?.count || 0} entries inserted.`);
 
-    const preview = await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} LIMIT 5`);
-    console.log('Dictionary: Preview of the first 5 records:', preview);
+
+    // Get 2 random records:
+    console.log('Dictionary: Preview of random 2 records:');
+    console.log(await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} ORDER BY RANDOM() LIMIT 1`))
+    console.log(await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} ORDER BY RANDOM() LIMIT 1`))
 
     await this.dictionaryDB.createIndexes();
 

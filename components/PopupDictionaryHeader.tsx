@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
 import { Translate } from "@/components/Translate";
 import { Token } from "@/src/tokenizer";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translateWithBing } from '@/src/translate'
 
 interface PopupDictionaryHeaderProps {
   token: Token;
@@ -20,6 +22,17 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
   const onExplainPress = () => {
     // Implement the logic to explain the word using AI
   };
+  const { l1Lang, l2Lang } = useLanguage();
+  const [ translation, setTranslation ] = useState<string | null>(null)
+
+  if (context && !translatedContext && l1Lang && l2Lang) {
+    const translateContext = useCallback(async () => {
+      const trans = await translateWithBing({ text :context, l1Code: l1Lang.code, l2Code: l2Lang.code})
+      setTranslation(trans)
+    }, [context, l1Lang, l2Lang])
+    
+    translateContext()
+  }
 
   return (
     <View style={styles.headerContainer}>
@@ -32,7 +45,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
       </View>
       <Text style={styles.translationText}>
         <ThemedText>{token.pronunciation} • </ThemedText>
-        <Translate l1Code="en" l2Code="zh" text={token.text} />
+        <Translate l1Code={l1Lang.code} l2Code={l2Lang.code} text={token.text} />
       </Text>
       <ThemedButton
         type="pro"
@@ -44,7 +57,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
       <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
         <View style={{ flex: 1 }}>
           <ThemedText style={styles.contextText} type="large">{context}</ThemedText>
-          <ThemedText style={styles.translatedContextText} variant="secondary">{translatedContext}</ThemedText>
+          <ThemedText style={styles.translatedContextText} variant="secondary">{translatedContext || translation}</ThemedText>
         </View>
         <ThemedButton
           type="ghost"

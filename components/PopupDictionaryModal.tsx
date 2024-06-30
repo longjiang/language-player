@@ -18,9 +18,8 @@ interface PopupDictionaryModalProps {
     state: PopupDictionaryModalState;
 }
 
-export const PopupDictionaryModal = forwardRef<typeof ThemedRBSheet, PopupDictionaryModalProps>((props, ref) => {
+export const PopupDictionaryModal = forwardRef<typeof ThemedRBSheet, PopupDictionaryModalProps>(({ state }, ref) => {
     const refRBSheet = useRef<typeof ThemedRBSheet>(null);
-    const { state } = props; // Destructuring state from props for clearer access
 
     const openModal = () => {
       refRBSheet.current?.open();

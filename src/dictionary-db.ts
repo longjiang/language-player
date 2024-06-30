@@ -41,7 +41,8 @@ export class DictionaryDB {
         alternate TEXT,
         definitions TEXT,
         level INTEGER,
-        search TEXT
+        search TEXT,
+        pos TEXT
       );
     `);
   }
@@ -52,10 +53,10 @@ export class DictionaryDB {
       const batch = entries.slice(i, i + batchSize);
       const values = batch.map(entry => {
         const search = `${entry.head} ${entry.alternate || ''} ${stripAccents(entry.pronunciation || '').toLowerCase().replace(/\s+/g, '')} ${entry.definitions.join(' ').toLowerCase()}`
-        return `('${escapeSQLValue(entry.id)}', ${entry.hskId || 'NULL'}, '${escapeSQLValue(entry.head)}', '${escapeSQLValue(entry.pronunciation)}', '${escapeSQLValue(entry.alternate || '')}', '${escapeSQLValue(entry.definitions.join(' | '))}', ${entry.level || 'NULL'}, '${escapeSQLValue(search)}')`
+        return `('${escapeSQLValue(entry.id)}', ${entry.hskId || 'NULL'}, '${escapeSQLValue(entry.head)}', '${escapeSQLValue(entry.pronunciation)}', '${escapeSQLValue(entry.alternate || '')}', '${escapeSQLValue(entry.definitions.join(' | '))}', ${entry.level || 'NULL'}, '${escapeSQLValue(search)}', '${escapeSQLValue(entry.pos)}')`
       }).join(',');
 
-      await this.db!.execAsync(`INSERT OR IGNORE INTO ${this.dbName} (id, hskId, head, pronunciation, alternate, definitions, level, search) VALUES ${values}`);
+      await this.db!.execAsync(`INSERT OR IGNORE INTO ${this.dbName} (id, hskId, head, pronunciation, alternate, definitions, level, search, pos) VALUES ${values}`);
     }
   }
 

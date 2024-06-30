@@ -16,7 +16,7 @@ const SelectLevelScreen = () => {
 
   const { l2Lang } = useLanguage();
 
-  if (!l2Lang) return;;
+  if (!l2Lang) return;
 
   const levels = languageLevelsByL2Code(l2Lang.code);
 

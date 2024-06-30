@@ -10,7 +10,7 @@ def csv_to_json(csv_filepath, json_filepath):
 
     # Wrap the CSV data as a single string inside a JSON object
     wrapped_data = {
-        "csvData": csv_data
+      "csvData": csv_data.strip()
     }
 
     # Write the JSON object to a file
