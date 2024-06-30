@@ -5,7 +5,7 @@ import { stripAccents } from '@/src/utils';
 
 export const escapeSQLValue = (value: string): string => {
   if (value === null || value === undefined) {
-    return 'NULL';
+    return null;
   }
   return `${value.replace(/'/g, "''")}`; // Single quote escaping
 }
@@ -53,9 +53,17 @@ export class DictionaryDB {
       const batch = entries.slice(i, i + batchSize);
       const values = batch.map(entry => {
         const search = `${entry.head} ${entry.alternate || ''} ${stripAccents(entry.pronunciation || '').toLowerCase().replace(/\s+/g, '')} ${entry.definitions.join(' ').toLowerCase()}`
-        return `('${escapeSQLValue(entry.id)}', ${entry.hskId || 'NULL'}, '${escapeSQLValue(entry.head)}', '${escapeSQLValue(entry.pronunciation)}', '${escapeSQLValue(entry.alternate || '')}', '${escapeSQLValue(entry.definitions.join(' | '))}', ${entry.level || 'NULL'}, '${escapeSQLValue(search)}', '${escapeSQLValue(entry.pos)}')`
+        return `(${escapeSQLValue(entry.id) ? `'${escapeSQLValue(entry.id)}'` : 'NULL'}, 
+                 ${entry.hskId || 'NULL'}, 
+                 ${escapeSQLValue(entry.head) ? `'${escapeSQLValue(entry.head)}'` : 'NULL'}, 
+                 ${escapeSQLValue(entry.pronunciation) ? `'${escapeSQLValue(entry.pronunciation)}'` : 'NULL'}, 
+                 ${escapeSQLValue(entry.alternate) ? `'${escapeSQLValue(entry.alternate)}'` : 'NULL'}, 
+                 ${escapeSQLValue(entry.definitions.join(' | ')) ? `'${escapeSQLValue(entry.definitions.join(' | '))}'` : 'NULL'}, 
+                 ${entry.level || 'NULL'}, 
+                 ${escapeSQLValue(search) ? `'${escapeSQLValue(search)}'` : 'NULL'}, 
+                 ${escapeSQLValue(entry.pos) ? `'${escapeSQLValue(entry.pos)}'` : 'NULL'})`;
       }).join(',');
-
+  
       await this.db!.execAsync(`INSERT OR IGNORE INTO ${this.dbName} (id, hskId, head, pronunciation, alternate, definitions, level, search, pos) VALUES ${values}`);
     }
   }
