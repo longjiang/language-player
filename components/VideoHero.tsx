@@ -6,6 +6,7 @@ import { YouTubeVideo } from "@/components/YouTubeVideo";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { router } from "expo-router";
 
 export const VideoHero: React.FC<{
   youtubeId: string;
@@ -51,7 +52,7 @@ export const VideoHero: React.FC<{
             leadingIcon={<Icon name="play" />}
             style={styles.button}
             onPress={() => {
-              console.log("Video playing...");
+              router.navigate(`/video/youtube/${youtubeId}`);
             }}
           />
           <ThemedButton

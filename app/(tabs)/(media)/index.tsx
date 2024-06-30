@@ -72,11 +72,11 @@ const MediaHomeScreen = () => {
           marginTop: -50,
         }}
       >
-        <VideoHero
-          youtubeId="t6fPzVNIEB0"
-          title="As Long As You Love Me"
+        {(items?.length > 0 && <VideoHero
+          youtubeId={items[0]?.youtube_id}
+          title={items[0].title || ''}
           height={videoHeight}
-        />
+        />)}
       </View>
       <SafeAreaView style={[styles.header, { width: headerWidth }]}>
         <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
