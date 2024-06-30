@@ -1,17 +1,21 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Dictionary } from '@/src/dictionary';
+import { TokenizerService } from '@/src/tokenizer';
 
 interface DictionaryContextProps {
   dictionary: Dictionary | null;
+  tokenizer: TokenizerService | null;
 }
 
 export const DictionaryContext = createContext<DictionaryContextProps>({
   dictionary: null,
+  tokenizer: null,
 });
 
 export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [dictionary, setDictionary] = useState<Dictionary | null>(null);
-
+  const tokenizer = TokenizerService.getInstance();
+  
   useEffect(() => {
     const newDictionary = new Dictionary('zh');
     console.log('DictionaryContext: Loading the dictionary...');
@@ -24,7 +28,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
   }, []);
 
   return (
-    <DictionaryContext.Provider value={{ dictionary }}>
+    <DictionaryContext.Provider value={{ dictionary, tokenizer }}>
       {children}
     </DictionaryContext.Provider>
   );

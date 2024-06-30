@@ -55,7 +55,6 @@ const YouTubeVideoScreen = () => {
         });
         if (!videos) return;
         const newVideo = videos[0];
-        console.log(newVideo) 
         
         setVideoPlayerState((prev) => ({
           ...prev,

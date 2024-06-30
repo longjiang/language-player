@@ -26,3 +26,8 @@ export const formatDuration = (totalSeconds: number): string => {
 export const stripAccents = (str: string): string => {
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
+
+export const isHangul = (text: string): boolean => {
+  // Example implementation; you should define this based on actual usage.
+  return /[\uac00-\ud7af]/.test(text);
+}
