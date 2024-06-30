@@ -1,5 +1,5 @@
 // @/app/(tabs)/(media)/index.tsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { SafeAreaView, Dimensions, View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -12,6 +12,8 @@ import videoData from '@/data/recommended-videos.json'; // Importing the JSON da
 import { parseDuration } from '@/src/utils';
 import { YouTubeVideo } from '@/types';
 import { normalizeVideoData } from "@/src/directus-video"
+import { recommendVideos } from "@/src/api/python/video";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 
 const videos = videoData.map((video: any) => normalizeVideoData(video))
@@ -22,6 +24,43 @@ const MediaHomeScreen = () => {
   const videoWidth = videoHeight * 1.777777777777778;
   const screenWidth = Dimensions.get('window').width;
   const headerWidth = screenWidth - padding * 2;
+  const [items, setItems] = useState<YouTubeVideo[]>([]);
+  const { l2Lang } = useLanguage();
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Search screen mounted
+    loadItems();
+  }, []);
+
+
+  const loadItems = async () => {
+    if (!l2Lang) return;
+    setItems([]); // Clear items
+    setIsLoading(true); // Start loading
+    const userId = 1;
+    const langCode = l2Lang.code;
+    const level = 1;
+    const preferredCategories = [1, 2, 3];
+    const excludeIds = [4265,17213,33658,11662];
+    const madeForKids = '0';
+    const limit = 50;
+    try {
+      const fetchedItems = await recommendVideos(
+        userId,
+        langCode,
+        level,
+        preferredCategories,
+        excludeIds,
+        madeForKids,
+        limit
+      );
+      setItems(fetchedItems.map(normalizeVideoData) as YouTubeVideo[]);
+    } catch (error) {
+      console.error("Failed to load items:", error);
+    }
+    setIsLoading(false); // Stop loading
+  };
 
   const headerComponent = (
     <View>
@@ -71,7 +110,7 @@ const MediaHomeScreen = () => {
   );
 
   return (
-    <YouTubeVideoList videos={videos} header={headerComponent} style={{ marginHorizontal: 26, marginBottom: 26 }} />
+    <YouTubeVideoList videos={items} header={headerComponent} style={{ marginHorizontal: 26, marginBottom: 26 }} />
   );
 };
 
