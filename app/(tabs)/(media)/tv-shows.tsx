@@ -1,4 +1,5 @@
 // @/app/tv-shows.tsx
+// @/app/tv-shows.tsx
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -7,22 +8,21 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import { getCollectionItems } from "@/src/api/directus";
 import { ThemedInput } from "@/components/ThemedInput";
-import { ThemedText } from "@/components/ThemedText";
-import { YouTubeVideoCard } from "@/components/YouTubeVideoCard";
 import { FlatList } from "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { ShowCard, Show } from "@/components/ShowCard";
-
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const TVShowsScreen = () => {
   const [items, setItems] = useState<Show[]>([]);
+  const [filteredItems, setFilteredItems] = useState<Show[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
-
+  const { l2Lang } = useLanguage();
 
   useEffect(() => {
     // Search screen mounted
@@ -31,27 +31,32 @@ const TVShowsScreen = () => {
 
   const handleInputChange = (text: string) => {
     setSearchQuery(text);
+    filterItems(text);
   };
 
-  const handleSearch = () => {
-    // Trigger search based on searchQuery
-    loadItems();
+  const filterItems = (query: string) => {
+    const filtered = items.filter(item =>
+      item.title.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredItems(filtered);
   };
 
   const loadItems = async () => {
+    if (!l2Lang) return;
     setItems([]); // Clear items
+    setFilteredItems([]); // Clear filtered items
     setIsLoading(true); // Start loading
     try {
       const tvShows = await getCollectionItems("tv_shows", {
-        filter: { l2: { eq: 7731 } }, // 7731 is Chinese
+        filter: { l2: { eq: l2Lang.id } },
       });
       setItems(tvShows as Show[]);
+      setFilteredItems(tvShows as Show[]); // Set initial filtered items
     } catch (error) {
       console.error("Failed to load items:", error);
     }
     setIsLoading(false); // Stop loading
   };
-  
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -76,7 +81,6 @@ const TVShowsScreen = () => {
               icon="magnify"
               size="small"
               onChangeText={handleInputChange}
-              onSubmitEditing={handleSearch}
               value={searchQuery}
             />
             {(searchQuery && <ThemedButton
@@ -95,7 +99,7 @@ const TVShowsScreen = () => {
 
         <View>
           <FlatList
-            data={items}
+            data={filteredItems}
             renderItem={({ item }) => (
               <ShowCard show={item} style={{ marginBottom: 26 }} />
             )}
