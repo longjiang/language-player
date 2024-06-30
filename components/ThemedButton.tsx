@@ -166,7 +166,7 @@ export function ThemedButton({
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       >
-        <View style={{ ...mergedViewStyle, justifyContent: title && trailingIcon ? 'space-between' : 'space-evenly' }}>
+        <View style={{ ...mergedViewStyle, justifyContent: title && (trailingIcon || leadingIcon) ? 'space-between' : 'space-evenly' }}>
           {styledLeadingIcon}
           {title && (
             <ThemedText

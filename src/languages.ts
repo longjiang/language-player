@@ -92,7 +92,6 @@ class Languages {
   private static instance: Languages;
   private static languages: any[];
   private static countries: any[];
-  private static hours: any[];
   private static locales: any[];
   private static scripts: any[];
 
@@ -122,7 +121,6 @@ class Languages {
       }
     })
     this.countries = await this.loadCSV(require('@/data/languages/json-export/countries.json'));
-    this.hours = await this.loadCSV(require('@/data/languages/json-export/hours.json'));
     this.locales = await this.loadCSV(require('@/data/languages/json-export/locales.json'));
     this.scripts = await this.loadCSV(require('@/data/languages/json-export/scripts.json'));
   }
@@ -181,10 +179,6 @@ class Languages {
     const countryCodes = lang.country.split(" ")
     const countryCode = preferredCountryCodes[lang.code] || countryCodes[0]
     return Languages.countries.find(country => country.alpha2Code === countryCode);
-  }
-
-  public getHours(lang: Language) {
-    return Languages.hours.find(hour => hour['iso639-3'] === lang.iso639_3);
   }
 
   public getScripts(lang: Language) {

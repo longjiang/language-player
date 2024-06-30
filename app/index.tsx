@@ -25,7 +25,7 @@ const Index = () => {
         <ThemedButton
           title="Start Learning"
           trailingIcon={<Icon name="chevron-right" />}
-          onPress={() => router.push("/select-l1")}
+          onPress={() => router.push("/select-l2")}
           
         />
       </View>
@@ -37,11 +37,6 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     marginBottom: 20,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-    paddingBottom: 20,
   },
   title: {
     fontSize: 24,

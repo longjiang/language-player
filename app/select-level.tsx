@@ -8,19 +8,18 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { ThemedText } from "@/components/ThemedText";
 import { LevelColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
-const levels = [
-  { level: 1, title: "HSK 1", label: "Beginner (HSK 1)" },
-  { level: 2, title: "HSK 2", label: "Beginner (HSK 2)" }, 
-  { level: 3, title: "HSK 3", label: "Beginner (HSK 3)" }, 
-  { level: 4, title: "HSK 4", label: "Intermediate (HSK 4)" }, 
-  { level: 5, title: "HSK 5", label: "Intermediate (HSK 5)" }, 
-  { level: 6, title: "HSK 6", label: "Advanced (HSK 6)" },
-  { level: 7, title: "HSK 7-9", label: "Advanced (HSK 7-9)" }
-];
+import { languageLevelsByL2Code } from '@/src/language-levels';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 
 const SelectLevelScreen = () => {
+
+  const { l1Lang } = useLanguage();
+
+  if (!l1Lang) return;;
+
+  const levels = languageLevelsByL2Code(l1Lang.code);
+
   const onSelect = (level: number) => {
     router.navigate("/(tabs)/(media)");
   };
@@ -29,23 +28,26 @@ const SelectLevelScreen = () => {
 
   return (
     <ThemedScreen
-      title="What's your current Chinese level?"
+      title={`What's your current ${l1Lang.name} level?`}
       onBackPress={() => router.navigate("/select-l1")}
     >
-      {levels.map(({ level, label }) => 
-        {
-          const levelColor = LevelColors[colorScheme || 'light'][level]
-          return <ThemedButton
-            key={level}
-            title={label}
-            leadingIcon={<Icon name="circle" style={{ color: levelColor || 'rgba(0,0,0,0)' }} />}
-            trailingIcon={<Icon name="chevron-right" />}
-            onPress={() => onSelect(level)}
-            type="accent"
-            style={styles.item}
-          />
-        }
-      )}
+      <View>
+        {Object.values(levels).map(({ level, levelName, examLevelName }) => 
+          {
+            const levelColor = LevelColors[colorScheme || 'light'][level]
+            return <ThemedButton
+              key={level}
+              title={`${levelName} (${examLevelName})`}
+              leadingIcon={<Icon name="circle" style={{ color: levelColor || 'rgba(0,0,0,0)' }} />}
+              trailingIcon={<Icon name="chevron-right" />}
+              onPress={() => onSelect(level)}
+              type="accent"
+              size="small"
+              style={styles.item}
+            />
+          }
+        )}
+      </View>
       <ThemedText style={{ marginTop: 20, textAlign: "center" }}  >
         “HSK” is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.
       </ThemedText>
@@ -55,13 +57,9 @@ const SelectLevelScreen = () => {
 
 const styles = StyleSheet.create({
   item: {
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 16,
-    marginVertical: 8,
     borderRadius: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between"
   }
 });
 
