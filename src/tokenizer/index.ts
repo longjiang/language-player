@@ -26,7 +26,7 @@ export interface Token {
 }
 
 interface TokenizerModule {
-  normalizeTokens: (tokens: Token[], text: string) => (string | Token)[];
+  normalizeTokens: (tokens: Token[], text: string) => Token[];
 }
 
 interface Tokenizer {
@@ -132,7 +132,7 @@ export class TokenizerService {
       const response = await fetch(`${PYTHON_SERVER}/${tokenizer.endPoint}?text=${encodeURIComponent(text)}`);
       const tokenData = await response.json();
 
-      const tokens = OpenKoreanTextTokenizer.normalizeTokens(tokenData, text);
+      const tokens = tokenizer.module.normalizeTokens(tokenData, text);
 
       // Cache the results
       this.cache.set(cacheKey, tokens);

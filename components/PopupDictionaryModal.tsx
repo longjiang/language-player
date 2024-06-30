@@ -4,7 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemedRBSheet } from '@/components/ThemedRBSheet';
 import { PopupDictionaryContent } from '@/components/PopupDictionaryContent';
 import { PopupDictionaryHeader } from '@/components/PopupDictionaryHeader';
-import { Token as TokenType } from '@/types/tokenTypes';
+import { Token as TokenType } from '@/src/tokenizer';
 
 // Define the structure of the state expected by the component
 interface PopupDictionaryModalState {

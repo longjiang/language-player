@@ -4,7 +4,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
 import { Translate } from "@/components/Translate";
-import { Token } from "@/types/tokenTypes";
+import { Token } from "@/src/tokenizer";
 
 interface PopupDictionaryHeaderProps {
   token: Token;
@@ -24,7 +24,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
   return (
     <View style={styles.headerContainer}>
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <ThemedText type="xxlarge" style={{ flex: 1 }}>{token.word}</ThemedText>
+        <ThemedText type="xxlarge" style={{ flex: 1 }}>{token.text}</ThemedText>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Icon name="volume-high" size={26} style={styles.iconStyle} />
           <Icon name="bookmark-outline" size={26} style={styles.iconStyle} />
@@ -32,7 +32,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
       </View>
       <Text style={styles.translationText}>
         <ThemedText>{token.pronunciation} • </ThemedText>
-        <Translate l1Code="en" l2Code="zh" text={token.word} />
+        <Translate l1Code="en" l2Code="zh" text={token.text} />
       </Text>
       <ThemedButton
         type="pro"

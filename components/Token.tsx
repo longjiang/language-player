@@ -6,7 +6,7 @@ import { Typography } from "@/constants/Typography";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { PopupDictionaryModal } from "./PopupDictionaryModal";
-import { Token as TokenType } from "@/types/tokenTypes";
+import { Token as TokenType } from "@/src/tokenizer";
 
 export const Token: React.FC<{
   token: TokenType,
@@ -29,7 +29,7 @@ export const Token: React.FC<{
       : Typography.fontFamilyRegular;
 
   // Render pronunciation only if it is different from the word
-  const renderPronunciation = token.pronunciation !== token.word;
+  const renderPronunciation = token.pronunciation !== token.text;
   const modalRef = useRef();
 
   const handleTokenPress = () => {
@@ -66,11 +66,11 @@ export const Token: React.FC<{
               lineHeight: defaultFontSize * textScale * 1.14,
             }}
           >
-            {token.word}
+            {token.text}
           </Text>
         </View>
       </TouchableOpacity>
-      <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} key={token.word} />
+      <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} key={token.text} />
     </>
   );
 };

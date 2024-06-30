@@ -12,7 +12,6 @@ export const SyncedTranscript = () => {
 
   return (
       <View style={styles.container}>
-        <ThemedText>{currentLine?.l2Line}</ThemedText>
         {currentLine?.l2Line && <TokenizedText text={currentLine?.l2Line} translation={currentLine?.l1Line} textScale={1.5} textWeight="bold" align='center' />}
         {currentLine?.l1Line && <ThemedText style={styles.subtitle} type="default" variant="secondary" >{currentLine?.l1Line}</ThemedText>}
       </View>

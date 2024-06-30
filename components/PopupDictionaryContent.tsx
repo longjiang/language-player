@@ -6,7 +6,7 @@ import { Typography } from "@/constants/Typography";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Token } from "@/types/tokenTypes";
+import { Token } from "@/src/tokenizer";
 import { DictionaryEntry } from "@/src/dictionary-types";
 
 export const PopupDictionaryContent: React.FC<{
@@ -24,16 +24,16 @@ export const PopupDictionaryContent: React.FC<{
   if (!dictionary) {
     return null;
   }
-  if (!token.word) return
+  if (!token.text) return
 
 
   useEffect(() => {
     const fetchDictionaryEntries = async () => {
-      if (!token || !token.word || !dictionary) {
+      if (!token || !token.text || !dictionary) {
         setDictionaryEntries([]);
         return;
       }
-      const entries = await dictionary.findWordsInPhrase(token.word) || [];
+      const entries = await dictionary.findWordsInPhrase(token.text) || [];
       setDictionaryEntries(entries);
     };
 
