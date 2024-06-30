@@ -133,6 +133,8 @@ export class TokenizerService {
       const tokenData = await response.json();
 
       const tokens = tokenizer.module.normalizeTokens(tokenData, text);
+      console.log(text);
+      console.log(tokens);
 
       // Cache the results
       this.cache.set(cacheKey, tokens);

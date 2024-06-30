@@ -18,7 +18,7 @@ export const normalizeTokens = (tokens: Token[], text: string): Token[] => {
           normalizedTokens.push({ text: " ", pos: 'punc' });
       }
 
-      if (token.pos === 'Punctuation' && !isHangul(token.text)) {
+      if (['Punctuation', 'Foreign'].includes(token.pos) && !isHangul(token.text)) {
           normalizedTokens.push({ text: token.text, pos: 'punc' });
       } else {
           if (token.stem) {
@@ -41,8 +41,11 @@ export const normalizeTokens = (tokens: Token[], text: string): Token[] => {
 }
 
 function normalizeToken(token: Token): Token {
-  // Add normalization logic here, potentially manipulating the token's text or lemmas.
-  return token; // Return the token after any necessary transformations.
+  return {
+      text: token.text,
+      pos: token.pos,
+      lemmas: token.lemmas,
+  };
 }
 
 export default { normalizeTokens };
