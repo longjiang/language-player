@@ -27,7 +27,8 @@ export const ThemedScreen = ({
   showHeader?: boolean,
   onAction?: () => void
 }) => {
-  const { i18n } = useLanguage();
+  const { languages, i18n, l2Lang } = useLanguage();
+  const country = l2Lang ? languages?.getCountry(l2Lang) : null;
   return (
     <ThemedView style={styles.container}>
       {imageName && <Image source={imageName} style={[styles.image, imageStyle]} />}
@@ -40,7 +41,7 @@ export const ThemedScreen = ({
             </View>
             {(onAction && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="dots-horizontal-circle" />} onPress={onAction} />)}
             {(showFlag && <TouchableOpacity onPress={() => { router.navigate('/select-l2') }}>
-              <CountryFlag isoCode="cn" size={16} style={{ marginTop: 10, borderRadius: 3 }} />
+              {(country &&<CountryFlag isoCode={country.alpha2Code} size={16} style={{ marginTop: 10, borderRadius: 3 }} />)}
             </TouchableOpacity>)}
           </View>)}
           {children}

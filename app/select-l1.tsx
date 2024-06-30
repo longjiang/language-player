@@ -32,6 +32,7 @@ const SelectL2Screen = () => {
         title="title.next"
         trailingIcon={<Icon name="chevron-right" />}
         style={styles.button}
+        disabled={!l1Lang}
         onPress={() => {
           router.navigate("/select-level");
         }}

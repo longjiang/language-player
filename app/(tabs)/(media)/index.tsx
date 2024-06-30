@@ -25,8 +25,9 @@ const MediaHomeScreen = () => {
   const screenWidth = Dimensions.get('window').width;
   const headerWidth = screenWidth - padding * 2;
   const [items, setItems] = useState<YouTubeVideo[]>([]);
-  const { l2Lang } = useLanguage();
+  const { languages, i18n, l2Lang } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
+  const country = l2Lang ? languages?.getCountry(l2Lang) : null;
 
   useEffect(() => {
     // Search screen mounted
@@ -89,7 +90,7 @@ const MediaHomeScreen = () => {
         <View style={styles.iconsContainer}>
           <ThemedButton type="ghost" size="large" leadingIcon={<Icon name="magnify" />} onPress={ () => { router.navigate('/search') }} />
           <TouchableOpacity onPress={() => { router.navigate('/select-l2') }}>
-            <CountryFlag isoCode="cn" size={16} style={{ marginLeft: 10, borderRadius: 3 }} />
+            {(country && <CountryFlag isoCode={country.alpha2Code} size={16} style={{ marginLeft: 10, borderRadius: 3 }} />)}
           </TouchableOpacity>
         </View>
       </SafeAreaView>
