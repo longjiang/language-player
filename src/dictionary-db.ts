@@ -52,7 +52,7 @@ export class DictionaryDB {
     for (let i = 0; i < entries.length; i += batchSize) {
       const batch = entries.slice(i, i + batchSize);
       const values = batch.map(entry => {
-        const search = `${entry.head} ${entry.alternate || ''} ${stripAccents(entry.pronunciation || '').toLowerCase().replace(/\s+/g, '')} ${entry.definitions.join(' ').toLowerCase()}`
+        const search = `${entry.head} ${stripAccents(entry.head).toLowerCase()} ${entry.alternate || ''} ${stripAccents(entry.pronunciation || '').toLowerCase().replace(/\s+/g, '')} ${entry.definitions.join(' ').toLowerCase()}`
         return `(${escapeSQLValue(entry.id) ? `'${escapeSQLValue(entry.id)}'` : 'NULL'}, 
                  ${entry.hskId || 'NULL'}, 
                  ${escapeSQLValue(entry.head) ? `'${escapeSQLValue(entry.head)}'` : 'NULL'}, 
