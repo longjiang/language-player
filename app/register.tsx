@@ -10,6 +10,8 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { Link } from 'expo-router';
 import { router } from 'expo-router';
 import { registerUser } from '@/src/api/directus/register';
+import { sendVerificationEmail } from '@/src/api/python/verify-email';
+
 
 const RegisterScreen = () => {
     const [firstName, setFirstName] = useState('');
@@ -20,20 +22,21 @@ const RegisterScreen = () => {
     const [loading, setLoading] = useState(false);
 
     const handleRegister = async () => {
-        if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
-            return;
-        }
+      if (password !== confirmPassword) {
+          Alert.alert('Error', 'Passwords do not match');
+          return;
+      }
 
-        setLoading(true);
-        try {
-            await registerUser(firstName, lastName, email, password);
-            router.push('/verify-email');
-        } catch (error) {
-            Alert.alert('Error', error.message);
-        } finally {
-            setLoading(false);
-        }
+      setLoading(true);
+      try {
+          await registerUser(firstName, lastName, email, password);
+          await sendVerificationEmail(email);
+          router.push({ pathname: '/verify-email', params: { email } });
+      } catch (error) {
+          Alert.alert('Error', error.message);
+      } finally {
+          setLoading(false);
+      }
     };
 
     return (

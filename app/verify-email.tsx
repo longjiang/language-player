@@ -1,17 +1,28 @@
 import React, { useState } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Alert } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedCodeInput } from "@/components/ThemedCodeInput";
 import { ThemedScreen } from "@/components/ThemedScreen";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { verifyEmailCode } from "@/src/api/python/verify-email";
 
 const VerifyEmailScreen = () => {
   const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { email } = useLocalSearchParams<{ email?: string }>(); // Get the email from query params
 
-  const handleVerify = () => {
-    console.log("Verification code entered:", code);
-    // Add your verification logic here
+
+  const handleVerify = async () => {
+    setLoading(true);
+    try {
+      await verifyEmailCode(email, code);
+      router.navigate("/acquisition-survey");
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -22,7 +33,7 @@ const VerifyEmailScreen = () => {
       imageStyle={{ marginTop: -400 }}
     >
       <ThemedText style={styles.instructions}>
-        Please enter the verification code sent to the email name***@gmail.com
+        Please enter the verification code sent to the email { email }
       </ThemedText>
 
       <ThemedCodeInput codeLength={6} onCodeFilled={setCode} />
@@ -30,9 +41,8 @@ const VerifyEmailScreen = () => {
       <ThemedButton
         title="Verify"
         style={styles.button}
-        onPress={() => {
-          router.navigate("/acquisition-survey");
-        }}
+        onPress={handleVerify}
+        disabled={loading}
       />
     </ThemedScreen>
   );
