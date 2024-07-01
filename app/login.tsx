@@ -22,7 +22,7 @@ const LoginScreen = () => {
         try {
             await login(email, password);
             router.navigate("/account");
-        } catch (error) {
+        } catch (error: any) {
             Alert.alert('Login Error', error.message);
         } finally {
             setLoading(false);

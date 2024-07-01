@@ -3,7 +3,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { DIRECTUS_URL } from '.'
 
-export async function registerUser(firstName, lastName, email, password) {
+export async function registerUser(firstName: string, lastName: string, email: string, password: string) {
   // Register the user
   const registerResponse = await fetch(`${DIRECTUS_URL}/users`, {
       method: 'POST',

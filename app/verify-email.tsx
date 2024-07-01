@@ -25,7 +25,7 @@ const VerifyEmailScreen = () => {
       await SecureStore.deleteItemAsync('user_password'); // Delete the stored password after use
       router.push("/acquisition-survey");
       setLoading(false);
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Error', error.message);
       setLoading(false);
     }
@@ -35,7 +35,7 @@ const VerifyEmailScreen = () => {
     try {
       await sendVerificationEmail(email);
       Alert.alert('Success', 'Verification code resent to your email.');
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Error', error.message);
     }
   };

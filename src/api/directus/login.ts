@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 import { DIRECTUS_URL } from '.'
 import { fetchAndStoreUserInfo } from './user';
 
-export async function login(email, password) {
+export async function login(email: string, password: string) {
     const response = await fetch(`${DIRECTUS_URL}/auth/authenticate`, {
         method: 'POST',
         headers: {

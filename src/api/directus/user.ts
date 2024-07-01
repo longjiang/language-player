@@ -3,6 +3,16 @@ import * as SecureStore from 'expo-secure-store';
 
 import { DIRECTUS_URL } from '.'
 
+export type User = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  last_access_on: string;
+  role: number;
+  status: string;
+};
+
 export async function fetchAndStoreUserInfo() {
   const token = await SecureStore.getItemAsync('access_token');
   if (!token) throw new Error('No access token found');
@@ -22,7 +32,7 @@ export async function fetchAndStoreUserInfo() {
   }
 }
 
-export async function getStoredUserInfo() {
+export async function getStoredUserInfo(): Promise<User | null> {
   const userInfo = await SecureStore.getItemAsync('user_info');
   return userInfo ? JSON.parse(userInfo) : null;
 }

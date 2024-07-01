@@ -4,7 +4,7 @@ import axios, { AxiosInstance, AxiosResponse } from "axios";
 
 export const DIRECTUS_URL = "https://directusvps.zerotohero.ca/zerotohero";
 
-interface GenericCollectionItem {
+export interface GenericCollectionItem {
   [key: string]: any; // This allows any property of any type
 }
 

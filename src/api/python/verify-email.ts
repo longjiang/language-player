@@ -1,7 +1,7 @@
 // @/auth.js
 import { PYTHON_SERVER } from '.';
 
-export async function sendVerificationEmail(email) {
+export async function sendVerificationEmail(email: string) {
     const response = await fetch(`${PYTHON_SERVER}/verification_email`, {
         method: 'POST',
         headers: {
@@ -16,7 +16,7 @@ export async function sendVerificationEmail(email) {
     }
 }
 
-export async function verifyEmailCode(email, code) {
+export async function verifyEmailCode(email: string, code: string) {
     const response = await fetch(`${PYTHON_SERVER}/verification_email/verify`, {
         method: 'POST',
         headers: {

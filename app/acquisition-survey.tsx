@@ -11,7 +11,7 @@ import { submitAcquisitionSurvey } from "@/src/api/python/acquisition-survey";
 import { getStoredUserInfo } from "@/src/api/directus/user";
 
 const AcquisitionSurveyScreen = () => {
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOption, setSelectedOption] = useState<any>(null);
   const [otherText, setOtherText] = useState("");
   const [userId, setUserId] = useState(null);
 
@@ -24,7 +24,7 @@ const AcquisitionSurveyScreen = () => {
         } else {
           throw new Error("User information not found");
         }
-      } catch (error) {
+      } catch (error: any) {
         Alert.alert("Error", error.message);
       }
     };
@@ -56,7 +56,7 @@ const AcquisitionSurveyScreen = () => {
       const acquisitionDetails = selectedOption?.value === 'other' ? otherText : null;
       await submitAcquisitionSurvey(userId, selectedOption.value, acquisitionDetails);
       router.push("select-l2");
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Error', error.message);
     }
   };
@@ -73,7 +73,7 @@ const AcquisitionSurveyScreen = () => {
           <ThemedRadio
             key={index}
             label={option.text}
-            isSelected={selectedOption && selectedOption.value === option.value}
+            isSelected={selectedOption?.value === option.value}
             onPress={() => handleSelectOption(option)}
           />
         ))}

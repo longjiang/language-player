@@ -10,10 +10,14 @@ import { getStoredUserInfo, logout } from "@/src/api/directus/user";
 import { getUserSubscriptions } from "@/src/api/directus";
 import * as SecureStore from 'expo-secure-store';
 import { getDeltaDate } from "@/src/utils";
+import { GenericCollectionItem } from "@/src/api/directus";
+import { User } from "@/src/api/directus/user";
+
+
 
 const AccountScreen = () => {
-  const [userInfo, setUserInfo] = useState(null);
-  const [subscription, setSubscription] = useState(null);
+  const [userInfo, setUserInfo] = useState<User | null>(null);
+  const [subscription, setSubscription] = useState<GenericCollectionItem | null>(null);
   const secondaryTextColor = useThemeColor({}, "secondaryText");
 
   useEffect(() => {
@@ -24,13 +28,14 @@ const AccountScreen = () => {
 
         if (info && info.id) {
           const authToken = await SecureStore.getItemAsync('access_token');
+          if (!authToken) throw new Error('Failed to retrieve stored auth token');
           const subscriptions = await getUserSubscriptions(info.id, authToken);
           if (subscriptions.length > 0) {
             setSubscription(subscriptions[0]);
           }
           console.log(subscriptions);
         }
-      } catch (error) {
+      } catch (error: any) {
         Alert.alert('Error', error.message);
       }
     };

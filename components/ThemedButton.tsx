@@ -19,7 +19,7 @@ type ButtonProps = {
   onPress?: () => void;
   leadingIcon?: React.ReactNode;
   trailingIcon?: React.ReactNode;
-  style?: ViewStyle; // ViewStyle
+  style?: ViewStyle | object;
   disabled?: boolean;
 };
 
