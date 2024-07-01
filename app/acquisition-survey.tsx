@@ -1,31 +1,64 @@
-import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
+// @/app/acquisition-survey.tsx
+
+import React, { useState, useEffect } from "react";
+import { StyleSheet, View, Alert } from "react-native";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedRadio } from "@/components/ThemedRadio";
 import { ThemedInput } from "@/components/ThemedInput";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { submitAcquisitionSurvey } from "@/src/api/python/acquisition-survey";
+import { getStoredUserInfo } from "@/src/api/directus/user";
 
 const AcquisitionSurveyScreen = () => {
-  const [selectedOption, setSelectedOption] = useState("");
+  const [selectedOption, setSelectedOption] = useState(null);
   const [otherText, setOtherText] = useState("");
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userInfo = await getStoredUserInfo();
+        if (userInfo) {
+          setUserId(userInfo.id);
+        } else {
+          throw new Error("User information not found");
+        }
+      } catch (error) {
+        Alert.alert("Error", error.message);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   const options = [
-    "Word of Mouth",
-    "Instagram",
-    "Bilibili",
-    "Online Ads",
-    "HSK Courses",
-    "App Store",
-    "Google Play",
-    "Web Search",
-    "YouTube",
-    "Other",
+    { value: 'word_of_mouth', text: 'Word of Mouth' },
+    { value: 'instagram', text: 'Instagram' },
+    { value: 'bilibili', text: 'Bilibili' },
+    { value: 'google_ads', text: 'Online Ads' },
+    { value: 'hsk_courses', text: 'HSK Courses' },
+    { value: 'app_store', text: 'App Store' },
+    { value: 'google_play', text: 'Google Play' },
+    { value: 'google_search', text: 'Web Search' },
+    { value: 'youtube', text: 'YouTube' },
+    { value: 'other', text: 'Other (Please specify)' },
   ];
 
-  const handleSelectOption = (option: string) => {
+  const handleSelectOption = (option: any) => {
     setSelectedOption(option);
-    if (option !== "Other") setOtherText("");
+    if (option.value !== "other") setOtherText("");
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedOption) return;
+    try {
+      const acquisitionDetails = selectedOption?.value === 'other' ? otherText : null;
+      await submitAcquisitionSurvey(userId, selectedOption.value, acquisitionDetails);
+      router.push("select-l2");
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
 
   return (
@@ -39,8 +72,8 @@ const AcquisitionSurveyScreen = () => {
         {options.map((option, index) => (
           <ThemedRadio
             key={index}
-            label={option}
-            isSelected={selectedOption === option}
+            label={option.text}
+            isSelected={selectedOption && selectedOption.value === option.value}
             onPress={() => handleSelectOption(option)}
           />
         ))}
@@ -55,13 +88,9 @@ const AcquisitionSurveyScreen = () => {
       </View>
       <ThemedButton
         title="Start Learning"
-        onPress={() =>
-          { 
-            console.log("Survey results:", selectedOption, otherText)
-            router.push("select-l2")
-          }
-        }
+        onPress={handleSubmit}
         style={{ marginTop: 20 }}
+        disabled={!selectedOption}
       />
     </ThemedScreen>
   );

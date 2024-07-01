@@ -1,3 +1,4 @@
+// @/app/verify-email.tsx
 import React, { useState } from "react";
 import { StyleSheet, Alert } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
@@ -5,23 +6,37 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedCodeInput } from "@/components/ThemedCodeInput";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router, useLocalSearchParams } from "expo-router";
-import { verifyEmailCode } from "@/src/api/python/verify-email";
+import { login } from "@/src/api/directus/login";
+import { sendVerificationEmail, verifyEmailCode } from "@/src/api/python/verify-email";
+import * as SecureStore from 'expo-secure-store';
 
 const VerifyEmailScreen = () => {
   const [code, setCode] = useState("");
+  const { email } = useLocalSearchParams(); // Get email from query params
   const [loading, setLoading] = useState(false);
-  const { email } = useLocalSearchParams<{ email?: string }>(); // Get the email from query params
-
 
   const handleVerify = async () => {
     setLoading(true);
     try {
-      await verifyEmailCode(email, code);
-      router.navigate("/acquisition-survey");
+      await verifyEmailCode(email, code); // Add your verification logic here
+      const password = await SecureStore.getItemAsync('user_password');
+      if (!password) throw new Error('Failed to retrieve stored password');
+      await login(email, password); // Log the user in after verification
+      await SecureStore.deleteItemAsync('user_password'); // Delete the stored password after use
+      router.push("/acquisition-survey");
+      setLoading(false);
     } catch (error) {
       Alert.alert('Error', error.message);
-    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    try {
+      await sendVerificationEmail(email);
+      Alert.alert('Success', 'Verification code resent to your email.');
+    } catch (error) {
+      Alert.alert('Error', error.message);
     }
   };
 
@@ -33,7 +48,7 @@ const VerifyEmailScreen = () => {
       imageStyle={{ marginTop: -400 }}
     >
       <ThemedText style={styles.instructions}>
-        Please enter the verification code sent to the email { email }
+        Please enter the verification code sent to the email {email}
       </ThemedText>
 
       <ThemedCodeInput codeLength={6} onCodeFilled={setCode} />
@@ -42,7 +57,13 @@ const VerifyEmailScreen = () => {
         title="Verify"
         style={styles.button}
         onPress={handleVerify}
-        disabled={loading}
+        disabled={code.length < 6 || loading}
+      />
+
+      <ThemedButton
+        title="Resend Code"
+        style={styles.button}
+        onPress={handleResendCode}
       />
     </ThemedScreen>
   );

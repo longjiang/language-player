@@ -17,7 +17,7 @@ interface ThemedInputProps {
   onSubmitEditing?: () => void;
   secureTextEntry?: boolean;
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
-  autoCapitalize: 'none' | 'sentences' | 'words' | 'characters';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 }
 
 export const ThemedInput: React.FC<ThemedInputProps> = ({

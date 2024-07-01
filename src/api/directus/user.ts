@@ -1,9 +1,9 @@
-// @/src/auth/user.ts
+// @/src/api/directus/user.ts
 import * as SecureStore from 'expo-secure-store';
 
 import { DIRECTUS_URL } from '.'
 
-export async function storeUserInfo() {
+export async function fetchAndStoreUserInfo() {
   const token = await SecureStore.getItemAsync('access_token');
   if (!token) throw new Error('No access token found');
 

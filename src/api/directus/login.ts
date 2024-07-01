@@ -2,7 +2,7 @@
 import * as SecureStore from 'expo-secure-store';
 
 import { DIRECTUS_URL } from '.'
-import { storeUserInfo } from './user';
+import { fetchAndStoreUserInfo } from './user';
 
 export async function login(email, password) {
     const response = await fetch(`${DIRECTUS_URL}/auth/authenticate`, {
@@ -20,7 +20,7 @@ export async function login(email, password) {
 
     if (response.ok) {
         await SecureStore.setItemAsync('access_token', data.data.token);
-        await storeUserInfo();
+        await fetchAndStoreUserInfo();
         return data;
     } else {
         throw new Error(data.errors[0].message);
