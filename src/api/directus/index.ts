@@ -1,11 +1,13 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 
+export const DIRECTUS_URL = "https://directusvps.zerotohero.ca/zerotohero";
+
 interface GenericCollectionItem {
   [key: string]: any; // This allows any property of any type
 }
 
 const API: AxiosInstance = axios.create({
-  baseURL: "https://directusvps.zerotohero.ca/zerotohero",
+  baseURL: DIRECTUS_URL,
 });
 
 // Using generics in functions

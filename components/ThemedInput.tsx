@@ -16,6 +16,8 @@ interface ThemedInputProps {
   onChangeText?: (text: string) => void;
   onSubmitEditing?: () => void;
   secureTextEntry?: boolean;
+  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
+  autoCapitalize: 'none' | 'sentences' | 'words' | 'characters';
 }
 
 export const ThemedInput: React.FC<ThemedInputProps> = ({
@@ -27,7 +29,9 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
   value,
   onChangeText,
   onSubmitEditing,
-  secureTextEntry = true,
+  secureTextEntry = false,
+  keyboardType = 'default',
+  autoCapitalize = 'sentences',
   ...rest
 }) => {
   const borderColor = useThemeColor({}, 'secondaryStroke');
@@ -44,6 +48,9 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
         placeholderTextColor={placeholderTextColor}
         onSubmitEditing={onSubmitEditing}
         onChangeText={onChangeText}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
+        secureTextEntry={secureTextEntry}
         {...rest}
       />
       {icon && (
