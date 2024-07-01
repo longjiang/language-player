@@ -33,6 +33,7 @@ export const DictionaryComponent = () => {
                         <TouchableOpacity onPress={() => router.navigate(`/dictionary/word/${entry.id}`)}>
                           <ThemedText>
                               <ThemedText type="title" level={entry.level}>{entry.head}</ThemedText>
+                              <ThemedText type="default" variant="secondary"> {entry.alternate}</ThemedText>
                               <ThemedText type="defaultBold"> {entry.pronunciation}</ThemedText>
                               <ThemedText type="default"> • {entry.definitions.join('; ')}</ThemedText>
                           </ThemedText>
