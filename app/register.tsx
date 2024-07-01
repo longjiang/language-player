@@ -1,5 +1,6 @@
+// @/app/RegisterScreen.tsx
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { ThemedScreen } from '@/components/ThemedScreen';
 import { ThemedInput } from '@/components/ThemedInput';
 import { ThemedButton } from '@/components/ThemedButton';
@@ -8,6 +9,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Link } from 'expo-router';
 import { router } from 'expo-router';
+import { registerUser } from '@/src/api/directus/register';
 
 const RegisterScreen = () => {
     const [firstName, setFirstName] = useState('');
@@ -15,6 +17,24 @@ const RegisterScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleRegister = async () => {
+        if (password !== confirmPassword) {
+            Alert.alert('Error', 'Passwords do not match');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await registerUser(firstName, lastName, email, password);
+            router.push('/verify-email');
+        } catch (error) {
+            Alert.alert('Error', error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <ThemedScreen
@@ -23,7 +43,6 @@ const RegisterScreen = () => {
           imageName={require("../assets/images/splash-image.png")}
           imageStyle={{ marginTop: -400 }}
         >
-
             <View style={styles.row}>
                 <ThemedInput
                     style={{...styles.input, flex: 1}}
@@ -45,6 +64,8 @@ const RegisterScreen = () => {
                 value={email}
                 placeholder="Email"
                 icon="email"
+                keyboardType="email-address"
+                autoCapitalize="none"
             />
             <ThemedInput
                 style={styles.input}
@@ -63,7 +84,7 @@ const RegisterScreen = () => {
                 icon="lock"
             />
 
-            <ThemedButton title="Register" onPress={() => { router.push('/verify-email'); }} />
+            <ThemedButton title="Register" onPress={handleRegister} disabled={loading} />
 
             <ThemedText style={styles.orText}>Or register with:</ThemedText>
             <View style={styles.socialButtons}>
