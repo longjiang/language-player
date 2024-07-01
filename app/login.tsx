@@ -10,7 +10,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Link } from 'expo-router';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { login } from '@/src/auth/login';
+import { login } from '@/src/api/directus/login';
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');

@@ -6,7 +6,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { PricingBlock } from "@/components/PricingBlock";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { getStoredUserInfo, logout } from "@/src/auth/login";
+import { getStoredUserInfo, logout } from "@/src/api/directus/user";
 import { getUserSubscriptions } from "@/src/api/directus";
 import * as SecureStore from 'expo-secure-store';
 import { getDeltaDate } from "@/src/utils";
