@@ -31,3 +31,11 @@ export const isHangul = (text: string): boolean => {
   // Example implementation; you should define this based on actual usage.
   return /[\uac00-\ud7af]/.test(text);
 }
+
+export const getDeltaDate = (expiresOn) => {
+  const now = new Date();
+  const expirationDate = new Date(expiresOn);
+  const deltaMilliseconds = expirationDate - now;
+  const deltaDays = Math.ceil(deltaMilliseconds / (1000 * 60 * 60 * 24));
+  return deltaDays;
+};

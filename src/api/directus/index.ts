@@ -1,3 +1,5 @@
+// @/api/directus/index.js
+
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 
 export const DIRECTUS_URL = "https://directusvps.zerotohero.ca/zerotohero";
@@ -13,22 +15,40 @@ const API: AxiosInstance = axios.create({
 // Using generics in functions
 const getCollectionItems = async <T = GenericCollectionItem>(
   collectionName: string,
-  queryParams: Record<string, any> = {}
+  queryParams: Record<string, any> = {},
+  authToken?: string
 ): Promise<T[]> => {
   const queryString = new URLSearchParams(buildParams(queryParams)).toString();
   const url = `/items/${collectionName}${queryString ? `?${queryString}` : ""}`;
 
-  const response: AxiosResponse<{ data: T[] }> = await API.get(url);
+  const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+
+  const response: AxiosResponse<{ data: T[] }> = await API.get(url, { headers });
   return response.data.data;
 };
 
 const getItemById = async <T = GenericCollectionItem>(
   collectionName: string,
-  id: number
+  id: number,
+  authToken?: string
 ): Promise<T> => {
+  const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+
   const response: AxiosResponse<{ data: T }> = await API.get(
-    `/items/${collectionName}/${id}`
+    `/items/${collectionName}/${id}`,
+    { headers }
   );
+  return response.data.data;
+};
+
+const getUserSubscriptions = async (
+  userId: string,
+  authToken?: string
+): Promise<GenericCollectionItem[]> => {
+  const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+  const url = `/items/subscriptions?filter[owner][eq]=${userId}`;
+
+  const response: AxiosResponse<{ data: GenericCollectionItem[] }> = await API.get(url, { headers });
   return response.data.data;
 };
 
@@ -81,4 +101,4 @@ function buildParams(
   return params;
 }
 
-export { getCollectionItems, getItemById };
+export { getCollectionItems, getItemById, getUserSubscriptions };

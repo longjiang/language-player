@@ -14,7 +14,8 @@ export interface PricingBlockProps {
   current?: boolean;
   recommended?: boolean;
   onPress?: () => void;
-  showButtons?: boolean;
+  showUpgrade?: boolean;
+  showCancel?: boolean;
 }
 
 export const PricingBlock: React.FC<PricingBlockProps> = ({
@@ -23,7 +24,8 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
   current,
   recommended,
   onPress,
-  showButtons,
+  showUpgrade,
+  showCancel,
 }) => {
   const secondaryBrandColor = useThemeColor({}, 'semanticSuccess');
   const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
@@ -69,22 +71,22 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
           <ThemedText style={styles.tagText}>Best Value</ThemedText>
         </View>
       )}
-      {showButtons && (
+      {(showUpgrade || showCancel) && (
         <View style={styles.buttonContainer}>
-          <ThemedButton
+          {(showUpgrade && <ThemedButton
             title="Upgrade"
             size="small"
             trailingIcon={<Icon name="chevron-right" />}
-            style={{ marginRight: 8 }}
             onPress={() => router.navigate('/go-pro')}
-          />
-          <ThemedButton
+          />)}
+          {(showCancel && <ThemedButton
             title="Cancel"
             size="small"
             type="neutral"
+            style={{ marginLeft: 8 }}
             trailingIcon={<Icon name="chevron-right" />}
             onPress={handleCancelPress}
-          />
+          />)}
         </View>
       )}
       <ThemedRBSheet
