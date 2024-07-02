@@ -41,6 +41,33 @@ const getItemById = async <T = GenericCollectionItem>(
   return response.data.data;
 };
 
+// Function to post a new item to a collection
+export const postCollectionItem = async <T = GenericCollectionItem>(
+  collectionName: string,
+  item: T,
+  authToken?: string
+): Promise<T> => {
+  const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+  try {
+    const response: AxiosResponse<{ data: T }> = await API.post(
+      `/items/${collectionName}`,
+      item,
+      { headers }
+    );
+    return response.data.data;
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    if (axiosError && axiosError.response) {
+      // Handle specific API error response here
+      console.error('API Error:', axiosError.response.data);
+    } else {
+      // General error handling
+      console.error('Error posting item to collection:', error);
+    }
+    throw error;
+  }
+};
+
 const getUserSubscriptions = async (
   userId: string,
   authToken?: string
