@@ -6,8 +6,10 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedText } from "@/components/ThemedText";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
+import { useAuth } from "@/contexts/AuthContext";
 
 const LanguageProgressScreen = () => {
+  const { handleLogout } = useAuth();
   return (
     <ThemedScreen
       title="My Progress"
@@ -59,9 +61,7 @@ const LanguageProgressScreen = () => {
           trailingIcon={<Icon name="chevron-right" />}
           type="accent"
           style={styles.button}
-          onPress={() => {
-            router.navigate("/login");
-          }}
+          onPress={handleLogout}
         />
       </View>
     </ThemedScreen>

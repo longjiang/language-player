@@ -4,16 +4,8 @@ import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
 import { login as apiLogin, checkToken as apiCheckToken, fetchUserInfo } from '@/src/api/directus/login';
 import { registerUser as apiRegisterUser } from '@/src/api/directus/register'
+import { User } from '@/src/api/directus/user';
 
-export type User = {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  last_access_on: string;
-  role: number;
-  status: string;
-};
 
 const AuthContext = createContext(null);
 
