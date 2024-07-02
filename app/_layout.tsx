@@ -9,7 +9,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
-
+import { Platform } from "react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { VideoPlayerProvider } from "@/contexts/VideoPlayerContext";
 import { MiniPlayer } from "@/components/MiniPlayer";
@@ -19,6 +19,9 @@ import { DictionaryProvider } from "@/contexts/DictionaryContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from '@/contexts/AuthContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
+import { Audio } from "expo-av";
+
+const soundObject = new Audio.Sound();
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -35,6 +38,19 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
+
+  useEffect(() => {
+    const enableSound = async () => {
+      if (Platform.OS === "ios") {
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+        });
+        await soundObject.loadAsync(require("@/assets/soundFile.mp3"));
+        await soundObject.playAsync();
+      }
+    };
+    enableSound();
+  });
 
   if (!loaded) {
     return null;
