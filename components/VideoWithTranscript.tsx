@@ -39,7 +39,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
 
   const { video, playVideo, updatePlayVideo, currentTime, startTime, syncedLines } =
     useVideoWithTranscriptContext();
-  const { closePlayer } = useVideoPlayer();
+  const { minimizePlayer, closePlayer } = useVideoPlayer();
 
   function removeTextInBrackets(text: string) {
     // Regular expression to match content inside various brackets
@@ -70,13 +70,18 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
                   type="ghost"
                   style={styles.headerButton}
                   trailingIcon={<Icon name="text-long" />}
-                  onPress={() => router.push("/(tabs)/(media)/youtube-video")}
+                  onPress={() => {
+                    // Handle transcript button press
+                  }}
                 />
                 <ThemedButton
                   type="ghost"
                   style={styles.headerButton}
                   trailingIcon={<Icon name="cog-outline" />}
-                  onPress={() => router.push("/(tabs)/(media)/youtube-video")}
+                  onPress={() => {
+                    minimizePlayer();
+                    router.navigate("/(tabs)/(me)/settings");
+                  }}
                 />
               </View>
             </SafeAreaView>
@@ -103,15 +108,20 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
               startTime={startTime}
             />
           </View>
-          <Link href={`/video/youtube/${video.youtube_id}`} style={{ marginLeft: 10, flex: 1 }}>
+          <Link
+            href={`/video/youtube/${video.youtube_id}`}
+            style={{ marginLeft: 10, flex: 1 }}
+          >
             <View style={styles.miniPlayerVideoInfo}>
-              {video.title && <ThemedText
-                style={styles.miniPlayerVideoTitle}
-                numberOfLines={1}
-                type="defaultBold"
-              >
-                {removeTextInBrackets(video.title)}
-              </ThemedText>}
+              {video.title && (
+                <ThemedText
+                  style={styles.miniPlayerVideoTitle}
+                  numberOfLines={1}
+                  type="defaultBold"
+                >
+                  {removeTextInBrackets(video.title)}
+                </ThemedText>
+              )}
               <ThemedText
                 style={styles.miniPlayerVideoSubTitle}
                 numberOfLines={1}

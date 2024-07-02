@@ -7,6 +7,7 @@ import { useDictionary } from "@/contexts/DictionaryContext";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { PopupDictionaryModal } from "./PopupDictionaryModal";
 import { Token as TokenType } from "@/src/tokenizer";
+import { useSettings } from "@/contexts/SettingsContext"; // Import the useSettings hook
 
 export const Token: React.FC<{
   token: TokenType,
@@ -28,13 +29,15 @@ export const Token: React.FC<{
       ? Typography.fontFamilyBold
       : Typography.fontFamilyRegular;
 
-  // Render pronunciation only if it is different from the word
-  const renderPronunciation = token.pronunciation !== token.text;
+  const { settings } = useSettings(); // Use the settings context
   const modalRef = useRef();
 
   const handleTokenPress = () => {
     modalRef.current?.open();
   };
+
+  // Determine if pronunciation should be shown
+  const shouldShowPronunciation = settings.showPhonetics && token.pronunciation !== token.text;
 
   return (
     <>
@@ -46,7 +49,7 @@ export const Token: React.FC<{
             padding: 5,
           }}
         >
-          {renderPronunciation && (
+          {shouldShowPronunciation && ( // Conditionally render based on showPhonetics setting
             <Text
               style={{
                 fontFamily,

@@ -1,68 +1,22 @@
 // @/app/(tabs)/(me)/settings.tsx
 
-import React, { useReducer, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { ThemedScreen, ThemedText, ThemedSwitch } from '@/components';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-
-// Initial state for settings
-const initialState = {
-  showPhonetics: false,
-  showDefinition: false,
-  useTraditional: false,
-  showTranslation: false,
-  autoPronounce: false,
-  darkMode: false,
-  showGloss: false,
-  wordsAsBlanks: false,
-};
-
-// Reducer function to handle state changes
-interface SettingsState {
-  showPhonetics: boolean;
-  showDefinition: boolean;
-  useTraditional: boolean;
-  showTranslation: boolean;
-  autoPronounce: boolean;
-  darkMode: boolean;
-  showGloss: boolean;
-  wordsAsBlanks: boolean;
-}
-
-type SettingsAction =
-  | { type: 'SET_SETTINGS'; payload: Partial<SettingsState> }
-  | { type: 'TOGGLE_SETTING'; payload: keyof SettingsState };
-
-const settingsReducer = (state: SettingsState, action: SettingsAction): SettingsState => {
-  switch (action.type) {
-    case 'SET_SETTINGS':
-      return { ...state, ...action.payload };
-    case 'TOGGLE_SETTING':
-      return { ...state, [action.payload]: !state[action.payload] };
-    default:
-      return state;
-  }
-};
+import { useSettings } from '@/contexts/SettingsContext';  // Import useSettings hook
 
 const SettingsScreen = () => {
-  const [settings, dispatch] = useReducer(settingsReducer, initialState);
+  const { settings, dispatch } = useSettings();  // Use settings from context
   const secondaryBrandColor = useThemeColor({}, 'secondaryBrand');
 
-  useEffect(() => {
-    SecureStore.getItemAsync('userSettings').then(savedSettings => {
-      savedSettings && dispatch({ type: 'SET_SETTINGS', payload: JSON.parse(savedSettings) });
-    });
-  }, []);
-
-  const toggleSetting = async (setting: keyof SettingsState) => {
-    const updatedSettings: SettingsState = { ...settings, [setting]: !settings[setting] };
-    dispatch({ type: 'TOGGLE_SETTING', payload: setting });
-    await SecureStore.setItemAsync('userSettings', JSON.stringify(updatedSettings));
+  const toggleSetting = async (settingKey) => {
+    dispatch({ type: 'TOGGLE_SETTING', payload: settingKey });  // Update state using context
+    // Optionally persist changes here or handle it globally in the context provider
   };
 
-  const renderSwitch = (label: string, settingKey: keyof SettingsState): JSX.Element => (
+  const renderSwitch = (label, settingKey) => (
     <View style={styles.switchContainer}>
       <ThemedText>{label}</ThemedText>
       <ThemedSwitch isEnabled={settings[settingKey]} toggleSwitch={() => toggleSetting(settingKey)} />
@@ -72,7 +26,9 @@ const SettingsScreen = () => {
   return (
     <ThemedScreen title="Settings" onBackPress={() => router.back()}>
       <View style={styles.container}>
-        <ThemedText type="subtitle" style={{ ...styles.subtitle, color: secondaryBrandColor }}>Language Settings</ThemedText>
+        <ThemedText type="subtitle" style={{ ...styles.subtitle, color: secondaryBrandColor }}>
+          Language Settings
+        </ThemedText>
         {renderSwitch('Show Phonetics', 'showPhonetics')}
         {renderSwitch('Show Definition', 'showDefinition')}
         {renderSwitch('Use Traditional', 'useTraditional')}
@@ -80,7 +36,9 @@ const SettingsScreen = () => {
         {renderSwitch('Show Gloss for Saved', 'showGloss')}
         {renderSwitch('Saved Words as Blanks', 'wordsAsBlanks')}
         {renderSwitch('Auto Pronounce', 'autoPronounce')}
-        <ThemedText type="subtitle" style={{ ...styles.subtitle, marginTop: 26, color: secondaryBrandColor }}>App Settings</ThemedText>
+        <ThemedText type="subtitle" style={{ ...styles.subtitle, marginTop: 26, color: secondaryBrandColor }}>
+          App Settings
+        </ThemedText>
         {renderSwitch('Dark Mode', 'darkMode')}
       </View>
     </ThemedScreen>

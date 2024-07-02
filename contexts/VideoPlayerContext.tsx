@@ -51,7 +51,10 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [videoPlayerState, setVideoPlayerState] = useState(initialVideoPlayerState);
   // Helper functions to modify state
   const closePlayer = () => setVideoPlayerState({ isMini: false, video: undefined, queue: [] });
-  const minimizePlayer = () => setVideoPlayerState(prev => ({ ...prev, isMini: true }));
+  const minimizePlayer = () => {
+    console.log('minimizePlayer')
+    setVideoPlayerState(prev => ({ ...prev, isMini: true }))
+  };
   const maximizePlayer = () => setVideoPlayerState(prev => ({ ...prev, isMini: false }));
 
   const playNext = () => {
