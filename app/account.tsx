@@ -87,7 +87,7 @@ const AccountScreen = () => {
             style={{marginTop: 26}}
             type="primary"
             onPress={() => {
-              router.navigate("/(tabs)/(media)");
+              router.navigate("/select-l2");
             }}
           />
         </>

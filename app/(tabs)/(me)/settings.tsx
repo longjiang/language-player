@@ -1,5 +1,5 @@
 // @/app/settings.tsx
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedText } from "@/components/ThemedText";
@@ -7,61 +7,72 @@ import { ThemedSwitch } from '@/components/ThemedSwitch';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
 
+// Initial state for settings
+const initialState = {
+  showPhonetics: false,
+  showDefinition: false,
+  useTraditional: false,
+  showTranslation: false,
+  autoPronounce: false,
+  darkMode: false,
+  showGloss: false,
+  wordsAsBlanks: false,
+};
+
+// Reducer function to handle state changes
+const settingsReducer = (state, action) => {
+  switch (action.type) {
+    case 'TOGGLE_SETTING':
+      return { ...state, [action.payload]: !state[action.payload] };
+    default:
+      return state;
+  }
+};
+
 const SettingsScreen = () => {
-  // Existing states for each switch
-  const [showPhonetics, setShowPhonetics] = useState(false);
-  const [showDefinition, setShowDefinition] = useState(false);
-  const [useTraditional, setUseTraditional] = useState(false);
-  const [showTranslation, setShowTranslation] = useState(false);
-  const [autoPronounce, setAutoPronounce] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  // New states for added options
-  const [showGloss, setShowGloss] = useState(false);
-  const [wordsAsBlanks, setWordsAsBlanks] = useState(false);
+  const [settings, dispatch] = useReducer(settingsReducer, initialState);
+  const secondaryBrandColor = useThemeColor({}, 'secondaryBrand');
 
-  const secondaryBrandColor = useThemeColor({}, 'secondaryBrand'); // Retrieve accent color
-
+  const toggleSetting = (setting) => {
+    dispatch({ type: 'TOGGLE_SETTING', payload: setting });
+  };
 
   return (
-    <ThemedScreen
-      title="Settings"
-      onBackPress={() => {router.back();}}
-    >
-      
+    <ThemedScreen title="Settings" onBackPress={() => { router.back(); }}>
       <View style={styles.container}>
-        <ThemedText type="subtitle" style={{ marginBottom: 10, color: secondaryBrandColor }}>This Language Only</ThemedText>
+        <ThemedText type="subtitle" style={{ marginBottom: 10, color: secondaryBrandColor }}>Language Settings</ThemedText>
         <View style={styles.switchContainer}>
           <ThemedText style={styles.label}>Show Phonetics</ThemedText>
-          <ThemedSwitch isEnabled={showPhonetics} toggleSwitch={() => setShowPhonetics(prev => !prev)} />
+          <ThemedSwitch isEnabled={settings.showPhonetics} toggleSwitch={() => toggleSetting('showPhonetics')} />
         </View>
         <View style={styles.switchContainer}>
           <ThemedText style={styles.label}>Show Definition</ThemedText>
-          <ThemedSwitch isEnabled={showDefinition} toggleSwitch={() => setShowDefinition(prev => !prev)} />
+          <ThemedSwitch isEnabled={settings.showDefinition} toggleSwitch={() => toggleSetting('showDefinition')} />
         </View>
         <View style={styles.switchContainer}>
           <ThemedText style={styles.label}>Use Traditional</ThemedText>
-          <ThemedSwitch isEnabled={useTraditional} toggleSwitch={() => setUseTraditional(prev => !prev)} />
+          <ThemedSwitch isEnabled={settings.useTraditional} toggleSwitch={() => toggleSetting('useTraditional')} />
         </View>
         <View style={styles.switchContainer}>
           <ThemedText style={styles.label}>Show Translation</ThemedText>
-          <ThemedSwitch isEnabled={showTranslation} toggleSwitch={() => setShowTranslation(prev => !prev)} />
+          <ThemedSwitch isEnabled={settings.showTranslation} toggleSwitch={() => toggleSetting('showTranslation')} />
         </View>
         <View style={styles.switchContainer}>
           <ThemedText style={styles.label}>Show Gloss for Saved</ThemedText>
-          <ThemedSwitch isEnabled={showGloss} toggleSwitch={() => setShowGloss(prev => !prev)} />
+          <ThemedSwitch isEnabled={settings.showGloss} toggleSwitch={() => toggleSetting('showGloss')} />
         </View>
         <View style={styles.switchContainer}>
           <ThemedText style={styles.label}>Saved Words as Blanks</ThemedText>
-          <ThemedSwitch isEnabled={wordsAsBlanks} toggleSwitch={() => setWordsAsBlanks(prev => !prev)} />
+          <ThemedSwitch isEnabled={settings.wordsAsBlanks} toggleSwitch={() => toggleSetting('wordsAsBlanks')} />
         </View>
         <View style={styles.switchContainer}>
           <ThemedText style={styles.label}>Auto Pronounce</ThemedText>
-          <ThemedSwitch isEnabled={autoPronounce} toggleSwitch={() => setAutoPronounce(prev => !prev)} />
+          <ThemedSwitch isEnabled={settings.autoPronounce} toggleSwitch={() => toggleSetting('autoPronounce')} />
         </View>
-        <ThemedText type="subtitle" style={{ marginTop: 26, marginBottom: 10, color: secondaryBrandColor }}>System Wide</ThemedText>
+        <ThemedText type="subtitle" style={{ marginTop: 26, marginBottom: 10, color: secondaryBrandColor }}>App Settings</ThemedText>
         <View style={styles.switchContainer}>
           <ThemedText style={styles.label}>Dark Mode</ThemedText>
-          <ThemedSwitch isEnabled={darkMode} toggleSwitch={() => setDarkMode(prev => !prev)} />
+          <ThemedSwitch isEnabled={settings.darkMode} toggleSwitch={() => toggleSetting('darkMode')} />
         </View>
       </View>
     </ThemedScreen>
@@ -80,7 +91,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   label: {
-
+    // Add any styles for labels
   },
 });
 
