@@ -1,4 +1,6 @@
-import React, { useCallback, useState } from "react";
+// @/components/PopupDictionaryHeader
+
+import React, { useCallback, useState, useEffect } from "react";
 import { View, Text } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
@@ -9,6 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { translateWithBing } from '@/src/translate';
 import { popupDictionaryHeaderStyles as styles } from "@/src/styles";
 import { speakText } from "@/src/speech";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface PopupDictionaryHeaderProps {
   token: Token;
@@ -23,9 +26,16 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
 }) => {
   
   const { l1Lang, l2Lang } = useLanguage();
+  const { settings } = useSettings();
 
   if (!(l1Lang && l2Lang)) return;
   const [translation, setTranslation] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (settings.autoPronounce) {
+      speakText(token.text, l2Lang.code);
+    }
+  }, [settings.autoPronounce, token.text, l2Lang.code]);
 
   if (context && !translatedContext && l1Lang && l2Lang) {
     const translateContext = useCallback(async () => {
