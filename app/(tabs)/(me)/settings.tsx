@@ -2,9 +2,7 @@
 
 import React, { useReducer, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { ThemedScreen } from "@/components/ThemedScreen";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedSwitch } from '@/components/ThemedSwitch';
+import { ThemedScreen, ThemedText, ThemedSwitch } from '@/components';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -22,75 +20,48 @@ const initialState = {
 };
 
 // Reducer function to handle state changes
-const settingsReducer = (state, action) => {
-  switch (action.type) {
-    case 'SET_SETTINGS':
-      return { ...state, ...action.payload };
-    case 'TOGGLE_SETTING':
-      return { ...state, [action.payload]: !state[action.payload] };
-    default:
-      return state;
-  }
-};
+const settingsReducer = (state, action) => ({
+  ...state,
+  ...action.payload,
+  ...(action.type === 'TOGGLE_SETTING' && { [action.payload]: !state[action.payload] })
+});
 
 const SettingsScreen = () => {
   const [settings, dispatch] = useReducer(settingsReducer, initialState);
   const secondaryBrandColor = useThemeColor({}, 'secondaryBrand');
 
   useEffect(() => {
-    const loadSettings = async () => {
-      const savedSettings = await SecureStore.getItemAsync('userSettings');
-      if (savedSettings) {
-        dispatch({ type: 'SET_SETTINGS', payload: JSON.parse(savedSettings) });
-      }
-    };
-
-    loadSettings();
+    SecureStore.getItemAsync('userSettings').then(savedSettings => {
+      savedSettings && dispatch({ type: 'SET_SETTINGS', payload: JSON.parse(savedSettings) });
+    });
   }, []);
 
-  const toggleSetting = async (setting) => {
+  const toggleSetting = async setting => {
     const updatedSettings = { ...settings, [setting]: !settings[setting] };
     dispatch({ type: 'TOGGLE_SETTING', payload: setting });
     await SecureStore.setItemAsync('userSettings', JSON.stringify(updatedSettings));
   };
 
+  const renderSwitch = (label, settingKey) => (
+    <View style={styles.switchContainer}>
+      <ThemedText style={styles.label}>{label}</ThemedText>
+      <ThemedSwitch isEnabled={settings[settingKey]} toggleSwitch={() => toggleSetting(settingKey)} />
+    </View>
+  );
+
   return (
-    <ThemedScreen title="Settings" onBackPress={() => { router.back(); }}>
+    <ThemedScreen title="Settings" onBackPress={() => router.back()}>
       <View style={styles.container}>
-        <ThemedText type="subtitle" style={{ marginBottom: 10, color: secondaryBrandColor }}>Language Settings</ThemedText>
-        <View style={styles.switchContainer}>
-          <ThemedText style={styles.label}>Show Phonetics</ThemedText>
-          <ThemedSwitch isEnabled={settings.showPhonetics} toggleSwitch={() => toggleSetting('showPhonetics')} />
-        </View>
-        <View style={styles.switchContainer}>
-          <ThemedText style={styles.label}>Show Definition</ThemedText>
-          <ThemedSwitch isEnabled={settings.showDefinition} toggleSwitch={() => toggleSetting('showDefinition')} />
-        </View>
-        <View style={styles.switchContainer}>
-          <ThemedText style={styles.label}>Use Traditional</ThemedText>
-          <ThemedSwitch isEnabled={settings.useTraditional} toggleSwitch={() => toggleSetting('useTraditional')} />
-        </View>
-        <View style={styles.switchContainer}>
-          <ThemedText style={styles.label}>Show Translation</ThemedText>
-          <ThemedSwitch isEnabled={settings.showTranslation} toggleSwitch={() => toggleSetting('showTranslation')} />
-        </View>
-        <View style={styles.switchContainer}>
-          <ThemedText style={styles.label}>Show Gloss for Saved</ThemedText>
-          <ThemedSwitch isEnabled={settings.showGloss} toggleSwitch={() => toggleSetting('showGloss')} />
-        </View>
-        <View style={styles.switchContainer}>
-          <ThemedText style={styles.label}>Saved Words as Blanks</ThemedText>
-          <ThemedSwitch isEnabled={settings.wordsAsBlanks} toggleSwitch={() => toggleSetting('wordsAsBlanks')} />
-        </View>
-        <View style={styles.switchContainer}>
-          <ThemedText style={styles.label}>Auto Pronounce</ThemedText>
-          <ThemedSwitch isEnabled={settings.autoPronounce} toggleSwitch={() => toggleSetting('autoPronounce')} />
-        </View>
-        <ThemedText type="subtitle" style={{ marginTop: 26, marginBottom: 10, color: secondaryBrandColor }}>App Settings</ThemedText>
-        <View style={styles.switchContainer}>
-          <ThemedText style={styles.label}>Dark Mode</ThemedText>
-          <ThemedSwitch isEnabled={settings.darkMode} toggleSwitch={() => toggleSetting('darkMode')} />
-        </View>
+        <ThemedText type="subtitle" style={{ ...styles.subtitle, color: secondaryBrandColor }}>Language Settings</ThemedText>
+        {renderSwitch('Show Phonetics', 'showPhonetics')}
+        {renderSwitch('Show Definition', 'showDefinition')}
+        {renderSwitch('Use Traditional', 'useTraditional')}
+        {renderSwitch('Show Translation', 'showTranslation')}
+        {renderSwitch('Show Gloss for Saved', 'showGloss')}
+        {renderSwitch('Saved Words as Blanks', 'wordsAsBlanks')}
+        {renderSwitch('Auto Pronounce', 'autoPronounce')}
+        <ThemedText type="subtitle" style={{ ...styles.subtitle, marginTop: 26, color: secondaryBrandColor }}>App Settings</ThemedText>
+        {renderSwitch('Dark Mode', 'darkMode')}
       </View>
     </ThemedScreen>
   );
