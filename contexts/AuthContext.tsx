@@ -2,14 +2,26 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
-import { login as apiLogin, checkToken as apiCheckToken, fetchUserInfo } from '@/src/api/directus/user';
-import { registerUser as apiRegisterUser } from '@/src/api/directus/user'
-import { User } from '@/src/api/directus/user';
+import {
+  login as apiLogin,
+  checkToken as apiCheckToken,
+  fetchUserInfo,
+  registerUser as apiRegisterUser,
+  User,
+} from "@/src/api/directus/user";
 
 
-const AuthContext = createContext(null);
+const AuthContext = createContext<{
+  isAuthenticated: boolean;
+  loading: boolean;
+  userInfo: User | null;
+  handleLogin: (email: string, password: string) => Promise<void>;
+  handleLogout: () => Promise<void>;
+  handleRegister: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
+  getStoredUserInfo: () => Promise<User | null>;
+} | null>(null);
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
     const [userInfo, setUserInfo] = useState<User | null>(null);
@@ -43,7 +55,7 @@ export const AuthProvider = ({ children }) => {
         return userInfo ? JSON.parse(userInfo) : null;
     };
 
-    const handleLogin = async (email, password) => {
+    const handleLogin = async (email: string, password: string) => {
         setLoading(true);
         try {
             const token = await apiLogin(email, password);
