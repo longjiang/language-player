@@ -1,4 +1,22 @@
 import { StyleSheet } from "react-native";
+import { Typography } from "@/constants/Typography";
+
+export const popupDictionaryContentStyles = StyleSheet.create({
+  container: {},
+  entryContainer: {
+    marginVertical: 2,
+    borderRadius: 8,
+    padding: 20,
+  },
+  entryText: {
+    fontWeight: "bold",
+  },
+  definitionText: {
+    fontSize: Typography.fontSize.xsmall,
+  },
+  saveWordButton: { position: "absolute", top: 16, right: 16 },
+  
+});
 
 export const popupDictionaryHeaderStyles = StyleSheet.create({
   headerContainer: {

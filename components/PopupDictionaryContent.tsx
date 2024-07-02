@@ -1,13 +1,15 @@
+// @/components/PopupDictionaryContent
+
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "@/components/ThemedButton";
-import { Typography } from "@/constants/Typography";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Token } from "@/src/tokenizer";
 import { DictionaryEntry } from "@/src/dictionary-types";
+import { popupDictionaryContentStyles as styles } from "@/src/styles";
 
 export const PopupDictionaryContent: React.FC<{
   token: Token;
@@ -26,7 +28,6 @@ export const PopupDictionaryContent: React.FC<{
   }
   if (!token.text) return
 
-
   useEffect(() => {
     const fetchDictionaryEntries = async () => {
       if (!token || !token.text || !dictionary) {
@@ -40,27 +41,10 @@ export const PopupDictionaryContent: React.FC<{
     fetchDictionaryEntries();
   }, [token, dictionary]); // Re-run this effect if `token` or `dictionary` changes
 
-
-  const styles = StyleSheet.create({
-    container: {},
-    entryContainer: {
-      marginVertical: 2,
-      borderRadius: 8,
-      padding: 20,
-      backgroundColor: primaryBackgroundColor,
-    },
-    entryText: {
-      fontWeight: "bold",
-    },
-    definitionText: {
-      fontSize: Typography.fontSize.xsmall,
-    },
-  });
-
   return (
     <View style={styles.container}>
       {dictionaryEntries.map((entry: DictionaryEntry, index: number) => (
-        <View key={index} style={styles.entryContainer}>
+        <View key={index} style={[styles.entryContainer, {backgroundColor: primaryBackgroundColor}]}>
           <ThemedText
             style={[styles.entryText]}
             type="subtitle"
@@ -71,7 +55,7 @@ export const PopupDictionaryContent: React.FC<{
           <ThemedButton
             type="ghost"
             trailingIcon={<Icon name="bookmark-outline" size={20} />}
-            style={{ position: "absolute", top: 16, right: 16 }}
+            style={styles.saveWordButton}
           />
           <ThemedText style={styles.entryText}>
             {entry.pronunciation}{" "}
