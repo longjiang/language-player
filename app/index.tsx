@@ -1,4 +1,5 @@
 // @/app/index.tsx
+import React from 'react';
 import {
   StyleSheet,
   View,
@@ -8,8 +9,19 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedText } from "@/components/ThemedText";
 import { router } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext'; // Ensure this path matches where your AuthContext is defined
 
 const Index = () => {
+  const { isAuthenticated } = useAuth();  // Use the isAuthenticated state from AuthContext
+
+  const handleStartPress = () => {
+    // Navigate based on authentication status
+    if (isAuthenticated) {
+      router.push("/select-l2"); // Change to your actual route for "select-l2"
+    } else {
+      router.push("/login");
+    }
+  };
 
   return (
     <ThemedScreen
@@ -25,8 +37,7 @@ const Index = () => {
         <ThemedButton
           title="Start Learning"
           trailingIcon={<Icon name="chevron-right" />}
-          onPress={() => router.push("/login")}
-          
+          onPress={handleStartPress}
         />
       </View>
     </ThemedScreen>

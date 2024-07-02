@@ -49,7 +49,7 @@ const SelectL2Screen = () => {
   return (
     <ThemedScreen
       title="What language would you like to learn?"
-      onBackPress={() => router.navigate("/acquisition-survey")}
+      onBackPress={() => router.back()}
     >
       <ScrollView contentContainerStyle={styles.iconLayout}>
         {languageOptions.filter(lang => lang.icon).map((lang: Option) => (
