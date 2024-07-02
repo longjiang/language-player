@@ -1,22 +1,23 @@
 // @/app/(tabs)/(me)/settings.tsx
 
 import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { ThemedScreen, ThemedText, ThemedSwitch } from '@/components';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
 import { useSettings } from '@/contexts/SettingsContext';  // Import useSettings hook
+import { settingsStyles as styles } from '@/src/styles';
+import { SettingsState } from '@/contexts/SettingsContext';
 
 const SettingsScreen = () => {
   const { settings, dispatch } = useSettings();  // Use settings from context
   const secondaryBrandColor = useThemeColor({}, 'secondaryBrand');
 
-  const toggleSetting = async (settingKey) => {
+  const toggleSetting = async (settingKey: any) => {
     dispatch({ type: 'TOGGLE_SETTING', payload: settingKey });  // Update state using context
-    // Optionally persist changes here or handle it globally in the context provider
   };
 
-  const renderSwitch = (label, settingKey) => (
+  const renderSwitch = (label: string, settingKey: keyof SettingsState) => (
     <View style={styles.switchContainer}>
       <ThemedText>{label}</ThemedText>
       <ThemedSwitch isEnabled={settings[settingKey]} toggleSwitch={() => toggleSetting(settingKey)} />
@@ -30,7 +31,6 @@ const SettingsScreen = () => {
           Language Settings
         </ThemedText>
         {renderSwitch('Show Phonetics', 'showPinyin')}
-        {/* {renderSwitch('Show Definition', 'showDefinition')} */}
         {renderSwitch('Use Traditional', 'useTraditional')}
         {renderSwitch('Show Translation', 'showTranslation')}
         {renderSwitch('Show Gloss for Saved', 'showQuickGloss')}
@@ -44,21 +44,5 @@ const SettingsScreen = () => {
     </ThemedScreen>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingTop: 20,
-    height: '100%',
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  subtitle: {
-    marginBottom: 10,
-  }
-});
 
 export default SettingsScreen;

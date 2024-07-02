@@ -14,7 +14,7 @@ const initialState = {
 };
 
 // Define the types for the state and actions
-interface SettingsState {
+export interface SettingsState {
   showPinyin: boolean;
   showDefinition: boolean;
   useTraditional: boolean;

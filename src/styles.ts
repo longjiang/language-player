@@ -48,3 +48,20 @@ export const popupDictionaryHeaderStyles = StyleSheet.create({
   actionButtons: { flexDirection: "row", justifyContent: "space-between" },
   header: { flexDirection: "row", justifyContent: "space-between" },
 });
+
+
+export const settingsStyles = StyleSheet.create({
+  container: {
+    paddingTop: 20,
+    height: '100%',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  subtitle: {
+    marginBottom: 10,
+  }
+});
