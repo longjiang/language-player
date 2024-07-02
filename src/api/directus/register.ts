@@ -1,10 +1,7 @@
 // @/src/api/directus/register.ts
-
-import * as SecureStore from 'expo-secure-store';
-import { DIRECTUS_URL } from '.'
+import { DIRECTUS_URL } from '.';
 
 export async function registerUser(firstName: string, lastName: string, email: string, password: string) {
-  // Register the user
   const registerResponse = await fetch(`${DIRECTUS_URL}/users`, {
       method: 'POST',
       headers: {
@@ -24,9 +21,6 @@ export async function registerUser(firstName: string, lastName: string, email: s
   if (!registerResponse.ok) {
       throw new Error(registerData.errors ? registerData.errors[0].message : 'Failed to register user');
   }
-
-  // Temporarily store the user's password securely
-  await SecureStore.setItemAsync('user_password', password);
 
   return registerData;
 }
