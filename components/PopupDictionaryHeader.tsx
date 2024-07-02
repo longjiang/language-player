@@ -9,6 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { translateWithBing } from '@/src/translate';
 import * as Speech from 'expo-speech';
 import { popupDictionaryHeaderStyles as styles } from "@/src/styles";
+import { speakText } from "@/src/speech";
 
 interface PopupDictionaryHeaderProps {
   token: Token;
@@ -37,26 +38,9 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
     translateContext();
   }
 
-
   const onSpeakPress = () => {
     if (!l2Lang) return;
-    const text = token.text;
-
-    // Check if the text-to-speech is available
-    Speech.isSpeakingAsync().then((isSpeaking) => {
-      if (isSpeaking) {
-        Speech.stop();
-      }
-    });
-
-    // Speak the text
-    Speech.speak(text, {
-      language: l2Lang.code, // Set the language to the target language
-      onError: (error) => {
-        console.error('Speech error occurred:', error);
-        alert('An error occurred while trying to speak the text.');
-      },
-    });
+    speakText(token.text, l2Lang.code);
   };
 
   return (
