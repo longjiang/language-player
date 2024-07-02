@@ -6,6 +6,8 @@ import { ThemedText, SubsSearch } from "@/components";
 import { DictionaryEntry } from "@/src/dictionary-types";
 import { dictionaryEntryStyles as styles } from "@/src/styles";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { languageLevelsByL2Code } from "@/src/language-levels";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DictionaryEntryContentProps {
   entry: DictionaryEntry;
@@ -16,6 +18,9 @@ interface DictionaryEntryContentProps {
 const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, headKey, alternateKey }) => {
   const tertiaryBackgroundColor = useThemeColor({}, 'tertiaryBackground');
   const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
+  const l2Lang = useLanguage().l2Lang;
+  if (!l2Lang) return null;
+  const levels = languageLevelsByL2Code(l2Lang.code)
 
   return (
     <ScrollView style={styles.entryContainer}>
@@ -30,7 +35,11 @@ const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, 
             {entry[alternateKey]}
           </ThemedText>
         </View>
-        <Text><ThemedText type="default">{entry.pronunciation} • </ThemedText><ThemedText type="smallBold" level={entry.level}>HSK {entry.level}</ThemedText></Text>
+        <Text>
+          {entry.pronunciation && <ThemedText type="default">{entry.pronunciation}</ThemedText>}
+          {entry.pronunciation && entry.level && <ThemedText type="default"> • </ThemedText>}
+          {entry.level && <ThemedText type="smallBold" level={entry.level}>{levels[entry.level].examLevelName}</ThemedText>}
+        </Text>
       </View>
       <View style={[styles.detailsContainer, { backgroundColor: tertiaryBackgroundColor }]}>
         <View style={{ paddingBottom: 16, paddingHorizontal: 26 }}>
