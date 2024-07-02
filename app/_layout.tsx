@@ -2,7 +2,6 @@
 import {
   DarkTheme,
   DefaultTheme,
-  ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "@expo-google-fonts/nunito";
 import { Stack } from "expo-router";
@@ -20,6 +19,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from '@/contexts/AuthContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { Audio } from "expo-av";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";  // Adjust the import path as needed
 
 const soundObject = new Audio.Sound();
 
@@ -61,7 +61,7 @@ export default function RootLayout() {
       <SettingsProvider>
         <LanguageProvider>
           <DictionaryProvider>
-            <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+            <ThemeProvider>
               <VideoPlayerProvider>
                 <Stack>
                   <Stack.Screen name="index" options={{ headerShown: false }} />
