@@ -1,28 +1,26 @@
+// @/app/(tabs)/(dictionary)/dictionary/word/[id].tsx
+
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, ActivityIndicator, Text, ScrollView } from "react-native";
-import { ThemedButton } from "@/components/ThemedButton";
-import { ThemedInput } from "@/components/ThemedInput";
-import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { View, ActivityIndicator, Text } from "react-native";
+import { ThemedButton, ThemedInput, ThemedText } from "@/components";
 import { router } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useRoute, useTheme } from "@react-navigation/native";
-import { useDictionary } from "@/contexts/DictionaryContext";
-import { ThemedText } from "@/components/ThemedText";
-import { useThemeColor } from "@/hooks/useThemeColor";
+import { useRoute } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { SubsSearch } from "@/components/SubsSearch";
 import { DictionaryEntry } from "@/src/dictionary-types";
 import { RouteProp } from '@react-navigation/native';
 import { debounce } from 'lodash';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useDictionary } from "@/contexts/DictionaryContext";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { dictionaryEntryStyles as styles } from "@/src/styles";
+import DictionaryEntryContent from "@/components/DictionaryEntryContent";
 
 type DictionaryEntryScreenRouteParams = {
   id: string;
 };
-
-
 
 const DictionaryEntryScreen = () => {
   const route = useRoute<RouteProp<{
@@ -39,8 +37,6 @@ const DictionaryEntryScreen = () => {
   const { settings } = useSettings();
   if (!l2Lang) return null;
 
-  const tertiaryBackgroundColor = useThemeColor({}, 'tertiaryBackground');
-  const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
   // if l2Lang.code is 'zh' and settings.useTraditional is true, then switch head and alternate keys
@@ -119,62 +115,11 @@ const DictionaryEntryScreen = () => {
           />
         </View>
         {entry && (
-          <ScrollView style={styles.entryContainer}>
-            <View style={styles.entryHeader}>
-              <View style={{ flexDirection: "row", alignItems: "flex-end", marginBottom: 12 }}>
-                <Text>
-                  <ThemedText type="xxlarge" style={styles.character} level={entry.level}>
-                    {entry[headKey]}
-                  </ThemedText>
-                </Text>
-                <ThemedText type="subtitle" style={{ marginLeft: 4, fontWeight: 'normal' }} variant="secondary">
-                  {entry[alternateKey]}
-                </ThemedText>
-              </View>
-              <Text><ThemedText type="default">{entry.pronunciation} • </ThemedText><ThemedText type="smallBold" level={entry.level}>HSK {entry.level}</ThemedText></Text>
-            </View>
-            <View style={[styles.detailsContainer, { backgroundColor: tertiaryBackgroundColor }]}>
-              <View style={{ paddingBottom: 16, paddingHorizontal: 26 }}>
-                <ThemedText type="large">{entry.definitions ? entry.definitions.join('; ') : ''}</ThemedText>
-                <View style={{ borderBottomColor: secondaryStrokeColor, borderBottomWidth: 2, paddingBottom: 16 }}></View>
-                <ThemedText type="defaultBold" style={{ marginTop: 26 }}>EXAMPLES FROM VIDEOS</ThemedText>
-              </View>
-              <SubsSearch term={entry.head} />
-            </View>
-          </ScrollView>
+          <DictionaryEntryContent entry={entry} headKey={headKey} alternateKey={alternateKey} />
         )}
       </SafeAreaView>
     </GestureHandlerRootView>
   );
 };
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-  },
-  character: {
-
-  },
-  spinnerContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 100,
-  },
-  entryContainer: {
-
-  },
-  entryHeader: {
-    padding: 26
-  },
-  detailsContainer: {
-    borderRadius: 24,
-    paddingTop: 26,
-    minHeight: 600,
-  }
-});
 
 export default DictionaryEntryScreen;

@@ -90,3 +90,32 @@ export const videoControlBarStyles = StyleSheet.create({
     marginTop: 10,
   },
 });
+
+export const dictionaryEntryStyles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+  },
+  character: {
+
+  },
+  spinnerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 100,
+  },
+  entryContainer: {
+
+  },
+  entryHeader: {
+    padding: 26
+  },
+  detailsContainer: {
+    borderRadius: 24,
+    paddingTop: 26,
+    minHeight: 600,
+  }
+});
