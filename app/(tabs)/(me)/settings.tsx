@@ -20,11 +20,31 @@ const initialState = {
 };
 
 // Reducer function to handle state changes
-const settingsReducer = (state, action) => ({
-  ...state,
-  ...action.payload,
-  ...(action.type === 'TOGGLE_SETTING' && { [action.payload]: !state[action.payload] })
-});
+interface SettingsState {
+  showPhonetics: boolean;
+  showDefinition: boolean;
+  useTraditional: boolean;
+  showTranslation: boolean;
+  autoPronounce: boolean;
+  darkMode: boolean;
+  showGloss: boolean;
+  wordsAsBlanks: boolean;
+}
+
+type SettingsAction =
+  | { type: 'SET_SETTINGS'; payload: Partial<SettingsState> }
+  | { type: 'TOGGLE_SETTING'; payload: keyof SettingsState };
+
+const settingsReducer = (state: SettingsState, action: SettingsAction): SettingsState => {
+  switch (action.type) {
+    case 'SET_SETTINGS':
+      return { ...state, ...action.payload };
+    case 'TOGGLE_SETTING':
+      return { ...state, [action.payload]: !state[action.payload] };
+    default:
+      return state;
+  }
+};
 
 const SettingsScreen = () => {
   const [settings, dispatch] = useReducer(settingsReducer, initialState);
@@ -36,15 +56,15 @@ const SettingsScreen = () => {
     });
   }, []);
 
-  const toggleSetting = async setting => {
-    const updatedSettings = { ...settings, [setting]: !settings[setting] };
+  const toggleSetting = async (setting: keyof SettingsState) => {
+    const updatedSettings: SettingsState = { ...settings, [setting]: !settings[setting] };
     dispatch({ type: 'TOGGLE_SETTING', payload: setting });
     await SecureStore.setItemAsync('userSettings', JSON.stringify(updatedSettings));
   };
 
-  const renderSwitch = (label, settingKey) => (
+  const renderSwitch = (label: string, settingKey: keyof SettingsState): JSX.Element => (
     <View style={styles.switchContainer}>
-      <ThemedText style={styles.label}>{label}</ThemedText>
+      <ThemedText>{label}</ThemedText>
       <ThemedSwitch isEnabled={settings[settingKey]} toggleSwitch={() => toggleSetting(settingKey)} />
     </View>
   );
@@ -78,9 +98,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 10,
   },
-  label: {
-    // Add any styles for labels
-  },
+  subtitle: {
+    marginBottom: 10,
+  }
 });
 
 export default SettingsScreen;
