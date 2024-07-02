@@ -33,7 +33,6 @@ const AccountScreen = () => {
           if (subscriptions.length > 0) {
             setSubscription(subscriptions[0]);
           }
-          console.log(subscriptions);
         }
       } catch (error: any) {
         Alert.alert('Error', error.message);
