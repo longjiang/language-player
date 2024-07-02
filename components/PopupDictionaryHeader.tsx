@@ -8,7 +8,7 @@ import { Token } from "@/src/tokenizer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translateWithBing } from '@/src/translate';
 import * as Speech from 'expo-speech';
-import { Audio } from "expo-av";
+import { popupDictionaryHeaderStyles as styles } from "@/src/styles";
 
 interface PopupDictionaryHeaderProps {
   token: Token;
@@ -39,6 +39,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
 
 
   const onSpeakPress = () => {
+    if (!l2Lang) return;
     const text = token.text;
 
     // Check if the text-to-speech is available
@@ -53,16 +54,16 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
       language: l2Lang.code, // Set the language to the target language
       onError: (error) => {
         console.error('Speech error occurred:', error);
-        alert('An error occurred while trying to speak the text. Please check your device settings.');
+        alert('An error occurred while trying to speak the text.');
       },
     });
   };
 
   return (
     <View style={styles.headerContainer}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <View style={styles.header}>
         <ThemedText type="xxlarge" style={{ flex: 1 }}>{token.text}</ThemedText>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <View style={styles.actionButtons}>
           <Icon name="volume-high" size={26} style={styles.iconStyle} onPress={onSpeakPress} />
           <Icon name="bookmark-outline" size={26} style={styles.iconStyle} />
         </View>
@@ -78,7 +79,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
         onPress={onExplainPress}
         leadingIcon={<Icon name="chat-outline" size={20} style={styles.iconStyle} />}
       />
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+      <View style={styles.contextRow}>
         <View style={{ flex: 1 }}>
           <ThemedText style={styles.contextText} type="large">{context}</ThemedText>
           <ThemedText style={styles.translatedContextText} variant="secondary">{translatedContext || translation}</ThemedText>
@@ -91,31 +92,3 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  headerContainer: {
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-  },
-  contextText: {
-    marginVertical: 4,
-    textAlign: 'left',
-    width: '100%'
-  },
-  translatedContextText: {
-    marginVertical: 4,
-    textAlign: 'left',
-    width: '100%'
-  },
-  translationText: {
-    textAlign: 'left',
-    width: '100%',
-    marginBottom: 20,
-  },
-  iconStyle: {
-    marginHorizontal: 5,
-    color: "white", // Adjust based on theme if needed
-  },
-});
