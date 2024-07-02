@@ -1,4 +1,3 @@
-// @/app/LoginScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { ThemedText, ThemedButton, ThemedInput, ThemedScreen } from '@/components';
@@ -6,51 +5,32 @@ import { router } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Link } from 'expo-router';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import * as SecureStore from 'expo-secure-store';
-
-import { login, checkToken } from '@/src/api/directus/login';
+import { useAuth } from '@/contexts/AuthContext';
 
 const LoginScreen = () => {
+    const { handleLogin, isAuthenticated, loading } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const checkAuthentication = async () => {
-            setLoading(true);
-            const token = await SecureStore.getItemAsync('authToken');
-            if (token) {
-                const isValid = await checkToken(token);
-                if (isValid) {
-                    router.navigate("/account");
-                } else {
-                    await SecureStore.deleteItemAsync('authToken');
-                }
-            }
-            setLoading(false);
-        };
+        if (isAuthenticated) {
+            router.navigate('/account');
+        }
+    }, [isAuthenticated]);
 
-        checkAuthentication();
-    }, []);
-
-    const handleLogin = async () => {
-        setLoading(true);
+    const onLoginPress = async () => {
         try {
-            const token = await login(email, password);
-            await SecureStore.setItemAsync('authToken', token);
-            router.navigate("/account");
+            await handleLogin(email, password);
         } catch (error: any) {
             Alert.alert('Login Error', error.message);
-        } finally {
-            setLoading(false);
         }
     };
 
     return (
         <ThemedScreen
             title="Login"
-            onBackPress={() => router.navigate("/")}
-            imageName={require("../assets/images/splash-image.png")}
+            onBackPress={() => router.navigate('/')}
+            imageName={require('../assets/images/splash-image.png')}
             imageStyle={{ marginTop: -400 }}
         >
             <ThemedInput
@@ -71,7 +51,7 @@ const LoginScreen = () => {
                 icon="lock"
             />
 
-            <ThemedButton title="Login" onPress={handleLogin} disabled={loading} />
+            <ThemedButton title="Login" onPress={onLoginPress} disabled={loading} />
 
             <TouchableOpacity style={styles.textButton}>
                 <ThemedText>Forgot Password?</ThemedText>
@@ -80,9 +60,9 @@ const LoginScreen = () => {
             <ThemedText style={styles.orText}>Or login with:</ThemedText>
 
             <View style={styles.socialButtons}>
-                <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="google" />} onPress={() => router.navigate("/")} />
-                <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="apple" />} onPress={() => router.navigate("/")} />
-                <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="facebook" />} onPress={() => router.navigate("/")} />
+                <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="google" />} onPress={() => router.navigate('/')} />
+                <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="apple" />} onPress={() => router.navigate('/')} />
+                <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="facebook" />} onPress={() => router.navigate('/')} />
             </View>
 
             <ThemedText style={{ textAlign: 'center', marginTop: 10 }}>
