@@ -1,26 +1,43 @@
 // @/app/LoginScreen.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedButton } from '@/components/ThemedButton';
-import { ThemedInput } from '@/components/ThemedInput';
-import { ThemedScreen } from '@/components/ThemedScreen';
+import { ThemedText, ThemedButton, ThemedInput, ThemedScreen } from '@/components';
 import { router } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Link } from 'expo-router';
-
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { login } from '@/src/api/directus/login';
+import * as SecureStore from 'expo-secure-store';
+
+import { login, checkToken } from '@/src/api/directus/login';
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        const checkAuthentication = async () => {
+            setLoading(true);
+            const token = await SecureStore.getItemAsync('authToken');
+            if (token) {
+                const isValid = await checkToken(token);
+                if (isValid) {
+                    router.navigate("/account");
+                } else {
+                    await SecureStore.deleteItemAsync('authToken');
+                }
+            }
+            setLoading(false);
+        };
+
+        checkAuthentication();
+    }, []);
+
     const handleLogin = async () => {
         setLoading(true);
         try {
-            await login(email, password);
+            const token = await login(email, password);
+            await SecureStore.setItemAsync('authToken', token);
             router.navigate("/account");
         } catch (error: any) {
             Alert.alert('Login Error', error.message);
@@ -31,10 +48,10 @@ const LoginScreen = () => {
 
     return (
         <ThemedScreen
-          title="Login"
-          onBackPress={() => router.navigate("/")}
-          imageName={require("../assets/images/splash-image.png")}
-          imageStyle={{ marginTop: -400 }}
+            title="Login"
+            onBackPress={() => router.navigate("/")}
+            imageName={require("../assets/images/splash-image.png")}
+            imageStyle={{ marginTop: -400 }}
         >
             <ThemedInput
                 style={styles.input}
