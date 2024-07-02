@@ -1,5 +1,5 @@
-import React, { useCallback, useState, useEffect } from "react";
-import { View, StyleSheet, Text, Platform } from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, Text } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
@@ -7,7 +7,6 @@ import { Translate } from "@/components/Translate";
 import { Token } from "@/src/tokenizer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translateWithBing } from '@/src/translate';
-import * as Speech from 'expo-speech';
 import { popupDictionaryHeaderStyles as styles } from "@/src/styles";
 import { speakText } from "@/src/speech";
 
@@ -22,11 +21,10 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
   context,
   translatedContext,
 }) => {
-  const onExplainPress = () => {
-    // Implement the logic to explain the word using AI
-  };
   
-  const { l1Lang, l2Lang, languages } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
+
+  if (!(l1Lang && l2Lang)) return;
   const [translation, setTranslation] = useState<string | null>(null);
 
   if (context && !translatedContext && l1Lang && l2Lang) {
@@ -38,8 +36,11 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
     translateContext();
   }
 
+  const onExplainPress = () => {
+    // Implement the logic to explain the word using AI
+  };
+
   const onSpeakPress = () => {
-    if (!l2Lang) return;
     speakText(token.text, l2Lang.code);
   };
 
