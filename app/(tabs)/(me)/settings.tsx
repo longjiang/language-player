@@ -29,12 +29,12 @@ const SettingsScreen = () => {
         <ThemedText type="subtitle" style={{ ...styles.subtitle, color: secondaryBrandColor }}>
           Language Settings
         </ThemedText>
-        {renderSwitch('Show Phonetics', 'showPhonetics')}
+        {renderSwitch('Show Phonetics', 'showPinyin')}
         {renderSwitch('Show Definition', 'showDefinition')}
         {renderSwitch('Use Traditional', 'useTraditional')}
         {renderSwitch('Show Translation', 'showTranslation')}
-        {renderSwitch('Show Gloss for Saved', 'showGloss')}
-        {renderSwitch('Saved Words as Blanks', 'wordsAsBlanks')}
+        {renderSwitch('Show Gloss for Saved', 'showQuickGloss')}
+        {renderSwitch('Saved Words as Blanks', 'quizMode')}
         {renderSwitch('Auto Pronounce', 'autoPronounce')}
         <ThemedText type="subtitle" style={{ ...styles.subtitle, marginTop: 26, color: secondaryBrandColor }}>
           App Settings

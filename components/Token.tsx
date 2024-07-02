@@ -37,7 +37,7 @@ export const Token: React.FC<{
   };
 
   // Determine if pronunciation should be shown
-  const shouldShowPronunciation = settings.showPhonetics && token.pronunciation !== token.text;
+  const shouldShowPronunciation = settings.showPinyin && token.pronunciation !== token.text;
 
   return (
     <>
@@ -49,7 +49,7 @@ export const Token: React.FC<{
             padding: 5,
           }}
         >
-          {shouldShowPronunciation && ( // Conditionally render based on showPhonetics setting
+          {shouldShowPronunciation && ( // Conditionally render based on showPinyin setting
             <Text
               style={{
                 fontFamily,

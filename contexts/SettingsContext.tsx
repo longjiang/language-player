@@ -3,26 +3,26 @@ import * as SecureStore from 'expo-secure-store';
 
 // Define the initial state for the settings
 const initialState = {
-  showPhonetics: false,
+  showPinyin: false,
   showDefinition: false,
   useTraditional: false,
   showTranslation: false,
+  showQuickGloss: false,
   autoPronounce: false,
   darkMode: false,
-  showGloss: false,
-  wordsAsBlanks: false,
+  quizMode: false,
 };
 
 // Define the types for the state and actions
 interface SettingsState {
-  showPhonetics: boolean;
+  showPinyin: boolean;
   showDefinition: boolean;
   useTraditional: boolean;
   showTranslation: boolean;
   autoPronounce: boolean;
   darkMode: boolean;
-  showGloss: boolean;
-  wordsAsBlanks: boolean;
+  showQuickGloss: boolean;
+  quizMode: boolean;
 }
 
 type SettingsAction =
