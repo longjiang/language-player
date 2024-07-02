@@ -1,25 +1,19 @@
 // @/app/video/youtube/[youtube_id].tsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import {
   View,
   Text,
   Dimensions,
 } from "react-native";
-import { router, useNavigation, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useFocusEffect } from "expo-router";
 import { useRoute } from "@react-navigation/native";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
-import { parseSubtitles } from "@/src/subs";
-import { getCollectionItems } from "@/src/api/directus";
-import { normalizeVideoData, getVideosByL2Code } from "@/src/api/directus/youtube-video";
-import { YouTubeVideo as YouTubeVideoType } from "@/types/videoTypes";
+import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-const screenHeight = Dimensions.get("window").height;
-const screenWidth = Dimensions.get("window").width;
 
 const YouTubeVideoScreen = () => {
   const params = useLocalSearchParams();
@@ -38,7 +32,7 @@ const YouTubeVideoScreen = () => {
     videoPlayerState,
   } = useVideoPlayer();
 
-  const navigation = useNavigation();
+
   const route = useRoute(); // This hook fetches information about the current route
 
   // Fetch the video data from the API
@@ -96,11 +90,11 @@ const YouTubeVideoScreen = () => {
           minimizePlayer();
         }
       };
-    }, [route]) // Include `route` in the dependency array if you need to react to changes in the route
+    }, [route])
   );
 
   if (!videoPlayerState.video) {
-    return <Text>Loading...</Text>; // This will display a loading message until the video is fetched
+    return <Text>Loading...</Text>;
   }
 
   return (
