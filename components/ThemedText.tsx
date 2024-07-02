@@ -49,6 +49,7 @@ export function ThemedText({
 
     return primaryTextColor;
   }
+  // console.log('determineFontColor', determineFontColor())
 
   return (
     <Text

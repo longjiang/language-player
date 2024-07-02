@@ -9,22 +9,18 @@ import { Swatches } from "@/constants/Swatches";
 import { LinearGradient } from "expo-linear-gradient";
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
 import { Dimensions } from "react-native";
-import RBSheet from "react-native-raw-bottom-sheet";
 import { ThemedText } from "./ThemedText";
-import { ThemedView } from "./ThemedView";
 import { formatDuration } from "@/src/utils";
 import { ThemedRBSheet } from "./ThemedRBSheet";
+import { videoControlBarStyles as styles } from "@/src/styles";
 
 export const VideoControlBar: React.FC = () => {
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
-  const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const {
     video,
     playVideo,
     duration,
     currentTime,
-    fullscreen,
-    updateFullscreen,
     updatePlayVideo,
     seekTo,
     rewind,
@@ -45,7 +41,7 @@ export const VideoControlBar: React.FC = () => {
   
   return (
     <View style={styles.container}>
-      <View style={styles.progressBarContainer}>
+      <View style={[styles.progressBarContainer, { backgroundColor: useThemeColor({}, 'secondaryBackground') }]}>
         <View />
         <TouchableOpacity activeOpacity={1} onPress={handlePress}>
           <LinearGradient
@@ -103,11 +99,6 @@ export const VideoControlBar: React.FC = () => {
           trailingIcon={<Icon name="rotate-left" />}
           onPress={rewind}
         />
-        {/* <ThemedButton
-          type="ghost"
-          trailingIcon={<Icon name={ fullscreen ? "fullscreen-exit" : "fullscreen" } />}
-          onPress={() => updateFullscreen(!fullscreen)}
-        /> */}
       </View>
       <ThemedRBSheet
         ref={refRBSheet}
@@ -127,29 +118,3 @@ export const VideoControlBar: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "column",
-    justifyContent: "flex-end",
-    alignItems: "center",
-  },
-  progressBarContainer: {
-    width: "100%",
-    height: 10,
-    backgroundColor: Swatches.neutral[500], // Light grey background for the progress bar container
-    borderRadius: 5,
-  },
-  progressBar: {
-    height: "100%",
-    width: "50%", // Example progress: 50%
-    borderRadius: 5,
-  },
-  controls: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    width: "100%",
-    marginTop: 10,
-  },
-});

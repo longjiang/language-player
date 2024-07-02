@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { Swatches } from '@/constants/Swatches';
 
 export const ThemedSwitch: React.FC<{
   isEnabled: boolean;
@@ -22,7 +23,7 @@ export const ThemedSwitch: React.FC<{
     >
       <View
         style={[styles.thumb, {
-          backgroundColor: primaryTextColor,
+          backgroundColor: Swatches.neutral[0],
           borderColor: secondaryStrokeColor, // Apply stroke color as border
           alignSelf: isEnabled ? 'flex-end' : 'flex-start',
         }]}

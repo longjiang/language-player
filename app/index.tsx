@@ -52,12 +52,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "white",
     marginBottom: 10,
   },
   description: {
     fontSize: 16,
-    color: "white",
     marginBottom: 20,
   },
 });

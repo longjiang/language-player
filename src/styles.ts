@@ -65,3 +65,28 @@ export const settingsStyles = StyleSheet.create({
     marginBottom: 10,
   }
 });
+
+export const videoControlBarStyles = StyleSheet.create({
+  container: {
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  progressBarContainer: {
+    width: "100%",
+    height: 10,
+    borderRadius: 5,
+  },
+  progressBar: {
+    height: "100%",
+    width: "50%", // Example progress: 50%
+    borderRadius: 5,
+  },
+  controls: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    width: "100%",
+    marginTop: 10,
+  },
+});

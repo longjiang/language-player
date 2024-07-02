@@ -26,7 +26,7 @@ const LevelColors = {
 
 export const Colors = {
   light: {
-    primaryText: Swatches.neutral[0],
+    primaryText: Swatches.neutral[900],
     secondaryText: Swatches.neutral[300],
     primaryBackground: Swatches.neutral[0],
     secondaryBackground: Swatches.neutral[50],
