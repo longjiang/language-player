@@ -40,7 +40,7 @@ export class Dictionary {
     const parsedData = Papa.parse(response.data, { header: true });
 
     const entryCount: Record<string, number> = {};
-    const entries = parsedData.data.map(entry => this.normalizeEntry(entry as RawEntry, entryCount));
+    const entries = parsedData.data.map(entry => this.normalizeEntry(entry as RawEntry, entryCount)).filter(entry => entry.head);
 
     console.log('Dictionary: Inserting records...')
     await this.dictionaryDB.insertEntries(entries);
