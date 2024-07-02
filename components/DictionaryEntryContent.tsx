@@ -16,8 +16,6 @@ interface DictionaryEntryContentProps {
 }
 
 const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, headKey, alternateKey }) => {
-  const tertiaryBackgroundColor = useThemeColor({}, 'tertiaryBackground');
-  const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
   const l2Lang = useLanguage().l2Lang;
   if (!l2Lang) return null;
   const levels = languageLevelsByL2Code(l2Lang.code)
@@ -36,16 +34,16 @@ const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, 
           </ThemedText>
         </View>
         <Text>
-          {entry.pronunciation && <ThemedText type="default">{entry.pronunciation}</ThemedText>}
-          {entry.pronunciation && entry.level && <ThemedText type="default"> • </ThemedText>}
-          {entry.level && <ThemedText type="smallBold" level={entry.level}>{levels[entry.level].examLevelName}</ThemedText>}
+          {entry.pronunciation && <ThemedText type="large">{entry.pronunciation}</ThemedText>}
+          {entry.pronunciation && entry.level && <ThemedText type="large"> • </ThemedText>}
+          {entry.level && <ThemedText type="defaultBold" level={entry.level}>{levels[entry.level].examLevelName}</ThemedText>}
         </Text>
       </View>
-      <View style={[styles.detailsContainer, { backgroundColor: tertiaryBackgroundColor }]}>
+      <View style={[styles.detailsContainer, { backgroundColor: useThemeColor({}, 'primaryBackground') }]}>
         <View style={{ paddingBottom: 16, paddingHorizontal: 26 }}>
           <ThemedText type="large">{entry.definitions ? entry.definitions.join('; ') : ''}</ThemedText>
-          <View style={{ borderBottomColor: secondaryStrokeColor, borderBottomWidth: 2, paddingBottom: 16 }}></View>
-          <ThemedText type="defaultBold" style={{ marginTop: 26 }}>EXAMPLES FROM VIDEOS</ThemedText>
+          <View style={{ borderBottomColor: useThemeColor({}, 'secondaryStroke'), borderBottomWidth: 2, paddingBottom: 16 }}></View>
+          <ThemedText type="defaultBold" style={{ marginTop: 26 }} variant="secondary">EXAMPLES FROM VIDEOS</ThemedText>
         </View>
         <SubsSearch term={entry.head} />
       </View>

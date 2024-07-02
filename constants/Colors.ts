@@ -44,7 +44,7 @@ export const Colors = {
     semanticWarning: Swatches.warning[600],
     semanticInfo: Swatches.neutral[300],
     primaryStroke: Swatches.neutral[200],
-    secondaryStroke: Swatches.neutral[100],
+    secondaryStroke: Swatches.neutral[50],
     primaryLink: Swatches.primary[400],
     secondaryLink: Swatches.primary[700],
   },

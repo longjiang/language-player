@@ -90,7 +90,7 @@ const DictionaryEntryScreen = () => {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: primaryBackgroundColor }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: useThemeColor({}, 'tertiaryBackground') }}>
       <SafeAreaView style={{ marginTop: 16 }}>
         <View style={styles.header}>
           <ThemedButton
@@ -111,7 +111,7 @@ const DictionaryEntryScreen = () => {
             type="ghost"
             size="medium"
             trailingIcon={<Icon name="cog-outline" />}
-            onPress={() => router.navigate("/(tabs)/(media)")}
+            onPress={() => router.navigate("/(tabs)/(me)/settings")}
           />
         </View>
         {entry && (
