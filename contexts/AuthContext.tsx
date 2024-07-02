@@ -19,6 +19,7 @@ const AuthContext = createContext<{
   handleLogout: () => Promise<void>;
   handleRegister: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
   getStoredUserInfo: () => Promise<User | null>;
+  getStoredAuthToken: () => Promise<string | null>;
 } | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -54,6 +55,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const userInfo = await SecureStore.getItemAsync('userInfo');
         return userInfo ? JSON.parse(userInfo) : null;
     };
+
+    const getStoredAuthToken = async (): Promise<string | null> => {
+        const token = await SecureStore.getItemAsync('authToken');
+        return token;
+    }
 
     const handleLogin = async (email: string, password: string) => {
         setLoading(true);
@@ -91,7 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, loading, userInfo, handleLogin, handleLogout, handleRegister, getStoredUserInfo }}>
+        <AuthContext.Provider value={{ isAuthenticated, loading, userInfo, handleLogin, handleLogout, handleRegister, getStoredUserInfo, getStoredAuthToken }}>
             {children}
         </AuthContext.Provider>
     );

@@ -15,7 +15,7 @@ export const addToWatchHistory = async (
   l2Lang: number,
   videoId: number,
   lastPosition: number,
-  authToken?: string
+  authToken: string
 ): Promise<WatchHistoryItem> => {
   const date = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
   const item: WatchHistoryItem = {

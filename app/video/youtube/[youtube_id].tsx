@@ -14,16 +14,19 @@ import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
 import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { addToWatchHistory } from "@/src/api/directus/user-watch-history";
+
 
 const YouTubeVideoScreen = () => {
   const params = useLocalSearchParams();
   const { l2Lang } = useLanguage();
+  const { getStoredAuthToken } = useAuth();
   let youtubeIdFromParams = Array.isArray(params?.youtube_id)
     ? params?.youtube_id[0]
     : params?.youtube_id; // params can sometimes return an array
   
-  if (!youtubeIdFromParams) return
-
+  if (!youtubeIdFromParams) return;
 
   const {
     minimizePlayer,
@@ -31,7 +34,6 @@ const YouTubeVideoScreen = () => {
     setVideoPlayerState,
     videoPlayerState,
   } = useVideoPlayer();
-
 
   const route = useRoute(); // This hook fetches information about the current route
 
@@ -55,6 +57,12 @@ const YouTubeVideoScreen = () => {
           video: newVideo,
           isMini: false,
         }));
+
+        // Add to watch history
+        const authToken = await getStoredAuthToken();
+        if (authToken) {
+          await addToWatchHistory(l2Lang.id, newVideo.id, 0, authToken);
+        }
       } catch (error) {
         console.error("Failed to fetch video", error);
       }
