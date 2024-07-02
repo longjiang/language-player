@@ -56,7 +56,6 @@ export class TokenizerService {
 
   public async fetchTokens(tokenizer: Tokenizer, text: string, l2Lang: Language): Promise<Token[]> {
     const uri = `${PYTHON_SERVER}/${tokenizer.endPoint}?text=${encodeURIComponent(text)}&lang=${l2Lang.iso639_3}`
-    console.log(uri)
     const response = await fetch(uri);
     const tokenData = await response.json();
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Token } from './Token';
-import { TokenData } from '@/src/tokenizer';
+import { Token as TokenType } from '@/src/tokenizer';
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -23,7 +23,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   align = "left"
 }) => {
 
-  const [tokens, setTokens] = useState<TokenData[]>([]);
+  const [tokens, setTokens] = useState<TokenType[]>([]);
   const { tokenizer } = useDictionary();
   const { l2Lang } = useLanguage();
 
@@ -41,7 +41,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   }, [text]);
 
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end' }}>
       {tokens.map((token, index) => (
         <Token key={index} token={token} textScale={textScale} textWeight={textWeight} context={text} translatedContext={translation} />
       ))}
