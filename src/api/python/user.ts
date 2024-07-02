@@ -1,3 +1,5 @@
+// @/src/api/python/user
+
 import { AxiosResponse } from "axios";
 import { API } from "@/src/api/python";
 

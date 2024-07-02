@@ -29,6 +29,10 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
     router.navigate(`/video/youtube/${video.youtube_id}`);
   };
 
+  const viewsText = video.views?.toLocaleString() || '';
+  const durationText = video.duration ? formatDuration(video.duration) : '';
+  const localeText = video.locale || '';
+
   return (
     <TouchableOpacity onPress={handlePress} style={{ flex: 1 }}>
       <View style={[styles.card]}>
@@ -43,9 +47,7 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
             {video.title}
           </ThemedText>
           <ThemedText style={styles.details} type="small" variant="secondary">
-            {`${video.views ? video.views.toLocaleString() : 'No'} Views / ${video.duration ? formatDuration(
-              video.duration
-            ) : '--:--'} / ${video.locale}`}
+            { [viewsText, durationText, localeText].filter(Boolean).join(' • ') }
           </ThemedText>
         </View>
       </View>

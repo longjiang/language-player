@@ -1,19 +1,65 @@
 // @/app/watch-history.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router } from "expo-router";
 import { YouTubeVideoList } from "@/components/YouTubeVideoList";
-import videoData from '@/data/recommended-videos.json'; // Example data
+import { getUserWatchHistory } from "@/src/api/python/user";
+import { View, Text, ActivityIndicator } from "react-native";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { getStoredUserInfo } from "@/src/api/directus/user";
 
 const WatchHistoryScreen = () => {
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { l2Lang } = useLanguage()
+  if (!l2Lang) {
+    return <View><Text>Language not selected</Text></View>;
+  }
+
+  useEffect(() => {
+    const fetchVideos = async () => {
+      const userInfo = await getStoredUserInfo();
+      if (!userInfo) {
+        router.navigate("/login");
+        return;
+      }
+      try {
+        const userId = userInfo.id;
+        const langCode = l2Lang.code;
+        const response = await getUserWatchHistory(userId, langCode);
+        const uniqueVideos = response.data.reduce((acc: any[], video: { youtube_id: any; }) => {
+          if (!acc.find((v) => v.youtube_id === video.youtube_id)) {
+            acc.push(video);
+          }
+          return acc;
+        }, []);
+        setVideos(uniqueVideos);
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to fetch videos');
+        setLoading(false);
+      }
+    };
+
+    fetchVideos();
+  }, []);
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
+  if (error) {
+    return <View><Text>{error}</Text></View>;
+  }
 
   return (
     <ThemedScreen
       title="Watch History"
       onBackPress={() => router.navigate('/(tabs)/(me)')}
     >
-      
-      <YouTubeVideoList videos={videoData} />
+      <YouTubeVideoList videos={videos} />
     </ThemedScreen>
   );
 };
