@@ -1,11 +1,11 @@
-// @/app/settings.tsx
-import React, { useReducer } from 'react';
+import React, { useReducer, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedSwitch } from '@/components/ThemedSwitch';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 
 // Initial state for settings
 const initialState = {
@@ -22,6 +22,8 @@ const initialState = {
 // Reducer function to handle state changes
 const settingsReducer = (state, action) => {
   switch (action.type) {
+    case 'SET_SETTINGS':
+      return { ...state, ...action.payload };
     case 'TOGGLE_SETTING':
       return { ...state, [action.payload]: !state[action.payload] };
     default:
@@ -33,8 +35,21 @@ const SettingsScreen = () => {
   const [settings, dispatch] = useReducer(settingsReducer, initialState);
   const secondaryBrandColor = useThemeColor({}, 'secondaryBrand');
 
-  const toggleSetting = (setting) => {
+  useEffect(() => {
+    const loadSettings = async () => {
+      const savedSettings = await SecureStore.getItemAsync('userSettings');
+      if (savedSettings) {
+        dispatch({ type: 'SET_SETTINGS', payload: JSON.parse(savedSettings) });
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  const toggleSetting = async (setting) => {
+    const updatedSettings = { ...settings, [setting]: !settings[setting] };
     dispatch({ type: 'TOGGLE_SETTING', payload: setting });
+    await SecureStore.setItemAsync('userSettings', JSON.stringify(updatedSettings));
   };
 
   return (
