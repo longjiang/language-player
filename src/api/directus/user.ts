@@ -1,7 +1,5 @@
 // @/src/api/directus/user.ts
-import * as SecureStore from 'expo-secure-store';
-
-import { DIRECTUS_URL } from '.'
+import { DIRECTUS_URL } from '.';
 
 export type User = {
   id: string;
@@ -13,31 +11,75 @@ export type User = {
   status: string;
 };
 
-export async function fetchAndStoreUserInfo() {
-  const token = await SecureStore.getItemAsync('access_token');
-  if (!token) throw new Error('No access token found');
+export async function login(email: string, password: string) {
+    const response = await fetch(`${DIRECTUS_URL}/auth/authenticate`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password
+        })
+    });
 
-  const response = await fetch(`${DIRECTUS_URL}/users/me`, {
+    const data = await response.json();
+
+    if (response.ok) {
+        return data.data.token;
+    } else {
+        throw new Error(data.errors[0].message);
+    }
+}
+
+export async function checkToken(token: string) {
+    const response = await fetch(`${DIRECTUS_URL}/users/me`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    return response.ok;
+}
+
+export async function fetchUserInfo(token: string) {
+    const response = await fetch(`${DIRECTUS_URL}/users/me`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+        return data.data;
+    } else {
+        throw new Error(data.errors ? data.errors[0].message : 'Failed to fetch user info');
+    }
+}
+
+
+export async function registerUser(firstName: string, lastName: string, email: string, password: string) {
+  const registerResponse = await fetch(`${DIRECTUS_URL}/users`, {
+      method: 'POST',
       headers: {
-          'Authorization': `Bearer ${token}`
-      }
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          email: email,
+          password: password,
+          role: 3 // Assuming role 3 is the "user" role
+      })
   });
 
-  const data = await response.json();
+  const registerData = await registerResponse.json();
 
-  if (response.ok) {
-      await SecureStore.setItemAsync('user_info', JSON.stringify(data.data));
-  } else {
-      throw new Error(data.errors ? data.errors[0].message : 'Failed to fetch user info');
+  if (!registerResponse.ok) {
+      throw new Error(registerData.errors ? registerData.errors[0].message : 'Failed to register user');
   }
-}
 
-export async function getStoredUserInfo(): Promise<User | null> {
-  const userInfo = await SecureStore.getItemAsync('user_info');
-  return userInfo ? JSON.parse(userInfo) : null;
-}
-
-export async function logout() {
-  await SecureStore.deleteItemAsync('access_token');
-  await SecureStore.deleteItemAsync('user_info');
+  return registerData;
 }

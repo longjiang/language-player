@@ -9,7 +9,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Link } from 'expo-router';
 import { router } from 'expo-router';
-import { registerUser } from '@/src/api/directus/register';
+import { registerUser } from '@/src/api/directus/user';
 import { sendVerificationEmail } from '@/src/api/python/verify-email';
 
 

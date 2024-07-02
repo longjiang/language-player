@@ -2,8 +2,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
-import { login as apiLogin, checkToken as apiCheckToken, fetchUserInfo } from '@/src/api/directus/login';
-import { registerUser as apiRegisterUser } from '@/src/api/directus/register'
+import { login as apiLogin, checkToken as apiCheckToken, fetchUserInfo } from '@/src/api/directus/user';
+import { registerUser as apiRegisterUser } from '@/src/api/directus/user'
 import { User } from '@/src/api/directus/user';
 
 

@@ -6,7 +6,7 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedCodeInput } from "@/components/ThemedCodeInput";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router, useLocalSearchParams } from "expo-router";
-import { login } from "@/src/api/directus/login";
+import { login } from "@/src/api/directus/user";
 import { sendVerificationEmail, verifyEmailCode } from "@/src/api/python/verify-email";
 import * as SecureStore from 'expo-secure-store';
 
