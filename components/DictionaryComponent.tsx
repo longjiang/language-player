@@ -18,15 +18,15 @@ export const DictionaryComponent = () => {
     const { settings } = useSettings(); // Use the settings from context
     const { l2Lang } = useLanguage(); // Use the language from context
     if (!l2Lang) return null;
+
+    // if l2Lang.code is 'zh' and settings.useTraditional is true, then switch head and alternate keys
+    const headKey = l2Lang.code === 'zh' && settings.useTraditional ? 'alternate' : 'head';
+    const alternateKey = l2Lang.code === 'zh' && settings.useTraditional ? 'head' : 'alternate';
     
     const handleSearch = async (text: string) => {
         setQuery(text);
         if (dictionary) setResults((await dictionary.search(text)).slice(0, 50));
     };
-
-    // if l2Lang.code is 'zh' and settings.useTraditional is true, then switch head and alternate keys
-    const headKey = l2Lang.code === 'zh' && settings.useTraditional ? 'alternate' : 'head';
-    const alternateKey = l2Lang.code === 'zh' && settings.useTraditional ? 'head' : 'alternate';
 
     return (
         <View>

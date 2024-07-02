@@ -12,9 +12,11 @@ import { ThemedText } from "@/components/ThemedText";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SubsSearch } from "@/components/SubsSearch";
-import { DictionaryEntry } from "@/src/dictionary";
+import { DictionaryEntry } from "@/src/dictionary-types";
 import { RouteProp } from '@react-navigation/native';
 import { debounce } from 'lodash';
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useSettings } from "@/contexts/SettingsContext";
 
 type DictionaryEntryScreenRouteParams = {
   id: string;
@@ -33,10 +35,17 @@ const DictionaryEntryScreen = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { dictionary } = useDictionary();
+  const { l2Lang } = useLanguage();
+  const { settings } = useSettings();
+  if (!l2Lang) return null;
 
   const tertiaryBackgroundColor = useThemeColor({}, 'tertiaryBackground');
   const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
+
+  // if l2Lang.code is 'zh' and settings.useTraditional is true, then switch head and alternate keys
+  const headKey = l2Lang.code === 'zh' && settings.useTraditional ? 'alternate' : 'head';
+  const alternateKey = l2Lang.code === 'zh' && settings.useTraditional ? 'head' : 'alternate';
 
   useEffect(() => {
     if (dictionary) {
@@ -115,11 +124,11 @@ const DictionaryEntryScreen = () => {
               <View style={{ flexDirection: "row", alignItems: "flex-end", marginBottom: 12 }}>
                 <Text>
                   <ThemedText type="xxlarge" style={styles.character} level={entry.level}>
-                    {entry.head}
+                    {entry[headKey]}
                   </ThemedText>
                 </Text>
                 <ThemedText type="subtitle" style={{ marginLeft: 4, fontWeight: 'normal' }} variant="secondary">
-                  {entry.alternate}
+                  {entry[alternateKey]}
                 </ThemedText>
               </View>
               <Text><ThemedText type="default">{entry.pronunciation} • </ThemedText><ThemedText type="smallBold" level={entry.level}>HSK {entry.level}</ThemedText></Text>
