@@ -6,12 +6,12 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { PricingBlock } from "@/components/PricingBlock";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { getStoredUserInfo, logout } from "@/src/api/directus/user";
 import { getUserSubscriptions } from "@/src/api/directus";
 import * as SecureStore from 'expo-secure-store';
 import { getDeltaDate } from "@/src/utils";
 import { GenericCollectionItem } from "@/src/api/directus";
 import { User } from "@/src/api/directus/user";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 
@@ -19,6 +19,7 @@ const AccountScreen = () => {
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [subscription, setSubscription] = useState<GenericCollectionItem | null>(null);
   const secondaryTextColor = useThemeColor({}, "secondaryText");
+  const { handleLogout, getStoredUserInfo } = useAuth();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -41,11 +42,6 @@ const AccountScreen = () => {
 
     fetchUserInfo();
   }, []);
-
-  const handleLogout = async () => {
-    await logout();
-    router.navigate("/login");
-  };
 
   return (
     <ThemedScreen

@@ -6,14 +6,15 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedRadio } from "@/components/ThemedRadio";
 import { ThemedInput } from "@/components/ThemedInput";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { submitAcquisitionSurvey } from "@/src/api/python/acquisition-survey";
-import { getStoredUserInfo } from "@/src/api/directus/user";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AcquisitionSurveyScreen = () => {
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [otherText, setOtherText] = useState("");
   const [userId, setUserId] = useState(null);
+  const { getStoredUserInfo } = useAuth();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -51,7 +52,7 @@ const AcquisitionSurveyScreen = () => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedOption) return;
+    if (!selectedOption || !userId) return;
     try {
       const acquisitionDetails = selectedOption?.value === 'other' ? otherText : null;
       await submitAcquisitionSurvey(userId, selectedOption.value, acquisitionDetails);

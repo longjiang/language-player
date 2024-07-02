@@ -6,13 +6,14 @@ import { YouTubeVideoList } from "@/components/YouTubeVideoList";
 import { getUserWatchHistory } from "@/src/api/python/user";
 import { View, Text, ActivityIndicator } from "react-native";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getStoredUserInfo } from "@/src/api/directus/user";
+import { useAuth } from "@/contexts/AuthContext";
 
 const WatchHistoryScreen = () => {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { l2Lang } = useLanguage()
+  const { getStoredUserInfo } = useAuth();
   if (!l2Lang) {
     return <View><Text>Language not selected</Text></View>;
   }
