@@ -1,5 +1,10 @@
+// @/contexts/SettingsContext
+
 import React, { createContext, useReducer, useContext, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import { useColorScheme } from 'react-native';
+
+const systemColorScheme = useColorScheme(); // Gets the system color scheme ('light' or 'dark')
 
 // Define the initial state for the settings
 const initialState = {
@@ -9,7 +14,7 @@ const initialState = {
   showTranslation: false,
   showQuickGloss: false,
   autoPronounce: false,
-  darkMode: false,
+  darkMode: systemColorScheme === 'dark',  // Initialize based on system preference
   quizMode: false,
 };
 

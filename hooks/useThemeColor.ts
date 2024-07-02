@@ -6,7 +6,7 @@
  */
 
 import { useColorScheme } from 'react-native';
-
+import { useSettings } from '@/contexts/SettingsContext';
 import { Colors } from '@/constants/Colors';
 import { LevelColors } from '@/constants/Colors';
 
@@ -14,7 +14,8 @@ export function useThemeColor(
   props: { light?: string; dark?: string },
   colorName: keyof typeof Colors.light & keyof typeof Colors.dark
 ) {
-  const theme = useColorScheme() ?? 'light';
+  const { settings } = useSettings();  // Use settings from context
+  const theme = settings.darkMode ? 'dark' : 'light';  // Determine theme based on settings
   const colorFromProps = props[theme];
 
   if (colorFromProps) {
