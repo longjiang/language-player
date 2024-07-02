@@ -7,11 +7,21 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import { router } from "expo-router";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { ThemedText } from "@/components";
+import * as Localization from "expo-localization";
 import { SUPPORTED_L1S } from "@/constants/LanguageConstants";
 
 const SelectL2Screen = () => {
   const { l1Lang, setL1Lang, languages, i18n } = useLanguage();
+  const [deviceLanguage, setDeviceLanguage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const defaultLanguage = Localization.locale.split('-')[0]; // Get the base language code
+    const language = languages?.getLangByCode(defaultLanguage);
+    if (language) {
+      setL1Lang(language);
+      setDeviceLanguage(defaultLanguage);
+    }
+  }, [languages]);
 
   const onSelect = (value: string) => {
     if (!languages) return;
@@ -25,8 +35,7 @@ const SelectL2Screen = () => {
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
     >
-      {/* <ThemedText>{l1Lang?.name}</ThemedText> */}
-      <ThemedLanguageSelect onSelect={onSelect} initialValue={l1Lang?.code} scope="l1" />
+      <ThemedLanguageSelect onSelect={onSelect} initialValue={deviceLanguage || l1Lang?.code} scope="l1" />
 
       <ThemedButton
         title="title.next"

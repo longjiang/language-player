@@ -1,3 +1,5 @@
+// @/app/(tabs)/(me)/settings.tsx
+
 import React, { useReducer, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ThemedScreen } from "@/components/ThemedScreen";
