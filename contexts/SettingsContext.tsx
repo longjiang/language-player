@@ -4,7 +4,6 @@ import React, { createContext, useReducer, useContext, useEffect, ReactNode } fr
 import * as SecureStore from 'expo-secure-store';
 import { useColorScheme } from 'react-native';
 
-const systemColorScheme = useColorScheme(); // Gets the system color scheme ('light' or 'dark')
 
 // Define the initial state for the settings
 const initialState = {
@@ -14,7 +13,7 @@ const initialState = {
   showTranslation: false,
   showQuickGloss: false,
   autoPronounce: false,
-  darkMode: systemColorScheme === 'dark',  // Initialize based on system preference
+  darkMode: false, // Default, will be updated in provider
   quizMode: false,
 };
 
@@ -57,7 +56,11 @@ const SettingsContext = createContext<{
 
 // Create a provider component
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
-  const [settings, dispatch] = useReducer(settingsReducer, initialState);
+  const systemColorScheme = useColorScheme(); // Gets the system color scheme ('light' or 'dark')
+  const [settings, dispatch] = useReducer(settingsReducer, {
+    ...initialState,
+    darkMode: systemColorScheme === 'dark', // Initialize based on system preference here
+  });
 
   useEffect(() => {
     const loadSettings = async () => {
