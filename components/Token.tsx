@@ -1,13 +1,12 @@
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import { View, Text } from "react-native";
-import { ThemedText } from "./ThemedText"; // Assuming this is already defined
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Typography } from "@/constants/Typography";
-import { useDictionary } from "@/contexts/DictionaryContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { PopupDictionaryModal } from "./PopupDictionaryModal";
 import { Token as TokenType } from "@/src/tokenizer";
-import { useSettings } from "@/contexts/SettingsContext"; // Import the useSettings hook
+import { Converter } from 'opencc-js';  // Import the converter
 
 export const Token: React.FC<{
   token: TokenType,
@@ -24,20 +23,22 @@ export const Token: React.FC<{
 }) => {
   const defaultFontSize = 16;
   const primaryTextColor = useThemeColor({}, "primaryText");
-  const fontFamily =
-    textWeight === "bold"
-      ? Typography.fontFamilyBold
-      : Typography.fontFamilyRegular;
+  const fontFamily = textWeight === "bold" ? Typography.fontFamilyBold : Typography.fontFamilyRegular;
 
-  const { settings } = useSettings(); // Use the settings context
+  const { settings } = useSettings(); // Use the settings from context
   const modalRef = useRef();
 
   const handleTokenPress = () => {
     modalRef.current?.open();
   };
 
-  // Determine if pronunciation should be shown
   const shouldShowPronunciation = settings.showPinyin && token.pronunciation !== token.text;
+
+  // Using useMemo to avoid unnecessary conversions on each render
+  const displayText = useMemo(() => {
+    const convert = Converter({ from: 'cn', to: settings.useTraditional ? 'tw' : 'cn' });
+    return convert(token.text);
+  }, [token.text, settings.useTraditional]);
 
   return (
     <>
@@ -49,7 +50,7 @@ export const Token: React.FC<{
             padding: 5,
           }}
         >
-          {shouldShowPronunciation && ( // Conditionally render based on showPinyin setting
+          {shouldShowPronunciation && (
             <Text
               style={{
                 fontFamily,
@@ -69,7 +70,7 @@ export const Token: React.FC<{
               lineHeight: defaultFontSize * textScale * 1.14,
             }}
           >
-            {token.text}
+            {displayText}
           </Text>
         </View>
       </TouchableOpacity>

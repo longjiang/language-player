@@ -30,7 +30,7 @@ const SettingsScreen = () => {
           Language Settings
         </ThemedText>
         {renderSwitch('Show Phonetics', 'showPinyin')}
-        {renderSwitch('Show Definition', 'showDefinition')}
+        {/* {renderSwitch('Show Definition', 'showDefinition')} */}
         {renderSwitch('Use Traditional', 'useTraditional')}
         {renderSwitch('Show Translation', 'showTranslation')}
         {renderSwitch('Show Gloss for Saved', 'showQuickGloss')}
