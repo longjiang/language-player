@@ -1,4 +1,5 @@
 // @/src/dictionary.ts
+
 import axios from 'axios';
 import Papa from 'papaparse';
 import { DictionaryDB } from '@/src/dictionary-db';
@@ -24,50 +25,49 @@ export class Dictionary {
     this.normalizeEntry = normalizeEntry;
   }
 
-  async loadData(forceRebuild: boolean = false): Promise<void> {
+  async loadData(forceRebuild: boolean = false, addLog: (message: string) => void): Promise<void> {
     await this.dictionaryDB.openDB();
     await this.dictionaryDB.createTable(forceRebuild);
 
-    const loaded = await this.dictionaryDB.loaded()
+    const loaded = await this.dictionaryDB.loaded();
 
     if (loaded) {
-      console.log('Dictionary: Database already loaded.');
+      addLog('Database already loaded.');
       return;
     }
 
-    console.log('Dictionary: Fetching...')
+    addLog('Downloading...');
     const response = await axios.get(this.sourceUrl);
     const parsedData = Papa.parse(response.data, { header: true });
 
     const entryCount: Record<string, number> = {};
     const entries = parsedData.data.map(entry => this.normalizeEntry(entry as RawEntry, entryCount)).filter(entry => entry.head);
 
-    console.log('Dictionary: Inserting records...')
+    addLog('Processing...');
     await this.dictionaryDB.insertEntries(entries);
 
     const newCountResult = await this.dictionaryDB.db!.getFirstAsync<{ count: number }>(`SELECT COUNT(*) AS count FROM ${this.dbName}`);
-    console.log(`Dictionary: ${newCountResult?.count || 0} entries inserted.`);
-
+    addLog(`${newCountResult?.count || 0} entries processed. Indexing...`);
 
     // Get 2 random records:
-    console.log('Dictionary: Preview of random 2 records:');
-    console.log(await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} ORDER BY RANDOM() LIMIT 1`))
-    console.log(await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} ORDER BY RANDOM() LIMIT 1`))
+    console.log('Preview of random 2 records:');
+    console.log(await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} ORDER BY RANDOM() LIMIT 1`));
+    console.log(await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} ORDER BY RANDOM() LIMIT 1`));
+
+    addLog('Dictionary ready!');
 
     await this.dictionaryDB.createIndexes();
-
-    console.log('Dictionary: Data loaded and normalized.');
   }
 
   async getWordSet(): Promise<Set<string>> {
     const words = await this.dictionaryDB.getWordList();
     return new Set(words);
-  }    
+  }
 
   async search(query: string): Promise<DictionaryEntry[]> {
     query = stripAccents(query.toLowerCase()).replace(/\s+/g, ' ');
     const results = await this.dictionaryDB.search(query);
-  
+
     const entries = results.map(transformToDictionaryEntry);
     return sortEntries(entries, query);
   }
@@ -78,7 +78,7 @@ export class Dictionary {
   }
 
   async findWordsInPhrase(phrase: string): Promise<DictionaryEntry[]> {
-    const words = phrase.toLowerCase().split(/\s+/);
+    const words = phrase.toLowerCase().split(/\s+/g);
     const results = new Set<DictionaryEntry>();
 
     for (const word of words) {

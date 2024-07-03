@@ -156,3 +156,28 @@ export const selectL1Styles = StyleSheet.create({
     marginBottom: 110,
   },
 });
+
+export const dictionaryLoadingModalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.8)',
+  },
+  modalContainer: {
+    padding: 20,
+    borderRadius: 8,
+    width: '80%',
+    maxHeight: '80%',
+  },
+  loadingText: {
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  logsContainer: {
+    maxHeight: '80%',
+    textAlign: 'center',
+  },
+  logText: {
+  },
+});

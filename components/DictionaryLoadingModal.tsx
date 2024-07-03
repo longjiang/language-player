@@ -1,9 +1,19 @@
-// @/components/DictionaryLoadingModal.js
+// @/components/DictionaryLoadingModal.tsx
 
 import React from 'react';
 import { Modal, View, Text, StyleSheet } from 'react-native';
+import { dictionaryLoadingModalStyles as styles } from '@/src/styles';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { ThemedText } from './ThemedText';
 
-export const DictionaryLoadingModal = () => {
+interface DictionaryLoadingModalProps {
+  logs: string[];
+  language: string;
+}
+
+export const DictionaryLoadingModal: React.FC<DictionaryLoadingModalProps> = ({ logs, language }) => {
+  const lastLog = logs.length > 0 ? logs[logs.length - 1] : 'Initializing...';
+
   return (
     <Modal
       transparent={true}
@@ -11,28 +21,13 @@ export const DictionaryLoadingModal = () => {
       visible={true}
     >
       <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.loadingText}>Loading Dictionary...</Text>
+        <View style={[styles.modalContainer, {backgroundColor: useThemeColor({}, 'secondaryBackground')} ]}>
+          <ThemedText style={styles.loadingText} type="subtitle">Loading {language} Dictionary</ThemedText>
+          <View style={styles.logsContainer}>
+            <ThemedText style={styles.logText} type="large" variant="secondary">{lastLog}</ThemedText>
+          </View>
         </View>
       </View>
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalContainer: {
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 5,
-  },
-  loadingText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
