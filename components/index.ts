@@ -9,7 +9,7 @@ export { ExternalLink } from './ExternalLink';
 export { LanguageIcon } from './LanguageIcon';
 export { MiniPlayer } from './MiniPlayer';
 // export { PricingBlock } from './PricingBlock'; // Circular dependency
-export { SavedWords } from './SavedWords';
+export { WordList } from './WordList';
 export { ShowCard } from './ShowCard';
 export { SubsSearch } from './SubsSearch';
 export { SubsSearchResults } from './SubsSearchResults';

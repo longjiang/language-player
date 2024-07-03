@@ -7,7 +7,7 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { DictionaryProvider, useDictionary } from "@/contexts/DictionaryContext";
-import { SavedWords } from "@/components/SavedWords";
+import { WordList } from "@/components/WordList";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserData } from "@/src/api/directus/user-data"; // Make sure this path is correct
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -49,7 +49,7 @@ const SavedWordsScreen = () => {
       }}
     >
       <DictionaryProvider>
-        <SavedWords words={savedWords} />
+        <WordList words={savedWords} />
       </DictionaryProvider>
     </ThemedScreen>
   );

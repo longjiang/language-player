@@ -6,7 +6,7 @@ import { ThemedButton } from './ThemedButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
 
-export const SavedWords = ({ words }) => {
+export const WordList = ({ words }) => {
 
   const bookmarkColor = useThemeColor({}, 'semanticWarning');
 
