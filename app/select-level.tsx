@@ -31,6 +31,8 @@ const SelectLevelScreen = () => {
             levelName={levelName}
             examLevelName={examLevelName}
             onPress={onSelect}
+            style={styles.item}
+            size="large"
           />
         ))}
       </View>
@@ -43,7 +45,7 @@ const SelectLevelScreen = () => {
 
 const styles = StyleSheet.create({
   item: {
-    paddingVertical: 8,
+    paddingVertical: 4,
     paddingHorizontal: 16,
     borderRadius: 10,
   }

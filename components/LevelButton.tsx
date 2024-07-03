@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, ViewStyle } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -10,9 +10,11 @@ interface LevelButtonProps {
   levelName: string;
   examLevelName: string;
   onPress: (level: number) => void;
+  style?: ViewStyle;
+  size?: "small" | "medium" | "large";
 }
 
-const LevelButton: React.FC<LevelButtonProps> = ({ level, levelName, examLevelName, onPress }) => {
+const LevelButton: React.FC<LevelButtonProps> = ({ level, levelName, examLevelName, onPress, style, size = "small" }) => {
   const colorScheme = useColorScheme();
   const levelColor = LevelColors[colorScheme || 'light'][level];
 
@@ -23,18 +25,10 @@ const LevelButton: React.FC<LevelButtonProps> = ({ level, levelName, examLevelNa
       trailingIcon={<Icon name="chevron-right" />}
       onPress={() => onPress(level)}
       type="accent"
-      size="small"
-      style={styles.item}
+      size={size}
+      style={style}
     />
   );
 };
-
-const styles = StyleSheet.create({
-  item: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-  }
-});
 
 export default LevelButton;
