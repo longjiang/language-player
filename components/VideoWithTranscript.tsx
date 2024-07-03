@@ -10,19 +10,13 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import { router, Link } from "expo-router";
 import { Dimensions } from "react-native";
-import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
-import { YouTubeVideo as YouTubeVideoType } from "@/types";
-import { StyleSheet } from "react-native";
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Swatches } from "@/constants/Swatches";
 import { ThemedText } from "./ThemedText";
 import { formatDuration } from "@/src/utils";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
-import {
-  GestureHandlerRootView,
-  TouchableOpacity,
-} from "react-native-gesture-handler";
+import { videoWithTranscriptStyles as styles } from "@/styles/videoWithTranscriptStyles";
 
 interface VideoWithTranscriptProps {
   isMini: boolean;
@@ -150,27 +144,3 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
     </View>
   );
 };
-
-// Create stylesheet
-const styles = StyleSheet.create({
-  headerButton: { padding: 8 },
-  header: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 8 },
-  miniPlayerVideoInfo: {
-    overflow: "hidden", // Ensures overflow is hidden
-  },
-  miniPlayerVideoTitle: { fontSize: 14, color: Swatches.neutral[0] },
-  miniPlayerVideoSubTitle: { fontSize: 12, color: Swatches.neutral[0] },
-  fullPlayerContainer: { marginBottom: 26 },
-  miniPlayerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  miniPlayerVideoContainer: {
-    width: 70 * 1.777777777777778,
-  },
-  miniPlayerControlsContainer: {
-    paddingHorizontal: 13,
-    flexDirection: "row",
-  },
-});

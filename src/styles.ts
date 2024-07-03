@@ -225,3 +225,26 @@ export const youtubeVideoCardStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+export const videoWithTranscriptStyles = StyleSheet.create({
+  headerButton: { padding: 8 },
+  header: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 8 },
+  miniPlayerVideoInfo: {
+    overflow: "hidden", // Ensures overflow is hidden
+  },
+  miniPlayerVideoTitle: { fontSize: 14, color: Swatches.neutral[0] },
+  miniPlayerVideoSubTitle: { fontSize: 12, color: Swatches.neutral[0] },
+  fullPlayerContainer: { marginBottom: 26 },
+  miniPlayerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  miniPlayerVideoContainer: {
+    width: 70 * 1.777777777777778,
+  },
+  miniPlayerControlsContainer: {
+    paddingHorizontal: 13,
+    flexDirection: "row",
+  },
+});
