@@ -1,7 +1,7 @@
 // @/contexts/UserDataContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserData, updateUserData } from '@/src/api/directus/user-data'; // Make sure this path is correct
+import { getUserData, patchUserData } from '@/src/api/directus/user-data'; // Make sure this path is correct
 
 const UserDataContext = createContext();
 
@@ -40,7 +40,7 @@ export const UserDataProvider = ({ children }) => {
     setSavedWords(updatedSavedWords);
     try {
       const authToken = await getStoredAuthToken();
-      await updateUserData(authToken, { saved_words: updatedSavedWords });
+      await patchUserData(userData.id, { saved_words: JSON.stringify(updatedSavedWords) }, authToken);
     } catch (error) {
       console.error('Error updating user data:', error);
     }
@@ -57,7 +57,7 @@ export const UserDataProvider = ({ children }) => {
     setSavedWords(updatedSavedWords);
     try {
       const authToken = await getStoredAuthToken();
-      await updateUserData(authToken, { saved_words: updatedSavedWords });
+      await patchUserData(userData.id, { saved_words: JSON.stringify(updatedSavedWords) }, authToken);
     } catch (error) {
       console.error('Error updating user data:', error);
     }
