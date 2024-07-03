@@ -14,20 +14,28 @@ import { YouTubeVideo } from '@/types';
 import { normalizeVideoData } from "@/src/api/directus/youtube-video"
 import { recommendVideos } from "@/src/api/python/video";
 import { useLanguage } from "@/contexts/LanguageContext";
-
+import { useUserData } from "@/contexts/UserDataContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const videos = videoData.map((video: any) => normalizeVideoData(video))
 
 const MediaHomeScreen = () => {
+  const { languages, i18n, l2Lang } = useLanguage();
+  const { progress } = useUserData();
+  const { getStoredUserInfo } = useAuth();
+  const [items, setItems] = useState<YouTubeVideo[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  if (!l2Lang) return;
   const videoHeight = 300;
   const padding = 26;
   const videoWidth = videoHeight * 1.777777777777778;
   const screenWidth = Dimensions.get('window').width;
   const headerWidth = screenWidth - padding * 2;
-  const [items, setItems] = useState<YouTubeVideo[]>([]);
-  const { languages, i18n, l2Lang } = useLanguage();
-  const [isLoading, setIsLoading] = useState(false);
   const country = l2Lang ? languages?.getCountry(l2Lang) : null;
+  const langCode = l2Lang.code;
+  const l2Progress = progress[l2Lang.code] || { level: '1', time: 0 };
+  const level = Number(l2Progress.level);
+
 
   useEffect(() => {
     // Search screen mounted
@@ -36,13 +44,11 @@ const MediaHomeScreen = () => {
 
 
   const loadItems = async () => {
-    if (!l2Lang) return;
     setItems([]); // Clear items
     setIsLoading(true); // Start loading
-    const userId = 1;
-    const langCode = l2Lang.code;
-    const level = 1;
-    const preferredCategories = [1, 2, 3];
+    const userInfo = await getStoredUserInfo();
+    if (!userInfo) throw new Error('User info not found');
+    const userId = userInfo.id;
     const excludeIds = [4265,17213,33658,11662];
     const madeForKids = '0';
     const limit = 50;
@@ -51,7 +57,6 @@ const MediaHomeScreen = () => {
         userId,
         langCode,
         level,
-        preferredCategories,
         excludeIds,
         madeForKids,
         limit

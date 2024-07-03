@@ -16,7 +16,7 @@ const LanguageProgressScreen = () => {
   const { progress } = useUserData();
   const { l2Lang } = useLanguage();
   if (!l2Lang) return null;
-  const chineseProgress = progress[l2Lang.code] || { level: '1', time: 0 };
+  const l2Progress = progress[l2Lang.code] || { level: '1', time: 0 };
   
   const formatTime = (milliseconds: number) => {
     const totalSeconds = Math.floor(milliseconds / 1000);
@@ -38,12 +38,12 @@ const LanguageProgressScreen = () => {
     >
       <View style={{ flexDirection: "column" }}>
         <View style={{ flexDirection: "column", justifyContent: "space-between", alignItems: 'center', marginTop: 14, marginBottom: 42 }}>
-          <ThemedText type="xlarge">{formatTime(chineseProgress.time)}</ThemedText>
+          <ThemedText type="xlarge">{formatTime(l2Progress.time)}</ThemedText>
           <ThemedText style={{ marginTop: 8}}>Spent learning Chinese in Language Player</ThemedText>
         </View>
         <LevelButton
-          key={chineseProgress.level}
-          level={Number(chineseProgress.level)}
+          key={l2Progress.level}
+          level={Number(l2Progress.level)}
           onPress={onSelect}
           style={{ marginBottom: 8 }}
           size="large"
