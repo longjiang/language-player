@@ -32,19 +32,6 @@ export const WordList = ({ words }) => {
       renderItem={renderItem}
       keyExtractor={item => item.id}
       style={styles.container}
-      ListFooterComponent={
-        <View style={{ padding: 20, alignItems: 'center' }}>
-          <ThemedButton
-            title="Clear"
-            type="neutral"
-            size="medium"
-            leadingIcon={<Ionicons name="trash-outline" />}
-            onPress={() => {
-              router.navigate("/(tabs)/(dictionary)");
-            }}
-          />
-        </View>
-      }
     />
   );
 };

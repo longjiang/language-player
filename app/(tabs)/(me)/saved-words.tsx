@@ -1,45 +1,33 @@
 // @/app/(tabs)/(me)/saved-words.tsx
-
 import React, { useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
-import { ThemedButton } from "@/components/ThemedButton";
+import { StyleSheet, View } from "react-native";
 import { ThemedScreen } from "@/components/ThemedScreen";
-import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { DictionaryProvider, useDictionary } from "@/contexts/DictionaryContext";
 import { WordList } from "@/components/WordList";
-import { useAuth } from "@/contexts/AuthContext";
-import { getUserData } from "@/src/api/directus/user-data"; // Make sure this path is correct
+import { useUserData } from "@/contexts/UserDataContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ThemedButton } from "@/components/ThemedButton";
+import { Ionicons } from "@expo/vector-icons";
 
 const SavedWordsScreen = () => {
-  const { getStoredAuthToken } = useAuth();
-  
-  // State to hold the fetched user data
-  const [userData, setUserData] = useState(null);
-  const [savedWords, setSavedWords] = useState(null);
-  const { l2Lang } = useLanguage();
+  const { userData } = useUserData();
   const { dictionary } = useDictionary();
+  const { l2Lang } = useLanguage();
+  const [savedWords, setSavedWords] = useState(null);
 
-  // Effect to fetch user data on mount
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const authToken = await getStoredAuthToken();
-        const data = await getUserData(authToken);
-        const savedWordsData = data?.saved_words[l2Lang.code]
+    const fetchWords = async () => {
+      if (userData) {
+        const savedWordsData = userData?.saved_words[l2Lang.code];
         if (!savedWordsData) return;
         const words = await Promise.all(savedWordsData.map(async (word) => await dictionary.getEntry(word.id)));
-        if (words) {
-          setSavedWords(words);
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
+        setSavedWords(words);
       }
     };
 
-    fetchData();
-  }, []); // Empty dependency array ensures this runs only once on mount
+    fetchWords();
+  }, [userData, l2Lang, dictionary]);
 
   return (
     <ThemedScreen
@@ -50,6 +38,17 @@ const SavedWordsScreen = () => {
     >
       <DictionaryProvider>
         <WordList words={savedWords} />
+        <View style={{ padding: 20, alignItems: 'center' }}>
+          <ThemedButton
+            title="Clear"
+            type="neutral"
+            size="medium"
+            leadingIcon={<Ionicons name="trash-outline" />}
+            onPress={() => {
+              router.navigate("/(tabs)/(dictionary)");
+            }}
+          />
+        </View>
       </DictionaryProvider>
     </ThemedScreen>
   );
