@@ -1,0 +1,53 @@
+// @/components/ChatGPT
+
+import React, { useEffect, useState } from 'react';
+import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
+import Markdown from 'react-native-markdown-display';
+import { chatGPT } from '@/src/api/python/openai';
+
+export const ChatGPT = ({ prompt }) => {
+  const [loading, setLoading] = useState(true);
+  const [markdown, setMarkdown] = useState('');
+
+  useEffect(() => {
+    const fetchChatGPTResponse = async () => {
+      try {
+        const response = await chatGPT(prompt);
+        console.log(response.data.response)
+        setMarkdown(response.data.response);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data from ChatGPT API:", error);
+        setMarkdown('An error occurred while fetching data.');
+        setLoading(false);
+      }
+    };
+
+    fetchChatGPTResponse();
+  }, [prompt]);
+
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <Markdown>{markdown}</Markdown>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

@@ -1,3 +1,5 @@
+// @/src/api/python/openai
+
 import { AxiosResponse } from "axios";
 import { API } from "@/src/api/python";
 

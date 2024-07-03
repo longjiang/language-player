@@ -12,6 +12,7 @@ import { translateWithBing } from '@/src/translate';
 import { popupDictionaryHeaderStyles as styles } from "@/src/styles";
 import { speakText } from "@/src/speech";
 import { useSettings } from "@/contexts/SettingsContext";
+import { ChatGPT } from "@/components/ChatGPT";
 
 interface PopupDictionaryHeaderProps {
   token: Token;
@@ -79,6 +80,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
         onPress={onExplainPress}
         leadingIcon={<Icon name="chat-outline" size={20} style={styles.iconStyle} />}
       />
+      <ChatGPT prompt="test" />
       <View style={styles.contextRow}>
         <View style={{ flex: 1 }}>
           <ThemedText style={styles.contextText} type="large">{context}</ThemedText>
