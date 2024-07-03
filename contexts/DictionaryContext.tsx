@@ -35,7 +35,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
     };
 
     addLog('Loading the dictionary...');
-    newDictionary.loadData(true, addLog).then(() => {
+    newDictionary.loadData(false, addLog).then(() => {
       setDictionary(newDictionary);
       const initializeTokenizer = async () => {
         const tokenizer = TokenizerService.getInstance(await newDictionary.getWordSet());
