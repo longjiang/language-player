@@ -182,9 +182,10 @@ export const dictionaryLoadingModalStyles = StyleSheet.create({
   },
 });
 
-export 
+// @/src/styles.ts
 
-const youtubeVideoCardStyles = StyleSheet.create({
+
+export const youtubeVideoCardStyles = StyleSheet.create({
   details: {
   },
   card: {
@@ -194,6 +195,9 @@ const youtubeVideoCardStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 1.2,
+  },
+  thumbnailContainer: {
+    position: 'relative',
   },
   thumbnail: {
     width: "100%", // Makes the image fill the container
@@ -207,16 +211,17 @@ const youtubeVideoCardStyles = StyleSheet.create({
     marginTop: 16,
   },
   badge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
     backgroundColor: '#6c757d',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
     alignSelf: 'flex-start',
-    marginTop: 8,
   },
   badgeText: {
     color: '#fff',
-    fontSize: 12,
     fontWeight: 'bold',
   },
 });

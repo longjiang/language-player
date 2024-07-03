@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  Dimensions,
 } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { router } from "expo-router";
@@ -17,6 +16,8 @@ import { YouTubeVideo } from '@/types';
 import { languageLevelsByL2Code } from '@/src/language-levels';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { youtubeVideoCardStyles as styles } from '@/src/styles';
+import { useThemeColorForLevel } from '@/hooks/useThemeColor';
+import { Typography } from "@/constants";
 
 export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; videos: YouTubeVideo[]; style?: object }) => {
   if (videos.length === 0) videos = [video];
@@ -49,12 +50,19 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
   return (
     <TouchableOpacity onPress={handlePress} style={{ flex: 1 }}>
       <View style={[styles.card]}>
-        <Image
-          source={{
-            uri: `https://img.youtube.com/vi/${video.youtube_id}/0.jpg`,
-          }}
-          style={[styles.thumbnail]}
-        />
+        <View style={styles.thumbnailContainer}>
+          <Image
+            source={{
+              uri: `https://img.youtube.com/vi/${video.youtube_id}/0.jpg`,
+            }}
+            style={[styles.thumbnail]}
+          />
+          {badgeText && level && (
+            <View style={{...styles.badge, backgroundColor: useThemeColorForLevel({}, level.level)}}>
+              <ThemedText style={{...styles.badgeText }} type="defaultBold">{badgeText}</ThemedText>
+            </View>
+          )}
+        </View>
         <View style={styles.infoContainer}>
           <ThemedText style={styles.title} type="defaultBold">
             {video.title}
@@ -62,11 +70,6 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
           <ThemedText style={styles.details} type="small" variant="secondary">
             { [viewsText, durationText, localeText].filter(Boolean).join(' • ') }
           </ThemedText>
-          {badgeText && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{badgeText}</Text>
-            </View>
-          )}
         </View>
       </View>
     </TouchableOpacity>

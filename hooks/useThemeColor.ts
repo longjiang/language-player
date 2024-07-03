@@ -26,8 +26,8 @@ export function useThemeColor(
 }
 
 export function useThemeColorForLevel(
+  props: { light?: string; dark?: string },
   level: number,
-  props: { light?: string; dark?: string }
 ) {
   const theme = useColorScheme() ?? 'light';
   const colorFromProps = props[theme];
