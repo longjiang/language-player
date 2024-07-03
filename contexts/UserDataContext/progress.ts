@@ -1,7 +1,13 @@
 // @/utils/progress.ts
-import { Progress, UserData } from '@/types';
-import { getUserData, patchUserData } from '@/src/api/directus/user-data';
-import { useAuth } from '@/contexts/AuthContext';
+import { UserData } from '.';
+import { patchUserData } from '@/src/api/directus/user-data';
+
+export interface Progress {
+  [langCode: string]: {
+    level: string;
+    time: number; // milliseconds
+  };
+}
 
 export const getProgress = (progress: Progress, langCode: string) => {
   return progress[langCode];

@@ -1,7 +1,25 @@
 // @/utils/savedWords.ts
-import { SavedWords, SavedWordMeta, UserData } from '@/types';
-import { getUserData, patchUserData } from '@/src/api/directus/user-data';
-import { useAuth } from '@/contexts/AuthContext';
+import { UserData } from '.';
+import { patchUserData } from '@/src/api/directus/user-data';
+
+export interface Context {
+  form: string;
+  starttime?: number;
+  youtube_id?: string;
+  text?: string;
+}
+
+
+export interface SavedWordMeta {
+  id: string;
+  forms: string[];
+  date: number;
+  context: Context;
+}
+
+export interface SavedWords {
+  [langCode: string]: SavedWordMeta[];
+}
 
 export const hasSavedWord = (savedWords: SavedWords, langCode: string, wordId: string): boolean => {
   return savedWords[langCode]?.some(word => word.id === wordId);

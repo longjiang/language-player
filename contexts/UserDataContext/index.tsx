@@ -2,9 +2,14 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, FC } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData } from '@/src/api/directus/user-data';
-import { hasSavedWord, saveWord, removeSavedWord } from './utils/savedWords';
-import { getProgress, updateProgress } from './utils/progress';
-import { UserData, SavedWords, Progress, SavedWordMeta } from '@/types';
+import { hasSavedWord, saveWord, removeSavedWord, SavedWords, SavedWordMeta } from './savedWords';
+import { getProgress, updateProgress, Progress } from './progress';
+
+export interface UserData {
+  id: string;
+  saved_words: SavedWords;
+  progress: Progress;
+}
 
 interface UserDataContextProps {
   userData: UserData | null;
