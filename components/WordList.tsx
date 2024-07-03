@@ -28,7 +28,7 @@ export const WordList = ({ wordIds }) => {
     <View style={styles.item}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <BookmarkButton wordId={item.id} head={item.head} alternate={item.alternate} />
-        <TouchableOpacity onPress={() => router.navigate('/dictionary/word/' + item.id)}>
+        <TouchableOpacity onPress={() => router.navigate('/dictionary/word/' + item.id)} style={{ marginLeft: 10 }}>
           <Text>
             <ThemedText style={styles.chinese} type="subtitle">{item.head}</ThemedText>
             <ThemedText style={styles.pinyin}> ({item.pronunciation}) </ThemedText>

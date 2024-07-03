@@ -8,6 +8,7 @@ import { dictionaryEntryStyles as styles } from "@/src/styles";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { languageLevelsByL2Code } from "@/src/language-levels";
 import { useLanguage } from "@/contexts/LanguageContext";
+import BookmarkButton from "@/components/BookmarkButton";  // Import the BookmarkButton component
 
 interface DictionaryEntryContentProps {
   entry: DictionaryEntry;
@@ -23,15 +24,25 @@ const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, 
   return (
     <ScrollView style={styles.entryContainer}>
       <View style={styles.entryHeader}>
-        <View style={{ flexDirection: "row", alignItems: "flex-end", marginBottom: 12 }}>
-          <Text>
-            <ThemedText type="xxlarge" style={styles.character} level={entry.level}>
-              {entry[headKey]}
+        <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 12 }}>
+          <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
+            <Text>
+              <ThemedText type="xxlarge" style={styles.character} level={entry.level}>
+                {entry[headKey]}
+              </ThemedText>
+            </Text>
+            <ThemedText type="subtitle" style={{ marginLeft: 4, fontWeight: 'normal' }} variant="secondary">
+              {entry[alternateKey]}
             </ThemedText>
-          </Text>
-          <ThemedText type="subtitle" style={{ marginLeft: 4, fontWeight: 'normal' }} variant="secondary">
-            {entry[alternateKey]}
-          </ThemedText>
+          </View>
+          <BookmarkButton 
+            wordId={entry.id}
+            head={entry[headKey]}
+            alternate={entry[alternateKey]}
+            forms={entry.forms}
+            context={{ form: entry[headKey], text: entry.text || '' }}
+            size="medium"
+          />
         </View>
         <Text>
           {entry.pronunciation && <ThemedText type="large">{entry.pronunciation}</ThemedText>}

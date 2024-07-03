@@ -13,6 +13,7 @@ interface BookmarkButtonProps {
     head: string;
     alternate?: string;
     forms?: string[];
+    size?: "title" | "large" | "medium" | "small";
     context?: {
         form: string;
         starttime?: number;
@@ -21,7 +22,7 @@ interface BookmarkButtonProps {
     };
 }
 
-const BookmarkButton: React.FC<BookmarkButtonProps> = ({ wordId, head, alternate, forms, context }) => {
+const BookmarkButton: React.FC<BookmarkButtonProps> = ({ wordId, head, alternate, forms, context, size = "small" }) => {
     const { hasSavedWord, saveWord, removeSavedWord } = useUserData();
     const [isBookmarked, setIsBookmarked] = useState(false);
     const bookmarkColor = useThemeColor({}, 'semanticWarning');  // Set the bookmark color
@@ -49,8 +50,8 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ wordId, head, alternate
     return (
         <ThemedButton
             type="ghost"
-            size="small"
-            style={{ marginRight: 10, color: bookmarkColor }}
+            size={size}
+            style={{ color: bookmarkColor }}
             trailingIcon={
                 <Ionicons 
                     name={isBookmarked ? "bookmark" : "bookmark-outline"} 
