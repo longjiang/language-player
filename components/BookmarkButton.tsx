@@ -11,7 +11,7 @@ interface BookmarkButtonProps {
 }
 
 const BookmarkButton: React.FC<BookmarkButtonProps> = ({ wordId }) => {
-    const { hasSavedWord } = useUserData();
+    const { hasSavedWord, saveWord, removeSavedWord } = useUserData();
     const [isBookmarked, setIsBookmarked] = useState(false);
     const bookmarkColor = useThemeColor({}, 'semanticWarning');  // Set the bookmark color
     const { l2Lang } = useLanguage();  // Assume this hook provides current language code
@@ -20,6 +20,15 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ wordId }) => {
         // Check the saved status when wordId or l2Lang changes
         setIsBookmarked(hasSavedWord(l2Lang.code, wordId));
     }, [wordId, l2Lang, hasSavedWord]);
+
+    const toggleBookmark = async () => {
+        if (isBookmarked) {
+            await removeSavedWord(l2Lang.code, wordId);
+        } else {
+            await saveWord(l2Lang.code, wordId);
+        }
+        setIsBookmarked(!isBookmarked);
+    };
 
     return (
         <ThemedButton
@@ -32,6 +41,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ wordId }) => {
                     size={24}
                 />
             }
+            onPress={toggleBookmark}  // Add onPress handler
         />
     );
 };

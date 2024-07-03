@@ -29,6 +29,23 @@ export const UserDataProvider = ({ children }) => {
     return savedWords[langCode]?.some(word => word.id === wordId);
   };
 
+  const saveWord = async (langCode, wordId) => {
+    if (!userData || !savedWords) return;
+
+    const updatedSavedWords = {
+      ...savedWords,
+      [langCode]: [...(savedWords[langCode] || []), { id: wordId }]
+    };
+
+    setSavedWords(updatedSavedWords);
+    try {
+      const authToken = await getStoredAuthToken();
+      await updateUserData(authToken, { saved_words: updatedSavedWords });
+    } catch (error) {
+      console.error('Error updating user data:', error);
+    }
+  };
+
   const removeSavedWord = async (langCode, wordId) => {
     if (!userData || !savedWords) return;
 
@@ -47,7 +64,7 @@ export const UserDataProvider = ({ children }) => {
   };
 
   return (
-    <UserDataContext.Provider value={{ userData, savedWords, hasSavedWord, removeSavedWord }}>
+    <UserDataContext.Provider value={{ userData, savedWords, hasSavedWord, saveWord, removeSavedWord }}>
       {children}
     </UserDataContext.Provider>
   );
