@@ -1,20 +1,33 @@
-import React from 'react';
+// @/components/WordList.tsx
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedButton } from './ThemedButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
+import { useDictionary } from '@/contexts/DictionaryContext';
 
-export const WordList = ({ words }) => {
-
+export const WordList = ({ wordIds }) => {
+  const [words, setWords] = useState([]);
+  const { dictionary } = useDictionary();
   const bookmarkColor = useThemeColor({}, 'semanticWarning');
 
-  // Render Item Function
-  const renderItem = ({ item }: { item: { id: string, head: string, pronunciation: string, definitions: string[] } }) => (
+  useEffect(() => {
+    const fetchWords = async () => {
+      const wordsData = await Promise.all(wordIds.map(async (id) => await dictionary.getEntry(id)));
+      setWords(wordsData);
+    };
+
+    if (wordIds) {
+      fetchWords();
+    }
+  }, [wordIds, dictionary]);
+
+  const renderItem = ({ item }) => (
     <View style={styles.item}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <ThemedButton type="ghost" size="small" style={{ marginRight: 10, color: bookmarkColor }} trailingIcon={<Ionicons name="bookmark" size={24}  />} />
+        <ThemedButton type="ghost" size="small" style={{ marginRight: 10, color: bookmarkColor }} trailingIcon={<Ionicons name="bookmark" size={24} />} />
         <TouchableOpacity onPress={() => router.navigate('/dictionary/word/' + item.id)}>
           <Text>
             <ThemedText style={styles.chinese} type="subtitle">{item.head}</ThemedText>
@@ -36,7 +49,6 @@ export const WordList = ({ words }) => {
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     marginBottom: 250,
@@ -44,9 +56,7 @@ const styles = StyleSheet.create({
   item: {
     marginVertical: 8,
   },
-  chinese: {
-
-  },
+  chinese: {},
   pinyin: {
     fontSize: 16,
   },

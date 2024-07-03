@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router } from "expo-router";
-import { DictionaryProvider, useDictionary } from "@/contexts/DictionaryContext";
+import { DictionaryProvider } from "@/contexts/DictionaryContext";
 import { WordList } from "@/components/WordList";
 import { useUserData } from "@/contexts/UserDataContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -12,22 +12,17 @@ import { Ionicons } from "@expo/vector-icons";
 
 const SavedWordsScreen = () => {
   const { userData } = useUserData();
-  const { dictionary } = useDictionary();
   const { l2Lang } = useLanguage();
-  const [savedWords, setSavedWords] = useState(null);
+  const [savedWordIds, setSavedWordIds] = useState(null);
 
   useEffect(() => {
-    const fetchWords = async () => {
-      if (userData) {
-        const savedWordsData = userData?.saved_words[l2Lang.code];
-        if (!savedWordsData) return;
-        const words = await Promise.all(savedWordsData.map(async (word) => await dictionary.getEntry(word.id)));
-        setSavedWords(words);
+    if (userData) {
+      const savedWordsData = userData?.saved_words[l2Lang.code];
+      if (savedWordsData) {
+        setSavedWordIds(savedWordsData.map(word => word.id));
       }
-    };
-
-    fetchWords();
-  }, [userData, l2Lang, dictionary]);
+    }
+  }, [userData, l2Lang]);
 
   return (
     <ThemedScreen
@@ -37,7 +32,7 @@ const SavedWordsScreen = () => {
       }}
     >
       <DictionaryProvider>
-        <WordList words={savedWords} />
+        <WordList wordIds={savedWordIds} />
         <View style={{ padding: 20, alignItems: 'center' }}>
           <ThemedButton
             title="Clear"
