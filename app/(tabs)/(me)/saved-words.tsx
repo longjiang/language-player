@@ -11,18 +11,18 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { Ionicons } from "@expo/vector-icons";
 
 const SavedWordsScreen = () => {
-  const { userData } = useUserData();
+  const { savedWords } = useUserData();
   const { l2Lang } = useLanguage();
   const [savedWordIds, setSavedWordIds] = useState(null);
 
   useEffect(() => {
-    if (userData) {
-      const savedWordsData = userData?.saved_words[l2Lang.code];
+    if (savedWords && l2Lang) {
+      const savedWordsData = savedWords[l2Lang.code];
       if (savedWordsData) {
         setSavedWordIds(savedWordsData.map(word => word.id));
       }
     }
-  }, [userData, l2Lang]);
+  }, [savedWords, l2Lang]);
 
   return (
     <ThemedScreen
