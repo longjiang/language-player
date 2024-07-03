@@ -48,15 +48,17 @@ const MediaHomeScreen = () => {
     setIsLoading(true); // Start loading
     const userInfo = await getStoredUserInfo();
     if (!userInfo) throw new Error('User info not found');
-    const userId = userInfo.id;
+    const userId = Number(userInfo.id);
+    const preferredCategories = [];
     const excludeIds = [4265,17213,33658,11662];
-    const madeForKids = '0';
+    const madeForKids = 0;
     const limit = 50;
     try {
       const fetchedItems = await recommendVideos(
         userId,
         langCode,
         level,
+        preferredCategories,
         excludeIds,
         madeForKids,
         limit

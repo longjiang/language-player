@@ -59,7 +59,7 @@ export const recommendVideos = async (
   level?: number,
   preferredCategories?: number[],
   excludeIds?: number[],
-  madeForKids?: string,
+  madeForKids?: number,
   limit?: number
 ): Promise<YouTubeVideo[]> => {
   const params: any = {
