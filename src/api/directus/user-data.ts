@@ -1,7 +1,7 @@
 // @/src/api/directus/user-data
 
 // Import necessary functions and types
-import { getCollectionItems, GenericCollectionItem } from '.';
+import { getCollectionItems, GenericCollectionItem, patchCollectionItem } from '.';
 
 /**
  * Fetches the first item from the 'user_data' collection.
@@ -19,6 +19,24 @@ export const getUserData = async (authToken?: string): Promise<GenericCollection
     return userData;
   } catch (error) {
     console.error('Failed to fetch the first item from user_data collection:', error);
+    throw error;
+  }
+};
+
+/**
+ * Updates an item in the 'user_data' collection.
+ * 
+ * @param id The ID of the item to be updated.
+ * @param updatedData The updated data for the item.
+ * @param authToken Optional authorization token for accessing the collection.
+ * @returns A promise that resolves to the updated item.
+ */
+export const patchUserData = async (id: number, updatedData: Partial<GenericCollectionItem>, authToken?: string): Promise<GenericCollectionItem> => {
+  try {
+    const updatedItem = await patchCollectionItem<GenericCollectionItem>('user_data', id, updatedData, authToken);
+    return updatedItem;
+  } catch (error) {
+    console.error('Failed to update the item in user_data collection:', error);
     throw error;
   }
 };

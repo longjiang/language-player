@@ -13,7 +13,7 @@ const API: AxiosInstance = axios.create({
 });
 
 // Using generics in functions
-const getCollectionItems = async <T = GenericCollectionItem>(
+export const getCollectionItems = async <T = GenericCollectionItem>(
   collectionName: string,
   queryParams: Record<string, any> = {},
   authToken?: string
@@ -27,7 +27,7 @@ const getCollectionItems = async <T = GenericCollectionItem>(
   return response.data.data;
 };
 
-const getItemById = async <T = GenericCollectionItem>(
+export const getItemById = async <T = GenericCollectionItem>(
   collectionName: string,
   id: number,
   authToken?: string
@@ -68,16 +68,42 @@ export const postCollectionItem = async <T = GenericCollectionItem>(
   }
 };
 
-const getUserSubscriptions = async (
-  userId: string,
+/**
+ * Updates an item in a collection.
+ * 
+ * @param collectionName The name of the collection to update.
+ * @param id The ID of the item to update.
+ * @param updatedData The updated data for the item.
+ * @param authToken Optional authorization token for accessing the collection.
+ * @returns A promise that resolves to the updated item.
+ */
+export const patchCollectionItem = async <T = GenericCollectionItem>(
+  collectionName: string,
+  id: number,
+  updatedData: Partial<T>,
   authToken?: string
-): Promise<GenericCollectionItem[]> => {
+): Promise<T> => {
   const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-  const url = `/items/subscriptions?filter[owner][eq]=${userId}`;
-
-  const response: AxiosResponse<{ data: GenericCollectionItem[] }> = await API.get(url, { headers });
-  return response.data.data;
+  try {
+    const response: AxiosResponse<{ data: T }> = await API.patch(
+      `/items/${collectionName}/${id}`,
+      updatedData,
+      { headers }
+    );
+    return response.data.data;
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    if (axiosError && axiosError.response) {
+      // Handle specific API error response here
+      console.error('API Error:', axiosError.response.data);
+    } else {
+      // General error handling
+      console.error('Error patching item in collection:', error);
+    }
+    throw error;
+  }
 };
+
 
 /**
  * Serialize an object into a URLSearchParams object. E.g. it takes an object like:
@@ -127,5 +153,3 @@ function buildParams(
   recurseParams(obj, parentKey);
   return params;
 }
-
-export { getCollectionItems, getItemById, getUserSubscriptions };
