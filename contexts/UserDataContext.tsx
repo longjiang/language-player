@@ -1,39 +1,10 @@
 // @/contexts/UserDataContext.tsx
 import React, { createContext, useContext, useEffect, useState, ReactNode, FC } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserData, patchUserData } from '@/src/api/directus/user-data'; // Make sure this path is correct
-import { User } from '@/src/api/directus/user'
-
-export interface Context {
-  form: string;
-  starttime?: number;
-  youtube_id?: string;
-  text?: string;
-}
-
-export interface SavedWordMeta {
-  id: string;
-  forms: string[];
-  date: number;
-  context: Context;
-}
-
-interface SavedWords {
-  [langCode: string]: SavedWordMeta[];
-}
-
-interface Progress {
-  [langCode: string]: {
-    level: string;
-    time: number;
-  };
-}
-
-interface UserData {
-  id: string;
-  saved_words: SavedWords;
-  progress: Progress;
-}
+import { getUserData } from '@/src/api/directus/user-data';
+import { hasSavedWord, saveWord, removeSavedWord } from './utils/savedWords';
+import { getProgress, updateProgress } from './utils/progress';
+import { UserData, SavedWords, Progress, SavedWordMeta } from '@/types';
 
 interface UserDataContextProps {
   userData: UserData | null;
@@ -76,73 +47,19 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
     fetchData();
   }, [getStoredAuthToken]);
 
-  const hasSavedWord = (langCode: string, wordId: string): boolean => {
-    return savedWords[langCode]?.some(word => word.id === wordId);
-  };
-
-  const saveWord = async (langCode: string, word: SavedWordMeta): Promise<void> => {
-    if (!userData) throw new Error('Cannot save word when user data is not initialized');
-    if (!savedWords) throw new Error('Cannot save word when saved words are not initialized');
-
-    const updatedSavedWords: SavedWords = {
-      ...savedWords,
-      [langCode]: [...(savedWords[langCode] || []), word]
-    };
-
-    setSavedWords(updatedSavedWords);
-    try {
-      const authToken = await getStoredAuthToken();
-      if (!authToken) throw new Error('No auth token found');
-      await patchUserData(Number(userData.id), { saved_words: JSON.stringify(updatedSavedWords) }, authToken);
-    } catch (error) {
-      console.error('Error updating user data:', error);
-    }
-  };
-
-  const removeSavedWord = async (langCode: string, wordId: string): Promise<void> => {
-    if (!userData) throw new Error('Cannot remove word when user data is not initialized');
-    if (!savedWords) throw new Error('Cannot remove word when saved words are not initialized');
-
-    const updatedSavedWords: SavedWords = {
-      ...savedWords,
-      [langCode]: savedWords[langCode].filter(word => word.id !== wordId)
-    };
-
-    setSavedWords(updatedSavedWords);
-    try {
-      const authToken = await getStoredAuthToken();
-      if (!authToken) throw new Error('No auth token found');
-      await patchUserData(Number(userData.id), { saved_words: JSON.stringify(updatedSavedWords) }, authToken);
-    } catch (error) {
-      console.error('Error updating user data:', error);
-    }
-  };
-
-  const getProgress = (langCode: string) => {
-    return progress[langCode];
-  };
-
-  const updateProgress = async (langCode: string, newProgress: { level: string; time: number }): Promise<void> => {
-    if (!userData) throw new Error('Cannot update progress when user data is not initialized');
-    if (!progress) throw new Error('Cannot update progress when progress is not initialized');
-
-    const updatedProgress: Progress = {
-      ...progress,
-      [langCode]: newProgress
-    };
-
-    setProgress(updatedProgress);
-    try {
-      const authToken = await getStoredAuthToken();
-      if (!authToken) throw new Error('No auth token found');
-      await patchUserData(Number(userData.id), { progress: JSON.stringify(updatedProgress) }, authToken);
-    } catch (error) {
-      console.error('Error updating user data:', error);
-    }
-  };
-
   return (
-    <UserDataContext.Provider value={{ userData, savedWords, progress, hasSavedWord, saveWord, removeSavedWord, getProgress, updateProgress }}>
+    <UserDataContext.Provider
+      value={{
+        userData,
+        savedWords,
+        progress,
+        hasSavedWord: (langCode: string, wordId: string) => hasSavedWord(savedWords, langCode, wordId),
+        saveWord: (langCode: string, word: SavedWordMeta) => saveWord(savedWords, setSavedWords, userData, langCode, word, getStoredAuthToken),
+        removeSavedWord: (langCode: string, wordId: string) => removeSavedWord(savedWords, setSavedWords, userData, langCode, wordId, getStoredAuthToken),
+        getProgress: (langCode: string) => getProgress(progress, langCode),
+        updateProgress: (langCode: string, newProgress: { level: string; time: number }) => updateProgress(progress, setProgress, userData, langCode, newProgress, getStoredAuthToken),
+      }}
+    >
       {children}
     </UserDataContext.Provider>
   );
