@@ -4,12 +4,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getUserData, patchUserData } from '@/src/api/directus/user-data'; // Make sure this path is correct
 import { User } from '@/src/api/directus/user'
 
-interface Word {
+export interface Context {
+  form: string;
+  starttime?: number;
+  youtube_id?: string;
+  text?: string;
+}
+
+export interface SavedWordMeta {
   id: string;
+  forms: string[];
+  date: number;
+  context: Context;
 }
 
 interface SavedWords {
-  [langCode: string]: Word[];
+  [langCode: string]: SavedWordMeta[];
 }
 
 interface Progress {
@@ -30,7 +40,7 @@ interface UserDataContextProps {
   savedWords: SavedWords;
   progress: Progress;
   hasSavedWord: (langCode: string, wordId: string) => boolean;
-  saveWord: (langCode: string, wordId: string) => Promise<void>;
+  saveWord: (langCode: string, word: SavedWordMeta) => Promise<void>;
   removeSavedWord: (langCode: string, wordId: string) => Promise<void>;
   getProgress: (langCode: string) => { level: string; time: number } | undefined;
   updateProgress: (langCode: string, newProgress: { level: string; time: number }) => Promise<void>;
@@ -70,13 +80,13 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
     return savedWords[langCode]?.some(word => word.id === wordId);
   };
 
-  const saveWord = async (langCode: string, wordId: string): Promise<void> => {
+  const saveWord = async (langCode: string, word: SavedWordMeta): Promise<void> => {
     if (!userData) throw new Error('Cannot save word when user data is not initialized');
     if (!savedWords) throw new Error('Cannot save word when saved words are not initialized');
 
     const updatedSavedWords: SavedWords = {
       ...savedWords,
-      [langCode]: [...(savedWords[langCode] || []), { id: wordId }]
+      [langCode]: [...(savedWords[langCode] || []), word]
     };
 
     setSavedWords(updatedSavedWords);

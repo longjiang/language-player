@@ -2,19 +2,31 @@
 import React, { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedButton } from './ThemedButton';
-import { useUserData } from '@/contexts/UserDataContext';  // Import user data context
-import { useThemeColor } from '@/hooks/useThemeColor';    // Import the hook for theme colors
-import { useLanguage } from '@/contexts/LanguageContext'; // Import the hook for language context
+import { useUserData } from '@/contexts/UserDataContext';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { SavedWordMeta } from '@/contexts/UserDataContext';
+import { Context } from '@/contexts/UserDataContext';
 
 interface BookmarkButtonProps {
     wordId: string;
+    head: string;
+    alternate?: string;
+    forms?: string[];
+    context?: {
+        form: string;
+        starttime?: number;
+        youtube_id?: string;
+        text: string;
+    };
 }
 
-const BookmarkButton: React.FC<BookmarkButtonProps> = ({ wordId }) => {
+const BookmarkButton: React.FC<BookmarkButtonProps> = ({ wordId, head, alternate, forms, context }) => {
     const { hasSavedWord, saveWord, removeSavedWord } = useUserData();
     const [isBookmarked, setIsBookmarked] = useState(false);
     const bookmarkColor = useThemeColor({}, 'semanticWarning');  // Set the bookmark color
     const { l2Lang } = useLanguage();  // Assume this hook provides current language code
+    if (!l2Lang) return null;
 
     useEffect(() => {
         // Check the saved status when wordId or l2Lang changes
@@ -25,7 +37,11 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ wordId }) => {
         if (isBookmarked) {
             await removeSavedWord(l2Lang.code, wordId);
         } else {
-            await saveWord(l2Lang.code, wordId);
+            const currentDatetime = Date.now();
+            const wordForms = forms || [head, ...(alternate ? [alternate] : [])];
+            const wordContext = context || { form: head, text: '' };
+            const word: SavedWordMeta = { id: wordId, forms: wordForms, date: currentDatetime, context: wordContext };
+            await saveWord(l2Lang.code, word);
         }
         setIsBookmarked(!isBookmarked);
     };
