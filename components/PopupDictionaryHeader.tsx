@@ -1,7 +1,7 @@
-// @/components/PopupDictionaryHeader
+// @/components/PopupDictionaryHeader.tsx
 
 import React, { useCallback, useState, useEffect } from "react";
-import { View, Text } from "react-native";
+import { View, Text, Clipboard } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
@@ -28,7 +28,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
   const { l1Lang, l2Lang } = useLanguage();
   const { settings } = useSettings();
 
-  if (!(l1Lang && l2Lang)) return;
+  if (!(l1Lang && l2Lang)) return null;
   const [translation, setTranslation] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,13 +54,18 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
     speakText(token.text, l2Lang.code);
   };
 
+  const onCopyPress = () => {
+    Clipboard.setString(token.text);
+    // Optionally, show a message or toast to the user indicating the copy action was successful
+  };
+
   return (
     <View style={styles.headerContainer}>
       <View style={styles.header}>
         <ThemedText type="xxlarge" style={{ flex: 1 }}>{token.text}</ThemedText>
         <View style={styles.actionButtons}>
           <Icon name="volume-high" size={26} style={styles.iconStyle} onPress={onSpeakPress} />
-          <Icon name="bookmark-outline" size={26} style={styles.iconStyle} />
+          <Icon name="content-copy" size={26} style={styles.iconStyle} onPress={onCopyPress} />
         </View>
       </View>
       <Text style={styles.translationText}>
