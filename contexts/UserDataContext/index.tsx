@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, FC } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserData } from '@/src/api/directus/user-data';
+import { getUserData, initializeUserData } from '@/src/api/directus/user-data';
 import { hasSavedWord, saveWord, removeSavedWord, SavedWords, SavedWordMeta } from './savedWords';
 import { getProgress, updateProgress, Progress } from './progress';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -40,8 +40,13 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
       try {
         const authToken = await getStoredAuthToken();
         if (!authToken) throw new Error('No auth token found');
-        const data = await getUserData(authToken);
-        if (!data) throw new Error('No user data found');
+        let data = await getUserData(authToken);
+
+        // Initialize user data if it doesn't exist
+        if (!data) {
+          data = await initializeUserData(authToken);
+        }
+
         setUserData(data as UserData);
         setSavedWords(data?.saved_words || {});
         setProgress(data?.progress || {});
@@ -54,19 +59,26 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
   }, [getStoredAuthToken]);
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
+    const intervalId = setInterval(async () => {
       if (l2Lang && userData) {
         const langCode = l2Lang.code;
-        const currentProgress = getProgress(progress, langCode);
-        if (currentProgress) {
-          const newTime = currentProgress.time + 1000;
-          updateProgress(progress, setProgress, userData, langCode, { level: currentProgress.level, time: newTime }, getStoredAuthToken);
+        let currentProgress = getProgress(progress, langCode);
+
+        // Initialize progress for new language if it doesn't exist
+        if (!currentProgress) {
+          currentProgress = { level: '1', time: 0 };
+          const newProgress = { ...progress, [langCode]: currentProgress };
+          setProgress(newProgress);
+          await updateProgress(newProgress, setProgress, userData, langCode, currentProgress, getStoredAuthToken);
         }
+
+        const newTime = currentProgress.time + 1000;
+        await updateProgress(progress, setProgress, userData, langCode, { level: currentProgress.level, time: newTime }, getStoredAuthToken);
       }
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [userData, progress]);
+  }, [userData, progress, l2Lang]);
 
   return (
     <UserDataContext.Provider

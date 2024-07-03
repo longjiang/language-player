@@ -1,7 +1,7 @@
 // @/src/api/directus/user-data
 
 // Import necessary functions and types
-import { getCollectionItems, GenericCollectionItem, patchCollectionItem } from '.';
+import { getCollectionItems, GenericCollectionItem, patchCollectionItem, postCollectionItem } from '.';
 
 /**
  * Fetches the first item from the 'user_data' collection.
@@ -38,6 +38,28 @@ export const patchUserData = async (id: number, updatedData: Partial<GenericColl
     return updatedItem;
   } catch (error) {
     console.error('Failed to update the item in user_data collection:', error);
+    throw error;
+  }
+};
+
+/**
+ * Initializes a new item in the 'user_data' collection with default values.
+ * 
+ * @param authToken Optional authorization token for accessing the collection.
+ * @returns A promise that resolves to the newly created user data item.
+ */
+export const initializeUserData = async (authToken?: string): Promise<UserData> => {
+  try {
+    const newUserData: Partial<UserData> = {
+      saved_words: JSON.stringify({}),
+      progress: JSON.stringify({}),
+    };
+    const createdItem = await postCollectionItem<UserData>('user_data', newUserData, authToken);
+    createdItem.saved_words = JSON.parse(createdItem.saved_words);
+    createdItem.progress = JSON.parse(createdItem.progress);
+    return createdItem;
+  } catch (error) {
+    console.error('Failed to initialize new user data item in user_data collection:', error);
     throw error;
   }
 };

@@ -1,3 +1,5 @@
+// @/contexts/DictionaryContext
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Dictionary } from '@/src/dictionary';
 import { TokenizerService } from '@/src/tokenizer';
