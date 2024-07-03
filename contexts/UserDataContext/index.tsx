@@ -2,9 +2,9 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, FC } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserData, initializeUserData, syncUserData } from '@/src/api/directus/user-data';
+import { getUserData, initializeUserData, patchUserData } from '@/src/api/directus/user-data';
 import { hasSavedWord, saveWord, removeSavedWord, SavedWords, SavedWordMeta } from './savedWords';
-import { getProgress, Progress } from './progress';
+import { getProgress, updateProgress, Progress } from './progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface UserData {
@@ -21,7 +21,7 @@ interface UserDataContextProps {
   saveWord: (langCode: string, word: SavedWordMeta) => Promise<void>;
   removeSavedWord: (langCode: string, wordId: string) => Promise<void>;
   getProgress: (langCode: string) => { level: string; time: number } | undefined;
-  updateProgress: (langCode: string, newProgress: { level: string; time: number }) => void;
+  updateProgress: (langCode: string, newProgress: { level: string; time: number }) => Promise<void>;
 }
 
 interface UserDataProviderProps {
@@ -69,38 +69,39 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
         // Initialize progress for new language if it doesn't exist
         if (!currentProgress) {
           currentProgress = { level: undefined, time: 0 };
-          setProgress(prev => ({ ...prev, [langCode]: currentProgress }));
-        }
-
-        const newTime = (currentProgress?.time || 0) + 1000;
-        setProgress(prev => ({
-          ...prev,
-          [langCode]: { ...currentProgress, time: newTime },
-        }));
-      }
-    };
-
-    const localIntervalId = setInterval(updateLocalProgress, 1000); // Every 1 second
-
-    return () => clearInterval(localIntervalId);
-  }, [userData, progress, l2Lang]);
-
-  useEffect(() => {
-    const syncDataWithServer = async () => {
-      if (userData) {
-        try {
-          const authToken = await getStoredAuthToken();
-          await syncUserData(authToken, userData);
-        } catch (error) {
-          console.error('Error syncing user data with server:', error);
+          const newProgress = { ...progress, [langCode]: currentProgress };
+          setProgress(newProgress);
+        } else {
+          currentProgress.time += 1000;
+          const newProgress = { ...progress, [langCode]: currentProgress };
+          setProgress(newProgress);
         }
       }
     };
 
-    const serverIntervalId = setInterval(syncDataWithServer, 60000); // Every 1 minute
+    const localUpdateInterval = setInterval(updateLocalProgress, 1000); // Update every 1 second
 
-    return () => clearInterval(serverIntervalId);
-  }, [userData]);
+    const serverSyncInterval = setInterval(async () => {
+      try {
+        const authToken = await getStoredAuthToken();
+        if (!authToken || !userData) return;
+
+        const updatedData = {
+          saved_words: JSON.stringify(savedWords),
+          progress: JSON.stringify(progress),
+        };
+
+        await patchUserData(Number(userData.id), updatedData, authToken);
+      } catch (error) {
+        console.error('Error syncing user data with server:', error);
+      }
+    }, 60000); // Sync every 1 minute
+
+    return () => {
+      clearInterval(localUpdateInterval);
+      clearInterval(serverSyncInterval);
+    };
+  }, [userData, progress, savedWords, l2Lang, getStoredAuthToken]);
 
   return (
     <UserDataContext.Provider
@@ -112,12 +113,7 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
         saveWord: (langCode: string, word: SavedWordMeta) => saveWord(savedWords, setSavedWords, userData, langCode, word, getStoredAuthToken),
         removeSavedWord: (langCode: string, wordId: string) => removeSavedWord(savedWords, setSavedWords, userData, langCode, wordId, getStoredAuthToken),
         getProgress: (langCode: string) => getProgress(progress, langCode),
-        updateProgress: (langCode: string, newProgress: { level: string; time: number }) => {
-          setProgress(prev => ({
-            ...prev,
-            [langCode]: { ...prev[langCode], ...newProgress },
-          }));
-        },
+        updateProgress: (langCode: string, newProgress: { level: string; time: number }) => updateProgress(progress, setProgress, userData, langCode, newProgress, getStoredAuthToken),
       }}
     >
       {children}
