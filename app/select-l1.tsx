@@ -1,4 +1,3 @@
-// @/app/select-l1.tsx
 import React, { useState, useEffect } from "react";
 import { ThemedLanguageSelect } from "@/components/ThemedLanguageSelect";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -8,9 +7,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import * as Localization from "expo-localization";
 import { selectL1Styles as styles } from "@/src/styles";
+import { useUserData } from "@/contexts/UserDataContext";
 
 const SelectL2Screen = () => {
-  const { l1Lang, setL1Lang, languages, i18n } = useLanguage();
+  const { l1Lang, setL1Lang, languages } = useLanguage();
+  const { progress } = useUserData();
   const [deviceLanguage, setDeviceLanguage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,7 +26,15 @@ const SelectL2Screen = () => {
   const onSelect = (value: string) => {
     if (!languages) return;
     setL1Lang(languages.getLangByCode(value));
-  }
+  };
+
+  const handleNextPress = () => {
+    if (l1Lang && progress[l1Lang.code]?.level !== '1') {
+      router.replace("/(tabs)/(media)");
+    } else {
+      router.navigate("/select-level");
+    }
+  };
 
   return (
     <ThemedScreen
@@ -41,14 +50,10 @@ const SelectL2Screen = () => {
         trailingIcon={<Icon name="chevron-right" />}
         style={styles.button}
         disabled={!l1Lang}
-        onPress={() => {
-          router.navigate("/select-level");
-        }}
+        onPress={handleNextPress}
       />
     </ThemedScreen>
   );
 };
-
-
 
 export default SelectL2Screen;
