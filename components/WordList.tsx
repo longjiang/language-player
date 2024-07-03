@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
 import { ThemedText } from './ThemedText';
-import { Ionicons } from '@expo/vector-icons';
-import { ThemedButton } from './ThemedButton';
+import BookmarkButton from './BookmarkButton'; // Updated import
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
 import { useDictionary } from '@/contexts/DictionaryContext';
+import { wordListStyles as styles } from '@/src/styles'
 
 export const WordList = ({ wordIds }) => {
   const [words, setWords] = useState([]);
@@ -27,7 +27,7 @@ export const WordList = ({ wordIds }) => {
   const renderItem = ({ item }) => (
     <View style={styles.item}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <ThemedButton type="ghost" size="small" style={{ marginRight: 10, color: bookmarkColor }} trailingIcon={<Ionicons name="bookmark" size={24} />} />
+        <BookmarkButton bookmarkColor={bookmarkColor} />
         <TouchableOpacity onPress={() => router.navigate('/dictionary/word/' + item.id)}>
           <Text>
             <ThemedText style={styles.chinese} type="subtitle">{item.head}</ThemedText>
@@ -48,19 +48,3 @@ export const WordList = ({ wordIds }) => {
     />
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 250,
-  },
-  item: {
-    marginVertical: 8,
-  },
-  chinese: {},
-  pinyin: {
-    fontSize: 16,
-  },
-  english: {
-    fontSize: 14,
-  }
-});

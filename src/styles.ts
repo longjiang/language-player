@@ -119,3 +119,21 @@ export const dictionaryEntryStyles = StyleSheet.create({
     minHeight: 600,
   }
 });
+
+
+
+export const wordListStyles = StyleSheet.create({
+  container: {
+    marginBottom: 250,
+  },
+  item: {
+    marginVertical: 8,
+  },
+  chinese: {},
+  pinyin: {
+    fontSize: 16,
+  },
+  english: {
+    fontSize: 14,
+  }
+});
