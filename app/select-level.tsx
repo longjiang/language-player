@@ -1,9 +1,10 @@
+// @/app/select-level.tsx
+
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router } from "expo-router";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { languageLevelsByL2Code } from '@/src/language-levels';
 import { ThemedText } from "@/components/ThemedText";
 import LevelButton from "@/components/LevelButton";
 
@@ -12,7 +13,7 @@ const SelectLevelScreen = () => {
 
   if (!l2Lang) return null;
 
-  const levels = languageLevelsByL2Code(l2Lang.code);
+  const levels = Array.from({ length: 9 }, (_, i) => i + 1); // Assuming 9 levels
 
   const onSelect = (level: number) => {
     router.navigate("/(tabs)/(media)");
@@ -24,12 +25,10 @@ const SelectLevelScreen = () => {
       onBackPress={() => router.navigate("/select-l1")}
     >
       <View>
-        {Object.values(levels).map(({ level, levelName, examLevelName }) => (
+        {levels.map(level => (
           <LevelButton
             key={level}
             level={level}
-            levelName={levelName}
-            examLevelName={examLevelName}
             onPress={onSelect}
             style={styles.item}
             size="large"
