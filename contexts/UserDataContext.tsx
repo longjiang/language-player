@@ -8,7 +8,7 @@ const UserDataContext = createContext();
 export const UserDataProvider = ({ children }) => {
   const { getStoredAuthToken } = useAuth();
   const [userData, setUserData] = useState(null);
-  const [savedWords, setSavedWords] = useState(null);
+  const [savedWords, setSavedWords] = useState({}); // Initialize as an empty object
 
   useEffect(() => {
     const fetchData = async () => {
@@ -16,7 +16,7 @@ export const UserDataProvider = ({ children }) => {
         const authToken = await getStoredAuthToken();
         const data = await getUserData(authToken);
         setUserData(data);
-        setSavedWords(data?.saved_words || null); // Save words for all languages
+        setSavedWords(data?.saved_words || {}); // Ensure saved words are an object
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -24,6 +24,10 @@ export const UserDataProvider = ({ children }) => {
 
     fetchData();
   }, [getStoredAuthToken]);
+
+  const hasSavedWord = (langCode, wordId) => {
+    return savedWords[langCode]?.some(word => word.id === wordId);
+  };
 
   const removeSavedWord = async (langCode, wordId) => {
     if (!userData || !savedWords) return;
@@ -43,7 +47,7 @@ export const UserDataProvider = ({ children }) => {
   };
 
   return (
-    <UserDataContext.Provider value={{ userData, savedWords, removeSavedWord }}>
+    <UserDataContext.Provider value={{ userData, savedWords, hasSavedWord, removeSavedWord }}>
       {children}
     </UserDataContext.Provider>
   );
