@@ -7,16 +7,23 @@ import { router } from "expo-router";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ThemedText } from "@/components/ThemedText";
 import LevelButton from "@/components/LevelButton";
+import { useUserData } from "@/contexts/UserDataContext";
 
 const SelectLevelScreen = () => {
   const { l2Lang } = useLanguage();
+  const { userData, updateProgress } = useUserData();
 
   if (!l2Lang) return null;
 
-  const levels = Array.from({ length: 9 }, (_, i) => i + 1); // Assuming 9 levels
+  const levels = [1, 2, 3, 4, 5, 6, 7];
 
-  const onSelect = (level: number) => {
-    router.navigate("/(tabs)/(media)");
+  const onSelect = async (level: number) => {
+    try {
+      await updateProgress(l2Lang.code, { level: String(level), time: 0 });
+      router.navigate("/(tabs)/(media)");
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    }
   };
 
   return (
@@ -29,7 +36,7 @@ const SelectLevelScreen = () => {
           <LevelButton
             key={level}
             level={level}
-            onPress={onSelect}
+            onPress={() => onSelect(level)}
             style={styles.item}
             size="large"
           />
