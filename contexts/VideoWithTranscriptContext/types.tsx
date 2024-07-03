@@ -1,0 +1,28 @@
+export interface VideoWithTranscriptContextType {
+  video: YouTubeVideo;
+  playlist: YouTubeVideo[];
+  playbackState: PLAYER_STATES;
+  currentTime: number;
+  seekTime?: number;
+  playVideo: boolean;
+  syncedLines: SyncedLine[];
+  currentLine: SyncedLine | null;
+  currentVideoIndex: number;
+  fullscreen: boolean;
+  duration: number;
+  startTime: number;
+  updateDuration: (duration: number) => void;
+  updatePlayVideo: (newVal: boolean) => void;
+  updatePlaybackState: (state: PLAYER_STATES) => void;
+  updateCurrentTime: (time: number, seekTime?: boolean) => void;
+  updateFullscreen: (state: boolean) => void;
+  updateStartTime: (time: number) => void;
+  resetSeekTime: () => void;
+  seekTo: (time: number) => void;
+  rewind: () => void;
+  seekToNextLine: () => void;
+  seekToPreviousLine: () => void;
+  skipToNextVideo: () => void;
+  skipToPreviousVideo: () => void;
+  skipToVideo: (index: number) => void;
+}

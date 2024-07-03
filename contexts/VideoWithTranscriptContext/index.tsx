@@ -1,41 +1,12 @@
-// @/contexts/VideoWithTranscriptContext/index
+// @/contexts/VideoWithTranscriptContext/index.tsx
 
-// contexts/VideoWithTranscriptContext/index.tsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { YouTubeVideo, SyncedLine } from "@/types";
 import { PLAYER_STATES } from "react-native-youtube-iframe";
 import { useSyncedLines } from "./useSyncedLines";
 import { usePlaylist } from "./usePlaylist";
 import { findSubtitle } from "@/src/subs";
-
-export interface VideoWithTranscriptContextType {
-  video: YouTubeVideo;
-  playlist: YouTubeVideo[];
-  playbackState: PLAYER_STATES;
-  currentTime: number;
-  seekTime?: number;
-  playVideo: boolean;
-  syncedLines: SyncedLine[];
-  currentLine: SyncedLine | null;
-  currentVideoIndex: number;
-  fullscreen: boolean;
-  duration: number;
-  startTime: number;
-  updateDuration: (duration: number) => void;
-  updatePlayVideo: (newVal: boolean) => void;
-  updatePlaybackState: (state: PLAYER_STATES) => void;
-  updateCurrentTime: (time: number, seekTime?: boolean) => void;
-  updateFullscreen: (state: boolean) => void;
-  updateStartTime: (time: number) => void;
-  resetSeekTime: () => void;
-  seekTo: (time: number) => void;
-  rewind: () => void;
-  seekToNextLine: () => void;
-  seekToPreviousLine: () => void;
-  skipToNextVideo: () => void;
-  skipToPreviousVideo: () => void;
-  skipToVideo: (index: number) => void;
-}
+import { VideoWithTranscriptContextType } from "./types";
 
 const VideoWithTranscriptContext = createContext<VideoWithTranscriptContextType | undefined>(undefined);
 
