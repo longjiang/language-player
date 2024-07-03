@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { Typography } from "@/constants/Typography";
+import { Swatches } from "@/constants/Swatches";
 
 export const popupDictionaryContentStyles = StyleSheet.create({
   container: {},
