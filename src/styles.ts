@@ -137,3 +137,22 @@ export const wordListStyles = StyleSheet.create({
     fontSize: 14,
   }
 });
+
+export const selectL1Styles = StyleSheet.create({
+  item: {
+    padding: 16,
+  },
+  image: {
+    width: "100%",
+    marginBottom: 20,
+    position: "relative",
+    top: -230,
+  },
+  instructions: {
+    marginBottom: 20,
+  },
+  button: {
+    marginTop: 20,
+    marginBottom: 110,
+  },
+});
