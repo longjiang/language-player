@@ -37,8 +37,6 @@ const SelectL2Screen = () => {
   const onSelect = (value: string) => {
     if (!languages) return;
     setSelectedLanguage(value);
-    const language = languages.getLangByCode(value)
-    setL2Lang(language);
   };
 
   // Function to get an option based on the value
@@ -75,6 +73,9 @@ const SelectL2Screen = () => {
         style={styles.button}
         disabled={!selectedLanguage}
         onPress={() => {
+          if (!languages) return;
+          const language = languages.getLangByCode(selectedLanguage)
+          setL2Lang(language);
           router.navigate("/select-l1");
         }}
       />
