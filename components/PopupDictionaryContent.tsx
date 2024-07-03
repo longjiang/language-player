@@ -1,22 +1,22 @@
-// @/components/PopupDictionaryContent
+// @/components/PopupDictionaryContent.tsx
 
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { ThemedText } from "./ThemedText";
-import { ThemedButton } from "@/components/ThemedButton";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Token } from "@/src/tokenizer";
 import { DictionaryEntry } from "@/src/dictionary-types";
 import { popupDictionaryContentStyles as styles } from "@/src/styles";
+import BookmarkButton from "@/components/BookmarkButton";  // Import the BookmarkButton component
 
 export const PopupDictionaryContent: React.FC<{
   token: Token;
 }> = ({
   token,
 }) => {
-  if (!token) return
+  if (!token) return null;
   
   const [dictionaryEntries, setDictionaryEntries] = useState<DictionaryEntry[]>([]);
   const { dictionary } = useDictionary();
@@ -26,7 +26,7 @@ export const PopupDictionaryContent: React.FC<{
   if (!dictionary) {
     return null;
   }
-  if (!token.text) return
+  if (!token.text) return null;
 
   useEffect(() => {
     const fetchDictionaryEntries = async () => {
@@ -52,9 +52,12 @@ export const PopupDictionaryContent: React.FC<{
           >
             {entry.head}
           </ThemedText>
-          <ThemedButton
-            type="ghost"
-            trailingIcon={<Icon name="bookmark-outline" size={20} />}
+          <BookmarkButton 
+            wordId={entry.id}
+            head={entry.head}
+            alternate={entry.alternate}
+            forms={entry.forms}
+            context={{ form: entry.head, text: token.text || '' }}
             style={styles.saveWordButton}
           />
           <ThemedText style={styles.entryText}>
