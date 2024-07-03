@@ -1,4 +1,5 @@
-// @/utils/savedWords.ts
+// @/contexts/UserDataContext/savedWords
+
 import { UserData } from '.';
 import { patchUserData } from '@/src/api/directus/user-data';
 

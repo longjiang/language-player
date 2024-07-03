@@ -1,4 +1,5 @@
-// @/utils/progress.ts
+// @/contexts/UserDataContext/progress
+
 import { UserData } from '.';
 import { patchUserData } from '@/src/api/directus/user-data';
 

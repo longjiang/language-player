@@ -1,4 +1,5 @@
-// @/contexts/UserDataContext.tsx
+// @/contexts/UserDataContext/index.tsx
+
 import React, { createContext, useContext, useEffect, useState, ReactNode, FC } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData } from '@/src/api/directus/user-data';
