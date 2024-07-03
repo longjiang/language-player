@@ -75,7 +75,7 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
         const newTime = currentProgress.time + 1000;
         await updateProgress(progress, setProgress, userData, langCode, { level: currentProgress.level, time: newTime }, getStoredAuthToken);
       }
-    }, 1000); // Every 1 second
+    }, 15000); // Every 15 seconds
 
     return () => clearInterval(intervalId);
   }, [userData, progress, l2Lang]);

@@ -34,6 +34,7 @@ export const getUserData = async (authToken?: string): Promise<GenericCollection
  */
 export const patchUserData = async (id: number, updatedData: Partial<GenericCollectionItem>, authToken?: string): Promise<GenericCollectionItem> => {
   try {
+    console.log('Patching user data:', updatedData);
     const updatedItem = await patchCollectionItem<GenericCollectionItem>('user_data', id, updatedData, authToken);
     return updatedItem;
   } catch (error) {
