@@ -10,8 +10,7 @@ import {
   User,
 } from "@/src/api/directus/user";
 
-
-const AuthContext = createContext<{
+type AuthContextType = {
   isAuthenticated: boolean;
   loading: boolean;
   userInfo: User | null;
@@ -20,7 +19,19 @@ const AuthContext = createContext<{
   handleRegister: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
   getStoredUserInfo: () => Promise<User | null>;
   getStoredAuthToken: () => Promise<string | null>;
-} | null>(null);
+}
+
+
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  loading: true,
+  userInfo: null,
+  handleLogin: async () => { },
+  handleLogout: async () => { },
+  handleRegister: async () => { },
+  getStoredUserInfo: async () => null,
+  getStoredAuthToken: async () => null,
+});
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -103,4 +114,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = (): AuthContextType => useContext(AuthContext);
