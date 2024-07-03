@@ -8,7 +8,6 @@ import { Platform } from "react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { VideoPlayerProvider } from "@/contexts/VideoPlayerContext";
 import { MiniPlayer } from "@/components/MiniPlayer";
-import { useNavigation } from "expo-router";
 import { DictionaryProvider } from "@/contexts/DictionaryContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -27,7 +26,6 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
-  const navigation = useNavigation();
 
   useEffect(() => {
     if (loaded) {
