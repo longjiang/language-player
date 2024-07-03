@@ -16,6 +16,7 @@ export const getUserData = async (authToken?: string): Promise<GenericCollection
     // Return the first item, or undefined if no items were returned
     const userData = items[0];
     userData.saved_words = JSON.parse(userData.saved_words);
+    userData.progress = JSON.parse(userData.progress);
     return userData;
   } catch (error) {
     console.error('Failed to fetch the first item from user_data collection:', error);
