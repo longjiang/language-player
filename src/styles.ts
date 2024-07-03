@@ -181,3 +181,42 @@ export const dictionaryLoadingModalStyles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+export 
+
+const youtubeVideoCardStyles = StyleSheet.create({
+  details: {
+  },
+  card: {
+    overflow: "hidden",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.2,
+  },
+  thumbnail: {
+    width: "100%", // Makes the image fill the container
+    aspectRatio: 16 / 9, // Maintains a 16:9 aspect ratio
+    borderRadius: 8,
+  },
+  title: {
+    marginBottom: 3,
+  },
+  infoContainer: {
+    marginTop: 16,
+  },
+  badge: {
+    backgroundColor: '#6c757d',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+});
