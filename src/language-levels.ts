@@ -1,3 +1,5 @@
+// @/src/language-levels
+
 import { LEVELS, L2_LEVEL_6_HOURS, LevelInfo } from '@/constants/LanguageLevels';
 import { MAX_DIFFICULTY_BY_LEVEL } from '@/constants/MaxDifficultyByLevel';
 
@@ -35,7 +37,7 @@ export function languageLevelsByL2Code(l2Code: string): Record<number, LevelDeta
       examName: examName,
       examLevelName: `${examName} ${examLevelName}`,
       hoursToComplete: calculateHoursToComplete(hoursMultiplier, l2Code),
-      maxDifficulty: maxDifficulty
+      maxDifficulty
     };
   });
 

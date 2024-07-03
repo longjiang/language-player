@@ -1,3 +1,5 @@
+// @/components/YouTubeVideoCard
+
 import React from "react";
 import {
   View,
@@ -12,10 +14,14 @@ import { router } from "expo-router";
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { formatDuration } from '@/src/utils';
 import { YouTubeVideo } from '@/types';
+import { languageLevelsByL2Code } from '@/src/language-levels';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; videos: YouTubeVideo[]; style?: object }) => {
   if (videos.length === 0) videos = [video];
   const { setVideoPlayerState } = useVideoPlayer();
+  const { l2Lang } = useLanguage();
+  if (!l2Lang) return null;
 
   const handlePress = () => {
     // Set the current video and queue in the global state
@@ -33,6 +39,12 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
   const durationText = video.duration ? formatDuration(video.duration) : '';
   const localeText = video.locale || '';
 
+  // Determine the CEFR level based on the video's difficulty
+  const levels = languageLevelsByL2Code(l2Lang.code); 
+  const videoDifficulty = video.difficulty || 1; // Replace with actual difficulty value from video data
+  const level = Object.values(levels).find(l => videoDifficulty <= l.maxDifficulty);
+  const badgeText = level ? level.examLevelName : '';
+
   return (
     <TouchableOpacity onPress={handlePress} style={{ flex: 1 }}>
       <View style={[styles.card]}>
@@ -49,6 +61,11 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
           <ThemedText style={styles.details} type="small" variant="secondary">
             { [viewsText, durationText, localeText].filter(Boolean).join(' • ') }
           </ThemedText>
+          {badgeText && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{badgeText}</Text>
+            </View>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -76,5 +93,18 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     marginTop: 16,
+  },
+  badge: {
+    backgroundColor: '#6c757d',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
