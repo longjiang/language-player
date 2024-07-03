@@ -1,8 +1,10 @@
+// @/contexts/UserDataContext
+
 import React, { createContext, useContext, useEffect, useState, ReactNode, FC } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserData, initializeUserData } from '@/src/api/directus/user-data';
+import { getUserData, initializeUserData, syncUserData } from '@/src/api/directus/user-data';
 import { hasSavedWord, saveWord, removeSavedWord, SavedWords, SavedWordMeta } from './savedWords';
-import { getProgress, updateProgress, Progress } from './progress';
+import { getProgress, Progress } from './progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface UserData {
@@ -19,7 +21,7 @@ interface UserDataContextProps {
   saveWord: (langCode: string, word: SavedWordMeta) => Promise<void>;
   removeSavedWord: (langCode: string, wordId: string) => Promise<void>;
   getProgress: (langCode: string) => { level: string; time: number } | undefined;
-  updateProgress: (langCode: string, newProgress: { level: string; time: number }) => Promise<void>;
+  updateProgress: (langCode: string, newProgress: { level: string; time: number }) => void;
 }
 
 interface UserDataProviderProps {
@@ -59,7 +61,7 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
   }, [getStoredAuthToken]);
 
   useEffect(() => {
-    const intervalId = setInterval(async () => {
+    const updateLocalProgress = () => {
       if (l2Lang && userData) {
         const langCode = l2Lang.code;
         let currentProgress = getProgress(progress, langCode);
@@ -67,18 +69,38 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
         // Initialize progress for new language if it doesn't exist
         if (!currentProgress) {
           currentProgress = { level: undefined, time: 0 };
-          const newProgress = { ...progress, [langCode]: currentProgress };
-          setProgress(newProgress);
-          await updateProgress(newProgress, setProgress, userData, langCode, currentProgress, getStoredAuthToken);
+          setProgress(prev => ({ ...prev, [langCode]: currentProgress }));
         }
 
-        const newTime = currentProgress.time + 1000;
-        await updateProgress(progress, setProgress, userData, langCode, { level: currentProgress.level, time: newTime }, getStoredAuthToken);
+        const newTime = (currentProgress?.time || 0) + 1000;
+        setProgress(prev => ({
+          ...prev,
+          [langCode]: { ...currentProgress, time: newTime },
+        }));
       }
-    }, 15000); // Every 15 seconds
+    };
 
-    return () => clearInterval(intervalId);
+    const localIntervalId = setInterval(updateLocalProgress, 1000); // Every 1 second
+
+    return () => clearInterval(localIntervalId);
   }, [userData, progress, l2Lang]);
+
+  useEffect(() => {
+    const syncDataWithServer = async () => {
+      if (userData) {
+        try {
+          const authToken = await getStoredAuthToken();
+          await syncUserData(authToken, userData);
+        } catch (error) {
+          console.error('Error syncing user data with server:', error);
+        }
+      }
+    };
+
+    const serverIntervalId = setInterval(syncDataWithServer, 60000); // Every 1 minute
+
+    return () => clearInterval(serverIntervalId);
+  }, [userData]);
 
   return (
     <UserDataContext.Provider
@@ -90,7 +112,12 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
         saveWord: (langCode: string, word: SavedWordMeta) => saveWord(savedWords, setSavedWords, userData, langCode, word, getStoredAuthToken),
         removeSavedWord: (langCode: string, wordId: string) => removeSavedWord(savedWords, setSavedWords, userData, langCode, wordId, getStoredAuthToken),
         getProgress: (langCode: string) => getProgress(progress, langCode),
-        updateProgress: (langCode: string, newProgress: { level: string; time: number }) => updateProgress(progress, setProgress, userData, langCode, newProgress, getStoredAuthToken),
+        updateProgress: (langCode: string, newProgress: { level: string; time: number }) => {
+          setProgress(prev => ({
+            ...prev,
+            [langCode]: { ...prev[langCode], ...newProgress },
+          }));
+        },
       }}
     >
       {children}
