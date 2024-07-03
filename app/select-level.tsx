@@ -1,6 +1,6 @@
 // @/app/select-level.tsx
 
-import React from "react";
+import React, { useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router } from "expo-router";
@@ -8,22 +8,35 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ThemedText } from "@/components/ThemedText";
 import LevelButton from "@/components/LevelButton";
 import { useUserData } from "@/contexts/UserDataContext";
+import LevelResetSheet from "@/components/LevelResetSheet";
 
 const SelectLevelScreen = () => {
   const { l2Lang } = useLanguage();
   const { userData, updateProgress } = useUserData();
+  const refRBSheet = useRef<RBSheet>(null);
+  const selectedLevelRef = useRef<number | null>(null);
 
   if (!l2Lang) return null;
 
   const levels = [1, 2, 3, 4, 5, 6, 7];
 
-  const onSelect = async (level: number) => {
-    try {
-      await updateProgress(l2Lang.code, { level: String(level), time: 0 });
-      router.navigate("/(tabs)/(media)");
-    } catch (error) {
-      console.error('Error updating progress:', error);
+  const onSelect = (level: number) => {
+    selectedLevelRef.current = level;
+    refRBSheet.current?.open();
+  };
+
+  const handleConfirm = async (resetTime: boolean) => {
+    if (selectedLevelRef.current !== null) {
+      try {
+        const currentProgress = userData?.progress[l2Lang.code];
+        const newTime = resetTime ? 0 : currentProgress?.time || 0;
+        await updateProgress(l2Lang.code, { level: String(selectedLevelRef.current), time: newTime });
+        router.navigate("/(tabs)/(media)");
+      } catch (error) {
+        console.error('Error updating progress:', error);
+      }
     }
+    refRBSheet.current?.close();
   };
 
   return (
@@ -45,6 +58,7 @@ const SelectLevelScreen = () => {
       <ThemedText style={{ marginTop: 20, textAlign: "center" }}>
         “HSK” is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.
       </ThemedText>
+      <LevelResetSheet ref={refRBSheet} onConfirm={handleConfirm} />
     </ThemedScreen>
   );
 };
