@@ -1,6 +1,8 @@
+// @/contexts/VideoWithTranscriptContext/index
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { YouTubeVideo, Line, SyncedLine } from "@/types";
-import { syncLines } from "@/src/subs";
+import { syncLines, findSubtitle } from "@/src/subs";
 import { PLAYER_STATES } from "react-native-youtube-iframe";
 import { router } from "expo-router";
 
@@ -33,32 +35,7 @@ export interface VideoWithTranscriptContextType {
   skipToVideo: (index: number) => void;
 }
 
-
 const VideoWithTranscriptContext = createContext<VideoWithTranscriptContextType | undefined>(undefined);
-
-
-
-
-
-const findSubtitle = (currentTime: number, syncedLines: SyncedLine[]) => {
-  // Find the nearest subtitle
-  let nearestSubtitle = null;
-  for (let i = 0; i < syncedLines.length; i++) {
-    if (currentTime >= syncedLines[i].starttime) {
-      nearestSubtitle = syncedLines[i];
-      // Continue searching until finding the last subtitle that meets the condition
-      if (i + 1 < syncedLines.length && currentTime >= syncedLines[i + 1].starttime) {
-        continue;
-      } else {
-        break;
-      }
-    }
-  }
-  return nearestSubtitle;
-}
-
-
-
 
 
 export const useVideoWithTranscriptContext = () => {

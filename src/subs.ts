@@ -62,3 +62,18 @@ export const syncLines = (l1Lines: Line[], l2Lines: Line[]): SyncedLine[] => {
 
   return syncedLines;
 }
+
+export const findSubtitle = (currentTime: number, syncedLines: SyncedLine[]) => {
+  let nearestSubtitle = null;
+  for (let i = 0; i < syncedLines.length; i++) {
+    if (currentTime >= syncedLines[i].starttime) {
+      nearestSubtitle = syncedLines[i];
+      if (i + 1 < syncedLines.length && currentTime >= syncedLines[i + 1].starttime) {
+        continue;
+      } else {
+        break;
+      }
+    }
+  }
+  return nearestSubtitle;
+};
