@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
-import Markdown from 'react-native-markdown-display';
 import { chatGPT } from '@/src/api/python/openai';
+import { ThemedMarkdown } from "@/components/ThemedMarkdown";
 
 export const ChatGPT = ({ prompt }) => {
   const [loading, setLoading] = useState(true);
@@ -13,7 +13,6 @@ export const ChatGPT = ({ prompt }) => {
     const fetchChatGPTResponse = async () => {
       try {
         const response = await chatGPT(prompt);
-        console.log(response.data.response)
         setMarkdown(response.data.response);
         setLoading(false);
       } catch (error) {
@@ -35,11 +34,12 @@ export const ChatGPT = ({ prompt }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <Markdown>{markdown}</Markdown>
+    <View>
+      <ThemedMarkdown>{markdown}</ThemedMarkdown>
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
