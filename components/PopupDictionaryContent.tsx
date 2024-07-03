@@ -13,8 +13,10 @@ import BookmarkButton from "@/components/BookmarkButton";  // Import the Bookmar
 
 export const PopupDictionaryContent: React.FC<{
   token: Token;
+  context: string;
 }> = ({
   token,
+  context
 }) => {
   if (!token) return null;
   
@@ -52,14 +54,15 @@ export const PopupDictionaryContent: React.FC<{
           >
             {entry.head}
           </ThemedText>
+          <View style={{ position: "absolute", top: 16, right: 16 }}>
           <BookmarkButton 
             wordId={entry.id}
             head={entry.head}
             alternate={entry.alternate}
-            forms={entry.forms}
-            context={{ form: entry.head, text: token.text || '' }}
-            style={styles.saveWordButton}
+            forms={[entry.head, entry.alternate, token.text].filter(Boolean)}
+            context={{ form: token.text, text: context || '' }}
           />
+            </View>
           <ThemedText style={styles.entryText}>
             {entry.pronunciation}{" "}
             <ThemedText type="smallBold" level={entry.level}>

@@ -46,7 +46,7 @@ export const PopupDictionaryModal = forwardRef<typeof ThemedRBSheet, PopupDictio
                 <GestureHandlerRootView>
                     <ScrollView>
                         <PopupDictionaryHeader token={state.token} context={state.context} translatedContext={state.translatedContext} />
-                        <PopupDictionaryContent token={state.token} />
+                        <PopupDictionaryContent token={state.token} context={state.context} />
                     </ScrollView>
                 </GestureHandlerRootView>
             )}

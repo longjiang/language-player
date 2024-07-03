@@ -26,7 +26,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   syncedLines.find((line) => {
     if (typeof line.l2Line === 'string' && line.l2Line.includes(term)) {
       // We need to find the index of the line in the playlist
-      const foundLine = syncedLines.find((item) => item.l2Line?.includes(term));
+      const foundLine = syncedLines.find((item) => item.l2Line && item.l2Line?.includes(term));
 
       if (foundLine) {
         // If the term is found, proceed
