@@ -176,8 +176,8 @@ export const dictionaryLoadingModalStyles = StyleSheet.create({
   },
   logsContainer: {
     maxHeight: '80%',
-    textAlign: 'center',
   },
   logText: {
+    textAlign: 'center',
   },
 });

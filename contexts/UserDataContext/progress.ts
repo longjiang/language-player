@@ -3,7 +3,7 @@ import { patchUserData } from '@/src/api/directus/user-data';
 
 export interface Progress {
   [langCode: string]: {
-    level: string;
+    level?: string;
     time: number; // milliseconds
   };
 }

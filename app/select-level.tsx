@@ -20,9 +20,16 @@ const SelectLevelScreen = () => {
 
   const levels = [1, 2, 3, 4, 5, 6, 7];
 
-  const onSelect = (level: number) => {
+  const onSelect = async (level: number) => {
     selectedLevelRef.current = level;
-    refRBSheet.current?.open();
+    const currentProgress = userData?.progress[l2Lang.code];
+    const hasProgress = currentProgress?.time && currentProgress.time > 0;
+    
+    if (hasProgress) {
+      refRBSheet.current?.open();
+    } else {
+      await handleConfirm(false);
+    }
   };
 
   const handleConfirm = async (resetTime: boolean) => {

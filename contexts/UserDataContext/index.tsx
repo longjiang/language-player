@@ -66,7 +66,7 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
 
         // Initialize progress for new language if it doesn't exist
         if (!currentProgress) {
-          currentProgress = { level: '1', time: 0 };
+          currentProgress = { level: undefined, time: 0 };
           const newProgress = { ...progress, [langCode]: currentProgress };
           setProgress(newProgress);
           await updateProgress(newProgress, setProgress, userData, langCode, currentProgress, getStoredAuthToken);
@@ -75,7 +75,7 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
         const newTime = currentProgress.time + 1000;
         await updateProgress(progress, setProgress, userData, langCode, { level: currentProgress.level, time: newTime }, getStoredAuthToken);
       }
-    }, 1000);
+    }, 1000); // Every 1 second
 
     return () => clearInterval(intervalId);
   }, [userData, progress, l2Lang]);

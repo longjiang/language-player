@@ -10,7 +10,7 @@ import { selectL1Styles as styles } from "@/src/styles";
 import { useUserData } from "@/contexts/UserDataContext";
 
 const SelectL2Screen = () => {
-  const { l1Lang, setL1Lang, languages } = useLanguage();
+  const { l1Lang, l2Lang, setL1Lang, languages } = useLanguage();
   const { progress } = useUserData();
   const [deviceLanguage, setDeviceLanguage] = useState<string | null>(null);
 
@@ -29,7 +29,7 @@ const SelectL2Screen = () => {
   };
 
   const handleNextPress = () => {
-    if (l1Lang && progress[l1Lang.code]?.level !== '1') {
+    if (l2Lang && progress[l2Lang.code]?.level) {
       router.replace("/(tabs)/(media)");
     } else {
       router.navigate("/select-level");
