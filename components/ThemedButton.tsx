@@ -12,7 +12,7 @@ import { Swatches, Typography } from "@/constants";
 import { ThemedText } from "./ThemedText";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-type ButtonProps = {
+export type ButtonProps = {
   type?: "neutral" | "accent" | "primary" | "ghost" | "pro";
   size?: "title" | "large" | "medium" | "small";
   title?: string;

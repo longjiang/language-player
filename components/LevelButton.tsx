@@ -2,21 +2,19 @@
 
 import React from "react";
 import { ViewStyle } from "react-native";
-import { ThemedButton } from "@/components/ThemedButton";
+import { ThemedButton, ButtonProps } from "@/components/ThemedButton";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { LevelColors } from '@/constants/Colors';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { languageLevelsByL2Code } from '@/src/language-levels';
 
-interface LevelButtonProps {
+interface LevelButtonProps extends Omit<ButtonProps, 'onPress'> {
   level: number;
   onPress: (level: number) => void;
-  style?: ViewStyle;
-  size?: "small" | "medium" | "large";
 }
 
-const LevelButton: React.FC<LevelButtonProps> = ({ level, onPress, style, size = "small" }) => {
+const LevelButton: React.FC<LevelButtonProps> = ({ level, onPress, style, size = "small", type = "accent" }) => {
   const colorScheme = useColorScheme();
   const { l2Lang } = useLanguage();
 
@@ -35,7 +33,7 @@ const LevelButton: React.FC<LevelButtonProps> = ({ level, onPress, style, size =
       leadingIcon={<Icon name="circle" style={{ color: levelColor || 'rgba(0,0,0,0)' }} />}
       trailingIcon={<Icon name="chevron-right" />}
       onPress={() => onPress(level)}
-      type="accent"
+      type={type}
       size={size}
       style={style}
     />
