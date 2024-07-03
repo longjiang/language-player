@@ -51,44 +51,44 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <UserDataProvider>
-        <SettingsProvider>
-          <LanguageProvider>
-            <DictionaryProvider>
-              <ThemeProvider>
-                <VideoPlayerProvider>
-                  <Stack>
-                    <Stack.Screen name="index" options={{ headerShown: false }} />
-                    <Stack.Screen name="login" options={{ headerShown: false }} />
-                    <Stack.Screen name="register" options={{ headerShown: false }} />
-                    <Stack.Screen name="verify-email" options={{ headerShown: false }} />
-                    <Stack.Screen
-                      name="acquisition-survey"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen name="select-l2" options={{ headerShown: false }} />
-                    <Stack.Screen name="select-l1" options={{ headerShown: false }} />
-                    <Stack.Screen name="select-level" options={{ headerShown: false }} />
-                    <Stack.Screen name="account" options={{ headerShown: false }} />
-                    <Stack.Screen name="go-pro" options={{ headerShown: false }} />
-                    <Stack.Screen name="delete-account" options={{ headerShown: false }} />
-                    <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
-                    <Stack.Screen name="test" options={{ headerShown: false }} />
-                    <Stack.Screen
-                      name="video/youtube/[youtube_id]"
-                      options={{ headerShown: false, presentation: "modal" }}
-                    />
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen name="+not-found" />
-                  </Stack>
-                  <MiniPlayer />
-                </VideoPlayerProvider>
-              </ThemeProvider>
-            </DictionaryProvider>
-          </LanguageProvider>
-        </SettingsProvider>
-      </UserDataProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <UserDataProvider>
+          <SettingsProvider>
+              <DictionaryProvider>
+                <ThemeProvider>
+                  <VideoPlayerProvider>
+                    <Stack>
+                      <Stack.Screen name="index" options={{ headerShown: false }} />
+                      <Stack.Screen name="login" options={{ headerShown: false }} />
+                      <Stack.Screen name="register" options={{ headerShown: false }} />
+                      <Stack.Screen name="verify-email" options={{ headerShown: false }} />
+                      <Stack.Screen
+                        name="acquisition-survey"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen name="select-l2" options={{ headerShown: false }} />
+                      <Stack.Screen name="select-l1" options={{ headerShown: false }} />
+                      <Stack.Screen name="select-level" options={{ headerShown: false }} />
+                      <Stack.Screen name="account" options={{ headerShown: false }} />
+                      <Stack.Screen name="go-pro" options={{ headerShown: false }} />
+                      <Stack.Screen name="delete-account" options={{ headerShown: false }} />
+                      <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
+                      <Stack.Screen name="test" options={{ headerShown: false }} />
+                      <Stack.Screen
+                        name="video/youtube/[youtube_id]"
+                        options={{ headerShown: false, presentation: "modal" }}
+                      />
+                      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                      <Stack.Screen name="+not-found" />
+                    </Stack>
+                    <MiniPlayer />
+                  </VideoPlayerProvider>
+                </ThemeProvider>
+              </DictionaryProvider>
+          </SettingsProvider>
+        </UserDataProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }

@@ -1,10 +1,9 @@
-// @/contexts/UserDataContext/index.tsx
-
 import React, { createContext, useContext, useEffect, useState, ReactNode, FC } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData } from '@/src/api/directus/user-data';
 import { hasSavedWord, saveWord, removeSavedWord, SavedWords, SavedWordMeta } from './savedWords';
 import { getProgress, updateProgress, Progress } from './progress';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface UserData {
   id: string;
@@ -34,6 +33,7 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [savedWords, setSavedWords] = useState<SavedWords>({});
   const [progress, setProgress] = useState<Progress>({});
+  const { l2Lang } = useLanguage();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,6 +52,21 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
 
     fetchData();
   }, [getStoredAuthToken]);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (l2Lang && userData) {
+        const langCode = l2Lang.code;
+        const currentProgress = getProgress(progress, langCode);
+        if (currentProgress) {
+          const newTime = currentProgress.time + 1000;
+          updateProgress(progress, setProgress, userData, langCode, { level: currentProgress.level, time: newTime }, getStoredAuthToken);
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [userData, progress]);
 
   return (
     <UserDataContext.Provider
