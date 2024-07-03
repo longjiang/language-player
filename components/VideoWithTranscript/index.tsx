@@ -1,9 +1,8 @@
-// @/components/VideoWithTranscript/index.tsx
-
 import React from "react";
 import { View } from "react-native";
 import { VideoWithTranscriptFull } from "./full";
 import { VideoWithTranscriptMini } from "./mini";
+import { ProModal } from "@/components/ProModal"; // Import the new ProModal component
 
 interface VideoWithTranscriptProps {
   isMini: boolean;
@@ -18,6 +17,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({ isMini
       ) : (
         <VideoWithTranscriptMini />
       )}
+      <ProModal />
     </View>
   );
 };
