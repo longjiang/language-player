@@ -11,8 +11,8 @@ interface SyncedTranscriptProps {
 }
 
 export const SyncedTranscript: React.FC<SyncedTranscriptProps> = ({ transcriptLimitReached = false }) => {
-  const { syncedLines, currentLine } = useVideoWithTranscriptContext();
-
+  const { video, syncedLines, currentLine } = useVideoWithTranscriptContext();
+  if (syncedLines?.[1]) console.log('tsakjs', 'syncedLines[1].l2Line=', syncedLines[1].l2Line, 'video=', video);
   const renderContent = () => {
     if (transcriptLimitReached) {
       return (
