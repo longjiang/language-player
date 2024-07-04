@@ -31,6 +31,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
 
   if (!(l1Lang && l2Lang)) return null;
   const [translation, setTranslation] = useState<string | null>(null);
+  const [showChatGPT, setShowChatGPT] = useState(false);
 
   useEffect(() => {
     if (settings.autoPronounce) {
@@ -38,17 +39,19 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
     }
   }, [settings.autoPronounce, token.text, l2Lang.code]);
 
-  if (context && !translatedContext && l1Lang && l2Lang) {
-    const translateContext = useCallback(async () => {
-      const trans = await translateWithBing({ text: context, l1Code: l1Lang.code, l2Code: l2Lang.code });
-      setTranslation(trans);
-    }, [context, l1Lang, l2Lang]);
-    
-    translateContext();
-  }
+  useEffect(() => {
+    if (context && !translatedContext && l1Lang && l2Lang) {
+      const translateContext = async () => {
+        const trans = await translateWithBing({ text: context, l1Code: l1Lang.code, l2Code: l2Lang.code });
+        setTranslation(trans);
+      };
+      
+      translateContext();
+    }
+  }, [context, translatedContext, l1Lang, l2Lang]);
 
   const onExplainPress = () => {
-    // Implement the logic to explain the word using AI
+    setShowChatGPT(!showChatGPT);
   };
 
   const onSpeakPress = () => {
@@ -80,7 +83,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
         onPress={onExplainPress}
         leadingIcon={<Icon name="chat-outline" size={20} style={styles.iconStyle} />}
       />
-      <ChatGPT prompt="test" />
+      {showChatGPT && <ChatGPT prompt={token.text} />}
       <View style={styles.contextRow}>
         <View style={{ flex: 1 }}>
           <ThemedText style={styles.contextText} type="large">{context}</ThemedText>
