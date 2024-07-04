@@ -5,14 +5,17 @@ import * as SecureStore from "expo-secure-store";
 import { getUserSubscription } from "@/src/api/directus/subscriptions";
 import { GenericCollectionItem } from "@/src/api/directus";
 import { useAuth } from "@/contexts/AuthContext";
+import { getDeltaDate } from "@/src/utils";
 
 interface SubscriptionContextProps {
   subscription: GenericCollectionItem | null;
+  isProUser: () => boolean;
   fetchSubscription: () => Promise<void>;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextProps>({
   subscription: null,
+  isProUser: () => false,
   fetchSubscription: async () => {},
 });
 
@@ -36,12 +39,19 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   };
 
+  const isProUser = () => {
+    if (!subscription) return false;
+    if (subscription.type === "lifetime") return true;
+    const delta = getDeltaDate(subscription.expires_on);
+    return delta > 0;
+  };
+
   useEffect(() => {
     fetchSubscription();
   }, []);
 
   return (
-    <SubscriptionContext.Provider value={{ subscription, fetchSubscription }}>
+    <SubscriptionContext.Provider value={{ subscription, isProUser, fetchSubscription }}>
       {children}
     </SubscriptionContext.Provider>
   );
