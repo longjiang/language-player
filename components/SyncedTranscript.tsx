@@ -1,5 +1,3 @@
-// @/components/SyncedTranscript.tsx
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText';
@@ -23,7 +21,7 @@ export const SyncedTranscript = () => {
   );
 
   useEffect(() => {
-    if (!isProUser() && currentLineIndex >= 10 && !hasShownModalRef.current) {
+    if (!isProUser() && currentLineIndex > 2 && !hasShownModalRef.current) {
       setShowProModal(true);
       hasShownModalRef.current = true;
     }
@@ -34,7 +32,7 @@ export const SyncedTranscript = () => {
   }, []);
 
   const renderContent = () => {
-    if (!isProUser() && currentLineIndex >= 10) {
+    if (!isProUser() && currentLineIndex > 2) {
       return <ThemedText>You've reached the limit for free users.</ThemedText>;
     }
 
