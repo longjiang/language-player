@@ -11,7 +11,7 @@ const OnlyLifetimePlan = () => {
   return (
     <View style={styles.container}>
       <ThemedText type="subtitle" style={styles.centeredText}>
-        Only Lifetime Plan is available in the App Store.
+        Only the Lifetime Plan is available in the App Store
       </ThemedText>
       <ThemedText style={styles.bodyText}>
         Currently, monthly and annual subscriptions are not supported as in-app
@@ -48,19 +48,15 @@ const OnlyLifetimePlan = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: '#1D1D1D', // Adjust color as needed
     borderRadius: 10,
   },
   centeredText: {
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: 20,
-    color: '#FFFFFF', // Adjust color as needed
   },
   bodyText: {
     textAlign: "left",
-    marginBottom: 20,
-    color: '#CCCCCC', // Adjust color as needed
+    marginBottom: 26,
   },
   paymentButton: { justifyContent: "space-between", marginBottom: 8 },
 });
