@@ -3,10 +3,11 @@ import Papa from 'papaparse';
 import { Line, SyncedLine } from '@/types';
 
 export const  parseSubtitles = (csvData: string) => {
-  return Papa.parse(csvData, {
+  const parsedSubs = Papa.parse(csvData, {
     header: true,
     dynamicTyping: true,
   }).data;
+  return parsedSubs.filter((line: any) => line.starttime && line.line && line.line.toString().trim());
 };
 
 
