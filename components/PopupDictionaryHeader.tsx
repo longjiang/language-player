@@ -13,6 +13,7 @@ import { popupDictionaryHeaderStyles as styles } from "@/src/styles";
 import { speakText } from "@/src/speech";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ChatGPT } from "@/components/ChatGPT";
+import { GradientLine } from "./GradientLine";
 
 interface PopupDictionaryHeaderProps {
   token: Token;
@@ -75,28 +76,58 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
   return (
     <View style={styles.headerContainer}>
       <View style={styles.header}>
-        <ThemedText type="xxlarge" style={{ flex: 1 }}>{token.text}</ThemedText>
+        <ThemedText type="xxlarge" style={{ flex: 1 }}>
+          {token.text}
+        </ThemedText>
         <View style={styles.actionButtons}>
-          <Icon name="volume-high" size={26} style={styles.iconStyle} onPress={onSpeakPress} />
-          <Icon name="content-copy" size={26} style={styles.iconStyle} onPress={onCopyPress} />
+          <Icon
+            name="volume-high"
+            size={26}
+            style={styles.iconStyle}
+            onPress={onSpeakPress}
+          />
+          <Icon
+            name="content-copy"
+            size={26}
+            style={styles.iconStyle}
+            onPress={onCopyPress}
+          />
         </View>
       </View>
       <Text style={styles.translationText}>
         <ThemedText>{token.pronunciation} • </ThemedText>
-        <Translate l1Code={l1Lang.code} l2Code={l2Lang.code} text={token.text} />
+        <Translate
+          l1Code={l1Lang.code}
+          l2Code={l2Lang.code}
+          text={token.text}
+        />
       </Text>
       <ThemedButton
         type="pro"
         style={{ marginBottom: 26 }}
         title="Let ChatGPT Explain"
         onPress={onExplainPress}
-        leadingIcon={<Icon name="chat-outline" size={20} style={styles.iconStyle} />}
+        leadingIcon={
+          <Icon name="chat-outline" size={20} style={styles.iconStyle} />
+        }
       />
-      {showChatGPT && <ChatGPT prompt={chatGPTPrompt} />}
+      {showChatGPT && (
+        <View style={{ marginVertical: 26 }}>
+          <GradientLine />
+          <View style={{ marginVertical: 26 }}>
+            <ChatGPT prompt={chatGPTPrompt} />
+          </View>
+          <GradientLine />
+        </View>
+      )}
       <View style={styles.contextRow}>
         <View style={{ flex: 1 }}>
-          <ThemedText style={styles.contextText} type="large">{context}</ThemedText>
-          <ThemedText style={styles.translatedContextText} variant="secondary">{translatedContext || translation}</ThemedText>
+          <ThemedText style={styles.contextText} type="large">
+            {context}
+          </ThemedText>
+          <ThemedText style={styles.translatedContextText} variant="secondary">
+            {translatedContext || translation}
+          </ThemedText>
         </View>
         <ThemedButton
           type="ghost"
