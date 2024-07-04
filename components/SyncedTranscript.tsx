@@ -1,14 +1,21 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import Papa from 'papaparse';
+// @/components/SyncedTranscript.tsx
+
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Text } from 'react-native';
 import { ThemedText } from './ThemedText';
-import { VideoWithTranscriptProvider, useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext"
-import { Line, SyncedLine } from '@/types';
+import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext"
 import { TokenizedText } from './TokenizedText';
+import { SyncedLine } from "@/types";
 
 export const SyncedTranscript = () => {
   
-  const { video, syncedLines, currentLine } = useVideoWithTranscriptContext();
+  const { syncedLines, currentLine } = useVideoWithTranscriptContext();
+  const currentLineIndex = syncedLines.findIndex(
+    (line: SyncedLine) => 
+      line.starttime === currentLine?.starttime &&
+      line.l1Line === currentLine?.l1Line &&
+      line.l2Line === currentLine?.l2Line
+  );
 
   return (
       <View style={styles.container}>
