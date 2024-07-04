@@ -1,13 +1,27 @@
-import React, { memo, useRef, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Token } from './Token'; // Adjust this import path if needed
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-export const TokenizedText = memo(({ text, translation, textScale, textWeight }) => {
+interface TokenizedTextProps {
+  text: string;
+  translation?: string;
+  textScale?: number;
+  textWeight?: 'bold' | 'regular';
+  align?: 'left' | 'center' | 'right';
+}
+
+export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({ 
+  text, 
+  translation, 
+  textScale = 1, 
+  textWeight, 
+  align = 'left' 
+}) => {
   console.log('🍎 TokenizedText rendering:', text);
 
-  const tokensRef = useRef([]);
+  const tokensRef = useRef<Array<{ text: string }>>([]);
   const { tokenizer } = useDictionary();
   const { l2Lang } = useLanguage();
 
@@ -26,7 +40,7 @@ export const TokenizedText = memo(({ text, translation, textScale, textWeight })
   }, [text, tokenizer, l2Lang]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { alignItems: align }]}>
       {tokensRef.current.map((token, index) => (
         <Token 
           key={index} 
