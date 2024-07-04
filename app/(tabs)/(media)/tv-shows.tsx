@@ -1,5 +1,5 @@
 // @/app/tv-shows.tsx
-// @/app/tv-shows.tsx
+
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -10,11 +10,11 @@ import { getCollectionItems } from "@/src/api/directus";
 import { ThemedInput } from "@/components/ThemedInput";
 import { FlatList } from "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { ShowCard, Show } from "@/components/ShowCard";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { tvShowsStyles as styles } from "@/src/styles";
 
 const TVShowsScreen = () => {
   const [items, setItems] = useState<Show[]>([]);
@@ -117,23 +117,6 @@ const TVShowsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    marginBottom: 26,
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  spinnerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 100,
-  },
-});
+
 
 export default TVShowsScreen;
