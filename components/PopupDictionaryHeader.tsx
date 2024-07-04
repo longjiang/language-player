@@ -102,7 +102,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
           text={token.text}
         />
       </Text>
-      <ThemedButton
+      {!showChatGPT && <ThemedButton
         type="pro"
         style={{ marginBottom: 26 }}
         title="Let ChatGPT Explain"
@@ -110,11 +110,11 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
         leadingIcon={
           <Icon name="chat-outline" size={20} style={styles.iconStyle} />
         }
-      />
+      />}
       {showChatGPT && (
-        <View style={{ marginVertical: 26 }}>
+        <View style={{ marginBottom: 16 }}>
           <GradientLine />
-          <View style={{ marginVertical: 26 }}>
+          <View style={{ marginVertical: 10 }}>
             <ChatGPT prompt={chatGPTPrompt} />
           </View>
           <GradientLine />

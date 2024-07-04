@@ -137,11 +137,7 @@ export function ThemedButton({
   ) : null;
 
   const gradientColors = [
-    "#00C853",
-    "#72C30B",
-    "#2EC0FF",
-    "#6C7CDE",
-    "#D20EA7",
+    '#00B2FF', '#6C7CDE', '#DB0DC6'
   ];
   return (
     <TouchableOpacity
