@@ -249,3 +249,45 @@ export const videoWithTranscriptStyles = StyleSheet.create({
     flexDirection: "row",
   },
 });
+
+export const proFeatureModalStyles = StyleSheet.create({
+  iconStyle: {
+    color: "#fff",
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+  },
+  modalContainer: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalCloseIcon: {
+    alignSelf: "flex-end",
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  upgradeButton: {
+    backgroundColor: "#6200EE",
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  upgradeButtonText: {
+    color: "#fff",
+    fontSize: 16,
+  },
+});
