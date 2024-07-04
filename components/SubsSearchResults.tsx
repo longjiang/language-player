@@ -66,7 +66,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
           style={{ fontWeight: "regular" }}
         />
       </View>
-      <VideoWithTranscript isMini={false} showHeader={false} />
+      <VideoWithTranscript isMini={false} showHeader={false} isProCheckEnabled={false} />
       <ThemedRBSheet
         ref={refRBSheet}
         height={screenHeight - 200}
