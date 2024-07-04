@@ -297,3 +297,22 @@ export const goProStyles = StyleSheet.create({
   footerText: { marginTop: 10 },
   rocketImage: { width: 59, height: 51, position: "absolute", top: 20, right: 20 },
 });
+
+export const tvShowsStyles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    marginBottom: 26,
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  spinnerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 100,
+  },
+});

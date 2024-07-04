@@ -30,7 +30,8 @@
       "expo-router",
       "expo-font",
       "expo-localization",
-      "expo-secure-store"
+      "expo-secure-store",
+      "react-native-iap"
     ],
     "experiments": {
       "typedRoutes": true
