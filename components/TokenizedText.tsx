@@ -1,26 +1,34 @@
 import React, { memo, useRef, useLayoutEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Token } from './Token'; // Adjust this import path as needed
+import { Token } from './Token'; // Adjust this import path if needed
+import { useDictionary } from '@/contexts/DictionaryContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const TokenizedText = memo(({ text }) => {
   console.log('🍎 TokenizedText rendering:', text);
 
   const tokensRef = useRef([]);
+  const { tokenizer } = useDictionary();
+  const { l2Lang } = useLanguage();
 
   useLayoutEffect(() => {
     const tokenizeText = async () => {
-      // Simulating an asynchronous operation
-      await new Promise(resolve => setTimeout(resolve, 0));
-      tokensRef.current = text.split(' ').map(word => ({ text: word }));
+      try {
+        const result = await tokenizer.tokenize(text, l2Lang);
+        tokensRef.current = result;
+      } catch (error) {
+        console.error('Tokenization error:', error);
+        tokensRef.current = [{ text }]; // Fallback to treating the entire text as one token
+      }
     };
 
     tokenizeText();
-  }, [text]);
+  }, [text, tokenizer, l2Lang]);
 
   return (
     <View style={styles.container}>
-      {text.split(' ').map((word, index) => (
-        <Token key={index} token={{ text: word }} />
+      {tokensRef.current.map((token, index) => (
+        <Token key={index} token={token} l2Lang={l2Lang} />
       ))}
     </View>
   );
