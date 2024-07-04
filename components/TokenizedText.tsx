@@ -33,6 +33,7 @@ export const TokenizedText = memo(({ text, textScale }) => {
           token={token} 
           l2Lang={l2Lang} 
           textScale={textScale}
+          context={text}
         />
       ))}
     </View>
