@@ -1,7 +1,6 @@
 // @/contexts/VideoWithTranscriptContext/usePlaylist
 
-import { useState, useEffect } from "react";
-import { PLAYER_STATES } from "react-native-youtube-iframe";
+import { useState, useEffect, useCallback } from "react";
 import { YouTubeVideo } from "@/types";
 
 export const usePlaylist = (initialVideo: YouTubeVideo, initialPlaylist: YouTubeVideo[]) => {
@@ -10,24 +9,34 @@ export const usePlaylist = (initialVideo: YouTubeVideo, initialPlaylist: YouTube
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 
   useEffect(() => {
-    const index = playlist.findIndex((video) => video.youtube_id === initialVideo.youtube_id);
+    const index = playlist.findIndex((v) => v.youtube_id === initialVideo.youtube_id);
     setCurrentVideoIndex(index);
-  }, [initialVideo]);
+  }, [initialVideo, playlist]);
+
+  const updateVideo = useCallback((newVideo: YouTubeVideo) => {
+    setVideo((prevVideo) => {
+      if (prevVideo.youtube_id !== newVideo.youtube_id) {
+        return newVideo;
+      }
+      return prevVideo;
+    });
+  }, []);
 
   useEffect(() => {
     if (currentVideoIndex < playlist.length) {
       const newVideo = playlist[currentVideoIndex];
-      if (!newVideo) return;
-      setVideo(newVideo);
+      if (newVideo) {
+        updateVideo(newVideo);
+      }
     }
-  }, [currentVideoIndex, playlist]);
+  }, [currentVideoIndex, playlist, updateVideo]);
 
-  const skipToVideo = (index: number) => {
+  const skipToVideo = useCallback((index: number) => {
     if (index >= 0 && index < playlist.length) {
       setCurrentVideoIndex(index);
-      setVideo(playlist[index]);
+      updateVideo(playlist[index]);
     }
-  };
+  }, [playlist, updateVideo]);
 
   return {
     video,
