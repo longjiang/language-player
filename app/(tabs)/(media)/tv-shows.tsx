@@ -25,6 +25,7 @@ const TVShowsScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sortOption, setSortOption] = useState("title");
+  const [localeFilter, setLocaleFilter] = useState("all");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const { l2Lang } = useLanguage();
   const rbSheetRef = useRef(null);
@@ -35,16 +36,18 @@ const TVShowsScreen = () => {
 
   useEffect(() => {
     sortItems(sortOption);
-  }, [sortOption, items]);
+    filterItems(searchQuery, localeFilter);
+  }, [sortOption, items, localeFilter]);
 
   const handleInputChange = (text: string) => {
     setSearchQuery(text);
-    filterItems(text);
+    filterItems(text, localeFilter);
   };
 
-  const filterItems = (query: string) => {
+  const filterItems = (query: string, locale: string) => {
     const filtered = items.filter(item =>
-      item.title.toLowerCase().includes(query.toLowerCase())
+      item.title.toLowerCase().includes(query.toLowerCase()) &&
+      (locale === "all" || item.locale === locale)
     );
     setFilteredItems(filtered);
   };
@@ -86,6 +89,17 @@ const TVShowsScreen = () => {
     setFilteredItems(sorted);
   };
 
+  const handleLocaleFilter = (locale: string) => {
+    setLocaleFilter(locale);
+    filterItems(searchQuery, locale);
+    rbSheetRef.current?.close();
+  };
+
+  const getUniqueLocales = () => {
+    const locales = new Set(items.map(item => item.locale).filter(Boolean));
+    return ["all", ...Array.from(locales)];
+  };
+
   const SortOption = ({ title, option }) => (
     <TouchableOpacity 
       style={styles.sortOption} 
@@ -94,7 +108,6 @@ const TVShowsScreen = () => {
         rbSheetRef.current?.close();
       }}
     >
-
       <ThemedRadio
         key={title}
         label={title}
@@ -161,10 +174,25 @@ const TVShowsScreen = () => {
         </View>
       </ThemedScreen>
 
-      <ThemedRBSheet ref={rbSheetRef} height={300}>
+      <ThemedRBSheet ref={rbSheetRef} height={400}>
         <ThemedText type="subtitle" style={{ marginBottom: 12 }}>SORT BY</ThemedText>
         <SortOption title="Title" option="title" />
         <SortOption title="Most Viewed" option="views" />
+        
+        <ThemedText type="subtitle" style={{ marginTop: 20, marginBottom: 12 }}>FILTER BY LOCALE</ThemedText>
+        {getUniqueLocales().map(locale => (
+          <TouchableOpacity 
+            key={locale}
+            style={styles.sortOption} 
+            onPress={() => handleLocaleFilter(locale)}
+          >
+            <ThemedRadio
+              label={locale === "all" ? "All Locales" : locale}
+              isSelected={localeFilter === locale}
+              onPress={() => handleLocaleFilter(locale)}
+            />
+          </TouchableOpacity>
+        ))}
       </ThemedRBSheet>
     </GestureHandlerRootView>
   );
