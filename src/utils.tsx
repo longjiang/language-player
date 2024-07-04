@@ -39,3 +39,7 @@ export const getDeltaDate = (expiresOn) => {
   const deltaDays = Math.ceil(deltaMilliseconds / (1000 * 60 * 60 * 24));
   return deltaDays;
 };
+
+export const timeout = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};

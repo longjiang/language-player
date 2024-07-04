@@ -7,18 +7,15 @@ import { VideoWithTranscript } from "./VideoWithTranscript";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { useThemeColor } from "@/hooks/useThemeColor";
-import RBSheet from "react-native-raw-bottom-sheet";
 import { SubsSearchResultsList } from "./SubsSearchResultsList";
 import { ThemedRBSheet } from "./ThemedRBSheet";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { ProFeatureModal } from "./ProFeatureModal";
+import { timeout } from "@/src/utils";
 
 export const SubsSearchResults = ({ term }: { term: string }) => {
   const { video, syncedLines, playlist, updateStartTime, currentVideoIndex, skipToVideo } =
     useVideoWithTranscriptContext();
-  const primaryBrandColor = useThemeColor({}, "primaryBrand");
-  const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const refRBSheet = useRef();
 
   const { isProUser } = useSubscription();
@@ -38,15 +35,16 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
     setShowProModal(false);
   }, []);
 
-  const onSelect = (index: number) => {
+  const onSelect = async (index: number) => {
+    refRBSheet.current.close();
     if (!isProUser() && index > 2) {
+      await timeout(1000);
       setShowProModal(true);
       skipToVideo(previousIndexRef.current); // Revert to previous index
       return;
     }
     updateStartTime(playlist[index].starttime || 0);
     skipToVideo(index);
-    refRBSheet.current.close();
   };
 
   syncedLines.find((line) => {
