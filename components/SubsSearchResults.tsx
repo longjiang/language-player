@@ -1,6 +1,6 @@
 // @/components/SubsSearchResults.tsx
 
-import React, { useRef}  from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { View, Text, Dimensions } from "react-native";
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
 import { VideoWithTranscript } from "./VideoWithTranscript";
@@ -11,6 +11,8 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { SubsSearchResultsList } from "./SubsSearchResultsList";
 import { ThemedRBSheet } from "./ThemedRBSheet";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import { ProFeatureModal } from "./ProFeatureModal";
 
 export const SubsSearchResults = ({ term }: { term: string }) => {
   const { video, syncedLines, playlist, updateStartTime, currentVideoIndex, skipToVideo } =
@@ -19,21 +21,42 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const refRBSheet = useRef();
 
-  // We need to skip to the line containing the `term`
-  // We watch change of `video`, then find the l2 line containing the result
-  // Then set startTime
+  const { isProUser } = useSubscription();
+  const [showProModal, setShowProModal] = useState(false);
+  const previousIndexRef = useRef(currentVideoIndex);
+
+  useEffect(() => {
+    if (!isProUser() && currentVideoIndex > 2) {
+      setShowProModal(true);
+      skipToVideo(previousIndexRef.current); // Revert to previous index
+    } else {
+      previousIndexRef.current = currentVideoIndex; // Update the previous index
+    }
+  }, [currentVideoIndex, isProUser, skipToVideo]);
+
+  const closeProModal = useCallback(() => {
+    setShowProModal(false);
+  }, []);
+
+  const onSelect = (index: number) => {
+    if (!isProUser() && index > 2) {
+      setShowProModal(true);
+      skipToVideo(previousIndexRef.current); // Revert to previous index
+      return;
+    }
+    updateStartTime(playlist[index].starttime || 0);
+    skipToVideo(index);
+    refRBSheet.current.close();
+  };
 
   syncedLines.find((line) => {
     if (typeof line.l2Line === 'string' && line.l2Line.includes(term)) {
-      // We need to find the index of the line in the playlist
       const foundLine = syncedLines.find((item) => item.l2Line && item.l2Line?.includes(term));
 
       if (foundLine) {
-        // If the term is found, proceed
         const { starttime, l1Line, l2Line } = foundLine;
         updateStartTime(starttime);
       } else {
-        // Handle the case where the term is not found
         console.log(`Term "${term}" not found in synced lines.`);
       }
     }
@@ -42,12 +65,6 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   const openModal = () => {
     refRBSheet.current.open();
   };
-
-  const onSelect = (index: number) => {
-    updateStartTime(playlist[index].starttime || 0);
-    skipToVideo(index);
-    refRBSheet.current.close();
-  }
 
   const screenHeight = Dimensions.get("screen").height;
 
@@ -73,6 +90,11 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
       >
         <SubsSearchResultsList results={playlist} term={term} onSelect={onSelect} />
       </ThemedRBSheet>
+      <ProFeatureModal
+        visible={showProModal}
+        onClose={closeProModal}
+        upgradeText="Upgrade to Pro to access more videos!"
+      />
     </View>
   );
 };
