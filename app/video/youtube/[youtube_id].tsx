@@ -3,7 +3,6 @@ import React, { useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  Dimensions,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -17,14 +16,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { addToWatchHistory } from "@/src/api/directus/user-watch-history";
 
-
 const YouTubeVideoScreen = () => {
   const params = useLocalSearchParams();
   const { l2Lang } = useLanguage();
   const { getStoredAuthToken } = useAuth();
   let youtubeIdFromParams = Array.isArray(params?.youtube_id)
     ? params?.youtube_id[0]
-    : params?.youtube_id; // params can sometimes return an array
+    : params?.youtube_id;
   
   if (!youtubeIdFromParams) return;
 
@@ -35,9 +33,8 @@ const YouTubeVideoScreen = () => {
     videoPlayerState,
   } = useVideoPlayer();
 
-  const route = useRoute(); // This hook fetches information about the current route
+  const route = useRoute();
 
-  // Fetch the video data from the API
   useEffect(() => {
     const fetchVideo = async () => {
       if (!l2Lang) return;
@@ -52,13 +49,23 @@ const YouTubeVideoScreen = () => {
         if (!videos) return;
         const newVideo = videos[0];
         
-        setVideoPlayerState((prev) => ({
-          ...prev,
-          video: newVideo,
-          isMini: false,
-        }));
+        setVideoPlayerState((prev) => {
+          // Find the index of the video in the queue
+          const videoIndex = prev.queue.findIndex(v => v.youtube_id === newVideo.youtube_id);
+          
+          // Create a new queue with the updated video
+          const updatedQueue = videoIndex !== -1
+            ? prev.queue.map((v, index) => index === videoIndex ? { ...v, ...newVideo } : v)
+            : prev.queue;
 
-        // Add to watch history
+          return {
+            ...prev,
+            video: newVideo,
+            queue: updatedQueue,
+            isMini: false,
+          };
+        });
+
         const authToken = await getStoredAuthToken();
         if (authToken) {
           await addToWatchHistory(l2Lang.id, newVideo.id, 0, authToken);
@@ -68,7 +75,7 @@ const YouTubeVideoScreen = () => {
       }
     };
 
-    if (videoPlayerState.video && !videoPlayerState.video.subs_l2?.length) { // Skeletal video needs to be fleshed
+    if (videoPlayerState.video && !videoPlayerState.video.subs_l2?.length) {
       fetchVideo();
     }
   }, [videoPlayerState.video]);
@@ -105,6 +112,8 @@ const YouTubeVideoScreen = () => {
     return <Text>Loading...</Text>;
   }
 
+  // console.log(videoPlayerState.video);
+
   return (
     <GestureHandlerRootView>
       <View>
@@ -112,7 +121,7 @@ const YouTubeVideoScreen = () => {
           initialVideo={ videoPlayerState.video }
           initialPlaylist={ videoPlayerState.queue }
           isMainPlayer={true}
-          key={`video-player-${videoPlayerState.video.youtube_id}-${videoPlayerState?.video?.subs_l2?.length}`}
+          key={`video-with-transcript-provider-${videoPlayerState.video.youtube_id}-${videoPlayerState?.video?.subs_l2?.length}`}
 
         >
           <VideoWithTranscript

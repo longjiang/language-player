@@ -4,6 +4,8 @@ import { PLAYER_STATES } from "react-native-youtube-iframe";
 import { findSubtitle } from "@/src/subs";
 import { VideoWithTranscriptContextType } from "./types";
 import { syncLines } from "@/src/subs";
+import { router } from "expo-router";
+import { useRoute } from "@react-navigation/native";
 
 const VideoWithTranscriptContext = createContext<VideoWithTranscriptContextType | undefined>(undefined);
 
@@ -29,6 +31,12 @@ export const VideoWithTranscriptProvider: React.FC<{
   const [fullscreen, setFullscreen] = useState(false);
   const [duration, setDuration] = useState(0);
   const [startTime, setStartTime] = useState(0);
+  let route;
+  try {
+    route = useRoute();
+  } catch (e) {
+    // Not in a navigator
+  }
 
   // Merged usePlaylist logic
   const [video, setVideo] = useState<YouTubeVideo>(initialVideo);
@@ -41,6 +49,7 @@ export const VideoWithTranscriptProvider: React.FC<{
   const [currentLine, setCurrentLine] = useState<SyncedLine | null>(null);
 
   useEffect(() => {
+    setVideo(initialVideo);
     const index = playlist.findIndex((v) => v.youtube_id === initialVideo.youtube_id);
     setCurrentVideoIndex(index);
   }, [initialVideo, playlist]);
@@ -58,21 +67,25 @@ export const VideoWithTranscriptProvider: React.FC<{
     if (currentVideoIndex < playlist.length) {
       const newVideo = playlist[currentVideoIndex];
       if (newVideo) {
-        updateVideo(newVideo);
+        if (newVideo.youtube_id !== video.youtube_id) updateVideo(newVideo);
       }
     }
   }, [currentVideoIndex, playlist, updateVideo]);
 
   const skipToVideo = useCallback((index: number) => {
-    if (index >= 0 && index < playlist.length) {
+    const newVideo = playlist[index];
+    // console.log('🍉 route', route?.name)
+    if (route?.name === "video/youtube/[youtube_id]") {
+      // console.log('🍉 ROUTING TO', `video/youtube/${newVideo.youtube_id}`)
+      router.navigate(`video/youtube/${newVideo.youtube_id}`);
+    } else if (index >= 0 && index < playlist.length) {
       setCurrentVideoIndex(index);
-      updateVideo(playlist[index]);
+      updateVideo(newVideo);
     }
   }, [playlist, updateVideo]);
 
   useEffect(() => {
     if (!video?.subs_l2?.length) setSyncedLines([]);
-    console.log('useSyncedLines', video.subs_l2);
     const l1Lines = video.subs_l1 || [];
     const l2Lines = video.subs_l2 || [];
     const syncedLines = syncLines(l1Lines, l2Lines);
@@ -118,7 +131,7 @@ export const VideoWithTranscriptProvider: React.FC<{
     if (previousLine) seekTo(previousLine.starttime);
   };
 
-  if (video) console.log('vwtContext', 'syncedLines=', syncedLines, 'video=', video);
+  // if (video) console.log('vwtContext END', 'syncedLines=', syncedLines, 'video=', video);
 
   return (
     <VideoWithTranscriptContext.Provider
