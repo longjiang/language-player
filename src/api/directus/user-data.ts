@@ -12,7 +12,7 @@ import { getCollectionItems, GenericCollectionItem, patchCollectionItem, postCol
 export const getUserData = async (authToken?: string): Promise<GenericCollectionItem | undefined> => {
   try {
     // Fetch the first item by setting the limit to 1
-    const items = await getCollectionItems<GenericCollectionItem>('user_data', { limit: 1 }, authToken);
+    const items = await getCollectionItems<GenericCollectionItem>('user_data', { limit: 1 }, authToken, true);
     // Return the first item, or undefined if no items were returned
     const userData = items[0];
     userData.saved_words = JSON.parse(userData.saved_words);
