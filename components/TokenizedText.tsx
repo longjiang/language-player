@@ -1,18 +1,26 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useRef, useLayoutEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Token } from './Token';
+import { Token } from './Token'; // Adjust this import path as needed
 
 export const TokenizedText = memo(({ text }) => {
   console.log('🍎 TokenizedText rendering:', text);
 
-  const tokens = useMemo(() => {
-    return text.split(' ').map(word => ({ text: word }));
+  const tokensRef = useRef([]);
+
+  useLayoutEffect(() => {
+    const tokenizeText = async () => {
+      // Simulating an asynchronous operation
+      await new Promise(resolve => setTimeout(resolve, 0));
+      tokensRef.current = text.split(' ').map(word => ({ text: word }));
+    };
+
+    tokenizeText();
   }, [text]);
 
   return (
     <View style={styles.container}>
-      {tokens.map((token, index) => (
-        <Token key={index} token={token} />
+      {text.split(' ').map((word, index) => (
+        <Token key={index} token={{ text: word }} />
       ))}
     </View>
   );
