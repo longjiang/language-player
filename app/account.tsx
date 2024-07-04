@@ -6,37 +6,24 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { PricingBlock } from "@/components/PricingBlock";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { getUserSubscription } from "@/src/api/directus/subscriptions";
-import * as SecureStore from 'expo-secure-store';
 import { getDeltaDate } from "@/src/utils";
-import { GenericCollectionItem } from "@/src/api/directus";
 import { User } from "@/src/api/directus/user";
 import { useAuth } from "@/contexts/AuthContext";
-
-
+import { useSubscription } from "@/contexts/SubscriptionContext";
 
 const AccountScreen = () => {
   const [userInfo, setUserInfo] = useState<User | null>(null);
-  const [subscription, setSubscription] = useState<GenericCollectionItem | null>(null);
   const secondaryTextColor = useThemeColor({}, "secondaryText");
   const { handleLogout, getStoredUserInfo } = useAuth();
+  const { subscription } = useSubscription();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         const info = await getStoredUserInfo();
         setUserInfo(info);
-
-        if (info && info.id) {
-          const authToken = await SecureStore.getItemAsync('access_token');
-          if (!authToken) throw new Error('Failed to retrieve stored auth token');
-          const subscription = await getUserSubscription(info.id, authToken);
-          if (subscription) {
-            setSubscription(subscription);
-          }
-        }
       } catch (error: any) {
-        Alert.alert('Error', error.message);
+        Alert.alert("Error", error.message);
       }
     };
 
