@@ -6,10 +6,22 @@ import { ThemedText } from './ThemedText';
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
 import { TokenizedText } from './TokenizedText';
 
-export const SyncedTranscript: React.FC = () => {
+interface SyncedTranscriptProps {
+  transcriptLimitReached?: boolean;
+}
+
+export const SyncedTranscript: React.FC<SyncedTranscriptProps> = ({ transcriptLimitReached = false }) => {
   const { syncedLines, currentLine } = useVideoWithTranscriptContext();
 
   const renderContent = () => {
+    if (transcriptLimitReached) {
+      return (
+        <ThemedText style={styles.limitReachedText} type="default">
+          Transcript limit reached. Please upgrade to Pro to access more transcripts.
+        </ThemedText>
+      );
+    }
+
     return (
       <>
         {currentLine?.l2Line && (
@@ -50,6 +62,12 @@ const styles = StyleSheet.create({
   subtitle: {
     paddingHorizontal: 10,
     paddingVertical: 4,
+  },
+  limitReachedText: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    textAlign: 'center',
+    color: '#FF0000', // Example color for emphasis, adjust as needed
   },
 });
 

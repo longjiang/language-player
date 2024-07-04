@@ -45,22 +45,13 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
     setShowProModal(false);
   }, []);
 
-  const renderTranscriptContent = () => {
-    if (isProCheckEnabled && !isProUser() && currentLineIndex > 2) {
-      return <ThemedText>You've reached the limit for free users.</ThemedText>;
-    }
-
-    return <SyncedTranscript />;
-  };
-
   return (
     <View>
       {!isMini ? (
-        <VideoWithTranscriptFull showHeader={showHeader} />
+        <VideoWithTranscriptFull showHeader={showHeader} transcriptLimitReached={isProCheckEnabled && !isProUser() && currentLineIndex > 2} />
       ) : (
         <VideoWithTranscriptMini />
       )}
-      {renderTranscriptContent()}
       <ProFeatureModal
         visible={showProModal}
         onClose={closeProModal}

@@ -17,7 +17,7 @@ interface VideoWithTranscriptFullProps {
   showHeader?: boolean;
 }
 
-export const VideoWithTranscriptFull: React.FC<VideoWithTranscriptFullProps> = ({ showHeader = false }) => {
+export const VideoWithTranscriptFull: React.FC<VideoWithTranscriptFullProps> = ({ showHeader = false, transcriptLimitReached = false }) => {
   const screenWidth = Dimensions.get("window").width;
   const videoHeight = screenWidth * 0.5625; // 16:9 aspect ratio
 
@@ -69,7 +69,7 @@ export const VideoWithTranscriptFull: React.FC<VideoWithTranscriptFullProps> = (
           startTime={startTime}
         />
         <VideoControlBar />
-        <SyncedTranscript />
+        <SyncedTranscript transcriptLimitReached={transcriptLimitReached} />
       </View>
     </View>
   );
