@@ -25,6 +25,4 @@ export interface VideoWithTranscriptContextType {
   skipToNextVideo: () => void;
   skipToPreviousVideo: () => void;
   skipToVideo: (index: number) => void;
-  showProModal: boolean;
-  setShowProModal: (show: boolean) => void;
 }

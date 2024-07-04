@@ -23,8 +23,7 @@ export const VideoWithTranscriptProvider: React.FC<{
   initialPlaylist: YouTubeVideo[];
   children: React.ReactNode;
   isMainPlayer: boolean;
-  pro: boolean; // New prop to check if the user is a pro user
-}> = ({ initialVideo, initialPlaylist, children, isMainPlayer = false, pro = false }) => {
+}> = ({ initialVideo, initialPlaylist, children, isMainPlayer = false }) => {
   initialPlaylist = initialPlaylist || [initialVideo];
   const [playbackState, setPlaybackState] = useState(PLAYER_STATES.UNSTARTED);
   const [currentTime, setCurrentTime] = useState(0);
@@ -33,7 +32,6 @@ export const VideoWithTranscriptProvider: React.FC<{
   const [fullscreen, setFullscreen] = useState(false);
   const [duration, setDuration] = useState(0);
   const [startTime, setStartTime] = useState(0);
-  const [showProModal, setShowProModal] = useState(false); // State to control modal visibility
 
   const { video, playlist, currentVideoIndex, skipToVideo } = usePlaylist(initialVideo, initialPlaylist);
   const syncedLines = useSyncedLines(video);
@@ -43,16 +41,6 @@ export const VideoWithTranscriptProvider: React.FC<{
     const subtitle = findSubtitle(currentTime, syncedLines);
     setCurrentLine(subtitle || null);
   }, [currentTime, syncedLines]);
-
-  useEffect(() => {
-    if (!pro && currentLine) {
-      const currentLineIndex = syncedLines.findIndex(line => line.starttime === currentLine.starttime);
-      if (currentLineIndex >= 10) {
-        setPlayVideo(false);
-        setShowProModal(true);
-      }
-    }
-  }, [currentLine, pro, syncedLines]);
 
   const updatePlaybackState = (state: PLAYER_STATES) => setPlaybackState(state);
   const updateCurrentTime = (time: number) => setCurrentTime(time);
@@ -117,8 +105,6 @@ export const VideoWithTranscriptProvider: React.FC<{
         skipToNextVideo,
         skipToPreviousVideo,
         skipToVideo,
-        showProModal, // Added to context value
-        setShowProModal, // Added to context value
       }}
     >
       {children}
