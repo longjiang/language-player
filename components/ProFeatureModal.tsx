@@ -1,10 +1,12 @@
 // @/components/ProFeatureModal.tsx
 
 import React from "react";
-import { View, Modal, Text, TouchableOpacity } from "react-native";
+import { View, Modal, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import { proFeatureModalStyles as styles } from "@/src/styles";
+import { ThemedText } from "./ThemedText";
+import { ThemedButton } from "./ThemedButton";
 
 interface ProFeatureModalProps {
   visible: boolean;
@@ -36,17 +38,20 @@ export const ProFeatureModal: React.FC<ProFeatureModalProps> = ({
         onPressOut={onClose}
       >
         <View style={styles.modalContainer}>
-          <TouchableOpacity onPress={onClose}>
-            <Icon name="close" size={30} style={styles.modalCloseIcon} />
+          <TouchableOpacity onPress={onClose} style={styles.modalCloseIcon}>
+            <Icon name="close" size={30} style={styles.iconStyle} />
           </TouchableOpacity>
-          <Text style={styles.modalTitle}>Pro Feature</Text>
-          <Text style={styles.modalText}>{upgradeText}</Text>
-          <TouchableOpacity
-            style={styles.upgradeButton}
-            onPress={handleUpgrade}
-          >
-            <Text style={styles.upgradeButtonText}>Upgrade to Pro</Text>
-          </TouchableOpacity>
+          <Image
+            source={require("@/assets/images/pro-rocket.png")}
+            style={{
+              width: 59,
+              height: 51,
+              marginBottom: 26,
+            }}
+          />
+          <ThemedText style={styles.modalTitle} type="title">Pro Feature</ThemedText>
+          <ThemedText style={styles.modalText} type="default">{upgradeText}</ThemedText>
+          <ThemedButton title="Upgrade to Pro" type="pro" onPress={handleUpgrade} trailingIcon={<Icon name="chevron-right" />} />
         </View>
       </TouchableOpacity>
     </Modal>

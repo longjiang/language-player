@@ -1,3 +1,5 @@
+// @/src/styles.ts
+
 import { StyleSheet } from "react-native";
 import { Typography } from "@/constants/Typography";
 import { Swatches } from "@/constants/Swatches";
@@ -250,6 +252,8 @@ export const videoWithTranscriptStyles = StyleSheet.create({
   },
 });
 
+// @/src/styles.ts
+
 export const proFeatureModalStyles = StyleSheet.create({
   iconStyle: {
     color: "#fff",
@@ -261,30 +265,21 @@ export const proFeatureModalStyles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.9)",
   },
   modalContainer: {
-    width: "80%",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
+    padding: 26,
     alignItems: "center",
+    position: 'relative', // Added to allow absolute positioning inside
   },
   modalCloseIcon: {
-    alignSelf: "flex-end",
+    position: "absolute",
+    top: 16,
+    right: 16,
   },
   modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
     marginBottom: 10,
   },
   modalText: {
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  upgradeButton: {
-    backgroundColor: "#6200EE",
-    borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    marginBottom: 28,
+    textAlign: 'center',
   },
   upgradeButtonText: {
     color: "#fff",

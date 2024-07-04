@@ -145,14 +145,14 @@ export function ThemedButton({
       disabled={disabled}
       style={{ opacity: disabled ? 0.5 : 1, ...style }}
     >
-      {type === "pro" && (
+      {/* {type === "pro" && (
         <ThemedText
           type="smallBold"
           style={{ color: "#2EC0FF", alignSelf: "center" }}
         >
           PRO FEATURE
         </ThemedText>
-      )}
+      )} */}
       <LinearGradient
         colors={type === "pro" ? gradientColors : []}
         style={{
