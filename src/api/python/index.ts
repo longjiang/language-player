@@ -1,3 +1,5 @@
+// @/src/api/python/index.ts
+
 import axios, { AxiosInstance } from "axios";
 
 export const PYTHON_SERVER = 'https://python.zerotohero.ca'; // Replace with your server URL

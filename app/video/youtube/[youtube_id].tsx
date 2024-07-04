@@ -15,10 +15,11 @@ import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { addToWatchHistory } from "@/src/api/directus/user-watch-history";
+import fetchL1Subtitles from "@/src/fetchSubs";
 
 const YouTubeVideoScreen = () => {
   const params = useLocalSearchParams();
-  const { l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const { getStoredAuthToken } = useAuth();
   let youtubeIdFromParams = Array.isArray(params?.youtube_id)
     ? params?.youtube_id[0]
@@ -48,6 +49,9 @@ const YouTubeVideoScreen = () => {
         });
         if (!videos) return;
         const newVideo = videos[0];
+        if (!newVideo.subs_l1?.length) {
+          newVideo.subs_l1 = await fetchL1Subtitles(newVideo.youtube_id, { code: l1Lang.code }) || [];
+        }
         
         setVideoPlayerState((prev) => {
           // Find the index of the video in the queue

@@ -1,3 +1,5 @@
+// @/src/api/python/video
+
 import axios, { AxiosResponse } from "axios";
 import { API } from "@/src/api/python";
 import { YouTubeVideo } from "@/types";
