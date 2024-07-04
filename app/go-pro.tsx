@@ -30,6 +30,33 @@ const GoProScreen = () => {
 
   const currentPlan = isProUser() ? subscription?.type : null;
 
+  const getExpirationText = () => {
+    if (!subscription || !isProUser()) return "";
+
+    const expiresOn = new Date(subscription.expires_on);
+    const now = new Date();
+    const diffTime = Math.abs(expiresOn.getTime() - now.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    const formatTimeRemaining = (days) => {
+      if (days < 31) {
+        return `${days} day${days > 1 ? 's' : ''}`;
+      } else {
+        const months = Math.floor(days / 30);
+        const remainingDays = days % 30;
+        return `${months} month${months > 1 ? 's' : ''} ${remainingDays} day${remainingDays > 1 ? 's' : ''}`;
+      }
+    };
+
+    const timeRemaining = formatTimeRemaining(diffDays);
+
+    if (subscription.payment_customer_id) {
+      return `Auto-renews in ${timeRemaining}.`;
+    } else {
+      return `Expiring in ${timeRemaining}.`;
+    }
+  };
+
   return (
     <ThemedScreen title="Go Pro" onBackPress={() => router.back()}>
       <Image
@@ -63,25 +90,20 @@ const GoProScreen = () => {
         {isProUser() ? "Your Current Plan" : "Choose Your Plan"}
       </ThemedText>
       {[
-        { price: "$12/mo", duration: "Auto-renews each month.", plan: "monthly" },
-        { price: "$89/yr", duration: "Auto renews annually.", plan: "annual" },
+        { price: "$12/mo", duration: "Billed each month.", plan: "monthly" },
+        { price: "$89/yr", duration: "Billed annually.", plan: "annual" },
         { price: "$199/lifetime", duration: "Never Expires.", plan: "lifetime", recommended: true },
       ].map((pricing) => (
         <PricingBlock
           key={pricing.plan}
           price={pricing.price}
-          duration={pricing.duration}
+          duration={isProUser() && pricing.plan === currentPlan ? getExpirationText() : pricing.duration}
           current={isProUser() && pricing.plan === currentPlan}
           recommended={pricing.recommended}
           onPress={() => onSelect(pricing.plan)}
           disabled={isProUser() && pricing.plan === currentPlan}
         />
       ))}
-      {isProUser() && subscription && (
-        <ThemedText style={styles.activeSubscriptionText}>
-          Your {currentPlan} subscription is active until {new Date(subscription.expires_on).toLocaleDateString()}
-        </ThemedText>
-      )}
       <ThemedText style={styles.footerText} type="small">
         1. Assuming you will live longer than 2.4 years.
       </ThemedText>
