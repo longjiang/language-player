@@ -11,12 +11,14 @@ import PaymentMethods from "@/components/PaymentMethods";
 import IOSPaymentMethods from "@/components/IOSPaymentMethods";
 import Failure from "@/components/Failure";
 import OnlyLifetimePlan from "@/components/OnlyLifetimePlan";
-import { goProStyles as styles } from "@/src/styles"
+import { goProStyles as styles } from "@/src/styles";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 
 const GoProScreen = () => {
   const [paymentError, setPaymentError] = useState<boolean>(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const refRBSheet = useRef();
+  const { subscription, isProUser } = useSubscription();
 
   const onSelect = (value: string) => {
     console.log("Selected:", value);
@@ -25,6 +27,8 @@ const GoProScreen = () => {
   };
 
   const showOnlyLifetimePlan = Platform.OS === "ios" && selectedPlan !== "lifetime";
+
+  const currentPlan = isProUser() ? subscription?.type : null;
 
   return (
     <ThemedScreen title="Go Pro" onBackPress={() => router.back()}>
@@ -56,22 +60,28 @@ const GoProScreen = () => {
         ))}
       </View>
       <ThemedText style={styles.choosePlan} type="subtitle">
-        Choose Your Plan
+        {isProUser() ? "Your Current Plan" : "Choose Your Plan"}
       </ThemedText>
       {[
         { price: "$12/mo", duration: "Auto-renews each month.", plan: "monthly" },
-        { price: "$89/yr", duration: "Auto renews in 5 months 10 days.", plan: "annual", current: true },
+        { price: "$89/yr", duration: "Auto renews annually.", plan: "annual" },
         { price: "$199/lifetime", duration: "Never Expires.", plan: "lifetime", recommended: true },
       ].map((pricing) => (
         <PricingBlock
           key={pricing.plan}
           price={pricing.price}
           duration={pricing.duration}
-          current={pricing.current}
+          current={isProUser() && pricing.plan === currentPlan}
           recommended={pricing.recommended}
           onPress={() => onSelect(pricing.plan)}
+          disabled={isProUser() && pricing.plan === currentPlan}
         />
       ))}
+      {isProUser() && subscription && (
+        <ThemedText style={styles.activeSubscriptionText}>
+          Your {currentPlan} subscription is active until {new Date(subscription.expires_on).toLocaleDateString()}
+        </ThemedText>
+      )}
       <ThemedText style={styles.footerText} type="small">
         1. Assuming you will live longer than 2.4 years.
       </ThemedText>
@@ -92,6 +102,5 @@ const GoProScreen = () => {
     </ThemedScreen>
   );
 };
-
 
 export default GoProScreen;
