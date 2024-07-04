@@ -127,7 +127,7 @@ const TVShowsScreen = () => {
               />
             )}
             <ThemedInput
-              placeholder="Search all Chinese content"
+              placeholder="Filter by title..."
               style={{ flex: 1, marginRight: 6 }}
               icon="magnify"
               size="small"
