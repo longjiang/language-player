@@ -19,6 +19,7 @@ export const ProFeatureModal: React.FC<ProFeatureModalProps> = ({
 }) => {
   const handleUpgrade = () => {
     onClose();
+    router.navigate("../");
     router.navigate("/go-pro");
   };
 
