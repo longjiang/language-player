@@ -12,7 +12,8 @@ export const getUserSubscription = async (
   const subscriptions: GenericCollectionItem[] = await getCollectionItems<GenericCollectionItem>(
     "subscriptions",
     queryParams,
-    authToken
+    authToken,
+    true // cache busting
   );
 
   if (subscriptions.length > 0) {

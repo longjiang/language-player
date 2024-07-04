@@ -16,8 +16,13 @@ const API: AxiosInstance = axios.create({
 export const getCollectionItems = async <T = GenericCollectionItem>(
   collectionName: string,
   queryParams: Record<string, any> = {},
-  authToken?: string
+  authToken?: string,
+  cacheBusting: boolean = false
 ): Promise<T[]> => {
+  if (cacheBusting) {
+    queryParams._ = new Date().getTime(); // Add cache-busting parameter
+  }
+
   const queryString = new URLSearchParams(buildParams(queryParams)).toString();
   const url = `/items/${collectionName}${queryString ? `?${queryString}` : ""}`;
 
@@ -30,14 +35,16 @@ export const getCollectionItems = async <T = GenericCollectionItem>(
 export const getItemById = async <T = GenericCollectionItem>(
   collectionName: string,
   id: number,
-  authToken?: string
+  authToken?: string,
+  cacheBusting: boolean = false
 ): Promise<T> => {
+  const url = `/items/${collectionName}/${id}${
+    cacheBusting ? `?_=${new Date().getTime()}` : ""
+  }`;
+
   const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
 
-  const response: AxiosResponse<{ data: T }> = await API.get(
-    `/items/${collectionName}/${id}`,
-    { headers }
-  );
+  const response: AxiosResponse<{ data: T }> = await API.get(url, { headers });
   return response.data.data;
 };
 
@@ -103,7 +110,6 @@ export const patchCollectionItem = async <T = GenericCollectionItem>(
     throw error;
   }
 };
-
 
 /**
  * Serialize an object into a URLSearchParams object. E.g. it takes an object like:
