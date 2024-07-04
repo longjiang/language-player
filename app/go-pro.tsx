@@ -1,4 +1,5 @@
-// @/app/select-l2.tsx
+// @/app/go-pro.tsx
+
 import React, { useRef, useState } from "react";
 import { StyleSheet, View, Image, Platform } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
@@ -6,14 +7,14 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import { router } from "expo-router";
 import { PricingBlock } from "@/components/PricingBlock";
 import { ThemedRBSheet } from "@/components/ThemedRBSheet";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import PaymentMethods from "@/components/PaymentMethods";
 import IOSPaymentMethods from "@/components/IOSPaymentMethods";
 import Failure from "@/components/Failure";
-import { goProStyles as styles } from "@/src/styles";
+import OnlyLifetimePlan from "@/components/OnlyLifetimePlan";
+import { goProStyles as styles } from "@/src/styles"
 
 const GoProScreen = () => {
-  const [paymentError, setPaymentError] = useState<boolean>(true);
+  const [paymentError, setPaymentError] = useState<boolean>(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const refRBSheet = useRef();
 
@@ -22,6 +23,8 @@ const GoProScreen = () => {
     setSelectedPlan(value);
     if (refRBSheet.current) refRBSheet.current.open();
   };
+
+  const showOnlyLifetimePlan = Platform.OS === "ios" && selectedPlan !== "lifetime";
 
   return (
     <ThemedScreen title="Go Pro" onBackPress={() => router.back()}>
@@ -76,10 +79,19 @@ const GoProScreen = () => {
         2. All currencies in US dollars (USD).
       </ThemedText>
       <ThemedRBSheet ref={refRBSheet} height={500}>
-        {paymentError ? <Failure /> : Platform.OS === "ios" ? <IOSPaymentMethods selectedPlan={selectedPlan} onSelect={onSelect} /> : <PaymentMethods />}
+        {paymentError ? (
+          <Failure />
+        ) : showOnlyLifetimePlan ? (
+          <OnlyLifetimePlan />
+        ) : Platform.OS === "ios" ? (
+          <IOSPaymentMethods selectedPlan={selectedPlan} onSelect={onSelect} />
+        ) : (
+          <PaymentMethods />
+        )}
       </ThemedRBSheet>
     </ThemedScreen>
   );
 };
+
 
 export default GoProScreen;
