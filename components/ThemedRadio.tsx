@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { ThemedText } from './ThemedText';
 
 export const ThemedRadio: React.FC<{
   label: string;
@@ -15,7 +16,6 @@ export const ThemedRadio: React.FC<{
   const uncheckedRadioColor = useThemeColor({}, 'secondaryBackground');
   const uncheckedBorderColor = useThemeColor({}, 'secondaryStroke');
   const checkedRadioFillColor = useThemeColor({}, 'primaryText');
-  const textColor = useThemeColor({}, 'primaryText');
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.6}>
@@ -28,7 +28,7 @@ export const ThemedRadio: React.FC<{
           { backgroundColor: checkedRadioFillColor }
         ]} />}
       </View>
-      <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+      <ThemedText type="large">{label}</ThemedText>
     </TouchableOpacity>
   );
 };
@@ -52,8 +52,5 @@ const styles = StyleSheet.create({
     height: 12,
     width: 12,
     borderRadius: 6,
-  },
-  label: {
-    fontSize: 16,
   },
 });

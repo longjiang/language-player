@@ -17,6 +17,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { tvShowsStyles as styles } from "@/src/styles";
 import { ThemedRBSheet } from "@/components/ThemedRBSheet";
 import { ThemedText } from "@/components/ThemedText";
+import { ThemedRadio } from "@/components/ThemedRadio";
 
 const TVShowsScreen = () => {
   const [items, setItems] = useState<Show[]>([]);
@@ -93,8 +94,16 @@ const TVShowsScreen = () => {
         rbSheetRef.current?.close();
       }}
     >
-      <ThemedText>{title}</ThemedText>
-      {sortOption === option && <Icon name="check" size={24} color={primaryBrandColor} />}
+
+      <ThemedRadio
+        key={title}
+        label={title}
+        isSelected={sortOption === option}
+        onPress={() => {
+          setSortOption(option);
+          rbSheetRef.current?.close();
+        }}
+      />
     </TouchableOpacity>
   );
 
@@ -153,7 +162,7 @@ const TVShowsScreen = () => {
       </ThemedScreen>
 
       <ThemedRBSheet ref={rbSheetRef} height={300}>
-        <ThemedText style={styles.sortTitle}>Sort by</ThemedText>
+        <ThemedText type="subtitle" style={{ marginBottom: 12 }}>SORT BY</ThemedText>
         <SortOption title="Title" option="title" />
         <SortOption title="Most Viewed" option="views" />
       </ThemedRBSheet>
