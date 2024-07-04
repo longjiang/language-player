@@ -4,7 +4,7 @@ import { Token } from './Token'; // Adjust this import path if needed
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-export const TokenizedText = memo(({ text }) => {
+export const TokenizedText = memo(({ text, textScale }) => {
   console.log('🍎 TokenizedText rendering:', text);
 
   const tokensRef = useRef([]);
@@ -28,7 +28,12 @@ export const TokenizedText = memo(({ text }) => {
   return (
     <View style={styles.container}>
       {tokensRef.current.map((token, index) => (
-        <Token key={index} token={token} l2Lang={l2Lang} />
+        <Token 
+          key={index} 
+          token={token} 
+          l2Lang={l2Lang} 
+          textScale={textScale}
+        />
       ))}
     </View>
   );
