@@ -6,7 +6,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { PricingBlock } from "@/components/PricingBlock";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { getUserSubscriptions } from "@/src/api/directus/subscriptions";
+import { getUserSubscription } from "@/src/api/directus/subscriptions";
 import * as SecureStore from 'expo-secure-store';
 import { getDeltaDate } from "@/src/utils";
 import { GenericCollectionItem } from "@/src/api/directus";
@@ -30,9 +30,9 @@ const AccountScreen = () => {
         if (info && info.id) {
           const authToken = await SecureStore.getItemAsync('access_token');
           if (!authToken) throw new Error('Failed to retrieve stored auth token');
-          const subscriptions = await getUserSubscriptions(info.id, authToken);
-          if (subscriptions.length > 0) {
-            setSubscription(subscriptions[0]);
+          const subscription = await getUserSubscription(info.id, authToken);
+          if (subscription) {
+            setSubscription(subscription);
           }
         }
       } catch (error: any) {

@@ -1,15 +1,23 @@
 // @/src/api/directus/subscriptions
 
 import { AxiosResponse } from "axios";
-import { GenericCollectionItem } from "."
+import { GenericCollectionItem, getCollectionItems } from "."
 
-export const getUserSubscriptions = async (
+export const getUserSubscription = async (
   userId: string,
   authToken?: string
-): Promise<GenericCollectionItem[]> => {
-  const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-  const url = `/items/subscriptions?filter[owner][eq]=${userId}`;
+): Promise<GenericCollectionItem | null> => {
+  const queryParams = { filter: { owner: { eq: userId } } };
 
-  const response: AxiosResponse<{ data: GenericCollectionItem[] }> = await API.get(url, { headers });
-  return response.data.data;
+  const subscriptions: GenericCollectionItem[] = await getCollectionItems<GenericCollectionItem>(
+    "subscriptions",
+    queryParams,
+    authToken
+  );
+
+  if (subscriptions.length > 0) {
+    return subscriptions[0];
+  } else {
+    return null;
+  }
 };
