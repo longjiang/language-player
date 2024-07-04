@@ -21,15 +21,16 @@ const SubscriptionContext = createContext<SubscriptionContextProps>({
 
 export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [subscription, setSubscription] = useState<GenericCollectionItem | null>(null);
-  const { getStoredUserInfo } = useAuth();
+  const { userInfo } = useAuth();
+
+  // subscription {"created_on": "2024-05-23T01:09:37+00:00", "expires_on": "2024-07-31 14:36:09", "id": 3387, "notes": "System failed to update the subscription.", "owner": 986, "payment_customer_id": "", "payment_date": "2024-07-01 14:36:09", "payment_email": "longjiang2005@gmail.com", "payment_id": "200001727281903", "payment_method": null, "payment_processor": null, "status": "draft", "type": "monthly"}
 
   const fetchSubscription = async () => {
     try {
-      const info = await getStoredUserInfo();
-      if (info && info.id) {
-        const authToken = await SecureStore.getItemAsync("access_token");
+      if (userInfo && userInfo.id) {
+        const authToken = await SecureStore.getItemAsync("authToken");
         if (!authToken) throw new Error("Failed to retrieve stored auth token");
-        const fetchedSubscription = await getUserSubscription(info.id, authToken);
+        const fetchedSubscription = await getUserSubscription(userInfo.id, authToken);
         if (fetchedSubscription) {
           setSubscription(fetchedSubscription);
         }
@@ -47,8 +48,10 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   useEffect(() => {
-    fetchSubscription();
-  }, []);
+    if (userInfo) {
+      fetchSubscription();
+    }
+  }, [userInfo]);
 
   return (
     <SubscriptionContext.Provider value={{ subscription, isProUser, fetchSubscription }}>
