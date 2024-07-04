@@ -1,21 +1,28 @@
-import React, { memo } from 'react';
-import { StyleSheet } from 'react-native';
-import { ThemedText } from './ThemedText';
+import React, { memo, useMemo } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Token } from './Token';
 
-const TokenizedText = memo(({ text }) => {
+export const TokenizedText = memo(({ text }) => {
   console.log('🍎 TokenizedText rendering:', text);
 
+  const tokens = useMemo(() => {
+    return text.split(' ').map(word => ({ text: word }));
+  }, [text]);
+
   return (
-    <ThemedText style={styles.text}>{text}</ThemedText>
+    <View style={styles.container}>
+      {tokens.map((token, index) => (
+        <Token key={index} token={token} />
+      ))}
+    </View>
   );
 });
 
 TokenizedText.displayName = 'TokenizedText';
 
 const styles = StyleSheet.create({
-  text: {
-    fontSize: 16,
+  container: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
 });
-
-export { TokenizedText };
