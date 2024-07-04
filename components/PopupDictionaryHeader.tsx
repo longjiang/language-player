@@ -12,8 +12,8 @@ import { translateWithBing } from '@/src/translate';
 import { popupDictionaryHeaderStyles as styles } from "@/src/styles";
 import { speakText } from "@/src/speech";
 import { useSettings } from "@/contexts/SettingsContext";
-import { ChatGPT } from "@/components/ChatGPT";
-import { GradientLine } from "./GradientLine";
+import { ChatGPTExplanation } from "./ChatGPTExplanation";
+import { ContextRow } from "./ContextRow";
 
 interface PopupDictionaryHeaderProps {
   token: Token;
@@ -102,38 +102,16 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
           text={token.text}
         />
       </Text>
-      {!showChatGPT && <ThemedButton
-        type="pro"
-        style={{ marginBottom: 26 }}
-        title="Let ChatGPT Explain"
-        onPress={onExplainPress}
-        leadingIcon={
-          <Icon name="chat-outline" size={20} style={styles.iconStyle} />
-        }
-      />}
-      {showChatGPT && (
-        <View style={{ marginBottom: 16 }}>
-          <GradientLine />
-          <View style={{ marginVertical: 10 }}>
-            <ChatGPT prompt={chatGPTPrompt} />
-          </View>
-          <GradientLine />
-        </View>
-      )}
-      <View style={styles.contextRow}>
-        <View style={{ flex: 1 }}>
-          <ThemedText style={styles.contextText} type="large">
-            {context}
-          </ThemedText>
-          <ThemedText style={styles.translatedContextText} variant="secondary">
-            {translatedContext || translation}
-          </ThemedText>
-        </View>
-        <ThemedButton
-          type="ghost"
-          trailingIcon={<Icon name="dots-vertical" size={20} />}
-        />
-      </View>
+      <ChatGPTExplanation 
+        showChatGPT={showChatGPT} 
+        chatGPTPrompt={chatGPTPrompt} 
+        onExplainPress={onExplainPress}
+      />
+      <ContextRow 
+        context={context} 
+        translatedContext={translatedContext} 
+        translation={translation}
+      />
     </View>
   );
 };
