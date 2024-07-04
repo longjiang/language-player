@@ -50,6 +50,13 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
     }
   }, [context, translatedContext, l1Lang, l2Lang]);
 
+  const generateChatGPTPrompt = (l1Name, l2Name, l2Code, word, text) => {
+    const basePrompt = `Succinctly explain using ${l1Name}, what the ${l2Name} (${l2Code}) word ‘${word}’ means in the phrase ‘${text}’.`;
+    const inflectionPrompt = "Give its lemma, inflection, and morphology.";
+    const inflectionNotNeeded = ['zh', 'vi', 'th', 'lo', 'km'];
+    return inflectionNotNeeded.includes(l2Code) ? basePrompt : `${basePrompt} ${inflectionPrompt}`;
+  };
+
   const onExplainPress = () => {
     setShowChatGPT(!showChatGPT);
   };
@@ -62,6 +69,8 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
     Clipboard.setString(token.text);
     // Optionally, show a message or toast to the user indicating the copy action was successful
   };
+
+  const chatGPTPrompt = generateChatGPTPrompt(l1Lang.name, l2Lang.name, l2Lang.code, token.text, context);
 
   return (
     <View style={styles.headerContainer}>
@@ -83,7 +92,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
         onPress={onExplainPress}
         leadingIcon={<Icon name="chat-outline" size={20} style={styles.iconStyle} />}
       />
-      {showChatGPT && <ChatGPT prompt={token.text} />}
+      {showChatGPT && <ChatGPT prompt={chatGPTPrompt} />}
       <View style={styles.contextRow}>
         <View style={{ flex: 1 }}>
           <ThemedText style={styles.contextText} type="large">{context}</ThemedText>
