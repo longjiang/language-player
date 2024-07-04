@@ -1,3 +1,5 @@
+// @/components/ThemedRBSheet.tsx
+
 import React, { useRef, forwardRef, useImperativeHandle, ReactNode } from 'react';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { SafeAreaView, StyleSheet, ViewStyle } from 'react-native';

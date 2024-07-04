@@ -316,3 +316,31 @@ export const tvShowsStyles = StyleSheet.create({
     marginTop: 100,
   },
 });
+
+export const showCardStyles = StyleSheet.create({
+  card: {
+    overflow: "hidden",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.2,
+  },
+  thumbStack: {
+    width: "100%", // Makes the image fill the container
+    aspectRatio: 16 / 9, // Maintains a 16:9 aspect ratio
+    borderRadius: 8,
+    backgroundColor: "white",
+    // Shadow properties for iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 3.84,
+  },
+  title: {
+    marginBottom: 3,
+  },
+  infoContainer: {
+    marginTop: 16,
+  },
+});

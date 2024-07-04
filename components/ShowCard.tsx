@@ -1,16 +1,12 @@
 import React from "react";
 import {
   View,
-  Text,
-  StyleSheet,
   Image,
   TouchableOpacity,
-  Dimensions,
 } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { router } from "expo-router";
-import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
-import { formatDuration } from "@/src/utils";
+import { showCardStyles as styles } from "@/src/styles";
 
 export interface Show {
   id: number;
@@ -18,6 +14,7 @@ export interface Show {
   title: string;
   avg_views: number;
   locale: string;
+  created_on?: string;
 }
 
 interface ShowCardProps {
@@ -98,41 +95,14 @@ export const ShowCard: React.FC<ShowCardProps> = ({ show, style }) => {
           <ThemedText style={styles.title} type="defaultBold">
             {show.title}
           </ThemedText>
-          <ThemedText variant="secondary">
-            {`${
-              show.avg_views ? show.avg_views.toLocaleString() : "No"
-            } Views / ${show.locale}`}
-          </ThemedText>
+            <ThemedText variant="secondary">
+              {[
+                show.avg_views ? show.avg_views.toLocaleString() : "No",
+                show.locale,
+              ].join(' / ')}
+            </ThemedText>
         </View>
       </View>
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    overflow: "hidden",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.2,
-  },
-  thumbStack: {
-    width: "100%", // Makes the image fill the container
-    aspectRatio: 16 / 9, // Maintains a 16:9 aspect ratio
-    borderRadius: 8,
-    backgroundColor: "white",
-    // Shadow properties for iOS
-    shadowColor: "#000",
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 3.84,
-  },
-  title: {
-    marginBottom: 3,
-  },
-  infoContainer: {
-    marginTop: 16,
-  },
-});
