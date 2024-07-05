@@ -148,3 +148,4 @@ word.pinyin,Pinyin,拼音,拼音,Pinyin,بينيين,Pinyin,Pinyin,Πινγίν,
 word.kana,Kana,假名,假名,Kana,كانا,Kana,Kana,Κανα,Kana,Kana,Kana,KanaGenericName,काना,Kana,Kana,Kana,Kana,仮名,가나,Kana,Kana,Kana,Kana,Kana,Кана,Kana Kana,Kana,Kana,คานะ,Kana,Kana
 word.hanja,Hanja,汉字,漢字,Hanja,هانجا,Hanja,Hanja,Χάντζα,Hanja,Hanja,Hanja,HanjaName,हंजा,Hanja,Hanja,Hanja,Hanja,漢字,한자(漢��,Hanja,Hanja,Hanja,Hanja,Hanja,Ханча,Hanja,Hanja Hanja,Hanja,ฮันจา,Hanja Belediyesi,Hanja
 title.dictionary,Dictionary,词典,詞典,Dictionary,القاموس,Diccionari,Wörterbuch,Λεξικό,Diccionario,Sanakirja,Dictionnaire,Diccionari,शब्दकोश,Rječnik,Szótár,Kamus,Dizionario,辞書,사전,Dictionary,Dicionário,Diccionario,Diccionario,Diccionario,Rječnik,Sözlük,Dicionário,Sözlük,พจนานุกรม,Sözlük,Từ điển
+error.entry_not_found,Entry not found or dictionary not loaded,找不到条目或词典未加载,找不到條目或詞典未載入,Inskrywing nie gevind nie of woordeboek nie gelaai nie

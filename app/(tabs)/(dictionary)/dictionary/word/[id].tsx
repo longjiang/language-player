@@ -17,6 +17,7 @@ import { useDictionary } from "@/contexts/DictionaryContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { dictionaryEntryStyles as styles } from "@/src/styles";
 import DictionaryEntryContent from "@/components/DictionaryEntryContent";
+import { getDictionaryPlaceholder } from "@/components/DictionaryComponent";
 
 type DictionaryEntryScreenRouteParams = {
   id: string;
@@ -26,20 +27,20 @@ const DictionaryEntryScreen = () => {
   const route = useRoute<RouteProp<{
     DictionaryEntryScreen: DictionaryEntryScreenRouteParams;
   }, 'DictionaryEntryScreen'>>();
-  if (!route.params) return ;
-  const id = decodeURIComponent(route.params.id) 
+  if (!route.params) return;
+  const id = decodeURIComponent(route.params.id);
 
   const [entry, setEntry] = useState<null | DictionaryEntry>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { dictionary } = useDictionary();
-  const { l2Lang } = useLanguage();
+  const { l2Lang, t } = useLanguage();
   const { settings } = useSettings();
   if (!l2Lang) return null;
+  if (!dictionary) return null;
 
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
-  // if l2Lang.code is 'zh' and settings.useTraditional is true, then switch head and alternate keys
   const headKey = l2Lang.code === 'zh' && settings.useTraditional ? 'alternate' : 'head';
   const alternateKey = l2Lang.code === 'zh' && settings.useTraditional ? 'head' : 'alternate';
 
@@ -49,7 +50,6 @@ const DictionaryEntryScreen = () => {
     }
   }, [dictionary, id]);
 
-  // This is for 'search suggest': as the user types in the search bar, we want to show suggestions
   const handleInputChange = (text: string) => {
     setSearchQuery(text);
   };
@@ -60,12 +60,11 @@ const DictionaryEntryScreen = () => {
 
   const loadEntry = async () => {
     setIsLoading(true);
-    setEntry(null); // Reset entry state for new searches
+    setEntry(null);
 
     if (dictionary) {
       const entryData = await dictionary.getEntry(id);
-      // entryData will be null if not found, which is handled in rendering logic
-      setEntry(entryData || null);  // Convert undefined to null if entryData is undefined
+      setEntry(entryData || null);
       setSearchQuery(entryData?.head || "");
     } else {
       console.log("Dictionary not loaded yet");
@@ -84,10 +83,11 @@ const DictionaryEntryScreen = () => {
   if (!entry) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ThemedText>Entry not found or dictionary not loaded</ThemedText>
+        <ThemedText>{t('error.entry_not_found')}</ThemedText>
       </View>
     );
   }
+    
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: useThemeColor({}, 'tertiaryBackground') }}>
@@ -100,7 +100,7 @@ const DictionaryEntryScreen = () => {
             onPress={() => router.navigate("../")}
           />
           <ThemedInput
-            placeholder="Chinese, pinyin or English..."
+            placeholder={getDictionaryPlaceholder(l2Lang, dictionary, t)}
             style={{ flex: 1, marginHorizontal: 16 }}
             icon="magnify"
             size="small"

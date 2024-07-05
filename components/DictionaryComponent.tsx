@@ -11,6 +11,27 @@ import { debounce } from 'lodash';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import DefinitionList from './DefinitionList';
+import { Language } from '@/src/languages';
+import { Dictionary } from '@/src/dictionary';
+
+
+export function getDictionaryPlaceholder(l2Lang: Language, dictionary: Dictionary | undefined, t: Function) {
+  const altFieldKey = {
+    'zh': 'pinyin',
+    'ja': 'kana',
+    'ko': 'hanja',
+  }[l2Lang.code];
+  
+  const dictL1Name = t('lang.' + dictionary?.l1Code);
+  const altField = t('word.' + altFieldKey);
+  const l2Name = t('lang.' + l2Lang.code);
+  
+  return t('placeholder.dict_search', {
+    l2Name: l2Name,
+    altField: altField,
+    dictL1Name: dictL1Name
+  });
+}
 
 export const DictionaryComponent = () => {
     const [query, setQuery] = useState('');
@@ -18,6 +39,7 @@ export const DictionaryComponent = () => {
     const { dictionary } = useDictionary();
     const { settings } = useSettings();
     const { l2Lang, t } = useLanguage();
+    if (!dictionary) return null;
     
     if (!l2Lang) return null;
 
@@ -29,24 +51,10 @@ export const DictionaryComponent = () => {
         if (dictionary) setResults((await dictionary.search(text)).slice(0, 50));
     };
 
-    const altFieldKey = {
-        'zh': 'pinyin',
-        'ja': 'kana',
-        'ko': 'hanja',
-    }[l2Lang.code];
-    
-    const dictL1Name = t('lang.' + dictionary?.l1Code);
-    const altField = t('word.' + altFieldKey);
-    const l2Name = t('lang.' + l2Lang.code);
-
     return (
         <View>
             <ThemedInput
-              placeholder={t('placeholder.dict_search', {
-                l2Name: l2Name,
-                altField: altField,
-                dictL1Name: dictL1Name
-              })}
+              placeholder={getDictionaryPlaceholder(l2Lang, dictionary, t)}
               value={query}
               onChangeText={debounce(handleSearch, 300)}
               style={{ width: '100%' }}

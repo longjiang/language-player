@@ -1,7 +1,6 @@
 // @/contexts/LanguageContext.tsx
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import * as Localization from 'expo-localization';
 import { I18n } from 'i18n-js';
 import Languages from '@/src/languages';
 import { Language } from '@/src/languages';  // Import the Language type from your languages module
