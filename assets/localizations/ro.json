@@ -293,7 +293,7 @@
         "what_your_first_language": "Care este prima ta limbă?",
         "confirm_cancel_subscription": "Sigur doriți să vă anulați abonamentul?",
         "no_active_subscription": "Nu a fost găsit niciun abonament activ.",
-        "loading": "Încărcare...",
+        "loading": "Cargando...",
         "auto_renews_in": "Reînnoiri automate în {{days}} zile",
         "expires_in": "Expiră în {{days}} zile",
         "or_register_with": "Sau înregistrați-vă cu:",
@@ -304,7 +304,8 @@
         "pro_transcript_limit_reached": "Limita de transcriere a fost atinsă. Vă rugăm să faceți upgrade la Pro pentru a accesa mai multe transcrieri.",
         "copy_success": "Copiado",
         "pro_feature_chatgpt": "Numai utilizatorii Pro pot utiliza funcțiile AI în Language Player Go. Pentru a utiliza această caracteristică, faceți upgrade la Pro.",
-        "initializing": "Inicializando..."
+        "initializing": "Inicializando...",
+        "sort_by": "Sortiraj po: {{sortBy}}"
     },
     "title": {
         "email": "E-mail",
@@ -331,11 +332,18 @@
         "current_level": "Care este nivelul tău actual de {{language}}?",
         "pro_feature": "Función Pro",
         "loading_dictionary": "Cargando diccionario {{language}}",
-        "dictionary": "Diccionario"
+        "dictionary": "Diccionario",
+        "examples_from_videos": "Ejemplos de videos",
+        "popularity": "Popularidad",
+        "likes": "Gustos",
+        "date": "Data",
+        "length": "Longitud",
+        "leftContext": "Contexto izquierdo",
+        "rightContext": "Contexto derecho"
     },
     "action": {
         "upgrade": "Face upgrade",
-        "cancel": "Anula",
+        "cancel": "Cancelar",
         "confirm_cancellation": "Confirmați anularea",
         "keep_subscription": "Păstrați abonamentul",
         "register": "Înregistrare",
@@ -360,7 +368,8 @@
         "please_specify": "Vă rugăm să specificați",
         "more_languages": "Mai multe limbi ({{count}})",
         "select_language": "Selecciona un idioma",
-        "dict_search": "Căutați {{l2Name}}, {{altField}} sau {{dictL1Name}}..."
+        "dict_search": "Căutați {{l2Name}}, {{altField}} sau {{dictL1Name}}...",
+        "search": "Buscar..."
     },
     "error": {
         "passwords_do_not_match": "Parolele nu se potrivesc",
@@ -369,7 +378,8 @@
         "generic": "Eroare",
         "user_info_not_found": "Informațiile despre utilizator nu au fost găsite",
         "updating_progress": "Eroare la actualizarea progresului:",
-        "failed_to_load_items": "Încărcarea elementelor nu a reușit:"
+        "failed_to_load_items": "Încărcarea elementelor nu a reușit:",
+        "entry_not_found": "Entrada no encontrada o diccionario no cargado"
     },
     "success": {
         "code_resent": "Codul de verificare a fost retrimis pe e-mail."
@@ -467,5 +477,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Mostrar Todo",
+    "of": "de",
+    "upgrade_text": "Actualiza a Pro para acceder a más vídeos!"
 }

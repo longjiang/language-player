@@ -292,7 +292,7 @@
         "what_your_first_language": "İlk diliniz nedir?",
         "confirm_cancel_subscription": "Aboneliğinizi iptal etmek istediğinizden emin misiniz?",
         "no_active_subscription": "Etkin abonelik bulunamadı.",
-        "loading": "Yükleme...",
+        "loading": "Yükleniyor...",
         "auto_renews_in": "{{days}} gün içinde otomatik yenileme",
         "expires_in": "{{days}} gün içinde sona eriyor",
         "or_register_with": "Veya şununla kaydolun:",
@@ -303,7 +303,8 @@
         "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
         "copy_success": "Panoya kopyalanan metin",
         "pro_feature_chatgpt": "Language Player Go'da AI özelliklerini yalnızca Pro kullanıcıları kullanabilir. Bu özelliği kullanmak için Pro'ya yükseltin.",
-        "initializing": "Başlatılıyor..."
+        "initializing": "Başlatılıyor...",
+        "sort_by": "Sắp xếp theo: {{sortBy}}"
     },
     "title": {
         "email": "E-posta",
@@ -330,11 +331,18 @@
         "current_level": "Şu anki {{language}} seviyeniz nedir?",
         "pro_feature": "Profesyonel Özellik",
         "loading_dictionary": "{{language}} Sözlük yükleniyor",
-        "dictionary": "Sözlük"
+        "dictionary": "Sözlük",
+        "examples_from_videos": "Video örnekleri",
+        "popularity": "Phổ biến",
+        "likes": "Lượt thích",
+        "date": "Ngày",
+        "length": "Chiều dài",
+        "leftContext": "Ngữ cảnh trái",
+        "rightContext": "Ngữ cảnh phải"
     },
     "action": {
         "upgrade": "Yükseltmek",
-        "cancel": "İptal",
+        "cancel": "Huỷ",
         "confirm_cancellation": "İptali Onayla",
         "keep_subscription": "Aboneliği Koru",
         "register": "Kayıt ol",
@@ -359,7 +367,8 @@
         "please_specify": "Lütfen belirtin",
         "more_languages": "Daha fazla dil ({{count}})",
         "select_language": "Bir dil seçin",
-        "dict_search": "{{l2Name}}, {{altField}} veya {{dictL1Name}} araması yapın..."
+        "dict_search": "{{l2Name}}, {{altField}} veya {{dictL1Name}} araması yapın...",
+        "search": "Tìm kiếm..."
     },
     "error": {
         "passwords_do_not_match": "Şifreler eşleşmiyor",
@@ -368,7 +377,8 @@
         "generic": "Hata",
         "user_info_not_found": "Kullanıcı bilgisi bulunamadı",
         "updating_progress": "Güncelleme hatası:",
-        "failed_to_load_items": "Öğeler yüklenemedi:"
+        "failed_to_load_items": "Öğeler yüklenemedi:",
+        "entry_not_found": "Giriş bulunamadı veya sözlük yüklenmedi"
     },
     "success": {
         "code_resent": "Doğrulama kodu e-postanıza yeniden gönderilir."
@@ -466,5 +476,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja Belediyesi"
-    }
+    },
+    "list_all": "Hepsini Göster",
+    "of": "của",
+    "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!"
 }

@@ -294,7 +294,7 @@
         "what_your_first_language": "你的第一語言是什麼？",
         "confirm_cancel_subscription": "您確定要取消訂閱嗎？",
         "no_active_subscription": "未找到活動訂閱。",
-        "loading": "裝載。。。",
+        "loading": "載入中...",
         "auto_renews_in": "{{days}} 天自動續訂",
         "expires_in": "過期后 {{days}} 天",
         "or_register_with": "或使用以下方式註冊：",
@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "已達到字幕限制。",
         "copy_success": "文本已複製到剪貼板",
         "pro_feature_chatgpt": "只有 Pro 用戶才能在 Language Player Go 中使用 AI 功能。要使用此功能，請升級到 Pro。",
-        "initializing": "初始化中..."
+        "initializing": "初始化中...",
+        "sort_by": "排序方式：{{sortBy}}"
     },
     "title": {
         "email": "電子郵件",
@@ -332,7 +333,14 @@
         "current_level": "您目前的{{language}}水平是多少？",
         "pro_feature": "Pro 功能",
         "loading_dictionary": "正在加載{{language}}字典",
-        "dictionary": "詞典"
+        "dictionary": "詞典",
+        "examples_from_videos": "來自視頻的例子",
+        "popularity": "觀看次數",
+        "likes": "喜歡",
+        "date": "日期",
+        "length": "長度",
+        "leftContext": "左上下文",
+        "rightContext": "右上下文"
     },
     "action": {
         "upgrade": "升級",
@@ -361,7 +369,8 @@
         "please_specify": "請說明",
         "more_languages": "更多語言 ({{count}})",
         "select_language": "選擇一種語言",
-        "dict_search": "搜索 {{l2Name}}、{{altField}} 或 {{dictL1Name}}..."
+        "dict_search": "搜索 {{l2Name}}、{{altField}} 或 {{dictL1Name}}...",
+        "search": "搜索..."
     },
     "error": {
         "passwords_do_not_match": "密碼不匹配",
@@ -370,7 +379,8 @@
         "generic": "錯誤",
         "user_info_not_found": "未找到用戶信息",
         "updating_progress": "更新進度時出錯：",
-        "failed_to_load_items": "加载项目失败："
+        "failed_to_load_items": "加载项目失败：",
+        "entry_not_found": "找不到條目或詞典未載入"
     },
     "success": {
         "code_resent": "驗證碼已重新發送到您的電子郵件。"
@@ -468,5 +478,8 @@
         "pinyin": "拼音",
         "kana": "假名",
         "hanja": "漢字"
-    }
+    },
+    "list_all": "列出全部",
+    "of": "之",
+    "upgrade_text": "升級到專業版以訪問更多視頻！"
 }

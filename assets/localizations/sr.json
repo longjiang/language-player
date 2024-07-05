@@ -293,7 +293,7 @@
         "what_your_first_language": "Koji ti je prvi jezik?",
         "confirm_cancel_subscription": "Želite li zaista da otkažete pretplatu?",
         "no_active_subscription": "Aktivna pretplata nije pronađena.",
-        "loading": "Učitavanje...",
+        "loading": "Yükleniyor...",
         "auto_renews_in": "Automatsko obnavljanje u {{days}} dana",
         "expires_in": "Ističe u {{days}} dana",
         "or_register_with": "Ili se registrirajte sa:",
@@ -304,7 +304,8 @@
         "pro_transcript_limit_reached": "Dostignuta granica transkripta. Nadogradite na Pro da biste pristupili još transkripta.",
         "copy_success": "Kopyalandı",
         "pro_feature_chatgpt": "Samo Pro korisnici mogu da koriste AI funkcije u programu Language Player Go. Da biste koristili ovu funkciju, nadogradite na Pro.",
-        "initializing": "Başlatılıyor..."
+        "initializing": "Başlatılıyor...",
+        "sort_by": "Ordenar por: {{sortBy}}"
     },
     "title": {
         "email": "E-pošta",
@@ -331,11 +332,18 @@
         "current_level": "Koji je vaš trenutni nivo {{language}}?",
         "pro_feature": "Pro Özelliği",
         "loading_dictionary": "{{language}} Sözlük yükleniyor",
-        "dictionary": "Sözlük"
+        "dictionary": "Sözlük",
+        "examples_from_videos": "Video örnekleri",
+        "popularity": "Popülerlik",
+        "likes": "Beğeniler",
+        "date": "Tarih",
+        "length": "Uzunluk",
+        "leftContext": "Sol Bağlam",
+        "rightContext": "Sağ Bağlam"
     },
     "action": {
         "upgrade": "Nadogradnju",
-        "cancel": "Otkaži",
+        "cancel": "İptal",
         "confirm_cancellation": "Potvrda otkazivanja",
         "keep_subscription": "Zadrži pretplatu",
         "register": "Registrujte se",
@@ -360,7 +368,8 @@
         "please_specify": "Navedite",
         "more_languages": "Više jezika ({{count}})",
         "select_language": "Dil seçin",
-        "dict_search": "Pretraga {{l2Name}}, {{altField}} ili {{dictL1Name}}}"
+        "dict_search": "Pretraga {{l2Name}}, {{altField}} ili {{dictL1Name}}}",
+        "search": "Ara..."
     },
     "error": {
         "passwords_do_not_match": "Lozinke se ne podudaraju",
@@ -369,7 +378,8 @@
         "generic": "Greška",
         "user_info_not_found": "Korisničke informacije nisu pronađene",
         "updating_progress": "Greška pri ažuriranju napretka:",
-        "failed_to_load_items": "Učitavanje stavki nije uspelo:"
+        "failed_to_load_items": "Učitavanje stavki nije uspelo:",
+        "entry_not_found": "Giriş bulunamadı veya sözlük yüklenmedi"
     },
     "success": {
         "code_resent": "Kod"
@@ -467,5 +477,8 @@
         "pinyin": "Pinjin",
         "kana": "Kana Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Tümünü Göster",
+    "of": "of",
+    "upgrade_text": "Actualiza a Pro para acceder a más vídeos!"
 }

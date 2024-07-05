@@ -294,7 +294,7 @@
         "what_your_first_language": "Mi az első nyelve?",
         "confirm_cancel_subscription": "Biztosan le szeretné mondani az előfizetését?",
         "no_active_subscription": "Nem található aktív előfizetés.",
-        "loading": "Berakás...",
+        "loading": "Betöltés...",
         "auto_renews_in": "Automatikus megújítás {{days}} nap múlva",
         "expires_in": "{{days}} nap múlva lejár",
         "or_register_with": "Vagy regisztráljon:",
@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "Elérte az átirati korlátot. Kérjük, frissítsen Pro-ra, hogy további átiratokhoz férjen hozzá.",
         "copy_success": "Kijelölt szöveg másolva",
         "pro_feature_chatgpt": "Csak a Pro felhasználók használhatják a Language Player Go AI funkcióit. A funkció használatához frissítsen Pro-ra.",
-        "initializing": "Inicializálás..."
+        "initializing": "Inicializálás...",
+        "sort_by": "Rendezés: {{sortBy}}"
     },
     "title": {
         "email": "E-mail",
@@ -332,11 +333,18 @@
         "current_level": "Mi a jelenlegi {{language}} szinted?",
         "pro_feature": "Pro funkció",
         "loading_dictionary": "{{language}} szótár betöltése",
-        "dictionary": "Szótár"
+        "dictionary": "Szótár",
+        "examples_from_videos": "Videó példák",
+        "popularity": "Népszerűség",
+        "likes": "Tetszik",
+        "date": "Dátum",
+        "length": "Hossz",
+        "leftContext": "Left Context",
+        "rightContext": "Right Context"
     },
     "action": {
         "upgrade": "Feljavít",
-        "cancel": "Érvénytelenít",
+        "cancel": "Mégse",
         "confirm_cancellation": "Lemondás megerősítése",
         "keep_subscription": "Előfizetés megtartása",
         "register": "Regisztráció",
@@ -361,7 +369,8 @@
         "please_specify": "Adjon meg",
         "more_languages": "Több nyelv ({{count}})",
         "select_language": "Válasszon nyelvet",
-        "dict_search": "Keresés {{l2Name}}, {{altField}} vagy {{dictL1Name}}..."
+        "dict_search": "Keresés {{l2Name}}, {{altField}} vagy {{dictL1Name}}...",
+        "search": "Keresés..."
     },
     "error": {
         "passwords_do_not_match": "A jelszavak nem egyeznek",
@@ -370,7 +379,8 @@
         "generic": "Hiba",
         "user_info_not_found": "Felhasználói információk nem találhatók",
         "updating_progress": "Hiba a frissítés közben:",
-        "failed_to_load_items": "Az elemek betöltése nem sikerült:"
+        "failed_to_load_items": "Az elemek betöltése nem sikerült:",
+        "entry_not_found": "Bejegyzés nem található vagy a szótár nincs betöltve"
     },
     "success": {
         "code_resent": "Az ellenőrző kódot újra elküldtük az e-mail címére."
@@ -468,5 +478,8 @@
         "pinyin": "Pinjin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Mutasd az összeset",
+    "of": "az",
+    "upgrade_text": "Nadogradite na Pro da biste pristupili više videozapisa!"
 }

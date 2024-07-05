@@ -1,3 +1,5 @@
+// @/components/SubsSearch.tsx
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import axios from 'axios';  // You need to install axios for HTTP requests
@@ -10,8 +12,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export const SubsSearch = ({ term }: { term: string }): JSX.Element => {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const { l2Lang } = useLanguage()
-  if (!l2Lang) return <Text>Loading...</Text>
+  const { l2Lang, t } = useLanguage();
+  
+  if (!l2Lang) return <Text>{t('loading')}</Text>;
 
   useEffect(() => {
     if (term) {

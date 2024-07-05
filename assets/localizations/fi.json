@@ -294,7 +294,7 @@
         "what_your_first_language": "Mikä on ensimmäinen kielesi?",
         "confirm_cancel_subscription": "Haluatko varmasti peruuttaa tilauksesi?",
         "no_active_subscription": "Aktiivista tilausta ei löytynyt.",
-        "loading": "Lastaaminen...",
+        "loading": "Ladataan...",
         "auto_renews_in": "Automaattinen uusiminen {{days}} päivässä",
         "expires_in": "Vanhenee {{days}} päivässä",
         "or_register_with": "Tai rekisteröidy:",
@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "Transkriptioraja saavutettu. Päivitä Pro-versioon saadaksesi lisää transkriptioita.",
         "copy_success": "Teksti kopioitu leikepöydälle",
         "pro_feature_chatgpt": "Vain Pro-käyttäjät voivat käyttää tekoälyn ominaisuuksia Language Player Go -sovelluksessa. Käyttääksesi tätä ominaisuutta, päivitä Pro-versioon.",
-        "initializing": "Alustetaan..."
+        "initializing": "Alustetaan...",
+        "sort_by": "Lajittele: {{sortBy}}"
     },
     "title": {
         "email": "Sähköposti",
@@ -332,11 +333,18 @@
         "current_level": "Mikä on nykyinen taitotasosi {{language}}?",
         "pro_feature": "Pro-ominaisuus",
         "loading_dictionary": "Ladataan {{language}}-sanakirjaa",
-        "dictionary": "Sanakirja"
+        "dictionary": "Sanakirja",
+        "examples_from_videos": "Videoiden esimerkkejä",
+        "popularity": "Suosio",
+        "likes": "Tykkäykset",
+        "date": "Päivämäärä",
+        "length": "Pituus",
+        "leftContext": "Vasen konteksti",
+        "rightContext": "Oikea konteksti"
     },
     "action": {
         "upgrade": "Päivittää",
-        "cancel": "Perua",
+        "cancel": "Peruuta",
         "confirm_cancellation": "Vahvista peruutus",
         "keep_subscription": "Pidä tilaus",
         "register": "Rekisteröidy",
@@ -361,7 +369,8 @@
         "please_specify": "Määritä",
         "more_languages": "Lisää kieliä ({{count}})",
         "select_language": "Valitse kieli",
-        "dict_search": "Hae {{l2Name}}, {{altField}} tai {{dictL1Name}}..."
+        "dict_search": "Hae {{l2Name}}, {{altField}} tai {{dictL1Name}}...",
+        "search": "Hae..."
     },
     "error": {
         "passwords_do_not_match": "Salasanat eivät täsmää",
@@ -370,7 +379,8 @@
         "generic": "Virhe",
         "user_info_not_found": "Käyttäjätietoja ei löytynyt",
         "updating_progress": "Virheen päivitys:",
-        "failed_to_load_items": "Kohteiden lataaminen epäonnistui:"
+        "failed_to_load_items": "Kohteiden lataaminen epäonnistui:",
+        "entry_not_found": "Merkintää ei löytynyt tai sanakirjaa ei ole ladattu"
     },
     "success": {
         "code_resent": "Vahvistuskoodi lähetettiin uudelleen sähköpostiisi."
@@ -468,5 +478,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Näytä kaikki",
+    "of": "of",
+    "upgrade_text": "¡Actualiza a Pro para acceder a más vídeos!"
 }

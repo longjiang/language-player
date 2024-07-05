@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "Limite de transcription atteinte. Veuillez passer à Pro pour accéder à plus de transcriptions.",
         "copy_success": "Texte copié dans le presse-papiers",
         "pro_feature_chatgpt": "Seuls les utilisateurs Pro peuvent utiliser les fonctionnalités d'IA dans Language Player Go. Pour utiliser cette fonctionnalité, passez à Pro.",
-        "initializing": "Initialisation..."
+        "initializing": "Initialisation...",
+        "sort_by": "Trier par : {{sortBy}}"
     },
     "title": {
         "email": "Messagerie électronique",
@@ -332,7 +333,14 @@
         "current_level": "Quel est votre niveau actuel en {{language}}?",
         "pro_feature": "Fonction Pro",
         "loading_dictionary": "Chargement du dictionnaire {{language}}",
-        "dictionary": "Dictionnaire"
+        "dictionary": "Dictionnaire",
+        "examples_from_videos": "Exemples de vidéos",
+        "popularity": "Popularité",
+        "likes": "J'aime",
+        "date": "Date",
+        "length": "Longueur",
+        "leftContext": "Contexte gauche",
+        "rightContext": "Contexte droit"
     },
     "action": {
         "upgrade": "Mise à niveau",
@@ -361,7 +369,8 @@
         "please_specify": "Veuillez préciser",
         "more_languages": "Plus de langues ({{count}})",
         "select_language": "Sélectionnez une langue",
-        "dict_search": "Recherchez {{l2Name}}, {{altField}} ou {{dictL1Name}}}..."
+        "dict_search": "Recherchez {{l2Name}}, {{altField}} ou {{dictL1Name}}}...",
+        "search": "Rechercher..."
     },
     "error": {
         "passwords_do_not_match": "Les mots de passe ne correspondent pas",
@@ -370,7 +379,8 @@
         "generic": "Erreur",
         "user_info_not_found": "Informations utilisateur non trouvées",
         "updating_progress": "Erreur lors de la mise à jour de la progression:",
-        "failed_to_load_items": "Échec du chargement des éléments :"
+        "failed_to_load_items": "Échec du chargement des éléments :",
+        "entry_not_found": "Entrée non trouvée ou dictionnaire non chargé"
     },
     "success": {
         "code_resent": "Le code de vérification a été renvoyé à votre adresse e-mail."
@@ -468,5 +478,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Tout afficher",
+    "of": "of",
+    "upgrade_text": "Päivitä Pro-versioon saadaksesi lisää videoita!"
 }

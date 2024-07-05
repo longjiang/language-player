@@ -294,7 +294,7 @@
         "what_your_first_language": "Apa bahasa pertama Anda?",
         "confirm_cancel_subscription": "Apakah Anda yakin ingin membatalkan langganan Anda?",
         "no_active_subscription": "Tidak ada langganan aktif yang ditemukan.",
-        "loading": "Loading...",
+        "loading": "Memuat...",
         "auto_renews_in": "Perpanjang otomatis dalam {{days}} hari",
         "expires_in": "Kedaluwarsa dalam {{days}} hari",
         "or_register_with": "Atau daftar dengan:",
@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip.",
         "copy_success": "Salin teks ke papan klip",
         "pro_feature_chatgpt": "Hanya pengguna Pro yang dapat menggunakan fitur AI di Language Player Go. Untuk menggunakan fitur ini, tingkatkan ke Pro.",
-        "initializing": "Inisialisasi..."
+        "initializing": "Inisialisasi...",
+        "sort_by": "Urutkan berdasarkan: {{sortBy}}"
     },
     "title": {
         "email": "Email",
@@ -332,11 +333,18 @@
         "current_level": "Apa tingkat {{language}} Anda saat ini?",
         "pro_feature": "Fitur Pro",
         "loading_dictionary": "Memuat kamus {{language}}",
-        "dictionary": "Kamus"
+        "dictionary": "Kamus",
+        "examples_from_videos": "Contoh dari Video",
+        "popularity": "Popularitas",
+        "likes": "Suka",
+        "date": "Tanggal",
+        "length": "Panjang",
+        "leftContext": "Konteks Kiri",
+        "rightContext": "Konteks Kanan"
     },
     "action": {
         "upgrade": "Upgrade",
-        "cancel": "Membatalkan",
+        "cancel": "Batalkan",
         "confirm_cancellation": "Konfirmasi Pembatalan",
         "keep_subscription": "Tetap Berlangganan",
         "register": "Registrasi",
@@ -361,7 +369,8 @@
         "please_specify": "Harap tentukan",
         "more_languages": "Lebih banyak bahasa ({{count}})",
         "select_language": "Pilih bahasa",
-        "dict_search": "Cari {{l2Name}}, {{altField}} atau {{dictL1Name}}..."
+        "dict_search": "Cari {{l2Name}}, {{altField}} atau {{dictL1Name}}...",
+        "search": "Cari..."
     },
     "error": {
         "passwords_do_not_match": "Kata sandi tidak cocok",
@@ -370,7 +379,8 @@
         "generic": "Kesalahan",
         "user_info_not_found": "Informasi pengguna tidak ditemukan",
         "updating_progress": "Kesalahan saat memperbarui kemajuan:",
-        "failed_to_load_items": "Gagal memuat item:"
+        "failed_to_load_items": "Gagal memuat item:",
+        "entry_not_found": "Entri tidak ditemukan atau kamus tidak dimuat"
     },
     "success": {
         "code_resent": "Kode verifikasi telah dikirim ulang ke email Anda."
@@ -468,5 +478,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Tampilkan Semua",
+    "of": "of",
+    "upgrade_text": "Frissítse Pro verzióra"
 }

@@ -293,7 +293,7 @@
         "what_your_first_language": "あなたの母国語は何ですか?",
         "confirm_cancel_subscription": "サブスクリプションをキャンセルしてもよろしいですか?",
         "no_active_subscription": "アクティブなサブスクリプションが見つかりませんでした。",
-        "loading": "積載。。。",
+        "loading": "読み込み中...",
         "auto_renews_in": "{{days}日で自動更新",
         "expires_in": "有効期限 {{days}} 日",
         "or_register_with": "または、以下で登録します。",
@@ -304,7 +304,8 @@
         "pro_transcript_limit_reached": "字幕の制限に達しました。より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。",
         "copy_success": "テキストがクリップボードにコピーされました",
         "pro_feature_chatgpt": "Language Player Go で AI 機能を使用できるのは Pro ユーザーのみです。この機能を使用するには、Pro にアップグレードしてください。",
-        "initializing": "初期化中..."
+        "initializing": "初期化中...",
+        "sort_by": "{{sortBy}}で並べ替え"
     },
     "title": {
         "email": "電子メール",
@@ -331,7 +332,14 @@
         "current_level": "現在の{{language}}のレベルは？",
         "pro_feature": "Pro機能",
         "loading_dictionary": "{{language}} 辞書の読み込み",
-        "dictionary": "辞書"
+        "dictionary": "辞書",
+        "examples_from_videos": "動画からの例",
+        "popularity": "人気",
+        "likes": "いいね",
+        "date": "日付",
+        "length": "長さ",
+        "leftContext": "左コンテキスト",
+        "rightContext": "右コンテキスト"
     },
     "action": {
         "upgrade": "アップグレード",
@@ -360,7 +368,8 @@
         "please_specify": "具体的にお答えください",
         "more_languages": "さらに言語 ({{count}})",
         "select_language": "言語を選択",
-        "dict_search": "{{l2Name}}、{{altField}}、または{{dictL1Name}}を検索してください..."
+        "dict_search": "{{l2Name}}、{{altField}}、または{{dictL1Name}}を検索してください...",
+        "search": "検索..."
     },
     "error": {
         "passwords_do_not_match": "パスワードが一致しません",
@@ -369,7 +378,8 @@
         "generic": "エラー",
         "user_info_not_found": "ユーザー情報が見つかりません",
         "updating_progress": "進捗を更新する際のエラー:",
-        "failed_to_load_items": "アイテムの読み込みに失敗しました："
+        "failed_to_load_items": "アイテムの読み込みに失敗しました：",
+        "entry_not_found": "エントリが見つかりませんでした、または辞書が読み込まれていません"
     },
     "success": {
         "code_resent": "確認コードがメールアドレスに再送信されました。"
@@ -467,5 +477,8 @@
         "pinyin": "ピンイン",
         "kana": "仮名",
         "hanja": "漢字"
-    }
+    },
+    "list_all": "すべて表示",
+    "of": "の",
+    "upgrade_text": "Upgrade ke Pro untuk mengakses lebih banyak video!"
 }

@@ -294,7 +294,7 @@
         "what_your_first_language": "Cad í do chéad teanga?",
         "confirm_cancel_subscription": "An bhfuil tú cinnte go bhfuil fonn ort do shíntiús a chealú?",
         "no_active_subscription": "Níor aimsíodh aon síntiús gníomhach.",
-        "loading": "Á Luchtú...",
+        "loading": "Carregant...",
         "auto_renews_in": "Auto renews in {{days}} days",
         "expires_in": "Expires in {{days}} days",
         "or_register_with": "Nó cláraigh le:",
@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "Sroicheadh teorainn trascríbhinne. Déan uasghrádú ar Pro chun rochtain a fháil ar níos mó tras-scríbhinní.",
         "copy_success": "Text copiat",
         "pro_feature_chatgpt": "Ní féidir ach le húsáideoirí Pro gnéithe AI a úsáid i Language Player Go. Chun an ghné seo a úsáid, uasghrádú go Pro.",
-        "initializing": "S'està inicialitzant..."
+        "initializing": "S'està inicialitzant...",
+        "sort_by": "Ordena per: {{sortBy}}"
     },
     "title": {
         "email": "Ríomhphost",
@@ -332,11 +333,18 @@
         "current_level": "Cén leibhéal atá agat i láthair i {{language}}?",
         "pro_feature": "Funció Pro",
         "loading_dictionary": "Carregant el diccionari {{language}}",
-        "dictionary": "Diccionari"
+        "dictionary": "Diccionari",
+        "examples_from_videos": "Exemples de vidéos",
+        "popularity": "Popularitat",
+        "likes": "M'agrada",
+        "date": "Data",
+        "length": "Longitud",
+        "leftContext": "Context esquerre",
+        "rightContext": "Context dret"
     },
     "action": {
         "upgrade": "Uasghrádú",
-        "cancel": "Cuir ar ceal",
+        "cancel": "Cancel·la",
         "confirm_cancellation": "Deimhnigh cealú",
         "keep_subscription": "Coinnigh Síntiús",
         "register": "Cláraigh",
@@ -361,7 +369,8 @@
         "please_specify": "Sonraigh le do thoil",
         "more_languages": "Tuilleadh teangacha ({{count}})",
         "select_language": "Selecciona un idioma",
-        "dict_search": "Cuardaigh {{l2Name}}, {{altField}} nó {{dictL1Name}}..."
+        "dict_search": "Cuardaigh {{l2Name}}, {{altField}} nó {{dictL1Name}}...",
+        "search": "Cerca..."
     },
     "error": {
         "passwords_do_not_match": "Níl na pasfhocail comhtháite",
@@ -370,7 +379,8 @@
         "generic": "Earráid",
         "user_info_not_found": "Informació de l'usuari no trobada",
         "updating_progress": "Earráid agus an dul chun cinn a nuashonrú:",
-        "failed_to_load_items": "Error al carregar elements:"
+        "failed_to_load_items": "Error al carregar elements:",
+        "entry_not_found": "Entrada no trobada o diccionari no carregat"
     },
     "success": {
         "code_resent": "Tá an cód deimhnithe atá atáirthe arís chuig do ríomhphost."
@@ -468,5 +478,8 @@
         "pinyin": "PinyinName",
         "kana": "KanaGenericName",
         "hanja": "HanjaName"
-    }
+    },
+    "list_all": "Mostra-ho tot",
+    "of": "de",
+    "upgrade_text": "Mettez à niveau vers Pro pour accéder à plus de vidéos!"
 }

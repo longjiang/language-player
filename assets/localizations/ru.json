@@ -293,7 +293,7 @@
         "what_your_first_language": "Какой у вас родной язык?",
         "confirm_cancel_subscription": "Вы уверены, что хотите отменить подписку?",
         "no_active_subscription": "Активная подписка не найдена.",
-        "loading": "Погрузка...",
+        "loading": "Učitavanje...",
         "auto_renews_in": "Автоматическое продление через {{days}} дней",
         "expires_in": "Срок действия истекает через {{days}} дней",
         "or_register_with": "Или зарегистрируйтесь с помощью:",
@@ -304,7 +304,8 @@
         "pro_transcript_limit_reached": "Достигнут лимит стенограммы. Пожалуйста, обновите статус до Pro, чтобы получить доступ к большему количеству стенограмм.",
         "copy_success": "Kopirano",
         "pro_feature_chatgpt": "Только пользователи Pro могут использовать функции ИИ в Language Player Go. Чтобы использовать эту функцию, выполните обновление до Pro.",
-        "initializing": "Inicijalizacija..."
+        "initializing": "Inicijalizacija...",
+        "sort_by": "{{sortBy}} ile sırala"
     },
     "title": {
         "email": "Отправить по электронной почте",
@@ -331,11 +332,18 @@
         "current_level": "Какой у вас текущий уровень {{language}}?",
         "pro_feature": "Pro funkcija",
         "loading_dictionary": "Učitavanje rječnika {{language}}",
-        "dictionary": "Rječnik"
+        "dictionary": "Rječnik",
+        "examples_from_videos": "Rasprave iz videozapisa",
+        "popularity": "Popularnost",
+        "likes": "Volim",
+        "date": "Datum",
+        "length": "Dužina",
+        "leftContext": "Levi kontekst",
+        "rightContext": "Desni kontekst"
     },
     "action": {
         "upgrade": "Модернизировать",
-        "cancel": "Отмена",
+        "cancel": "Otkaži",
         "confirm_cancellation": "Подтвердить отмену",
         "keep_subscription": "Сохранить подписку",
         "register": "Регистрация",
@@ -360,7 +368,8 @@
         "please_specify": "Пожалуйста, уточните",
         "more_languages": "Больше языков ({{count}})",
         "select_language": "Odaberite jezik",
-        "dict_search": "Поиск {{l2Name}}, {{altField}} или {{dictL1Name}}..."
+        "dict_search": "Поиск {{l2Name}}, {{altField}} или {{dictL1Name}}...",
+        "search": "Pretraži..."
     },
     "error": {
         "passwords_do_not_match": "Пароли не совпадают",
@@ -369,7 +378,8 @@
         "generic": "Ошибка",
         "user_info_not_found": "Информация о пользователе не найдена",
         "updating_progress": "Ошибка при обновлении прогресса:",
-        "failed_to_load_items": "Не удалось загрузить элементы:"
+        "failed_to_load_items": "Не удалось загрузить элементы:",
+        "entry_not_found": "Unos nije pronađen ili rječnik nije učitan"
     },
     "success": {
         "code_resent": "Код подтверждения отправлен на ваш адрес электронной почты."
@@ -467,5 +477,8 @@
         "pinyin": "Пиньинь",
         "kana": "Кана",
         "hanja": "Ханча"
-    }
+    },
+    "list_all": "Prikaži sve",
+    "of": "od",
+    "upgrade_text": "Actualiza a Pro para acceder a más vídeos!"
 }

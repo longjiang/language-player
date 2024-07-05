@@ -304,7 +304,8 @@
         "pro_transcript_limit_reached": "Transcriptielimiet bereikt. Upgrade naar Pro om toegang te krijgen tot meer transcripties.",
         "copy_success": "Tekst gekopieerd naar klembord",
         "pro_feature_chatgpt": "Alleen Pro-gebruikers kunnen AI-functies gebruiken in Language Player Go. Als u deze functie wilt gebruiken, moet u upgraden naar Pro.",
-        "initializing": "Initialiseren..."
+        "initializing": "Initialiseren...",
+        "sort_by": "Sorteren op: {{sortBy}}"
     },
     "title": {
         "email": "E-mail",
@@ -331,11 +332,18 @@
         "current_level": "Wat is je huidige niveau van {{language}}?",
         "pro_feature": "Pro-functie",
         "loading_dictionary": "Woordenboek {{language}} laden",
-        "dictionary": "Dictionary"
+        "dictionary": "Dictionary",
+        "examples_from_videos": "Video's van voorbeelden",
+        "popularity": "Populariteit",
+        "likes": "Likes",
+        "date": "Datum",
+        "length": "Lengte",
+        "leftContext": "Linkercontext",
+        "rightContext": "Rechtercontext"
     },
     "action": {
         "upgrade": "Opwaarderen",
-        "cancel": "Annuleren",
+        "cancel": "Annuler",
         "confirm_cancellation": "Annulering bevestigen",
         "keep_subscription": "Abonnement behouden",
         "register": "Registreren",
@@ -360,7 +368,8 @@
         "please_specify": "Gelieve te specificeren",
         "more_languages": "Meer talen ({{count}})",
         "select_language": "Kies een taal",
-        "dict_search": "Zoek naar {{l2Name}}, {{altField}} of {{dictL1Name}}..."
+        "dict_search": "Zoek naar {{l2Name}}, {{altField}} of {{dictL1Name}}...",
+        "search": "Zoeken..."
     },
     "error": {
         "passwords_do_not_match": "Wachtwoorden komen niet overeen",
@@ -369,7 +378,8 @@
         "generic": "Fout",
         "user_info_not_found": "Gebruikersinformatie niet gevonden",
         "updating_progress": "Fout bij het bijwerken van de voortgang:",
-        "failed_to_load_items": "Kan items niet laden:"
+        "failed_to_load_items": "Kan items niet laden:",
+        "entry_not_found": "Item niet gevonden of woordenboek niet geladen"
     },
     "success": {
         "code_resent": "Verificatiecode opnieuw verzonden naar uw e-mail."
@@ -467,5 +477,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Toon alles",
+    "of": "of",
+    "upgrade_text": "Pro にアップグレードして、さらに多くのビデオにアクセスしましょう！"
 }

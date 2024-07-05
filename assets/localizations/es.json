@@ -293,7 +293,7 @@
         "what_your_first_language": "¿Cuál es tu lengua materna?",
         "confirm_cancel_subscription": "¿Estás seguro de que quieres cancelar tu suscripción?",
         "no_active_subscription": "No se ha encontrado ninguna suscripción activa.",
-        "loading": "Carga...",
+        "loading": "Cargando...",
         "auto_renews_in": "Se renueva automáticamente en {{days}} días",
         "expires_in": "Caduca en {{days}} días",
         "or_register_with": "O registra con:",
@@ -304,7 +304,8 @@
         "pro_transcript_limit_reached": "Se ha alcanzado el límite de transcripciones. Actualice a Pro para acceder a más transcripciones.",
         "copy_success": "Texto copiado al portapapeles",
         "pro_feature_chatgpt": "Solo los usuarios Pro pueden usar funciones de IA en Language Player Go. Para usar esta función, actualiza a Pro.",
-        "initializing": "Inicializando..."
+        "initializing": "Inicializando...",
+        "sort_by": "Ordenar por: {{sortBy}}"
     },
     "title": {
         "email": "Correo electrónico",
@@ -331,7 +332,14 @@
         "current_level": "¿Cuál es tu nivel actual de {{language}}?",
         "pro_feature": "Función Pro",
         "loading_dictionary": "Cargando diccionario {{language}}",
-        "dictionary": "Diccionario"
+        "dictionary": "Diccionario",
+        "examples_from_videos": "Ejemplos de videos",
+        "popularity": "Popularidad",
+        "likes": "Me gusta",
+        "date": "Fecha",
+        "length": "Longitud",
+        "leftContext": "Contexto izquierdo",
+        "rightContext": "Contexto derecho"
     },
     "action": {
         "upgrade": "Actualizar",
@@ -360,7 +368,8 @@
         "please_specify": "Por favor, especifique",
         "more_languages": "Más idiomas ({{count}})",
         "select_language": "Selecciona un idioma",
-        "dict_search": "Busca {{l2Name}}, {{altField}} o {{dictL1Name}}..."
+        "dict_search": "Busca {{l2Name}}, {{altField}} o {{dictL1Name}}...",
+        "search": "Buscar..."
     },
     "error": {
         "passwords_do_not_match": "Las contraseñas no coinciden",
@@ -369,7 +378,8 @@
         "generic": "Error",
         "user_info_not_found": "Información del usuario no encontrada",
         "updating_progress": "Error al actualizar el progreso:",
-        "failed_to_load_items": "Error al cargar elementos:"
+        "failed_to_load_items": "Error al cargar elementos:",
+        "entry_not_found": "Entrada no encontrada o diccionario no cargado"
     },
     "success": {
         "code_resent": "El código de verificación se ha reenviado a su correo electrónico."
@@ -467,5 +477,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Mostrar todo",
+    "of": "de",
+    "upgrade_text": "Αναβαθμίστε σε Pro για πρόσβαση σε περισσότερα βίντεο!"
 }

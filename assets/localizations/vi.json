@@ -292,7 +292,7 @@
         "what_your_first_language": "Ngôn ngữ đầu tiên của bạn là gì?",
         "confirm_cancel_subscription": "Bạn có chắc chắn muốn hủy đăng ký của mình không?",
         "no_active_subscription": "Không tìm thấy đăng ký đang hoạt động.",
-        "loading": "Tải...",
+        "loading": "Đang tải...",
         "auto_renews_in": "Tự động gia hạn sau {{days}} ngày",
         "expires_in": "Hết hạn sau {{days}} ngày",
         "or_register_with": "Hoặc đăng ký bằng:",
@@ -303,7 +303,8 @@
         "pro_transcript_limit_reached": "Đã đạt đến giới hạn bảng điểm. Vui lòng nâng cấp lên Pro để truy cập thêm bảng điểm.",
         "copy_success": "Văn bản được sao chép vào khay nhớ tạm",
         "pro_feature_chatgpt": "Chỉ người dùng Pro mới có thể sử dụng các tính năng AI trong Language Player Go. Để sử dụng tính năng này, hãy nâng cấp lên Pro.",
-        "initializing": "Khởi xướng..."
+        "initializing": "Khởi xướng...",
+        "sort_by": "Sắp xếp theo: {{sortBy}}"
     },
     "title": {
         "email": "Email",
@@ -330,11 +331,18 @@
         "current_level": "Cấp độ hiện tại của bạn với {{language}} là gì?",
         "pro_feature": "Tính năng Pro",
         "loading_dictionary": "Đang tải từ điển {{language}}",
-        "dictionary": "Từ điển"
+        "dictionary": "Từ điển",
+        "examples_from_videos": "Ví dụ từ Video",
+        "popularity": "Độ phổ biến",
+        "likes": "Lượt thích",
+        "date": "Ngày",
+        "length": "Chiều dài",
+        "leftContext": "Ngữ cảnh trái",
+        "rightContext": "Ngữ cảnh phải"
     },
     "action": {
         "upgrade": "Nâng cấp",
-        "cancel": "Hủy",
+        "cancel": "Bỏ",
         "confirm_cancellation": "Xác nhận hủy",
         "keep_subscription": "Giữ đăng ký",
         "register": "Đăng ký",
@@ -359,7 +367,8 @@
         "please_specify": "Vui lòng ghi rõ",
         "more_languages": "Thêm ngôn ngữ ({{count}})",
         "select_language": "Chọn ngôn ngữ",
-        "dict_search": "Tìm kiếm {{l2Name}}, {{altField}} hoặc {{dictL1Name}}..."
+        "dict_search": "Tìm kiếm {{l2Name}}, {{altField}} hoặc {{dictL1Name}}...",
+        "search": "Tìm kiếm..."
     },
     "error": {
         "passwords_do_not_match": "Mật khẩu không khớp",
@@ -368,7 +377,8 @@
         "generic": "Lỗi",
         "user_info_not_found": "Không tìm thấy thông tin người dùng",
         "updating_progress": "Lỗi cập nhật tiến trình:",
-        "failed_to_load_items": "Không tải được mục:"
+        "failed_to_load_items": "Không tải được mục:",
+        "entry_not_found": "Không tìm thấy mục nhập hoặc từ điển không được tải"
     },
     "success": {
         "code_resent": "Mã xác minh được gửi lại đến email của bạn."
@@ -466,5 +476,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Hiển thị tất cả",
+    "of": "của",
+    "upgrade_text": "อัปเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!"
 }

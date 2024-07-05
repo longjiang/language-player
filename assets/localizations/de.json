@@ -294,7 +294,7 @@
         "what_your_first_language": "Was ist Ihre Muttersprache?",
         "confirm_cancel_subscription": "Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten?",
         "no_active_subscription": "Kein aktives Abonnement gefunden.",
-        "loading": "Laden...",
+        "loading": "Wird geladen...",
         "auto_renews_in": "Automatische Verlängerung in {{days}} Tagen",
         "expires_in": "Läuft in {{days}} Tagen ab",
         "or_register_with": "Oder registrieren Sie sich mit:",
@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "Transkript-Limit erreicht. Bitte aktualisieren Sie auf Pro, um auf weitere Transkripte zugreifen zu können.",
         "copy_success": "Text in die Zwischenablage kopiert",
         "pro_feature_chatgpt": "Nur Pro-Benutzer können KI-Funktionen in Language Player Go verwenden. Um diese Funktion zu verwenden, aktualisieren Sie auf Pro.",
-        "initializing": "Initialisierung..."
+        "initializing": "Initialisierung...",
+        "sort_by": "Sortieren nach: {{sortBy}}"
     },
     "title": {
         "email": "E-Mail",
@@ -332,7 +333,14 @@
         "current_level": "Was ist Ihr aktuelles Niveau in {{language}}?",
         "pro_feature": "Pro-Funktion",
         "loading_dictionary": "{{language}}-Wörterbuch wird geladen",
-        "dictionary": "Wörterbuch"
+        "dictionary": "Wörterbuch",
+        "examples_from_videos": "Beispiele aus Videos",
+        "popularity": "Beliebtheit",
+        "likes": "Gefällt mir",
+        "date": "Datum",
+        "length": "Länge",
+        "leftContext": "Linker Kontext",
+        "rightContext": "Rechter Kontext"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -361,7 +369,8 @@
         "please_specify": "Bitte angeben",
         "more_languages": "Mehr Sprachen ({{count}})",
         "select_language": "Wählen Sie eine Sprache",
-        "dict_search": "Suche nach {{l2Name}}, {{altField}} oder {{dictL1Name}}..."
+        "dict_search": "Suche nach {{l2Name}}, {{altField}} oder {{dictL1Name}}...",
+        "search": "Suche..."
     },
     "error": {
         "passwords_do_not_match": "Passwörter stimmen nicht überein",
@@ -370,7 +379,8 @@
         "generic": "Fehler",
         "user_info_not_found": "Benutzerinformationen nicht gefunden",
         "updating_progress": "Fehler beim Aktualisieren des Fortschritts:",
-        "failed_to_load_items": "Fehler beim Laden von Elementen:"
+        "failed_to_load_items": "Fehler beim Laden von Elementen:",
+        "entry_not_found": "Eintrag nicht gefunden oder Wörterbuch nicht geladen"
     },
     "success": {
         "code_resent": "Der Code wurde erneut an Ihre E-Mail-Adresse gesendet."
@@ -468,5 +478,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Alle auflisten",
+    "of": "von",
+    "upgrade_text": "Upgrade auf Pro"
 }

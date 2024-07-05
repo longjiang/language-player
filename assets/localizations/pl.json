@@ -293,7 +293,7 @@
         "what_your_first_language": "Jaki jest Twój pierwszy język?",
         "confirm_cancel_subscription": "Czy na pewno chcesz anulować subskrypcję?",
         "no_active_subscription": "Nie znaleziono aktywnej subskrypcji.",
-        "loading": "Ładowania...",
+        "loading": "Cargando...",
         "auto_renews_in": "Automatyczne odnawianie za {{days}} dni",
         "expires_in": "Wygasa za {{days}} dni",
         "or_register_with": "Lub zarejestruj się za pomocą:",
@@ -304,7 +304,8 @@
         "pro_transcript_limit_reached": "Osiągnięto limit transkrypcji. Uaktualnij do wersji Pro, aby uzyskać dostęp do większej liczby transkrypcji.",
         "copy_success": "Copiado",
         "pro_feature_chatgpt": "Tylko użytkownicy wersji Pro mogą korzystać z funkcji sztucznej inteligencji w Language Player Go. Aby korzystać z tej funkcji, uaktualnij do wersji Pro.",
-        "initializing": "Inicializando..."
+        "initializing": "Inicializando...",
+        "sort_by": "Ordenar por: {{sortBy}}"
     },
     "title": {
         "email": "E-mail",
@@ -331,11 +332,18 @@
         "current_level": "Jaki jest twój obecny poziom {{language}}?",
         "pro_feature": "Función Pro",
         "loading_dictionary": "Cargando diccionario {{language}}",
-        "dictionary": "Diccionario"
+        "dictionary": "Diccionario",
+        "examples_from_videos": "Ejemplos de videos",
+        "popularity": "Popularidad",
+        "likes": "Gustos",
+        "date": "Data",
+        "length": "Longitud",
+        "leftContext": "Contexto izquierdo",
+        "rightContext": "Contexto derecho"
     },
     "action": {
         "upgrade": "Upgrade",
-        "cancel": "Anuluj",
+        "cancel": "Cancelar",
         "confirm_cancellation": "Potwierdź anulowanie",
         "keep_subscription": "Zachowaj subskrypcję",
         "register": "Zarejestruj się",
@@ -360,7 +368,8 @@
         "please_specify": "Proszę określić",
         "more_languages": "Więcej języków ({{count}})",
         "select_language": "Selecciona un idioma",
-        "dict_search": "Szukaj {{l2Name}}, {{altField}} lub {{dictL1Name}}..."
+        "dict_search": "Szukaj {{l2Name}}, {{altField}} lub {{dictL1Name}}...",
+        "search": "Buscar..."
     },
     "error": {
         "passwords_do_not_match": "Hasła nie pasują",
@@ -369,7 +378,8 @@
         "generic": "Błąd",
         "user_info_not_found": "Nie znaleziono informacji o użytkowniku",
         "updating_progress": "Błąd podczas aktualizacji postępu:",
-        "failed_to_load_items": "Nie udało się załadować elementów:"
+        "failed_to_load_items": "Nie udało się załadować elementów:",
+        "entry_not_found": "Entrada no encontrada o diccionario no cargado"
     },
     "success": {
         "code_resent": "Kod weryfikacyjny został ponownie wysłany na Twój adres e-mail."
@@ -467,5 +477,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Mostrar Todo",
+    "of": "de",
+    "upgrade_text": "Upgrade naar Pro om toegang te krijgen tot meer video's!"
 }

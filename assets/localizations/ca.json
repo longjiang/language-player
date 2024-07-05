@@ -294,7 +294,7 @@
         "what_your_first_language": "Quin és el teu primer idioma?",
         "confirm_cancel_subscription": "Estàs segur que vols cancel·lar la teva subscripció?",
         "no_active_subscription": "No s'ha trobat cap subscripció activa.",
-        "loading": "Càrrega...",
+        "loading": "Carregant...",
         "auto_renews_in": "Es renova automàticament en {{days}} dies",
         "expires_in": "Caduca en {{days}} dies",
         "or_register_with": "O registrau amb:",
@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "Límit de transcripció assolit. Actualitzeu a Pro per accedir a més transcripcions.",
         "copy_success": "Text copiat al porta-retalls",
         "pro_feature_chatgpt": "Només els usuaris Pro poden utilitzar les funcions d'IA a Language Player Go. Per utilitzar aquesta funció, actualitza a Pro.",
-        "initializing": "S'està inicialitzant..."
+        "initializing": "S'està inicialitzant...",
+        "sort_by": "Ordena per: {{sortBy}}"
     },
     "title": {
         "email": "Correu electrònic",
@@ -332,11 +333,18 @@
         "current_level": "Quin és el teu nivell actual de {{language}}?",
         "pro_feature": "Funció Pro",
         "loading_dictionary": "Carregant el diccionari {{language}}",
-        "dictionary": "Diccionari"
+        "dictionary": "Diccionari",
+        "examples_from_videos": "Exemples de vidéos",
+        "popularity": "Popularitat",
+        "likes": "M'agrada",
+        "date": "Data",
+        "length": "Longitud",
+        "leftContext": "Context esquerre",
+        "rightContext": "Context dret"
     },
     "action": {
         "upgrade": "Rampa",
-        "cancel": "Cancel·lar",
+        "cancel": "Cancel·la",
         "confirm_cancellation": "Confirmeu la cancel·lació",
         "keep_subscription": "Mantenir subscripció",
         "register": "Registrar",
@@ -361,7 +369,8 @@
         "please_specify": "Especifiqueu",
         "more_languages": "Més idiomes ({{count}}})",
         "select_language": "Selecciona un idioma",
-        "dict_search": "Cerca {{l2Name}}, {{altField}} o {{dictL1Name}}..."
+        "dict_search": "Cerca {{l2Name}}, {{altField}} o {{dictL1Name}}...",
+        "search": "Cerca..."
     },
     "error": {
         "passwords_do_not_match": "Les contrasenyes no coincideixen",
@@ -370,7 +379,8 @@
         "generic": "Error",
         "user_info_not_found": "Informació de l'usuari no trobada",
         "updating_progress": "Error actualitzant el progrés:",
-        "failed_to_load_items": "Error al carregar els elements:"
+        "failed_to_load_items": "Error al carregar els elements:",
+        "entry_not_found": "No s'ha trobat l'entrada o el diccionari no s'ha carregat"
     },
     "success": {
         "code_resent": "El codi de verificació s'ha reenviat al teu correu electrònic."
@@ -468,5 +478,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Llista tot",
+    "of": "de",
+    "upgrade_text": "Actualitza a Pro per accedir a més vídeos!"
 }

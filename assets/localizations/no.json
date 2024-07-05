@@ -293,7 +293,7 @@
         "what_your_first_language": "Hva er ditt morsmål?",
         "confirm_cancel_subscription": "Er du sikker på at du vil si opp abonnementet?",
         "no_active_subscription": "Finner ikke noe aktivt abonnement.",
-        "loading": "Lasting...",
+        "loading": "Carregando...",
         "auto_renews_in": "Automatisk fornyelse på {{days}} dager",
         "expires_in": "Utløper om {{days}} dager",
         "or_register_with": "Eller registrer deg med:",
@@ -304,7 +304,8 @@
         "pro_transcript_limit_reached": "Transkripsjonsgrense nådd. Oppgrader til Pro for å få tilgang til flere transkripsjoner.",
         "copy_success": "Texto copiado",
         "pro_feature_chatgpt": "Bare Pro-brukere kan bruke AI-funksjoner i Language Player Go. For å bruke denne funksjonen, oppgrader til Pro.",
-        "initializing": "Inicializando..."
+        "initializing": "Inicializando...",
+        "sort_by": "Ordenar por: {{sortBy}}"
     },
     "title": {
         "email": "E-post",
@@ -331,11 +332,18 @@
         "current_level": "Hva er ditt nåværende nivå av {{language}}?",
         "pro_feature": "Recurso Pro",
         "loading_dictionary": "Carregando dicionário {{language}}",
-        "dictionary": "Dicionário"
+        "dictionary": "Dicionário",
+        "examples_from_videos": "Exemplos de vídeos",
+        "popularity": "Popularidade",
+        "likes": "Gostos",
+        "date": "Data",
+        "length": "Comprimento",
+        "leftContext": "Contexto Esquerdo",
+        "rightContext": "Contexto Direito"
     },
     "action": {
         "upgrade": "Oppgradere",
-        "cancel": "Annullere",
+        "cancel": "Cancelar",
         "confirm_cancellation": "Bekreft kansellering",
         "keep_subscription": "Behold abonnement",
         "register": "Registrer deg",
@@ -360,7 +368,8 @@
         "please_specify": "Vennligst spesifiser",
         "more_languages": "Flere språk ({{count}})",
         "select_language": "Selecione um idioma",
-        "dict_search": "Søk {{l2Name}}, {{altField}} eller {{dictL1Name}}..."
+        "dict_search": "Søk {{l2Name}}, {{altField}} eller {{dictL1Name}}...",
+        "search": "Pesquisar..."
     },
     "error": {
         "passwords_do_not_match": "Passordene stemmer ikke overens",
@@ -369,7 +378,8 @@
         "generic": "Feil",
         "user_info_not_found": "Finner ikke brukerinformasjon",
         "updating_progress": "Feil ved oppdatering av fremdriften:",
-        "failed_to_load_items": "Kunne ikke laste inn elementer:"
+        "failed_to_load_items": "Kunne ikke laste inn elementer:",
+        "entry_not_found": "Entrada não encontrada ou dicionário não carregado"
     },
     "success": {
         "code_resent": "Bekreftelseskoden ble sendt på nytt til e-posten din."
@@ -467,5 +477,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Mostrar Tudo",
+    "of": "de",
+    "upgrade_text": "더 많은 비디오에 액세스하려면 Pro로 업그레이드하세요!"
 }

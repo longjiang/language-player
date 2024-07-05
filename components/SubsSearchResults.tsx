@@ -12,6 +12,7 @@ import { ThemedRBSheet } from "./ThemedRBSheet";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { ProFeatureModal } from "./ProFeatureModal";
 import { timeout } from "@/src/utils";
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const SubsSearchResults = ({ term }: { term: string }) => {
   const { video, syncedLines, playlist, updateStartTime, currentVideoIndex, skipToVideo } =
@@ -21,6 +22,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   const { isProUser } = useSubscription();
   const [showProModal, setShowProModal] = useState(false);
   const previousIndexRef = useRef(currentVideoIndex);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!isProUser() && currentVideoIndex > 2) {
@@ -70,12 +72,12 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
     <View>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: "space-between", paddingHorizontal: 26, paddingBottom: 16 }}>
         <ThemedText>
-          {currentVideoIndex + 1} of {playlist.length}
+          {currentVideoIndex + 1} {t('of')} {playlist.length}
         </ThemedText>
         <ThemedButton
           type="ghost"
           size="small"
-          title="List All"
+          title={t('list_all')}
           trailingIcon={<Icon name="caret-down" />}
           onPress={openModal}
           style={{ fontWeight: "regular" }}
@@ -91,7 +93,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
       <ProFeatureModal
         visible={showProModal}
         onClose={closeProModal}
-        upgradeText="Upgrade to Pro to access more videos!"
+        upgradeText={t('upgrade_text')}
       />
     </View>
   );

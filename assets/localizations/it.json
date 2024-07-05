@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "Limite di trascrizione raggiunto. Si prega di eseguire l'upgrade a Pro per accedere a più trascrizioni.",
         "copy_success": "Testo copiato negli appunti",
         "pro_feature_chatgpt": "Solo gli utenti Pro possono utilizzare le funzionalità AI in Language Player Go. Per utilizzare questa funzione, eseguire l'aggiornamento a Pro.",
-        "initializing": "Inizializzazione..."
+        "initializing": "Inizializzazione...",
+        "sort_by": "Ordina per: {{sortBy}}"
     },
     "title": {
         "email": "E-mail",
@@ -332,7 +333,14 @@
         "current_level": "Qual è il tuo livello attuale di {{language}}?",
         "pro_feature": "Caratteristica Pro",
         "loading_dictionary": "Caricamento dizionario {{language}}",
-        "dictionary": "Dizionario"
+        "dictionary": "Dizionario",
+        "examples_from_videos": "Esempi dai video",
+        "popularity": "Popolarità",
+        "likes": "Like",
+        "date": "Data",
+        "length": "Lunghezza",
+        "leftContext": "Contesto sinistro",
+        "rightContext": "Contesto destro"
     },
     "action": {
         "upgrade": "Aggiornamento",
@@ -361,7 +369,8 @@
         "please_specify": "Si prega di specificare",
         "more_languages": "Altre lingue ({{count}})",
         "select_language": "Scegli una lingua",
-        "dict_search": "Cerca {{l2Name}}, {{altField}} o {{dictL1Name}}..."
+        "dict_search": "Cerca {{l2Name}}, {{altField}} o {{dictL1Name}}...",
+        "search": "Cerca..."
     },
     "error": {
         "passwords_do_not_match": "Le password non corrispondono",
@@ -370,7 +379,8 @@
         "generic": "Errore",
         "user_info_not_found": "Informazioni utente non trovate",
         "updating_progress": "Errore nell'aggiornamento del progresso:",
-        "failed_to_load_items": "Caricamento elementi non riuscito:"
+        "failed_to_load_items": "Caricamento elementi non riuscito:",
+        "entry_not_found": "Voce non trovata o dizionario non caricato"
     },
     "success": {
         "code_resent": "Il codice di verifica è stato rispedito al tuo indirizzo email."
@@ -468,5 +478,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Mostra Tutto",
+    "of": "di",
+    "upgrade_text": " hogy több videót érjen el!"
 }

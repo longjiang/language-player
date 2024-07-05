@@ -292,7 +292,7 @@
         "what_your_first_language": "ภาษาแรกของคุณคืออะไร?",
         "confirm_cancel_subscription": "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการสมัครสมาชิกของคุณ?",
         "no_active_subscription": "ไม่พบการสมัครสมาชิกที่ใช้งานอยู่",
-        "loading": "การโหลด   ",
+        "loading": "กำลังโหลด...",
         "auto_renews_in": "ต่ออายุอัตโนมัติใน {{days}} วัน",
         "expires_in": "หมดอายุใน {{days}} วัน",
         "or_register_with": "หรือลงทะเบียนด้วย:",
@@ -303,7 +303,8 @@
         "pro_transcript_limit_reached": "ถึงขีดจํากัดการถอดเสียงแล้ว โปรดอัปเกรดเป็น Pro เพื่อเข้าถึงการถอดเสียงเพิ่มเติม",
         "copy_success": "Đã sao chép văn bản",
         "pro_feature_chatgpt": "เฉพาะผู้ใช้ Pro เท่านั้นที่สามารถใช้คุณสมบัติ AI ใน Language Player Go ได้ หากต้องการใช้คุณสมบัตินี้ ให้อัปเกรดเป็น Pro",
-        "initializing": "Khởi tạo..."
+        "initializing": "Khởi tạo...",
+        "sort_by": "Sắp xếp theo: {{sortBy}}"
     },
     "title": {
         "email": "อีเมล",
@@ -330,7 +331,14 @@
         "current_level": "ระดับ {{language}} ปัจจุบันของคุณคืออะไร?",
         "pro_feature": "คุณสมบัติ Pro",
         "loading_dictionary": "กำลังโหลดพจนานุกรม {{language}}",
-        "dictionary": "พจนานุกรม"
+        "dictionary": "พจนานุกรม",
+        "examples_from_videos": "วิดีโอตัวอย่าง",
+        "popularity": "ความนิยม",
+        "likes": "ถูกใจ",
+        "date": "วันที่",
+        "length": "ความยาว",
+        "leftContext": "บริบทซ้าย",
+        "rightContext": "บริบทขวา"
     },
     "action": {
         "upgrade": "อัพ เกรด",
@@ -359,7 +367,8 @@
         "please_specify": "โปรดระบุ",
         "more_languages": "เพิ่มเติมภาษา ({{count}})",
         "select_language": "Chọn một ngôn ngữ",
-        "dict_search": "ค้นหา {{l2Name}}, {{altField}} หรือ {{dictL1Name}}..."
+        "dict_search": "ค้นหา {{l2Name}}, {{altField}} หรือ {{dictL1Name}}...",
+        "search": "ค้นหา..."
     },
     "error": {
         "passwords_do_not_match": "Mật khẩu không khớp",
@@ -368,7 +377,8 @@
         "generic": "ความผิดพลาด",
         "user_info_not_found": "ไม่พบข้อมูลผู้ใช้",
         "updating_progress": "ข้อผิดพลาดในการอัปเดตความคืบหน้า:",
-        "failed_to_load_items": "ไม่สามารถโหลดรายการ:"
+        "failed_to_load_items": "ไม่สามารถโหลดรายการ:",
+        "entry_not_found": "ไม่พบรายการหรือพจนานุกรมไม่ได้โ"
     },
     "success": {
         "code_resent": "รหัสยืนยันถูกส่งไปยังอีเมลของคุณอีกครั้ง"
@@ -466,5 +476,8 @@
         "pinyin": "พินอิน",
         "kana": "คานะ",
         "hanja": "ฮันจา"
-    }
+    },
+    "list_all": "แสดงทั้งหมด",
+    "of": "ของ",
+    "upgrade_text": "Atualize para Pro para acessar mais vídeos!"
 }

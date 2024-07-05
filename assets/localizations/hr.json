@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "Dosegnuto je ograničenje transkripta. Nadogradite na Pro da biste pristupili većem broju transkripata.",
         "copy_success": "Tekst kopiran u međuspremnik",
         "pro_feature_chatgpt": "Samo Pro korisnici mogu koristiti značajke umjetne inteligencije u aplikaciji Language Player Go. Da biste koristili ovu značajku, nadogradite na Pro.",
-        "initializing": "Inicijalizacija..."
+        "initializing": "Inicijalizacija...",
+        "sort_by": "Sortiraj po: {{sortBy}}"
     },
     "title": {
         "email": "E-pošta",
@@ -332,11 +333,18 @@
         "current_level": "Koji je vaš trenutni nivo {{language}}?",
         "pro_feature": "Pro funkcija",
         "loading_dictionary": "Učitavanje rječnika {{language}}",
-        "dictionary": "Rječnik"
+        "dictionary": "Rječnik",
+        "examples_from_videos": "Rasprave iz videozapisa",
+        "popularity": "Popularnost",
+        "likes": "Volim",
+        "date": "Datum",
+        "length": "Dužina",
+        "leftContext": "Levi kontekst",
+        "rightContext": "Desni kontekst"
     },
     "action": {
         "upgrade": "Nadograditi",
-        "cancel": "Otkazati",
+        "cancel": "Otkaži",
         "confirm_cancellation": "Potvrda otkazivanja",
         "keep_subscription": "Zadrži pretplatu",
         "register": "Registrirajte se",
@@ -361,7 +369,8 @@
         "please_specify": "Navedite",
         "more_languages": "Više jezika ({{count}})",
         "select_language": "Odaberite jezik",
-        "dict_search": "Pretraživanje {{l2Name}}, {{altField}} ili {{dictL1Name}}..."
+        "dict_search": "Pretraživanje {{l2Name}}, {{altField}} ili {{dictL1Name}}...",
+        "search": "Pretraži..."
     },
     "error": {
         "passwords_do_not_match": "Lozinke se ne podudaraju",
@@ -370,7 +379,8 @@
         "generic": "Greška",
         "user_info_not_found": "Podaci o korisniku nisu pronađeni",
         "updating_progress": "Greška prilikom ažuriranja napretka:",
-        "failed_to_load_items": "Neuspješno učitavanje stavki:"
+        "failed_to_load_items": "Neuspješno učitavanje stavki:",
+        "entry_not_found": "Unos nije pronađen ili rječnik nije učitan"
     },
     "success": {
         "code_resent": "Kod za potvrdu ponovno je poslan na vašu e-poštu."
@@ -468,5 +478,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "Prikaži sve",
+    "of": "od",
+    "upgrade_text": "अधिक वीडियो देखने के लिए Pro में अपग्रेड करें!"
 }

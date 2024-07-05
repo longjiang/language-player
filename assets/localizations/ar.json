@@ -294,7 +294,7 @@
         "what_your_first_language": "ما هي لغتك الأولى؟",
         "confirm_cancel_subscription": "هل أنت متأكد من رغبتك في إلغاء اشتراكك؟",
         "no_active_subscription": "لم يتم العثور على اشتراك نشط.",
-        "loading": "تحميل...",
+        "loading": "جار التحميل...",
         "auto_renews_in": "التجديد التلقائي في {{days}} أيام",
         "expires_in": "تنتهي صلاحيتها بعد {{days}} يوم",
         "or_register_with": "أو سجل بواسطة:",
@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "تم الوصول إلى حد النص. يرجى الترقية إلى Pro للوصول إلى المزيد من النصوص.",
         "copy_success": "تم نسخ النص إلى الحافظة",
         "pro_feature_chatgpt": "يمكن لمستخدمي Pro فقط استخدام ميزات الذكاء الاصطناعي في Language Player Go. لاستخدام هذه الميزة، قم بالترقية إلى Pro.",
-        "initializing": "جاري التهيئة..."
+        "initializing": "جاري التهيئة...",
+        "sort_by": "فرز حسب: {{sortBy}}"
     },
     "title": {
         "email": "البريد الإلكتروني",
@@ -332,11 +333,18 @@
         "current_level": "ما هو مستواك الحالي في {{language}}؟",
         "pro_feature": "ميزة الاحترافية",
         "loading_dictionary": "تحميل قاموس {{language}}",
-        "dictionary": "القاموس"
+        "dictionary": "القاموس",
+        "examples_from_videos": "أمثلة من الفيديوهات",
+        "popularity": "الشهرة",
+        "likes": "إعجابات",
+        "date": "تاريخ",
+        "length": "الطول",
+        "leftContext": "السياق الأيسر",
+        "rightContext": "السياق الأيمن"
     },
     "action": {
         "upgrade": "ترقيه",
-        "cancel": "إلغاء الأمر",
+        "cancel": "إلغاء",
         "confirm_cancellation": "تأكيد الإلغاء",
         "keep_subscription": "حافظ على الاشتراك",
         "register": "سجل",
@@ -361,7 +369,8 @@
         "please_specify": "يرجى التحديد",
         "more_languages": "المزيد من اللغات ({{count}})",
         "select_language": "اختر لغة",
-        "dict_search": "البحث {{l2Name}} أو {{altField}} أو {{dictL1Name}}..."
+        "dict_search": "البحث {{l2Name}} أو {{altField}} أو {{dictL1Name}}...",
+        "search": "بحث..."
     },
     "error": {
         "passwords_do_not_match": "كلمات المرور غير متطابقة",
@@ -370,7 +379,8 @@
         "generic": "خطأ",
         "user_info_not_found": "معلومات المستخدم غير موجودة",
         "updating_progress": "خطأ في تحديث التقدم:",
-        "failed_to_load_items": "فشل تحميل العناصر:"
+        "failed_to_load_items": "فشل تحميل العناصر:",
+        "entry_not_found": "لم يتم العثور على الإدخال أو لم يتم تحميل القاموس"
     },
     "success": {
         "code_resent": "تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني."
@@ -468,5 +478,8 @@
         "pinyin": "بينيين",
         "kana": "كانا",
         "hanja": "هانجا"
-    }
+    },
+    "list_all": "عرض الكل",
+    "of": "من",
+    "upgrade_text": "قم بالترقية إلى النسخة الاحترافية للوصول إلى المزيد من مقاطع الفيديو!"
 }

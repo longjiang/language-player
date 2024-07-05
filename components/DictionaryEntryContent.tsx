@@ -1,6 +1,6 @@
 // @/components/DictionaryEntryContent.tsx
 
-import React, { useMemo } from "react";
+import React from "react";
 import { View, ScrollView, Text } from "react-native";
 import { ThemedText, SubsSearch } from "@/components";
 import { DictionaryEntry } from "@/src/dictionary-types";
@@ -8,7 +8,7 @@ import { dictionaryEntryStyles as styles } from "@/src/styles";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { languageLevelsByL2Code } from "@/src/language-levels";
 import { useLanguage } from "@/contexts/LanguageContext";
-import BookmarkButton from "@/components/BookmarkButton";  // Import the BookmarkButton component
+import BookmarkButton from "@/components/BookmarkButton";
 import DefinitionList from "./DefinitionList";
 
 interface DictionaryEntryContentProps {
@@ -18,9 +18,9 @@ interface DictionaryEntryContentProps {
 }
 
 const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, headKey, alternateKey }) => {
-  const l2Lang = useLanguage().l2Lang;
+  const { l2Lang, t } = useLanguage();
   if (!l2Lang) return null;
-  const levels = languageLevelsByL2Code(l2Lang.code)
+  const levels = languageLevelsByL2Code(l2Lang.code);
 
   return (
     <ScrollView style={styles.entryContainer}>
@@ -55,7 +55,9 @@ const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, 
         <View style={{ paddingBottom: 16, paddingHorizontal: 26 }}>
           <DefinitionList definitions={entry.definitions} type="large" />
           <View style={{ borderBottomColor: useThemeColor({}, 'secondaryStroke'), borderBottomWidth: 2, paddingBottom: 16 }}></View>
-          <ThemedText type="defaultBold" style={{ marginTop: 26 }} variant="secondary">EXAMPLES FROM VIDEOS</ThemedText>
+          <ThemedText type="defaultBold" style={{ marginTop: 26 }} variant="secondary">
+            {t('title.examples_from_videos')}
+          </ThemedText>
         </View>
         <SubsSearch term={entry.head} />
       </View>

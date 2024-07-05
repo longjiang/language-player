@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts.",
         "copy_success": "Text copied to clipboard",
         "pro_feature_chatgpt": "Only Pro users can use AI features in Language Player Go. To use this feature, upgrade to Pro.",
-        "initializing": "Initializing..."
+        "initializing": "Initializing...",
+        "sort_by": "Sort by: {{sortBy}}"
     },
     "title": {
         "email": "Email",
@@ -332,7 +333,14 @@
         "current_level": "What's your current {{language}} level?",
         "pro_feature": "Pro Feature",
         "loading_dictionary": "Loading {{language}} Dictionary",
-        "dictionary": "Dictionary"
+        "dictionary": "Dictionary",
+        "examples_from_videos": "Examples from Videos",
+        "popularity": "Popularity",
+        "likes": "Likes",
+        "date": "Date",
+        "length": "Length",
+        "leftContext": "Left Context",
+        "rightContext": "Right Context"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -361,7 +369,8 @@
         "please_specify": "Please specify",
         "more_languages": "More languages ({{count}})",
         "select_language": "Select a language",
-        "dict_search": "Search {{l2Name}}, {{altField}} or {{dictL1Name}}..."
+        "dict_search": "Search {{l2Name}}, {{altField}} or {{dictL1Name}}...",
+        "search": "Search..."
     },
     "error": {
         "passwords_do_not_match": "Passwords do not match",
@@ -370,7 +379,8 @@
         "generic": "Error",
         "user_info_not_found": "User info not found",
         "updating_progress": "Error updating progress:",
-        "failed_to_load_items": "Failed to load items:"
+        "failed_to_load_items": "Failed to load items:",
+        "entry_not_found": "Entry not found or dictionary not loaded"
     },
     "success": {
         "code_resent": "Verification code resent to your email."
@@ -468,5 +478,8 @@
         "pinyin": "Pinyin",
         "kana": "Kana",
         "hanja": "Hanja"
-    }
+    },
+    "list_all": "List All",
+    "of": "of",
+    "upgrade_text": "Upgrade to Pro to access more videos!"
 }

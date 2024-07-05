@@ -305,7 +305,8 @@
         "pro_transcript_limit_reached": "Συμπληρώθηκε το όριο μεταγραφής. Αναβαθμίστε σε Pro για να αποκτήσετε πρόσβαση σε περισσότερες μεταγραφές.",
         "copy_success": "Το κείμενο αντιγράφηκε στο πρόχειρο",
         "pro_feature_chatgpt": "Μόνο οι χρήστες Pro μπορούν να χρησιμοποιήσουν τις λειτουργίες τεχνητής νοημοσύνης στο Language Player Go. Για να χρησιμοποιήσετε αυτήν τη λειτουργία, αναβαθμίστε σε Pro.",
-        "initializing": "Αρχικοποίηση..."
+        "initializing": "Αρχικοποίηση...",
+        "sort_by": "Ταξινόμηση κατά: {{sortBy}}"
     },
     "title": {
         "email": "Email",
@@ -332,11 +333,18 @@
         "current_level": "Ποιο είναι το τρέχον επίπεδό σας στα {{language}};",
         "pro_feature": "Λειτουργία Pro",
         "loading_dictionary": "Φόρτωση λεξικού {{language}}",
-        "dictionary": "Λεξικό"
+        "dictionary": "Λεξικό",
+        "examples_from_videos": "Παραδείγματα από βίντεο",
+        "popularity": "Δημοφιλία",
+        "likes": "Αρέσει",
+        "date": "Ημερομηνία",
+        "length": "Μήκος",
+        "leftContext": "Αριστερό πλαίσιο",
+        "rightContext": "Δεξί πλαίσιο"
     },
     "action": {
         "upgrade": "Αναβαθμίζω",
-        "cancel": "Ακυρώνω",
+        "cancel": "Ακύρωση",
         "confirm_cancellation": "Επιβεβαίωση ακύρωσης",
         "keep_subscription": "Διατήρηση συνδρομής",
         "register": "Εγγραφή",
@@ -361,7 +369,8 @@
         "please_specify": "Διευκρινίστε",
         "more_languages": "Περισσότερες γλώσσες ({{count}})",
         "select_language": "Επιλέξτε γλώσσα",
-        "dict_search": "Αναζήτηση {{l2Name}}, {{altField}} ή {{dictL1Name}}..."
+        "dict_search": "Αναζήτηση {{l2Name}}, {{altField}} ή {{dictL1Name}}...",
+        "search": "Αναζήτηση..."
     },
     "error": {
         "passwords_do_not_match": "Οι κωδικοί πρόσβασης δεν ταιριάζουν",
@@ -370,7 +379,8 @@
         "generic": "Σφάλμα",
         "user_info_not_found": "Δεν βρέθηκαν πληροφορίες χρήστη",
         "updating_progress": "Σφάλμα κατά την ενημέρωση της προόδου:",
-        "failed_to_load_items": "Αποτυχία φόρτωσης στοιχείων:"
+        "failed_to_load_items": "Αποτυχία φόρτωσης στοιχείων:",
+        "entry_not_found": "Δεν βρέθηκε η καταχώρηση ή το λεξικό δεν φορτώθηκε"
     },
     "success": {
         "code_resent": "Ο κωδικός επαλήθευσης εστάλη ξανά στο email σας."
@@ -468,5 +478,8 @@
         "pinyin": "Πινγίν",
         "kana": "Κανα",
         "hanja": "Χάντζα"
-    }
+    },
+    "list_all": "Εμφάνιση όλων",
+    "of": "του",
+    "upgrade_text": " um auf mehr Videos zuzugreifen!"
 }

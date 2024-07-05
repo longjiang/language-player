@@ -7,7 +7,7 @@ import { Image } from "react-native";
 import { subsSearchResultsListStyles as styles } from "@/src/styles";
 import { Ionicons } from "@expo/vector-icons";
 import { ThemedButton } from "./ThemedButton";
-
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const extractContexts = (line: string, term: string) => {
   const lowercaseLine = line.toLowerCase().replace(/\s/g, '');
@@ -58,6 +58,7 @@ export const SubsSearchResultsList = ({
   const [filteredResults, setFilteredResults] = useState(results);
   const [searchTerm, setSearchTerm] = useState(term);
   const [sortBy, setSortBy] = useState("popularity");
+  const { t } = useLanguage();
 
   useEffect(() => {
     filterAndSortResults(searchTerm, sortBy);
@@ -144,7 +145,15 @@ export const SubsSearchResultsList = ({
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ['Cancel', 'Popularity', 'Likes', 'Date', 'Length', 'Left Context', 'Right Context'],
+          options: [
+            t('action.cancel'),
+            t('title.popularity'),
+            t('title.likes'),
+            t('title.date'),
+            t('title.length'),
+            t('title.leftContext'),
+            t('title.rightContext')
+          ],
           cancelButtonIndex: 0,
         },
         (buttonIndex) => {
@@ -157,8 +166,6 @@ export const SubsSearchResultsList = ({
         }
       );
     } else {
-      // For Android, you might want to use a modal or custom dropdown here
-      // This is a simple example that cycles through options
       const options = ['popularity', 'likes', 'date', 'length', 'leftContext', 'rightContext'];
       const currentIndex = options.indexOf(sortBy);
       const nextIndex = (currentIndex + 1) % options.length;
@@ -170,7 +177,7 @@ export const SubsSearchResultsList = ({
     <GestureHandlerRootView style={styles.fullContainer}>
       <View style={styles.fullContainer}>
         <ThemedButton
-          title={`Sort by: ${sortBy}`}
+          title={t('msg.sort_by', { sortBy: t(`title.${sortBy}`) })}
           type="ghost"
           size="small"
           trailingIcon={<Ionicons name="caret-down" />}
@@ -178,7 +185,7 @@ export const SubsSearchResultsList = ({
           style={{marginBottom: 8}}
         />
         <ThemedInput
-          placeholder="Search..."
+          placeholder={t('placeholder.search')}
           icon="magnify"
           style={styles.searchInput}
           value={searchTerm}
