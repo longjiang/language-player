@@ -7,6 +7,8 @@ import { hasSavedWord, saveWord, removeSavedWord, SavedWords, SavedWordMeta } fr
 import { getProgress, updateProgress, Progress } from './progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+const UPDATE_INTERVAL = 1000; // 10 seconds
+
 // Define interfaces for UserData and context props
 export interface UserData {
   id: string;
@@ -77,7 +79,7 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
           const newProgress = { ...progress, [langCode]: currentProgress };
           setProgress(newProgress);
         } else {
-          currentProgress.time += 1000;
+          currentProgress.time += UPDATE_INTERVAL;
           const newProgress = { ...progress, [langCode]: currentProgress };
           setProgress(newProgress);
         }
@@ -85,7 +87,7 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
     };
 
     // Set up interval for local progress updates (every 1 second)
-    const localUpdateInterval = setInterval(updateLocalProgress, 1000);
+    const localUpdateInterval = setInterval(updateLocalProgress, UPDATE_INTERVAL);
 
     // Set up interval for server synchronization (every 1 minute)
     const serverSyncInterval = setInterval(async () => {

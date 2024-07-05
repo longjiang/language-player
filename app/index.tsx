@@ -23,14 +23,14 @@ const IndexScreen = () => {
   const [shouldShowHome, setShouldShowHome] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated && userData && settings.l1LangCode && settings.l2LangCode) {
+    if (isAuthenticated && settings.l1LangCode && settings.l2LangCode) {
       // Redirect to media tab
       router.replace('/(tabs)/(media)');
     } else {
       // Show home screen if conditions are not met
       setShouldShowHome(true);
     }
-  }, [isAuthenticated, userData, settings.l1LangCode, settings.l2LangCode]);
+  }, [isAuthenticated, settings.l1LangCode, settings.l2LangCode]);
 
   const buttonText = useMemo(() => {
     if (!isAuthenticated) {
