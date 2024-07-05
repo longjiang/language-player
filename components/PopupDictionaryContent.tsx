@@ -5,11 +5,12 @@ import { View } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Token } from "@/src/tokenizer";
 import { DictionaryEntry } from "@/src/dictionary-types";
 import { popupDictionaryContentStyles as styles } from "@/src/styles";
+import { languageLevelsByL2Code } from "@/src/language-levels";
 import BookmarkButton from "@/components/BookmarkButton";  // Import the BookmarkButton component
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const PopupDictionaryContent: React.FC<{
   token: Token;
@@ -23,6 +24,8 @@ export const PopupDictionaryContent: React.FC<{
   const [dictionaryEntries, setDictionaryEntries] = useState<DictionaryEntry[]>([]);
   const { dictionary } = useDictionary();
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
+  const { l2Lang } = useLanguage();
+  const levels = languageLevelsByL2Code(l2Lang.code)
 
   // Wait for the dictionary to load
   if (!dictionary) {
@@ -66,7 +69,7 @@ export const PopupDictionaryContent: React.FC<{
           <ThemedText style={styles.entryText}>
             {entry.pronunciation}{" "}
             <ThemedText type="smallBold" level={entry.level}>
-              {entry.level ? " • HSK " + entry.level : ""}
+              {entry.level ? " • " + levels[entry.level].examLevelName : ""}
             </ThemedText>{" "}
             • {entry.definitions.join("; ")}
           </ThemedText>
