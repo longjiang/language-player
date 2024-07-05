@@ -10,7 +10,7 @@ interface DefinitionListProps {
   type?: 'default' | 'defaultBold' | 'link' | 'linkBold' | 'large' | 'subtitle' | 'xlarge' | 'title' | 'xxlarge';
 }
 
-const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, type = "default" }) => {
+export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, type = "default" }) => {
   const [translatedDefinitions, setTranslatedDefinitions] = useState<string[]>([]);
   const { dictionary } = useDictionary();
   const { l1Lang } = useLanguage();

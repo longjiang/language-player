@@ -11,6 +11,7 @@ import BookmarkButton from "@/components/BookmarkButton";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
+import { DefinitionList } from "./DefinitionList";
 
 export const PopupDictionaryContent: React.FC<{
   token: Token;
@@ -81,8 +82,9 @@ export const PopupDictionaryContent: React.FC<{
             <ThemedText type="smallBold" level={entry.level}>
               {entry.level ? " • " + levels[entry.level].examLevelName : ""}
             </ThemedText>{" "}
-            • {entry.definitions.join("; ")}
+            • 
           </ThemedText>
+          <DefinitionList definitions={entry.definitions} type="default" />
         </TouchableOpacity>
       ))}
     </View>
