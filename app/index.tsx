@@ -1,5 +1,5 @@
 // @/app/index.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,17 +11,32 @@ import { ThemedText } from "@/components/ThemedText";
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserData } from '@/contexts/UserDataContext';
+import { useSettings } from '@/contexts/SettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
   const { userData } = useUserData();
+  const { settings } = useSettings();
+  const { l2Lang } = useLanguage();
+
+  const buttonText = useMemo(() => {
+    if (!isAuthenticated) {
+      return "Start Learning";
+    } else if (!settings.l1LangCode || !settings.l2LangCode) {
+      return "Choose Language";
+    } else {
+      return `Continue Learning ${l2Lang?.name || ''}`;
+    }
+  }, [isAuthenticated, settings.l1LangCode, settings.l2LangCode, l2Lang]);
 
   const handleStartPress = () => {
-    // Navigate based on authentication status
-    if (isAuthenticated && userData) {
-      router.push("/select-l2"); // Change to your actual route for "select-l2"
-    } else {
+    if (!isAuthenticated) {
       router.push("/login");
+    } else if (!settings.l1LangCode || !settings.l2LangCode) {
+      router.push("/select-l2");
+    } else {
+      router.push("/(tabs)/(media)");
     }
   };
 
@@ -37,7 +52,7 @@ const Index = () => {
           thousands of videos in over 100 languages.
         </ThemedText>
         <ThemedButton
-          title="Start Learning"
+          title={buttonText}
           trailingIcon={<Icon name="chevron-right" />}
           onPress={handleStartPress}
         />
