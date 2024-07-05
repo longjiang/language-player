@@ -1,7 +1,6 @@
 id,name,vernacularName,otherNames,wiktionary,glottologId,glottologFamilyId,glottologParentId,level,lat,long,country,iso639_3,iso639_1,scope,type,speakers,logo,logoDesc
 118,Afrikaans,Afrikaans,,6653.0,afri1274,indo1319,afri1273,language,-22.0,30.0,BW MZ NA ZA ZM ZW,afr,af,I,L,7200000.0,af,"General James Barry Munnik Hertzog KC (3 April 1866 – 21 November 1942), a South African politician and soldier"
 346,Arabic,العربية,,125016.0,arab1395,afro1255,arab1394,family,24.0,54.0,AE BH DJ DZ EG EH ER GM IL IQ JO KM KW LB LY MA MR OM PS QA SA SD SO SY TD TN YE,ara,ar,M,L,350000000.0,ar,"Ibn al-Haytham (c. 965 – c. 1040), a Muslim Arab mathematician, astronomer, and physicist of the Islamic Golden Age"
-347,Standard Arabic,العربية ,,,stan1318,afro1255,arab1395,language,27.9625,43.8525,AE BH DJ DZ EG ER IL IQ JO KM KW LB LY MA OM PS QA SA SD SO SY TD TN TZ YE,arb,,I,L,280000000.0,arb,"Taha Hussein (1889–1973), one of the most influential 20th-century Egyptian writers and intellectuals"
 380,Assamese,অসমীয়া,,3715.0,assa1263,indo1319,assa1262,language,26.0876,91.2932,BD BT IN,asm,as,I,L,15311351.0,as,"Lakshminath Bezbaroa (1864 – 1938), a writer from Assam"
 504,Azerbaijani,Azərbaycan,,9189.0,mode1262,turk1311,azer1255,family,40.3,47.7,,aze,az,M,L,23000000.0,az,"Huseyn Javid (1882 – 1941), a prominent Azerbaijani poet and playwright"
 621,Belarusian,беларуская,,3556.0,bela1254,indo1319,east1426,language,53.2307,25.6038,BY LT LV PL RU UA,bel,be,I,L,5100000.0,be,"Francišak Bahuševič (1840 – 1900) a Belarusian poet, writer and lawyer"
