@@ -1,6 +1,6 @@
 // @/components/DictionaryEntryContent.tsx
 
-import React from "react";
+import React, { useMemo } from "react";
 import { View, ScrollView, Text } from "react-native";
 import { ThemedText, SubsSearch } from "@/components";
 import { DictionaryEntry } from "@/src/dictionary-types";
@@ -20,6 +20,10 @@ const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, 
   const l2Lang = useLanguage().l2Lang;
   if (!l2Lang) return null;
   const levels = languageLevelsByL2Code(l2Lang.code)
+
+  const displayDefinitions = useMemo(() => {
+    return entry.definitions ? entry.definitions.join('; ') : ''
+  }, [entry]);
 
   return (
     <ScrollView style={styles.entryContainer}>
@@ -52,7 +56,7 @@ const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, 
       </View>
       <View style={[styles.detailsContainer, { backgroundColor: useThemeColor({}, 'primaryBackground') }]}>
         <View style={{ paddingBottom: 16, paddingHorizontal: 26 }}>
-          <ThemedText type="large">{entry.definitions ? entry.definitions.join('; ') : ''}</ThemedText>
+          <ThemedText type="large">{displayDefinitions}</ThemedText>
           <View style={{ borderBottomColor: useThemeColor({}, 'secondaryStroke'), borderBottomWidth: 2, paddingBottom: 16 }}></View>
           <ThemedText type="defaultBold" style={{ marginTop: 26 }} variant="secondary">EXAMPLES FROM VIDEOS</ThemedText>
         </View>
