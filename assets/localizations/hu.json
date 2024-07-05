@@ -359,7 +359,8 @@
         "confirm_password": "Jelszó megerősítése",
         "please_specify": "Adjon meg",
         "more_languages": "Több nyelv ({{count}})",
-        "select_language": "Válasszon nyelvet"
+        "select_language": "Válasszon nyelvet",
+        "dict_search": "Keresés {{l2Name}}, {{altField}} vagy {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "A jelszavak nem egyeznek",
@@ -461,5 +462,10 @@
         "downloading": "Letöltés...",
         "processing": "Feldolgozás...",
         "entries_processed": "{{count}} bejegyzés feldolgozva. Indexelés..."
+    },
+    "word": {
+        "pinyin": "Pinjin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

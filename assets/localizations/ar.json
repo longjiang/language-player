@@ -359,7 +359,8 @@
         "confirm_password": "تأكيد كلمة المرور",
         "please_specify": "يرجى التحديد",
         "more_languages": "المزيد من اللغات ({{count}})",
-        "select_language": "اختر لغة"
+        "select_language": "اختر لغة",
+        "dict_search": "البحث {{l2Name}} أو {{altField}} أو {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "كلمات المرور غير متطابقة",
@@ -461,5 +462,10 @@
         "downloading": "جاري التنزيل...",
         "processing": "جاري المعالجة...",
         "entries_processed": "تم معالجة {{count}} إدخال. جاري فهرسة..."
+    },
+    "word": {
+        "pinyin": "بينيين",
+        "kana": "كانا",
+        "hanja": "هانجا"
     }
 }

@@ -359,7 +359,8 @@
         "confirm_password": "Passwort bestätigen",
         "please_specify": "Bitte angeben",
         "more_languages": "Mehr Sprachen ({{count}})",
-        "select_language": "Wählen Sie eine Sprache"
+        "select_language": "Wählen Sie eine Sprache",
+        "dict_search": "Suche nach {{l2Name}}, {{altField}} oder {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Passwörter stimmen nicht überein",
@@ -461,5 +462,10 @@
         "downloading": "Herunterladen...",
         "processing": "Verarbeitung...",
         "entries_processed": "{{count}} Einträge verarbeitet. Indizierung..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

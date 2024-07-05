@@ -359,7 +359,8 @@
         "confirm_password": "Konfirmasi Kata Sandi",
         "please_specify": "Harap tentukan",
         "more_languages": "Lebih banyak bahasa ({{count}})",
-        "select_language": "Pilih bahasa"
+        "select_language": "Pilih bahasa",
+        "dict_search": "Cari {{l2Name}}, {{altField}} atau {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Kata sandi tidak cocok",
@@ -461,5 +462,10 @@
         "downloading": "Mengunduh...",
         "processing": "Memproses...",
         "entries_processed": "{{count}} entri diproses. Indexing..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

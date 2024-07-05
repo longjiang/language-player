@@ -358,7 +358,8 @@
         "confirm_password": "Bekreft passord",
         "please_specify": "Vennligst spesifiser",
         "more_languages": "Flere språk ({{count}})",
-        "select_language": "Selecione um idioma"
+        "select_language": "Selecione um idioma",
+        "dict_search": "Søk {{l2Name}}, {{altField}} eller {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Passordene stemmer ikke overens",
@@ -460,5 +461,10 @@
         "downloading": "Baixando...",
         "processing": "Processando...",
         "entries_processed": "{{count}} entradas processadas. Indexando..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

@@ -356,7 +356,9 @@
         "password": "Mật khẩu",
         "confirm_password": "Xác nhận mật khẩu",
         "please_specify": "Vui lòng ghi rõ",
-        "more_languages": "Thêm ngôn ngữ ({{count}})"
+        "more_languages": "Thêm ngôn ngữ ({{count}})",
+        "select_language": "Chọn ngôn ngữ",
+        "dict_search": "Tìm kiếm {{l2Name}}, {{altField}} hoặc {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Mật khẩu không khớp",
@@ -458,5 +460,10 @@
         "downloading": "Tải...",
         "processing": "Xử lý...",
         "entries_processed": "{{count}} các bài dự thi đã được xử lý. Indexing..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

@@ -358,7 +358,8 @@
         "confirm_password": "Potvrdi lozinku",
         "please_specify": "Navedite",
         "more_languages": "Više jezika ({{count}})",
-        "select_language": "Dil seçin"
+        "select_language": "Dil seçin",
+        "dict_search": "Pretraga {{l2Name}}, {{altField}} ili {{dictL1Name}}}"
     },
     "error": {
         "passwords_do_not_match": "Lozinke se ne podudaraju",
@@ -460,5 +461,10 @@
         "downloading": "İndiriliyor...",
         "processing": "İşleniyor...",
         "entries_processed": "{{count}} entradas processadas. Indexando..."
+    },
+    "word": {
+        "pinyin": "Pinjin",
+        "kana": "Kana Kana",
+        "hanja": "Hanja"
     }
 }

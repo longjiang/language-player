@@ -358,7 +358,8 @@
         "confirm_password": "Confirmar senha",
         "please_specify": "Por favor, especifique",
         "more_languages": "Mais idiomas ({{count}})",
-        "select_language": "Selecciona un idioma"
+        "select_language": "Selecciona un idioma",
+        "dict_search": "Pesquise {{l2Name}}, {{altField}} ou {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Senhas não correspondem",
@@ -460,5 +461,10 @@
         "downloading": "Descargando...",
         "processing": "Procesando...",
         "entries_processed": "{{count}} entradas processadas. Indexando..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

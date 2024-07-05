@@ -358,7 +358,8 @@
         "confirm_password": "Confirmă parola",
         "please_specify": "Vă rugăm să specificați",
         "more_languages": "Mai multe limbi ({{count}})",
-        "select_language": "Selecciona un idioma"
+        "select_language": "Selecciona un idioma",
+        "dict_search": "Căutați {{l2Name}}, {{altField}} sau {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Parolele nu se potrivesc",
@@ -460,5 +461,10 @@
         "downloading": "Descargando...",
         "processing": "Procesando...",
         "entries_processed": "Obradjeno je {{count}} unosa. Indeksiranje..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

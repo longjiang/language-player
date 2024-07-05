@@ -359,7 +359,8 @@
         "confirm_password": "Επιβεβαίωση κωδικού πρόσβασης",
         "please_specify": "Διευκρινίστε",
         "more_languages": "Περισσότερες γλώσσες ({{count}})",
-        "select_language": "Επιλέξτε γλώσσα"
+        "select_language": "Επιλέξτε γλώσσα",
+        "dict_search": "Αναζήτηση {{l2Name}}, {{altField}} ή {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Οι κωδικοί πρόσβασης δεν ταιριάζουν",
@@ -461,5 +462,10 @@
         "downloading": "Λήψη...",
         "processing": "Επεξεργασία...",
         "entries_processed": "Επεξεργάστηκαν {{count}} καταχωρήσεις. Γίνεται ευρετήριο..."
+    },
+    "word": {
+        "pinyin": "Πινγίν",
+        "kana": "Κανα",
+        "hanja": "Χάντζα"
     }
 }

@@ -359,7 +359,8 @@
         "confirm_password": "Deimhnigh an Pasfhocal",
         "please_specify": "Sonraigh le do thoil",
         "more_languages": "Tuilleadh teangacha ({{count}})",
-        "select_language": "Selecciona un idioma"
+        "select_language": "Selecciona un idioma",
+        "dict_search": "Cuardaigh {{l2Name}}, {{altField}} nó {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Níl na pasfhocail comhtháite",
@@ -461,5 +462,10 @@
         "downloading": "S'està descarregant...",
         "processing": "S'està processant...",
         "entries_processed": "S'han processat {{count}} entrades. Indexant..."
+    },
+    "word": {
+        "pinyin": "PinyinName",
+        "kana": "KanaGenericName",
+        "hanja": "HanjaName"
     }
 }

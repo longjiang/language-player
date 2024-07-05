@@ -358,7 +358,8 @@
         "confirm_password": "암호 확인",
         "please_specify": "지정하십시오",
         "more_languages": "더 많은 언어 ({{count}})",
-        "select_language": "언어 선택"
+        "select_language": "언어 선택",
+        "dict_search": "{{l2Name}}, {{altField}}, {{dictL1Name}} 검색..."
     },
     "error": {
         "passwords_do_not_match": "비밀번호가 일치하지 않습니다",
@@ -460,5 +461,10 @@
         "downloading": "다운로드 중...",
         "processing": "처리 중...",
         "entries_processed": "{{count}} 항목 처리됨. 색인 작업 중..."
+    },
+    "word": {
+        "pinyin": "병음",
+        "kana": "가나",
+        "hanja": "한자(漢��"
     }
 }

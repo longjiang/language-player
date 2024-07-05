@@ -357,7 +357,8 @@
         "confirm_password": "ยืนยันรหัสผ่าน",
         "please_specify": "โปรดระบุ",
         "more_languages": "เพิ่มเติมภาษา ({{count}})",
-        "select_language": "Chọn một ngôn ngữ"
+        "select_language": "Chọn một ngôn ngữ",
+        "dict_search": "ค้นหา {{l2Name}}, {{altField}} หรือ {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Mật khẩu không khớp",
@@ -459,5 +460,10 @@
         "downloading": "Đang tải xuống...",
         "processing": "Đang xử lý...",
         "entries_processed": "{{count}} รายการที่ประมวลผล ดัชนี   "
+    },
+    "word": {
+        "pinyin": "พินอิน",
+        "kana": "คานะ",
+        "hanja": "ฮันจา"
     }
 }

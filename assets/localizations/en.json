@@ -359,7 +359,8 @@
         "confirm_password": "Confirm Password",
         "please_specify": "Please specify",
         "more_languages": "More languages ({{count}})",
-        "select_language": "Select a language"
+        "select_language": "Select a language",
+        "dict_search": "Search {{l2Name}}, {{altField}} or {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Passwords do not match",
@@ -461,5 +462,10 @@
         "downloading": "Downloading...",
         "processing": "Processing...",
         "entries_processed": "{{count}} entries processed. Indexing..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

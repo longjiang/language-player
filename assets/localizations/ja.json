@@ -358,7 +358,8 @@
         "confirm_password": "パスワードを確認",
         "please_specify": "具体的にお答えください",
         "more_languages": "さらに言語 ({{count}})",
-        "select_language": "言語を選択"
+        "select_language": "言語を選択",
+        "dict_search": "{{l2Name}}、{{altField}}、または{{dictL1Name}}を検索してください..."
     },
     "error": {
         "passwords_do_not_match": "パスワードが一致しません",
@@ -460,5 +461,10 @@
         "downloading": "ダウンロード中...",
         "processing": "処理中...",
         "entries_processed": "{{count}}エントリが処理されました。インデックス作成中..."
+    },
+    "word": {
+        "pinyin": "ピンイン",
+        "kana": "仮名",
+        "hanja": "漢字"
     }
 }

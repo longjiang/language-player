@@ -40,13 +40,12 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
   const placeholderTextColor = useThemeColor({}, 'secondaryText');
   const containerStyles = [styles.container, size === 'small' ? styles.small : styles.medium, { borderColor, backgroundColor }, style];
   const iconSize = Typography.fontSize.medium;
-  const { i18n } = useLanguage();
 
   return (
     <View style={containerStyles}>
       <TextInput
         style={{ flex: 1, fontSize: Typography.fontSize[size], color: useThemeColor({}, 'primaryText'), width: '100%' }}
-        placeholder={i18n.t(placeholder)}
+        placeholder={placeholder}
         placeholderTextColor={placeholderTextColor}
         onSubmitEditing={onSubmitEditing}
         onChangeText={onChangeText}

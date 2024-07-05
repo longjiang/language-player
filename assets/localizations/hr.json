@@ -359,7 +359,8 @@
         "confirm_password": "Potvrdi lozinku",
         "please_specify": "Navedite",
         "more_languages": "Više jezika ({{count}})",
-        "select_language": "Odaberite jezik"
+        "select_language": "Odaberite jezik",
+        "dict_search": "Pretraživanje {{l2Name}}, {{altField}} ili {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Lozinke se ne podudaraju",
@@ -461,5 +462,10 @@
         "downloading": "Preuzimanje...",
         "processing": "Obrada...",
         "entries_processed": "Obradili su se {{count}} unosa. Indeksiranje..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

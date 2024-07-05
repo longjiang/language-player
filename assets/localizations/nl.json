@@ -358,7 +358,8 @@
         "confirm_password": "Wachtwoord bevestigen",
         "please_specify": "Gelieve te specificeren",
         "more_languages": "Meer talen ({{count}})",
-        "select_language": "Kies een taal"
+        "select_language": "Kies een taal",
+        "dict_search": "Zoek naar {{l2Name}}, {{altField}} of {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Wachtwoorden komen niet overeen",
@@ -460,5 +461,10 @@
         "downloading": "Downloaden...",
         "processing": "Verwerken...",
         "entries_processed": "{{count}} vermeldingen verwerkt. Indexeren..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

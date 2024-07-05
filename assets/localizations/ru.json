@@ -358,7 +358,8 @@
         "confirm_password": "Подтвердите пароль",
         "please_specify": "Пожалуйста, уточните",
         "more_languages": "Больше языков ({{count}})",
-        "select_language": "Odaberite jezik"
+        "select_language": "Odaberite jezik",
+        "dict_search": "Поиск {{l2Name}}, {{altField}} или {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Пароли не совпадают",
@@ -460,5 +461,10 @@
         "downloading": "Preuzimanje...",
         "processing": "Obrada...",
         "entries_processed": "{{count}} giriş işlendi. İndeksleniyor..."
+    },
+    "word": {
+        "pinyin": "Пиньинь",
+        "kana": "Кана",
+        "hanja": "Ханча"
     }
 }

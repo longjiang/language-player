@@ -6,16 +6,13 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import { ThemedInput } from "@/components/ThemedInput";
-import { ThemedText } from "@/components/ThemedText";
-import { YouTubeVideoCard } from "@/components/YouTubeVideoCard";
-import { FlatList } from "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { DictionaryComponent } from "@/components/DictionaryComponent";
-import { DictionaryEntry } from "@/src/dictionary";
+import { DictionaryEntry } from "@/src/dictionary-types";
 
 
 const DictionaryScreen = () => {

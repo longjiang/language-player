@@ -359,7 +359,8 @@
         "confirm_password": "确认密码",
         "please_specify": "请说明",
         "more_languages": "更多语言 ({{count}})",
-        "select_language": "选择一种语言"
+        "select_language": "选择一种语言",
+        "dict_search": "搜索 {{l2Name}}、{{altField}} 或 {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "密码不匹配",
@@ -461,5 +462,10 @@
         "downloading": "下载中...",
         "processing": "处理中...",
         "entries_processed": "已处理{{count}}条目。正在索引..."
+    },
+    "word": {
+        "pinyin": "拼音",
+        "kana": "假名",
+        "hanja": "汉字"
     }
 }

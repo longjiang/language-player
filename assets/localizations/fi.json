@@ -359,7 +359,8 @@
         "confirm_password": "Vahvista salasana",
         "please_specify": "Määritä",
         "more_languages": "Lisää kieliä ({{count}})",
-        "select_language": "Valitse kieli"
+        "select_language": "Valitse kieli",
+        "dict_search": "Hae {{l2Name}}, {{altField}} tai {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Salasanat eivät täsmää",
@@ -461,5 +462,10 @@
         "downloading": "Lataaminen...",
         "processing": "Käsittelyssä...",
         "entries_processed": "{{count}} merkintää käsitelty. Indeksoidaan..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

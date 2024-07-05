@@ -16,11 +16,11 @@ export const DictionaryComponent = () => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<DictionaryEntry[]>([]);
     const { dictionary } = useDictionary();
-    const { settings } = useSettings(); // Use the settings from context
-    const { l2Lang } = useLanguage(); // Use the language from context
+    const { settings } = useSettings();
+    const { l2Lang, t } = useLanguage();
+    
     if (!l2Lang) return null;
 
-    // if l2Lang.code is 'zh' and settings.useTraditional is true, then switch head and alternate keys
     const headKey = l2Lang.code === 'zh' && settings.useTraditional ? 'alternate' : 'head';
     const alternateKey = l2Lang.code === 'zh' && settings.useTraditional ? 'head' : 'alternate';
     
@@ -29,12 +29,26 @@ export const DictionaryComponent = () => {
         if (dictionary) setResults((await dictionary.search(text)).slice(0, 50));
     };
 
+    const altFieldKey = {
+        'zh': 'pinyin',
+        'ja': 'kana',
+        'ko': 'hanja',
+    }[l2Lang.code];
+    
+    const dictL1Name = t('lang.' + dictionary?.l1Code);
+    const altField = t('word.' + altFieldKey);
+    const l2Name = t('lang.' + l2Lang.code);
+
     return (
         <View>
             <ThemedInput
-              placeholder="Chinese, pinyin or English..."
+              placeholder={t('placeholder.dict_search', {
+                l2Name: l2Name,
+                altField: altField,
+                dictL1Name: dictL1Name
+              })}
               value={query}
-              onChangeText={ debounce(handleSearch, 300) }
+              onChangeText={debounce(handleSearch, 300)}
               style={{ width: '100%' }}
             />
             <ScrollView>

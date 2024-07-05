@@ -359,7 +359,8 @@
         "confirm_password": "पासवर्ड की पुष्टि करें",
         "please_specify": "कृपया निर्दिष्ट करें",
         "more_languages": "अधिक भाषाएँ ({{count}})",
-        "select_language": "एक भाषा चुनें"
+        "select_language": "एक भाषा चुनें",
+        "dict_search": "{{l2Name}}, {{altField}} या {{dictL1Name}} खोजें..."
     },
     "error": {
         "passwords_do_not_match": "पासवर्ड मेल नहीं खाते",
@@ -461,5 +462,10 @@
         "downloading": "डाउनलोड हो रहा है...",
         "processing": "प्रोसेसिंग हो रहा है...",
         "entries_processed": "{{count}} प्रविष्टियाँ प्रोसेस हुईं। इंडेक्सिंग हो रहा है..."
+    },
+    "word": {
+        "pinyin": "पिनयिन",
+        "kana": "काना",
+        "hanja": "हंजा"
     }
 }

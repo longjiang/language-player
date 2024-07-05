@@ -358,7 +358,8 @@
         "confirm_password": "Thibitisha Nywila",
         "please_specify": "Tafadhali bainisha",
         "more_languages": "Lugha zaidi ({{count}})",
-        "select_language": "Seçiniz"
+        "select_language": "Seçiniz",
+        "dict_search": "Tafuta {{l2Name}}, {{altField}} au {{dictL1Name}}..."
     },
     "error": {
         "passwords_do_not_match": "Maneno ya siri hayalingani",
@@ -460,5 +461,10 @@
         "downloading": "Descargando...",
         "processing": "Procesando...",
         "entries_processed": "{{count}} mục đã được xử lý. Đang tạo chỉ mục..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja"
     }
 }

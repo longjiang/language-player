@@ -356,7 +356,9 @@
         "password": "Parola",
         "confirm_password": "Xác nhận mật khẩu",
         "please_specify": "Lütfen belirtin",
-        "more_languages": "Daha fazla dil ({{count}})"
+        "more_languages": "Daha fazla dil ({{count}})",
+        "select_language": "Bir dil seçin",
+        "dict_search": "{{l2Name}}, {{altField}} veya {{dictL1Name}} araması yapın..."
     },
     "error": {
         "passwords_do_not_match": "Şifreler eşleşmiyor",
@@ -458,5 +460,10 @@
         "downloading": "Indiriyor...",
         "processing": "Işleme...",
         "entries_processed": "{{count}} girişler işlendi. Dizin..."
+    },
+    "word": {
+        "pinyin": "Pinyin",
+        "kana": "Kana",
+        "hanja": "Hanja Belediyesi"
     }
 }
