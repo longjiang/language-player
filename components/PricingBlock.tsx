@@ -1,12 +1,13 @@
 // @/components/PricingBlock.tsx
 
 import React, { useRef } from "react";
-import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
-import { ThemedText, ThemedButton, ThemedView } from "@/components";
+import { StyleSheet, View, TouchableOpacity } from "react-native";
+import { ThemedText, ThemedButton } from "@/components";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { ThemedRBSheet } from "./ThemedRBSheet"; // Import the ThemedRBSheet
+import { ThemedRBSheet } from "./ThemedRBSheet";
 import { router } from "expo-router";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface PricingBlockProps {
   price: string;
@@ -27,6 +28,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
   showUpgrade,
   showCancel,
 }) => {
+  const { t } = useLanguage();
   const secondaryBrandColor = useThemeColor({}, 'semanticSuccess');
   const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
   const primaryTextColor = useThemeColor({}, 'primaryText');
@@ -56,7 +58,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
           ]}
         >
           <ThemedText style={{ ...styles.tagText, color: primaryBackgroundColor }} type="defaultBold">
-            Current Plan
+            {t('title.current_plan')}
           </ThemedText>
         </View>
       )}
@@ -68,19 +70,19 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
       </ThemedText>
       {recommended && (
         <View style={[styles.recommendedTag, { backgroundColor: secondaryBrandColor }]}>
-          <ThemedText style={styles.tagText}>Best Value</ThemedText>
+          <ThemedText style={styles.tagText}>{t('title.best_value')}</ThemedText>
         </View>
       )}
       {(showUpgrade || showCancel) && (
         <View style={styles.buttonContainer}>
           {(showUpgrade && <ThemedButton
-            title="Upgrade"
+            title={t('action.upgrade')}
             size="small"
             trailingIcon={<Icon name="chevron-right" />}
             onPress={() => router.navigate('/go-pro')}
           />)}
           {(showCancel && <ThemedButton
-            title="Cancel"
+            title={t('action.cancel')}
             size="small"
             type="neutral"
             style={{ marginLeft: 8 }}
@@ -92,28 +94,29 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
       <ThemedRBSheet
         ref={refRBSheet}
       >
-        <ThemedText style={styles.sheetText} type="subtitle">Are you sure you want to cancel your subscription?</ThemedText>
+        <ThemedText style={styles.sheetText} type="subtitle">
+          {t('msg.confirm_cancel_subscription')}
+        </ThemedText>
         <ThemedButton
-          title="Confirm Cancellation"
+          title={t('action.confirm_cancellation')}
           type="primary"
           onPress={() => {
             console.log("Subscription cancelled");
-            refRBSheet.current.close();
+            refRBSheet.current?.close();
           }}
           style={{
             marginBottom: 10,
           }}
         />
         <ThemedButton
-          title="Keep Subscription"
+          title={t('action.keep_subscription')}
           type="neutral"
-          onPress={() => refRBSheet.current.close()}
+          onPress={() => refRBSheet.current?.close()}
         />
       </ThemedRBSheet>
     </TouchableOpacity>
   );
 };
-
 
 const styles = StyleSheet.create({
   sheetText: {
