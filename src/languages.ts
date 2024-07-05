@@ -131,7 +131,9 @@ class Languages {
   }
 
   public getLocales(lang: Language) {
-    return Languages.locales.filter(locale => locale.code === lang.iso639_3);
+    const locales = Languages.locales.filter(locale => locale.code === lang.code);
+    const codes = [lang.code, ...locales.map(locale => locale.locale)];
+    return Array.from(new Set(codes));
   }
 
   public getCountries(lang: Language) {

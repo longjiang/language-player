@@ -29,21 +29,64 @@ const request = async <T>(config: any): Promise<T> => {
   }
 };
 
-export const getTimedText = async (
+
+/**
+ * Fetches and processes captions for a YouTube video.
+ * 
+ * @param {string} videoId - The YouTube video ID to fetch captions for.
+ * @param {string} [name] - The name of the specific transcript to look for (e.g., 'English' or 'Spanish').
+ * @param {string} [lang] - The language code of the desired caption (e.g., 'en' for English).
+ * @param {string[]} [tlangs] - List of target language codes for translation.
+ * @param {boolean} [generated] - Whether to accept auto-generated captions.
+ * 
+ * @returns {Promise<Array<{line: string, starttime: number, duration: number}>>} 
+ *          A promise that resolves to an array of caption objects, each containing:
+ *          - line: The text content of the caption.
+ *          - starttime: The start time of the caption in seconds.
+ *          - duration: The duration of the caption in seconds.
+ * 
+ * @throws {Error} If the request fails or returns an unexpected response format.
+ * 
+ * @example
+ * // Fetch English captions for a video
+ * const captions = await getCaption('dQw4w9WgXcQ', 'English', 'en');
+ * 
+ * // Fetch auto-generated captions in Spanish
+ * const autoCaptions = await getCaption('dQw4w9WgXcQ', undefined, 'es', undefined, true);
+ */
+export const getCaption = async (
   videoId: string,
-  type: 'list' | 'caption',
   name?: string,
   lang?: string,
   tlangs?: string[],
   generated?: boolean
-): Promise<any> => {
-  const params: any = { v: videoId, type };
-  if (type === 'caption') {
-    params.name = name;
-    params.lang = lang;
-    params.tlangs = tlangs?.join(',');
-    params.generated = generated;
+): Promise<Array<{ line: string; starttime: number; duration: number }>> => {
+  const params: any = {
+    v: videoId,
+    type: 'caption',
+    name,
+    lang,
+    tlangs: tlangs?.join(','),
+    generated
+  };
+  const response = await request({ method: 'get', url: "/timedtext", params });
+
+  if (response && Array.isArray(response)) {
+    return response.map(line => ({
+      line: line.text,
+      starttime: line.start,
+      duration: line.duration
+    })).sort((a, b) => a.starttime - b.starttime);
   }
+
+  return [];
+};
+
+export const getCaptionList = async (videoId: string): Promise<any> => {
+  const params = {
+    v: videoId,
+    type: 'list'
+  };
   return request({ method: 'get', url: "/timedtext", params });
 };
 

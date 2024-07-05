@@ -1,6 +1,7 @@
 // @/src/subs.ts
 import Papa from 'papaparse';
 import { Line, SyncedLine } from '@/types';
+import { getCaption } from '@/src/api/python/video';
 
 export const  parseSubtitles = (csvData: string) => {
   const parsedSubs = Papa.parse(csvData, {
@@ -77,4 +78,37 @@ export const findSubtitle = (currentTime: number, syncedLines: SyncedLine[]) => 
     }
   }
   return nearestSubtitle;
+};
+
+export const getBestTranslatedSubs = async (
+  videoId: string,
+  l2Code: string,
+  l1Locales: string[]
+) => {
+  try {
+    const manualL1Subs =
+      (await getCaption(
+        videoId, // videoId
+        undefined, // name
+        l1Locales[0], // lang
+        undefined, // tlangs
+        true // generated
+      )) || [];
+    if (manualL1Subs.length) return manualL1Subs;
+  } catch (error) {
+    console.error("Failed to fetch manualL1Subs", error);
+  }
+  try {
+    const autoTranslatedL2Subs =
+      (await getCaption(
+        videoId, // videoId
+        undefined, // name
+        l2Code, // lang
+        l1Locales, // tlangs
+        false // generated
+      )) || [];
+    if (autoTranslatedL2Subs.length) return autoTranslatedL2Subs;
+  } catch (error) {
+    console.error("Failed to fetch autoTranslatedL2Subs", error);
+  }
 };

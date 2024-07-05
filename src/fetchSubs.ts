@@ -1,4 +1,4 @@
-import { getTimedText } from "@/src/api/python/video";
+import { getCaption } from "@/src/api/python/video";
 
 interface Subtitle {
   line: string;
@@ -11,10 +11,10 @@ async function fetchL1Subtitles(
   l1: { code: string; locale?: string; name?: string }
 ): Promise<Subtitle[] | undefined> {
   try {
-    // First, try to get manual captions
+    // First, try to get manually translated captions
     let subs = await fetchSubtitles(youtube_id, l1, false);
 
-    // If no manual captions, try auto-generated captions
+    // If fails, try to get machine translated captions
     if (!subs || subs.length === 0) {
       subs = await fetchSubtitles(youtube_id, l1, true);
     }
@@ -32,22 +32,15 @@ async function fetchSubtitles(
   generated: boolean
 ): Promise<Subtitle[] | undefined> {
   try {
-    const response = await getTimedText(
+    const subs = await getCaption(
       youtube_id,
-      'caption',
       l1.name,
       l1.locale || l1.code,
       undefined,
       generated
     );
 
-    if (response && Array.isArray(response)) {
-      return response.map(line => ({
-        line: line.text,
-        starttime: line.start,
-        duration: line.duration
-      })).sort((a, b) => a.starttime - b.starttime);
-    }
+    return subs;
   } catch (error) {
     console.error(`Failed to fetch ${generated ? 'generated' : 'manual'} subtitles:`, error);
   }
