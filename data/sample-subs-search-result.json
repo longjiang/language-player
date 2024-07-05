@@ -1,0 +1,505 @@
+[
+    {
+        "category": 24,
+        "comments": 506,
+        "date": "2022-04-15 11:00:10",
+        "difficulty": 0.00582675,
+        "duration": "PT17M20S",
+        "id": 23718,
+        "l2": 3179,
+        "lesson": null,
+        "level": null,
+        "lex_div": 0.0286676,
+        "likes": 5387,
+        "locale": "ko",
+        "subs_l2": [
+            {
+                "starttime": 161.66,
+                "duration": 1.24,
+                "line": "최근 인기 차트에\n(1화)"
+            },
+            {
+                "starttime": 162.9,
+                "duration": 3.21,
+                "line": "아이돌 그룹의 곡이 역주행 하는 일이 또 일어났습니다\n(1화)"
+            },
+            {
+                "starttime": 166.98,
+                "duration": 3.39,
+                "line": "역주행으로 돌풍을 일으키고 있는 그룹 '엑스피어스인'데요"
+            },
+            {
+                "starttime": 170.84,
+                "duration": 3.55,
+                "line": "2집 활동에도 별다른 반응이 없었던 엑스피어스는"
+            },
+            {
+                "starttime": 174.39,
+                "duration": 2.2,
+                "line": "2년 전 발표한 1집 타이틀 곡"
+            },
+            {
+                "starttime": 176.59,
+                "duration": 3.41,
+                "line": "베러베러의 뮤직 비디오가 차트 진입에 성공하면서"
+            },
+            {
+                "starttime": 180,
+                "duration": 2.04,
+                "line": "역주행의 주역으로 떠올랐습니다"
+            },
+            {
+                "starttime": 182.88,
+                "duration": 1.83,
+                "line": "한 번 역주행으로 올라온 인기는"
+            },
+            {
+                "starttime": 184.71,
+                "duration": 2.09,
+                "line": "쉽게 가라앉을 생각을 안 하는데요"
+            },
+            {
+                "starttime": 187.8,
+                "duration": 1.99,
+                "line": "난 은현이가 제일 좋은 것 같아"
+            },
+            {
+                "starttime": 189.79,
+                "duration": 1.59,
+                "line": "춤 출 때 섹시하잖아~"
+            },
+            {
+                "starttime": 216.97,
+                "duration": 1.75,
+                "line": "인지도가 없는 그룹 내 멤버는"
+            },
+            {
+                "starttime": 218.72,
+                "duration": 2.92,
+                "line": "생활고에 힘겨워하는 것으로 드러났습니다"
+            },
+            {
+                "starttime": 221.64,
+                "duration": 3.23,
+                "line": "(데뷔 2년 차 아이돌) \n실제로 돈이 떨어지는 게(수입이) 없거든요"
+            },
+            {
+                "starttime": 224.87,
+                "duration": 2.93,
+                "line": "어차피 마이너스로 시작하는 게 이 바닥이라..."
+            },
+            {
+                "starttime": 228.35,
+                "duration": 3.26,
+                "line": "데뷔하고도 진짜 내 손에 돈이 떨어지려면(수입을 내려면)"
+            },
+            {
+                "starttime": 231.61,
+                "duration": 3.86,
+                "line": "연습실 비용, 트레이닝 비용 이거 다 까야 하는데"
+            },
+            {
+                "starttime": 236.64,
+                "duration": 1.11,
+                "line": "어휴..."
+            },
+            {
+                "starttime": 259.93,
+                "duration": 1.88,
+                "line": "다들 고생하셨습니다~!"
+            },
+            {
+                "starttime": 261.97,
+                "duration": 0.72,
+                "line": "수고!"
+            },
+            {
+                "starttime": 262.69,
+                "duration": 0.7,
+                "line": "올라간다"
+            },
+            {
+                "starttime": 264.52,
+                "duration": 0.87,
+                "line": "형!"
+            },
+            {
+                "starttime": 307.12,
+                "duration": 1.63,
+                "line": "그거 녹화 하루 종일 할 거 아니야"
+            },
+            {
+                "starttime": 308.75,
+                "duration": 0.77,
+                "line": "응"
+            },
+            {
+                "starttime": 311.71,
+                "duration": 1.37,
+                "line": "찬이는 좀 낫다"
+            },
+            {
+                "starttime": 313.08,
+                "duration": 1.38,
+                "line": "내일 라디오 하나 하고"
+            },
+            {
+                "starttime": 314.88,
+                "duration": 1.89,
+                "line": "오후에 화보 촬영 잡혀있으니까"
+            },
+            {
+                "starttime": 317.64,
+                "duration": 2.03,
+                "line": "10시까지 준비하고 있어"
+            },
+            {
+                "starttime": 319.67,
+                "duration": 0.76,
+                "line": "숍 들려야 하니까"
+            },
+            {
+                "starttime": 320.43,
+                "duration": 0.79,
+                "line": "일찍 대기하고 있고"
+            },
+            {
+                "starttime": 322.79,
+                "duration": 3.5,
+                "line": "그리고 휘연이는..."
+            },
+            {
+                "starttime": 328.62,
+                "duration": 1.05,
+                "line": "나는 없다"
+            },
+            {
+                "starttime": 330.45,
+                "duration": 1.28,
+                "line": "스케줄이..."
+            },
+            {
+                "starttime": 819.59,
+                "duration": 0.9,
+                "line": "그러게"
+            },
+            {
+                "starttime": 820.49,
+                "duration": 2.17,
+                "line": "사람 인생 진짜 모른다"
+            },
+            {
+                "starttime": 822.66,
+                "duration": 3.51,
+                "line": "이분들이 다~ 니네 팬분들이시다! 응~?"
+            },
+            {
+                "starttime": 827.86,
+                "duration": 1.76,
+                "line": "휘연 씨! 괜찮아요~"
+            },
+            {
+                "starttime": 830.64,
+                "duration": 2.88,
+                "line": "섞이는데 좀 힘들어도 금방 적응될 거야"
+            },
+            {
+                "starttime": 835.19,
+                "duration": 3.88,
+                "line": "갑작스럽게 들어간 비인기 아이돌 그룹 엑스피어스는"
+            },
+            {
+                "starttime": 839.07,
+                "duration": 2.55,
+                "line": "1집 뮤직비디오가 뒤늦게 대박이 터졌고"
+            },
+            {
+                "starttime": 841.62,
+                "duration": 1.2,
+                "line": "이슈를 받기 시작했다"
+            },
+            {
+                "starttime": 844.01,
+                "duration": 1.52,
+                "line": "그렇지만..."
+            },
+            {
+                "starttime": 845.53,
+                "duration": 2.85,
+                "line": "뮤직비디오에 나는... 없었다..."
+            },
+            {
+                "starttime": 855.64,
+                "duration": 2.65,
+                "line": "(휘연 오빠~ 여기 한 번 봐주세요!)"
+            },
+            {
+                "starttime": 859.21,
+                "duration": 2.51,
+                "line": "(휘연 오빠 멋있어요~!)"
+            },
+            {
+                "starttime": 862.72,
+                "duration": 1.2,
+                "line": "(뭐야...!)"
+            },
+            {
+                "starttime": 863.92,
+                "duration": 1.66,
+                "line": "(날 부른 건가...?)"
+            },
+            {
+                "starttime": 865.59,
+                "duration": 2.64,
+                "line": "(드디어 휘연 인생도 26년 만에 빛을 보는 건가!)"
+            }
+        ],
+        "title": "[ KBS WORLD TV Original Drama ] Broke Rookie Star  - EP.01 l 짠내아이돌",
+        "tv_show": 327,
+        "views": 48072,
+        "youtube_id": "JhVJcR8HCS8",
+        "subs_l1": [
+            {
+                "starttime": 161.66,
+                "duration": 1.24,
+                "line": "최근 인기 차트에\n(1화)"
+            },
+            {
+                "starttime": 162.9,
+                "duration": 3.21,
+                "line": "아이돌 그룹의 곡이 역주행 하는 일이 또 일어났습니다\n(1화)"
+            },
+            {
+                "starttime": 166.98,
+                "duration": 3.39,
+                "line": "역주행으로 돌풍을 일으키고 있는 그룹 '엑스피어스인'데요"
+            },
+            {
+                "starttime": 170.84,
+                "duration": 3.55,
+                "line": "2집 활동에도 별다른 반응이 없었던 엑스피어스는"
+            },
+            {
+                "starttime": 174.39,
+                "duration": 2.2,
+                "line": "2년 전 발표한 1집 타이틀 곡"
+            },
+            {
+                "starttime": 176.59,
+                "duration": 3.41,
+                "line": "베러베러의 뮤직 비디오가 차트 진입에 성공하면서"
+            },
+            {
+                "starttime": 180,
+                "duration": 2.04,
+                "line": "역주행의 주역으로 떠올랐습니다"
+            },
+            {
+                "starttime": 182.88,
+                "duration": 1.83,
+                "line": "한 번 역주행으로 올라온 인기는"
+            },
+            {
+                "starttime": 184.71,
+                "duration": 2.09,
+                "line": "쉽게 가라앉을 생각을 안 하는데요"
+            },
+            {
+                "starttime": 187.8,
+                "duration": 1.99,
+                "line": "난 은현이가 제일 좋은 것 같아"
+            },
+            {
+                "starttime": 189.79,
+                "duration": 1.59,
+                "line": "춤 출 때 섹시하잖아~"
+            },
+            {
+                "starttime": 216.97,
+                "duration": 1.75,
+                "line": "인지도가 없는 그룹 내 멤버는"
+            },
+            {
+                "starttime": 218.72,
+                "duration": 2.92,
+                "line": "생활고에 힘겨워하는 것으로 드러났습니다"
+            },
+            {
+                "starttime": 221.64,
+                "duration": 3.23,
+                "line": "(데뷔 2년 차 아이돌) \n실제로 돈이 떨어지는 게(수입이) 없거든요"
+            },
+            {
+                "starttime": 224.87,
+                "duration": 2.93,
+                "line": "어차피 마이너스로 시작하는 게 이 바닥이라..."
+            },
+            {
+                "starttime": 228.35,
+                "duration": 3.26,
+                "line": "데뷔하고도 진짜 내 손에 돈이 떨어지려면(수입을 내려면)"
+            },
+            {
+                "starttime": 231.61,
+                "duration": 3.86,
+                "line": "연습실 비용, 트레이닝 비용 이거 다 까야 하는데"
+            },
+            {
+                "starttime": 236.64,
+                "duration": 1.11,
+                "line": "어휴..."
+            },
+            {
+                "starttime": 259.93,
+                "duration": 1.88,
+                "line": "다들 고생하셨습니다~!"
+            },
+            {
+                "starttime": 261.97,
+                "duration": 0.72,
+                "line": "수고!"
+            },
+            {
+                "starttime": 262.69,
+                "duration": 0.7,
+                "line": "올라간다"
+            },
+            {
+                "starttime": 264.52,
+                "duration": 0.87,
+                "line": "형!"
+            },
+            {
+                "starttime": 307.12,
+                "duration": 1.63,
+                "line": "그거 녹화 하루 종일 할 거 아니야"
+            },
+            {
+                "starttime": 308.75,
+                "duration": 0.77,
+                "line": "응"
+            },
+            {
+                "starttime": 311.71,
+                "duration": 1.37,
+                "line": "찬이는 좀 낫다"
+            },
+            {
+                "starttime": 313.08,
+                "duration": 1.38,
+                "line": "내일 라디오 하나 하고"
+            },
+            {
+                "starttime": 314.88,
+                "duration": 1.89,
+                "line": "오후에 화보 촬영 잡혀있으니까"
+            },
+            {
+                "starttime": 317.64,
+                "duration": 2.03,
+                "line": "10시까지 준비하고 있어"
+            },
+            {
+                "starttime": 319.67,
+                "duration": 0.76,
+                "line": "숍 들려야 하니까"
+            },
+            {
+                "starttime": 320.43,
+                "duration": 0.79,
+                "line": "일찍 대기하고 있고"
+            },
+            {
+                "starttime": 322.79,
+                "duration": 3.5,
+                "line": "그리고 휘연이는..."
+            },
+            {
+                "starttime": 328.62,
+                "duration": 1.05,
+                "line": "나는 없다"
+            },
+            {
+                "starttime": 330.45,
+                "duration": 1.28,
+                "line": "스케줄이..."
+            },
+            {
+                "starttime": 819.59,
+                "duration": 0.9,
+                "line": "그러게"
+            },
+            {
+                "starttime": 820.49,
+                "duration": 2.17,
+                "line": "사람 인생 진짜 모른다"
+            },
+            {
+                "starttime": 822.66,
+                "duration": 3.51,
+                "line": "이분들이 다~ 니네 팬분들이시다! 응~?"
+            },
+            {
+                "starttime": 827.86,
+                "duration": 1.76,
+                "line": "휘연 씨! 괜찮아요~"
+            },
+            {
+                "starttime": 830.64,
+                "duration": 2.88,
+                "line": "섞이는데 좀 힘들어도 금방 적응될 거야"
+            },
+            {
+                "starttime": 835.19,
+                "duration": 3.88,
+                "line": "갑작스럽게 들어간 비인기 아이돌 그룹 엑스피어스는"
+            },
+            {
+                "starttime": 839.07,
+                "duration": 2.55,
+                "line": "1집 뮤직비디오가 뒤늦게 대박이 터졌고"
+            },
+            {
+                "starttime": 841.62,
+                "duration": 1.2,
+                "line": "이슈를 받기 시작했다"
+            },
+            {
+                "starttime": 844.01,
+                "duration": 1.52,
+                "line": "그렇지만..."
+            },
+            {
+                "starttime": 845.53,
+                "duration": 2.85,
+                "line": "뮤직비디오에 나는... 없었다..."
+            },
+            {
+                "starttime": 855.64,
+                "duration": 2.65,
+                "line": "(휘연 오빠~ 여기 한 번 봐주세요!)"
+            },
+            {
+                "starttime": 859.21,
+                "duration": 2.51,
+                "line": "(휘연 오빠 멋있어요~!)"
+            },
+            {
+                "starttime": 862.72,
+                "duration": 1.2,
+                "line": "(뭐야...!)"
+            },
+            {
+                "starttime": 863.92,
+                "duration": 1.66,
+                "line": "(날 부른 건가...?)"
+            },
+            {
+                "starttime": 865.59,
+                "duration": 2.64,
+                "line": "(드디어 휘연 인생도 26년 만에 빛을 보는 건가!)"
+            }
+        ],
+        "targetLineIndex": 0
+    }
+]
