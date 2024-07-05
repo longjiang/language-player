@@ -330,7 +330,8 @@
         "select_language": "Ungependa kujifunza lugha gani?",
         "current_level": "Ni kiwango chako cha sasa cha {{language}}?",
         "pro_feature": "Pro Özelliği",
-        "loading_dictionary": "{{language}} Sözlük yükleniyor"
+        "loading_dictionary": "{{language}} Sözlük yükleniyor",
+        "dictionary": "Sözlük"
     },
     "action": {
         "upgrade": "Kuboresha",

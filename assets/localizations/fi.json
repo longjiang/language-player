@@ -331,7 +331,8 @@
         "select_language": "Mitä kieltä haluat oppia?",
         "current_level": "Mikä on nykyinen taitotasosi {{language}}?",
         "pro_feature": "Pro-ominaisuus",
-        "loading_dictionary": "Ladataan {{language}}-sanakirjaa"
+        "loading_dictionary": "Ladataan {{language}}-sanakirjaa",
+        "dictionary": "Sanakirja"
     },
     "action": {
         "upgrade": "Päivittää",

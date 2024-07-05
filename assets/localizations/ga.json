@@ -331,7 +331,8 @@
         "select_language": "Cén teanga ba mhaith leat a fhoghlaim?",
         "current_level": "Cén leibhéal atá agat i láthair i {{language}}?",
         "pro_feature": "Funció Pro",
-        "loading_dictionary": "Carregant el diccionari {{language}}"
+        "loading_dictionary": "Carregant el diccionari {{language}}",
+        "dictionary": "Diccionari"
     },
     "action": {
         "upgrade": "Uasghrádú",

@@ -13,21 +13,19 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { DictionaryComponent } from "@/components/DictionaryComponent";
 import { DictionaryEntry } from "@/src/dictionary-types";
-
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const DictionaryScreen = () => {
   const [items, setItems] = useState<DictionaryEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
-  const { dictionary } = useDictionary(); // Custom hook to access the dictionary
-
+  const { dictionary } = useDictionary();
+  const { t } = useLanguage();
 
   useEffect(() => {
     console.log('DictionaryScreen - Mounted');
-    // Search screen mounted
     if (searchQuery) {
-      // Load items based on search query
       loadItems();
     }
   }, []);
@@ -37,31 +35,25 @@ const DictionaryScreen = () => {
   };
 
   const handleSearch = () => {
-    // Trigger search based on searchQuery
     loadItems();
   };
 
   const loadItems = async () => {
-    setItems([]); // Clear items
-    setIsLoading(true); // Start loading
+    setItems([]);
+    setIsLoading(true);
     if (!dictionary) return;
-    // console.log('Screen - Searching for:', searchQuery);
     dictionary.search(searchQuery).then((results) => {
       setItems(results);
     })
-
-    setIsLoading(false); // Stop loading
+    setIsLoading(false);
   };
-  
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      {true && (
-        <ThemedScreen
-          title="Dictionary"
+      <ThemedScreen
+          title={t('title.dictionary')}
           showFlag={true}
         >
-          
           <DictionaryComponent />
           {isLoading && (
             <View style={styles.spinnerContainer}>
@@ -69,42 +61,6 @@ const DictionaryScreen = () => {
             </View>
           )}
         </ThemedScreen>
-      )}
-      {false && (
-        <SafeAreaView style={styles.resultsContainer}>
-          <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <ThemedButton
-                type="ghost"
-                size="medium"
-                trailingIcon={<Icon name="chevron-left" />}
-                onPress={() => router.navigate("/(tabs)/(media)")}
-              />
-              <ThemedInput
-                placeholder="Search all Chinese content"
-                style={{ flex: 1, marginRight: 8 }}
-                size="small"
-                icon="magnify"
-                onChangeText={handleInputChange}
-                onSubmitEditing={handleSearch}
-                value={searchQuery}
-              />
-              <ThemedButton
-                type="ghost"
-                size="medium"
-                trailingIcon={<Icon name="dots-horizontal-circle" />}
-                onPress={() => router.navigate("/(tabs)/(media)")}
-              />
-            </View>
-          </View>
-          {isLoading && (
-            <View style={styles.spinnerContainer}>
-              <ActivityIndicator size="large" color={primaryBrandColor} />
-            </View>
-          )}
-        </SafeAreaView>
-      )}
-
     </GestureHandlerRootView>
   );
 };

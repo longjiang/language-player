@@ -330,7 +330,8 @@
         "select_language": "どの言語を学びたいですか？",
         "current_level": "現在の{{language}}のレベルは？",
         "pro_feature": "Pro機能",
-        "loading_dictionary": "{{language}} 辞書の読み込み"
+        "loading_dictionary": "{{language}} 辞書の読み込み",
+        "dictionary": "辞書"
     },
     "action": {
         "upgrade": "アップグレード",

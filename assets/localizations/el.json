@@ -331,7 +331,8 @@
         "select_language": "Ποια γλώσσα θέλετε να μάθετε;",
         "current_level": "Ποιο είναι το τρέχον επίπεδό σας στα {{language}};",
         "pro_feature": "Λειτουργία Pro",
-        "loading_dictionary": "Φόρτωση λεξικού {{language}}"
+        "loading_dictionary": "Φόρτωση λεξικού {{language}}",
+        "dictionary": "Λεξικό"
     },
     "action": {
         "upgrade": "Αναβαθμίζω",

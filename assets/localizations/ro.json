@@ -330,7 +330,8 @@
         "select_language": "Ce limbă doriți să învățați?",
         "current_level": "Care este nivelul tău actual de {{language}}?",
         "pro_feature": "Función Pro",
-        "loading_dictionary": "Cargando diccionario {{language}}"
+        "loading_dictionary": "Cargando diccionario {{language}}",
+        "dictionary": "Diccionario"
     },
     "action": {
         "upgrade": "Face upgrade",

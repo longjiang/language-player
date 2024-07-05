@@ -330,7 +330,8 @@
         "select_language": "Vilket språk vill du lära dig?",
         "current_level": "Vilken är din nuvarande nivå av {{language}}?",
         "pro_feature": "Recurso Pro",
-        "loading_dictionary": "Carregando dicionário {{language}}"
+        "loading_dictionary": "Carregando dicionário {{language}}",
+        "dictionary": "Dicionário"
     },
     "action": {
         "upgrade": "Uppgradera",

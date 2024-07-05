@@ -331,7 +331,8 @@
         "select_language": "Milyen nyelvet szeretne megtanulni?",
         "current_level": "Mi a jelenlegi {{language}} szinted?",
         "pro_feature": "Pro funkció",
-        "loading_dictionary": "{{language}} szótár betöltése"
+        "loading_dictionary": "{{language}} szótár betöltése",
+        "dictionary": "Szótár"
     },
     "action": {
         "upgrade": "Feljavít",

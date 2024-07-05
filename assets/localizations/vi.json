@@ -329,7 +329,8 @@
         "select_language": "Bạn muốn học ngôn ngữ nào?",
         "current_level": "Cấp độ hiện tại của bạn với {{language}} là gì?",
         "pro_feature": "Tính năng Pro",
-        "loading_dictionary": "Đang tải từ điển {{language}}"
+        "loading_dictionary": "Đang tải từ điển {{language}}",
+        "dictionary": "Từ điển"
     },
     "action": {
         "upgrade": "Nâng cấp",

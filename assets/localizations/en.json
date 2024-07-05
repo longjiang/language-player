@@ -331,7 +331,8 @@
         "select_language": "What language would you like to learn?",
         "current_level": "What's your current {{language}} level?",
         "pro_feature": "Pro Feature",
-        "loading_dictionary": "Loading {{language}} Dictionary"
+        "loading_dictionary": "Loading {{language}} Dictionary",
+        "dictionary": "Dictionary"
     },
     "action": {
         "upgrade": "Upgrade",

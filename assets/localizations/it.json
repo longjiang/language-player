@@ -331,7 +331,8 @@
         "select_language": "Quale lingua desideri imparare?",
         "current_level": "Qual è il tuo livello attuale di {{language}}?",
         "pro_feature": "Caratteristica Pro",
-        "loading_dictionary": "Caricamento dizionario {{language}}"
+        "loading_dictionary": "Caricamento dizionario {{language}}",
+        "dictionary": "Dizionario"
     },
     "action": {
         "upgrade": "Aggiornamento",

@@ -330,7 +330,8 @@
         "select_language": "¿Qué idioma te gustaría aprender?",
         "current_level": "¿Cuál es tu nivel actual de {{language}}?",
         "pro_feature": "Función Pro",
-        "loading_dictionary": "Cargando diccionario {{language}}"
+        "loading_dictionary": "Cargando diccionario {{language}}",
+        "dictionary": "Diccionario"
     },
     "action": {
         "upgrade": "Actualizar",

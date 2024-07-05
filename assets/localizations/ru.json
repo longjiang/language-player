@@ -330,7 +330,8 @@
         "select_language": "Какой язык вы хотите изучать?",
         "current_level": "Какой у вас текущий уровень {{language}}?",
         "pro_feature": "Pro funkcija",
-        "loading_dictionary": "Učitavanje rječnika {{language}}"
+        "loading_dictionary": "Učitavanje rječnika {{language}}",
+        "dictionary": "Rječnik"
     },
     "action": {
         "upgrade": "Модернизировать",

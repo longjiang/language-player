@@ -331,7 +331,8 @@
         "select_language": "您想學習什麼語言？",
         "current_level": "您目前的{{language}}水平是多少？",
         "pro_feature": "Pro 功能",
-        "loading_dictionary": "正在加載{{language}}字典"
+        "loading_dictionary": "正在加載{{language}}字典",
+        "dictionary": "詞典"
     },
     "action": {
         "upgrade": "升級",

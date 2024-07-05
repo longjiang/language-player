@@ -331,7 +331,8 @@
         "select_language": "Quin idioma vols aprendre?",
         "current_level": "Quin és el teu nivell actual de {{language}}?",
         "pro_feature": "Funció Pro",
-        "loading_dictionary": "Carregant el diccionari {{language}}"
+        "loading_dictionary": "Carregant el diccionari {{language}}",
+        "dictionary": "Diccionari"
     },
     "action": {
         "upgrade": "Rampa",

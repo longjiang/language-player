@@ -331,7 +331,8 @@
         "select_language": "Bahasa apa yang ingin Anda pelajari?",
         "current_level": "Apa tingkat {{language}} Anda saat ini?",
         "pro_feature": "Fitur Pro",
-        "loading_dictionary": "Memuat kamus {{language}}"
+        "loading_dictionary": "Memuat kamus {{language}}",
+        "dictionary": "Kamus"
     },
     "action": {
         "upgrade": "Upgrade",

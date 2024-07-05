@@ -331,7 +331,8 @@
         "select_language": "आप किस भाषा सीखना चाहेंगे?",
         "current_level": "आपका वर्तमान {{language}} स्तर क्या है?",
         "pro_feature": "प्रो विशेषता",
-        "loading_dictionary": "{{language}} शब्दकोश लोड हो रहा है"
+        "loading_dictionary": "{{language}} शब्दकोश लोड हो रहा है",
+        "dictionary": "शब्दकोश"
     },
     "action": {
         "upgrade": "अपग्रेड",

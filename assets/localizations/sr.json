@@ -330,7 +330,8 @@
         "select_language": "Koji jezik želite da učite?",
         "current_level": "Koji je vaš trenutni nivo {{language}}?",
         "pro_feature": "Pro Özelliği",
-        "loading_dictionary": "{{language}} Sözlük yükleniyor"
+        "loading_dictionary": "{{language}} Sözlük yükleniyor",
+        "dictionary": "Sözlük"
     },
     "action": {
         "upgrade": "Nadogradnju",

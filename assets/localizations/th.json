@@ -329,7 +329,8 @@
         "select_language": "คุณต้องการเรียนภาษาอะไร?",
         "current_level": "ระดับ {{language}} ปัจจุบันของคุณคืออะไร?",
         "pro_feature": "คุณสมบัติ Pro",
-        "loading_dictionary": "กำลังโหลดพจนานุกรม {{language}}"
+        "loading_dictionary": "กำลังโหลดพจนานุกรม {{language}}",
+        "dictionary": "พจนานุกรม"
     },
     "action": {
         "upgrade": "อัพ เกรด",

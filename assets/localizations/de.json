@@ -331,7 +331,8 @@
         "select_language": "Welche Sprache möchtest du lernen?",
         "current_level": "Was ist Ihr aktuelles Niveau in {{language}}?",
         "pro_feature": "Pro-Funktion",
-        "loading_dictionary": "{{language}}-Wörterbuch wird geladen"
+        "loading_dictionary": "{{language}}-Wörterbuch wird geladen",
+        "dictionary": "Wörterbuch"
     },
     "action": {
         "upgrade": "Upgrade",

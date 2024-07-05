@@ -331,7 +331,8 @@
         "select_language": "ما اللغة التي ترغب في تعلمها؟",
         "current_level": "ما هو مستواك الحالي في {{language}}؟",
         "pro_feature": "ميزة الاحترافية",
-        "loading_dictionary": "تحميل قاموس {{language}}"
+        "loading_dictionary": "تحميل قاموس {{language}}",
+        "dictionary": "القاموس"
     },
     "action": {
         "upgrade": "ترقيه",

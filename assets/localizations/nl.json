@@ -330,7 +330,8 @@
         "select_language": "Welke taal wil je leren?",
         "current_level": "Wat is je huidige niveau van {{language}}?",
         "pro_feature": "Pro-functie",
-        "loading_dictionary": "Woordenboek {{language}} laden"
+        "loading_dictionary": "Woordenboek {{language}} laden",
+        "dictionary": "Dictionary"
     },
     "action": {
         "upgrade": "Opwaarderen",

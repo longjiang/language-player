@@ -331,7 +331,8 @@
         "select_language": "Koji jezik biste želeli da naučite?",
         "current_level": "Koji je vaš trenutni nivo {{language}}?",
         "pro_feature": "Pro funkcija",
-        "loading_dictionary": "Učitavanje rječnika {{language}}"
+        "loading_dictionary": "Učitavanje rječnika {{language}}",
+        "dictionary": "Rječnik"
     },
     "action": {
         "upgrade": "Nadograditi",

@@ -330,7 +330,8 @@
         "select_language": "어떤 언어를 배우고 싶으신가요?",
         "current_level": "현재 {{language}} 레벨은 무엇입니까?",
         "pro_feature": "Pro 기능",
-        "loading_dictionary": "{{language}} 사전 로드 중"
+        "loading_dictionary": "{{language}} 사전 로드 중",
+        "dictionary": "사전"
     },
     "action": {
         "upgrade": "업그레이드",
