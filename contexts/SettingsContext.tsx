@@ -47,9 +47,9 @@ const settingsReducer = (state: SettingsState, action: SettingsAction): Settings
     case 'TOGGLE_SETTING':
       return { ...state, [action.payload]: !state[action.payload] };
     case 'SET_L1_LANG_CODE':
-      return { ...state, l1LangCode: action.payload };
+      return { ...state, l1LangCode: action.payload || state.l1LangCode };
     case 'SET_L2_LANG_CODE':
-      return { ...state, l2LangCode: action.payload };
+      return { ...state, l2LangCode: action.payload || state.l2LangCode };
     default:
       return state;
   }
@@ -67,10 +67,7 @@ const SettingsContext = createContext<{
 // Provider component
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const systemColorScheme = useColorScheme();
-  const [settings, dispatch] = useReducer(settingsReducer, {
-    ...initialState,
-    darkMode: systemColorScheme === 'dark',
-  });
+  const [settings, dispatch] = useReducer(settingsReducer, initialState);
   const { l1Lang, l2Lang, setL1Lang, setL2Lang, languages } = useLanguage();
 
   // Effect: Load settings from SecureStore on mount and set languages
@@ -90,29 +87,40 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
           const l2Language = languages.getLangByCode(parsedSettings.l2LangCode);
           if (l2Language) setL2Lang(l2Language);
         }
+      } else {
+        // If no saved settings, initialize with default values
+        const defaultSettings = {
+          ...initialState,
+          darkMode: systemColorScheme === 'dark',
+        };
+        dispatch({ type: 'SET_SETTINGS', payload: defaultSettings });
+        await SecureStore.setItemAsync('userSettings', JSON.stringify(defaultSettings));
       }
     };
     loadSettings();
-  }, [languages, setL1Lang, setL2Lang]);
+  }, [languages, setL1Lang, setL2Lang, systemColorScheme]);
 
   // Effect: Save settings to SecureStore when they change
   useEffect(() => {
     const saveSettings = async () => {
       await SecureStore.setItemAsync('userSettings', JSON.stringify(settings));
     };
-    saveSettings();
+    // If languages aren't set, this is initial load, so don't save
+    if (settings.l1LangCode && settings.l2LangCode) {
+      saveSettings();
+    }
   }, [settings]);
 
   // Effect: Update l1LangCode in settings when l1Lang changes
   useEffect(() => {
-    if (l1Lang && l1Lang.code) {
+    if (l1Lang && l1Lang.code && l1Lang.code !== settings.l1LangCode) {
       dispatch({ type: 'SET_L1_LANG_CODE', payload: l1Lang.code });
     }
   }, [l1Lang]);
 
   // Effect: Update l2LangCode in settings when l2Lang changes
   useEffect(() => {
-    if (l2Lang && l2Lang.code) {
+    if (l2Lang && l2Lang.code && l2Lang.code !== settings.l2LangCode) {
       dispatch({ type: 'SET_L2_LANG_CODE', payload: l2Lang.code });
     }
   }, [l2Lang]);
