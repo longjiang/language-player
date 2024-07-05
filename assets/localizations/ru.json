@@ -275,7 +275,9 @@
         "verify": "Подтвердить",
         "resend_code": "Повторно отправить код",
         "start_learning": "Начать обучение",
-        "next": "Далее"
+        "next": "Далее",
+        "tv_shows": "Programas de TV",
+        "watch": "Ver"
     },
     "placeholder": {
         "first_name": "Имя",

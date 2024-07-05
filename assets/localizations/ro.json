@@ -275,7 +275,9 @@
         "verify": "Verificare",
         "resend_code": "Retrimiteți codul",
         "start_learning": "Începeți să învățați",
-        "next": "Următorul"
+        "next": "Următorul",
+        "tv_shows": "Programas de TV",
+        "watch": "Ver"
     },
     "placeholder": {
         "first_name": "Prenume",

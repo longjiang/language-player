@@ -275,7 +275,9 @@
         "verify": "Xác minh",
         "resend_code": "Mãi mãi",
         "start_learning": "Öğrenmeye Başla",
-        "next": "Sonraki"
+        "next": "Sonraki",
+        "tv_shows": "Programas de TV",
+        "watch": "İzle"
     },
     "placeholder": {
         "first_name": "İsim",

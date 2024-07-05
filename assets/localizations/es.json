@@ -275,7 +275,9 @@
         "verify": "Verificar",
         "resend_code": "Reenviar código",
         "start_learning": "Comenzar a aprender",
-        "next": "Próximo"
+        "next": "Próximo",
+        "tv_shows": "Programas de televisión",
+        "watch": "Ver"
     },
     "placeholder": {
         "first_name": "Nombre",
@@ -291,8 +293,9 @@
         "registration_failed": "Registro fallido",
         "failed_retrieve_password": "Fallo al recuperar la contraseña almacenada",
         "generic": "Error",
-        "user_info_not_found": "No se encontraron datos de usuario",
-        "updating_progress": "Error al actualizar el progreso:"
+        "user_info_not_found": "Información del usuario no encontrada",
+        "updating_progress": "Error al actualizar el progreso:",
+        "failed_to_load_items": "Error al cargar elementos:"
     },
     "success": {
         "code_resent": "El código de verificación se ha reenviado a su correo electrónico."

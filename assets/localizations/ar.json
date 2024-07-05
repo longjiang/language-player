@@ -275,7 +275,9 @@
         "verify": "التحقق",
         "resend_code": "إعادة إرسال الرمز",
         "start_learning": "ابدأ التعلم",
-        "next": "التالي"
+        "next": "التالي",
+        "tv_shows": "البرامج التلفزيونية",
+        "watch": "شاهد"
     },
     "placeholder": {
         "first_name": "الاسم الأول",
@@ -291,8 +293,9 @@
         "registration_failed": "فشل التسجيل",
         "failed_retrieve_password": "فشل في استرداد كلمة المرور المخزنة",
         "generic": "خطأ",
-        "user_info_not_found": "لم يتم العثور على معلومات المستخدم",
-        "updating_progress": "خطأ في تحديث التقدم:"
+        "user_info_not_found": "معلومات المستخدم غير موجودة",
+        "updating_progress": "خطأ في تحديث التقدم:",
+        "failed_to_load_items": "فشل تحميل العناصر:"
     },
     "success": {
         "code_resent": "تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني."

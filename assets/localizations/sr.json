@@ -275,7 +275,9 @@
         "verify": "Potvrdi",
         "resend_code": "Ponovno pošalji",
         "start_learning": "Započni učenje",
-        "next": "Sljedeće"
+        "next": "Sljedeće",
+        "tv_shows": "ТВ-програми",
+        "watch": "Pogledaj"
     },
     "placeholder": {
         "first_name": "Ime",

@@ -275,7 +275,9 @@
         "verify": "验证",
         "resend_code": "重新发送验证码",
         "start_learning": "开始学习",
-        "next": "下一步"
+        "next": "下一步",
+        "tv_shows": "电视节目",
+        "watch": "观看"
     },
     "placeholder": {
         "first_name": "名字",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "无法获取存储的密码",
         "generic": "错误",
         "user_info_not_found": "未找到用户信息",
-        "updating_progress": "更新进度时出错："
+        "updating_progress": "更新进度时出错：",
+        "failed_to_load_items": "加载项目失败："
     },
     "success": {
         "code_resent": "验证码已重新发送到您的邮箱。"

@@ -275,7 +275,9 @@
         "verify": "Potvrdi",
         "resend_code": "Ponovno pošalji kod",
         "start_learning": "Počnite učiti",
-        "next": "Sljedeće"
+        "next": "Sljedeće",
+        "tv_shows": "TV programi",
+        "watch": "Gledaj"
     },
     "placeholder": {
         "first_name": "Ime",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "Neuspjelo dohvaćanje pohranjene lozinke",
         "generic": "Greška",
         "user_info_not_found": "Podaci o korisniku nisu pronađeni",
-        "updating_progress": "Greška prilikom ažuriranja napretka:"
+        "updating_progress": "Greška prilikom ažuriranja napretka:",
+        "failed_to_load_items": "Neuspješno učitavanje stavki:"
     },
     "success": {
         "code_resent": "Kod za potvrdu ponovno je poslan na vašu e-poštu."

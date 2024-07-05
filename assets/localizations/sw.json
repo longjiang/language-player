@@ -275,7 +275,9 @@
         "verify": "Thibitisha",
         "resend_code": "Peana tena nambari",
         "start_learning": "Anza Kujifunza",
-        "next": "Mbele"
+        "next": "Mbele",
+        "tv_shows": "TV-program",
+        "watch": "Ver"
     },
     "placeholder": {
         "first_name": "Jina la kwanza",

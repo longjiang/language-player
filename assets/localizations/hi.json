@@ -275,7 +275,9 @@
         "verify": "सत्यापित करें",
         "resend_code": "कोड पुनः भेजें",
         "start_learning": "शुरू करें",
-        "next": "अगला"
+        "next": "अगला",
+        "tv_shows": "टीवी शो",
+        "watch": "Tv देखें"
     },
     "placeholder": {
         "first_name": "पहला",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "स्टोर्ड पासवर्ड पुनः प्राप्त करने में विफल",
         "generic": "त्रुटि",
         "user_info_not_found": "उपयोगकर्ता जानकारी नहीं मिली",
-        "updating_progress": "प्रगति अपडेट करते समय त्रुटि:"
+        "updating_progress": "प्रगति अपडेट करते समय त्रुटि:",
+        "failed_to_load_items": "आइटम लोड करने में विफल:"
     },
     "success": {
         "code_resent": "सत्यापन कोड आपके ईमेल पर पुनः भेज दिया गया है।"

@@ -275,7 +275,9 @@
         "verify": "ยืนยัน",
         "resend_code": "Thibitisha tena",
         "start_learning": "เริ่มเรียนรู้",
-        "next": "ถัดไป"
+        "next": "ถัดไป",
+        "tv_shows": "Programu za TV",
+        "watch": "Assistir"
     },
     "placeholder": {
         "first_name": "ชื่อจริง",

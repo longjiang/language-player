@@ -1,3 +1,4 @@
+// @/components/VideoHero
 import React, { useState } from "react";
 import { View, StyleSheet, Dimensions, FlexAlignType } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -7,12 +8,14 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { router } from "expo-router";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const VideoHero: React.FC<{
   youtubeId: string;
   title: string;
   height: number;
 }> = ({ youtubeId, title, height }) => {
+  const { t } = useLanguage();
   const screenWidth = Dimensions.get("window").width;
   const videoWidth = (height * 16) / 9;
   const padding = 26;
@@ -20,7 +23,7 @@ export const VideoHero: React.FC<{
     width: screenWidth - padding * 2, // 26px padding on each side
     position: "absolute" as "absolute", // Explicitly setting the type to "absolute"
     top: height - 90,
-    left: (videoWidth - screenWidth) / 2 + padding, // Note the left edige of the video is off the screen
+    left: (videoWidth - screenWidth) / 2 + padding, // Note the left edge of the video is off the screen
   };
   // Add a mute state
   const [isMuted, setIsMuted] = useState(true); // Default to muted
@@ -47,7 +50,7 @@ export const VideoHero: React.FC<{
         <ThemedText style={styles.title} type="defaultBold">{title}</ThemedText>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <ThemedButton
-            title="Watch"
+            title={t('action.watch')}
             size="medium"
             leadingIcon={<Icon name="play" />}
             style={styles.button}

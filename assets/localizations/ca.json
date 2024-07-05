@@ -275,7 +275,9 @@
         "verify": "Verifica",
         "resend_code": "Reenvia el codi",
         "start_learning": "Comença a aprendre",
-        "next": "Següent"
+        "next": "Següent",
+        "tv_shows": "Programmes de televisió",
+        "watch": "Visualitza"
     },
     "placeholder": {
         "first_name": "Primer nom",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "Error en recuperar la contrasenya emmagatzemada",
         "generic": "Error",
         "user_info_not_found": "Informació de l'usuari no trobada",
-        "updating_progress": "Error actualitzant el progrés:"
+        "updating_progress": "Error actualitzant el progrés:",
+        "failed_to_load_items": "Error al carregar els elements:"
     },
     "success": {
         "code_resent": "El codi de verificació s'ha reenviat al teu correu electrònic."

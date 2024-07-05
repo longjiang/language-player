@@ -275,7 +275,9 @@
         "verify": "확인",
         "resend_code": "코드 다시 보내기",
         "start_learning": "학습 시작",
-        "next": "다음"
+        "next": "다음",
+        "tv_shows": "TV 프로그램",
+        "watch": "보기"
     },
     "placeholder": {
         "first_name": "이름",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "저장된 비밀번호 검색 실패",
         "generic": "오류",
         "user_info_not_found": "사용자 정보를 찾을 수 없습니다",
-        "updating_progress": "진행률 업데이트 오류:"
+        "updating_progress": "진행률 업데이트 오류:",
+        "failed_to_load_items": "항목을 로드하지 못했습니다:"
     },
     "success": {
         "code_resent": "확인 코드가 이메일로 다시 전송되었습니다."

@@ -275,7 +275,9 @@
         "verify": "Vahvista",
         "resend_code": "Vahvista uudelleen",
         "start_learning": "Aloita oppiminen",
-        "next": "Seuraava"
+        "next": "Seuraava",
+        "tv_shows": "TV-ohjelmat",
+        "watch": "Katso"
     },
     "placeholder": {
         "first_name": "Etunimi",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "Salasanan haku epäonnistui",
         "generic": "Virhe",
         "user_info_not_found": "Käyttäjätietoja ei löytynyt",
-        "updating_progress": "Virheen päivitys:"
+        "updating_progress": "Virheen päivitys:",
+        "failed_to_load_items": "Kohteiden lataaminen epäonnistui:"
     },
     "success": {
         "code_resent": "Vahvistuskoodi lähetettiin uudelleen sähköpostiisi."

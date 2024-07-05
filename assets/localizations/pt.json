@@ -275,7 +275,9 @@
         "verify": "Verificar",
         "resend_code": "Reenviar código",
         "start_learning": "Comece a aprender",
-        "next": "Próximo"
+        "next": "Próximo",
+        "tv_shows": "Programas de TV",
+        "watch": "Ver"
     },
     "placeholder": {
         "first_name": "Primeiro",

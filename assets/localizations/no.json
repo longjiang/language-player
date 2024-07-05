@@ -275,7 +275,9 @@
         "verify": "Bekreft",
         "resend_code": "Send kode på nytt",
         "start_learning": "Begynn å lære",
-        "next": "Neste"
+        "next": "Neste",
+        "tv_shows": "Programas de TV",
+        "watch": "Ver"
     },
     "placeholder": {
         "first_name": "Fornavn",

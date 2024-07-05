@@ -275,7 +275,9 @@
         "verify": "Verifieer",
         "resend_code": "Stuur kode weer",
         "start_learning": "Begin leer",
-        "next": "Volgende"
+        "next": "Volgende",
+        "tv_shows": "TV-programma's",
+        "watch": "Bekijken"
     },
     "placeholder": {
         "first_name": "Voornaam",
@@ -291,8 +293,9 @@
         "registration_failed": "Registrasie het misluk",
         "failed_retrieve_password": "Misluk om gestoorde wagwoord te herwin",
         "generic": "Fout",
-        "user_info_not_found": "Gebruikersinligting nie gevind nie",
-        "updating_progress": "Fout by die opdateer van vordering:"
+        "user_info_not_found": "Gebruikersinformatie niet gevonden",
+        "updating_progress": "Fout by die opdateer van vordering:",
+        "failed_to_load_items": "Kan items niet laden:"
     },
     "success": {
         "code_resent": "Verifikasiekode is weer na jou e-pos gestuur."

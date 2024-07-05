@@ -275,7 +275,9 @@
         "verify": "Verifiëren",
         "resend_code": "Code opnieuw verzenden",
         "start_learning": "Begin met leren",
-        "next": "Volgende"
+        "next": "Volgende",
+        "tv_shows": "TV-programma's",
+        "watch": "Bekijken"
     },
     "placeholder": {
         "first_name": "Voornaam",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "Wachtwoord ophalen mislukt",
         "generic": "Fout",
         "user_info_not_found": "Gebruikersinformatie niet gevonden",
-        "updating_progress": "Fout bij het bijwerken van de voortgang:"
+        "updating_progress": "Fout bij het bijwerken van de voortgang:",
+        "failed_to_load_items": "Kan items niet laden:"
     },
     "success": {
         "code_resent": "Verificatiecode opnieuw verzonden naar uw e-mail."

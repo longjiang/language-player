@@ -275,7 +275,9 @@
         "verify": "Vérifier",
         "resend_code": "Renvoyer le code",
         "start_learning": "Commencer à apprendre",
-        "next": "Suivant"
+        "next": "Suivant",
+        "tv_shows": "Émissions de télévision",
+        "watch": "Kijken"
     },
     "placeholder": {
         "first_name": "Prénom",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "Échec de la récupération du mot de passe stocké",
         "generic": "Erreur",
         "user_info_not_found": "Informations utilisateur non trouvées",
-        "updating_progress": "Erreur lors de la mise à jour de la progression:"
+        "updating_progress": "Erreur lors de la mise à jour de la progression:",
+        "failed_to_load_items": "Échec du chargement des éléments :"
     },
     "success": {
         "code_resent": "Le code de vérification a été renvoyé à votre adresse e-mail."

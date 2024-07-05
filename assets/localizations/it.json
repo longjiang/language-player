@@ -275,7 +275,9 @@
         "verify": "Verifica",
         "resend_code": "Rispedisci il codice",
         "start_learning": "Inizia a imparare",
-        "next": "Avanti"
+        "next": "Avanti",
+        "tv_shows": "Programmi TV",
+        "watch": "Guarda"
     },
     "placeholder": {
         "first_name": "Primo",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "Recupero password memorizzata fallito",
         "generic": "Errore",
         "user_info_not_found": "Informazioni utente non trovate",
-        "updating_progress": "Errore nell'aggiornamento del progresso:"
+        "updating_progress": "Errore nell'aggiornamento del progresso:",
+        "failed_to_load_items": "Caricamento elementi non riuscito:"
     },
     "success": {
         "code_resent": "Il codice di verifica è stato rispedito al tuo indirizzo email."

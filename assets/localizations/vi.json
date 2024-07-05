@@ -275,7 +275,8 @@
         "verify": "Doğrulama",
         "resend_code": "Gửi lại mã",
         "start_learning": "Bắt đầu học",
-        "next": "Tiếp theo"
+        "next": "Tiếp theo",
+        "tv_shows": "TV programları"
     },
     "placeholder": {
         "first_name": "Tên",

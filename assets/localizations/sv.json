@@ -275,7 +275,9 @@
         "verify": "Bekräfta",
         "resend_code": "Beställ ny kod",
         "start_learning": "Börja lära dig",
-        "next": "Nästa"
+        "next": "Nästa",
+        "tv_shows": "TV programi",
+        "watch": "İzle"
     },
     "placeholder": {
         "first_name": "Förnamn",

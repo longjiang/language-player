@@ -275,7 +275,9 @@
         "verify": "Verify",
         "resend_code": "Resend Code",
         "start_learning": "Start Learning",
-        "next": "Next"
+        "next": "Next",
+        "tv_shows": "TV Shows",
+        "watch": "Watch"
     },
     "placeholder": {
         "first_name": "First",
@@ -291,8 +293,9 @@
         "registration_failed": "Registration failed",
         "failed_retrieve_password": "Failed to retrieve stored password",
         "generic": "Error",
-        "user_info_not_found": "User information not found",
-        "updating_progress": "Error updating progress:"
+        "user_info_not_found": "User info not found",
+        "updating_progress": "Error updating progress:",
+        "failed_to_load_items": "Failed to load items:"
     },
     "success": {
         "code_resent": "Verification code resent to your email."

@@ -275,7 +275,9 @@
         "verify": "Bestätigen",
         "resend_code": "Code erneut senden",
         "start_learning": "Lernen beginnen",
-        "next": "Weiter"
+        "next": "Weiter",
+        "tv_shows": "TV-Sendungen",
+        "watch": "Ansehen"
     },
     "placeholder": {
         "first_name": "Vorname",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "Fehler beim Abrufen des gespeicherten Passworts",
         "generic": "Fehler",
         "user_info_not_found": "Benutzerinformationen nicht gefunden",
-        "updating_progress": "Fehler beim Aktualisieren des Fortschritts:"
+        "updating_progress": "Fehler beim Aktualisieren des Fortschritts:",
+        "failed_to_load_items": "Fehler beim Laden von Elementen:"
     },
     "success": {
         "code_resent": "Der Code wurde erneut an Ihre E-Mail-Adresse gesendet."

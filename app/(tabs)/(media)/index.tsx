@@ -20,12 +20,12 @@ import { useAuth } from "@/contexts/AuthContext";
 const videos = videoData.map((video: any) => normalizeVideoData(video))
 
 const MediaHomeScreen = () => {
-  const { languages, i18n, l2Lang } = useLanguage();
+  const { languages, i18n, l2Lang, t } = useLanguage();
   const { progress } = useUserData();
   const { getStoredUserInfo } = useAuth();
   const [items, setItems] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  if (!l2Lang) return;
+  if (!l2Lang) return null;
   const videoHeight = 300;
   const padding = 26;
   const videoWidth = videoHeight * 1.777777777777778;
@@ -36,18 +36,16 @@ const MediaHomeScreen = () => {
   const l2Progress = progress[l2Lang.code] || { level: '1', time: 0 };
   const level = Number(l2Progress.level);
 
-
   useEffect(() => {
     // Search screen mounted
     loadItems();
   }, []);
 
-
   const loadItems = async () => {
     setItems([]); // Clear items
     setIsLoading(true); // Start loading
     const userInfo = await getStoredUserInfo();
-    if (!userInfo) throw new Error('User info not found');
+    if (!userInfo) throw new Error(t('error.user_info_not_found'));
     const userId = Number(userInfo.id);
     const preferredCategories = [];
     const excludeIds = [4265,17213,33658,11662];
@@ -65,7 +63,7 @@ const MediaHomeScreen = () => {
       );
       setItems(fetchedItems.map(normalizeVideoData) as YouTubeVideo[]);
     } catch (error) {
-      console.error("Failed to load items:", error);
+      console.error(t('error.failed_to_load_items'), error);
     }
     setIsLoading(false); // Stop loading
   };
@@ -93,7 +91,7 @@ const MediaHomeScreen = () => {
             source={require('@/assets/images/language-player-logo-64.png')}
             style={styles.logo}
           />
-          <ThemedText style={styles.headerTitle} type="defaultBold">Language Player</ThemedText>
+          <ThemedText style={{...styles.headerTitle, color: 'white'}} type="defaultBold">Language Player</ThemedText>
         </View>
         <View style={styles.iconsContainer}>
           <ThemedButton type="ghost" size="large" leadingIcon={<Icon name="magnify" />} onPress={ () => { router.navigate('/search') }} />
@@ -104,7 +102,7 @@ const MediaHomeScreen = () => {
       </SafeAreaView>
       <View style={styles.container}>
         <ThemedButton
-          title="TV Shows"
+          title={t('action.tv_shows')}
           size="medium"
           type="neutral"
           leadingIcon={<Icon name="youtube-tv" />}

@@ -275,7 +275,9 @@
         "verify": "Konfirmasi",
         "resend_code": "Kirim Ulang Kode",
         "start_learning": "Mulai Belajar",
-        "next": "Selanjutnya"
+        "next": "Selanjutnya",
+        "tv_shows": "Acara TV",
+        "watch": "Menonton"
     },
     "placeholder": {
         "first_name": "Nama depan",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "Gagal mengambil kata sandi yang disimpan",
         "generic": "Kesalahan",
         "user_info_not_found": "Informasi pengguna tidak ditemukan",
-        "updating_progress": "Kesalahan saat memperbarui kemajuan:"
+        "updating_progress": "Kesalahan saat memperbarui kemajuan:",
+        "failed_to_load_items": "Gagal memuat item:"
     },
     "success": {
         "code_resent": "Kode verifikasi telah dikirim ulang ke email Anda."

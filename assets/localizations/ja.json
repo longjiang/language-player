@@ -275,7 +275,9 @@
         "verify": "確認",
         "resend_code": "コードを再送信",
         "start_learning": "学習を開始",
-        "next": "次へ"
+        "next": "次へ",
+        "tv_shows": "テレビ番組",
+        "watch": "見る"
     },
     "placeholder": {
         "first_name": "ファースト",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "保存されたパスワードの取得に失敗しました",
         "generic": "エラー",
         "user_info_not_found": "ユーザー情報が見つかりません",
-        "updating_progress": "進捗を更新する際のエラー:"
+        "updating_progress": "進捗を更新する際のエラー:",
+        "failed_to_load_items": "アイテムの読み込みに失敗しました："
     },
     "success": {
         "code_resent": "確認コードがメールアドレスに再送信されました。"

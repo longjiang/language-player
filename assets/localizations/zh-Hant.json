@@ -275,7 +275,9 @@
         "verify": "驗證",
         "resend_code": "重新發送驗證碼",
         "start_learning": "開始學習",
-        "next": "下一步"
+        "next": "下一步",
+        "tv_shows": "電視節目",
+        "watch": "觀看"
     },
     "placeholder": {
         "first_name": "名字",
@@ -292,7 +294,8 @@
         "failed_retrieve_password": "無法獲取存儲的密碼",
         "generic": "錯誤",
         "user_info_not_found": "未找到用戶信息",
-        "updating_progress": "更新進度時出錯："
+        "updating_progress": "更新進度時出錯：",
+        "failed_to_load_items": "加载项目失败："
     },
     "success": {
         "code_resent": "驗證碼已重新發送到您的電子郵件。"

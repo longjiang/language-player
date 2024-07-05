@@ -275,7 +275,9 @@
         "verify": "Megerősít",
         "resend_code": "Kód újraküldése",
         "start_learning": "Tanulás megkezdése",
-        "next": "Következő"
+        "next": "Következő",
+        "tv_shows": "TV-műsorok",
+        "watch": "Néz"
     },
     "placeholder": {
         "first_name": "Először",
@@ -291,8 +293,9 @@
         "registration_failed": "A regisztráció sikertelen",
         "failed_retrieve_password": "Sikertelen a tárolt jelszó visszakeresése",
         "generic": "Hiba",
-        "user_info_not_found": "Felhasználói információ nem található",
-        "updating_progress": "Hiba a frissítés közben:"
+        "user_info_not_found": "Felhasználói információk nem találhatók",
+        "updating_progress": "Hiba a frissítés közben:",
+        "failed_to_load_items": "Az elemek betöltése nem sikerült:"
     },
     "success": {
         "code_resent": "Az ellenőrző kódot újra elküldtük az e-mail címére."

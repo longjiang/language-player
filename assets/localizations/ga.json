@@ -275,7 +275,9 @@
         "verify": "Deimhnigh",
         "resend_code": "Seol arís an cód",
         "start_learning": "Tosaigh ag foghlaim",
-        "next": "Ar aghaidh"
+        "next": "Ar aghaidh",
+        "tv_shows": "TV-programmer",
+        "watch": "Visualitza"
     },
     "placeholder": {
         "first_name": "Ainm",
@@ -291,8 +293,9 @@
         "registration_failed": "Níor éirigh le clárú",
         "failed_retrieve_password": "Níor éirigh leis an bhfocal faire a stóráil",
         "generic": "Earráid",
-        "user_info_not_found": "Níor aimsíodh eolas úsáideora",
-        "updating_progress": "Earráid agus an dul chun cinn a nuashonrú:"
+        "user_info_not_found": "Informació de l'usuari no trobada",
+        "updating_progress": "Earráid agus an dul chun cinn a nuashonrú:",
+        "failed_to_load_items": "Error al carregar elements:"
     },
     "success": {
         "code_resent": "Tá an cód deimhnithe atá atáirthe arís chuig do ríomhphost."
