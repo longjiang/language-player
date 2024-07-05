@@ -235,7 +235,8 @@
         "auto_renews_in": "Auto renews in {{days}} days",
         "expires_in": "Expires in {{days}} days",
         "or_register_with": "Nó cláraigh le:",
-        "already_have_account": "An bhfuil cuntas agat cheana féin?"
+        "already_have_account": "An bhfuil cuntas agat cheana féin?",
+        "enter_verification_code": "Cuir isteach an cód fíoraithe a sheoltar chuig an ríomhphost"
     },
     "title": {
         "email": "Ríomhphost",
@@ -255,7 +256,8 @@
         "monthly": "Míosúil",
         "annual": "Bliana",
         "lifetime": "Anam",
-        "trial": "Trial"
+        "trial": "Trial",
+        "verify_your_email": "Deimhnigh do ríomhphost"
     },
     "action": {
         "upgrade": "Uasghrádú",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Deimhnigh cealú",
         "keep_subscription": "Coinnigh Síntiús",
         "register": "Cláraigh",
-        "login": "Logáil isteach"
+        "login": "Logáil isteach",
+        "verify": "Deimhnigh",
+        "resend_code": "Seol arís an cód"
     },
     "placeholder": {
         "first_name": "Ainm",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Níl na pasfhocail comhtháite",
-        "registration_failed": "Níor éirigh le clárú"
+        "registration_failed": "Níor éirigh le clárú",
+        "failed_retrieve_password": "Níor éirigh leis an bhfocal faire a stóráil",
+        "generic": "Earráid"
+    },
+    "success": {
+        "code_resent": "Tá an cód deimhnithe atá atáirthe arís chuig do ríomhphost."
     }
 }

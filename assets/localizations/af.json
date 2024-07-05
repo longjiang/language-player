@@ -235,7 +235,8 @@
         "auto_renews_in": "Auto renews in {{days}} dae",
         "expires_in": "Verval in {{days}} dae",
         "or_register_with": "Of registreer met:",
-        "already_have_account": "Het u reeds 'n rekening?"
+        "already_have_account": "Het u reeds 'n rekening?",
+        "enter_verification_code": "Voer asseblief die verifikasiekode in wat na die e-pos gestuur is"
     },
     "title": {
         "email": "E-pos",
@@ -255,7 +256,8 @@
         "monthly": "Maandeliks",
         "annual": "Jaarliks",
         "lifetime": "Leeftyd",
-        "trial": "Proeflopie"
+        "trial": "Proeflopie",
+        "verify_your_email": "Verifieer jou e-pos"
     },
     "action": {
         "upgrade": "Opgradering",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Bevestig kansellasie",
         "keep_subscription": "Hou intekening",
         "register": "Registreer",
-        "login": "Aanteken"
+        "login": "Aanteken",
+        "verify": "Verifieer",
+        "resend_code": "Stuur kode weer"
     },
     "placeholder": {
         "first_name": "Voornaam",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Wagwoorde stem nie ooreen nie",
-        "registration_failed": "Registrasie het misluk"
+        "registration_failed": "Registrasie het misluk",
+        "failed_retrieve_password": "Misluk om gestoorde wagwoord te herwin",
+        "generic": "Fout"
+    },
+    "success": {
+        "code_resent": "Verifikasiekode is weer na jou e-pos gestuur."
     }
 }

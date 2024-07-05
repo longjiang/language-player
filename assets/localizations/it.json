@@ -235,7 +235,8 @@
         "auto_renews_in": "Rinnovo automatico in {{days}} giorni",
         "expires_in": "Scade tra {{days}} giorni",
         "or_register_with": "Oppure registrati con:",
-        "already_have_account": "Hai già un account?"
+        "already_have_account": "Hai già un account?",
+        "enter_verification_code": "Inserisci il codice di verifica inviato all'e-mail"
     },
     "title": {
         "email": "E-mail",
@@ -255,7 +256,8 @@
         "monthly": "Mensile",
         "annual": "Annuale",
         "lifetime": "A vita",
-        "trial": "Prova"
+        "trial": "Prova",
+        "verify_your_email": "Verifica la tua email"
     },
     "action": {
         "upgrade": "Aggiornamento",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Conferma cancellazione",
         "keep_subscription": "Mantieni l'abbonamento",
         "register": "Registro",
-        "login": "Accesso"
+        "login": "Accesso",
+        "verify": "Verifica",
+        "resend_code": "Rispedisci il codice"
     },
     "placeholder": {
         "first_name": "Primo",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Le password non corrispondono",
-        "registration_failed": "Registrazione fallita"
+        "registration_failed": "Registrazione fallita",
+        "failed_retrieve_password": "Recupero password memorizzata fallito",
+        "generic": "Errore"
+    },
+    "success": {
+        "code_resent": "Il codice di verifica è stato rispedito al tuo indirizzo email."
     }
 }

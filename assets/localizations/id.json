@@ -235,7 +235,8 @@
         "auto_renews_in": "Perpanjang otomatis dalam {{days}} hari",
         "expires_in": "Kedaluwarsa dalam {{days}} hari",
         "or_register_with": "Atau daftar dengan:",
-        "already_have_account": "Sudah punya akun?"
+        "already_have_account": "Sudah punya akun?",
+        "enter_verification_code": "Silakan masukkan kode verifikasi yang dikirim ke email"
     },
     "title": {
         "email": "Email",
@@ -255,7 +256,8 @@
         "monthly": "Sebulan",
         "annual": "Tahunan",
         "lifetime": "Seumur hidup",
-        "trial": "Uji coba"
+        "trial": "Uji coba",
+        "verify_your_email": "Konfirmasikan Email Anda"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Konfirmasi Pembatalan",
         "keep_subscription": "Tetap Berlangganan",
         "register": "Registrasi",
-        "login": "Login"
+        "login": "Login",
+        "verify": "Konfirmasi",
+        "resend_code": "Kirim Ulang Kode"
     },
     "placeholder": {
         "first_name": "Nama depan",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Kata sandi tidak cocok",
-        "registration_failed": "Registrasi gagal"
+        "registration_failed": "Registrasi gagal",
+        "failed_retrieve_password": "Gagal mengambil kata sandi yang disimpan",
+        "generic": "Kesalahan"
+    },
+    "success": {
+        "code_resent": "Kode verifikasi telah dikirim ulang ke email Anda."
     }
 }

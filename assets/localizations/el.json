@@ -235,7 +235,8 @@
         "auto_renews_in": "Αυτόματη ανανέωση σε {{days}} ημέρες",
         "expires_in": "Λήγει σε {{days}} ημέρες",
         "or_register_with": "Ή εγγραφείτε με:",
-        "already_have_account": "Έχετε ήδη λογαριασμό;"
+        "already_have_account": "Έχετε ήδη λογαριασμό;",
+        "enter_verification_code": "Εισαγάγετε τον κωδικό επαλήθευσης που στάλθηκε στο email"
     },
     "title": {
         "email": "Email",
@@ -255,7 +256,8 @@
         "monthly": "Μηνιαία",
         "annual": "Ετήσια",
         "lifetime": "Εφικτή",
-        "trial": "Δοκιμή"
+        "trial": "Δοκιμή",
+        "verify_your_email": "Επιβεβαιώστε το email σας"
     },
     "action": {
         "upgrade": "Αναβαθμίζω",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Επιβεβαίωση ακύρωσης",
         "keep_subscription": "Διατήρηση συνδρομής",
         "register": "Εγγραφή",
-        "login": "Σύνδεση"
+        "login": "Σύνδεση",
+        "verify": "Επαλήθευση",
+        "resend_code": "Επανάληψη κωδικού"
     },
     "placeholder": {
         "first_name": "Όνομα",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Οι κωδικοί πρόσβασης δεν ταιριάζουν",
-        "registration_failed": "Η εγγραφή απέτυχε"
+        "registration_failed": "Η εγγραφή απέτυχε",
+        "failed_retrieve_password": "Αποτυχία ανάκτησης αποθηκευμένου κωδικού πρόσβασης",
+        "generic": "Σφάλμα"
+    },
+    "success": {
+        "code_resent": "Ο κωδικός επαλήθευσης εστάλη ξανά στο email σας."
     }
 }

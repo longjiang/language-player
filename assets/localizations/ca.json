@@ -235,7 +235,8 @@
         "auto_renews_in": "Es renova automàticament en {{days}} dies",
         "expires_in": "Caduca en {{days}} dies",
         "or_register_with": "O registrau amb:",
-        "already_have_account": "Ja tens un compte?"
+        "already_have_account": "Ja tens un compte?",
+        "enter_verification_code": "Si us plau, introdueix el codi de verificació enviat al correu electrònic"
     },
     "title": {
         "email": "Correu electrònic",
@@ -255,7 +256,8 @@
         "monthly": "Mensual",
         "annual": "Anual",
         "lifetime": "De per vida",
-        "trial": "Prova"
+        "trial": "Prova",
+        "verify_your_email": "Verifica el teu correu electrònic"
     },
     "action": {
         "upgrade": "Rampa",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Confirmeu la cancel·lació",
         "keep_subscription": "Mantenir subscripció",
         "register": "Registrar",
-        "login": "Connexió"
+        "login": "Connexió",
+        "verify": "Verifica",
+        "resend_code": "Reenvia el codi"
     },
     "placeholder": {
         "first_name": "Primer nom",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Les contrasenyes no coincideixen",
-        "registration_failed": "El registre ha fallat"
+        "registration_failed": "El registre ha fallat",
+        "failed_retrieve_password": "Error en recuperar la contrasenya emmagatzemada",
+        "generic": "Error"
+    },
+    "success": {
+        "code_resent": "El codi de verificació s'ha reenviat al teu correu electrònic."
     }
 }

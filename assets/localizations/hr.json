@@ -235,7 +235,8 @@
         "auto_renews_in": "Automatsko obnavljanje u {{days}} dana",
         "expires_in": "Istječe za {{days}} dana",
         "or_register_with": "Ili se registrirate s:",
-        "already_have_account": "Već imate račun?"
+        "already_have_account": "Već imate račun?",
+        "enter_verification_code": "Unesite kontrolni kôd poslan na e-poštu"
     },
     "title": {
         "email": "E-pošta",
@@ -255,7 +256,8 @@
         "monthly": "Mjesečno",
         "annual": "Godišnje",
         "lifetime": "Doživotno",
-        "trial": "Probni"
+        "trial": "Probni",
+        "verify_your_email": "Potvrdite svoj e-mail"
     },
     "action": {
         "upgrade": "Nadograditi",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Potvrda otkazivanja",
         "keep_subscription": "Zadrži pretplatu",
         "register": "Registrirajte se",
-        "login": "Prijava"
+        "login": "Prijava",
+        "verify": "Potvrdi",
+        "resend_code": "Ponovno pošalji kod"
     },
     "placeholder": {
         "first_name": "Ime",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Lozinke se ne podudaraju",
-        "registration_failed": "Registracija nije uspjela"
+        "registration_failed": "Registracija nije uspjela",
+        "failed_retrieve_password": "Neuspjelo dohvaćanje pohranjene lozinke",
+        "generic": "Greška"
+    },
+    "success": {
+        "code_resent": "Kod za potvrdu ponovno je poslan na vašu e-poštu."
     }
 }

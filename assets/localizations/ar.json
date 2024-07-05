@@ -235,7 +235,8 @@
         "auto_renews_in": "التجديد التلقائي في {{days}} أيام",
         "expires_in": "تنتهي صلاحيتها بعد {{days}} يوم",
         "or_register_with": "أو سجل بواسطة:",
-        "already_have_account": "هل لديك حساب بالفعل؟"
+        "already_have_account": "هل لديك حساب بالفعل؟",
+        "enter_verification_code": "يرجى إدخال رمز التحقق المرسل إلى البريد الإلكتروني"
     },
     "title": {
         "email": "البريد الإلكتروني",
@@ -255,7 +256,8 @@
         "monthly": "شهرياً",
         "annual": "سنوياً",
         "lifetime": "مدى الحياة",
-        "trial": "تجربة"
+        "trial": "تجربة",
+        "verify_your_email": "تحقق من بريدك الإلكتروني"
     },
     "action": {
         "upgrade": "ترقيه",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "تأكيد الإلغاء",
         "keep_subscription": "حافظ على الاشتراك",
         "register": "سجل",
-        "login": "تسجيل الدخول"
+        "login": "تسجيل الدخول",
+        "verify": "التحقق",
+        "resend_code": "إعادة إرسال الرمز"
     },
     "placeholder": {
         "first_name": "الاسم الأول",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "كلمات المرور غير متطابقة",
-        "registration_failed": "فشل التسجيل"
+        "registration_failed": "فشل التسجيل",
+        "failed_retrieve_password": "فشل في استرداد كلمة المرور المخزنة",
+        "generic": "خطأ"
+    },
+    "success": {
+        "code_resent": "تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني."
     }
 }

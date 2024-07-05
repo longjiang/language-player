@@ -235,7 +235,8 @@
         "auto_renews_in": "Renovação automática em {{days}} dias",
         "expires_in": "Expira em {{days}} dias",
         "or_register_with": "Ou registre-se com:",
-        "already_have_account": "Já tem uma conta?"
+        "already_have_account": "Já tem uma conta?",
+        "enter_verification_code": "Insira o código de verificação enviado para o e-mail"
     },
     "title": {
         "email": "Email",
@@ -255,7 +256,8 @@
         "monthly": "Mensal",
         "annual": "Anual",
         "lifetime": "Vitalício",
-        "trial": "Trial"
+        "trial": "Trial",
+        "verify_your_email": "Verifique seu e-mail"
     },
     "action": {
         "upgrade": "Melhoramento",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Confirme o cancelamento",
         "keep_subscription": "Manter assinatura",
         "register": "Registrar",
-        "login": "Login"
+        "login": "Login",
+        "verify": "Verificar",
+        "resend_code": "Reenviar código"
     },
     "placeholder": {
         "first_name": "Primeiro",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Senhas não correspondem",
-        "registration_failed": "Registro falhou"
+        "registration_failed": "Registro falhou",
+        "failed_retrieve_password": "Falha ao recuperar a senha armazenada",
+        "generic": "Erro"
+    },
+    "success": {
+        "code_resent": "Código de verificação reenviado para o seu e-mail."
     }
 }

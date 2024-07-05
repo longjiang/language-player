@@ -235,7 +235,8 @@
         "auto_renews_in": "Förnyas automatiskt om {{days}} dagar",
         "expires_in": "Går ut om {{days}} dagar",
         "or_register_with": "Eller registrera dig med:",
-        "already_have_account": "Har du redan ett konto?"
+        "already_have_account": "Har du redan ett konto?",
+        "enter_verification_code": "Ange verifieringskoden som skickades till e-postmeddelandet"
     },
     "title": {
         "email": "E-post",
@@ -255,7 +256,8 @@
         "monthly": "Månadsvis",
         "annual": "Årligen",
         "lifetime": "Livstid",
-        "trial": "Provperiod"
+        "trial": "Provperiod",
+        "verify_your_email": "Bekräfta din e-postadress"
     },
     "action": {
         "upgrade": "Uppgradera",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Bekräfta avbokning",
         "keep_subscription": "Behåll prenumeration",
         "register": "Registrera dig",
-        "login": "Logga in"
+        "login": "Logga in",
+        "verify": "Bekräfta",
+        "resend_code": "Beställ ny kod"
     },
     "placeholder": {
         "first_name": "Förnamn",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Lösenorden matchar inte",
-        "registration_failed": "Registreringen misslyckades"
+        "registration_failed": "Registreringen misslyckades",
+        "failed_retrieve_password": "Misslyckades med att hämta lagrat lösenord",
+        "generic": "Fel"
+    },
+    "success": {
+        "code_resent": "Verifieringskoden skickas till din e-post på nytt."
     }
 }

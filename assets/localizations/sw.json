@@ -235,7 +235,8 @@
         "auto_renews_in": "Kusasisha kiotomatiki katika siku {{days}}",
         "expires_in": "Inaisha katika siku {{days}}",
         "or_register_with": "Aujiandikisha na:",
-        "already_have_account": "Tayari una akaunti?"
+        "already_have_account": "Tayari una akaunti?",
+        "enter_verification_code": "Tafadhali ingiza msimbo wa uthibitishaji uliotumwa kwa barua pepe"
     },
     "title": {
         "email": "Barua pepe",
@@ -255,7 +256,8 @@
         "monthly": "Kila mwezi",
         "annual": "Kila mwaka",
         "lifetime": "Maisha yote",
-        "trial": "Jaribio"
+        "trial": "Jaribio",
+        "verify_your_email": "Thibitisha Barua pepe yako"
     },
     "action": {
         "upgrade": "Kuboresha",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Thibitisha Kughairi",
         "keep_subscription": "Weka Usajili",
         "register": "Jisajili",
-        "login": "Kuingia"
+        "login": "Kuingia",
+        "verify": "Thibitisha",
+        "resend_code": "Peana tena nambari"
     },
     "placeholder": {
         "first_name": "Jina la kwanza",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Maneno ya siri hayalingani",
-        "registration_failed": "Kusajiliwa kushindwa"
+        "registration_failed": "Kusajiliwa kushindwa",
+        "failed_retrieve_password": "Kushindwa kupata nywila iliyohifadhiwa",
+        "generic": "Fehler"
+    },
+    "success": {
+        "code_resent": "Nambari ya uthibitishaji inakataa barua pepe yako."
     }
 }

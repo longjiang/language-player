@@ -9,24 +9,27 @@ import { router, useLocalSearchParams } from "expo-router";
 import { login } from "@/src/api/directus/user";
 import { sendVerificationEmail, verifyEmailCode } from "@/src/api/python/verify-email";
 import * as SecureStore from 'expo-secure-store';
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Ionicons } from "@expo/vector-icons";
 
 const VerifyEmailScreen = () => {
+  const { t } = useLanguage();
   const [code, setCode] = useState("");
-  const { email } = useLocalSearchParams(); // Get email from query params
+  const { email } = useLocalSearchParams();
   const [loading, setLoading] = useState(false);
 
   const handleVerify = async () => {
     setLoading(true);
     try {
-      await verifyEmailCode(email, code); // Add your verification logic here
+      await verifyEmailCode(email, code);
       const password = await SecureStore.getItemAsync('user_password');
-      if (!password) throw new Error('Failed to retrieve stored password');
-      await login(email, password); // Log the user in after verification
-      await SecureStore.deleteItemAsync('user_password'); // Delete the stored password after use
+      if (!password) throw new Error(t('error.failed_retrieve_password'));
+      await login(email, password);
+      await SecureStore.deleteItemAsync('user_password');
       router.push("/acquisition-survey");
       setLoading(false);
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      Alert.alert(t('error.generic'), error.message);
       setLoading(false);
     }
   };
@@ -34,36 +37,38 @@ const VerifyEmailScreen = () => {
   const handleResendCode = async () => {
     try {
       await sendVerificationEmail(email);
-      Alert.alert('Success', 'Verification code resent to your email.');
+      Alert.alert(t('success.code_resent'));
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      Alert.alert(t('error.generic'), error.message);
     }
   };
 
   return (
     <ThemedScreen
-      title="Verify Your Email"
+      title={t('title.verify_your_email')}
       onBackPress={() => router.navigate("/register")}
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
     >
       <ThemedText style={styles.instructions}>
-        Please enter the verification code sent to the email {email}
+        {t('msg.enter_verification_code')} {email}
       </ThemedText>
 
       <ThemedCodeInput codeLength={6} onCodeFilled={setCode} />
 
       <ThemedButton
-        title="Verify"
+        title={t('action.verify')}
         style={styles.button}
         onPress={handleVerify}
         disabled={code.length < 6 || loading}
       />
 
       <ThemedButton
-        title="Resend Code"
+        title={t('action.resend_code')}
         style={styles.button}
         onPress={handleResendCode}
+        type="ghost"
+        leadingIcon={<Ionicons name="refresh" size={24} />}
       />
     </ThemedScreen>
   );
@@ -75,9 +80,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 20,
-    marginBottom: 110,
   },
-  // Add or adjust other styles as necessary
 });
 
 export default VerifyEmailScreen;

@@ -235,7 +235,8 @@
         "auto_renews_in": "Automatisk fornyelse på {{days}} dager",
         "expires_in": "Utløper om {{days}} dager",
         "or_register_with": "Eller registrer deg med:",
-        "already_have_account": "Har du allerede en konto?"
+        "already_have_account": "Har du allerede en konto?",
+        "enter_verification_code": "Vennligst skriv inn bekreftelseskoden som ble sendt til e-posten"
     },
     "title": {
         "email": "E-post",
@@ -255,7 +256,8 @@
         "monthly": "Månedlig",
         "annual": "Årlig",
         "lifetime": "Livstid",
-        "trial": "Prøveperiode"
+        "trial": "Prøveperiode",
+        "verify_your_email": "Verifiser e-posten din"
     },
     "action": {
         "upgrade": "Oppgradere",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Bekreft kansellering",
         "keep_subscription": "Behold abonnement",
         "register": "Registrer deg",
-        "login": "Pålogging"
+        "login": "Pålogging",
+        "verify": "Bekreft",
+        "resend_code": "Send kode på nytt"
     },
     "placeholder": {
         "first_name": "Fornavn",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Passordene stemmer ikke overens",
-        "registration_failed": "Registreringen mislyktes"
+        "registration_failed": "Registreringen mislyktes",
+        "failed_retrieve_password": "Mislykket i å hente lagret passord",
+        "generic": "Feil"
+    },
+    "success": {
+        "code_resent": "Bekreftelseskoden ble sendt på nytt til e-posten din."
     }
 }

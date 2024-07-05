@@ -235,7 +235,8 @@
         "auto_renews_in": "{{days}} gün içinde otomatik yenileme",
         "expires_in": "{{days}} gün içinde sona eriyor",
         "or_register_with": "Veya şununla kaydolun:",
-        "already_have_account": "Zaten bir hesabınız var mı?"
+        "already_have_account": "Zaten bir hesabınız var mı?",
+        "enter_verification_code": "Lütfen e-postaya gönderilen doğrulama kodunu girin"
     },
     "title": {
         "email": "E-posta",
@@ -255,7 +256,8 @@
         "monthly": "Aylık",
         "annual": "Yıllık",
         "lifetime": "Ömür",
-        "trial": "Deneme"
+        "trial": "Deneme",
+        "verify_your_email": "E-postanızı doğrulayın"
     },
     "action": {
         "upgrade": "Yükseltmek",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "İptali Onayla",
         "keep_subscription": "Aboneliği Koru",
         "register": "Kayıt ol",
-        "login": "Oturum açma"
+        "login": "Oturum açma",
+        "verify": "Xác minh",
+        "resend_code": "Mãi mãi"
     },
     "placeholder": {
         "first_name": "İsim",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Şifreler eşleşmiyor",
-        "registration_failed": "Kayıt başarısız oldu"
+        "registration_failed": "Kayıt başarısız oldu",
+        "failed_retrieve_password": "Saklanan parola alınamadı",
+        "generic": "Đã xảy ra lỗi"
+    },
+    "success": {
+        "code_resent": "Doğrulama kodu e-postanıza yeniden gönderilir."
     }
 }

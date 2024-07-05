@@ -235,7 +235,8 @@
         "auto_renews_in": "{{days}} दिनों में ऑटो नवीनीकरण",
         "expires_in": "{{days}} दिनों में समाप्त हो रहा है",
         "or_register_with": "या इसके साथ रजिस्टर करें:",
-        "already_have_account": "क्या आपके पास पहले से ही खाता है?"
+        "already_have_account": "क्या आपके पास पहले से ही खाता है?",
+        "enter_verification_code": "कृपया ईमेल पर भेजा गया सत्यापन कोड दर्ज करें"
     },
     "title": {
         "email": "ईमेल",
@@ -255,7 +256,8 @@
         "monthly": "मासिक",
         "annual": "वार्षिक",
         "lifetime": "जीवनकाल",
-        "trial": "परीक्षण"
+        "trial": "परीक्षण",
+        "verify_your_email": "अपना ईमेल सत्यापित करें"
     },
     "action": {
         "upgrade": "अपग्रेड",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "रद्द करने की पुष्टि करें",
         "keep_subscription": "सदस्यता रखें",
         "register": "रजिस्टर",
-        "login": "लॉगिन"
+        "login": "लॉगिन",
+        "verify": "सत्यापित करें",
+        "resend_code": "कोड पुनः भेजें"
     },
     "placeholder": {
         "first_name": "पहला",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "पासवर्ड मेल नहीं खाते",
-        "registration_failed": "पंजीकरण विफल हुआ"
+        "registration_failed": "पंजीकरण विफल हुआ",
+        "failed_retrieve_password": "स्टोर्ड पासवर्ड पुनः प्राप्त करने में विफल",
+        "generic": "त्रुटि"
+    },
+    "success": {
+        "code_resent": "सत्यापन कोड आपके ईमेल पर पुनः भेज दिया गया है।"
     }
 }

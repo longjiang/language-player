@@ -235,7 +235,8 @@
         "auto_renews_in": "Automatikus megújítás {{days}} nap múlva",
         "expires_in": "{{days}} nap múlva lejár",
         "or_register_with": "Vagy regisztráljon:",
-        "already_have_account": "Már van fiókja?"
+        "already_have_account": "Már van fiókja?",
+        "enter_verification_code": "Kérjük, adja meg az e-mailre küldött ellenőrző kódot"
     },
     "title": {
         "email": "E-mail",
@@ -255,7 +256,8 @@
         "monthly": "Havi",
         "annual": "Éves",
         "lifetime": "Életre szól",
-        "trial": "Próba"
+        "trial": "Próba",
+        "verify_your_email": "Megerősítse az e-mail címét"
     },
     "action": {
         "upgrade": "Feljavít",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Lemondás megerősítése",
         "keep_subscription": "Előfizetés megtartása",
         "register": "Regisztráció",
-        "login": "Bejelentkezés"
+        "login": "Bejelentkezés",
+        "verify": "Megerősít",
+        "resend_code": "Kód újraküldése"
     },
     "placeholder": {
         "first_name": "Először",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "A jelszavak nem egyeznek",
-        "registration_failed": "A regisztráció sikertelen"
+        "registration_failed": "A regisztráció sikertelen",
+        "failed_retrieve_password": "Sikertelen a tárolt jelszó visszakeresése",
+        "generic": "Hiba"
+    },
+    "success": {
+        "code_resent": "Az ellenőrző kódot újra elküldtük az e-mail címére."
     }
 }

@@ -235,7 +235,8 @@
         "auto_renews_in": "Automatische Verlängerung in {{days}} Tagen",
         "expires_in": "Läuft in {{days}} Tagen ab",
         "or_register_with": "Oder registrieren Sie sich mit:",
-        "already_have_account": "Haben Sie bereits ein Konto?"
+        "already_have_account": "Haben Sie bereits ein Konto?",
+        "enter_verification_code": "Bitte geben Sie den Bestätigungscode ein, der an die E-Mail gesendet wurde."
     },
     "title": {
         "email": "E-Mail",
@@ -255,7 +256,8 @@
         "monthly": "Montalich",
         "annual": "Jährlich",
         "lifetime": "Lebenslang",
-        "trial": "Probe"
+        "trial": "Probe",
+        "verify_your_email": "Bestätigen Sie Ihre E-Mail"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Stornierung bestätigen",
         "keep_subscription": "Abonnement beibehalten",
         "register": "Registrieren",
-        "login": "Einloggen"
+        "login": "Einloggen",
+        "verify": "Bestätigen",
+        "resend_code": "Code erneut senden"
     },
     "placeholder": {
         "first_name": "Vorname",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Passwörter stimmen nicht überein",
-        "registration_failed": "Registrierung fehlgeschlagen"
+        "registration_failed": "Registrierung fehlgeschlagen",
+        "failed_retrieve_password": "Fehler beim Abrufen des gespeicherten Passworts",
+        "generic": "Fehler"
+    },
+    "success": {
+        "code_resent": "Der Code wurde erneut an Ihre E-Mail-Adresse gesendet."
     }
 }

@@ -235,7 +235,8 @@
         "auto_renews_in": "Wordt automatisch verlengd in {{days}} dagen",
         "expires_in": "Verloopt over {{days}} dagen",
         "or_register_with": "Of registreer met:",
-        "already_have_account": "Heeft u al een account?"
+        "already_have_account": "Heeft u al een account?",
+        "enter_verification_code": "Voer de verificatiecode in die naar de e-mail is verzonden"
     },
     "title": {
         "email": "E-mail",
@@ -255,7 +256,8 @@
         "monthly": "Maandelijks",
         "annual": "Jaarlijks",
         "lifetime": "Levenslang",
-        "trial": "Proefperiode"
+        "trial": "Proefperiode",
+        "verify_your_email": "Bevestig uw e-mail"
     },
     "action": {
         "upgrade": "Opwaarderen",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Annulering bevestigen",
         "keep_subscription": "Abonnement behouden",
         "register": "Registreren",
-        "login": "Inloggen"
+        "login": "Inloggen",
+        "verify": "Verifiëren",
+        "resend_code": "Code opnieuw verzenden"
     },
     "placeholder": {
         "first_name": "Voornaam",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Wachtwoorden komen niet overeen",
-        "registration_failed": "Registratie mislukt"
+        "registration_failed": "Registratie mislukt",
+        "failed_retrieve_password": "Wachtwoord ophalen mislukt",
+        "generic": "Fout"
+    },
+    "success": {
+        "code_resent": "Verificatiecode opnieuw verzonden naar uw e-mail."
     }
 }

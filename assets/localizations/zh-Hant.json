@@ -235,7 +235,8 @@
         "auto_renews_in": "{{days}} 天自動續訂",
         "expires_in": "過期后 {{days}} 天",
         "or_register_with": "或使用以下方式註冊：",
-        "already_have_account": "已經有帳戶？"
+        "already_have_account": "已經有帳戶？",
+        "enter_verification_code": "請輸入發送到以下郵箱的驗證碼"
     },
     "title": {
         "email": "電子郵件",
@@ -255,7 +256,8 @@
         "monthly": "每月",
         "annual": "年度",
         "lifetime": "終身",
-        "trial": "試用"
+        "trial": "試用",
+        "verify_your_email": "验证您的邮箱"
     },
     "action": {
         "upgrade": "升級",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "確認取消",
         "keep_subscription": "保持訂閱",
         "register": "註冊",
-        "login": "登錄"
+        "login": "登錄",
+        "verify": "驗證",
+        "resend_code": "重新發送驗證碼"
     },
     "placeholder": {
         "first_name": "名字",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "密碼不匹配",
-        "registration_failed": "註冊失敗"
+        "registration_failed": "註冊失敗",
+        "failed_retrieve_password": "無法獲取存儲的密碼",
+        "generic": "錯誤"
+    },
+    "success": {
+        "code_resent": "驗證碼已重新發送到您的電子郵件。"
     }
 }

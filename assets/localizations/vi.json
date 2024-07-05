@@ -235,7 +235,8 @@
         "auto_renews_in": "Tự động gia hạn sau {{days}} ngày",
         "expires_in": "Hết hạn sau {{days}} ngày",
         "or_register_with": "Hoặc đăng ký bằng:",
-        "already_have_account": "Bạn đã có tài khoản chưa?"
+        "already_have_account": "Bạn đã có tài khoản chưa?",
+        "enter_verification_code": "Vui lòng nhập mã xác minh được gửi đến email"
     },
     "title": {
         "email": "Email",
@@ -255,7 +256,8 @@
         "monthly": "Nguyệt san",
         "annual": "Thường niên",
         "lifetime": "Đời",
-        "trial": "Thử nghiệm"
+        "trial": "Thử nghiệm",
+        "verify_your_email": "Xác minh email của bạn"
     },
     "action": {
         "upgrade": "Nâng cấp",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Xác nhận hủy",
         "keep_subscription": "Giữ đăng ký",
         "register": "Đăng ký",
-        "login": "Đăng nhập"
+        "login": "Đăng nhập",
+        "verify": "Doğrulama",
+        "resend_code": "Gửi lại mã"
     },
     "placeholder": {
         "first_name": "Tên",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Mật khẩu không khớp",
-        "registration_failed": "Đăng ký thất bại"
+        "registration_failed": "Đăng ký thất bại",
+        "failed_retrieve_password": "Không thể truy xuất mật khẩu đã lưu trữ",
+        "generic": "Hata"
+    },
+    "success": {
+        "code_resent": "Mã xác minh được gửi lại đến email của bạn."
     }
 }

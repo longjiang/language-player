@@ -235,7 +235,8 @@
         "auto_renews_in": "Auto renews in {{days}} days",
         "expires_in": "Expires in {{days}} days",
         "or_register_with": "Or register with:",
-        "already_have_account": "Already have an account?"
+        "already_have_account": "Already have an account?",
+        "enter_verification_code": "Please enter the verification code sent to the email"
     },
     "title": {
         "email": "Email",
@@ -255,7 +256,8 @@
         "monthly": "Monthly",
         "annual": "Annual",
         "lifetime": "Lifetime",
-        "trial": "Trial"
+        "trial": "Trial",
+        "verify_your_email": "Verify Your Email"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Confirm Cancellation",
         "keep_subscription": "Keep Subscription",
         "register": "Register",
-        "login": "Login"
+        "login": "Login",
+        "verify": "Verify",
+        "resend_code": "Resend Code"
     },
     "placeholder": {
         "first_name": "First",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Passwords do not match",
-        "registration_failed": "Registration failed"
+        "registration_failed": "Registration failed",
+        "failed_retrieve_password": "Failed to retrieve stored password",
+        "generic": "Error"
+    },
+    "success": {
+        "code_resent": "Verification code resent to your email."
     }
 }

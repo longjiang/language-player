@@ -235,7 +235,8 @@
         "auto_renews_in": "Reînnoiri automate în {{days}} zile",
         "expires_in": "Expiră în {{days}} zile",
         "or_register_with": "Sau înregistrați-vă cu:",
-        "already_have_account": "Aveți deja un cont?"
+        "already_have_account": "Aveți deja un cont?",
+        "enter_verification_code": "Vă rugăm să introduceți codul de verificare trimis la e-mail"
     },
     "title": {
         "email": "E-mail",
@@ -255,7 +256,8 @@
         "monthly": "Lunar",
         "annual": "Anual",
         "lifetime": "Pe viață",
-        "trial": "Încercare"
+        "trial": "Încercare",
+        "verify_your_email": "Verificați-vă e-mailul"
     },
     "action": {
         "upgrade": "Face upgrade",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Confirmați anularea",
         "keep_subscription": "Păstrați abonamentul",
         "register": "Înregistrare",
-        "login": "Login"
+        "login": "Login",
+        "verify": "Verificare",
+        "resend_code": "Retrimiteți codul"
     },
     "placeholder": {
         "first_name": "Prenume",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Parolele nu se potrivesc",
-        "registration_failed": "Înregistrarea a eșuat"
+        "registration_failed": "Înregistrarea a eșuat",
+        "failed_retrieve_password": "Recuperarea parolei stocate a eșuat",
+        "generic": "Erroare"
+    },
+    "success": {
+        "code_resent": "Codul de verificare a fost retrimis pe e-mail."
     }
 }

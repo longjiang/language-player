@@ -235,7 +235,8 @@
         "auto_renews_in": "Se renueva automáticamente en {{days}} días",
         "expires_in": "Caduca en {{days}} días",
         "or_register_with": "O registra con:",
-        "already_have_account": "¿Ya tienes una cuenta?"
+        "already_have_account": "¿Ya tienes una cuenta?",
+        "enter_verification_code": "Ingrese el código de verificación enviado al correo electrónico"
     },
     "title": {
         "email": "Correo electrónico",
@@ -255,7 +256,8 @@
         "monthly": "Mensual",
         "annual": "Anual",
         "lifetime": "De por vida",
-        "trial": "Prueba"
+        "trial": "Prueba",
+        "verify_your_email": "Verifica tu correo electrónico"
     },
     "action": {
         "upgrade": "Actualizar",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Confirmar cancelación",
         "keep_subscription": "Mantener la suscripción",
         "register": "Registro",
-        "login": "Iniciar sesión"
+        "login": "Iniciar sesión",
+        "verify": "Verificar",
+        "resend_code": "Reenviar código"
     },
     "placeholder": {
         "first_name": "Nombre",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Las contraseñas no coinciden",
-        "registration_failed": "Registro fallido"
+        "registration_failed": "Registro fallido",
+        "failed_retrieve_password": "Fallo al recuperar la contraseña almacenada",
+        "generic": "Error"
+    },
+    "success": {
+        "code_resent": "El código de verificación se ha reenviado a su correo electrónico."
     }
 }

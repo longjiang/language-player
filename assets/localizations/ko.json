@@ -235,7 +235,8 @@
         "auto_renews_in": "{{days}}일 후에 자동 갱신",
         "expires_in": "{{days}} 일 후에 만료됩니다.",
         "or_register_with": "또는 다음으로 등록하십시오.",
-        "already_have_account": "이미 계정이 있으신가요?"
+        "already_have_account": "이미 계정이 있으신가요?",
+        "enter_verification_code": "이메일로 전송된 인증 코드를 입력하세요."
     },
     "title": {
         "email": "메일 주소",
@@ -255,7 +256,8 @@
         "monthly": "매월",
         "annual": "매년",
         "lifetime": "평생",
-        "trial": "시험"
+        "trial": "시험",
+        "verify_your_email": "이메일 확인"
     },
     "action": {
         "upgrade": "업그레이드",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "취소 확인",
         "keep_subscription": "구독 유지",
         "register": "등록",
-        "login": "로그인"
+        "login": "로그인",
+        "verify": "확인",
+        "resend_code": "코드 다시 보내기"
     },
     "placeholder": {
         "first_name": "이름",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "비밀번호가 일치하지 않습니다",
-        "registration_failed": "등록에 실패했습니다"
+        "registration_failed": "등록에 실패했습니다",
+        "failed_retrieve_password": "저장된 비밀번호 검색 실패",
+        "generic": "오류"
+    },
+    "success": {
+        "code_resent": "확인 코드가 이메일로 다시 전송되었습니다."
     }
 }

@@ -235,7 +235,8 @@
         "auto_renews_in": "ต่ออายุอัตโนมัติใน {{days}} วัน",
         "expires_in": "หมดอายุใน {{days}} วัน",
         "or_register_with": "หรือลงทะเบียนด้วย:",
-        "already_have_account": "คุณมีบัญชีอยู่แล้วหรือไม่?"
+        "already_have_account": "คุณมีบัญชีอยู่แล้วหรือไม่?",
+        "enter_verification_code": "โปรดป้อนรหัสยืนยันที่ส่งไปยังอีเมล"
     },
     "title": {
         "email": "อีเมล",
@@ -255,7 +256,8 @@
         "monthly": "Hàng tháng",
         "annual": "Hàng năm",
         "lifetime": "Suốt đời",
-        "trial": "Thử nghiệm"
+        "trial": "Thử nghiệm",
+        "verify_your_email": "Hãy xác minh email của bạn"
     },
     "action": {
         "upgrade": "อัพ เกรด",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "ยืนยันการยกเลิก",
         "keep_subscription": "สมัครสมาชิกต่อไป",
         "register": "ลงทะเบียน",
-        "login": "เข้า สู่ ระบบ"
+        "login": "เข้า สู่ ระบบ",
+        "verify": "ยืนยัน",
+        "resend_code": "Thibitisha tena"
     },
     "placeholder": {
         "first_name": "ชื่อจริง",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Mật khẩu không khớp",
-        "registration_failed": "การลงทะเบียนล้มเหลว"
+        "registration_failed": "การลงทะเบียนล้มเหลว",
+        "failed_retrieve_password": "Thất bại trong việc lấy mật khẩu đã lưu",
+        "generic": "Kosa"
+    },
+    "success": {
+        "code_resent": "รหัสยืนยันถูกส่งไปยังอีเมลของคุณอีกครั้ง"
     }
 }

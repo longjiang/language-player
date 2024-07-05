@@ -235,7 +235,8 @@
         "auto_renews_in": "{{days}日で自動更新",
         "expires_in": "有効期限 {{days}} 日",
         "or_register_with": "または、以下で登録します。",
-        "already_have_account": "アカウントをお持ちですか？"
+        "already_have_account": "アカウントをお持ちですか？",
+        "enter_verification_code": "メールに送信された認証コードを入力してください"
     },
     "title": {
         "email": "電子メール",
@@ -255,7 +256,8 @@
         "monthly": "毎月",
         "annual": "毎年",
         "lifetime": "生涯",
-        "trial": "トライアル"
+        "trial": "トライアル",
+        "verify_your_email": "メールアドレスを確認してください"
     },
     "action": {
         "upgrade": "アップグレード",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "キャンセルの確認",
         "keep_subscription": "サブスクリプションを維持する",
         "register": "登録",
-        "login": "ログイン"
+        "login": "ログイン",
+        "verify": "確認",
+        "resend_code": "コードを再送信"
     },
     "placeholder": {
         "first_name": "ファースト",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "パスワードが一致しません",
-        "registration_failed": "登録に失敗しました"
+        "registration_failed": "登録に失敗しました",
+        "failed_retrieve_password": "保存されたパスワードの取得に失敗しました",
+        "generic": "エラー"
+    },
+    "success": {
+        "code_resent": "確認コードがメールアドレスに再送信されました。"
     }
 }

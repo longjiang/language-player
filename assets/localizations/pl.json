@@ -235,7 +235,8 @@
         "auto_renews_in": "Automatyczne odnawianie za {{days}} dni",
         "expires_in": "Wygasa za {{days}} dni",
         "or_register_with": "Lub zarejestruj się za pomocą:",
-        "already_have_account": "Masz już konto?"
+        "already_have_account": "Masz już konto?",
+        "enter_verification_code": "Wprowadź kod weryfikacyjny wysłany na adres e-mail"
     },
     "title": {
         "email": "E-mail",
@@ -255,7 +256,8 @@
         "monthly": "Miesięcznie",
         "annual": "Rocznie",
         "lifetime": "Dożywotnio",
-        "trial": "Okres próbny"
+        "trial": "Okres próbny",
+        "verify_your_email": "Potwierdź swój adres e-mail"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -263,7 +265,9 @@
         "confirm_cancellation": "Potwierdź anulowanie",
         "keep_subscription": "Zachowaj subskrypcję",
         "register": "Zarejestruj się",
-        "login": "Login"
+        "login": "Login",
+        "verify": "Podaj",
+        "resend_code": "Prześlij kod ponownie"
     },
     "placeholder": {
         "first_name": "Imię",
@@ -274,6 +278,11 @@
     },
     "error": {
         "passwords_do_not_match": "Hasła nie pasują",
-        "registration_failed": "Rejestracja nie powiodła się"
+        "registration_failed": "Rejestracja nie powiodła się",
+        "failed_retrieve_password": "Nie udało się odzyskać przechowywanego hasła",
+        "generic": "Błąd"
+    },
+    "success": {
+        "code_resent": "Kod weryfikacyjny został ponownie wysłany na Twój adres e-mail."
     }
 }
