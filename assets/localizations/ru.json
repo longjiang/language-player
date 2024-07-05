@@ -453,7 +453,11 @@
     },
     "log": {
         "loading_dictionary": "Učitavanje rječnika...",
-        "dictionary_ready": "Rječnik je spreman i učitan.",
-        "failed_load_dictionary": "Neuspjelo učitavanje rječnika: {{error}}"
+        "dictionary_ready": "Rječnik je spreman!",
+        "failed_load_dictionary": "Neuspjelo učitavanje rječnika: {{error}}",
+        "database_already_loaded": "Baza podataka već je učitana.",
+        "downloading": "Preuzimanje...",
+        "processing": "Obrada...",
+        "entries_processed": "{{count}} giriş işlendi. İndeksleniyor..."
     }
 }

@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "Wörterbuch wird geladen...",
-        "dictionary_ready": "Wörterbuch ist bereit und geladen.",
-        "failed_load_dictionary": "Wörterbuch konnte nicht geladen werden: {{error}}"
+        "dictionary_ready": "Wörterbuch bereit!",
+        "failed_load_dictionary": "Wörterbuch konnte nicht geladen werden: {{error}}",
+        "database_already_loaded": "Datenbank bereits geladen.",
+        "downloading": "Herunterladen...",
+        "processing": "Verarbeitung...",
+        "entries_processed": "{{count}} Einträge verarbeitet. Indizierung..."
     }
 }

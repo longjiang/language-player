@@ -302,7 +302,8 @@
         "pro_transcript": "Nâng cấp lên Pro để xem bảng điểm đầy đủ!",
         "pro_transcript_limit_reached": "Đã đạt đến giới hạn bảng điểm. Vui lòng nâng cấp lên Pro để truy cập thêm bảng điểm.",
         "copy_success": "Văn bản được sao chép vào khay nhớ tạm",
-        "pro_feature_chatgpt": "Chỉ người dùng Pro mới có thể sử dụng các tính năng AI trong Language Player Go. Để sử dụng tính năng này, hãy nâng cấp lên Pro."
+        "pro_feature_chatgpt": "Chỉ người dùng Pro mới có thể sử dụng các tính năng AI trong Language Player Go. Để sử dụng tính năng này, hãy nâng cấp lên Pro.",
+        "initializing": "Khởi xướng..."
     },
     "title": {
         "email": "Email",
@@ -451,7 +452,11 @@
     },
     "log": {
         "loading_dictionary": "Đang tải từ điển...",
-        "dictionary_ready": "Từ điển đã sẵn sàng và được tải.",
-        "failed_load_dictionary": "Không thể tải từ điển: {{error}}"
+        "dictionary_ready": "Từ điển đã sẵn sàng!",
+        "failed_load_dictionary": "Không thể tải từ điển: {{error}}",
+        "database_already_loaded": "Cơ sở dữ liệu đã được tải.",
+        "downloading": "Tải...",
+        "processing": "Xử lý...",
+        "entries_processed": "{{count}} các bài dự thi đã được xử lý. Indexing..."
     }
 }

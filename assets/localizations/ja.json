@@ -453,7 +453,11 @@
     },
     "log": {
         "loading_dictionary": "辞書を読み込んでいます...",
-        "dictionary_ready": "辞書が準備され、読み込まれました。",
-        "failed_load_dictionary": "辞書の読み込みに失敗しました: {{error}}"
+        "dictionary_ready": "辞書が準備完了！",
+        "failed_load_dictionary": "辞書の読み込みに失敗しました: {{error}}",
+        "database_already_loaded": "データベースはすでに読み込まれています。",
+        "downloading": "ダウンロード中...",
+        "processing": "処理中...",
+        "entries_processed": "{{count}}エントリが処理されました。インデックス作成中..."
     }
 }

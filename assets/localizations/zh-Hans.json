@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "正在加载字典...",
-        "dictionary_ready": "字典已加载就绪。",
-        "failed_load_dictionary": "无法加载字典：{{error}}"
+        "dictionary_ready": "字典已准备就绪！",
+        "failed_load_dictionary": "无法加载字典：{{error}}",
+        "database_already_loaded": "数据库已加载。",
+        "downloading": "下载中...",
+        "processing": "处理中...",
+        "entries_processed": "已处理{{count}}条目。正在索引..."
     }
 }

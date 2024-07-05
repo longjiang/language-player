@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "Caricamento del dizionario...",
-        "dictionary_ready": "Dizionario pronto e caricato.",
-        "failed_load_dictionary": "Errore durante il caricamento del dizionario: {{error}}"
+        "dictionary_ready": "Dizionario pronto!",
+        "failed_load_dictionary": "Errore durante il caricamento del dizionario: {{error}}",
+        "database_already_loaded": "Database già caricato.",
+        "downloading": "Scaricamento...",
+        "processing": "Elaborazione...",
+        "entries_processed": "{{count}} voci elaborate. Indicizzazione..."
     }
 }

@@ -452,7 +452,11 @@
     },
     "log": {
         "loading_dictionary": "กำลังโหลดพจนานุกรม...",
-        "dictionary_ready": "พจนานุกรมพร้อมและถูกโหลดแล้ว.",
-        "failed_load_dictionary": "การโหลดพจนานุกรมล้มเหลว: {{error}}"
+        "dictionary_ready": "พจนานุกรมพร้อม!",
+        "failed_load_dictionary": "การโหลดพจนานุกรมล้มเหลว: {{error}}",
+        "database_already_loaded": "Cơ sở dữ liệu đã được tải.",
+        "downloading": "Đang tải xuống...",
+        "processing": "Đang xử lý...",
+        "entries_processed": "{{count}} รายการที่ประมวลผล ดัชนี   "
     }
 }

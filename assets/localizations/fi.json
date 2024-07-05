@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "Ladataan sanakirjaa...",
-        "dictionary_ready": "Sanakirja on valmis ja ladattu.",
-        "failed_load_dictionary": "Sanakirjan lataaminen epäonnistui: {{error}}"
+        "dictionary_ready": "Sanakirja valmis!",
+        "failed_load_dictionary": "Sanakirjan lataaminen epäonnistui: {{error}}",
+        "database_already_loaded": "Tietokanta on jo ladattu.",
+        "downloading": "Lataaminen...",
+        "processing": "Käsittelyssä...",
+        "entries_processed": "{{count}} merkintää käsitelty. Indeksoidaan..."
     }
 }

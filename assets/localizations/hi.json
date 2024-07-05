@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "शब्दकोश लोड हो रहा है...",
-        "dictionary_ready": "शब्दकोश तैयार है और लोड हो गया है।",
-        "failed_load_dictionary": "शब्दकोश लोड करने में विफल: {{error}}"
+        "dictionary_ready": "शब्दकोश तैयार है!",
+        "failed_load_dictionary": "शब्दकोश लोड करने में विफल: {{error}}",
+        "database_already_loaded": "डेटाबेस पहले से ही लोड है।",
+        "downloading": "डाउनलोड हो रहा है...",
+        "processing": "प्रोसेसिंग हो रहा है...",
+        "entries_processed": "{{count}} प्रविष्टियाँ प्रोसेस हुईं। इंडेक्सिंग हो रहा है..."
     }
 }

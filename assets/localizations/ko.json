@@ -453,7 +453,11 @@
     },
     "log": {
         "loading_dictionary": "사전을 로드하는 중...",
-        "dictionary_ready": "사전이 준비되었으며 로드되었습니다.",
-        "failed_load_dictionary": "사전을 로드하는 데 실패했습니다: {{error}}"
+        "dictionary_ready": "사전 준비 완료!",
+        "failed_load_dictionary": "사전을 로드하는 데 실패했습니다: {{error}}",
+        "database_already_loaded": "데이터베이스가 이미 로드되었습니다.",
+        "downloading": "다운로드 중...",
+        "processing": "처리 중...",
+        "entries_processed": "{{count}} 항목 처리됨. 색인 작업 중..."
     }
 }

@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "Carregant el diccionari...",
-        "dictionary_ready": "El diccionari està llest i carregat.",
-        "failed_load_dictionary": "No s'ha pogut carregar el diccionari: {{error}}"
+        "dictionary_ready": "Diccionari llest!",
+        "failed_load_dictionary": "No s'ha pogut carregar el diccionari: {{error}}",
+        "database_already_loaded": "La base de dades ja està carregada.",
+        "downloading": "S'està descarregant...",
+        "processing": "S'està processant...",
+        "entries_processed": "S'han processat {{count}} entrades. Indexant..."
     }
 }

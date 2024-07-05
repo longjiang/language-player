@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "Szótár betöltése...",
-        "dictionary_ready": "A szótár készen áll és betöltve.",
-        "failed_load_dictionary": "Nem sikerült betölteni a szótárat: {{error}}"
+        "dictionary_ready": "A szótár készen áll!",
+        "failed_load_dictionary": "Nem sikerült betölteni a szótárat: {{error}}",
+        "database_already_loaded": "Az adatbázis már betöltve.",
+        "downloading": "Letöltés...",
+        "processing": "Feldolgozás...",
+        "entries_processed": "{{count}} bejegyzés feldolgozva. Indexelés..."
     }
 }

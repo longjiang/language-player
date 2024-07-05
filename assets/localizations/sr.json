@@ -453,7 +453,11 @@
     },
     "log": {
         "loading_dictionary": "Sözlük yükleniyor...",
-        "dictionary_ready": "Sözlük hazır ve yüklendi.",
-        "failed_load_dictionary": "Sözlük yüklenemedi: {{error}}"
+        "dictionary_ready": "Sözlük hazır!",
+        "failed_load_dictionary": "Sözlük yüklenemedi: {{error}}",
+        "database_already_loaded": "Veritabanı zaten yüklendi.",
+        "downloading": "İndiriliyor...",
+        "processing": "İşleniyor...",
+        "entries_processed": "{{count}} entradas processadas. Indexando..."
     }
 }

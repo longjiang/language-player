@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "جاري تحميل القاموس...",
-        "dictionary_ready": "تم تحميل القاموس وجاهز.",
-        "failed_load_dictionary": "فشل تحميل القاموس: {{error}}"
+        "dictionary_ready": "القاموس جاهز!",
+        "failed_load_dictionary": "فشل تحميل القاموس: {{error}}",
+        "database_already_loaded": "تم تحميل قاعدة البيانات بالفعل.",
+        "downloading": "جاري التنزيل...",
+        "processing": "جاري المعالجة...",
+        "entries_processed": "تم معالجة {{count}} إدخال. جاري فهرسة..."
     }
 }

@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "Loading the dictionary...",
-        "dictionary_ready": "Dictionary is ready and loaded.",
-        "failed_load_dictionary": "Failed to load dictionary: {{error}}"
+        "dictionary_ready": "Dictionary ready!",
+        "failed_load_dictionary": "Failed to load dictionary: {{error}}",
+        "database_already_loaded": "Database already loaded.",
+        "downloading": "Downloading...",
+        "processing": "Processing...",
+        "entries_processed": "{{count}} entries processed. Indexing..."
     }
 }

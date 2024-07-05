@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "Memuat kamus...",
-        "dictionary_ready": "Kamus siap dan dimuat.",
-        "failed_load_dictionary": "Gagal memuat kamus: {{error}}"
+        "dictionary_ready": "Kamus siap!",
+        "failed_load_dictionary": "Gagal memuat kamus: {{error}}",
+        "database_already_loaded": "Database sudah dimuat.",
+        "downloading": "Mengunduh...",
+        "processing": "Memproses...",
+        "entries_processed": "{{count}} entri diproses. Indexing..."
     }
 }

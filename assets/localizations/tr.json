@@ -302,7 +302,8 @@
         "pro_transcript": "Tam transkripti görüntülemek için Pro'ya yükseltin!",
         "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
         "copy_success": "Panoya kopyalanan metin",
-        "pro_feature_chatgpt": "Language Player Go'da AI özelliklerini yalnızca Pro kullanıcıları kullanabilir. Bu özelliği kullanmak için Pro'ya yükseltin."
+        "pro_feature_chatgpt": "Language Player Go'da AI özelliklerini yalnızca Pro kullanıcıları kullanabilir. Bu özelliği kullanmak için Pro'ya yükseltin.",
+        "initializing": "Başlatılıyor..."
     },
     "title": {
         "email": "E-posta",
@@ -451,7 +452,11 @@
     },
     "log": {
         "loading_dictionary": "Sözlük yükleniyor...",
-        "dictionary_ready": "Sözlük hazır ve yüklendi.",
-        "failed_load_dictionary": "Sözlük yüklenemedi: {{error}}"
+        "dictionary_ready": "Sözlük hazır!",
+        "failed_load_dictionary": "Sözlük yüklenemedi: {{error}}",
+        "database_already_loaded": "Veritabanı zaten yüklendi.",
+        "downloading": "Indiriyor...",
+        "processing": "Işleme...",
+        "entries_processed": "{{count}} girişler işlendi. Dizin..."
     }
 }

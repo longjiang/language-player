@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "Φόρτωση του λεξικού...",
-        "dictionary_ready": "Το λεξικό είναι έτοιμο και φορτώθηκε.",
-        "failed_load_dictionary": "Αποτυχία φόρτωσης λεξικού: {{error}}"
+        "dictionary_ready": "Το λεξικό είναι έτοιμο!",
+        "failed_load_dictionary": "Αποτυχία φόρτωσης λεξικού: {{error}}",
+        "database_already_loaded": "Η βάση δεδομένων έχει ήδη φορτωθεί.",
+        "downloading": "Λήψη...",
+        "processing": "Επεξεργασία...",
+        "entries_processed": "Επεξεργάστηκαν {{count}} καταχωρήσεις. Γίνεται ευρετήριο..."
     }
 }

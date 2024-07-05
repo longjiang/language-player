@@ -454,7 +454,11 @@
     },
     "log": {
         "loading_dictionary": "Het woordenboek wordt geladen...",
-        "dictionary_ready": "Woordenboek is klaar en geladen.",
-        "failed_load_dictionary": "Kan woordenboek niet laden: {{error}}"
+        "dictionary_ready": "Woordenboek gereed!",
+        "failed_load_dictionary": "Kan woordenboek niet laden: {{error}}",
+        "database_already_loaded": "Database is al geladen.",
+        "downloading": "Downloaden...",
+        "processing": "Verwerken...",
+        "entries_processed": "{{count}} vermeldingen verwerkt. Indexeren..."
     }
 }
