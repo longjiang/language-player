@@ -301,7 +301,9 @@
         "enter_verification_code": "이메일로 전송된 인증 코드를 입력하세요.",
         "hsk_explanation": "\"HSK\"는 공식 중국어 능력 시험으로 1급이 가장 낮고 9급이 가장 높습니다.",
         "pro_transcript": "Pro로 업그레이드하여 전체 대본을 확인하세요!",
-        "pro_transcript_limit_reached": "대본 제한에 도달했습니다. 더 많은 대본에 액세스하려면 Pro로 업그레이드하십시오."
+        "pro_transcript_limit_reached": "대본 제한에 도달했습니다. 더 많은 대본에 액세스하려면 Pro로 업그레이드하십시오.",
+        "copy_success": "텍스트가 클립보드에 복사되었습니다",
+        "pro_feature_chatgpt": "Pro 사용자만 Language Player Go에서 AI 기능을 사용할 수 있습니다. 이 기능을 사용하려면 Pro로 업그레이드하십시오."
     },
     "title": {
         "email": "메일 주소",
@@ -341,7 +343,10 @@
         "next": "다음",
         "tv_shows": "TV 프로그램",
         "watch": "보기",
-        "upgrade_to_pro": "Pro로 업그레이드"
+        "upgrade_to_pro": "Pro로 업그레이드",
+        "speak": "말하기",
+        "copy": "복사",
+        "let_chatgpt_explain": "인공지능에게 물어보기"
     },
     "placeholder": {
         "first_name": "이름",
@@ -437,5 +442,11 @@
         "views": "조회수",
         "likes": "좋아요",
         "comments": "댓글"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "'{{l2Name}} ({{l2Code}}) 단어 '{{word}}'가 '{{text}'에서 무엇을 의미하는지 {{l1Name}}를 사용하여 간결하게 설명하십시오.",
+            "inflection": "기본형, 굴절 및 형태를 제공하십시오."
+        }
     }
 }

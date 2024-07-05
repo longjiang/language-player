@@ -301,7 +301,9 @@
         "enter_verification_code": "Wprowadź kod weryfikacyjny wysłany na adres e-mail",
         "hsk_explanation": "\"HSK\" to oficjalny chiński test biegłości, w którym poziom 1 jest najniższy, a poziom 9 najwyższy.",
         "pro_transcript": "Uaktualnij do wersji Pro, aby wyświetlić pełną transkrypcję!",
-        "pro_transcript_limit_reached": "Osiągnięto limit transkrypcji. Uaktualnij do wersji Pro, aby uzyskać dostęp do większej liczby transkrypcji."
+        "pro_transcript_limit_reached": "Osiągnięto limit transkrypcji. Uaktualnij do wersji Pro, aby uzyskać dostęp do większej liczby transkrypcji.",
+        "copy_success": "Copiado",
+        "pro_feature_chatgpt": "Tylko użytkownicy wersji Pro mogą korzystać z funkcji sztucznej inteligencji w Language Player Go. Aby korzystać z tej funkcji, uaktualnij do wersji Pro."
     },
     "title": {
         "email": "E-mail",
@@ -341,7 +343,10 @@
         "next": "Następny",
         "tv_shows": "Programas de TV",
         "watch": "Ver",
-        "upgrade_to_pro": "Actualizar a Pro"
+        "upgrade_to_pro": "Actualizar a Pro",
+        "speak": "Hablar",
+        "copy": "Copiar",
+        "let_chatgpt_explain": "Deja que la IA lo explique"
     },
     "placeholder": {
         "first_name": "Imię",
@@ -437,5 +442,11 @@
         "views": "Visualizaciones",
         "likes": "Gustos",
         "comments": "Comentarios"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Zwięźle wyjaśnij, używając {{l1Name}}, co oznacza słowo {{l2Name}} ({{l2Code}}) \"{{word}}\" w wyrażeniu \"{{text}}}\".",
+            "inflection": "Podaj jego lemat, fleksję i morfologię."
+        }
     }
 }

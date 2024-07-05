@@ -302,7 +302,9 @@
         "enter_verification_code": "Please enter the verification code sent to the email",
         "hsk_explanation": "\"HSK\" is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.",
         "pro_transcript": "Upgrade to Pro to view the full transcript!",
-        "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts."
+        "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts.",
+        "copy_success": "Text copied to clipboard",
+        "pro_feature_chatgpt": "Only Pro users can use AI features in Language Player Go. To use this feature, upgrade to Pro."
     },
     "title": {
         "email": "Email",
@@ -342,7 +344,10 @@
         "next": "Next",
         "tv_shows": "TV Shows",
         "watch": "Watch",
-        "upgrade_to_pro": "Upgrade to Pro"
+        "upgrade_to_pro": "Upgrade to Pro",
+        "speak": "Speak",
+        "copy": "Copy",
+        "let_chatgpt_explain": "Ask AI"
     },
     "placeholder": {
         "first_name": "First",
@@ -438,5 +443,11 @@
         "views": "Views",
         "likes": "Likes",
         "comments": "Comments"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Succinctly explain using {{l1Name}}, what the {{l2Name}} ({{l2Code}}) word '{{word}}' means in the phrase '{{text}}'.",
+            "inflection": "Give its lemma, inflection, and morphology."
+        }
     }
 }

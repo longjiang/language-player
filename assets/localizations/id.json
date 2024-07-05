@@ -302,7 +302,9 @@
         "enter_verification_code": "Silakan masukkan kode verifikasi yang dikirim ke email",
         "hsk_explanation": "\"HSK\" adalah tes kecakapan bahasa Mandarin resmi, dengan Level 1 menjadi yang terendah dan Level 9 menjadi yang tertinggi.",
         "pro_transcript": "Tingkatkan ke Pro untuk melihat transkrip lengkap!",
-        "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip."
+        "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip.",
+        "copy_success": "Salin teks ke papan klip",
+        "pro_feature_chatgpt": "Hanya pengguna Pro yang dapat menggunakan fitur AI di Language Player Go. Untuk menggunakan fitur ini, tingkatkan ke Pro."
     },
     "title": {
         "email": "Email",
@@ -342,7 +344,10 @@
         "next": "Selanjutnya",
         "tv_shows": "Acara TV",
         "watch": "Menonton",
-        "upgrade_to_pro": "Upgrade ke Pro"
+        "upgrade_to_pro": "Upgrade ke Pro",
+        "speak": "Bicara",
+        "copy": "Salin",
+        "let_chatgpt_explain": "Biarkan AI menjelaskan"
     },
     "placeholder": {
         "first_name": "Nama depan",
@@ -438,5 +443,11 @@
         "views": "Tayangan",
         "likes": "Suka",
         "comments": "Komentar"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Jelaskan secara ringkas menggunakan {{l1Name}}, apa arti kata {{l2Name}} ({{l2Code}}) '{{word}}' dalam frasa '{{text}}'.",
+            "inflection": "Berikan lemma, infleksi, dan morfologinya."
+        }
     }
 }

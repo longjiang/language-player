@@ -302,7 +302,9 @@
         "enter_verification_code": "Unesite kontrolni kôd poslan na e-poštu",
         "hsk_explanation": "\"HSK\" je službeni test kineskog znanja, pri čemu je razina 1 najniža, a razina 9 najviša.",
         "pro_transcript": "पूर्ण प्रतिलेख देखने के लिए Pro पर अपग्र",
-        "pro_transcript_limit_reached": "Dosegnuto je ograničenje transkripta. Nadogradite na Pro da biste pristupili većem broju transkripata."
+        "pro_transcript_limit_reached": "Dosegnuto je ograničenje transkripta. Nadogradite na Pro da biste pristupili većem broju transkripata.",
+        "copy_success": "Tekst kopiran u međuspremnik",
+        "pro_feature_chatgpt": "Samo Pro korisnici mogu koristiti značajke umjetne inteligencije u aplikaciji Language Player Go. Da biste koristili ovu značajku, nadogradite na Pro."
     },
     "title": {
         "email": "E-pošta",
@@ -342,7 +344,10 @@
         "next": "Sljedeće",
         "tv_shows": "TV programi",
         "watch": "Gledaj",
-        "upgrade_to_pro": "Nadogradnja na Pro"
+        "upgrade_to_pro": "Nadogradnja na Pro",
+        "speak": "Govori",
+        "copy": "Kopiraj",
+        "let_chatgpt_explain": "Neka AI objasni"
     },
     "placeholder": {
         "first_name": "Ime",
@@ -438,5 +443,11 @@
         "views": "Pogledi",
         "likes": "Glasovi",
         "comments": "Komentari"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Sažeto objasnite koristeći {{{l1Name}}, što {{l2Name}} ({{l2Code}}) znači riječ '{{{word}}' u izrazu '{{{text}}'.",
+            "inflection": "Dajte mu lemmu, infleksiju i morfologiju."
+        }
     }
 }

@@ -301,7 +301,9 @@
         "enter_verification_code": "Insira o código de verificação enviado para o e-mail",
         "hsk_explanation": "\"HSK\" é o teste oficial de proficiência chinês, sendo o Nível 1 o mais baixo e o Nível 9 o mais alto.",
         "pro_transcript": "Atualize para o Pro para ver a transcrição completa!",
-        "pro_transcript_limit_reached": "Limite de transcrição atingido. Atualize para o Pro para acessar mais transcrições."
+        "pro_transcript_limit_reached": "Limite de transcrição atingido. Atualize para o Pro para acessar mais transcrições.",
+        "copy_success": "Copiado",
+        "pro_feature_chatgpt": "Apenas usuários Pro podem usar recursos de IA no Language Player Go. Para usar esse recurso, atualize para o Pro."
     },
     "title": {
         "email": "Email",
@@ -341,7 +343,10 @@
         "next": "Próximo",
         "tv_shows": "Programas de TV",
         "watch": "Ver",
-        "upgrade_to_pro": "Actualizar a Pro"
+        "upgrade_to_pro": "Actualizar a Pro",
+        "speak": "Hablar",
+        "copy": "Copiar",
+        "let_chatgpt_explain": "Deja que la IA lo explique"
     },
     "placeholder": {
         "first_name": "Primeiro",
@@ -437,5 +442,11 @@
         "views": "Visualizaciones",
         "likes": "Gustos",
         "comments": "Comentarios"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Explique sucintamente usando {{l1Name}}, o que a palavra {{l2Name}} ({{l2Code}}) significa '{{word}}' na frase '{{text}}'.",
+            "inflection": "Dê seu lema, inflexão e morfologia."
+        }
     }
 }

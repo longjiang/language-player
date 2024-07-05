@@ -302,7 +302,9 @@
         "enter_verification_code": "Anna sähköpostiin lähetetty vahvistuskoodi",
         "hsk_explanation": "\"HSK\" on virallinen kiinalainen taitotesti, jossa taso 1 on alin ja taso 9 korkein.",
         "pro_transcript": "¡Actualiza a Pro para ver la transcripción completa!",
-        "pro_transcript_limit_reached": "Transkriptioraja saavutettu. Päivitä Pro-versioon saadaksesi lisää transkriptioita."
+        "pro_transcript_limit_reached": "Transkriptioraja saavutettu. Päivitä Pro-versioon saadaksesi lisää transkriptioita.",
+        "copy_success": "Teksti kopioitu leikepöydälle",
+        "pro_feature_chatgpt": "Vain Pro-käyttäjät voivat käyttää tekoälyn ominaisuuksia Language Player Go -sovelluksessa. Käyttääksesi tätä ominaisuutta, päivitä Pro-versioon."
     },
     "title": {
         "email": "Sähköposti",
@@ -342,7 +344,10 @@
         "next": "Seuraava",
         "tv_shows": "TV-ohjelmat",
         "watch": "Katso",
-        "upgrade_to_pro": "Päivitä Pro-versioon"
+        "upgrade_to_pro": "Päivitä Pro-versioon",
+        "speak": "Puhu",
+        "copy": "Kopioi",
+        "let_chatgpt_explain": "Anna tekoälyn selittää"
     },
     "placeholder": {
         "first_name": "Etunimi",
@@ -438,5 +443,11 @@
         "views": "Katselukerrat",
         "likes": "Tykkäykset",
         "comments": "Kommentit"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Selitä lyhyesti {{l1Name}} avulla, mitä {{l2Name}} ({{l2Code}}) -sana \"{{word}}\" tarkoittaa lauseessa \"{{text}}\".",
+            "inflection": "Anna sen lemma, taivutus ja morfologia."
+        }
     }
 }

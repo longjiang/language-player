@@ -302,7 +302,9 @@
         "enter_verification_code": "Bitte geben Sie den Bestätigungscode ein, der an die E-Mail gesendet wurde.",
         "hsk_explanation": "\"HSK\" ist der offizielle chinesische Eignungstest, wobei Stufe 1 die niedrigste und Stufe 9 die höchste ist.",
         "pro_transcript": "Upgrade auf Pro",
-        "pro_transcript_limit_reached": "Transkript-Limit erreicht. Bitte aktualisieren Sie auf Pro, um auf weitere Transkripte zugreifen zu können."
+        "pro_transcript_limit_reached": "Transkript-Limit erreicht. Bitte aktualisieren Sie auf Pro, um auf weitere Transkripte zugreifen zu können.",
+        "copy_success": "Text in die Zwischenablage kopiert",
+        "pro_feature_chatgpt": "Nur Pro-Benutzer können KI-Funktionen in Language Player Go verwenden. Um diese Funktion zu verwenden, aktualisieren Sie auf Pro."
     },
     "title": {
         "email": "E-Mail",
@@ -342,7 +344,10 @@
         "next": "Weiter",
         "tv_shows": "TV-Sendungen",
         "watch": "Ansehen",
-        "upgrade_to_pro": "Upgrade auf Pro"
+        "upgrade_to_pro": "Upgrade auf Pro",
+        "speak": "Sprechen",
+        "copy": "Kopieren",
+        "let_chatgpt_explain": "Lassen Sie die KI erklären"
     },
     "placeholder": {
         "first_name": "Vorname",
@@ -438,5 +443,11 @@
         "views": "Aufrufe",
         "likes": "Mögen",
         "comments": "Kommentare"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Erklären Sie kurz und bündig mit {{l1Name}}, was das {{l2Name}} ({{l2Code}}) Wort '{{word}}' in der Phrase '{{text}}' bedeutet.",
+            "inflection": "Geben Sie das Lemma, die Flexion und die Morphologie an."
+        }
     }
 }

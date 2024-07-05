@@ -82,7 +82,6 @@ export const PopupDictionaryContent: React.FC<{
             <ThemedText type="smallBold" level={entry.level}>
               {entry.level ? " • " + levels[entry.level].examLevelName : ""}
             </ThemedText>{" "}
-            • 
           </ThemedText>
           <DefinitionList definitions={entry.definitions} type="default" />
         </TouchableOpacity>

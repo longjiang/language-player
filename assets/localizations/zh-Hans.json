@@ -302,7 +302,9 @@
         "enter_verification_code": "请输入发送到以下邮箱的验证码",
         "hsk_explanation": "“HSK”是官方的汉语水平测试，1 级是最低的，9 级是最高的。",
         "pro_transcript": "升级到 Pro 以查看完整的字幕！",
-        "pro_transcript_limit_reached": "已达到字幕限制。请升级到 Pro 以访问更多字幕。"
+        "pro_transcript_limit_reached": "已达到字幕限制。请升级到 Pro 以访问更多字幕。",
+        "copy_success": "文本已复制到剪贴板",
+        "pro_feature_chatgpt": "只有 Pro 用户才能在 Language Player Go 中使用 AI 功能。要使用此功能，请升级到 Pro。"
     },
     "title": {
         "email": "电子邮件",
@@ -342,7 +344,10 @@
         "next": "下一步",
         "tv_shows": "电视节目",
         "watch": "观看",
-        "upgrade_to_pro": "升级到 Pro"
+        "upgrade_to_pro": "升级到 Pro",
+        "speak": "朗读",
+        "copy": "复制",
+        "let_chatgpt_explain": "让 AI 解释"
     },
     "placeholder": {
         "first_name": "名字",
@@ -438,5 +443,11 @@
         "views": "观看次数",
         "likes": "喜欢",
         "comments": "评论"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "使用{{l1Name}}简洁地解释{{l2Name}}（{{l2Code}}）单词“{{word}}”在短语“{{text}}”中的含义。",
+            "inflection": "给出它的原型、变形和构词。"
+        }
     }
 }

@@ -302,7 +302,9 @@
         "enter_verification_code": "Kérjük, adja meg az e-mailre küldött ellenőrző kódot",
         "hsk_explanation": "A \"HSK\" a hivatalos kínai jártassági teszt, ahol az 1. szint a legalacsonyabb és a 9. szint a legmagasabb.",
         "pro_transcript": "Frissítsen Pro-ra a teljes átirat megtekintéséhez!",
-        "pro_transcript_limit_reached": "Elérte az átirati korlátot. Kérjük, frissítsen Pro-ra, hogy további átiratokhoz férjen hozzá."
+        "pro_transcript_limit_reached": "Elérte az átirati korlátot. Kérjük, frissítsen Pro-ra, hogy további átiratokhoz férjen hozzá.",
+        "copy_success": "Kijelölt szöveg másolva",
+        "pro_feature_chatgpt": "Csak a Pro felhasználók használhatják a Language Player Go AI funkcióit. A funkció használatához frissítsen Pro-ra."
     },
     "title": {
         "email": "E-mail",
@@ -342,7 +344,10 @@
         "next": "Következő",
         "tv_shows": "TV-műsorok",
         "watch": "Néz",
-        "upgrade_to_pro": "Frissítés Pro verzióra"
+        "upgrade_to_pro": "Frissítés Pro verzióra",
+        "speak": "Beszél",
+        "copy": "Másol",
+        "let_chatgpt_explain": "Hadd AI magyarázza el"
     },
     "placeholder": {
         "first_name": "Először",
@@ -438,5 +443,11 @@
         "views": "Megtekintések",
         "likes": "Tetszik",
         "comments": "Hozzászólások"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Röviden magyarázza el a {{l1Name}} használatával, hogy mit jelent a {{l2Name}} ({{l2Code}}) szó '{{word}}' a '{{text}}' kifejezésben.",
+            "inflection": "Adja meg lemmáját, inflexióját és morfológiáját."
+        }
     }
 }

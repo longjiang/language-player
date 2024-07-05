@@ -301,7 +301,9 @@
         "enter_verification_code": "Пожалуйста, введите код подтверждения, отправленный на электронную почту",
         "hsk_explanation": "«HSK» — это официальный тест на знание китайского языка, где уровень 1 — самый низкий, а уровень 9 — самый высокий.",
         "pro_transcript": "Перейдите на Pro для просмотра полной стенограммы!",
-        "pro_transcript_limit_reached": "Достигнут лимит стенограммы. Пожалуйста, обновите статус до Pro, чтобы получить доступ к большему количеству стенограмм."
+        "pro_transcript_limit_reached": "Достигнут лимит стенограммы. Пожалуйста, обновите статус до Pro, чтобы получить доступ к большему количеству стенограмм.",
+        "copy_success": "Kopirano",
+        "pro_feature_chatgpt": "Только пользователи Pro могут использовать функции ИИ в Language Player Go. Чтобы использовать эту функцию, выполните обновление до Pro."
     },
     "title": {
         "email": "Отправить по электронной почте",
@@ -341,7 +343,10 @@
         "next": "Далее",
         "tv_shows": "Programas de TV",
         "watch": "Ver",
-        "upgrade_to_pro": "Nadogradnja na Pro"
+        "upgrade_to_pro": "Nadogradnja na Pro",
+        "speak": "Govori",
+        "copy": "Kopiraj",
+        "let_chatgpt_explain": "Neka AI objasni"
     },
     "placeholder": {
         "first_name": "Имя",
@@ -437,5 +442,11 @@
         "views": "Visualizaciones",
         "likes": "Glasovi",
         "comments": "Komentari"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Кратко объясните, используя {{l1Name}}, что означает {{l2Name}} ({{l2Code}}) слово '{{word}}' во фразе '{{text}}'.",
+            "inflection": "Укажите его лемму, перегиб и морфологию."
+        }
     }
 }

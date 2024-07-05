@@ -302,7 +302,9 @@
         "enter_verification_code": "Si us plau, introdueix el codi de verificació enviat al correu electrònic",
         "hsk_explanation": "\"HSK\" és la prova oficial de competència xinesa, sent el nivell 1 el més baix i el nivell 9 el més alt.",
         "pro_transcript": "Actualitza a Pro per veure la transcripció completa!",
-        "pro_transcript_limit_reached": "Límit de transcripció assolit. Actualitzeu a Pro per accedir a més transcripcions."
+        "pro_transcript_limit_reached": "Límit de transcripció assolit. Actualitzeu a Pro per accedir a més transcripcions.",
+        "copy_success": "Text copiat al porta-retalls",
+        "pro_feature_chatgpt": "Només els usuaris Pro poden utilitzar les funcions d'IA a Language Player Go. Per utilitzar aquesta funció, actualitza a Pro."
     },
     "title": {
         "email": "Correu electrònic",
@@ -342,7 +344,10 @@
         "next": "Següent",
         "tv_shows": "Programmes de televisió",
         "watch": "Visualitza",
-        "upgrade_to_pro": "Actualitza a Pro"
+        "upgrade_to_pro": "Actualitza a Pro",
+        "speak": "Parla",
+        "copy": "Kopiar",
+        "let_chatgpt_explain": "Deixa que l'IA ho expliqui"
     },
     "placeholder": {
         "first_name": "Primer nom",
@@ -438,5 +443,11 @@
         "views": "Visualitzacions",
         "likes": "Like",
         "comments": "Comentaris"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Expliqueu succintament amb {{l1Name}}, què vol dir la paraula {{l2Name}} ({{l2Code}}) \"{{word}}\" a la frase \"{{text}}\".",
+            "inflection": "Doneu-li lema, inflexió i morfologia."
+        }
     }
 }

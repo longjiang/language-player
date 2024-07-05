@@ -9,6 +9,7 @@ import { GradientLine } from "./GradientLine";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { popupDictionaryHeaderStyles as styles } from "@/src/styles";
 import { ProFeatureModal } from "@/components/ProFeatureModal";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ChatGPTExplanationProps {
   showChatGPT: boolean;
@@ -23,6 +24,7 @@ export const ChatGPTExplanation: React.FC<ChatGPTExplanationProps> = ({
 }) => {
   const { isProUser } = useSubscription();
   const [modalVisible, setModalVisible] = useState(false);
+  const { t } = useLanguage();
 
   const handlePress = () => {
     if (isProUser()) {
@@ -38,7 +40,7 @@ export const ChatGPTExplanation: React.FC<ChatGPTExplanationProps> = ({
         <ThemedButton
           type="pro"
           style={{ marginBottom: 26 }}
-          title="Let ChatGPT Explain"
+          title={t('action.let_chatgpt_explain')}
           onPress={handlePress}
           leadingIcon={
             <Icon name="chat-outline" size={20} style={styles.iconStyle} />
@@ -57,7 +59,7 @@ export const ChatGPTExplanation: React.FC<ChatGPTExplanationProps> = ({
       <ProFeatureModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        upgradeText="Only Pro users can use AI features in Language Player Go. To use this feature, upgrade to Pro."
+        upgradeText={t('msg.pro_feature_chatgpt')}
       />
     </>
   );

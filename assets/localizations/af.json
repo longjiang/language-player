@@ -302,7 +302,9 @@
         "enter_verification_code": "Voer asseblief die verifikasiekode in wat na die e-pos gestuur is",
         "hsk_explanation": "\"HSK\" is die amptelike Chinese vaardigheidstoets, met vlak 1 die laagste en vlak 9 die hoogste.",
         "pro_transcript": "Upgrade naar Pro om de volledige transcriptie te bekijken!",
-        "pro_transcript_limit_reached": "Transkripsie limiet bereik. Gradeer asseblief op na Pro om toegang tot meer transkripsies te kry."
+        "pro_transcript_limit_reached": "Transkripsie limiet bereik. Gradeer asseblief op na Pro om toegang tot meer transkripsies te kry.",
+        "copy_success": "Tekst gekopieerd naar klembord",
+        "pro_feature_chatgpt": "Alleen Pro-gebruikers kunnen AI-functies in Language Player Go gebruiken. Om deze functie te gebruiken, upgrade naar Pro."
     },
     "title": {
         "email": "E-pos",
@@ -342,7 +344,10 @@
         "next": "Volgende",
         "tv_shows": "TV-programma's",
         "watch": "Bekijken",
-        "upgrade_to_pro": "Upgrade naar Pro"
+        "upgrade_to_pro": "Upgrade naar Pro",
+        "speak": "Spreken",
+        "copy": "Kopiëren",
+        "let_chatgpt_explain": "Laat AI uitleggen"
     },
     "placeholder": {
         "first_name": "Voornaam",
@@ -438,5 +443,11 @@
         "views": "Weergaven",
         "likes": "Vind-ik-leuks",
         "comments": "Reacties"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Verduidelik bondig met {{l1Name}}, wat die {{l2Name}} ({{l2Code}}) woord '{{word}}' beteken in die frase '{{text}}'.",
+            "inflection": "Gee sy lemma, verbuiging en morfologie."
+        }
     }
 }

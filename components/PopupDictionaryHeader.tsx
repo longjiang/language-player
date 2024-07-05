@@ -1,7 +1,7 @@
 // @/components/PopupDictionaryHeader.tsx
 
 import React, { useCallback, useState, useEffect, useMemo } from "react";
-import { View, Text, Clipboard } from "react-native";
+import { View, Text, Clipboard, ToastAndroid, Platform, AlertIOS } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
 import { Translate } from "@/components/Translate";
@@ -25,7 +25,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
   context,
   translatedContext,
 }) => {
-  const { l1Lang, l2Lang } = useLanguage();
+  const { l1Lang, l2Lang, t } = useLanguage();
   const { settings } = useSettings();
   const { convert, translationManager } = useDictionary();
 
@@ -51,8 +51,8 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
   }, [context, translatedContext, l1Lang, l2Lang, translationManager]);
 
   const generateChatGPTPrompt = (l1Name, l2Name, l2Code, word, text) => {
-    const basePrompt = `Succinctly explain using ${l1Name}, what the ${l2Name} (${l2Code}) word ‘${word}’ means in the phrase ‘${text}’.`;
-    const inflectionPrompt = "Give its lemma, inflection, and morphology.";
+    const basePrompt = t('chatgpt.prompt.base', { l1Name, l2Name, l2Code, word, text });
+    const inflectionPrompt = t('chatgpt.prompt.inflection');
     const inflectionNotNeeded = ['zh', 'vi', 'th', 'lo', 'km'];
     return inflectionNotNeeded.includes(l2Code) ? basePrompt : `${basePrompt} ${inflectionPrompt}`;
   };
@@ -67,7 +67,11 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
 
   const onCopyPress = () => {
     Clipboard.setString(token.text);
-    // Optionally, show a message or toast to the user indicating the copy action was successful
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(t('msg.copy_success'), ToastAndroid.SHORT);
+    } else {
+      AlertIOS.alert(t('msg.copy_success'));
+    }
   };
 
   const displayText = useMemo(() => {
@@ -98,12 +102,14 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
             size={26}
             style={styles.iconStyle}
             onPress={onSpeakPress}
+            accessibilityLabel={t('action.speak')}
           />
           <Icon
             name="content-copy"
             size={26}
             style={styles.iconStyle}
             onPress={onCopyPress}
+            accessibilityLabel={t('action.copy')}
           />
         </View>
       </View>

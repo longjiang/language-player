@@ -301,7 +301,9 @@
         "enter_verification_code": "Vennligst skriv inn bekreftelseskoden som ble sendt til e-posten",
         "hsk_explanation": "\"HSK\" er den offisielle kinesiske ferdighetstesten, med nivå 1 som det laveste og nivå 9 som det høyeste.",
         "pro_transcript": "Oppgrader til Pro for å se hele transkripsjonen!",
-        "pro_transcript_limit_reached": "Transkripsjonsgrense nådd. Oppgrader til Pro for å få tilgang til flere transkripsjoner."
+        "pro_transcript_limit_reached": "Transkripsjonsgrense nådd. Oppgrader til Pro for å få tilgang til flere transkripsjoner.",
+        "copy_success": "Texto copiado",
+        "pro_feature_chatgpt": "Bare Pro-brukere kan bruke AI-funksjoner i Language Player Go. For å bruke denne funksjonen, oppgrader til Pro."
     },
     "title": {
         "email": "E-post",
@@ -341,7 +343,10 @@
         "next": "Neste",
         "tv_shows": "Programas de TV",
         "watch": "Ver",
-        "upgrade_to_pro": "Atualizar para Pro"
+        "upgrade_to_pro": "Atualizar para Pro",
+        "speak": "Falar",
+        "copy": "Copiar",
+        "let_chatgpt_explain": "Deixe a IA explicar"
     },
     "placeholder": {
         "first_name": "Fornavn",
@@ -437,5 +442,11 @@
         "views": "Visualizações",
         "likes": "Gostos",
         "comments": "Comentários"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Forklar kortfattet med {{l1Name}}, hva ordet {{l2Name}} ({{l2Code}}) betyr i uttrykket '{{PLACEHOLDER3 PLACEHOLDER4}}}'.",
+            "inflection": "Gi dens lemma, bøyning og morfologi."
+        }
     }
 }

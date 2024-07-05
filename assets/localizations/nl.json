@@ -301,7 +301,9 @@
         "enter_verification_code": "Voer de verificatiecode in die naar de e-mail is verzonden",
         "hsk_explanation": "\"HSK\" is de officiële Chinese taalvaardigheidstest, waarbij niveau 1 de laagste is en niveau 9 de hoogste.",
         "pro_transcript": "Upgrade naar Pro om het volledige transcript te bekijken!",
-        "pro_transcript_limit_reached": "Transcriptielimiet bereikt. Upgrade naar Pro om toegang te krijgen tot meer transcripties."
+        "pro_transcript_limit_reached": "Transcriptielimiet bereikt. Upgrade naar Pro om toegang te krijgen tot meer transcripties.",
+        "copy_success": "Tekst gekopieerd naar klembord",
+        "pro_feature_chatgpt": "Alleen Pro-gebruikers kunnen AI-functies gebruiken in Language Player Go. Als u deze functie wilt gebruiken, moet u upgraden naar Pro."
     },
     "title": {
         "email": "E-mail",
@@ -341,7 +343,10 @@
         "next": "Volgende",
         "tv_shows": "TV-programma's",
         "watch": "Bekijken",
-        "upgrade_to_pro": "Upgrade naar Pro"
+        "upgrade_to_pro": "Upgrade naar Pro",
+        "speak": "Spreken",
+        "copy": "Kopiëren",
+        "let_chatgpt_explain": "Vraag AI"
     },
     "placeholder": {
         "first_name": "Voornaam",
@@ -437,5 +442,11 @@
         "views": "Weergaven",
         "likes": "Vind-ik-leuks",
         "comments": "Reacties"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Leg kort en bondig uit met behulp van {{l1Name}}, wat het {{l2Name}} ({{l2Code}}) woord '{{word}}' betekent in de zin '{{text}}'.",
+            "inflection": "Geef het lemma, de verbuiging en de morfologie."
+        }
     }
 }

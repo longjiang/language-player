@@ -301,7 +301,9 @@
         "enter_verification_code": "メールに送信された認証コードを入力してください",
         "hsk_explanation": "「HSK」は公式の中国語能力試験であり、レベル1が最低、レベル9が最高です。",
         "pro_transcript": "Proにアップグレードして、完全なトランスクリプトを表示してください!",
-        "pro_transcript_limit_reached": "字幕の制限に達しました。より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。"
+        "pro_transcript_limit_reached": "字幕の制限に達しました。より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。",
+        "copy_success": "テキストがクリップボードにコピーされました",
+        "pro_feature_chatgpt": "Language Player Go で AI 機能を使用できるのは Pro ユーザーのみです。この機能を使用するには、Pro にアップグレードしてください。"
     },
     "title": {
         "email": "電子メール",
@@ -326,7 +328,7 @@
         "how_did_you_hear": "私たちのことをどこでお知りになりましたか?",
         "select_language": "どの言語を学びたいですか？",
         "current_level": "現在の{{language}}のレベルは？",
-        "pro_feature": "プロ機能"
+        "pro_feature": "Pro機能"
     },
     "action": {
         "upgrade": "アップグレード",
@@ -341,7 +343,10 @@
         "next": "次へ",
         "tv_shows": "テレビ番組",
         "watch": "見る",
-        "upgrade_to_pro": "Proにアップグレード"
+        "upgrade_to_pro": "Proにアップグレード",
+        "speak": "話す",
+        "copy": "コピー",
+        "let_chatgpt_explain": "人工知能に尋ねる"
     },
     "placeholder": {
         "first_name": "ファースト",
@@ -437,5 +442,11 @@
         "views": "ビュー",
         "likes": "いいね",
         "comments": "コメント"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "{{l2Name}}({{l2Code}})という単語「{{word}}」が「{{text}}」というフレーズで何を意味するのかを{{l1Name}}を使って簡潔に説明します。",
+            "inflection": "その補題、語形変化、形態を与えてください。"
+        }
     }
 }

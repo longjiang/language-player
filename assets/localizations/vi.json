@@ -300,7 +300,9 @@
         "enter_verification_code": "Vui lòng nhập mã xác minh được gửi đến email",
         "hsk_explanation": "\"HSK\" là bài kiểm tra trình độ chính thức của Trung Quốc, với cấp độ 1 là thấp nhất và cấp độ 9 là cao nhất.",
         "pro_transcript": "Nâng cấp lên Pro để xem bảng điểm đầy đủ!",
-        "pro_transcript_limit_reached": "Đã đạt đến giới hạn bảng điểm. Vui lòng nâng cấp lên Pro để truy cập thêm bảng điểm."
+        "pro_transcript_limit_reached": "Đã đạt đến giới hạn bảng điểm. Vui lòng nâng cấp lên Pro để truy cập thêm bảng điểm.",
+        "copy_success": "Văn bản được sao chép vào khay nhớ tạm",
+        "pro_feature_chatgpt": "Chỉ người dùng Pro mới có thể sử dụng các tính năng AI trong Language Player Go. Để sử dụng tính năng này, hãy nâng cấp lên Pro."
     },
     "title": {
         "email": "Email",
@@ -340,7 +342,10 @@
         "next": "Tiếp theo",
         "tv_shows": "TV programları",
         "watch": "Xem",
-        "upgrade_to_pro": "Nâng cấp lên Pro"
+        "upgrade_to_pro": "Nâng cấp lên Pro",
+        "speak": "Nói",
+        "copy": "Sao chép",
+        "let_chatgpt_explain": "Hỏi AI"
     },
     "placeholder": {
         "first_name": "Tên",
@@ -436,5 +441,11 @@
         "views": "Views",
         "likes": "Thích",
         "comments": "Ý kiến"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Giải thích ngắn gọn bằng cách sử dụng {{l1Name}}, từ {{l2Name}} ({{l2Code}}) '{{word}}' có nghĩa là gì trong cụm từ '{{text}}'.",
+            "inflection": "Đưa ra lemma, biến tố và hình thái của nó."
+        }
     }
 }

@@ -301,7 +301,9 @@
         "enter_verification_code": "Tafadhali ingiza msimbo wa uthibitishaji uliotumwa kwa barua pepe",
         "hsk_explanation": "\"HSK\" ni mtihani rasmi wa ustadi wa Kichina, na Kiwango cha 1 kuwa cha chini na Kiwango cha 9 kuwa cha juu zaidi.",
         "pro_transcript": "Boresha kwa Pro ili kuona nakala kamili!",
-        "pro_transcript_limit_reached": "Ukomo wa Transcript umefikiwa. Tafadhali sasisha hadi Pro ili kufikia nakala zaidi."
+        "pro_transcript_limit_reached": "Ukomo wa Transcript umefikiwa. Tafadhali sasisha hadi Pro ili kufikia nakala zaidi.",
+        "copy_success": "Kopyalandı",
+        "pro_feature_chatgpt": "Watumiaji wa Pro tu ndio wanaweza kutumia vipengele vya AI katika Kicheza Lugha Go. Ili kutumia kipengele hiki, boresha hadi Pro."
     },
     "title": {
         "email": "Barua pepe",
@@ -341,7 +343,10 @@
         "next": "Mbele",
         "tv_shows": "TV-program",
         "watch": "Ver",
-        "upgrade_to_pro": "Pro'ya Yükselt"
+        "upgrade_to_pro": "Pro'ya Yükselt",
+        "speak": "Konuş",
+        "copy": "Kopyala",
+        "let_chatgpt_explain": "Deixe a IA explicar"
     },
     "placeholder": {
         "first_name": "Jina la kwanza",
@@ -437,5 +442,11 @@
         "views": "Visualizações",
         "likes": "Beğenme",
         "comments": "Yorumlar"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Kwa ufupi eleza kwa kutumia {{l1Name}}, neno {{l2Name}} ({{l2Code}}) neno '{{word}}' linamaanisha katika kishazi '{{text}}'.",
+            "inflection": "Kutoa lemma yake, inflection, na morphology."
+        }
     }
 }

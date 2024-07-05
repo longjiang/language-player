@@ -302,7 +302,9 @@
         "enter_verification_code": "Inserisci il codice di verifica inviato all'e-mail",
         "hsk_explanation": "\"HSK\" è il test ufficiale di conoscenza della lingua cinese, con il livello 1 che è il più basso e il livello 9 che è il più alto.",
         "pro_transcript": "Esegui l'upgrade a Pro per visualizzare la trascrizione completa!",
-        "pro_transcript_limit_reached": "Limite di trascrizione raggiunto. Si prega di eseguire l'upgrade a Pro per accedere a più trascrizioni."
+        "pro_transcript_limit_reached": "Limite di trascrizione raggiunto. Si prega di eseguire l'upgrade a Pro per accedere a più trascrizioni.",
+        "copy_success": "Testo copiato negli appunti",
+        "pro_feature_chatgpt": "Solo gli utenti Pro possono utilizzare le funzionalità AI in Language Player Go. Per utilizzare questa funzione, eseguire l'aggiornamento a Pro."
     },
     "title": {
         "email": "E-mail",
@@ -342,7 +344,10 @@
         "next": "Avanti",
         "tv_shows": "Programmi TV",
         "watch": "Guarda",
-        "upgrade_to_pro": "Aggiorna a Pro"
+        "upgrade_to_pro": "Aggiorna a Pro",
+        "speak": "Parla",
+        "copy": "Copia",
+        "let_chatgpt_explain": "Lascia che l'IA spieghi"
     },
     "placeholder": {
         "first_name": "Primo",
@@ -438,5 +443,11 @@
         "views": "Visualizzazioni",
         "likes": "Like",
         "comments": "Komenti"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Spiega brevemente usando {{l1Name}}, cosa significa la parola {{l2Name}} ({{l2Code}}) '{{word}}' nella frase '{{text}}'.",
+            "inflection": "Fornisci il suo lemma, la flessione e la morfologia."
+        }
     }
 }

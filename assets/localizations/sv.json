@@ -301,7 +301,9 @@
         "enter_verification_code": "Ange verifieringskoden som skickades till e-postmeddelandet",
         "hsk_explanation": "\"HSK\" är det officiella kinesiska kunskapstestet, där nivå 1 är den lägsta och nivå 9 är den högsta.",
         "pro_transcript": "Uppgradera till Pro för att se hela utskriften!",
-        "pro_transcript_limit_reached": "Avskriftsgränsen har nåtts. Uppgradera till Pro för att få tillgång till fler utskrifter."
+        "pro_transcript_limit_reached": "Avskriftsgränsen har nåtts. Uppgradera till Pro för att få tillgång till fler utskrifter.",
+        "copy_success": "Copiado",
+        "pro_feature_chatgpt": "Endast Pro-användare kan använda AI-funktioner i Language Player Go. Om du vill använda den här funktionen uppgraderar du till Pro."
     },
     "title": {
         "email": "E-post",
@@ -341,7 +343,10 @@
         "next": "Nästa",
         "tv_shows": "TV programi",
         "watch": "İzle",
-        "upgrade_to_pro": "Atualizar para Pro"
+        "upgrade_to_pro": "Atualizar para Pro",
+        "speak": "Conversar",
+        "copy": "Copiar",
+        "let_chatgpt_explain": "Deixe a IA explicar"
     },
     "placeholder": {
         "first_name": "Förnamn",
@@ -437,5 +442,11 @@
         "views": "İzlenme",
         "likes": "Gostos",
         "comments": "Comentários"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Förklara kortfattat med {{l1Name}} vad ordet {{l2Name}} ({{l2Code}}) {{word}}' betyder i frasen '{{text}}'.",
+            "inflection": "Ge dess lemma, böjning och morfologi."
+        }
     }
 }

@@ -302,7 +302,9 @@
         "enter_verification_code": "Cuir isteach an cód fíoraithe a sheoltar chuig an ríomhphost",
         "hsk_explanation": "Is é \"HSK\" an tástáil inniúlachta oifigiúil Síneach, agus is é Leibhéal 1 an leibhéal is ísle agus is é Leibhéal 9 an ceann is airde.",
         "pro_transcript": "Mettez à niveau vers Pro pour voir la transcription complète!",
-        "pro_transcript_limit_reached": "Sroicheadh teorainn trascríbhinne. Déan uasghrádú ar Pro chun rochtain a fháil ar níos mó tras-scríbhinní."
+        "pro_transcript_limit_reached": "Sroicheadh teorainn trascríbhinne. Déan uasghrádú ar Pro chun rochtain a fháil ar níos mó tras-scríbhinní.",
+        "copy_success": "Text copiat",
+        "pro_feature_chatgpt": "Ní féidir ach le húsáideoirí Pro gnéithe AI a úsáid i Language Player Go. Chun an ghné seo a úsáid, uasghrádú go Pro."
     },
     "title": {
         "email": "Ríomhphost",
@@ -342,7 +344,10 @@
         "next": "Ar aghaidh",
         "tv_shows": "TV-programmer",
         "watch": "Visualitza",
-        "upgrade_to_pro": "Actualitza a Pro"
+        "upgrade_to_pro": "Actualitza a Pro",
+        "speak": "Parla",
+        "copy": "Copiar",
+        "let_chatgpt_explain": "Deixa que l'IA ho expliqui"
     },
     "placeholder": {
         "first_name": "Ainm",
@@ -438,5 +443,11 @@
         "views": "Visualitzacions",
         "likes": "M'agrada",
         "comments": "Comentaris"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Mínigh go gonta ag baint úsáide as {{l1Name}}, cad is brí leis an bhfocal {{l2Name}} ({{l2Code}}) '{{word}}' san abairt '{{text}}'.",
+            "inflection": "Tabhair a lemma, infhilleadh, agus deilbhíocht."
+        }
     }
 }

@@ -300,7 +300,9 @@
         "enter_verification_code": "Lütfen e-postaya gönderilen doğrulama kodunu girin",
         "hsk_explanation": "\"HSK\", Seviye 1 en düşük ve Seviye 9 en yüksek olmak üzere resmi Çince yeterlilik testidir.",
         "pro_transcript": "Tam transkripti görüntülemek için Pro'ya yükseltin!",
-        "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin."
+        "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
+        "copy_success": "Panoya kopyalanan metin",
+        "pro_feature_chatgpt": "Language Player Go'da AI özelliklerini yalnızca Pro kullanıcıları kullanabilir. Bu özelliği kullanmak için Pro'ya yükseltin."
     },
     "title": {
         "email": "E-posta",
@@ -340,7 +342,10 @@
         "next": "Sonraki",
         "tv_shows": "Programas de TV",
         "watch": "İzle",
-        "upgrade_to_pro": "Pro'ya yükseltin"
+        "upgrade_to_pro": "Pro'ya yükseltin",
+        "speak": "Speak",
+        "copy": "Kopyala",
+        "let_chatgpt_explain": "Haydi AI anlatsın"
     },
     "placeholder": {
         "first_name": "İsim",
@@ -436,5 +441,11 @@
         "views": "Görünümler",
         "likes": "Seviyor",
         "comments": "Yorum"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "{{l1Name}} kullanarak, '{{l2Name}} ({{l2Code}}) '{{word}}' ifadesindeki '{{}}}' kelime PLACEHOLDER4 sinin ne anlama geldiğini kısaca açıklayın.",
+            "inflection": "Lemmasını, bükülmesini ve morfolojisini verin."
+        }
     }
 }

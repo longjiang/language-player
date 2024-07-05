@@ -301,7 +301,9 @@
         "enter_verification_code": "Vă rugăm să introduceți codul de verificare trimis la e-mail",
         "hsk_explanation": "\"HSK\" este testul oficial de competență chineză, nivelul 1 fiind cel mai scăzut și nivelul 9 fiind cel mai înalt.",
         "pro_transcript": "Faceți upgrade la Pro pentru a vizualiza transcrierea completă!",
-        "pro_transcript_limit_reached": "Limita de transcriere a fost atinsă. Vă rugăm să faceți upgrade la Pro pentru a accesa mai multe transcrieri."
+        "pro_transcript_limit_reached": "Limita de transcriere a fost atinsă. Vă rugăm să faceți upgrade la Pro pentru a accesa mai multe transcrieri.",
+        "copy_success": "Copiado",
+        "pro_feature_chatgpt": "Numai utilizatorii Pro pot utiliza funcțiile AI în Language Player Go. Pentru a utiliza această caracteristică, faceți upgrade la Pro."
     },
     "title": {
         "email": "E-mail",
@@ -341,7 +343,10 @@
         "next": "Următorul",
         "tv_shows": "Programas de TV",
         "watch": "Ver",
-        "upgrade_to_pro": "Actualizar a Pro"
+        "upgrade_to_pro": "Actualizar a Pro",
+        "speak": "Hablar",
+        "copy": "Copiar",
+        "let_chatgpt_explain": "Deja que la IA lo explique"
     },
     "placeholder": {
         "first_name": "Prenume",
@@ -437,5 +442,11 @@
         "views": "Visualizaciones",
         "likes": "Gustos",
         "comments": "Comentarios"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "Explicați succint folosind {{l1Name}}, ce înseamnă cuvântul {{l2Name}} ({{l2Code}}) din expresia \"{{PLACEHOLDER3 PLACEHOLDER4}}}\".",
+            "inflection": "Dați-i lema, inflexiunea și morfologia."
+        }
     }
 }

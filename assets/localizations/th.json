@@ -300,7 +300,9 @@
         "enter_verification_code": "โปรดป้อนรหัสยืนยันที่ส่งไปยังอีเมล",
         "hsk_explanation": "\"HSK\" เป็นการทดสอบความสามารถทางภาษาจีนอย่างเป็นทางการ โดยระดับ 1 เป็นระดับต่ําสุดและระดับ 9 เป็นระดับสูงสุด",
         "pro_transcript": "อัปเกรดเป็น Pro เพื่อดูการถอดเสียงฉบับเต็ม!",
-        "pro_transcript_limit_reached": "ถึงขีดจํากัดการถอดเสียงแล้ว โปรดอัปเกรดเป็น Pro เพื่อเข้าถึงการถอดเสียงเพิ่มเติม"
+        "pro_transcript_limit_reached": "ถึงขีดจํากัดการถอดเสียงแล้ว โปรดอัปเกรดเป็น Pro เพื่อเข้าถึงการถอดเสียงเพิ่มเติม",
+        "copy_success": "Đã sao chép văn bản",
+        "pro_feature_chatgpt": "เฉพาะผู้ใช้ Pro เท่านั้นที่สามารถใช้คุณสมบัติ AI ใน Language Player Go ได้ หากต้องการใช้คุณสมบัตินี้ ให้อัปเกรดเป็น Pro"
     },
     "title": {
         "email": "อีเมล",
@@ -340,7 +342,10 @@
         "next": "ถัดไป",
         "tv_shows": "Programu za TV",
         "watch": "Assistir",
-        "upgrade_to_pro": "อัปเกรดเป็น Pro"
+        "upgrade_to_pro": "อัปเกรดเป็น Pro",
+        "speak": "พูด",
+        "copy": "Sao chép",
+        "let_chatgpt_explain": "Hỏi AI"
     },
     "placeholder": {
         "first_name": "ชื่อจริง",
@@ -436,5 +441,11 @@
         "views": "İzlenme",
         "likes": "ชอบ",
         "comments": "ความ คิด เห็น"
+    },
+    "chatgpt": {
+        "prompt": {
+            "base": "อธิบายอย่างรวบรัดโดยใช้ {{l1Name}}}คําว่า {{l2Name}} ({{l2Code}}}) คําว่า '{{word}}}' หมายถึงอะไรในวลี '{{text}}'",
+            "inflection": "ให้คําหลักการผันและสัณฐานวิทยา"
+        }
     }
 }
