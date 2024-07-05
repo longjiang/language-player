@@ -45,9 +45,8 @@ export const DictionaryComponent = () => {
                               <ThemedText type="title" level={entry.level}>{entry[headKey]}</ThemedText>
                               <ThemedText type="default" variant="secondary"> {entry[alternateKey]}</ThemedText>
                               <ThemedText type="defaultBold"> {entry.pronunciation}</ThemedText>
-                              <ThemedText type="default"> • </ThemedText>
-                              <DefinitionList definitions={entry.definitions} type="default" />
                           </ThemedText>
+                          {entry.definitions?.length && <DefinitionList definitions={entry.definitions.slice(0, 2)} type="default" />}
                         </TouchableOpacity>
                     </View>
                 ))}
