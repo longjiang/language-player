@@ -50,10 +50,6 @@ export const lemmatizeBurmese = async (text: string): Promise<AxiosResponse<any>
   return API.get("/lemmatize-burmese", { params: { text } });
 };
 
-export const lemmatizeVideo = async (videoId: string, lang: string): Promise<AxiosResponse<any>> => {
-  return API.get("/lemmatize-video", { params: { video_id: videoId, lang } });
-};
-
 export const transliteratePersian = async (text: string): Promise<AxiosResponse<any>> => {
   return API.get("/transliterate-persian", { params: { text } });
 };

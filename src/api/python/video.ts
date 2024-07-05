@@ -139,3 +139,11 @@ export const subsSearch = async (
   };
   return request({ method: 'get', url: "/subs-search", params });
 };
+
+
+export const getTokenizerCacheForVideo = async (videoId: string, l2Code: string) => {
+  const response = await API.get("/lemmatize-video", { params: { video_id: videoId, lang: l2Code } });
+  if (response && response.data) {
+    return response.data;
+  }
+};

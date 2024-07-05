@@ -54,6 +54,14 @@ export class TokenizerService {
     return TokenizerService.instance;
   }
 
+  public logCache(): void {
+    const cacheObject = {};
+    this.cache.forEach((value, key) => {
+      cacheObject[key] = value;
+    });
+    console.log("Cache as Object:", cacheObject);
+  }
+
   public loadCache(initialCache: { [key: string]: Token[] }): void {
     for (const [key, tokens] of Object.entries(initialCache)) {
       this.cache.set(key, tokens);
@@ -61,8 +69,8 @@ export class TokenizerService {
     console.log("🍒 Cache loaded");
   }
 
-  private generateCacheKey(text: string, languageCode: string): string {
-    const hash = CryptoJS.MD5(`${languageCode}:${text}`).toString();
+  private generateCacheKey(text: string): string {
+    const hash = CryptoJS.MD5(text).toString();
     return hash;
   }
 
@@ -75,7 +83,7 @@ export class TokenizerService {
   }
 
   public async tokenize(text: string, l2Lang: Language): Promise<Token[] | undefined> {
-    const cacheKey = this.generateCacheKey(text, l2Lang.code);
+    const cacheKey = this.generateCacheKey(text);
     if (this.cache.has(cacheKey)) {
       console.log("🍎 Loading from cache:", cacheKey);
       return this.cache.get(cacheKey);

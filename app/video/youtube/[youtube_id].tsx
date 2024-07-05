@@ -16,11 +16,14 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { addToWatchHistory } from "@/src/api/directus/user-watch-history";
 import { getBestTranslatedSubs } from "@/src/subs";
+import { useDictionary } from "@/contexts/DictionaryContext";
+import { getTokenizerCacheForVideo } from "@/src/api/python/video";
 
 const YouTubeVideoScreen = () => {
   const params = useLocalSearchParams();
   const { l1Lang, l2Lang, languages } = useLanguage();
   const { getStoredAuthToken } = useAuth();
+  const { tokenizer } = useDictionary();
   let youtubeIdFromParams = Array.isArray(params?.youtube_id)
     ? params?.youtube_id[0]
     : params?.youtube_id;
@@ -81,6 +84,18 @@ const YouTubeVideoScreen = () => {
         console.error("Failed to fetch video", error);
       }
     };
+
+    const fetchTokenizerCache = async () => {
+      if (!videoPlayerState.video) return
+      if (!l2Lang) return;
+      if (!tokenizer) return;
+      const tokenizerCache = await getTokenizerCacheForVideo(videoPlayerState.video.id, l2Lang.code);
+      if (tokenizerCache) {
+        tokenizer.loadCache(tokenizerCache);
+      }
+    }
+
+    fetchTokenizerCache();
 
     if (videoPlayerState.video && !videoPlayerState.video.subs_l2?.length) {
       fetchVideo();
