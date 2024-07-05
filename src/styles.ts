@@ -344,3 +344,41 @@ export const showCardStyles = StyleSheet.create({
     marginTop: 16,
   },
 });
+
+
+export const subsSearchResultsListStyles = StyleSheet.create({
+  fullContainer: {
+    flex: 1,
+  },
+  sortContainer: {
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  sortLabel: {
+    fontSize: 16,
+  },
+  searchInput: {
+    marginBottom: 16,
+  },
+  thumbnail: {
+    width: 75,
+    aspectRatio: 16 / 9,
+    borderRadius: 4,
+  },
+  item: {
+    paddingBottom: 26,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  line: {
+    width: "100%",
+    textAlign: "left",
+    paddingLeft: 16,
+    paddingRight: 50,
+  },
+  highlight: {
+    color: Swatches.warning[500],
+    fontFamily: "Nunito_700Bold",
+  },
+});

@@ -4,7 +4,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedInput } from "./ThemedInput";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 import { Image } from "react-native";
-import { Swatches } from "@/constants/Swatches";
+import { subsSearchResultsListStyles as styles } from "@/src/styles";
 
 const extractContexts = (line: string, term: string) => {
   const lowercaseLine = line.toLowerCase();
@@ -180,40 +180,3 @@ export const SubsSearchResultsList = ({
     </GestureHandlerRootView>
   );
 };
-
-const styles = StyleSheet.create({
-  fullContainer: {
-    flex: 1,
-  },
-  sortContainer: {
-    marginBottom: 16,
-    alignItems: "center",
-  },
-  sortLabel: {
-    fontSize: 16,
-  },
-  searchInput: {
-    marginBottom: 16,
-  },
-  thumbnail: {
-    width: 75,
-    aspectRatio: 16 / 9,
-    borderRadius: 4,
-  },
-  item: {
-    paddingBottom: 26,
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-  },
-  line: {
-    width: "100%",
-    textAlign: "left",
-    paddingLeft: 16,
-    paddingRight: 50,
-  },
-  highlight: {
-    color: Swatches.warning[500],
-    fontFamily: "Nunito_700Bold",
-  },
-});
