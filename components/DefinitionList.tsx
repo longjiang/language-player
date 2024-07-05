@@ -1,9 +1,10 @@
+// @/components/DefinitionList
+
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import TranslationManager from '@/src/translation-manager';
 
 interface DefinitionListProps {
   definitions: string[];
@@ -12,7 +13,7 @@ interface DefinitionListProps {
 
 export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, type = "default" }) => {
   const [translatedDefinitions, setTranslatedDefinitions] = useState<string[]>(definitions);
-  const { dictionary } = useDictionary();
+  const { dictionary, translationManager } = useDictionary();
   const { l1Lang } = useLanguage();
   const viewRef = useRef<View>(null);
   const [isWithinViewport, setIsWithinViewport] = useState(false);
@@ -23,7 +24,7 @@ export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, typ
     if (hasTranslatedRef.current) return; // Prevent multiple translations
     try {
       if (dictionary && l1Lang && dictionary.l1Code !== l1Lang.code) {
-        const translated = await TranslationManager.translateArray(definitions, l1Lang.code, dictionary.l1Code);
+        const translated = await translationManager.translateArray(definitions, l1Lang.code, dictionary.l1Code);
         console.log('Translated definitions:', translated);
         setTranslatedDefinitions(translated);
         hasTranslatedRef.current = true;
@@ -33,7 +34,7 @@ export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, typ
       // Fallback to original definitions if translation fails
       setTranslatedDefinitions(definitions);
     }
-  }, [definitions, dictionary, l1Lang]);
+  }, [definitions, dictionary, l1Lang, translationManager]);
 
   const debouncedCheckPosition = useCallback(() => {
     if (debounceTimerRef.current) {

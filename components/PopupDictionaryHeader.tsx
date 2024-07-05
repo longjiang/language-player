@@ -4,11 +4,9 @@ import React, { useCallback, useState, useEffect, useMemo } from "react";
 import { View, Text, Clipboard } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
-import { ThemedButton } from "./ThemedButton";
 import { Translate } from "@/components/Translate";
 import { Token } from "@/src/tokenizer";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { translateWithBing } from '@/src/translate';
 import { popupDictionaryHeaderStyles as styles } from "@/src/styles";
 import { speakText } from "@/src/speech";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -27,10 +25,9 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
   context,
   translatedContext,
 }) => {
-  
   const { l1Lang, l2Lang } = useLanguage();
   const { settings } = useSettings();
-  const { convert } = useDictionary();
+  const { convert, translationManager } = useDictionary();
 
   if (!(l1Lang && l2Lang)) return null;
   const [translation, setTranslation] = useState<string | null>(null);
@@ -45,13 +42,13 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
   useEffect(() => {
     if (context && !translatedContext && l1Lang && l2Lang) {
       const translateContext = async () => {
-        const trans = await translateWithBing({ text: context, l1Code: l1Lang.code, l2Code: l2Lang.code });
+        const trans = await translationManager.translate(context, l1Lang.code, l2Lang.code);
         setTranslation(trans);
       };
       
       translateContext();
     }
-  }, [context, translatedContext, l1Lang, l2Lang]);
+  }, [context, translatedContext, l1Lang, l2Lang, translationManager]);
 
   const generateChatGPTPrompt = (l1Name, l2Name, l2Code, word, text) => {
     const basePrompt = `Succinctly explain using ${l1Name}, what the ${l2Name} (${l2Code}) word ‘${word}’ means in the phrase ‘${text}’.`;

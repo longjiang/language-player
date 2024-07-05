@@ -16,7 +16,7 @@ interface TranslationArrayCache {
   };
 }
 
-class TranslationManager {
+export default class TranslationManager {
   private static instance: TranslationManager;
   private cache: TranslationCache = {};
   private arrayCache: TranslationArrayCache = {};
@@ -134,5 +134,3 @@ class TranslationManager {
     return translationPromise;
   }
 }
-
-export default TranslationManager.getInstance();

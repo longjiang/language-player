@@ -1,3 +1,5 @@
+// @/contexts/DictionaryContext.tsx
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Dictionary } from '@/src/dictionary';
 import { TokenizerService } from '@/src/tokenizer';
@@ -5,17 +7,20 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryLoadingModal } from '@/components/DictionaryLoadingModal';
 import { Converter } from 'opencc-js';
 import { useSettings } from '@/contexts/SettingsContext';
+import TranslationManager from '@/src/translation-manager';
 
 interface DictionaryContextProps {
   dictionary: Dictionary | null;
   tokenizer: TokenizerService | null;
   convert: ((text: string) => string) | null;
+  translationManager: TranslationManager;
 }
 
 export const DictionaryContext = createContext<DictionaryContextProps>({
   dictionary: null,
   tokenizer: null,
   convert: null,
+  translationManager: TranslationManager.getInstance(),
 });
 
 export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -26,6 +31,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
   const [logs, setLogs] = useState<string[]>([]);
   const { l2Lang } = useLanguage();
   const { settings } = useSettings();
+  const translationManager = TranslationManager.getInstance();
 
   useEffect(() => {
     if (!l2Lang) return;
@@ -62,7 +68,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
   }, [l2Lang, settings.useTraditional]);
 
   return (
-    <DictionaryContext.Provider value={{ dictionary, tokenizer, convert }}>
+    <DictionaryContext.Provider value={{ dictionary, tokenizer, convert, translationManager }}>
       {isLoading && l2Lang && <DictionaryLoadingModal logs={logs} language={l2Lang.name} />}
       {children}
     </DictionaryContext.Provider>
