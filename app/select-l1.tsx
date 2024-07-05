@@ -8,6 +8,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import * as Localization from "expo-localization";
 import { selectL1Styles as styles } from "@/src/styles";
 import { useUserData } from "@/contexts/UserDataContext";
+import { ThemedText } from "@/components/ThemedText";
 
 const SelectL2Screen = () => {
   const { l1Lang, l2Lang, setL1Lang, languages } = useLanguage();
@@ -25,7 +26,8 @@ const SelectL2Screen = () => {
 
   const onSelect = (value: string) => {
     if (!languages) return;
-    setL1Lang(languages.getLangByCode(value));
+    const language = languages.getLangByCode(value)
+    setL1Lang(language);
   };
 
   const handleNextPress = () => {
@@ -43,7 +45,7 @@ const SelectL2Screen = () => {
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
     >
-      <ThemedLanguageSelect onSelect={onSelect} initialValue={deviceLanguage || l1Lang?.code} scope="l1" />
+      <ThemedLanguageSelect onSelect={onSelect} initialValue={l1Lang?.code || deviceLanguage} scope="l1" />
 
       <ThemedButton
         title="title.next"
