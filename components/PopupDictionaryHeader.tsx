@@ -1,6 +1,6 @@
 // @/components/PopupDictionaryHeader.tsx
 
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useMemo } from "react";
 import { View, Text, Clipboard } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
@@ -14,6 +14,7 @@ import { speakText } from "@/src/speech";
 import { useSettings } from "@/contexts/SettingsContext";
 import { ChatGPTExplanation } from "./ChatGPTExplanation";
 import { ContextRow } from "./ContextRow";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface PopupDictionaryHeaderProps {
   token: Token;
@@ -29,6 +30,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
   
   const { l1Lang, l2Lang } = useLanguage();
   const { settings } = useSettings();
+  const { convert } = useDictionary();
 
   if (!(l1Lang && l2Lang)) return null;
   const [translation, setTranslation] = useState<string | null>(null);
@@ -71,13 +73,27 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
     // Optionally, show a message or toast to the user indicating the copy action was successful
   };
 
-  const chatGPTPrompt = generateChatGPTPrompt(l1Lang.name, l2Lang.name, l2Lang.code, token.text, context);
+  const displayText = useMemo(() => {
+    if (convert && l2Lang.han && token.text) {
+      return convert(token.text);
+    }
+    return token.text;
+  }, [token.text, convert, l2Lang.han]);
+
+  const displayContext = useMemo(() => {
+    if (convert && l2Lang.han && context) {
+      return convert(context);
+    }
+    return context;
+  }, [context, convert, l2Lang.han]);
+
+  const chatGPTPrompt = generateChatGPTPrompt(l1Lang.name, l2Lang.name, l2Lang.code, displayText, displayContext);
 
   return (
     <View style={styles.headerContainer}>
       <View style={styles.header}>
         <ThemedText type="xxlarge" style={{ flex: 1 }}>
-          {token.text}
+          {displayText}
         </ThemedText>
         <View style={styles.actionButtons}>
           <Icon
@@ -108,7 +124,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
         onExplainPress={onExplainPress}
       />
       <ContextRow 
-        context={context} 
+        context={displayContext} 
         translatedContext={translatedContext} 
         translation={translation}
       />
