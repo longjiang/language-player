@@ -257,7 +257,8 @@
         "annual": "Annual",
         "lifetime": "Lifetime",
         "trial": "Trial",
-        "verify_your_email": "Verify Your Email"
+        "verify_your_email": "Verify Your Email",
+        "how_did_you_hear": "How did you hear about us?"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -267,22 +268,37 @@
         "register": "Register",
         "login": "Login",
         "verify": "Verify",
-        "resend_code": "Resend Code"
+        "resend_code": "Resend Code",
+        "start_learning": "Start Learning"
     },
     "placeholder": {
         "first_name": "First",
         "last_name": "Last",
         "email": "Email",
         "password": "Password",
-        "confirm_password": "Confirm Password"
+        "confirm_password": "Confirm Password",
+        "please_specify": "Please specify"
     },
     "error": {
         "passwords_do_not_match": "Passwords do not match",
         "registration_failed": "Registration failed",
         "failed_retrieve_password": "Failed to retrieve stored password",
-        "generic": "Error"
+        "generic": "Error",
+        "user_info_not_found": "User information not found"
     },
     "success": {
         "code_resent": "Verification code resent to your email."
+    },
+    "option": {
+        "word_of_mouth": "Word of Mouth",
+        "instagram": "Instagram",
+        "bilibili": "Bilibili",
+        "google_ads": "Online Ads",
+        "hsk_courses": "HSK Courses",
+        "app_store": "App Store",
+        "google_play": "Google Play",
+        "google_search": "Web Search",
+        "youtube": "YouTube",
+        "other": "Other (Please specify)"
     }
 }

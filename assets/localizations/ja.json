@@ -257,7 +257,8 @@
         "annual": "毎年",
         "lifetime": "生涯",
         "trial": "トライアル",
-        "verify_your_email": "メールアドレスを確認してください"
+        "verify_your_email": "メールアドレスを確認してください",
+        "how_did_you_hear": "私たちのことをどこでお知りになりましたか?"
     },
     "action": {
         "upgrade": "アップグレード",
@@ -267,22 +268,37 @@
         "register": "登録",
         "login": "ログイン",
         "verify": "確認",
-        "resend_code": "コードを再送信"
+        "resend_code": "コードを再送信",
+        "start_learning": "学習を開始"
     },
     "placeholder": {
         "first_name": "ファースト",
         "last_name": "ラスト",
         "email": "メール",
         "password": "パスワード",
-        "confirm_password": "パスワードを確認"
+        "confirm_password": "パスワードを確認",
+        "please_specify": "具体的にお答えください"
     },
     "error": {
         "passwords_do_not_match": "パスワードが一致しません",
         "registration_failed": "登録に失敗しました",
         "failed_retrieve_password": "保存されたパスワードの取得に失敗しました",
-        "generic": "エラー"
+        "generic": "エラー",
+        "user_info_not_found": "ユーザー情報が見つかりません"
     },
     "success": {
         "code_resent": "確認コードがメールアドレスに再送信されました。"
+    },
+    "option": {
+        "word_of_mouth": "口コミ",
+        "instagram": "インスタグラム",
+        "bilibili": "ビリビリ",
+        "google_ads": "オンライン広告",
+        "hsk_courses": "HSKコース",
+        "app_store": "アプリストア",
+        "google_play": "Google Playの",
+        "google_search": "ウェブ検索",
+        "youtube": "ユーチューブ",
+        "other": "その他(具体的にお答えください)"
     }
 }

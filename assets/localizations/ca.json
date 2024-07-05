@@ -257,7 +257,8 @@
         "annual": "Anual",
         "lifetime": "De per vida",
         "trial": "Prova",
-        "verify_your_email": "Verifica el teu correu electrònic"
+        "verify_your_email": "Verifica el teu correu electrònic",
+        "how_did_you_hear": "Com ens has conegut?"
     },
     "action": {
         "upgrade": "Rampa",
@@ -267,22 +268,37 @@
         "register": "Registrar",
         "login": "Connexió",
         "verify": "Verifica",
-        "resend_code": "Reenvia el codi"
+        "resend_code": "Reenvia el codi",
+        "start_learning": "Comença a aprendre"
     },
     "placeholder": {
         "first_name": "Primer nom",
         "last_name": "Cognom",
         "email": "Correu electrònic",
         "password": "Contrasenya",
-        "confirm_password": "Confirma la contrasenya"
+        "confirm_password": "Confirma la contrasenya",
+        "please_specify": "Especifiqueu"
     },
     "error": {
         "passwords_do_not_match": "Les contrasenyes no coincideixen",
         "registration_failed": "El registre ha fallat",
         "failed_retrieve_password": "Error en recuperar la contrasenya emmagatzemada",
-        "generic": "Error"
+        "generic": "Error",
+        "user_info_not_found": "Informació de l'usuari no trobada"
     },
     "success": {
         "code_resent": "El codi de verificació s'ha reenviat al teu correu electrònic."
+    },
+    "option": {
+        "word_of_mouth": "Recomanació",
+        "instagram": "Indonèsia",
+        "bilibili": "Bilibili",
+        "google_ads": "Anuncis en línia",
+        "hsk_courses": "Cursos HSK",
+        "app_store": "App Store",
+        "google_play": "Google Play",
+        "google_search": "Cerca a la web",
+        "youtube": "Youtube",
+        "other": "Altres (Especifiqueu-ho)"
     }
 }

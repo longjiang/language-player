@@ -257,7 +257,8 @@
         "annual": "Yıllık",
         "lifetime": "Ömür",
         "trial": "Deneme",
-        "verify_your_email": "E-postanızı doğrulayın"
+        "verify_your_email": "E-postanızı doğrulayın",
+        "how_did_you_hear": "Bizden nasıl haberdar oldunuz?"
     },
     "action": {
         "upgrade": "Yükseltmek",
@@ -267,22 +268,37 @@
         "register": "Kayıt ol",
         "login": "Oturum açma",
         "verify": "Xác minh",
-        "resend_code": "Mãi mãi"
+        "resend_code": "Mãi mãi",
+        "start_learning": "Öğrenmeye Başla"
     },
     "placeholder": {
         "first_name": "İsim",
         "last_name": "Soyadı",
         "email": "E-posta",
         "password": "Parola",
-        "confirm_password": "Xác nhận mật khẩu"
+        "confirm_password": "Xác nhận mật khẩu",
+        "please_specify": "Lütfen belirtin"
     },
     "error": {
         "passwords_do_not_match": "Şifreler eşleşmiyor",
         "registration_failed": "Kayıt başarısız oldu",
         "failed_retrieve_password": "Saklanan parola alınamadı",
-        "generic": "Đã xảy ra lỗi"
+        "generic": "Hata",
+        "user_info_not_found": "Kullanıcı bilgileri bulunamadı"
     },
     "success": {
         "code_resent": "Doğrulama kodu e-postanıza yeniden gönderilir."
+    },
+    "option": {
+        "word_of_mouth": "Ağızdan Ağıza",
+        "instagram": "Instagram Bağlantısı",
+        "bilibili": "Bilibili",
+        "google_ads": "Online Reklamlar",
+        "hsk_courses": "HSK Kursları",
+        "app_store": "Uygulama Mağazası",
+        "google_play": "Google Oyun",
+        "google_search": "Web Araması",
+        "youtube": "Youtube'da T",
+        "other": "Diğer (Lütfen Belirtiniz)"
     }
 }

@@ -257,7 +257,8 @@
         "annual": "Jaarliks",
         "lifetime": "Leeftyd",
         "trial": "Proeflopie",
-        "verify_your_email": "Verifieer jou e-pos"
+        "verify_your_email": "Verifieer jou e-pos",
+        "how_did_you_hear": "Hoe het jy van ons gehoor?"
     },
     "action": {
         "upgrade": "Opgradering",
@@ -267,22 +268,37 @@
         "register": "Registreer",
         "login": "Aanteken",
         "verify": "Verifieer",
-        "resend_code": "Stuur kode weer"
+        "resend_code": "Stuur kode weer",
+        "start_learning": "Begin leer"
     },
     "placeholder": {
         "first_name": "Voornaam",
         "last_name": "Achternaam",
         "email": "E-pos",
         "password": "Wagwoord",
-        "confirm_password": "Bevestig wagwoord"
+        "confirm_password": "Bevestig wagwoord",
+        "please_specify": "Spesifiseer asseblief"
     },
     "error": {
         "passwords_do_not_match": "Wagwoorde stem nie ooreen nie",
         "registration_failed": "Registrasie het misluk",
         "failed_retrieve_password": "Misluk om gestoorde wagwoord te herwin",
-        "generic": "Fout"
+        "generic": "Fout",
+        "user_info_not_found": "Gebruikersinligting nie gevind nie"
     },
     "success": {
         "code_resent": "Verifikasiekode is weer na jou e-pos gestuur."
+    },
+    "option": {
+        "word_of_mouth": "Mondelinge aanbeveling",
+        "instagram": "Instagram",
+        "bilibili": "Bilibili",
+        "google_ads": "Online-advertensies",
+        "hsk_courses": "HSK-kursusse",
+        "app_store": "App Store",
+        "google_play": "Google Play",
+        "google_search": "Websoektog",
+        "youtube": "Youtube",
+        "other": "Ander (Spesifiseer asseblief)"
     }
 }

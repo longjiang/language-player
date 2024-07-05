@@ -257,7 +257,8 @@
         "annual": "Vuosittain",
         "lifetime": "Elinikäinen",
         "trial": "Kokeilu",
-        "verify_your_email": "Vahvista sähköpostisi"
+        "verify_your_email": "Vahvista sähköpostisi",
+        "how_did_you_hear": "Miten kuulit meistä?"
     },
     "action": {
         "upgrade": "Päivittää",
@@ -267,22 +268,37 @@
         "register": "Rekisteröidy",
         "login": "Sisäänkirjautuminen",
         "verify": "Vahvista",
-        "resend_code": "Vahvista uudelleen"
+        "resend_code": "Vahvista uudelleen",
+        "start_learning": "Aloita oppiminen"
     },
     "placeholder": {
         "first_name": "Etunimi",
         "last_name": "Sukunimi",
         "email": "Sähköposti",
         "password": "Salasana",
-        "confirm_password": "Vahvista salasana"
+        "confirm_password": "Vahvista salasana",
+        "please_specify": "Määritä"
     },
     "error": {
         "passwords_do_not_match": "Salasanat eivät täsmää",
         "registration_failed": "Rekisteröinti epäonnistui",
         "failed_retrieve_password": "Salasanan haku epäonnistui",
-        "generic": "Virhe"
+        "generic": "Virhe",
+        "user_info_not_found": "Käyttäjätietoja ei löytynyt"
     },
     "success": {
         "code_resent": "Vahvistuskoodi lähetettiin uudelleen sähköpostiisi."
+    },
+    "option": {
+        "word_of_mouth": "Business suositus",
+        "instagram": "Instagramissa",
+        "bilibili": "Bilibili",
+        "google_ads": "Verkkomainonta",
+        "hsk_courses": "HSK-kurssit",
+        "app_store": "App Store",
+        "google_play": "Google Play",
+        "google_search": "Verkkohaku",
+        "youtube": "YouTubessa",
+        "other": "Muu (täsmennettävä)"
     }
 }

@@ -257,7 +257,8 @@
         "annual": "Ежегодно",
         "lifetime": "Пожизненно",
         "trial": "Испытание",
-        "verify_your_email": "Подтвердите свой адрес электронной почты"
+        "verify_your_email": "Подтвердите свой адрес электронной почты",
+        "how_did_you_hear": "Как вы узнали о нас?"
     },
     "action": {
         "upgrade": "Модернизировать",
@@ -267,22 +268,37 @@
         "register": "Регистрация",
         "login": "Логин",
         "verify": "Подтвердить",
-        "resend_code": "Повторно отправить код"
+        "resend_code": "Повторно отправить код",
+        "start_learning": "Начать обучение"
     },
     "placeholder": {
         "first_name": "Имя",
         "last_name": "Фамилия",
         "email": "Почта",
         "password": "Пароль",
-        "confirm_password": "Подтвердите пароль"
+        "confirm_password": "Подтвердите пароль",
+        "please_specify": "Пожалуйста, уточните"
     },
     "error": {
         "passwords_do_not_match": "Пароли не совпадают",
         "registration_failed": "Регистрация не удалась",
         "failed_retrieve_password": "Не удалось извлечь сохраненный пароль",
-        "generic": "Ошибка"
+        "generic": "Ошибка",
+        "user_info_not_found": "Информация о пользователе не найдена"
     },
     "success": {
         "code_resent": "Код подтверждения отправлен на ваш адрес электронной почты."
+    },
+    "option": {
+        "word_of_mouth": "Рекомендация",
+        "instagram": "Инстаграм",
+        "bilibili": "Билибили",
+        "google_ads": "Онлайн-реклама",
+        "hsk_courses": "Курсы HSK",
+        "app_store": "Магазин приложений",
+        "google_play": "Google Play",
+        "google_search": "Поиск в Интернете",
+        "youtube": "Ютуб",
+        "other": "Другое (Пожалуйста, уточните)"
     }
 }

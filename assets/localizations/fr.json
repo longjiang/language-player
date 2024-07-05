@@ -257,7 +257,8 @@
         "annual": "Annuel",
         "lifetime": "À vie",
         "trial": "Période d’essai",
-        "verify_your_email": "Vérifiez votre e-mail"
+        "verify_your_email": "Vérifiez votre e-mail",
+        "how_did_you_hear": "Comment avez-vous entendu parler de nous ?"
     },
     "action": {
         "upgrade": "Mise à niveau",
@@ -267,22 +268,37 @@
         "register": "Inscription",
         "login": "Connectez-vous",
         "verify": "Vérifier",
-        "resend_code": "Renvoyer le code"
+        "resend_code": "Renvoyer le code",
+        "start_learning": "Commencer à apprendre"
     },
     "placeholder": {
         "first_name": "Prénom",
         "last_name": "Nom de famille",
         "email": "Adresse e-mail",
         "password": "Mot de passe",
-        "confirm_password": "Confirmer le mot de passe"
+        "confirm_password": "Confirmer le mot de passe",
+        "please_specify": "Veuillez préciser"
     },
     "error": {
         "passwords_do_not_match": "Les mots de passe ne correspondent pas",
         "registration_failed": "Inscription échouée",
         "failed_retrieve_password": "Échec de la récupération du mot de passe stocké",
-        "generic": "Erreur"
+        "generic": "Erreur",
+        "user_info_not_found": "Informations utilisateur non trouvées"
     },
     "success": {
         "code_resent": "Le code de vérification a été renvoyé à votre adresse e-mail."
+    },
+    "option": {
+        "word_of_mouth": "Bouche à oreille",
+        "instagram": "Sur Instagram",
+        "bilibili": "Bilibili",
+        "google_ads": "Publicité en ligne",
+        "hsk_courses": "Cours HSK",
+        "app_store": "Boutique d’applications",
+        "google_play": "Google Play",
+        "google_search": "Recherche Web",
+        "youtube": "Youtube",
+        "other": "Autre (Veuillez préciser)"
     }
 }

@@ -257,7 +257,8 @@
         "annual": "年度",
         "lifetime": "终身",
         "trial": "试用",
-        "verify_your_email": "验证您的邮箱"
+        "verify_your_email": "验证您的邮箱",
+        "how_did_you_hear": "您是如何了解到我们的？"
     },
     "action": {
         "upgrade": "升级",
@@ -267,22 +268,37 @@
         "register": "注册",
         "login": "登录",
         "verify": "验证",
-        "resend_code": "重新发送验证码"
+        "resend_code": "重新发送验证码",
+        "start_learning": "开始学习"
     },
     "placeholder": {
         "first_name": "名字",
         "last_name": "姓",
         "email": "电子邮件",
         "password": "密码",
-        "confirm_password": "确认密码"
+        "confirm_password": "确认密码",
+        "please_specify": "请说明"
     },
     "error": {
         "passwords_do_not_match": "密码不匹配",
         "registration_failed": "注册失败",
         "failed_retrieve_password": "无法获取存储的密码",
-        "generic": "错误"
+        "generic": "错误",
+        "user_info_not_found": "未找到用户信息"
     },
     "success": {
         "code_resent": "验证码已重新发送到您的邮箱。"
+    },
+    "option": {
+        "word_of_mouth": "口碑推荐",
+        "instagram": "Instagram",
+        "bilibili": "哔哩哔哩",
+        "google_ads": "在线广告",
+        "hsk_courses": "HSK 课程",
+        "app_store": "App Store",
+        "google_play": "Google Play",
+        "google_search": "网络搜索",
+        "youtube": "YouTube",
+        "other": "其他（请说明）"
     }
 }

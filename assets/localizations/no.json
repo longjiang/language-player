@@ -257,7 +257,8 @@
         "annual": "Årlig",
         "lifetime": "Livstid",
         "trial": "Prøveperiode",
-        "verify_your_email": "Verifiser e-posten din"
+        "verify_your_email": "Verifiser e-posten din",
+        "how_did_you_hear": "Hvordan hørte du om oss?"
     },
     "action": {
         "upgrade": "Oppgradere",
@@ -267,22 +268,37 @@
         "register": "Registrer deg",
         "login": "Pålogging",
         "verify": "Bekreft",
-        "resend_code": "Send kode på nytt"
+        "resend_code": "Send kode på nytt",
+        "start_learning": "Begynn å lære"
     },
     "placeholder": {
         "first_name": "Fornavn",
         "last_name": "Achternavn",
         "email": "E-post",
         "password": "Passord",
-        "confirm_password": "Bekreft passord"
+        "confirm_password": "Bekreft passord",
+        "please_specify": "Vennligst spesifiser"
     },
     "error": {
         "passwords_do_not_match": "Passordene stemmer ikke overens",
         "registration_failed": "Registreringen mislyktes",
         "failed_retrieve_password": "Mislykket i å hente lagret passord",
-        "generic": "Feil"
+        "generic": "Feil",
+        "user_info_not_found": "Finner ikke brukerinformasjon"
     },
     "success": {
         "code_resent": "Bekreftelseskoden ble sendt på nytt til e-posten din."
+    },
+    "option": {
+        "word_of_mouth": "Munn til munn",
+        "instagram": "Instagram",
+        "bilibili": "Bilibili",
+        "google_ads": "Online annonser",
+        "hsk_courses": "HSK-kurs",
+        "app_store": "App Store",
+        "google_play": "Google Play",
+        "google_search": "Web-søk",
+        "youtube": "YouTube",
+        "other": "Annet (vennligst spesifiser)"
     }
 }

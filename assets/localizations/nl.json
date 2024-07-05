@@ -257,7 +257,8 @@
         "annual": "Jaarlijks",
         "lifetime": "Levenslang",
         "trial": "Proefperiode",
-        "verify_your_email": "Bevestig uw e-mail"
+        "verify_your_email": "Bevestig uw e-mail",
+        "how_did_you_hear": "Hoe heb je ons leren kennen?"
     },
     "action": {
         "upgrade": "Opwaarderen",
@@ -267,22 +268,37 @@
         "register": "Registreren",
         "login": "Inloggen",
         "verify": "Verifiëren",
-        "resend_code": "Code opnieuw verzenden"
+        "resend_code": "Code opnieuw verzenden",
+        "start_learning": "Begin met leren"
     },
     "placeholder": {
         "first_name": "Voornaam",
         "last_name": "Naam",
         "email": "Email",
         "password": "Wachtwoord",
-        "confirm_password": "Wachtwoord bevestigen"
+        "confirm_password": "Wachtwoord bevestigen",
+        "please_specify": "Gelieve te specificeren"
     },
     "error": {
         "passwords_do_not_match": "Wachtwoorden komen niet overeen",
         "registration_failed": "Registratie mislukt",
         "failed_retrieve_password": "Wachtwoord ophalen mislukt",
-        "generic": "Fout"
+        "generic": "Fout",
+        "user_info_not_found": "Gebruikersinformatie niet gevonden"
     },
     "success": {
         "code_resent": "Verificatiecode opnieuw verzonden naar uw e-mail."
+    },
+    "option": {
+        "word_of_mouth": "Mond-tot-mondreclame",
+        "instagram": "Naar Instagram",
+        "bilibili": "Bilibili",
+        "google_ads": "Online advertenties",
+        "hsk_courses": "HSK-cursussen",
+        "app_store": "App Store",
+        "google_play": "Google Spelen",
+        "google_search": "Web zoeken",
+        "youtube": "Naar YouTube",
+        "other": "Andere (Gelieve te specificeren)"
     }
 }

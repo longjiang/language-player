@@ -9,8 +9,10 @@ import { ThemedInput } from "@/components/ThemedInput";
 import { router } from "expo-router";
 import { submitAcquisitionSurvey } from "@/src/api/python/acquisition-survey";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const AcquisitionSurveyScreen = () => {
+  const { t } = useLanguage();
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [otherText, setOtherText] = useState("");
   const [userId, setUserId] = useState(null);
@@ -23,10 +25,10 @@ const AcquisitionSurveyScreen = () => {
         if (userInfo) {
           setUserId(userInfo.id);
         } else {
-          throw new Error("User information not found");
+          throw new Error(t('error.user_info_not_found'));
         }
       } catch (error: any) {
-        Alert.alert("Error", error.message);
+        Alert.alert(t('error.generic'), error.message);
       }
     };
 
@@ -34,16 +36,16 @@ const AcquisitionSurveyScreen = () => {
   }, []);
 
   const options = [
-    { value: 'word_of_mouth', text: 'Word of Mouth' },
-    { value: 'instagram', text: 'Instagram' },
-    { value: 'bilibili', text: 'Bilibili' },
-    { value: 'google_ads', text: 'Online Ads' },
-    { value: 'hsk_courses', text: 'HSK Courses' },
-    { value: 'app_store', text: 'App Store' },
-    { value: 'google_play', text: 'Google Play' },
-    { value: 'google_search', text: 'Web Search' },
-    { value: 'youtube', text: 'YouTube' },
-    { value: 'other', text: 'Other (Please specify)' },
+    { value: 'word_of_mouth', text: t('option.word_of_mouth') },
+    { value: 'instagram', text: t('option.instagram') },
+    { value: 'bilibili', text: t('option.bilibili') },
+    { value: 'google_ads', text: t('option.google_ads') },
+    { value: 'hsk_courses', text: t('option.hsk_courses') },
+    { value: 'app_store', text: t('option.app_store') },
+    { value: 'google_play', text: t('option.google_play') },
+    { value: 'google_search', text: t('option.google_search') },
+    { value: 'youtube', text: t('option.youtube') },
+    { value: 'other', text: t('option.other') },
   ];
 
   const handleSelectOption = (option: any) => {
@@ -58,13 +60,13 @@ const AcquisitionSurveyScreen = () => {
       await submitAcquisitionSurvey(userId, selectedOption.value, acquisitionDetails);
       router.push("select-l2");
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      Alert.alert(t('error.generic'), error.message);
     }
   };
 
   return (
     <ThemedScreen
-      title="How did you hear about us?"
+      title={t('title.how_did_you_hear')}
       onBackPress={() => router.navigate("/register")}
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
@@ -78,17 +80,17 @@ const AcquisitionSurveyScreen = () => {
             onPress={() => handleSelectOption(option)}
           />
         ))}
-        {selectedOption === "Other" && (
+        {selectedOption?.value === "other" && (
           <ThemedInput
             style={styles.input}
             value={otherText}
             onChangeText={setOtherText}
-            placeholder="Please specify"
+            placeholder={t('placeholder.please_specify')}
           />
         )}
       </View>
       <ThemedButton
-        title="Start Learning"
+        title={t('action.start_learning')}
         onPress={handleSubmit}
         style={{ marginTop: 20 }}
         disabled={!selectedOption}

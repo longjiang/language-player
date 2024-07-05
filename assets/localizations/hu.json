@@ -257,7 +257,8 @@
         "annual": "Éves",
         "lifetime": "Életre szól",
         "trial": "Próba",
-        "verify_your_email": "Megerősítse az e-mail címét"
+        "verify_your_email": "Megerősítse az e-mail címét",
+        "how_did_you_hear": "Honnan hallottál rólunk?"
     },
     "action": {
         "upgrade": "Feljavít",
@@ -267,22 +268,37 @@
         "register": "Regisztráció",
         "login": "Bejelentkezés",
         "verify": "Megerősít",
-        "resend_code": "Kód újraküldése"
+        "resend_code": "Kód újraküldése",
+        "start_learning": "Tanulás megkezdése"
     },
     "placeholder": {
         "first_name": "Először",
         "last_name": "Vezetéknév",
         "email": "Email",
         "password": "Jelszó",
-        "confirm_password": "Jelszó megerősítése"
+        "confirm_password": "Jelszó megerősítése",
+        "please_specify": "Adjon meg"
     },
     "error": {
         "passwords_do_not_match": "A jelszavak nem egyeznek",
         "registration_failed": "A regisztráció sikertelen",
         "failed_retrieve_password": "Sikertelen a tárolt jelszó visszakeresése",
-        "generic": "Hiba"
+        "generic": "Hiba",
+        "user_info_not_found": "Felhasználói információ nem található"
     },
     "success": {
         "code_resent": "Az ellenőrző kódot újra elküldtük az e-mail címére."
+    },
+    "option": {
+        "word_of_mouth": "Szóbeszéd",
+        "instagram": "Instagram",
+        "bilibili": "Bilibili",
+        "google_ads": "Online hirdetések",
+        "hsk_courses": "HSK tanfolyamok",
+        "app_store": "App Store",
+        "google_play": "Google Play",
+        "google_search": "Webes keresés",
+        "youtube": "Youtube-videók",
+        "other": "Egyéb (kérjük, részletezze)"
     }
 }

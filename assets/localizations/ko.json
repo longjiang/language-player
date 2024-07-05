@@ -257,7 +257,8 @@
         "annual": "매년",
         "lifetime": "평생",
         "trial": "시험",
-        "verify_your_email": "이메일 확인"
+        "verify_your_email": "이메일 확인",
+        "how_did_you_hear": "저희에 대해 어떻게 알게 되셨나요?"
     },
     "action": {
         "upgrade": "업그레이드",
@@ -267,22 +268,37 @@
         "register": "등록",
         "login": "로그인",
         "verify": "확인",
-        "resend_code": "코드 다시 보내기"
+        "resend_code": "코드 다시 보내기",
+        "start_learning": "학습 시작"
     },
     "placeholder": {
         "first_name": "이름",
         "last_name": "성",
         "email": "이메일",
         "password": "암호",
-        "confirm_password": "암호 확인"
+        "confirm_password": "암호 확인",
+        "please_specify": "지정하십시오"
     },
     "error": {
         "passwords_do_not_match": "비밀번호가 일치하지 않습니다",
         "registration_failed": "등록에 실패했습니다",
         "failed_retrieve_password": "저장된 비밀번호 검색 실패",
-        "generic": "오류"
+        "generic": "오류",
+        "user_info_not_found": "사용자 정보를 찾을 수 없습니다"
     },
     "success": {
         "code_resent": "확인 코드가 이메일로 다시 전송되었습니다."
+    },
+    "option": {
+        "word_of_mouth": "마우스 투 마우스",
+        "instagram": "인스타그램",
+        "bilibili": "빌리빌리",
+        "google_ads": "온라인 광고",
+        "hsk_courses": "HSK 코스",
+        "app_store": "앱 스토어",
+        "google_play": "구글 플레이",
+        "google_search": "웹 검색",
+        "youtube": "유튜브",
+        "other": "기타 (구체적으로 기재해 주십시오)"
     }
 }

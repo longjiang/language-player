@@ -257,7 +257,8 @@
         "annual": "年度",
         "lifetime": "終身",
         "trial": "試用",
-        "verify_your_email": "验证您的邮箱"
+        "verify_your_email": "验证您的邮箱",
+        "how_did_you_hear": "您是如何了解到我們的？"
     },
     "action": {
         "upgrade": "升級",
@@ -267,22 +268,37 @@
         "register": "註冊",
         "login": "登錄",
         "verify": "驗證",
-        "resend_code": "重新發送驗證碼"
+        "resend_code": "重新發送驗證碼",
+        "start_learning": "開始學習"
     },
     "placeholder": {
         "first_name": "名字",
         "last_name": "姓",
         "email": "電子郵件",
         "password": "密碼",
-        "confirm_password": "確認密碼"
+        "confirm_password": "確認密碼",
+        "please_specify": "請說明"
     },
     "error": {
         "passwords_do_not_match": "密碼不匹配",
         "registration_failed": "註冊失敗",
         "failed_retrieve_password": "無法獲取存儲的密碼",
-        "generic": "錯誤"
+        "generic": "錯誤",
+        "user_info_not_found": "未找到用戶信息"
     },
     "success": {
         "code_resent": "驗證碼已重新發送到您的電子郵件。"
+    },
+    "option": {
+        "word_of_mouth": "口碑推薦",
+        "instagram": "Instagram",
+        "bilibili": "嗶哩嗶哩",
+        "google_ads": "在線廣告",
+        "hsk_courses": "HSK 課程",
+        "app_store": "App Store",
+        "google_play": "Google Play",
+        "google_search": "網絡搜索",
+        "youtube": "YouTube",
+        "other": "其他（請說明）"
     }
 }

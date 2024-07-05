@@ -257,7 +257,8 @@
         "annual": "वार्षिक",
         "lifetime": "जीवनकाल",
         "trial": "परीक्षण",
-        "verify_your_email": "अपना ईमेल सत्यापित करें"
+        "verify_your_email": "अपना ईमेल सत्यापित करें",
+        "how_did_you_hear": "आपने हमारे बारे में कैसे सुना?"
     },
     "action": {
         "upgrade": "अपग्रेड",
@@ -267,22 +268,37 @@
         "register": "रजिस्टर",
         "login": "लॉगिन",
         "verify": "सत्यापित करें",
-        "resend_code": "कोड पुनः भेजें"
+        "resend_code": "कोड पुनः भेजें",
+        "start_learning": "शुरू करें"
     },
     "placeholder": {
         "first_name": "पहला",
         "last_name": "अंतिम",
         "email": "ईमेल",
         "password": "पासवर्ड",
-        "confirm_password": "पासवर्ड की पुष्टि करें"
+        "confirm_password": "पासवर्ड की पुष्टि करें",
+        "please_specify": "कृपया निर्दिष्ट करें"
     },
     "error": {
         "passwords_do_not_match": "पासवर्ड मेल नहीं खाते",
         "registration_failed": "पंजीकरण विफल हुआ",
         "failed_retrieve_password": "स्टोर्ड पासवर्ड पुनः प्राप्त करने में विफल",
-        "generic": "त्रुटि"
+        "generic": "त्रुटि",
+        "user_info_not_found": "उपयोगकर्ता जानकारी नहीं मिली"
     },
     "success": {
         "code_resent": "सत्यापन कोड आपके ईमेल पर पुनः भेज दिया गया है।"
+    },
+    "option": {
+        "word_of_mouth": "मुंह से मुंह",
+        "instagram": "इंस्टाग्राम",
+        "bilibili": "बिलिबिली",
+        "google_ads": "ऑनलाइन विज्ञापन",
+        "hsk_courses": "HSK पाठ्यक्रम",
+        "app_store": "ऐप स्टोर",
+        "google_play": "गूगल प्ले",
+        "google_search": "वेब खोज",
+        "youtube": "यूट्यूब",
+        "other": "अन्य (कृपया निर्दिष्ट करें)"
     }
 }

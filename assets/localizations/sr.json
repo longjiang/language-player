@@ -257,7 +257,8 @@
         "annual": "Godišnje",
         "lifetime": "Doživotno",
         "trial": "Probni",
-        "verify_your_email": "Potvrdite svoj e-mail"
+        "verify_your_email": "Potvrdite svoj e-mail",
+        "how_did_you_hear": "Kako si иuo za nas?"
     },
     "action": {
         "upgrade": "Nadogradnju",
@@ -267,22 +268,37 @@
         "register": "Registrujte se",
         "login": "Prijavljivanje",
         "verify": "Potvrdi",
-        "resend_code": "Ponovno pošalji"
+        "resend_code": "Ponovno pošalji",
+        "start_learning": "Započni učenje"
     },
     "placeholder": {
         "first_name": "Ime",
         "last_name": "Prezime",
         "email": "Email",
         "password": "Lozinka",
-        "confirm_password": "Potvrdi lozinku"
+        "confirm_password": "Potvrdi lozinku",
+        "please_specify": "Navedite"
     },
     "error": {
         "passwords_do_not_match": "Lozinke se ne podudaraju",
         "registration_failed": "Registracija nije uspela",
         "failed_retrieve_password": "Neuspjelo dohvaćanje pohranjene lozinke",
-        "generic": "Greška"
+        "generic": "Greška",
+        "user_info_not_found": "Korisničke informacije nisu pronađene"
     },
     "success": {
         "code_resent": "Kod"
+    },
+    "option": {
+        "word_of_mouth": "Preporuka",
+        "instagram": "Instagram",
+        "bilibili": "Bilibili",
+        "google_ads": "Online oglasi",
+        "hsk_courses": "HSK kursevi",
+        "app_store": "Prodavnica aplikacija",
+        "google_play": "Google Play",
+        "google_search": "Web pretraga",
+        "youtube": "YouTube",
+        "other": "Ostalo (Navedite)"
     }
 }

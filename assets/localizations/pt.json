@@ -257,7 +257,8 @@
         "annual": "Anual",
         "lifetime": "Vitalício",
         "trial": "Trial",
-        "verify_your_email": "Verifique seu e-mail"
+        "verify_your_email": "Verifique seu e-mail",
+        "how_did_you_hear": "Como você ficou sabendo sobre nós?"
     },
     "action": {
         "upgrade": "Melhoramento",
@@ -267,22 +268,37 @@
         "register": "Registrar",
         "login": "Login",
         "verify": "Verificar",
-        "resend_code": "Reenviar código"
+        "resend_code": "Reenviar código",
+        "start_learning": "Comece a aprender"
     },
     "placeholder": {
         "first_name": "Primeiro",
         "last_name": "Sobrenome",
         "email": "Email",
         "password": "Senha",
-        "confirm_password": "Confirmar senha"
+        "confirm_password": "Confirmar senha",
+        "please_specify": "Por favor, especifique"
     },
     "error": {
         "passwords_do_not_match": "Senhas não correspondem",
         "registration_failed": "Registro falhou",
         "failed_retrieve_password": "Falha ao recuperar a senha armazenada",
-        "generic": "Erro"
+        "generic": "Erro",
+        "user_info_not_found": "Informações do usuário não encontradas"
     },
     "success": {
         "code_resent": "Código de verificação reenviado para o seu e-mail."
+    },
+    "option": {
+        "word_of_mouth": "Boca a boca",
+        "instagram": "Linkedin",
+        "bilibili": "Bilibili",
+        "google_ads": "Anúncios online",
+        "hsk_courses": "Cursos HSK",
+        "app_store": "Loja de aplicativos",
+        "google_play": "Google Play",
+        "google_search": "Procura na Web",
+        "youtube": "YouTube",
+        "other": "Outro (especifique)"
     }
 }

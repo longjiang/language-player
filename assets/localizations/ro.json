@@ -257,7 +257,8 @@
         "annual": "Anual",
         "lifetime": "Pe viață",
         "trial": "Încercare",
-        "verify_your_email": "Verificați-vă e-mailul"
+        "verify_your_email": "Verificați-vă e-mailul",
+        "how_did_you_hear": "Cum ai auzit de noi?"
     },
     "action": {
         "upgrade": "Face upgrade",
@@ -267,22 +268,37 @@
         "register": "Înregistrare",
         "login": "Login",
         "verify": "Verificare",
-        "resend_code": "Retrimiteți codul"
+        "resend_code": "Retrimiteți codul",
+        "start_learning": "Începeți să învățați"
     },
     "placeholder": {
         "first_name": "Prenume",
         "last_name": "Nume",
         "email": "Email",
         "password": "Parolă",
-        "confirm_password": "Confirmă parola"
+        "confirm_password": "Confirmă parola",
+        "please_specify": "Vă rugăm să specificați"
     },
     "error": {
         "passwords_do_not_match": "Parolele nu se potrivesc",
         "registration_failed": "Înregistrarea a eșuat",
         "failed_retrieve_password": "Recuperarea parolei stocate a eșuat",
-        "generic": "Erroare"
+        "generic": "Eroare",
+        "user_info_not_found": "Informațiile utilizatorului nu au fost găsite"
     },
     "success": {
         "code_resent": "Codul de verificare a fost retrimis pe e-mail."
+    },
+    "option": {
+        "word_of_mouth": "Recomandare",
+        "instagram": "Anonim",
+        "bilibili": "Bilibili",
+        "google_ads": "Anunțuri online",
+        "hsk_courses": "Cursuri HSK",
+        "app_store": "Magazinul de aplicații",
+        "google_play": "Google Play",
+        "google_search": "Căutare pe web",
+        "youtube": "YouTube",
+        "other": "Altele (Vă rugăm să precizați)"
     }
 }

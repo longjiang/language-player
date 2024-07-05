@@ -257,7 +257,8 @@
         "annual": "Årligen",
         "lifetime": "Livstid",
         "trial": "Provperiod",
-        "verify_your_email": "Bekräfta din e-postadress"
+        "verify_your_email": "Bekräfta din e-postadress",
+        "how_did_you_hear": "Hur hörde du talas om oss?"
     },
     "action": {
         "upgrade": "Uppgradera",
@@ -267,22 +268,37 @@
         "register": "Registrera dig",
         "login": "Logga in",
         "verify": "Bekräfta",
-        "resend_code": "Beställ ny kod"
+        "resend_code": "Beställ ny kod",
+        "start_learning": "Börja lära dig"
     },
     "placeholder": {
         "first_name": "Förnamn",
         "last_name": "Efternamn",
         "email": "E-post",
         "password": "Lösenord",
-        "confirm_password": "Bekräfta lösenord"
+        "confirm_password": "Bekräfta lösenord",
+        "please_specify": "Precisera"
     },
     "error": {
         "passwords_do_not_match": "Lösenorden matchar inte",
         "registration_failed": "Registreringen misslyckades",
         "failed_retrieve_password": "Misslyckades med att hämta lagrat lösenord",
-        "generic": "Fel"
+        "generic": "Fel",
+        "user_info_not_found": "Det gick inte att hitta användarinformationen"
     },
     "success": {
         "code_resent": "Verifieringskoden skickas till din e-post på nytt."
+    },
+    "option": {
+        "word_of_mouth": "Mun till mun",
+        "instagram": "Följ oss på Instagram",
+        "bilibili": "Bilibili Bilibili",
+        "google_ads": "Online-annonser",
+        "hsk_courses": "HSK-kurser",
+        "app_store": "App Store",
+        "google_play": "Google Play",
+        "google_search": "Webbsökning",
+        "youtube": "På YouTube (på engelska",
+        "other": "Annat (vänligen specificera)"
     }
 }

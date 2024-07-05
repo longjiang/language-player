@@ -257,7 +257,8 @@
         "annual": "Jährlich",
         "lifetime": "Lebenslang",
         "trial": "Probe",
-        "verify_your_email": "Bestätigen Sie Ihre E-Mail"
+        "verify_your_email": "Bestätigen Sie Ihre E-Mail",
+        "how_did_you_hear": "Wie sind Sie auf uns aufmerksam geworden?"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -267,22 +268,37 @@
         "register": "Registrieren",
         "login": "Einloggen",
         "verify": "Bestätigen",
-        "resend_code": "Code erneut senden"
+        "resend_code": "Code erneut senden",
+        "start_learning": "Lernen beginnen"
     },
     "placeholder": {
         "first_name": "Vorname",
         "last_name": "Name",
         "email": "E-Mail",
         "password": "Passwort",
-        "confirm_password": "Passwort bestätigen"
+        "confirm_password": "Passwort bestätigen",
+        "please_specify": "Bitte angeben"
     },
     "error": {
         "passwords_do_not_match": "Passwörter stimmen nicht überein",
         "registration_failed": "Registrierung fehlgeschlagen",
         "failed_retrieve_password": "Fehler beim Abrufen des gespeicherten Passworts",
-        "generic": "Fehler"
+        "generic": "Fehler",
+        "user_info_not_found": "Benutzerinformationen nicht gefunden"
     },
     "success": {
         "code_resent": "Der Code wurde erneut an Ihre E-Mail-Adresse gesendet."
+    },
+    "option": {
+        "word_of_mouth": "Empfehlung",
+        "instagram": "Auf Instagram (Englisch)",
+        "bilibili": "Bilibili",
+        "google_ads": "Online-Anzeigen",
+        "hsk_courses": "HSK-Kurse",
+        "app_store": "App Store",
+        "google_play": "Bei Google Spielen",
+        "google_search": "Web-Suche",
+        "youtube": "Auf YouTube (Englisch)",
+        "other": "Sonstiges (bitte angeben)"
     }
 }

@@ -257,7 +257,8 @@
         "annual": "Tahunan",
         "lifetime": "Seumur hidup",
         "trial": "Uji coba",
-        "verify_your_email": "Konfirmasikan Email Anda"
+        "verify_your_email": "Konfirmasikan Email Anda",
+        "how_did_you_hear": "Bagaimana Anda mendengar tentang kami?"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -267,22 +268,37 @@
         "register": "Registrasi",
         "login": "Login",
         "verify": "Konfirmasi",
-        "resend_code": "Kirim Ulang Kode"
+        "resend_code": "Kirim Ulang Kode",
+        "start_learning": "Mulai Belajar"
     },
     "placeholder": {
         "first_name": "Nama depan",
         "last_name": "Nama belakang",
         "email": "Email",
         "password": "Kata sandi",
-        "confirm_password": "Konfirmasi Kata Sandi"
+        "confirm_password": "Konfirmasi Kata Sandi",
+        "please_specify": "Harap tentukan"
     },
     "error": {
         "passwords_do_not_match": "Kata sandi tidak cocok",
         "registration_failed": "Registrasi gagal",
         "failed_retrieve_password": "Gagal mengambil kata sandi yang disimpan",
-        "generic": "Kesalahan"
+        "generic": "Kesalahan",
+        "user_info_not_found": "Informasi pengguna tidak ditemukan"
     },
     "success": {
         "code_resent": "Kode verifikasi telah dikirim ulang ke email Anda."
+    },
+    "option": {
+        "word_of_mouth": "Rekomendasi",
+        "instagram": "Situs web",
+        "bilibili": "Bstation",
+        "google_ads": "Iklan Online",
+        "hsk_courses": "Kursus HSK",
+        "app_store": "Toko Aplikasi",
+        "google_play": "Google Play",
+        "google_search": "Pencarian Web",
+        "youtube": "YouTube",
+        "other": "Lainnya (Sebutkan)"
     }
 }

@@ -257,7 +257,8 @@
         "annual": "Ετήσια",
         "lifetime": "Εφικτή",
         "trial": "Δοκιμή",
-        "verify_your_email": "Επιβεβαιώστε το email σας"
+        "verify_your_email": "Επιβεβαιώστε το email σας",
+        "how_did_you_hear": "Πώς μάθατε για εμάς;"
     },
     "action": {
         "upgrade": "Αναβαθμίζω",
@@ -267,22 +268,37 @@
         "register": "Εγγραφή",
         "login": "Σύνδεση",
         "verify": "Επαλήθευση",
-        "resend_code": "Επανάληψη κωδικού"
+        "resend_code": "Επανάληψη κωδικού",
+        "start_learning": "Ξεκινήστε τη μάθηση"
     },
     "placeholder": {
         "first_name": "Όνομα",
         "last_name": "Επώνυμο",
         "email": "Ηλεκτρονικό ταχυδρομείο",
         "password": "Κωδικός πρόσβασης",
-        "confirm_password": "Επιβεβαίωση κωδικού πρόσβασης"
+        "confirm_password": "Επιβεβαίωση κωδικού πρόσβασης",
+        "please_specify": "Διευκρινίστε"
     },
     "error": {
         "passwords_do_not_match": "Οι κωδικοί πρόσβασης δεν ταιριάζουν",
         "registration_failed": "Η εγγραφή απέτυχε",
         "failed_retrieve_password": "Αποτυχία ανάκτησης αποθηκευμένου κωδικού πρόσβασης",
-        "generic": "Σφάλμα"
+        "generic": "Σφάλμα",
+        "user_info_not_found": "Δεν βρέθηκαν πληροφορίες χρήστη"
     },
     "success": {
         "code_resent": "Ο κωδικός επαλήθευσης εστάλη ξανά στο email σας."
+    },
+    "option": {
+        "word_of_mouth": "Στόμα στο στόμα",
+        "instagram": "Ίνσταγκραμ",
+        "bilibili": "Μπιλιμπίλι",
+        "google_ads": "Διαφημίσεις στο διαδίκτυο",
+        "hsk_courses": "Μαθήματα HSK",
+        "app_store": "Κατάστημα εφαρμογών",
+        "google_play": "Google Play",
+        "google_search": "Αναζήτηση στο διαδίκτυο",
+        "youtube": "YouTube",
+        "other": "Άλλο (διευκρινίστε)"
     }
 }

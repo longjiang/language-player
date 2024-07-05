@@ -257,7 +257,8 @@
         "annual": "Kila mwaka",
         "lifetime": "Maisha yote",
         "trial": "Jaribio",
-        "verify_your_email": "Thibitisha Barua pepe yako"
+        "verify_your_email": "Thibitisha Barua pepe yako",
+        "how_did_you_hear": "Ulisikiaje kuhusu sisi?"
     },
     "action": {
         "upgrade": "Kuboresha",
@@ -267,22 +268,37 @@
         "register": "Jisajili",
         "login": "Kuingia",
         "verify": "Thibitisha",
-        "resend_code": "Peana tena nambari"
+        "resend_code": "Peana tena nambari",
+        "start_learning": "Anza Kujifunza"
     },
     "placeholder": {
         "first_name": "Jina la kwanza",
         "last_name": "Jina la mwisho",
         "email": "Barua pepe",
         "password": "Nywila",
-        "confirm_password": "Thibitisha Nywila"
+        "confirm_password": "Thibitisha Nywila",
+        "please_specify": "Tafadhali bainisha"
     },
     "error": {
         "passwords_do_not_match": "Maneno ya siri hayalingani",
         "registration_failed": "Kusajiliwa kushindwa",
         "failed_retrieve_password": "Kushindwa kupata nywila iliyohifadhiwa",
-        "generic": "Fehler"
+        "generic": "Kosa",
+        "user_info_not_found": "Maelezo ya mtumiaji hayapatikani"
     },
     "success": {
         "code_resent": "Nambari ya uthibitishaji inakataa barua pepe yako."
+    },
+    "option": {
+        "word_of_mouth": "Kinywa kwa Kinywa",
+        "instagram": "Instagram",
+        "bilibili": "Bilibili",
+        "google_ads": "Matangazo ya mtandaoni",
+        "hsk_courses": "Mafunzo ya HSK",
+        "app_store": "Duka la Programu",
+        "google_play": "Google Play",
+        "google_search": "Tafuta kwenye Wavuti",
+        "youtube": "Youtube",
+        "other": "Nyingine (Tafadhali taja)"
     }
 }

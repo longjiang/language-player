@@ -257,7 +257,8 @@
         "annual": "Bliana",
         "lifetime": "Anam",
         "trial": "Trial",
-        "verify_your_email": "Deimhnigh do ríomhphost"
+        "verify_your_email": "Deimhnigh do ríomhphost",
+        "how_did_you_hear": "Conas a chuala tú fúinn?"
     },
     "action": {
         "upgrade": "Uasghrádú",
@@ -267,22 +268,37 @@
         "register": "Cláraigh",
         "login": "Logáil isteach",
         "verify": "Deimhnigh",
-        "resend_code": "Seol arís an cód"
+        "resend_code": "Seol arís an cód",
+        "start_learning": "Tosaigh ag foghlaim"
     },
     "placeholder": {
         "first_name": "Ainm",
         "last_name": "Ainm deiridh",
         "email": "Ríomhphost",
         "password": "Pasfhocal",
-        "confirm_password": "Deimhnigh an Pasfhocal"
+        "confirm_password": "Deimhnigh an Pasfhocal",
+        "please_specify": "Sonraigh le do thoil"
     },
     "error": {
         "passwords_do_not_match": "Níl na pasfhocail comhtháite",
         "registration_failed": "Níor éirigh le clárú",
         "failed_retrieve_password": "Níor éirigh leis an bhfocal faire a stóráil",
-        "generic": "Earráid"
+        "generic": "Earráid",
+        "user_info_not_found": "Níor aimsíodh eolas úsáideora"
     },
     "success": {
         "code_resent": "Tá an cód deimhnithe atá atáirthe arís chuig do ríomhphost."
+    },
+    "option": {
+        "word_of_mouth": "Labhairt",
+        "instagram": "Instagram",
+        "bilibili": "BilibiliName",
+        "google_ads": "An tionscadal",
+        "hsk_courses": "Cúrsaí HSK",
+        "app_store": "Siopa Aipeanna",
+        "google_play": "Google Play",
+        "google_search": "Cuardach gréasáin",
+        "youtube": "YouTube",
+        "other": "Eile (Sonraigh le do thoil)"
     }
 }

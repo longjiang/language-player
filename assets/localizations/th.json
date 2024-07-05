@@ -257,7 +257,8 @@
         "annual": "Hàng năm",
         "lifetime": "Suốt đời",
         "trial": "Thử nghiệm",
-        "verify_your_email": "Hãy xác minh email của bạn"
+        "verify_your_email": "Hãy xác minh email của bạn",
+        "how_did_you_hear": "คุณรู้จักเราได้อย่างไร?"
     },
     "action": {
         "upgrade": "อัพ เกรด",
@@ -267,22 +268,37 @@
         "register": "ลงทะเบียน",
         "login": "เข้า สู่ ระบบ",
         "verify": "ยืนยัน",
-        "resend_code": "Thibitisha tena"
+        "resend_code": "Thibitisha tena",
+        "start_learning": "เริ่มเรียนรู้"
     },
     "placeholder": {
         "first_name": "ชื่อจริง",
         "last_name": "นามสกุล",
         "email": "อีเมล",
         "password": "รหัสผ่าน",
-        "confirm_password": "ยืนยันรหัสผ่าน"
+        "confirm_password": "ยืนยันรหัสผ่าน",
+        "please_specify": "โปรดระบุ"
     },
     "error": {
         "passwords_do_not_match": "Mật khẩu không khớp",
         "registration_failed": "การลงทะเบียนล้มเหลว",
         "failed_retrieve_password": "Thất bại trong việc lấy mật khẩu đã lưu",
-        "generic": "Kosa"
+        "generic": "ความผิดพลาด",
+        "user_info_not_found": "ไม่พบข้อมูลผู้ใช้"
     },
     "success": {
         "code_resent": "รหัสยืนยันถูกส่งไปยังอีเมลของคุณอีกครั้ง"
+    },
+    "option": {
+        "word_of_mouth": "Truyền miệng",
+        "instagram": "อินสตาแกรม",
+        "bilibili": "บิบิลิ",
+        "google_ads": "Quảng cáo trực tuyến",
+        "hsk_courses": "Khoá học HSK",
+        "app_store": "แอพสโตร์",
+        "google_play": "Google เล่น",
+        "google_search": "Tìm kiếm trên web",
+        "youtube": "ยูทูบ",
+        "other": "อื่นๆ (โปรดระบุ)"
     }
 }

@@ -257,7 +257,8 @@
         "annual": "سنوياً",
         "lifetime": "مدى الحياة",
         "trial": "تجربة",
-        "verify_your_email": "تحقق من بريدك الإلكتروني"
+        "verify_your_email": "تحقق من بريدك الإلكتروني",
+        "how_did_you_hear": "كيف سمعت عنا؟"
     },
     "action": {
         "upgrade": "ترقيه",
@@ -267,22 +268,37 @@
         "register": "سجل",
         "login": "تسجيل الدخول",
         "verify": "التحقق",
-        "resend_code": "إعادة إرسال الرمز"
+        "resend_code": "إعادة إرسال الرمز",
+        "start_learning": "ابدأ التعلم"
     },
     "placeholder": {
         "first_name": "الاسم الأول",
         "last_name": "الاسم الأخير",
         "email": "البريد الإلكتروني",
         "password": "كلمة السر",
-        "confirm_password": "تأكيد كلمة المرور"
+        "confirm_password": "تأكيد كلمة المرور",
+        "please_specify": "يرجى التحديد"
     },
     "error": {
         "passwords_do_not_match": "كلمات المرور غير متطابقة",
         "registration_failed": "فشل التسجيل",
         "failed_retrieve_password": "فشل في استرداد كلمة المرور المخزنة",
-        "generic": "خطأ"
+        "generic": "خطأ",
+        "user_info_not_found": "لم يتم العثور على معلومات المستخدم"
     },
     "success": {
         "code_resent": "تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني."
+    },
+    "option": {
+        "word_of_mouth": "التوصية الشخصية",
+        "instagram": "انستغرام",
+        "bilibili": "بيليبيلي",
+        "google_ads": "الإعلانات عبر الإنترنت",
+        "hsk_courses": "دورات HSK",
+        "app_store": "المتجر",
+        "google_play": "جوجل بلاي",
+        "google_search": "البحث على الإنترنت",
+        "youtube": "يوتيوب",
+        "other": "أخرى (يرجى التحديد)"
     }
 }

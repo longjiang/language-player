@@ -257,7 +257,8 @@
         "annual": "Anual",
         "lifetime": "De por vida",
         "trial": "Prueba",
-        "verify_your_email": "Verifica tu correo electrónico"
+        "verify_your_email": "Verifica tu correo electrónico",
+        "how_did_you_hear": "¿Cómo te enteraste de nosotros?"
     },
     "action": {
         "upgrade": "Actualizar",
@@ -267,22 +268,37 @@
         "register": "Registro",
         "login": "Iniciar sesión",
         "verify": "Verificar",
-        "resend_code": "Reenviar código"
+        "resend_code": "Reenviar código",
+        "start_learning": "Comenzar a aprender"
     },
     "placeholder": {
         "first_name": "Nombre",
         "last_name": "Apellido",
         "email": "Correo electrónico",
         "password": "Contraseña",
-        "confirm_password": "Confirmar contraseña"
+        "confirm_password": "Confirmar contraseña",
+        "please_specify": "Por favor, especifique"
     },
     "error": {
         "passwords_do_not_match": "Las contraseñas no coinciden",
         "registration_failed": "Registro fallido",
         "failed_retrieve_password": "Fallo al recuperar la contraseña almacenada",
-        "generic": "Error"
+        "generic": "Error",
+        "user_info_not_found": "No se encontraron datos de usuario"
     },
     "success": {
         "code_resent": "El código de verificación se ha reenviado a su correo electrónico."
+    },
+    "option": {
+        "word_of_mouth": "Recomendación",
+        "instagram": "Instagram (en inglés)",
+        "bilibili": "Bilibili",
+        "google_ads": "Anuncios en línea",
+        "hsk_courses": "Cursos HSK",
+        "app_store": "Tienda de aplicaciones",
+        "google_play": "Google Play",
+        "google_search": "Búsqueda en la web",
+        "youtube": "YouTube (en inglés)",
+        "other": "Otros (Especifique)"
     }
 }
