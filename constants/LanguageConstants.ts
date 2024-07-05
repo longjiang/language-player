@@ -205,3 +205,23 @@ export const CONTINUA_LANGUAGES = [
   "yue",
   "zho",
 ];
+
+export const HAN_LANGUAGES = [
+  "cdo",
+  "cjy",
+  "cmn",
+  "cnp",
+  "cpx",
+  "csp",
+  "czo",
+  "hak",
+  "hsn",
+  "ltc",
+  "lzh",
+  "mnp",
+  "nan",
+  "och",
+  "wuu",
+  "yue",
+  "zho",
+];

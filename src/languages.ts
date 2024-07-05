@@ -10,7 +10,8 @@ import {
   LANGS_WITH_AZURE_TRANSLATE,
   LANGS_WITH_LEVELS,
   PREFERRED_COUNTRY_CODES,
-  CONTINUA_LANGUAGES
+  CONTINUA_LANGUAGES,
+  HAN_LANGUAGES,
 } from "@/constants/LanguageConstants";
 
 export type Language = {
@@ -22,6 +23,7 @@ export type Language = {
   glottologId: string;
   glottologFamilyId: string;
   glottologParentId: string;
+  han: boolean;
   level: string;
   lat: number;
   long: number;
@@ -70,6 +72,7 @@ class Languages {
         ...lang,
         code,
         continua,
+        han: HAN_LANGUAGES.includes(lang.iso639_3),
         has: {
           content: LANGS_WITH_CONTENT.includes(lang.iso639_3),
           youtube: LANGS_YOUTUBE_SUPPORTS.includes(lang.iso639_3),
