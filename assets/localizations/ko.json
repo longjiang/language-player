@@ -236,6 +236,8 @@
         "next": "다음",
         "password": "암호",
         "register": "등록기",
-        "start_learning": "학습 시작하기"
+        "start_learning": "학습 시작하기",
+        "choose_language": "언어 선택",
+        "continue_learning": "계속 학습하기 {{l2Code}}"
     }
 }

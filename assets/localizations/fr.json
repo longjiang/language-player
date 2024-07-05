@@ -236,6 +236,8 @@
         "next": "Prochain",
         "password": "Mot de passe",
         "register": "Registre",
-        "start_learning": "Commencez à apprendre"
+        "start_learning": "Commencez à apprendre",
+        "choose_language": "Choisissez la langue",
+        "continue_learning": "Continuer à apprendre {{l2Code}}"
     }
 }

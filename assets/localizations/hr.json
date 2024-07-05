@@ -236,6 +236,8 @@
         "next": "Sljedeći",
         "password": "Lozinka",
         "register": "Registar",
-        "start_learning": "Započnite učenje"
+        "start_learning": "Započnite učenje",
+        "choose_language": "Odabir jezika",
+        "continue_learning": "Nastavi učiti {{l2Code}}"
     }
 }

@@ -236,6 +236,8 @@
         "next": "अगला",
         "password": "पासवर्ड",
         "register": "पंजीकृत करें",
-        "start_learning": "सीखना शुरू करें"
+        "start_learning": "सीखना शुरू करें",
+        "choose_language": "भाषा चुनें",
+        "continue_learning": "सीखना जारी रखें {{l2Code}}"
     }
 }

@@ -41,10 +41,12 @@ const i18n = new I18n({
   vi: require('@/assets/localizations/vi.json')
 });
 
-
 // Enable fallback and load default translations
 i18n.enableFallback = true;
 i18n.translations.en = i18n.translations.en || require('@/assets/localizations/en.json');
+
+// Set default missingBehavior
+i18n.missingBehavior = 'guess';
 
 // Define the context's value type
 interface LanguageContextType {

@@ -236,6 +236,8 @@
         "next": "Következő",
         "password": "Jelszó",
         "register": "Regisztráció",
-        "start_learning": "Kezdje el a tanulást"
+        "start_learning": "Kezdje el a tanulást",
+        "choose_language": "Válasszon nyelvet",
+        "continue_learning": "Folytassa a tanulást {{l2Code}}"
     }
 }

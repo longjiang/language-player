@@ -236,6 +236,8 @@
         "next": "Volgende",
         "password": "Wagwoord",
         "register": "Register",
-        "start_learning": "Begin leer"
+        "start_learning": "Begin leer",
+        "choose_language": "Kies Taal",
+        "continue_learning": "Continue Learning {{l2Code}}"
     }
 }

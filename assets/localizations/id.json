@@ -236,6 +236,8 @@
         "next": "Depan",
         "password": "Kata sandi",
         "register": "Daftar",
-        "start_learning": "Mulai Belajar"
+        "start_learning": "Mulai Belajar",
+        "choose_language": "Pilih Bahasa",
+        "continue_learning": "Lanjutkan Belajar {{l2Code}}"
     }
 }

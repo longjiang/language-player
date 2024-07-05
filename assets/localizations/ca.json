@@ -236,6 +236,8 @@
         "next": "Proper",
         "password": "Contrasenya",
         "register": "Registrar",
-        "start_learning": "Comença a aprendre"
+        "start_learning": "Comença a aprendre",
+        "choose_language": "Tria l'idioma",
+        "continue_learning": "Continuar aprenent {{l2Code}}"
     }
 }

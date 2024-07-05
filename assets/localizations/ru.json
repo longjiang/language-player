@@ -236,6 +236,8 @@
         "next": "Следующий",
         "password": "Пароль",
         "register": "Регистрировать",
-        "start_learning": "Начать обучение"
+        "start_learning": "Начать обучение",
+        "choose_language": "Выберите язык",
+        "continue_learning": "Продолжить обучение {{l2Code}}"
     }
 }

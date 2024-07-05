@@ -236,6 +236,8 @@
         "next": "Seuraava",
         "password": "Salasana",
         "register": "Rekisteröidy",
-        "start_learning": "Aloita oppiminen"
+        "start_learning": "Aloita oppiminen",
+        "choose_language": "Valitse kieli",
+        "continue_learning": "Jatka oppimista {{l2Code}}"
     }
 }

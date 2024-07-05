@@ -236,6 +236,8 @@
         "next": "下一个",
         "password": "密码",
         "register": "注册",
-        "start_learning": "开始学习"
+        "start_learning": "开始学习",
+        "choose_language": "选择语言",
+        "continue_learning": "继续学习 {{l2Code}}"
     }
 }

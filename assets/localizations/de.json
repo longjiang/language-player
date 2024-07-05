@@ -236,6 +236,8 @@
         "next": "Nächster",
         "password": "Passwort",
         "register": "Registrieren",
-        "start_learning": "Beginnen Sie zu lernen"
+        "start_learning": "Beginnen Sie zu lernen",
+        "choose_language": "Sprache wählen",
+        "continue_learning": "Lernen Sie weiter {{l2Code}}"
     }
 }

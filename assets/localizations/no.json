@@ -236,6 +236,8 @@
         "next": "Neste",
         "password": "Passord",
         "register": "Registrering",
-        "start_learning": "Begynn å lære"
+        "start_learning": "Begynn å lære",
+        "choose_language": "Velg språk",
+        "continue_learning": "Fortsett å lære {{l2Code}}"
     }
 }

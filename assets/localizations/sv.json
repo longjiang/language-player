@@ -236,6 +236,8 @@
         "next": "Nästa",
         "password": "Lösenord",
         "register": "Registrera dig",
-        "start_learning": "Börja lära dig"
+        "start_learning": "Börja lära dig",
+        "choose_language": "Välj språk",
+        "continue_learning": "Fortsätt lära dig {{l2Code}}"
     }
 }

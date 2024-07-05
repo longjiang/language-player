@@ -236,6 +236,8 @@
         "next": "次に",
         "password": "パスワード",
         "register": "登録する",
-        "start_learning": "学習を始める"
+        "start_learning": "学習を始める",
+        "choose_language": "言語を選択",
+        "continue_learning": "学習を続ける {{l2Code}}"
     }
 }

@@ -236,6 +236,8 @@
         "next": "ต่อไป",
         "password": "รหัสผ่าน",
         "register": "ลงทะเบียน",
-        "start_learning": "เริ่มเรียนรู้"
+        "start_learning": "เริ่มเรียนรู้",
+        "choose_language": "เลือกภาษา",
+        "continue_learning": "เรียนรู้ต่อไป {{l2Code}}"
     }
 }

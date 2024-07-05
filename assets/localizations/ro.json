@@ -236,6 +236,8 @@
         "next": "Următor",
         "password": "Parolă",
         "register": "Înregistrează-te",
-        "start_learning": "Începeți să învățați"
+        "start_learning": "Începeți să învățați",
+        "choose_language": "Alege limba",
+        "continue_learning": "Continuați să învățați {{l2Code}}"
     }
 }

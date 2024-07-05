@@ -236,6 +236,8 @@
         "next": "مقبل",
         "password": "شعار",
         "register": "سجل",
-        "start_learning": "ابدأ التعلم"
+        "start_learning": "ابدأ التعلم",
+        "choose_language": "اختر اللغة",
+        "continue_learning": "مواصلة التعلم {{l2Code}}"
     }
 }

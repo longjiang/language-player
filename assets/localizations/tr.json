@@ -236,6 +236,8 @@
         "next": "Önümüzdeki",
         "password": "Parola",
         "register": "Kaydolmak",
-        "start_learning": "Öğrenmeye Başla"
+        "start_learning": "Öğrenmeye Başla",
+        "choose_language": "Dil Seçiniz",
+        "continue_learning": "Öğrenmeye Devam Et {{l2Code}}"
     }
 }

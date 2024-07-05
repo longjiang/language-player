@@ -236,6 +236,8 @@
         "next": "Sau",
         "password": "Mật khẩu",
         "register": "Đăng ký",
-        "start_learning": "Bắt đầu học"
+        "start_learning": "Bắt đầu học",
+        "choose_language": "Chọn ngôn ngữ",
+        "continue_learning": "Tiếp tục học {{l2Code}}"
     }
 }

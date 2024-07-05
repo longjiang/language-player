@@ -19,7 +19,7 @@ const IndexScreen = () => {
   const { isAuthenticated } = useAuth();
   const { userData } = useUserData();
   const { settings } = useSettings();
-  const { l2Lang } = useLanguage();
+  const { i18n, l2Lang } = useLanguage();
   const [shouldShowHome, setShouldShowHome] = useState(false);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ const IndexScreen = () => {
 
   const buttonText = useMemo(() => {
     if (!isAuthenticated) {
-      return "Start Learning";
+      return "title.start_learning";
     } else if (!settings.l1LangCode || !settings.l2LangCode) {
       return "Choose Language";
     } else {
@@ -59,15 +59,12 @@ const IndexScreen = () => {
 
   return (
     <ThemedScreen
-      title="Enrich your language-learning journey"
+      title="msg.enrich_your_language_learning_journey"
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -30}}
     >
       <View>
-        <ThemedText style={styles.description}>
-          Discover the power of Comprehensible Input through hundreds of
-          thousands of videos in over 100 languages.
-        </ThemedText>
+        <ThemedText style={styles.description}>{i18n.t('msg.discover_the_power_of_comprehensible_input')}</ThemedText>
         <ThemedButton
           title={buttonText}
           trailingIcon={<Icon name="chevron-right" />}

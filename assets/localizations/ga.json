@@ -236,6 +236,8 @@
         "next": "Ar Aghaidh",
         "password": "Pasfhocal",
         "register": "Cláraigh",
-        "start_learning": "Tosaigh Foghlaim"
+        "start_learning": "Tosaigh Foghlaim",
+        "choose_language": "Roghnaigh Teanga",
+        "continue_learning": "Lean ar aghaidh ag foghlaim {{l2Code}}"
     }
 }

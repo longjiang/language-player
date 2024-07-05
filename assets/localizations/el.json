@@ -236,6 +236,8 @@
         "next": "Επόμενος",
         "password": "Κωδικός πρόσβασης",
         "register": "Εγγράψου",
-        "start_learning": "Ξεκινήστε να μαθαίνετε"
+        "start_learning": "Ξεκινήστε να μαθαίνετε",
+        "choose_language": "Επιλέξτε Γλώσσα",
+        "continue_learning": "Συνεχίστε να μαθαίνετε {{l2Code}}"
     }
 }

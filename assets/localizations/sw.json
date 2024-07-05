@@ -236,6 +236,8 @@
         "next": "Ijayo",
         "password": "Nywila",
         "register": "Kujiandikisha",
-        "start_learning": "Anza Kujifunza"
+        "start_learning": "Anza Kujifunza",
+        "choose_language": "Chagua Lugha",
+        "continue_learning": "Endelea Kujifunza {{l2Code}}"
     }
 }

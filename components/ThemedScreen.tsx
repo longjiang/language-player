@@ -1,3 +1,5 @@
+// @/components/ThemedScreen.tsx
+
 import React from 'react';
 import { View, SafeAreaView, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
@@ -7,6 +9,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CountryFlag from 'react-native-country-flag';
 import { router } from "expo-router";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { themedScreenStyles as styles } from '@/src/styles';
 
 export const ThemedScreen = ({
   title,
@@ -37,7 +40,7 @@ export const ThemedScreen = ({
           {(showHeader && <View style={styles.header}>
             <View style={styles.headerLeft}>
               {onBackPress && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="chevron-left" />} onPress={onBackPress} />}
-              <ThemedText type="title" style={styles.title}>{i18n.t(title, { missingBehavior: "guess"})}</ThemedText>
+              <ThemedText type="title" style={styles.title}>{i18n.t(title)}</ThemedText>
             </View>
             {(onAction && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="dots-horizontal-circle" />} onPress={onAction} />)}
             {(showFlag && <TouchableOpacity onPress={() => { router.navigate('/select-l2') }}>
@@ -50,32 +53,3 @@ export const ThemedScreen = ({
     </ThemedView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingBottom: 20,
-  },
-  contentContainer: {
-    padding: 26,
-    textAlign: "left",
-    width: "100%", // Full width container
-  },
-  header: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    marginLeft: -15,
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-  },
-  headerLeft: {
-    flexDirection: 'row',
-  },
-  title: {
-    marginLeft: 10,
-  },
-  image: {
-    width: "100%",
-    marginBottom: 20,
-  },
-});
