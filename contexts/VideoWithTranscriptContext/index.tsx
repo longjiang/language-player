@@ -85,7 +85,10 @@ export const VideoWithTranscriptProvider: React.FC<{
   }, [playlist, updateVideo]);
 
   useEffect(() => {
-    if (!video?.subs_l2?.length) setSyncedLines([]);
+    if (!video?.subs_l2?.length) {
+      setSyncedLines([]);
+      return;
+    }
     const l1Lines = video.subs_l1 || [];
     const l2Lines = video.subs_l2 || [];
     const syncedLines = syncLines(l1Lines, l2Lines);
