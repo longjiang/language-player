@@ -299,7 +299,9 @@
         "or_register_with": "Lub zarejestruj się za pomocą:",
         "already_have_account": "Masz już konto?",
         "enter_verification_code": "Wprowadź kod weryfikacyjny wysłany na adres e-mail",
-        "hsk_explanation": "\"HSK\" to oficjalny chiński test biegłości, w którym poziom 1 jest najniższy, a poziom 9 najwyższy."
+        "hsk_explanation": "\"HSK\" to oficjalny chiński test biegłości, w którym poziom 1 jest najniższy, a poziom 9 najwyższy.",
+        "pro_transcript": "Uaktualnij do wersji Pro, aby wyświetlić pełną transkrypcję!",
+        "pro_transcript_limit_reached": "Osiągnięto limit transkrypcji. Uaktualnij do wersji Pro, aby uzyskać dostęp do większej liczby transkrypcji."
     },
     "title": {
         "email": "E-mail",
@@ -323,7 +325,8 @@
         "verify_your_email": "Potwierdź swój adres e-mail",
         "how_did_you_hear": "Skąd się o nas dowiedziałeś?",
         "select_language": "Jakiego języka chcesz się nauczyć?",
-        "current_level": "Jaki jest twój obecny poziom {{language}}?"
+        "current_level": "Jaki jest twój obecny poziom {{language}}?",
+        "pro_feature": "Función Pro"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -337,7 +340,8 @@
         "start_learning": "Rozpocznij naukę",
         "next": "Następny",
         "tv_shows": "Programas de TV",
-        "watch": "Ver"
+        "watch": "Ver",
+        "upgrade_to_pro": "Actualizar a Pro"
     },
     "placeholder": {
         "first_name": "Imię",
@@ -354,7 +358,8 @@
         "failed_retrieve_password": "Nie udało się odzyskać przechowywanego hasła",
         "generic": "Błąd",
         "user_info_not_found": "Nie znaleziono informacji o użytkowniku",
-        "updating_progress": "Błąd podczas aktualizacji postępu:"
+        "updating_progress": "Błąd podczas aktualizacji postępu:",
+        "failed_to_load_items": "Nie udało się załadować elementów:"
     },
     "success": {
         "code_resent": "Kod weryfikacyjny został ponownie wysłany na Twój adres e-mail."

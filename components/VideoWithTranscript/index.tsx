@@ -6,10 +6,9 @@ import { VideoWithTranscriptFull } from "./full";
 import { VideoWithTranscriptMini } from "./mini";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { ProFeatureModal } from '../ProFeatureModal';
-import { SyncedTranscript } from '../SyncedTranscript';  // Ensure the correct import here
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext"
-import { ThemedText } from '../ThemedText';
 import { SyncedLine } from "@/types";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface VideoWithTranscriptProps {
   isMini: boolean;
@@ -24,6 +23,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
 }) => {
   const { syncedLines, currentLine } = useVideoWithTranscriptContext();
   const { isProUser } = useSubscription();
+  const { t } = useLanguage();
   const [showProModal, setShowProModal] = useState(false);
   const hasShownModalRef = useRef(false);
 
@@ -55,7 +55,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
       <ProFeatureModal
         visible={showProModal}
         onClose={closeProModal}
-        upgradeText="Upgrade to Pro to view the full transcript!"
+        upgradeText={t('msg.pro_transcript')}
       />
     </View>
   );

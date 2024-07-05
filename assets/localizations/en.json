@@ -300,7 +300,9 @@
         "or_register_with": "Or register with:",
         "already_have_account": "Already have an account?",
         "enter_verification_code": "Please enter the verification code sent to the email",
-        "hsk_explanation": "\"HSK\" is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest."
+        "hsk_explanation": "\"HSK\" is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.",
+        "pro_transcript": "Upgrade to Pro to view the full transcript!",
+        "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts."
     },
     "title": {
         "email": "Email",
@@ -324,7 +326,8 @@
         "verify_your_email": "Verify Your Email",
         "how_did_you_hear": "How did you hear about us?",
         "select_language": "What language would you like to learn?",
-        "current_level": "What's your current {{language}} level?"
+        "current_level": "What's your current {{language}} level?",
+        "pro_feature": "Pro Feature"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -338,7 +341,8 @@
         "start_learning": "Start Learning",
         "next": "Next",
         "tv_shows": "TV Shows",
-        "watch": "Watch"
+        "watch": "Watch",
+        "upgrade_to_pro": "Upgrade to Pro"
     },
     "placeholder": {
         "first_name": "First",

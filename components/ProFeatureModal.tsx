@@ -1,12 +1,13 @@
 // @/components/ProFeatureModal.tsx
 
 import React from "react";
-import { View, Modal, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Modal, TouchableOpacity, StyleSheet, Image } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import { proFeatureModalStyles as styles } from "@/src/styles";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ProFeatureModalProps {
   visible: boolean;
@@ -19,6 +20,8 @@ export const ProFeatureModal: React.FC<ProFeatureModalProps> = ({
   onClose,
   upgradeText,
 }) => {
+  const { t } = useLanguage();
+
   const handleUpgrade = () => {
     onClose();
     router.navigate("../");
@@ -49,9 +52,18 @@ export const ProFeatureModal: React.FC<ProFeatureModalProps> = ({
               marginBottom: 26,
             }}
           />
-          <ThemedText style={styles.modalTitle} type="title">Pro Feature</ThemedText>
-          <ThemedText style={styles.modalText} type="default">{upgradeText}</ThemedText>
-          <ThemedButton title="Upgrade to Pro" type="pro" onPress={handleUpgrade} trailingIcon={<Icon name="chevron-right" />} />
+          <ThemedText style={styles.modalTitle} type="title">
+            {t('title.pro_feature')}
+          </ThemedText>
+          <ThemedText style={styles.modalText} type="default">
+            {upgradeText}
+          </ThemedText>
+          <ThemedButton 
+            title={t('action.upgrade_to_pro')} 
+            type="pro" 
+            onPress={handleUpgrade} 
+            trailingIcon={<Icon name="chevron-right" />} 
+          />
         </View>
       </TouchableOpacity>
     </Modal>

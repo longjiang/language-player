@@ -299,7 +299,9 @@
         "or_register_with": "Of registreer met:",
         "already_have_account": "Heeft u al een account?",
         "enter_verification_code": "Voer de verificatiecode in die naar de e-mail is verzonden",
-        "hsk_explanation": "\"HSK\" is de officiële Chinese taalvaardigheidstest, waarbij niveau 1 de laagste is en niveau 9 de hoogste."
+        "hsk_explanation": "\"HSK\" is de officiële Chinese taalvaardigheidstest, waarbij niveau 1 de laagste is en niveau 9 de hoogste.",
+        "pro_transcript": "Upgrade naar Pro om het volledige transcript te bekijken!",
+        "pro_transcript_limit_reached": "Transcriptielimiet bereikt. Upgrade naar Pro om toegang te krijgen tot meer transcripties."
     },
     "title": {
         "email": "E-mail",
@@ -323,7 +325,8 @@
         "verify_your_email": "Bevestig uw e-mail",
         "how_did_you_hear": "Hoe heb je ons leren kennen?",
         "select_language": "Welke taal wil je leren?",
-        "current_level": "Wat is je huidige niveau van {{language}}?"
+        "current_level": "Wat is je huidige niveau van {{language}}?",
+        "pro_feature": "Pro-functie"
     },
     "action": {
         "upgrade": "Opwaarderen",
@@ -337,7 +340,8 @@
         "start_learning": "Begin met leren",
         "next": "Volgende",
         "tv_shows": "TV-programma's",
-        "watch": "Bekijken"
+        "watch": "Bekijken",
+        "upgrade_to_pro": "Upgrade naar Pro"
     },
     "placeholder": {
         "first_name": "Voornaam",

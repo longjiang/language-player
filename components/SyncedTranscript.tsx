@@ -5,6 +5,7 @@ import { View, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
 import { TokenizedText } from './TokenizedText';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SyncedTranscriptProps {
   transcriptLimitReached?: boolean;
@@ -12,11 +13,12 @@ interface SyncedTranscriptProps {
 
 export const SyncedTranscript: React.FC<SyncedTranscriptProps> = ({ transcriptLimitReached = false }) => {
   const { video, syncedLines, currentLine } = useVideoWithTranscriptContext();
+  const { t } = useLanguage();
   const renderContent = () => {
     if (transcriptLimitReached) {
       return (
-        <ThemedText style={styles.limitReachedText} type="default">
-          Transcript limit reached. Please upgrade to Pro to access more transcripts.
+        <ThemedText style={styles.limitReachedText} type="subtitle" variant="secondary">
+          {t('msg.pro_transcript_limit_reached')}
         </ThemedText>
       );
     }
@@ -63,10 +65,8 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   limitReachedText: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    padding: 26,
     textAlign: 'center',
-    color: '#FF0000', // Example color for emphasis, adjust as needed
   },
 });
 

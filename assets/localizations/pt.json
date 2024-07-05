@@ -299,7 +299,9 @@
         "or_register_with": "Ou registre-se com:",
         "already_have_account": "Já tem uma conta?",
         "enter_verification_code": "Insira o código de verificação enviado para o e-mail",
-        "hsk_explanation": "\"HSK\" é o teste oficial de proficiência chinês, sendo o Nível 1 o mais baixo e o Nível 9 o mais alto."
+        "hsk_explanation": "\"HSK\" é o teste oficial de proficiência chinês, sendo o Nível 1 o mais baixo e o Nível 9 o mais alto.",
+        "pro_transcript": "Atualize para o Pro para ver a transcrição completa!",
+        "pro_transcript_limit_reached": "Limite de transcrição atingido. Atualize para o Pro para acessar mais transcrições."
     },
     "title": {
         "email": "Email",
@@ -323,7 +325,8 @@
         "verify_your_email": "Verifique seu e-mail",
         "how_did_you_hear": "Como você ficou sabendo sobre nós?",
         "select_language": "Que idioma você gostaria de aprender?",
-        "current_level": "Qual é o seu nível atual de {{language}}?"
+        "current_level": "Qual é o seu nível atual de {{language}}?",
+        "pro_feature": "Función Pro"
     },
     "action": {
         "upgrade": "Melhoramento",
@@ -337,7 +340,8 @@
         "start_learning": "Comece a aprender",
         "next": "Próximo",
         "tv_shows": "Programas de TV",
-        "watch": "Ver"
+        "watch": "Ver",
+        "upgrade_to_pro": "Actualizar a Pro"
     },
     "placeholder": {
         "first_name": "Primeiro",
@@ -354,7 +358,8 @@
         "failed_retrieve_password": "Falha ao recuperar a senha armazenada",
         "generic": "Erro",
         "user_info_not_found": "Informações do usuário não encontradas",
-        "updating_progress": "Erro ao atualizar o progresso:"
+        "updating_progress": "Erro ao atualizar o progresso:",
+        "failed_to_load_items": "Falha ao carregar itens:"
     },
     "success": {
         "code_resent": "Código de verificação reenviado para o seu e-mail."

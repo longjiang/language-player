@@ -300,7 +300,9 @@
         "or_register_with": "Atau daftar dengan:",
         "already_have_account": "Sudah punya akun?",
         "enter_verification_code": "Silakan masukkan kode verifikasi yang dikirim ke email",
-        "hsk_explanation": "\"HSK\" adalah tes kecakapan bahasa Mandarin resmi, dengan Level 1 menjadi yang terendah dan Level 9 menjadi yang tertinggi."
+        "hsk_explanation": "\"HSK\" adalah tes kecakapan bahasa Mandarin resmi, dengan Level 1 menjadi yang terendah dan Level 9 menjadi yang tertinggi.",
+        "pro_transcript": "Tingkatkan ke Pro untuk melihat transkrip lengkap!",
+        "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip."
     },
     "title": {
         "email": "Email",
@@ -324,7 +326,8 @@
         "verify_your_email": "Konfirmasikan Email Anda",
         "how_did_you_hear": "Bagaimana Anda mendengar tentang kami?",
         "select_language": "Bahasa apa yang ingin Anda pelajari?",
-        "current_level": "Apa tingkat {{language}} Anda saat ini?"
+        "current_level": "Apa tingkat {{language}} Anda saat ini?",
+        "pro_feature": "Fitur Pro"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -338,7 +341,8 @@
         "start_learning": "Mulai Belajar",
         "next": "Selanjutnya",
         "tv_shows": "Acara TV",
-        "watch": "Menonton"
+        "watch": "Menonton",
+        "upgrade_to_pro": "Upgrade ke Pro"
     },
     "placeholder": {
         "first_name": "Nama depan",

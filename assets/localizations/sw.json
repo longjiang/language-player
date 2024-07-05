@@ -299,7 +299,9 @@
         "or_register_with": "Aujiandikisha na:",
         "already_have_account": "Tayari una akaunti?",
         "enter_verification_code": "Tafadhali ingiza msimbo wa uthibitishaji uliotumwa kwa barua pepe",
-        "hsk_explanation": "\"HSK\" ni mtihani rasmi wa ustadi wa Kichina, na Kiwango cha 1 kuwa cha chini na Kiwango cha 9 kuwa cha juu zaidi."
+        "hsk_explanation": "\"HSK\" ni mtihani rasmi wa ustadi wa Kichina, na Kiwango cha 1 kuwa cha chini na Kiwango cha 9 kuwa cha juu zaidi.",
+        "pro_transcript": "Boresha kwa Pro ili kuona nakala kamili!",
+        "pro_transcript_limit_reached": "Ukomo wa Transcript umefikiwa. Tafadhali sasisha hadi Pro ili kufikia nakala zaidi."
     },
     "title": {
         "email": "Barua pepe",
@@ -323,7 +325,8 @@
         "verify_your_email": "Thibitisha Barua pepe yako",
         "how_did_you_hear": "Ulisikiaje kuhusu sisi?",
         "select_language": "Ungependa kujifunza lugha gani?",
-        "current_level": "Ni kiwango chako cha sasa cha {{language}}?"
+        "current_level": "Ni kiwango chako cha sasa cha {{language}}?",
+        "pro_feature": "Pro Özelliği"
     },
     "action": {
         "upgrade": "Kuboresha",
@@ -337,7 +340,8 @@
         "start_learning": "Anza Kujifunza",
         "next": "Mbele",
         "tv_shows": "TV-program",
-        "watch": "Ver"
+        "watch": "Ver",
+        "upgrade_to_pro": "Pro'ya Yükselt"
     },
     "placeholder": {
         "first_name": "Jina la kwanza",
@@ -354,7 +358,8 @@
         "failed_retrieve_password": "Kushindwa kupata nywila iliyohifadhiwa",
         "generic": "Kosa",
         "user_info_not_found": "Maelezo ya mtumiaji hayapatikani",
-        "updating_progress": "Kosa wakati wa kuboresha maendeleo:"
+        "updating_progress": "Kosa wakati wa kuboresha maendeleo:",
+        "failed_to_load_items": "Imeshindwa kupakia vipengee:"
     },
     "success": {
         "code_resent": "Nambari ya uthibitishaji inakataa barua pepe yako."

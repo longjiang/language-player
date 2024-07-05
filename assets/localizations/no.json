@@ -299,7 +299,9 @@
         "or_register_with": "Eller registrer deg med:",
         "already_have_account": "Har du allerede en konto?",
         "enter_verification_code": "Vennligst skriv inn bekreftelseskoden som ble sendt til e-posten",
-        "hsk_explanation": "\"HSK\" er den offisielle kinesiske ferdighetstesten, med nivå 1 som det laveste og nivå 9 som det høyeste."
+        "hsk_explanation": "\"HSK\" er den offisielle kinesiske ferdighetstesten, med nivå 1 som det laveste og nivå 9 som det høyeste.",
+        "pro_transcript": "Oppgrader til Pro for å se hele transkripsjonen!",
+        "pro_transcript_limit_reached": "Transkripsjonsgrense nådd. Oppgrader til Pro for å få tilgang til flere transkripsjoner."
     },
     "title": {
         "email": "E-post",
@@ -323,7 +325,8 @@
         "verify_your_email": "Verifiser e-posten din",
         "how_did_you_hear": "Hvordan hørte du om oss?",
         "select_language": "Hvilket språk vil du lære?",
-        "current_level": "Hva er ditt nåværende nivå av {{language}}?"
+        "current_level": "Hva er ditt nåværende nivå av {{language}}?",
+        "pro_feature": "Recurso Pro"
     },
     "action": {
         "upgrade": "Oppgradere",
@@ -337,7 +340,8 @@
         "start_learning": "Begynn å lære",
         "next": "Neste",
         "tv_shows": "Programas de TV",
-        "watch": "Ver"
+        "watch": "Ver",
+        "upgrade_to_pro": "Atualizar para Pro"
     },
     "placeholder": {
         "first_name": "Fornavn",
@@ -354,7 +358,8 @@
         "failed_retrieve_password": "Mislykket i å hente lagret passord",
         "generic": "Feil",
         "user_info_not_found": "Finner ikke brukerinformasjon",
-        "updating_progress": "Feil ved oppdatering av fremdriften:"
+        "updating_progress": "Feil ved oppdatering av fremdriften:",
+        "failed_to_load_items": "Kunne ikke laste inn elementer:"
     },
     "success": {
         "code_resent": "Bekreftelseskoden ble sendt på nytt til e-posten din."

@@ -300,7 +300,9 @@
         "or_register_with": "Nó cláraigh le:",
         "already_have_account": "An bhfuil cuntas agat cheana féin?",
         "enter_verification_code": "Cuir isteach an cód fíoraithe a sheoltar chuig an ríomhphost",
-        "hsk_explanation": "Is é \"HSK\" an tástáil inniúlachta oifigiúil Síneach, agus is é Leibhéal 1 an leibhéal is ísle agus is é Leibhéal 9 an ceann is airde."
+        "hsk_explanation": "Is é \"HSK\" an tástáil inniúlachta oifigiúil Síneach, agus is é Leibhéal 1 an leibhéal is ísle agus is é Leibhéal 9 an ceann is airde.",
+        "pro_transcript": "Mettez à niveau vers Pro pour voir la transcription complète!",
+        "pro_transcript_limit_reached": "Sroicheadh teorainn trascríbhinne. Déan uasghrádú ar Pro chun rochtain a fháil ar níos mó tras-scríbhinní."
     },
     "title": {
         "email": "Ríomhphost",
@@ -324,7 +326,8 @@
         "verify_your_email": "Deimhnigh do ríomhphost",
         "how_did_you_hear": "Conas a chuala tú fúinn?",
         "select_language": "Cén teanga ba mhaith leat a fhoghlaim?",
-        "current_level": "Cén leibhéal atá agat i láthair i {{language}}?"
+        "current_level": "Cén leibhéal atá agat i láthair i {{language}}?",
+        "pro_feature": "Funció Pro"
     },
     "action": {
         "upgrade": "Uasghrádú",
@@ -338,7 +341,8 @@
         "start_learning": "Tosaigh ag foghlaim",
         "next": "Ar aghaidh",
         "tv_shows": "TV-programmer",
-        "watch": "Visualitza"
+        "watch": "Visualitza",
+        "upgrade_to_pro": "Actualitza a Pro"
     },
     "placeholder": {
         "first_name": "Ainm",

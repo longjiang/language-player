@@ -300,7 +300,9 @@
         "or_register_with": "Oppure registrati con:",
         "already_have_account": "Hai già un account?",
         "enter_verification_code": "Inserisci il codice di verifica inviato all'e-mail",
-        "hsk_explanation": "\"HSK\" è il test ufficiale di conoscenza della lingua cinese, con il livello 1 che è il più basso e il livello 9 che è il più alto."
+        "hsk_explanation": "\"HSK\" è il test ufficiale di conoscenza della lingua cinese, con il livello 1 che è il più basso e il livello 9 che è il più alto.",
+        "pro_transcript": "Esegui l'upgrade a Pro per visualizzare la trascrizione completa!",
+        "pro_transcript_limit_reached": "Limite di trascrizione raggiunto. Si prega di eseguire l'upgrade a Pro per accedere a più trascrizioni."
     },
     "title": {
         "email": "E-mail",
@@ -324,7 +326,8 @@
         "verify_your_email": "Verifica la tua email",
         "how_did_you_hear": "Come hai saputo di noi?",
         "select_language": "Quale lingua desideri imparare?",
-        "current_level": "Qual è il tuo livello attuale di {{language}}?"
+        "current_level": "Qual è il tuo livello attuale di {{language}}?",
+        "pro_feature": "Caratteristica Pro"
     },
     "action": {
         "upgrade": "Aggiornamento",
@@ -338,7 +341,8 @@
         "start_learning": "Inizia a imparare",
         "next": "Avanti",
         "tv_shows": "Programmi TV",
-        "watch": "Guarda"
+        "watch": "Guarda",
+        "upgrade_to_pro": "Aggiorna a Pro"
     },
     "placeholder": {
         "first_name": "Primo",

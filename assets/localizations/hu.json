@@ -300,7 +300,9 @@
         "or_register_with": "Vagy regisztráljon:",
         "already_have_account": "Már van fiókja?",
         "enter_verification_code": "Kérjük, adja meg az e-mailre küldött ellenőrző kódot",
-        "hsk_explanation": "A \"HSK\" a hivatalos kínai jártassági teszt, ahol az 1. szint a legalacsonyabb és a 9. szint a legmagasabb."
+        "hsk_explanation": "A \"HSK\" a hivatalos kínai jártassági teszt, ahol az 1. szint a legalacsonyabb és a 9. szint a legmagasabb.",
+        "pro_transcript": "Frissítsen Pro-ra a teljes átirat megtekintéséhez!",
+        "pro_transcript_limit_reached": "Elérte az átirati korlátot. Kérjük, frissítsen Pro-ra, hogy további átiratokhoz férjen hozzá."
     },
     "title": {
         "email": "E-mail",
@@ -324,7 +326,8 @@
         "verify_your_email": "Megerősítse az e-mail címét",
         "how_did_you_hear": "Honnan hallottál rólunk?",
         "select_language": "Milyen nyelvet szeretne megtanulni?",
-        "current_level": "Mi a jelenlegi {{language}} szinted?"
+        "current_level": "Mi a jelenlegi {{language}} szinted?",
+        "pro_feature": "Pro funkció"
     },
     "action": {
         "upgrade": "Feljavít",
@@ -338,7 +341,8 @@
         "start_learning": "Tanulás megkezdése",
         "next": "Következő",
         "tv_shows": "TV-műsorok",
-        "watch": "Néz"
+        "watch": "Néz",
+        "upgrade_to_pro": "Frissítés Pro verzióra"
     },
     "placeholder": {
         "first_name": "Először",

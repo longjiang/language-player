@@ -299,7 +299,9 @@
         "or_register_with": "または、以下で登録します。",
         "already_have_account": "アカウントをお持ちですか？",
         "enter_verification_code": "メールに送信された認証コードを入力してください",
-        "hsk_explanation": "「HSK」は公式の中国語能力試験であり、レベル1が最低、レベル9が最高です。"
+        "hsk_explanation": "「HSK」は公式の中国語能力試験であり、レベル1が最低、レベル9が最高です。",
+        "pro_transcript": "Proにアップグレードして、完全なトランスクリプトを表示してください!",
+        "pro_transcript_limit_reached": "字幕の制限に達しました。より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。"
     },
     "title": {
         "email": "電子メール",
@@ -323,7 +325,8 @@
         "verify_your_email": "メールアドレスを確認してください",
         "how_did_you_hear": "私たちのことをどこでお知りになりましたか?",
         "select_language": "どの言語を学びたいですか？",
-        "current_level": "現在の{{language}}のレベルは？"
+        "current_level": "現在の{{language}}のレベルは？",
+        "pro_feature": "プロ機能"
     },
     "action": {
         "upgrade": "アップグレード",
@@ -337,7 +340,8 @@
         "start_learning": "学習を開始",
         "next": "次へ",
         "tv_shows": "テレビ番組",
-        "watch": "見る"
+        "watch": "見る",
+        "upgrade_to_pro": "Proにアップグレード"
     },
     "placeholder": {
         "first_name": "ファースト",

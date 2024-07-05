@@ -300,7 +300,9 @@
         "or_register_with": "O registrau amb:",
         "already_have_account": "Ja tens un compte?",
         "enter_verification_code": "Si us plau, introdueix el codi de verificació enviat al correu electrònic",
-        "hsk_explanation": "\"HSK\" és la prova oficial de competència xinesa, sent el nivell 1 el més baix i el nivell 9 el més alt."
+        "hsk_explanation": "\"HSK\" és la prova oficial de competència xinesa, sent el nivell 1 el més baix i el nivell 9 el més alt.",
+        "pro_transcript": "Actualitza a Pro per veure la transcripció completa!",
+        "pro_transcript_limit_reached": "Límit de transcripció assolit. Actualitzeu a Pro per accedir a més transcripcions."
     },
     "title": {
         "email": "Correu electrònic",
@@ -324,7 +326,8 @@
         "verify_your_email": "Verifica el teu correu electrònic",
         "how_did_you_hear": "Com ens has conegut?",
         "select_language": "Quin idioma vols aprendre?",
-        "current_level": "Quin és el teu nivell actual de {{language}}?"
+        "current_level": "Quin és el teu nivell actual de {{language}}?",
+        "pro_feature": "Funció Pro"
     },
     "action": {
         "upgrade": "Rampa",
@@ -338,7 +341,8 @@
         "start_learning": "Comença a aprendre",
         "next": "Següent",
         "tv_shows": "Programmes de televisió",
-        "watch": "Visualitza"
+        "watch": "Visualitza",
+        "upgrade_to_pro": "Actualitza a Pro"
     },
     "placeholder": {
         "first_name": "Primer nom",

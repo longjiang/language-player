@@ -300,7 +300,9 @@
         "or_register_with": "Ή εγγραφείτε με:",
         "already_have_account": "Έχετε ήδη λογαριασμό;",
         "enter_verification_code": "Εισαγάγετε τον κωδικό επαλήθευσης που στάλθηκε στο email",
-        "hsk_explanation": "Το \"HSK\" είναι το επίσημο κινεζικό τεστ επάρκειας, με το επίπεδο 1 να είναι το χαμηλότερο και το επίπεδο 9 να είναι το υψηλότερο."
+        "hsk_explanation": "Το \"HSK\" είναι το επίσημο κινεζικό τεστ επάρκειας, με το επίπεδο 1 να είναι το χαμηλότερο και το επίπεδο 9 να είναι το υψηλότερο.",
+        "pro_transcript": " um die vollständige Transkription zu sehen!",
+        "pro_transcript_limit_reached": "Συμπληρώθηκε το όριο μεταγραφής. Αναβαθμίστε σε Pro για να αποκτήσετε πρόσβαση σε περισσότερες μεταγραφές."
     },
     "title": {
         "email": "Email",
@@ -324,7 +326,8 @@
         "verify_your_email": "Επιβεβαιώστε το email σας",
         "how_did_you_hear": "Πώς μάθατε για εμάς;",
         "select_language": "Ποια γλώσσα θέλετε να μάθετε;",
-        "current_level": "Ποιο είναι το τρέχον επίπεδό σας στα {{language}};"
+        "current_level": "Ποιο είναι το τρέχον επίπεδό σας στα {{language}};",
+        "pro_feature": "Λειτουργία Pro"
     },
     "action": {
         "upgrade": "Αναβαθμίζω",
@@ -338,7 +341,8 @@
         "start_learning": "Ξεκινήστε τη μάθηση",
         "next": "Επόμενο",
         "tv_shows": "Τηλεοπτικές εκπομπές",
-        "watch": "Παρακολούθηση"
+        "watch": "Παρακολούθηση",
+        "upgrade_to_pro": "Αναβάθμιση σε Pro"
     },
     "placeholder": {
         "first_name": "Όνομα",

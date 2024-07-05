@@ -298,7 +298,9 @@
         "or_register_with": "หรือลงทะเบียนด้วย:",
         "already_have_account": "คุณมีบัญชีอยู่แล้วหรือไม่?",
         "enter_verification_code": "โปรดป้อนรหัสยืนยันที่ส่งไปยังอีเมล",
-        "hsk_explanation": "\"HSK\" เป็นการทดสอบความสามารถทางภาษาจีนอย่างเป็นทางการ โดยระดับ 1 เป็นระดับต่ําสุดและระดับ 9 เป็นระดับสูงสุด"
+        "hsk_explanation": "\"HSK\" เป็นการทดสอบความสามารถทางภาษาจีนอย่างเป็นทางการ โดยระดับ 1 เป็นระดับต่ําสุดและระดับ 9 เป็นระดับสูงสุด",
+        "pro_transcript": "อัปเกรดเป็น Pro เพื่อดูการถอดเสียงฉบับเต็ม!",
+        "pro_transcript_limit_reached": "ถึงขีดจํากัดการถอดเสียงแล้ว โปรดอัปเกรดเป็น Pro เพื่อเข้าถึงการถอดเสียงเพิ่มเติม"
     },
     "title": {
         "email": "อีเมล",
@@ -322,7 +324,8 @@
         "verify_your_email": "Hãy xác minh email của bạn",
         "how_did_you_hear": "คุณรู้จักเราได้อย่างไร?",
         "select_language": "คุณต้องการเรียนภาษาอะไร?",
-        "current_level": "ระดับ {{language}} ปัจจุบันของคุณคืออะไร?"
+        "current_level": "ระดับ {{language}} ปัจจุบันของคุณคืออะไร?",
+        "pro_feature": "คุณสมบัติ Pro"
     },
     "action": {
         "upgrade": "อัพ เกรด",
@@ -336,7 +339,8 @@
         "start_learning": "เริ่มเรียนรู้",
         "next": "ถัดไป",
         "tv_shows": "Programu za TV",
-        "watch": "Assistir"
+        "watch": "Assistir",
+        "upgrade_to_pro": "อัปเกรดเป็น Pro"
     },
     "placeholder": {
         "first_name": "ชื่อจริง",
@@ -353,7 +357,8 @@
         "failed_retrieve_password": "Thất bại trong việc lấy mật khẩu đã lưu",
         "generic": "ความผิดพลาด",
         "user_info_not_found": "ไม่พบข้อมูลผู้ใช้",
-        "updating_progress": "ข้อผิดพลาดในการอัปเดตความคืบหน้า:"
+        "updating_progress": "ข้อผิดพลาดในการอัปเดตความคืบหน้า:",
+        "failed_to_load_items": "ไม่สามารถโหลดรายการ:"
     },
     "success": {
         "code_resent": "รหัสยืนยันถูกส่งไปยังอีเมลของคุณอีกครั้ง"
@@ -428,6 +433,8 @@
         }
     },
     "video": {
-        "views": "İzlenme"
+        "views": "İzlenme",
+        "likes": "ชอบ",
+        "comments": "ความ คิด เห็น"
     }
 }

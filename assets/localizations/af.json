@@ -300,7 +300,9 @@
         "or_register_with": "Of registreer met:",
         "already_have_account": "Het u reeds 'n rekening?",
         "enter_verification_code": "Voer asseblief die verifikasiekode in wat na die e-pos gestuur is",
-        "hsk_explanation": "\"HSK\" is die amptelike Chinese vaardigheidstoets, met vlak 1 die laagste en vlak 9 die hoogste."
+        "hsk_explanation": "\"HSK\" is die amptelike Chinese vaardigheidstoets, met vlak 1 die laagste en vlak 9 die hoogste.",
+        "pro_transcript": "Upgrade naar Pro om de volledige transcriptie te bekijken!",
+        "pro_transcript_limit_reached": "Transkripsie limiet bereik. Gradeer asseblief op na Pro om toegang tot meer transkripsies te kry."
     },
     "title": {
         "email": "E-pos",
@@ -324,7 +326,8 @@
         "verify_your_email": "Verifieer jou e-pos",
         "how_did_you_hear": "Hoe het jy van ons gehoor?",
         "select_language": "Watter taal wil jy leer?",
-        "current_level": "Wat is jou huidige vlak van {{language}}?"
+        "current_level": "Wat is jou huidige vlak van {{language}}?",
+        "pro_feature": "Pro-functie"
     },
     "action": {
         "upgrade": "Opgradering",
@@ -338,7 +341,8 @@
         "start_learning": "Begin leer",
         "next": "Volgende",
         "tv_shows": "TV-programma's",
-        "watch": "Bekijken"
+        "watch": "Bekijken",
+        "upgrade_to_pro": "Upgrade naar Pro"
     },
     "placeholder": {
         "first_name": "Voornaam",

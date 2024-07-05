@@ -300,7 +300,9 @@
         "or_register_with": "Ou inscrivez-vous avec :",
         "already_have_account": "Déjà un compte?",
         "enter_verification_code": "Veuillez saisir le code de vérification envoyé par e-mail",
-        "hsk_explanation": "« HSK » est le test de compétence officiel en chinois, le niveau 1 étant le plus bas et le niveau 9 étant le plus élevé."
+        "hsk_explanation": "« HSK » est le test de compétence officiel en chinois, le niveau 1 étant le plus bas et le niveau 9 étant le plus élevé.",
+        "pro_transcript": "Päivitä Pro-versioon nähdäksesi koko transkriptio!",
+        "pro_transcript_limit_reached": "Limite de transcription atteinte. Veuillez passer à Pro pour accéder à plus de transcriptions."
     },
     "title": {
         "email": "Messagerie électronique",
@@ -324,7 +326,8 @@
         "verify_your_email": "Vérifiez votre e-mail",
         "how_did_you_hear": "Comment avez-vous entendu parler de nous ?",
         "select_language": "Quelle langue souhaitez-vous apprendre ?",
-        "current_level": "Quel est votre niveau actuel en {{language}}?"
+        "current_level": "Quel est votre niveau actuel en {{language}}?",
+        "pro_feature": "Fonction Pro"
     },
     "action": {
         "upgrade": "Mise à niveau",
@@ -338,7 +341,8 @@
         "start_learning": "Commencer à apprendre",
         "next": "Suivant",
         "tv_shows": "Émissions de télévision",
-        "watch": "Kijken"
+        "watch": "Kijken",
+        "upgrade_to_pro": "Mettre à niveau vers Pro"
     },
     "placeholder": {
         "first_name": "Prénom",

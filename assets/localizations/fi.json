@@ -300,7 +300,9 @@
         "or_register_with": "Tai rekisteröidy:",
         "already_have_account": "Onko sinulla jo tili?",
         "enter_verification_code": "Anna sähköpostiin lähetetty vahvistuskoodi",
-        "hsk_explanation": "\"HSK\" on virallinen kiinalainen taitotesti, jossa taso 1 on alin ja taso 9 korkein."
+        "hsk_explanation": "\"HSK\" on virallinen kiinalainen taitotesti, jossa taso 1 on alin ja taso 9 korkein.",
+        "pro_transcript": "¡Actualiza a Pro para ver la transcripción completa!",
+        "pro_transcript_limit_reached": "Transkriptioraja saavutettu. Päivitä Pro-versioon saadaksesi lisää transkriptioita."
     },
     "title": {
         "email": "Sähköposti",
@@ -324,7 +326,8 @@
         "verify_your_email": "Vahvista sähköpostisi",
         "how_did_you_hear": "Miten kuulit meistä?",
         "select_language": "Mitä kieltä haluat oppia?",
-        "current_level": "Mikä on nykyinen taitotasosi {{language}}?"
+        "current_level": "Mikä on nykyinen taitotasosi {{language}}?",
+        "pro_feature": "Pro-ominaisuus"
     },
     "action": {
         "upgrade": "Päivittää",
@@ -338,7 +341,8 @@
         "start_learning": "Aloita oppiminen",
         "next": "Seuraava",
         "tv_shows": "TV-ohjelmat",
-        "watch": "Katso"
+        "watch": "Katso",
+        "upgrade_to_pro": "Päivitä Pro-versioon"
     },
     "placeholder": {
         "first_name": "Etunimi",

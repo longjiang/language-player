@@ -300,7 +300,9 @@
         "or_register_with": "Ili se registrirate s:",
         "already_have_account": "Već imate račun?",
         "enter_verification_code": "Unesite kontrolni kôd poslan na e-poštu",
-        "hsk_explanation": "\"HSK\" je službeni test kineskog znanja, pri čemu je razina 1 najniža, a razina 9 najviša."
+        "hsk_explanation": "\"HSK\" je službeni test kineskog znanja, pri čemu je razina 1 najniža, a razina 9 najviša.",
+        "pro_transcript": "पूर्ण प्रतिलेख देखने के लिए Pro पर अपग्र",
+        "pro_transcript_limit_reached": "Dosegnuto je ograničenje transkripta. Nadogradite na Pro da biste pristupili većem broju transkripata."
     },
     "title": {
         "email": "E-pošta",
@@ -324,7 +326,8 @@
         "verify_your_email": "Potvrdite svoj e-mail",
         "how_did_you_hear": "Kako ste čuli za nas?",
         "select_language": "Koji jezik biste želeli da naučite?",
-        "current_level": "Koji je vaš trenutni nivo {{language}}?"
+        "current_level": "Koji je vaš trenutni nivo {{language}}?",
+        "pro_feature": "Pro funkcija"
     },
     "action": {
         "upgrade": "Nadograditi",
@@ -338,7 +341,8 @@
         "start_learning": "Počnite učiti",
         "next": "Sljedeće",
         "tv_shows": "TV programi",
-        "watch": "Gledaj"
+        "watch": "Gledaj",
+        "upgrade_to_pro": "Nadogradnja na Pro"
     },
     "placeholder": {
         "first_name": "Ime",

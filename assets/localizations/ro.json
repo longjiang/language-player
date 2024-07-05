@@ -299,7 +299,9 @@
         "or_register_with": "Sau înregistrați-vă cu:",
         "already_have_account": "Aveți deja un cont?",
         "enter_verification_code": "Vă rugăm să introduceți codul de verificare trimis la e-mail",
-        "hsk_explanation": "\"HSK\" este testul oficial de competență chineză, nivelul 1 fiind cel mai scăzut și nivelul 9 fiind cel mai înalt."
+        "hsk_explanation": "\"HSK\" este testul oficial de competență chineză, nivelul 1 fiind cel mai scăzut și nivelul 9 fiind cel mai înalt.",
+        "pro_transcript": "Faceți upgrade la Pro pentru a vizualiza transcrierea completă!",
+        "pro_transcript_limit_reached": "Limita de transcriere a fost atinsă. Vă rugăm să faceți upgrade la Pro pentru a accesa mai multe transcrieri."
     },
     "title": {
         "email": "E-mail",
@@ -323,7 +325,8 @@
         "verify_your_email": "Verificați-vă e-mailul",
         "how_did_you_hear": "Cum ai auzit de noi?",
         "select_language": "Ce limbă doriți să învățați?",
-        "current_level": "Care este nivelul tău actual de {{language}}?"
+        "current_level": "Care este nivelul tău actual de {{language}}?",
+        "pro_feature": "Función Pro"
     },
     "action": {
         "upgrade": "Face upgrade",
@@ -337,7 +340,8 @@
         "start_learning": "Începeți să învățați",
         "next": "Următorul",
         "tv_shows": "Programas de TV",
-        "watch": "Ver"
+        "watch": "Ver",
+        "upgrade_to_pro": "Actualizar a Pro"
     },
     "placeholder": {
         "first_name": "Prenume",
@@ -353,8 +357,9 @@
         "registration_failed": "Înregistrarea a eșuat",
         "failed_retrieve_password": "Recuperarea parolei stocate a eșuat",
         "generic": "Eroare",
-        "user_info_not_found": "Informațiile utilizatorului nu au fost găsite",
-        "updating_progress": "Eroare la actualizarea progresului:"
+        "user_info_not_found": "Informațiile despre utilizator nu au fost găsite",
+        "updating_progress": "Eroare la actualizarea progresului:",
+        "failed_to_load_items": "Încărcarea elementelor nu a reușit:"
     },
     "success": {
         "code_resent": "Codul de verificare a fost retrimis pe e-mail."

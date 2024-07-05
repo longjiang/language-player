@@ -300,7 +300,9 @@
         "or_register_with": "或使用以下方式註冊：",
         "already_have_account": "已經有帳戶？",
         "enter_verification_code": "請輸入發送到以下郵箱的驗證碼",
-        "hsk_explanation": "“HSK”是官方的漢語水平測試，1 級是最低的，9 級是最高的。"
+        "hsk_explanation": "“HSK”是官方的漢語水平測試，1 級是最低的，9 級是最高的。",
+        "pro_transcript": "升級到 Pro 以查看完整的字幕！",
+        "pro_transcript_limit_reached": "已達到字幕限制。"
     },
     "title": {
         "email": "電子郵件",
@@ -324,7 +326,8 @@
         "verify_your_email": "验证您的邮箱",
         "how_did_you_hear": "您是如何了解到我們的？",
         "select_language": "您想學習什麼語言？",
-        "current_level": "您目前的{{language}}水平是多少？"
+        "current_level": "您目前的{{language}}水平是多少？",
+        "pro_feature": "Pro 功能"
     },
     "action": {
         "upgrade": "升級",
@@ -338,7 +341,8 @@
         "start_learning": "開始學習",
         "next": "下一步",
         "tv_shows": "電視節目",
-        "watch": "觀看"
+        "watch": "觀看",
+        "upgrade_to_pro": "升級到 Pro"
     },
     "placeholder": {
         "first_name": "名字",

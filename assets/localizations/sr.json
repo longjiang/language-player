@@ -299,7 +299,9 @@
         "or_register_with": "Ili se registrirajte sa:",
         "already_have_account": "Već imate nalog?",
         "enter_verification_code": "Unesite verifikacioni kôd poslat na e-mail",
-        "hsk_explanation": "\"HSK\" je zvanični kineski test stručnosti, s tim da je nivo 1 najniži, a nivo 9 najviši."
+        "hsk_explanation": "\"HSK\" je zvanični kineski test stručnosti, s tim da je nivo 1 najniži, a nivo 9 najviši.",
+        "pro_transcript": "Nadogradite na Pro da biste videli ceo transkript!",
+        "pro_transcript_limit_reached": "Dostignuta granica transkripta. Nadogradite na Pro da biste pristupili još transkripta."
     },
     "title": {
         "email": "E-pošta",
@@ -323,7 +325,8 @@
         "verify_your_email": "Potvrdite svoj e-mail",
         "how_did_you_hear": "Kako si иuo za nas?",
         "select_language": "Koji jezik želite da učite?",
-        "current_level": "Koji je vaš trenutni nivo {{language}}?"
+        "current_level": "Koji je vaš trenutni nivo {{language}}?",
+        "pro_feature": "Pro Özelliği"
     },
     "action": {
         "upgrade": "Nadogradnju",
@@ -337,7 +340,8 @@
         "start_learning": "Započni učenje",
         "next": "Sljedeće",
         "tv_shows": "ТВ-програми",
-        "watch": "Pogledaj"
+        "watch": "Pogledaj",
+        "upgrade_to_pro": "Pro'ya Yükselt"
     },
     "placeholder": {
         "first_name": "Ime",
@@ -354,7 +358,8 @@
         "failed_retrieve_password": "Neuspjelo dohvaćanje pohranjene lozinke",
         "generic": "Greška",
         "user_info_not_found": "Korisničke informacije nisu pronađene",
-        "updating_progress": "Greška pri ažuriranju napretka:"
+        "updating_progress": "Greška pri ažuriranju napretka:",
+        "failed_to_load_items": "Učitavanje stavki nije uspelo:"
     },
     "success": {
         "code_resent": "Kod"

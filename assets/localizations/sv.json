@@ -299,7 +299,9 @@
         "or_register_with": "Eller registrera dig med:",
         "already_have_account": "Har du redan ett konto?",
         "enter_verification_code": "Ange verifieringskoden som skickades till e-postmeddelandet",
-        "hsk_explanation": "\"HSK\" är det officiella kinesiska kunskapstestet, där nivå 1 är den lägsta och nivå 9 är den högsta."
+        "hsk_explanation": "\"HSK\" är det officiella kinesiska kunskapstestet, där nivå 1 är den lägsta och nivå 9 är den högsta.",
+        "pro_transcript": "Uppgradera till Pro för att se hela utskriften!",
+        "pro_transcript_limit_reached": "Avskriftsgränsen har nåtts. Uppgradera till Pro för att få tillgång till fler utskrifter."
     },
     "title": {
         "email": "E-post",
@@ -323,7 +325,8 @@
         "verify_your_email": "Bekräfta din e-postadress",
         "how_did_you_hear": "Hur hörde du talas om oss?",
         "select_language": "Vilket språk vill du lära dig?",
-        "current_level": "Vilken är din nuvarande nivå av {{language}}?"
+        "current_level": "Vilken är din nuvarande nivå av {{language}}?",
+        "pro_feature": "Recurso Pro"
     },
     "action": {
         "upgrade": "Uppgradera",
@@ -337,7 +340,8 @@
         "start_learning": "Börja lära dig",
         "next": "Nästa",
         "tv_shows": "TV programi",
-        "watch": "İzle"
+        "watch": "İzle",
+        "upgrade_to_pro": "Atualizar para Pro"
     },
     "placeholder": {
         "first_name": "Förnamn",
@@ -354,7 +358,8 @@
         "failed_retrieve_password": "Misslyckades med att hämta lagrat lösenord",
         "generic": "Fel",
         "user_info_not_found": "Det gick inte att hitta användarinformationen",
-        "updating_progress": "Fel vid uppdatering av framsteg:"
+        "updating_progress": "Fel vid uppdatering av framsteg:",
+        "failed_to_load_items": "Det gick inte att ladda objekt:"
     },
     "success": {
         "code_resent": "Verifieringskoden skickas till din e-post på nytt."
