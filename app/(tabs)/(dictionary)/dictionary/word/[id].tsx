@@ -97,7 +97,7 @@ const DictionaryEntryScreen = () => {
             type="ghost"
             size="medium"
             trailingIcon={<Icon name="chevron-left" />}
-            onPress={() => router.navigate("/dictionary")}
+            onPress={() => router.navigate("../")}
           />
           <ThemedInput
             placeholder="Chinese, pinyin or English..."

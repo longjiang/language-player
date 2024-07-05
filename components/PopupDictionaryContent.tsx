@@ -1,7 +1,5 @@
-// @/components/PopupDictionaryContent.tsx
-
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
@@ -9,8 +7,10 @@ import { Token } from "@/src/tokenizer";
 import { DictionaryEntry } from "@/src/dictionary-types";
 import { popupDictionaryContentStyles as styles } from "@/src/styles";
 import { languageLevelsByL2Code } from "@/src/language-levels";
-import BookmarkButton from "@/components/BookmarkButton";  // Import the BookmarkButton component
+import BookmarkButton from "@/components/BookmarkButton";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigation } from "@react-navigation/native";
+import { router } from "expo-router";
 
 export const PopupDictionaryContent: React.FC<{
   token: Token;
@@ -25,7 +25,9 @@ export const PopupDictionaryContent: React.FC<{
   const { dictionary } = useDictionary();
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
   const { l2Lang } = useLanguage();
-  const levels = languageLevelsByL2Code(l2Lang.code)
+  const levels = languageLevelsByL2Code(l2Lang.code);
+  const navigation = useNavigation();
+
 
   // Wait for the dictionary to load
   if (!dictionary) {
@@ -44,12 +46,20 @@ export const PopupDictionaryContent: React.FC<{
     };
 
     fetchDictionaryEntries();
-  }, [token, dictionary]); // Re-run this effect if `token` or `dictionary` changes
+  }, [token, dictionary]);
+
+  const handleEntryPress = (entryId: string) => {
+    router.navigate(`/dictionary/word/${entryId}`);
+  };
 
   return (
     <View style={styles.container}>
       {dictionaryEntries.map((entry: DictionaryEntry, index: number) => (
-        <View key={index} style={[styles.entryContainer, {backgroundColor: primaryBackgroundColor}]}>
+        <TouchableOpacity
+          key={index}
+          style={[styles.entryContainer, {backgroundColor: primaryBackgroundColor}]}
+          onPress={() => handleEntryPress(entry.id)}
+        >
           <ThemedText
             style={[styles.entryText]}
             type="subtitle"
@@ -58,14 +68,14 @@ export const PopupDictionaryContent: React.FC<{
             {entry.head}
           </ThemedText>
           <View style={{ position: "absolute", top: 16, right: 16 }}>
-          <BookmarkButton 
-            wordId={entry.id}
-            head={entry.head}
-            alternate={entry.alternate}
-            forms={[entry.head, entry.alternate, token.text].filter(Boolean)}
-            context={{ form: token.text, text: context || '' }}
-          />
-            </View>
+            <BookmarkButton 
+              wordId={entry.id}
+              head={entry.head}
+              alternate={entry.alternate}
+              forms={[entry.head, entry.alternate, token.text].filter(Boolean)}
+              context={{ form: token.text, text: context || '' }}
+            />
+          </View>
           <ThemedText style={styles.entryText}>
             {entry.pronunciation}{" "}
             <ThemedText type="smallBold" level={entry.level}>
@@ -73,7 +83,7 @@ export const PopupDictionaryContent: React.FC<{
             </ThemedText>{" "}
             • {entry.definitions.join("; ")}
           </ThemedText>
-        </View>
+        </TouchableOpacity>
       ))}
     </View>
   );
