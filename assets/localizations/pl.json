@@ -260,7 +260,8 @@
         "lifetime": "Dożywotnio",
         "trial": "Okres próbny",
         "verify_your_email": "Potwierdź swój adres e-mail",
-        "how_did_you_hear": "Skąd się o nas dowiedziałeś?"
+        "how_did_you_hear": "Skąd się o nas dowiedziałeś?",
+        "select_language": "Jakiego języka chcesz się nauczyć?"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -271,7 +272,8 @@
         "login": "Login",
         "verify": "Podaj",
         "resend_code": "Prześlij kod ponownie",
-        "start_learning": "Rozpocznij naukę"
+        "start_learning": "Rozpocznij naukę",
+        "next": "Następny"
     },
     "placeholder": {
         "first_name": "Imię",
@@ -279,7 +281,8 @@
         "email": "Email",
         "password": "Hasło",
         "confirm_password": "Potwierdź hasło",
-        "please_specify": "Proszę określić"
+        "please_specify": "Proszę określić",
+        "more_languages": "Więcej języków ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Hasła nie pasują",

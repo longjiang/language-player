@@ -260,7 +260,8 @@
         "lifetime": "Anam",
         "trial": "Trial",
         "verify_your_email": "Deimhnigh do ríomhphost",
-        "how_did_you_hear": "Conas a chuala tú fúinn?"
+        "how_did_you_hear": "Conas a chuala tú fúinn?",
+        "select_language": "Cén teanga ba mhaith leat a fhoghlaim?"
     },
     "action": {
         "upgrade": "Uasghrádú",
@@ -271,7 +272,8 @@
         "login": "Logáil isteach",
         "verify": "Deimhnigh",
         "resend_code": "Seol arís an cód",
-        "start_learning": "Tosaigh ag foghlaim"
+        "start_learning": "Tosaigh ag foghlaim",
+        "next": "Ar aghaidh"
     },
     "placeholder": {
         "first_name": "Ainm",
@@ -279,7 +281,8 @@
         "email": "Ríomhphost",
         "password": "Pasfhocal",
         "confirm_password": "Deimhnigh an Pasfhocal",
-        "please_specify": "Sonraigh le do thoil"
+        "please_specify": "Sonraigh le do thoil",
+        "more_languages": "Tuilleadh teangacha ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Níl na pasfhocail comhtháite",

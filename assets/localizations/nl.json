@@ -260,7 +260,8 @@
         "lifetime": "Levenslang",
         "trial": "Proefperiode",
         "verify_your_email": "Bevestig uw e-mail",
-        "how_did_you_hear": "Hoe heb je ons leren kennen?"
+        "how_did_you_hear": "Hoe heb je ons leren kennen?",
+        "select_language": "Welke taal wil je leren?"
     },
     "action": {
         "upgrade": "Opwaarderen",
@@ -271,7 +272,8 @@
         "login": "Inloggen",
         "verify": "Verifiëren",
         "resend_code": "Code opnieuw verzenden",
-        "start_learning": "Begin met leren"
+        "start_learning": "Begin met leren",
+        "next": "Volgende"
     },
     "placeholder": {
         "first_name": "Voornaam",
@@ -279,7 +281,8 @@
         "email": "Email",
         "password": "Wachtwoord",
         "confirm_password": "Wachtwoord bevestigen",
-        "please_specify": "Gelieve te specificeren"
+        "please_specify": "Gelieve te specificeren",
+        "more_languages": "Meer talen ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Wachtwoorden komen niet overeen",

@@ -260,7 +260,8 @@
         "lifetime": "Lifetime",
         "trial": "Trial",
         "verify_your_email": "Verify Your Email",
-        "how_did_you_hear": "How did you hear about us?"
+        "how_did_you_hear": "How did you hear about us?",
+        "select_language": "What language would you like to learn?"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -271,7 +272,8 @@
         "login": "Login",
         "verify": "Verify",
         "resend_code": "Resend Code",
-        "start_learning": "Start Learning"
+        "start_learning": "Start Learning",
+        "next": "Next"
     },
     "placeholder": {
         "first_name": "First",
@@ -279,7 +281,8 @@
         "email": "Email",
         "password": "Password",
         "confirm_password": "Confirm Password",
-        "please_specify": "Please specify"
+        "please_specify": "Please specify",
+        "more_languages": "More languages ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Passwords do not match",

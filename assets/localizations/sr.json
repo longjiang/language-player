@@ -260,7 +260,8 @@
         "lifetime": "Doživotno",
         "trial": "Probni",
         "verify_your_email": "Potvrdite svoj e-mail",
-        "how_did_you_hear": "Kako si иuo za nas?"
+        "how_did_you_hear": "Kako si иuo za nas?",
+        "select_language": "Koji jezik želite da učite?"
     },
     "action": {
         "upgrade": "Nadogradnju",
@@ -271,7 +272,8 @@
         "login": "Prijavljivanje",
         "verify": "Potvrdi",
         "resend_code": "Ponovno pošalji",
-        "start_learning": "Započni učenje"
+        "start_learning": "Započni učenje",
+        "next": "Sljedeće"
     },
     "placeholder": {
         "first_name": "Ime",
@@ -279,7 +281,8 @@
         "email": "Email",
         "password": "Lozinka",
         "confirm_password": "Potvrdi lozinku",
-        "please_specify": "Navedite"
+        "please_specify": "Navedite",
+        "more_languages": "Više jezika ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Lozinke se ne podudaraju",

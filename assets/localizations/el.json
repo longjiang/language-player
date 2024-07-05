@@ -260,7 +260,8 @@
         "lifetime": "Εφικτή",
         "trial": "Δοκιμή",
         "verify_your_email": "Επιβεβαιώστε το email σας",
-        "how_did_you_hear": "Πώς μάθατε για εμάς;"
+        "how_did_you_hear": "Πώς μάθατε για εμάς;",
+        "select_language": "Ποια γλώσσα θέλετε να μάθετε;"
     },
     "action": {
         "upgrade": "Αναβαθμίζω",
@@ -271,7 +272,8 @@
         "login": "Σύνδεση",
         "verify": "Επαλήθευση",
         "resend_code": "Επανάληψη κωδικού",
-        "start_learning": "Ξεκινήστε τη μάθηση"
+        "start_learning": "Ξεκινήστε τη μάθηση",
+        "next": "Επόμενο"
     },
     "placeholder": {
         "first_name": "Όνομα",
@@ -279,7 +281,8 @@
         "email": "Ηλεκτρονικό ταχυδρομείο",
         "password": "Κωδικός πρόσβασης",
         "confirm_password": "Επιβεβαίωση κωδικού πρόσβασης",
-        "please_specify": "Διευκρινίστε"
+        "please_specify": "Διευκρινίστε",
+        "more_languages": "Περισσότερες γλώσσες ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Οι κωδικοί πρόσβασης δεν ταιριάζουν",

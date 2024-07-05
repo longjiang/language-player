@@ -260,7 +260,8 @@
         "lifetime": "평생",
         "trial": "시험",
         "verify_your_email": "이메일 확인",
-        "how_did_you_hear": "저희에 대해 어떻게 알게 되셨나요?"
+        "how_did_you_hear": "저희에 대해 어떻게 알게 되셨나요?",
+        "select_language": "어떤 언어를 배우고 싶으신가요?"
     },
     "action": {
         "upgrade": "업그레이드",
@@ -271,7 +272,8 @@
         "login": "로그인",
         "verify": "확인",
         "resend_code": "코드 다시 보내기",
-        "start_learning": "학습 시작"
+        "start_learning": "학습 시작",
+        "next": "다음"
     },
     "placeholder": {
         "first_name": "이름",
@@ -279,7 +281,8 @@
         "email": "이메일",
         "password": "암호",
         "confirm_password": "암호 확인",
-        "please_specify": "지정하십시오"
+        "please_specify": "지정하십시오",
+        "more_languages": "더 많은 언어 ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "비밀번호가 일치하지 않습니다",

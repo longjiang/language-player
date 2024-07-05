@@ -260,7 +260,8 @@
         "lifetime": "مدى الحياة",
         "trial": "تجربة",
         "verify_your_email": "تحقق من بريدك الإلكتروني",
-        "how_did_you_hear": "كيف سمعت عنا؟"
+        "how_did_you_hear": "كيف سمعت عنا؟",
+        "select_language": "ما اللغة التي ترغب في تعلمها؟"
     },
     "action": {
         "upgrade": "ترقيه",
@@ -271,7 +272,8 @@
         "login": "تسجيل الدخول",
         "verify": "التحقق",
         "resend_code": "إعادة إرسال الرمز",
-        "start_learning": "ابدأ التعلم"
+        "start_learning": "ابدأ التعلم",
+        "next": "التالي"
     },
     "placeholder": {
         "first_name": "الاسم الأول",
@@ -279,7 +281,8 @@
         "email": "البريد الإلكتروني",
         "password": "كلمة السر",
         "confirm_password": "تأكيد كلمة المرور",
-        "please_specify": "يرجى التحديد"
+        "please_specify": "يرجى التحديد",
+        "more_languages": "المزيد من اللغات ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "كلمات المرور غير متطابقة",

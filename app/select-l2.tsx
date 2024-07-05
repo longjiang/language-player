@@ -8,7 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 
 const SelectL2Screen = () => {
-  const { l2Lang, setL2Lang, languages } = useLanguage();
+  const { l2Lang, setL2Lang, languages, t } = useLanguage();
   const [selectedLanguage, setSelectedLanguage] = useState(l2Lang?.iso639_1 || l2Lang?.iso639_3 || "");
 
   const languageCircleIcons: { [key: string]: string } = {
@@ -28,7 +28,7 @@ const SelectL2Screen = () => {
       return {
         icon,
         value: lang.iso639_1 || lang.iso639_3,
-        label: lang.name,
+        label: t('lang.' + lang.code) || lang.name,
         flag: country ? getUnicodeFlagIcon(country.alpha2Code) : '',
       };
     }).sort((a, b) => a.label.localeCompare(b.label)) || [];
@@ -52,7 +52,7 @@ const SelectL2Screen = () => {
 
   return (
     <ThemedScreen
-      title="What language would you like to learn?"
+      title={t('title.select_language')}
       onBackPress={() => router.back()}
     >
       <ScrollView contentContainerStyle={styles.iconLayout}>
@@ -69,12 +69,12 @@ const SelectL2Screen = () => {
       <ThemedLanguageSelect
         onSelect={onSelect}
         initialValue={getOption(selectedLanguage)?.value}
-        placeholder={`More languages (${languageOptions.length})`}
+        placeholder={t('placeholder.more_languages', { count: languageOptions.length })}
         scope="l2"
       />
 
       <ThemedButton
-        title="Next"
+        title={t('action.next')}
         trailingIcon={<Icon name="chevron-right" />}
         style={styles.button}
         disabled={!selectedLanguage}

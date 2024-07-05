@@ -260,7 +260,8 @@
         "lifetime": "Suốt đời",
         "trial": "Thử nghiệm",
         "verify_your_email": "Hãy xác minh email của bạn",
-        "how_did_you_hear": "คุณรู้จักเราได้อย่างไร?"
+        "how_did_you_hear": "คุณรู้จักเราได้อย่างไร?",
+        "select_language": "คุณต้องการเรียนภาษาอะไร?"
     },
     "action": {
         "upgrade": "อัพ เกรด",
@@ -271,7 +272,8 @@
         "login": "เข้า สู่ ระบบ",
         "verify": "ยืนยัน",
         "resend_code": "Thibitisha tena",
-        "start_learning": "เริ่มเรียนรู้"
+        "start_learning": "เริ่มเรียนรู้",
+        "next": "ถัดไป"
     },
     "placeholder": {
         "first_name": "ชื่อจริง",
@@ -279,7 +281,8 @@
         "email": "อีเมล",
         "password": "รหัสผ่าน",
         "confirm_password": "ยืนยันรหัสผ่าน",
-        "please_specify": "โปรดระบุ"
+        "please_specify": "โปรดระบุ",
+        "more_languages": "เพิ่มเติมภาษา ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Mật khẩu không khớp",

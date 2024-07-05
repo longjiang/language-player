@@ -260,7 +260,8 @@
         "lifetime": "जीवनकाल",
         "trial": "परीक्षण",
         "verify_your_email": "अपना ईमेल सत्यापित करें",
-        "how_did_you_hear": "आपने हमारे बारे में कैसे सुना?"
+        "how_did_you_hear": "आपने हमारे बारे में कैसे सुना?",
+        "select_language": "आप किस भाषा सीखना चाहेंगे?"
     },
     "action": {
         "upgrade": "अपग्रेड",
@@ -271,7 +272,8 @@
         "login": "लॉगिन",
         "verify": "सत्यापित करें",
         "resend_code": "कोड पुनः भेजें",
-        "start_learning": "शुरू करें"
+        "start_learning": "शुरू करें",
+        "next": "अगला"
     },
     "placeholder": {
         "first_name": "पहला",
@@ -279,7 +281,8 @@
         "email": "ईमेल",
         "password": "पासवर्ड",
         "confirm_password": "पासवर्ड की पुष्टि करें",
-        "please_specify": "कृपया निर्दिष्ट करें"
+        "please_specify": "कृपया निर्दिष्ट करें",
+        "more_languages": "अधिक भाषाएँ ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "पासवर्ड मेल नहीं खाते",

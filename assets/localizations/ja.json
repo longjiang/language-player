@@ -260,7 +260,8 @@
         "lifetime": "生涯",
         "trial": "トライアル",
         "verify_your_email": "メールアドレスを確認してください",
-        "how_did_you_hear": "私たちのことをどこでお知りになりましたか?"
+        "how_did_you_hear": "私たちのことをどこでお知りになりましたか?",
+        "select_language": "どの言語を学びたいですか？"
     },
     "action": {
         "upgrade": "アップグレード",
@@ -271,7 +272,8 @@
         "login": "ログイン",
         "verify": "確認",
         "resend_code": "コードを再送信",
-        "start_learning": "学習を開始"
+        "start_learning": "学習を開始",
+        "next": "次へ"
     },
     "placeholder": {
         "first_name": "ファースト",
@@ -279,7 +281,8 @@
         "email": "メール",
         "password": "パスワード",
         "confirm_password": "パスワードを確認",
-        "please_specify": "具体的にお答えください"
+        "please_specify": "具体的にお答えください",
+        "more_languages": "さらに言語 ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "パスワードが一致しません",

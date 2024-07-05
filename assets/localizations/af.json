@@ -260,7 +260,8 @@
         "lifetime": "Leeftyd",
         "trial": "Proeflopie",
         "verify_your_email": "Verifieer jou e-pos",
-        "how_did_you_hear": "Hoe het jy van ons gehoor?"
+        "how_did_you_hear": "Hoe het jy van ons gehoor?",
+        "select_language": "Watter taal wil jy leer?"
     },
     "action": {
         "upgrade": "Opgradering",
@@ -271,7 +272,8 @@
         "login": "Aanteken",
         "verify": "Verifieer",
         "resend_code": "Stuur kode weer",
-        "start_learning": "Begin leer"
+        "start_learning": "Begin leer",
+        "next": "Volgende"
     },
     "placeholder": {
         "first_name": "Voornaam",
@@ -279,7 +281,8 @@
         "email": "E-pos",
         "password": "Wagwoord",
         "confirm_password": "Bevestig wagwoord",
-        "please_specify": "Spesifiseer asseblief"
+        "please_specify": "Spesifiseer asseblief",
+        "more_languages": "Meer tale ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Wagwoorde stem nie ooreen nie",

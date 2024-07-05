@@ -260,7 +260,8 @@
         "lifetime": "Életre szól",
         "trial": "Próba",
         "verify_your_email": "Megerősítse az e-mail címét",
-        "how_did_you_hear": "Honnan hallottál rólunk?"
+        "how_did_you_hear": "Honnan hallottál rólunk?",
+        "select_language": "Milyen nyelvet szeretne megtanulni?"
     },
     "action": {
         "upgrade": "Feljavít",
@@ -271,7 +272,8 @@
         "login": "Bejelentkezés",
         "verify": "Megerősít",
         "resend_code": "Kód újraküldése",
-        "start_learning": "Tanulás megkezdése"
+        "start_learning": "Tanulás megkezdése",
+        "next": "Következő"
     },
     "placeholder": {
         "first_name": "Először",
@@ -279,7 +281,8 @@
         "email": "Email",
         "password": "Jelszó",
         "confirm_password": "Jelszó megerősítése",
-        "please_specify": "Adjon meg"
+        "please_specify": "Adjon meg",
+        "more_languages": "Több nyelv ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "A jelszavak nem egyeznek",

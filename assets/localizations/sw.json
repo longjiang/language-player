@@ -260,7 +260,8 @@
         "lifetime": "Maisha yote",
         "trial": "Jaribio",
         "verify_your_email": "Thibitisha Barua pepe yako",
-        "how_did_you_hear": "Ulisikiaje kuhusu sisi?"
+        "how_did_you_hear": "Ulisikiaje kuhusu sisi?",
+        "select_language": "Ungependa kujifunza lugha gani?"
     },
     "action": {
         "upgrade": "Kuboresha",
@@ -271,7 +272,8 @@
         "login": "Kuingia",
         "verify": "Thibitisha",
         "resend_code": "Peana tena nambari",
-        "start_learning": "Anza Kujifunza"
+        "start_learning": "Anza Kujifunza",
+        "next": "Mbele"
     },
     "placeholder": {
         "first_name": "Jina la kwanza",
@@ -279,7 +281,8 @@
         "email": "Barua pepe",
         "password": "Nywila",
         "confirm_password": "Thibitisha Nywila",
-        "please_specify": "Tafadhali bainisha"
+        "please_specify": "Tafadhali bainisha",
+        "more_languages": "Lugha zaidi ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Maneno ya siri hayalingani",

@@ -260,7 +260,8 @@
         "lifetime": "Pe viață",
         "trial": "Încercare",
         "verify_your_email": "Verificați-vă e-mailul",
-        "how_did_you_hear": "Cum ai auzit de noi?"
+        "how_did_you_hear": "Cum ai auzit de noi?",
+        "select_language": "Ce limbă doriți să învățați?"
     },
     "action": {
         "upgrade": "Face upgrade",
@@ -271,7 +272,8 @@
         "login": "Login",
         "verify": "Verificare",
         "resend_code": "Retrimiteți codul",
-        "start_learning": "Începeți să învățați"
+        "start_learning": "Începeți să învățați",
+        "next": "Următorul"
     },
     "placeholder": {
         "first_name": "Prenume",
@@ -279,7 +281,8 @@
         "email": "Email",
         "password": "Parolă",
         "confirm_password": "Confirmă parola",
-        "please_specify": "Vă rugăm să specificați"
+        "please_specify": "Vă rugăm să specificați",
+        "more_languages": "Mai multe limbi ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Parolele nu se potrivesc",

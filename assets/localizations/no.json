@@ -260,7 +260,8 @@
         "lifetime": "Livstid",
         "trial": "Prøveperiode",
         "verify_your_email": "Verifiser e-posten din",
-        "how_did_you_hear": "Hvordan hørte du om oss?"
+        "how_did_you_hear": "Hvordan hørte du om oss?",
+        "select_language": "Hvilket språk vil du lære?"
     },
     "action": {
         "upgrade": "Oppgradere",
@@ -271,7 +272,8 @@
         "login": "Pålogging",
         "verify": "Bekreft",
         "resend_code": "Send kode på nytt",
-        "start_learning": "Begynn å lære"
+        "start_learning": "Begynn å lære",
+        "next": "Neste"
     },
     "placeholder": {
         "first_name": "Fornavn",
@@ -279,7 +281,8 @@
         "email": "E-post",
         "password": "Passord",
         "confirm_password": "Bekreft passord",
-        "please_specify": "Vennligst spesifiser"
+        "please_specify": "Vennligst spesifiser",
+        "more_languages": "Flere språk ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Passordene stemmer ikke overens",

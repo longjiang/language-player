@@ -260,7 +260,8 @@
         "lifetime": "Пожизненно",
         "trial": "Испытание",
         "verify_your_email": "Подтвердите свой адрес электронной почты",
-        "how_did_you_hear": "Как вы узнали о нас?"
+        "how_did_you_hear": "Как вы узнали о нас?",
+        "select_language": "Какой язык вы хотите изучать?"
     },
     "action": {
         "upgrade": "Модернизировать",
@@ -271,7 +272,8 @@
         "login": "Логин",
         "verify": "Подтвердить",
         "resend_code": "Повторно отправить код",
-        "start_learning": "Начать обучение"
+        "start_learning": "Начать обучение",
+        "next": "Далее"
     },
     "placeholder": {
         "first_name": "Имя",
@@ -279,7 +281,8 @@
         "email": "Почта",
         "password": "Пароль",
         "confirm_password": "Подтвердите пароль",
-        "please_specify": "Пожалуйста, уточните"
+        "please_specify": "Пожалуйста, уточните",
+        "more_languages": "Больше языков ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Пароли не совпадают",

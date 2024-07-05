@@ -260,7 +260,8 @@
         "lifetime": "Seumur hidup",
         "trial": "Uji coba",
         "verify_your_email": "Konfirmasikan Email Anda",
-        "how_did_you_hear": "Bagaimana Anda mendengar tentang kami?"
+        "how_did_you_hear": "Bagaimana Anda mendengar tentang kami?",
+        "select_language": "Bahasa apa yang ingin Anda pelajari?"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -271,7 +272,8 @@
         "login": "Login",
         "verify": "Konfirmasi",
         "resend_code": "Kirim Ulang Kode",
-        "start_learning": "Mulai Belajar"
+        "start_learning": "Mulai Belajar",
+        "next": "Selanjutnya"
     },
     "placeholder": {
         "first_name": "Nama depan",
@@ -279,7 +281,8 @@
         "email": "Email",
         "password": "Kata sandi",
         "confirm_password": "Konfirmasi Kata Sandi",
-        "please_specify": "Harap tentukan"
+        "please_specify": "Harap tentukan",
+        "more_languages": "Lebih banyak bahasa ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Kata sandi tidak cocok",

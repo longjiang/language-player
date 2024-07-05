@@ -260,7 +260,8 @@
         "lifetime": "A vita",
         "trial": "Prova",
         "verify_your_email": "Verifica la tua email",
-        "how_did_you_hear": "Come hai saputo di noi?"
+        "how_did_you_hear": "Come hai saputo di noi?",
+        "select_language": "Quale lingua desideri imparare?"
     },
     "action": {
         "upgrade": "Aggiornamento",
@@ -271,7 +272,8 @@
         "login": "Accesso",
         "verify": "Verifica",
         "resend_code": "Rispedisci il codice",
-        "start_learning": "Inizia a imparare"
+        "start_learning": "Inizia a imparare",
+        "next": "Avanti"
     },
     "placeholder": {
         "first_name": "Primo",
@@ -279,7 +281,8 @@
         "email": "Email",
         "password": "Parola d’ordine",
         "confirm_password": "Conferma password",
-        "please_specify": "Si prega di specificare"
+        "please_specify": "Si prega di specificare",
+        "more_languages": "Altre lingue ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Le password non corrispondono",

@@ -260,7 +260,8 @@
         "lifetime": "De per vida",
         "trial": "Prova",
         "verify_your_email": "Verifica el teu correu electrònic",
-        "how_did_you_hear": "Com ens has conegut?"
+        "how_did_you_hear": "Com ens has conegut?",
+        "select_language": "Quin idioma vols aprendre?"
     },
     "action": {
         "upgrade": "Rampa",
@@ -271,7 +272,8 @@
         "login": "Connexió",
         "verify": "Verifica",
         "resend_code": "Reenvia el codi",
-        "start_learning": "Comença a aprendre"
+        "start_learning": "Comença a aprendre",
+        "next": "Següent"
     },
     "placeholder": {
         "first_name": "Primer nom",
@@ -279,7 +281,8 @@
         "email": "Correu electrònic",
         "password": "Contrasenya",
         "confirm_password": "Confirma la contrasenya",
-        "please_specify": "Especifiqueu"
+        "please_specify": "Especifiqueu",
+        "more_languages": "Més idiomes ({{count}}})"
     },
     "error": {
         "passwords_do_not_match": "Les contrasenyes no coincideixen",

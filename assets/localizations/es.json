@@ -260,7 +260,8 @@
         "lifetime": "De por vida",
         "trial": "Prueba",
         "verify_your_email": "Verifica tu correo electrónico",
-        "how_did_you_hear": "¿Cómo te enteraste de nosotros?"
+        "how_did_you_hear": "¿Cómo te enteraste de nosotros?",
+        "select_language": "¿Qué idioma te gustaría aprender?"
     },
     "action": {
         "upgrade": "Actualizar",
@@ -271,7 +272,8 @@
         "login": "Iniciar sesión",
         "verify": "Verificar",
         "resend_code": "Reenviar código",
-        "start_learning": "Comenzar a aprender"
+        "start_learning": "Comenzar a aprender",
+        "next": "Próximo"
     },
     "placeholder": {
         "first_name": "Nombre",
@@ -279,7 +281,8 @@
         "email": "Correo electrónico",
         "password": "Contraseña",
         "confirm_password": "Confirmar contraseña",
-        "please_specify": "Por favor, especifique"
+        "please_specify": "Por favor, especifique",
+        "more_languages": "Más idiomas ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Las contraseñas no coinciden",

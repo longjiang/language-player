@@ -260,7 +260,8 @@
         "lifetime": "Đời",
         "trial": "Thử nghiệm",
         "verify_your_email": "Xác minh email của bạn",
-        "how_did_you_hear": "Làm thế nào bạn biết về chúng tôi?"
+        "how_did_you_hear": "Làm thế nào bạn biết về chúng tôi?",
+        "select_language": "Bạn muốn học ngôn ngữ nào?"
     },
     "action": {
         "upgrade": "Nâng cấp",
@@ -271,7 +272,8 @@
         "login": "Đăng nhập",
         "verify": "Doğrulama",
         "resend_code": "Gửi lại mã",
-        "start_learning": "Bắt đầu học"
+        "start_learning": "Bắt đầu học",
+        "next": "Tiếp theo"
     },
     "placeholder": {
         "first_name": "Tên",
@@ -279,7 +281,8 @@
         "email": "Email",
         "password": "Mật khẩu",
         "confirm_password": "Xác nhận mật khẩu",
-        "please_specify": "Vui lòng ghi rõ"
+        "please_specify": "Vui lòng ghi rõ",
+        "more_languages": "Thêm ngôn ngữ ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Mật khẩu không khớp",

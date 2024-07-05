@@ -260,7 +260,8 @@
         "lifetime": "Vitalício",
         "trial": "Trial",
         "verify_your_email": "Verifique seu e-mail",
-        "how_did_you_hear": "Como você ficou sabendo sobre nós?"
+        "how_did_you_hear": "Como você ficou sabendo sobre nós?",
+        "select_language": "Que idioma você gostaria de aprender?"
     },
     "action": {
         "upgrade": "Melhoramento",
@@ -271,7 +272,8 @@
         "login": "Login",
         "verify": "Verificar",
         "resend_code": "Reenviar código",
-        "start_learning": "Comece a aprender"
+        "start_learning": "Comece a aprender",
+        "next": "Próximo"
     },
     "placeholder": {
         "first_name": "Primeiro",
@@ -279,7 +281,8 @@
         "email": "Email",
         "password": "Senha",
         "confirm_password": "Confirmar senha",
-        "please_specify": "Por favor, especifique"
+        "please_specify": "Por favor, especifique",
+        "more_languages": "Mais idiomas ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Senhas não correspondem",

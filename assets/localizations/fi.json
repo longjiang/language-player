@@ -260,7 +260,8 @@
         "lifetime": "Elinikäinen",
         "trial": "Kokeilu",
         "verify_your_email": "Vahvista sähköpostisi",
-        "how_did_you_hear": "Miten kuulit meistä?"
+        "how_did_you_hear": "Miten kuulit meistä?",
+        "select_language": "Mitä kieltä haluat oppia?"
     },
     "action": {
         "upgrade": "Päivittää",
@@ -271,7 +272,8 @@
         "login": "Sisäänkirjautuminen",
         "verify": "Vahvista",
         "resend_code": "Vahvista uudelleen",
-        "start_learning": "Aloita oppiminen"
+        "start_learning": "Aloita oppiminen",
+        "next": "Seuraava"
     },
     "placeholder": {
         "first_name": "Etunimi",
@@ -279,7 +281,8 @@
         "email": "Sähköposti",
         "password": "Salasana",
         "confirm_password": "Vahvista salasana",
-        "please_specify": "Määritä"
+        "please_specify": "Määritä",
+        "more_languages": "Lisää kieliä ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Salasanat eivät täsmää",

@@ -260,7 +260,8 @@
         "lifetime": "終身",
         "trial": "試用",
         "verify_your_email": "验证您的邮箱",
-        "how_did_you_hear": "您是如何了解到我們的？"
+        "how_did_you_hear": "您是如何了解到我們的？",
+        "select_language": "您想學習什麼語言？"
     },
     "action": {
         "upgrade": "升級",
@@ -271,7 +272,8 @@
         "login": "登錄",
         "verify": "驗證",
         "resend_code": "重新發送驗證碼",
-        "start_learning": "開始學習"
+        "start_learning": "開始學習",
+        "next": "下一步"
     },
     "placeholder": {
         "first_name": "名字",
@@ -279,7 +281,8 @@
         "email": "電子郵件",
         "password": "密碼",
         "confirm_password": "確認密碼",
-        "please_specify": "請說明"
+        "please_specify": "請說明",
+        "more_languages": "更多語言 ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "密碼不匹配",

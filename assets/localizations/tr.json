@@ -260,7 +260,8 @@
         "lifetime": "Ömür",
         "trial": "Deneme",
         "verify_your_email": "E-postanızı doğrulayın",
-        "how_did_you_hear": "Bizden nasıl haberdar oldunuz?"
+        "how_did_you_hear": "Bizden nasıl haberdar oldunuz?",
+        "select_language": "Hangi dili öğrenmek istersiniz?"
     },
     "action": {
         "upgrade": "Yükseltmek",
@@ -271,7 +272,8 @@
         "login": "Oturum açma",
         "verify": "Xác minh",
         "resend_code": "Mãi mãi",
-        "start_learning": "Öğrenmeye Başla"
+        "start_learning": "Öğrenmeye Başla",
+        "next": "Sonraki"
     },
     "placeholder": {
         "first_name": "İsim",
@@ -279,7 +281,8 @@
         "email": "E-posta",
         "password": "Parola",
         "confirm_password": "Xác nhận mật khẩu",
-        "please_specify": "Lütfen belirtin"
+        "please_specify": "Lütfen belirtin",
+        "more_languages": "Daha fazla dil ({{count}})"
     },
     "error": {
         "passwords_do_not_match": "Şifreler eşleşmiyor",
