@@ -5,6 +5,9 @@ import { ThemedInput } from "./ThemedInput";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 import { Image } from "react-native";
 import { subsSearchResultsListStyles as styles } from "@/src/styles";
+import { Ionicons } from "@expo/vector-icons";
+import { ThemedButton } from "./ThemedButton";
+
 
 const extractContexts = (line: string, term: string) => {
   const lowercaseLine = line.toLowerCase().replace(/\s/g, '');
@@ -166,9 +169,14 @@ export const SubsSearchResultsList = ({
   return (
     <GestureHandlerRootView style={styles.fullContainer}>
       <View style={styles.fullContainer}>
-        <TouchableOpacity onPress={showSortOptions} style={styles.sortContainer}>
-          <ThemedText style={styles.sortLabel} type="defaultBold">Sort by: {sortBy}</ThemedText>
-        </TouchableOpacity>
+        <ThemedButton
+          title={`Sort by: ${sortBy}`}
+          type="ghost"
+          size="small"
+          trailingIcon={<Ionicons name="caret-down" />}
+          onPress={showSortOptions}
+          style={{marginBottom: 8}}
+        />
         <ThemedInput
           placeholder="Search..."
           icon="magnify"
