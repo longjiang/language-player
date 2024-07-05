@@ -357,7 +357,8 @@
         "password": "Passord",
         "confirm_password": "Bekreft passord",
         "please_specify": "Vennligst spesifiser",
-        "more_languages": "Flere språk ({{count}})"
+        "more_languages": "Flere språk ({{count}})",
+        "select_language": "Selecione um idioma"
     },
     "error": {
         "passwords_do_not_match": "Passordene stemmer ikke overens",

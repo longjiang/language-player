@@ -357,7 +357,8 @@
         "password": "Parolă",
         "confirm_password": "Confirmă parola",
         "please_specify": "Vă rugăm să specificați",
-        "more_languages": "Mai multe limbi ({{count}})"
+        "more_languages": "Mai multe limbi ({{count}})",
+        "select_language": "Selecciona un idioma"
     },
     "error": {
         "passwords_do_not_match": "Parolele nu se potrivesc",

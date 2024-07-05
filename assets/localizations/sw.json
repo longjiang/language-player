@@ -357,7 +357,8 @@
         "password": "Nywila",
         "confirm_password": "Thibitisha Nywila",
         "please_specify": "Tafadhali bainisha",
-        "more_languages": "Lugha zaidi ({{count}})"
+        "more_languages": "Lugha zaidi ({{count}})",
+        "select_language": "Seçiniz"
     },
     "error": {
         "passwords_do_not_match": "Maneno ya siri hayalingani",

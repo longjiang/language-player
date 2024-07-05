@@ -358,7 +358,8 @@
         "password": "Jelszó",
         "confirm_password": "Jelszó megerősítése",
         "please_specify": "Adjon meg",
-        "more_languages": "Több nyelv ({{count}})"
+        "more_languages": "Több nyelv ({{count}})",
+        "select_language": "Válasszon nyelvet"
     },
     "error": {
         "passwords_do_not_match": "A jelszavak nem egyeznek",

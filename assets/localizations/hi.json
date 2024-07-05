@@ -358,7 +358,8 @@
         "password": "पासवर्ड",
         "confirm_password": "पासवर्ड की पुष्टि करें",
         "please_specify": "कृपया निर्दिष्ट करें",
-        "more_languages": "अधिक भाषाएँ ({{count}})"
+        "more_languages": "अधिक भाषाएँ ({{count}})",
+        "select_language": "एक भाषा चुनें"
     },
     "error": {
         "passwords_do_not_match": "पासवर्ड मेल नहीं खाते",

@@ -358,7 +358,8 @@
         "password": "كلمة السر",
         "confirm_password": "تأكيد كلمة المرور",
         "please_specify": "يرجى التحديد",
-        "more_languages": "المزيد من اللغات ({{count}})"
+        "more_languages": "المزيد من اللغات ({{count}})",
+        "select_language": "اختر لغة"
     },
     "error": {
         "passwords_do_not_match": "كلمات المرور غير متطابقة",

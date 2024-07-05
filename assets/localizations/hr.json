@@ -358,7 +358,8 @@
         "password": "Lozinka",
         "confirm_password": "Potvrdi lozinku",
         "please_specify": "Navedite",
-        "more_languages": "Više jezika ({{count}})"
+        "more_languages": "Više jezika ({{count}})",
+        "select_language": "Odaberite jezik"
     },
     "error": {
         "passwords_do_not_match": "Lozinke se ne podudaraju",

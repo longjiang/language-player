@@ -356,7 +356,8 @@
         "password": "รหัสผ่าน",
         "confirm_password": "ยืนยันรหัสผ่าน",
         "please_specify": "โปรดระบุ",
-        "more_languages": "เพิ่มเติมภาษา ({{count}})"
+        "more_languages": "เพิ่มเติมภาษา ({{count}})",
+        "select_language": "Chọn một ngôn ngữ"
     },
     "error": {
         "passwords_do_not_match": "Mật khẩu không khớp",

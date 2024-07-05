@@ -358,7 +358,8 @@
         "password": "密碼",
         "confirm_password": "確認密碼",
         "please_specify": "請說明",
-        "more_languages": "更多語言 ({{count}})"
+        "more_languages": "更多語言 ({{count}})",
+        "select_language": "選擇一種語言"
     },
     "error": {
         "passwords_do_not_match": "密碼不匹配",

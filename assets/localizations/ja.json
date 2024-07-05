@@ -357,7 +357,8 @@
         "password": "パスワード",
         "confirm_password": "パスワードを確認",
         "please_specify": "具体的にお答えください",
-        "more_languages": "さらに言語 ({{count}})"
+        "more_languages": "さらに言語 ({{count}})",
+        "select_language": "言語を選択"
     },
     "error": {
         "passwords_do_not_match": "パスワードが一致しません",

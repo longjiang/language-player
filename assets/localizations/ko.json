@@ -357,7 +357,8 @@
         "password": "암호",
         "confirm_password": "암호 확인",
         "please_specify": "지정하십시오",
-        "more_languages": "더 많은 언어 ({{count}})"
+        "more_languages": "더 많은 언어 ({{count}})",
+        "select_language": "언어 선택"
     },
     "error": {
         "passwords_do_not_match": "비밀번호가 일치하지 않습니다",

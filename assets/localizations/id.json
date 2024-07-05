@@ -358,7 +358,8 @@
         "password": "Kata sandi",
         "confirm_password": "Konfirmasi Kata Sandi",
         "please_specify": "Harap tentukan",
-        "more_languages": "Lebih banyak bahasa ({{count}})"
+        "more_languages": "Lebih banyak bahasa ({{count}})",
+        "select_language": "Pilih bahasa"
     },
     "error": {
         "passwords_do_not_match": "Kata sandi tidak cocok",

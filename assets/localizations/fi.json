@@ -358,7 +358,8 @@
         "password": "Salasana",
         "confirm_password": "Vahvista salasana",
         "please_specify": "Määritä",
-        "more_languages": "Lisää kieliä ({{count}})"
+        "more_languages": "Lisää kieliä ({{count}})",
+        "select_language": "Valitse kieli"
     },
     "error": {
         "passwords_do_not_match": "Salasanat eivät täsmää",

@@ -358,7 +358,8 @@
         "password": "Contrasenya",
         "confirm_password": "Confirma la contrasenya",
         "please_specify": "Especifiqueu",
-        "more_languages": "Més idiomes ({{count}}})"
+        "more_languages": "Més idiomes ({{count}}})",
+        "select_language": "Selecciona un idioma"
     },
     "error": {
         "passwords_do_not_match": "Les contrasenyes no coincideixen",

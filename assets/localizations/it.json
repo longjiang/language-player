@@ -358,7 +358,8 @@
         "password": "Parola d’ordine",
         "confirm_password": "Conferma password",
         "please_specify": "Si prega di specificare",
-        "more_languages": "Altre lingue ({{count}})"
+        "more_languages": "Altre lingue ({{count}})",
+        "select_language": "Scegli una lingua"
     },
     "error": {
         "passwords_do_not_match": "Le password non corrispondono",

@@ -358,7 +358,8 @@
         "password": "Κωδικός πρόσβασης",
         "confirm_password": "Επιβεβαίωση κωδικού πρόσβασης",
         "please_specify": "Διευκρινίστε",
-        "more_languages": "Περισσότερες γλώσσες ({{count}})"
+        "more_languages": "Περισσότερες γλώσσες ({{count}})",
+        "select_language": "Επιλέξτε γλώσσα"
     },
     "error": {
         "passwords_do_not_match": "Οι κωδικοί πρόσβασης δεν ταιριάζουν",

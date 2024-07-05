@@ -358,7 +358,8 @@
         "password": "Password",
         "confirm_password": "Confirm Password",
         "please_specify": "Please specify",
-        "more_languages": "More languages ({{count}})"
+        "more_languages": "More languages ({{count}})",
+        "select_language": "Select a language"
     },
     "error": {
         "passwords_do_not_match": "Passwords do not match",

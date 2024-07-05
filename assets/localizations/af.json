@@ -358,7 +358,8 @@
         "password": "Wagwoord",
         "confirm_password": "Bevestig wagwoord",
         "please_specify": "Spesifiseer asseblief",
-        "more_languages": "Meer tale ({{count}})"
+        "more_languages": "Meer tale ({{count}})",
+        "select_language": "Kies een taal"
     },
     "error": {
         "passwords_do_not_match": "Wagwoorde stem nie ooreen nie",

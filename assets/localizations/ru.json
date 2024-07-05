@@ -357,7 +357,8 @@
         "password": "Пароль",
         "confirm_password": "Подтвердите пароль",
         "please_specify": "Пожалуйста, уточните",
-        "more_languages": "Больше языков ({{count}})"
+        "more_languages": "Больше языков ({{count}})",
+        "select_language": "Odaberite jezik"
     },
     "error": {
         "passwords_do_not_match": "Пароли не совпадают",

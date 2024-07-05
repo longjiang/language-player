@@ -357,7 +357,8 @@
         "password": "Wachtwoord",
         "confirm_password": "Wachtwoord bevestigen",
         "please_specify": "Gelieve te specificeren",
-        "more_languages": "Meer talen ({{count}})"
+        "more_languages": "Meer talen ({{count}})",
+        "select_language": "Kies een taal"
     },
     "error": {
         "passwords_do_not_match": "Wachtwoorden komen niet overeen",

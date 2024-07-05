@@ -7,7 +7,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import { SUPPORTED_L1S } from "@/constants/LanguageConstants";
 
-
 export const ThemedLanguageSelect: React.FC<{
   onSelect: (value: string) => void;
   placeholder?: string;
@@ -19,14 +18,14 @@ export const ThemedLanguageSelect: React.FC<{
   scope = 'l2',
   initialValue
 }) => {
-  const { languages, i18n } = useLanguage();
+  const { languages, t } = useLanguage();
 
   const langToOption = (lang: any): Option => {
     const country = languages?.getCountry(lang)
     return {
       value: lang.code,
       label: 'lang.' + lang.code, // Will be translated in the app
-      translatedLabel: i18n.t('lang.' + lang.code, { missingBehavior: "guess"}),
+      translatedLabel: t('lang.' + lang.code),
       alternateLabel: lang.vernacularName,
       englishLabel: lang.name,
       flag: country ? getUnicodeFlagIcon(country.alpha2Code) : '',
@@ -44,7 +43,7 @@ export const ThemedLanguageSelect: React.FC<{
       {
         value: "zh-Hans",
         label: "lang.zh-Hans",  // Will be translated in the app
-        translatedLabel: i18n.t('lang.zh-Hant', { missingBehavior: "guess"}),
+        translatedLabel: t('lang.zh-Hant'),
         alternateLabel: '简体中文',
         englishLabel: 'Chinese (Simplified)',
         flag: getUnicodeFlagIcon("CN"),
@@ -52,7 +51,7 @@ export const ThemedLanguageSelect: React.FC<{
       {
         value: "zh-Hant",
         label: "lang.zh-Hant", // Will be translated in the app
-        translatedLabel: i18n.t('lang.zh-Hans', { missingBehavior: "guess"}),
+        translatedLabel: t('lang.zh-Hans'),
         alternateLabel: '繁體中文',
         englishLabel: 'Chinese (Traditional)',
         flag: getUnicodeFlagIcon("TW"),
@@ -64,11 +63,11 @@ export const ThemedLanguageSelect: React.FC<{
     <ThemedSearchableSelect
       options={scope === 'l1' ? l1Options : l2Options}
       onSelect={onSelect}
-      placeholder={placeholder}
+      placeholder={t('placeholder.select_language')}
       initialValue={initialValue}  // Pass initialValue to ThemedSearchableSelect
       renderItem={({ item }) => (
         <TouchableOpacity style={styles.item} onPress={() => onSelect(item.value)}>
-          <ThemedText>{item.flag} {i18n.t('lang.' + item.value, { missingBehavior: "guess"})}</ThemedText>
+          <ThemedText>{item.flag} {t('lang.' + item.value)}</ThemedText>
         </TouchableOpacity>
       )}
     />

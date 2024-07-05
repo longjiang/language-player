@@ -357,7 +357,8 @@
         "password": "Lösenord",
         "confirm_password": "Bekräfta lösenord",
         "please_specify": "Precisera",
-        "more_languages": "Fler språk ({{count}})"
+        "more_languages": "Fler språk ({{count}})",
+        "select_language": "Selecione um idioma"
     },
     "error": {
         "passwords_do_not_match": "Lösenorden matchar inte",
