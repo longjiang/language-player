@@ -6,6 +6,21 @@ import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 import { Image } from "react-native";
 import { Swatches } from "@/constants/Swatches";
 
+const extractContexts = (line: string, term: string) => {
+  const lowercaseLine = line.toLowerCase();
+  const lowercaseTerm = term.toLowerCase();
+  const termIndex = lowercaseLine.indexOf(lowercaseTerm);
+  
+  if (termIndex === -1) {
+    return { leftContext: '', rightContext: '' };
+  }
+
+  const leftContext = line.substring(0, termIndex).split('').reverse().join('');
+  const rightContext = line.substring(termIndex + term.length);
+
+  return { leftContext, rightContext };
+};
+
 const HighlightSearchTerm = ({
   line,
   searchTerm,
@@ -15,20 +30,14 @@ const HighlightSearchTerm = ({
 }) => {
   if (!line) return null;
 
-  const termIndex = line.toLowerCase().indexOf(searchTerm.toLowerCase());
-  if (termIndex === -1) {
-    return <ThemedText style={styles.line}>{line}</ThemedText>;
-  }
-
-  const beforeTerm = line.substring(0, termIndex);
-  const term = line.substring(termIndex, termIndex + searchTerm.length);
-  const afterTerm = line.substring(termIndex + searchTerm.length);
+  const { leftContext, rightContext } = extractContexts(line, searchTerm);
+  const term = line.substring(leftContext.length, line.length - rightContext.length);
 
   return (
     <ThemedText style={styles.line}>
-      {beforeTerm}
+      <ThemedText>{leftContext.split('').reverse().join('')}</ThemedText>
       <ThemedText style={styles.highlight}>{term}</ThemedText>
-      {afterTerm}
+      <ThemedText>{rightContext}</ThemedText>
     </ThemedText>
   );
 };
@@ -62,6 +71,9 @@ export const SubsSearchResultsList = ({
         return typeof sub.line === "string" && sub.line.toLowerCase().includes(searchTerm.toLowerCase());
       });
       item.targetLineIndex = targetLineIndex;
+      const { leftContext, rightContext } = extractContexts(item.subs_l2[targetLineIndex]?.line || '', searchTerm);
+      item.leftContext = leftContext;
+      item.rightContext = rightContext;
     });
 
     switch (sortBy) {
@@ -73,6 +85,19 @@ export const SubsSearchResultsList = ({
         break;
       case "date":
         filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        break;
+      case "length":
+        filtered.sort((a, b) => {
+          const aLength = a.subs_l2[a.targetLineIndex]?.line.length || 0;
+          const bLength = b.subs_l2[b.targetLineIndex]?.line.length || 0;
+          return aLength - bLength; // Sort from shortest to longest
+        });
+        break;
+      case "leftContext":
+        filtered.sort((a, b) => a.leftContext.localeCompare(b.leftContext));
+        break;
+      case "rightContext":
+        filtered.sort((a, b) => a.rightContext.localeCompare(b.rightContext));
         break;
       default:
         break;
@@ -93,19 +118,22 @@ export const SubsSearchResultsList = ({
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ['Cancel', 'Popularity', 'Likes', 'Date'],
+          options: ['Cancel', 'Popularity', 'Likes', 'Date', 'Length', 'Left Context', 'Right Context'],
           cancelButtonIndex: 0,
         },
         (buttonIndex) => {
           if (buttonIndex === 1) setSortBy('popularity');
           else if (buttonIndex === 2) setSortBy('likes');
           else if (buttonIndex === 3) setSortBy('date');
+          else if (buttonIndex === 4) setSortBy('length');
+          else if (buttonIndex === 5) setSortBy('leftContext');
+          else if (buttonIndex === 6) setSortBy('rightContext');
         }
       );
     } else {
       // For Android, you might want to use a modal or custom dropdown here
       // This is a simple example that cycles through options
-      const options = ['popularity', 'likes', 'date'];
+      const options = ['popularity', 'likes', 'date', 'length', 'leftContext', 'rightContext'];
       const currentIndex = options.indexOf(sortBy);
       const nextIndex = (currentIndex + 1) % options.length;
       setSortBy(options[nextIndex]);
