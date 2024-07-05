@@ -182,6 +182,7 @@ export const SubsSearchResultsList = ({
           icon="magnify"
           style={styles.searchInput}
           value={searchTerm}
+          size="small"
           onChangeText={handleSearchChange}
         />
         <FlatList
@@ -197,12 +198,10 @@ export const SubsSearchResultsList = ({
                 }}
                 style={[styles.thumbnail]}
               />
-              <ThemedText style={styles.line}>
-                <HighlightSearchTerm
-                  line={item.subs_l2[item.targetLineIndex]?.line}
-                  searchTerm={searchTerm}
-                />
-              </ThemedText>
+              <HighlightSearchTerm
+                line={item.subs_l2[item.targetLineIndex]?.line}
+                searchTerm={searchTerm}
+              />
             </TouchableOpacity>
           )}
           keyExtractor={(item, index) => index.toString()}

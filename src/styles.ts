@@ -366,7 +366,7 @@ export const subsSearchResultsListStyles = StyleSheet.create({
     borderRadius: 4,
   },
   item: {
-    paddingBottom: 26,
+    paddingBottom: 16,
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
