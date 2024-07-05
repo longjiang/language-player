@@ -9,14 +9,16 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedText } from "@/components/ThemedText";
 import { router } from 'expo-router';
-import { useAuth } from '@/contexts/AuthContext'; // Ensure this path matches where your AuthContext is defined
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserData } from '@/contexts/UserDataContext';
 
 const Index = () => {
-  const { isAuthenticated } = useAuth();  // Use the isAuthenticated state from AuthContext
+  const { isAuthenticated } = useAuth();
+  const { userData } = useUserData();
 
   const handleStartPress = () => {
     // Navigate based on authentication status
-    if (isAuthenticated) {
+    if (isAuthenticated && userData) {
       router.push("/select-l2"); // Change to your actual route for "select-l2"
     } else {
       router.push("/login");

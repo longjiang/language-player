@@ -6,14 +6,16 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Link } from 'expo-router';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserData } from '@/contexts/UserDataContext';
 
 const LoginScreen = () => {
     const { handleLogin, isAuthenticated, loading } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const { userData } = useUserData();
 
     useEffect(() => {
-        if (isAuthenticated) {
+        if (isAuthenticated && userData) {
             router.navigate('/account');
         }
     }, [isAuthenticated]);
