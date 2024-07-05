@@ -91,6 +91,7 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
     onChangeText={handleChangeText}
     style={{ backgroundColor: inputColor, borderColor, marginBottom: 8 }}
     icon="magnify"
+    size="small"
   />
   ), []);
 
