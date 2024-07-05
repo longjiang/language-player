@@ -4,6 +4,7 @@ import { View, TextInput, StyleSheet, TouchableOpacity, ViewStyle, TextStyle } f
 import { useThemeColor } from '@/hooks/useThemeColor';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Typography } from '@/constants/Typography';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Define the type for the props of ThemedInput component
 interface ThemedInputProps {
@@ -39,12 +40,13 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
   const placeholderTextColor = useThemeColor({}, 'secondaryText');
   const containerStyles = [styles.container, size === 'small' ? styles.small : styles.medium, { borderColor, backgroundColor }, style];
   const iconSize = Typography.fontSize.medium;
+  const { i18n } = useLanguage();
 
   return (
     <View style={containerStyles}>
       <TextInput
         style={{ flex: 1, fontSize: Typography.fontSize[size], color: useThemeColor({}, 'primaryText'), width: '100%' }}
-        placeholder={placeholder}
+        placeholder={i18n.t(placeholder)}
         placeholderTextColor={placeholderTextColor}
         onSubmitEditing={onSubmitEditing}
         onChangeText={onChangeText}

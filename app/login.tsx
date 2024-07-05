@@ -7,12 +7,14 @@ import { Link } from 'expo-router';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserData } from '@/contexts/UserDataContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const LoginScreen = () => {
     const { handleLogin, isAuthenticated, loading } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { userData } = useUserData();
+    const { i18n } = useLanguage();
 
     useEffect(() => {
         if (isAuthenticated && userData) {
@@ -30,7 +32,7 @@ const LoginScreen = () => {
 
     return (
         <ThemedScreen
-            title="Login"
+            title="title.login"
             onBackPress={() => router.navigate('/')}
             imageName={require('../assets/images/splash-image.png')}
             imageStyle={{ marginTop: -400 }}
@@ -39,7 +41,7 @@ const LoginScreen = () => {
                 style={styles.input}
                 onChangeText={setEmail}
                 value={email}
-                placeholder="Email"
+                placeholder="title.email"
                 icon="email"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -48,27 +50,26 @@ const LoginScreen = () => {
                 style={styles.input}
                 onChangeText={setPassword}
                 value={password}
-                placeholder="Password"
+                placeholder="title.password"
                 secureTextEntry
                 icon="lock"
             />
 
-            <ThemedButton title="Login" onPress={onLoginPress} disabled={loading} />
+            <ThemedButton title="title.login" onPress={onLoginPress} disabled={loading} />
 
             <TouchableOpacity style={styles.textButton}>
-                <ThemedText>Forgot Password?</ThemedText>
+                <ThemedText>{i18n.t('msg.forgot_password')}</ThemedText>
             </TouchableOpacity>
 
-            <ThemedText style={styles.orText}>Or login with:</ThemedText>
+            {/* <ThemedText style={styles.orText}>Or login with:</ThemedText>
 
             <View style={styles.socialButtons}>
                 <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="google" />} onPress={() => router.navigate('/')} />
                 <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="apple" />} onPress={() => router.navigate('/')} />
                 <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="facebook" />} onPress={() => router.navigate('/')} />
-            </View>
+            </View> */}
 
-            <ThemedText style={{ textAlign: 'center', marginTop: 10 }}>
-                Don't have an account? <Link href='/register' style={{ color: useThemeColor({}, 'primaryLink'), fontWeight: 'bold' }}>Register</Link>
+            <ThemedText style={{ textAlign: 'left', marginTop: 26 }} type="subtitle">{i18n.t('msg.dont_have_an_account')} <Link href='/register' style={{ color: useThemeColor({}, 'primaryLink'), fontWeight: 'bold' }}>{i18n.t('title.register')}</Link>
             </ThemedText>
         </ThemedScreen>
     );
