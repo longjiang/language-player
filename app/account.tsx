@@ -32,6 +32,11 @@ const AccountScreen = () => {
     fetchUserInfo();
   }, []);
 
+  const handleLogoutPress = async () => {
+    await handleLogout();
+    router.navigate("/");
+  }
+
   return (
     <ThemedScreen
       title={t('title.account')}
@@ -89,7 +94,7 @@ const AccountScreen = () => {
         leadingIcon={<Icon name="logout" size={20} />}
         style={styles.button}
         type="ghost"
-        onPress={handleLogout}
+        onPress={handleLogoutPress}
       />
 
       <View style={styles.buttonRow}>

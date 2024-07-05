@@ -2,6 +2,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
+import { verifyEmailCode } from "@/src/api/python/verify-email";
 import {
   login as apiLogin,
   checkToken as apiCheckToken,
@@ -9,6 +10,7 @@ import {
   registerUser as apiRegisterUser,
   User,
 } from "@/src/api/directus/user";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -17,6 +19,7 @@ type AuthContextType = {
   handleLogin: (email: string, password: string) => Promise<void>;
   handleLogout: () => Promise<void>;
   handleRegister: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
+  handleVerify: (email: string, code: string) => Promise<void>;
   getStoredUserInfo: () => Promise<User | null>;
   getStoredAuthToken: () => Promise<string | null>;
 }
@@ -31,12 +34,14 @@ const AuthContext = createContext<AuthContextType>({
   handleRegister: async () => { },
   getStoredUserInfo: async () => null,
   getStoredAuthToken: async () => null,
+  handleVerify: async () => { },
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
     const [userInfo, setUserInfo] = useState<User | null>(null);
+    const { t } = useLanguage();
 
     useEffect(() => {
         const initializeAuth = async () => {
@@ -79,7 +84,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             await SecureStore.setItemAsync('authToken', token);
             await fetchAndStoreUserInfo(token);
             setIsAuthenticated(true);
-            router.navigate("/account");
+            setLoading(false);
+            return token;
         } catch (error) {
             throw error;
         } finally {
@@ -92,15 +98,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await SecureStore.deleteItemAsync('userInfo');
         setUserInfo(null);
         setIsAuthenticated(false);
-        router.navigate("/login");
+        return true;
     };
+
+    const handleVerify = async (email: string, code: string) => {
+      await verifyEmailCode(email, code);
+      const password = await SecureStore.getItemAsync('user_password');
+      if (!password) throw new Error(t('error.failed_retrieve_password'));
+      const token = await handleLogin(email, password);
+      await SecureStore.deleteItemAsync('user_password');
+      return token;
+    }
 
     const handleRegister = async (firstName: string, lastName: string, email: string, password: string) => {
         setLoading(true);
         try {
-            await apiRegisterUser(firstName, lastName, email, password);
-            await SecureStore.setItemAsync('userPassword', password);
+            // This function should now return the token upon successful registration
+            const token = await apiRegisterUser(firstName, lastName, email, password);
+            
+            if (token) {
+                await SecureStore.setItemAsync('authToken', token);
+                await fetchAndStoreUserInfo(token);
+                setIsAuthenticated(true);
+                setLoading(false);
+                return token;
+            } else {
+                throw new Error("Failed to obtain token after registration");
+            }
         } catch (error) {
+            console.error("Registration failed: ", error);
             throw error;
         } finally {
             setLoading(false);
@@ -108,7 +134,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, loading, userInfo, handleLogin, handleLogout, handleRegister, getStoredUserInfo, getStoredAuthToken }}>
+        <AuthContext.Provider value={{ isAuthenticated, loading, userInfo, handleLogin, handleLogout, handleRegister, handleVerify, getStoredUserInfo, getStoredAuthToken }}>
             {children}
         </AuthContext.Provider>
     );

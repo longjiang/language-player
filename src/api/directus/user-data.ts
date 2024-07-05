@@ -15,6 +15,8 @@ export const getUserData = async (authToken?: string): Promise<GenericCollection
     const items = await getCollectionItems<GenericCollectionItem>('user_data', { limit: 1 }, authToken, true);
     // Return the first item, or undefined if no items were returned
     const userData = items[0];
+    // If userData doesn't exist, return undefined
+    if (!userData) return undefined;
     userData.saved_words = JSON.parse(userData.saved_words);
     userData.progress = JSON.parse(userData.progress);
     return userData;

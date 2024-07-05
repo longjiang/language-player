@@ -11,23 +11,23 @@ import { sendVerificationEmail, verifyEmailCode } from "@/src/api/python/verify-
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/contexts/AuthContext";
 
 const VerifyEmailScreen = () => {
   const { t } = useLanguage();
   const [code, setCode] = useState("");
   const { email } = useLocalSearchParams();
   const [loading, setLoading] = useState(false);
+  const { handleVerify } = useAuth();
 
-  const handleVerify = async () => {
+  const handleVerifyCode = async () => {
     setLoading(true);
     try {
-      await verifyEmailCode(email, code);
-      const password = await SecureStore.getItemAsync('user_password');
-      if (!password) throw new Error(t('error.failed_retrieve_password'));
-      await login(email, password);
-      await SecureStore.deleteItemAsync('user_password');
-      router.push("/acquisition-survey");
-      setLoading(false);
+      const token = await handleVerify(email, code);
+      if (token) {
+        setLoading(false);
+        router.push("/acquisition-survey");
+      }
     } catch (error: any) {
       Alert.alert(t('error.generic'), error.message);
       setLoading(false);
@@ -59,7 +59,7 @@ const VerifyEmailScreen = () => {
       <ThemedButton
         title={t('action.verify')}
         style={styles.button}
-        onPress={handleVerify}
+        onPress={handleVerifyCode}
         disabled={code.length < 6 || loading}
       />
 

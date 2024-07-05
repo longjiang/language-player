@@ -63,7 +63,7 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
     };
 
     if (isAuthenticated) fetchData();
-  }, [getStoredAuthToken, isAuthenticated]);
+  }, [isAuthenticated]);
 
   // Effect: Handle local progress updates and server synchronization
   useEffect(() => {
