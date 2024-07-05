@@ -6,10 +6,10 @@ import { getUserData, initializeUserData, patchUserData } from '@/src/api/direct
 import { hasSavedWord, saveWord, removeSavedWord, SavedWords, SavedWordMeta } from './savedWords';
 import { getProgress, updateProgress, Progress } from './progress';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { storageManager } from "../StorageManager";
 
-const UPDATE_INTERVAL = 1000; // 10 seconds
+const UPDATE_INTERVAL = 1000; // 1 second
 
-// Define interfaces for UserData and context props
 export interface UserData {
   id: string;
   saved_words: SavedWords;
@@ -31,29 +31,27 @@ interface UserDataProviderProps {
   children: ReactNode;
 }
 
-// Create the context
 const UserDataContext = createContext<UserDataContextProps | undefined>(undefined);
 
 export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
-  const { getStoredAuthToken, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [savedWords, setSavedWords] = useState<SavedWords>({});
   const [progress, setProgress] = useState<Progress>({});
-  const { l2Lang, setL2Lang } = useLanguage();
+  const { l2Lang } = useLanguage();
 
-  // Effect: Fetch user data on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const authToken = await getStoredAuthToken();
+        const authToken = storageManager.getAuthToken();
         if (!authToken) throw new Error('No auth token found');
         let data = await getUserData(authToken);
 
-        // Initialize user data if it doesn't exist
         if (!data) {
           data = await initializeUserData(authToken);
         }
 
+        await storageManager.setUserData(data as UserData);
         setUserData(data as UserData);
         setSavedWords(data?.saved_words || {});
         setProgress(data?.progress || {});
@@ -65,15 +63,12 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
     if (isAuthenticated) fetchData();
   }, [isAuthenticated]);
 
-  // Effect: Handle local progress updates and server synchronization
   useEffect(() => {
-    // Function to update local progress
     const updateLocalProgress = () => {
       if (l2Lang && userData) {
         const langCode = l2Lang.code;
         let currentProgress = getProgress(progress, langCode);
 
-        // Initialize progress for new language if it doesn't exist
         if (!currentProgress) {
           currentProgress = { level: undefined, time: 0 };
           const newProgress = { ...progress, [langCode]: currentProgress };
@@ -86,13 +81,11 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
       }
     };
 
-    // Set up interval for local progress updates (every 1 second)
     const localUpdateInterval = setInterval(updateLocalProgress, UPDATE_INTERVAL);
 
-    // Set up interval for server synchronization (every 1 minute)
     const serverSyncInterval = setInterval(async () => {
       try {
-        const authToken = await getStoredAuthToken();
+        const authToken = storageManager.getAuthToken();
         if (!authToken || !userData) return;
 
         const updatedData = {
@@ -101,19 +94,18 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
         };
 
         await patchUserData(Number(userData.id), updatedData, authToken);
+        await storageManager.setUserData({ ...userData, saved_words: savedWords, progress });
       } catch (error) {
         console.error('Error syncing user data with server:', error);
       }
     }, 60000);
 
-    // Clean up intervals on component unmount
     return () => {
       clearInterval(localUpdateInterval);
       clearInterval(serverSyncInterval);
     };
-  }, [userData, progress, savedWords, l2Lang, getStoredAuthToken]);
+  }, [userData, progress, savedWords, l2Lang]);
 
-  // Provide context value
   return (
     <UserDataContext.Provider
       value={{
@@ -121,10 +113,19 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
         savedWords,
         progress,
         hasSavedWord: (langCode: string, wordId: string) => hasSavedWord(savedWords, langCode, wordId),
-        saveWord: (langCode: string, word: SavedWordMeta) => saveWord(savedWords, setSavedWords, userData, langCode, word, getStoredAuthToken),
-        removeSavedWord: (langCode: string, wordId: string) => removeSavedWord(savedWords, setSavedWords, userData, langCode, wordId, getStoredAuthToken),
+        saveWord: async (langCode: string, word: SavedWordMeta) => {
+          await saveWord(savedWords, setSavedWords, userData, langCode, word, storageManager.getAuthToken);
+          await storageManager.setUserData({ ...userData!, saved_words: savedWords });
+        },
+        removeSavedWord: async (langCode: string, wordId: string) => {
+          await removeSavedWord(savedWords, setSavedWords, userData, langCode, wordId, storageManager.getAuthToken);
+          await storageManager.setUserData({ ...userData!, saved_words: savedWords });
+        },
         getProgress: (langCode: string) => getProgress(progress, langCode),
-        updateProgress: (langCode: string, newProgress: { level: string; time: number }) => updateProgress(progress, setProgress, userData, langCode, newProgress, getStoredAuthToken),
+        updateProgress: async (langCode: string, newProgress: { level: string; time: number }) => {
+          await updateProgress(progress, setProgress, userData, langCode, newProgress, storageManager.getAuthToken);
+          await storageManager.setUserData({ ...userData!, progress });
+        },
       }}
     >
       {children}
@@ -132,7 +133,6 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
   );
 };
 
-// Custom hook to use the UserDataContext
 export const useUserData = (): UserDataContextProps => {
   const context = useContext(UserDataContext);
   if (!context) {
