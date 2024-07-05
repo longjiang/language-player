@@ -13,8 +13,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { indexScreenStyles as styles } from '@/src/styles';
 
-const Index = () => {
+const IndexScreen = () => {
   const { isAuthenticated } = useAuth();
   const { userData } = useUserData();
   const { settings } = useSettings();
@@ -77,20 +78,4 @@ const Index = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  image: {
-    width: "100%",
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  description: {
-    fontSize: 16,
-    marginBottom: 20,
-  },
-});
-
-export default Index;
+export default IndexScreen;

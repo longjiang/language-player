@@ -33,7 +33,7 @@ interface UserDataProviderProps {
 const UserDataContext = createContext<UserDataContextProps | undefined>(undefined);
 
 export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
-  const { getStoredAuthToken } = useAuth();
+  const { getStoredAuthToken, isAuthenticated } = useAuth();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [savedWords, setSavedWords] = useState<SavedWords>({});
   const [progress, setProgress] = useState<Progress>({});
@@ -60,8 +60,8 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
       }
     };
 
-    fetchData();
-  }, [getStoredAuthToken]);
+    if (isAuthenticated) fetchData();
+  }, [getStoredAuthToken, isAuthenticated]);
 
   // Effect: Handle local progress updates and server synchronization
   useEffect(() => {

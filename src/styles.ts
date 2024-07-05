@@ -382,3 +382,22 @@ export const subsSearchResultsListStyles = StyleSheet.create({
     fontFamily: "Nunito_700Bold",
   },
 });
+
+
+
+
+export const indexScreenStyles = StyleSheet.create({
+  image: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 16,
+    marginBottom: 20,
+  },
+});
