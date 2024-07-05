@@ -32,7 +32,7 @@ const AccountScreen = () => {
 
   return (
     <ThemedScreen
-      title="Account"
+      title="title.account"
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
       onBackPress={() => {
@@ -64,7 +64,7 @@ const AccountScreen = () => {
             </ThemedText>
           )}
           <ThemedButton
-            title="Start Learning"
+            title="title.start_learning"
             trailingIcon={<Icon name="chevron-right" size={20} />}
             style={{marginTop: 26}}
             type="primary"
@@ -80,7 +80,7 @@ const AccountScreen = () => {
       )}
 
       <ThemedButton
-        title="Logout"
+        title="title.logout"
         leadingIcon={<Icon name="logout" size={20} />}
         style={styles.button}
         type="ghost"
@@ -89,7 +89,7 @@ const AccountScreen = () => {
 
       <View style={styles.buttonRow}>
         <ThemedButton
-          title="Delete My Account"
+          title="title.delete_my_account"
           size="small"
           type="ghost"
           onPress={() => {
@@ -98,7 +98,7 @@ const AccountScreen = () => {
           style={{ color: secondaryTextColor }}
         />
         <ThemedButton
-          title="Privacy Policy"
+          title="title.privacy_policy"
           size="small"
           type="ghost"
           onPress={() => {

@@ -36,9 +36,9 @@ const IndexScreen = () => {
     if (!isAuthenticated) {
       return "title.start_learning";
     } else if (!settings.l1LangCode || !settings.l2LangCode) {
-      return "Choose Language";
+      return "title.choose_language";
     } else {
-      return `Continue Learning ${l2Lang?.name || ''}`;
+      return 'title.continue_learning';
     }
   }, [isAuthenticated, settings.l1LangCode, settings.l2LangCode, l2Lang]);
 
@@ -60,6 +60,7 @@ const IndexScreen = () => {
   return (
     <ThemedScreen
       title="msg.enrich_your_language_learning_journey"
+      titleParams={{ l2Code: l2Lang?.name || '' }}
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -30}}
     >

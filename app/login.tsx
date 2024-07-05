@@ -1,3 +1,5 @@
+// @/app/login.tsx
+
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { ThemedText, ThemedButton, ThemedInput, ThemedScreen } from '@/components';

@@ -13,6 +13,7 @@ import { themedScreenStyles as styles } from '@/src/styles';
 
 export const ThemedScreen = ({
   title,
+  titleParams = {}, // for translations with parameters
   children,
   onBackPress,
   imageName,
@@ -22,6 +23,7 @@ export const ThemedScreen = ({
   onAction
 }: {
   title: string,
+  titleParams: any,
   children: React.ReactNode,
   onBackPress?: () => void,
   imageName?: any,
@@ -40,7 +42,7 @@ export const ThemedScreen = ({
           {(showHeader && <View style={styles.header}>
             <View style={styles.headerLeft}>
               {onBackPress && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="chevron-left" />} onPress={onBackPress} />}
-              <ThemedText type="title" style={styles.title}>{i18n.t(title)}</ThemedText>
+              <ThemedText type="title" style={styles.title}>{i18n.t(title, titleParams)}</ThemedText>
             </View>
             {(onAction && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="dots-horizontal-circle" />} onPress={onAction} />)}
             {(showFlag && <TouchableOpacity onPress={() => { router.navigate('/select-l2') }}>
