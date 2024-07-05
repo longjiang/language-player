@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { translateTextArray } from '@/src/api/python/translate';
+import TranslationManager from '@/src/translation-manager';
 
 interface DefinitionListProps {
   definitions: string[];
@@ -11,29 +11,29 @@ interface DefinitionListProps {
 }
 
 export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, type = "default" }) => {
-  const [translatedDefinitions, setTranslatedDefinitions] = useState<string[]>([]);
+  const [translatedDefinitions, setTranslatedDefinitions] = useState<string[]>(definitions);
   const { dictionary } = useDictionary();
   const { l1Lang } = useLanguage();
   const viewRef = useRef<View>(null);
   const [isWithinViewport, setIsWithinViewport] = useState(false);
-  const [hasTranslated, setHasTranslated] = useState(false);
+  const hasTranslatedRef = useRef(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const translateDefinitions = async () => {
-    if (hasTranslated) return; // Prevent multiple translations
+  const translateDefinitions = useCallback(async () => {
+    if (hasTranslatedRef.current) return; // Prevent multiple translations
     try {
       if (dictionary && l1Lang && dictionary.l1Code !== l1Lang.code) {
-        const translated = await translateTextArray(definitions, l1Lang.code, dictionary.l1Code);
+        const translated = await TranslationManager.translateArray(definitions, l1Lang.code, dictionary.l1Code);
         console.log('Translated definitions:', translated);
         setTranslatedDefinitions(translated);
-        setHasTranslated(true);
+        hasTranslatedRef.current = true;
       }
     } catch (error) {
       console.error('Translation failed:', error);
       // Fallback to original definitions if translation fails
       setTranslatedDefinitions(definitions);
     }
-  };
+  }, [definitions, dictionary, l1Lang]);
 
   const debouncedCheckPosition = useCallback(() => {
     if (debounceTimerRef.current) {
@@ -44,20 +44,21 @@ export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, typ
       viewRef.current?.measure((x, y, width, height, pageX, pageY) => {
         const isNowWithinViewport = pageY >= 0 && pageY < 1600;
         setIsWithinViewport(isNowWithinViewport);
-        if (isNowWithinViewport && !hasTranslated) {
+        if (isNowWithinViewport && !hasTranslatedRef.current) {
           translateDefinitions();
         }
       });
     }, 500); // 500ms debounce time
-  }, [hasTranslated]);
+  }, [translateDefinitions]);
 
   useEffect(() => {
+    setTranslatedDefinitions(definitions);
+    hasTranslatedRef.current = false;
+    
     if (!definitions || definitions.length === 0) {
       return;
     }
 
-    setTranslatedDefinitions(definitions);
-    
     // Initial position check
     debouncedCheckPosition();
 
@@ -74,10 +75,10 @@ export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, typ
   }, [definitions, debouncedCheckPosition]);
 
   useEffect(() => {
-    if (isWithinViewport && !hasTranslated) {
+    if (isWithinViewport && !hasTranslatedRef.current) {
       translateDefinitions();
     }
-  }, [isWithinViewport, dictionary, l1Lang]);
+  }, [isWithinViewport, translateDefinitions]);
 
   if (!translatedDefinitions || translatedDefinitions.length === 0) {
     return null;
