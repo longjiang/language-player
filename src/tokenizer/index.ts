@@ -43,7 +43,7 @@ export class TokenizerService {
   private localTokenizer: LocalTokenizer;
 
   private constructor(wordset?: Set<string>) {
-    this.cache = new Map();
+    this.cache = new Map<string, Token[]>();
     this.localTokenizer = new LocalTokenizer(wordset);
   }
 
@@ -52,6 +52,13 @@ export class TokenizerService {
       TokenizerService.instance = new TokenizerService(wordset);
     }
     return TokenizerService.instance;
+  }
+
+  public loadCache(initialCache: { [key: string]: Token[] }): void {
+    for (const [key, tokens] of Object.entries(initialCache)) {
+      this.cache.set(key, tokens);
+    }
+    console.log("🍒 Cache loaded");
   }
 
   private generateCacheKey(text: string, languageCode: string): string {
