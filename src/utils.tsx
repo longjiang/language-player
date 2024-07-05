@@ -12,15 +12,10 @@ export const parseDuration = (duration: string): number => {
 };
 
 // Convert seconds into a human-readable format HH:MM:SS
-export const formatDuration = (totalSeconds: number): string => {
-  if (totalSeconds === 0) {
-      return "Invalid duration format";
-  }
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  return `${hours ? `${hours}:` : ""}${minutes < 10 ? `0${minutes}` : minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+export const formatDuration = (seconds: number, locale: string): string => {
+  const date = new Date(0);
+  date.setSeconds(seconds);
+  return date.toLocaleTimeString(locale, { timeZone: 'UTC', hour12: false, minute: '2-digit', second: '2-digit' });
 };
 
 export const stripAccents = (str: string): string => {

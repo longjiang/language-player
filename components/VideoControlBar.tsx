@@ -2,7 +2,6 @@
 import React, { useRef, useMemo } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedButton } from "./ThemedButton";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Swatches } from "@/constants/Swatches";
@@ -13,8 +12,17 @@ import { ThemedText } from "./ThemedText";
 import { formatDuration } from "@/src/utils";
 import { ThemedRBSheet } from "./ThemedRBSheet";
 import { videoControlBarStyles as styles } from "@/src/styles";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+const formatNumber = (num: number): string => {
+  if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+  if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+  if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+  return num.toString();
+};
 
 export const VideoControlBar: React.FC = () => {
+  const { t, i18n } = useLanguage();
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const disabledColor = useThemeColor({}, "disabled");
   const {
@@ -53,6 +61,12 @@ export const VideoControlBar: React.FC = () => {
   const isPreviousVideoDisabled = currentVideoIndex <= 0;
   const isNextVideoDisabled = currentVideoIndex >= playlist.length - 1;
 
+  const videoInfo = [
+    video.duration ? formatDuration(video.duration, i18n.locale) : undefined,
+    video.date instanceof Date ? video.date.toLocaleDateString(i18n.locale, { month: 'long', day: 'numeric', year: 'numeric' }) : undefined,
+    t('lang.' + video.locale)
+  ];
+
   return (
     <View style={styles.container}>
       <View style={[styles.progressBarContainer, { backgroundColor: useThemeColor({}, 'secondaryBackground') }]}>
@@ -75,18 +89,18 @@ export const VideoControlBar: React.FC = () => {
       <View style={styles.controls}>
         <ThemedButton
           type="ghost"
-          trailingIcon={<Icon name="information" />}
+          trailingIcon={<Ionicon name="information-circle-outline" />}
           onPress={() => refRBSheet.current?.open()}
         />
         <ThemedButton
           type="ghost"
-          trailingIcon={<Icon name="skip-previous" color={isPreviousVideoDisabled ? disabledColor : undefined} />}
+          trailingIcon={<Ionicon name="play-skip-back-outline" color={isPreviousVideoDisabled ? disabledColor : undefined} />}
           onPress={skipToPreviousVideo}
           disabled={isPreviousVideoDisabled}
         />
         <ThemedButton
           type="ghost"
-          trailingIcon={<Icon name="arrow-left" color={isPreviousLineDisabled ? disabledColor : undefined} />}
+          trailingIcon={<Ionicon name="arrow-back-outline" color={isPreviousLineDisabled ? disabledColor : undefined} />}
           onPress={seekToPreviousLine}
           disabled={isPreviousLineDisabled}
         />
@@ -99,19 +113,19 @@ export const VideoControlBar: React.FC = () => {
         </TouchableOpacity>
         <ThemedButton
           type="ghost"
-          trailingIcon={<Icon name="arrow-right" color={isNextLineDisabled ? disabledColor : undefined} />}
+          trailingIcon={<Ionicon name="arrow-forward-outline" color={isNextLineDisabled ? disabledColor : undefined} />}
           onPress={seekToNextLine}
           disabled={isNextLineDisabled}
         />
         <ThemedButton
           type="ghost"
-          trailingIcon={<Icon name="skip-next" color={isNextVideoDisabled ? disabledColor : undefined} />}
+          trailingIcon={<Ionicon name="play-skip-forward-outline" color={isNextVideoDisabled ? disabledColor : undefined} />}
           onPress={skipToNextVideo}
           disabled={isNextVideoDisabled}
         />
         <ThemedButton
           type="ghost"
-          trailingIcon={<Icon name="rotate-left" />}
+          trailingIcon={<Ionicon name="refresh-circle-outline" />}
           onPress={rewind}
         />
       </View>
@@ -119,12 +133,17 @@ export const VideoControlBar: React.FC = () => {
         <View>
           <ThemedText type="subtitle">{video.title}</ThemedText>
           <ThemedText variant="secondary" style={{ marginTop: 10 }}>
-            {`${video.date instanceof Date ? video.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'No Date'} / Duration: ${video.duration ? formatDuration(video.duration) : '--:--'} / ${video.locale}`}
+            {videoInfo.filter(Boolean).map((info, index) => (
+              <React.Fragment key={index}>
+                {info}
+                {index < videoInfo.length - 1 && ' • '}
+              </React.Fragment>
+            ))}          
           </ThemedText>
-          <ThemedText variant="secondary" style={{ marginTop: 10 }}>
-            {`${video.views ? video.views.toLocaleString() : '0'} Views / ${video.likes ? video.likes : '0'} likes / ${
-              video.comments
-            } comments`}
+          <ThemedText variant="secondary" style={{ marginTop: 10, flexDirection: "row", alignItems: "center" }}>
+            <Ionicon name="eye" size={16} /> {formatNumber(video.views || 0)} {t('video.views')} {" "}
+            <Ionicon name="thumbs-up" size={16} style={{ marginLeft: 5 }} /> {formatNumber(video.likes || 0)} {t('video.likes')} {" "}
+            <Ionicon name="chatbubble" size={16} style={{ marginLeft: 5 }} /> {formatNumber(video.comments || 0)} {t('video.comments')}
           </ThemedText>
         </View>
       </ThemedRBSheet>

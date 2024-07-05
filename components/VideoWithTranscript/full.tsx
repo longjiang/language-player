@@ -41,14 +41,14 @@ export const VideoWithTranscriptFull: React.FC<VideoWithTranscriptFullProps> = (
             />
           </View>
           <View style={{ flexDirection: "row" }}>
-            <ThemedButton
+            {/* <ThemedButton
               type="ghost"
               style={styles.headerButton}
               trailingIcon={<Icon name="text-long" />}
               onPress={() => {
                 // Handle transcript button press
               }}
-            />
+            /> */}
             <ThemedButton
               type="ghost"
               style={styles.headerButton}
