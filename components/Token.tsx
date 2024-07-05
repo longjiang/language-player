@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useEffect, useState, useCallback } from "react";
 import { View, Text } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Typography } from "@/constants/Typography";
@@ -6,7 +6,8 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { PopupDictionaryModal } from "./PopupDictionaryModal";
 import { Token as TokenType } from "@/src/tokenizer";
-import { Converter } from 'opencc-js';  // Import the converter
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 export const Token: React.FC<{
   token: TokenType,
@@ -24,8 +25,10 @@ export const Token: React.FC<{
   const defaultFontSize = 16;
   const primaryTextColor = useThemeColor({}, "primaryText");
   const fontFamily = textWeight === "bold" ? Typography.fontFamilyBold : Typography.fontFamilyRegular;
+  const { l2Lang } = useLanguage();
 
-  const { settings } = useSettings(); // Use the settings from context
+  const { settings } = useSettings();
+  const { convert } = useDictionary();
   const modalRef = useRef();
 
   const handleTokenPress = () => {
@@ -36,9 +39,11 @@ export const Token: React.FC<{
 
   // Using useMemo to avoid unnecessary conversions on each render
   const displayText = useMemo(() => {
-    const convert = Converter({ from: 'cn', to: settings.useTraditional ? 'tw' : 'cn' });
-    return convert(token.text);
-  }, [token.text, settings.useTraditional]);
+    if (convert && l2Lang.han && token.text) {
+      return convert(token.text);
+    }
+    return token.text;
+  }, [token.text, convert, l2Lang.han]);
 
   return (
     <>

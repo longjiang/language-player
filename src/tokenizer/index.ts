@@ -54,16 +54,12 @@ export class TokenizerService {
     return TokenizerService.instance;
   }
 
-  public logCache(): void {
-    const cacheObject = {};
-    this.cache.forEach((value, key) => {
-      cacheObject[key] = value;
-    });
-    console.log("Cache as Object:", cacheObject);
-  }
-
   public loadCache(initialCache: { [key: string]: Token[] }): void {
-    for (const [key, tokens] of Object.entries(initialCache)) {
+    const tokenizer = getTokenizer("en");
+    for (const [key, tokenData] of Object.entries(initialCache)) {
+      const text = tokenData.map(token => token.text).join(" ");
+      // Normalize the tokens
+      const tokens = tokenizer ? tokenizer.module.normalizeTokens(tokenData, text) : tokenData;
       this.cache.set(key, tokens);
     }
     console.log("🍒 Cache loaded");

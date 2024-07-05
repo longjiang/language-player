@@ -1,25 +1,26 @@
-// @/contexts/DictionaryContext.ts
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Dictionary } from '@/src/dictionary';
 import { TokenizerService } from '@/src/tokenizer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryLoadingModal } from '@/components/DictionaryLoadingModal';
-import { Text } from 'react-native';
+import { Converter } from 'opencc-js';
 
 interface DictionaryContextProps {
   dictionary: Dictionary | null;
   tokenizer: TokenizerService | null;
+  convert: ((text: string) => string) | null;
 }
 
 export const DictionaryContext = createContext<DictionaryContextProps>({
   dictionary: null,
   tokenizer: null,
+  convert: null,
 });
 
 export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [dictionary, setDictionary] = useState<Dictionary | null>(null);
   const [tokenizer, setTokenizer] = useState<TokenizerService | null>(null);
+  const [convert, setConvert] = useState<((text: string) => string) | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const { l2Lang } = useLanguage();
@@ -42,6 +43,12 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
         setTokenizer(tokenizer);
       };
       initializeTokenizer();
+
+      if (l2Lang.han) {
+        const converterFunction = Converter({ from: 'cn', to: 'tw' });
+        setConvert(() => converterFunction);
+      }
+
       addLog('Dictionary is ready and loaded.');
       setIsLoading(false);
     }).catch(error => {
@@ -51,7 +58,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
   }, [l2Lang]);
 
   return (
-    <DictionaryContext.Provider value={{ dictionary, tokenizer }}>
+    <DictionaryContext.Provider value={{ dictionary, tokenizer, convert }}>
       {isLoading && l2Lang && <DictionaryLoadingModal logs={logs} language={l2Lang.name} />}
       {children}
     </DictionaryContext.Provider>
