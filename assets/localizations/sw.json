@@ -238,7 +238,8 @@
         "expires_in": "Inaisha katika siku {{days}}",
         "or_register_with": "Aujiandikisha na:",
         "already_have_account": "Tayari una akaunti?",
-        "enter_verification_code": "Tafadhali ingiza msimbo wa uthibitishaji uliotumwa kwa barua pepe"
+        "enter_verification_code": "Tafadhali ingiza msimbo wa uthibitishaji uliotumwa kwa barua pepe",
+        "hsk_explanation": "\"HSK\" ni mtihani rasmi wa ustadi wa Kichina, na Kiwango cha 1 kuwa cha chini na Kiwango cha 9 kuwa cha juu zaidi."
     },
     "title": {
         "email": "Barua pepe",
@@ -261,7 +262,8 @@
         "trial": "Jaribio",
         "verify_your_email": "Thibitisha Barua pepe yako",
         "how_did_you_hear": "Ulisikiaje kuhusu sisi?",
-        "select_language": "Ungependa kujifunza lugha gani?"
+        "select_language": "Ungependa kujifunza lugha gani?",
+        "current_level": "Ni kiwango chako cha sasa cha {{language}}?"
     },
     "action": {
         "upgrade": "Kuboresha",
@@ -289,7 +291,8 @@
         "registration_failed": "Kusajiliwa kushindwa",
         "failed_retrieve_password": "Kushindwa kupata nywila iliyohifadhiwa",
         "generic": "Kosa",
-        "user_info_not_found": "Maelezo ya mtumiaji hayapatikani"
+        "user_info_not_found": "Maelezo ya mtumiaji hayapatikani",
+        "updating_progress": "Kosa wakati wa kuboresha maendeleo:"
     },
     "success": {
         "code_resent": "Nambari ya uthibitishaji inakataa barua pepe yako."
@@ -305,5 +308,62 @@
         "google_search": "Tafuta kwenye Wavuti",
         "youtube": "Youtube",
         "other": "Nyingine (Tafadhali taja)"
+    },
+    "level": {
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Mwanzo I",
+            "2": "Kompyuta II",
+            "3": "Kompyuta III",
+            "4": "Kati ya I",
+            "5": "Kati ya II",
+            "6": "Ya juu I",
+            "7": "Ya Juu II"
+        },
+        "hsk": {
+            "1": "HSK 1",
+            "2": "HSK 2",
+            "3": "HSK 3",
+            "4": "HSK 4",
+            "5": "HSK 5",
+            "6": "HSK 6",
+            "7": "HSK 7-9"
+        },
+        "topik": {
+            "1": "Kabla ya TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
+        },
+        "jlpt": {
+            "1": "JLPT N5",
+            "2": "JLPT N4",
+            "3": "JLPT N3",
+            "4": "JLPT N2",
+            "5": "JLPT N1",
+            "6": "JLPT N1",
+            "7": "CEFR C2"
+        },
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
+        },
+        "cefr": {
+            "1": "CEFR Kabla ya A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
+        }
     }
 }

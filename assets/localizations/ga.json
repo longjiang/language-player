@@ -238,7 +238,8 @@
         "expires_in": "Expires in {{days}} days",
         "or_register_with": "Nó cláraigh le:",
         "already_have_account": "An bhfuil cuntas agat cheana féin?",
-        "enter_verification_code": "Cuir isteach an cód fíoraithe a sheoltar chuig an ríomhphost"
+        "enter_verification_code": "Cuir isteach an cód fíoraithe a sheoltar chuig an ríomhphost",
+        "hsk_explanation": "Is é \"HSK\" an tástáil inniúlachta oifigiúil Síneach, agus is é Leibhéal 1 an leibhéal is ísle agus is é Leibhéal 9 an ceann is airde."
     },
     "title": {
         "email": "Ríomhphost",
@@ -261,7 +262,8 @@
         "trial": "Trial",
         "verify_your_email": "Deimhnigh do ríomhphost",
         "how_did_you_hear": "Conas a chuala tú fúinn?",
-        "select_language": "Cén teanga ba mhaith leat a fhoghlaim?"
+        "select_language": "Cén teanga ba mhaith leat a fhoghlaim?",
+        "current_level": "Cén leibhéal atá agat i láthair i {{language}}?"
     },
     "action": {
         "upgrade": "Uasghrádú",
@@ -289,7 +291,8 @@
         "registration_failed": "Níor éirigh le clárú",
         "failed_retrieve_password": "Níor éirigh leis an bhfocal faire a stóráil",
         "generic": "Earráid",
-        "user_info_not_found": "Níor aimsíodh eolas úsáideora"
+        "user_info_not_found": "Níor aimsíodh eolas úsáideora",
+        "updating_progress": "Earráid agus an dul chun cinn a nuashonrú:"
     },
     "success": {
         "code_resent": "Tá an cód deimhnithe atá atáirthe arís chuig do ríomhphost."
@@ -305,5 +308,62 @@
         "google_search": "Cuardach gréasáin",
         "youtube": "YouTube",
         "other": "Eile (Sonraigh le do thoil)"
+    },
+    "level": {
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Bunleibhéal I",
+            "2": "Bunleibhéal II",
+            "3": "Bunleibhéal III",
+            "4": "Meánleibhéal I",
+            "5": "Meánrang II",
+            "6": "Ardrang I",
+            "7": "Ardrang II"
+        },
+        "hsk": {
+            "1": "HSK 1",
+            "2": "HSK 2",
+            "3": "HSK 3",
+            "4": "HSK 4",
+            "5": "HSK 5",
+            "6": "HSK 6",
+            "7": "HSK 7-9"
+        },
+        "topik": {
+            "1": "Réamh-TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
+        },
+        "jlpt": {
+            "1": "JLPT N5",
+            "2": "JLPT N4",
+            "3": "JLPT N3",
+            "4": "JLPT N2",
+            "5": "JLPT N1",
+            "6": "JLPT N1",
+            "7": "CEFR C2"
+        },
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
+        },
+        "cefr": {
+            "1": "CEFR Roimh A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
+        }
     }
 }

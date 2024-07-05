@@ -238,7 +238,8 @@
         "expires_in": "Går ut om {{days}} dagar",
         "or_register_with": "Eller registrera dig med:",
         "already_have_account": "Har du redan ett konto?",
-        "enter_verification_code": "Ange verifieringskoden som skickades till e-postmeddelandet"
+        "enter_verification_code": "Ange verifieringskoden som skickades till e-postmeddelandet",
+        "hsk_explanation": "\"HSK\" är det officiella kinesiska kunskapstestet, där nivå 1 är den lägsta och nivå 9 är den högsta."
     },
     "title": {
         "email": "E-post",
@@ -261,7 +262,8 @@
         "trial": "Provperiod",
         "verify_your_email": "Bekräfta din e-postadress",
         "how_did_you_hear": "Hur hörde du talas om oss?",
-        "select_language": "Vilket språk vill du lära dig?"
+        "select_language": "Vilket språk vill du lära dig?",
+        "current_level": "Vilken är din nuvarande nivå av {{language}}?"
     },
     "action": {
         "upgrade": "Uppgradera",
@@ -289,7 +291,8 @@
         "registration_failed": "Registreringen misslyckades",
         "failed_retrieve_password": "Misslyckades med att hämta lagrat lösenord",
         "generic": "Fel",
-        "user_info_not_found": "Det gick inte att hitta användarinformationen"
+        "user_info_not_found": "Det gick inte att hitta användarinformationen",
+        "updating_progress": "Fel vid uppdatering av framsteg:"
     },
     "success": {
         "code_resent": "Verifieringskoden skickas till din e-post på nytt."
@@ -305,5 +308,62 @@
         "google_search": "Webbsökning",
         "youtube": "På YouTube (på engelska",
         "other": "Annat (vänligen specificera)"
+    },
+    "level": {
+        "label": "{{levelName}} {{}} ({{examLevelName}})",
+        "name": {
+            "1": "Nybörjare I",
+            "2": "Nybörjare II",
+            "3": "Nybörjare III",
+            "4": "Fortsättningskurs I",
+            "5": "Fortsättningskurs II",
+            "6": "Avancerad I",
+            "7": "Avancerad II"
+        },
+        "hsk": {
+            "1": "HSK 1",
+            "2": "HSK 2",
+            "3": "HSK 3",
+            "4": "HSK 4",
+            "5": "HSK 5",
+            "6": "HSK 6",
+            "7": "HSK 7-9"
+        },
+        "topik": {
+            "1": "Pre-TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
+        },
+        "jlpt": {
+            "1": "JLPT N5",
+            "2": "JLPT N4",
+            "3": "JLPT N3",
+            "4": "JLPT N2",
+            "5": "JLPT N1",
+            "6": "JLPT N1",
+            "7": "CEFR C2"
+        },
+        "ielts": {
+            "1": "IELTS 1 (på engelska)",
+            "2": "IELTS 2 (på engelska)",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5 (på engelska)",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8 (på engelska)",
+            "7": "IELTS 9 (på engelska)"
+        },
+        "cefr": {
+            "1": "CEFR före A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
+        }
     }
 }

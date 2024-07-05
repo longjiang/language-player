@@ -238,7 +238,8 @@
         "expires_in": "{{days}} gün içinde sona eriyor",
         "or_register_with": "Veya şununla kaydolun:",
         "already_have_account": "Zaten bir hesabınız var mı?",
-        "enter_verification_code": "Lütfen e-postaya gönderilen doğrulama kodunu girin"
+        "enter_verification_code": "Lütfen e-postaya gönderilen doğrulama kodunu girin",
+        "hsk_explanation": "\"HSK\", Seviye 1 en düşük ve Seviye 9 en yüksek olmak üzere resmi Çince yeterlilik testidir."
     },
     "title": {
         "email": "E-posta",
@@ -261,7 +262,8 @@
         "trial": "Deneme",
         "verify_your_email": "E-postanızı doğrulayın",
         "how_did_you_hear": "Bizden nasıl haberdar oldunuz?",
-        "select_language": "Hangi dili öğrenmek istersiniz?"
+        "select_language": "Hangi dili öğrenmek istersiniz?",
+        "current_level": "Şu anki {{language}} seviyeniz nedir?"
     },
     "action": {
         "upgrade": "Yükseltmek",
@@ -289,7 +291,8 @@
         "registration_failed": "Kayıt başarısız oldu",
         "failed_retrieve_password": "Saklanan parola alınamadı",
         "generic": "Hata",
-        "user_info_not_found": "Kullanıcı bilgileri bulunamadı"
+        "user_info_not_found": "Kullanıcı bilgileri bulunamadı",
+        "updating_progress": "Güncelleme hatası:"
     },
     "success": {
         "code_resent": "Doğrulama kodu e-postanıza yeniden gönderilir."
@@ -305,5 +308,62 @@
         "google_search": "Web Araması",
         "youtube": "Youtube'da T",
         "other": "Diğer (Lütfen Belirtiniz)"
+    },
+    "level": {
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Başlangıç I",
+            "2": "Başlangıç II",
+            "3": "Başlangıç III",
+            "4": "Orta Seviye I",
+            "5": "Orta Seviye II",
+            "6": "İleri I",
+            "7": "İleri Düzey II"
+        },
+        "hsk": {
+            "1": "HSK 1",
+            "2": "HSK 2",
+            "3": "HSK 3",
+            "4": "HSK 4",
+            "5": "HSK 5",
+            "6": "HSK 6",
+            "7": "HSK 7-9"
+        },
+        "topik": {
+            "1": "TOPİK öncesi 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
+        },
+        "jlpt": {
+            "1": "JLPT N5",
+            "2": "JLPT N4",
+            "3": "JLPT N3",
+            "4": "JLPT N2",
+            "5": "JLPT N1",
+            "6": "JLPT N1",
+            "7": "CEFR C2"
+        },
+        "ielts": {
+            "1": "IELTS 1 Sınavı",
+            "2": "IELTS 2 Sınavı",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5 sınavı",
+            "5": "IELTS 6.5 Sınavı",
+            "6": "IELTS 8 Sınavı",
+            "7": "IELTS 9 Sınavı"
+        },
+        "cefr": {
+            "1": "CEFR A1 Öncesi",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
+        }
     }
 }

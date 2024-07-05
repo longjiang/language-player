@@ -238,7 +238,8 @@
         "expires_in": "过期后 {{days}} 天",
         "or_register_with": "或使用以下方式注册：",
         "already_have_account": "已经有账户？",
-        "enter_verification_code": "请输入发送到以下邮箱的验证码"
+        "enter_verification_code": "请输入发送到以下邮箱的验证码",
+        "hsk_explanation": "“HSK”是官方的汉语水平测试，1 级是最低的，9 级是最高的。"
     },
     "title": {
         "email": "电子邮件",
@@ -261,7 +262,8 @@
         "trial": "试用",
         "verify_your_email": "验证您的邮箱",
         "how_did_you_hear": "您是如何了解到我们的？",
-        "select_language": "您想学习什么语言？"
+        "select_language": "您想学习什么语言？",
+        "current_level": "您目前的{{language}}水平是多少？"
     },
     "action": {
         "upgrade": "升级",
@@ -289,7 +291,8 @@
         "registration_failed": "注册失败",
         "failed_retrieve_password": "无法获取存储的密码",
         "generic": "错误",
-        "user_info_not_found": "未找到用户信息"
+        "user_info_not_found": "未找到用户信息",
+        "updating_progress": "更新进度时出错："
     },
     "success": {
         "code_resent": "验证码已重新发送到您的邮箱。"
@@ -305,5 +308,62 @@
         "google_search": "网络搜索",
         "youtube": "YouTube",
         "other": "其他（请说明）"
+    },
+    "level": {
+        "label": "{{levelName}}（{{examLevelName}}）",
+        "name": {
+            "1": "初级 I",
+            "2": "初级 II",
+            "3": "初级 III",
+            "4": "中级 I",
+            "5": "中级II",
+            "6": "高级 I",
+            "7": "高级 II"
+        },
+        "hsk": {
+            "1": "HSK一级",
+            "2": "HSK二级",
+            "3": "HSK三级",
+            "4": "HSK四级",
+            "5": "HSK五级",
+            "6": "HSK六级",
+            "7": "HSK 7-9级"
+        },
+        "topik": {
+            "1": "TOPIK 1前",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
+        },
+        "jlpt": {
+            "1": "JLPT N5",
+            "2": "JLPT N4",
+            "3": "JLPT N3",
+            "4": "JLPT N2",
+            "5": "JLPT N1",
+            "6": "JLPT N1",
+            "7": "欧标 C2"
+        },
+        "ielts": {
+            "1": "雅思1",
+            "2": "雅思2",
+            "3": "雅思3.5",
+            "4": "雅思5",
+            "5": "雅思6.5",
+            "6": "雅思8",
+            "7": "雅思9"
+        },
+        "cefr": {
+            "1": "欧标A1前",
+            "2": "欧标 A1",
+            "3": "欧标 A2",
+            "4": "欧标 B1",
+            "5": "欧标 B2",
+            "6": "欧标 C1",
+            "7": "欧标 C2"
+        }
     }
 }

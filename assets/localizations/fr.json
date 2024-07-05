@@ -238,7 +238,8 @@
         "expires_in": "Expire dans {{days}} jours",
         "or_register_with": "Ou inscrivez-vous avec :",
         "already_have_account": "Déjà un compte?",
-        "enter_verification_code": "Veuillez saisir le code de vérification envoyé par e-mail"
+        "enter_verification_code": "Veuillez saisir le code de vérification envoyé par e-mail",
+        "hsk_explanation": "« HSK » est le test de compétence officiel en chinois, le niveau 1 étant le plus bas et le niveau 9 étant le plus élevé."
     },
     "title": {
         "email": "Messagerie électronique",
@@ -261,7 +262,8 @@
         "trial": "Période d’essai",
         "verify_your_email": "Vérifiez votre e-mail",
         "how_did_you_hear": "Comment avez-vous entendu parler de nous ?",
-        "select_language": "Quelle langue souhaitez-vous apprendre ?"
+        "select_language": "Quelle langue souhaitez-vous apprendre ?",
+        "current_level": "Quel est votre niveau actuel en {{language}}?"
     },
     "action": {
         "upgrade": "Mise à niveau",
@@ -289,7 +291,8 @@
         "registration_failed": "Inscription échouée",
         "failed_retrieve_password": "Échec de la récupération du mot de passe stocké",
         "generic": "Erreur",
-        "user_info_not_found": "Informations utilisateur non trouvées"
+        "user_info_not_found": "Informations utilisateur non trouvées",
+        "updating_progress": "Erreur lors de la mise à jour de la progression:"
     },
     "success": {
         "code_resent": "Le code de vérification a été renvoyé à votre adresse e-mail."
@@ -305,5 +308,62 @@
         "google_search": "Recherche Web",
         "youtube": "Youtube",
         "other": "Autre (Veuillez préciser)"
+    },
+    "level": {
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Débutant I",
+            "2": "Débutant II",
+            "3": "Débutant III",
+            "4": "Intermédiaire I",
+            "5": "Intermédiaire II",
+            "6": "Avancé I",
+            "7": "Avancé II"
+        },
+        "hsk": {
+            "1": "HSK 1",
+            "2": "HSK 2",
+            "3": "HSK 3",
+            "4": "HSK 4",
+            "5": "HSK 5",
+            "6": "HSK 6",
+            "7": "HSK 7-9"
+        },
+        "topik": {
+            "1": "Pré-TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
+        },
+        "jlpt": {
+            "1": "JLPT N5",
+            "2": "JLPT N4",
+            "3": "JLPT N3",
+            "4": "JLPT N2",
+            "5": "JLPT N1",
+            "6": "JLPT N1",
+            "7": "CECRL C2"
+        },
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
+        },
+        "cefr": {
+            "1": "CECRL Pré-A1",
+            "2": "CECRL A1",
+            "3": "CECR A2",
+            "4": "CECRL B1",
+            "5": "CECRL B2",
+            "6": "CECRL C1",
+            "7": "CECRL C2"
+        }
     }
 }

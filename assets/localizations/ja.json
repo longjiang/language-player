@@ -238,7 +238,8 @@
         "expires_in": "有効期限 {{days}} 日",
         "or_register_with": "または、以下で登録します。",
         "already_have_account": "アカウントをお持ちですか？",
-        "enter_verification_code": "メールに送信された認証コードを入力してください"
+        "enter_verification_code": "メールに送信された認証コードを入力してください",
+        "hsk_explanation": "「HSK」は公式の中国語能力試験であり、レベル1が最低、レベル9が最高です。"
     },
     "title": {
         "email": "電子メール",
@@ -261,7 +262,8 @@
         "trial": "トライアル",
         "verify_your_email": "メールアドレスを確認してください",
         "how_did_you_hear": "私たちのことをどこでお知りになりましたか?",
-        "select_language": "どの言語を学びたいですか？"
+        "select_language": "どの言語を学びたいですか？",
+        "current_level": "現在の{{language}}のレベルは？"
     },
     "action": {
         "upgrade": "アップグレード",
@@ -289,7 +291,8 @@
         "registration_failed": "登録に失敗しました",
         "failed_retrieve_password": "保存されたパスワードの取得に失敗しました",
         "generic": "エラー",
-        "user_info_not_found": "ユーザー情報が見つかりません"
+        "user_info_not_found": "ユーザー情報が見つかりません",
+        "updating_progress": "進捗を更新する際のエラー:"
     },
     "success": {
         "code_resent": "確認コードがメールアドレスに再送信されました。"
@@ -305,5 +308,62 @@
         "google_search": "ウェブ検索",
         "youtube": "ユーチューブ",
         "other": "その他(具体的にお答えください)"
+    },
+    "level": {
+        "label": "{{levelName}}({{examLevelName}})",
+        "name": {
+            "1": "初級I.",
+            "2": "初級II.",
+            "3": "初級 III",
+            "4": "中級I.",
+            "5": "中級II.",
+            "6": "上級I.",
+            "7": "アドバンスII."
+        },
+        "hsk": {
+            "1": "HSK1",
+            "2": "HSK2",
+            "3": "HSK3",
+            "4": "HSK4",
+            "5": "HSK5",
+            "6": "HSK6",
+            "7": "HSK7-9"
+        },
+        "topik": {
+            "1": "プレトピック1",
+            "2": "トピック1",
+            "3": "トピック2",
+            "4": "トピック3",
+            "5": "トピック4",
+            "6": "トピック5",
+            "7": "トピック6"
+        },
+        "jlpt": {
+            "1": "日本語能力試験N5",
+            "2": "日本語能力試験N4",
+            "3": "日本語能力試験N3",
+            "4": "日本語能力試験N2",
+            "5": "日本語能力試験N1",
+            "6": "日本語能力試験N1",
+            "7": "CEFR C2"
+        },
+        "ielts": {
+            "1": "IELTS試験 1",
+            "2": "IELTS2",
+            "3": "IELTS 3.5",
+            "4": "IELTS5",
+            "5": "IELTS 6.5",
+            "6": "IELTS8",
+            "7": "IELTS9"
+        },
+        "cefr": {
+            "1": "CEFRプレA1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
+        }
     }
 }

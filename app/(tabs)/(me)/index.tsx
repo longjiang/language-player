@@ -25,6 +25,11 @@ const LanguageProgressScreen = () => {
     const secs = totalSeconds % 60;
     return `${hrs} hours ${mins} min ${secs} sec`;
   };
+
+  const handleLogoutPress = async () => {
+    await handleLogout();
+    router.navigate("/");
+  }
   
 
   const onSelect = (level: number) => {
@@ -90,7 +95,7 @@ const LanguageProgressScreen = () => {
           trailingIcon={<Icon name="chevron-right" />}
           type="accent"
           style={styles.button}
-          onPress={handleLogout}
+          onPress={handleLogoutPress}
         />
       </View>
     </ThemedScreen>

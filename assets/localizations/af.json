@@ -238,7 +238,8 @@
         "expires_in": "Verval in {{days}} dae",
         "or_register_with": "Of registreer met:",
         "already_have_account": "Het u reeds 'n rekening?",
-        "enter_verification_code": "Voer asseblief die verifikasiekode in wat na die e-pos gestuur is"
+        "enter_verification_code": "Voer asseblief die verifikasiekode in wat na die e-pos gestuur is",
+        "hsk_explanation": "\"HSK\" is die amptelike Chinese vaardigheidstoets, met vlak 1 die laagste en vlak 9 die hoogste."
     },
     "title": {
         "email": "E-pos",
@@ -261,7 +262,8 @@
         "trial": "Proeflopie",
         "verify_your_email": "Verifieer jou e-pos",
         "how_did_you_hear": "Hoe het jy van ons gehoor?",
-        "select_language": "Watter taal wil jy leer?"
+        "select_language": "Watter taal wil jy leer?",
+        "current_level": "Wat is jou huidige vlak van {{language}}?"
     },
     "action": {
         "upgrade": "Opgradering",
@@ -289,7 +291,8 @@
         "registration_failed": "Registrasie het misluk",
         "failed_retrieve_password": "Misluk om gestoorde wagwoord te herwin",
         "generic": "Fout",
-        "user_info_not_found": "Gebruikersinligting nie gevind nie"
+        "user_info_not_found": "Gebruikersinligting nie gevind nie",
+        "updating_progress": "Fout by die opdateer van vordering:"
     },
     "success": {
         "code_resent": "Verifikasiekode is weer na jou e-pos gestuur."
@@ -305,5 +308,62 @@
         "google_search": "Websoektog",
         "youtube": "Youtube",
         "other": "Ander (Spesifiseer asseblief)"
+    },
+    "level": {
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Beginner I",
+            "2": "Beginner II",
+            "3": "Beginner III",
+            "4": "Intermediêr I",
+            "5": "Intermediêre II",
+            "6": "Gevorderde I",
+            "7": "Gevorderde II"
+        },
+        "hsk": {
+            "1": "HSK 1",
+            "2": "HSK 2",
+            "3": "HSK 3",
+            "4": "HSK 4",
+            "5": "HSK 5",
+            "6": "HSK 6",
+            "7": "HSK 7-9"
+        },
+        "topik": {
+            "1": "Pre-TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
+        },
+        "jlpt": {
+            "1": "JLPT N5",
+            "2": "JLPT N4",
+            "3": "JLPT N3",
+            "4": "JLPT N2",
+            "5": "JLPT N1",
+            "6": "JLPT N1",
+            "7": "CEFR C2"
+        },
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
+        },
+        "cefr": {
+            "1": "CEFR Pre-A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
+        }
     }
 }

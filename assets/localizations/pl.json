@@ -238,7 +238,8 @@
         "expires_in": "Wygasa za {{days}} dni",
         "or_register_with": "Lub zarejestruj się za pomocą:",
         "already_have_account": "Masz już konto?",
-        "enter_verification_code": "Wprowadź kod weryfikacyjny wysłany na adres e-mail"
+        "enter_verification_code": "Wprowadź kod weryfikacyjny wysłany na adres e-mail",
+        "hsk_explanation": "\"HSK\" to oficjalny chiński test biegłości, w którym poziom 1 jest najniższy, a poziom 9 najwyższy."
     },
     "title": {
         "email": "E-mail",
@@ -261,7 +262,8 @@
         "trial": "Okres próbny",
         "verify_your_email": "Potwierdź swój adres e-mail",
         "how_did_you_hear": "Skąd się o nas dowiedziałeś?",
-        "select_language": "Jakiego języka chcesz się nauczyć?"
+        "select_language": "Jakiego języka chcesz się nauczyć?",
+        "current_level": "Jaki jest twój obecny poziom {{language}}?"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -289,7 +291,8 @@
         "registration_failed": "Rejestracja nie powiodła się",
         "failed_retrieve_password": "Nie udało się odzyskać przechowywanego hasła",
         "generic": "Błąd",
-        "user_info_not_found": "Nie znaleziono informacji o użytkowniku"
+        "user_info_not_found": "Nie znaleziono informacji o użytkowniku",
+        "updating_progress": "Błąd podczas aktualizacji postępu:"
     },
     "success": {
         "code_resent": "Kod weryfikacyjny został ponownie wysłany na Twój adres e-mail."
@@ -305,5 +308,62 @@
         "google_search": "Wyszukiwanie w sieci",
         "youtube": "Kanał YouTube",
         "other": "Inne (proszę określić)"
+    },
+    "level": {
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Początkujący I",
+            "2": "Początkujący II",
+            "3": "Początkujący III",
+            "4": "Średnio zaawansowany I",
+            "5": "Średnio zaawansowany II",
+            "6": "Zaawansowany I",
+            "7": "Zaawansowany II"
+        },
+        "hsk": {
+            "1": "Zobacz materiał HSK 1",
+            "2": "Zobacz materiał HSK 2",
+            "3": "Zobacz materiał HSK 3",
+            "4": "Zobacz materiał HSK 4",
+            "5": "Zobacz materiał HSK 5",
+            "6": "Zobacz materiał HSK 6",
+            "7": "Zobacz materiał HSK 7-9"
+        },
+        "topik": {
+            "1": "Przed TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
+        },
+        "jlpt": {
+            "1": "JLPT N5",
+            "2": "JLPT N4",
+            "3": "JLPT N3",
+            "4": "JLPT N2",
+            "5": "JLPT N1",
+            "6": "JLPT N1",
+            "7": "CEFR C2"
+        },
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "Egzamin IELTS 3.5",
+            "4": "Egzamin IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "Egzamin IELTS 8",
+            "7": "Egzamin IELTS 9"
+        },
+        "cefr": {
+            "1": "CEFR Pre-A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
+        }
     }
 }

@@ -169,7 +169,7 @@ export function ThemedButton({
               type="title"
               style={{ fontSize: stylesBasedOnSize[size].fontSize, color: style?.color || mergedViewStyle.color }} // Ignore the lint error here
             >
-              {i18n.t(title, { missingBehavior: "guess"})}
+              {title}
             </ThemedText>
           )}
           {styledTrailingIcon}

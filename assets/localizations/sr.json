@@ -238,7 +238,8 @@
         "expires_in": "Ističe u {{days}} dana",
         "or_register_with": "Ili se registrirajte sa:",
         "already_have_account": "Već imate nalog?",
-        "enter_verification_code": "Unesite verifikacioni kôd poslat na e-mail"
+        "enter_verification_code": "Unesite verifikacioni kôd poslat na e-mail",
+        "hsk_explanation": "\"HSK\" je zvanični kineski test stručnosti, s tim da je nivo 1 najniži, a nivo 9 najviši."
     },
     "title": {
         "email": "E-pošta",
@@ -261,7 +262,8 @@
         "trial": "Probni",
         "verify_your_email": "Potvrdite svoj e-mail",
         "how_did_you_hear": "Kako si иuo za nas?",
-        "select_language": "Koji jezik želite da učite?"
+        "select_language": "Koji jezik želite da učite?",
+        "current_level": "Koji je vaš trenutni nivo {{language}}?"
     },
     "action": {
         "upgrade": "Nadogradnju",
@@ -289,7 +291,8 @@
         "registration_failed": "Registracija nije uspela",
         "failed_retrieve_password": "Neuspjelo dohvaćanje pohranjene lozinke",
         "generic": "Greška",
-        "user_info_not_found": "Korisničke informacije nisu pronađene"
+        "user_info_not_found": "Korisničke informacije nisu pronađene",
+        "updating_progress": "Greška pri ažuriranju napretka:"
     },
     "success": {
         "code_resent": "Kod"
@@ -305,5 +308,62 @@
         "google_search": "Web pretraga",
         "youtube": "YouTube",
         "other": "Ostalo (Navedite)"
+    },
+    "level": {
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Početnik I",
+            "2": "Početnik II",
+            "3": "Početnik III",
+            "4": "Srednji I",
+            "5": "Srednji II",
+            "6": "Napredno I",
+            "7": "Napredni II"
+        },
+        "hsk": {
+            "1": "HSK 1",
+            "2": "HSK 2",
+            "3": "HSK 3",
+            "4": "HSK 4",
+            "5": "HSK 5",
+            "6": "HSK 6",
+            "7": "HSK 7-9"
+        },
+        "topik": {
+            "1": "Pre TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
+        },
+        "jlpt": {
+            "1": "JLPT N5",
+            "2": "JLPT N4",
+            "3": "JLPT N3",
+            "4": "JLPT N2",
+            "5": "JLPT N1",
+            "6": "JLPT N1",
+            "7": "CEFR C2"
+        },
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
+        },
+        "cefr": {
+            "1": "CEFR Pre-A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
+        }
     }
 }

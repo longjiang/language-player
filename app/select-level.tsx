@@ -9,9 +9,10 @@ import { ThemedText } from "@/components/ThemedText";
 import LevelButton from "@/components/LevelButton";
 import { useUserData } from "@/contexts/UserDataContext";
 import LevelResetSheet from "@/components/LevelResetSheet";
+import RBSheet from "react-native-raw-bottom-sheet";
 
 const SelectLevelScreen = () => {
-  const { l2Lang } = useLanguage();
+  const { l2Lang, t } = useLanguage();
   const { userData, updateProgress } = useUserData();
   const refRBSheet = useRef<RBSheet>(null);
   const selectedLevelRef = useRef<number | null>(null);
@@ -40,7 +41,7 @@ const SelectLevelScreen = () => {
         await updateProgress(l2Lang.code, { level: String(selectedLevelRef.current), time: newTime });
         router.navigate("/(tabs)/(media)");
       } catch (error) {
-        console.error('Error updating progress:', error);
+        console.error(t('error.updating_progress'), error);
       }
     }
     refRBSheet.current?.close();
@@ -48,7 +49,7 @@ const SelectLevelScreen = () => {
 
   return (
     <ThemedScreen
-      title={`What's your current ${l2Lang.name} level?`}
+      title={t('title.current_level', { language: t('lang.' + l2Lang.code) })}
       onBackPress={() => router.navigate("/select-l1")}
     >
       <View>
@@ -63,7 +64,7 @@ const SelectLevelScreen = () => {
         ))}
       </View>
       <ThemedText style={{ marginTop: 20, textAlign: "center" }}>
-        “HSK” is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.
+        {t('msg.hsk_explanation')}
       </ThemedText>
       <LevelResetSheet ref={refRBSheet} onConfirm={handleConfirm} />
     </ThemedScreen>

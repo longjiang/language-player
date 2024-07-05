@@ -16,20 +16,23 @@ interface LevelButtonProps extends Omit<ButtonProps, 'onPress'> {
 
 const LevelButton: React.FC<LevelButtonProps> = ({ level, onPress, style, size = "small", type = "accent" }) => {
   const colorScheme = useColorScheme();
-  const { l2Lang } = useLanguage();
+  const { l2Lang, t } = useLanguage();
 
   if (!l2Lang) return null;
 
   const levels = languageLevelsByL2Code(l2Lang.code);
-  const { levelName, examLevelName } = levels[level] || {};
+
+  const { levelName, examKey, examLevelName } = levels[level] || {};
 
   if (!levelName || !examLevelName) return null;
 
   const levelColor = LevelColors[colorScheme || 'light'][level];
 
+  const title = t('level.label', { levelName: t('level.name.' + level), examLevelName: t('level.' + examKey + '.' + level) })
+
   return (
     <ThemedButton
-      title={`${levelName} (${examLevelName})`}
+      title={title}
       leadingIcon={<Icon name="circle" style={{ color: levelColor || 'rgba(0,0,0,0)' }} />}
       trailingIcon={<Icon name="chevron-right" />}
       onPress={() => onPress(level)}

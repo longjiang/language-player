@@ -238,7 +238,8 @@
         "expires_in": "Vanhenee {{days}} päivässä",
         "or_register_with": "Tai rekisteröidy:",
         "already_have_account": "Onko sinulla jo tili?",
-        "enter_verification_code": "Anna sähköpostiin lähetetty vahvistuskoodi"
+        "enter_verification_code": "Anna sähköpostiin lähetetty vahvistuskoodi",
+        "hsk_explanation": "\"HSK\" on virallinen kiinalainen taitotesti, jossa taso 1 on alin ja taso 9 korkein."
     },
     "title": {
         "email": "Sähköposti",
@@ -261,7 +262,8 @@
         "trial": "Kokeilu",
         "verify_your_email": "Vahvista sähköpostisi",
         "how_did_you_hear": "Miten kuulit meistä?",
-        "select_language": "Mitä kieltä haluat oppia?"
+        "select_language": "Mitä kieltä haluat oppia?",
+        "current_level": "Mikä on nykyinen taitotasosi {{language}}?"
     },
     "action": {
         "upgrade": "Päivittää",
@@ -289,7 +291,8 @@
         "registration_failed": "Rekisteröinti epäonnistui",
         "failed_retrieve_password": "Salasanan haku epäonnistui",
         "generic": "Virhe",
-        "user_info_not_found": "Käyttäjätietoja ei löytynyt"
+        "user_info_not_found": "Käyttäjätietoja ei löytynyt",
+        "updating_progress": "Virheen päivitys:"
     },
     "success": {
         "code_resent": "Vahvistuskoodi lähetettiin uudelleen sähköpostiisi."
@@ -305,5 +308,62 @@
         "google_search": "Verkkohaku",
         "youtube": "YouTubessa",
         "other": "Muu (täsmennettävä)"
+    },
+    "level": {
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Aloittelija I",
+            "2": "Aloittelija II",
+            "3": "Aloittelija III",
+            "4": "Keskitaso I",
+            "5": "Keskitaso II",
+            "6": "Edistynyt I",
+            "7": "Edistynyt II"
+        },
+        "hsk": {
+            "1": "HSK 1",
+            "2": "HSK 2",
+            "3": "HSK 3",
+            "4": "HSK 4",
+            "5": "HSK 5",
+            "6": "HSK 6",
+            "7": "HSK 7-9"
+        },
+        "topik": {
+            "1": "Ennen TOPIK 1:tä",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
+        },
+        "jlpt": {
+            "1": "JLPT N5",
+            "2": "JLPT N4",
+            "3": "JLPT N3",
+            "4": "JLPT N2",
+            "5": "JLPT N1",
+            "6": "JLPT N1",
+            "7": "CEFR C2"
+        },
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
+        },
+        "cefr": {
+            "1": "CEFR ennen A1:tä",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
+        }
     }
 }

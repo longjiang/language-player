@@ -16,7 +16,7 @@ const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { userData } = useUserData();
-    const { i18n } = useLanguage();
+    const { t } = useLanguage();
 
     useEffect(() => {
         if (isAuthenticated && userData) {
@@ -34,7 +34,7 @@ const LoginScreen = () => {
 
     return (
         <ThemedScreen
-            title="title.login"
+            title={t('title.login')}
             onBackPress={() => router.navigate('/')}
             imageName={require('../assets/images/splash-image.png')}
             imageStyle={{ marginTop: -400 }}
@@ -57,10 +57,10 @@ const LoginScreen = () => {
                 icon="lock"
             />
 
-            <ThemedButton title="title.login" onPress={onLoginPress} disabled={loading} />
+            <ThemedButton title={t('title.login')} onPress={onLoginPress} disabled={loading} />
 
             <TouchableOpacity style={styles.textButton}>
-                <ThemedText>{i18n.t('msg.forgot_password')}</ThemedText>
+                <ThemedText>{t('msg.forgot_password')}</ThemedText>
             </TouchableOpacity>
 
             {/* <ThemedText style={styles.orText}>Or login with:</ThemedText>
@@ -71,7 +71,7 @@ const LoginScreen = () => {
                 <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="facebook" />} onPress={() => router.navigate('/')} />
             </View> */}
 
-            <ThemedText style={{ textAlign: 'left', marginTop: 26 }} type="subtitle">{i18n.t('msg.dont_have_an_account')} <Link href='/register' style={{ color: useThemeColor({}, 'primaryLink'), fontWeight: 'bold' }}>{i18n.t('title.register')}</Link>
+            <ThemedText style={{ textAlign: 'left', marginTop: 26 }} type="subtitle">{t('msg.dont_have_an_account')} <Link href='/register' style={{ color: useThemeColor({}, 'primaryLink'), fontWeight: 'bold' }}>{t('title.register')}</Link>
             </ThemedText>
         </ThemedScreen>
     );

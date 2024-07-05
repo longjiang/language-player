@@ -13,7 +13,7 @@ import { useUserData } from "@/contexts/UserDataContext";
 import { ThemedText } from "@/components/ThemedText";
 
 const SelectL1Screen = () => {
-  const { l1Lang, l2Lang, setL1Lang, languages } = useLanguage();
+  const { l1Lang, l2Lang, setL1Lang, languages, t } = useLanguage();
   const { progress } = useUserData();
   const [defaultLanguage, setDefaultLanguage] = useState<string | null>(null);
 
@@ -69,7 +69,7 @@ const SelectL1Screen = () => {
       <ThemedLanguageSelect onSelect={onSelect} initialValue={defaultLanguage} scope="l1" />
 
       <ThemedButton
-        title="title.next"
+        title={t('title.next')}
         trailingIcon={<Icon name="chevron-right" />}
         style={styles.button}
         disabled={!l1Lang}
