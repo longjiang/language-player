@@ -1,4 +1,5 @@
 // @/app/(tabs)/(media)/index.tsx
+
 import React, { useState, useEffect } from "react";
 import { SafeAreaView, Dimensions, View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -18,7 +19,7 @@ import { mediaHomeScreenStyles as styles } from "@/src/styles";
 
 const MediaHomeScreen = () => {
   const { languages, i18n, l2Lang, t } = useLanguage();
-  const { progress } = useUserData();
+  const { progress, lastSignificantChange } = useUserData();
   const { getStoredUserInfo } = useAuth();
   const [items, setItems] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,9 +35,8 @@ const MediaHomeScreen = () => {
   const level = Number(l2Progress.level);
 
   useEffect(() => {
-    // Search screen mounted
     loadItems();
-  }, []);
+  }, [lastSignificantChange]); // Reload when lastSignificantChange updates
 
   const loadItems = async () => {
     setItems([]); // Clear items

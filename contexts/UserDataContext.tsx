@@ -48,6 +48,7 @@ interface UserDataContextProps {
   removeSavedWord: (langCode: string, wordId: string) => Promise<void>;
   getProgress: (langCode: string) => { level: string; time: number } | undefined;
   updateProgress: (langCode: string, newProgress: { level: string; time: number }) => Promise<void>;
+  lastSignificantChange: number;
 }
 
 const UserDataContext = createContext<UserDataContextProps | undefined>(undefined);
@@ -56,6 +57,7 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const [userData, setUserData] = useState<UserData | null>(null);
   const { l2Lang } = useLanguage();
+  const [lastSignificantChange, setLastSignificantChange] = useState(Date.now());
 
   const fetchAndSetUserData = async () => {
     try {
@@ -198,6 +200,7 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
     setUserData(updatedUserData);
     await storageManager.setUserData(updatedUserData);
+    setLastSignificantChange(Date.now()); // Update the change tracker
 
     try {
       const authToken = storageManager.getAuthToken();
@@ -207,6 +210,13 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
       console.error('Error updating user data:', error);
     }
   };
+
+  // Add an effect to update lastSignificantChange when l2Lang changes
+  useEffect(() => {
+    if (l2Lang) {
+      setLastSignificantChange(Date.now());
+    }
+  }, [l2Lang]);
 
   return (
     <UserDataContext.Provider
@@ -219,6 +229,7 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
         removeSavedWord,
         getProgress,
         updateProgress,
+        lastSignificantChange,
       }}
     >
       {children}

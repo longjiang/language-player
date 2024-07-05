@@ -1,3 +1,5 @@
+// @/app/select-l2.tsx
+
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { Option, ThemedLanguageSelect } from "@/components/ThemedLanguageSelect";
