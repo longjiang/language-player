@@ -12,9 +12,10 @@ import { Language } from '@/src/languages';
 export class Dictionary {
   private dictionaryDB: DictionaryDB;
   private dbName: string;
-  private l1Code: string;
   private sourceUrl: string;
   private normalizeEntry: (entry: RawEntry, entryCount: Record<string, number>) => DictionaryEntry;
+
+  readonly l1Code: string;
 
   constructor(l2Lang: Language) {
     const { dbName, l1Code, sourceUrl, normalizeEntry } = getDictionaryProfile(l2Lang);

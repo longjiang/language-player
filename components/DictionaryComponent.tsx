@@ -10,6 +10,7 @@ import { DictionaryEntry } from '@/src/dictionary-types';
 import { debounce } from 'lodash';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import DefinitionList from './DefinitionList';
 
 export const DictionaryComponent = () => {
     const [query, setQuery] = useState('');
@@ -44,7 +45,8 @@ export const DictionaryComponent = () => {
                               <ThemedText type="title" level={entry.level}>{entry[headKey]}</ThemedText>
                               <ThemedText type="default" variant="secondary"> {entry[alternateKey]}</ThemedText>
                               <ThemedText type="defaultBold"> {entry.pronunciation}</ThemedText>
-                              <ThemedText type="default"> • {entry.definitions.join('; ')}</ThemedText>
+                              <ThemedText type="default"> • </ThemedText>
+                              <DefinitionList definitions={entry.definitions} type="default" />
                           </ThemedText>
                         </TouchableOpacity>
                     </View>
