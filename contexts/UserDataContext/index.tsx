@@ -6,7 +6,7 @@ import { getUserData, initializeUserData, patchUserData } from '@/src/api/direct
 import { hasSavedWord, saveWord, removeSavedWord, SavedWords, SavedWordMeta } from './savedWords';
 import { getProgress, updateProgress, Progress } from './progress';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { storageManager } from "../StorageManager";
+import { storageManager } from "@/src/StorageManager";
 
 const UPDATE_INTERVAL = 1000; // 1 second
 

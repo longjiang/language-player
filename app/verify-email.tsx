@@ -1,4 +1,5 @@
 // @/app/verify-email.tsx
+
 import React, { useState } from "react";
 import { StyleSheet, Alert } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
@@ -6,9 +7,7 @@ import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedCodeInput } from "@/components/ThemedCodeInput";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router, useLocalSearchParams } from "expo-router";
-import { login } from "@/src/api/directus/user";
-import { sendVerificationEmail, verifyEmailCode } from "@/src/api/python/verify-email";
-import * as SecureStore from 'expo-secure-store';
+import { sendVerificationEmail } from "@/src/api/python/verify-email";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,7 +22,7 @@ const VerifyEmailScreen = () => {
   const handleVerifyCode = async () => {
     setLoading(true);
     try {
-      const token = await handleVerify(email, code);
+      const token = await handleVerify(email as string, code);
       if (token) {
         setLoading(false);
         router.push("/acquisition-survey");
@@ -36,7 +35,7 @@ const VerifyEmailScreen = () => {
 
   const handleResendCode = async () => {
     try {
-      await sendVerificationEmail(email);
+      await sendVerificationEmail(email as string);
       Alert.alert(t('success.code_resent'));
     } catch (error: any) {
       Alert.alert(t('error.generic'), error.message);

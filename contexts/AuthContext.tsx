@@ -1,4 +1,4 @@
-// @/src/context/AuthContext.tsx
+// @/contexts/AuthContext.tsx
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { verifyEmailCode } from "@/src/api/python/verify-email";
@@ -10,7 +10,7 @@ import {
   User,
 } from "@/src/api/directus/user";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { storageManager } from "./StorageManager";
+import { storageManager } from "@/src/StorageManager";
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -87,9 +87,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const handleVerify = async (email: string, code: string) => {
       await verifyEmailCode(email, code);
-      const password = await storageManager.getAuthToken();
+      const password = await storageManager.getTempPassword();
       if (!password) throw new Error(t('error.failed_retrieve_password'));
       const token = await handleLogin(email, password);
+      await storageManager.clearTempPassword();
       return token;
     }
 

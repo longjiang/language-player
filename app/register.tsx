@@ -1,4 +1,5 @@
-// @/app/RegisterScreen.tsx
+// @/app/register.tsx
+
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { ThemedScreen } from '@/components/ThemedScreen';
@@ -13,6 +14,7 @@ import { registerUser } from '@/src/api/directus/user';
 import { sendVerificationEmail } from '@/src/api/python/verify-email';
 import { useLanguage } from "@/contexts/LanguageContext"; 
 import { registerScreenStyles as styles } from '@/src/styles';
+import { storageManager } from "@/src/StorageManager";
 
 const RegisterScreen = () => {
     const { t } = useLanguage();
@@ -33,6 +35,10 @@ const RegisterScreen = () => {
       try {
           await registerUser(firstName, lastName, email, password);
           await sendVerificationEmail(email);
+          
+          // Store the password temporarily
+          await storageManager.setTempPassword(password);
+          
           router.push({ pathname: '/verify-email', params: { email } });
       } catch (error) {
           Alert.alert('Error', t('error.registration_failed'));
@@ -91,12 +97,6 @@ const RegisterScreen = () => {
 
             <ThemedButton title={t('action.register')} onPress={handleRegister} disabled={loading} />
 
-            {/* <ThemedText style={styles.orText}>{t('msg.or_register_with')}</ThemedText>
-            <View style={styles.socialButtons}>
-                <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="google" />} onPress={() => {}} />
-                <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="apple" />} onPress={() => {}} />
-                <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="facebook" />} onPress={() => {}} />
-            </View> */}
             <TouchableOpacity style={styles.textButton}>
                 <ThemedText type="subtitle">{t('msg.already_have_account')} <Link href='/login' style={{ color: useThemeColor({}, 'primaryLink'), fontWeight: 'bold' }}>{t('action.login')}</Link></ThemedText>
             </TouchableOpacity>

@@ -1,3 +1,5 @@
+// @/src/StorageManager.ts
+
 import * as SecureStore from 'expo-secure-store';
 import { User } from "@/src/api/directus/user";
 import { UserData } from "@/contexts/UserDataContext";
@@ -6,6 +8,7 @@ export interface StorageData {
   authToken: string | null;
   userInfo: User | null;
   userData: UserData | null;
+  tempPassword: string | null;
 }
 
 class StorageManager {
@@ -14,6 +17,7 @@ class StorageManager {
     authToken: null,
     userInfo: null,
     userData: null,
+    tempPassword: null,
   };
 
   private constructor() {}
@@ -29,11 +33,13 @@ class StorageManager {
     const authToken = await SecureStore.getItemAsync('authToken');
     const userInfo = await SecureStore.getItemAsync('userInfo');
     const userData = await SecureStore.getItemAsync('userData');
+    const tempPassword = await SecureStore.getItemAsync('tempPassword');
 
     this.storageData = {
       authToken,
       userInfo: userInfo ? JSON.parse(userInfo) : null,
       userData: userData ? JSON.parse(userData) : null,
+      tempPassword,
     };
   }
 
@@ -64,6 +70,11 @@ class StorageManager {
     }
   }
 
+  async setTempPassword(password: string): Promise<void> {
+    this.storageData.tempPassword = password;
+    await SecureStore.setItemAsync('tempPassword', password);
+  }
+
   getAuthToken(): string | null {
     return this.storageData.authToken;
   }
@@ -76,15 +87,30 @@ class StorageManager {
     return this.storageData.userData;
   }
 
+  async getTempPassword(): Promise<string | null> {
+    if (!this.storageData.tempPassword) {
+      const tempPassword = await SecureStore.getItemAsync('tempPassword');
+      this.storageData.tempPassword = tempPassword;
+    }
+    return this.storageData.tempPassword;
+  }
+
+  async clearTempPassword(): Promise<void> {
+    this.storageData.tempPassword = null;
+    await SecureStore.deleteItemAsync('tempPassword');
+  }
+
   async clearAll(): Promise<void> {
     this.storageData = {
       authToken: null,
       userInfo: null,
       userData: null,
+      tempPassword: null,
     };
     await SecureStore.deleteItemAsync('authToken');
     await SecureStore.deleteItemAsync('userInfo');
     await SecureStore.deleteItemAsync('userData');
+    await SecureStore.deleteItemAsync('tempPassword');
   }
 }
 
