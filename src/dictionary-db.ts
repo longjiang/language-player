@@ -90,12 +90,63 @@ export class DictionaryDB {
   }
 
   // match any records where the `field` contains any part of the input `phrase`
-  async fieldContains(field: string, phrase: string): Promise<any[]> {
+  async fieldContainsPhrase(field: string, phrase: string): Promise<any[]> {
     return await this.db!.getAllAsync(
       `SELECT * FROM ${this.dbName} WHERE ? LIKE '%' ||${field} || '%' AND ${field} <> '%'`,
       [phrase]
     );
   }  
 
+  // Helper method to escape identifiers (table names, column names)
+  async fieldsContainPhrase(fields: string[], phrase: string): Promise<any[]> {
+    if (fields.length === 0) {
+      throw new Error("At least one field must be specified");
+    }
+
+    const escapedFields = fields.map(field => this.escapeIdentifier(field));
+    const conditions = escapedFields.map(field => `${field} LIKE ?`).join(' OR ');
+    const params = Array(fields.length).fill(`%${escapeSQLValue(phrase)}%`);
+
+    const query = `SELECT * FROM ${this.escapeIdentifier(this.dbName)} WHERE ${conditions}`;
+    
+    return await this.db!.getAllAsync(query, params);
+  }
+  // match any records where the input `phrase` contains any part of the specified `field`
+  async phraseContainsField(phrase: string, field: string): Promise<any[]> {
+    const escapedField = this.escapeIdentifier(field);
+    const escapedPhrase = escapeSQLValue(phrase);
+    
+    const query = `SELECT * FROM ${this.escapeIdentifier(this.dbName)} 
+                   WHERE instr(?, ${escapedField}) > 0 
+                   AND ${escapedField} <> ''
+                   LIMIT 100`; // Add a LIMIT to ensure the query doesn't run indefinitely
+    
+    return await this.db!.getAllAsync(query, [escapedPhrase]);
+  }
+
+  // match any records where the input `phrase` contains any part of any of the specified `fields`
+  async phraseContainsFields(phrase: string, fields: string[]): Promise<any[]> {
+    if (fields.length === 0) {
+      throw new Error("At least one field must be specified");
+    }
+
+    const escapedFields = fields.map(field => this.escapeIdentifier(field));
+    const escapedPhrase = escapeSQLValue(phrase);
+    
+    const conditions = escapedFields.map(field => `instr(?, ${field}) > 0 AND ${field} <> ''`).join(' OR ');
+    
+    const query = `SELECT * FROM ${this.escapeIdentifier(this.dbName)} 
+                   WHERE ${conditions}
+                   LIMIT 100`; // Add a LIMIT to ensure the query doesn't run indefinitely
+    
+    const params = Array(fields.length).fill(escapedPhrase);
+    
+    return await this.db!.getAllAsync(query, params);
+  }
+
+  // Helper method to escape identifiers (table names, column names)
+  private escapeIdentifier(identifier: string): string {
+    return `"${identifier.replace(/"/g, '""')}"`;
+  }
 
 }

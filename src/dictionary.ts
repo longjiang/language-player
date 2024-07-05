@@ -83,7 +83,7 @@ export class Dictionary {
     const results = new Set<DictionaryEntry>();
 
     for (const word of words) {
-      const matches = await this.dictionaryDB.fieldContains('head', word);
+      const matches = await this.dictionaryDB.phraseContainsFields(word, ['head', 'alternate']);
       matches.forEach(match => results.add(transformToDictionaryEntry(match)));
     }
 
