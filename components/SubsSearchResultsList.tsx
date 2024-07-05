@@ -7,16 +7,16 @@ import { Image } from "react-native";
 import { subsSearchResultsListStyles as styles } from "@/src/styles";
 
 const extractContexts = (line: string, term: string) => {
-  const lowercaseLine = line.toLowerCase();
-  const lowercaseTerm = term.toLowerCase();
+  const lowercaseLine = line.toLowerCase().replace(/\s/g, '');
+  const lowercaseTerm = term.toLowerCase().replace(/\s/g, '');
   const termIndex = lowercaseLine.indexOf(lowercaseTerm);
   
   if (termIndex === -1) {
     return { leftContext: '', rightContext: '' };
   }
 
-  const leftContext = line.substring(0, termIndex).split('').reverse().join('');
-  const rightContext = line.substring(termIndex + term.length);
+  const leftContext = lowercaseLine.substring(0, termIndex).split('').reverse().join('');
+  const rightContext = lowercaseLine.substring(termIndex + lowercaseTerm.length);
 
   return { leftContext, rightContext };
 };
@@ -31,13 +31,14 @@ const HighlightSearchTerm = ({
   if (!line) return null;
 
   const { leftContext, rightContext } = extractContexts(line, searchTerm);
-  const term = line.substring(leftContext.length, line.length - rightContext.length);
+  const termIndex = line.toLowerCase().indexOf(searchTerm.toLowerCase());
+  const term = line.substring(termIndex, termIndex + searchTerm.length);
 
   return (
     <ThemedText style={styles.line}>
-      <ThemedText>{leftContext.split('').reverse().join('')}</ThemedText>
+      <ThemedText>{line.substring(0, termIndex)}</ThemedText>
       <ThemedText style={styles.highlight}>{term}</ThemedText>
-      <ThemedText>{rightContext}</ThemedText>
+      <ThemedText>{line.substring(termIndex + searchTerm.length)}</ThemedText>
     </ThemedText>
   );
 };
@@ -62,13 +63,13 @@ export const SubsSearchResultsList = ({
   const filterAndSortResults = (searchTerm: string, sortBy: string) => {
     let filtered = results.filter((item) =>
       item.subs_l2.some((sub: any) =>
-        sub.line.toLowerCase().includes(searchTerm.toLowerCase())
+        sub.line.toLowerCase().replace(/\s/g, '').includes(searchTerm.toLowerCase().replace(/\s/g, ''))
       )
     );
 
     filtered.forEach((item) => {
       const targetLineIndex = item.subs_l2.findIndex((sub: any) => {
-        return typeof sub.line === "string" && sub.line.toLowerCase().includes(searchTerm.toLowerCase());
+        return typeof sub.line === "string" && sub.line.toLowerCase().replace(/\s/g, '').includes(searchTerm.toLowerCase().replace(/\s/g, ''));
       });
       item.targetLineIndex = targetLineIndex;
       const { leftContext, rightContext } = extractContexts(item.subs_l2[targetLineIndex]?.line || '', searchTerm);
@@ -90,14 +91,36 @@ export const SubsSearchResultsList = ({
         filtered.sort((a, b) => {
           const aLength = a.subs_l2[a.targetLineIndex]?.line.length || 0;
           const bLength = b.subs_l2[b.targetLineIndex]?.line.length || 0;
-          return aLength - bLength; // Sort from shortest to longest
+          return aLength - bLength;
         });
         break;
       case "leftContext":
-        filtered.sort((a, b) => a.leftContext.localeCompare(b.leftContext));
-        break;
       case "rightContext":
-        filtered.sort((a, b) => a.rightContext.localeCompare(b.rightContext));
+        const contextGroups = new Map();
+        filtered.forEach((item) => {
+          const context = sortBy === "leftContext" ? item.leftContext : item.rightContext;
+          const immediateContext = context.charAt(0) || '';
+          if (!contextGroups.has(immediateContext)) {
+            contextGroups.set(immediateContext, []);
+          }
+          contextGroups.get(immediateContext).push(item);
+        });
+
+        // Sort groups by size (descending) and then by immediate context character
+        const sortedGroups = Array.from(contextGroups.entries()).sort((a, b) => {
+          const sizeComparison = b[1].length - a[1].length;
+          return sizeComparison !== 0 ? sizeComparison : a[0].localeCompare(b[0]);
+        });
+
+        // Flatten the sorted groups back into a single array
+        filtered = sortedGroups.flatMap(([_, group]) => {
+          // Within each group, sort by the full context
+          return group.sort((a, b) => {
+            const aContext = sortBy === "leftContext" ? a.leftContext : a.rightContext;
+            const bContext = sortBy === "leftContext" ? b.leftContext : b.rightContext;
+            return aContext.localeCompare(bContext);
+          });
+        });
         break;
       default:
         break;
