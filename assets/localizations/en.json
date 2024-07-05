@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Enrich your language-learning journey",
         "forgot_password": "Forgot password?",
         "or_login_with": "Or login with:",
-        "what_your_first_language": "What’s your first language?"
+        "what_your_first_language": "What’s your first language?",
+        "confirm_cancel_subscription": "Are you sure you want to cancel your subscription?",
+        "no_active_subscription": "No active subscription found.",
+        "loading": "Loading...",
+        "auto_renews_in": "Auto renews in {{days}} days",
+        "expires_in": "Expires in {{days}} days"
     },
     "title": {
         "email": "Email",
@@ -238,6 +243,22 @@
         "register": "Register",
         "start_learning": "Start Learning",
         "choose_language": "Choose Language",
-        "continue_learning": "Continue Learning {{l2Code}}"
+        "continue_learning": "Continue Learning {{l2Code}}",
+        "account": "Account",
+        "logout": "Logout",
+        "delete_my_account": "Delete My Account",
+        "privacy_policy": "Privacy Policy",
+        "current_plan": "Current Plan",
+        "best_value": "Best Value",
+        "monthly": "Monthly",
+        "annual": "Annual",
+        "lifetime": "Lifetime",
+        "trial": "Trial"
+    },
+    "action": {
+        "upgrade": "Upgrade",
+        "cancel": "Cancel",
+        "confirm_cancellation": "Confirm Cancellation",
+        "keep_subscription": "Keep Subscription"
     }
 }

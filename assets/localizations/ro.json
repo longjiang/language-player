@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Îmbogățiți-vă călătoria de învățare a limbilor străine",
         "forgot_password": "Ai uitat parola?",
         "or_login_with": "Sau conectați-vă cu:",
-        "what_your_first_language": "Care este prima ta limbă?"
+        "what_your_first_language": "Care este prima ta limbă?",
+        "confirm_cancel_subscription": "Sigur doriți să vă anulați abonamentul?",
+        "no_active_subscription": "Nu a fost găsit niciun abonament activ.",
+        "loading": "Încărcare...",
+        "auto_renews_in": "Reînnoiri automate în {{days}} zile",
+        "expires_in": "Expiră în {{days}} zile"
     },
     "title": {
         "email": "E-mail",
@@ -238,6 +243,22 @@
         "register": "Înregistrează-te",
         "start_learning": "Începeți să învățați",
         "choose_language": "Alege limba",
-        "continue_learning": "Continuați să învățați {{l2Code}}"
+        "continue_learning": "Continuați să învățați {{l2Code}}",
+        "account": "Cont",
+        "logout": "Deconectare",
+        "delete_my_account": "Ștergere cont",
+        "privacy_policy": "Politica de confidențialitate",
+        "current_plan": "Planul curent",
+        "best_value": "Cea mai bună valoare",
+        "monthly": "Lunar",
+        "annual": "Anual",
+        "lifetime": "Pe viață",
+        "trial": "Încercare"
+    },
+    "action": {
+        "upgrade": "Face upgrade",
+        "cancel": "Anula",
+        "confirm_cancellation": "Confirmați anularea",
+        "keep_subscription": "Păstrați abonamentul"
     }
 }

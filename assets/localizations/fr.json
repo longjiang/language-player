@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Enrichissez votre parcours d’apprentissage des langues",
         "forgot_password": "Mot de passe oublié ?",
         "or_login_with": "Ou connectez-vous avec :",
-        "what_your_first_language": "Quelle est votre langue maternelle ?"
+        "what_your_first_language": "Quelle est votre langue maternelle ?",
+        "confirm_cancel_subscription": "Êtes-vous sûr de vouloir résilier votre abonnement ?",
+        "no_active_subscription": "Aucun abonnement actif n’a été trouvé.",
+        "loading": "Chargement...",
+        "auto_renews_in": "Renouvellement automatique en {{days}} jours",
+        "expires_in": "Expire dans {{days}} jours"
     },
     "title": {
         "email": "Messagerie électronique",
@@ -238,6 +243,22 @@
         "register": "Registre",
         "start_learning": "Commencez à apprendre",
         "choose_language": "Choisissez la langue",
-        "continue_learning": "Continuer à apprendre {{l2Code}}"
+        "continue_learning": "Continuer à apprendre {{l2Code}}",
+        "account": "Compte",
+        "logout": "Déconnexion",
+        "delete_my_account": "Supprimer mon compte",
+        "privacy_policy": "Politique de confidentialité",
+        "current_plan": "Plan actuel",
+        "best_value": "Meilleur rapport qualité-prix",
+        "monthly": "Mensuel",
+        "annual": "Annuel",
+        "lifetime": "À vie",
+        "trial": "Période d’essai"
+    },
+    "action": {
+        "upgrade": "Mise à niveau",
+        "cancel": "Annuler",
+        "confirm_cancellation": "Confirmer l’annulation",
+        "keep_subscription": "Conserver l’abonnement"
     }
 }

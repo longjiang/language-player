@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Dil öğrenme yolculuğunuzu zenginleştirin",
         "forgot_password": "Şifrenizi mi unuttunuz?",
         "or_login_with": "Veya şununla giriş yapın:",
-        "what_your_first_language": "İlk diliniz nedir?"
+        "what_your_first_language": "İlk diliniz nedir?",
+        "confirm_cancel_subscription": "Aboneliğinizi iptal etmek istediğinizden emin misiniz?",
+        "no_active_subscription": "Etkin abonelik bulunamadı.",
+        "loading": "Yükleme...",
+        "auto_renews_in": "{{days}} gün içinde otomatik yenileme",
+        "expires_in": "{{days}} gün içinde sona eriyor"
     },
     "title": {
         "email": "E-posta",
@@ -238,6 +243,18 @@
         "register": "Kaydolmak",
         "start_learning": "Öğrenmeye Başla",
         "choose_language": "Dil Seçiniz",
-        "continue_learning": "Öğrenmeye Devam Et {{l2Code}}"
+        "continue_learning": "Öğrenmeye Devam Et {{l2Code}}",
+        "account": "Hesap",
+        "logout": "Oturum kapatma",
+        "delete_my_account": "Hesabımı Sil",
+        "privacy_policy": "Gizlilik Politikası",
+        "current_plan": "Mevcut Plan",
+        "best_value": "En İyi Değer"
+    },
+    "action": {
+        "upgrade": "Yükseltmek",
+        "cancel": "İptal",
+        "confirm_cancellation": "İptali Onayla",
+        "keep_subscription": "Aboneliği Koru"
     }
 }

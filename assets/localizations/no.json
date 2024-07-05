@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Berik språklæringsreisen din",
         "forgot_password": "Glemt passord?",
         "or_login_with": "Eller logg inn med:",
-        "what_your_first_language": "Hva er ditt morsmål?"
+        "what_your_first_language": "Hva er ditt morsmål?",
+        "confirm_cancel_subscription": "Er du sikker på at du vil si opp abonnementet?",
+        "no_active_subscription": "Finner ikke noe aktivt abonnement.",
+        "loading": "Lasting...",
+        "auto_renews_in": "Automatisk fornyelse på {{days}} dager",
+        "expires_in": "Utløper om {{days}} dager"
     },
     "title": {
         "email": "E-post",
@@ -238,6 +243,22 @@
         "register": "Registrering",
         "start_learning": "Begynn å lære",
         "choose_language": "Velg språk",
-        "continue_learning": "Fortsett å lære {{l2Code}}"
+        "continue_learning": "Fortsett å lære {{l2Code}}",
+        "account": "Konto",
+        "logout": "Logout",
+        "delete_my_account": "Slett kontoen min",
+        "privacy_policy": "Personvernpolicy",
+        "current_plan": "Gjeldende plan",
+        "best_value": "Mest for pengene",
+        "monthly": "Månedlig",
+        "annual": "Årlig",
+        "lifetime": "Livstid",
+        "trial": "Prøveperiode"
+    },
+    "action": {
+        "upgrade": "Oppgradere",
+        "cancel": "Annullere",
+        "confirm_cancellation": "Bekreft kansellering",
+        "keep_subscription": "Behold abonnement"
     }
 }

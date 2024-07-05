@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Rikastuta kieltenoppimismatkaasi",
         "forgot_password": "Unohtuiko salasana?",
         "or_login_with": "Tai kirjaudu sisään:",
-        "what_your_first_language": "Mikä on ensimmäinen kielesi?"
+        "what_your_first_language": "Mikä on ensimmäinen kielesi?",
+        "confirm_cancel_subscription": "Haluatko varmasti peruuttaa tilauksesi?",
+        "no_active_subscription": "Aktiivista tilausta ei löytynyt.",
+        "loading": "Lastaaminen...",
+        "auto_renews_in": "Automaattinen uusiminen {{days}} päivässä",
+        "expires_in": "Vanhenee {{days}} päivässä"
     },
     "title": {
         "email": "Sähköposti",
@@ -238,6 +243,22 @@
         "register": "Rekisteröidy",
         "start_learning": "Aloita oppiminen",
         "choose_language": "Valitse kieli",
-        "continue_learning": "Jatka oppimista {{l2Code}}"
+        "continue_learning": "Jatka oppimista {{l2Code}}",
+        "account": "Tili",
+        "logout": "Uloskirjaus",
+        "delete_my_account": "Poista tilini",
+        "privacy_policy": "Tietosuojakäytäntö",
+        "current_plan": "Nykyinen suunnitelma",
+        "best_value": "Paras hinta-laatusuhde",
+        "monthly": "Kuukausittain",
+        "annual": "Vuosittain",
+        "lifetime": "Elinikäinen",
+        "trial": "Kokeilu"
+    },
+    "action": {
+        "upgrade": "Päivittää",
+        "cancel": "Perua",
+        "confirm_cancellation": "Vahvista peruutus",
+        "keep_subscription": "Pidä tilaus"
     }
 }

@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "अपनी भाषा-सीखने की यात्रा को समृद्ध करें",
         "forgot_password": "पासवर्ड भूल गए?",
         "or_login_with": "या इसके साथ लॉगिन करें:",
-        "what_your_first_language": "आपकी पहली भाषा क्या है?"
+        "what_your_first_language": "आपकी पहली भाषा क्या है?",
+        "confirm_cancel_subscription": "क्या आप वाकई अपनी सदस्यता रद्द करना चाहते हैं?",
+        "no_active_subscription": "कोई सक्रिय सदस्यता नहीं मिली.",
+        "loading": "लोड।।।",
+        "auto_renews_in": "{{days}} दिनों में ऑटो नवीनीकरण",
+        "expires_in": "{{days}} दिनों में समाप्त हो रहा है"
     },
     "title": {
         "email": "ईमेल",
@@ -238,6 +243,22 @@
         "register": "पंजीकृत करें",
         "start_learning": "सीखना शुरू करें",
         "choose_language": "भाषा चुनें",
-        "continue_learning": "सीखना जारी रखें {{l2Code}}"
+        "continue_learning": "सीखना जारी रखें {{l2Code}}",
+        "account": "खाता",
+        "logout": "लॉगआउट",
+        "delete_my_account": "मेरा खाता हटाएं",
+        "privacy_policy": "गोपनीयता नीति",
+        "current_plan": "वर्तमान योजना",
+        "best_value": "सबसे अच्छा मूल्य",
+        "monthly": "मासिक",
+        "annual": "वार्षिक",
+        "lifetime": "जीवनकाल",
+        "trial": "परीक्षण"
+    },
+    "action": {
+        "upgrade": "अपग्रेड",
+        "cancel": "रद्द करना",
+        "confirm_cancellation": "रद्द करने की पुष्टि करें",
+        "keep_subscription": "सदस्यता रखें"
     }
 }

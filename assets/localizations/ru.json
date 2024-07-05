@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Обогатите свое путешествие по изучению языка",
         "forgot_password": "Забыли пароль?",
         "or_login_with": "Или войдите в систему с помощью:",
-        "what_your_first_language": "Какой у вас родной язык?"
+        "what_your_first_language": "Какой у вас родной язык?",
+        "confirm_cancel_subscription": "Вы уверены, что хотите отменить подписку?",
+        "no_active_subscription": "Активная подписка не найдена.",
+        "loading": "Погрузка...",
+        "auto_renews_in": "Автоматическое продление через {{days}} дней",
+        "expires_in": "Срок действия истекает через {{days}} дней"
     },
     "title": {
         "email": "Отправить по электронной почте",
@@ -238,6 +243,22 @@
         "register": "Регистрировать",
         "start_learning": "Начать обучение",
         "choose_language": "Выберите язык",
-        "continue_learning": "Продолжить обучение {{l2Code}}"
+        "continue_learning": "Продолжить обучение {{l2Code}}",
+        "account": "Счет",
+        "logout": "Выход",
+        "delete_my_account": "Удалить мою учетную запись",
+        "privacy_policy": "Политика конфиденциальности",
+        "current_plan": "Текущий план",
+        "best_value": "Лучшее соотношение цены и качества",
+        "monthly": "Ежемесячно",
+        "annual": "Ежегодно",
+        "lifetime": "Пожизненно",
+        "trial": "Испытание"
+    },
+    "action": {
+        "upgrade": "Модернизировать",
+        "cancel": "Отмена",
+        "confirm_cancellation": "Подтвердить отмену",
+        "keep_subscription": "Сохранить подписку"
     }
 }

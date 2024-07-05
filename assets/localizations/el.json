@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Εμπλουτίστε το ταξίδι εκμάθησης γλωσσών",
         "forgot_password": "Ξεχάσατε τον κωδικό πρόσβασης;",
         "or_login_with": "Ή συνδεθείτε με:",
-        "what_your_first_language": "Ποια είναι η πρώτη σας γλώσσα;"
+        "what_your_first_language": "Ποια είναι η πρώτη σας γλώσσα;",
+        "confirm_cancel_subscription": "Είστε βέβαιοι ότι θέλετε να ακυρώσετε τη συνδρομή σας;",
+        "no_active_subscription": "Δεν βρέθηκε ενεργή συνδρομή.",
+        "loading": "Φόρτωση...",
+        "auto_renews_in": "Αυτόματη ανανέωση σε {{days}} ημέρες",
+        "expires_in": "Λήγει σε {{days}} ημέρες"
     },
     "title": {
         "email": "Email",
@@ -238,6 +243,22 @@
         "register": "Εγγράψου",
         "start_learning": "Ξεκινήστε να μαθαίνετε",
         "choose_language": "Επιλέξτε Γλώσσα",
-        "continue_learning": "Συνεχίστε να μαθαίνετε {{l2Code}}"
+        "continue_learning": "Συνεχίστε να μαθαίνετε {{l2Code}}",
+        "account": "Λογαριασμός",
+        "logout": "Αποσύνδεση",
+        "delete_my_account": "Διαγραφή του λογαριασμού μου",
+        "privacy_policy": "Πολιτική Απορρήτου",
+        "current_plan": "Τρέχον σχέδιο",
+        "best_value": "Καλύτερη αξία",
+        "monthly": "Μηνιαία",
+        "annual": "Ετήσια",
+        "lifetime": "Εφικτή",
+        "trial": "Δοκιμή"
+    },
+    "action": {
+        "upgrade": "Αναβαθμίζω",
+        "cancel": "Ακυρώνω",
+        "confirm_cancellation": "Επιβεβαίωση ακύρωσης",
+        "keep_subscription": "Διατήρηση συνδρομής"
     }
 }

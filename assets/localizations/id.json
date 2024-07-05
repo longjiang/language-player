@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Perkaya perjalanan belajar bahasa Anda",
         "forgot_password": "Lupa kata sandi?",
         "or_login_with": "Atau login dengan:",
-        "what_your_first_language": "Apa bahasa pertama Anda?"
+        "what_your_first_language": "Apa bahasa pertama Anda?",
+        "confirm_cancel_subscription": "Apakah Anda yakin ingin membatalkan langganan Anda?",
+        "no_active_subscription": "Tidak ada langganan aktif yang ditemukan.",
+        "loading": "Loading...",
+        "auto_renews_in": "Perpanjang otomatis dalam {{days}} hari",
+        "expires_in": "Kedaluwarsa dalam {{days}} hari"
     },
     "title": {
         "email": "Email",
@@ -238,6 +243,22 @@
         "register": "Daftar",
         "start_learning": "Mulai Belajar",
         "choose_language": "Pilih Bahasa",
-        "continue_learning": "Lanjutkan Belajar {{l2Code}}"
+        "continue_learning": "Lanjutkan Belajar {{l2Code}}",
+        "account": "Rekening",
+        "logout": "Logout",
+        "delete_my_account": "Hapus Akun Saya",
+        "privacy_policy": "Kebijakan Privasi",
+        "current_plan": "Paket Saat Ini",
+        "best_value": "Nilai terbaik",
+        "monthly": "Sebulan",
+        "annual": "Tahunan",
+        "lifetime": "Seumur hidup",
+        "trial": "Uji coba"
+    },
+    "action": {
+        "upgrade": "Upgrade",
+        "cancel": "Membatalkan",
+        "confirm_cancellation": "Konfirmasi Pembatalan",
+        "keep_subscription": "Tetap Berlangganan"
     }
 }

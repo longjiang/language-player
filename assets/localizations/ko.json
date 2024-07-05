@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "언어 학습 여정 풍요로움",
         "forgot_password": "비밀번호를 잊으셨나요?",
         "or_login_with": "또는 다음으로 로그인하십시오.",
-        "what_your_first_language": "당신의 모국어는 무엇입니까?"
+        "what_your_first_language": "당신의 모국어는 무엇입니까?",
+        "confirm_cancel_subscription": "구독을 취소하시겠습니까?",
+        "no_active_subscription": "활성 구독을 찾을 수 없습니다.",
+        "loading": "로드...",
+        "auto_renews_in": "{{days}}일 후에 자동 갱신",
+        "expires_in": "{{days}} 일 후에 만료됩니다."
     },
     "title": {
         "email": "메일 주소",
@@ -238,6 +243,22 @@
         "register": "등록기",
         "start_learning": "학습 시작하기",
         "choose_language": "언어 선택",
-        "continue_learning": "계속 학습하기 {{l2Code}}"
+        "continue_learning": "계속 학습하기 {{l2Code}}",
+        "account": "계좌",
+        "logout": "로그아웃",
+        "delete_my_account": "내 계정 삭제",
+        "privacy_policy": "개인정보처리방침",
+        "current_plan": "현재 계획",
+        "best_value": "가성비 최고",
+        "monthly": "매월",
+        "annual": "매년",
+        "lifetime": "평생",
+        "trial": "시험"
+    },
+    "action": {
+        "upgrade": "업그레이드",
+        "cancel": "취소",
+        "confirm_cancellation": "취소 확인",
+        "keep_subscription": "구독 유지"
     }
 }

@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Gazdagítsa nyelvtanulási útját",
         "forgot_password": "Elfelejtett jelszó?",
         "or_login_with": "Vagy jelentkezzen be:",
-        "what_your_first_language": "Mi az első nyelve?"
+        "what_your_first_language": "Mi az első nyelve?",
+        "confirm_cancel_subscription": "Biztosan le szeretné mondani az előfizetését?",
+        "no_active_subscription": "Nem található aktív előfizetés.",
+        "loading": "Berakás...",
+        "auto_renews_in": "Automatikus megújítás {{days}} nap múlva",
+        "expires_in": "{{days}} nap múlva lejár"
     },
     "title": {
         "email": "E-mail",
@@ -238,6 +243,22 @@
         "register": "Regisztráció",
         "start_learning": "Kezdje el a tanulást",
         "choose_language": "Válasszon nyelvet",
-        "continue_learning": "Folytassa a tanulást {{l2Code}}"
+        "continue_learning": "Folytassa a tanulást {{l2Code}}",
+        "account": "Számla",
+        "logout": "Jel",
+        "delete_my_account": "Saját fiók törlése",
+        "privacy_policy": "Adatvédelem",
+        "current_plan": "Jelenlegi terv",
+        "best_value": "Legjobb ár-érték arány",
+        "monthly": "Havi",
+        "annual": "Éves",
+        "lifetime": "Életre szól",
+        "trial": "Próba"
+    },
+    "action": {
+        "upgrade": "Feljavít",
+        "cancel": "Érvénytelenít",
+        "confirm_cancellation": "Lemondás megerősítése",
+        "keep_subscription": "Előfizetés megtartása"
     }
 }

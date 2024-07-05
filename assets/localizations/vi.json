@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Làm phong phú thêm hành trình học ngôn ngữ của bạn",
         "forgot_password": "Quên mật khẩu?",
         "or_login_with": "Hoặc đăng nhập bằng:",
-        "what_your_first_language": "Ngôn ngữ đầu tiên của bạn là gì?"
+        "what_your_first_language": "Ngôn ngữ đầu tiên của bạn là gì?",
+        "confirm_cancel_subscription": "Bạn có chắc chắn muốn hủy đăng ký của mình không?",
+        "no_active_subscription": "Không tìm thấy đăng ký đang hoạt động.",
+        "loading": "Tải...",
+        "auto_renews_in": "Tự động gia hạn sau {{days}} ngày",
+        "expires_in": "Hết hạn sau {{days}} ngày"
     },
     "title": {
         "email": "Email",
@@ -238,6 +243,18 @@
         "register": "Đăng ký",
         "start_learning": "Bắt đầu học",
         "choose_language": "Chọn ngôn ngữ",
-        "continue_learning": "Tiếp tục học {{l2Code}}"
+        "continue_learning": "Tiếp tục học {{l2Code}}",
+        "account": "Tài khoản",
+        "logout": "Đăng xuất",
+        "delete_my_account": "Xóa tài khoản của tôi",
+        "privacy_policy": "Chính sách bảo mật",
+        "current_plan": "Kế hoạch hiện tại",
+        "best_value": "Giá trị tốt nhất"
+    },
+    "action": {
+        "upgrade": "Nâng cấp",
+        "cancel": "Hủy",
+        "confirm_cancellation": "Xác nhận hủy",
+        "keep_subscription": "Giữ đăng ký"
     }
 }

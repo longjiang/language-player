@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "豐富您的語言學習之旅",
         "forgot_password": "忘記密碼？",
         "or_login_with": "或使用以下方式登入：",
-        "what_your_first_language": "你的第一語言是什麼？"
+        "what_your_first_language": "你的第一語言是什麼？",
+        "confirm_cancel_subscription": "您確定要取消訂閱嗎？",
+        "no_active_subscription": "未找到活動訂閱。",
+        "loading": "裝載。。。",
+        "auto_renews_in": "{{days}} 天自動續訂",
+        "expires_in": "過期后 {{days}} 天"
     },
     "title": {
         "email": "電子郵件",
@@ -238,6 +243,22 @@
         "register": "註冊",
         "start_learning": "開始學習",
         "choose_language": "選擇語言",
-        "continue_learning": "繼續學習 {{l2Code}}"
+        "continue_learning": "繼續學習 {{l2Code}}",
+        "account": "帳戶",
+        "logout": "註銷",
+        "delete_my_account": "刪除我的帳戶",
+        "privacy_policy": "隱私策略",
+        "current_plan": "當前計劃",
+        "best_value": "最超值",
+        "monthly": "每月",
+        "annual": "年度",
+        "lifetime": "終身",
+        "trial": "試用"
+    },
+    "action": {
+        "upgrade": "升級",
+        "cancel": "取消",
+        "confirm_cancellation": "確認取消",
+        "keep_subscription": "保持訂閱"
     }
 }

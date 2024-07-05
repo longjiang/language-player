@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "語学学習の旅を豊かに",
         "forgot_password": "パスワードをお忘れですか?",
         "or_login_with": "または、以下でログインします。",
-        "what_your_first_language": "あなたの母国語は何ですか?"
+        "what_your_first_language": "あなたの母国語は何ですか?",
+        "confirm_cancel_subscription": "サブスクリプションをキャンセルしてもよろしいですか?",
+        "no_active_subscription": "アクティブなサブスクリプションが見つかりませんでした。",
+        "loading": "積載。。。",
+        "auto_renews_in": "{{days}日で自動更新",
+        "expires_in": "有効期限 {{days}} 日"
     },
     "title": {
         "email": "電子メール",
@@ -238,6 +243,22 @@
         "register": "登録する",
         "start_learning": "学習を始める",
         "choose_language": "言語を選択",
-        "continue_learning": "学習を続ける {{l2Code}}"
+        "continue_learning": "学習を続ける {{l2Code}}",
+        "account": "アカウント",
+        "logout": "ログアウト",
+        "delete_my_account": "マイアカウントの削除",
+        "privacy_policy": "プライバシーポリシー",
+        "current_plan": "現在の計画",
+        "best_value": "ベストバリュー",
+        "monthly": "毎月",
+        "annual": "毎年",
+        "lifetime": "生涯",
+        "trial": "トライアル"
+    },
+    "action": {
+        "upgrade": "アップグレード",
+        "cancel": "キャンセル",
+        "confirm_cancellation": "キャンセルの確認",
+        "keep_subscription": "サブスクリプションを維持する"
     }
 }

@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Verrijk uw taalleertraject",
         "forgot_password": "Wachtwoord vergeten?",
         "or_login_with": "Of log in met:",
-        "what_your_first_language": "Wat is je eerste taal?"
+        "what_your_first_language": "Wat is je eerste taal?",
+        "confirm_cancel_subscription": "Weet je zeker dat je je abonnement wilt opzeggen?",
+        "no_active_subscription": "Geen actief abonnement gevonden.",
+        "loading": "Laden...",
+        "auto_renews_in": "Wordt automatisch verlengd in {{days}} dagen",
+        "expires_in": "Verloopt over {{days}} dagen"
     },
     "title": {
         "email": "E-mail",
@@ -238,6 +243,22 @@
         "register": "Registreren",
         "start_learning": "Begin met leren",
         "choose_language": "Taal kiezen",
-        "continue_learning": "Doorgaan met leren {{l2Code}}"
+        "continue_learning": "Doorgaan met leren {{l2Code}}",
+        "account": "Rekening",
+        "logout": "Logout",
+        "delete_my_account": "Mijn account verwijderen",
+        "privacy_policy": "Privacybeleid",
+        "current_plan": "Huidig plan",
+        "best_value": "Beste prijs-kwaliteitverhouding",
+        "monthly": "Maandelijks",
+        "annual": "Jaarlijks",
+        "lifetime": "Levenslang",
+        "trial": "Proefperiode"
+    },
+    "action": {
+        "upgrade": "Opwaarderen",
+        "cancel": "Annuleren",
+        "confirm_cancellation": "Annulering bevestigen",
+        "keep_subscription": "Abonnement behouden"
     }
 }

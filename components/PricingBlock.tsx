@@ -63,7 +63,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
         </View>
       )}
       <ThemedText style={styles.price} type="title">
-        {price}
+        {t(price)}
       </ThemedText>
       <ThemedText style={styles.duration} variant="secondary">
         {duration}

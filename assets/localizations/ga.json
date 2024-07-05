@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Saibhrigh do thuras foghlama teanga",
         "forgot_password": "Dearmad déanta ar phasfhocal?",
         "or_login_with": "Nó logáil isteach le:",
-        "what_your_first_language": "Cad í do chéad teanga?"
+        "what_your_first_language": "Cad í do chéad teanga?",
+        "confirm_cancel_subscription": "An bhfuil tú cinnte go bhfuil fonn ort do shíntiús a chealú?",
+        "no_active_subscription": "Níor aimsíodh aon síntiús gníomhach.",
+        "loading": "Á Luchtú...",
+        "auto_renews_in": "Auto renews in {{days}} days",
+        "expires_in": "Expires in {{days}} days"
     },
     "title": {
         "email": "Ríomhphost",
@@ -238,6 +243,22 @@
         "register": "Cláraigh",
         "start_learning": "Tosaigh Foghlaim",
         "choose_language": "Roghnaigh Teanga",
-        "continue_learning": "Lean ar aghaidh ag foghlaim {{l2Code}}"
+        "continue_learning": "Lean ar aghaidh ag foghlaim {{l2Code}}",
+        "account": "Cuntas",
+        "logout": "Logáil amach",
+        "delete_my_account": "Scrios Mo Chuntas",
+        "privacy_policy": "Polasaí Príobháideachais",
+        "current_plan": "Plean Reatha",
+        "best_value": "Luach is Fearr",
+        "monthly": "Míosúil",
+        "annual": "Bliana",
+        "lifetime": "Anam",
+        "trial": "Trial"
+    },
+    "action": {
+        "upgrade": "Uasghrádú",
+        "cancel": "Cuir ar ceal",
+        "confirm_cancellation": "Deimhnigh cealú",
+        "keep_subscription": "Coinnigh Síntiús"
     }
 }

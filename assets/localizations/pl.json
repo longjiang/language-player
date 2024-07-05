@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Wzbogać swoją podróż do nauki języka",
         "forgot_password": "Nie pamiętasz hasła?",
         "or_login_with": "Lub zaloguj się za pomocą:",
-        "what_your_first_language": "Jaki jest Twój pierwszy język?"
+        "what_your_first_language": "Jaki jest Twój pierwszy język?",
+        "confirm_cancel_subscription": "Czy na pewno chcesz anulować subskrypcję?",
+        "no_active_subscription": "Nie znaleziono aktywnej subskrypcji.",
+        "loading": "Ładowania...",
+        "auto_renews_in": "Automatyczne odnawianie za {{days}} dni",
+        "expires_in": "Wygasa za {{days}} dni"
     },
     "title": {
         "email": "E-mail",
@@ -238,6 +243,22 @@
         "register": "Rejestrować",
         "start_learning": "Rozpocznij naukę",
         "choose_language": "Wybierz język",
-        "continue_learning": "Kontynuuj naukę {{l2Code}}"
+        "continue_learning": "Kontynuuj naukę {{l2Code}}",
+        "account": "Rachunek",
+        "logout": "Wyloguj",
+        "delete_my_account": "Usuń moje konto",
+        "privacy_policy": "Polityka prywatności",
+        "current_plan": "Bieżący plan",
+        "best_value": "Najlepszy stosunek jakości do ceny",
+        "monthly": "Miesięcznie",
+        "annual": "Rocznie",
+        "lifetime": "Dożywotnio",
+        "trial": "Okres próbny"
+    },
+    "action": {
+        "upgrade": "Upgrade",
+        "cancel": "Anuluj",
+        "confirm_cancellation": "Potwierdź anulowanie",
+        "keep_subscription": "Zachowaj subskrypcję"
     }
 }

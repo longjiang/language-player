@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Obogatite svoje putovanje učenjem jezika",
         "forgot_password": "Zaboravili ste lozinku?",
         "or_login_with": "Ili se prijavite sa:",
-        "what_your_first_language": "Koji ti je prvi jezik?"
+        "what_your_first_language": "Koji ti je prvi jezik?",
+        "confirm_cancel_subscription": "Želite li zaista da otkažete pretplatu?",
+        "no_active_subscription": "Aktivna pretplata nije pronađena.",
+        "loading": "Učitavanje...",
+        "auto_renews_in": "Automatsko obnavljanje u {{days}} dana",
+        "expires_in": "Ističe u {{days}} dana"
     },
     "title": {
         "email": "E-pošta",
@@ -238,6 +243,22 @@
         "register": "Registrujete",
         "start_learning": "Započni učenje",
         "choose_language": "Odaberi jezik",
-        "continue_learning": "Continue Learning {{l2Code}}"
+        "continue_learning": "Continue Learning {{l2Code}}",
+        "account": "Nalog",
+        "logout": "Odjavljivanje",
+        "delete_my_account": "Izbriši moj nalog",
+        "privacy_policy": "Politika privatnosti",
+        "current_plan": "Trenutni plan",
+        "best_value": "Najbolja vrednost",
+        "monthly": "Mesečno",
+        "annual": "Godišnje",
+        "lifetime": "Doživotno",
+        "trial": "Probni"
+    },
+    "action": {
+        "upgrade": "Nadogradnju",
+        "cancel": "Otkaži",
+        "confirm_cancellation": "Potvrda otkazivanja",
+        "keep_subscription": "Zadrži pretplatu"
     }
 }

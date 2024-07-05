@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Berika din språkinlärningsresa",
         "forgot_password": "Glömt lösenordet?",
         "or_login_with": "Eller logga in med:",
-        "what_your_first_language": "Vilket är ditt första språk?"
+        "what_your_first_language": "Vilket är ditt första språk?",
+        "confirm_cancel_subscription": "Är du säker på att du vill säga upp din prenumeration?",
+        "no_active_subscription": "Ingen aktiv prenumeration hittades.",
+        "loading": "Lastning...",
+        "auto_renews_in": "Förnyas automatiskt om {{days}} dagar",
+        "expires_in": "Går ut om {{days}} dagar"
     },
     "title": {
         "email": "E-post",
@@ -238,6 +243,22 @@
         "register": "Registrera dig",
         "start_learning": "Börja lära dig",
         "choose_language": "Välj språk",
-        "continue_learning": "Fortsätt lära dig {{l2Code}}"
+        "continue_learning": "Fortsätt lära dig {{l2Code}}",
+        "account": "Konto",
+        "logout": "Utloggning",
+        "delete_my_account": "Ta bort mitt konto",
+        "privacy_policy": "Integritetspolicy",
+        "current_plan": "Nuvarande plan",
+        "best_value": "Bästa värde",
+        "monthly": "Månadsvis",
+        "annual": "Årligen",
+        "lifetime": "Livstid",
+        "trial": "Provperiod"
+    },
+    "action": {
+        "upgrade": "Uppgradera",
+        "cancel": "Annullera",
+        "confirm_cancellation": "Bekräfta avbokning",
+        "keep_subscription": "Behåll prenumeration"
     }
 }

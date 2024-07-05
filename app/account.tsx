@@ -10,8 +10,10 @@ import { getDeltaDate } from "@/src/utils";
 import { User } from "@/src/api/directus/user";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const AccountScreen = () => {
+  const { t } = useLanguage();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const secondaryTextColor = useThemeColor({}, "secondaryText");
   const { handleLogout, getStoredUserInfo } = useAuth();
@@ -32,7 +34,7 @@ const AccountScreen = () => {
 
   return (
     <ThemedScreen
-      title="title.account"
+      title={t('title.account')}
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
       onBackPress={() => {
@@ -52,19 +54,22 @@ const AccountScreen = () => {
           </ThemedText>
           {subscription ? (
             <PricingBlock
-              price={subscription.type}
-              duration={subscription.payment_customer_id ? `Auto renews in ${getDeltaDate(subscription.expires_on)} days` : `Expires in ${getDeltaDate(subscription.expires_on)} days`}
+              price={'title.' + subscription.type}
+              duration={subscription.payment_customer_id 
+                ? t('msg.auto_renews_in', { days: getDeltaDate(subscription.expires_on) })
+                : t('msg.expires_in', { days: getDeltaDate(subscription.expires_on) })
+              }
               current
               showCancel={subscription.payment_customer_id}
               showUpgrade={subscription.type !== "lifetime"}
             />
           ) : (
             <ThemedText style={{ alignSelf: "center", marginTop: 16 }} type="large">
-              No active subscription found.
+              {t('msg.no_active_subscription')}
             </ThemedText>
           )}
           <ThemedButton
-            title="title.start_learning"
+            title={t('title.start_learning')}
             trailingIcon={<Icon name="chevron-right" size={20} />}
             style={{marginTop: 26}}
             type="primary"
@@ -75,12 +80,12 @@ const AccountScreen = () => {
         </>
       ) : (
         <ThemedText style={{ alignSelf: "center", marginTop: 16 }} type="xxlarge">
-          Loading...
+          {t('msg.loading')}
         </ThemedText>
       )}
 
       <ThemedButton
-        title="title.logout"
+        title={t('title.logout')}
         leadingIcon={<Icon name="logout" size={20} />}
         style={styles.button}
         type="ghost"
@@ -89,7 +94,7 @@ const AccountScreen = () => {
 
       <View style={styles.buttonRow}>
         <ThemedButton
-          title="title.delete_my_account"
+          title={t('title.delete_my_account')}
           size="small"
           type="ghost"
           onPress={() => {
@@ -98,7 +103,7 @@ const AccountScreen = () => {
           style={{ color: secondaryTextColor }}
         />
         <ThemedButton
-          title="title.privacy_policy"
+          title={t('title.privacy_policy')}
           size="small"
           type="ghost"
           onPress={() => {
@@ -122,8 +127,8 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 16, // Add padding to the sides if needed
-    marginTop: 16, // Add top margin to separate from the content above
+    paddingHorizontal: 16,
+    marginTop: 16,
   },
 });
 

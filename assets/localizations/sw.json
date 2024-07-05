@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "Boresha safari yako ya kujifunza lugha",
         "forgot_password": "Umesahau nywila?",
         "or_login_with": "Au kuingia na:",
-        "what_your_first_language": "Lugha yako ya kwanza ni ipi?"
+        "what_your_first_language": "Lugha yako ya kwanza ni ipi?",
+        "confirm_cancel_subscription": "Una uhakika unataka kughairi usajili wako?",
+        "no_active_subscription": "Hakuna usajili amilifu uliopatikana.",
+        "loading": "Kupakia...",
+        "auto_renews_in": "Kusasisha kiotomatiki katika siku {{days}}",
+        "expires_in": "Inaisha katika siku {{days}}"
     },
     "title": {
         "email": "Barua pepe",
@@ -238,6 +243,22 @@
         "register": "Kujiandikisha",
         "start_learning": "Anza Kujifunza",
         "choose_language": "Chagua Lugha",
-        "continue_learning": "Endelea Kujifunza {{l2Code}}"
+        "continue_learning": "Endelea Kujifunza {{l2Code}}",
+        "account": "Akaunti",
+        "logout": "Kuingia",
+        "delete_my_account": "Futa Akaunti Yangu",
+        "privacy_policy": "Sera ya faragha",
+        "current_plan": "Mpango wa sasa",
+        "best_value": "Thamani Bora",
+        "monthly": "Kila mwezi",
+        "annual": "Kila mwaka",
+        "lifetime": "Maisha yote",
+        "trial": "Jaribio"
+    },
+    "action": {
+        "upgrade": "Kuboresha",
+        "cancel": "Katisha",
+        "confirm_cancellation": "Thibitisha Kughairi",
+        "keep_subscription": "Weka Usajili"
     }
 }

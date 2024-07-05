@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "เติมเต็มเส้นทางการเรียนภาษาของคุณ",
         "forgot_password": "ลืมรหัสผ่าน?",
         "or_login_with": "หรือเข้าสู่ระบบด้วย:",
-        "what_your_first_language": "ภาษาแรกของคุณคืออะไร?"
+        "what_your_first_language": "ภาษาแรกของคุณคืออะไร?",
+        "confirm_cancel_subscription": "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการสมัครสมาชิกของคุณ?",
+        "no_active_subscription": "ไม่พบการสมัครสมาชิกที่ใช้งานอยู่",
+        "loading": "การโหลด   ",
+        "auto_renews_in": "ต่ออายุอัตโนมัติใน {{days}} วัน",
+        "expires_in": "หมดอายุใน {{days}} วัน"
     },
     "title": {
         "email": "อีเมล",
@@ -238,6 +243,22 @@
         "register": "ลงทะเบียน",
         "start_learning": "เริ่มเรียนรู้",
         "choose_language": "เลือกภาษา",
-        "continue_learning": "เรียนรู้ต่อไป {{l2Code}}"
+        "continue_learning": "เรียนรู้ต่อไป {{l2Code}}",
+        "account": "บัญชี",
+        "logout": "ออกจากระบบ",
+        "delete_my_account": "ลบบัญชีของฉัน",
+        "privacy_policy": "นโยบายความเป็นส่วนตัว",
+        "current_plan": "แผนปัจจุบัน",
+        "best_value": "คุ้มค่าที่สุด",
+        "monthly": "Hàng tháng",
+        "annual": "Hàng năm",
+        "lifetime": "Suốt đời",
+        "trial": "Thử nghiệm"
+    },
+    "action": {
+        "upgrade": "อัพ เกรด",
+        "cancel": "ยกเลิก",
+        "confirm_cancellation": "ยืนยันการยกเลิก",
+        "keep_subscription": "สมัครสมาชิกต่อไป"
     }
 }

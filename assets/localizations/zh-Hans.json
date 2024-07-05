@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "丰富您的语言学习之旅",
         "forgot_password": "忘记密码？",
         "or_login_with": "或使用以下方式登录：",
-        "what_your_first_language": "你的第一语言是什么？"
+        "what_your_first_language": "你的第一语言是什么？",
+        "confirm_cancel_subscription": "您确定要取消订阅吗？",
+        "no_active_subscription": "未找到活动订阅。",
+        "loading": "装载。。。",
+        "auto_renews_in": "{{days}} 天自动续订",
+        "expires_in": "过期后 {{days}} 天"
     },
     "title": {
         "email": "电子邮件",
@@ -238,6 +243,22 @@
         "register": "注册",
         "start_learning": "开始学习",
         "choose_language": "选择语言",
-        "continue_learning": "继续学习 {{l2Code}}"
+        "continue_learning": "继续学习 {{l2Code}}",
+        "account": "帐户",
+        "logout": "注销",
+        "delete_my_account": "删除我的帐户",
+        "privacy_policy": "隐私策略",
+        "current_plan": "当前计划",
+        "best_value": "最超值",
+        "monthly": "每月",
+        "annual": "年度",
+        "lifetime": "终身",
+        "trial": "试用"
+    },
+    "action": {
+        "upgrade": "升级",
+        "cancel": "取消",
+        "confirm_cancellation": "确认取消",
+        "keep_subscription": "保持订阅"
     }
 }

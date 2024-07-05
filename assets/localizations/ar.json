@@ -228,7 +228,12 @@
         "enrich_your_language_learning_journey": "إثراء رحلة تعلم اللغة الخاصة بك",
         "forgot_password": "نسيت كلمة المرور؟",
         "or_login_with": "أو تسجيل الدخول باستخدام:",
-        "what_your_first_language": "ما هي لغتك الأولى؟"
+        "what_your_first_language": "ما هي لغتك الأولى؟",
+        "confirm_cancel_subscription": "هل أنت متأكد من رغبتك في إلغاء اشتراكك؟",
+        "no_active_subscription": "لم يتم العثور على اشتراك نشط.",
+        "loading": "تحميل...",
+        "auto_renews_in": "التجديد التلقائي في {{days}} أيام",
+        "expires_in": "تنتهي صلاحيتها بعد {{days}} يوم"
     },
     "title": {
         "email": "البريد الإلكتروني",
@@ -238,6 +243,22 @@
         "register": "سجل",
         "start_learning": "ابدأ التعلم",
         "choose_language": "اختر اللغة",
-        "continue_learning": "مواصلة التعلم {{l2Code}}"
+        "continue_learning": "مواصلة التعلم {{l2Code}}",
+        "account": "حساب",
+        "logout": "الخروج",
+        "delete_my_account": "حذف حسابي",
+        "privacy_policy": "سياسة الخصوصية",
+        "current_plan": "الخطة الحالية",
+        "best_value": "أفضل قيمة",
+        "monthly": "شهرياً",
+        "annual": "سنوياً",
+        "lifetime": "مدى الحياة",
+        "trial": "تجربة"
+    },
+    "action": {
+        "upgrade": "ترقيه",
+        "cancel": "إلغاء الأمر",
+        "confirm_cancellation": "تأكيد الإلغاء",
+        "keep_subscription": "حافظ على الاشتراك"
     }
 }
