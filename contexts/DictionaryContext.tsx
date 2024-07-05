@@ -4,6 +4,7 @@ import { TokenizerService } from '@/src/tokenizer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryLoadingModal } from '@/components/DictionaryLoadingModal';
 import { Converter } from 'opencc-js';
+import { useSettings } from '@/contexts/SettingsContext';
 
 interface DictionaryContextProps {
   dictionary: Dictionary | null;
@@ -24,6 +25,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const { l2Lang } = useLanguage();
+  const { settings } = useSettings();
 
   useEffect(() => {
     if (!l2Lang) return;
@@ -44,11 +46,6 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
       };
       initializeTokenizer();
 
-      if (l2Lang.han) {
-        const converterFunction = Converter({ from: 'cn', to: 'tw' });
-        setConvert(() => converterFunction);
-      }
-
       addLog('Dictionary is ready and loaded.');
       setIsLoading(false);
     }).catch(error => {
@@ -56,6 +53,13 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
       setIsLoading(false);
     });
   }, [l2Lang]);
+
+  useEffect(() => {
+    if (l2Lang?.han) {
+      const converterFunction = Converter(settings.useTraditional ? { from: 'cn', to: 'tw'} : { from: 'tw', to: 'cn'});
+      setConvert(() => converterFunction);
+    }
+  }, [l2Lang, settings.useTraditional]);
 
   return (
     <DictionaryContext.Provider value={{ dictionary, tokenizer, convert }}>
