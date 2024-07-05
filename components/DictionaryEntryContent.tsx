@@ -9,6 +9,7 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { languageLevelsByL2Code } from "@/src/language-levels";
 import { useLanguage } from "@/contexts/LanguageContext";
 import BookmarkButton from "@/components/BookmarkButton";  // Import the BookmarkButton component
+import DefinitionList from "./DefinitionList";
 
 interface DictionaryEntryContentProps {
   entry: DictionaryEntry;
@@ -20,10 +21,6 @@ const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, 
   const l2Lang = useLanguage().l2Lang;
   if (!l2Lang) return null;
   const levels = languageLevelsByL2Code(l2Lang.code)
-
-  const displayDefinitions = useMemo(() => {
-    return entry.definitions ? entry.definitions.join('; ') : ''
-  }, [entry]);
 
   return (
     <ScrollView style={styles.entryContainer}>
@@ -56,7 +53,7 @@ const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, 
       </View>
       <View style={[styles.detailsContainer, { backgroundColor: useThemeColor({}, 'primaryBackground') }]}>
         <View style={{ paddingBottom: 16, paddingHorizontal: 26 }}>
-          <ThemedText type="large">{displayDefinitions}</ThemedText>
+          <DefinitionList definitions={entry.definitions} type="large" />
           <View style={{ borderBottomColor: useThemeColor({}, 'secondaryStroke'), borderBottomWidth: 2, paddingBottom: 16 }}></View>
           <ThemedText type="defaultBold" style={{ marginTop: 26 }} variant="secondary">EXAMPLES FROM VIDEOS</ThemedText>
         </View>
