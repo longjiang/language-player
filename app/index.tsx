@@ -1,5 +1,5 @@
 // @/app/index.tsx
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -19,6 +19,17 @@ const Index = () => {
   const { userData } = useUserData();
   const { settings } = useSettings();
   const { l2Lang } = useLanguage();
+  const [shouldShowHome, setShouldShowHome] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated && userData && settings.l1LangCode && settings.l2LangCode) {
+      // Redirect to media tab
+      router.replace('/(tabs)/(media)');
+    } else {
+      // Show home screen if conditions are not met
+      setShouldShowHome(true);
+    }
+  }, [isAuthenticated, userData, settings.l1LangCode, settings.l2LangCode]);
 
   const buttonText = useMemo(() => {
     if (!isAuthenticated) {
@@ -39,6 +50,11 @@ const Index = () => {
       router.push("/(tabs)/(media)");
     }
   };
+
+  if (!shouldShowHome) {
+    // Return null or a loading indicator while checking conditions
+    return null;
+  }
 
   return (
     <ThemedScreen
