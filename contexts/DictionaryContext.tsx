@@ -36,7 +36,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
   useEffect(() => {
     if (!l2Lang) return;
     setIsLoading(true);
-    const newDictionary = new Dictionary(l2Lang);
+    const newDictionary = new Dictionary(l2Lang, t);
 
     const addLog = (message: string) => {
       setLogs((prevLogs) => [...prevLogs, message]);
