@@ -304,7 +304,8 @@
         "pro_transcript": "Upgrade to Pro to view the full transcript!",
         "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts.",
         "copy_success": "Text copied to clipboard",
-        "pro_feature_chatgpt": "Only Pro users can use AI features in Language Player Go. To use this feature, upgrade to Pro."
+        "pro_feature_chatgpt": "Only Pro users can use AI features in Language Player Go. To use this feature, upgrade to Pro.",
+        "initializing": "Initializing..."
     },
     "title": {
         "email": "Email",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "How did you hear about us?",
         "select_language": "What language would you like to learn?",
         "current_level": "What's your current {{language}} level?",
-        "pro_feature": "Pro Feature"
+        "pro_feature": "Pro Feature",
+        "loading_dictionary": "Loading {{language}} Dictionary"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -449,5 +451,10 @@
             "base": "Succinctly explain using {{l1Name}}, what the {{l2Name}} ({{l2Code}}) word '{{word}}' means in the phrase '{{text}}'.",
             "inflection": "Give its lemma, inflection, and morphology."
         }
+    },
+    "log": {
+        "loading_dictionary": "Loading the dictionary...",
+        "dictionary_ready": "Dictionary is ready and loaded.",
+        "failed_load_dictionary": "Failed to load dictionary: {{error}}"
     }
 }

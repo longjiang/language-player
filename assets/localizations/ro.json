@@ -303,7 +303,8 @@
         "pro_transcript": "Faceți upgrade la Pro pentru a vizualiza transcrierea completă!",
         "pro_transcript_limit_reached": "Limita de transcriere a fost atinsă. Vă rugăm să faceți upgrade la Pro pentru a accesa mai multe transcrieri.",
         "copy_success": "Copiado",
-        "pro_feature_chatgpt": "Numai utilizatorii Pro pot utiliza funcțiile AI în Language Player Go. Pentru a utiliza această caracteristică, faceți upgrade la Pro."
+        "pro_feature_chatgpt": "Numai utilizatorii Pro pot utiliza funcțiile AI în Language Player Go. Pentru a utiliza această caracteristică, faceți upgrade la Pro.",
+        "initializing": "Inicializando..."
     },
     "title": {
         "email": "E-mail",
@@ -328,7 +329,8 @@
         "how_did_you_hear": "Cum ai auzit de noi?",
         "select_language": "Ce limbă doriți să învățați?",
         "current_level": "Care este nivelul tău actual de {{language}}?",
-        "pro_feature": "Función Pro"
+        "pro_feature": "Función Pro",
+        "loading_dictionary": "Cargando diccionario {{language}}"
     },
     "action": {
         "upgrade": "Face upgrade",
@@ -448,5 +450,10 @@
             "base": "Explicați succint folosind {{l1Name}}, ce înseamnă cuvântul {{l2Name}} ({{l2Code}}) din expresia \"{{PLACEHOLDER3 PLACEHOLDER4}}}\".",
             "inflection": "Dați-i lema, inflexiunea și morfologia."
         }
+    },
+    "log": {
+        "loading_dictionary": "Cargando el diccionario...",
+        "dictionary_ready": "Diccionario listo y cargado.",
+        "failed_load_dictionary": "Error al cargar el diccionario: {{error}}"
     }
 }

@@ -303,7 +303,8 @@
         "pro_transcript": "Uppgradera till Pro för att se hela utskriften!",
         "pro_transcript_limit_reached": "Avskriftsgränsen har nåtts. Uppgradera till Pro för att få tillgång till fler utskrifter.",
         "copy_success": "Copiado",
-        "pro_feature_chatgpt": "Endast Pro-användare kan använda AI-funktioner i Language Player Go. Om du vill använda den här funktionen uppgraderar du till Pro."
+        "pro_feature_chatgpt": "Endast Pro-användare kan använda AI-funktioner i Language Player Go. Om du vill använda den här funktionen uppgraderar du till Pro.",
+        "initializing": "Inicializando..."
     },
     "title": {
         "email": "E-post",
@@ -328,7 +329,8 @@
         "how_did_you_hear": "Hur hörde du talas om oss?",
         "select_language": "Vilket språk vill du lära dig?",
         "current_level": "Vilken är din nuvarande nivå av {{language}}?",
-        "pro_feature": "Recurso Pro"
+        "pro_feature": "Recurso Pro",
+        "loading_dictionary": "Carregando dicionário {{language}}"
     },
     "action": {
         "upgrade": "Uppgradera",
@@ -448,5 +450,10 @@
             "base": "Förklara kortfattat med {{l1Name}} vad ordet {{l2Name}} ({{l2Code}}) {{word}}' betyder i frasen '{{text}}'.",
             "inflection": "Ge dess lemma, böjning och morfologi."
         }
+    },
+    "log": {
+        "loading_dictionary": "Carregando o dicionário...",
+        "dictionary_ready": "Dicionário pronto e carregado.",
+        "failed_load_dictionary": "Falha ao carregar o dicionário: {{error}}"
     }
 }

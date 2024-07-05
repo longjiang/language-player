@@ -303,7 +303,8 @@
         "pro_transcript": "Proにアップグレードして、完全なトランスクリプトを表示してください!",
         "pro_transcript_limit_reached": "字幕の制限に達しました。より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。",
         "copy_success": "テキストがクリップボードにコピーされました",
-        "pro_feature_chatgpt": "Language Player Go で AI 機能を使用できるのは Pro ユーザーのみです。この機能を使用するには、Pro にアップグレードしてください。"
+        "pro_feature_chatgpt": "Language Player Go で AI 機能を使用できるのは Pro ユーザーのみです。この機能を使用するには、Pro にアップグレードしてください。",
+        "initializing": "初期化中..."
     },
     "title": {
         "email": "電子メール",
@@ -328,7 +329,8 @@
         "how_did_you_hear": "私たちのことをどこでお知りになりましたか?",
         "select_language": "どの言語を学びたいですか？",
         "current_level": "現在の{{language}}のレベルは？",
-        "pro_feature": "Pro機能"
+        "pro_feature": "Pro機能",
+        "loading_dictionary": "{{language}} 辞書の読み込み"
     },
     "action": {
         "upgrade": "アップグレード",
@@ -448,5 +450,10 @@
             "base": "{{l2Name}}({{l2Code}})という単語「{{word}}」が「{{text}}」というフレーズで何を意味するのかを{{l1Name}}を使って簡潔に説明します。",
             "inflection": "その補題、語形変化、形態を与えてください。"
         }
+    },
+    "log": {
+        "loading_dictionary": "辞書を読み込んでいます...",
+        "dictionary_ready": "辞書が準備され、読み込まれました。",
+        "failed_load_dictionary": "辞書の読み込みに失敗しました: {{error}}"
     }
 }

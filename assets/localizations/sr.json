@@ -303,7 +303,8 @@
         "pro_transcript": "Nadogradite na Pro da biste videli ceo transkript!",
         "pro_transcript_limit_reached": "Dostignuta granica transkripta. Nadogradite na Pro da biste pristupili još transkripta.",
         "copy_success": "Kopyalandı",
-        "pro_feature_chatgpt": "Samo Pro korisnici mogu da koriste AI funkcije u programu Language Player Go. Da biste koristili ovu funkciju, nadogradite na Pro."
+        "pro_feature_chatgpt": "Samo Pro korisnici mogu da koriste AI funkcije u programu Language Player Go. Da biste koristili ovu funkciju, nadogradite na Pro.",
+        "initializing": "Başlatılıyor..."
     },
     "title": {
         "email": "E-pošta",
@@ -328,7 +329,8 @@
         "how_did_you_hear": "Kako si иuo za nas?",
         "select_language": "Koji jezik želite da učite?",
         "current_level": "Koji je vaš trenutni nivo {{language}}?",
-        "pro_feature": "Pro Özelliği"
+        "pro_feature": "Pro Özelliği",
+        "loading_dictionary": "{{language}} Sözlük yükleniyor"
     },
     "action": {
         "upgrade": "Nadogradnju",
@@ -448,5 +450,10 @@
             "base": "Sažeto objasnite koristeći {{l1Name}}, šta znači reč {{l2Name}} ({{l2Code}}) \"{{word}}PLACEHOLDER4\".",
             "inflection": "Daj joj lemu, inflekciju i morfologiju."
         }
+    },
+    "log": {
+        "loading_dictionary": "Sözlük yükleniyor...",
+        "dictionary_ready": "Sözlük hazır ve yüklendi.",
+        "failed_load_dictionary": "Sözlük yüklenemedi: {{error}}"
     }
 }

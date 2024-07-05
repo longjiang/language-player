@@ -303,7 +303,8 @@
         "pro_transcript": "Pro로 업그레이드하여 전체 대본을 확인하세요!",
         "pro_transcript_limit_reached": "대본 제한에 도달했습니다. 더 많은 대본에 액세스하려면 Pro로 업그레이드하십시오.",
         "copy_success": "텍스트가 클립보드에 복사되었습니다",
-        "pro_feature_chatgpt": "Pro 사용자만 Language Player Go에서 AI 기능을 사용할 수 있습니다. 이 기능을 사용하려면 Pro로 업그레이드하십시오."
+        "pro_feature_chatgpt": "Pro 사용자만 Language Player Go에서 AI 기능을 사용할 수 있습니다. 이 기능을 사용하려면 Pro로 업그레이드하십시오.",
+        "initializing": "초기화 중..."
     },
     "title": {
         "email": "메일 주소",
@@ -328,7 +329,8 @@
         "how_did_you_hear": "저희에 대해 어떻게 알게 되셨나요?",
         "select_language": "어떤 언어를 배우고 싶으신가요?",
         "current_level": "현재 {{language}} 레벨은 무엇입니까?",
-        "pro_feature": "Pro 기능"
+        "pro_feature": "Pro 기능",
+        "loading_dictionary": "{{language}} 사전 로드 중"
     },
     "action": {
         "upgrade": "업그레이드",
@@ -448,5 +450,10 @@
             "base": "'{{l2Name}} ({{l2Code}}) 단어 '{{word}}'가 '{{text}'에서 무엇을 의미하는지 {{l1Name}}를 사용하여 간결하게 설명하십시오.",
             "inflection": "기본형, 굴절 및 형태를 제공하십시오."
         }
+    },
+    "log": {
+        "loading_dictionary": "사전을 로드하는 중...",
+        "dictionary_ready": "사전이 준비되었으며 로드되었습니다.",
+        "failed_load_dictionary": "사전을 로드하는 데 실패했습니다: {{error}}"
     }
 }

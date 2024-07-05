@@ -304,7 +304,8 @@
         "pro_transcript": "पूर्ण प्रतिलेख देखने के लिए Pro पर अपग्र",
         "pro_transcript_limit_reached": "Dosegnuto je ograničenje transkripta. Nadogradite na Pro da biste pristupili većem broju transkripata.",
         "copy_success": "Tekst kopiran u međuspremnik",
-        "pro_feature_chatgpt": "Samo Pro korisnici mogu koristiti značajke umjetne inteligencije u aplikaciji Language Player Go. Da biste koristili ovu značajku, nadogradite na Pro."
+        "pro_feature_chatgpt": "Samo Pro korisnici mogu koristiti značajke umjetne inteligencije u aplikaciji Language Player Go. Da biste koristili ovu značajku, nadogradite na Pro.",
+        "initializing": "Inicijalizacija..."
     },
     "title": {
         "email": "E-pošta",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "Kako ste čuli za nas?",
         "select_language": "Koji jezik biste želeli da naučite?",
         "current_level": "Koji je vaš trenutni nivo {{language}}?",
-        "pro_feature": "Pro funkcija"
+        "pro_feature": "Pro funkcija",
+        "loading_dictionary": "Učitavanje rječnika {{language}}"
     },
     "action": {
         "upgrade": "Nadograditi",
@@ -449,5 +451,10 @@
             "base": "Sažeto objasnite koristeći {{{l1Name}}, što {{l2Name}} ({{l2Code}}) znači riječ '{{{word}}' u izrazu '{{{text}}'.",
             "inflection": "Dajte mu lemmu, infleksiju i morfologiju."
         }
+    },
+    "log": {
+        "loading_dictionary": "Učitavanje rječnika...",
+        "dictionary_ready": "Rječnik je spreman i učitan.",
+        "failed_load_dictionary": "Neuspjelo učitavanje rječnika: {{error}}"
     }
 }

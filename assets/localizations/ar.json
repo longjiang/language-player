@@ -304,7 +304,8 @@
         "pro_transcript": "الترقية إلى النسخة المحترفة لعرض النص الكامل!",
         "pro_transcript_limit_reached": "تم الوصول إلى حد النص. يرجى الترقية إلى Pro للوصول إلى المزيد من النصوص.",
         "copy_success": "تم نسخ النص إلى الحافظة",
-        "pro_feature_chatgpt": "يمكن لمستخدمي Pro فقط استخدام ميزات الذكاء الاصطناعي في Language Player Go. لاستخدام هذه الميزة، قم بالترقية إلى Pro."
+        "pro_feature_chatgpt": "يمكن لمستخدمي Pro فقط استخدام ميزات الذكاء الاصطناعي في Language Player Go. لاستخدام هذه الميزة، قم بالترقية إلى Pro.",
+        "initializing": "جاري التهيئة..."
     },
     "title": {
         "email": "البريد الإلكتروني",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "كيف سمعت عنا؟",
         "select_language": "ما اللغة التي ترغب في تعلمها؟",
         "current_level": "ما هو مستواك الحالي في {{language}}؟",
-        "pro_feature": "ميزة الاحترافية"
+        "pro_feature": "ميزة الاحترافية",
+        "loading_dictionary": "تحميل قاموس {{language}}"
     },
     "action": {
         "upgrade": "ترقيه",
@@ -449,5 +451,10 @@
             "base": "اشرح بإيجاز باستخدام {{l1Name}} ما تعنيه كلمة PLACEHOLDER3{{l2Name}} ({{l2Code}}) في عبارة \"{{text}}\".",
             "inflection": "أعط ليما ، انعطاف ، ومورفولوجيا."
         }
+    },
+    "log": {
+        "loading_dictionary": "جاري تحميل القاموس...",
+        "dictionary_ready": "تم تحميل القاموس وجاهز.",
+        "failed_load_dictionary": "فشل تحميل القاموس: {{error}}"
     }
 }

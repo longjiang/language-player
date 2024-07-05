@@ -304,7 +304,8 @@
         "pro_transcript": "Mettez à niveau vers Pro pour voir la transcription complète!",
         "pro_transcript_limit_reached": "Sroicheadh teorainn trascríbhinne. Déan uasghrádú ar Pro chun rochtain a fháil ar níos mó tras-scríbhinní.",
         "copy_success": "Text copiat",
-        "pro_feature_chatgpt": "Ní féidir ach le húsáideoirí Pro gnéithe AI a úsáid i Language Player Go. Chun an ghné seo a úsáid, uasghrádú go Pro."
+        "pro_feature_chatgpt": "Ní féidir ach le húsáideoirí Pro gnéithe AI a úsáid i Language Player Go. Chun an ghné seo a úsáid, uasghrádú go Pro.",
+        "initializing": "S'està inicialitzant..."
     },
     "title": {
         "email": "Ríomhphost",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "Conas a chuala tú fúinn?",
         "select_language": "Cén teanga ba mhaith leat a fhoghlaim?",
         "current_level": "Cén leibhéal atá agat i láthair i {{language}}?",
-        "pro_feature": "Funció Pro"
+        "pro_feature": "Funció Pro",
+        "loading_dictionary": "Carregant el diccionari {{language}}"
     },
     "action": {
         "upgrade": "Uasghrádú",
@@ -449,5 +451,10 @@
             "base": "Mínigh go gonta ag baint úsáide as {{l1Name}}, cad is brí leis an bhfocal {{l2Name}} ({{l2Code}}) '{{word}}' san abairt '{{text}}'.",
             "inflection": "Tabhair a lemma, infhilleadh, agus deilbhíocht."
         }
+    },
+    "log": {
+        "loading_dictionary": "Carregant el diccionari...",
+        "dictionary_ready": "El diccionari està llest i carregat.",
+        "failed_load_dictionary": "No s'ha pogut carregar el diccionari: {{error}}"
     }
 }

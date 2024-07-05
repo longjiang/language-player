@@ -303,7 +303,8 @@
         "pro_transcript": "Перейдите на Pro для просмотра полной стенограммы!",
         "pro_transcript_limit_reached": "Достигнут лимит стенограммы. Пожалуйста, обновите статус до Pro, чтобы получить доступ к большему количеству стенограмм.",
         "copy_success": "Kopirano",
-        "pro_feature_chatgpt": "Только пользователи Pro могут использовать функции ИИ в Language Player Go. Чтобы использовать эту функцию, выполните обновление до Pro."
+        "pro_feature_chatgpt": "Только пользователи Pro могут использовать функции ИИ в Language Player Go. Чтобы использовать эту функцию, выполните обновление до Pro.",
+        "initializing": "Inicijalizacija..."
     },
     "title": {
         "email": "Отправить по электронной почте",
@@ -328,7 +329,8 @@
         "how_did_you_hear": "Как вы узнали о нас?",
         "select_language": "Какой язык вы хотите изучать?",
         "current_level": "Какой у вас текущий уровень {{language}}?",
-        "pro_feature": "Pro funkcija"
+        "pro_feature": "Pro funkcija",
+        "loading_dictionary": "Učitavanje rječnika {{language}}"
     },
     "action": {
         "upgrade": "Модернизировать",
@@ -448,5 +450,10 @@
             "base": "Кратко объясните, используя {{l1Name}}, что означает {{l2Name}} ({{l2Code}}) слово '{{word}}' во фразе '{{text}}'.",
             "inflection": "Укажите его лемму, перегиб и морфологию."
         }
+    },
+    "log": {
+        "loading_dictionary": "Učitavanje rječnika...",
+        "dictionary_ready": "Rječnik je spreman i učitan.",
+        "failed_load_dictionary": "Neuspjelo učitavanje rječnika: {{error}}"
     }
 }

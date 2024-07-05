@@ -304,7 +304,8 @@
         "pro_transcript": "Päivitä Pro-versioon nähdäksesi koko transkriptio!",
         "pro_transcript_limit_reached": "Limite de transcription atteinte. Veuillez passer à Pro pour accéder à plus de transcriptions.",
         "copy_success": "Texte copié dans le presse-papiers",
-        "pro_feature_chatgpt": "Seuls les utilisateurs Pro peuvent utiliser les fonctionnalités d'IA dans Language Player Go. Pour utiliser cette fonctionnalité, passez à Pro."
+        "pro_feature_chatgpt": "Seuls les utilisateurs Pro peuvent utiliser les fonctionnalités d'IA dans Language Player Go. Pour utiliser cette fonctionnalité, passez à Pro.",
+        "initializing": "Initialisation..."
     },
     "title": {
         "email": "Messagerie électronique",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "Comment avez-vous entendu parler de nous ?",
         "select_language": "Quelle langue souhaitez-vous apprendre ?",
         "current_level": "Quel est votre niveau actuel en {{language}}?",
-        "pro_feature": "Fonction Pro"
+        "pro_feature": "Fonction Pro",
+        "loading_dictionary": "Chargement du dictionnaire {{language}}"
     },
     "action": {
         "upgrade": "Mise à niveau",
@@ -449,5 +451,10 @@
             "base": "Expliquez succinctement en utilisant {{l1Name}}, ce que le mot {{l2Name}}} ({{l2Code}}}) '{{word}}' signifie dans l’expression '{{text}}'.",
             "inflection": "Donnez son lemme, son inflexion et sa morphologie."
         }
+    },
+    "log": {
+        "loading_dictionary": "Chargement du dictionnaire...",
+        "dictionary_ready": "Le dictionnaire est prêt et chargé.",
+        "failed_load_dictionary": "Échec du chargement du dictionnaire : {{error}}"
     }
 }

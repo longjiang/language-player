@@ -304,7 +304,8 @@
         "pro_transcript": "Actualitza a Pro per veure la transcripció completa!",
         "pro_transcript_limit_reached": "Límit de transcripció assolit. Actualitzeu a Pro per accedir a més transcripcions.",
         "copy_success": "Text copiat al porta-retalls",
-        "pro_feature_chatgpt": "Només els usuaris Pro poden utilitzar les funcions d'IA a Language Player Go. Per utilitzar aquesta funció, actualitza a Pro."
+        "pro_feature_chatgpt": "Només els usuaris Pro poden utilitzar les funcions d'IA a Language Player Go. Per utilitzar aquesta funció, actualitza a Pro.",
+        "initializing": "S'està inicialitzant..."
     },
     "title": {
         "email": "Correu electrònic",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "Com ens has conegut?",
         "select_language": "Quin idioma vols aprendre?",
         "current_level": "Quin és el teu nivell actual de {{language}}?",
-        "pro_feature": "Funció Pro"
+        "pro_feature": "Funció Pro",
+        "loading_dictionary": "Carregant el diccionari {{language}}"
     },
     "action": {
         "upgrade": "Rampa",
@@ -449,5 +451,10 @@
             "base": "Expliqueu succintament amb {{l1Name}}, què vol dir la paraula {{l2Name}} ({{l2Code}}) \"{{word}}\" a la frase \"{{text}}\".",
             "inflection": "Doneu-li lema, inflexió i morfologia."
         }
+    },
+    "log": {
+        "loading_dictionary": "Carregant el diccionari...",
+        "dictionary_ready": "El diccionari està llest i carregat.",
+        "failed_load_dictionary": "No s'ha pogut carregar el diccionari: {{error}}"
     }
 }

@@ -29,7 +29,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
   const [convert, setConvert] = useState<((text: string) => string) | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
-  const { l2Lang } = useLanguage();
+  const { l2Lang, t } = useLanguage();
   const { settings } = useSettings();
   const translationManager = TranslationManager.getInstance();
 
@@ -43,7 +43,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
       console.log(message);
     };
 
-    addLog('Loading the dictionary...');
+    addLog(t('log.loading_dictionary'));
     newDictionary.loadData(false, addLog).then(() => {
       setDictionary(newDictionary);
       const initializeTokenizer = async () => {
@@ -52,13 +52,13 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
       };
       initializeTokenizer();
 
-      addLog('Dictionary is ready and loaded.');
+      addLog(t('log.dictionary_ready'));
       setIsLoading(false);
     }).catch(error => {
-      addLog(`Failed to load dictionary: ${error}`);
+      addLog(t('log.failed_load_dictionary', { error }));
       setIsLoading(false);
     });
-  }, [l2Lang]);
+  }, [l2Lang, t]);
 
   useEffect(() => {
     if (l2Lang?.han) {
@@ -69,7 +69,7 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
 
   return (
     <DictionaryContext.Provider value={{ dictionary, tokenizer, convert, translationManager }}>
-      {isLoading && l2Lang && <DictionaryLoadingModal logs={logs} language={l2Lang.name} />}
+      {isLoading && l2Lang && <DictionaryLoadingModal logs={logs} l2Code={l2Lang.code} />}
       {children}
     </DictionaryContext.Provider>
   );

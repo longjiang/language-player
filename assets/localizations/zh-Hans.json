@@ -304,7 +304,8 @@
         "pro_transcript": "升级到 Pro 以查看完整的字幕！",
         "pro_transcript_limit_reached": "已达到字幕限制。请升级到 Pro 以访问更多字幕。",
         "copy_success": "文本已复制到剪贴板",
-        "pro_feature_chatgpt": "只有 Pro 用户才能在 Language Player Go 中使用 AI 功能。要使用此功能，请升级到 Pro。"
+        "pro_feature_chatgpt": "只有 Pro 用户才能在 Language Player Go 中使用 AI 功能。要使用此功能，请升级到 Pro。",
+        "initializing": "初始化中..."
     },
     "title": {
         "email": "电子邮件",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "您是如何了解到我们的？",
         "select_language": "您想学习什么语言？",
         "current_level": "您目前的{{language}}水平是多少？",
-        "pro_feature": "Pro 功能"
+        "pro_feature": "Pro 功能",
+        "loading_dictionary": "正在加载{{language}}字典"
     },
     "action": {
         "upgrade": "升级",
@@ -449,5 +451,10 @@
             "base": "使用{{l1Name}}简洁地解释{{l2Name}}（{{l2Code}}）单词“{{word}}”在短语“{{text}}”中的含义。",
             "inflection": "给出它的原型、变形和构词。"
         }
+    },
+    "log": {
+        "loading_dictionary": "正在加载字典...",
+        "dictionary_ready": "字典已加载就绪。",
+        "failed_load_dictionary": "无法加载字典：{{error}}"
     }
 }

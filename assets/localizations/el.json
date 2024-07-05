@@ -304,7 +304,8 @@
         "pro_transcript": " um die vollständige Transkription zu sehen!",
         "pro_transcript_limit_reached": "Συμπληρώθηκε το όριο μεταγραφής. Αναβαθμίστε σε Pro για να αποκτήσετε πρόσβαση σε περισσότερες μεταγραφές.",
         "copy_success": "Το κείμενο αντιγράφηκε στο πρόχειρο",
-        "pro_feature_chatgpt": "Μόνο οι χρήστες Pro μπορούν να χρησιμοποιήσουν τις λειτουργίες τεχνητής νοημοσύνης στο Language Player Go. Για να χρησιμοποιήσετε αυτήν τη λειτουργία, αναβαθμίστε σε Pro."
+        "pro_feature_chatgpt": "Μόνο οι χρήστες Pro μπορούν να χρησιμοποιήσουν τις λειτουργίες τεχνητής νοημοσύνης στο Language Player Go. Για να χρησιμοποιήσετε αυτήν τη λειτουργία, αναβαθμίστε σε Pro.",
+        "initializing": "Αρχικοποίηση..."
     },
     "title": {
         "email": "Email",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "Πώς μάθατε για εμάς;",
         "select_language": "Ποια γλώσσα θέλετε να μάθετε;",
         "current_level": "Ποιο είναι το τρέχον επίπεδό σας στα {{language}};",
-        "pro_feature": "Λειτουργία Pro"
+        "pro_feature": "Λειτουργία Pro",
+        "loading_dictionary": "Φόρτωση λεξικού {{language}}"
     },
     "action": {
         "upgrade": "Αναβαθμίζω",
@@ -449,5 +451,10 @@
             "base": "Εξηγήστε συνοπτικά χρησιμοποιώντας {{l1Name}}, τι σημαίνει η λέξη {{l2Name}} ({{l2Code}}) '{{word}}' στη φράση '{{text}}'.",
             "inflection": "Δώστε το λήμμα, την κλίση και τη μορφολογία του."
         }
+    },
+    "log": {
+        "loading_dictionary": "Φόρτωση του λεξικού...",
+        "dictionary_ready": "Το λεξικό είναι έτοιμο και φορτώθηκε.",
+        "failed_load_dictionary": "Αποτυχία φόρτωσης λεξικού: {{error}}"
     }
 }

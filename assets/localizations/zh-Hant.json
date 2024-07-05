@@ -304,7 +304,8 @@
         "pro_transcript": "升級到 Pro 以查看完整的字幕！",
         "pro_transcript_limit_reached": "已達到字幕限制。",
         "copy_success": "文本已複製到剪貼板",
-        "pro_feature_chatgpt": "只有 Pro 用戶才能在 Language Player Go 中使用 AI 功能。要使用此功能，請升級到 Pro。"
+        "pro_feature_chatgpt": "只有 Pro 用戶才能在 Language Player Go 中使用 AI 功能。要使用此功能，請升級到 Pro。",
+        "initializing": "初始化中..."
     },
     "title": {
         "email": "電子郵件",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "您是如何了解到我們的？",
         "select_language": "您想學習什麼語言？",
         "current_level": "您目前的{{language}}水平是多少？",
-        "pro_feature": "Pro 功能"
+        "pro_feature": "Pro 功能",
+        "loading_dictionary": "正在加載{{language}}字典"
     },
     "action": {
         "upgrade": "升級",
@@ -449,5 +451,10 @@
             "base": "使用{{l1Name}}簡潔地解釋{{l2Name}}（{{l2Code}}）單詞“{{word}}”在短語“{{text}}”中的含義。",
             "inflection": "給出它的原型、變形和構詞。"
         }
+    },
+    "log": {
+        "loading_dictionary": "正在加載字典...",
+        "dictionary_ready": "字典已加載就緒。",
+        "failed_load_dictionary": "無法加載字典：{{error}}"
     }
 }

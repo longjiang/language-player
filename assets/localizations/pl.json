@@ -303,7 +303,8 @@
         "pro_transcript": "Uaktualnij do wersji Pro, aby wyświetlić pełną transkrypcję!",
         "pro_transcript_limit_reached": "Osiągnięto limit transkrypcji. Uaktualnij do wersji Pro, aby uzyskać dostęp do większej liczby transkrypcji.",
         "copy_success": "Copiado",
-        "pro_feature_chatgpt": "Tylko użytkownicy wersji Pro mogą korzystać z funkcji sztucznej inteligencji w Language Player Go. Aby korzystać z tej funkcji, uaktualnij do wersji Pro."
+        "pro_feature_chatgpt": "Tylko użytkownicy wersji Pro mogą korzystać z funkcji sztucznej inteligencji w Language Player Go. Aby korzystać z tej funkcji, uaktualnij do wersji Pro.",
+        "initializing": "Inicializando..."
     },
     "title": {
         "email": "E-mail",
@@ -328,7 +329,8 @@
         "how_did_you_hear": "Skąd się o nas dowiedziałeś?",
         "select_language": "Jakiego języka chcesz się nauczyć?",
         "current_level": "Jaki jest twój obecny poziom {{language}}?",
-        "pro_feature": "Función Pro"
+        "pro_feature": "Función Pro",
+        "loading_dictionary": "Cargando diccionario {{language}}"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -448,5 +450,10 @@
             "base": "Zwięźle wyjaśnij, używając {{l1Name}}, co oznacza słowo {{l2Name}} ({{l2Code}}) \"{{word}}\" w wyrażeniu \"{{text}}}\".",
             "inflection": "Podaj jego lemat, fleksję i morfologię."
         }
+    },
+    "log": {
+        "loading_dictionary": "Cargando el diccionario...",
+        "dictionary_ready": "Diccionario listo y cargado.",
+        "failed_load_dictionary": "Error al cargar el diccionario: {{error}}"
     }
 }

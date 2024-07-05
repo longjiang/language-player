@@ -303,7 +303,8 @@
         "pro_transcript": "Αναβαθμίστε σε Pro για να δείτε την πλήρη μεταγραφή!",
         "pro_transcript_limit_reached": "Se ha alcanzado el límite de transcripciones. Actualice a Pro para acceder a más transcripciones.",
         "copy_success": "Texto copiado al portapapeles",
-        "pro_feature_chatgpt": "Solo los usuarios Pro pueden usar funciones de IA en Language Player Go. Para usar esta función, actualiza a Pro."
+        "pro_feature_chatgpt": "Solo los usuarios Pro pueden usar funciones de IA en Language Player Go. Para usar esta función, actualiza a Pro.",
+        "initializing": "Inicializando..."
     },
     "title": {
         "email": "Correo electrónico",
@@ -328,7 +329,8 @@
         "how_did_you_hear": "¿Cómo te enteraste de nosotros?",
         "select_language": "¿Qué idioma te gustaría aprender?",
         "current_level": "¿Cuál es tu nivel actual de {{language}}?",
-        "pro_feature": "Función Pro"
+        "pro_feature": "Función Pro",
+        "loading_dictionary": "Cargando diccionario {{language}}"
     },
     "action": {
         "upgrade": "Actualizar",
@@ -448,5 +450,10 @@
             "base": "Explique sucintamente usando {{l1Name}}, lo que significa la palabra {{l2Name}} ({{l2Code}}) '{{word}}' en la frase '{{text}}'.",
             "inflection": "Dé su lema, inflexión y morfología."
         }
+    },
+    "log": {
+        "loading_dictionary": "Cargando el diccionario...",
+        "dictionary_ready": "El diccionario está listo y cargado.",
+        "failed_load_dictionary": "Error al cargar el diccionario: {{error}}"
     }
 }

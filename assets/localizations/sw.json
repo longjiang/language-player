@@ -303,7 +303,8 @@
         "pro_transcript": "Boresha kwa Pro ili kuona nakala kamili!",
         "pro_transcript_limit_reached": "Ukomo wa Transcript umefikiwa. Tafadhali sasisha hadi Pro ili kufikia nakala zaidi.",
         "copy_success": "Kopyalandı",
-        "pro_feature_chatgpt": "Watumiaji wa Pro tu ndio wanaweza kutumia vipengele vya AI katika Kicheza Lugha Go. Ili kutumia kipengele hiki, boresha hadi Pro."
+        "pro_feature_chatgpt": "Watumiaji wa Pro tu ndio wanaweza kutumia vipengele vya AI katika Kicheza Lugha Go. Ili kutumia kipengele hiki, boresha hadi Pro.",
+        "initializing": "Inicializando..."
     },
     "title": {
         "email": "Barua pepe",
@@ -328,7 +329,8 @@
         "how_did_you_hear": "Ulisikiaje kuhusu sisi?",
         "select_language": "Ungependa kujifunza lugha gani?",
         "current_level": "Ni kiwango chako cha sasa cha {{language}}?",
-        "pro_feature": "Pro Özelliği"
+        "pro_feature": "Pro Özelliği",
+        "loading_dictionary": "{{language}} Sözlük yükleniyor"
     },
     "action": {
         "upgrade": "Kuboresha",
@@ -448,5 +450,10 @@
             "base": "Kwa ufupi eleza kwa kutumia {{l1Name}}, neno {{l2Name}} ({{l2Code}}) neno '{{word}}' linamaanisha katika kishazi '{{text}}'.",
             "inflection": "Kutoa lemma yake, inflection, na morphology."
         }
+    },
+    "log": {
+        "loading_dictionary": "Sözlük yükleniyor...",
+        "dictionary_ready": "Sözlük hazır ve yüklendi.",
+        "failed_load_dictionary": "Sözlük yüklenemedi: {{error}}"
     }
 }

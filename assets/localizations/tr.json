@@ -327,7 +327,8 @@
         "how_did_you_hear": "Bizden nasıl haberdar oldunuz?",
         "select_language": "Hangi dili öğrenmek istersiniz?",
         "current_level": "Şu anki {{language}} seviyeniz nedir?",
-        "pro_feature": "Profesyonel Özellik"
+        "pro_feature": "Profesyonel Özellik",
+        "loading_dictionary": "{{language}} Sözlük yükleniyor"
     },
     "action": {
         "upgrade": "Yükseltmek",
@@ -447,5 +448,10 @@
             "base": "{{l1Name}} kullanarak, '{{l2Name}} ({{l2Code}}) '{{word}}' ifadesindeki '{{}}}' kelime PLACEHOLDER4 sinin ne anlama geldiğini kısaca açıklayın.",
             "inflection": "Lemmasını, bükülmesini ve morfolojisini verin."
         }
+    },
+    "log": {
+        "loading_dictionary": "Sözlük yükleniyor...",
+        "dictionary_ready": "Sözlük hazır ve yüklendi.",
+        "failed_load_dictionary": "Sözlük yüklenemedi: {{error}}"
     }
 }

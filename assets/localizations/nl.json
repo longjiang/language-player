@@ -303,7 +303,8 @@
         "pro_transcript": "Upgrade naar Pro om het volledige transcript te bekijken!",
         "pro_transcript_limit_reached": "Transcriptielimiet bereikt. Upgrade naar Pro om toegang te krijgen tot meer transcripties.",
         "copy_success": "Tekst gekopieerd naar klembord",
-        "pro_feature_chatgpt": "Alleen Pro-gebruikers kunnen AI-functies gebruiken in Language Player Go. Als u deze functie wilt gebruiken, moet u upgraden naar Pro."
+        "pro_feature_chatgpt": "Alleen Pro-gebruikers kunnen AI-functies gebruiken in Language Player Go. Als u deze functie wilt gebruiken, moet u upgraden naar Pro.",
+        "initializing": "Initialiseren..."
     },
     "title": {
         "email": "E-mail",
@@ -328,7 +329,8 @@
         "how_did_you_hear": "Hoe heb je ons leren kennen?",
         "select_language": "Welke taal wil je leren?",
         "current_level": "Wat is je huidige niveau van {{language}}?",
-        "pro_feature": "Pro-functie"
+        "pro_feature": "Pro-functie",
+        "loading_dictionary": "Woordenboek {{language}} laden"
     },
     "action": {
         "upgrade": "Opwaarderen",
@@ -448,5 +450,10 @@
             "base": "Leg kort en bondig uit met behulp van {{l1Name}}, wat het {{l2Name}} ({{l2Code}}) woord '{{word}}' betekent in de zin '{{text}}'.",
             "inflection": "Geef het lemma, de verbuiging en de morfologie."
         }
+    },
+    "log": {
+        "loading_dictionary": "Woordenboek wordt geladen...",
+        "dictionary_ready": "Woordenboek is klaar en geladen.",
+        "failed_load_dictionary": "Kan woordenboek niet laden: {{error}}"
     }
 }

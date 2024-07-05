@@ -327,7 +327,8 @@
         "how_did_you_hear": "Làm thế nào bạn biết về chúng tôi?",
         "select_language": "Bạn muốn học ngôn ngữ nào?",
         "current_level": "Cấp độ hiện tại của bạn với {{language}} là gì?",
-        "pro_feature": "Tính năng Pro"
+        "pro_feature": "Tính năng Pro",
+        "loading_dictionary": "Đang tải từ điển {{language}}"
     },
     "action": {
         "upgrade": "Nâng cấp",
@@ -447,5 +448,10 @@
             "base": "Giải thích ngắn gọn bằng cách sử dụng {{l1Name}}, từ {{l2Name}} ({{l2Code}}) '{{word}}' có nghĩa là gì trong cụm từ '{{text}}'.",
             "inflection": "Đưa ra lemma, biến tố và hình thái của nó."
         }
+    },
+    "log": {
+        "loading_dictionary": "Đang tải từ điển...",
+        "dictionary_ready": "Từ điển đã sẵn sàng và được tải.",
+        "failed_load_dictionary": "Không thể tải từ điển: {{error}}"
     }
 }

@@ -302,7 +302,8 @@
         "pro_transcript": "อัปเกรดเป็น Pro เพื่อดูการถอดเสียงฉบับเต็ม!",
         "pro_transcript_limit_reached": "ถึงขีดจํากัดการถอดเสียงแล้ว โปรดอัปเกรดเป็น Pro เพื่อเข้าถึงการถอดเสียงเพิ่มเติม",
         "copy_success": "Đã sao chép văn bản",
-        "pro_feature_chatgpt": "เฉพาะผู้ใช้ Pro เท่านั้นที่สามารถใช้คุณสมบัติ AI ใน Language Player Go ได้ หากต้องการใช้คุณสมบัตินี้ ให้อัปเกรดเป็น Pro"
+        "pro_feature_chatgpt": "เฉพาะผู้ใช้ Pro เท่านั้นที่สามารถใช้คุณสมบัติ AI ใน Language Player Go ได้ หากต้องการใช้คุณสมบัตินี้ ให้อัปเกรดเป็น Pro",
+        "initializing": "Khởi tạo..."
     },
     "title": {
         "email": "อีเมล",
@@ -327,7 +328,8 @@
         "how_did_you_hear": "คุณรู้จักเราได้อย่างไร?",
         "select_language": "คุณต้องการเรียนภาษาอะไร?",
         "current_level": "ระดับ {{language}} ปัจจุบันของคุณคืออะไร?",
-        "pro_feature": "คุณสมบัติ Pro"
+        "pro_feature": "คุณสมบัติ Pro",
+        "loading_dictionary": "กำลังโหลดพจนานุกรม {{language}}"
     },
     "action": {
         "upgrade": "อัพ เกรด",
@@ -447,5 +449,10 @@
             "base": "อธิบายอย่างรวบรัดโดยใช้ {{l1Name}}}คําว่า {{l2Name}} ({{l2Code}}}) คําว่า '{{word}}}' หมายถึงอะไรในวลี '{{text}}'",
             "inflection": "ให้คําหลักการผันและสัณฐานวิทยา"
         }
+    },
+    "log": {
+        "loading_dictionary": "กำลังโหลดพจนานุกรม...",
+        "dictionary_ready": "พจนานุกรมพร้อมและถูกโหลดแล้ว.",
+        "failed_load_dictionary": "การโหลดพจนานุกรมล้มเหลว: {{error}}"
     }
 }

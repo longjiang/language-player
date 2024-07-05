@@ -304,7 +304,8 @@
         "pro_transcript": "¡Actualiza a Pro para ver la transcripción completa!",
         "pro_transcript_limit_reached": "Transkriptioraja saavutettu. Päivitä Pro-versioon saadaksesi lisää transkriptioita.",
         "copy_success": "Teksti kopioitu leikepöydälle",
-        "pro_feature_chatgpt": "Vain Pro-käyttäjät voivat käyttää tekoälyn ominaisuuksia Language Player Go -sovelluksessa. Käyttääksesi tätä ominaisuutta, päivitä Pro-versioon."
+        "pro_feature_chatgpt": "Vain Pro-käyttäjät voivat käyttää tekoälyn ominaisuuksia Language Player Go -sovelluksessa. Käyttääksesi tätä ominaisuutta, päivitä Pro-versioon.",
+        "initializing": "Alustetaan..."
     },
     "title": {
         "email": "Sähköposti",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "Miten kuulit meistä?",
         "select_language": "Mitä kieltä haluat oppia?",
         "current_level": "Mikä on nykyinen taitotasosi {{language}}?",
-        "pro_feature": "Pro-ominaisuus"
+        "pro_feature": "Pro-ominaisuus",
+        "loading_dictionary": "Ladataan {{language}}-sanakirjaa"
     },
     "action": {
         "upgrade": "Päivittää",
@@ -449,5 +451,10 @@
             "base": "Selitä lyhyesti {{l1Name}} avulla, mitä {{l2Name}} ({{l2Code}}) -sana \"{{word}}\" tarkoittaa lauseessa \"{{text}}\".",
             "inflection": "Anna sen lemma, taivutus ja morfologia."
         }
+    },
+    "log": {
+        "loading_dictionary": "Ladataan sanakirjaa...",
+        "dictionary_ready": "Sanakirja on valmis ja ladattu.",
+        "failed_load_dictionary": "Sanakirjan lataaminen epäonnistui: {{error}}"
     }
 }

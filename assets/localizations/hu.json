@@ -304,7 +304,8 @@
         "pro_transcript": "Frissítsen Pro-ra a teljes átirat megtekintéséhez!",
         "pro_transcript_limit_reached": "Elérte az átirati korlátot. Kérjük, frissítsen Pro-ra, hogy további átiratokhoz férjen hozzá.",
         "copy_success": "Kijelölt szöveg másolva",
-        "pro_feature_chatgpt": "Csak a Pro felhasználók használhatják a Language Player Go AI funkcióit. A funkció használatához frissítsen Pro-ra."
+        "pro_feature_chatgpt": "Csak a Pro felhasználók használhatják a Language Player Go AI funkcióit. A funkció használatához frissítsen Pro-ra.",
+        "initializing": "Inicializálás..."
     },
     "title": {
         "email": "E-mail",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "Honnan hallottál rólunk?",
         "select_language": "Milyen nyelvet szeretne megtanulni?",
         "current_level": "Mi a jelenlegi {{language}} szinted?",
-        "pro_feature": "Pro funkció"
+        "pro_feature": "Pro funkció",
+        "loading_dictionary": "{{language}} szótár betöltése"
     },
     "action": {
         "upgrade": "Feljavít",
@@ -449,5 +451,10 @@
             "base": "Röviden magyarázza el a {{l1Name}} használatával, hogy mit jelent a {{l2Name}} ({{l2Code}}) szó '{{word}}' a '{{text}}' kifejezésben.",
             "inflection": "Adja meg lemmáját, inflexióját és morfológiáját."
         }
+    },
+    "log": {
+        "loading_dictionary": "Szótár betöltése...",
+        "dictionary_ready": "A szótár készen áll és betöltve.",
+        "failed_load_dictionary": "Nem sikerült betölteni a szótárat: {{error}}"
     }
 }

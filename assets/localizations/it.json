@@ -304,7 +304,8 @@
         "pro_transcript": "Esegui l'upgrade a Pro per visualizzare la trascrizione completa!",
         "pro_transcript_limit_reached": "Limite di trascrizione raggiunto. Si prega di eseguire l'upgrade a Pro per accedere a più trascrizioni.",
         "copy_success": "Testo copiato negli appunti",
-        "pro_feature_chatgpt": "Solo gli utenti Pro possono utilizzare le funzionalità AI in Language Player Go. Per utilizzare questa funzione, eseguire l'aggiornamento a Pro."
+        "pro_feature_chatgpt": "Solo gli utenti Pro possono utilizzare le funzionalità AI in Language Player Go. Per utilizzare questa funzione, eseguire l'aggiornamento a Pro.",
+        "initializing": "Inizializzazione..."
     },
     "title": {
         "email": "E-mail",
@@ -329,7 +330,8 @@
         "how_did_you_hear": "Come hai saputo di noi?",
         "select_language": "Quale lingua desideri imparare?",
         "current_level": "Qual è il tuo livello attuale di {{language}}?",
-        "pro_feature": "Caratteristica Pro"
+        "pro_feature": "Caratteristica Pro",
+        "loading_dictionary": "Caricamento dizionario {{language}}"
     },
     "action": {
         "upgrade": "Aggiornamento",
@@ -449,5 +451,10 @@
             "base": "Spiega brevemente usando {{l1Name}}, cosa significa la parola {{l2Name}} ({{l2Code}}) '{{word}}' nella frase '{{text}}'.",
             "inflection": "Fornisci il suo lemma, la flessione e la morfologia."
         }
+    },
+    "log": {
+        "loading_dictionary": "Caricamento del dizionario...",
+        "dictionary_ready": "Dizionario pronto e caricato.",
+        "failed_load_dictionary": "Errore durante il caricamento del dizionario: {{error}}"
     }
 }
