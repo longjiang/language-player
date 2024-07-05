@@ -3,9 +3,9 @@
 import React, { createContext, useReducer, useContext, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useColorScheme } from 'react-native';
+import { useLanguage } from './LanguageContext';
 
-
-// Define the initial state for the settings
+// Initial state for settings
 const initialState = {
   showPinyin: false,
   showDefinition: false,
@@ -13,11 +13,13 @@ const initialState = {
   showTranslation: false,
   showQuickGloss: false,
   autoPronounce: false,
-  darkMode: false, // Default, will be updated in provider
+  darkMode: false,
   quizMode: false,
+  l1LangCode: '',
+  l2LangCode: '',
 };
 
-// Define the types for the state and actions
+// Types for state and actions
 export interface SettingsState {
   showPinyin: boolean;
   showDefinition: boolean;
@@ -27,11 +29,15 @@ export interface SettingsState {
   darkMode: boolean;
   showQuickGloss: boolean;
   quizMode: boolean;
+  l1LangCode: string;
+  l2LangCode: string;
 }
 
 type SettingsAction =
   | { type: 'SET_SETTINGS'; payload: Partial<SettingsState> }
-  | { type: 'TOGGLE_SETTING'; payload: keyof SettingsState };
+  | { type: 'TOGGLE_SETTING'; payload: keyof SettingsState }
+  | { type: 'SET_L1_LANG_CODE'; payload: string }
+  | { type: 'SET_L2_LANG_CODE'; payload: string };
 
 // Reducer function to handle state changes
 const settingsReducer = (state: SettingsState, action: SettingsAction): SettingsState => {
@@ -40,12 +46,16 @@ const settingsReducer = (state: SettingsState, action: SettingsAction): Settings
       return { ...state, ...action.payload };
     case 'TOGGLE_SETTING':
       return { ...state, [action.payload]: !state[action.payload] };
+    case 'SET_L1_LANG_CODE':
+      return { ...state, l1LangCode: action.payload };
+    case 'SET_L2_LANG_CODE':
+      return { ...state, l2LangCode: action.payload };
     default:
       return state;
   }
 };
 
-// Create the context
+// Create context
 const SettingsContext = createContext<{
   settings: SettingsState;
   dispatch: React.Dispatch<SettingsAction>;
@@ -54,30 +64,58 @@ const SettingsContext = createContext<{
   dispatch: () => null,
 });
 
-// Create a provider component
+// Provider component
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
-  const systemColorScheme = useColorScheme(); // Gets the system color scheme ('light' or 'dark')
+  const systemColorScheme = useColorScheme();
   const [settings, dispatch] = useReducer(settingsReducer, {
     ...initialState,
-    darkMode: systemColorScheme === 'dark', // Initialize based on system preference here
+    darkMode: systemColorScheme === 'dark',
   });
+  const { l1Lang, l2Lang, setL1Lang, setL2Lang, languages } = useLanguage();
 
+  // Effect: Load settings from SecureStore on mount and set languages
   useEffect(() => {
     const loadSettings = async () => {
       const savedSettings = await SecureStore.getItemAsync('userSettings');
       if (savedSettings) {
-        dispatch({ type: 'SET_SETTINGS', payload: JSON.parse(savedSettings) });
+        const parsedSettings = JSON.parse(savedSettings);
+        dispatch({ type: 'SET_SETTINGS', payload: parsedSettings });
+        
+        // Set l1Lang and l2Lang based on stored codes
+        if (parsedSettings.l1LangCode && languages) {
+          const l1Language = languages.getLangByCode(parsedSettings.l1LangCode);
+          if (l1Language) setL1Lang(l1Language);
+        }
+        if (parsedSettings.l2LangCode && languages) {
+          const l2Language = languages.getLangByCode(parsedSettings.l2LangCode);
+          if (l2Language) setL2Lang(l2Language);
+        }
       }
     };
     loadSettings();
-  }, []);
+  }, [languages, setL1Lang, setL2Lang]);
 
+  // Effect: Save settings to SecureStore when they change
   useEffect(() => {
     const saveSettings = async () => {
       await SecureStore.setItemAsync('userSettings', JSON.stringify(settings));
     };
     saveSettings();
   }, [settings]);
+
+  // Effect: Update l1LangCode in settings when l1Lang changes
+  useEffect(() => {
+    if (l1Lang && l1Lang.code) {
+      dispatch({ type: 'SET_L1_LANG_CODE', payload: l1Lang.code });
+    }
+  }, [l1Lang]);
+
+  // Effect: Update l2LangCode in settings when l2Lang changes
+  useEffect(() => {
+    if (l2Lang && l2Lang.code) {
+      dispatch({ type: 'SET_L2_LANG_CODE', payload: l2Lang.code });
+    }
+  }, [l2Lang]);
 
   return (
     <SettingsContext.Provider value={{ settings, dispatch }}>

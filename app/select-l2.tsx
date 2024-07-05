@@ -1,5 +1,4 @@
-// @/app/select-l2.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { Option, ThemedLanguageSelect } from "@/components/ThemedLanguageSelect";
 import { ThemedButton, ThemedScreen, LanguageIcon, ThemedText } from "@/components";
@@ -9,8 +8,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 
 const SelectL2Screen = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState("");
   const { l2Lang, setL2Lang, languages } = useLanguage();
+  const [selectedLanguage, setSelectedLanguage] = useState(l2Lang?.iso639_1 || l2Lang?.iso639_3 || "");
 
   const languageCircleIcons: { [key: string]: string } = {
     zh: require("@/assets/flags/china.png"),
@@ -43,6 +42,13 @@ const SelectL2Screen = () => {
   const getOption: (value: string) => Option | undefined = (value) => {
     return languageOptions.find((lang: Option) => lang.value === value);
   };
+
+  // Use useEffect to set the initial selected language
+  useEffect(() => {
+    if (l2Lang) {
+      setSelectedLanguage(l2Lang.iso639_1 || l2Lang.iso639_3);
+    }
+  }, [l2Lang]);
 
   return (
     <ThemedScreen
@@ -95,7 +101,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 110,
   },
-  // Add or adjust other styles as necessary
 });
 
 export default SelectL2Screen;

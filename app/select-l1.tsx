@@ -1,3 +1,5 @@
+// @/app/select-l1
+
 import React, { useState, useEffect } from "react";
 import { ThemedLanguageSelect } from "@/components/ThemedLanguageSelect";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -10,19 +12,38 @@ import { selectL1Styles as styles } from "@/src/styles";
 import { useUserData } from "@/contexts/UserDataContext";
 import { ThemedText } from "@/components/ThemedText";
 
-const SelectL2Screen = () => {
+const SelectL1Screen = () => {
   const { l1Lang, l2Lang, setL1Lang, languages } = useLanguage();
   const { progress } = useUserData();
-  const [deviceLanguage, setDeviceLanguage] = useState<string | null>(null);
+  const [defaultLanguage, setDefaultLanguage] = useState<string | null>(null);
 
   useEffect(() => {
-    const defaultLanguage = Localization.locale.split('-')[0]; // Get the base language code
-    const language = languages?.getLangByCode(defaultLanguage);
-    if (language) {
-      setL1Lang(language);
-      setDeviceLanguage(defaultLanguage);
+    const setInitialLanguage = () => {
+      if (l1Lang) {
+        // If l1Lang is already set, use it
+        setDefaultLanguage(l1Lang.code);
+      } else {
+        // Otherwise, try to use the system's language
+        const systemLanguage = Localization.locale.split('-')[0]; // Get the base language code
+        const language = languages?.getLangByCode(systemLanguage);
+        if (language) {
+          setL1Lang(language);
+          setDefaultLanguage(systemLanguage);
+        } else {
+          // If system language is not available, default to the first available language
+          const firstAvailableLanguage = languages?.getLanguages()[0];
+          if (firstAvailableLanguage) {
+            setL1Lang(firstAvailableLanguage);
+            setDefaultLanguage(firstAvailableLanguage.code);
+          }
+        }
+      }
+    };
+
+    if (languages) {
+      setInitialLanguage();
     }
-  }, [languages]);
+  }, [languages, l1Lang, setL1Lang]);
 
   const onSelect = (value: string) => {
     if (!languages) return;
@@ -45,7 +66,7 @@ const SelectL2Screen = () => {
       imageName={require("../assets/images/splash-image.png")}
       imageStyle={{ marginTop: -400 }}
     >
-      <ThemedLanguageSelect onSelect={onSelect} initialValue={l1Lang?.code || deviceLanguage} scope="l1" />
+      <ThemedLanguageSelect onSelect={onSelect} initialValue={defaultLanguage} scope="l1" />
 
       <ThemedButton
         title="title.next"
@@ -58,4 +79,4 @@ const SelectL2Screen = () => {
   );
 };
 
-export default SelectL2Screen;
+export default SelectL1Screen;

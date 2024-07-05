@@ -7,6 +7,7 @@ import { hasSavedWord, saveWord, removeSavedWord, SavedWords, SavedWordMeta } fr
 import { getProgress, updateProgress, Progress } from './progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+// Define interfaces for UserData and context props
 export interface UserData {
   id: string;
   saved_words: SavedWords;
@@ -28,6 +29,7 @@ interface UserDataProviderProps {
   children: ReactNode;
 }
 
+// Create the context
 const UserDataContext = createContext<UserDataContextProps | undefined>(undefined);
 
 export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
@@ -35,8 +37,9 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [savedWords, setSavedWords] = useState<SavedWords>({});
   const [progress, setProgress] = useState<Progress>({});
-  const { l2Lang } = useLanguage();
+  const { l2Lang, setL2Lang } = useLanguage();
 
+  // Effect: Fetch user data on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -60,7 +63,9 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
     fetchData();
   }, [getStoredAuthToken]);
 
+  // Effect: Handle local progress updates and server synchronization
   useEffect(() => {
+    // Function to update local progress
     const updateLocalProgress = () => {
       if (l2Lang && userData) {
         const langCode = l2Lang.code;
@@ -79,8 +84,10 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
       }
     };
 
-    const localUpdateInterval = setInterval(updateLocalProgress, 1000); // Update every 1 second
+    // Set up interval for local progress updates (every 1 second)
+    const localUpdateInterval = setInterval(updateLocalProgress, 1000);
 
+    // Set up interval for server synchronization (every 1 minute)
     const serverSyncInterval = setInterval(async () => {
       try {
         const authToken = await getStoredAuthToken();
@@ -95,14 +102,16 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
       } catch (error) {
         console.error('Error syncing user data with server:', error);
       }
-    }, 60000); // Sync every 1 minute
+    }, 60000);
 
+    // Clean up intervals on component unmount
     return () => {
       clearInterval(localUpdateInterval);
       clearInterval(serverSyncInterval);
     };
   }, [userData, progress, savedWords, l2Lang, getStoredAuthToken]);
 
+  // Provide context value
   return (
     <UserDataContext.Provider
       value={{
@@ -121,6 +130,7 @@ export const UserDataProvider: FC<UserDataProviderProps> = ({ children }) => {
   );
 };
 
+// Custom hook to use the UserDataContext
 export const useUserData = (): UserDataContextProps => {
   const context = useContext(UserDataContext);
   if (!context) {
