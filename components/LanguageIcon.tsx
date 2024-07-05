@@ -34,8 +34,8 @@ export const LanguageIcon: React.FC<LanguageIconProps> = ({ icon, label, onPress
 const styles = StyleSheet.create({
   iconContainer: {
     alignItems: 'center',
-    marginHorizontal: 16,
     marginBottom: 32,
+    width: '33%',
   },
   iconImage: {
     width: 67,

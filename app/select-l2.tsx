@@ -94,8 +94,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-evenly",
-    padding: 10,
-    alignSelf: "center",
   },
   button: {
     marginTop: 20,
