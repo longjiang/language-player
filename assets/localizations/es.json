@@ -233,7 +233,9 @@
         "no_active_subscription": "No se ha encontrado ninguna suscripción activa.",
         "loading": "Carga...",
         "auto_renews_in": "Se renueva automáticamente en {{days}} días",
-        "expires_in": "Caduca en {{days}} días"
+        "expires_in": "Caduca en {{days}} días",
+        "or_register_with": "O registra con:",
+        "already_have_account": "¿Ya tienes una cuenta?"
     },
     "title": {
         "email": "Correo electrónico",
@@ -259,6 +261,19 @@
         "upgrade": "Actualizar",
         "cancel": "Cancelar",
         "confirm_cancellation": "Confirmar cancelación",
-        "keep_subscription": "Mantener la suscripción"
+        "keep_subscription": "Mantener la suscripción",
+        "register": "Registro",
+        "login": "Iniciar sesión"
+    },
+    "placeholder": {
+        "first_name": "Nombre",
+        "last_name": "Apellido",
+        "email": "Correo electrónico",
+        "password": "Contraseña",
+        "confirm_password": "Confirmar contraseña"
+    },
+    "error": {
+        "passwords_do_not_match": "Las contraseñas no coinciden",
+        "registration_failed": "Registro fallido"
     }
 }

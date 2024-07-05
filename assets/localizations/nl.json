@@ -233,7 +233,9 @@
         "no_active_subscription": "Geen actief abonnement gevonden.",
         "loading": "Laden...",
         "auto_renews_in": "Wordt automatisch verlengd in {{days}} dagen",
-        "expires_in": "Verloopt over {{days}} dagen"
+        "expires_in": "Verloopt over {{days}} dagen",
+        "or_register_with": "Of registreer met:",
+        "already_have_account": "Heeft u al een account?"
     },
     "title": {
         "email": "E-mail",
@@ -259,6 +261,19 @@
         "upgrade": "Opwaarderen",
         "cancel": "Annuleren",
         "confirm_cancellation": "Annulering bevestigen",
-        "keep_subscription": "Abonnement behouden"
+        "keep_subscription": "Abonnement behouden",
+        "register": "Registreren",
+        "login": "Inloggen"
+    },
+    "placeholder": {
+        "first_name": "Voornaam",
+        "last_name": "Naam",
+        "email": "Email",
+        "password": "Wachtwoord",
+        "confirm_password": "Wachtwoord bevestigen"
+    },
+    "error": {
+        "passwords_do_not_match": "Wachtwoorden komen niet overeen",
+        "registration_failed": "Registratie mislukt"
     }
 }

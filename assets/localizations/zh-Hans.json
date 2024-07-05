@@ -233,7 +233,9 @@
         "no_active_subscription": "未找到活动订阅。",
         "loading": "装载。。。",
         "auto_renews_in": "{{days}} 天自动续订",
-        "expires_in": "过期后 {{days}} 天"
+        "expires_in": "过期后 {{days}} 天",
+        "or_register_with": "或使用以下方式注册：",
+        "already_have_account": "已经有账户？"
     },
     "title": {
         "email": "电子邮件",
@@ -259,6 +261,19 @@
         "upgrade": "升级",
         "cancel": "取消",
         "confirm_cancellation": "确认取消",
-        "keep_subscription": "保持订阅"
+        "keep_subscription": "保持订阅",
+        "register": "注册",
+        "login": "登录"
+    },
+    "placeholder": {
+        "first_name": "名字",
+        "last_name": "姓",
+        "email": "电子邮件",
+        "password": "密码",
+        "confirm_password": "确认密码"
+    },
+    "error": {
+        "passwords_do_not_match": "密码不匹配",
+        "registration_failed": "注册失败"
     }
 }

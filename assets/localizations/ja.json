@@ -233,7 +233,9 @@
         "no_active_subscription": "アクティブなサブスクリプションが見つかりませんでした。",
         "loading": "積載。。。",
         "auto_renews_in": "{{days}日で自動更新",
-        "expires_in": "有効期限 {{days}} 日"
+        "expires_in": "有効期限 {{days}} 日",
+        "or_register_with": "または、以下で登録します。",
+        "already_have_account": "アカウントをお持ちですか？"
     },
     "title": {
         "email": "電子メール",
@@ -259,6 +261,19 @@
         "upgrade": "アップグレード",
         "cancel": "キャンセル",
         "confirm_cancellation": "キャンセルの確認",
-        "keep_subscription": "サブスクリプションを維持する"
+        "keep_subscription": "サブスクリプションを維持する",
+        "register": "登録",
+        "login": "ログイン"
+    },
+    "placeholder": {
+        "first_name": "ファースト",
+        "last_name": "ラスト",
+        "email": "メール",
+        "password": "パスワード",
+        "confirm_password": "パスワードを確認"
+    },
+    "error": {
+        "passwords_do_not_match": "パスワードが一致しません",
+        "registration_failed": "登録に失敗しました"
     }
 }

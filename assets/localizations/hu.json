@@ -233,7 +233,9 @@
         "no_active_subscription": "Nem található aktív előfizetés.",
         "loading": "Berakás...",
         "auto_renews_in": "Automatikus megújítás {{days}} nap múlva",
-        "expires_in": "{{days}} nap múlva lejár"
+        "expires_in": "{{days}} nap múlva lejár",
+        "or_register_with": "Vagy regisztráljon:",
+        "already_have_account": "Már van fiókja?"
     },
     "title": {
         "email": "E-mail",
@@ -259,6 +261,19 @@
         "upgrade": "Feljavít",
         "cancel": "Érvénytelenít",
         "confirm_cancellation": "Lemondás megerősítése",
-        "keep_subscription": "Előfizetés megtartása"
+        "keep_subscription": "Előfizetés megtartása",
+        "register": "Regisztráció",
+        "login": "Bejelentkezés"
+    },
+    "placeholder": {
+        "first_name": "Először",
+        "last_name": "Vezetéknév",
+        "email": "Email",
+        "password": "Jelszó",
+        "confirm_password": "Jelszó megerősítése"
+    },
+    "error": {
+        "passwords_do_not_match": "A jelszavak nem egyeznek",
+        "registration_failed": "A regisztráció sikertelen"
     }
 }

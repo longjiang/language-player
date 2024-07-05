@@ -233,7 +233,9 @@
         "no_active_subscription": "Tidak ada langganan aktif yang ditemukan.",
         "loading": "Loading...",
         "auto_renews_in": "Perpanjang otomatis dalam {{days}} hari",
-        "expires_in": "Kedaluwarsa dalam {{days}} hari"
+        "expires_in": "Kedaluwarsa dalam {{days}} hari",
+        "or_register_with": "Atau daftar dengan:",
+        "already_have_account": "Sudah punya akun?"
     },
     "title": {
         "email": "Email",
@@ -259,6 +261,19 @@
         "upgrade": "Upgrade",
         "cancel": "Membatalkan",
         "confirm_cancellation": "Konfirmasi Pembatalan",
-        "keep_subscription": "Tetap Berlangganan"
+        "keep_subscription": "Tetap Berlangganan",
+        "register": "Registrasi",
+        "login": "Login"
+    },
+    "placeholder": {
+        "first_name": "Nama depan",
+        "last_name": "Nama belakang",
+        "email": "Email",
+        "password": "Kata sandi",
+        "confirm_password": "Konfirmasi Kata Sandi"
+    },
+    "error": {
+        "passwords_do_not_match": "Kata sandi tidak cocok",
+        "registration_failed": "Registrasi gagal"
     }
 }

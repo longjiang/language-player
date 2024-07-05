@@ -233,7 +233,9 @@
         "no_active_subscription": "未找到活動訂閱。",
         "loading": "裝載。。。",
         "auto_renews_in": "{{days}} 天自動續訂",
-        "expires_in": "過期后 {{days}} 天"
+        "expires_in": "過期后 {{days}} 天",
+        "or_register_with": "或使用以下方式註冊：",
+        "already_have_account": "已經有帳戶？"
     },
     "title": {
         "email": "電子郵件",
@@ -259,6 +261,19 @@
         "upgrade": "升級",
         "cancel": "取消",
         "confirm_cancellation": "確認取消",
-        "keep_subscription": "保持訂閱"
+        "keep_subscription": "保持訂閱",
+        "register": "註冊",
+        "login": "登錄"
+    },
+    "placeholder": {
+        "first_name": "名字",
+        "last_name": "姓",
+        "email": "電子郵件",
+        "password": "密碼",
+        "confirm_password": "確認密碼"
+    },
+    "error": {
+        "passwords_do_not_match": "密碼不匹配",
+        "registration_failed": "註冊失敗"
     }
 }

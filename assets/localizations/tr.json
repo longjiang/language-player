@@ -233,7 +233,9 @@
         "no_active_subscription": "Etkin abonelik bulunamadı.",
         "loading": "Yükleme...",
         "auto_renews_in": "{{days}} gün içinde otomatik yenileme",
-        "expires_in": "{{days}} gün içinde sona eriyor"
+        "expires_in": "{{days}} gün içinde sona eriyor",
+        "or_register_with": "Veya şununla kaydolun:",
+        "already_have_account": "Zaten bir hesabınız var mı?"
     },
     "title": {
         "email": "E-posta",
@@ -249,12 +251,29 @@
         "delete_my_account": "Hesabımı Sil",
         "privacy_policy": "Gizlilik Politikası",
         "current_plan": "Mevcut Plan",
-        "best_value": "En İyi Değer"
+        "best_value": "En İyi Değer",
+        "monthly": "Aylık",
+        "annual": "Yıllık",
+        "lifetime": "Ömür",
+        "trial": "Deneme"
     },
     "action": {
         "upgrade": "Yükseltmek",
         "cancel": "İptal",
         "confirm_cancellation": "İptali Onayla",
-        "keep_subscription": "Aboneliği Koru"
+        "keep_subscription": "Aboneliği Koru",
+        "register": "Kayıt ol",
+        "login": "Oturum açma"
+    },
+    "placeholder": {
+        "first_name": "İsim",
+        "last_name": "Soyadı",
+        "email": "E-posta",
+        "password": "Parola",
+        "confirm_password": "Xác nhận mật khẩu"
+    },
+    "error": {
+        "passwords_do_not_match": "Şifreler eşleşmiyor",
+        "registration_failed": "Kayıt başarısız oldu"
     }
 }

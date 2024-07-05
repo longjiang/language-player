@@ -233,7 +233,9 @@
         "no_active_subscription": "Aucun abonnement actif n’a été trouvé.",
         "loading": "Chargement...",
         "auto_renews_in": "Renouvellement automatique en {{days}} jours",
-        "expires_in": "Expire dans {{days}} jours"
+        "expires_in": "Expire dans {{days}} jours",
+        "or_register_with": "Ou inscrivez-vous avec :",
+        "already_have_account": "Déjà un compte?"
     },
     "title": {
         "email": "Messagerie électronique",
@@ -259,6 +261,19 @@
         "upgrade": "Mise à niveau",
         "cancel": "Annuler",
         "confirm_cancellation": "Confirmer l’annulation",
-        "keep_subscription": "Conserver l’abonnement"
+        "keep_subscription": "Conserver l’abonnement",
+        "register": "Inscription",
+        "login": "Connectez-vous"
+    },
+    "placeholder": {
+        "first_name": "Prénom",
+        "last_name": "Nom de famille",
+        "email": "Adresse e-mail",
+        "password": "Mot de passe",
+        "confirm_password": "Confirmer le mot de passe"
+    },
+    "error": {
+        "passwords_do_not_match": "Les mots de passe ne correspondent pas",
+        "registration_failed": "Inscription échouée"
     }
 }

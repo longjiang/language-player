@@ -233,7 +233,9 @@
         "no_active_subscription": "Hakuna usajili amilifu uliopatikana.",
         "loading": "Kupakia...",
         "auto_renews_in": "Kusasisha kiotomatiki katika siku {{days}}",
-        "expires_in": "Inaisha katika siku {{days}}"
+        "expires_in": "Inaisha katika siku {{days}}",
+        "or_register_with": "Aujiandikisha na:",
+        "already_have_account": "Tayari una akaunti?"
     },
     "title": {
         "email": "Barua pepe",
@@ -259,6 +261,19 @@
         "upgrade": "Kuboresha",
         "cancel": "Katisha",
         "confirm_cancellation": "Thibitisha Kughairi",
-        "keep_subscription": "Weka Usajili"
+        "keep_subscription": "Weka Usajili",
+        "register": "Jisajili",
+        "login": "Kuingia"
+    },
+    "placeholder": {
+        "first_name": "Jina la kwanza",
+        "last_name": "Jina la mwisho",
+        "email": "Barua pepe",
+        "password": "Nywila",
+        "confirm_password": "Thibitisha Nywila"
+    },
+    "error": {
+        "passwords_do_not_match": "Maneno ya siri hayalingani",
+        "registration_failed": "Kusajiliwa kushindwa"
     }
 }

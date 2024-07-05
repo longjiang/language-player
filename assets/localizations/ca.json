@@ -233,7 +233,9 @@
         "no_active_subscription": "No s'ha trobat cap subscripció activa.",
         "loading": "Càrrega...",
         "auto_renews_in": "Es renova automàticament en {{days}} dies",
-        "expires_in": "Caduca en {{days}} dies"
+        "expires_in": "Caduca en {{days}} dies",
+        "or_register_with": "O registrau amb:",
+        "already_have_account": "Ja tens un compte?"
     },
     "title": {
         "email": "Correu electrònic",
@@ -259,6 +261,19 @@
         "upgrade": "Rampa",
         "cancel": "Cancel·lar",
         "confirm_cancellation": "Confirmeu la cancel·lació",
-        "keep_subscription": "Mantenir subscripció"
+        "keep_subscription": "Mantenir subscripció",
+        "register": "Registrar",
+        "login": "Connexió"
+    },
+    "placeholder": {
+        "first_name": "Primer nom",
+        "last_name": "Cognom",
+        "email": "Correu electrònic",
+        "password": "Contrasenya",
+        "confirm_password": "Confirma la contrasenya"
+    },
+    "error": {
+        "passwords_do_not_match": "Les contrasenyes no coincideixen",
+        "registration_failed": "El registre ha fallat"
     }
 }

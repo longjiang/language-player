@@ -233,7 +233,9 @@
         "no_active_subscription": "Ingen aktiv prenumeration hittades.",
         "loading": "Lastning...",
         "auto_renews_in": "Förnyas automatiskt om {{days}} dagar",
-        "expires_in": "Går ut om {{days}} dagar"
+        "expires_in": "Går ut om {{days}} dagar",
+        "or_register_with": "Eller registrera dig med:",
+        "already_have_account": "Har du redan ett konto?"
     },
     "title": {
         "email": "E-post",
@@ -259,6 +261,19 @@
         "upgrade": "Uppgradera",
         "cancel": "Annullera",
         "confirm_cancellation": "Bekräfta avbokning",
-        "keep_subscription": "Behåll prenumeration"
+        "keep_subscription": "Behåll prenumeration",
+        "register": "Registrera dig",
+        "login": "Logga in"
+    },
+    "placeholder": {
+        "first_name": "Förnamn",
+        "last_name": "Efternamn",
+        "email": "E-post",
+        "password": "Lösenord",
+        "confirm_password": "Bekräfta lösenord"
+    },
+    "error": {
+        "passwords_do_not_match": "Lösenorden matchar inte",
+        "registration_failed": "Registreringen misslyckades"
     }
 }

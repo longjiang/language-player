@@ -233,7 +233,9 @@
         "no_active_subscription": "No active subscription found.",
         "loading": "Loading...",
         "auto_renews_in": "Auto renews in {{days}} days",
-        "expires_in": "Expires in {{days}} days"
+        "expires_in": "Expires in {{days}} days",
+        "or_register_with": "Or register with:",
+        "already_have_account": "Already have an account?"
     },
     "title": {
         "email": "Email",
@@ -259,6 +261,19 @@
         "upgrade": "Upgrade",
         "cancel": "Cancel",
         "confirm_cancellation": "Confirm Cancellation",
-        "keep_subscription": "Keep Subscription"
+        "keep_subscription": "Keep Subscription",
+        "register": "Register",
+        "login": "Login"
+    },
+    "placeholder": {
+        "first_name": "First",
+        "last_name": "Last",
+        "email": "Email",
+        "password": "Password",
+        "confirm_password": "Confirm Password"
+    },
+    "error": {
+        "passwords_do_not_match": "Passwords do not match",
+        "registration_failed": "Registration failed"
     }
 }

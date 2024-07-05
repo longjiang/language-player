@@ -233,7 +233,9 @@
         "no_active_subscription": "Aktiivista tilausta ei löytynyt.",
         "loading": "Lastaaminen...",
         "auto_renews_in": "Automaattinen uusiminen {{days}} päivässä",
-        "expires_in": "Vanhenee {{days}} päivässä"
+        "expires_in": "Vanhenee {{days}} päivässä",
+        "or_register_with": "Tai rekisteröidy:",
+        "already_have_account": "Onko sinulla jo tili?"
     },
     "title": {
         "email": "Sähköposti",
@@ -259,6 +261,19 @@
         "upgrade": "Päivittää",
         "cancel": "Perua",
         "confirm_cancellation": "Vahvista peruutus",
-        "keep_subscription": "Pidä tilaus"
+        "keep_subscription": "Pidä tilaus",
+        "register": "Rekisteröidy",
+        "login": "Sisäänkirjautuminen"
+    },
+    "placeholder": {
+        "first_name": "Etunimi",
+        "last_name": "Sukunimi",
+        "email": "Sähköposti",
+        "password": "Salasana",
+        "confirm_password": "Vahvista salasana"
+    },
+    "error": {
+        "passwords_do_not_match": "Salasanat eivät täsmää",
+        "registration_failed": "Rekisteröinti epäonnistui"
     }
 }

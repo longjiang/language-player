@@ -233,7 +233,9 @@
         "no_active_subscription": "Finner ikke noe aktivt abonnement.",
         "loading": "Lasting...",
         "auto_renews_in": "Automatisk fornyelse på {{days}} dager",
-        "expires_in": "Utløper om {{days}} dager"
+        "expires_in": "Utløper om {{days}} dager",
+        "or_register_with": "Eller registrer deg med:",
+        "already_have_account": "Har du allerede en konto?"
     },
     "title": {
         "email": "E-post",
@@ -259,6 +261,19 @@
         "upgrade": "Oppgradere",
         "cancel": "Annullere",
         "confirm_cancellation": "Bekreft kansellering",
-        "keep_subscription": "Behold abonnement"
+        "keep_subscription": "Behold abonnement",
+        "register": "Registrer deg",
+        "login": "Pålogging"
+    },
+    "placeholder": {
+        "first_name": "Fornavn",
+        "last_name": "Achternavn",
+        "email": "E-post",
+        "password": "Passord",
+        "confirm_password": "Bekreft passord"
+    },
+    "error": {
+        "passwords_do_not_match": "Passordene stemmer ikke overens",
+        "registration_failed": "Registreringen mislyktes"
     }
 }

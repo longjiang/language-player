@@ -233,7 +233,9 @@
         "no_active_subscription": "Níor aimsíodh aon síntiús gníomhach.",
         "loading": "Á Luchtú...",
         "auto_renews_in": "Auto renews in {{days}} days",
-        "expires_in": "Expires in {{days}} days"
+        "expires_in": "Expires in {{days}} days",
+        "or_register_with": "Nó cláraigh le:",
+        "already_have_account": "An bhfuil cuntas agat cheana féin?"
     },
     "title": {
         "email": "Ríomhphost",
@@ -259,6 +261,19 @@
         "upgrade": "Uasghrádú",
         "cancel": "Cuir ar ceal",
         "confirm_cancellation": "Deimhnigh cealú",
-        "keep_subscription": "Coinnigh Síntiús"
+        "keep_subscription": "Coinnigh Síntiús",
+        "register": "Cláraigh",
+        "login": "Logáil isteach"
+    },
+    "placeholder": {
+        "first_name": "Ainm",
+        "last_name": "Ainm deiridh",
+        "email": "Ríomhphost",
+        "password": "Pasfhocal",
+        "confirm_password": "Deimhnigh an Pasfhocal"
+    },
+    "error": {
+        "passwords_do_not_match": "Níl na pasfhocail comhtháite",
+        "registration_failed": "Níor éirigh le clárú"
     }
 }

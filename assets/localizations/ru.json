@@ -233,7 +233,9 @@
         "no_active_subscription": "Активная подписка не найдена.",
         "loading": "Погрузка...",
         "auto_renews_in": "Автоматическое продление через {{days}} дней",
-        "expires_in": "Срок действия истекает через {{days}} дней"
+        "expires_in": "Срок действия истекает через {{days}} дней",
+        "or_register_with": "Или зарегистрируйтесь с помощью:",
+        "already_have_account": "У вас уже есть учетная запись?"
     },
     "title": {
         "email": "Отправить по электронной почте",
@@ -259,6 +261,19 @@
         "upgrade": "Модернизировать",
         "cancel": "Отмена",
         "confirm_cancellation": "Подтвердить отмену",
-        "keep_subscription": "Сохранить подписку"
+        "keep_subscription": "Сохранить подписку",
+        "register": "Регистрация",
+        "login": "Логин"
+    },
+    "placeholder": {
+        "first_name": "Имя",
+        "last_name": "Фамилия",
+        "email": "Почта",
+        "password": "Пароль",
+        "confirm_password": "Подтвердите пароль"
+    },
+    "error": {
+        "passwords_do_not_match": "Пароли не совпадают",
+        "registration_failed": "Регистрация не удалась"
     }
 }

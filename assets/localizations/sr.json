@@ -233,7 +233,9 @@
         "no_active_subscription": "Aktivna pretplata nije pronađena.",
         "loading": "Učitavanje...",
         "auto_renews_in": "Automatsko obnavljanje u {{days}} dana",
-        "expires_in": "Ističe u {{days}} dana"
+        "expires_in": "Ističe u {{days}} dana",
+        "or_register_with": "Ili se registrirajte sa:",
+        "already_have_account": "Već imate nalog?"
     },
     "title": {
         "email": "E-pošta",
@@ -259,6 +261,19 @@
         "upgrade": "Nadogradnju",
         "cancel": "Otkaži",
         "confirm_cancellation": "Potvrda otkazivanja",
-        "keep_subscription": "Zadrži pretplatu"
+        "keep_subscription": "Zadrži pretplatu",
+        "register": "Registrujte se",
+        "login": "Prijavljivanje"
+    },
+    "placeholder": {
+        "first_name": "Ime",
+        "last_name": "Prezime",
+        "email": "Email",
+        "password": "Lozinka",
+        "confirm_password": "Potvrdi lozinku"
+    },
+    "error": {
+        "passwords_do_not_match": "Lozinke se ne podudaraju",
+        "registration_failed": "Registracija nije uspela"
     }
 }

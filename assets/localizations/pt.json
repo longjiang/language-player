@@ -233,7 +233,9 @@
         "no_active_subscription": "Nenhuma assinatura ativa encontrada.",
         "loading": "Carregamento...",
         "auto_renews_in": "Renovação automática em {{days}} dias",
-        "expires_in": "Expira em {{days}} dias"
+        "expires_in": "Expira em {{days}} dias",
+        "or_register_with": "Ou registre-se com:",
+        "already_have_account": "Já tem uma conta?"
     },
     "title": {
         "email": "Email",
@@ -259,6 +261,19 @@
         "upgrade": "Melhoramento",
         "cancel": "Cancelar",
         "confirm_cancellation": "Confirme o cancelamento",
-        "keep_subscription": "Manter assinatura"
+        "keep_subscription": "Manter assinatura",
+        "register": "Registrar",
+        "login": "Login"
+    },
+    "placeholder": {
+        "first_name": "Primeiro",
+        "last_name": "Sobrenome",
+        "email": "Email",
+        "password": "Senha",
+        "confirm_password": "Confirmar senha"
+    },
+    "error": {
+        "passwords_do_not_match": "Senhas não correspondem",
+        "registration_failed": "Registro falhou"
     }
 }

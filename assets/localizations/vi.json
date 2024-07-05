@@ -233,7 +233,9 @@
         "no_active_subscription": "Không tìm thấy đăng ký đang hoạt động.",
         "loading": "Tải...",
         "auto_renews_in": "Tự động gia hạn sau {{days}} ngày",
-        "expires_in": "Hết hạn sau {{days}} ngày"
+        "expires_in": "Hết hạn sau {{days}} ngày",
+        "or_register_with": "Hoặc đăng ký bằng:",
+        "already_have_account": "Bạn đã có tài khoản chưa?"
     },
     "title": {
         "email": "Email",
@@ -249,12 +251,29 @@
         "delete_my_account": "Xóa tài khoản của tôi",
         "privacy_policy": "Chính sách bảo mật",
         "current_plan": "Kế hoạch hiện tại",
-        "best_value": "Giá trị tốt nhất"
+        "best_value": "Giá trị tốt nhất",
+        "monthly": "Nguyệt san",
+        "annual": "Thường niên",
+        "lifetime": "Đời",
+        "trial": "Thử nghiệm"
     },
     "action": {
         "upgrade": "Nâng cấp",
         "cancel": "Hủy",
         "confirm_cancellation": "Xác nhận hủy",
-        "keep_subscription": "Giữ đăng ký"
+        "keep_subscription": "Giữ đăng ký",
+        "register": "Đăng ký",
+        "login": "Đăng nhập"
+    },
+    "placeholder": {
+        "first_name": "Tên",
+        "last_name": "Họ",
+        "email": "Email",
+        "password": "Mật khẩu",
+        "confirm_password": "Xác nhận mật khẩu"
+    },
+    "error": {
+        "passwords_do_not_match": "Mật khẩu không khớp",
+        "registration_failed": "Đăng ký thất bại"
     }
 }

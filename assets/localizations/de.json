@@ -233,7 +233,9 @@
         "no_active_subscription": "Kein aktives Abonnement gefunden.",
         "loading": "Laden...",
         "auto_renews_in": "Automatische Verlängerung in {{days}} Tagen",
-        "expires_in": "Läuft in {{days}} Tagen ab"
+        "expires_in": "Läuft in {{days}} Tagen ab",
+        "or_register_with": "Oder registrieren Sie sich mit:",
+        "already_have_account": "Haben Sie bereits ein Konto?"
     },
     "title": {
         "email": "E-Mail",
@@ -259,6 +261,19 @@
         "upgrade": "Upgrade",
         "cancel": "Abbrechen",
         "confirm_cancellation": "Stornierung bestätigen",
-        "keep_subscription": "Abonnement beibehalten"
+        "keep_subscription": "Abonnement beibehalten",
+        "register": "Registrieren",
+        "login": "Einloggen"
+    },
+    "placeholder": {
+        "first_name": "Vorname",
+        "last_name": "Name",
+        "email": "E-Mail",
+        "password": "Passwort",
+        "confirm_password": "Passwort bestätigen"
+    },
+    "error": {
+        "passwords_do_not_match": "Passwörter stimmen nicht überein",
+        "registration_failed": "Registrierung fehlgeschlagen"
     }
 }

@@ -11,9 +11,11 @@ import { Link } from 'expo-router';
 import { router } from 'expo-router';
 import { registerUser } from '@/src/api/directus/user';
 import { sendVerificationEmail } from '@/src/api/python/verify-email';
-
+import { useLanguage } from "@/contexts/LanguageContext"; 
+import { registerScreenStyles as styles } from '@/src/styles';
 
 const RegisterScreen = () => {
+    const { t } = useLanguage();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -23,7 +25,7 @@ const RegisterScreen = () => {
 
     const handleRegister = async () => {
       if (password !== confirmPassword) {
-          Alert.alert('Error', 'Passwords do not match');
+          Alert.alert('Error', t('error.passwords_do_not_match'));
           return;
       }
 
@@ -33,7 +35,7 @@ const RegisterScreen = () => {
           await sendVerificationEmail(email);
           router.push({ pathname: '/verify-email', params: { email } });
       } catch (error) {
-          Alert.alert('Error', error.message);
+          Alert.alert('Error', t('error.registration_failed'));
       } finally {
           setLoading(false);
       }
@@ -41,7 +43,7 @@ const RegisterScreen = () => {
 
     return (
         <ThemedScreen
-          title="Register"
+          title={t('title.register')}
           onBackPress={() => router.navigate("/")}
           imageName={require("../assets/images/splash-image.png")}
           imageStyle={{ marginTop: -400 }}
@@ -51,13 +53,13 @@ const RegisterScreen = () => {
                     style={{...styles.input, flex: 1}}
                     onChangeText={setFirstName}
                     value={firstName}
-                    placeholder="First"
+                    placeholder={t('placeholder.first_name')}
                 />
                 <ThemedInput
                     style={{...styles.input, flex: 1}}
                     onChangeText={setLastName}
                     value={lastName}
-                    placeholder="Last"
+                    placeholder={t('placeholder.last_name')}
                     icon="account"
                 />
             </View>
@@ -65,7 +67,7 @@ const RegisterScreen = () => {
                 style={styles.input}
                 onChangeText={setEmail}
                 value={email}
-                placeholder="Email"
+                placeholder={t('placeholder.email')}
                 icon="email"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -74,7 +76,7 @@ const RegisterScreen = () => {
                 style={styles.input}
                 onChangeText={setPassword}
                 value={password}
-                placeholder="Password"
+                placeholder={t('placeholder.password')}
                 secureTextEntry
                 icon="lock"
             />
@@ -82,56 +84,24 @@ const RegisterScreen = () => {
                 style={styles.input}
                 onChangeText={setConfirmPassword}
                 value={confirmPassword}
-                placeholder="Confirm Password"
+                placeholder={t('placeholder.confirm_password')}
                 secureTextEntry
                 icon="lock"
             />
 
-            <ThemedButton title="Register" onPress={handleRegister} disabled={loading} />
+            <ThemedButton title={t('action.register')} onPress={handleRegister} disabled={loading} />
 
-            <ThemedText style={styles.orText}>Or register with:</ThemedText>
+            {/* <ThemedText style={styles.orText}>{t('msg.or_register_with')}</ThemedText>
             <View style={styles.socialButtons}>
                 <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="google" />} onPress={() => {}} />
                 <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="apple" />} onPress={() => {}} />
                 <ThemedButton type="neutral" size="large" style={styles.socialButton} trailingIcon={<Icon name="facebook" />} onPress={() => {}} />
-            </View>
+            </View> */}
             <TouchableOpacity style={styles.textButton}>
-                <ThemedText>Already have an account? <Link href='/login' style={{ color: useThemeColor({}, 'primaryLink'), fontWeight: 'bold' }}>Login</Link></ThemedText>
+                <ThemedText type="subtitle">{t('msg.already_have_account')} <Link href='/login' style={{ color: useThemeColor({}, 'primaryLink'), fontWeight: 'bold' }}>{t('action.login')}</Link></ThemedText>
             </TouchableOpacity>
         </ThemedScreen>
     );
 };
-
-const styles = StyleSheet.create({
-    input: {
-        marginBottom: 10,
-    },
-    textButton: {
-        marginTop: 10,
-        alignSelf: 'flex-start',
-    },
-    orText: {
-        textAlign: 'center',
-        color: 'white',
-        marginTop: 20,
-        marginBottom: 10,
-    },
-    socialButton: {
-        flex: 1, // Each button will take equal space
-        marginHorizontal: 4, // Add some space between buttons
-        marginBottom: 10,
-    },
-    socialButtons: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginTop: 10,
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        columnGap: 10,
-    },
-    // Make sure to adjust or add other styles as necessary
-});
 
 export default RegisterScreen;

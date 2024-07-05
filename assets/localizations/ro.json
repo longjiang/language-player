@@ -233,7 +233,9 @@
         "no_active_subscription": "Nu a fost găsit niciun abonament activ.",
         "loading": "Încărcare...",
         "auto_renews_in": "Reînnoiri automate în {{days}} zile",
-        "expires_in": "Expiră în {{days}} zile"
+        "expires_in": "Expiră în {{days}} zile",
+        "or_register_with": "Sau înregistrați-vă cu:",
+        "already_have_account": "Aveți deja un cont?"
     },
     "title": {
         "email": "E-mail",
@@ -259,6 +261,19 @@
         "upgrade": "Face upgrade",
         "cancel": "Anula",
         "confirm_cancellation": "Confirmați anularea",
-        "keep_subscription": "Păstrați abonamentul"
+        "keep_subscription": "Păstrați abonamentul",
+        "register": "Înregistrare",
+        "login": "Login"
+    },
+    "placeholder": {
+        "first_name": "Prenume",
+        "last_name": "Nume",
+        "email": "Email",
+        "password": "Parolă",
+        "confirm_password": "Confirmă parola"
+    },
+    "error": {
+        "passwords_do_not_match": "Parolele nu se potrivesc",
+        "registration_failed": "Înregistrarea a eșuat"
     }
 }

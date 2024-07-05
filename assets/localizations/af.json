@@ -233,7 +233,9 @@
         "no_active_subscription": "Geen aktiewe intekening gevind nie.",
         "loading": "Laai tans...",
         "auto_renews_in": "Auto renews in {{days}} dae",
-        "expires_in": "Verval in {{days}} dae"
+        "expires_in": "Verval in {{days}} dae",
+        "or_register_with": "Of registreer met:",
+        "already_have_account": "Het u reeds 'n rekening?"
     },
     "title": {
         "email": "E-pos",
@@ -259,6 +261,19 @@
         "upgrade": "Opgradering",
         "cancel": "Kanselleer",
         "confirm_cancellation": "Bevestig kansellasie",
-        "keep_subscription": "Hou intekening"
+        "keep_subscription": "Hou intekening",
+        "register": "Registreer",
+        "login": "Aanteken"
+    },
+    "placeholder": {
+        "first_name": "Voornaam",
+        "last_name": "Achternaam",
+        "email": "E-pos",
+        "password": "Wagwoord",
+        "confirm_password": "Bevestig wagwoord"
+    },
+    "error": {
+        "passwords_do_not_match": "Wagwoorde stem nie ooreen nie",
+        "registration_failed": "Registrasie het misluk"
     }
 }

@@ -233,7 +233,9 @@
         "no_active_subscription": "Nie znaleziono aktywnej subskrypcji.",
         "loading": "Ładowania...",
         "auto_renews_in": "Automatyczne odnawianie za {{days}} dni",
-        "expires_in": "Wygasa za {{days}} dni"
+        "expires_in": "Wygasa za {{days}} dni",
+        "or_register_with": "Lub zarejestruj się za pomocą:",
+        "already_have_account": "Masz już konto?"
     },
     "title": {
         "email": "E-mail",
@@ -259,6 +261,19 @@
         "upgrade": "Upgrade",
         "cancel": "Anuluj",
         "confirm_cancellation": "Potwierdź anulowanie",
-        "keep_subscription": "Zachowaj subskrypcję"
+        "keep_subscription": "Zachowaj subskrypcję",
+        "register": "Zarejestruj się",
+        "login": "Login"
+    },
+    "placeholder": {
+        "first_name": "Imię",
+        "last_name": "Nazwisko",
+        "email": "Email",
+        "password": "Hasło",
+        "confirm_password": "Potwierdź hasło"
+    },
+    "error": {
+        "passwords_do_not_match": "Hasła nie pasują",
+        "registration_failed": "Rejestracja nie powiodła się"
     }
 }

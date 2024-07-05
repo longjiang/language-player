@@ -233,7 +233,9 @@
         "no_active_subscription": "कोई सक्रिय सदस्यता नहीं मिली.",
         "loading": "लोड।।।",
         "auto_renews_in": "{{days}} दिनों में ऑटो नवीनीकरण",
-        "expires_in": "{{days}} दिनों में समाप्त हो रहा है"
+        "expires_in": "{{days}} दिनों में समाप्त हो रहा है",
+        "or_register_with": "या इसके साथ रजिस्टर करें:",
+        "already_have_account": "क्या आपके पास पहले से ही खाता है?"
     },
     "title": {
         "email": "ईमेल",
@@ -259,6 +261,19 @@
         "upgrade": "अपग्रेड",
         "cancel": "रद्द करना",
         "confirm_cancellation": "रद्द करने की पुष्टि करें",
-        "keep_subscription": "सदस्यता रखें"
+        "keep_subscription": "सदस्यता रखें",
+        "register": "रजिस्टर",
+        "login": "लॉगिन"
+    },
+    "placeholder": {
+        "first_name": "पहला",
+        "last_name": "अंतिम",
+        "email": "ईमेल",
+        "password": "पासवर्ड",
+        "confirm_password": "पासवर्ड की पुष्टि करें"
+    },
+    "error": {
+        "passwords_do_not_match": "पासवर्ड मेल नहीं खाते",
+        "registration_failed": "पंजीकरण विफल हुआ"
     }
 }

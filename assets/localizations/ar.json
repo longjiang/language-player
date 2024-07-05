@@ -233,7 +233,9 @@
         "no_active_subscription": "لم يتم العثور على اشتراك نشط.",
         "loading": "تحميل...",
         "auto_renews_in": "التجديد التلقائي في {{days}} أيام",
-        "expires_in": "تنتهي صلاحيتها بعد {{days}} يوم"
+        "expires_in": "تنتهي صلاحيتها بعد {{days}} يوم",
+        "or_register_with": "أو سجل بواسطة:",
+        "already_have_account": "هل لديك حساب بالفعل؟"
     },
     "title": {
         "email": "البريد الإلكتروني",
@@ -259,6 +261,19 @@
         "upgrade": "ترقيه",
         "cancel": "إلغاء الأمر",
         "confirm_cancellation": "تأكيد الإلغاء",
-        "keep_subscription": "حافظ على الاشتراك"
+        "keep_subscription": "حافظ على الاشتراك",
+        "register": "سجل",
+        "login": "تسجيل الدخول"
+    },
+    "placeholder": {
+        "first_name": "الاسم الأول",
+        "last_name": "الاسم الأخير",
+        "email": "البريد الإلكتروني",
+        "password": "كلمة السر",
+        "confirm_password": "تأكيد كلمة المرور"
+    },
+    "error": {
+        "passwords_do_not_match": "كلمات المرور غير متطابقة",
+        "registration_failed": "فشل التسجيل"
     }
 }

@@ -233,7 +233,9 @@
         "no_active_subscription": "Δεν βρέθηκε ενεργή συνδρομή.",
         "loading": "Φόρτωση...",
         "auto_renews_in": "Αυτόματη ανανέωση σε {{days}} ημέρες",
-        "expires_in": "Λήγει σε {{days}} ημέρες"
+        "expires_in": "Λήγει σε {{days}} ημέρες",
+        "or_register_with": "Ή εγγραφείτε με:",
+        "already_have_account": "Έχετε ήδη λογαριασμό;"
     },
     "title": {
         "email": "Email",
@@ -259,6 +261,19 @@
         "upgrade": "Αναβαθμίζω",
         "cancel": "Ακυρώνω",
         "confirm_cancellation": "Επιβεβαίωση ακύρωσης",
-        "keep_subscription": "Διατήρηση συνδρομής"
+        "keep_subscription": "Διατήρηση συνδρομής",
+        "register": "Εγγραφή",
+        "login": "Σύνδεση"
+    },
+    "placeholder": {
+        "first_name": "Όνομα",
+        "last_name": "Επώνυμο",
+        "email": "Ηλεκτρονικό ταχυδρομείο",
+        "password": "Κωδικός πρόσβασης",
+        "confirm_password": "Επιβεβαίωση κωδικού πρόσβασης"
+    },
+    "error": {
+        "passwords_do_not_match": "Οι κωδικοί πρόσβασης δεν ταιριάζουν",
+        "registration_failed": "Η εγγραφή απέτυχε"
     }
 }

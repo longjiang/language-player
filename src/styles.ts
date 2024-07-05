@@ -431,3 +431,36 @@ export const themedScreenStyles = StyleSheet.create({
     marginBottom: 20,
   },
 });
+
+
+
+export const registerScreenStyles = StyleSheet.create({
+  input: {
+      marginBottom: 10,
+  },
+  textButton: {
+      marginTop: 26,
+      alignSelf: 'flex-start',
+  },
+  orText: {
+      textAlign: 'center',
+      color: 'white',
+      marginTop: 20,
+      marginBottom: 10,
+  },
+  socialButton: {
+      flex: 1,
+      marginHorizontal: 4,
+      marginBottom: 10,
+  },
+  socialButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      columnGap: 10,
+  },
+});

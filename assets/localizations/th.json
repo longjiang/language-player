@@ -233,7 +233,9 @@
         "no_active_subscription": "ไม่พบการสมัครสมาชิกที่ใช้งานอยู่",
         "loading": "การโหลด   ",
         "auto_renews_in": "ต่ออายุอัตโนมัติใน {{days}} วัน",
-        "expires_in": "หมดอายุใน {{days}} วัน"
+        "expires_in": "หมดอายุใน {{days}} วัน",
+        "or_register_with": "หรือลงทะเบียนด้วย:",
+        "already_have_account": "คุณมีบัญชีอยู่แล้วหรือไม่?"
     },
     "title": {
         "email": "อีเมล",
@@ -259,6 +261,19 @@
         "upgrade": "อัพ เกรด",
         "cancel": "ยกเลิก",
         "confirm_cancellation": "ยืนยันการยกเลิก",
-        "keep_subscription": "สมัครสมาชิกต่อไป"
+        "keep_subscription": "สมัครสมาชิกต่อไป",
+        "register": "ลงทะเบียน",
+        "login": "เข้า สู่ ระบบ"
+    },
+    "placeholder": {
+        "first_name": "ชื่อจริง",
+        "last_name": "นามสกุล",
+        "email": "อีเมล",
+        "password": "รหัสผ่าน",
+        "confirm_password": "ยืนยันรหัสผ่าน"
+    },
+    "error": {
+        "passwords_do_not_match": "Mật khẩu không khớp",
+        "registration_failed": "การลงทะเบียนล้มเหลว"
     }
 }
