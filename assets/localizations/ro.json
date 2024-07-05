@@ -460,7 +460,7 @@
     },
     "chatgpt": {
         "prompt": {
-            "base": "Explicați succint folosind {{l1Name}}, ce înseamnă cuvântul {{l2Name}} ({{l2Code}}) din expresia \"{{PLACEHOLDER3 PLACEHOLDER4}}}\".",
+            "base": "Explicați succint folosind {{l1Name}}, ce înseamnă cuvântul {{l2Name}} ({{l2Code}}) din expresia \"{{PLACEHOLDER3 PLACEHOLDER4}}\".",
             "inflection": "Dați-i lema, inflexiunea și morfologia."
         }
     },

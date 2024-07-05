@@ -369,7 +369,7 @@
         "please_specify": "Veuillez préciser",
         "more_languages": "Plus de langues ({{count}})",
         "select_language": "Sélectionnez une langue",
-        "dict_search": "Recherchez {{l2Name}}, {{altField}} ou {{dictL1Name}}}...",
+        "dict_search": "Recherchez {{l2Name}}, {{altField}} ou {{dictL1Name}}...",
         "search": "Rechercher..."
     },
     "error": {
@@ -461,7 +461,7 @@
     },
     "chatgpt": {
         "prompt": {
-            "base": "Expliquez succinctement en utilisant {{l1Name}}, ce que le mot {{l2Name}}} ({{l2Code}}}) '{{word}}' signifie dans l’expression '{{text}}'.",
+            "base": "Expliquez succinctement en utilisant {{l1Name}}, ce que le mot {{l2Name}} ({{l2Code}}) '{{word}}' signifie dans l’expression '{{text}}'.",
             "inflection": "Donnez son lemme, son inflexion et sa morphologie."
         }
     },

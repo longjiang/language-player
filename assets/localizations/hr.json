@@ -461,7 +461,7 @@
     },
     "chatgpt": {
         "prompt": {
-            "base": "Sažeto objasnite koristeći {{{l1Name}}, što {{l2Name}} ({{l2Code}}) znači riječ '{{{word}}' u izrazu '{{{text}}'.",
+            "base": "Sažeto objasnite koristeći {{l1Name}}, što {{l2Name}} ({{l2Code}}) znači riječ '{{word}}' u izrazu '{{text}}'.",
             "inflection": "Dajte mu lemmu, infleksiju i morfologiju."
         }
     },

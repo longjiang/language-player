@@ -43,7 +43,7 @@ const LoginScreen = () => {
                 style={styles.input}
                 onChangeText={setEmail}
                 value={email}
-                placeholder="title.email"
+                placeholder={t('title.email')}
                 icon="email"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -52,7 +52,7 @@ const LoginScreen = () => {
                 style={styles.input}
                 onChangeText={setPassword}
                 value={password}
-                placeholder="title.password"
+                placeholder={t('title.password')}
                 secureTextEntry
                 icon="lock"
             />

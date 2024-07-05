@@ -460,7 +460,7 @@
     },
     "chatgpt": {
         "prompt": {
-            "base": "Zwięźle wyjaśnij, używając {{l1Name}}, co oznacza słowo {{l2Name}} ({{l2Code}}) \"{{word}}\" w wyrażeniu \"{{text}}}\".",
+            "base": "Zwięźle wyjaśnij, używając {{l1Name}}, co oznacza słowo {{l2Name}} ({{l2Code}}) \"{{word}}\" w wyrażeniu \"{{text}}\".",
             "inflection": "Podaj jego lemat, fleksję i morfologię."
         }
     },

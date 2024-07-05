@@ -368,7 +368,7 @@
         "please_specify": "Navedite",
         "more_languages": "Više jezika ({{count}})",
         "select_language": "Dil seçin",
-        "dict_search": "Pretraga {{l2Name}}, {{altField}} ili {{dictL1Name}}}",
+        "dict_search": "Pretraga {{l2Name}}, {{altField}} ili {{dictL1Name}}",
         "search": "Ara..."
     },
     "error": {

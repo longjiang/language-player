@@ -29,7 +29,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       if (userInfo && userInfo.id) {
         const authToken = await SecureStore.getItemAsync("authToken");
-        if (!authToken) throw new Error("Failed to retrieve stored auth token");
+        if (!authToken) throw new Error("Error fetching subscription. Failed to retrieve stored auth token");
         const fetchedSubscription = await getUserSubscription(userInfo.id, authToken);
         if (fetchedSubscription) {
           setSubscription(fetchedSubscription);

@@ -10,6 +10,8 @@ import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptCon
 import { SyncedLine } from "@/types";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+const MAX_FREE_LINES = 10;
+
 interface VideoWithTranscriptProps {
   isMini: boolean;
   showHeader?: boolean;
@@ -35,7 +37,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   );
 
   useEffect(() => {
-    if (isProCheckEnabled && !isProUser() && currentLineIndex > 2 && !hasShownModalRef.current) {
+    if (isProCheckEnabled && !isProUser() && currentLineIndex >= MAX_FREE_LINES && !hasShownModalRef.current) {
       setShowProModal(true);
       hasShownModalRef.current = true;
     }
@@ -48,7 +50,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   return (
     <View>
       {!isMini ? (
-        <VideoWithTranscriptFull showHeader={showHeader} transcriptLimitReached={isProCheckEnabled && !isProUser() && currentLineIndex > 2} />
+        <VideoWithTranscriptFull showHeader={showHeader} transcriptLimitReached={isProCheckEnabled && !isProUser() && currentLineIndex >= MAX_FREE_LINES} />
       ) : (
         <VideoWithTranscriptMini />
       )}

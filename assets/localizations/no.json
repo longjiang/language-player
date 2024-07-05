@@ -460,7 +460,7 @@
     },
     "chatgpt": {
         "prompt": {
-            "base": "Forklar kortfattet med {{l1Name}}, hva ordet {{l2Name}} ({{l2Code}}) betyr i uttrykket '{{PLACEHOLDER3 PLACEHOLDER4}}}'.",
+            "base": "Forklar kortfattet med {{l1Name}}, hva ordet {{l2Name}} ({{l2Code}}) betyr i uttrykket '{{PLACEHOLDER3 PLACEHOLDER4}}'.",
             "inflection": "Gi dens lemma, bøyning og morfologi."
         }
     },

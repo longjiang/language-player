@@ -45,7 +45,7 @@ export async function checkToken(token: string) {
 }
 
 export async function fetchUserInfo(token: string) {
-    const response = await fetch(`${DIRECTUS_URL}/users/me`, {
+    const response = await fetch(`${DIRECTUS_URL}/users/me?_=${new Date().getTime()}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }

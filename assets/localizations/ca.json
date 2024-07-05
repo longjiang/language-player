@@ -367,7 +367,7 @@
         "password": "Contrasenya",
         "confirm_password": "Confirma la contrasenya",
         "please_specify": "Especifiqueu",
-        "more_languages": "Més idiomes ({{count}}})",
+        "more_languages": "Més idiomes ({{count}})",
         "select_language": "Selecciona un idioma",
         "dict_search": "Cerca {{l2Name}}, {{altField}} o {{dictL1Name}}...",
         "search": "Cerca..."

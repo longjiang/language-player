@@ -14,6 +14,8 @@ import { ProFeatureModal } from "./ProFeatureModal";
 import { timeout } from "@/src/utils";
 import { useLanguage } from '@/contexts/LanguageContext';
 
+const MAX_FREE_SUBS_SEARCH_RESULTS = 3;
+
 export const SubsSearchResults = ({ term }: { term: string }) => {
   const { video, syncedLines, playlist, updateStartTime, currentVideoIndex, skipToVideo } =
     useVideoWithTranscriptContext();
@@ -25,7 +27,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   const { t } = useLanguage();
 
   useEffect(() => {
-    if (!isProUser() && currentVideoIndex > 2) {
+    if (!isProUser() && currentVideoIndex >= MAX_FREE_SUBS_SEARCH_RESULTS) {
       setShowProModal(true);
       skipToVideo(previousIndexRef.current); // Revert to previous index
     } else {
@@ -39,7 +41,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
 
   const onSelect = async (index: number) => {
     refRBSheet.current.close();
-    if (!isProUser() && index > 2) {
+    if (!isProUser() && index >= MAX_FREE_SUBS_SEARCH_RESULTS) {
       await timeout(1000);
       setShowProModal(true);
       skipToVideo(previousIndexRef.current); // Revert to previous index
