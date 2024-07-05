@@ -1,8 +1,8 @@
-// @/src/tokenizer.ts
 import { PYTHON_SERVER } from "@/src/api/python"
 import { Language } from '@/src/languages';
 import LocalTokenizer from './local-tokenizer';
 import { tokenizers } from './tokenizer-list';
+import CryptoJS from 'crypto-js';
 
 export interface Lemma {
   lemma: string;
@@ -54,8 +54,13 @@ export class TokenizerService {
     return TokenizerService.instance;
   }
 
+  private generateCacheKey(text: string, languageCode: string): string {
+    const hash = CryptoJS.MD5(`${languageCode}:${text}`).toString();
+    return hash;
+  }
+
   public async fetchTokens(tokenizer: Tokenizer, text: string, l2Lang: Language): Promise<Token[]> {
-    const uri = `${PYTHON_SERVER}/${tokenizer.endPoint}?text=${encodeURIComponent(text)}&lang=${l2Lang.iso639_3}`
+    const uri = `${PYTHON_SERVER}/${tokenizer.endPoint}?text=${encodeURIComponent(text)}&lang=${l2Lang.iso639_3}`;
     const response = await fetch(uri);
     const tokenData = await response.json();
 
@@ -63,19 +68,26 @@ export class TokenizerService {
   }
 
   public async tokenize(text: string, l2Lang: Language): Promise<Token[] | undefined> {
-    const cacheKey = `${l2Lang.code}:${text}`;
+    const cacheKey = this.generateCacheKey(text, l2Lang.code);
     if (this.cache.has(cacheKey)) {
+      console.log("🍎 Loading from cache:", cacheKey);
       return this.cache.get(cacheKey);
     }
 
     try {
       let tokens: Token[] | undefined = undefined;
-      const remoteTokenizer = getTokenizer(l2Lang.code)
-      if (remoteTokenizer) tokens = await this.fetchTokens(remoteTokenizer, text, l2Lang);
-      else tokens = await this.localTokenizer.tokenize(text, l2Lang);
+      const remoteTokenizer = getTokenizer(l2Lang.code);
+      if (remoteTokenizer) {
+        console.log("🍌 Fetching from remote tokenizer:", cacheKey);
+        tokens = await this.fetchTokens(remoteTokenizer, text, l2Lang);
+      } else {
+        console.log("🍊 Tokenizing locally:", cacheKey);
+        tokens = await this.localTokenizer.tokenize(text, l2Lang);
+      }
 
       // Cache the results
       this.cache.set(cacheKey, tokens || []);
+      console.log("🍓 Caching result:", cacheKey);
       return tokens;
     } catch (error) {
       console.error("Error fetching tokens:", error);

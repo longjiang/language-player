@@ -19,7 +19,6 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
   textWeight, 
   align = 'left' 
 }) => {
-  console.log('🍎 TokenizedText rendering:', text);
 
   const tokensRef = useRef<Array<{ text: string }>>([]);
   const { tokenizer } = useDictionary();
