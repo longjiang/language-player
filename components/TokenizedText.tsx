@@ -1,8 +1,9 @@
-import React, { useRef, useLayoutEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Token } from './Token'; // Adjust this import path if needed
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ThemedText } from './ThemedText';
 
 interface TokenizedTextProps {
   text: string;
@@ -19,19 +20,18 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
   textWeight, 
   align = 'left' 
 }) => {
-
-  const tokensRef = useRef<Array<{ text: string }>>([]);
+  const [tokens, setTokens] = useState<Array<{ text: string }>>([]);
   const { tokenizer } = useDictionary();
   const { l2Lang } = useLanguage();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const tokenizeText = async () => {
       try {
         const result = await tokenizer.tokenize(text, l2Lang);
-        tokensRef.current = result;
+        setTokens(result);
       } catch (error) {
         console.error('Tokenization error:', error);
-        tokensRef.current = [{ text }]; // Fallback to treating the entire text as one token
+        setTokens([{ text }]); // Fallback to treating the entire text as one token
       }
     };
 
@@ -40,11 +40,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
 
   return (
     <View style={[styles.container, { alignItems: align }]}>
-      {tokensRef.current.map((token, index) => (
+      {tokens.map((token, index) => (
         <Token 
           key={index} 
           token={token} 
-          l2Lang={l2Lang} 
           textScale={textScale}
           textWeight={textWeight}
           context={text}
