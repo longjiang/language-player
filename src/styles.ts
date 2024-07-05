@@ -464,3 +464,30 @@ export const registerScreenStyles = StyleSheet.create({
       columnGap: 10,
   },
 });
+
+
+export const mediaHomeScreenStyles = StyleSheet.create({
+  container: {
+    padding: 26
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 26,
+  },
+  logo: {
+    width: 32,
+    height: 32
+  },
+  headerTitle: {
+    marginLeft: 10,
+  },
+  iconsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  }
+});

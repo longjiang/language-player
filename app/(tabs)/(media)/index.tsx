@@ -8,16 +8,13 @@ import { ThemedText } from '@/components/ThemedText';
 import CountryFlag from "react-native-country-flag";
 import { router } from "expo-router";
 import { YouTubeVideoList } from "@/components/YouTubeVideoList";
-import videoData from '@/data/recommended-videos.json'; // Importing the JSON data
-import { parseDuration } from '@/src/utils';
 import { YouTubeVideo } from '@/types';
 import { normalizeVideoData } from "@/src/api/directus/youtube-video"
 import { recommendVideos } from "@/src/api/python/video";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUserData } from "@/contexts/UserDataContext";
 import { useAuth } from "@/contexts/AuthContext";
-
-const videos = videoData.map((video: any) => normalizeVideoData(video))
+import { mediaHomeScreenStyles as styles } from "@/src/styles";
 
 const MediaHomeScreen = () => {
   const { languages, i18n, l2Lang, t } = useLanguage();
@@ -120,31 +117,5 @@ const MediaHomeScreen = () => {
     <YouTubeVideoList videos={items} header={headerComponent} style={{ marginHorizontal: 26, marginBottom: 26 }} />
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 26
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    position: 'absolute',
-    top: 0,
-    left: 26,
-  },
-  logo: {
-    width: 32,
-    height: 32
-  },
-  headerTitle: {
-    marginLeft: 10,
-  },
-  iconsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  }
-});
 
 export default MediaHomeScreen;
