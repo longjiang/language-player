@@ -10,7 +10,7 @@ import { PopupDictionaryModal } from "./PopupDictionaryModal";
 import { Token as TokenType } from "@/src/tokenizer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDictionary } from "@/contexts/DictionaryContext";
-import { addFurigana, FuriganaSegment } from "@/src/furigana";
+import { addFurigana, Segment } from "@/src/furigana";
 
 export const Token: React.FC<{
   token: TokenType,
@@ -51,7 +51,7 @@ export const Token: React.FC<{
   return (
     <TouchableOpacity onPress={handleTokenPress}>
       <View style={styles.token}>
-        {displayContent.map((segment: FuriganaSegment, index: number) => (
+        {displayContent.map((segment: Segment, index: number) => (
           <View key={index} style={styles.segment}>
             {shouldShowPronunciation && segment.pronunciation !== segment.text && (
               <Text
