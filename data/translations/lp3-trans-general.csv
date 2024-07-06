@@ -212,3 +212,10 @@ button.purchase,Purchase,购买,購買,Koop
 button.processing,Processing...,处理中...,處理中...,Besig...
 msg.lifetime_only,"Only the Lifetime plan is available as an option for Apple In-App Purchase.","只有终身计划可作为Apple应用内购买的选项。","只有終身計劃可作為Apple應用內購買的選項。","Slegs die Lewenslange plan is beskikbaar as 'n opsie vir Apple In-App Aankope."
 button.switch_to_lifetime,"Switch to Lifetime","切换到终身计划","切換到終身計劃","Skakel oor na Lewenslank"
+title.only_lifetime_available,"Only the Lifetime Plan is available in the App Store","App Store中只提供终身计划","App Store中只提供終身計劃","Slegs die Lewenslange Plan is beskikbaar in die App Store"
+msg.subscription_explanation,"Currently, monthly and annual subscriptions are not supported as in-app purchase because our server can only handle one-time payments from Apple. To continue the purchase, please choose the Lifetime Plan.","目前，由于我们的服务器只能处理来自苹果的一次性付款，因此不支持月度和年度订阅作为应用内购买。要继续购买，请选择终身计划。","目前，由於我們的服務器只能處理來自蘋果的一次性付款，因此不支持月度和年度訂閱作為應用內購買。要繼續購買，請選擇終身計劃。","Tans word maandelikse en jaarlikse intekeninge nie as in-app aankope ondersteun nie, omdat ons bediener slegs eenmalige betalings van Apple kan hanteer. Om voort te gaan met die aankoop, kies asseblief die Lewenslange Plan."
+button.email_support,"Email Support","发邮件给客服","發郵件給客服","E-pos Ondersteuning"
+email.subject,"Support Request","客服请求","客服請求","Ondersteuningsversoek"
+email.body,"Please describe your issue or question.","请描述您的问题或疑问。","請描述您的問題或疑問。","Beskryf asseblief jou probleem of vraag."
+error.cannot_open_url,"Don't know how to open this URL:","不知道如何打开此URL：","不知道如何打開此URL：","Weet nie hoe om hierdie URL oop te maak nie:"
+error.occurred,"An error occurred","发生错误","發生錯誤","'n Fout het voorgekom"

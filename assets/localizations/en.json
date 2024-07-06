@@ -329,7 +329,9 @@
         "passwords_do_not_match": "Passwords do not match",
         "registration_failed": "Registration failed",
         "updating_progress": "Error updating progress:",
-        "user_info_not_found": "User info not found"
+        "user_info_not_found": "User info not found",
+        "cannot_open_url": "Don't know how to open this URL:",
+        "occurred": "An error occurred"
     },
     "feature": {
         "see_all_subtitles": "See all subtitles search results beyond the first three.",
@@ -435,7 +437,8 @@
         "what_your_first_language": "What’s your first language?",
         "with_pro_you_can": "With Pro, you can:",
         "purchase_confirmation": "Press \"Purchase\" and you will be asked to confirm your in-app purchase from the Apple App Store.",
-        "lifetime_only": "Only the Lifetime plan is available as an option for Apple In-App Purchase."
+        "lifetime_only": "Only the Lifetime plan is available as an option for Apple In-App Purchase.",
+        "subscription_explanation": "Currently, monthly and annual subscriptions are not supported as in-app purchase because our server can only handle one-time payments from Apple. To continue the purchase, please choose the Lifetime Plan."
     },
     "of": "of",
     "option": {
@@ -531,7 +534,8 @@
         "views": "{{numViews}} Views",
         "watch_history": "Watch History",
         "your_current_plan": "Your Current Plan",
-        "confirm_in_app_purchase": "Confirm Your In-App Purchase"
+        "confirm_in_app_purchase": "Confirm Your In-App Purchase",
+        "only_lifetime_available": "Only the Lifetime Plan is available in the App Store"
     },
     "video": {
         "comments": "Comments",
@@ -546,6 +550,11 @@
     "button": {
         "purchase": "Purchase",
         "processing": "Processing...",
-        "switch_to_lifetime": "Switch to Lifetime"
+        "switch_to_lifetime": "Switch to Lifetime",
+        "email_support": "Email Support"
+    },
+    "email": {
+        "subject": "Support Request",
+        "body": "Please describe your issue or question."
     }
 }

@@ -4,42 +4,40 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedButton } from "@/components/ThemedButton";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const OnlyLifetimePlan = () => {
   const semanticWarningColor = useThemeColor({}, "semanticWarning");
+  const { t } = useLanguage();
 
   return (
     <View style={styles.container}>
       <ThemedText type="subtitle" style={styles.centeredText}>
-        Only the Lifetime Plan is available in the App Store
+        {t('title.only_lifetime_available')}
       </ThemedText>
       <ThemedText style={styles.bodyText}>
-        Currently, monthly and annual subscriptions are not supported as in-app
-        purchase because our server can only handle one-time payments from
-        Apple. To continue the purchase, please choose the Lifetime Plan.
+        {t('msg.subscription_explanation')}
       </ThemedText>
       <ThemedButton
         type="neutral"
-        title="Email Support"
+        title={t('button.email_support')}
         style={styles.paymentButton}
         leadingIcon={<Icon name="email" />}
         trailingIcon={<Icon name="chevron-right" />}
         onPress={() => {
           const email = "support@example.com";
-          const subject = encodeURIComponent("Support Request");
-          const body = encodeURIComponent(
-            "Please describe your issue or question."
-          );
+          const subject = encodeURIComponent(t('email.subject'));
+          const body = encodeURIComponent(t('email.body'));
           const mailtoURL = `mailto:${email}?subject=${subject}&body=${body}`;
           Linking.canOpenURL(mailtoURL)
             .then((supported) => {
               if (supported) {
                 Linking.openURL(mailtoURL);
               } else {
-                console.log("Don't know how to open this URL: " + mailtoURL);
+                console.log(t('error.cannot_open_url') + " " + mailtoURL);
               }
             })
-            .catch((err) => console.error("An error occurred", err));
+            .catch((err) => console.error(t('error.occurred'), err));
         }}
       />
     </View>

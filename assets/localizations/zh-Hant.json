@@ -329,7 +329,9 @@
         "passwords_do_not_match": "密碼不匹配",
         "registration_failed": "註冊失敗",
         "updating_progress": "更新進度時出錯：",
-        "user_info_not_found": "未找到用戶資訊"
+        "user_info_not_found": "未找到用戶資訊",
+        "cannot_open_url": "不知道如何打開此URL：",
+        "occurred": "發生錯誤"
     },
     "feature": {
         "see_all_subtitles": "查看前三個之外的所有字幕搜尋結果。",
@@ -435,7 +437,8 @@
         "what_your_first_language": "您的母語是什麼？",
         "with_pro_you_can": "使用專業版，您可以：",
         "purchase_confirmation": "點擊「購買」，您將被要求確認來自Apple App Store的應用內購買。",
-        "lifetime_only": "只有終身計劃可作為Apple應用內購買的選項。"
+        "lifetime_only": "只有終身計劃可作為Apple應用內購買的選項。",
+        "subscription_explanation": "目前，由於我們的服務器只能處理來自蘋果的一次性付款，因此不支持月度和年度訂閱作為應用內購買。要繼續購買，請選擇終身計劃。"
     },
     "of": "的",
     "option": {
@@ -531,7 +534,8 @@
         "views": "{{numViews}}次觀看",
         "watch_history": "觀看歷史",
         "your_current_plan": "您當前的計劃",
-        "confirm_in_app_purchase": "確認您的應用內購買"
+        "confirm_in_app_purchase": "確認您的應用內購買",
+        "only_lifetime_available": "App Store中只提供終身計劃"
     },
     "video": {
         "comments": "評論",
@@ -546,6 +550,11 @@
     "button": {
         "purchase": "購買",
         "processing": "處理中...",
-        "switch_to_lifetime": "切換到終身計劃"
+        "switch_to_lifetime": "切換到終身計劃",
+        "email_support": "發郵件給客服"
+    },
+    "email": {
+        "subject": "客服請求",
+        "body": "請描述您的問題或疑問。"
     }
 }

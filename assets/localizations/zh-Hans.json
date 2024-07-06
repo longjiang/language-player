@@ -329,7 +329,9 @@
         "passwords_do_not_match": "密码不匹配",
         "registration_failed": "注册失败",
         "updating_progress": "更新进度时出错：",
-        "user_info_not_found": "未找到用户信息"
+        "user_info_not_found": "未找到用户信息",
+        "cannot_open_url": "不知道如何打开此URL：",
+        "occurred": "发生错误"
     },
     "feature": {
         "see_all_subtitles": "查看前三个之外的所有字幕搜索结果。",
@@ -435,7 +437,8 @@
         "what_your_first_language": "您的母语是什么？",
         "with_pro_you_can": "使用专业版，您可以：",
         "purchase_confirmation": "点击\"购买\"，您将被要求确认来自Apple App Store的应用内购买。",
-        "lifetime_only": "只有终身计划可作为Apple应用内购买的选项。"
+        "lifetime_only": "只有终身计划可作为Apple应用内购买的选项。",
+        "subscription_explanation": "目前，由于我们的服务器只能处理来自苹果的一次性付款，因此不支持月度和年度订阅作为应用内购买。要继续购买，请选择终身计划。"
     },
     "of": "的",
     "option": {
@@ -531,7 +534,8 @@
         "views": "{{numViews}}次观看",
         "watch_history": "观看历史",
         "your_current_plan": "您当前的计划",
-        "confirm_in_app_purchase": "确认您的应用内购买"
+        "confirm_in_app_purchase": "确认您的应用内购买",
+        "only_lifetime_available": "App Store中只提供终身计划"
     },
     "video": {
         "comments": "评论",
@@ -546,6 +550,11 @@
     "button": {
         "purchase": "购买",
         "processing": "处理中...",
-        "switch_to_lifetime": "切换到终身计划"
+        "switch_to_lifetime": "切换到终身计划",
+        "email_support": "发邮件给客服"
+    },
+    "email": {
+        "subject": "客服请求",
+        "body": "请描述您的问题或疑问。"
     }
 }
