@@ -58,6 +58,7 @@ export const YouTubeVideo: React.FC<{
   // Assuming playerRef and other state variables are defined here
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null); // To store the interval ID
 
+  
   if (inVideoWithTranscriptProvider) {
     // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
     useEffect(() => {
