@@ -92,7 +92,6 @@ const styles = StyleSheet.create({
   token: {
     flexDirection: 'row',  // Changed to 'row' to align segments horizontally
     alignItems: 'flex-end', // Aligns items to the bottom
-    marginHorizontal: 2,
   },
   segment: {
     flexDirection: 'column', // Each segment is a column
