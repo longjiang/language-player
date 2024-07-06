@@ -17,7 +17,7 @@ import { useDictionary } from "@/contexts/DictionaryContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { dictionaryEntryStyles as styles } from "@/src/styles";
 import DictionaryEntryContent from "@/components/DictionaryEntryContent";
-import { getDictionaryPlaceholder } from "@/components/DictionaryComponent";
+import { DictionaryComponent, getDictionaryPlaceholder } from "@/components/DictionaryComponent";
 
 type DictionaryEntryScreenRouteParams = {
   id: string;
@@ -90,26 +90,7 @@ const DictionaryEntryScreen = () => {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: tertiaryBackgroundColor }}>
       <SafeAreaView style={{ marginTop: 16 }}>
         <View style={styles.header}>
-          <ThemedButton
-            type="ghost"
-            size="medium"
-            trailingIcon={<Icon name="chevron-left" />}
-            onPress={() => router.navigate("../")}
-          />
-          <ThemedInput
-            placeholder={getDictionaryPlaceholder(l2Lang, dictionary, t)}
-            style={{ flex: 1, marginHorizontal: 16 }}
-            icon="magnify"
-            size="small"
-            onChangeText={debounce(handleInputChange, 300)}
-            onSubmitEditing={handleSearch}
-          />
-          <ThemedButton
-            type="ghost"
-            size="medium"
-            trailingIcon={<Icon name="cog-outline" />}
-            onPress={() => router.navigate("/(tabs)/(me)/settings")}
-          />
+        <DictionaryComponent />
         </View>
         {entry && (
           <DictionaryEntryContent entry={entry} headKey={headKey} alternateKey={alternateKey} />

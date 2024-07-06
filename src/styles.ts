@@ -96,9 +96,6 @@ export const videoControlBarStyles = StyleSheet.create({
 
 export const dictionaryEntryStyles = StyleSheet.create({
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
     paddingHorizontal: 16,
   },
   character: {
