@@ -9,18 +9,38 @@ import { Audio } from 'expo-av';
  */
 export const useSoundEffect = () => {
   useEffect(() => {
-    const soundObject = new Audio.Sound();
+    let soundObject: Audio.Sound | null = null;
 
     const enableSound = async () => {
       if (Platform.OS === 'ios') {
         try {
           await Audio.setAudioModeAsync({
             playsInSilentModeIOS: true,
+            staysActiveInBackground: false,
+            shouldDuckAndroid: false,
+            playThroughEarpieceAndroid: false,
           });
+
+          soundObject = new Audio.Sound();
           await soundObject.loadAsync(require('@/assets/soundFile.mp3'));
-          await soundObject.playAsync();
+          
+          // Check if the sound was loaded successfully
+          const status = await soundObject.getStatusAsync();
+          if (status.isLoaded) {
+            await soundObject.playAsync();
+          } else {
+            console.warn('Sound file not loaded properly');
+          }
         } catch (error) {
-          console.error('Error playing sound:', error);
+          console.error('Error setting up or playing sound:', error);
+          // Attempt to release the audio resources
+          if (soundObject) {
+            try {
+              await soundObject.unloadAsync();
+            } catch (unloadError) {
+              console.error('Error unloading sound:', unloadError);
+            }
+          }
         }
       }
     };
@@ -29,7 +49,11 @@ export const useSoundEffect = () => {
 
     // Cleanup function
     return () => {
-      soundObject.unloadAsync();
+      if (soundObject) {
+        soundObject.unloadAsync().catch(error => {
+          console.error('Error unloading sound in cleanup:', error);
+        });
+      }
     };
   }, []);
 };
