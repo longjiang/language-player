@@ -22,10 +22,10 @@ interface BookmarkButtonProps {
     };
 }
 
-const BookmarkButton: React.FC<BookmarkButtonProps> = ({ wordId, head, alternate, forms, context, size = "small" }) => {
+const BookmarkButton: React.FC<BookmarkButtonProps> = ({ wordId, head, alternate, forms, context, size = "small", color }) => {
     const { hasSavedWord, saveWord, removeSavedWord } = useUserData();
     const [isBookmarked, setIsBookmarked] = useState(false);
-    const bookmarkColor = useThemeColor({}, 'semanticWarning');  // Set the bookmark color
+    const bookmarkColor = color ? color : useThemeColor({}, 'semanticWarning');  // Set the bookmark color
     const { l2Lang } = useLanguage();  // Assume this hook provides current language code
     if (!l2Lang) return null;
 

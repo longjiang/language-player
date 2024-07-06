@@ -39,16 +39,14 @@ export const ChatGPTExplanation: React.FC<ChatGPTExplanationProps> = ({
       {!showChatGPT && (
         <ThemedButton
           type="pro"
-          style={{ marginBottom: 26 }}
+          style={{ marginBottom: 20, width: '100%'}}
           title={t('action.let_chatgpt_explain')}
           onPress={handlePress}
-          leadingIcon={
-            <Icon name="chat-outline" size={20} style={styles.iconStyle} />
-          }
+          size="medium"
         />
       )}
       {showChatGPT && (
-        <View style={{ marginBottom: 16 }}>
+        <View style={{ marginBottom: 16, width: '100%' }}>
           <GradientLine />
           <View style={{ marginVertical: 10 }}>
             <ChatGPT prompt={chatGPTPrompt} />

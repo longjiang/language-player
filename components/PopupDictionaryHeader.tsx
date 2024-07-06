@@ -99,14 +99,14 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
         <View style={styles.actionButtons}>
           <Icon
             name="volume-high"
-            size={26}
+            size={22}
             style={styles.iconStyle}
             onPress={onSpeakPress}
             accessibilityLabel={t('action.speak')}
           />
           <Icon
             name="content-copy"
-            size={26}
+            size={22}
             style={styles.iconStyle}
             onPress={onCopyPress}
             accessibilityLabel={t('action.copy')}

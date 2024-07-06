@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { chatGPT } from '@/src/api/python/openai';
 import { ThemedMarkdown } from "@/components/ThemedMarkdown";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export const ChatGPT = ({ prompt }) => {
   const [loading, setLoading] = useState(true);
   const [markdown, setMarkdown] = useState('');
+  const primaryTextColor = useThemeColor({}, "primaryText");
 
   useEffect(() => {
     const fetchChatGPTResponse = async () => {
@@ -28,7 +30,7 @@ export const ChatGPT = ({ prompt }) => {
   if (loading) {
     return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={primaryTextColor} />
       </View>
     );
   }
@@ -42,12 +44,10 @@ export const ChatGPT = ({ prompt }) => {
 
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-  },
   loader: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 16,
   },
 });

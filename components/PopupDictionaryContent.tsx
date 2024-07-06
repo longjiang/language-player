@@ -41,7 +41,7 @@ export const PopupDictionaryContent: React.FC<{
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
   const { l2Lang } = useLanguage();
   const levels = languageLevelsByL2Code(l2Lang.code);
-  const navigation = useNavigation();
+  const primaryTextColor = useThemeColor({}, "primaryText");
 
 
   // Wait for the dictionary to load
@@ -98,6 +98,8 @@ export const PopupDictionaryContent: React.FC<{
               alternate={entry.alternate}
               forms={[entry.head, entry.alternate, token.text].filter(Boolean)}
               context={{ form: token.text, text: context || '' }}
+              size="large"
+              color={primaryTextColor}
             />
           </View>
           <ThemedText style={styles.entryText}>

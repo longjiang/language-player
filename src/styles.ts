@@ -48,7 +48,7 @@ export const popupDictionaryHeaderStyles = StyleSheet.create({
     color: "white", // Adjust based on theme if needed
   },
   contextRow: { flexDirection: "row", alignItems: "flex-start" },
-  actionButtons: { flexDirection: "row", justifyContent: "space-between" },
+  actionButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
   header: { flexDirection: "row", justifyContent: "space-between" },
 });
 
