@@ -302,8 +302,8 @@
         "speak": "Sema",
         "start_learning": "Anza Kujifunza",
         "tv_shows": "Vipindi vya TV",
-        "upgrade_to_pro": "Boresha hadi Pro",
         "upgrade": "Boresha",
+        "upgrade_to_pro": "Boresha hadi Pro",
         "verify": "Thibitisha",
         "watch": "Tazama"
     },
@@ -407,8 +407,8 @@
     },
     "msg": {
         "already_have_account": "Tayari una akaunti?",
-        "auto_renews_in": "Inasasishwa moja kwa moja baada ya {{days}} siku",
         "auto_renews": "Inasasishwa moja kwa moja baada ya {{time}}",
+        "auto_renews_in": "Inasasishwa moja kwa moja baada ya {{days}} siku",
         "confirm_cancel_subscription": "Una uhakika unataka kughairi usajili wako?",
         "copy_success": "Maandishi yamenakiliwa kwenye ubao wa kunakili",
         "delete_confirmation": "Una uhakika unataka kufuta akaunti yako kabisa? Utapoteza maneno yote uliyookoa na maendeleo. Hatua hii haiwezi kubatilishwa.",
@@ -426,8 +426,8 @@
         "or_login_with": "Au ingia kwa:",
         "or_register_with": "Au jisajili kwa:",
         "pro_feature_chatgpt": "Watumiaji wa Pro pekee wanaweza kutumia vipengele vya AI katika Language Player Go. Ili kutumia kipengele hiki, boresha hadi Pro.",
-        "pro_transcript_limit_reached": "Kikomo cha nakala kimefikiwa. Tafadhali boresha hadi Pro ili kupata nakala zaidi.",
         "pro_transcript": "Boresha hadi Pro ili kuona nakala kamili!",
+        "pro_transcript_limit_reached": "Kikomo cha nakala kimefikiwa. Tafadhali boresha hadi Pro ili kupata nakala zaidi.",
         "sort_by": "Panga kwa: {{sortBy}}",
         "time_spent_learning": "Muda uliotumika kujifunza {{language}} katika Language Player",
         "upgrade_text": "Boresha hadi Pro ili kupata video zaidi!",
@@ -472,12 +472,12 @@
         "code_resent": "Msimbo wa uthibitisho umetumwa tena kwa barua pepe yako."
     },
     "time": {
+        "days": "{{count}} siku",
         "hours": "saa",
         "min": "dakika",
-        "sec": "sekunde",
-        "days": "{{count}} siku",
         "months": "{{count}} miezi",
-        "months_and_days": "{{months}} na {{days}}"
+        "months_and_days": "{{months}} na {{days}}",
+        "sec": "sekunde"
     },
     "title": {
         "account": "Akaunti",

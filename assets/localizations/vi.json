@@ -301,8 +301,8 @@
         "speak": "Nói",
         "start_learning": "Bắt đầu học",
         "tv_shows": "Chương trình TV",
-        "upgrade_to_pro": "Nâng cấp lên Pro",
         "upgrade": "Nâng cấp",
+        "upgrade_to_pro": "Nâng cấp lên Pro",
         "verify": "Xác minh",
         "watch": "Xem"
     },
@@ -406,8 +406,8 @@
     },
     "msg": {
         "already_have_account": "Bạn đã có tài khoản?",
-        "auto_renews_in": "Tự động gia hạn sau {{days}} ngày",
         "auto_renews": "Tự động gia hạn sau {{time}}",
+        "auto_renews_in": "Tự động gia hạn sau {{days}} ngày",
         "confirm_cancel_subscription": "Bạn có chắc chắn muốn hủy đăng ký không?",
         "copy_success": "Đã sao chép văn bản vào bộ nhớ tạm",
         "delete_confirmation": "Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản của mình không? Bạn sẽ mất tất cả các từ đã lưu và tiến trình. Hành động này không thể hoàn tác.",
@@ -425,8 +425,8 @@
         "or_login_with": "Hoặc đăng nhập bằng:",
         "or_register_with": "Hoặc đăng ký bằng:",
         "pro_feature_chatgpt": "Chỉ người dùng Pro mới có thể sử dụng các tính năng AI trong Language Player Go. Để sử dụng tính năng này, hãy nâng cấp lên Pro.",
-        "pro_transcript_limit_reached": "Đã đạt giới hạn bản ghi. Vui lòng nâng cấp lên Pro để truy cập thêm bản ghi.",
         "pro_transcript": "Nâng cấp lên Pro để xem toàn bộ bản ghi!",
+        "pro_transcript_limit_reached": "Đã đạt giới hạn bản ghi. Vui lòng nâng cấp lên Pro để truy cập thêm bản ghi.",
         "sort_by": "Sắp xếp theo: {{sortBy}}",
         "time_spent_learning": "Thời gian dành để học {{language}} trong Language Player",
         "upgrade_text": "Nâng cấp lên Pro để truy cập thêm video!",
@@ -471,12 +471,12 @@
         "code_resent": "Đã gửi lại mã xác minh đến email của bạn."
     },
     "time": {
+        "days": "{{count}} ngày",
         "hours": "giờ",
         "min": "phút",
-        "sec": "giây",
-        "days": "{{count}} ngày",
         "months": "{{count}} tháng",
-        "months_and_days": "{{months}} và {{days}}"
+        "months_and_days": "{{months}} và {{days}}",
+        "sec": "giây"
     },
     "title": {
         "account": "Tài khoản",

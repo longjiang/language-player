@@ -302,8 +302,8 @@
         "speak": "말하기",
         "start_learning": "학습 시작",
         "tv_shows": "TV 프로그램",
-        "upgrade_to_pro": "프로로 업그레이드",
         "upgrade": "업그레이드",
+        "upgrade_to_pro": "프로로 업그레이드",
         "verify": "확인",
         "watch": "보기"
     },
@@ -407,8 +407,8 @@
     },
     "msg": {
         "already_have_account": "이미 계정이 있으신가요?",
-        "auto_renews_in": "{{days}}일 후 자동 갱신됩니다",
         "auto_renews": "{{time}} 후 자동 갱신됩니다",
+        "auto_renews_in": "{{days}}일 후 자동 갱신됩니다",
         "confirm_cancel_subscription": "구독을 취소하시겠습니까?",
         "copy_success": "텍스트가 클립보드에 복사되었습니다",
         "delete_confirmation": "계정을 영구적으로 삭제하시겠습니까? 저장된 모든 단어와 진행 상황이 손실됩니다. 이 작업은 취소할 수 없습니다.",
@@ -426,8 +426,8 @@
         "or_login_with": "또는 다음으로 로그인:",
         "or_register_with": "또는 다음으로 가입:",
         "pro_feature_chatgpt": "프로 사용자만 Language Player Go에서 AI 기능을 사용할 수 있습니다. 이 기능을 사용하려면 프로로 업그레이드하세요.",
-        "pro_transcript_limit_reached": "대본 한도에 도달했습니다. 더 많은 대본에 접근하려면 프로로 업그레이드하세요.",
         "pro_transcript": "전체 대본을 보려면 프로로 업그레이드하세요!",
+        "pro_transcript_limit_reached": "대본 한도에 도달했습니다. 더 많은 대본에 접근하려면 프로로 업그레이드하세요.",
         "sort_by": "정렬 기준: {{sortBy}}",
         "time_spent_learning": "Language Player에서 {{language}} 학습에 소요된 시간",
         "upgrade_text": "더 많은 동영상에 접근하려면 프로로 업그레이드하세요!",
@@ -472,12 +472,12 @@
         "code_resent": "인증 코드가 이메일로 다시 전송되었습니다."
     },
     "time": {
+        "days": "{{count}}일",
         "hours": "시간",
         "min": "분",
-        "sec": "초",
-        "days": "{{count}}일",
         "months": "{{count}}개월",
-        "months_and_days": "{{months}}와 {{days}}"
+        "months_and_days": "{{months}}와 {{days}}",
+        "sec": "초"
     },
     "title": {
         "account": "계정",

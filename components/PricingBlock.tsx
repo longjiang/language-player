@@ -86,7 +86,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
       </ThemedText>
       {recommended && (
         <View style={[styles.recommendedTag, { backgroundColor: secondaryBrandColor }]}>
-          <ThemedText style={styles.tagText}>{t('title.best_value')}</ThemedText>
+          <ThemedText style={styles.tagText}>{t('title.best_value')}¹</ThemedText>
         </View>
       )}
       {(shouldShowUpgrade || shouldShowCancel) && (

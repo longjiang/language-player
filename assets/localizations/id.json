@@ -303,8 +303,8 @@
         "speak": "Bicara",
         "start_learning": "Mulai Belajar",
         "tv_shows": "Acara TV",
-        "upgrade_to_pro": "Tingkatkan ke Pro",
         "upgrade": "Tingkatkan",
+        "upgrade_to_pro": "Tingkatkan ke Pro",
         "verify": "Verifikasi",
         "watch": "Tonton"
     },
@@ -408,8 +408,8 @@
     },
     "msg": {
         "already_have_account": "Sudah memiliki akun?",
-        "auto_renews_in": "Otomatis diperbarui dalam {{days}} hari",
         "auto_renews": "Otomatis diperbarui dalam {{time}}",
+        "auto_renews_in": "Otomatis diperbarui dalam {{days}} hari",
         "confirm_cancel_subscription": "Apakah Anda yakin ingin membatalkan langganan Anda?",
         "copy_success": "Teks disalin ke clipboard",
         "delete_confirmation": "Apakah Anda yakin ingin menghapus akun Anda secara permanen? Anda akan kehilangan semua kata dan kemajuan yang disimpan. Tindakan ini tidak dapat diurungkan.",
@@ -427,8 +427,8 @@
         "or_login_with": "Atau masuk dengan:",
         "or_register_with": "Atau daftar dengan:",
         "pro_feature_chatgpt": "Hanya pengguna Pro yang dapat menggunakan fitur AI di Language Player Go. Untuk menggunakan fitur ini, tingkatkan ke Pro.",
-        "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip.",
         "pro_transcript": "Tingkatkan ke Pro untuk melihat transkrip lengkap!",
+        "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip.",
         "sort_by": "Urutkan berdasarkan: {{sortBy}}",
         "time_spent_learning": "Waktu yang dihabiskan belajar {{language}} di Language Player",
         "upgrade_text": "Tingkatkan ke Pro untuk mengakses lebih banyak video!",
@@ -473,12 +473,12 @@
         "code_resent": "Kode verifikasi dikirim ulang ke email Anda."
     },
     "time": {
+        "days": "{{count, plural, one {# hari} other {# hari}}}",
         "hours": "jam",
         "min": "menit",
-        "sec": "detik",
-        "days": "{{count, plural, one {# hari} other {# hari}}}",
         "months": "{{count, plural, one {# bulan} other {# bulan}}}",
-        "months_and_days": "{{months}} dan {{days}}"
+        "months_and_days": "{{months}} dan {{days}}",
+        "sec": "detik"
     },
     "title": {
         "account": "Akun",

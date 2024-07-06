@@ -303,8 +303,8 @@
         "speak": "Puhu",
         "start_learning": "Aloita oppiminen",
         "tv_shows": "TV-ohjelmat",
-        "upgrade_to_pro": "Päivitä Pro-versioon",
         "upgrade": "Päivitä",
+        "upgrade_to_pro": "Päivitä Pro-versioon",
         "verify": "Vahvista",
         "watch": "Katso"
     },
@@ -408,8 +408,8 @@
     },
     "msg": {
         "already_have_account": "Onko sinulla jo tili?",
-        "auto_renews_in": "Uusitaan automaattisesti {{days}} päivän kuluttua",
         "auto_renews": "Uusitaan automaattisesti {{time}} kuluttua",
+        "auto_renews_in": "Uusitaan automaattisesti {{days}} päivän kuluttua",
         "confirm_cancel_subscription": "Oletko varma, että haluat peruuttaa tilauksesi?",
         "copy_success": "Teksti kopioitu leikepöydälle",
         "delete_confirmation": "Oletko varma, että haluat poistaa tilisi pysyvästi? Menetät kaikki tallennetut sanasi ja edistymisesi. Tätä toimintoa ei voi kumota.",
@@ -427,8 +427,8 @@
         "or_login_with": "Tai kirjaudu sisään:",
         "or_register_with": "Tai rekisteröidy:",
         "pro_feature_chatgpt": "Vain Pro-käyttäjät voivat käyttää tekoälytoimintoja Language Player Go:ssa. Käyttääksesi tätä ominaisuutta, päivitä Pro-versioon.",
-        "pro_transcript_limit_reached": "Transkriptioraja saavutettu. Päivitä Pro-versioon saadaksesi lisää transkriptioita.",
         "pro_transcript": "Päivitä Pro-versioon nähdäksesi koko transkription!",
+        "pro_transcript_limit_reached": "Transkriptioraja saavutettu. Päivitä Pro-versioon saadaksesi lisää transkriptioita.",
         "sort_by": "Lajittele: {{sortBy}}",
         "time_spent_learning": "Aika käytetty {{language}} oppimiseen Language Playerissa",
         "upgrade_text": "Päivitä Pro-versioon saadaksesi lisää videoita!",
@@ -473,12 +473,12 @@
         "code_resent": "Vahvistuskoodi lähetetty uudelleen sähköpostiisi."
     },
     "time": {
+        "days": "{{count, plural, one {# päivä} other {# päivää}}}",
         "hours": "tuntia",
         "min": "min",
-        "sec": "sek",
-        "days": "{{count, plural, one {# päivä} other {# päivää}}}",
         "months": "{{count, plural, one {# kuukausi} other {# kuukautta}}}",
-        "months_and_days": "{{months}} ja {{days}}"
+        "months_and_days": "{{months}} ja {{days}}",
+        "sec": "sek"
     },
     "title": {
         "account": "Tili",

@@ -303,10 +303,16 @@
         "speak": "朗讀",
         "start_learning": "開始學習",
         "tv_shows": "電視節目",
-        "upgrade_to_pro": "升級到專業版",
         "upgrade": "升級",
+        "upgrade_to_pro": "升級到專業版",
         "verify": "驗證",
         "watch": "觀看"
+    },
+    "button": {
+        "email_support": "發郵件給客服",
+        "processing": "處理中...",
+        "purchase": "購買",
+        "switch_to_lifetime": "切換到終身計劃"
     },
     "chatgpt": {
         "prompt": {
@@ -319,19 +325,23 @@
         "lifetime": "永不過期。",
         "monthly": "每月計費。"
     },
+    "email": {
+        "body": "請描述您的問題或疑問。",
+        "subject": "客服請求"
+    },
     "error": {
+        "cannot_open_url": "不知道如何打開此URL：",
         "entry_not_found": "未找到條目或字典未加載",
         "failed_fetch_videos": "獲取影片失敗",
         "failed_retrieve_password": "檢索儲存的密碼失敗",
         "failed_to_load_items": "載入項目失敗：",
         "generic": "錯誤",
         "language_not_selected": "未選擇語言",
+        "occurred": "發生錯誤",
         "passwords_do_not_match": "密碼不匹配",
         "registration_failed": "註冊失敗",
         "updating_progress": "更新進度時出錯：",
-        "user_info_not_found": "未找到用戶資訊",
-        "cannot_open_url": "不知道如何打開此URL：",
-        "occurred": "發生錯誤"
+        "user_info_not_found": "未找到用戶資訊"
     },
     "feature": {
         "see_all_subtitles": "查看前三個之外的所有字幕搜尋結果。",
@@ -410,8 +420,8 @@
     },
     "msg": {
         "already_have_account": "已有帳戶？",
-        "auto_renews_in": "{{days}}天後自動續訂",
         "auto_renews": "{{time}}後自動續訂",
+        "auto_renews_in": "{{days}}天後自動續訂",
         "confirm_cancel_subscription": "您確定要取消訂閱嗎？",
         "copy_success": "文字已複製到剪貼簿",
         "delete_confirmation": "您確定要永久刪除您的帳戶嗎？您將失去所有保存的單詞和進度。此操作無法撤消。",
@@ -424,21 +434,21 @@
         "forgot_password": "忘記密碼？",
         "hsk_explanation": "「HSK」是官方漢語水平考試，1級為最低，9級為最高。",
         "initializing": "正在初始化...",
+        "lifetime_only": "只有終身計劃可作為Apple應用內購買的選項。",
         "loading": "正在載入...",
         "no_active_subscription": "未找到活躍訂閱。",
         "or_login_with": "或使用以下方式登入：",
         "or_register_with": "或使用以下方式註冊：",
         "pro_feature_chatgpt": "只有專業版用戶可以在Language Player Go中使用人工智能功能。要使用此功能，請升級到專業版。",
-        "pro_transcript_limit_reached": "已達到文字記錄限制。請升級到專業版以存取更多文字記錄。",
         "pro_transcript": "升級到專業版以查看完整文字記錄！",
+        "pro_transcript_limit_reached": "已達到文字記錄限制。請升級到專業版以存取更多文字記錄。",
+        "purchase_confirmation": "點擊「購買」，您將被要求確認來自Apple App Store的應用內購買。",
         "sort_by": "排序方式：{{sortBy}}",
+        "subscription_explanation": "目前，由於我們的服務器只能處理來自蘋果的一次性付款，因此不支持月度和年度訂閱作為應用內購買。要繼續購買，請選擇終身計劃。",
         "time_spent_learning": "在Language Player中學習{{language}}的時間",
         "upgrade_text": "升級到專業版以存取更多影片！",
         "what_your_first_language": "您的母語是什麼？",
-        "with_pro_you_can": "使用專業版，您可以：",
-        "purchase_confirmation": "點擊「購買」，您將被要求確認來自Apple App Store的應用內購買。",
-        "lifetime_only": "只有終身計劃可作為Apple應用內購買的選項。",
-        "subscription_explanation": "目前，由於我們的服務器只能處理來自蘋果的一次性付款，因此不支持月度和年度訂閱作為應用內購買。要繼續購買，請選擇終身計劃。"
+        "with_pro_you_can": "使用專業版，您可以："
     },
     "of": "的",
     "option": {
@@ -478,12 +488,12 @@
         "code_resent": "驗證碼已重新發送到您的電子郵箱。"
     },
     "time": {
+        "days": "{{count, plural, one {# 天} other {# 天}}}",
         "hours": "小時",
         "min": "分鐘",
-        "sec": "秒",
-        "days": "{{count, plural, one {# 天} other {# 天}}}",
         "months": "{{count, plural, one {# 個月} other {# 個月}}}",
-        "months_and_days": "{{months}}和{{days}}"
+        "months_and_days": "{{months}}和{{days}}",
+        "sec": "秒"
     },
     "title": {
         "account": "帳戶",
@@ -492,6 +502,7 @@
         "best_value": "最佳價值",
         "choose_language": "選擇語言",
         "choose_your_plan": "選擇您的計劃",
+        "confirm_in_app_purchase": "確認您的應用內購買",
         "continue_learning": "繼續學習{{l2Code}}",
         "current_level": "您當前的{{language}}水平是什麼？",
         "current_plan": "當前計劃",
@@ -514,6 +525,7 @@
         "monthly": "月度",
         "my_progress": "我的進度",
         "next": "下一步",
+        "only_lifetime_available": "App Store中只提供終身計劃",
         "password": "密碼",
         "popularity": "熱門程度",
         "privacy_policy": "隱私政策",
@@ -528,9 +540,7 @@
         "verify_your_email": "驗證您的電子郵箱",
         "views": "{{numViews}}次觀看",
         "watch_history": "觀看歷史",
-        "your_current_plan": "您當前的計劃",
-        "confirm_in_app_purchase": "確認您的應用內購買",
-        "only_lifetime_available": "App Store中只提供終身計劃"
+        "your_current_plan": "您當前的計劃"
     },
     "video": {
         "comments": "評論",
@@ -541,15 +551,5 @@
         "hanja": "漢字",
         "kana": "假名",
         "pinyin": "拼音"
-    },
-    "button": {
-        "purchase": "購買",
-        "processing": "處理中...",
-        "switch_to_lifetime": "切換到終身計劃",
-        "email_support": "發郵件給客服"
-    },
-    "email": {
-        "subject": "客服請求",
-        "body": "請描述您的問題或疑問。"
     }
 }

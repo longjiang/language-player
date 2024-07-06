@@ -303,8 +303,8 @@
         "speak": "Parla",
         "start_learning": "Inizia a imparare",
         "tv_shows": "Programmi TV",
-        "upgrade_to_pro": "Passa a Pro",
         "upgrade": "Aggiorna",
+        "upgrade_to_pro": "Passa a Pro",
         "verify": "Verifica",
         "watch": "Guarda"
     },
@@ -408,8 +408,8 @@
     },
     "msg": {
         "already_have_account": "Hai già un account?",
-        "auto_renews_in": "Si rinnova automaticamente tra {{days}} giorni",
         "auto_renews": "Si rinnova automaticamente tra {{time}}",
+        "auto_renews_in": "Si rinnova automaticamente tra {{days}} giorni",
         "confirm_cancel_subscription": "Sei sicuro di voler cancellare il tuo abbonamento?",
         "copy_success": "Testo copiato negli appunti",
         "delete_confirmation": "Sei sicuro di voler eliminare definitivamente il tuo account? Perderai tutte le tue parole salvate e i progressi. Questa azione non può essere annullata.",
@@ -427,8 +427,8 @@
         "or_login_with": "Oppure accedi con:",
         "or_register_with": "Oppure registrati con:",
         "pro_feature_chatgpt": "Solo gli utenti Pro possono utilizzare le funzioni di IA in Language Player Go. Per utilizzare questa funzione, passa a Pro.",
-        "pro_transcript_limit_reached": "Limite di trascrizioni raggiunto. Passa a Pro per accedere a più trascrizioni.",
         "pro_transcript": "Passa a Pro per visualizzare la trascrizione completa!",
+        "pro_transcript_limit_reached": "Limite di trascrizioni raggiunto. Passa a Pro per accedere a più trascrizioni.",
         "sort_by": "Ordina per: {{sortBy}}",
         "time_spent_learning": "Tempo trascorso a imparare {{language}} in Language Player",
         "upgrade_text": "Passa a Pro per accedere a più video!",
@@ -473,12 +473,12 @@
         "code_resent": "Codice di verifica reinviato alla tua email."
     },
     "time": {
+        "days": "{{count, plural, one {# giorno} other {# giorni}}}",
         "hours": "ore",
         "min": "min",
-        "sec": "sec",
-        "days": "{{count, plural, one {# giorno} other {# giorni}}}",
         "months": "{{count, plural, one {# mese} other {# mesi}}}",
-        "months_and_days": "{{months}} e {{days}}"
+        "months_and_days": "{{months}} e {{days}}",
+        "sec": "sec"
     },
     "title": {
         "account": "Account",

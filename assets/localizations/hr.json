@@ -303,8 +303,8 @@
         "speak": "Govori",
         "start_learning": "Započni učenje",
         "tv_shows": "TV emisije",
-        "upgrade_to_pro": "Nadogradi na Pro",
         "upgrade": "Nadogradi",
+        "upgrade_to_pro": "Nadogradi na Pro",
         "verify": "Potvrdi",
         "watch": "Gledaj"
     },
@@ -408,8 +408,8 @@
     },
     "msg": {
         "already_have_account": "Već imaš račun?",
-        "auto_renews_in": "Automatski se obnavlja za {{days}} dana",
         "auto_renews": "Automatski se obnavlja za {{time}}",
+        "auto_renews_in": "Automatski se obnavlja za {{days}} dana",
         "confirm_cancel_subscription": "Jesi li siguran/na da želiš otkazati pretplatu?",
         "copy_success": "Tekst kopiran u međuspremnik",
         "delete_confirmation": "Jesi li siguran/na da želiš trajno izbrisati svoj račun? Izgubit ćeš sve spremljene riječi i napredak. Ova radnja se ne može poništiti.",
@@ -427,8 +427,8 @@
         "or_login_with": "Ili se prijavi putem:",
         "or_register_with": "Ili se registriraj putem:",
         "pro_feature_chatgpt": "Samo Pro korisnici mogu koristiti AI značajke u Language Player Go. Za korištenje ove značajke, nadogradi na Pro.",
-        "pro_transcript_limit_reached": "Dostignut je limit transkripata. Nadogradi na Pro za pristup većem broju transkripata.",
         "pro_transcript": "Nadogradi na Pro za pregled cijelog transkripta!",
+        "pro_transcript_limit_reached": "Dostignut je limit transkripata. Nadogradi na Pro za pristup većem broju transkripata.",
         "sort_by": "Sortiraj po: {{sortBy}}",
         "time_spent_learning": "Vrijeme provedeno učeći {{language}} u Language Playeru",
         "upgrade_text": "Nadogradi na Pro za pristup većem broju videozapisa!",
@@ -473,12 +473,12 @@
         "code_resent": "Verifikacijski kod ponovno poslan na tvoj e-mail."
     },
     "time": {
+        "days": "{{count, plural, one {# dan} few {# dana} other {# dana}}}",
         "hours": "sati",
         "min": "min",
-        "sec": "sek",
-        "days": "{{count, plural, one {# dan} few {# dana} other {# dana}}}",
         "months": "{{count, plural, one {# mjesec} few {# mjeseca} other {# mjeseci}}}",
-        "months_and_days": "{{months}} i {{days}}"
+        "months_and_days": "{{months}} i {{days}}",
+        "sec": "sek"
     },
     "title": {
         "account": "Račun",

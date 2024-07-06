@@ -302,8 +302,8 @@
         "speak": "Govori",
         "start_learning": "Počni da učiš",
         "tv_shows": "TV emisije",
-        "upgrade_to_pro": "Nadogradi na Pro",
         "upgrade": "Nadogradi",
+        "upgrade_to_pro": "Nadogradi na Pro",
         "verify": "Potvrdi",
         "watch": "Gledaj"
     },
@@ -407,8 +407,8 @@
     },
     "msg": {
         "already_have_account": "Već imaš nalog?",
-        "auto_renews_in": "Automatski se obnavlja za {{days}} dana",
         "auto_renews": "Automatski se obnavlja za {{time}}",
+        "auto_renews_in": "Automatski se obnavlja za {{days}} dana",
         "confirm_cancel_subscription": "Da li si siguran/na da želiš da otkažeš pretplatu?",
         "copy_success": "Tekst kopiran u međumemoriju",
         "delete_confirmation": "Da li si siguran/na da želiš trajno da obrišeš svoj nalog? Izgubićeš sve sačuvane reči i napredak. Ova radnja ne može biti poništena.",
@@ -426,8 +426,8 @@
         "or_login_with": "Ili se prijavi preko:",
         "or_register_with": "Ili se registruj preko:",
         "pro_feature_chatgpt": "Samo Pro korisnici mogu da koriste AI funkcije u Language Player Go. Da bi koristio ovu funkciju, nadogradi na Pro.",
-        "pro_transcript_limit_reached": "Dostignut je limit transkripta. Nadogradi na Pro za pristup većem broju transkripata.",
         "pro_transcript": "Nadogradi na Pro da bi video ceo transkript!",
+        "pro_transcript_limit_reached": "Dostignut je limit transkripta. Nadogradi na Pro za pristup većem broju transkripata.",
         "sort_by": "Sortiraj po: {{sortBy}}",
         "time_spent_learning": "Vreme provedeno učeći {{language}} u Language Player-u",
         "upgrade_text": "Nadogradi na Pro za pristup većem broju video zapisa!",
@@ -472,12 +472,12 @@
         "code_resent": "Verifikacioni kod je ponovo poslat na tvoju e-poštu."
     },
     "time": {
+        "days": "{{count, plural, one {# dan} few {# dana} many {# dana} other {# dana}}}",
         "hours": "sati",
         "min": "min",
-        "sec": "sek",
-        "days": "{{count, plural, one {# dan} few {# dana} many {# dana} other {# dana}}}",
         "months": "{{count, plural, one {# mesec} few {# meseca} many {# meseci} other {# meseci}}}",
-        "months_and_days": "{{months}} i {{days}}"
+        "months_and_days": "{{months}} i {{days}}",
+        "sec": "sek"
     },
     "title": {
         "account": "Nalog",

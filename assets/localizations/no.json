@@ -302,8 +302,8 @@
         "speak": "Snakk",
         "start_learning": "Start læring",
         "tv_shows": "TV-serier",
-        "upgrade_to_pro": "Oppgrader til Pro",
         "upgrade": "Oppgrader",
+        "upgrade_to_pro": "Oppgrader til Pro",
         "verify": "Bekreft",
         "watch": "Se"
     },
@@ -407,8 +407,8 @@
     },
     "msg": {
         "already_have_account": "Har du allerede en konto?",
-        "auto_renews_in": "Fornyes automatisk om {{days}} dager",
         "auto_renews": "Fornyes automatisk om {{time}}",
+        "auto_renews_in": "Fornyes automatisk om {{days}} dager",
         "confirm_cancel_subscription": "Er du sikker på at du vil avbryte abonnementet?",
         "copy_success": "Tekst kopiert til utklippstavle",
         "delete_confirmation": "Er du sikker på at du vil slette kontoen din permanent? Du mister alle lagrede ord og fremgang. Denne handlingen kan ikke angres.",
@@ -426,8 +426,8 @@
         "or_login_with": "Eller logg inn med:",
         "or_register_with": "Eller registrer deg med:",
         "pro_feature_chatgpt": "Bare Pro-brukere kan bruke AI-funksjoner i Language Player Go. For å bruke denne funksjonen, oppgrader til Pro.",
-        "pro_transcript_limit_reached": "Transkripsjonsgrense nådd. Vennligst oppgrader til Pro for tilgang til flere transkripsjoner.",
         "pro_transcript": "Oppgrader til Pro for å se hele transkripsjonen!",
+        "pro_transcript_limit_reached": "Transkripsjonsgrense nådd. Vennligst oppgrader til Pro for tilgang til flere transkripsjoner.",
         "sort_by": "Sorter etter: {{sortBy}}",
         "time_spent_learning": "Tid brukt på å lære {{language}} i Language Player",
         "upgrade_text": "Oppgrader til Pro for tilgang til flere videoer!",
@@ -472,12 +472,12 @@
         "code_resent": "Verifikasjonskoden er sendt på nytt til e-posten din."
     },
     "time": {
+        "days": "{{count}} dager",
         "hours": "timer",
         "min": "min",
-        "sec": "sek",
-        "days": "{{count}} dager",
         "months": "{{count}} måneder",
-        "months_and_days": "{{months}} og {{days}}"
+        "months_and_days": "{{months}} og {{days}}",
+        "sec": "sek"
     },
     "title": {
         "account": "Konto",

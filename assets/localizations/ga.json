@@ -303,8 +303,8 @@
         "speak": "Labhair",
         "start_learning": "Tosaigh ag foghlaim",
         "tv_shows": "Cláir theilifíse",
-        "upgrade_to_pro": "Uasghrádaigh go Pro",
         "upgrade": "Uasghrádaigh",
+        "upgrade_to_pro": "Uasghrádaigh go Pro",
         "verify": "Deimhnigh",
         "watch": "Féach"
     },
@@ -408,8 +408,8 @@
     },
     "msg": {
         "already_have_account": "An bhfuil cuntas agat cheana?",
-        "auto_renews_in": "Athnuaite go huathoibríoch i gceann {{days}} lá",
         "auto_renews": "Athnuaite go huathoibríoch i gceann {{time}}",
+        "auto_renews_in": "Athnuaite go huathoibríoch i gceann {{days}} lá",
         "confirm_cancel_subscription": "An bhfuil tú cinnte gur mian leat do shíntiús a chealú?",
         "copy_success": "Téacs cóipeáilte chuig an ghearrthaisce",
         "delete_confirmation": "An bhfuil tú cinnte gur mian leat do chuntas a scriosadh go buan? Caillfidh tú do chuid focal sábháilte agus do dhul chun cinn go léir. Ní féidir an gníomh seo a chur ar ceal.",
@@ -427,8 +427,8 @@
         "or_login_with": "Nó logáil isteach le:",
         "or_register_with": "Nó cláraigh le:",
         "pro_feature_chatgpt": "Ní féidir ach le húsáideoirí Pro gnéithe AI a úsáid in Language Player Go. Chun an ghné seo a úsáid, uasghrádaigh go Pro.",
-        "pro_transcript_limit_reached": "Sroicheadh teorainn tras-scríbhinne. Uasghrádaigh go Pro le rochtain a fháil ar níos mó tras-scríbhinní.",
         "pro_transcript": "Uasghrádaigh go Pro chun an tras-scríbhinn iomlán a fheiceáil!",
+        "pro_transcript_limit_reached": "Sroicheadh teorainn tras-scríbhinne. Uasghrádaigh go Pro le rochtain a fháil ar níos mó tras-scríbhinní.",
         "sort_by": "Sórtáil de réir: {{sortBy}}",
         "time_spent_learning": "Am caite ag foghlaim {{language}} in Language Player",
         "upgrade_text": "Uasghrádaigh go Pro chun rochtain a fháil ar níos mó físeán!",
@@ -473,12 +473,12 @@
         "code_resent": "Cód fíoraithe athsheoladh chuig do ríomhphost."
     },
     "time": {
+        "days": "{{count, plural, one {# lá} two {# lá} few {# lá} many {# lá} other {# lá}}}",
         "hours": "uair",
         "min": "nóim",
-        "sec": "soic",
-        "days": "{{count, plural, one {# lá} two {# lá} few {# lá} many {# lá} other {# lá}}}",
         "months": "{{count, plural, one {# mhí} two {# mhí} few {# mí} many {# mí} other {# mí}}}",
-        "months_and_days": "{{months}} agus {{days}}"
+        "months_and_days": "{{months}} agus {{days}}",
+        "sec": "soic"
     },
     "title": {
         "account": "Cuntas",

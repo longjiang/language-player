@@ -303,8 +303,8 @@
         "speak": "Beszéljen",
         "start_learning": "Tanulás megkezdése",
         "tv_shows": "TV-műsorok",
-        "upgrade_to_pro": "Frissítés Pro-ra",
         "upgrade": "Frissítés",
+        "upgrade_to_pro": "Frissítés Pro-ra",
         "verify": "Ellenőrzés",
         "watch": "Megtekintés"
     },
@@ -408,8 +408,8 @@
     },
     "msg": {
         "already_have_account": "Már van fiókja?",
-        "auto_renews_in": "Automatikus megújítás {{days}} nap múlva",
         "auto_renews": "Automatikus megújítás {{time}} múlva",
+        "auto_renews_in": "Automatikus megújítás {{days}} nap múlva",
         "confirm_cancel_subscription": "Biztos benne, hogy le szeretné mondani az előfizetését?",
         "copy_success": "A szöveg a vágólapra lett másolva",
         "delete_confirmation": "Biztos benne, hogy véglegesen törli a fiókját? Elveszíti az összes mentett szavát és előrehaladását. Ez a művelet nem vonható vissza.",
@@ -427,8 +427,8 @@
         "or_login_with": "Vagy jelentkezzen be ezzel:",
         "or_register_with": "Vagy regisztráljon ezzel:",
         "pro_feature_chatgpt": "Csak Pro felhasználók használhatják az AI-funkciókat a Language Player Go-ban. Ennek a funkciónak a használatához frissítsen Pro-ra.",
-        "pro_transcript_limit_reached": "Átirat limit elérve. További átiratok eléréséhez frissítsen Pro-ra.",
         "pro_transcript": "Frissítés Pro-ra a teljes átirat megtekintéséhez!",
+        "pro_transcript_limit_reached": "Átirat limit elérve. További átiratok eléréséhez frissítsen Pro-ra.",
         "sort_by": "Rendezés: {{sortBy}}",
         "time_spent_learning": "Nyelvtanulásra fordított idő a Language Player-ben {{language}}",
         "upgrade_text": "Frissítsen Pro-ra a további videók eléréséhez!",
@@ -473,12 +473,12 @@
         "code_resent": "Az ellenőrző kód újra lett küldve az e-mail címére."
     },
     "time": {
+        "days": "{{count, plural, one {# nap} other {# nap}}}",
         "hours": "óra",
         "min": "perc",
-        "sec": "mp",
-        "days": "{{count, plural, one {# nap} other {# nap}}}",
         "months": "{{count, plural, one {# hónap} other {# hónap}}}",
-        "months_and_days": "{{months}} és {{days}}"
+        "months_and_days": "{{months}} és {{days}}",
+        "sec": "mp"
     },
     "title": {
         "account": "Fiók",

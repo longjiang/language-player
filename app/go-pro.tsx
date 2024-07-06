@@ -1,5 +1,3 @@
-// @/app/go-pro.tsx
-
 import React, { useRef, useState } from "react";
 import { StyleSheet, View, Image, Platform } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
@@ -34,9 +32,9 @@ const GoProScreen = () => {
   const currentPlan = isProUser() ? subscription?.type : null;
 
   const plans = [
-    { type: "monthly", price: t('price.monthly', { price: 12 }), duration: t('duration.monthly') },
-    { type: "annual", price: t('price.annual', { price: 89 }), duration: t('duration.annual') },
-    { type: "lifetime", price: t('price.lifetime', { price: 199 }), duration: t('duration.lifetime'), recommended: true },
+    { type: "monthly", price: t('price.monthly', { price: 10 }), duration: t('duration.monthly') },
+    { type: "annual", price: t('price.annual', { price: 90 }), duration: t('duration.annual') },
+    { type: "lifetime", price: t('price.lifetime', { price: 169 }), duration: t('duration.lifetime'), recommended: true },
   ];
 
   return (

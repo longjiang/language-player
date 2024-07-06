@@ -302,8 +302,8 @@
         "speak": "Spreken",
         "start_learning": "Begin met leren",
         "tv_shows": "TV-programma's",
-        "upgrade_to_pro": "Upgraden naar Pro",
         "upgrade": "Upgraden",
+        "upgrade_to_pro": "Upgraden naar Pro",
         "verify": "Verifiëren",
         "watch": "Bekijken"
     },
@@ -407,8 +407,8 @@
     },
     "msg": {
         "already_have_account": "Heb je al een account?",
-        "auto_renews_in": "Wordt automatisch verlengd over {{days}} dagen",
         "auto_renews": "Wordt automatisch verlengd over {{time}}",
+        "auto_renews_in": "Wordt automatisch verlengd over {{days}} dagen",
         "confirm_cancel_subscription": "Weet je zeker dat je je abonnement wilt annuleren?",
         "copy_success": "Tekst gekopieerd naar klembord",
         "delete_confirmation": "Weet je zeker dat je je account permanent wilt verwijderen? Je verliest al je opgeslagen woorden en voortgang. Deze actie kan niet ongedaan worden gemaakt.",
@@ -426,8 +426,8 @@
         "or_login_with": "Of log in met:",
         "or_register_with": "Of registreer met:",
         "pro_feature_chatgpt": "Alleen Pro-gebruikers kunnen AI-functies gebruiken in Language Player Go. Upgrade naar Pro om deze functie te gebruiken.",
-        "pro_transcript_limit_reached": "Transcriptielimiet bereikt. Upgrade naar Pro voor toegang tot meer transcripties.",
         "pro_transcript": "Upgrade naar Pro om de volledige transcriptie te bekijken!",
+        "pro_transcript_limit_reached": "Transcriptielimiet bereikt. Upgrade naar Pro voor toegang tot meer transcripties.",
         "sort_by": "Sorteren op: {{sortBy}}",
         "time_spent_learning": "Tijd besteed aan het leren van {{language}} in Language Player",
         "upgrade_text": "Upgrade naar Pro voor toegang tot meer video's!",
@@ -472,12 +472,12 @@
         "code_resent": "Verificatiecode opnieuw naar je e-mail verzonden."
     },
     "time": {
+        "days": "{{count, plural, one {# dag} other {# dagen}}}",
         "hours": "uur",
         "min": "min",
-        "sec": "sec",
-        "days": "{{count, plural, one {# dag} other {# dagen}}}",
         "months": "{{count, plural, one {# maand} other {# maanden}}}",
-        "months_and_days": "{{months}} en {{days}}"
+        "months_and_days": "{{months}} en {{days}}",
+        "sec": "sec"
     },
     "title": {
         "account": "Account",

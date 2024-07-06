@@ -302,8 +302,8 @@
         "speak": "話す",
         "start_learning": "学習を開始する",
         "tv_shows": "テレビ番組",
-        "upgrade_to_pro": "Proにアップグレードする",
         "upgrade": "アップグレード",
+        "upgrade_to_pro": "Proにアップグレードする",
         "verify": "確認する",
         "watch": "見る"
     },
@@ -407,8 +407,8 @@
     },
     "msg": {
         "already_have_account": "すでにアカウントをお持ちですか？",
-        "auto_renews_in": "自動更新まで{{days}}日",
         "auto_renews": "{{time}}後に自動更新",
+        "auto_renews_in": "自動更新まで{{days}}日",
         "confirm_cancel_subscription": "サブスクリプションをキャンセルしてもよろしいですか？",
         "copy_success": "テキストがクリップボードにコピーされました",
         "delete_confirmation": "アカウントを完全に削除してもよろしいですか？ 保存した単語と進行状況がすべて失われます。 この操作は元に戻せません。",
@@ -426,8 +426,8 @@
         "or_login_with": "または次でログイン:",
         "or_register_with": "または次で登録:",
         "pro_feature_chatgpt": "ProユーザーのみがLanguage Player GoでAI機能を使用できます。 この機能を使用するには、Proにアップグレードしてください。",
-        "pro_transcript_limit_reached": "トランスクリプトの制限に達しました。 より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。",
         "pro_transcript": "完全なトランスクリプトを表示するには、Proにアップグレードしてください！",
+        "pro_transcript_limit_reached": "トランスクリプトの制限に達しました。 より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。",
         "sort_by": "並べ替え: {{sortBy}}",
         "time_spent_learning": "Language Playerで{{language}}の学習に費やした時間",
         "upgrade_text": "より多くのビデオにアクセスするには、Proにアップグレードしてください！",
@@ -472,12 +472,12 @@
         "code_resent": "確認コードがメールに再送信されました。"
     },
     "time": {
+        "days": "{{count}}日",
         "hours": "時間",
         "min": "分",
-        "sec": "秒",
-        "days": "{{count}}日",
         "months": "{{count}}か月",
-        "months_and_days": "{{months}}と{{days}}"
+        "months_and_days": "{{months}}と{{days}}",
+        "sec": "秒"
     },
     "title": {
         "account": "アカウント",

@@ -303,8 +303,8 @@
         "speak": "تحدث",
         "start_learning": "ابدأ التعلم",
         "tv_shows": "البرامج التلفزيونية",
-        "upgrade_to_pro": "الترقية إلى النسخة المتقدمة",
         "upgrade": "ترقية",
+        "upgrade_to_pro": "الترقية إلى النسخة المتقدمة",
         "verify": "التحقق",
         "watch": "مشاهدة"
     },
@@ -408,8 +408,8 @@
     },
     "msg": {
         "already_have_account": "هل لديك حساب بالفعل؟",
-        "auto_renews_in": "يتجدد تلقائيًا خلال {{days}} يوم",
         "auto_renews": "يتجدد تلقائيًا خلال {{time}}",
+        "auto_renews_in": "يتجدد تلقائيًا خلال {{days}} يوم",
         "confirm_cancel_subscription": "هل أنت متأكد أنك تريد إلغاء اشتراكك؟",
         "copy_success": "تم نسخ النص إلى الحافظة",
         "delete_confirmation": "هل أنت متأكد أنك تريد حذف حسابك بشكل دائم؟ ستفقد جميع كلماتك المحفوظة وتقدمك. لا يمكن التراجع عن هذا الإجراء.",
@@ -427,8 +427,8 @@
         "or_login_with": "أو تسجيل الدخول باستخدام:",
         "or_register_with": "أو التسجيل باستخدام:",
         "pro_feature_chatgpt": "يمكن فقط للمستخدمين المتقدمين استخدام ميزات الذكاء الاصطناعي في Language Player Go. لاستخدام هذه الميزة، قم بالترقية إلى النسخة المتقدمة.",
-        "pro_transcript_limit_reached": "تم الوصول إلى حد النصوص. يرجى الترقية إلى النسخة المتقدمة للوصول إلى المزيد من النصوص.",
         "pro_transcript": "قم بالترقية إلى النسخة المتقدمة لعرض النص الكامل!",
+        "pro_transcript_limit_reached": "تم الوصول إلى حد النصوص. يرجى الترقية إلى النسخة المتقدمة للوصول إلى المزيد من النصوص.",
         "sort_by": "ترتيب حسب: {{sortBy}}",
         "time_spent_learning": "الوقت المستغرق في تعلم {{language}} في Language Player",
         "upgrade_text": "قم بالترقية إلى النسخة المتقدمة للوصول إلى المزيد من مقاطع الفيديو!",
@@ -473,12 +473,12 @@
         "code_resent": "تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني."
     },
     "time": {
+        "days": "{{count, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}}",
         "hours": "ساعات",
         "min": "دقيقة",
-        "sec": "ثانية",
-        "days": "{{count, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}}",
         "months": "{{count, plural, zero {# شهر} one {شهر واحد} two {شهران} few {# أشهر} many {# شهرًا} other {# شهر}}}",
-        "months_and_days": "{{months}} و {{days}}"
+        "months_and_days": "{{months}} و {{days}}",
+        "sec": "ثانية"
     },
     "title": {
         "account": "الحساب",

@@ -301,8 +301,8 @@
         "speak": "Konuş",
         "start_learning": "Öğrenmeye Başla",
         "tv_shows": "TV Şovları",
-        "upgrade_to_pro": "Pro'ya Yükselt",
         "upgrade": "Yükselt",
+        "upgrade_to_pro": "Pro'ya Yükselt",
         "verify": "Doğrula",
         "watch": "İzle"
     },
@@ -406,8 +406,8 @@
     },
     "msg": {
         "already_have_account": "Zaten hesabınız var mı?",
-        "auto_renews_in": "{{days}} gün içinde otomatik yenilenir",
         "auto_renews": "{{time}} içinde otomatik olarak yenilenir",
+        "auto_renews_in": "{{days}} gün içinde otomatik yenilenir",
         "confirm_cancel_subscription": "Aboneliğinizi iptal etmek istediğinizden emin misiniz?",
         "copy_success": "Metin panoya kopyalandı",
         "delete_confirmation": "Hesabınızı kalıcı olarak silmek istediğinizden emin misiniz? Tüm kaydedilmiş kelimelerinizi ve ilerlemenizi kaybedeceksiniz. Bu işlem geri alınamaz.",
@@ -425,8 +425,8 @@
         "or_login_with": "Ya da şununla giriş yapın:",
         "or_register_with": "Ya da şununla kayıt olun:",
         "pro_feature_chatgpt": "Sadece Pro kullanıcıları Language Player Go'da AI özelliklerini kullanabilir. Bu özelliği kullanmak için Pro'ya yükseltin.",
-        "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
         "pro_transcript": "Tam transkripti görmek için Pro'ya yükseltin!",
+        "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
         "sort_by": "Şuna göre sırala: {{sortBy}}",
         "time_spent_learning": "Language Player'da {{language}} öğrenmeye harcanan süre",
         "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!",
@@ -471,12 +471,12 @@
         "code_resent": "Doğrulama kodu e-postanıza yeniden gönderildi."
     },
     "time": {
+        "days": "{{count}} gün",
         "hours": "saat",
         "min": "dakika",
-        "sec": "saniye",
-        "days": "{{count}} gün",
         "months": "{{count}} ay",
-        "months_and_days": "{{months}} ve {{days}}"
+        "months_and_days": "{{months}} ve {{days}}",
+        "sec": "saniye"
     },
     "title": {
         "account": "Hesap",

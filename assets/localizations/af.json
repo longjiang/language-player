@@ -303,10 +303,16 @@
         "speak": "Praat",
         "start_learning": "Begin leer",
         "tv_shows": "TV-programme",
-        "upgrade_to_pro": "Opgradeer na Pro",
         "upgrade": "Opgradeer",
+        "upgrade_to_pro": "Opgradeer na Pro",
         "verify": "Verifieer",
         "watch": "Kyk"
+    },
+    "button": {
+        "email_support": "E-pos Ondersteuning",
+        "processing": "Besig...",
+        "purchase": "Koop",
+        "switch_to_lifetime": "Skakel oor na Lewenslank"
     },
     "chatgpt": {
         "prompt": {
@@ -319,19 +325,23 @@
         "lifetime": "Verval nooit.",
         "monthly": "Maandeliks gefaktureer."
     },
+    "email": {
+        "body": "Beskryf asseblief jou probleem of vraag.",
+        "subject": "Ondersteuningsversoek"
+    },
     "error": {
+        "cannot_open_url": "Weet nie hoe om hierdie URL oop te maak nie:",
         "entry_not_found": "Inskrywing nie gevind of woordeboek nie gelaai nie",
         "failed_fetch_videos": "Kon nie video's laai nie",
         "failed_retrieve_password": "Kon nie gestoorde wagwoord herwin nie",
         "failed_to_load_items": "Kon nie items laai nie:",
         "generic": "Fout",
         "language_not_selected": "Taal nie gekies nie",
+        "occurred": "'n Fout het voorgekom",
         "passwords_do_not_match": "Wagwoorde stem nie ooreen nie",
         "registration_failed": "Registrasie het misluk",
         "updating_progress": "Fout met opdatering van vordering:",
-        "user_info_not_found": "Gebruikersinligting nie gevind nie",
-        "cannot_open_url": "Weet nie hoe om hierdie URL oop te maak nie:",
-        "occurred": "'n Fout het voorgekom"
+        "user_info_not_found": "Gebruikersinligting nie gevind nie"
     },
     "feature": {
         "see_all_subtitles": "Sien alle onderskrifsoekresultate na die eerste drie.",
@@ -410,8 +420,8 @@
     },
     "msg": {
         "already_have_account": "Het jy reeds 'n rekening?",
-        "auto_renews_in": "Hernieu outomaties oor {{days}} dae",
         "auto_renews": "Hernieu outomaties oor {{time}}",
+        "auto_renews_in": "Hernieu outomaties oor {{days}} dae",
         "confirm_cancel_subscription": "Is jy seker jy wil jou inskrywing kanselleer?",
         "copy_success": "Teks na knipbord gekopieer",
         "delete_confirmation": "Is jy seker jy wil jou rekening permanent verwyder? Jy sal al jou gestoorde woorde en vordering verloor. Hierdie aksie kan nie ongedaan gemaak word nie.",
@@ -424,21 +434,21 @@
         "forgot_password": "Wagwoord vergeet?",
         "hsk_explanation": "\"HSK\" is die amptelike Chinese vaardigheidstoets, met Vlak 1 as die laagste en Vlak 9 as die hoogste.",
         "initializing": "Besig om te inisialiseer...",
+        "lifetime_only": "Slegs die Lewenslange plan is beskikbaar as 'n opsie vir Apple In-App Aankope.",
         "loading": "Besig om te laai...",
         "no_active_subscription": "Geen aktiewe inskrywing gevind nie.",
         "or_login_with": "Of teken in met:",
         "or_register_with": "Of registreer met:",
         "pro_feature_chatgpt": "Slegs Pro-gebruikers kan KI-funksies in Language Player Go gebruik. Om hierdie funksie te gebruik, opgradeer na Pro.",
-        "pro_transcript_limit_reached": "Transkripsielimiet bereik. Opgradeer asseblief na Pro om toegang tot meer transkripsies te kry.",
         "pro_transcript": "Opgradeer na Pro om die volledige transkripsie te sien!",
+        "pro_transcript_limit_reached": "Transkripsielimiet bereik. Opgradeer asseblief na Pro om toegang tot meer transkripsies te kry.",
+        "purchase_confirmation": "Druk \"Koop\" en jy sal gevra word om jou in-app aankoop vanaf die Apple App Store te bevestig.",
         "sort_by": "Sorteer volgens: {{sortBy}}",
+        "subscription_explanation": "Tans word maandelikse en jaarlikse intekeninge nie as in-app aankope ondersteun nie, omdat ons bediener slegs eenmalige betalings van Apple kan hanteer. Om voort te gaan met die aankoop, kies asseblief die Lewenslange Plan.",
         "time_spent_learning": "Tyd spandeer aan die leer van {{language}} in Language Player",
         "upgrade_text": "Opgradeer na Pro om toegang tot meer video's te kry!",
         "what_your_first_language": "Wat is jou moedertaal?",
-        "with_pro_you_can": "Met Pro kan jy:",
-        "purchase_confirmation": "Druk \"Koop\" en jy sal gevra word om jou in-app aankoop vanaf die Apple App Store te bevestig.",
-        "lifetime_only": "Slegs die Lewenslange plan is beskikbaar as 'n opsie vir Apple In-App Aankope.",
-        "subscription_explanation": "Tans word maandelikse en jaarlikse intekeninge nie as in-app aankope ondersteun nie, omdat ons bediener slegs eenmalige betalings van Apple kan hanteer. Om voort te gaan met die aankoop, kies asseblief die Lewenslange Plan."
+        "with_pro_you_can": "Met Pro kan jy:"
     },
     "of": "van",
     "option": {
@@ -478,12 +488,12 @@
         "code_resent": "Verifikasiekode is weer na jou e-pos gestuur."
     },
     "time": {
+        "days": "{{count, plural, one {# dag} other {# dae}}}",
         "hours": "ure",
         "min": "min",
-        "sec": "sek",
-        "days": "{{count, plural, one {# dag} other {# dae}}}",
         "months": "{{count, plural, one {# maand} other {# maande}}}",
-        "months_and_days": "{{months}} en {{days}}"
+        "months_and_days": "{{months}} en {{days}}",
+        "sec": "sek"
     },
     "title": {
         "account": "Rekening",
@@ -492,6 +502,7 @@
         "best_value": "Beste waarde",
         "choose_language": "Kies taal",
         "choose_your_plan": "Kies jou plan",
+        "confirm_in_app_purchase": "Bevestig jou in-app aankoop",
         "continue_learning": "Gaan voort met {{l2Code}} leer",
         "current_level": "Wat is jou huidige {{language}}-vlak?",
         "current_plan": "Huidige plan",
@@ -514,6 +525,7 @@
         "monthly": "Maandeliks",
         "my_progress": "My vordering",
         "next": "Volgende",
+        "only_lifetime_available": "Slegs die Lewenslange Plan is beskikbaar in die App Store",
         "password": "Wagwoord",
         "popularity": "Gewildheid",
         "privacy_policy": "Privaatheidsbeleid",
@@ -528,9 +540,7 @@
         "verify_your_email": "Verifieer jou e-pos",
         "views": "{{numViews}} keer gekyk",
         "watch_history": "Kykgeskiedenis",
-        "your_current_plan": "Jou huidige plan",
-        "confirm_in_app_purchase": "Bevestig jou in-app aankoop",
-        "only_lifetime_available": "Slegs die Lewenslange Plan is beskikbaar in die App Store"
+        "your_current_plan": "Jou huidige plan"
     },
     "video": {
         "comments": "Kommentaar",
@@ -541,15 +551,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "button": {
-        "purchase": "Koop",
-        "processing": "Besig...",
-        "switch_to_lifetime": "Skakel oor na Lewenslank",
-        "email_support": "E-pos Ondersteuning"
-    },
-    "email": {
-        "subject": "Ondersteuningsversoek",
-        "body": "Beskryf asseblief jou probleem of vraag."
     }
 }

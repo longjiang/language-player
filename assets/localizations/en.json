@@ -303,10 +303,16 @@
         "speak": "Speak",
         "start_learning": "Start Learning",
         "tv_shows": "TV Shows",
-        "upgrade_to_pro": "Upgrade to Pro",
         "upgrade": "Upgrade",
+        "upgrade_to_pro": "Upgrade to Pro",
         "verify": "Verify",
         "watch": "Watch"
+    },
+    "button": {
+        "email_support": "Email Support",
+        "processing": "Processing...",
+        "purchase": "Purchase",
+        "switch_to_lifetime": "Switch to Lifetime"
     },
     "chatgpt": {
         "prompt": {
@@ -319,19 +325,23 @@
         "lifetime": "Never Expires.",
         "monthly": "Billed each month."
     },
+    "email": {
+        "body": "Please describe your issue or question.",
+        "subject": "Support Request"
+    },
     "error": {
+        "cannot_open_url": "Don't know how to open this URL:",
         "entry_not_found": "Entry not found or dictionary not loaded",
         "failed_fetch_videos": "Failed to fetch videos",
         "failed_retrieve_password": "Failed to retrieve stored password",
         "failed_to_load_items": "Failed to load items:",
         "generic": "Error",
         "language_not_selected": "Language not selected",
+        "occurred": "An error occurred",
         "passwords_do_not_match": "Passwords do not match",
         "registration_failed": "Registration failed",
         "updating_progress": "Error updating progress:",
-        "user_info_not_found": "User info not found",
-        "cannot_open_url": "Don't know how to open this URL:",
-        "occurred": "An error occurred"
+        "user_info_not_found": "User info not found"
     },
     "feature": {
         "see_all_subtitles": "See all subtitles search results beyond the first three.",
@@ -410,8 +420,8 @@
     },
     "msg": {
         "already_have_account": "Already have an account?",
-        "auto_renews_in": "Auto renews in {{days}} days",
         "auto_renews": "Auto-renews in {{time}}",
+        "auto_renews_in": "Auto renews in {{days}} days",
         "confirm_cancel_subscription": "Are you sure you want to cancel your subscription?",
         "copy_success": "Text copied to clipboard",
         "delete_confirmation": "Are you sure you want to permanently delete your account? You will lose all your saved words and progress. This action cannot be undone.",
@@ -424,21 +434,21 @@
         "forgot_password": "Forgot password?",
         "hsk_explanation": "\"HSK\" is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.",
         "initializing": "Initializing...",
+        "lifetime_only": "Only the Lifetime plan is available as an option for Apple In-App Purchase.",
         "loading": "Loading...",
         "no_active_subscription": "No active subscription found.",
         "or_login_with": "Or login with:",
         "or_register_with": "Or register with:",
         "pro_feature_chatgpt": "Only Pro users can use AI features in Language Player Go. To use this feature, upgrade to Pro.",
-        "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts.",
         "pro_transcript": "Upgrade to Pro to view the full transcript!",
+        "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts.",
+        "purchase_confirmation": "Press \"Purchase\" and you will be asked to confirm your in-app purchase from the Apple App Store.",
         "sort_by": "Sort by: {{sortBy}}",
+        "subscription_explanation": "Currently, monthly and annual subscriptions are not supported as in-app purchase because our server can only handle one-time payments from Apple. To continue the purchase, please choose the Lifetime Plan.",
         "time_spent_learning": "Spent learning {{language}} in Language Player",
         "upgrade_text": "Upgrade to Pro to access more videos!",
         "what_your_first_language": "What’s your first language?",
-        "with_pro_you_can": "With Pro, you can:",
-        "purchase_confirmation": "Press \"Purchase\" and you will be asked to confirm your in-app purchase from the Apple App Store.",
-        "lifetime_only": "Only the Lifetime plan is available as an option for Apple In-App Purchase.",
-        "subscription_explanation": "Currently, monthly and annual subscriptions are not supported as in-app purchase because our server can only handle one-time payments from Apple. To continue the purchase, please choose the Lifetime Plan."
+        "with_pro_you_can": "With Pro, you can:"
     },
     "of": "of",
     "option": {
@@ -466,9 +476,9 @@
         "select_language": "Select a language"
     },
     "price": {
-        "annual": "{{price}}/yr",
-        "lifetime": "{{price}}/lifetime",
-        "monthly": "{{price}}/mo"
+        "annual": "${{price}}/yr",
+        "lifetime": "${{price}}/lifetime",
+        "monthly": "${{price}}/mo"
     },
     "setting": {
         "auto_pronounce": "Auto Pronounce",
@@ -483,12 +493,12 @@
         "code_resent": "Verification code resent to your email."
     },
     "time": {
+        "days": "{{count, plural, one {# day} other {# days}}}",
         "hours": "hours",
         "min": "min",
-        "sec": "sec",
-        "days": "{{count, plural, one {# day} other {# days}}}",
         "months": "{{count, plural, one {# month} other {# months}}}",
-        "months_and_days": "{{months}} and {{days}}"
+        "months_and_days": "{{months}} and {{days}}",
+        "sec": "sec"
     },
     "title": {
         "account": "Account",
@@ -497,6 +507,7 @@
         "best_value": "Best Value",
         "choose_language": "Choose Language",
         "choose_your_plan": "Choose Your Plan",
+        "confirm_in_app_purchase": "Confirm Your In-App Purchase",
         "continue_learning": "Continue Learning {{l2Code}}",
         "current_level": "What's your current {{language}} level?",
         "current_plan": "Current Plan",
@@ -519,6 +530,7 @@
         "monthly": "Monthly",
         "my_progress": "My Progress",
         "next": "Next",
+        "only_lifetime_available": "Only the Lifetime Plan is available in the App Store",
         "password": "Password",
         "popularity": "Popularity",
         "privacy_policy": "Privacy Policy",
@@ -533,9 +545,7 @@
         "verify_your_email": "Verify Your Email",
         "views": "{{numViews}} Views",
         "watch_history": "Watch History",
-        "your_current_plan": "Your Current Plan",
-        "confirm_in_app_purchase": "Confirm Your In-App Purchase",
-        "only_lifetime_available": "Only the Lifetime Plan is available in the App Store"
+        "your_current_plan": "Your Current Plan"
     },
     "video": {
         "comments": "Comments",
@@ -546,15 +556,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "button": {
-        "purchase": "Purchase",
-        "processing": "Processing...",
-        "switch_to_lifetime": "Switch to Lifetime",
-        "email_support": "Email Support"
-    },
-    "email": {
-        "subject": "Support Request",
-        "body": "Please describe your issue or question."
     }
 }

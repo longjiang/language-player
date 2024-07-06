@@ -303,8 +303,8 @@
         "speak": "Sprechen",
         "start_learning": "Lernen beginnen",
         "tv_shows": "TV-Sendungen",
-        "upgrade_to_pro": "Auf Pro upgraden",
         "upgrade": "Upgraden",
+        "upgrade_to_pro": "Auf Pro upgraden",
         "verify": "Verifizieren",
         "watch": "Ansehen"
     },
@@ -408,8 +408,8 @@
     },
     "msg": {
         "already_have_account": "Haben Sie bereits ein Konto?",
-        "auto_renews_in": "Verlängert sich automatisch in {{days}} Tagen",
         "auto_renews": "Verlängert sich automatisch in {{time}}",
+        "auto_renews_in": "Verlängert sich automatisch in {{days}} Tagen",
         "confirm_cancel_subscription": "Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten?",
         "copy_success": "Text in die Zwischenablage kopiert",
         "delete_confirmation": "Sind Sie sicher, dass Sie Ihr Konto dauerhaft löschen möchten? Sie verlieren alle Ihre gespeicherten Wörter und Fortschritte. Diese Aktion kann nicht rückgängig gemacht werden.",
@@ -427,8 +427,8 @@
         "or_login_with": "Oder melden Sie sich an mit:",
         "or_register_with": "Oder registrieren Sie sich mit:",
         "pro_feature_chatgpt": "Nur Pro-Benutzer können KI-Funktionen in Language Player Go verwenden. Um diese Funktion zu nutzen, upgraden Sie auf Pro.",
-        "pro_transcript_limit_reached": "Transkriptionslimit erreicht. Bitte upgraden Sie auf Pro, um Zugang zu mehr Transkriptionen zu erhalten.",
         "pro_transcript": "Upgraden Sie auf Pro, um das vollständige Transkript anzuzeigen!",
+        "pro_transcript_limit_reached": "Transkriptionslimit erreicht. Bitte upgraden Sie auf Pro, um Zugang zu mehr Transkriptionen zu erhalten.",
         "sort_by": "Sortieren nach: {{sortBy}}",
         "time_spent_learning": "Zeit, die mit dem Lernen von {{language}} in Language Player verbracht wurde",
         "upgrade_text": "Upgraden Sie auf Pro, um Zugang zu mehr Videos zu erhalten!",
@@ -473,12 +473,12 @@
         "code_resent": "Verifizierungscode erneut an Ihre E-Mail gesendet."
     },
     "time": {
+        "days": "{{count, plural, one {# Tag} other {# Tage}}}",
         "hours": "Stunden",
         "min": "Min",
-        "sec": "Sek",
-        "days": "{{count, plural, one {# Tag} other {# Tage}}}",
         "months": "{{count, plural, one {# Monat} other {# Monate}}}",
-        "months_and_days": "{{months}} und {{days}}"
+        "months_and_days": "{{months}} und {{days}}",
+        "sec": "Sek"
     },
     "title": {
         "account": "Konto",
