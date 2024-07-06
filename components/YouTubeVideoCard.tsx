@@ -22,7 +22,7 @@ import { Typography } from "@/constants";
 export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; videos: YouTubeVideo[]; style?: object }) => {
   if (videos.length === 0) videos = [video];
   const { setVideoPlayerState } = useVideoPlayer();
-  const { l2Lang } = useLanguage();
+  const { l2Lang, t } = useLanguage();
   if (!l2Lang) return null;
 
   const handlePress = () => {
@@ -34,9 +34,9 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
     router.navigate(`/video/youtube/${video.youtube_id}`);
   };
 
-  const viewsText = video.views?.toLocaleString() || '';
+  const viewsText = video.views ? t('title.views', {numViews: video.views?.toLocaleString()}) : '';
   const durationText = video.duration ? formatDuration(video.duration) : '';
-  const localeText = video.locale || '';
+  const localeText = t('lang.' + video.locale) || '';
 
   const levels = languageLevelsByL2Code(l2Lang.code); 
   const videoDifficulty = video.difficulty || 1;

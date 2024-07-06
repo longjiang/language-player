@@ -340,7 +340,8 @@
         "date": "Date",
         "length": "Length",
         "leftContext": "Left Context",
-        "rightContext": "Right Context"
+        "rightContext": "Right Context",
+        "views": "{{numViews}} Views"
     },
     "action": {
         "upgrade": "Upgrade",
