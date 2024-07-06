@@ -16,6 +16,7 @@ import { Audio } from "expo-av";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { UserDataProvider } from '@/contexts/UserDataContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
+import { useSoundEffect } from "@/hooks/useSoundEffect";
 
 const soundObject = new Audio.Sound();
 
@@ -28,24 +29,13 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
+  useSoundEffect();
+
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
-
-  useEffect(() => {
-    const enableSound = async () => {
-      if (Platform.OS === "ios") {
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-        });
-        await soundObject.loadAsync(require("@/assets/soundFile.mp3"));
-        await soundObject.playAsync();
-      }
-    };
-    enableSound();
-  });
 
   if (!loaded) {
     return null;
