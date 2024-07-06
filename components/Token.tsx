@@ -1,6 +1,6 @@
 // @/components/Token
 
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Typography } from "@/constants/Typography";
@@ -11,6 +11,10 @@ import { Token as TokenType } from "@/src/tokenizer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { addFurigana, Segment } from "@/src/furigana";
+import { useUserData } from "@/contexts/UserDataContext";
+import { DictionaryEntry } from "@/src/dictionary-types";
+import { LevelColors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 export const Token: React.FC<{
   token: TokenType,
@@ -30,8 +34,25 @@ export const Token: React.FC<{
   const fontFamily = textWeight === "bold" ? Typography.fontFamilyBold : Typography.fontFamilyRegular;
   const { l2Lang } = useLanguage();
   const { settings } = useSettings();
-  const { convert } = useDictionary();
+  const { convert, dictionary } = useDictionary();
   const modalRef = useRef();
+  const { savedWords, getSavedWordByForm } = useUserData();
+  const [ savedWord, setSavedWord ] = useState<DictionaryEntry | null>(null);
+  const colorScheme = useColorScheme();
+  const semanticSuccessColor = useThemeColor({}, "semanticSuccess");
+  const primaryBrandColor = useThemeColor({}, "primaryBrand");
+  const semanticWarningColor = useThemeColor({}, "semanticWarning");
+
+  const checkSavedWord = async () => {
+    if (!l2Lang) return;
+    const savedWordMeta = getSavedWordByForm(l2Lang.code, token.text)
+    const savedWord = dictionary && savedWordMeta ? await dictionary.getEntry(savedWordMeta.id) : null;
+    setSavedWord(savedWord);
+  }
+
+  useEffect(() => {
+    checkSavedWord();
+  }, [savedWords, token.text, dictionary]);
 
   const handleTokenPress = () => {
     modalRef.current?.open();
@@ -39,6 +60,11 @@ export const Token: React.FC<{
 
   const shouldShowPronunciation = settings.showPinyin && token.pronunciation !== token.text;
 
+  const savedWordColor = (level: number) => {
+    if (!level) return semanticWarningColor;
+    return LevelColors[colorScheme][level]
+  }
+  
   const displayContent = useMemo(() => {
     if (l2Lang.code === 'ja') {
       return addFurigana({ text: token.text, pronunciation: token.pronunciation });
@@ -62,7 +88,8 @@ export const Token: React.FC<{
                     color: primaryTextColor,
                     fontSize: defaultFontSize * textScale * 0.618,
                     marginBottom: defaultFontSize * textScale * -0.1,
-                  }
+                  },
+                  ...(savedWord ? [{ color: savedWordColor(savedWord.level) }] : []),
                 ]}
               >
                 {segment.pronunciation}
@@ -75,7 +102,8 @@ export const Token: React.FC<{
                   fontFamily,
                   color: primaryTextColor,
                   fontSize: defaultFontSize * textScale,
-                }
+                },
+                ...(savedWord ? [{ color: savedWordColor(savedWord.level) }] : []),
               ]}
             >
               {segment.text}

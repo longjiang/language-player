@@ -44,6 +44,7 @@ interface UserDataContextProps {
   savedWords: SavedWords;
   progress: Progress;
   hasSavedWord: (langCode: string, wordId: string) => boolean;
+  getSavedWordByForm: (langCode: string, form: string) => SavedWordMeta | undefined;
   saveWord: (langCode: string, word: SavedWordMeta) => Promise<void>;
   removeSavedWord: (langCode: string, wordId: string) => Promise<void>;
   getProgress: (langCode: string) => { level: string; time: number } | undefined;
@@ -129,6 +130,11 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const hasSavedWord = (langCode: string, wordId: string): boolean => {
     return userData?.saved_words[langCode]?.some(word => word.id === wordId) || false;
+  };
+
+  // Get saved word by form
+  const getSavedWordByForm = (langCode: string, form: string): SavedWordMeta | undefined => {
+    return userData?.saved_words[langCode]?.find(word => word.forms.includes(form));
   };
 
   const saveWord = async (langCode: string, word: SavedWordMeta): Promise<void> => {
@@ -225,6 +231,7 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
         savedWords: userData?.saved_words || {},
         progress: userData?.progress || {},
         hasSavedWord,
+        getSavedWordByForm,
         saveWord,
         removeSavedWord,
         getProgress,

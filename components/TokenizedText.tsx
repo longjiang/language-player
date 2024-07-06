@@ -5,6 +5,7 @@ import { View, StyleSheet } from 'react-native';
 import { Token } from './Token';
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useUserData } from '@/contexts/UserDataContext';
 
 export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({ 
   text, 
@@ -16,9 +17,11 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
   const [tokens, setTokens] = useState<Array<{ text: string }>>([]);
   const { tokenizer } = useDictionary();
   const { l2Lang } = useLanguage();
+  
 
   useEffect(() => {
     const tokenizeText = async () => {
+
       try {
         const result = await tokenizer.tokenize(text, l2Lang);
         setTokens(result);

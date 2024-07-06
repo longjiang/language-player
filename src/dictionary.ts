@@ -92,9 +92,9 @@ export class Dictionary {
    * @param id - The entry ID
    * @returns The dictionary entry or undefined if not found
    */
-  async getEntry(id: string): Promise<DictionaryEntry | undefined> {
+  async getEntry(id: string): Promise<DictionaryEntry | null> {
     const result = await this.dictionaryDB.get(id);
-    return result ? transformToDictionaryEntry(result) : undefined;
+    return result ? transformToDictionaryEntry(result) : null;
   }
 
   /**
