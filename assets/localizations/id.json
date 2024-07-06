@@ -340,7 +340,11 @@
         "date": "Tanggal",
         "length": "Panjang",
         "leftContext": "Konteks Kiri",
-        "rightContext": "Konteks Kanan"
+        "rightContext": "Konteks Kanan",
+        "views": "{{numViews}} Dilihat",
+        "settings": "Pengaturan",
+        "language_settings": "Pengaturan Bahasa",
+        "app_settings": "Pengaturan Aplikasi"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -481,5 +485,14 @@
     },
     "list_all": "Tampilkan Semua",
     "of": "of",
-    "upgrade_text": "Frissítse Pro verzióra"
+    "upgrade_text": "Frissítse Pro verzióra",
+    "setting": {
+        "show_phonetics": "Tampilkan Fonem",
+        "use_traditional": "Gunakan Tradisional",
+        "show_translation": "Tampilkan Terjemahan",
+        "show_gloss_saved": "Tampilkan Glosari untuk Tersimpan",
+        "saved_words_blanks": "Simpan Kata sebagai Spasi",
+        "auto_pronounce": "Pronon Otomatis",
+        "dark_mode": "Mode Gelap"
+    }
 }

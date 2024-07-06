@@ -339,7 +339,11 @@
         "date": "Data",
         "length": "Comprimento",
         "leftContext": "Sentido Esquerdo",
-        "rightContext": "Sentido Direito"
+        "rightContext": "Sentido Direito",
+        "views": "{{numViews}} {{}} Visningar",
+        "settings": "Configurações",
+        "language_settings": "Configurações de idioma",
+        "app_settings": "Configurações do aplicativo"
     },
     "action": {
         "upgrade": "Uppgradera",
@@ -480,5 +484,14 @@
     },
     "list_all": "Mostrar Tudo",
     "of": "de",
-    "upgrade_text": "Nadogradite na Pro da biste pristupili više videozapisa!"
+    "upgrade_text": "Nadogradite na Pro da biste pristupili više videozapisa!",
+    "setting": {
+        "show_phonetics": "Mostrar Fonética",
+        "use_traditional": "Usar Tradicional",
+        "show_translation": "Mostrar Tradução",
+        "show_gloss_saved": "Mostrar Glossário para Salvo",
+        "saved_words_blanks": "Palavras Salvas como Espaços em Branco",
+        "auto_pronounce": "Pronúncia automática",
+        "dark_mode": "Modo Escuro"
+    }
 }

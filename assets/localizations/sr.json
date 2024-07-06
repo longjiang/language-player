@@ -339,7 +339,11 @@
         "date": "Tarih",
         "length": "Uzunluk",
         "leftContext": "Sol Bağlam",
-        "rightContext": "Sağ Bağlam"
+        "rightContext": "Sağ Bağlam",
+        "views": "{{numViews}} Prikazi",
+        "settings": "Ayarlar",
+        "language_settings": "Dil Ayarları",
+        "app_settings": "Uygulama Ayarları"
     },
     "action": {
         "upgrade": "Nadogradnju",
@@ -480,5 +484,14 @@
     },
     "list_all": "Tümünü Göster",
     "of": "of",
-    "upgrade_text": "Actualiza a Pro para acceder a más vídeos!"
+    "upgrade_text": "Actualiza a Pro para acceder a más vídeos!",
+    "setting": {
+        "show_phonetics": "Sesli Harfleri Göster",
+        "use_traditional": "Geleneksel Kullan",
+        "show_translation": "Çeviriyi Göster",
+        "show_gloss_saved": "Kaydedilenler için Glossary Göster",
+        "saved_words_blanks": "Kaydedilen Kelimeleri Boşluklar Olarak Göster",
+        "auto_pronounce": "Otomatik Telaffuz",
+        "dark_mode": "Karanlık Mod"
+    }
 }

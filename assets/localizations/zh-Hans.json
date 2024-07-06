@@ -340,7 +340,11 @@
         "date": "日期",
         "length": "长度",
         "leftContext": "左上下文",
-        "rightContext": "右上下文"
+        "rightContext": "右上下文",
+        "views": "{{numViews}}视图",
+        "settings": "设置",
+        "language_settings": "语言设置",
+        "app_settings": "应用设置"
     },
     "action": {
         "upgrade": "升级",
@@ -481,5 +485,14 @@
     },
     "list_all": "列出全部",
     "of": "之",
-    "upgrade_text": "升级到专业版以访问更多视频！"
+    "upgrade_text": "升级到专业版以访问更多视频！",
+    "setting": {
+        "show_phonetics": "显示拼音",
+        "use_traditional": "使用繁体",
+        "show_translation": "显示翻译",
+        "show_gloss_saved": "显示已保存词汇的释义",
+        "saved_words_blanks": "将已保存的词变为空白",
+        "auto_pronounce": "自动发音",
+        "dark_mode": "深色模式"
+    }
 }

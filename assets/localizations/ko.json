@@ -339,7 +339,11 @@
         "date": "날짜",
         "length": "길이",
         "leftContext": "왼쪽 컨텍스트",
-        "rightContext": "오른쪽 컨텍스트"
+        "rightContext": "오른쪽 컨텍스트",
+        "views": "{{numViews}} 레이아웃",
+        "settings": "설정",
+        "language_settings": "언어 설정",
+        "app_settings": "앱 설정"
     },
     "action": {
         "upgrade": "업그레이드",
@@ -480,5 +484,14 @@
     },
     "list_all": "모두 표시",
     "of": "의",
-    "upgrade_text": "Aggiorna a Pro per accedere a più video!"
+    "upgrade_text": "Aggiorna a Pro per accedere a più video!",
+    "setting": {
+        "show_phonetics": "발음 표시",
+        "use_traditional": "번체자 사용",
+        "show_translation": "번역 표시",
+        "show_gloss_saved": "저장된 용어에 대한 용어집 표시",
+        "saved_words_blanks": "저장된 단어를 공백으로 표시",
+        "auto_pronounce": "자동 발음",
+        "dark_mode": "다크 모드"
+    }
 }

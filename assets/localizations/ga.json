@@ -340,7 +340,11 @@
         "date": "Data",
         "length": "Longitud",
         "leftContext": "Context esquerre",
-        "rightContext": "Context dret"
+        "rightContext": "Context dret",
+        "views": "{{numViews}} Amhairc",
+        "settings": "Configuració",
+        "language_settings": "Configuració d'idioma",
+        "app_settings": "Configuració de l'aplicació"
     },
     "action": {
         "upgrade": "Uasghrádú",
@@ -481,5 +485,14 @@
     },
     "list_all": "Mostra-ho tot",
     "of": "de",
-    "upgrade_text": "Mettez à niveau vers Pro pour accéder à plus de vidéos!"
+    "upgrade_text": "Mettez à niveau vers Pro pour accéder à plus de vidéos!",
+    "setting": {
+        "show_phonetics": "Mostra la fonètica",
+        "use_traditional": "Utilitza la tradicional",
+        "show_translation": "Mostra la traducció",
+        "show_gloss_saved": "Mostra el glossari per a les paraules desades",
+        "saved_words_blanks": "Paraules desades com a buits",
+        "auto_pronounce": "Pronuncia automàtica",
+        "dark_mode": "Mode fosc"
+    }
 }

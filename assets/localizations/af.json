@@ -340,7 +340,11 @@
         "date": "Datum",
         "length": "Lengte",
         "leftContext": "Linkercontext",
-        "rightContext": "Rechtercontext"
+        "rightContext": "Rechtercontext",
+        "views": "{{numViews}} Sieninge",
+        "settings": "Instellings",
+        "language_settings": "Taalinstellings",
+        "app_settings": "App-instellings"
     },
     "action": {
         "upgrade": "Opgradering",
@@ -481,5 +485,14 @@
     },
     "list_all": "Lys Alles",
     "of": "van",
-    "upgrade_text": "Gradeer op na Pro om toegang tot meer video's te kry!"
+    "upgrade_text": "Gradeer op na Pro om toegang tot meer video's te kry!",
+    "setting": {
+        "show_phonetics": "Wys Fonetiek",
+        "use_traditional": "Gebruik Tradisioneel",
+        "show_translation": "Wys Vertaling",
+        "show_gloss_saved": "Wys Glos vir Gestoorde",
+        "saved_words_blanks": "Gestoorde Woorde as Blanko",
+        "auto_pronounce": "Outomatiese Uitspraak",
+        "dark_mode": "Donker Modus"
+    }
 }

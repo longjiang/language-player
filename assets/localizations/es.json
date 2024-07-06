@@ -339,7 +339,11 @@
         "date": "Fecha",
         "length": "Longitud",
         "leftContext": "Contexto izquierdo",
-        "rightContext": "Contexto derecho"
+        "rightContext": "Contexto derecho",
+        "views": "{{numViews}} Vistas",
+        "settings": "Configuración",
+        "language_settings": "Configuración de idioma",
+        "app_settings": "Configuración de la aplicación"
     },
     "action": {
         "upgrade": "Actualizar",
@@ -480,5 +484,14 @@
     },
     "list_all": "Mostrar todo",
     "of": "de",
-    "upgrade_text": "Αναβαθμίστε σε Pro για πρόσβαση σε περισσότερα βίντεο!"
+    "upgrade_text": "Αναβαθμίστε σε Pro για πρόσβαση σε περισσότερα βίντεο!",
+    "setting": {
+        "show_phonetics": "Mostrar fonética",
+        "use_traditional": "Usar tradicional",
+        "show_translation": "Mostrar traducción",
+        "show_gloss_saved": "Mostrar glosario para Guardado",
+        "saved_words_blanks": "Palabras guardadas como espacios en blanco",
+        "auto_pronounce": "Pronunciación automática",
+        "dark_mode": "Modo oscuro"
+    }
 }

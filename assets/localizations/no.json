@@ -339,7 +339,11 @@
         "date": "Data",
         "length": "Comprimento",
         "leftContext": "Contexto Esquerdo",
-        "rightContext": "Contexto Direito"
+        "rightContext": "Contexto Direito",
+        "views": "{{numViews}} Visninger",
+        "settings": "Configurações",
+        "language_settings": "Configurações de idioma",
+        "app_settings": "Configurações do aplicativo"
     },
     "action": {
         "upgrade": "Oppgradere",
@@ -480,5 +484,14 @@
     },
     "list_all": "Mostrar Tudo",
     "of": "de",
-    "upgrade_text": "더 많은 비디오에 액세스하려면 Pro로 업그레이드하세요!"
+    "upgrade_text": "더 많은 비디오에 액세스하려면 Pro로 업그레이드하세요!",
+    "setting": {
+        "show_phonetics": "Mostrar Fonética",
+        "use_traditional": "Usar Tradicional",
+        "show_translation": "Mostrar Tradução",
+        "show_gloss_saved": "Mostrar Glossário para Salvo",
+        "saved_words_blanks": "Palavras salvas como espaços em branco",
+        "auto_pronounce": "Pronúncia automática",
+        "dark_mode": "Modo Escuro"
+    }
 }

@@ -339,7 +339,11 @@
         "date": "日付",
         "length": "長さ",
         "leftContext": "左コンテキスト",
-        "rightContext": "右コンテキスト"
+        "rightContext": "右コンテキスト",
+        "views": "{{numViews}}表示モード",
+        "settings": "設定",
+        "language_settings": "言語設定",
+        "app_settings": "アプリの設定"
     },
     "action": {
         "upgrade": "アップグレード",
@@ -480,5 +484,14 @@
     },
     "list_all": "すべて表示",
     "of": "の",
-    "upgrade_text": "Upgrade ke Pro untuk mengakses lebih banyak video!"
+    "upgrade_text": "Upgrade ke Pro untuk mengakses lebih banyak video!",
+    "setting": {
+        "show_phonetics": "音声を表示",
+        "use_traditional": "繁体字を使用",
+        "show_translation": "翻訳を表示",
+        "show_gloss_saved": "保存された用語の用語集を表示",
+        "saved_words_blanks": "保存された単語を空白として表示",
+        "auto_pronounce": "自動発音",
+        "dark_mode": "ダークモード"
+    }
 }

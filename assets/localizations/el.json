@@ -340,7 +340,11 @@
         "date": "Ημερομηνία",
         "length": "Μήκος",
         "leftContext": "Αριστερό πλαίσιο",
-        "rightContext": "Δεξί πλαίσιο"
+        "rightContext": "Δεξί πλαίσιο",
+        "views": "{{numViews}} Θέα",
+        "settings": "Ρυθμίσεις",
+        "language_settings": "Ρυθμίσεις γλώσσας",
+        "app_settings": "Ρυθμίσεις εφαρμογής"
     },
     "action": {
         "upgrade": "Αναβαθμίζω",
@@ -481,5 +485,14 @@
     },
     "list_all": "Εμφάνιση όλων",
     "of": "του",
-    "upgrade_text": " um auf mehr Videos zuzugreifen!"
+    "upgrade_text": " um auf mehr Videos zuzugreifen!",
+    "setting": {
+        "show_phonetics": "Εμφάνιση φωνητικής",
+        "use_traditional": "Χρήση παραδοσιακής",
+        "show_translation": "Εμφάνιση μετάφρασης",
+        "show_gloss_saved": "Εμφάνιση γλωσσαρίου για τα αποθηκευμένα",
+        "saved_words_blanks": "Αποθηκευμένες λέξεις ως κενά",
+        "auto_pronounce": "Αυτόματη προφορά",
+        "dark_mode": "Σκοτεινή λειτουργία"
+    }
 }

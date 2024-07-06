@@ -338,7 +338,11 @@
         "date": "Ngày",
         "length": "Chiều dài",
         "leftContext": "Ngữ cảnh trái",
-        "rightContext": "Ngữ cảnh phải"
+        "rightContext": "Ngữ cảnh phải",
+        "views": "{{numViews}} Görünümler",
+        "settings": "Ayarlar",
+        "language_settings": "Ayarlar ng Wika",
+        "app_settings": "Ayarlar ng App"
     },
     "action": {
         "upgrade": "Yükseltmek",
@@ -479,5 +483,14 @@
     },
     "list_all": "Hepsini Göster",
     "of": "của",
-    "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!"
+    "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!",
+    "setting": {
+        "show_phonetics": "Ipakita ang Phonetics",
+        "use_traditional": "Gumamit ng Tradisyonal",
+        "show_translation": "Ipakita ang Pagsasalin",
+        "show_gloss_saved": "Ipakita ang Gloss para sa Saved",
+        "saved_words_blanks": "Ang mga Nai-save na Salita bilang mga Blanks",
+        "auto_pronounce": "Pronounce ng Auto",
+        "dark_mode": "Chế độ Tối"
+    }
 }

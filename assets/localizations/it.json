@@ -340,7 +340,11 @@
         "date": "Data",
         "length": "Lunghezza",
         "leftContext": "Contesto sinistro",
-        "rightContext": "Contesto destro"
+        "rightContext": "Contesto destro",
+        "views": "{{numViews}} Visualizzazioni",
+        "settings": "Impostazioni",
+        "language_settings": "Impostazioni lingua",
+        "app_settings": "Impostazioni app"
     },
     "action": {
         "upgrade": "Aggiornamento",
@@ -481,5 +485,14 @@
     },
     "list_all": "Mostra Tutto",
     "of": "di",
-    "upgrade_text": " hogy több videót érjen el!"
+    "upgrade_text": " hogy több videót érjen el!",
+    "setting": {
+        "show_phonetics": "Mostra la fonetica",
+        "use_traditional": "Usa tradizionale",
+        "show_translation": "Mostra la traduzione",
+        "show_gloss_saved": "Mostra glossario per Salvato",
+        "saved_words_blanks": "Parole salvate come spazi vuoti",
+        "auto_pronounce": "Pronuncia automatica",
+        "dark_mode": "Modalità scura"
+    }
 }

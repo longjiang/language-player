@@ -338,7 +338,11 @@
         "date": "Ngày",
         "length": "Chiều dài",
         "leftContext": "Ngữ cảnh trái",
-        "rightContext": "Ngữ cảnh phải"
+        "rightContext": "Ngữ cảnh phải",
+        "views": "{{numViews}} Views",
+        "settings": "Cài đặt",
+        "language_settings": "Cài đặt ngôn ngữ",
+        "app_settings": "Cài đặt ứng dụng"
     },
     "action": {
         "upgrade": "Nâng cấp",
@@ -479,5 +483,14 @@
     },
     "list_all": "Hiển thị tất cả",
     "of": "của",
-    "upgrade_text": "อัปเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!"
+    "upgrade_text": "อัปเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!",
+    "setting": {
+        "show_phonetics": "Hiển thị âm vị",
+        "use_traditional": "Sử dụng truyền thống",
+        "show_translation": "Sử dụng dịch",
+        "show_gloss_saved": "Sử dụng Gloss cho Saved",
+        "saved_words_blanks": "Saved Words as Blanks",
+        "auto_pronounce": "Tự động Phát âm",
+        "dark_mode": "Chế độ tối"
+    }
 }

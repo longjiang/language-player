@@ -340,7 +340,11 @@
         "date": "Päivämäärä",
         "length": "Pituus",
         "leftContext": "Vasen konteksti",
-        "rightContext": "Oikea konteksti"
+        "rightContext": "Oikea konteksti",
+        "views": "{{numViews}} Näkymät",
+        "settings": "Asetukset",
+        "language_settings": "Kieliasetukset",
+        "app_settings": "Sovellusasetukset"
     },
     "action": {
         "upgrade": "Päivittää",
@@ -481,5 +485,14 @@
     },
     "list_all": "Näytä kaikki",
     "of": "of",
-    "upgrade_text": "¡Actualiza a Pro para acceder a más vídeos!"
+    "upgrade_text": "¡Actualiza a Pro para acceder a más vídeos!",
+    "setting": {
+        "show_phonetics": "Näytä fonetiikka",
+        "use_traditional": "Käytä perinteistä",
+        "show_translation": "Näytä käännös",
+        "show_gloss_saved": "Näytä sanasto tallennetuille",
+        "saved_words_blanks": "Tallennetut sanat tyhjinä",
+        "auto_pronounce": "Automaattinen ääntäminen",
+        "dark_mode": "Tumma tila"
+    }
 }

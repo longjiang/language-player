@@ -339,7 +339,11 @@
         "date": "Datum",
         "length": "Lengte",
         "leftContext": "Linkercontext",
-        "rightContext": "Rechtercontext"
+        "rightContext": "Rechtercontext",
+        "views": "{{numViews}} Weergaven",
+        "settings": "Instellingen",
+        "language_settings": "Taalinstellingen",
+        "app_settings": "App-instellingen"
     },
     "action": {
         "upgrade": "Opwaarderen",
@@ -480,5 +484,14 @@
     },
     "list_all": "Toon alles",
     "of": "of",
-    "upgrade_text": "Pro にアップグレードして、さらに多くのビデオにアクセスしましょう！"
+    "upgrade_text": "Pro にアップグレードして、さらに多くのビデオにアクセスしましょう！",
+    "setting": {
+        "show_phonetics": "Fonetiek weergeven",
+        "use_traditional": "Gebruik Traditioneel",
+        "show_translation": "Vertaling weergeven",
+        "show_gloss_saved": "Glossarium weergeven voor Opgeslagen",
+        "saved_words_blanks": "Gemarkeerde woorden als lege ruimtes weergeven",
+        "auto_pronounce": "Automatisch uitspreken",
+        "dark_mode": "Donkere modus"
+    }
 }

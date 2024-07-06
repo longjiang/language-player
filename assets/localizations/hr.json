@@ -340,7 +340,11 @@
         "date": "Datum",
         "length": "Dužina",
         "leftContext": "Levi kontekst",
-        "rightContext": "Desni kontekst"
+        "rightContext": "Desni kontekst",
+        "views": "{{numViews}} Pogledi",
+        "settings": "Postavke",
+        "language_settings": "Postavke jezika",
+        "app_settings": "Postavke aplikacije"
     },
     "action": {
         "upgrade": "Nadograditi",
@@ -481,5 +485,14 @@
     },
     "list_all": "Prikaži sve",
     "of": "od",
-    "upgrade_text": "अधिक वीडियो देखने के लिए Pro में अपग्रेड करें!"
+    "upgrade_text": "अधिक वीडियो देखने के लिए Pro में अपग्रेड करें!",
+    "setting": {
+        "show_phonetics": "Prikaži fonetiku",
+        "use_traditional": "Koristi tradicionalno",
+        "show_translation": "Prikaži prijevod",
+        "show_gloss_saved": "Prikaži glosar za spremljene",
+        "saved_words_blanks": "Spremljene riječi kao praznine",
+        "auto_pronounce": "Automatsko izgovaranje",
+        "dark_mode": "Tamni način rada"
+    }
 }

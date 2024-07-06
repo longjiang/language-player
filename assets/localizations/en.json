@@ -341,7 +341,10 @@
         "length": "Length",
         "leftContext": "Left Context",
         "rightContext": "Right Context",
-        "views": "{{numViews}} Views"
+        "views": "{{numViews}} Views",
+        "settings": "Settings",
+        "language_settings": "Language Settings",
+        "app_settings": "App Settings"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -482,5 +485,14 @@
     },
     "list_all": "List All",
     "of": "of",
-    "upgrade_text": "Upgrade to Pro to access more videos!"
+    "upgrade_text": "Upgrade to Pro to access more videos!",
+    "setting": {
+        "show_phonetics": "Show Phonetics",
+        "use_traditional": "Use Traditional",
+        "show_translation": "Show Translation",
+        "show_gloss_saved": "Show Gloss for Saved",
+        "saved_words_blanks": "Saved Words as Blanks",
+        "auto_pronounce": "Auto Pronounce",
+        "dark_mode": "Dark Mode"
+    }
 }

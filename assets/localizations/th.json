@@ -338,7 +338,11 @@
         "date": "วันที่",
         "length": "ความยาว",
         "leftContext": "บริบทซ้าย",
-        "rightContext": "บริบทขวา"
+        "rightContext": "บริบทขวา",
+        "views": "{{numViews}} มุมมอง",
+        "settings": "การตั้งค่า",
+        "language_settings": "การตั้งค่าภาษา",
+        "app_settings": "การตั้งค่าแอพ"
     },
     "action": {
         "upgrade": "อัพ เกรด",
@@ -479,5 +483,14 @@
     },
     "list_all": "แสดงทั้งหมด",
     "of": "ของ",
-    "upgrade_text": "Atualize para Pro para acessar mais vídeos!"
+    "upgrade_text": "Atualize para Pro para acessar mais vídeos!",
+    "setting": {
+        "show_phonetics": "แสดงเสียงพยาง",
+        "use_traditional": "ใช้ตามประเพณี",
+        "show_translation": "แสดงการแปล",
+        "show_gloss_saved": "บทอธิบายสำหรับที่บันทึกไว้",
+        "saved_words_blanks": "บทความที่บันทึกไว้เป็นช่องว่าง",
+        "auto_pronounce": "ออกเสียงอัตโนมัติ",
+        "dark_mode": "โหมดมืด"
+    }
 }

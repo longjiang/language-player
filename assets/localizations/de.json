@@ -340,7 +340,11 @@
         "date": "Datum",
         "length": "Länge",
         "leftContext": "Linker Kontext",
-        "rightContext": "Rechter Kontext"
+        "rightContext": "Rechter Kontext",
+        "views": "{{numViews}} Ansichten",
+        "settings": "Einstellungen",
+        "language_settings": "Spracheinstellungen",
+        "app_settings": "App-Einstellungen"
     },
     "action": {
         "upgrade": "Upgrade",
@@ -481,5 +485,14 @@
     },
     "list_all": "Alle auflisten",
     "of": "von",
-    "upgrade_text": "Upgrade auf Pro"
+    "upgrade_text": "Upgrade auf Pro",
+    "setting": {
+        "show_phonetics": "Phonetik anzeigen",
+        "use_traditional": "Traditionell verwenden",
+        "show_translation": "Übersetzung anzeigen",
+        "show_gloss_saved": "Glossar für Gespeichert anzeigen",
+        "saved_words_blanks": "Gespeicherte Wörter als Leerzeichen",
+        "auto_pronounce": "Automatische Aussprache",
+        "dark_mode": "Dunkler Modus"
+    }
 }

@@ -340,7 +340,11 @@
         "date": "Dátum",
         "length": "Hossz",
         "leftContext": "Left Context",
-        "rightContext": "Right Context"
+        "rightContext": "Right Context",
+        "views": "{{numViews}} Kilátás nyílik",
+        "settings": "Beállítások",
+        "language_settings": "Nyelvi beállítások",
+        "app_settings": "Alkalmazásbeállítások"
     },
     "action": {
         "upgrade": "Feljavít",
@@ -481,5 +485,14 @@
     },
     "list_all": "Mutasd az összeset",
     "of": "az",
-    "upgrade_text": "Nadogradite na Pro da biste pristupili više videozapisa!"
+    "upgrade_text": "Nadogradite na Pro da biste pristupili više videozapisa!",
+    "setting": {
+        "show_phonetics": "Fonetika megjelenítése",
+        "use_traditional": "Hagyományos használata",
+        "show_translation": "Fordítás megjelenítése",
+        "show_gloss_saved": "Elmentett szókincs megjelenítése",
+        "saved_words_blanks": "Mentett szavak üresen",
+        "auto_pronounce": "Automatikus kiejtés",
+        "dark_mode": "Sötét mód"
+    }
 }

@@ -340,7 +340,11 @@
         "date": "Date",
         "length": "Longueur",
         "leftContext": "Contexte gauche",
-        "rightContext": "Contexte droit"
+        "rightContext": "Contexte droit",
+        "views": "{{numViews}} Affichage",
+        "settings": "Paramètres",
+        "language_settings": "Paramètres de langue",
+        "app_settings": "Paramètres de l'application"
     },
     "action": {
         "upgrade": "Mise à niveau",
@@ -481,5 +485,14 @@
     },
     "list_all": "Tout afficher",
     "of": "of",
-    "upgrade_text": "Päivitä Pro-versioon saadaksesi lisää videoita!"
+    "upgrade_text": "Päivitä Pro-versioon saadaksesi lisää videoita!",
+    "setting": {
+        "show_phonetics": "Montrer la phonétique",
+        "use_traditional": "Utiliser le traditionnel",
+        "show_translation": "Afficher la traduction",
+        "show_gloss_saved": "Afficher le glossaire pour les enregistrements",
+        "saved_words_blanks": "Mots sauvegardés comme blancs",
+        "auto_pronounce": "Prononciation automatique",
+        "dark_mode": "Mode sombre"
+    }
 }

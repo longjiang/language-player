@@ -340,7 +340,11 @@
         "date": "तारीख",
         "length": "लंबाई",
         "leftContext": "बाएं संदर्भ",
-        "rightContext": "दाएं संदर्भ"
+        "rightContext": "दाएं संदर्भ",
+        "views": "{{numViews}} विचारों",
+        "settings": "सेटिंग्स",
+        "language_settings": "भाषा सेटिंग्स",
+        "app_settings": "ऐप सेटिंग्स"
     },
     "action": {
         "upgrade": "अपग्रेड",
@@ -481,5 +485,14 @@
     },
     "list_all": "सभी दिखाएं",
     "of": "का",
-    "upgrade_text": "Actualitza a Pro per accedir a més vídeos!"
+    "upgrade_text": "Actualitza a Pro per accedir a més vídeos!",
+    "setting": {
+        "show_phonetics": "ध्वनिक दिखाएं",
+        "use_traditional": "पारंपरिक उपयोग करें",
+        "show_translation": "अनुवाद दिखाएं",
+        "show_gloss_saved": "सहेजे गए शब्दों के लिए ग्लॉस दिखाएं",
+        "saved_words_blanks": "सहेजे गए शब्दों को रिक्त स्थान के रूप में दिखाएं",
+        "auto_pronounce": "स्वचालित उच्चारण",
+        "dark_mode": "डार्क मोड"
+    }
 }

@@ -340,7 +340,11 @@
         "date": "تاريخ",
         "length": "الطول",
         "leftContext": "السياق الأيسر",
-        "rightContext": "السياق الأيمن"
+        "rightContext": "السياق الأيمن",
+        "views": "{{numViews}} طرق عرض",
+        "settings": "الإعدادات",
+        "language_settings": "إعدادات اللغة",
+        "app_settings": "إعدادات التطبيق"
     },
     "action": {
         "upgrade": "ترقيه",
@@ -481,5 +485,14 @@
     },
     "list_all": "عرض الكل",
     "of": "من",
-    "upgrade_text": "قم بالترقية إلى النسخة الاحترافية للوصول إلى المزيد من مقاطع الفيديو!"
+    "upgrade_text": "قم بالترقية إلى النسخة الاحترافية للوصول إلى المزيد من مقاطع الفيديو!",
+    "setting": {
+        "show_phonetics": "عرض الصوتيات",
+        "use_traditional": "استخدام التقليدية",
+        "show_translation": "عرض الترجمة",
+        "show_gloss_saved": "عرض المعجم للمحفوظات",
+        "saved_words_blanks": "الكلمات المحفوظة كفراغات",
+        "auto_pronounce": "النطق التلقائي",
+        "dark_mode": "الوضع الداكن"
+    }
 }
