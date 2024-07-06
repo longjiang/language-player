@@ -7,8 +7,6 @@ import { View } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { PLAYER_STATES } from "react-native-youtube-iframe";
 
-
-
 export const YouTubeVideo: React.FC<{
   youtubeId: string;
   autoplay?: boolean;
@@ -38,7 +36,6 @@ export const YouTubeVideo: React.FC<{
   // Determine if I'm in the VideoWithTranscriptProvider with try/catch
   // If in the provider, get the playbackState currentTime values, and the updatePlaybackState, and updateCurrentTime functions
   try {
-
     const context = useVideoWithTranscriptContext();
     playbackState = context.playbackState;
     currentTime = context.currentTime;
@@ -64,6 +61,11 @@ export const YouTubeVideo: React.FC<{
   if (inVideoWithTranscriptProvider) {
     // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
     useEffect(() => {
+      // Clear any existing interval
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+
       // Set the interval and store its ID
       intervalRef.current = setInterval(async () => {
         if (!playerRef.current) return;
@@ -77,7 +79,6 @@ export const YouTubeVideo: React.FC<{
       
       if (seekTime && playerRef.current?.seekTo) {
         // Only seek if the currentTime is different from the current time of the video by 100ms
-
         playerRef.current.seekTo(currentTime, true); // The second allowSeekAhead parameter determines whether the player will make a new request to the server if the seconds parameter specifies a time outside of the currently buffered video data.
         resetSeekTime();
       }
@@ -86,11 +87,10 @@ export const YouTubeVideo: React.FC<{
       return () => {
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
+          intervalRef.current = null; // Reset interval reference to null after clearing it
         }
       };
-
-    }, [playbackState, seekTime]);
-
+    }, [playbackState, seekTime, inVideoWithTranscriptProvider, currentTime, updateCurrentTime]); // Added necessary dependencies
   }
 
   // Update the duration of the video once it's loaded
