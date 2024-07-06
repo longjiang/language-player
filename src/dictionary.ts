@@ -159,23 +159,22 @@ export class Dictionary {
    * @param lemmas - An array of lemma strings to match against
    * @returns An array of matching dictionary entries, sorted by relevance
    */
-  async findEntriesByLemmas(lemmas: string[]): Promise<DictionaryEntry[]> {
-    const normalizedLemmas = lemmas.map(lemma => stripAccents(lemma.toLowerCase()));
+  async findEntriesByLemmas(searchTerms: string[], limit: number = 10): Promise<DictionaryEntry[]> {
+    const normalizedTerms = searchTerms.map(term => stripAccents(term.toLowerCase()));
     
     const rawResults = await this.dictionaryDB.flexibleSearch(
-      normalizedLemmas,
+      normalizedTerms,
       ['head', 'alternate'],
-      { matchType: 'contains', bidirectional: true, limit: 200 }
+      {
+        matchTypes: ['exact', 'contains'],
+        bidirectional: true,
+        limit,
+        priorityWeights: normalizedTerms.map((_, index) => 
+          index < normalizedTerms.length - 1 ? 2 : 1  // Higher weight for lemmas
+        )
+      }
     );
   
-    const results = new Set(rawResults.map(transformToDictionaryEntry));
-  
-    const entries = Array.from(results);
-    
-    return entries.sort((a, b) => {
-      const aScore = this.calculateMatchScore(a, normalizedLemmas);
-      const bScore = this.calculateMatchScore(b, normalizedLemmas);
-      return bScore - aScore; // Higher score first
-    });
+    return rawResults.map(transformToDictionaryEntry);
   }
 }

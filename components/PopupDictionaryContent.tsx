@@ -59,13 +59,11 @@ export const PopupDictionaryContent: React.FC<{
       const tokenizerName = l2Lang && getTokenizer(l2Lang.code)?.name || ''; // getTokenizer gets the tokenizer for the specific language
       let entries: DictionaryEntry[] = []
       if (["PyidaungsuTokenizer", "JiebaTokenizer"].includes(tokenizerName)) {
-        entries = await dictionary.findWordsInPhrase(token.text) || [];
+          entries = await dictionary.findWordsInPhrase(token.text) || [];
       } else {
-        // If there are lemmas, match lemmas
-        let lemmas = getLemmas(token);
-        console.log(lemmas);
-        // If not, do a fuzzy match token.text
-
+          // Match lemmas (if exists) and token.text
+          let searchTerms = [...getLemmas(token), token.text].filter(Boolean);
+          entries = await dictionary.findEntriesByLemmas(searchTerms) || [];
       }
 
       setDictionaryEntries(entries);

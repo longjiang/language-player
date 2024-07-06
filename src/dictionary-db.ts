@@ -150,8 +150,9 @@ export class DictionaryDB {
   }
 
 
+  
   /**
-   * Performs a flexible search on specified fields of the dictionary.
+   * Performs an optimized flexible search on specified fields of the dictionary.
    * @param searchTerms - Array of terms to search for
    * @param fields - Array of field names to search in
    * @param options - Additional search options
@@ -161,15 +162,13 @@ export class DictionaryDB {
     searchTerms: string[],
     fields: string[],
     options: {
-      matchType?: 'exact' | 'contains' | 'startsWith' | 'endsWith';
       limit?: number;
-      bidirectional?: boolean;
+      exactMatch?: boolean;
     } = {}
   ): Promise<any[]> {
     const {
-      matchType = 'contains',
       limit = 100,
-      bidirectional = true
+      exactMatch = false
     } = options;
 
     if (fields.length === 0 || searchTerms.length === 0) {
@@ -182,41 +181,36 @@ export class DictionaryDB {
     let conditions: string[] = [];
     let params: string[] = [];
 
-    escapedFields.forEach(field => {
-      escapedTerms.forEach(term => {
-        switch (matchType) {
-          case 'exact':
-            conditions.push(`${field} = ?`);
-            params.push(term);
-            break;
-          case 'startsWith':
-            conditions.push(`${field} LIKE ? || '%'`);
-            params.push(term);
-            break;
-          case 'endsWith':
-            conditions.push(`${field} LIKE '%' || ?`);
-            params.push(term);
-            break;
-          case 'contains':
-          default:
-            conditions.push(`${field} LIKE '%' || ? || '%'`);
-            params.push(term);
-            if (bidirectional) {
-              conditions.push(`instr(?, ${field}) > 0`);
-              params.push(term);
-            }
+    escapedTerms.forEach((term, index) => {
+      escapedFields.forEach(field => {
+        if (exactMatch) {
+          conditions.push(`${field} = ?`);
+        } else {
+          conditions.push(`${field} LIKE '%' || ? || '%'`);
         }
+        params.push(term);
       });
     });
 
     const query = `
-      SELECT * FROM ${this.escapeIdentifier(this.dbName)}
+      SELECT *
+      FROM ${this.escapeIdentifier(this.dbName)}
       WHERE ${conditions.join(' OR ')}
+      ORDER BY 
+        CASE 
+          WHEN ${escapedFields.map(field => `${field} IN (${escapedTerms.map(() => '?').join(', ')})`).join(' OR ')} THEN 1
+          ELSE 2
+        END,
+        length(${escapedFields[0]})  -- Assuming the first field is the primary one (e.g., 'head')
       LIMIT ?
     `;
+
+    // Add parameters for the ORDER BY clause
+    params.push(...escapedTerms.flatMap(() => escapedTerms));
     params.push(limit.toString());
 
     return await this.db!.getAllAsync(query, params);
   }
+
 
 }
