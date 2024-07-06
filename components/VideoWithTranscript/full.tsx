@@ -69,7 +69,9 @@ export const VideoWithTranscriptFull: React.FC<VideoWithTranscriptFullProps> = (
           startTime={startTime}
         />
         <VideoControlBar />
-        <SyncedTranscript transcriptLimitReached={transcriptLimitReached} />
+        <View style={{ paddingHorizontal: 26 }}>
+            <SyncedTranscript transcriptLimitReached={transcriptLimitReached} />
+        </View>
       </View>
     </View>
   );

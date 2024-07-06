@@ -120,6 +120,7 @@ export const dictionaryEntryStyles = StyleSheet.create({
     borderRadius: 24,
     paddingTop: 26,
     minHeight: 600,
+    paddingBottom: 150,
   }
 });
 
