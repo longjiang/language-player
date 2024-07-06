@@ -22,6 +22,7 @@ export class Dictionary {
   private t: (key: string, params?: Record<string, any>) => string;
 
   readonly l1Code: string;
+  readonly l2Code: string;
 
   /**
    * Creates a new Dictionary instance.
@@ -32,6 +33,7 @@ export class Dictionary {
     const { dbName, l1Code, sourceUrl, normalizeEntry } = getDictionaryProfile(l2Lang);
     this.dbName = dbName;
     this.l1Code = l1Code;
+    this.l2Code = l2Lang.code;
     this.sourceUrl = sourceUrl;
     this.dictionaryDB = new DictionaryDB(this.dbName);
     this.normalizeEntry = normalizeEntry;
@@ -62,7 +64,8 @@ export class Dictionary {
     const entries = parsedData.data.map(entry => this.normalizeEntry(entry as RawEntry, entryCount)).filter(entry => entry.head);
 
     addLog(this.t('log.processing'));
-    await this.dictionaryDB.insertEntries(entries);
+    const indexPronunciation = ['zh', 'ja', 'ko'].includes(this.l2Code); // Add the ability to search by pronunciation for CJK languages
+    await this.dictionaryDB.insertEntries(entries, indexPronunciation);
 
     const newCountResult = await this.dictionaryDB.db!.getFirstAsync<{ count: number }>(`SELECT COUNT(*) AS count FROM ${this.dbName}`);
     addLog(this.t('log.entries_processed', { count: newCountResult?.count || 0 }));

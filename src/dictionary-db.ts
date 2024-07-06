@@ -47,12 +47,13 @@ export class DictionaryDB {
     `);
   }
 
-  async insertEntries(entries: any[]): Promise<void> {
+  async insertEntries(entries: any[], indexPronunciation = false): Promise<void> {
     const batchSize = 50;
     for (let i = 0; i < entries.length; i += batchSize) {
       const batch = entries.slice(i, i + batchSize);
       const values = batch.map(entry => {
-        const search = `${entry.head} ${stripAccents(entry.head).toLowerCase()} ${entry.alternate || ''} ${stripAccents(entry.pronunciation || '').toLowerCase().replace(/\s+/g, '')} ${entry.definitions.join(' ').toLowerCase()}`
+        const pronunciationSearchString = indexPronunciation ? stripAccents(entry.pronunciation || '').toLowerCase().replace(/\s+/g, '') : '';
+        const search = `${entry.head} ${stripAccents(entry.head).toLowerCase()} ${entry.alternate || ''} ${pronunciationSearchString} ${entry.definitions.slice(0,1).join(' ').toLowerCase()}`
         return `(${escapeSQLValue(entry.id) ? `'${escapeSQLValue(entry.id)}'` : 'NULL'}, 
                  ${entry.hskId || 'NULL'}, 
                  ${escapeSQLValue(entry.head) ? `'${escapeSQLValue(entry.head)}'` : 'NULL'}, 
