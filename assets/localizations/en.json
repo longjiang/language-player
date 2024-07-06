@@ -285,132 +285,51 @@
         "tr-TR": "Turkish (Turkey)",
         "yue-HK": "Cantonese (Hong Kong)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "Discover the power of Comprehensible Input through hundreds of thousands of videos in over 100 languages.",
-        "dont_have_an_account": "Don't have an account?",
-        "enrich_your_language_learning_journey": "Enrich your language-learning journey",
-        "forgot_password": "Forgot password?",
-        "or_login_with": "Or login with:",
-        "what_your_first_language": "What’s your first language?",
-        "confirm_cancel_subscription": "Are you sure you want to cancel your subscription?",
-        "no_active_subscription": "No active subscription found.",
-        "loading": "Loading...",
-        "auto_renews_in": "Auto renews in {{days}} days",
-        "expires_in": "Expires in {{days}} days",
-        "or_register_with": "Or register with:",
-        "already_have_account": "Already have an account?",
-        "enter_verification_code": "Please enter the verification code sent to the email",
-        "hsk_explanation": "\"HSK\" is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.",
-        "pro_transcript": "Upgrade to Pro to view the full transcript!",
-        "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts.",
-        "copy_success": "Text copied to clipboard",
-        "pro_feature_chatgpt": "Only Pro users can use AI features in Language Player Go. To use this feature, upgrade to Pro.",
-        "initializing": "Initializing...",
-        "sort_by": "Sort by: {{sortBy}}"
-    },
-    "title": {
-        "email": "Email",
-        "login": "Login",
-        "next": "Next",
-        "password": "Password",
-        "register": "Register",
-        "start_learning": "Start Learning",
-        "choose_language": "Choose Language",
-        "continue_learning": "Continue Learning {{l2Code}}",
-        "account": "Account",
-        "logout": "Logout",
-        "delete_my_account": "Delete My Account",
-        "privacy_policy": "Privacy Policy",
-        "current_plan": "Current Plan",
-        "best_value": "Best Value",
-        "monthly": "Monthly",
-        "annual": "Annual",
-        "lifetime": "Lifetime",
-        "trial": "Trial",
-        "verify_your_email": "Verify Your Email",
-        "how_did_you_hear": "How did you hear about us?",
-        "select_language": "What language would you like to learn?",
-        "current_level": "What's your current {{language}} level?",
-        "pro_feature": "Pro Feature",
-        "loading_dictionary": "Loading {{language}} Dictionary",
-        "dictionary": "Dictionary",
-        "examples_from_videos": "Examples from Videos",
-        "popularity": "Popularity",
-        "likes": "Likes",
-        "date": "Date",
-        "length": "Length",
-        "leftContext": "Left Context",
-        "rightContext": "Right Context",
-        "views": "{{numViews}} Views",
-        "settings": "Settings",
-        "language_settings": "Language Settings",
-        "app_settings": "App Settings"
-    },
     "action": {
-        "upgrade": "Upgrade",
         "cancel": "Cancel",
         "confirm_cancellation": "Confirm Cancellation",
-        "keep_subscription": "Keep Subscription",
-        "register": "Register",
-        "login": "Login",
-        "verify": "Verify",
-        "resend_code": "Resend Code",
-        "start_learning": "Start Learning",
-        "next": "Next",
-        "tv_shows": "TV Shows",
-        "watch": "Watch",
-        "upgrade_to_pro": "Upgrade to Pro",
-        "speak": "Speak",
         "copy": "Copy",
-        "let_chatgpt_explain": "Ask AI"
+        "keep_subscription": "Keep Subscription",
+        "let_chatgpt_explain": "Ask AI",
+        "login": "Login",
+        "logout": "Logout",
+        "next": "Next",
+        "register": "Register",
+        "resend_code": "Resend Code",
+        "speak": "Speak",
+        "start_learning": "Start Learning",
+        "tv_shows": "TV Shows",
+        "upgrade": "Upgrade",
+        "upgrade_to_pro": "Upgrade to Pro",
+        "verify": "Verify",
+        "watch": "Watch",
+        "list_all": "List All"
     },
-    "placeholder": {
-        "first_name": "First",
-        "last_name": "Last",
-        "email": "Email",
-        "password": "Password",
-        "confirm_password": "Confirm Password",
-        "please_specify": "Please specify",
-        "more_languages": "More languages ({{count}})",
-        "select_language": "Select a language",
-        "dict_search": "Search {{l2Name}}, {{altField}} or {{dictL1Name}}...",
-        "search": "Search..."
+    "chatgpt": {
+        "prompt": {
+            "base": "Succinctly explain using {{l1Name}}, what the {{l2Name}} ({{l2Code}}) word '{{word}}' means in the phrase '{{text}}'.",
+            "inflection": "Give its lemma, inflection, and morphology."
+        }
     },
     "error": {
+        "entry_not_found": "Entry not found or dictionary not loaded",
+        "failed_retrieve_password": "Failed to retrieve stored password",
+        "failed_to_load_items": "Failed to load items:",
+        "generic": "Error",
         "passwords_do_not_match": "Passwords do not match",
         "registration_failed": "Registration failed",
-        "failed_retrieve_password": "Failed to retrieve stored password",
-        "generic": "Error",
-        "user_info_not_found": "User info not found",
         "updating_progress": "Error updating progress:",
-        "failed_to_load_items": "Failed to load items:",
-        "entry_not_found": "Entry not found or dictionary not loaded"
-    },
-    "success": {
-        "code_resent": "Verification code resent to your email."
-    },
-    "option": {
-        "word_of_mouth": "Word of Mouth",
-        "instagram": "Instagram",
-        "bilibili": "Bilibili",
-        "google_ads": "Online Ads",
-        "hsk_courses": "HSK Courses",
-        "app_store": "App Store",
-        "google_play": "Google Play",
-        "google_search": "Web Search",
-        "youtube": "YouTube",
-        "other": "Other (Please specify)"
+        "user_info_not_found": "User info not found"
     },
     "level": {
-        "label": "{{levelName}} ({{examLevelName}})",
-        "name": {
-            "1": "Beginner I",
-            "2": "Beginner II",
-            "3": "Beginner III",
-            "4": "Intermediate I",
-            "5": "Intermediate II",
-            "6": "Advanced I",
-            "7": "Advanced II"
+        "cefr": {
+            "1": "CEFR Pre-A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "HSK 1",
@@ -421,14 +340,14 @@
             "6": "HSK 6",
             "7": "HSK 7-9"
         },
-        "topik": {
-            "1": "Pre-TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
         },
         "jlpt": {
             "1": "JLPT N5",
@@ -439,60 +358,151 @@
             "6": "JLPT N1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Beginner I",
+            "2": "Beginner II",
+            "3": "Beginner III",
+            "4": "Intermediate I",
+            "5": "Intermediate II",
+            "6": "Advanced I",
+            "7": "Advanced II"
         },
-        "cefr": {
-            "1": "CEFR Pre-A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "Views",
-        "likes": "Likes",
-        "comments": "Comments"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Succinctly explain using {{l1Name}}, what the {{l2Name}} ({{l2Code}}) word '{{word}}' means in the phrase '{{text}}'.",
-            "inflection": "Give its lemma, inflection, and morphology."
+        "topik": {
+            "1": "Pre-TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
         }
     },
     "log": {
-        "loading_dictionary": "Loading the dictionary...",
-        "dictionary_ready": "Dictionary ready!",
-        "failed_load_dictionary": "Failed to load dictionary: {{error}}",
         "database_already_loaded": "Database already loaded.",
+        "dictionary_ready": "Dictionary is ready and loaded.",
         "downloading": "Downloading...",
-        "processing": "Processing...",
-        "entries_processed": "{{count}} entries processed. Indexing..."
+        "entries_processed": "{{count}} entries processed. Indexing...",
+        "failed_load_dictionary": "Failed to load dictionary: {{error}}",
+        "loading_dictionary": "Loading the dictionary...",
+        "processing": "Processing..."
+    },
+    "msg": {
+        "already_have_account": "Already have an account?",
+        "auto_renews_in": "Auto renews in {{days}} days",
+        "confirm_cancel_subscription": "Are you sure you want to cancel your subscription?",
+        "copy_success": "Text copied to clipboard",
+        "discover_the_power_of_comprehensible_input": "Discover the power of Comprehensible Input through hundreds of thousands of videos in over 100 languages.",
+        "dont_have_an_account": "Don't have an account?",
+        "enrich_your_language_learning_journey": "Enrich your language-learning journey",
+        "enter_verification_code": "Please enter the verification code sent to the email",
+        "expires_in": "Expires in {{days}} days",
+        "forgot_password": "Forgot password?",
+        "hsk_explanation": "\"HSK\" is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.",
+        "initializing": "Initializing...",
+        "loading": "Loading...",
+        "no_active_subscription": "No active subscription found.",
+        "or_login_with": "Or login with:",
+        "or_register_with": "Or register with:",
+        "pro_feature_chatgpt": "Only Pro users can use AI features in Language Player Go. To use this feature, upgrade to Pro.",
+        "pro_transcript": "Upgrade to Pro to view the full transcript!",
+        "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts.",
+        "sort_by": "Sort by: {{sortBy}}",
+        "time_spent_learning": "Spent learning {{language}} in Language Player",
+        "what_your_first_language": "What’s your first language?",
+        "upgrade_text": "Upgrade to Pro to access more videos!"
+    },
+    "of": "of",
+    "option": {
+        "app_store": "App Store",
+        "bilibili": "Bilibili",
+        "google_ads": "Online Ads",
+        "google_play": "Google Play",
+        "google_search": "Web Search",
+        "hsk_courses": "HSK Courses",
+        "instagram": "Instagram",
+        "other": "Other (Please specify)",
+        "word_of_mouth": "Word of Mouth",
+        "youtube": "YouTube"
+    },
+    "placeholder": {
+        "confirm_password": "Confirm Password",
+        "dict_search": "Search {{l2Name}}, {{altField}} or {{dictL1Name}}...",
+        "email": "Email",
+        "first_name": "First",
+        "last_name": "Last",
+        "more_languages": "More languages ({{count}})",
+        "password": "Password",
+        "please_specify": "Please specify",
+        "search": "Search...",
+        "select_language": "Select a language"
+    },
+    "setting": {
+        "auto_pronounce": "Auto Pronounce",
+        "dark_mode": "Dark Mode",
+        "saved_words_blanks": "Saved Words as Blanks",
+        "show_gloss_saved": "Show Gloss for Saved",
+        "show_phonetics": "Show Phonetics",
+        "show_translation": "Show Translation",
+        "use_traditional": "Use Traditional"
+    },
+    "success": {
+        "code_resent": "Verification code resent to your email."
+    },
+    "time": {
+        "hours": "hours",
+        "min": "min",
+        "sec": "sec"
+    },
+    "title": {
+        "account": "Account",
+        "annual": "Annual",
+        "app_settings": "App Settings",
+        "best_value": "Best Value",
+        "choose_language": "Choose Language",
+        "continue_learning": "Continue Learning {{l2Code}}",
+        "current_level": "What's your current {{language}} level?",
+        "current_plan": "Current Plan",
+        "date": "Date",
+        "delete_my_account": "Delete My Account",
+        "dictionary": "Dictionary",
+        "email": "Email",
+        "examples_from_videos": "Examples from Videos",
+        "how_did_you_hear": "How did you hear about us?",
+        "language_settings": "Language Settings",
+        "leftContext": "Left Context",
+        "length": "Length",
+        "lifetime": "Lifetime",
+        "likes": "Likes",
+        "loading_dictionary": "Loading {{language}} Dictionary",
+        "login": "Login",
+        "logout": "Logout",
+        "monthly": "Monthly",
+        "my_progress": "My Progress",
+        "next": "Next",
+        "password": "Password",
+        "popularity": "Popularity",
+        "privacy_policy": "Privacy Policy",
+        "pro_feature": "Pro Feature",
+        "register": "Register",
+        "rightContext": "Right Context",
+        "saved_words": "Saved Words",
+        "select_language": "What language would you like to learn?",
+        "settings": "Settings",
+        "start_learning": "Start Learning",
+        "trial": "Trial",
+        "verify_your_email": "Verify Your Email",
+        "views": "{{numViews}} Views",
+        "watch_history": "Watch History"
+    },
+    "video": {
+        "comments": "Comments",
+        "likes": "Likes",
+        "views": "Views"
     },
     "word": {
-        "pinyin": "Pinyin",
+        "hanja": "Hanja",
         "kana": "Kana",
-        "hanja": "Hanja"
-    },
-    "list_all": "List All",
-    "of": "of",
-    "upgrade_text": "Upgrade to Pro to access more videos!",
-    "setting": {
-        "show_phonetics": "Show Phonetics",
-        "use_traditional": "Use Traditional",
-        "show_translation": "Show Translation",
-        "show_gloss_saved": "Show Gloss for Saved",
-        "saved_words_blanks": "Saved Words as Blanks",
-        "auto_pronounce": "Auto Pronounce",
-        "dark_mode": "Dark Mode"
+        "pinyin": "Pinyin"
     }
 }

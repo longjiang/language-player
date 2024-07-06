@@ -283,132 +283,51 @@
         "tr-TR": "Türkçe (Türkiye)",
         "yue-HK": "Kantonca (Hong Kong)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "100'den fazla dilde yüz binlerce video aracılığıyla Anlaşılabilir Girişin gücünü keşfedin.",
-        "dont_have_an_account": "Hesabınız yok mu?",
-        "enrich_your_language_learning_journey": "Dil öğrenme yolculuğunuzu zenginleştirin",
-        "forgot_password": "Şifrenizi mi unuttunuz?",
-        "or_login_with": "Veya şununla giriş yapın:",
-        "what_your_first_language": "İlk diliniz nedir?",
-        "confirm_cancel_subscription": "Aboneliğinizi iptal etmek istediğinizden emin misiniz?",
-        "no_active_subscription": "Etkin abonelik bulunamadı.",
-        "loading": "Yükleniyor...",
-        "auto_renews_in": "{{days}} gün içinde otomatik yenileme",
-        "expires_in": "{{days}} gün içinde sona eriyor",
-        "or_register_with": "Veya şununla kaydolun:",
-        "already_have_account": "Zaten bir hesabınız var mı?",
-        "enter_verification_code": "Lütfen e-postaya gönderilen doğrulama kodunu girin",
-        "hsk_explanation": "\"HSK\", Seviye 1 en düşük ve Seviye 9 en yüksek olmak üzere resmi Çince yeterlilik testidir.",
-        "pro_transcript": "Tam transkripti görüntülemek için Pro'ya yükseltin!",
-        "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
-        "copy_success": "Panoya kopyalanan metin",
-        "pro_feature_chatgpt": "Language Player Go'da AI özelliklerini yalnızca Pro kullanıcıları kullanabilir. Bu özelliği kullanmak için Pro'ya yükseltin.",
-        "initializing": "Başlatılıyor...",
-        "sort_by": "Sắp xếp theo: {{sortBy}}"
-    },
-    "title": {
-        "email": "E-posta",
-        "login": "Oturum açma",
-        "next": "Önümüzdeki",
-        "password": "Parola",
-        "register": "Kaydolmak",
-        "start_learning": "Öğrenmeye Başla",
-        "choose_language": "Dil Seçiniz",
-        "continue_learning": "Öğrenmeye Devam Et {{l2Code}}",
-        "account": "Hesap",
-        "logout": "Oturum kapatma",
-        "delete_my_account": "Hesabımı Sil",
-        "privacy_policy": "Gizlilik Politikası",
-        "current_plan": "Mevcut Plan",
-        "best_value": "En İyi Değer",
-        "monthly": "Aylık",
-        "annual": "Yıllık",
-        "lifetime": "Ömür",
-        "trial": "Deneme",
-        "verify_your_email": "E-postanızı doğrulayın",
-        "how_did_you_hear": "Bizden nasıl haberdar oldunuz?",
-        "select_language": "Hangi dili öğrenmek istersiniz?",
-        "current_level": "Şu anki {{language}} seviyeniz nedir?",
-        "pro_feature": "Profesyonel Özellik",
-        "loading_dictionary": "{{language}} Sözlük yükleniyor",
-        "dictionary": "Sözlük",
-        "examples_from_videos": "Video örnekleri",
-        "popularity": "Phổ biến",
-        "likes": "Lượt thích",
-        "date": "Ngày",
-        "length": "Chiều dài",
-        "leftContext": "Ngữ cảnh trái",
-        "rightContext": "Ngữ cảnh phải",
-        "views": "{{numViews}} Görünümler",
-        "settings": "Ayarlar",
-        "language_settings": "Ayarlar ng Wika",
-        "app_settings": "Ayarlar ng App"
-    },
     "action": {
-        "upgrade": "Yükseltmek",
-        "cancel": "Huỷ",
+        "cancel": "İptal",
         "confirm_cancellation": "İptali Onayla",
+        "copy": "Kopya etmek",
         "keep_subscription": "Aboneliği Koru",
-        "register": "Kayıt ol",
+        "let_chatgpt_explain": "Yapay zekaya sorun",
         "login": "Oturum açma",
-        "verify": "Xác minh",
-        "resend_code": "Mãi mãi",
+        "logout": "Oturum kapatma",
+        "next": "Önümüzdeki",
+        "register": "Kaydolmak",
+        "resend_code": "Kodu Tekrar Gönder",
+        "speak": "Konuşmak",
         "start_learning": "Öğrenmeye Başla",
-        "next": "Sonraki",
-        "tv_shows": "Programas de TV",
-        "watch": "İzle",
+        "tv_shows": "TV Şovları",
+        "upgrade": "Yükseltmek",
         "upgrade_to_pro": "Pro'ya yükseltin",
-        "speak": "Speak",
-        "copy": "Kopyala",
-        "let_chatgpt_explain": "Haydi AI anlatsın"
+        "verify": "Doğrulamak",
+        "watch": "Bakmak",
+        "list_all": "Tümünü Listele"
     },
-    "placeholder": {
-        "first_name": "İsim",
-        "last_name": "Soyadı",
-        "email": "E-posta",
-        "password": "Parola",
-        "confirm_password": "Xác nhận mật khẩu",
-        "please_specify": "Lütfen belirtin",
-        "more_languages": "Daha fazla dil ({{count}})",
-        "select_language": "Bir dil seçin",
-        "dict_search": "{{l2Name}}, {{altField}} veya {{dictL1Name}} araması yapın...",
-        "search": "Tìm kiếm..."
+    "chatgpt": {
+        "prompt": {
+            "base": "{{l1Name}} kullanarak, '{{l2Name}} ({{l2Code}}) '{{word}}' ifadesindeki '{{}}}' kelime PLACEHOLDER4 sinin ne anlama geldiğini kısaca açıklayın.",
+            "inflection": "Lemmasını, bükülmesini ve morfolojisini verin."
+        }
     },
     "error": {
+        "entry_not_found": "Giriş bulunamadı veya sözlük yüklenmedi",
+        "failed_retrieve_password": "Saklanan parola alınamadı",
+        "failed_to_load_items": "Öğeler yüklenemedi:",
+        "generic": "Hata",
         "passwords_do_not_match": "Şifreler eşleşmiyor",
         "registration_failed": "Kayıt başarısız oldu",
-        "failed_retrieve_password": "Saklanan parola alınamadı",
-        "generic": "Hata",
-        "user_info_not_found": "Kullanıcı bilgisi bulunamadı",
-        "updating_progress": "Güncelleme hatası:",
-        "failed_to_load_items": "Öğeler yüklenemedi:",
-        "entry_not_found": "Giriş bulunamadı veya sözlük yüklenmedi"
-    },
-    "success": {
-        "code_resent": "Doğrulama kodu e-postanıza yeniden gönderilir."
-    },
-    "option": {
-        "word_of_mouth": "Ağızdan Ağıza",
-        "instagram": "Instagram Bağlantısı",
-        "bilibili": "Bilibili",
-        "google_ads": "Online Reklamlar",
-        "hsk_courses": "HSK Kursları",
-        "app_store": "Uygulama Mağazası",
-        "google_play": "Google Oyun",
-        "google_search": "Web Araması",
-        "youtube": "Youtube'da T",
-        "other": "Diğer (Lütfen Belirtiniz)"
+        "updating_progress": "İlerleme güncelleştirme hatası:",
+        "user_info_not_found": "Kullanıcı bilgisi bulunamadı"
     },
     "level": {
-        "label": "{{levelName}} ({{examLevelName}})",
-        "name": {
-            "1": "Başlangıç I",
-            "2": "Başlangıç II",
-            "3": "Başlangıç III",
-            "4": "Orta Seviye I",
-            "5": "Orta Seviye II",
-            "6": "İleri I",
-            "7": "İleri Düzey II"
+        "cefr": {
+            "1": "CEFR A1 Öncesi",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "HSK 1",
@@ -419,14 +338,14 @@
             "6": "HSK 6",
             "7": "HSK 7-9"
         },
-        "topik": {
-            "1": "TOPİK öncesi 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
+        "ielts": {
+            "1": "IELTS 1 Sınavı",
+            "2": "IELTS 2 Sınavı",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5 sınavı",
+            "5": "IELTS 6.5 Sınavı",
+            "6": "IELTS 8 Sınavı",
+            "7": "IELTS 9 Sınavı"
         },
         "jlpt": {
             "1": "JLPT N5",
@@ -437,60 +356,151 @@
             "6": "JLPT N1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "IELTS 1 Sınavı",
-            "2": "IELTS 2 Sınavı",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5 sınavı",
-            "5": "IELTS 6.5 Sınavı",
-            "6": "IELTS 8 Sınavı",
-            "7": "IELTS 9 Sınavı"
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Başlangıç I",
+            "2": "Başlangıç II",
+            "3": "Başlangıç III",
+            "4": "Orta Seviye I",
+            "5": "Orta Seviye II",
+            "6": "İleri I",
+            "7": "İleri Düzey II"
         },
-        "cefr": {
-            "1": "CEFR A1 Öncesi",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "Görünümler",
-        "likes": "Seviyor",
-        "comments": "Yorum"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "{{l1Name}} kullanarak, '{{l2Name}} ({{l2Code}}) '{{word}}' ifadesindeki '{{}}' kelime PLACEHOLDER4 sinin ne anlama geldiğini kısaca açıklayın.",
-            "inflection": "Lemmasını, bükülmesini ve morfolojisini verin."
+        "topik": {
+            "1": "TOPİK öncesi 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
         }
     },
     "log": {
-        "loading_dictionary": "Sözlük yükleniyor...",
-        "dictionary_ready": "Sözlük hazır!",
-        "failed_load_dictionary": "Sözlük yüklenemedi: {{error}}",
         "database_already_loaded": "Veritabanı zaten yüklendi.",
+        "dictionary_ready": "Sözlük hazır ve yüklendi.",
         "downloading": "Indiriyor...",
-        "processing": "Işleme...",
-        "entries_processed": "{{count}} girişler işlendi. Dizin..."
+        "entries_processed": "{{count}} girişler işlendi. Dizin...",
+        "failed_load_dictionary": "Sözlük yüklenemedi: {{error}}",
+        "loading_dictionary": "Sözlük yükleniyor...",
+        "processing": "Işleme..."
+    },
+    "msg": {
+        "already_have_account": "Zaten bir hesabınız var mı?",
+        "auto_renews_in": "{{days}} gün içinde otomatik yenileme",
+        "confirm_cancel_subscription": "Aboneliğinizi iptal etmek istediğinizden emin misiniz?",
+        "copy_success": "Panoya kopyalanan metin",
+        "discover_the_power_of_comprehensible_input": "100'den fazla dilde yüz binlerce video aracılığıyla Anlaşılabilir Girişin gücünü keşfedin.",
+        "dont_have_an_account": "Hesabınız yok mu?",
+        "enrich_your_language_learning_journey": "Dil öğrenme yolculuğunuzu zenginleştirin",
+        "enter_verification_code": "Lütfen e-postaya gönderilen doğrulama kodunu girin",
+        "expires_in": "{{days}} gün içinde sona eriyor",
+        "forgot_password": "Şifrenizi mi unuttunuz?",
+        "hsk_explanation": "\"HSK\", Seviye 1 en düşük ve Seviye 9 en yüksek olmak üzere resmi Çince yeterlilik testidir.",
+        "initializing": "Başlatılıyor...",
+        "loading": "Yükleme...",
+        "no_active_subscription": "Etkin abonelik bulunamadı.",
+        "or_login_with": "Veya şununla giriş yapın:",
+        "or_register_with": "Veya şununla kaydolun:",
+        "pro_feature_chatgpt": "Language Player Go'da AI özelliklerini yalnızca Pro kullanıcıları kullanabilir. Bu özelliği kullanmak için Pro'ya yükseltin.",
+        "pro_transcript": "Tam transkripti görüntülemek için Pro'ya yükseltin!",
+        "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
+        "sort_by": "Sıralama ölçütü: {{sortBy}}",
+        "time_spent_learning": "Language Player'da {{language}} öğrenmek için harcandı",
+        "what_your_first_language": "İlk diliniz nedir?",
+        "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!"
+    },
+    "of": "in",
+    "option": {
+        "app_store": "Uygulama Mağazası",
+        "bilibili": "Bilibili",
+        "google_ads": "Online Reklamlar",
+        "google_play": "Google Oyun",
+        "google_search": "Web Araması",
+        "hsk_courses": "HSK Kursları",
+        "instagram": "Instagram Bağlantısı",
+        "other": "Diğer (Lütfen Belirtiniz)",
+        "word_of_mouth": "Ağızdan Ağıza",
+        "youtube": "Youtube'da T"
+    },
+    "placeholder": {
+        "confirm_password": "Şifreyi Onayla",
+        "dict_search": "{{l2Name}}, {{altField}} veya {{dictL1Name}} araması yapın...",
+        "email": "E-posta",
+        "first_name": "Birinci",
+        "last_name": "Son",
+        "more_languages": "Diğer diller ({{count}})",
+        "password": "Parola",
+        "please_specify": "Lütfen belirtin",
+        "search": "Aramak...",
+        "select_language": "Bir dil seçin"
+    },
+    "setting": {
+        "auto_pronounce": "Otomatik telaffuz",
+        "dark_mode": "Karanlık Mod",
+        "saved_words_blanks": "Boşluk olarak kaydedilen sözcükler",
+        "show_gloss_saved": "Kaydedilenler için Parlaklığı Göster",
+        "show_phonetics": "Fonetiği Göster",
+        "show_translation": "Çeviriyi Göster",
+        "use_traditional": "Geleneksel Kullan"
+    },
+    "success": {
+        "code_resent": "Doğrulama kodu e-postanıza yeniden gönderilir."
+    },
+    "time": {
+        "hours": "Saat",
+        "min": "min",
+        "sec": "Sn"
+    },
+    "title": {
+        "account": "Hesap",
+        "annual": "Yıllık",
+        "app_settings": "Uygulama Ayarları",
+        "best_value": "En İyi Değer",
+        "choose_language": "Dil Seçiniz",
+        "continue_learning": "Öğrenmeye Devam Et {{l2Code}}",
+        "current_level": "Şu anki {{language}} seviyeniz nedir?",
+        "current_plan": "Mevcut Plan",
+        "date": "Tarih",
+        "delete_my_account": "Hesabımı Sil",
+        "dictionary": "Sözlük",
+        "email": "E-posta",
+        "examples_from_videos": "Videolardan Örnekler",
+        "how_did_you_hear": "Bizden nasıl haberdar oldunuz?",
+        "language_settings": "Dil Ayarları",
+        "leftContext": "Sol Bağlam",
+        "length": "Uzunluk",
+        "lifetime": "Ömür",
+        "likes": "Seviyor",
+        "loading_dictionary": "{{language}} Sözlük yükleniyor",
+        "login": "Oturum açma",
+        "logout": "Oturum kapatma",
+        "monthly": "Aylık",
+        "my_progress": "İlerleme Durumum",
+        "next": "Önümüzdeki",
+        "password": "Parola",
+        "popularity": "Popüler -lik",
+        "privacy_policy": "Gizlilik Politikası",
+        "pro_feature": "Profesyonel Özellik",
+        "register": "Kaydolmak",
+        "rightContext": "Doğru Bağlam",
+        "saved_words": "Kaydedilen Kelimeler",
+        "select_language": "Hangi dili öğrenmek istersiniz?",
+        "settings": "Ayarlar",
+        "start_learning": "Öğrenmeye Başla",
+        "trial": "Deneme",
+        "verify_your_email": "E-postanızı Doğrulayın",
+        "views": "{{numViews}} Görünümler",
+        "watch_history": "İzleme Geçmişi"
+    },
+    "video": {
+        "comments": "Yorum",
+        "likes": "Seviyor",
+        "views": "Görünümler"
     },
     "word": {
-        "pinyin": "Pinyin",
+        "hanja": "Hanja Belediyesi",
         "kana": "Kana",
-        "hanja": "Hanja Belediyesi"
-    },
-    "list_all": "Hepsini Göster",
-    "of": "của",
-    "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!",
-    "setting": {
-        "show_phonetics": "Ipakita ang Phonetics",
-        "use_traditional": "Gumamit ng Tradisyonal",
-        "show_translation": "Ipakita ang Pagsasalin",
-        "show_gloss_saved": "Ipakita ang Gloss para sa Saved",
-        "saved_words_blanks": "Ang mga Nai-save na Salita bilang mga Blanks",
-        "auto_pronounce": "Pronounce ng Auto",
-        "dark_mode": "Chế độ Tối"
+        "pinyin": "Pinyin"
     }
 }

@@ -285,132 +285,51 @@
         "tr-TR": "التركية (تركيا)",
         "yue-HK": "الكانتونية (هونغ كونغ)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "اكتشف قوة الإدخال المفهوم من خلال مئات الآلاف من مقاطع الفيديو بأكثر من 100 لغة.",
-        "dont_have_an_account": "ليس لديك حساب؟",
-        "enrich_your_language_learning_journey": "إثراء رحلة تعلم اللغة الخاصة بك",
-        "forgot_password": "نسيت كلمة المرور؟",
-        "or_login_with": "أو تسجيل الدخول باستخدام:",
-        "what_your_first_language": "ما هي لغتك الأولى؟",
-        "confirm_cancel_subscription": "هل أنت متأكد من رغبتك في إلغاء اشتراكك؟",
-        "no_active_subscription": "لم يتم العثور على اشتراك نشط.",
-        "loading": "جار التحميل...",
-        "auto_renews_in": "التجديد التلقائي في {{days}} أيام",
-        "expires_in": "تنتهي صلاحيتها بعد {{days}} يوم",
-        "or_register_with": "أو سجل بواسطة:",
-        "already_have_account": "هل لديك حساب بالفعل؟",
-        "enter_verification_code": "يرجى إدخال رمز التحقق المرسل إلى البريد الإلكتروني",
-        "hsk_explanation": "\"HSK\" هو اختبار الكفاءة الصينية الرسمي ، حيث يكون المستوى 1 هو الأدنى والمستوى 9 هو الأعلى.",
-        "pro_transcript": "الترقية إلى النسخة المحترفة لعرض النص الكامل!",
-        "pro_transcript_limit_reached": "تم الوصول إلى حد النص. يرجى الترقية إلى Pro للوصول إلى المزيد من النصوص.",
-        "copy_success": "تم نسخ النص إلى الحافظة",
-        "pro_feature_chatgpt": "يمكن لمستخدمي Pro فقط استخدام ميزات الذكاء الاصطناعي في Language Player Go. لاستخدام هذه الميزة، قم بالترقية إلى Pro.",
-        "initializing": "جاري التهيئة...",
-        "sort_by": "فرز حسب: {{sortBy}}"
-    },
-    "title": {
-        "email": "البريد الإلكتروني",
-        "login": "تسجيل الدخول",
-        "next": "مقبل",
-        "password": "شعار",
-        "register": "سجل",
-        "start_learning": "ابدأ التعلم",
-        "choose_language": "اختر اللغة",
-        "continue_learning": "مواصلة التعلم {{l2Code}}",
-        "account": "حساب",
-        "logout": "الخروج",
-        "delete_my_account": "حذف حسابي",
-        "privacy_policy": "سياسة الخصوصية",
-        "current_plan": "الخطة الحالية",
-        "best_value": "أفضل قيمة",
-        "monthly": "شهرياً",
-        "annual": "سنوياً",
-        "lifetime": "مدى الحياة",
-        "trial": "تجربة",
-        "verify_your_email": "تحقق من بريدك الإلكتروني",
-        "how_did_you_hear": "كيف سمعت عنا؟",
-        "select_language": "ما اللغة التي ترغب في تعلمها؟",
-        "current_level": "ما هو مستواك الحالي في {{language}}؟",
-        "pro_feature": "ميزة الاحترافية",
-        "loading_dictionary": "تحميل قاموس {{language}}",
-        "dictionary": "القاموس",
-        "examples_from_videos": "أمثلة من الفيديوهات",
-        "popularity": "الشهرة",
-        "likes": "إعجابات",
-        "date": "تاريخ",
-        "length": "الطول",
-        "leftContext": "السياق الأيسر",
-        "rightContext": "السياق الأيمن",
-        "views": "{{numViews}} طرق عرض",
-        "settings": "الإعدادات",
-        "language_settings": "إعدادات اللغة",
-        "app_settings": "إعدادات التطبيق"
-    },
     "action": {
-        "upgrade": "ترقيه",
-        "cancel": "إلغاء",
+        "cancel": "إلغاء الأمر",
         "confirm_cancellation": "تأكيد الإلغاء",
-        "keep_subscription": "حافظ على الاشتراك",
-        "register": "سجل",
-        "login": "تسجيل الدخول",
-        "verify": "التحقق",
-        "resend_code": "إعادة إرسال الرمز",
-        "start_learning": "ابدأ التعلم",
-        "next": "التالي",
-        "tv_shows": "البرامج التلفزيونية",
-        "watch": "شاهد",
-        "upgrade_to_pro": "الترقية إلى النسخة المحترفة",
-        "speak": "تحدث",
         "copy": "نسخ",
-        "let_chatgpt_explain": "اسأل الذكاء الاصطناعي"
+        "keep_subscription": "حافظ على الاشتراك",
+        "let_chatgpt_explain": "اسأل الذكاء الاصطناعي",
+        "login": "تسجيل الدخول",
+        "logout": "تسجيل الخروج",
+        "next": "التالي",
+        "register": "سجل",
+        "resend_code": "إعادة إرسال الرمز",
+        "speak": "تحدث",
+        "start_learning": "ابدأ التعلم",
+        "tv_shows": "البرامج التلفزيونية",
+        "upgrade": "ترقيه",
+        "upgrade_to_pro": "الترقية إلى النسخة المحترفة",
+        "verify": "التحقق",
+        "watch": "شاهد",
+        "list_all": "عرض الكل"
     },
-    "placeholder": {
-        "first_name": "الاسم الأول",
-        "last_name": "الاسم الأخير",
-        "email": "البريد الإلكتروني",
-        "password": "كلمة السر",
-        "confirm_password": "تأكيد كلمة المرور",
-        "please_specify": "يرجى التحديد",
-        "more_languages": "المزيد من اللغات ({{count}})",
-        "select_language": "اختر لغة",
-        "dict_search": "البحث {{l2Name}} أو {{altField}} أو {{dictL1Name}}...",
-        "search": "بحث..."
+    "chatgpt": {
+        "prompt": {
+            "base": "اشرح بإيجاز باستخدام {{l1Name}} ما تعنيه كلمة PLACEHOLDER3{{l2Name}} ({{l2Code}}) في عبارة \"{{text}}\".",
+            "inflection": "أعط ليما ، انعطاف ، ومورفولوجيا."
+        }
     },
     "error": {
+        "entry_not_found": "لم يتم العثور على الإدخال أو لم يتم تحميل القاموس",
+        "failed_retrieve_password": "فشل في استرداد كلمة المرور المخزنة",
+        "failed_to_load_items": "فشل تحميل العناصر:",
+        "generic": "خطأ",
         "passwords_do_not_match": "كلمات المرور غير متطابقة",
         "registration_failed": "فشل التسجيل",
-        "failed_retrieve_password": "فشل في استرداد كلمة المرور المخزنة",
-        "generic": "خطأ",
-        "user_info_not_found": "معلومات المستخدم غير موجودة",
         "updating_progress": "خطأ في تحديث التقدم:",
-        "failed_to_load_items": "فشل تحميل العناصر:",
-        "entry_not_found": "لم يتم العثور على الإدخال أو لم يتم تحميل القاموس"
-    },
-    "success": {
-        "code_resent": "تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني."
-    },
-    "option": {
-        "word_of_mouth": "التوصية الشخصية",
-        "instagram": "انستغرام",
-        "bilibili": "بيليبيلي",
-        "google_ads": "الإعلانات عبر الإنترنت",
-        "hsk_courses": "دورات HSK",
-        "app_store": "المتجر",
-        "google_play": "جوجل بلاي",
-        "google_search": "البحث على الإنترنت",
-        "youtube": "يوتيوب",
-        "other": "أخرى (يرجى التحديد)"
+        "user_info_not_found": "معلومات المستخدم غير موجودة"
     },
     "level": {
-        "label": "{{levelName}} ({{examLevelName}})",
-        "name": {
-            "1": "مبتدئ I",
-            "2": "المستوى الابتدائي الثاني",
-            "3": "المستوى الابتدائي الثالث",
-            "4": "المستوى المتوسط الأول",
-            "5": "المستوى المتوسط II",
-            "6": "متقدم I",
-            "7": "متقدم II"
+        "cefr": {
+            "1": "CEFR ما قبل A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "هسك 1",
@@ -421,14 +340,14 @@
             "6": "هسك 6",
             "7": "هسك 7-9"
         },
-        "topik": {
-            "1": "ما قبل توبيك 1",
-            "2": "توبيك 1",
-            "3": "توبيك 2",
-            "4": "توبيك 3",
-            "5": "توبيك 4",
-            "6": "توبيك 5",
-            "7": "توبيك 6"
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "آيلتس 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "الآيلتس 9"
         },
         "jlpt": {
             "1": "جي ال بي تي ان 5",
@@ -439,60 +358,151 @@
             "6": "جي ال بي تي ان 1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "آيلتس 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "الآيلتس 9"
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "مبتدئ I",
+            "2": "المستوى الابتدائي الثاني",
+            "3": "المستوى الابتدائي الثالث",
+            "4": "المستوى المتوسط الأول",
+            "5": "المستوى المتوسط II",
+            "6": "متقدم I",
+            "7": "متقدم II"
         },
-        "cefr": {
-            "1": "CEFR ما قبل A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "المشاهدات",
-        "likes": "إعجاب",
-        "comments": "تعليقات"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "اشرح بإيجاز باستخدام {{l1Name}} ما تعنيه كلمة PLACEHOLDER3{{l2Name}} ({{l2Code}}) في عبارة \"{{text}}\".",
-            "inflection": "أعط ليما ، انعطاف ، ومورفولوجيا."
+        "topik": {
+            "1": "ما قبل توبيك 1",
+            "2": "توبيك 1",
+            "3": "توبيك 2",
+            "4": "توبيك 3",
+            "5": "توبيك 4",
+            "6": "توبيك 5",
+            "7": "توبيك 6"
         }
     },
     "log": {
-        "loading_dictionary": "جاري تحميل القاموس...",
-        "dictionary_ready": "القاموس جاهز!",
-        "failed_load_dictionary": "فشل تحميل القاموس: {{error}}",
         "database_already_loaded": "تم تحميل قاعدة البيانات بالفعل.",
+        "dictionary_ready": "تم تحميل القاموس وجاهز.",
         "downloading": "جاري التنزيل...",
-        "processing": "جاري المعالجة...",
-        "entries_processed": "تم معالجة {{count}} إدخال. جاري فهرسة..."
+        "entries_processed": "تم معالجة {{count}} إدخال. جاري فهرسة...",
+        "failed_load_dictionary": "فشل تحميل القاموس: {{error}}",
+        "loading_dictionary": "جاري تحميل القاموس...",
+        "processing": "جاري المعالجة..."
+    },
+    "msg": {
+        "already_have_account": "هل لديك حساب بالفعل؟",
+        "auto_renews_in": "التجديد التلقائي في {{days}} أيام",
+        "confirm_cancel_subscription": "هل أنت متأكد من رغبتك في إلغاء اشتراكك؟",
+        "copy_success": "تم نسخ النص إلى الحافظة",
+        "discover_the_power_of_comprehensible_input": "اكتشف قوة الإدخال المفهوم من خلال مئات الآلاف من مقاطع الفيديو بأكثر من 100 لغة.",
+        "dont_have_an_account": "ليس لديك حساب؟",
+        "enrich_your_language_learning_journey": "إثراء رحلة تعلم اللغة الخاصة بك",
+        "enter_verification_code": "يرجى إدخال رمز التحقق المرسل إلى البريد الإلكتروني",
+        "expires_in": "تنتهي صلاحيتها بعد {{days}} يوم",
+        "forgot_password": "نسيت كلمة المرور؟",
+        "hsk_explanation": "\"HSK\" هو اختبار الكفاءة الصينية الرسمي ، حيث يكون المستوى 1 هو الأدنى والمستوى 9 هو الأعلى.",
+        "initializing": "جاري التهيئة...",
+        "loading": "تحميل...",
+        "no_active_subscription": "لم يتم العثور على اشتراك نشط.",
+        "or_login_with": "أو تسجيل الدخول باستخدام:",
+        "or_register_with": "أو سجل بواسطة:",
+        "pro_feature_chatgpt": "يمكن لمستخدمي Pro فقط استخدام ميزات الذكاء الاصطناعي في Language Player Go. لاستخدام هذه الميزة، قم بالترقية إلى Pro.",
+        "pro_transcript": "الترقية إلى النسخة المحترفة لعرض النص الكامل!",
+        "pro_transcript_limit_reached": "تم الوصول إلى حد النص. يرجى الترقية إلى Pro للوصول إلى المزيد من النصوص.",
+        "sort_by": "فرز حسب: {{sortBy}}",
+        "time_spent_learning": "قضيت وقتًا في تعلم {{language}} في Language Player",
+        "what_your_first_language": "ما هي لغتك الأولى؟",
+        "upgrade_text": "قم بالترقية إلى Pro للوصول إلى المزيد من مقاطع الفيديو!"
+    },
+    "of": "من",
+    "option": {
+        "app_store": "المتجر",
+        "bilibili": "بيليبيلي",
+        "google_ads": "الإعلانات عبر الإنترنت",
+        "google_play": "جوجل بلاي",
+        "google_search": "البحث على الإنترنت",
+        "hsk_courses": "دورات HSK",
+        "instagram": "انستغرام",
+        "other": "أخرى (يرجى التحديد)",
+        "word_of_mouth": "التوصية الشخصية",
+        "youtube": "يوتيوب"
+    },
+    "placeholder": {
+        "confirm_password": "تأكيد كلمة المرور",
+        "dict_search": "البحث {{l2Name}} أو {{altField}} أو {{dictL1Name}}...",
+        "email": "البريد الإلكتروني",
+        "first_name": "الاسم الأول",
+        "last_name": "الاسم الأخير",
+        "more_languages": "المزيد من اللغات ({{count}})",
+        "password": "كلمة السر",
+        "please_specify": "يرجى التحديد",
+        "search": "بحث...",
+        "select_language": "اختر لغة"
+    },
+    "setting": {
+        "auto_pronounce": "النطق التلقائي",
+        "dark_mode": "الوضع الداكن",
+        "saved_words_blanks": "الكلمات المحفوظة كفراغات",
+        "show_gloss_saved": "عرض المعجم للمحفوظات",
+        "show_phonetics": "عرض الصوتيات",
+        "show_translation": "عرض الترجمة",
+        "use_traditional": "استخدام التقليدية"
+    },
+    "success": {
+        "code_resent": "تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني."
+    },
+    "time": {
+        "hours": "ساعات",
+        "min": "دقيقة",
+        "sec": "ثانية"
+    },
+    "title": {
+        "account": "حساب",
+        "annual": "سنوياً",
+        "app_settings": "إعدادات التطبيق",
+        "best_value": "أفضل قيمة",
+        "choose_language": "اختر اللغة",
+        "continue_learning": "مواصلة التعلم {{l2Code}}",
+        "current_level": "ما هو مستواك الحالي في {{language}}؟",
+        "current_plan": "الخطة الحالية",
+        "date": "تاريخ",
+        "delete_my_account": "حذف حسابي",
+        "dictionary": "القاموس",
+        "email": "البريد الإلكتروني",
+        "examples_from_videos": "أمثلة من الفيديوهات",
+        "how_did_you_hear": "كيف سمعت عنا؟",
+        "language_settings": "إعدادات اللغة",
+        "leftContext": "السياق الأيسر",
+        "length": "الطول",
+        "lifetime": "مدى الحياة",
+        "likes": "إعجابات",
+        "loading_dictionary": "تحميل قاموس {{language}}",
+        "login": "تسجيل الدخول",
+        "logout": "الخروج",
+        "monthly": "شهرياً",
+        "my_progress": "تقدمي",
+        "next": "مقبل",
+        "password": "شعار",
+        "popularity": "الشهرة",
+        "privacy_policy": "سياسة الخصوصية",
+        "pro_feature": "ميزة الاحترافية",
+        "register": "سجل",
+        "rightContext": "السياق الأيمن",
+        "saved_words": "الكلمات المحفوظة",
+        "select_language": "ما اللغة التي ترغب في تعلمها؟",
+        "settings": "الإعدادات",
+        "start_learning": "ابدأ التعلم",
+        "trial": "تجربة",
+        "verify_your_email": "تحقق من بريدك الإلكتروني",
+        "views": "{{numViews}} طرق عرض",
+        "watch_history": "تاريخ المشاهدة"
+    },
+    "video": {
+        "comments": "تعليقات",
+        "likes": "إعجاب",
+        "views": "المشاهدات"
     },
     "word": {
-        "pinyin": "بينيين",
+        "hanja": "هانجا",
         "kana": "كانا",
-        "hanja": "هانجا"
-    },
-    "list_all": "عرض الكل",
-    "of": "من",
-    "upgrade_text": "قم بالترقية إلى النسخة الاحترافية للوصول إلى المزيد من مقاطع الفيديو!",
-    "setting": {
-        "show_phonetics": "عرض الصوتيات",
-        "use_traditional": "استخدام التقليدية",
-        "show_translation": "عرض الترجمة",
-        "show_gloss_saved": "عرض المعجم للمحفوظات",
-        "saved_words_blanks": "الكلمات المحفوظة كفراغات",
-        "auto_pronounce": "النطق التلقائي",
-        "dark_mode": "الوضع الداكن"
+        "pinyin": "بينيين"
     }
 }

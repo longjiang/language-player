@@ -285,132 +285,51 @@
         "tr-TR": "Bahasa Turki (Turki)",
         "yue-HK": "Bahasa Kanton (Hong Kong)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "Temukan kekuatan Comprehensible Input melalui ratusan ribu video dalam lebih dari 100 bahasa.",
-        "dont_have_an_account": "Belum punya akun?",
-        "enrich_your_language_learning_journey": "Perkaya perjalanan belajar bahasa Anda",
-        "forgot_password": "Lupa kata sandi?",
-        "or_login_with": "Atau login dengan:",
-        "what_your_first_language": "Apa bahasa pertama Anda?",
-        "confirm_cancel_subscription": "Apakah Anda yakin ingin membatalkan langganan Anda?",
-        "no_active_subscription": "Tidak ada langganan aktif yang ditemukan.",
-        "loading": "Memuat...",
-        "auto_renews_in": "Perpanjang otomatis dalam {{days}} hari",
-        "expires_in": "Kedaluwarsa dalam {{days}} hari",
-        "or_register_with": "Atau daftar dengan:",
-        "already_have_account": "Sudah punya akun?",
-        "enter_verification_code": "Silakan masukkan kode verifikasi yang dikirim ke email",
-        "hsk_explanation": "\"HSK\" adalah tes kecakapan bahasa Mandarin resmi, dengan Level 1 menjadi yang terendah dan Level 9 menjadi yang tertinggi.",
-        "pro_transcript": "Tingkatkan ke Pro untuk melihat transkrip lengkap!",
-        "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip.",
-        "copy_success": "Salin teks ke papan klip",
-        "pro_feature_chatgpt": "Hanya pengguna Pro yang dapat menggunakan fitur AI di Language Player Go. Untuk menggunakan fitur ini, tingkatkan ke Pro.",
-        "initializing": "Inisialisasi...",
-        "sort_by": "Urutkan berdasarkan: {{sortBy}}"
-    },
-    "title": {
-        "email": "Email",
-        "login": "Login",
-        "next": "Depan",
-        "password": "Kata sandi",
-        "register": "Daftar",
-        "start_learning": "Mulai Belajar",
-        "choose_language": "Pilih Bahasa",
-        "continue_learning": "Lanjutkan Belajar {{l2Code}}",
-        "account": "Rekening",
-        "logout": "Logout",
-        "delete_my_account": "Hapus Akun Saya",
-        "privacy_policy": "Kebijakan Privasi",
-        "current_plan": "Paket Saat Ini",
-        "best_value": "Nilai terbaik",
-        "monthly": "Sebulan",
-        "annual": "Tahunan",
-        "lifetime": "Seumur hidup",
-        "trial": "Uji coba",
-        "verify_your_email": "Konfirmasikan Email Anda",
-        "how_did_you_hear": "Bagaimana Anda mendengar tentang kami?",
-        "select_language": "Bahasa apa yang ingin Anda pelajari?",
-        "current_level": "Apa tingkat {{language}} Anda saat ini?",
-        "pro_feature": "Fitur Pro",
-        "loading_dictionary": "Memuat kamus {{language}}",
-        "dictionary": "Kamus",
-        "examples_from_videos": "Contoh dari Video",
-        "popularity": "Popularitas",
-        "likes": "Suka",
-        "date": "Tanggal",
-        "length": "Panjang",
-        "leftContext": "Konteks Kiri",
-        "rightContext": "Konteks Kanan",
-        "views": "{{numViews}} Dilihat",
-        "settings": "Pengaturan",
-        "language_settings": "Pengaturan Bahasa",
-        "app_settings": "Pengaturan Aplikasi"
-    },
     "action": {
-        "upgrade": "Upgrade",
-        "cancel": "Batalkan",
+        "cancel": "Membatalkan",
         "confirm_cancellation": "Konfirmasi Pembatalan",
+        "copy": "Menyalin",
         "keep_subscription": "Tetap Berlangganan",
-        "register": "Registrasi",
+        "let_chatgpt_explain": "Tanya AI",
         "login": "Login",
-        "verify": "Konfirmasi",
+        "logout": "Logout",
+        "next": "Depan",
+        "register": "Daftar",
         "resend_code": "Kirim Ulang Kode",
+        "speak": "Berbicara",
         "start_learning": "Mulai Belajar",
-        "next": "Selanjutnya",
         "tv_shows": "Acara TV",
+        "upgrade": "Upgrade",
+        "upgrade_to_pro": "Tingkatkan ke Pro",
+        "verify": "Memverifikasi",
         "watch": "Menonton",
-        "upgrade_to_pro": "Upgrade ke Pro",
-        "speak": "Bicara",
-        "copy": "Salin",
-        "let_chatgpt_explain": "Biarkan AI menjelaskan"
+        "list_all": "Daftar Semua"
     },
-    "placeholder": {
-        "first_name": "Nama depan",
-        "last_name": "Nama belakang",
-        "email": "Email",
-        "password": "Kata sandi",
-        "confirm_password": "Konfirmasi Kata Sandi",
-        "please_specify": "Harap tentukan",
-        "more_languages": "Lebih banyak bahasa ({{count}})",
-        "select_language": "Pilih bahasa",
-        "dict_search": "Cari {{l2Name}}, {{altField}} atau {{dictL1Name}}...",
-        "search": "Cari..."
+    "chatgpt": {
+        "prompt": {
+            "base": "Jelaskan secara ringkas menggunakan {{l1Name}}, apa arti kata {{l2Name}} ({{l2Code}}) '{{word}}' dalam frasa '{{text}}'.",
+            "inflection": "Berikan lemma, infleksi, dan morfologinya."
+        }
     },
     "error": {
-        "passwords_do_not_match": "Kata sandi tidak cocok",
-        "registration_failed": "Registrasi gagal",
+        "entry_not_found": "Entri tidak ditemukan atau kamus tidak dimuat",
         "failed_retrieve_password": "Gagal mengambil kata sandi yang disimpan",
-        "generic": "Kesalahan",
-        "user_info_not_found": "Informasi pengguna tidak ditemukan",
-        "updating_progress": "Kesalahan saat memperbarui kemajuan:",
         "failed_to_load_items": "Gagal memuat item:",
-        "entry_not_found": "Entri tidak ditemukan atau kamus tidak dimuat"
-    },
-    "success": {
-        "code_resent": "Kode verifikasi telah dikirim ulang ke email Anda."
-    },
-    "option": {
-        "word_of_mouth": "Rekomendasi",
-        "instagram": "Situs web",
-        "bilibili": "Bstation",
-        "google_ads": "Iklan Online",
-        "hsk_courses": "Kursus HSK",
-        "app_store": "Toko Aplikasi",
-        "google_play": "Google Play",
-        "google_search": "Pencarian Web",
-        "youtube": "YouTube",
-        "other": "Lainnya (Sebutkan)"
+        "generic": "Kesalahan",
+        "passwords_do_not_match": "Kata sandi tidak cocok",
+        "registration_failed": "Pendaftaran gagal",
+        "updating_progress": "Kemajuan pembaruan kesalahan:",
+        "user_info_not_found": "Info pengguna tidak ditemukan"
     },
     "level": {
-        "label": "{{levelName}} ({{examLevelName}})",
-        "name": {
-            "1": "Pemula I",
-            "2": "Pemula II",
-            "3": "Pemula III",
-            "4": "Menengah I",
-            "5": "Menengah II",
-            "6": "Lanjutan I",
-            "7": "Lanjutan II"
+        "cefr": {
+            "1": "CEFR Pra-A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "HSK 1",
@@ -421,14 +340,14 @@
             "6": "HSK 6",
             "7": "HSK 7-9"
         },
-        "topik": {
-            "1": "Pra-TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
         },
         "jlpt": {
             "1": "JLPT N5",
@@ -439,60 +358,151 @@
             "6": "JLPT N1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Pemula I",
+            "2": "Pemula II",
+            "3": "Pemula III",
+            "4": "Menengah I",
+            "5": "Menengah II",
+            "6": "Lanjutan I",
+            "7": "Lanjutan II"
         },
-        "cefr": {
-            "1": "CEFR Pra-A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "Tayangan",
-        "likes": "Suka",
-        "comments": "Komentar"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Jelaskan secara ringkas menggunakan {{l1Name}}, apa arti kata {{l2Name}} ({{l2Code}}) '{{word}}' dalam frasa '{{text}}'.",
-            "inflection": "Berikan lemma, infleksi, dan morfologinya."
+        "topik": {
+            "1": "Pra-TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
         }
     },
     "log": {
-        "loading_dictionary": "Memuat kamus...",
-        "dictionary_ready": "Kamus siap!",
-        "failed_load_dictionary": "Gagal memuat kamus: {{error}}",
         "database_already_loaded": "Database sudah dimuat.",
-        "downloading": "Mengunduh...",
-        "processing": "Memproses...",
-        "entries_processed": "{{count}} entri diproses. Indexing..."
+        "dictionary_ready": "Kamus siap dan dimuat.",
+        "downloading": "Men...",
+        "entries_processed": "{{count}} entri diproses. Pengindeksan...",
+        "failed_load_dictionary": "Gagal memuat kamus: {{error}}",
+        "loading_dictionary": "Memuat kamus...",
+        "processing": "Pengolahan..."
+    },
+    "msg": {
+        "already_have_account": "Sudah punya akun?",
+        "auto_renews_in": "Perpanjang otomatis dalam {{days}} hari",
+        "confirm_cancel_subscription": "Apakah Anda yakin ingin membatalkan langganan Anda?",
+        "copy_success": "Teks disalin ke clipboard",
+        "discover_the_power_of_comprehensible_input": "Temukan kekuatan Comprehensible Input melalui ratusan ribu video dalam lebih dari 100 bahasa.",
+        "dont_have_an_account": "Belum punya akun?",
+        "enrich_your_language_learning_journey": "Perkaya perjalanan belajar bahasa Anda",
+        "enter_verification_code": "Silakan masukkan kode verifikasi yang dikirim ke email",
+        "expires_in": "Kedaluwarsa dalam {{days}} hari",
+        "forgot_password": "Lupa kata sandi?",
+        "hsk_explanation": "\"HSK\" adalah tes kecakapan bahasa Mandarin resmi, dengan Level 1 menjadi yang terendah dan Level 9 menjadi yang tertinggi.",
+        "initializing": "Initializing...",
+        "loading": "Loading...",
+        "no_active_subscription": "Tidak ada langganan aktif yang ditemukan.",
+        "or_login_with": "Atau login dengan:",
+        "or_register_with": "Atau daftar dengan:",
+        "pro_feature_chatgpt": "Hanya pengguna Pro yang dapat menggunakan fitur AI di Language Player Go. Untuk menggunakan fitur ini, tingkatkan ke Pro.",
+        "pro_transcript": "Tingkatkan ke Pro untuk melihat transkrip lengkap!",
+        "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip.",
+        "sort_by": "Urut berdasarkan: {{sortBy}}",
+        "time_spent_learning": "Menghabiskan belajar {{language}} di Language Player",
+        "what_your_first_language": "Apa bahasa pertama Anda?",
+        "upgrade_text": "Tingkatkan ke Pro untuk mengakses lebih banyak video!"
+    },
+    "of": "arab",
+    "option": {
+        "app_store": "Toko Aplikasi",
+        "bilibili": "Bstation",
+        "google_ads": "Iklan Online",
+        "google_play": "Google Play",
+        "google_search": "Pencarian Web",
+        "hsk_courses": "Kursus HSK",
+        "instagram": "Situs web",
+        "other": "Lainnya (Sebutkan)",
+        "word_of_mouth": "Dari mulut ke mulut",
+        "youtube": "YouTube"
+    },
+    "placeholder": {
+        "confirm_password": "Konfirmasi Kata Sandi",
+        "dict_search": "Cari {{l2Name}}, {{altField}} atau {{dictL1Name}}...",
+        "email": "Email",
+        "first_name": "Pertama",
+        "last_name": "Terakhir",
+        "more_languages": "Bahasa lainnya ({{count}})",
+        "password": "Kata sandi",
+        "please_specify": "Harap tentukan",
+        "search": "Mencari...",
+        "select_language": "Pilih bahasa"
+    },
+    "setting": {
+        "auto_pronounce": "Ucapkan Auto",
+        "dark_mode": "Mode Gelap",
+        "saved_words_blanks": "Kata-kata yang disimpan sebagai kosong",
+        "show_gloss_saved": "Tampilkan Gloss untuk Disimpan",
+        "show_phonetics": "Tampilkan Fonetik",
+        "show_translation": "Tampilkan Terjemahan",
+        "use_traditional": "Gunakan Tradisional"
+    },
+    "success": {
+        "code_resent": "Kode verifikasi dikirim ulang ke email Anda."
+    },
+    "time": {
+        "hours": "Jam",
+        "min": "Min",
+        "sec": "Sec"
+    },
+    "title": {
+        "account": "Rekening",
+        "annual": "Tahunan",
+        "app_settings": "Pengaturan Aplikasi",
+        "best_value": "Nilai terbaik",
+        "choose_language": "Pilih Bahasa",
+        "continue_learning": "Lanjutkan Belajar {{l2Code}}",
+        "current_level": "Berapa level {{language}} Anda saat ini?",
+        "current_plan": "Paket Saat Ini",
+        "date": "Tanggal",
+        "delete_my_account": "Hapus Akun Saya",
+        "dictionary": "Kamus",
+        "email": "Email",
+        "examples_from_videos": "Contoh dari Video",
+        "how_did_you_hear": "Bagaimana Anda mendengar tentang kami?",
+        "language_settings": "Pengaturan Bahasa",
+        "leftContext": "Konteks Kiri",
+        "length": "Panjangnya",
+        "lifetime": "Seumur hidup",
+        "likes": "Suka",
+        "loading_dictionary": "Memuat Kamus {{language}}",
+        "login": "Login",
+        "logout": "Logout",
+        "monthly": "Bulanan",
+        "my_progress": "Kemajuan Saya",
+        "next": "Depan",
+        "password": "Kata sandi",
+        "popularity": "Popularitas",
+        "privacy_policy": "Kebijakan Privasi",
+        "pro_feature": "Fitur Pro",
+        "register": "Daftar",
+        "rightContext": "Konteks yang Benar",
+        "saved_words": "Kata-kata yang Disimpan",
+        "select_language": "Bahasa apa yang ingin Anda pelajari?",
+        "settings": "Pengaturan",
+        "start_learning": "Mulai Belajar",
+        "trial": "Percobaan",
+        "verify_your_email": "Verifikasi Email Anda",
+        "views": "{{numViews}} Dilihat",
+        "watch_history": "Riwayat Tontonan"
+    },
+    "video": {
+        "comments": "Komentar",
+        "likes": "Suka",
+        "views": "Dilihat"
     },
     "word": {
-        "pinyin": "Pinyin",
+        "hanja": "Hanja",
         "kana": "Kana",
-        "hanja": "Hanja"
-    },
-    "list_all": "Tampilkan Semua",
-    "of": "of",
-    "upgrade_text": "Frissítse Pro verzióra",
-    "setting": {
-        "show_phonetics": "Tampilkan Fonem",
-        "use_traditional": "Gunakan Tradisional",
-        "show_translation": "Tampilkan Terjemahan",
-        "show_gloss_saved": "Tampilkan Glosari untuk Tersimpan",
-        "saved_words_blanks": "Simpan Kata sebagai Spasi",
-        "auto_pronounce": "Pronon Otomatis",
-        "dark_mode": "Mode Gelap"
+        "pinyin": "Pinyin"
     }
 }

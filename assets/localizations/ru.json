@@ -284,132 +284,51 @@
         "tr-TR": "Турецкий (Турция)",
         "yue-HK": "Кантонский (Гонконг)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "Откройте для себя мощь понятного ввода с помощью сотен тысяч видеороликов на более чем 100 языках.",
-        "dont_have_an_account": "У вас нет аккаунта?",
-        "enrich_your_language_learning_journey": "Обогатите свое путешествие по изучению языка",
-        "forgot_password": "Забыли пароль?",
-        "or_login_with": "Или войдите в систему с помощью:",
-        "what_your_first_language": "Какой у вас родной язык?",
-        "confirm_cancel_subscription": "Вы уверены, что хотите отменить подписку?",
-        "no_active_subscription": "Активная подписка не найдена.",
-        "loading": "Učitavanje...",
-        "auto_renews_in": "Автоматическое продление через {{days}} дней",
-        "expires_in": "Срок действия истекает через {{days}} дней",
-        "or_register_with": "Или зарегистрируйтесь с помощью:",
-        "already_have_account": "У вас уже есть учетная запись?",
-        "enter_verification_code": "Пожалуйста, введите код подтверждения, отправленный на электронную почту",
-        "hsk_explanation": "«HSK» — это официальный тест на знание китайского языка, где уровень 1 — самый низкий, а уровень 9 — самый высокий.",
-        "pro_transcript": "Перейдите на Pro для просмотра полной стенограммы!",
-        "pro_transcript_limit_reached": "Достигнут лимит стенограммы. Пожалуйста, обновите статус до Pro, чтобы получить доступ к большему количеству стенограмм.",
-        "copy_success": "Kopirano",
-        "pro_feature_chatgpt": "Только пользователи Pro могут использовать функции ИИ в Language Player Go. Чтобы использовать эту функцию, выполните обновление до Pro.",
-        "initializing": "Inicijalizacija...",
-        "sort_by": "{{sortBy}} ile sırala"
-    },
-    "title": {
-        "email": "Отправить по электронной почте",
-        "login": "Логин",
-        "next": "Следующий",
-        "password": "Пароль",
-        "register": "Регистрировать",
-        "start_learning": "Начать обучение",
-        "choose_language": "Выберите язык",
-        "continue_learning": "Продолжить обучение {{l2Code}}",
-        "account": "Счет",
-        "logout": "Выход",
-        "delete_my_account": "Удалить мою учетную запись",
-        "privacy_policy": "Политика конфиденциальности",
-        "current_plan": "Текущий план",
-        "best_value": "Лучшее соотношение цены и качества",
-        "monthly": "Ежемесячно",
-        "annual": "Ежегодно",
-        "lifetime": "Пожизненно",
-        "trial": "Испытание",
-        "verify_your_email": "Подтвердите свой адрес электронной почты",
-        "how_did_you_hear": "Как вы узнали о нас?",
-        "select_language": "Какой язык вы хотите изучать?",
-        "current_level": "Какой у вас текущий уровень {{language}}?",
-        "pro_feature": "Pro funkcija",
-        "loading_dictionary": "Učitavanje rječnika {{language}}",
-        "dictionary": "Rječnik",
-        "examples_from_videos": "Rasprave iz videozapisa",
-        "popularity": "Popularnost",
-        "likes": "Volim",
-        "date": "Datum",
-        "length": "Dužina",
-        "leftContext": "Levi kontekst",
-        "rightContext": "Desni kontekst",
-        "views": "{{numViews}} Представления",
-        "settings": "Postavke",
-        "language_settings": "Postavke jezika",
-        "app_settings": "Postavke aplikacije"
-    },
     "action": {
-        "upgrade": "Модернизировать",
-        "cancel": "Otkaži",
+        "cancel": "Отмена",
         "confirm_cancellation": "Подтвердить отмену",
+        "copy": "Копировать",
         "keep_subscription": "Сохранить подписку",
-        "register": "Регистрация",
+        "let_chatgpt_explain": "Спросите ИИ",
         "login": "Логин",
-        "verify": "Подтвердить",
-        "resend_code": "Повторно отправить код",
+        "logout": "Выход",
+        "next": "Следующий",
+        "register": "Регистрировать",
+        "resend_code": "Повторная отправка кода",
+        "speak": "Говорить",
         "start_learning": "Начать обучение",
-        "next": "Далее",
-        "tv_shows": "Programas de TV",
-        "watch": "Ver",
-        "upgrade_to_pro": "Nadogradnja na Pro",
-        "speak": "Govori",
-        "copy": "Kopiraj",
-        "let_chatgpt_explain": "Neka AI objasni"
+        "tv_shows": "ТВ шоу",
+        "upgrade": "Модернизировать",
+        "upgrade_to_pro": "Перейти на Pro",
+        "verify": "Проверять",
+        "watch": "Часы",
+        "list_all": "Список всех"
     },
-    "placeholder": {
-        "first_name": "Имя",
-        "last_name": "Фамилия",
-        "email": "Почта",
-        "password": "Пароль",
-        "confirm_password": "Подтвердите пароль",
-        "please_specify": "Пожалуйста, уточните",
-        "more_languages": "Больше языков ({{count}})",
-        "select_language": "Odaberite jezik",
-        "dict_search": "Поиск {{l2Name}}, {{altField}} или {{dictL1Name}}...",
-        "search": "Pretraži..."
+    "chatgpt": {
+        "prompt": {
+            "base": "Кратко объясните, используя {{l1Name}}, что означает {{l2Name}} ({{l2Code}}) слово '{{word}}' во фразе '{{text}}'.",
+            "inflection": "Укажите его лемму, перегиб и морфологию."
+        }
     },
     "error": {
-        "passwords_do_not_match": "Пароли не совпадают",
-        "registration_failed": "Регистрация не удалась",
-        "failed_retrieve_password": "Не удалось извлечь сохраненный пароль",
-        "generic": "Ошибка",
-        "user_info_not_found": "Информация о пользователе не найдена",
-        "updating_progress": "Ошибка при обновлении прогресса:",
+        "entry_not_found": "Запись не найдена или словарь не загружен",
+        "failed_retrieve_password": "Не удалось восстановить сохраненный пароль",
         "failed_to_load_items": "Не удалось загрузить элементы:",
-        "entry_not_found": "Unos nije pronađen ili rječnik nije učitan"
-    },
-    "success": {
-        "code_resent": "Код подтверждения отправлен на ваш адрес электронной почты."
-    },
-    "option": {
-        "word_of_mouth": "Рекомендация",
-        "instagram": "Инстаграм",
-        "bilibili": "Билибили",
-        "google_ads": "Онлайн-реклама",
-        "hsk_courses": "Курсы HSK",
-        "app_store": "Магазин приложений",
-        "google_play": "Google Play",
-        "google_search": "Поиск в Интернете",
-        "youtube": "Ютуб",
-        "other": "Другое (Пожалуйста, уточните)"
+        "generic": "Ошибка",
+        "passwords_do_not_match": "Пароли не совпадают",
+        "registration_failed": "Ошибка регистрации",
+        "updating_progress": "Ход обновления ошибок:",
+        "user_info_not_found": "Информация о пользователе не найдена"
     },
     "level": {
-        "label": "{{levelName}} ({{examLevelName}})",
-        "name": {
-            "1": "Начинающий I",
-            "2": "Начинающий II",
-            "3": "Начинающий III",
-            "4": "Средний уровень I",
-            "5": "Средний уровень II",
-            "6": "Продвинутый I",
-            "7": "Продвинутый II"
+        "cefr": {
+            "1": "CEFR Pre-A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "HSK 1",
@@ -420,14 +339,14 @@
             "6": "HSK 6",
             "7": "ГСК 7-9"
         },
-        "topik": {
-            "1": "До TOPIK 1",
-            "2": "ТОПИК 1",
-            "3": "ТОПИК 2",
-            "4": "ТОПИК 3",
-            "5": "ТОПИК 4",
-            "6": "ТОПИК 5",
-            "7": "ТОПИК 6"
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
         },
         "jlpt": {
             "1": "ЖЛПТ Н5",
@@ -438,60 +357,151 @@
             "6": "JLPT N1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Начинающий I",
+            "2": "Начинающий II",
+            "3": "Начинающий III",
+            "4": "Средний уровень I",
+            "5": "Средний уровень II",
+            "6": "Продвинутый I",
+            "7": "Продвинутый II"
         },
-        "cefr": {
-            "1": "CEFR Pre-A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "Visualizaciones",
-        "likes": "Glasovi",
-        "comments": "Komentari"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Кратко объясните, используя {{l1Name}}, что означает {{l2Name}} ({{l2Code}}) слово '{{word}}' во фразе '{{text}}'.",
-            "inflection": "Укажите его лемму, перегиб и морфологию."
+        "topik": {
+            "1": "До TOPIK 1",
+            "2": "ТОПИК 1",
+            "3": "ТОПИК 2",
+            "4": "ТОПИК 3",
+            "5": "ТОПИК 4",
+            "6": "ТОПИК 5",
+            "7": "ТОПИК 6"
         }
     },
     "log": {
-        "loading_dictionary": "Učitavanje rječnika...",
-        "dictionary_ready": "Rječnik je spreman!",
-        "failed_load_dictionary": "Neuspjelo učitavanje rječnika: {{error}}",
-        "database_already_loaded": "Baza podataka već je učitana.",
-        "downloading": "Preuzimanje...",
-        "processing": "Obrada...",
-        "entries_processed": "{{count}} giriş işlendi. İndeksleniyor..."
+        "database_already_loaded": "База данных уже загружена.",
+        "dictionary_ready": "Словарь готов и загружен.",
+        "downloading": "Загрузки...",
+        "entries_processed": "{{count}} обработанных записей. Индексирование...",
+        "failed_load_dictionary": "Не удалось загрузить словарь: {{error}}",
+        "loading_dictionary": "Загрузка словаря...",
+        "processing": "Обработка..."
+    },
+    "msg": {
+        "already_have_account": "У вас уже есть учетная запись?",
+        "auto_renews_in": "Автоматическое продление через {{days}} дней",
+        "confirm_cancel_subscription": "Вы уверены, что хотите отменить подписку?",
+        "copy_success": "Текст скопирован в буфер обмена",
+        "discover_the_power_of_comprehensible_input": "Откройте для себя мощь понятного ввода с помощью сотен тысяч видеороликов на более чем 100 языках.",
+        "dont_have_an_account": "У вас нет аккаунта?",
+        "enrich_your_language_learning_journey": "Обогатите свое путешествие по изучению языка",
+        "enter_verification_code": "Пожалуйста, введите код подтверждения, отправленный на электронную почту",
+        "expires_in": "Срок действия истекает через {{days}} дней",
+        "forgot_password": "Забыли пароль?",
+        "hsk_explanation": "«HSK» — это официальный тест на знание китайского языка, где уровень 1 — самый низкий, а уровень 9 — самый высокий.",
+        "initializing": "Инициализации...",
+        "loading": "Погрузка...",
+        "no_active_subscription": "Активная подписка не найдена.",
+        "or_login_with": "Или войдите в систему с помощью:",
+        "or_register_with": "Или зарегистрируйтесь с помощью:",
+        "pro_feature_chatgpt": "Только пользователи Pro могут использовать функции ИИ в Language Player Go. Чтобы использовать эту функцию, выполните обновление до Pro.",
+        "pro_transcript": "Перейдите на Pro для просмотра полной стенограммы!",
+        "pro_transcript_limit_reached": "Достигнут лимит стенограммы. Пожалуйста, обновите статус до Pro, чтобы получить доступ к большему количеству стенограмм.",
+        "sort_by": "Сортировать по: {{sortBy}}",
+        "time_spent_learning": "Потрачено на изучение {{language}} в языковом проигрывателе",
+        "what_your_first_language": "Какой у вас родной язык?",
+        "upgrade_text": "Обновитесь до Pro, чтобы получить доступ к большему количеству видео!"
+    },
+    "of": "из",
+    "option": {
+        "app_store": "Магазин приложений",
+        "bilibili": "Билибили",
+        "google_ads": "Онлайн-реклама",
+        "google_play": "Google Play",
+        "google_search": "Веб-поиск",
+        "hsk_courses": "Курсы HSK",
+        "instagram": "Инстаграм",
+        "other": "Другое (Пожалуйста, уточните)",
+        "word_of_mouth": "Сарафанное радио",
+        "youtube": "Ютуб"
+    },
+    "placeholder": {
+        "confirm_password": "Подтвердите пароль",
+        "dict_search": "Поиск {{l2Name}}, {{altField}} или {{dictL1Name}}...",
+        "email": "Отправить по электронной почте",
+        "first_name": "Первый",
+        "last_name": "Последний",
+        "more_languages": "Больше языков ({{count}})",
+        "password": "Пароль",
+        "please_specify": "Пожалуйста, уточните",
+        "search": "Искать...",
+        "select_language": "Выберите язык"
+    },
+    "setting": {
+        "auto_pronounce": "Автопроизношение",
+        "dark_mode": "Темный режим",
+        "saved_words_blanks": "Сохраненные слова в виде пробелов",
+        "show_gloss_saved": "Показать блеск для сохраненных",
+        "show_phonetics": "Показать фонетику",
+        "show_translation": "Показать перевод",
+        "use_traditional": "Используйте традиционный"
+    },
+    "success": {
+        "code_resent": "Код подтверждения повторно отправлен на вашу электронную почту."
+    },
+    "time": {
+        "hours": "Часов",
+        "min": "Мин",
+        "sec": "сек"
+    },
+    "title": {
+        "account": "Счет",
+        "annual": "Ежегодный",
+        "app_settings": "Настройки приложения",
+        "best_value": "Лучшее соотношение цены и качества",
+        "choose_language": "Выберите язык",
+        "continue_learning": "Продолжить обучение {{l2Code}}",
+        "current_level": "Каков ваш текущий уровень {{language}}?",
+        "current_plan": "Текущий план",
+        "date": "Дата",
+        "delete_my_account": "Удалить мою учетную запись",
+        "dictionary": "Словарь",
+        "email": "Отправить по электронной почте",
+        "examples_from_videos": "Примеры из видео",
+        "how_did_you_hear": "Как вы узнали о нас?",
+        "language_settings": "Языковые настройки",
+        "leftContext": "Левый контекст",
+        "length": "Длина",
+        "lifetime": "Продолжительность жизни",
+        "likes": "Любит",
+        "loading_dictionary": "Загрузка словаря {{language}}",
+        "login": "Логин",
+        "logout": "Выход",
+        "monthly": "Ежемесячный",
+        "my_progress": "Мой прогресс",
+        "next": "Следующий",
+        "password": "Пароль",
+        "popularity": "Популярность",
+        "privacy_policy": "Политика конфиденциальности",
+        "pro_feature": "Профессиональная функция",
+        "register": "Регистрировать",
+        "rightContext": "Правильный контекст",
+        "saved_words": "Сохраненные слова",
+        "select_language": "Какой язык вы хотели бы выучить?",
+        "settings": "Параметры",
+        "start_learning": "Начать обучение",
+        "trial": "Испытание",
+        "verify_your_email": "Подтвердите свой адрес электронной почты",
+        "views": "{{numViews}} Представления",
+        "watch_history": "История часов"
+    },
+    "video": {
+        "comments": "Комментарии",
+        "likes": "Любит",
+        "views": "Представления"
     },
     "word": {
-        "pinyin": "Пиньинь",
+        "hanja": "Ханча",
         "kana": "Кана",
-        "hanja": "Ханча"
-    },
-    "list_all": "Prikaži sve",
-    "of": "od",
-    "upgrade_text": "Actualiza a Pro para acceder a más vídeos!",
-    "setting": {
-        "show_phonetics": "Prikaži fonetiku",
-        "use_traditional": "Koristi tradicionalno",
-        "show_translation": "Prikaži prijevod",
-        "show_gloss_saved": "Prikaži glosar za spremljene",
-        "saved_words_blanks": "Spremljene riječi kao praznine",
-        "auto_pronounce": "Automatsko izgovaranje",
-        "dark_mode": "Tamni način rada"
+        "pinyin": "Пиньинь"
     }
 }

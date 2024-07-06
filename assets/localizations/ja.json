@@ -284,132 +284,51 @@
         "tr-TR": "トルコ語 (トルコ)",
         "yue-HK": "広東語 (香港)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "100以上の言語で書かれた何十万ものビデオを通して、Comprehensible Inputの力を発見してください。",
-        "dont_have_an_account": "アカウントをお持ちではありませんか?",
-        "enrich_your_language_learning_journey": "語学学習の旅を豊かに",
-        "forgot_password": "パスワードをお忘れですか?",
-        "or_login_with": "または、以下でログインします。",
-        "what_your_first_language": "あなたの母国語は何ですか?",
-        "confirm_cancel_subscription": "サブスクリプションをキャンセルしてもよろしいですか?",
-        "no_active_subscription": "アクティブなサブスクリプションが見つかりませんでした。",
-        "loading": "読み込み中...",
-        "auto_renews_in": "{{days}日で自動更新",
-        "expires_in": "有効期限 {{days}} 日",
-        "or_register_with": "または、以下で登録します。",
-        "already_have_account": "アカウントをお持ちですか？",
-        "enter_verification_code": "メールに送信された認証コードを入力してください",
-        "hsk_explanation": "「HSK」は公式の中国語能力試験であり、レベル1が最低、レベル9が最高です。",
-        "pro_transcript": "Proにアップグレードして、完全なトランスクリプトを表示してください!",
-        "pro_transcript_limit_reached": "字幕の制限に達しました。より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。",
-        "copy_success": "テキストがクリップボードにコピーされました",
-        "pro_feature_chatgpt": "Language Player Go で AI 機能を使用できるのは Pro ユーザーのみです。この機能を使用するには、Pro にアップグレードしてください。",
-        "initializing": "初期化中...",
-        "sort_by": "{{sortBy}}で並べ替え"
-    },
-    "title": {
-        "email": "電子メール",
-        "login": "ログイン",
-        "next": "次に",
-        "password": "パスワード",
-        "register": "登録する",
-        "start_learning": "学習を始める",
-        "choose_language": "言語を選択",
-        "continue_learning": "学習を続ける {{l2Code}}",
-        "account": "アカウント",
-        "logout": "ログアウト",
-        "delete_my_account": "マイアカウントの削除",
-        "privacy_policy": "プライバシーポリシー",
-        "current_plan": "現在の計画",
-        "best_value": "ベストバリュー",
-        "monthly": "毎月",
-        "annual": "毎年",
-        "lifetime": "生涯",
-        "trial": "トライアル",
-        "verify_your_email": "メールアドレスを確認してください",
-        "how_did_you_hear": "私たちのことをどこでお知りになりましたか?",
-        "select_language": "どの言語を学びたいですか？",
-        "current_level": "現在の{{language}}のレベルは？",
-        "pro_feature": "Pro機能",
-        "loading_dictionary": "{{language}} 辞書の読み込み",
-        "dictionary": "辞書",
-        "examples_from_videos": "動画からの例",
-        "popularity": "人気",
-        "likes": "いいね",
-        "date": "日付",
-        "length": "長さ",
-        "leftContext": "左コンテキスト",
-        "rightContext": "右コンテキスト",
-        "views": "{{numViews}}表示モード",
-        "settings": "設定",
-        "language_settings": "言語設定",
-        "app_settings": "アプリの設定"
-    },
     "action": {
-        "upgrade": "アップグレード",
         "cancel": "キャンセル",
         "confirm_cancellation": "キャンセルの確認",
+        "copy": "写し",
         "keep_subscription": "サブスクリプションを維持する",
-        "register": "登録",
+        "let_chatgpt_explain": "AIに聞く",
         "login": "ログイン",
-        "verify": "確認",
-        "resend_code": "コードを再送信",
-        "start_learning": "学習を開始",
-        "next": "次へ",
-        "tv_shows": "テレビ番組",
-        "watch": "見る",
-        "upgrade_to_pro": "Proにアップグレード",
+        "logout": "ログアウト",
+        "next": "次に",
+        "register": "登録する",
+        "resend_code": "コードの再送信",
         "speak": "話す",
-        "copy": "コピー",
-        "let_chatgpt_explain": "人工知能に尋ねる"
+        "start_learning": "学習を始める",
+        "tv_shows": "テレビ番組",
+        "upgrade": "アップグレード",
+        "upgrade_to_pro": "Proにアップグレード",
+        "verify": "確かめる",
+        "watch": "時計",
+        "list_all": "すべてリスト"
     },
-    "placeholder": {
-        "first_name": "ファースト",
-        "last_name": "ラスト",
-        "email": "メール",
-        "password": "パスワード",
-        "confirm_password": "パスワードを確認",
-        "please_specify": "具体的にお答えください",
-        "more_languages": "さらに言語 ({{count}})",
-        "select_language": "言語を選択",
-        "dict_search": "{{l2Name}}、{{altField}}、または{{dictL1Name}}を検索してください...",
-        "search": "検索..."
+    "chatgpt": {
+        "prompt": {
+            "base": "{{l2Name}}({{l2Code}})という単語「{{word}}」が「{{text}}」というフレーズで何を意味するのかを{{l1Name}}を使って簡潔に説明します。",
+            "inflection": "その補題、語形変化、形態を与えてください。"
+        }
     },
     "error": {
-        "passwords_do_not_match": "パスワードが一致しません",
-        "registration_failed": "登録に失敗しました",
-        "failed_retrieve_password": "保存されたパスワードの取得に失敗しました",
+        "entry_not_found": "エントリが見つからないか、辞書がロードされていません",
+        "failed_retrieve_password": "保存されているパスワードを取得できませんでした",
+        "failed_to_load_items": "アイテムの読み込みに失敗しました:",
         "generic": "エラー",
-        "user_info_not_found": "ユーザー情報が見つかりません",
-        "updating_progress": "進捗を更新する際のエラー:",
-        "failed_to_load_items": "アイテムの読み込みに失敗しました：",
-        "entry_not_found": "エントリが見つかりませんでした、または辞書が読み込まれていません"
-    },
-    "success": {
-        "code_resent": "確認コードがメールアドレスに再送信されました。"
-    },
-    "option": {
-        "word_of_mouth": "口コミ",
-        "instagram": "インスタグラム",
-        "bilibili": "ビリビリ",
-        "google_ads": "オンライン広告",
-        "hsk_courses": "HSKコース",
-        "app_store": "アプリストア",
-        "google_play": "Google Playの",
-        "google_search": "ウェブ検索",
-        "youtube": "ユーチューブ",
-        "other": "その他(具体的にお答えください)"
+        "passwords_do_not_match": "パスワードが一致しない",
+        "registration_failed": "登録に失敗しました",
+        "updating_progress": "更新の進行状況にエラーが発生しました:",
+        "user_info_not_found": "ユーザー情報が見つかりません"
     },
     "level": {
-        "label": "{{levelName}}({{examLevelName}})",
-        "name": {
-            "1": "初級I.",
-            "2": "初級II.",
-            "3": "初級 III",
-            "4": "中級I.",
-            "5": "中級II.",
-            "6": "上級I.",
-            "7": "アドバンスII."
+        "cefr": {
+            "1": "CEFRプレA1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "HSK1",
@@ -420,14 +339,14 @@
             "6": "HSK6",
             "7": "HSK7-9"
         },
-        "topik": {
-            "1": "プレトピック1",
-            "2": "トピック1",
-            "3": "トピック2",
-            "4": "トピック3",
-            "5": "トピック4",
-            "6": "トピック5",
-            "7": "トピック6"
+        "ielts": {
+            "1": "IELTS試験 1",
+            "2": "IELTS2",
+            "3": "IELTS 3.5",
+            "4": "IELTS5",
+            "5": "IELTS 6.5",
+            "6": "IELTS8",
+            "7": "IELTS9"
         },
         "jlpt": {
             "1": "日本語能力試験N5",
@@ -438,60 +357,151 @@
             "6": "日本語能力試験N1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "IELTS試験 1",
-            "2": "IELTS2",
-            "3": "IELTS 3.5",
-            "4": "IELTS5",
-            "5": "IELTS 6.5",
-            "6": "IELTS8",
-            "7": "IELTS9"
+        "label": "{{levelName}}({{examLevelName}})",
+        "name": {
+            "1": "初級I.",
+            "2": "初級II.",
+            "3": "初級 III",
+            "4": "中級I.",
+            "5": "中級II.",
+            "6": "上級I.",
+            "7": "アドバンスII."
         },
-        "cefr": {
-            "1": "CEFRプレA1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "ビュー",
-        "likes": "いいね",
-        "comments": "コメント"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "{{l2Name}}({{l2Code}})という単語「{{word}}」が「{{text}}」というフレーズで何を意味するのかを{{l1Name}}を使って簡潔に説明します。",
-            "inflection": "その補題、語形変化、形態を与えてください。"
+        "topik": {
+            "1": "プレトピック1",
+            "2": "トピック1",
+            "3": "トピック2",
+            "4": "トピック3",
+            "5": "トピック4",
+            "6": "トピック5",
+            "7": "トピック6"
         }
     },
     "log": {
-        "loading_dictionary": "辞書を読み込んでいます...",
-        "dictionary_ready": "辞書が準備完了！",
+        "database_already_loaded": "データベースは既にロードされています。",
+        "dictionary_ready": "ディクショナリの準備ができてロードされました。",
+        "downloading": "ダウンロード。。。",
+        "entries_processed": "{{count}}エントリが処理されました。インデキシング。。。",
         "failed_load_dictionary": "辞書の読み込みに失敗しました: {{error}}",
-        "database_already_loaded": "データベースはすでに読み込まれています。",
-        "downloading": "ダウンロード中...",
-        "processing": "処理中...",
-        "entries_processed": "{{count}}エントリが処理されました。インデックス作成中..."
+        "loading_dictionary": "辞書を読み込んでいます...",
+        "processing": "加工。。。"
+    },
+    "msg": {
+        "already_have_account": "すでにアカウントをお持ちですか?",
+        "auto_renews_in": "{{days}日で自動更新",
+        "confirm_cancel_subscription": "サブスクリプションをキャンセルしてもよろしいですか?",
+        "copy_success": "クリップボードにコピーされたテキスト",
+        "discover_the_power_of_comprehensible_input": "100以上の言語で書かれた何十万ものビデオを通して、Comprehensible Inputの力を発見してください。",
+        "dont_have_an_account": "アカウントをお持ちではありませんか?",
+        "enrich_your_language_learning_journey": "語学学習の旅を豊かに",
+        "enter_verification_code": "メールに送信された認証コードを入力してください",
+        "expires_in": "有効期限 {{days}} 日",
+        "forgot_password": "パスワードをお忘れですか?",
+        "hsk_explanation": "「HSK」は公式の中国語能力試験であり、レベル1が最低、レベル9が最高です。",
+        "initializing": "初期化。。。",
+        "loading": "積載。。。",
+        "no_active_subscription": "アクティブなサブスクリプションが見つかりませんでした。",
+        "or_login_with": "または、以下でログインします。",
+        "or_register_with": "または、次の方法で登録します。",
+        "pro_feature_chatgpt": "Language Player Go で AI 機能を使用できるのは Pro ユーザーのみです。この機能を使用するには、Pro にアップグレードしてください。",
+        "pro_transcript": "Proにアップグレードして、完全なトランスクリプトを表示してください!",
+        "pro_transcript_limit_reached": "成績証明書の制限に達しました。より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。",
+        "sort_by": "並び替え: {{sortBy}}",
+        "time_spent_learning": "Language Playerで{{language}}の学習に費やした",
+        "what_your_first_language": "あなたの母国語は何ですか?",
+        "upgrade_text": "Proにアップグレードして、より多くのビデオにアクセスしましょう!"
+    },
+    "of": "の",
+    "option": {
+        "app_store": "アプリストア",
+        "bilibili": "ビリビリ",
+        "google_ads": "オンライン広告",
+        "google_play": "Google Playの",
+        "google_search": "Web検索",
+        "hsk_courses": "HSKコース",
+        "instagram": "インスタグラム",
+        "other": "その他(具体的にお答えください)",
+        "word_of_mouth": "口コミ",
+        "youtube": "ユーチューブ"
+    },
+    "placeholder": {
+        "confirm_password": "パスワードの確認",
+        "dict_search": "{{l2Name}}、{{altField}}、または{{dictL1Name}}を検索してください...",
+        "email": "電子メール",
+        "first_name": "まずは",
+        "last_name": "前の",
+        "more_languages": "その他の言語 ({{count}})",
+        "password": "パスワード",
+        "please_specify": "具体的にお答えください",
+        "search": "捜索。。。",
+        "select_language": "言語を選択"
+    },
+    "setting": {
+        "auto_pronounce": "自動発音",
+        "dark_mode": "ダークモード",
+        "saved_words_blanks": "空白として保存された単語",
+        "show_gloss_saved": "保存済みに光沢を表示",
+        "show_phonetics": "音声学の表示",
+        "show_translation": "翻訳を表示",
+        "use_traditional": "従来の使用"
+    },
+    "success": {
+        "code_resent": "確認コードがメールに再送信されます。"
+    },
+    "time": {
+        "hours": "時間",
+        "min": "分",
+        "sec": "秒"
+    },
+    "title": {
+        "account": "アカウント",
+        "annual": "一年生",
+        "app_settings": "アプリ設定",
+        "best_value": "ベストバリュー",
+        "choose_language": "言語を選択",
+        "continue_learning": "学習を続ける {{l2Code}}",
+        "current_level": "現在の{{language}}レベルはどれくらいですか?",
+        "current_plan": "現在の計画",
+        "date": "日付",
+        "delete_my_account": "マイアカウントの削除",
+        "dictionary": "辞書",
+        "email": "電子メール",
+        "examples_from_videos": "動画からの例",
+        "how_did_you_hear": "私たちのことをどこでお知りになりましたか?",
+        "language_settings": "言語設定",
+        "leftContext": "左コンテキスト",
+        "length": "長さ",
+        "lifetime": "一生",
+        "likes": "好き",
+        "loading_dictionary": "{{language}} 辞書の読み込み",
+        "login": "ログイン",
+        "logout": "ログアウト",
+        "monthly": "マンスリー",
+        "my_progress": "マイ・プログレス",
+        "next": "次に",
+        "password": "パスワード",
+        "popularity": "人望",
+        "privacy_policy": "プライバシーポリシー",
+        "pro_feature": "プロ機能",
+        "register": "登録する",
+        "rightContext": "正しいコンテキスト",
+        "saved_words": "保存された単語",
+        "select_language": "どの言語を学びたいですか?",
+        "settings": "設定",
+        "start_learning": "学習を始める",
+        "trial": "裁判",
+        "verify_your_email": "メールを確認する",
+        "views": "{{numViews}}表示モード",
+        "watch_history": "歴史を見る"
+    },
+    "video": {
+        "comments": "コメント",
+        "likes": "好き",
+        "views": "表示モード"
     },
     "word": {
-        "pinyin": "ピンイン",
+        "hanja": "漢字",
         "kana": "仮名",
-        "hanja": "漢字"
-    },
-    "list_all": "すべて表示",
-    "of": "の",
-    "upgrade_text": "Upgrade ke Pro untuk mengakses lebih banyak video!",
-    "setting": {
-        "show_phonetics": "音声を表示",
-        "use_traditional": "繁体字を使用",
-        "show_translation": "翻訳を表示",
-        "show_gloss_saved": "保存された用語の用語集を表示",
-        "saved_words_blanks": "保存された単語を空白として表示",
-        "auto_pronounce": "自動発音",
-        "dark_mode": "ダークモード"
+        "pinyin": "ピンイン"
     }
 }

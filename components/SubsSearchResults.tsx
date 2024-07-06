@@ -94,7 +94,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
         <ThemedButton
           type="ghost"
           size="small"
-          title={t('list_all')}
+          title={t('action.list_all')}
           trailingIcon={<Icon name="caret-down" />}
           onPress={openModal}
           style={{ fontWeight: "regular" }}
@@ -110,7 +110,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
       <ProFeatureModal
         visible={showProModal}
         onClose={closeProModal}
-        upgradeText={t('upgrade_text')}
+        upgradeText={t('msg.upgrade_text')}
       />
     </View>
   );

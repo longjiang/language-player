@@ -14,7 +14,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const LanguageProgressScreen = () => {
   const { handleLogout } = useAuth();
   const { progress, getTimeFromStorage } = useUserData();
-  const { l2Lang } = useLanguage();
+  const { l2Lang, t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(0);
 
   if (!l2Lang) return null;
@@ -25,7 +25,7 @@ const LanguageProgressScreen = () => {
     const hrs = Math.floor(totalSeconds / 3600);
     const mins = Math.floor((totalSeconds % 3600) / 60);
     const secs = totalSeconds % 60;
-    return `${hrs} hours ${mins} min ${secs} sec`;
+    return `${hrs} ${t('time.hours')} ${mins} ${t('time.min')} ${secs} ${t('time.sec')}`;
   };
 
   useEffect(() => {
@@ -51,13 +51,13 @@ const LanguageProgressScreen = () => {
 
   return (
     <ThemedScreen
-      title="My Progress"
+      title={t('title.my_progress')}
       showFlag={true}
     >
       <View style={{ flexDirection: "column" }}>
         <View style={{ flexDirection: "column", justifyContent: "space-between", alignItems: 'center', marginTop: 14, marginBottom: 42 }}>
           <ThemedText type="xlarge">{formatTime(l2Progress.time + currentTime)}</ThemedText>
-          <ThemedText style={{ marginTop: 8}}>Spent learning Chinese in Language Player</ThemedText>
+          <ThemedText style={{ marginTop: 8}}>{t('msg.time_spent_learning', { language: l2Lang.name })}</ThemedText>
         </View>
         <LevelButton
           key={l2Progress.level}
@@ -68,7 +68,7 @@ const LanguageProgressScreen = () => {
           type="accent"
         />
         <ThemedButton
-          title="Saved Words"
+          title={t('title.saved_words')}
           trailingIcon={<Icon name="chevron-right" />}
           type="accent"
           style={styles.button}
@@ -77,7 +77,7 @@ const LanguageProgressScreen = () => {
           }}
         />
         <ThemedButton
-          title="Watch History"
+          title={t('title.watch_history')}
           trailingIcon={<Icon name="chevron-right" />}
           type="accent"
           style={styles.button}
@@ -86,7 +86,7 @@ const LanguageProgressScreen = () => {
           }}
         />
         <ThemedButton
-          title="Settings"
+          title={t('title.settings')}
           trailingIcon={<Icon name="chevron-right" />}
           type="accent"
           style={styles.button}
@@ -95,7 +95,7 @@ const LanguageProgressScreen = () => {
           }}
         />
         <ThemedButton
-          title="Account"
+          title={t('title.account')}
           trailingIcon={<Icon name="chevron-right" />}
           type="accent"
           style={styles.button}
@@ -104,7 +104,7 @@ const LanguageProgressScreen = () => {
           }}
         />
         <ThemedButton
-          title="Logout"
+          title={t('action.logout')}
           trailingIcon={<Icon name="chevron-right" />}
           type="accent"
           style={styles.button}

@@ -284,132 +284,51 @@
         "tr-TR": "Turecki (Turcja)",
         "yue-HK": "Kantoński (Hongkong)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "Odkryj moc zrozumiałego wprowadzania danych dzięki setkom tysięcy filmów w ponad 100 językach.",
-        "dont_have_an_account": "Nie masz konta?",
-        "enrich_your_language_learning_journey": "Wzbogać swoją podróż do nauki języka",
-        "forgot_password": "Nie pamiętasz hasła?",
-        "or_login_with": "Lub zaloguj się za pomocą:",
-        "what_your_first_language": "Jaki jest Twój pierwszy język?",
-        "confirm_cancel_subscription": "Czy na pewno chcesz anulować subskrypcję?",
-        "no_active_subscription": "Nie znaleziono aktywnej subskrypcji.",
-        "loading": "Cargando...",
-        "auto_renews_in": "Automatyczne odnawianie za {{days}} dni",
-        "expires_in": "Wygasa za {{days}} dni",
-        "or_register_with": "Lub zarejestruj się za pomocą:",
-        "already_have_account": "Masz już konto?",
-        "enter_verification_code": "Wprowadź kod weryfikacyjny wysłany na adres e-mail",
-        "hsk_explanation": "\"HSK\" to oficjalny chiński test biegłości, w którym poziom 1 jest najniższy, a poziom 9 najwyższy.",
-        "pro_transcript": "Uaktualnij do wersji Pro, aby wyświetlić pełną transkrypcję!",
-        "pro_transcript_limit_reached": "Osiągnięto limit transkrypcji. Uaktualnij do wersji Pro, aby uzyskać dostęp do większej liczby transkrypcji.",
-        "copy_success": "Copiado",
-        "pro_feature_chatgpt": "Tylko użytkownicy wersji Pro mogą korzystać z funkcji sztucznej inteligencji w Language Player Go. Aby korzystać z tej funkcji, uaktualnij do wersji Pro.",
-        "initializing": "Inicializando...",
-        "sort_by": "Ordenar por: {{sortBy}}"
-    },
-    "title": {
-        "email": "E-mail",
-        "login": "Login",
-        "next": "Następny",
-        "password": "Hasło",
-        "register": "Rejestrować",
-        "start_learning": "Rozpocznij naukę",
-        "choose_language": "Wybierz język",
-        "continue_learning": "Kontynuuj naukę {{l2Code}}",
-        "account": "Rachunek",
-        "logout": "Wyloguj",
-        "delete_my_account": "Usuń moje konto",
-        "privacy_policy": "Polityka prywatności",
-        "current_plan": "Bieżący plan",
-        "best_value": "Najlepszy stosunek jakości do ceny",
-        "monthly": "Miesięcznie",
-        "annual": "Rocznie",
-        "lifetime": "Dożywotnio",
-        "trial": "Okres próbny",
-        "verify_your_email": "Potwierdź swój adres e-mail",
-        "how_did_you_hear": "Skąd się o nas dowiedziałeś?",
-        "select_language": "Jakiego języka chcesz się nauczyć?",
-        "current_level": "Jaki jest twój obecny poziom {{language}}?",
-        "pro_feature": "Función Pro",
-        "loading_dictionary": "Cargando diccionario {{language}}",
-        "dictionary": "Diccionario",
-        "examples_from_videos": "Ejemplos de videos",
-        "popularity": "Popularidad",
-        "likes": "Gustos",
-        "date": "Data",
-        "length": "Longitud",
-        "leftContext": "Contexto izquierdo",
-        "rightContext": "Contexto derecho",
-        "views": "{{numViews}} Widoki",
-        "settings": "Configuración",
-        "language_settings": "Configuración de idioma",
-        "app_settings": "Configuración de la aplicación"
-    },
     "action": {
-        "upgrade": "Upgrade",
-        "cancel": "Cancelar",
+        "cancel": "Anuluj",
         "confirm_cancellation": "Potwierdź anulowanie",
+        "copy": "Kopiować",
         "keep_subscription": "Zachowaj subskrypcję",
-        "register": "Zarejestruj się",
+        "let_chatgpt_explain": "Zapytaj sztuczną inteligencję",
         "login": "Login",
-        "verify": "Podaj",
-        "resend_code": "Prześlij kod ponownie",
-        "start_learning": "Rozpocznij naukę",
+        "logout": "Wyloguj",
         "next": "Następny",
-        "tv_shows": "Programas de TV",
-        "watch": "Ver",
-        "upgrade_to_pro": "Actualizar a Pro",
-        "speak": "Hablar",
-        "copy": "Copiar",
-        "let_chatgpt_explain": "Deja que la IA lo explique"
+        "register": "Rejestrować",
+        "resend_code": "Wyślij ponownie kod",
+        "speak": "Mówić",
+        "start_learning": "Rozpocznij naukę",
+        "tv_shows": "Telewizyjne",
+        "upgrade": "Upgrade",
+        "upgrade_to_pro": "Uaktualnij do wersji Pro",
+        "verify": "Zweryfikować",
+        "watch": "Zegarek",
+        "list_all": "Lista wszystko"
     },
-    "placeholder": {
-        "first_name": "Imię",
-        "last_name": "Nazwisko",
-        "email": "Email",
-        "password": "Hasło",
-        "confirm_password": "Potwierdź hasło",
-        "please_specify": "Proszę określić",
-        "more_languages": "Więcej języków ({{count}})",
-        "select_language": "Selecciona un idioma",
-        "dict_search": "Szukaj {{l2Name}}, {{altField}} lub {{dictL1Name}}...",
-        "search": "Buscar..."
+    "chatgpt": {
+        "prompt": {
+            "base": "Zwięźle wyjaśnij, używając {{l1Name}}, co oznacza słowo {{l2Name}} ({{l2Code}}) \"{{word}}\" w wyrażeniu \"{{text}}}\".",
+            "inflection": "Podaj jego lemat, fleksję i morfologię."
+        }
     },
     "error": {
-        "passwords_do_not_match": "Hasła nie pasują",
-        "registration_failed": "Rejestracja nie powiodła się",
-        "failed_retrieve_password": "Nie udało się odzyskać przechowywanego hasła",
-        "generic": "Błąd",
-        "user_info_not_found": "Nie znaleziono informacji o użytkowniku",
-        "updating_progress": "Błąd podczas aktualizacji postępu:",
+        "entry_not_found": "Nie znaleziono wpisu lub nie załadowano słownika",
+        "failed_retrieve_password": "Nie udało się odzyskać zapisanego hasła",
         "failed_to_load_items": "Nie udało się załadować elementów:",
-        "entry_not_found": "Entrada no encontrada o diccionario no cargado"
-    },
-    "success": {
-        "code_resent": "Kod weryfikacyjny został ponownie wysłany na Twój adres e-mail."
-    },
-    "option": {
-        "word_of_mouth": "Rekomendacja",
-        "instagram": "Na Instagramie",
-        "bilibili": "Bilibili powiedział:",
-        "google_ads": "Reklamy online",
-        "hsk_courses": "Kursy HSK",
-        "app_store": "Sklep z aplikacjami",
-        "google_play": "Google Play",
-        "google_search": "Wyszukiwanie w sieci",
-        "youtube": "Kanał YouTube",
-        "other": "Inne (proszę określić)"
+        "generic": "Błąd",
+        "passwords_do_not_match": "Hasła nie są zgodne",
+        "registration_failed": "Rejestracja nie powiodła się",
+        "updating_progress": "Błąd postępu aktualizacji:",
+        "user_info_not_found": "Nie znaleziono informacji o użytkowniku"
     },
     "level": {
-        "label": "{{levelName}} ({{examLevelName}})",
-        "name": {
-            "1": "Początkujący I",
-            "2": "Początkujący II",
-            "3": "Początkujący III",
-            "4": "Średnio zaawansowany I",
-            "5": "Średnio zaawansowany II",
-            "6": "Zaawansowany I",
-            "7": "Zaawansowany II"
+        "cefr": {
+            "1": "CEFR Pre-A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "Zobacz materiał HSK 1",
@@ -420,14 +339,14 @@
             "6": "Zobacz materiał HSK 6",
             "7": "Zobacz materiał HSK 7-9"
         },
-        "topik": {
-            "1": "Przed TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "Egzamin IELTS 3.5",
+            "4": "Egzamin IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "Egzamin IELTS 8",
+            "7": "Egzamin IELTS 9"
         },
         "jlpt": {
             "1": "JLPT N5",
@@ -438,60 +357,151 @@
             "6": "JLPT N1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "Egzamin IELTS 3.5",
-            "4": "Egzamin IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "Egzamin IELTS 8",
-            "7": "Egzamin IELTS 9"
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Początkujący I",
+            "2": "Początkujący II",
+            "3": "Początkujący III",
+            "4": "Średnio zaawansowany I",
+            "5": "Średnio zaawansowany II",
+            "6": "Zaawansowany I",
+            "7": "Zaawansowany II"
         },
-        "cefr": {
-            "1": "CEFR Pre-A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "Visualizaciones",
-        "likes": "Gustos",
-        "comments": "Comentarios"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Zwięźle wyjaśnij, używając {{l1Name}}, co oznacza słowo {{l2Name}} ({{l2Code}}) \"{{word}}\" w wyrażeniu \"{{text}}\".",
-            "inflection": "Podaj jego lemat, fleksję i morfologię."
+        "topik": {
+            "1": "Przed TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
         }
     },
     "log": {
-        "loading_dictionary": "Cargando el diccionario...",
-        "dictionary_ready": "Diccionario listo!",
-        "failed_load_dictionary": "Error al cargar el diccionario: {{error}}",
-        "database_already_loaded": "Base de datos ya cargada.",
-        "downloading": "Descargando...",
-        "processing": "Procesando...",
-        "entries_processed": "{{count}} entradas processadas. Indexando..."
+        "database_already_loaded": "Baza danych została już załadowana.",
+        "dictionary_ready": "Słownik jest gotowy i załadowany.",
+        "downloading": "Pobieranie...",
+        "entries_processed": "{{count}} Wpisy zostały przetworzone. Indeksowania...",
+        "failed_load_dictionary": "Nie udało się załadować słownika: {{error}}",
+        "loading_dictionary": "Wczytywanie słownika...",
+        "processing": "Przetwarzanie..."
+    },
+    "msg": {
+        "already_have_account": "Masz już konto?",
+        "auto_renews_in": "Automatyczne odnawianie za {{days}} dni",
+        "confirm_cancel_subscription": "Czy na pewno chcesz anulować subskrypcję?",
+        "copy_success": "Tekst skopiowany do schowka",
+        "discover_the_power_of_comprehensible_input": "Odkryj moc zrozumiałego wprowadzania danych dzięki setkom tysięcy filmów w ponad 100 językach.",
+        "dont_have_an_account": "Nie masz konta?",
+        "enrich_your_language_learning_journey": "Wzbogać swoją podróż do nauki języka",
+        "enter_verification_code": "Wprowadź kod weryfikacyjny wysłany na adres e-mail",
+        "expires_in": "Wygasa za {{days}} dni",
+        "forgot_password": "Nie pamiętasz hasła?",
+        "hsk_explanation": "\"HSK\" to oficjalny chiński test biegłości, w którym poziom 1 jest najniższy, a poziom 9 najwyższy.",
+        "initializing": "Inicjowanie...",
+        "loading": "Ładowania...",
+        "no_active_subscription": "Nie znaleziono aktywnej subskrypcji.",
+        "or_login_with": "Lub zaloguj się za pomocą:",
+        "or_register_with": "Lub zarejestruj się za pomocą:",
+        "pro_feature_chatgpt": "Tylko użytkownicy wersji Pro mogą korzystać z funkcji sztucznej inteligencji w Language Player Go. Aby korzystać z tej funkcji, uaktualnij do wersji Pro.",
+        "pro_transcript": "Uaktualnij do wersji Pro, aby wyświetlić pełną transkrypcję!",
+        "pro_transcript_limit_reached": "Osiągnięto limit transkrypcji. Uaktualnij do wersji Pro, aby uzyskać dostęp do większej liczby transkrypcji.",
+        "sort_by": "Sortuj według: {{sortBy}}",
+        "time_spent_learning": "Spędzone na nauce {{language}} w odtwarzaczu językowym",
+        "what_your_first_language": "Jaki jest Twój pierwszy język?",
+        "upgrade_text": "Uaktualnij do wersji Pro, aby uzyskać dostęp do większej liczby filmów!"
+    },
+    "of": "z",
+    "option": {
+        "app_store": "Sklep z aplikacjami",
+        "bilibili": "Bilibili powiedział:",
+        "google_ads": "Reklamy online",
+        "google_play": "Google Play",
+        "google_search": "Wyszukiwanie w Internecie",
+        "hsk_courses": "Kursy HSK",
+        "instagram": "Na Instagramie",
+        "other": "Inne (proszę określić)",
+        "word_of_mouth": "Poczta pantoflowa",
+        "youtube": "Kanał YouTube"
+    },
+    "placeholder": {
+        "confirm_password": "Potwierdź hasło",
+        "dict_search": "Szukaj {{l2Name}}, {{altField}} lub {{dictL1Name}}...",
+        "email": "E-mail",
+        "first_name": "Pierwszy",
+        "last_name": "Ostatni",
+        "more_languages": "Więcej języków ({{count}})",
+        "password": "Hasło",
+        "please_specify": "Proszę określić",
+        "search": "Szukać...",
+        "select_language": "Wybierz język"
+    },
+    "setting": {
+        "auto_pronounce": "Automatyczne wymawianie",
+        "dark_mode": "Tryb ciemny",
+        "saved_words_blanks": "Zapisane słowa jako puste miejsca",
+        "show_gloss_saved": "Pokaż połysk dla zapisanych",
+        "show_phonetics": "Pokaż fonetykę",
+        "show_translation": "Pokaż tłumaczenie",
+        "use_traditional": "Użyj tradycyjnego"
+    },
+    "success": {
+        "code_resent": "Kod weryfikacyjny zostanie ponownie wysłany na Twój adres e-mail."
+    },
+    "time": {
+        "hours": "Godzin",
+        "min": "Min",
+        "sec": "S"
+    },
+    "title": {
+        "account": "Rachunek",
+        "annual": "Coroczny",
+        "app_settings": "Ustawienia aplikacji",
+        "best_value": "Najlepszy stosunek jakości do ceny",
+        "choose_language": "Wybierz język",
+        "continue_learning": "Kontynuuj naukę {{l2Code}}",
+        "current_level": "Jaki jest twój obecny poziom {{language}}?",
+        "current_plan": "Bieżący plan",
+        "date": "Data",
+        "delete_my_account": "Usuń moje konto",
+        "dictionary": "Słownik",
+        "email": "E-mail",
+        "examples_from_videos": "Przykłady z filmów",
+        "how_did_you_hear": "Skąd się o nas dowiedziałeś?",
+        "language_settings": "Ustawienia językowe",
+        "leftContext": "Lewy kontekst",
+        "length": "Długość",
+        "lifetime": "Życie",
+        "likes": "Lubi",
+        "loading_dictionary": "Wczytywanie słownika {{language}}",
+        "login": "Login",
+        "logout": "Wyloguj",
+        "monthly": "Miesięczny",
+        "my_progress": "Moje postępy",
+        "next": "Następny",
+        "password": "Hasło",
+        "popularity": "Popularność",
+        "privacy_policy": "Polityka prywatności",
+        "pro_feature": "Funkcja Pro",
+        "register": "Rejestrować",
+        "rightContext": "Prawy kontekst",
+        "saved_words": "Zapisane słowa",
+        "select_language": "Jakiego języka chciałbyś się nauczyć?",
+        "settings": "Ustawienia",
+        "start_learning": "Rozpocznij naukę",
+        "trial": "Proces",
+        "verify_your_email": "Zweryfikuj swój adres e-mail",
+        "views": "{{numViews}} Widoki",
+        "watch_history": "Historia oglądania"
+    },
+    "video": {
+        "comments": "Komentarze",
+        "likes": "Lubi",
+        "views": "Widoki"
     },
     "word": {
-        "pinyin": "Pinyin",
+        "hanja": "Hanja",
         "kana": "Kana",
-        "hanja": "Hanja"
-    },
-    "list_all": "Mostrar Todo",
-    "of": "de",
-    "upgrade_text": "Upgrade naar Pro om toegang te krijgen tot meer video's!",
-    "setting": {
-        "show_phonetics": "Mostrar Fonética",
-        "use_traditional": "Usar Tradicional",
-        "show_translation": "Mostrar Traducción",
-        "show_gloss_saved": "Mostrar Glosario para Guardado",
-        "saved_words_blanks": "Palabras guardadas como espacios en blanco",
-        "auto_pronounce": "Pronunciación automática",
-        "dark_mode": "Modo Oscuro"
+        "pinyin": "Pinyin"
     }
 }

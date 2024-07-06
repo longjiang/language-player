@@ -284,132 +284,51 @@
         "tr-TR": "Kituruki (Uturuki)",
         "yue-HK": "Kikantoni (Hong Kong)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "Gundua nguvu ya Ingizo linaloeleweka kupitia mamia ya maelfu ya video katika lugha zaidi ya 100.",
-        "dont_have_an_account": "Huna account?",
-        "enrich_your_language_learning_journey": "Boresha safari yako ya kujifunza lugha",
-        "forgot_password": "Umesahau nywila?",
-        "or_login_with": "Au kuingia na:",
-        "what_your_first_language": "Lugha yako ya kwanza ni ipi?",
-        "confirm_cancel_subscription": "Una uhakika unataka kughairi usajili wako?",
-        "no_active_subscription": "Hakuna usajili amilifu uliopatikana.",
-        "loading": "Yükleniyor...",
-        "auto_renews_in": "Kusasisha kiotomatiki katika siku {{days}}",
-        "expires_in": "Inaisha katika siku {{days}}",
-        "or_register_with": "Aujiandikisha na:",
-        "already_have_account": "Tayari una akaunti?",
-        "enter_verification_code": "Tafadhali ingiza msimbo wa uthibitishaji uliotumwa kwa barua pepe",
-        "hsk_explanation": "\"HSK\" ni mtihani rasmi wa ustadi wa Kichina, na Kiwango cha 1 kuwa cha chini na Kiwango cha 9 kuwa cha juu zaidi.",
-        "pro_transcript": "Boresha kwa Pro ili kuona nakala kamili!",
-        "pro_transcript_limit_reached": "Ukomo wa Transcript umefikiwa. Tafadhali sasisha hadi Pro ili kufikia nakala zaidi.",
-        "copy_success": "Kopyalandı",
-        "pro_feature_chatgpt": "Watumiaji wa Pro tu ndio wanaweza kutumia vipengele vya AI katika Kicheza Lugha Go. Ili kutumia kipengele hiki, boresha hadi Pro.",
-        "initializing": "Inicializando...",
-        "sort_by": "เรียงตาม: {{sortBy}}"
-    },
-    "title": {
-        "email": "Barua pepe",
-        "login": "Kuingia",
-        "next": "Ijayo",
-        "password": "Nywila",
-        "register": "Kujiandikisha",
-        "start_learning": "Anza Kujifunza",
-        "choose_language": "Chagua Lugha",
-        "continue_learning": "Endelea Kujifunza {{l2Code}}",
-        "account": "Akaunti",
-        "logout": "Kuingia",
-        "delete_my_account": "Futa Akaunti Yangu",
-        "privacy_policy": "Sera ya faragha",
-        "current_plan": "Mpango wa sasa",
-        "best_value": "Thamani Bora",
-        "monthly": "Kila mwezi",
-        "annual": "Kila mwaka",
-        "lifetime": "Maisha yote",
-        "trial": "Jaribio",
-        "verify_your_email": "Thibitisha Barua pepe yako",
-        "how_did_you_hear": "Ulisikiaje kuhusu sisi?",
-        "select_language": "Ungependa kujifunza lugha gani?",
-        "current_level": "Ni kiwango chako cha sasa cha {{language}}?",
-        "pro_feature": "Pro Özelliği",
-        "loading_dictionary": "{{language}} Sözlük yükleniyor",
-        "dictionary": "Sözlük",
-        "examples_from_videos": "Video örnekleri",
-        "popularity": "Popülerlik",
-        "likes": "Beğeniler",
-        "date": "Tarih",
-        "length": "Uzunluk",
-        "leftContext": "Sol Bağlam",
-        "rightContext": "Sağ Bağlam",
-        "views": "{{numViews}} Mionekano",
-        "settings": "Ayarlar",
-        "language_settings": "Dil Ayarları",
-        "app_settings": "Uygulama Ayarları"
-    },
     "action": {
-        "upgrade": "Kuboresha",
-        "cancel": "İptal",
+        "cancel": "Katisha",
         "confirm_cancellation": "Thibitisha Kughairi",
+        "copy": "Nakili",
         "keep_subscription": "Weka Usajili",
-        "register": "Jisajili",
+        "let_chatgpt_explain": "Uliza AI",
         "login": "Kuingia",
-        "verify": "Thibitisha",
-        "resend_code": "Peana tena nambari",
+        "logout": "Kuingia",
+        "next": "Ijayo",
+        "register": "Kujiandikisha",
+        "resend_code": "Msimbo wa kutuma tena",
+        "speak": "Kusema",
         "start_learning": "Anza Kujifunza",
-        "next": "Mbele",
-        "tv_shows": "TV-program",
-        "watch": "Ver",
-        "upgrade_to_pro": "Pro'ya Yükselt",
-        "speak": "Konuş",
-        "copy": "Kopyala",
-        "let_chatgpt_explain": "Deixe a IA explicar"
+        "tv_shows": "Maonyesho ya Runinga",
+        "upgrade": "Kuboresha",
+        "upgrade_to_pro": "Boresha kwa Pro",
+        "verify": "Thibitisha",
+        "watch": "Kuangalia",
+        "list_all": "Orodha ya Wote"
     },
-    "placeholder": {
-        "first_name": "Jina la kwanza",
-        "last_name": "Jina la mwisho",
-        "email": "Barua pepe",
-        "password": "Nywila",
-        "confirm_password": "Thibitisha Nywila",
-        "please_specify": "Tafadhali bainisha",
-        "more_languages": "Lugha zaidi ({{count}})",
-        "select_language": "Seçiniz",
-        "dict_search": "Tafuta {{l2Name}}, {{altField}} au {{dictL1Name}}...",
-        "search": "Ara..."
+    "chatgpt": {
+        "prompt": {
+            "base": "Kwa ufupi eleza kwa kutumia {{l1Name}}, neno {{l2Name}} ({{l2Code}}) neno '{{word}}' linamaanisha katika kishazi '{{text}}'.",
+            "inflection": "Kutoa lemma yake, inflection, na morphology."
+        }
     },
     "error": {
-        "passwords_do_not_match": "Maneno ya siri hayalingani",
-        "registration_failed": "Kusajiliwa kushindwa",
-        "failed_retrieve_password": "Kushindwa kupata nywila iliyohifadhiwa",
-        "generic": "Kosa",
-        "user_info_not_found": "Maelezo ya mtumiaji hayapatikani",
-        "updating_progress": "Kosa wakati wa kuboresha maendeleo:",
+        "entry_not_found": "Ingizo halipatikani au kamusi haijapakiwa",
+        "failed_retrieve_password": "Imeshindwa kurejesha nywila iliyohifadhiwa",
         "failed_to_load_items": "Imeshindwa kupakia vipengee:",
-        "entry_not_found": "Giriş bulunamadı veya sözlük yüklenmedi"
-    },
-    "success": {
-        "code_resent": "Nambari ya uthibitishaji inakataa barua pepe yako."
-    },
-    "option": {
-        "word_of_mouth": "Kinywa kwa Kinywa",
-        "instagram": "Instagram",
-        "bilibili": "Bilibili",
-        "google_ads": "Matangazo ya mtandaoni",
-        "hsk_courses": "Mafunzo ya HSK",
-        "app_store": "Duka la Programu",
-        "google_play": "Google Play",
-        "google_search": "Tafuta kwenye Wavuti",
-        "youtube": "Youtube",
-        "other": "Nyingine (Tafadhali taja)"
+        "generic": "Kosa",
+        "passwords_do_not_match": "Nywila hazilingani na",
+        "registration_failed": "Usajili umeshindwa",
+        "updating_progress": "Kosa kusasisha maendeleo:",
+        "user_info_not_found": "Maelezo ya mtumiaji hayapatikani"
     },
     "level": {
-        "label": "{{levelName}} ({{examLevelName}})",
-        "name": {
-            "1": "Mwanzo I",
-            "2": "Kompyuta II",
-            "3": "Kompyuta III",
-            "4": "Kati ya I",
-            "5": "Kati ya II",
-            "6": "Ya juu I",
-            "7": "Ya Juu II"
+        "cefr": {
+            "1": "CEFR Kabla ya A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "HSK 1",
@@ -420,14 +339,14 @@
             "6": "HSK 6",
             "7": "HSK 7-9"
         },
-        "topik": {
-            "1": "Kabla ya TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
         },
         "jlpt": {
             "1": "JLPT N5",
@@ -438,60 +357,151 @@
             "6": "JLPT N1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Mwanzo I",
+            "2": "Kompyuta II",
+            "3": "Kompyuta III",
+            "4": "Kati ya I",
+            "5": "Kati ya II",
+            "6": "Ya juu I",
+            "7": "Ya Juu II"
         },
-        "cefr": {
-            "1": "CEFR Kabla ya A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "Visualizações",
-        "likes": "Beğenme",
-        "comments": "Yorumlar"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Kwa ufupi eleza kwa kutumia {{l1Name}}, neno {{l2Name}} ({{l2Code}}) neno '{{word}}' linamaanisha katika kishazi '{{text}}'.",
-            "inflection": "Kutoa lemma yake, inflection, na morphology."
+        "topik": {
+            "1": "Kabla ya TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
         }
     },
     "log": {
-        "loading_dictionary": "Sözlük yükleniyor...",
-        "dictionary_ready": "Sözlük hazır!",
-        "failed_load_dictionary": "Sözlük yüklenemedi: {{error}}",
-        "database_already_loaded": "Base de datos ya cargada.",
-        "downloading": "Descargando...",
-        "processing": "Procesando...",
-        "entries_processed": "{{count}} mục đã được xử lý. Đang tạo chỉ mục..."
+        "database_already_loaded": "Hifadhidata tayari imepakiwa.",
+        "dictionary_ready": "Kamusi iko tayari na imepakiwa.",
+        "downloading": "Inapakua...",
+        "entries_processed": "{{count}} maingizo yaliyochakatwa. Kielezo...",
+        "failed_load_dictionary": "Imeshindwa kupakia kamusi: {{error}}",
+        "loading_dictionary": "Upload the Dictionary...",
+        "processing": "Usindikaji..."
+    },
+    "msg": {
+        "already_have_account": "Tayari una akaunti?",
+        "auto_renews_in": "Kusasisha kiotomatiki katika siku {{days}}",
+        "confirm_cancel_subscription": "Una uhakika unataka kughairi usajili wako?",
+        "copy_success": "Matini kunakiliwa kwenye ubao wa kunakili",
+        "discover_the_power_of_comprehensible_input": "Gundua nguvu ya Ingizo linaloeleweka kupitia mamia ya maelfu ya video katika lugha zaidi ya 100.",
+        "dont_have_an_account": "Huna account?",
+        "enrich_your_language_learning_journey": "Boresha safari yako ya kujifunza lugha",
+        "enter_verification_code": "Tafadhali ingiza msimbo wa uthibitishaji uliotumwa kwa barua pepe",
+        "expires_in": "Inaisha katika siku {{days}}",
+        "forgot_password": "Umesahau nywila?",
+        "hsk_explanation": "\"HSK\" ni mtihani rasmi wa ustadi wa Kichina, na Kiwango cha 1 kuwa cha chini na Kiwango cha 9 kuwa cha juu zaidi.",
+        "initializing": "Inaanzilisha...",
+        "loading": "Kupakia...",
+        "no_active_subscription": "Hakuna usajili amilifu uliopatikana.",
+        "or_login_with": "Au kuingia na:",
+        "or_register_with": "Au jiandikishe kwa:",
+        "pro_feature_chatgpt": "Watumiaji wa Pro tu ndio wanaweza kutumia vipengele vya AI katika Kicheza Lugha Go. Ili kutumia kipengele hiki, boresha hadi Pro.",
+        "pro_transcript": "Boresha kwa Pro ili kuona nakala kamili!",
+        "pro_transcript_limit_reached": "Ukomo wa Transcript umefikiwa. Tafadhali sasisha hadi Pro ili kufikia nakala zaidi.",
+        "sort_by": "Panga kwa: {{sortBy}}",
+        "time_spent_learning": "Alitumia kujifunza {{language}} katika Kichezaji Lugha",
+        "what_your_first_language": "Lugha yako ya kwanza ni ipi?",
+        "upgrade_text": "Boresha kwa Pro ili kufikia video zaidi!"
+    },
+    "of": "Ya",
+    "option": {
+        "app_store": "Duka la Programu",
+        "bilibili": "Bilibili",
+        "google_ads": "Matangazo ya mtandaoni",
+        "google_play": "Google Play",
+        "google_search": "Utafutaji wa Wavuti",
+        "hsk_courses": "Kozi za HSK",
+        "instagram": "Instagram",
+        "other": "Nyingine (Tafadhali taja)",
+        "word_of_mouth": "Maneno ya kinywa",
+        "youtube": "Youtube"
+    },
+    "placeholder": {
+        "confirm_password": "Thibitisha Nywila",
+        "dict_search": "Tafuta {{l2Name}}, {{altField}} au {{dictL1Name}}...",
+        "email": "Barua pepe",
+        "first_name": "Kwanza",
+        "last_name": "Mwisho",
+        "more_languages": "Lugha zaidi ({{count}})",
+        "password": "Nywila",
+        "please_specify": "Tafadhali bainisha",
+        "search": "Tafutiza...",
+        "select_language": "Chagua lugha"
+    },
+    "setting": {
+        "auto_pronounce": "Tangazo la Auto",
+        "dark_mode": "Hali ya Giza",
+        "saved_words_blanks": "Maneno yaliyohifadhiwa kama tupu",
+        "show_gloss_saved": "Onyesha Gloss kwa Kuokolewa",
+        "show_phonetics": "Onyesha Fonetiki",
+        "show_translation": "Onyesha Tafsiri",
+        "use_traditional": "Tumia Jadi"
+    },
+    "success": {
+        "code_resent": "Nambari ya uthibitishaji inakataa barua pepe yako."
+    },
+    "time": {
+        "hours": "Masaa",
+        "min": "min",
+        "sec": "Sec"
+    },
+    "title": {
+        "account": "Akaunti",
+        "annual": "Mwaka",
+        "app_settings": "Mipangilio ya Programu",
+        "best_value": "Thamani Bora",
+        "choose_language": "Chagua Lugha",
+        "continue_learning": "Endelea Kujifunza {{l2Code}}",
+        "current_level": "Kiwango chako cha sasa cha {{language}} ni nini?",
+        "current_plan": "Mpango wa sasa",
+        "date": "Tarehe",
+        "delete_my_account": "Futa Akaunti Yangu",
+        "dictionary": "Kamusi",
+        "email": "Barua pepe",
+        "examples_from_videos": "Mifano kutoka kwa Video",
+        "how_did_you_hear": "Ulisikiaje kuhusu sisi?",
+        "language_settings": "Mipangilio ya Lugha",
+        "leftContext": "Muktadha wa kushoto",
+        "length": "Urefu",
+        "lifetime": "Maisha",
+        "likes": "Anapenda",
+        "loading_dictionary": "Inapakia {{language}} Kamusi",
+        "login": "Kuingia",
+        "logout": "Kuingia",
+        "monthly": "Mwezi",
+        "my_progress": "Maendeleo yangu",
+        "next": "Ijayo",
+        "password": "Nywila",
+        "popularity": "Umaarufu",
+        "privacy_policy": "Sera ya faragha",
+        "pro_feature": "Kipengele cha Pro",
+        "register": "Kujiandikisha",
+        "rightContext": "Muktadha wa kulia",
+        "saved_words": "Maneno yaliyohifadhiwa",
+        "select_language": "Ni lugha gani ungependa kujifunza?",
+        "settings": "Vipimo",
+        "start_learning": "Anza Kujifunza",
+        "trial": "Kesi",
+        "verify_your_email": "Thibitisha Barua pepe Yako",
+        "views": "{{numViews}} Mionekano",
+        "watch_history": "Historia ya Tazama"
+    },
+    "video": {
+        "comments": "Maoni",
+        "likes": "Anapenda",
+        "views": "Mionekano"
     },
     "word": {
-        "pinyin": "Pinyin",
+        "hanja": "Hanja",
         "kana": "Kana",
-        "hanja": "Hanja"
-    },
-    "list_all": "Tümünü Göster",
-    "of": "of",
-    "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!",
-    "setting": {
-        "show_phonetics": "Sesli Harfleri Göster",
-        "use_traditional": "Geleneksel Kullan",
-        "show_translation": "Çeviriyi Göster",
-        "show_gloss_saved": "Kaydedilenler için Glossary Göster",
-        "saved_words_blanks": "Kaydedilen Kelimeleri Boşluklar Olarak Göster",
-        "auto_pronounce": "Otomatik Telaffuz",
-        "dark_mode": "Karanlık Mod"
+        "pinyin": "Pinyin"
     }
 }

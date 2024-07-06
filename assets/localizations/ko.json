@@ -284,132 +284,51 @@
         "tr-TR": "터키어 (터키)",
         "yue-HK": "광둥어 (홍콩)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "100개 이상의 언어로 된 수십만 개의 비디오를 통해 Comprehensible Input의 힘을 발견하십시오.",
-        "dont_have_an_account": "계정이 없으신가요?",
-        "enrich_your_language_learning_journey": "언어 학습 여정 풍요로움",
-        "forgot_password": "비밀번호를 잊으셨나요?",
-        "or_login_with": "또는 다음으로 로그인하십시오.",
-        "what_your_first_language": "당신의 모국어는 무엇입니까?",
-        "confirm_cancel_subscription": "구독을 취소하시겠습니까?",
-        "no_active_subscription": "활성 구독을 찾을 수 없습니다.",
-        "loading": "로드 중...",
-        "auto_renews_in": "{{days}}일 후에 자동 갱신",
-        "expires_in": "{{days}} 일 후에 만료됩니다.",
-        "or_register_with": "또는 다음으로 등록하십시오.",
-        "already_have_account": "이미 계정이 있으신가요?",
-        "enter_verification_code": "이메일로 전송된 인증 코드를 입력하세요.",
-        "hsk_explanation": "\"HSK\"는 공식 중국어 능력 시험으로 1급이 가장 낮고 9급이 가장 높습니다.",
-        "pro_transcript": "Pro로 업그레이드하여 전체 대본을 확인하세요!",
-        "pro_transcript_limit_reached": "대본 제한에 도달했습니다. 더 많은 대본에 액세스하려면 Pro로 업그레이드하십시오.",
-        "copy_success": "텍스트가 클립보드에 복사되었습니다",
-        "pro_feature_chatgpt": "Pro 사용자만 Language Player Go에서 AI 기능을 사용할 수 있습니다. 이 기능을 사용하려면 Pro로 업그레이드하십시오.",
-        "initializing": "초기화 중...",
-        "sort_by": "정렬 기준: {{sortBy}}"
-    },
-    "title": {
-        "email": "메일 주소",
-        "login": "로그인",
-        "next": "다음",
-        "password": "암호",
-        "register": "등록기",
-        "start_learning": "학습 시작하기",
-        "choose_language": "언어 선택",
-        "continue_learning": "계속 학습하기 {{l2Code}}",
-        "account": "계좌",
-        "logout": "로그아웃",
-        "delete_my_account": "내 계정 삭제",
-        "privacy_policy": "개인정보처리방침",
-        "current_plan": "현재 계획",
-        "best_value": "가성비 최고",
-        "monthly": "매월",
-        "annual": "매년",
-        "lifetime": "평생",
-        "trial": "시험",
-        "verify_your_email": "이메일 확인",
-        "how_did_you_hear": "저희에 대해 어떻게 알게 되셨나요?",
-        "select_language": "어떤 언어를 배우고 싶으신가요?",
-        "current_level": "현재 {{language}} 레벨은 무엇입니까?",
-        "pro_feature": "Pro 기능",
-        "loading_dictionary": "{{language}} 사전 로드 중",
-        "dictionary": "사전",
-        "examples_from_videos": "비디오에서의 예",
-        "popularity": "인기도",
-        "likes": "좋아요",
-        "date": "날짜",
-        "length": "길이",
-        "leftContext": "왼쪽 컨텍스트",
-        "rightContext": "오른쪽 컨텍스트",
-        "views": "{{numViews}} 레이아웃",
-        "settings": "설정",
-        "language_settings": "언어 설정",
-        "app_settings": "앱 설정"
-    },
     "action": {
-        "upgrade": "업그레이드",
         "cancel": "취소",
         "confirm_cancellation": "취소 확인",
-        "keep_subscription": "구독 유지",
-        "register": "등록",
-        "login": "로그인",
-        "verify": "확인",
-        "resend_code": "코드 다시 보내기",
-        "start_learning": "학습 시작",
-        "next": "다음",
-        "tv_shows": "TV 프로그램",
-        "watch": "보기",
-        "upgrade_to_pro": "Pro로 업그레이드",
-        "speak": "말하기",
         "copy": "복사",
-        "let_chatgpt_explain": "인공지능에게 물어보기"
+        "keep_subscription": "구독 유지",
+        "let_chatgpt_explain": "AI에게 물어보기",
+        "login": "로그인",
+        "logout": "로그아웃",
+        "next": "다음",
+        "register": "등록기",
+        "resend_code": "코드 재전송",
+        "speak": "말하다",
+        "start_learning": "학습 시작하기",
+        "tv_shows": "TV 쇼",
+        "upgrade": "업그레이드",
+        "upgrade_to_pro": "Pro로 업그레이드",
+        "verify": "확인",
+        "watch": "시계",
+        "list_all": "모두 나열"
     },
-    "placeholder": {
-        "first_name": "이름",
-        "last_name": "성",
-        "email": "이메일",
-        "password": "암호",
-        "confirm_password": "암호 확인",
-        "please_specify": "지정하십시오",
-        "more_languages": "더 많은 언어 ({{count}})",
-        "select_language": "언어 선택",
-        "dict_search": "{{l2Name}}, {{altField}}, {{dictL1Name}} 검색...",
-        "search": "검색..."
+    "chatgpt": {
+        "prompt": {
+            "base": "'{{l2Name}} ({{l2Code}}) 단어 '{{word}}'가 '{{text}'에서 무엇을 의미하는지 {{l1Name}}를 사용하여 간결하게 설명하십시오.",
+            "inflection": "기본형, 굴절 및 형태를 제공하십시오."
+        }
     },
     "error": {
-        "passwords_do_not_match": "비밀번호가 일치하지 않습니다",
-        "registration_failed": "등록에 실패했습니다",
-        "failed_retrieve_password": "저장된 비밀번호 검색 실패",
+        "entry_not_found": "항목을 찾을 수 없거나 사전이 로드되지 않았습니다.",
+        "failed_retrieve_password": "저장된 암호를 검색하지 못했습니다.",
+        "failed_to_load_items": "항목을 로드하지 못했습니다.",
         "generic": "오류",
-        "user_info_not_found": "사용자 정보를 찾을 수 없습니다",
-        "updating_progress": "진행률 업데이트 오류:",
-        "failed_to_load_items": "항목을 로드하지 못했습니다:",
-        "entry_not_found": "항목을 찾을 수 없거나 사전이 로드되지 않았습니다"
-    },
-    "success": {
-        "code_resent": "확인 코드가 이메일로 다시 전송되었습니다."
-    },
-    "option": {
-        "word_of_mouth": "마우스 투 마우스",
-        "instagram": "인스타그램",
-        "bilibili": "빌리빌리",
-        "google_ads": "온라인 광고",
-        "hsk_courses": "HSK 코스",
-        "app_store": "앱 스토어",
-        "google_play": "구글 플레이",
-        "google_search": "웹 검색",
-        "youtube": "유튜브",
-        "other": "기타 (구체적으로 기재해 주십시오)"
+        "passwords_do_not_match": "비밀번호가 일치하지 않습니다.",
+        "registration_failed": "등록 실패",
+        "updating_progress": "진행 상황을 업데이트하는 중 오류가 발생했습니다.",
+        "user_info_not_found": "사용자 정보를 찾을 수 없음"
     },
     "level": {
-        "label": "{{levelName}} ({{examLevelName}})",
-        "name": {
-            "1": "초급 I",
-            "2": "초급 II",
-            "3": "초급 III",
-            "4": "중급 I",
-            "5": "중급 II",
-            "6": "상급 I",
-            "7": "상급 II"
+        "cefr": {
+            "1": "CEFR Pre-A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR 지하 2층",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "HSK 레벨 1",
@@ -420,14 +339,14 @@
             "6": "HSK 레벨 6",
             "7": "HSK 7-9급"
         },
-        "topik": {
-            "1": "한국어능력시험(Pre-TOPIK) 1",
-            "2": "한국어능력시험(TOPIK) 1",
-            "3": "한국어능력시험(TOPIK) 2",
-            "4": "한국어능력시험(TOPIK) 3",
-            "5": "한국어능력시험(TOPIK) 4",
-            "6": "한국어능력시험(TOPIK) 5",
-            "7": "한국어능력시험(TOPIK) 6"
+        "ielts": {
+            "1": "IELTS 1 (영어)",
+            "2": "IELTS 2 시험",
+            "3": "아이엘츠 3.5",
+            "4": "아이엘츠 5",
+            "5": "아이엘츠 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9 시험"
         },
         "jlpt": {
             "1": "일본어능력시험 N5",
@@ -438,60 +357,151 @@
             "6": "일본어능력시험 N1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "IELTS 1 (영어)",
-            "2": "IELTS 2 시험",
-            "3": "아이엘츠 3.5",
-            "4": "아이엘츠 5",
-            "5": "아이엘츠 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9 시험"
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "초급 I",
+            "2": "초급 II",
+            "3": "초급 III",
+            "4": "중급 I",
+            "5": "중급 II",
+            "6": "상급 I",
+            "7": "상급 II"
         },
-        "cefr": {
-            "1": "CEFR Pre-A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR 지하 2층",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "조회수",
-        "likes": "좋아요",
-        "comments": "댓글"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "'{{l2Name}} ({{l2Code}}) 단어 '{{word}}'가 '{{text}'에서 무엇을 의미하는지 {{l1Name}}를 사용하여 간결하게 설명하십시오.",
-            "inflection": "기본형, 굴절 및 형태를 제공하십시오."
+        "topik": {
+            "1": "한국어능력시험(Pre-TOPIK) 1",
+            "2": "한국어능력시험(TOPIK) 1",
+            "3": "한국어능력시험(TOPIK) 2",
+            "4": "한국어능력시험(TOPIK) 3",
+            "5": "한국어능력시험(TOPIK) 4",
+            "6": "한국어능력시험(TOPIK) 5",
+            "7": "한국어능력시험(TOPIK) 6"
         }
     },
     "log": {
-        "loading_dictionary": "사전을 로드하는 중...",
-        "dictionary_ready": "사전 준비 완료!",
-        "failed_load_dictionary": "사전을 로드하는 데 실패했습니다: {{error}}",
         "database_already_loaded": "데이터베이스가 이미 로드되었습니다.",
-        "downloading": "다운로드 중...",
-        "processing": "처리 중...",
-        "entries_processed": "{{count}} 항목 처리됨. 색인 작업 중..."
+        "dictionary_ready": "딕셔너리가 준비되고 로드되었습니다.",
+        "downloading": "다운로드...",
+        "entries_processed": "{{count}} 항목이 처리되었습니다. 인덱싱...",
+        "failed_load_dictionary": "사전을 로드하지 못했습니다: {{error}}",
+        "loading_dictionary": "딕셔너리를 불러오는 중...",
+        "processing": "가공..."
+    },
+    "msg": {
+        "already_have_account": "이미 계정이 있으신가요?",
+        "auto_renews_in": "{{days}}일 후에 자동 갱신",
+        "confirm_cancel_subscription": "구독을 취소하시겠습니까?",
+        "copy_success": "클립보드에 복사된 텍스트",
+        "discover_the_power_of_comprehensible_input": "100개 이상의 언어로 된 수십만 개의 비디오를 통해 Comprehensible Input의 힘을 발견하십시오.",
+        "dont_have_an_account": "계정이 없으신가요?",
+        "enrich_your_language_learning_journey": "언어 학습 여정 풍요로움",
+        "enter_verification_code": "이메일로 전송된 인증 코드를 입력하세요.",
+        "expires_in": "{{days}} 일 후에 만료됩니다.",
+        "forgot_password": "비밀번호를 잊으셨나요?",
+        "hsk_explanation": "\"HSK\"는 공식 중국어 능력 시험으로 1급이 가장 낮고 9급이 가장 높습니다.",
+        "initializing": "초기화...",
+        "loading": "로드...",
+        "no_active_subscription": "활성 구독을 찾을 수 없습니다.",
+        "or_login_with": "또는 다음으로 로그인하십시오.",
+        "or_register_with": "또는 다음을 사용하여 등록하십시오.",
+        "pro_feature_chatgpt": "Pro 사용자만 Language Player Go에서 AI 기능을 사용할 수 있습니다. 이 기능을 사용하려면 Pro로 업그레이드하십시오.",
+        "pro_transcript": "Pro로 업그레이드하여 전체 대본을 확인하세요!",
+        "pro_transcript_limit_reached": "대본 제한에 도달했습니다. 더 많은 대본에 액세스하려면 Pro로 업그레이드하십시오.",
+        "sort_by": "정렬 기준: {{sortBy}}",
+        "time_spent_learning": "언어 플레이어에서 {{language}}를 배우는 데 소요",
+        "what_your_first_language": "당신의 모국어는 무엇입니까?",
+        "upgrade_text": "Pro로 업그레이드하여 더 많은 비디오에 액세스하세요!"
+    },
+    "of": "의",
+    "option": {
+        "app_store": "앱 스토어",
+        "bilibili": "빌리빌리",
+        "google_ads": "온라인 광고",
+        "google_play": "구글 플레이",
+        "google_search": "웹 검색",
+        "hsk_courses": "HSK 과정",
+        "instagram": "인스타그램",
+        "other": "기타 (구체적으로 기재해 주십시오)",
+        "word_of_mouth": "입소문",
+        "youtube": "유튜브"
+    },
+    "placeholder": {
+        "confirm_password": "비밀번호 확인",
+        "dict_search": "{{l2Name}}, {{altField}}, {{dictL1Name}} 검색...",
+        "email": "메일 주소",
+        "first_name": "첫",
+        "last_name": "지난",
+        "more_languages": "더 많은 언어 ({{count}})",
+        "password": "암호",
+        "please_specify": "지정하십시오",
+        "search": "검색...",
+        "select_language": "언어 선택"
+    },
+    "setting": {
+        "auto_pronounce": "자동 발음",
+        "dark_mode": "다크 모드",
+        "saved_words_blanks": "빈칸으로 저장된 단어",
+        "show_gloss_saved": "저장된 항목에 대한 광택 표시",
+        "show_phonetics": "발음 표시",
+        "show_translation": "번역 표시",
+        "use_traditional": "기존 사용"
+    },
+    "success": {
+        "code_resent": "인증 코드가 이메일로 다시 전송되었습니다."
+    },
+    "time": {
+        "hours": "시간",
+        "min": "분",
+        "sec": "초"
+    },
+    "title": {
+        "account": "계좌",
+        "annual": "매년의",
+        "app_settings": "앱 설정",
+        "best_value": "가성비 최고",
+        "choose_language": "언어 선택",
+        "continue_learning": "계속 학습하기 {{l2Code}}",
+        "current_level": "현재 {{language}} 레벨은 어느 정도인가요?",
+        "current_plan": "현재 계획",
+        "date": "날짜",
+        "delete_my_account": "내 계정 삭제",
+        "dictionary": "사전",
+        "email": "메일 주소",
+        "examples_from_videos": "비디오의 예",
+        "how_did_you_hear": "저희에 대해 어떻게 알게 되셨나요?",
+        "language_settings": "언어 설정",
+        "leftContext": "왼쪽 컨텍스트",
+        "length": "길이",
+        "lifetime": "평생",
+        "likes": "좋아하는",
+        "loading_dictionary": "{{language}} 딕셔너리 불러오기",
+        "login": "로그인",
+        "logout": "로그아웃",
+        "monthly": "매달의",
+        "my_progress": "내 진행 상황",
+        "next": "다음",
+        "password": "암호",
+        "popularity": "인기",
+        "privacy_policy": "개인정보처리방침",
+        "pro_feature": "프로 기능",
+        "register": "등록기",
+        "rightContext": "오른쪽 컨텍스트",
+        "saved_words": "저장된 단어",
+        "select_language": "어떤 언어를 배우고 싶습니까?",
+        "settings": "설정",
+        "start_learning": "학습 시작하기",
+        "trial": "재판",
+        "verify_your_email": "이메일 확인",
+        "views": "{{numViews}} 레이아웃",
+        "watch_history": "시청 내역"
+    },
+    "video": {
+        "comments": "코멘트",
+        "likes": "좋아하는",
+        "views": "레이아웃"
     },
     "word": {
-        "pinyin": "병음",
+        "hanja": "한자(漢��",
         "kana": "가나",
-        "hanja": "한자(漢��"
-    },
-    "list_all": "모두 표시",
-    "of": "의",
-    "upgrade_text": "Aggiorna a Pro per accedere a più video!",
-    "setting": {
-        "show_phonetics": "발음 표시",
-        "use_traditional": "번체자 사용",
-        "show_translation": "번역 표시",
-        "show_gloss_saved": "저장된 용어에 대한 용어집 표시",
-        "saved_words_blanks": "저장된 단어를 공백으로 표시",
-        "auto_pronounce": "자동 발음",
-        "dark_mode": "다크 모드"
+        "pinyin": "병음"
     }
 }

@@ -285,132 +285,51 @@
         "tr-TR": "Turks (Turkye)",
         "yue-HK": "Kantonees (Hong Kong)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "Ontdek die krag van verstaanbare insette deur honderdduisende video's in meer as 100 tale.",
-        "dont_have_an_account": "Het jy nie 'n rekening nie?",
-        "enrich_your_language_learning_journey": "Verryk jou taalleerreis",
-        "forgot_password": "Wagwoord vergeet?",
-        "or_login_with": "Of meld aan met:",
-        "what_your_first_language": "Wat is jou eerste taal?",
-        "confirm_cancel_subscription": "Is jy seker jy wil jou intekening kanselleer?",
-        "no_active_subscription": "Geen aktiewe intekening gevind nie.",
-        "loading": "Laai...",
-        "auto_renews_in": "Auto renews in {{days}} dae",
-        "expires_in": "Verval in {{days}} dae",
-        "or_register_with": "Of registreer met:",
-        "already_have_account": "Het u reeds 'n rekening?",
-        "enter_verification_code": "Voer asseblief die verifikasiekode in wat na die e-pos gestuur is",
-        "hsk_explanation": "\"HSK\" is die amptelike Chinese vaardigheidstoets, met vlak 1 die laagste en vlak 9 die hoogste.",
-        "pro_transcript": "Upgrade naar Pro om de volledige transcriptie te bekijken!",
-        "pro_transcript_limit_reached": "Transkripsie limiet bereik. Gradeer asseblief op na Pro om toegang tot meer transkripsies te kry.",
-        "copy_success": "Tekst gekopieerd naar klembord",
-        "pro_feature_chatgpt": "Alleen Pro-gebruikers kunnen AI-functies in Language Player Go gebruiken. Om deze functie te gebruiken, upgrade naar Pro.",
-        "initializing": "Initialiseren...",
-        "sort_by": "Sorteer op: {{sortBy}}"
-    },
-    "title": {
-        "email": "E-pos",
-        "login": "Aanteken",
-        "next": "Volgende",
-        "password": "Wagwoord",
-        "register": "Register",
-        "start_learning": "Begin leer",
-        "choose_language": "Kies Taal",
-        "continue_learning": "Continue Learning {{l2Code}}",
-        "account": "Rekening",
-        "logout": "Afmelding",
-        "delete_my_account": "Vee my rekening uit",
-        "privacy_policy": "Privaatheidsbeleid",
-        "current_plan": "Huidige plan",
-        "best_value": "Beste waarde",
-        "monthly": "Maandeliks",
-        "annual": "Jaarliks",
-        "lifetime": "Leeftyd",
-        "trial": "Proeflopie",
-        "verify_your_email": "Verifieer jou e-pos",
-        "how_did_you_hear": "Hoe het jy van ons gehoor?",
-        "select_language": "Watter taal wil jy leer?",
-        "current_level": "Wat is jou huidige vlak van {{language}}?",
-        "pro_feature": "Pro-functie",
-        "loading_dictionary": "{{language}}-woordenboek laden",
-        "dictionary": "Dictionary",
-        "examples_from_videos": "Voorbeelden uit video's",
-        "popularity": "Populariteit",
-        "likes": "Likes",
-        "date": "Datum",
-        "length": "Lengte",
-        "leftContext": "Linkercontext",
-        "rightContext": "Rechtercontext",
-        "views": "{{numViews}} Sieninge",
-        "settings": "Instellings",
-        "language_settings": "Taalinstellings",
-        "app_settings": "App-instellings"
-    },
     "action": {
-        "upgrade": "Opgradering",
-        "cancel": "Stel",
+        "cancel": "Kanselleer",
         "confirm_cancellation": "Bevestig kansellasie",
-        "keep_subscription": "Hou intekening",
-        "register": "Registreer",
-        "login": "Aanteken",
-        "verify": "Verifieer",
-        "resend_code": "Stuur kode weer",
-        "start_learning": "Begin leer",
-        "next": "Volgende",
-        "tv_shows": "TV-programma's",
-        "watch": "Bekijken",
-        "upgrade_to_pro": "Upgrade naar Pro",
-        "speak": "Spreken",
         "copy": "Kopiëren",
-        "let_chatgpt_explain": "Laat AI uitleggen"
+        "keep_subscription": "Hou intekening",
+        "let_chatgpt_explain": "Laat AI uitleggen",
+        "login": "Aanteken",
+        "logout": "Uitlog",
+        "next": "Volgende",
+        "register": "Registreer",
+        "resend_code": "Stuur kode weer",
+        "speak": "Spreken",
+        "start_learning": "Begin leer",
+        "tv_shows": "TV-programma's",
+        "upgrade": "Opgradering",
+        "upgrade_to_pro": "Upgrade naar Pro",
+        "verify": "Verifieer",
+        "watch": "Bekijken",
+        "list_all": "Lys Alles"
     },
-    "placeholder": {
-        "first_name": "Voornaam",
-        "last_name": "Achternaam",
-        "email": "E-pos",
-        "password": "Wagwoord",
-        "confirm_password": "Bevestig wagwoord",
-        "please_specify": "Spesifiseer asseblief",
-        "more_languages": "Meer tale ({{count}})",
-        "select_language": "Kies een taal",
-        "dict_search": "Search {{l2Name}}, {{altField}} of {{dictL1Name}}...",
-        "search": "Zoeken..."
+    "chatgpt": {
+        "prompt": {
+            "base": "Verduidelik bondig met {{l1Name}}, wat die {{l2Name}} ({{l2Code}}) woord '{{word}}' beteken in die frase '{{text}}'.",
+            "inflection": "Gee sy lemma, verbuiging en morfologie."
+        }
     },
     "error": {
+        "entry_not_found": "Inskrywing nie gevind nie of woordeboek nie gelaai nie",
+        "failed_retrieve_password": "Misluk om gestoorde wagwoord te herwin",
+        "failed_to_load_items": "Kan items niet laden:",
+        "generic": "Fout",
         "passwords_do_not_match": "Wagwoorde stem nie ooreen nie",
         "registration_failed": "Registrasie het misluk",
-        "failed_retrieve_password": "Misluk om gestoorde wagwoord te herwin",
-        "generic": "Fout",
-        "user_info_not_found": "Gebruikersinformatie niet gevonden",
         "updating_progress": "Fout by die opdateer van vordering:",
-        "failed_to_load_items": "Kan items niet laden:",
-        "entry_not_found": "Inskrywing nie gevind nie of woordeboek nie gelaai nie"
-    },
-    "success": {
-        "code_resent": "Verifikasiekode is weer na jou e-pos gestuur."
-    },
-    "option": {
-        "word_of_mouth": "Mondelinge aanbeveling",
-        "instagram": "Instagram",
-        "bilibili": "Bilibili",
-        "google_ads": "Online-advertensies",
-        "hsk_courses": "HSK-kursusse",
-        "app_store": "App Store",
-        "google_play": "Google Play",
-        "google_search": "Websoektog",
-        "youtube": "Youtube",
-        "other": "Ander (Spesifiseer asseblief)"
+        "user_info_not_found": "Gebruikersinformatie niet gevonden"
     },
     "level": {
-        "label": "{{levelName}} ({{examLevelName}})",
-        "name": {
-            "1": "Beginner I",
-            "2": "Beginner II",
-            "3": "Beginner III",
-            "4": "Intermediêr I",
-            "5": "Intermediêre II",
-            "6": "Gevorderde I",
-            "7": "Gevorderde II"
+        "cefr": {
+            "1": "CEFR Pre-A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "HSK 1",
@@ -421,14 +340,14 @@
             "6": "HSK 6",
             "7": "HSK 7-9"
         },
-        "topik": {
-            "1": "Pre-TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
         },
         "jlpt": {
             "1": "JLPT N5",
@@ -439,60 +358,151 @@
             "6": "JLPT N1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Beginner I",
+            "2": "Beginner II",
+            "3": "Beginner III",
+            "4": "Intermediêr I",
+            "5": "Intermediêre II",
+            "6": "Gevorderde I",
+            "7": "Gevorderde II"
         },
-        "cefr": {
-            "1": "CEFR Pre-A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "Weergaven",
-        "likes": "Vind-ik-leuks",
-        "comments": "Reacties"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Verduidelik bondig met {{l1Name}}, wat die {{l2Name}} ({{l2Code}}) woord '{{word}}' beteken in die frase '{{text}}'.",
-            "inflection": "Gee sy lemma, verbuiging en morfologie."
+        "topik": {
+            "1": "Pre-TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
         }
     },
     "log": {
-        "loading_dictionary": "Het woordenboek wordt geladen...",
-        "dictionary_ready": "Woordenboek gereed!",
-        "failed_load_dictionary": "Kan woordenboek niet laden: {{error}}",
         "database_already_loaded": "Database is al geladen.",
+        "dictionary_ready": "Woordenboek is klaar en geladen.",
         "downloading": "Downloaden...",
-        "processing": "Verwerken...",
-        "entries_processed": "{{count}} vermeldingen verwerkt. Indexeren..."
+        "entries_processed": "{{count}} vermeldingen verwerkt. Indexeren...",
+        "failed_load_dictionary": "Kan woordenboek niet laden: {{error}}",
+        "loading_dictionary": "Het woordenboek wordt geladen...",
+        "processing": "Verwerken..."
+    },
+    "msg": {
+        "already_have_account": "Het u reeds 'n rekening?",
+        "auto_renews_in": "Auto renews in {{days}} dae",
+        "confirm_cancel_subscription": "Is jy seker jy wil jou intekening kanselleer?",
+        "copy_success": "Tekst gekopieerd naar klembord",
+        "discover_the_power_of_comprehensible_input": "Ontdek die krag van verstaanbare insette deur honderdduisende video's in meer as 100 tale.",
+        "dont_have_an_account": "Het jy nie 'n rekening nie?",
+        "enrich_your_language_learning_journey": "Verryk jou taalleerreis",
+        "enter_verification_code": "Voer asseblief die verifikasiekode in wat na die e-pos gestuur is",
+        "expires_in": "Verval in {{days}} dae",
+        "forgot_password": "Wagwoord vergeet?",
+        "hsk_explanation": "\"HSK\" is die amptelike Chinese vaardigheidstoets, met vlak 1 die laagste en vlak 9 die hoogste.",
+        "initializing": "Initialiseren...",
+        "loading": "Laai tans...",
+        "no_active_subscription": "Geen aktiewe intekening gevind nie.",
+        "or_login_with": "Of meld aan met:",
+        "or_register_with": "Of registreer met:",
+        "pro_feature_chatgpt": "Alleen Pro-gebruikers kunnen AI-functies in Language Player Go gebruiken. Om deze functie te gebruiken, upgrade naar Pro.",
+        "pro_transcript": "Upgrade naar Pro om de volledige transcriptie te bekijken!",
+        "pro_transcript_limit_reached": "Transkripsie limiet bereik. Gradeer asseblief op na Pro om toegang tot meer transkripsies te kry.",
+        "sort_by": "Sorteer op: {{sortBy}}",
+        "time_spent_learning": "Tyd spandeer om {{language}} in Language Player te leer",
+        "what_your_first_language": "Wat is jou eerste taal?",
+        "upgrade_text": "Gradeer op na Pro om toegang tot meer video's te kry!"
+    },
+    "of": "van",
+    "option": {
+        "app_store": "App Store",
+        "bilibili": "Bilibili",
+        "google_ads": "Online-advertensies",
+        "google_play": "Google Play",
+        "google_search": "Websoektog",
+        "hsk_courses": "HSK-kursusse",
+        "instagram": "Instagram",
+        "other": "Ander (Spesifiseer asseblief)",
+        "word_of_mouth": "Mondelinge aanbeveling",
+        "youtube": "Youtube"
+    },
+    "placeholder": {
+        "confirm_password": "Bevestig wagwoord",
+        "dict_search": "Search {{l2Name}}, {{altField}} of {{dictL1Name}}...",
+        "email": "E-pos",
+        "first_name": "Voornaam",
+        "last_name": "Achternaam",
+        "more_languages": "Meer tale ({{count}})",
+        "password": "Wagwoord",
+        "please_specify": "Spesifiseer asseblief",
+        "search": "Zoeken...",
+        "select_language": "Kies een taal"
+    },
+    "setting": {
+        "auto_pronounce": "Outomatiese Uitspraak",
+        "dark_mode": "Donker Modus",
+        "saved_words_blanks": "Gestoorde Woorde as Blanko",
+        "show_gloss_saved": "Wys Glos vir Gestoorde",
+        "show_phonetics": "Wys Fonetiek",
+        "show_translation": "Wys Vertaling",
+        "use_traditional": "Gebruik Tradisioneel"
+    },
+    "success": {
+        "code_resent": "Verifikasiekode is weer na jou e-pos gestuur."
+    },
+    "time": {
+        "hours": "ure",
+        "min": "min",
+        "sec": "sek"
+    },
+    "title": {
+        "account": "Rekening",
+        "annual": "Jaarliks",
+        "app_settings": "App-instellings",
+        "best_value": "Beste waarde",
+        "choose_language": "Kies Taal",
+        "continue_learning": "Continue Learning {{l2Code}}",
+        "current_level": "Wat is jou huidige vlak van {{language}}?",
+        "current_plan": "Huidige plan",
+        "date": "Datum",
+        "delete_my_account": "Vee my rekening uit",
+        "dictionary": "Dictionary",
+        "email": "E-pos",
+        "examples_from_videos": "Voorbeelden uit video's",
+        "how_did_you_hear": "Hoe het jy van ons gehoor?",
+        "language_settings": "Taalinstellings",
+        "leftContext": "Linkercontext",
+        "length": "Lengte",
+        "lifetime": "Leeftyd",
+        "likes": "Likes",
+        "loading_dictionary": "{{language}}-woordenboek laden",
+        "login": "Aanteken",
+        "logout": "Afmelding",
+        "monthly": "Maandeliks",
+        "my_progress": "My Vordering",
+        "next": "Volgende",
+        "password": "Wagwoord",
+        "popularity": "Populariteit",
+        "privacy_policy": "Privaatheidsbeleid",
+        "pro_feature": "Pro-functie",
+        "register": "Register",
+        "rightContext": "Rechtercontext",
+        "saved_words": "Gestoorde Woorde",
+        "select_language": "Watter taal wil jy leer?",
+        "settings": "Instellings",
+        "start_learning": "Begin leer",
+        "trial": "Proeflopie",
+        "verify_your_email": "Verifieer jou e-pos",
+        "views": "{{numViews}} Sieninge",
+        "watch_history": "Kykgeskiedenis"
+    },
+    "video": {
+        "comments": "Reacties",
+        "likes": "Vind-ik-leuks",
+        "views": "Weergaven"
     },
     "word": {
-        "pinyin": "Pinyin",
+        "hanja": "Hanja",
         "kana": "Kana",
-        "hanja": "Hanja"
-    },
-    "list_all": "Lys Alles",
-    "of": "van",
-    "upgrade_text": "Gradeer op na Pro om toegang tot meer video's te kry!",
-    "setting": {
-        "show_phonetics": "Wys Fonetiek",
-        "use_traditional": "Gebruik Tradisioneel",
-        "show_translation": "Wys Vertaling",
-        "show_gloss_saved": "Wys Glos vir Gestoorde",
-        "saved_words_blanks": "Gestoorde Woorde as Blanko",
-        "auto_pronounce": "Outomatiese Uitspraak",
-        "dark_mode": "Donker Modus"
+        "pinyin": "Pinyin"
     }
 }

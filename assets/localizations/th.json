@@ -283,132 +283,51 @@
         "tr-TR": "ภาษาตุรกี (ตุรกี)",
         "yue-HK": "ภาษากวางตุ้ง (ฮ่องกง)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "ค้นพบพลังของ Comprehensible Input ผ่านวิดีโอหลายแสนรายการในกว่า 100 ภาษา",
-        "dont_have_an_account": "ยังไม่มีบัญชี?",
-        "enrich_your_language_learning_journey": "เติมเต็มเส้นทางการเรียนภาษาของคุณ",
-        "forgot_password": "ลืมรหัสผ่าน?",
-        "or_login_with": "หรือเข้าสู่ระบบด้วย:",
-        "what_your_first_language": "ภาษาแรกของคุณคืออะไร?",
-        "confirm_cancel_subscription": "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการสมัครสมาชิกของคุณ?",
-        "no_active_subscription": "ไม่พบการสมัครสมาชิกที่ใช้งานอยู่",
-        "loading": "กำลังโหลด...",
-        "auto_renews_in": "ต่ออายุอัตโนมัติใน {{days}} วัน",
-        "expires_in": "หมดอายุใน {{days}} วัน",
-        "or_register_with": "หรือลงทะเบียนด้วย:",
-        "already_have_account": "คุณมีบัญชีอยู่แล้วหรือไม่?",
-        "enter_verification_code": "โปรดป้อนรหัสยืนยันที่ส่งไปยังอีเมล",
-        "hsk_explanation": "\"HSK\" เป็นการทดสอบความสามารถทางภาษาจีนอย่างเป็นทางการ โดยระดับ 1 เป็นระดับต่ําสุดและระดับ 9 เป็นระดับสูงสุด",
-        "pro_transcript": "อัปเกรดเป็น Pro เพื่อดูการถอดเสียงฉบับเต็ม!",
-        "pro_transcript_limit_reached": "ถึงขีดจํากัดการถอดเสียงแล้ว โปรดอัปเกรดเป็น Pro เพื่อเข้าถึงการถอดเสียงเพิ่มเติม",
-        "copy_success": "Đã sao chép văn bản",
-        "pro_feature_chatgpt": "เฉพาะผู้ใช้ Pro เท่านั้นที่สามารถใช้คุณสมบัติ AI ใน Language Player Go ได้ หากต้องการใช้คุณสมบัตินี้ ให้อัปเกรดเป็น Pro",
-        "initializing": "Khởi tạo...",
-        "sort_by": "Sắp xếp theo: {{sortBy}}"
-    },
-    "title": {
-        "email": "อีเมล",
-        "login": "เข้า สู่ ระบบ",
-        "next": "ต่อไป",
-        "password": "รหัสผ่าน",
-        "register": "ลงทะเบียน",
-        "start_learning": "เริ่มเรียนรู้",
-        "choose_language": "เลือกภาษา",
-        "continue_learning": "เรียนรู้ต่อไป {{l2Code}}",
-        "account": "บัญชี",
-        "logout": "ออกจากระบบ",
-        "delete_my_account": "ลบบัญชีของฉัน",
-        "privacy_policy": "นโยบายความเป็นส่วนตัว",
-        "current_plan": "แผนปัจจุบัน",
-        "best_value": "คุ้มค่าที่สุด",
-        "monthly": "Hàng tháng",
-        "annual": "Hàng năm",
-        "lifetime": "Suốt đời",
-        "trial": "Thử nghiệm",
-        "verify_your_email": "Hãy xác minh email của bạn",
-        "how_did_you_hear": "คุณรู้จักเราได้อย่างไร?",
-        "select_language": "คุณต้องการเรียนภาษาอะไร?",
-        "current_level": "ระดับ {{language}} ปัจจุบันของคุณคืออะไร?",
-        "pro_feature": "คุณสมบัติ Pro",
-        "loading_dictionary": "กำลังโหลดพจนานุกรม {{language}}",
-        "dictionary": "พจนานุกรม",
-        "examples_from_videos": "วิดีโอตัวอย่าง",
-        "popularity": "ความนิยม",
-        "likes": "ถูกใจ",
-        "date": "วันที่",
-        "length": "ความยาว",
-        "leftContext": "บริบทซ้าย",
-        "rightContext": "บริบทขวา",
-        "views": "{{numViews}} มุมมอง",
-        "settings": "การตั้งค่า",
-        "language_settings": "การตั้งค่าภาษา",
-        "app_settings": "การตั้งค่าแอพ"
-    },
     "action": {
-        "upgrade": "อัพ เกรด",
         "cancel": "ยกเลิก",
         "confirm_cancellation": "ยืนยันการยกเลิก",
+        "copy": "ลอก",
         "keep_subscription": "สมัครสมาชิกต่อไป",
-        "register": "ลงทะเบียน",
+        "let_chatgpt_explain": "ถาม AI",
         "login": "เข้า สู่ ระบบ",
-        "verify": "ยืนยัน",
-        "resend_code": "Thibitisha tena",
-        "start_learning": "เริ่มเรียนรู้",
-        "next": "ถัดไป",
-        "tv_shows": "Programu za TV",
-        "watch": "Assistir",
-        "upgrade_to_pro": "อัปเกรดเป็น Pro",
+        "logout": "ออกจากระบบ",
+        "next": "ต่อไป",
+        "register": "ลงทะเบียน",
+        "resend_code": "ส่งรหัสอีกครั้ง",
         "speak": "พูด",
-        "copy": "Sao chép",
-        "let_chatgpt_explain": "Hỏi AI"
+        "start_learning": "เริ่มเรียนรู้",
+        "tv_shows": "ทีวี",
+        "upgrade": "อัพ เกรด",
+        "upgrade_to_pro": "อัปเกรดเป็น Pro",
+        "verify": "ตรวจสอบ",
+        "watch": "ดู",
+        "list_all": "รายการทั้งหมด"
     },
-    "placeholder": {
-        "first_name": "ชื่อจริง",
-        "last_name": "นามสกุล",
-        "email": "อีเมล",
-        "password": "รหัสผ่าน",
-        "confirm_password": "ยืนยันรหัสผ่าน",
-        "please_specify": "โปรดระบุ",
-        "more_languages": "เพิ่มเติมภาษา ({{count}})",
-        "select_language": "Chọn một ngôn ngữ",
-        "dict_search": "ค้นหา {{l2Name}}, {{altField}} หรือ {{dictL1Name}}...",
-        "search": "ค้นหา..."
+    "chatgpt": {
+        "prompt": {
+            "base": "อธิบายอย่างรวบรัดโดยใช้ {{l1Name}}}คําว่า {{l2Name}} ({{l2Code}}}) คําว่า '{{word}}}' หมายถึงอะไรในวลี '{{text}}'",
+            "inflection": "ให้คําหลักการผันและสัณฐานวิทยา"
+        }
     },
     "error": {
-        "passwords_do_not_match": "Mật khẩu không khớp",
-        "registration_failed": "การลงทะเบียนล้มเหลว",
-        "failed_retrieve_password": "Thất bại trong việc lấy mật khẩu đã lưu",
-        "generic": "ความผิดพลาด",
-        "user_info_not_found": "ไม่พบข้อมูลผู้ใช้",
-        "updating_progress": "ข้อผิดพลาดในการอัปเดตความคืบหน้า:",
+        "entry_not_found": "ไม่พบรายการหรือไม่ได้โหลดพจนานุกรม",
+        "failed_retrieve_password": "ไม่สามารถดึงรหัสผ่านที่เก็บไว้ได้",
         "failed_to_load_items": "ไม่สามารถโหลดรายการ:",
-        "entry_not_found": "ไม่พบรายการหรือพจนานุกรมไม่ได้โ"
-    },
-    "success": {
-        "code_resent": "รหัสยืนยันถูกส่งไปยังอีเมลของคุณอีกครั้ง"
-    },
-    "option": {
-        "word_of_mouth": "Truyền miệng",
-        "instagram": "อินสตาแกรม",
-        "bilibili": "บิบิลิ",
-        "google_ads": "Quảng cáo trực tuyến",
-        "hsk_courses": "Khoá học HSK",
-        "app_store": "แอพสโตร์",
-        "google_play": "Google เล่น",
-        "google_search": "Tìm kiếm trên web",
-        "youtube": "ยูทูบ",
-        "other": "อื่นๆ (โปรดระบุ)"
+        "generic": "ความผิดพลาด",
+        "passwords_do_not_match": "รหัสผ่านไม่ตรงกัน",
+        "registration_failed": "การลงทะเบียนล้มเหลว",
+        "updating_progress": "ความคืบหน้าการอัปเดตข้อผิดพลาด:",
+        "user_info_not_found": "ไม่พบข้อมูลผู้ใช้"
     },
     "level": {
-        "label": "{{levelName}} ({{examLevelName}})",
-        "name": {
-            "1": "เริ่มต้น I",
-            "2": "เริ่มต้น II",
-            "3": "เริ่มต้น III",
-            "4": "ระดับกลาง I",
-            "5": "ระดับกลาง II",
-            "6": "ขั้นสูง I",
-            "7": "ขั้นสูง II"
+        "cefr": {
+            "1": "CEFR ก่อน A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "เอชเอสเค 1",
@@ -419,14 +338,14 @@
             "6": "เอชเอสเค 6",
             "7": "เอชเอสเค 7-9"
         },
-        "topik": {
-            "1": "พรี-โทปิก 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "โทปิก 3",
-            "5": "TOPIK 4",
-            "6": "โทปิก 5",
-            "7": "โทปิก 6"
+        "ielts": {
+            "1": "สอบ IELTS 1",
+            "2": "สอบ IELTS 2",
+            "3": "สอบ IELTS 3.5",
+            "4": "สอบ IELTS 5",
+            "5": "สอบ IELTS 6.5",
+            "6": "สอบ IELTS 8",
+            "7": "สอบ IELTS 9"
         },
         "jlpt": {
             "1": "เจแอลพีที N5",
@@ -437,60 +356,151 @@
             "6": "เจแอลพีที N1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "สอบ IELTS 1",
-            "2": "สอบ IELTS 2",
-            "3": "สอบ IELTS 3.5",
-            "4": "สอบ IELTS 5",
-            "5": "สอบ IELTS 6.5",
-            "6": "สอบ IELTS 8",
-            "7": "สอบ IELTS 9"
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "เริ่มต้น I",
+            "2": "เริ่มต้น II",
+            "3": "เริ่มต้น III",
+            "4": "ระดับกลาง I",
+            "5": "ระดับกลาง II",
+            "6": "ขั้นสูง I",
+            "7": "ขั้นสูง II"
         },
-        "cefr": {
-            "1": "CEFR ก่อน A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "İzlenme",
-        "likes": "ชอบ",
-        "comments": "ความ คิด เห็น"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "อธิบายอย่างรวบรัดโดยใช้ {{l1Name}}คําว่า {{l2Name}} ({{l2Code}}) คําว่า '{{word}}' หมายถึงอะไรในวลี '{{text}}'",
-            "inflection": "ให้คําหลักการผันและสัณฐานวิทยา"
+        "topik": {
+            "1": "พรี-โทปิก 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "โทปิก 3",
+            "5": "TOPIK 4",
+            "6": "โทปิก 5",
+            "7": "โทปิก 6"
         }
     },
     "log": {
-        "loading_dictionary": "กำลังโหลดพจนานุกรม...",
-        "dictionary_ready": "พจนานุกรมพร้อม!",
-        "failed_load_dictionary": "การโหลดพจนานุกรมล้มเหลว: {{error}}",
-        "database_already_loaded": "Cơ sở dữ liệu đã được tải.",
-        "downloading": "Đang tải xuống...",
-        "processing": "Đang xử lý...",
-        "entries_processed": "{{count}} รายการที่ประมวลผล ดัชนี   "
+        "database_already_loaded": "ฐานข้อมูลโหลดแล้ว",
+        "dictionary_ready": "พจนานุกรมพร้อมและโหลดแล้ว",
+        "downloading": "ดาวน์โหลด   ",
+        "entries_processed": "{{count}} รายการที่ประมวลผล ดัชนี   ",
+        "failed_load_dictionary": "ไม่สามารถโหลดพจนานุกรม: {{error}}",
+        "loading_dictionary": "กําลังโหลดพจนานุกรม...",
+        "processing": "ประมวล ผล   "
+    },
+    "msg": {
+        "already_have_account": "มีบัญชีอยู่แล้ว?",
+        "auto_renews_in": "ต่ออายุอัตโนมัติใน {{days}} วัน",
+        "confirm_cancel_subscription": "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการสมัครสมาชิกของคุณ?",
+        "copy_success": "ข้อความถูกคัดลอกไปยังคลิปบอร์ด",
+        "discover_the_power_of_comprehensible_input": "ค้นพบพลังของ Comprehensible Input ผ่านวิดีโอหลายแสนรายการในกว่า 100 ภาษา",
+        "dont_have_an_account": "ยังไม่มีบัญชี?",
+        "enrich_your_language_learning_journey": "เติมเต็มเส้นทางการเรียนภาษาของคุณ",
+        "enter_verification_code": "โปรดป้อนรหัสยืนยันที่ส่งไปยังอีเมล",
+        "expires_in": "หมดอายุใน {{days}} วัน",
+        "forgot_password": "ลืมรหัสผ่าน?",
+        "hsk_explanation": "\"HSK\" เป็นการทดสอบความสามารถทางภาษาจีนอย่างเป็นทางการ โดยระดับ 1 เป็นระดับต่ําสุดและระดับ 9 เป็นระดับสูงสุด",
+        "initializing": "เริ่ม ต้น   ",
+        "loading": "การโหลด   ",
+        "no_active_subscription": "ไม่พบการสมัครสมาชิกที่ใช้งานอยู่",
+        "or_login_with": "หรือเข้าสู่ระบบด้วย:",
+        "or_register_with": "หรือลงทะเบียนกับ:",
+        "pro_feature_chatgpt": "เฉพาะผู้ใช้ Pro เท่านั้นที่สามารถใช้คุณสมบัติ AI ใน Language Player Go ได้ หากต้องการใช้คุณสมบัตินี้ ให้อัปเกรดเป็น Pro",
+        "pro_transcript": "อัปเกรดเป็น Pro เพื่อดูการถอดเสียงฉบับเต็ม!",
+        "pro_transcript_limit_reached": "ถึงขีดจํากัดการถอดเสียงแล้ว โปรดอัปเกรดเป็น Pro เพื่อเข้าถึงการถอดเสียงเพิ่มเติม",
+        "sort_by": "เรียงตาม: {{sortBy}}",
+        "time_spent_learning": "ใช้เวลาเรียนรู้ {{language}} ใน Language Player",
+        "what_your_first_language": "ภาษาแรกของคุณคืออะไร?",
+        "upgrade_text": "อัปเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!"
+    },
+    "of": "ของ",
+    "option": {
+        "app_store": "แอพสโตร์",
+        "bilibili": "บิบิลิ",
+        "google_ads": "โฆษณาออนไลน์",
+        "google_play": "Google เล่น",
+        "google_search": "ค้นหาเว็บ",
+        "hsk_courses": "หลักสูตร HSK",
+        "instagram": "อินสตาแกรม",
+        "other": "อื่นๆ (โปรดระบุ)",
+        "word_of_mouth": "ปากต่อปาก",
+        "youtube": "ยูทูบ"
+    },
+    "placeholder": {
+        "confirm_password": "ยืนยันรหัสผ่าน",
+        "dict_search": "ค้นหา {{l2Name}}, {{altField}} หรือ {{dictL1Name}}...",
+        "email": "อีเมล",
+        "first_name": "ที่หนึ่ง",
+        "last_name": "สุดท้าย",
+        "more_languages": "ภาษาอื่น ๆ ({{count}})",
+        "password": "รหัสผ่าน",
+        "please_specify": "โปรดระบุ",
+        "search": "ค้น   ",
+        "select_language": "เลือกภาษา"
+    },
+    "setting": {
+        "auto_pronounce": "ออกเสียงอัตโนมัติ",
+        "dark_mode": "โหมดมืด",
+        "saved_words_blanks": "คําที่บันทึกไว้เป็นช่องว่าง",
+        "show_gloss_saved": "แสดงความเงาสําหรับบันทึก",
+        "show_phonetics": "แสดงสัทศาสตร์",
+        "show_translation": "แสดงคําแปล",
+        "use_traditional": "ใช้แบบดั้งเดิม"
+    },
+    "success": {
+        "code_resent": "รหัสยืนยันถูกส่งไปยังอีเมลของคุณอีกครั้ง"
+    },
+    "time": {
+        "hours": "ชั่วโมง",
+        "min": "นาที",
+        "sec": "วินาที"
+    },
+    "title": {
+        "account": "บัญชี",
+        "annual": "ประจําปี",
+        "app_settings": "การตั้งค่าแอพ",
+        "best_value": "คุ้มค่าที่สุด",
+        "choose_language": "เลือกภาษา",
+        "continue_learning": "เรียนรู้ต่อไป {{l2Code}}",
+        "current_level": "ระดับ {{language}} ปัจจุบันของคุณคืออะไร?",
+        "current_plan": "แผนปัจจุบัน",
+        "date": "วันที่",
+        "delete_my_account": "ลบบัญชีของฉัน",
+        "dictionary": "พจนานุกรม",
+        "email": "อีเมล",
+        "examples_from_videos": "ตัวอย่างจากวิดีโอ",
+        "how_did_you_hear": "คุณรู้จักเราได้อย่างไร?",
+        "language_settings": "การตั้งค่าภาษา",
+        "leftContext": "บริบทด้านซ้าย",
+        "length": "ความยาว",
+        "lifetime": "ตลอดชีวิต",
+        "likes": "ชอบ",
+        "loading_dictionary": "กําลังโหลด {{language}} พจนานุกรม",
+        "login": "เข้า สู่ ระบบ",
+        "logout": "ออกจากระบบ",
+        "monthly": "รายเดือน",
+        "my_progress": "ความคืบหน้าของฉัน",
+        "next": "ต่อไป",
+        "password": "รหัสผ่าน",
+        "popularity": "ความนิยม",
+        "privacy_policy": "นโยบายความเป็นส่วนตัว",
+        "pro_feature": "คุณสมบัติ Pro",
+        "register": "ลงทะเบียน",
+        "rightContext": "บริบทที่เหมาะสม",
+        "saved_words": "คําที่บันทึกไว้",
+        "select_language": "คุณต้องการเรียนรู้ภาษาอะไร",
+        "settings": "การตั้งค่า",
+        "start_learning": "เริ่มเรียนรู้",
+        "trial": "การทดลอง",
+        "verify_your_email": "ยืนยันอีเมลของคุณ",
+        "views": "{{numViews}} มุมมอง",
+        "watch_history": "ดูประวัติ"
+    },
+    "video": {
+        "comments": "ความ คิด เห็น",
+        "likes": "ชอบ",
+        "views": "มุมมอง"
     },
     "word": {
-        "pinyin": "พินอิน",
+        "hanja": "ฮันจา",
         "kana": "คานะ",
-        "hanja": "ฮันจา"
-    },
-    "list_all": "แสดงทั้งหมด",
-    "of": "ของ",
-    "upgrade_text": "Atualize para Pro para acessar mais vídeos!",
-    "setting": {
-        "show_phonetics": "แสดงเสียงพยาง",
-        "use_traditional": "ใช้ตามประเพณี",
-        "show_translation": "แสดงการแปล",
-        "show_gloss_saved": "บทอธิบายสำหรับที่บันทึกไว้",
-        "saved_words_blanks": "บทความที่บันทึกไว้เป็นช่องว่าง",
-        "auto_pronounce": "ออกเสียงอัตโนมัติ",
-        "dark_mode": "โหมดมืด"
+        "pinyin": "พินอิน"
     }
 }

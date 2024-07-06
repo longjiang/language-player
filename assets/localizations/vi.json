@@ -283,132 +283,51 @@
         "tr-TR": "Tiếng Thổ Nhĩ Kỳ (Thổ Nhĩ Kỳ)",
         "yue-HK": "Tiếng Quảng Đông (Hồng Kông)"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "Khám phá sức mạnh của Nhập liệu dễ hiểu thông qua hàng trăm nghìn video bằng hơn 100 ngôn ngữ.",
-        "dont_have_an_account": "Bạn chưa có tài khoản?",
-        "enrich_your_language_learning_journey": "Làm phong phú thêm hành trình học ngôn ngữ của bạn",
-        "forgot_password": "Quên mật khẩu?",
-        "or_login_with": "Hoặc đăng nhập bằng:",
-        "what_your_first_language": "Ngôn ngữ đầu tiên của bạn là gì?",
-        "confirm_cancel_subscription": "Bạn có chắc chắn muốn hủy đăng ký của mình không?",
-        "no_active_subscription": "Không tìm thấy đăng ký đang hoạt động.",
-        "loading": "Đang tải...",
-        "auto_renews_in": "Tự động gia hạn sau {{days}} ngày",
-        "expires_in": "Hết hạn sau {{days}} ngày",
-        "or_register_with": "Hoặc đăng ký bằng:",
-        "already_have_account": "Bạn đã có tài khoản chưa?",
-        "enter_verification_code": "Vui lòng nhập mã xác minh được gửi đến email",
-        "hsk_explanation": "\"HSK\" là bài kiểm tra trình độ chính thức của Trung Quốc, với cấp độ 1 là thấp nhất và cấp độ 9 là cao nhất.",
-        "pro_transcript": "Nâng cấp lên Pro để xem bảng điểm đầy đủ!",
-        "pro_transcript_limit_reached": "Đã đạt đến giới hạn bảng điểm. Vui lòng nâng cấp lên Pro để truy cập thêm bảng điểm.",
-        "copy_success": "Văn bản được sao chép vào khay nhớ tạm",
-        "pro_feature_chatgpt": "Chỉ người dùng Pro mới có thể sử dụng các tính năng AI trong Language Player Go. Để sử dụng tính năng này, hãy nâng cấp lên Pro.",
-        "initializing": "Khởi xướng...",
-        "sort_by": "Sắp xếp theo: {{sortBy}}"
-    },
-    "title": {
-        "email": "Email",
-        "login": "Đăng nhập",
-        "next": "Sau",
-        "password": "Mật khẩu",
-        "register": "Đăng ký",
-        "start_learning": "Bắt đầu học",
-        "choose_language": "Chọn ngôn ngữ",
-        "continue_learning": "Tiếp tục học {{l2Code}}",
-        "account": "Tài khoản",
-        "logout": "Đăng xuất",
-        "delete_my_account": "Xóa tài khoản của tôi",
-        "privacy_policy": "Chính sách bảo mật",
-        "current_plan": "Kế hoạch hiện tại",
-        "best_value": "Giá trị tốt nhất",
-        "monthly": "Nguyệt san",
-        "annual": "Thường niên",
-        "lifetime": "Đời",
-        "trial": "Thử nghiệm",
-        "verify_your_email": "Xác minh email của bạn",
-        "how_did_you_hear": "Làm thế nào bạn biết về chúng tôi?",
-        "select_language": "Bạn muốn học ngôn ngữ nào?",
-        "current_level": "Cấp độ hiện tại của bạn với {{language}} là gì?",
-        "pro_feature": "Tính năng Pro",
-        "loading_dictionary": "Đang tải từ điển {{language}}",
-        "dictionary": "Từ điển",
-        "examples_from_videos": "Ví dụ từ Video",
-        "popularity": "Độ phổ biến",
-        "likes": "Lượt thích",
-        "date": "Ngày",
-        "length": "Chiều dài",
-        "leftContext": "Ngữ cảnh trái",
-        "rightContext": "Ngữ cảnh phải",
-        "views": "{{numViews}} Views",
-        "settings": "Cài đặt",
-        "language_settings": "Cài đặt ngôn ngữ",
-        "app_settings": "Cài đặt ứng dụng"
-    },
     "action": {
-        "upgrade": "Nâng cấp",
-        "cancel": "Bỏ",
+        "cancel": "Hủy",
         "confirm_cancellation": "Xác nhận hủy",
+        "copy": "Bản sao",
         "keep_subscription": "Giữ đăng ký",
-        "register": "Đăng ký",
+        "let_chatgpt_explain": "Hỏi AI",
         "login": "Đăng nhập",
-        "verify": "Doğrulama",
+        "logout": "Đăng xuất",
+        "next": "Sau",
+        "register": "Đăng ký",
         "resend_code": "Gửi lại mã",
-        "start_learning": "Bắt đầu học",
-        "next": "Tiếp theo",
-        "tv_shows": "TV programları",
-        "watch": "Xem",
-        "upgrade_to_pro": "Nâng cấp lên Pro",
         "speak": "Nói",
-        "copy": "Sao chép",
-        "let_chatgpt_explain": "Hỏi AI"
+        "start_learning": "Bắt đầu học",
+        "tv_shows": "Chương trình truyền hình",
+        "upgrade": "Nâng cấp",
+        "upgrade_to_pro": "Nâng cấp lên Pro",
+        "verify": "Xác minh",
+        "watch": "Xem",
+        "list_all": "Liệt kê tất cả"
     },
-    "placeholder": {
-        "first_name": "Tên",
-        "last_name": "Họ",
-        "email": "Email",
-        "password": "Mật khẩu",
-        "confirm_password": "Xác nhận mật khẩu",
-        "please_specify": "Vui lòng ghi rõ",
-        "more_languages": "Thêm ngôn ngữ ({{count}})",
-        "select_language": "Chọn ngôn ngữ",
-        "dict_search": "Tìm kiếm {{l2Name}}, {{altField}} hoặc {{dictL1Name}}...",
-        "search": "Tìm kiếm..."
+    "chatgpt": {
+        "prompt": {
+            "base": "Giải thích ngắn gọn bằng cách sử dụng {{l1Name}}, từ {{l2Name}} ({{l2Code}}) '{{word}}' có nghĩa là gì trong cụm từ '{{text}}'.",
+            "inflection": "Đưa ra lemma, biến tố và hình thái của nó."
+        }
     },
     "error": {
-        "passwords_do_not_match": "Mật khẩu không khớp",
-        "registration_failed": "Đăng ký thất bại",
+        "entry_not_found": "Không tìm thấy mục nhập hoặc từ điển không được tải",
         "failed_retrieve_password": "Không thể truy xuất mật khẩu đã lưu trữ",
-        "generic": "Lỗi",
-        "user_info_not_found": "Không tìm thấy thông tin người dùng",
-        "updating_progress": "Lỗi cập nhật tiến trình:",
         "failed_to_load_items": "Không tải được mục:",
-        "entry_not_found": "Không tìm thấy mục nhập hoặc từ điển không được tải"
-    },
-    "success": {
-        "code_resent": "Mã xác minh được gửi lại đến email của bạn."
-    },
-    "option": {
-        "word_of_mouth": "Truyền miệng",
-        "instagram": "Ảnh minh họa",
-        "bilibili": "Bilibili",
-        "google_ads": "Quảng cáo trực tuyến",
-        "hsk_courses": "Các khóa học HSK",
-        "app_store": "Cửa hàng ứng dụng",
-        "google_play": "Google Play",
-        "google_search": "Tìm kiếm trên web",
-        "youtube": "YouTube",
-        "other": "Khác (Vui lòng ghi rõ)"
+        "generic": "Lỗi",
+        "passwords_do_not_match": "Mật khẩu không khớp",
+        "registration_failed": "Đăng ký không thành công",
+        "updating_progress": "Lỗi cập nhật tiến độ:",
+        "user_info_not_found": "Không tìm thấy thông tin người dùng"
     },
     "level": {
-        "label": "{{levelName}} ({{examLevelName}})",
-        "name": {
-            "1": "Người mới bắt đầu I",
-            "2": "Người mới bắt đầu II",
-            "3": "Người mới bắt đầu III",
-            "4": "Trung cấp I",
-            "5": "Trung cấp II",
-            "6": "Nâng cao I",
-            "7": "Nâng cao II"
+        "cefr": {
+            "1": "CEFR Pre-A1",
+            "2": "CEFR A1",
+            "3": "CEFR A2",
+            "4": "CEFR B1",
+            "5": "CEFR B2",
+            "6": "CEFR C1",
+            "7": "CEFR C2"
         },
         "hsk": {
             "1": "HSK 1",
@@ -419,14 +338,14 @@
             "6": "HSK 6 ·",
             "7": "HSK 7-9"
         },
-        "topik": {
-            "1": "Tiền TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
+        "ielts": {
+            "1": "IELTS 1",
+            "2": "IELTS 2",
+            "3": "IELTS 3.5",
+            "4": "IELTS 5",
+            "5": "IELTS 6.5",
+            "6": "IELTS 8",
+            "7": "IELTS 9"
         },
         "jlpt": {
             "1": "JLPT N5",
@@ -437,60 +356,151 @@
             "6": "JLPT N1",
             "7": "CEFR C2"
         },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
+        "label": "{{levelName}} ({{examLevelName}})",
+        "name": {
+            "1": "Người mới bắt đầu I",
+            "2": "Người mới bắt đầu II",
+            "3": "Người mới bắt đầu III",
+            "4": "Trung cấp I",
+            "5": "Trung cấp II",
+            "6": "Nâng cao I",
+            "7": "Nâng cao II"
         },
-        "cefr": {
-            "1": "CEFR Pre-A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        }
-    },
-    "video": {
-        "views": "Views",
-        "likes": "Thích",
-        "comments": "Ý kiến"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Giải thích ngắn gọn bằng cách sử dụng {{l1Name}}, từ {{l2Name}} ({{l2Code}}) '{{word}}' có nghĩa là gì trong cụm từ '{{text}}'.",
-            "inflection": "Đưa ra lemma, biến tố và hình thái của nó."
+        "topik": {
+            "1": "Tiền TOPIK 1",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
         }
     },
     "log": {
-        "loading_dictionary": "Đang tải từ điển...",
-        "dictionary_ready": "Từ điển đã sẵn sàng!",
-        "failed_load_dictionary": "Không thể tải từ điển: {{error}}",
         "database_already_loaded": "Cơ sở dữ liệu đã được tải.",
+        "dictionary_ready": "Từ điển đã sẵn sàng và được tải.",
         "downloading": "Tải...",
-        "processing": "Xử lý...",
-        "entries_processed": "{{count}} các bài dự thi đã được xử lý. Indexing..."
+        "entries_processed": "{{count}} các bài dự thi đã được xử lý. Indexing...",
+        "failed_load_dictionary": "Không tải được từ điển: {{error}}",
+        "loading_dictionary": "Đang tải từ điển...",
+        "processing": "Xử lý..."
+    },
+    "msg": {
+        "already_have_account": "Bạn đã có tài khoản?",
+        "auto_renews_in": "Tự động gia hạn sau {{days}} ngày",
+        "confirm_cancel_subscription": "Bạn có chắc chắn muốn hủy đăng ký của mình không?",
+        "copy_success": "Văn bản được sao chép vào khay nhớ tạm",
+        "discover_the_power_of_comprehensible_input": "Khám phá sức mạnh của Nhập liệu dễ hiểu thông qua hàng trăm nghìn video bằng hơn 100 ngôn ngữ.",
+        "dont_have_an_account": "Bạn chưa có tài khoản?",
+        "enrich_your_language_learning_journey": "Làm phong phú thêm hành trình học ngôn ngữ của bạn",
+        "enter_verification_code": "Vui lòng nhập mã xác minh được gửi đến email",
+        "expires_in": "Hết hạn sau {{days}} ngày",
+        "forgot_password": "Quên mật khẩu?",
+        "hsk_explanation": "\"HSK\" là bài kiểm tra trình độ chính thức của Trung Quốc, với cấp độ 1 là thấp nhất và cấp độ 9 là cao nhất.",
+        "initializing": "Khởi xướng...",
+        "loading": "Tải...",
+        "no_active_subscription": "Không tìm thấy đăng ký đang hoạt động.",
+        "or_login_with": "Hoặc đăng nhập bằng:",
+        "or_register_with": "Hoặc đăng ký với:",
+        "pro_feature_chatgpt": "Chỉ người dùng Pro mới có thể sử dụng các tính năng AI trong Language Player Go. Để sử dụng tính năng này, hãy nâng cấp lên Pro.",
+        "pro_transcript": "Nâng cấp lên Pro để xem bảng điểm đầy đủ!",
+        "pro_transcript_limit_reached": "Đã đạt đến giới hạn bảng điểm. Vui lòng nâng cấp lên Pro để truy cập thêm bảng điểm.",
+        "sort_by": "Sắp xếp theo: {{sortBy}}",
+        "time_spent_learning": "Dành thời gian học {{language}} trong Trình phát ngôn ngữ",
+        "what_your_first_language": "Ngôn ngữ đầu tiên của bạn là gì?",
+        "upgrade_text": "Nâng cấp lên Pro để truy cập nhiều video hơn!"
+    },
+    "of": "của",
+    "option": {
+        "app_store": "Cửa hàng ứng dụng",
+        "bilibili": "Bilibili",
+        "google_ads": "Quảng cáo trực tuyến",
+        "google_play": "Google Play",
+        "google_search": "Tìm kiếm trên web",
+        "hsk_courses": "Các khóa học HSK",
+        "instagram": "Ảnh minh họa",
+        "other": "Khác (Vui lòng ghi rõ)",
+        "word_of_mouth": "Truyền miệng",
+        "youtube": "YouTube"
+    },
+    "placeholder": {
+        "confirm_password": "Xác nhận mật khẩu",
+        "dict_search": "Tìm kiếm {{l2Name}}, {{altField}} hoặc {{dictL1Name}}...",
+        "email": "Email",
+        "first_name": "Đầu tiên",
+        "last_name": "Cuối cùng",
+        "more_languages": "Ngôn ngữ khác ({{count}})",
+        "password": "Mật khẩu",
+        "please_specify": "Vui lòng ghi rõ",
+        "search": "Tìm kiếm...",
+        "select_language": "Chọn ngôn ngữ"
+    },
+    "setting": {
+        "auto_pronounce": "Tự động phát âm",
+        "dark_mode": "Chế độ tối",
+        "saved_words_blanks": "Các từ đã lưu dưới dạng khoảng trống",
+        "show_gloss_saved": "Hiển thị độ bóng cho đã lưu",
+        "show_phonetics": "Hiển thị ngữ âm",
+        "show_translation": "Hiển thị bản dịch",
+        "use_traditional": "Sử dụng truyền thống"
+    },
+    "success": {
+        "code_resent": "Mã xác minh được gửi lại đến email của bạn."
+    },
+    "time": {
+        "hours": "Giờ",
+        "min": "Phút",
+        "sec": "Sec"
+    },
+    "title": {
+        "account": "Tài khoản",
+        "annual": "Thường niên",
+        "app_settings": "Cài đặt ứng dụng",
+        "best_value": "Giá trị tốt nhất",
+        "choose_language": "Chọn ngôn ngữ",
+        "continue_learning": "Tiếp tục học {{l2Code}}",
+        "current_level": "Cấp độ {{language}} hiện tại của bạn là bao nhiêu?",
+        "current_plan": "Kế hoạch hiện tại",
+        "date": "Ngày",
+        "delete_my_account": "Xóa tài khoản của tôi",
+        "dictionary": "Từ điển",
+        "email": "Email",
+        "examples_from_videos": "Ví dụ từ Video",
+        "how_did_you_hear": "Làm thế nào bạn biết về chúng tôi?",
+        "language_settings": "Cài đặt ngôn ngữ",
+        "leftContext": "Ngữ cảnh bên trái",
+        "length": "Chiều dài",
+        "lifetime": "Đời",
+        "likes": "Thích",
+        "loading_dictionary": "Đang tải từ điển {{language}}",
+        "login": "Đăng nhập",
+        "logout": "Đăng xuất",
+        "monthly": "Nguyệt san",
+        "my_progress": "Tiến trình của tôi",
+        "next": "Sau",
+        "password": "Mật khẩu",
+        "popularity": "Phổ biến",
+        "privacy_policy": "Chính sách bảo mật",
+        "pro_feature": "Tính năng Pro",
+        "register": "Đăng ký",
+        "rightContext": "Bối cảnh phù hợp",
+        "saved_words": "Từ đã lưu",
+        "select_language": "Bạn muốn học ngôn ngữ nào?",
+        "settings": "Cài đặt",
+        "start_learning": "Bắt đầu học",
+        "trial": "Thử nghiệm",
+        "verify_your_email": "Xác minh email của bạn",
+        "views": "{{numViews}} Views",
+        "watch_history": "Lịch sử xem"
+    },
+    "video": {
+        "comments": "Ý kiến",
+        "likes": "Thích",
+        "views": "Views"
     },
     "word": {
-        "pinyin": "Pinyin",
+        "hanja": "Hanja",
         "kana": "Kana",
-        "hanja": "Hanja"
-    },
-    "list_all": "Hiển thị tất cả",
-    "of": "của",
-    "upgrade_text": "อัปเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!",
-    "setting": {
-        "show_phonetics": "Hiển thị âm vị",
-        "use_traditional": "Sử dụng truyền thống",
-        "show_translation": "Sử dụng dịch",
-        "show_gloss_saved": "Sử dụng Gloss cho Saved",
-        "saved_words_blanks": "Saved Words as Blanks",
-        "auto_pronounce": "Tự động Phát âm",
-        "dark_mode": "Chế độ tối"
+        "pinyin": "Pinyin"
     }
 }

@@ -285,132 +285,51 @@
         "tr-TR": "土耳其語（土耳其）",
         "yue-HK": "粵語（香港）"
     },
-    "msg": {
-        "discover_the_power_of_comprehensible_input": "通過100多種語言的數十萬個視頻發現可理解輸入的強大功能。",
-        "dont_have_an_account": "沒有帳戶？",
-        "enrich_your_language_learning_journey": "豐富您的語言學習之旅",
-        "forgot_password": "忘記密碼？",
-        "or_login_with": "或使用以下方式登入：",
-        "what_your_first_language": "你的第一語言是什麼？",
-        "confirm_cancel_subscription": "您確定要取消訂閱嗎？",
-        "no_active_subscription": "未找到活動訂閱。",
-        "loading": "載入中...",
-        "auto_renews_in": "{{days}} 天自動續訂",
-        "expires_in": "過期后 {{days}} 天",
-        "or_register_with": "或使用以下方式註冊：",
-        "already_have_account": "已經有帳戶？",
-        "enter_verification_code": "請輸入發送到以下郵箱的驗證碼",
-        "hsk_explanation": "“HSK”是官方的漢語水平測試，1 級是最低的，9 級是最高的。",
-        "pro_transcript": "升級到 Pro 以查看完整的字幕！",
-        "pro_transcript_limit_reached": "已達到字幕限制。",
-        "copy_success": "文本已複製到剪貼板",
-        "pro_feature_chatgpt": "只有 Pro 用戶才能在 Language Player Go 中使用 AI 功能。要使用此功能，請升級到 Pro。",
-        "initializing": "初始化中...",
-        "sort_by": "排序方式：{{sortBy}}"
-    },
-    "title": {
-        "email": "電子郵件",
-        "login": "登錄",
-        "next": "下一個",
-        "password": "密碼",
-        "register": "註冊",
-        "start_learning": "開始學習",
-        "choose_language": "選擇語言",
-        "continue_learning": "繼續學習 {{l2Code}}",
-        "account": "帳戶",
-        "logout": "註銷",
-        "delete_my_account": "刪除我的帳戶",
-        "privacy_policy": "隱私策略",
-        "current_plan": "當前計劃",
-        "best_value": "最超值",
-        "monthly": "每月",
-        "annual": "年度",
-        "lifetime": "終身",
-        "trial": "試用",
-        "verify_your_email": "验证您的邮箱",
-        "how_did_you_hear": "您是如何了解到我們的？",
-        "select_language": "您想學習什麼語言？",
-        "current_level": "您目前的{{language}}水平是多少？",
-        "pro_feature": "Pro 功能",
-        "loading_dictionary": "正在加載{{language}}字典",
-        "dictionary": "詞典",
-        "examples_from_videos": "來自視頻的例子",
-        "popularity": "觀看次數",
-        "likes": "喜歡",
-        "date": "日期",
-        "length": "長度",
-        "leftContext": "左上下文",
-        "rightContext": "右上下文",
-        "views": "{{numViews}}視圖",
-        "settings": "設置",
-        "language_settings": "語言設置",
-        "app_settings": "應用設置"
-    },
     "action": {
-        "upgrade": "升級",
         "cancel": "取消",
         "confirm_cancellation": "確認取消",
-        "keep_subscription": "保持訂閱",
-        "register": "註冊",
-        "login": "登錄",
-        "verify": "驗證",
-        "resend_code": "重新發送驗證碼",
-        "start_learning": "開始學習",
-        "next": "下一步",
-        "tv_shows": "電視節目",
-        "watch": "觀看",
-        "upgrade_to_pro": "升級到 Pro",
-        "speak": "朗讀",
         "copy": "複製",
-        "let_chatgpt_explain": "讓 AI 解釋"
+        "keep_subscription": "保持訂閱",
+        "let_chatgpt_explain": "讓 AI 解釋",
+        "login": "登錄",
+        "logout": "登出",
+        "next": "下一步",
+        "register": "註冊",
+        "resend_code": "重新發送驗證碼",
+        "speak": "朗讀",
+        "start_learning": "開始學習",
+        "tv_shows": "電視節目",
+        "upgrade": "升級",
+        "upgrade_to_pro": "升級到 Pro",
+        "verify": "驗證",
+        "watch": "觀看",
+        "list_all": "列出全部"
     },
-    "placeholder": {
-        "first_name": "名字",
-        "last_name": "姓",
-        "email": "電子郵件",
-        "password": "密碼",
-        "confirm_password": "確認密碼",
-        "please_specify": "請說明",
-        "more_languages": "更多語言 ({{count}})",
-        "select_language": "選擇一種語言",
-        "dict_search": "搜索 {{l2Name}}、{{altField}} 或 {{dictL1Name}}...",
-        "search": "搜索..."
+    "chatgpt": {
+        "prompt": {
+            "base": "使用{{l1Name}}簡潔地解釋{{l2Name}}（{{l2Code}}）單詞“{{word}}”在短語“{{text}}”中的含義。",
+            "inflection": "給出它的原型、變形和構詞。"
+        }
     },
     "error": {
+        "entry_not_found": "找不到條目或詞典未載入",
+        "failed_retrieve_password": "無法獲取存儲的密碼",
+        "failed_to_load_items": "加载项目失败：",
+        "generic": "錯誤",
         "passwords_do_not_match": "密碼不匹配",
         "registration_failed": "註冊失敗",
-        "failed_retrieve_password": "無法獲取存儲的密碼",
-        "generic": "錯誤",
-        "user_info_not_found": "未找到用戶信息",
         "updating_progress": "更新進度時出錯：",
-        "failed_to_load_items": "加载项目失败：",
-        "entry_not_found": "找不到條目或詞典未載入"
-    },
-    "success": {
-        "code_resent": "驗證碼已重新發送到您的電子郵件。"
-    },
-    "option": {
-        "word_of_mouth": "口碑推薦",
-        "instagram": "Instagram",
-        "bilibili": "嗶哩嗶哩",
-        "google_ads": "在線廣告",
-        "hsk_courses": "HSK 課程",
-        "app_store": "App Store",
-        "google_play": "Google Play",
-        "google_search": "網絡搜索",
-        "youtube": "YouTube",
-        "other": "其他（請說明）"
+        "user_info_not_found": "未找到用戶信息"
     },
     "level": {
-        "label": "{{levelName}}（{{examLevelName}}）",
-        "name": {
-            "1": "初級 I",
-            "2": "初級II",
-            "3": "初級III",
-            "4": "中級 I",
-            "5": "中級II",
-            "6": "高級 I",
-            "7": "高級II"
+        "cefr": {
+            "1": "歐標Pre-A1前",
+            "2": "歐標 A1",
+            "3": "歐標 A2",
+            "4": "歐標 B1",
+            "5": "歐標 B2",
+            "6": "歐標 C1",
+            "7": "歐標 C2"
         },
         "hsk": {
             "1": "HSK一級",
@@ -421,14 +340,14 @@
             "6": "HSK六級",
             "7": "HSK 7-9級"
         },
-        "topik": {
-            "1": "TOPIK 1前",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
+        "ielts": {
+            "1": "雅思1",
+            "2": "雅思2",
+            "3": "雅思3.5",
+            "4": "雅思5",
+            "5": "雅思6.5",
+            "6": "雅思8",
+            "7": "雅思9"
         },
         "jlpt": {
             "1": "JLPTN5",
@@ -439,60 +358,151 @@
             "6": "JLPTN1",
             "7": "歐標 C2"
         },
-        "ielts": {
-            "1": "雅思1",
-            "2": "雅思2",
-            "3": "雅思3.5",
-            "4": "雅思5",
-            "5": "雅思6.5",
-            "6": "雅思8",
-            "7": "雅思9"
+        "label": "{{levelName}}（{{examLevelName}}）",
+        "name": {
+            "1": "初級 I",
+            "2": "初級II",
+            "3": "初級III",
+            "4": "中級 I",
+            "5": "中級II",
+            "6": "高級 I",
+            "7": "高級II"
         },
-        "cefr": {
-            "1": "歐標Pre-A1前",
-            "2": "歐標 A1",
-            "3": "歐標 A2",
-            "4": "歐標 B1",
-            "5": "歐標 B2",
-            "6": "歐標 C1",
-            "7": "歐標 C2"
-        }
-    },
-    "video": {
-        "views": "觀看次數",
-        "likes": "喜歡",
-        "comments": "評論"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "使用{{l1Name}}簡潔地解釋{{l2Name}}（{{l2Code}}）單詞“{{word}}”在短語“{{text}}”中的含義。",
-            "inflection": "給出它的原型、變形和構詞。"
+        "topik": {
+            "1": "TOPIK 1前",
+            "2": "TOPIK 1",
+            "3": "TOPIK 2",
+            "4": "TOPIK 3",
+            "5": "TOPIK 4",
+            "6": "TOPIK 5",
+            "7": "TOPIK 6"
         }
     },
     "log": {
-        "loading_dictionary": "正在加載字典...",
-        "dictionary_ready": "字典已準備就緒！",
-        "failed_load_dictionary": "無法加載字典：{{error}}",
         "database_already_loaded": "数据库已加載。",
+        "dictionary_ready": "字典已加載就緒。",
         "downloading": "下載中...",
-        "processing": "處理中...",
-        "entries_processed": "已處理{{count}}條目。正在索引..."
+        "entries_processed": "已處理{{count}}條目。正在索引...",
+        "failed_load_dictionary": "無法加載字典：{{error}}",
+        "loading_dictionary": "正在加載字典...",
+        "processing": "處理中..."
+    },
+    "msg": {
+        "already_have_account": "已經有帳戶？",
+        "auto_renews_in": "{{days}} 天自動續訂",
+        "confirm_cancel_subscription": "您確定要取消訂閱嗎？",
+        "copy_success": "文本已複製到剪貼板",
+        "discover_the_power_of_comprehensible_input": "通過100多種語言的數十萬個視頻發現可理解輸入的強大功能。",
+        "dont_have_an_account": "沒有帳戶？",
+        "enrich_your_language_learning_journey": "豐富您的語言學習之旅",
+        "enter_verification_code": "請輸入發送到以下郵箱的驗證碼",
+        "expires_in": "過期后 {{days}} 天",
+        "forgot_password": "忘記密碼？",
+        "hsk_explanation": "“HSK”是官方的漢語水平測試，1 級是最低的，9 級是最高的。",
+        "initializing": "初始化中...",
+        "loading": "裝載。。。",
+        "no_active_subscription": "未找到活動訂閱。",
+        "or_login_with": "或使用以下方式登入：",
+        "or_register_with": "或使用以下方式註冊：",
+        "pro_feature_chatgpt": "只有 Pro 用戶才能在 Language Player Go 中使用 AI 功能。要使用此功能，請升級到 Pro。",
+        "pro_transcript": "升級到 Pro 以查看完整的字幕！",
+        "pro_transcript_limit_reached": "已達到字幕限制。",
+        "sort_by": "排序方式：{{sortBy}}",
+        "time_spent_learning": "在Language Player中學習{{language}}的時間",
+        "what_your_first_language": "你的第一語言是什麼？",
+        "upgrade_text": "升級到 Pro 以訪問更多視頻！"
+    },
+    "of": "之",
+    "option": {
+        "app_store": "App Store",
+        "bilibili": "嗶哩嗶哩",
+        "google_ads": "在線廣告",
+        "google_play": "Google Play",
+        "google_search": "網絡搜索",
+        "hsk_courses": "HSK 課程",
+        "instagram": "Instagram",
+        "other": "其他（請說明）",
+        "word_of_mouth": "口碑推薦",
+        "youtube": "YouTube"
+    },
+    "placeholder": {
+        "confirm_password": "確認密碼",
+        "dict_search": "搜索 {{l2Name}}、{{altField}} 或 {{dictL1Name}}...",
+        "email": "電子郵件",
+        "first_name": "名字",
+        "last_name": "姓",
+        "more_languages": "更多語言 ({{count}})",
+        "password": "密碼",
+        "please_specify": "請說明",
+        "search": "搜索...",
+        "select_language": "選擇一種語言"
+    },
+    "setting": {
+        "auto_pronounce": "自動發音",
+        "dark_mode": "深色模式",
+        "saved_words_blanks": "將已保存的詞變為空白",
+        "show_gloss_saved": "顯示已保存詞彙的釋義",
+        "show_phonetics": "顯示拼音",
+        "show_translation": "顯示翻譯",
+        "use_traditional": "使用繁體"
+    },
+    "success": {
+        "code_resent": "驗證碼已重新發送到您的電子郵件。"
+    },
+    "time": {
+        "hours": "小時",
+        "min": "分鐘",
+        "sec": "秒"
+    },
+    "title": {
+        "account": "帳戶",
+        "annual": "年度",
+        "app_settings": "應用設置",
+        "best_value": "最超值",
+        "choose_language": "選擇語言",
+        "continue_learning": "繼續學習 {{l2Code}}",
+        "current_level": "您目前的{{language}}水平是多少？",
+        "current_plan": "當前計劃",
+        "date": "日期",
+        "delete_my_account": "刪除我的帳戶",
+        "dictionary": "詞典",
+        "email": "電子郵件",
+        "examples_from_videos": "來自視頻的例子",
+        "how_did_you_hear": "您是如何了解到我們的？",
+        "language_settings": "語言設置",
+        "leftContext": "左上下文",
+        "length": "長度",
+        "lifetime": "終身",
+        "likes": "喜歡",
+        "loading_dictionary": "正在加載{{language}}字典",
+        "login": "登錄",
+        "logout": "註銷",
+        "monthly": "每月",
+        "my_progress": "我的進度",
+        "next": "下一個",
+        "password": "密碼",
+        "popularity": "觀看次數",
+        "privacy_policy": "隱私策略",
+        "pro_feature": "Pro 功能",
+        "register": "註冊",
+        "rightContext": "右上下文",
+        "saved_words": "已保存的單詞",
+        "select_language": "您想學習什麼語言？",
+        "settings": "設置",
+        "start_learning": "開始學習",
+        "trial": "試用",
+        "verify_your_email": "验证您的邮箱",
+        "views": "{{numViews}}視圖",
+        "watch_history": "觀看歷史"
+    },
+    "video": {
+        "comments": "評論",
+        "likes": "喜歡",
+        "views": "觀看次數"
     },
     "word": {
-        "pinyin": "拼音",
+        "hanja": "漢字",
         "kana": "假名",
-        "hanja": "漢字"
-    },
-    "list_all": "列出全部",
-    "of": "之",
-    "upgrade_text": "升級到專業版以訪問更多視頻！",
-    "setting": {
-        "show_phonetics": "顯示拼音",
-        "use_traditional": "使用繁體",
-        "show_translation": "顯示翻譯",
-        "show_gloss_saved": "顯示已保存詞彙的釋義",
-        "saved_words_blanks": "將已保存的詞變為空白",
-        "auto_pronounce": "自動發音",
-        "dark_mode": "深色模式"
+        "pinyin": "拼音"
     }
 }
