@@ -287,15 +287,15 @@
     },
     "action": {
         "cancel": "Abbrechen",
-        "clear": "Alle entfernen",
+        "clear": "Löschen",
         "confirm_cancellation": "Stornierung bestätigen",
-        "confirm_deletion": "Bestätigung der Löschung",
+        "confirm_deletion": "Löschung bestätigen",
         "copy": "Kopieren",
         "keep_account": "Konto behalten",
-        "keep_subscription": "Abonnement beibehalten",
-        "let_chatgpt_explain": "Lassen Sie die KI erklären",
+        "keep_subscription": "Abonnement behalten",
+        "let_chatgpt_explain": "KI fragen",
         "list_all": "Alle auflisten",
-        "login": "Einloggen",
+        "login": "Anmelden",
         "logout": "Abmelden",
         "next": "Weiter",
         "register": "Registrieren",
@@ -303,28 +303,42 @@
         "speak": "Sprechen",
         "start_learning": "Lernen beginnen",
         "tv_shows": "TV-Sendungen",
-        "upgrade_to_pro": "Upgrade auf Pro",
-        "upgrade": "Upgrade",
-        "verify": "Bestätigen",
+        "upgrade_to_pro": "Auf Pro upgraden",
+        "upgrade": "Upgraden",
+        "verify": "Verifizieren",
         "watch": "Ansehen"
     },
     "chatgpt": {
         "prompt": {
-            "base": "Erklären Sie kurz und bündig mit {{l1Name}}, was das {{l2Name}} ({{l2Code}}) Wort '{{word}}' in der Phrase '{{text}}' bedeutet.",
-            "inflection": "Geben Sie das Lemma, die Flexion und die Morphologie an."
+            "base": "Erkläre kurz auf {{l1Name}}, was das {{l2Name}} ({{l2Code}}) Wort '{{word}}' in der Phrase '{{text}}' bedeutet.",
+            "inflection": "Gib dessen Grundform, Flexion und Morphologie an."
         }
+    },
+    "duration": {
+        "annual": "Jährliche Abrechnung.",
+        "lifetime": "Läuft nie ab.",
+        "monthly": "Monatliche Abrechnung."
     },
     "error": {
         "entry_not_found": "Eintrag nicht gefunden oder Wörterbuch nicht geladen",
-        "failed_fetch_videos": "Fehler beim Abrufen von Videos",
+        "failed_fetch_videos": "Fehler beim Abrufen der Videos",
         "failed_retrieve_password": "Fehler beim Abrufen des gespeicherten Passworts",
-        "failed_to_load_items": "Fehler beim Laden von Elementen:",
+        "failed_to_load_items": "Fehler beim Laden der Elemente:",
         "generic": "Fehler",
         "language_not_selected": "Sprache nicht ausgewählt",
         "passwords_do_not_match": "Passwörter stimmen nicht überein",
         "registration_failed": "Registrierung fehlgeschlagen",
         "updating_progress": "Fehler beim Aktualisieren des Fortschritts:",
         "user_info_not_found": "Benutzerinformationen nicht gefunden"
+    },
+    "feature": {
+        "see_all_subtitles": "Alle Untertitel-Suchergebnisse über die ersten drei hinaus anzeigen.",
+        "use_all_ai": "Alle KI-Funktionen in der gesamten App nutzen.",
+        "view_entire_transcripts": "Vollständige Transkripte über die ersten zehn Zeilen hinaus anzeigen."
+    },
+    "footnote": {
+        "currency": "2. Alle Währungen in US-Dollar (USD).",
+        "lifetime_assumption": "1. Angenommen, Sie leben länger als 2,4 Jahre."
     },
     "level": {
         "cefr": {
@@ -347,12 +361,12 @@
         },
         "ielts": {
             "1": "IELTS 1",
-            "2": "IELTS 2 (Englisch)",
+            "2": "IELTS 2",
             "3": "IELTS 3.5",
-            "4": "IELTS 5 (Englisch)",
+            "4": "IELTS 5",
             "5": "IELTS 6.5",
-            "6": "IELTS 8 (Englisch)",
-            "7": "IELTS 9 (Englisch)"
+            "6": "IELTS 8",
+            "7": "IELTS 9"
         },
         "jlpt": {
             "1": "JLPT N5",
@@ -374,7 +388,7 @@
             "7": "Fortgeschritten II"
         },
         "topik": {
-            "1": "Vor TOPIK 1",
+            "1": "Vor-TOPIK 1",
             "2": "TOPIK 1",
             "3": "TOPIK 2",
             "4": "TOPIK 3",
@@ -386,88 +400,100 @@
     "log": {
         "database_already_loaded": "Datenbank bereits geladen.",
         "dictionary_ready": "Wörterbuch ist bereit und geladen.",
-        "downloading": "Herunterladen...",
+        "downloading": "Wird heruntergeladen...",
         "entries_processed": "{{count}} Einträge verarbeitet. Indizierung...",
-        "failed_load_dictionary": "Wörterbuch konnte nicht geladen werden: {{error}}",
+        "failed_load_dictionary": "Fehler beim Laden des Wörterbuchs: {{error}}",
         "loading_dictionary": "Wörterbuch wird geladen...",
-        "processing": "Verarbeitung..."
+        "processing": "Wird verarbeitet..."
     },
     "msg": {
         "already_have_account": "Haben Sie bereits ein Konto?",
-        "auto_renews_in": "Automatische Verlängerung in {{days}} Tagen",
+        "auto_renews_in": "Verlängert sich automatisch in {{days}} Tagen",
+        "auto_renews": "Verlängert sich automatisch in {{time}}",
         "confirm_cancel_subscription": "Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten?",
         "copy_success": "Text in die Zwischenablage kopiert",
-        "delete_confirmation": "Möchten Sie Ihr Konto wirklich dauerhaft löschen? Sie verlieren alle gespeicherten Wörter und Fortschritte. Diese Aktion kann nicht rückgängig gemacht werden.",
-        "discover_the_power_of_comprehensible_input": "Entdecken Sie die Leistungsfähigkeit von Comprehensible Input durch Hunderttausende von Videos in über 100 Sprachen.",
+        "delete_confirmation": "Sind Sie sicher, dass Sie Ihr Konto dauerhaft löschen möchten? Sie verlieren alle Ihre gespeicherten Wörter und Fortschritte. Diese Aktion kann nicht rückgängig gemacht werden.",
+        "discover_the_power_of_comprehensible_input": "Entdecken Sie die Kraft des verständlichen Inputs durch Hunderttausende von Videos in über 100 Sprachen.",
         "dont_have_an_account": "Sie haben noch kein Konto?",
         "enrich_your_language_learning_journey": "Bereichern Sie Ihre Sprachlernreise",
-        "enter_verification_code": "Bitte geben Sie den Bestätigungscode ein, der an die E-Mail gesendet wurde.",
+        "enter_verification_code": "Bitte geben Sie den an die E-Mail gesendeten Verifizierungscode ein",
         "expires_in": "Läuft in {{days}} Tagen ab",
+        "expiring": "Läuft in {{time}} ab",
         "forgot_password": "Passwort vergessen?",
-        "hsk_explanation": "\"HSK\" ist der offizielle chinesische Eignungstest, wobei Stufe 1 die niedrigste und Stufe 9 die höchste ist.",
-        "initializing": "Initialisierung...",
-        "loading": "Laden...",
+        "hsk_explanation": "\"HSK\" ist der offizielle chinesische Sprachtest, wobei Stufe 1 die niedrigste und Stufe 9 die höchste ist.",
+        "initializing": "Wird initialisiert...",
+        "loading": "Wird geladen...",
         "no_active_subscription": "Kein aktives Abonnement gefunden.",
         "or_login_with": "Oder melden Sie sich an mit:",
         "or_register_with": "Oder registrieren Sie sich mit:",
-        "pro_feature_chatgpt": "Nur Pro-Benutzer können KI-Funktionen in Language Player Go verwenden. Um diese Funktion zu verwenden, aktualisieren Sie auf Pro.",
-        "pro_transcript_limit_reached": "Transkript-Limit erreicht. Bitte aktualisieren Sie auf Pro, um auf weitere Transkripte zugreifen zu können.",
-        "pro_transcript": "Upgrade auf Pro",
+        "pro_feature_chatgpt": "Nur Pro-Benutzer können KI-Funktionen in Language Player Go verwenden. Um diese Funktion zu nutzen, upgraden Sie auf Pro.",
+        "pro_transcript_limit_reached": "Transkriptionslimit erreicht. Bitte upgraden Sie auf Pro, um Zugang zu mehr Transkriptionen zu erhalten.",
+        "pro_transcript": "Upgraden Sie auf Pro, um das vollständige Transkript anzuzeigen!",
         "sort_by": "Sortieren nach: {{sortBy}}",
-        "time_spent_learning": "Verbrachte Zeit beim Lernen von {{language}} im Language Player",
-        "upgrade_text": "Führen Sie ein Upgrade auf Pro durch, um auf mehr Videos zuzugreifen!",
-        "what_your_first_language": "Was ist Ihre Muttersprache?"
+        "time_spent_learning": "Zeit, die mit dem Lernen von {{language}} in Language Player verbracht wurde",
+        "upgrade_text": "Upgraden Sie auf Pro, um Zugang zu mehr Videos zu erhalten!",
+        "what_your_first_language": "Was ist Ihre Muttersprache?",
+        "with_pro_you_can": "Mit Pro können Sie:"
     },
     "of": "von",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
-        "google_ads": "Online-Anzeigen",
-        "google_play": "Bei Google Spielen",
-        "google_search": "Web-Suche",
+        "google_ads": "Online-Werbung",
+        "google_play": "Google Play",
+        "google_search": "Websuche",
         "hsk_courses": "HSK-Kurse",
-        "instagram": "Auf Instagram (Englisch)",
-        "other": "Sonstiges (bitte angeben)",
-        "word_of_mouth": "Empfehlung",
-        "youtube": "Auf YouTube (Englisch)"
+        "instagram": "Instagram",
+        "other": "Andere (Bitte angeben)",
+        "word_of_mouth": "Mundpropaganda",
+        "youtube": "YouTube"
     },
     "placeholder": {
         "confirm_password": "Passwort bestätigen",
-        "dict_search": "Suche nach {{l2Name}}, {{altField}} oder {{dictL1Name}}...",
+        "dict_search": "{{l2Name}}, {{altField}} oder {{dictL1Name}} durchsuchen...",
         "email": "E-Mail",
         "first_name": "Vorname",
-        "last_name": "Name",
-        "more_languages": "Mehr Sprachen ({{count}})",
+        "last_name": "Nachname",
+        "more_languages": "Weitere Sprachen ({{count}})",
         "password": "Passwort",
         "please_specify": "Bitte angeben",
-        "search": "Suche...",
-        "select_language": "Wählen Sie eine Sprache"
+        "search": "Suchen...",
+        "select_language": "Sprache auswählen"
+    },
+    "price": {
+        "annual": "89$/Jahr",
+        "lifetime": "199$/lebenslang",
+        "monthly": "12$/Monat"
     },
     "setting": {
         "auto_pronounce": "Automatische Aussprache",
-        "dark_mode": "Dunkler Modus",
-        "saved_words_blanks": "Gespeicherte Wörter als Leerzeichen",
-        "show_gloss_saved": "Glossar für Gespeichert anzeigen",
-        "show_phonetics": "Phonetik anzeigen",
+        "dark_mode": "Dunkelmodus",
+        "saved_words_blanks": "Gespeicherte Wörter als Lücken",
+        "show_gloss_saved": "Glossar für Gespeicherte anzeigen",
+        "show_phonetics": "Lautschrift anzeigen",
         "show_translation": "Übersetzung anzeigen",
         "use_traditional": "Traditionell verwenden"
     },
     "success": {
-        "code_resent": "Der Code wurde erneut an Ihre E-Mail-Adresse gesendet."
+        "code_resent": "Verifizierungscode erneut an Ihre E-Mail gesendet."
     },
     "time": {
         "hours": "Stunden",
-        "min": "Minuten",
-        "sec": "Sekunden"
+        "min": "Min",
+        "sec": "Sek",
+        "days": "{{count, plural, one {# Tag} other {# Tage}}}",
+        "months": "{{count, plural, one {# Monat} other {# Monate}}}",
+        "months_and_days": "{{months}} und {{days}}"
     },
     "title": {
         "account": "Konto",
         "annual": "Jährlich",
         "app_settings": "App-Einstellungen",
-        "best_value": "Bestes Preis-Leistungs-Verhältnis",
+        "best_value": "Bester Wert",
         "choose_language": "Sprache wählen",
-        "continue_learning": "Lernen Sie weiter {{l2Code}}",
-        "current_level": "Was ist Ihr aktuelles Niveau in {{language}}?",
+        "choose_your_plan": "Wählen Sie Ihren Plan",
+        "continue_learning": "Weiter {{l2Code}} lernen",
+        "current_level": "Was ist Ihr aktuelles {{language}}-Niveau?",
         "current_plan": "Aktueller Plan",
         "date": "Datum",
         "delete_account": "Konto löschen",
@@ -475,18 +501,19 @@
         "dictionary": "Wörterbuch",
         "email": "E-Mail",
         "examples_from_videos": "Beispiele aus Videos",
-        "how_did_you_hear": "Wie sind Sie auf uns aufmerksam geworden?",
+        "go_pro": "Auf Pro upgraden",
+        "how_did_you_hear": "Wie haben Sie von uns erfahren?",
         "language_settings": "Spracheinstellungen",
         "leftContext": "Linker Kontext",
         "length": "Länge",
         "lifetime": "Lebenslang",
-        "likes": "Gefällt mir",
+        "likes": "Likes",
         "loading_dictionary": "{{language}}-Wörterbuch wird geladen",
-        "login": "Einloggen",
-        "logout": "Abmeldung",
-        "monthly": "Montalich",
+        "login": "Anmelden",
+        "logout": "Abmelden",
+        "monthly": "Monatlich",
         "my_progress": "Mein Fortschritt",
-        "next": "Nächster",
+        "next": "Weiter",
         "password": "Passwort",
         "popularity": "Beliebtheit",
         "privacy_policy": "Datenschutzrichtlinie",
@@ -494,17 +521,18 @@
         "register": "Registrieren",
         "rightContext": "Rechter Kontext",
         "saved_words": "Gespeicherte Wörter",
-        "select_language": "Welche Sprache möchtest du lernen?",
+        "select_language": "Welche Sprache möchten Sie lernen?",
         "settings": "Einstellungen",
-        "start_learning": "Beginnen Sie zu lernen",
-        "trial": "Probe",
-        "verify_your_email": "Bestätigen Sie Ihre E-Mail",
-        "views": "{{numViews}} Ansichten",
-        "watch_history": "Sehverlauf"
+        "start_learning": "Lernen beginnen",
+        "trial": "Testversion",
+        "verify_your_email": "Verifizieren Sie Ihre E-Mail",
+        "views": "{{numViews}} Aufrufe",
+        "watch_history": "Verlauf ansehen",
+        "your_current_plan": "Ihr aktueller Plan"
     },
     "video": {
         "comments": "Kommentare",
-        "likes": "Mögen",
+        "likes": "Likes",
         "views": "Aufrufe"
     },
     "word": {

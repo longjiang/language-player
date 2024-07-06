@@ -286,55 +286,69 @@
         "yue-HK": "Kantoninkiina (Hongkong)"
     },
     "action": {
-        "cancel": "Perua",
-        "clear": "Poista kaikki",
+        "cancel": "Peruuta",
+        "clear": "Tyhjennä",
         "confirm_cancellation": "Vahvista peruutus",
-        "confirm_deletion": "Vahvista poistaminen",
+        "confirm_deletion": "Vahvista poisto",
         "copy": "Kopioi",
         "keep_account": "Säilytä tili",
-        "keep_subscription": "Pidä tilaus",
-        "let_chatgpt_explain": "Anna tekoälyn selittää",
-        "list_all": "Näytä kaikki",
-        "login": "Sisäänkirjautuminen",
+        "keep_subscription": "Säilytä tilaus",
+        "let_chatgpt_explain": "Kysy tekoälyltä",
+        "list_all": "Listaa kaikki",
+        "login": "Kirjaudu sisään",
         "logout": "Kirjaudu ulos",
         "next": "Seuraava",
         "register": "Rekisteröidy",
-        "resend_code": "Vahvista uudelleen",
+        "resend_code": "Lähetä koodi uudelleen",
         "speak": "Puhu",
         "start_learning": "Aloita oppiminen",
         "tv_shows": "TV-ohjelmat",
         "upgrade_to_pro": "Päivitä Pro-versioon",
-        "upgrade": "Päivittää",
+        "upgrade": "Päivitä",
         "verify": "Vahvista",
         "watch": "Katso"
     },
     "chatgpt": {
         "prompt": {
-            "base": "Selitä lyhyesti {{l1Name}} avulla, mitä {{l2Name}} ({{l2Code}}) -sana \"{{word}}\" tarkoittaa lauseessa \"{{text}}\".",
-            "inflection": "Anna sen lemma, taivutus ja morfologia."
+            "base": "Selitä lyhyesti {{l1Name}} kielellä, mitä {{l2Name}} ({{l2Code}}) sana '{{word}}' tarkoittaa lauseessa '{{text}}'.",
+            "inflection": "Anna sen perusmuoto, taivutus ja morfologia."
         }
     },
+    "duration": {
+        "annual": "Laskutetaan vuosittain.",
+        "lifetime": "Ei vanhene koskaan.",
+        "monthly": "Laskutetaan kuukausittain."
+    },
     "error": {
-        "entry_not_found": "Merkintää ei löytynyt tai sanakirjaa ei ole ladattu",
-        "failed_fetch_videos": "Videoiden noutaminen epäonnistui",
-        "failed_retrieve_password": "Salasanan haku epäonnistui",
+        "entry_not_found": "Merkintää ei löytynyt tai sanakirjaa ei ladattu",
+        "failed_fetch_videos": "Videoiden lataaminen epäonnistui",
+        "failed_retrieve_password": "Tallennetun salasanan hakeminen epäonnistui",
         "failed_to_load_items": "Kohteiden lataaminen epäonnistui:",
         "generic": "Virhe",
         "language_not_selected": "Kieltä ei valittu",
         "passwords_do_not_match": "Salasanat eivät täsmää",
         "registration_failed": "Rekisteröinti epäonnistui",
-        "updating_progress": "Virheen päivitys:",
+        "updating_progress": "Virhe edistymisen päivittämisessä:",
         "user_info_not_found": "Käyttäjätietoja ei löytynyt"
+    },
+    "feature": {
+        "see_all_subtitles": "Näytä kaikki tekstityshaun tulokset kolmen ensimmäisen jälkeen.",
+        "use_all_ai": "Käytä kaikkia tekoälytoimintoja koko sovelluksessa.",
+        "view_entire_transcripts": "Näytä kokonaiset transkriptiot kymmenen ensimmäisen rivin jälkeen."
+    },
+    "footnote": {
+        "currency": "2. Kaikki valuutat Yhdysvaltain dollareina (USD).",
+        "lifetime_assumption": "1. Olettaen, että elät pidempään kuin 2,4 vuotta."
     },
     "level": {
         "cefr": {
-            "1": "CEFR ennen A1:tä",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
+            "1": "EVK Pre-A1",
+            "2": "EVK A1",
+            "3": "EVK A2",
+            "4": "EVK B1",
+            "5": "EVK B2",
+            "6": "EVK C1",
+            "7": "EVK C2"
         },
         "hsk": {
             "1": "HSK 1",
@@ -361,7 +375,7 @@
             "4": "JLPT N2",
             "5": "JLPT N1",
             "6": "JLPT N1",
-            "7": "CEFR C2"
+            "7": "EVK C2"
         },
         "label": "{{levelName}} ({{examLevelName}})",
         "name": {
@@ -374,7 +388,7 @@
             "7": "Edistynyt II"
         },
         "topik": {
-            "1": "Ennen TOPIK 1:tä",
+            "1": "Pre-TOPIK 1",
             "2": "TOPIK 1",
             "3": "TOPIK 2",
             "4": "TOPIK 3",
@@ -386,50 +400,53 @@
     "log": {
         "database_already_loaded": "Tietokanta on jo ladattu.",
         "dictionary_ready": "Sanakirja on valmis ja ladattu.",
-        "downloading": "Lataaminen...",
+        "downloading": "Ladataan...",
         "entries_processed": "{{count}} merkintää käsitelty. Indeksoidaan...",
         "failed_load_dictionary": "Sanakirjan lataaminen epäonnistui: {{error}}",
         "loading_dictionary": "Ladataan sanakirjaa...",
-        "processing": "Käsittelyssä..."
+        "processing": "Käsitellään..."
     },
     "msg": {
         "already_have_account": "Onko sinulla jo tili?",
-        "auto_renews_in": "Automaattinen uusiminen {{days}} päivässä",
-        "confirm_cancel_subscription": "Haluatko varmasti peruuttaa tilauksesi?",
+        "auto_renews_in": "Uusitaan automaattisesti {{days}} päivän kuluttua",
+        "auto_renews": "Uusitaan automaattisesti {{time}} kuluttua",
+        "confirm_cancel_subscription": "Oletko varma, että haluat peruuttaa tilauksesi?",
         "copy_success": "Teksti kopioitu leikepöydälle",
-        "delete_confirmation": "Oletko varma",
-        "discover_the_power_of_comprehensible_input": "Tutustu ymmärrettävän syötteen voimaan satojen tuhansien videoiden avulla yli 100 kielellä.",
+        "delete_confirmation": "Oletko varma, että haluat poistaa tilisi pysyvästi? Menetät kaikki tallennetut sanasi ja edistymisesi. Tätä toimintoa ei voi kumota.",
+        "discover_the_power_of_comprehensible_input": "Tutustu ymmärrettävän syötteen voimaan satojen tuhansien videoiden kautta yli 100 kielellä.",
         "dont_have_an_account": "Eikö sinulla ole tiliä?",
-        "enrich_your_language_learning_journey": "Rikastuta kieltenoppimismatkaasi",
-        "enter_verification_code": "Anna sähköpostiin lähetetty vahvistuskoodi",
-        "expires_in": "Vanhenee {{days}} päivässä",
-        "forgot_password": "Unohtuiko salasana?",
-        "hsk_explanation": "\"HSK\" on virallinen kiinalainen taitotesti, jossa taso 1 on alin ja taso 9 korkein.",
+        "enrich_your_language_learning_journey": "Rikastuta kielenoppimismatkaasi",
+        "enter_verification_code": "Syötä sähköpostiin lähetetty vahvistuskoodi",
+        "expires_in": "Vanhenee {{days}} päivän kuluttua",
+        "expiring": "Vanhenee {{time}} kuluttua",
+        "forgot_password": "Unohditko salasanasi?",
+        "hsk_explanation": "\"HSK\" on virallinen kiinan kielen taitotasokoe, jossa taso 1 on alin ja taso 9 korkein.",
         "initializing": "Alustetaan...",
-        "loading": "Lastaaminen...",
+        "loading": "Ladataan...",
         "no_active_subscription": "Aktiivista tilausta ei löytynyt.",
         "or_login_with": "Tai kirjaudu sisään:",
         "or_register_with": "Tai rekisteröidy:",
-        "pro_feature_chatgpt": "Vain Pro-käyttäjät voivat käyttää tekoälyn ominaisuuksia Language Player Go -sovelluksessa. Käyttääksesi tätä ominaisuutta, päivitä Pro-versioon.",
+        "pro_feature_chatgpt": "Vain Pro-käyttäjät voivat käyttää tekoälytoimintoja Language Player Go:ssa. Käyttääksesi tätä ominaisuutta, päivitä Pro-versioon.",
         "pro_transcript_limit_reached": "Transkriptioraja saavutettu. Päivitä Pro-versioon saadaksesi lisää transkriptioita.",
-        "pro_transcript": "¡Actualiza a Pro para ver la transcripción completa!",
+        "pro_transcript": "Päivitä Pro-versioon nähdäksesi koko transkription!",
         "sort_by": "Lajittele: {{sortBy}}",
-        "time_spent_learning": "Käytetty oppiminen {{language}} Language Playerissa",
-        "upgrade_text": "Päivitä Pro-versioon nähdäksesi lisää videoita!",
-        "what_your_first_language": "Mikä on ensimmäinen kielesi?"
+        "time_spent_learning": "Aika käytetty {{language}} oppimiseen Language Playerissa",
+        "upgrade_text": "Päivitä Pro-versioon saadaksesi lisää videoita!",
+        "what_your_first_language": "Mikä on äidinkielesi?",
+        "with_pro_you_can": "Pro-versiolla voit:"
     },
-    "of": "of",
+    "of": "/",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
-        "google_ads": "Verkkomainonta",
+        "google_ads": "Verkkomainokset",
         "google_play": "Google Play",
         "google_search": "Verkkohaku",
         "hsk_courses": "HSK-kurssit",
-        "instagram": "Instagramissa",
-        "other": "Muu (täsmennettävä)",
-        "word_of_mouth": "Business suositus",
-        "youtube": "YouTubessa"
+        "instagram": "Instagram",
+        "other": "Muu (Täsmennä)",
+        "word_of_mouth": "Suusta suuhun",
+        "youtube": "YouTube"
     },
     "placeholder": {
         "confirm_password": "Vahvista salasana",
@@ -439,42 +456,52 @@
         "last_name": "Sukunimi",
         "more_languages": "Lisää kieliä ({{count}})",
         "password": "Salasana",
-        "please_specify": "Määritä",
+        "please_specify": "Täsmennä",
         "search": "Hae...",
         "select_language": "Valitse kieli"
+    },
+    "price": {
+        "annual": "89 $/vuosi",
+        "lifetime": "199 $/elinikäinen",
+        "monthly": "12 $/kuukausi"
     },
     "setting": {
         "auto_pronounce": "Automaattinen ääntäminen",
         "dark_mode": "Tumma tila",
         "saved_words_blanks": "Tallennetut sanat tyhjinä",
-        "show_gloss_saved": "Näytä sanasto tallennetuille",
+        "show_gloss_saved": "Näytä selitys tallennetuille",
         "show_phonetics": "Näytä fonetiikka",
         "show_translation": "Näytä käännös",
         "use_traditional": "Käytä perinteistä"
     },
     "success": {
-        "code_resent": "Vahvistuskoodi lähetettiin uudelleen sähköpostiisi."
+        "code_resent": "Vahvistuskoodi lähetetty uudelleen sähköpostiisi."
     },
     "time": {
-        "hours": "tunnit",
-        "min": "minuutit",
-        "sec": "sekunnit"
+        "hours": "tuntia",
+        "min": "min",
+        "sec": "sek",
+        "days": "{{count, plural, one {# päivä} other {# päivää}}}",
+        "months": "{{count, plural, one {# kuukausi} other {# kuukautta}}}",
+        "months_and_days": "{{months}} ja {{days}}"
     },
     "title": {
         "account": "Tili",
         "annual": "Vuosittain",
-        "app_settings": "Sovellusasetukset",
-        "best_value": "Paras hinta-laatusuhde",
+        "app_settings": "Sovelluksen asetukset",
+        "best_value": "Paras arvo",
         "choose_language": "Valitse kieli",
-        "continue_learning": "Jatka oppimista {{l2Code}}",
-        "current_level": "Mikä on nykyinen taitotasosi {{language}}?",
+        "choose_your_plan": "Valitse suunnitelmasi",
+        "continue_learning": "Jatka {{l2Code}} oppimista",
+        "current_level": "Mikä on nykyinen {{language}}-tasosi?",
         "current_plan": "Nykyinen suunnitelma",
         "date": "Päivämäärä",
         "delete_account": "Poista tili",
         "delete_my_account": "Poista tilini",
         "dictionary": "Sanakirja",
         "email": "Sähköposti",
-        "examples_from_videos": "Videoiden esimerkkejä",
+        "examples_from_videos": "Esimerkkejä videoista",
+        "go_pro": "Siirry Pro-versioon",
         "how_did_you_hear": "Miten kuulit meistä?",
         "language_settings": "Kieliasetukset",
         "leftContext": "Vasen konteksti",
@@ -482,10 +509,10 @@
         "lifetime": "Elinikäinen",
         "likes": "Tykkäykset",
         "loading_dictionary": "Ladataan {{language}}-sanakirjaa",
-        "login": "Sisäänkirjautuminen",
-        "logout": "Uloskirjaus",
+        "login": "Kirjaudu sisään",
+        "logout": "Kirjaudu ulos",
         "monthly": "Kuukausittain",
-        "my_progress": "Oma edistymiseni",
+        "my_progress": "Edistymiseni",
         "next": "Seuraava",
         "password": "Salasana",
         "popularity": "Suosio",
@@ -494,18 +521,19 @@
         "register": "Rekisteröidy",
         "rightContext": "Oikea konteksti",
         "saved_words": "Tallennetut sanat",
-        "select_language": "Mitä kieltä haluat oppia?",
+        "select_language": "Mitä kieltä haluaisit oppia?",
         "settings": "Asetukset",
         "start_learning": "Aloita oppiminen",
         "trial": "Kokeilu",
         "verify_your_email": "Vahvista sähköpostisi",
-        "views": "{{numViews}} Näkymät",
-        "watch_history": "Katseluhistoria"
+        "views": "{{numViews}} näyttökertaa",
+        "watch_history": "Katseluhistoria",
+        "your_current_plan": "Nykyinen suunnitelmasi"
     },
     "video": {
         "comments": "Kommentit",
         "likes": "Tykkäykset",
-        "views": "Katselukerrat"
+        "views": "Näyttökerrat"
     },
     "word": {
         "hanja": "Hanja",

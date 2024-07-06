@@ -433,7 +433,9 @@
         "time_spent_learning": "Spent learning {{language}} in Language Player",
         "upgrade_text": "Upgrade to Pro to access more videos!",
         "what_your_first_language": "What’s your first language?",
-        "with_pro_you_can": "With Pro, you can:"
+        "with_pro_you_can": "With Pro, you can:",
+        "purchase_confirmation": "Press \"Purchase\" and you will be asked to confirm your in-app purchase from the Apple App Store.",
+        "lifetime_only": "Only the Lifetime plan is available as an option for Apple In-App Purchase."
     },
     "of": "of",
     "option": {
@@ -528,7 +530,8 @@
         "verify_your_email": "Verify Your Email",
         "views": "{{numViews}} Views",
         "watch_history": "Watch History",
-        "your_current_plan": "Your Current Plan"
+        "your_current_plan": "Your Current Plan",
+        "confirm_in_app_purchase": "Confirm Your In-App Purchase"
     },
     "video": {
         "comments": "Comments",
@@ -539,5 +542,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "button": {
+        "purchase": "Purchase",
+        "processing": "Processing...",
+        "switch_to_lifetime": "Switch to Lifetime"
     }
 }

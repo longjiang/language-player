@@ -285,49 +285,63 @@
         "yue-HK": "Kantonesiska (Hongkong)"
     },
     "action": {
-        "cancel": "Annullera",
-        "clear": "Ta bort alla",
+        "cancel": "Avbryt",
+        "clear": "Rensa",
         "confirm_cancellation": "Bekräfta avbokning",
         "confirm_deletion": "Bekräfta radering",
-        "copy": "Kopia",
+        "copy": "Kopiera",
         "keep_account": "Behåll konto",
         "keep_subscription": "Behåll prenumeration",
         "let_chatgpt_explain": "Fråga AI",
         "list_all": "Lista alla",
         "login": "Logga in",
-        "logout": "Utloggning",
+        "logout": "Logga ut",
         "next": "Nästa",
-        "register": "Registrera dig",
-        "resend_code": "Skicka om kod",
+        "register": "Registrera",
+        "resend_code": "Skicka kod igen",
         "speak": "Tala",
         "start_learning": "Börja lära dig",
         "tv_shows": "TV-program",
         "upgrade_to_pro": "Uppgradera till Pro",
         "upgrade": "Uppgradera",
-        "verify": "Kontrollera",
-        "watch": "Klocka"
+        "verify": "Verifiera",
+        "watch": "Titta"
     },
     "chatgpt": {
         "prompt": {
-            "base": "Förklara kortfattat med {{l1Name}} vad ordet {{l2Name}} ({{l2Code}}) {{word}}' betyder i frasen '{{text}}'.",
-            "inflection": "Ge dess lemma, böjning och morfologi."
+            "base": "Förklara kortfattat med {{l1Name}} vad {{l2Name}} ({{l2Code}}) ordet '{{word}}' betyder i frasen '{{text}}'.",
+            "inflection": "Ange dess lemma, böjning och morfologi."
         }
     },
+    "duration": {
+        "annual": "Faktureras årligen.",
+        "lifetime": "Går aldrig ut.",
+        "monthly": "Faktureras varje månad."
+    },
     "error": {
-        "entry_not_found": "Det gick inte att hitta posten eller ordlistan har inte lästs in",
-        "failed_fetch_videos": "Det gick inte att hämta videor",
-        "failed_retrieve_password": "Det gick inte att hämta det lagrade lösenordet",
-        "failed_to_load_items": "Det gick inte att ladda objekt:",
+        "entry_not_found": "Inlägg hittades inte eller ordlistan laddades inte",
+        "failed_fetch_videos": "Kunde inte hämta videor",
+        "failed_retrieve_password": "Kunde inte hämta lagrat lösenord",
+        "failed_to_load_items": "Kunde inte ladda objekt:",
         "generic": "Fel",
-        "language_not_selected": "Språk har inte valts",
-        "passwords_do_not_match": "Lösenorden stämmer inte överens",
-        "registration_failed": "Registreringen misslyckades",
-        "updating_progress": "Fel vid uppdatering av förloppet:",
-        "user_info_not_found": "Det gick inte att hitta användarinformationen"
+        "language_not_selected": "Språk ej valt",
+        "passwords_do_not_match": "Lösenorden matchar inte",
+        "registration_failed": "Registrering misslyckades",
+        "updating_progress": "Fel vid uppdatering av framsteg:",
+        "user_info_not_found": "Användarinformation hittades inte"
+    },
+    "feature": {
+        "see_all_subtitles": "Se alla undertextsökresultat bortom de tre första.",
+        "use_all_ai": "Använd alla AI-funktioner i hela appen.",
+        "view_entire_transcripts": "Visa hela transkript bortom de första tio raderna."
+    },
+    "footnote": {
+        "currency": "2. Alla valutor är i amerikanska dollar (USD).",
+        "lifetime_assumption": "1. Förutsatt att du lever längre än 2,4 år."
     },
     "level": {
         "cefr": {
-            "1": "CEFR före A1",
+            "1": "CEFR Pre-A1",
             "2": "CEFR A1",
             "3": "CEFR A2",
             "4": "CEFR B1",
@@ -345,13 +359,13 @@
             "7": "HSK 7-9"
         },
         "ielts": {
-            "1": "IELTS 1 (på engelska)",
-            "2": "IELTS 2 (på engelska)",
+            "1": "IELTS 1",
+            "2": "IELTS 2",
             "3": "IELTS 3.5",
-            "4": "IELTS 5 (på engelska)",
+            "4": "IELTS 5",
             "5": "IELTS 6.5",
-            "6": "IELTS 8 (på engelska)",
-            "7": "IELTS 9 (på engelska)"
+            "6": "IELTS 8",
+            "7": "IELTS 9"
         },
         "jlpt": {
             "1": "JLPT N5",
@@ -362,13 +376,13 @@
             "6": "JLPT N1",
             "7": "CEFR C2"
         },
-        "label": "{{levelName}} {{}} ({{examLevelName}})",
+        "label": "{{levelName}} ({{examLevelName}})",
         "name": {
             "1": "Nybörjare I",
             "2": "Nybörjare II",
             "3": "Nybörjare III",
-            "4": "Fortsättningskurs I",
-            "5": "Fortsättningskurs II",
+            "4": "Mellannivå I",
+            "5": "Mellannivå II",
             "6": "Avancerad I",
             "7": "Avancerad II"
         },
@@ -383,80 +397,92 @@
         }
     },
     "log": {
-        "database_already_loaded": "Databasen har redan lästs in.",
-        "dictionary_ready": "Ordlistan är klar och laddad.",
-        "downloading": "Ladda ner...",
-        "entries_processed": "{{count}} {{}} Behandlade poster. Indexering...",
-        "failed_load_dictionary": "Det gick inte att ladda ordlistan: {{error}}",
-        "loading_dictionary": "Laddar ordboken...",
-        "processing": "Bearbetning..."
+        "database_already_loaded": "Databas redan laddad.",
+        "dictionary_ready": "Ordboken är redo och laddad.",
+        "downloading": "Laddar ner...",
+        "entries_processed": "{{count}} poster bearbetade. Indexerar...",
+        "failed_load_dictionary": "Kunde inte ladda ordlistan: {{error}}",
+        "loading_dictionary": "Laddar ordlistan...",
+        "processing": "Bearbetar..."
     },
     "msg": {
         "already_have_account": "Har du redan ett konto?",
         "auto_renews_in": "Förnyas automatiskt om {{days}} dagar",
-        "confirm_cancel_subscription": "Är du säker på att du vill säga upp din prenumeration?",
-        "copy_success": "Text kopierad till Urklipp",
-        "discover_the_power_of_comprehensible_input": "Upptäck kraften i begriplig inmatning genom hundratusentals videor på över 100 språk.",
+        "auto_renews": "Förnyas automatiskt om {{time}}",
+        "confirm_cancel_subscription": "Är du säker på att du vill avbryta prenumerationen?",
+        "copy_success": "Text kopierad till urklipp",
+        "delete_confirmation": "Är du säker på att du vill ta bort ditt konto permanent? Du kommer att förlora alla sparade ord och framsteg. Denna åtgärd kan inte ångras.",
+        "discover_the_power_of_comprehensible_input": "Upptäck kraften i begriplig input genom hundratusentals videor på över 100 språk.",
         "dont_have_an_account": "Har du inget konto?",
         "enrich_your_language_learning_journey": "Berika din språkinlärningsresa",
-        "enter_verification_code": "Ange verifieringskoden som skickades till e-postmeddelandet",
-        "expires_in": "Går ut om {{days}} dagar",
-        "forgot_password": "Glömt lösenordet?",
-        "hsk_explanation": "\"HSK\" är det officiella kinesiska kunskapstestet, där nivå 1 är den lägsta och nivå 9 är den högsta.",
+        "enter_verification_code": "Ange verifieringskoden som skickats till e-posten",
+        "expires_in": "Upphör om {{days}} dagar",
+        "expiring": "Upphör om {{time}}",
+        "forgot_password": "Glömt lösenord?",
+        "hsk_explanation": "\"HSK\" är det officiella kinesiska färdighetsprovet, med nivå 1 som det lägsta och nivå 9 som det högsta.",
         "initializing": "Initierar...",
-        "loading": "Lastning...",
+        "loading": "Laddar...",
         "no_active_subscription": "Ingen aktiv prenumeration hittades.",
         "or_login_with": "Eller logga in med:",
-        "or_register_with": "Eller registrera dig hos:",
-        "pro_feature_chatgpt": "Endast Pro-användare kan använda AI-funktioner i Language Player Go. Om du vill använda den här funktionen uppgraderar du till Pro.",
-        "pro_transcript_limit_reached": "Avskriftsgränsen har nåtts. Uppgradera till Pro för att få tillgång till fler utskrifter.",
-        "pro_transcript": "Uppgradera till Pro för att se hela utskriften!",
+        "or_register_with": "Eller registrera med:",
+        "pro_feature_chatgpt": "Endast Pro-användare kan använda AI-funktioner i Language Player Go. För att använda denna funktion, uppgradera till Pro.",
+        "pro_transcript_limit_reached": "Transkriptionsgräns nådd. Vänligen uppgradera till Pro för att få åtkomst till fler transkriptioner.",
+        "pro_transcript": "Uppgradera till Pro för att se hela transkriptet!",
         "sort_by": "Sortera efter: {{sortBy}}",
-        "time_spent_learning": "Spenderat på att lära sig {{language}} i Language Player",
-        "upgrade_text": "Uppgradera till Pro för att få tillgång till fler videor!",
-        "what_your_first_language": "Vilket är ditt första språk?"
+        "time_spent_learning": "Tid spenderad på att lära sig {{language}} i Language Player",
+        "upgrade_text": "Uppgradera till Pro för att få åtkomst till fler videor!",
+        "what_your_first_language": "Vad är ditt modersmål?",
+        "with_pro_you_can": "Med Pro kan du:"
     },
     "of": "av",
     "option": {
         "app_store": "App Store",
-        "bilibili": "Bilibili Bilibili",
-        "google_ads": "Annonser på nätet",
+        "bilibili": "Bilibili",
+        "google_ads": "Onlineannonser",
         "google_play": "Google Play",
         "google_search": "Webbsökning",
         "hsk_courses": "HSK-kurser",
-        "instagram": "Följ oss på Instagram",
-        "other": "Annat (vänligen specificera)",
+        "instagram": "Instagram",
+        "other": "Annat (Vänligen specificera)",
         "word_of_mouth": "Mun till mun",
-        "youtube": "På YouTube (på engelska"
+        "youtube": "YouTube"
     },
     "placeholder": {
         "confirm_password": "Bekräfta lösenord",
         "dict_search": "Sök {{l2Name}}, {{altField}} eller {{dictL1Name}}...",
         "email": "E-post",
-        "first_name": "Första",
-        "last_name": "Sist",
+        "first_name": "Förnamn",
+        "last_name": "Efternamn",
         "more_languages": "Fler språk ({{count}})",
         "password": "Lösenord",
-        "please_specify": "Precisera",
-        "search": "Söka...",
+        "please_specify": "Vänligen specificera",
+        "search": "Sök...",
         "select_language": "Välj ett språk"
     },
+    "price": {
+        "annual": "$89/år",
+        "lifetime": "$199/livstid",
+        "monthly": "$12/mån"
+    },
     "setting": {
-        "auto_pronounce": "Uttala automatiskt",
+        "auto_pronounce": "Automatiskt uttal",
         "dark_mode": "Mörkt läge",
-        "saved_words_blanks": "Sparade ord som blanksteg",
-        "show_gloss_saved": "Visa glans för sparade",
+        "saved_words_blanks": "Sparade ord som tomma",
+        "show_gloss_saved": "Visa glossa för sparade",
         "show_phonetics": "Visa fonetik",
         "show_translation": "Visa översättning",
-        "use_traditional": "Använd traditionellt"
+        "use_traditional": "Använd traditionell"
     },
     "success": {
-        "code_resent": "Verifieringskoden skickas till din e-post på nytt."
+        "code_resent": "Verifieringskod skickad igen till din e-post."
     },
     "time": {
-        "hours": "Timmar",
+        "hours": "timmar",
         "min": "min",
-        "sec": "sek"
+        "sec": "sek",
+        "days": "{{count}} dagar",
+        "months": "{{count}} månader",
+        "months_and_days": "{{months}} och {{days}}"
     },
     "title": {
         "account": "Konto",
@@ -464,16 +490,18 @@
         "app_settings": "App-inställningar",
         "best_value": "Bästa värde",
         "choose_language": "Välj språk",
+        "choose_your_plan": "Välj din plan",
         "continue_learning": "Fortsätt lära dig {{l2Code}}",
-        "current_level": "Vilken är din nuvarande {{language}}-nivå?",
+        "current_level": "Vad är din nuvarande nivå i {{language}}?",
         "current_plan": "Nuvarande plan",
         "date": "Datum",
-        "delete_account": "Radera konto",
+        "delete_account": "Ta bort konto",
         "delete_my_account": "Ta bort mitt konto",
         "dictionary": "Ordbok",
         "email": "E-post",
         "examples_from_videos": "Exempel från videor",
-        "how_did_you_hear": "Hur hörde du talas om oss?",
+        "go_pro": "Uppgradera till Pro",
+        "how_did_you_hear": "Hur fick du höra om oss?",
         "language_settings": "Språkinställningar",
         "leftContext": "Vänster kontext",
         "length": "Längd",
@@ -481,24 +509,25 @@
         "likes": "Gillar",
         "loading_dictionary": "Laddar {{language}} ordbok",
         "login": "Logga in",
-        "logout": "Utloggning",
+        "logout": "Logga ut",
         "monthly": "Månatlig",
-        "my_progress": "Mina framsteg",
+        "my_progress": "Min framgång",
         "next": "Nästa",
         "password": "Lösenord",
         "popularity": "Popularitet",
         "privacy_policy": "Integritetspolicy",
-        "pro_feature": "Pro-funktionen",
-        "register": "Registrera dig",
-        "rightContext": "Rätt sammanhang",
+        "pro_feature": "Pro-funktion",
+        "register": "Registrera",
+        "rightContext": "Höger kontext",
         "saved_words": "Sparade ord",
-        "select_language": "Vilket språk skulle du vilja lära dig?",
+        "select_language": "Välj språk",
         "settings": "Inställningar",
         "start_learning": "Börja lära dig",
-        "trial": "Rättegång",
-        "verify_your_email": "Verifiera din e-postadress",
-        "views": "{{numViews}} {{}} Visningar",
-        "watch_history": "Visningshistorik"
+        "trial": "Testa",
+        "verify_your_email": "Verifiera din e-post",
+        "views": "{{numViews}} visningar",
+        "watch_history": "Tittarhistorik",
+        "your_current_plan": "Din nuvarande plan"
     },
     "video": {
         "comments": "Kommentarer",
@@ -506,7 +535,7 @@
         "views": "Visningar"
     },
     "word": {
-        "hanja": "Hanja Hanja",
+        "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
     }
