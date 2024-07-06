@@ -1,8 +1,8 @@
 // @/app/(tabs)/(dictionary)/dictionary/word/[id].tsx
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { View, ActivityIndicator, Text } from "react-native";
+import { View, ActivityIndicator } from "react-native";
 import { ThemedButton, ThemedInput, ThemedText } from "@/components";
 import { router } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -27,38 +27,22 @@ const DictionaryEntryScreen = () => {
   const route = useRoute<RouteProp<{
     DictionaryEntryScreen: DictionaryEntryScreenRouteParams;
   }, 'DictionaryEntryScreen'>>();
-  if (!route.params) return;
-  const id = decodeURIComponent(route.params.id);
+  const { dictionary } = useDictionary();
+  const { l2Lang, t } = useLanguage();
+  const { settings } = useSettings();
+  const tertiaryBackgroundColor = useThemeColor({}, 'tertiaryBackground');
 
   const [entry, setEntry] = useState<null | DictionaryEntry>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { dictionary } = useDictionary();
-  const { l2Lang, t } = useLanguage();
-  const { settings } = useSettings();
-  if (!l2Lang) return null;
-  if (!dictionary) return null;
 
-  const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
+  if (!route.params || !l2Lang || !dictionary) return null;
+  const id = decodeURIComponent(route.params.id);
 
   const headKey = l2Lang.code === 'zh' && settings.useTraditional ? 'alternate' : 'head';
   const alternateKey = l2Lang.code === 'zh' && settings.useTraditional ? 'head' : 'alternate';
 
-  useEffect(() => {
-    if (dictionary) {
-      loadEntry();
-    }
-  }, [dictionary, id]);
-
-  const handleInputChange = (text: string) => {
-    setSearchQuery(text);
-  };
-
-  const handleSearch = () => {
-    loadEntry();
-  };
-
-  const loadEntry = async () => {
+  const loadEntry = useCallback(async () => {
     setIsLoading(true);
     setEntry(null);
 
@@ -70,6 +54,20 @@ const DictionaryEntryScreen = () => {
       console.log("Dictionary not loaded yet");
     }
     setIsLoading(false);
+  }, [dictionary, id]);
+
+  useEffect(() => {
+    if (dictionary) {
+      loadEntry();
+    }
+  }, [dictionary, loadEntry]);
+
+  const handleInputChange = (text: string) => {
+    setSearchQuery(text);
+  };
+
+  const handleSearch = () => {
+    loadEntry();
   };
 
   if (isLoading) {
@@ -87,10 +85,9 @@ const DictionaryEntryScreen = () => {
       </View>
     );
   }
-    
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: useThemeColor({}, 'tertiaryBackground') }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: tertiaryBackgroundColor }}>
       <SafeAreaView style={{ marginTop: 16 }}>
         <View style={styles.header}>
           <ThemedButton

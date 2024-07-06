@@ -62,7 +62,7 @@ export class TokenizerService {
       const tokens = tokenizer ? tokenizer.module.normalizeTokens(tokenData, text) : tokenData;
       this.cache.set(key, tokens);
     }
-    console.log("🍒 Cache loaded");
+    // console.log("🍒 Cache loaded");
   }
 
   private generateCacheKey(text: string): string {
@@ -81,7 +81,7 @@ export class TokenizerService {
   public async tokenize(text: string, l2Lang: Language): Promise<Token[] | undefined> {
     const cacheKey = this.generateCacheKey(text);
     if (this.cache.has(cacheKey)) {
-      console.log("🍎 Loading from cache:", cacheKey);
+      // console.log("🍎 Loading from cache:", cacheKey);
       return this.cache.get(cacheKey);
     }
 
@@ -89,16 +89,16 @@ export class TokenizerService {
       let tokens: Token[] | undefined = undefined;
       const remoteTokenizer = getTokenizer(l2Lang.code);
       if (remoteTokenizer) {
-        console.log("🍌 Fetching from remote tokenizer:", cacheKey);
+        // console.log("🍌 Fetching from remote tokenizer:", cacheKey);
         tokens = await this.fetchTokens(remoteTokenizer, text, l2Lang);
       } else {
-        console.log("🍊 Tokenizing locally:", cacheKey);
+        // console.log("🍊 Tokenizing locally:", cacheKey);
         tokens = await this.localTokenizer.tokenize(text, l2Lang);
       }
 
       // Cache the results
       this.cache.set(cacheKey, tokens || []);
-      console.log("🍓 Caching result:", cacheKey);
+      // console.log("🍓 Caching result:", cacheKey);
       return tokens;
     } catch (error) {
       console.error("Error fetching tokens:", error);

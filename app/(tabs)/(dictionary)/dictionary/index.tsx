@@ -1,13 +1,9 @@
 // @/app/search.tsx
+
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { router } from "expo-router";
-import { ThemedInput } from "@/components/ThemedInput";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useDictionary } from "@/contexts/DictionaryContext";
@@ -24,7 +20,6 @@ const DictionaryScreen = () => {
   const { t } = useLanguage();
 
   useEffect(() => {
-    console.log('DictionaryScreen - Mounted');
     if (searchQuery) {
       loadItems();
     }
