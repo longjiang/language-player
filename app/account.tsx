@@ -6,7 +6,6 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { PricingBlock } from "@/components/PricingBlock";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { getDeltaDate } from "@/src/utils";
 import { User } from "@/src/api/directus/user";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -60,13 +59,9 @@ const AccountScreen = () => {
           {subscription ? (
             <PricingBlock
               price={'title.' + subscription.type}
-              duration={subscription.payment_customer_id 
-                ? t('msg.auto_renews_in', { days: getDeltaDate(subscription.expires_on) })
-                : t('msg.expires_in', { days: getDeltaDate(subscription.expires_on) })
-              }
+              duration=""  // We'll calculate this inside PricingBlock now
               current
-              showCancel={subscription.payment_customer_id}
-              showUpgrade={subscription.type !== "lifetime"}
+              subscription={subscription}
             />
           ) : (
             <ThemedText style={{ alignSelf: "center", marginTop: 16 }} type="large">

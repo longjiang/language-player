@@ -8,6 +8,8 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { ThemedRBSheet } from "./ThemedRBSheet";
 import { router } from "expo-router";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Subscription } from "@/src/types";
+import { getDeltaDate } from "@/src/utils";
 
 export interface PricingBlockProps {
   price: string;
@@ -15,6 +17,7 @@ export interface PricingBlockProps {
   current?: boolean;
   recommended?: boolean;
   onPress?: () => void;
+  subscription?: Subscription | null;
   showUpgrade?: boolean;
   showCancel?: boolean;
 }
@@ -25,8 +28,9 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
   current,
   recommended,
   onPress,
-  showUpgrade,
-  showCancel,
+  subscription,
+  showUpgrade = true,
+  showCancel = true,
 }) => {
   const { t } = useLanguage();
   const secondaryBrandColor = useThemeColor({}, 'semanticSuccess');
@@ -39,6 +43,18 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
   const handleCancelPress = () => {
     refRBSheet.current?.open();
   };
+
+  const getExpirationText = () => {
+    if (!subscription) return duration;
+  
+    const days = getDeltaDate(subscription.expires_on);
+    return subscription.payment_customer_id
+      ? t('msg.auto_renews_in', { days })
+      : t('msg.expires_in', { days });
+  };
+
+  const shouldShowUpgrade = showUpgrade && subscription && subscription.type !== "lifetime";
+  const shouldShowCancel = showCancel && subscription && !!subscription.payment_customer_id;
 
   return (
     <TouchableOpacity
@@ -66,34 +82,36 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
         {t(price)}
       </ThemedText>
       <ThemedText style={styles.duration} variant="secondary">
-        {duration}
+        {getExpirationText()}
       </ThemedText>
       {recommended && (
         <View style={[styles.recommendedTag, { backgroundColor: secondaryBrandColor }]}>
           <ThemedText style={styles.tagText}>{t('title.best_value')}</ThemedText>
         </View>
       )}
-      {(showUpgrade || showCancel) && (
+      {(shouldShowUpgrade || shouldShowCancel) && (
         <View style={styles.buttonContainer}>
-          {(showUpgrade && <ThemedButton
-            title={t('action.upgrade')}
-            size="small"
-            trailingIcon={<Icon name="chevron-right" />}
-            onPress={() => router.navigate('/go-pro')}
-          />)}
-          {(showCancel && <ThemedButton
-            title={t('action.cancel')}
-            size="small"
-            type="neutral"
-            style={{ marginLeft: 8 }}
-            trailingIcon={<Icon name="chevron-right" />}
-            onPress={handleCancelPress}
-          />)}
+          {shouldShowUpgrade && (
+            <ThemedButton
+              title={t('action.upgrade')}
+              size="small"
+              trailingIcon={<Icon name="chevron-right" />}
+              onPress={() => router.navigate('/go-pro')}
+            />
+          )}
+          {shouldShowCancel && (
+            <ThemedButton
+              title={t('action.cancel')}
+              size="small"
+              type="neutral"
+              style={{ marginLeft: 8 }}
+              trailingIcon={<Icon name="chevron-right" />}
+              onPress={handleCancelPress}
+            />
+          )}
         </View>
       )}
-      <ThemedRBSheet
-        ref={refRBSheet}
-      >
+      <ThemedRBSheet ref={refRBSheet}>
         <ThemedText style={styles.sheetText} type="subtitle">
           {t('msg.confirm_cancel_subscription')}
         </ThemedText>
@@ -132,7 +150,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   current: {
-
   },
   currentTag: {
     position: 'absolute',

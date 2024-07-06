@@ -32,39 +32,11 @@ const GoProScreen = () => {
 
   const currentPlan = isProUser() ? subscription?.type : null;
 
-  const getExpirationText = () => {
-    if (!subscription || !isProUser()) return "";
-  
-    const expiresOn = new Date(subscription.expires_on);
-    const now = new Date();
-    const diffTime = Math.abs(expiresOn.getTime() - now.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-    const formatTimeRemaining = (days: number) => {
-      if (days < 31) {
-        return { days: t('time.days', { count: days }) };
-      } else {
-        const months = Math.floor(days / 30);
-        const remainingDays = days % 30;
-        return {
-          months: t('time.months', { count: months }),
-          days: remainingDays > 0 ? t('time.days', { count: remainingDays }) : null
-        };
-      }
-    };
-  
-    const timeRemaining = formatTimeRemaining(diffDays);
-  
-    const formattedTime = timeRemaining.days 
-      ? timeRemaining.days 
-      : t('time.months_and_days', { months: timeRemaining.months, days: timeRemaining.days });
-  
-    if (subscription.payment_customer_id) {
-      return t('msg.auto_renews', { time: formattedTime });
-    } else {
-      return t('msg.expiring', { time: formattedTime });
-    }
-  };
+  const plans = [
+    { type: "monthly", price: t('price.monthly'), duration: t('duration.monthly') },
+    { type: "annual", price: t('price.annual'), duration: t('duration.annual') },
+    { type: "lifetime", price: t('price.lifetime'), duration: t('duration.lifetime'), recommended: true },
+  ];
 
   return (
     <ThemedScreen title={t('title.go_pro')} onBackPress={() => router.back()}>
@@ -98,19 +70,16 @@ const GoProScreen = () => {
       <ThemedText style={styles.choosePlan} type="subtitle">
         {isProUser() ? t('title.your_current_plan') : t('title.choose_your_plan')}
       </ThemedText>
-      {[
-        { price: t('price.monthly'), duration: t('duration.monthly'), plan: "monthly" },
-        { price: t('price.annual'), duration: t('duration.annual'), plan: "annual" },
-        { price: t('price.lifetime'), duration: t('duration.lifetime'), plan: "lifetime", recommended: true },
-      ].map((pricing) => (
+      {plans.map((plan) => (
         <PricingBlock
-          key={pricing.plan}
-          price={pricing.price}
-          duration={isProUser() && pricing.plan === currentPlan ? getExpirationText() : pricing.duration}
-          current={isProUser() && pricing.plan === currentPlan}
-          recommended={pricing.recommended}
-          onPress={() => onSelect(pricing.plan)}
-          disabled={isProUser() && pricing.plan === currentPlan}
+          key={plan.type}
+          price={plan.price}
+          duration={plan.duration}
+          current={isProUser() && plan.type === currentPlan}
+          recommended={plan.recommended}
+          onPress={() => onSelect(plan.type)}
+          subscription={isProUser() && plan.type === currentPlan ? subscription : null}
+          showUpgrade={false}
         />
       ))}
       <ThemedText style={styles.footerText} type="small">
