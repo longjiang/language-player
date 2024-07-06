@@ -76,7 +76,7 @@ export const Token: React.FC<{
 
   return (
     <TouchableOpacity onPress={handleTokenPress}>
-      <View style={styles.token}>
+      <View style={{ ...styles.token, marginHorizontal: shouldShowPronunciation ? 4 : 0 }}>
         {displayContent.map((segment: Segment, index: number) => (
           <View key={index} style={styles.segment}>
             {shouldShowPronunciation && segment.pronunciation !== segment.text && (
