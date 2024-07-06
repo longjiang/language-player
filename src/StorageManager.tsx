@@ -31,14 +31,13 @@ class StorageManager {
 
   async initialize(): Promise<void> {
     const authToken = await SecureStore.getItemAsync('authToken');
-    const userInfo = await SecureStore.getItemAsync('userInfo');
-    const userData = await SecureStore.getItemAsync('userData');
+    const userInfoString = await SecureStore.getItemAsync('userInfo');
     const tempPassword = await SecureStore.getItemAsync('tempPassword');
 
     this.storageData = {
+      ...this.storageData,
       authToken,
-      userInfo: userInfo ? JSON.parse(userInfo) : null,
-      userData: userData ? JSON.parse(userData) : null,
+      userInfo: userInfoString ? JSON.parse(userInfoString) : null,
       tempPassword,
     };
   }
@@ -61,13 +60,8 @@ class StorageManager {
     }
   }
 
-  async setUserData(userData: UserData | null): Promise<void> {
+  setUserData(userData: UserData | null): void {
     this.storageData.userData = userData;
-    if (userData) {
-      await SecureStore.setItemAsync('userData', JSON.stringify(userData));
-    } else {
-      await SecureStore.deleteItemAsync('userData');
-    }
   }
 
   async setTempPassword(password: string): Promise<void> {
@@ -109,7 +103,6 @@ class StorageManager {
     };
     await SecureStore.deleteItemAsync('authToken');
     await SecureStore.deleteItemAsync('userInfo');
-    await SecureStore.deleteItemAsync('userData');
     await SecureStore.deleteItemAsync('tempPassword');
   }
 }
