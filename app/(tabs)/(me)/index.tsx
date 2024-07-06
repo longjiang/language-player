@@ -1,5 +1,5 @@
 // @/app/(tabs)/(me)/index.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
@@ -7,17 +7,19 @@ import { ThemedText } from "@/components/ThemedText";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserData } from "@/contexts/UserDataContext";
+import { UPDATE_INTERVAL, useUserData } from "@/contexts/UserDataContext";
 import LevelButton from "@/components/LevelButton";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const LanguageProgressScreen = () => {
   const { handleLogout } = useAuth();
-  const { progress } = useUserData();
+  const { progress, getTimeFromStorage } = useUserData();
   const { l2Lang } = useLanguage();
+  const [currentTime, setCurrentTime] = useState(0);
+
   if (!l2Lang) return null;
   const l2Progress = progress[l2Lang.code] || { level: '1', time: 0 };
-  
+
   const formatTime = (milliseconds: number) => {
     const totalSeconds = Math.floor(milliseconds / 1000);
     const hrs = Math.floor(totalSeconds / 3600);
@@ -26,15 +28,26 @@ const LanguageProgressScreen = () => {
     return `${hrs} hours ${mins} min ${secs} sec`;
   };
 
+  useEffect(() => {
+    const fetchTime = async () => {
+      const time = await getTimeFromStorage();
+      setCurrentTime(time);
+    };
+    
+    const interval = setInterval(fetchTime, UPDATE_INTERVAL);
+    fetchTime(); // Initial fetch
+
+    return () => clearInterval(interval);
+  }, [getTimeFromStorage]);
+
   const handleLogoutPress = async () => {
     await handleLogout();
     router.navigate("/");
-  }
-  
+  };
 
   const onSelect = (level: number) => {
     router.navigate("/select-level");
-  }
+  };
 
   return (
     <ThemedScreen
@@ -43,7 +56,7 @@ const LanguageProgressScreen = () => {
     >
       <View style={{ flexDirection: "column" }}>
         <View style={{ flexDirection: "column", justifyContent: "space-between", alignItems: 'center', marginTop: 14, marginBottom: 42 }}>
-          <ThemedText type="xlarge">{formatTime(l2Progress.time)}</ThemedText>
+          <ThemedText type="xlarge">{formatTime(l2Progress.time + currentTime)}</ThemedText>
           <ThemedText style={{ marginTop: 8}}>Spent learning Chinese in Language Player</ThemedText>
         </View>
         <LevelButton

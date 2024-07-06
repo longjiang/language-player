@@ -6,8 +6,8 @@ import { getUserData, initializeUserData, patchUserData } from '@/src/api/direct
 import { useLanguage } from '@/contexts/LanguageContext';
 import { storageManager } from "@/src/StorageManager";
 
-const UPDATE_INTERVAL = 1000; // 1 second
-const SYNC_INTERVAL = 60000; // 1 minute
+export const UPDATE_INTERVAL = 1000; // 1 second
+export const SYNC_INTERVAL = 60000; // 1 minute
 
 export interface Context {
   form: string;
@@ -50,6 +50,7 @@ interface UserDataContextProps {
   removeSavedWord: (langCode: string, wordId: string) => Promise<void>;
   getProgress: (langCode: string) => { level: string; time: number } | undefined;
   updateProgress: (langCode: string, newProgress: { level: string; time: number }) => Promise<void>;
+  getTimeFromStorage: () => Promise<number>;
   lastSignificantChange: number;
 }
 
@@ -235,6 +236,10 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
   };
 
+  const getTimeFromStorage = async (): Promise<number> => {
+    return await storageManager.getTime();
+  };
+
   // Add an effect to update lastSignificantChange when l2Lang changes
   useEffect(() => {
     if (l2Lang) {
@@ -254,6 +259,7 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
         removeSavedWord,
         getProgress,
         updateProgress,
+        getTimeFromStorage, // Expose the getTimeFromStorage function
         lastSignificantChange,
       }}
     >
