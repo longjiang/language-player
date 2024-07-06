@@ -460,6 +460,11 @@
         "search": "Cuardaigh...",
         "select_language": "Roghnaigh teanga"
     },
+    "price": {
+        "annual": "${{price}}/bliain",
+        "lifetime": "${{price}}/ar feadh an tsaoil",
+        "monthly": "${{price}}/mí"
+    },
     "setting": {
         "auto_pronounce": "Fuaimniú uathoibríoch",
         "dark_mode": "Mód dorcha",

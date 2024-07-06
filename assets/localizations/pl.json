@@ -459,6 +459,11 @@
         "search": "Szukaj...",
         "select_language": "Wybierz język"
     },
+    "price": {
+        "annual": "${{price}}/rok",
+        "lifetime": "${{price}}/dożywotnio",
+        "monthly": "${{price}}/mies"
+    },
     "setting": {
         "auto_pronounce": "Automatyczna wymowa",
         "dark_mode": "Tryb ciemny",

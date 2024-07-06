@@ -459,6 +459,11 @@
         "search": "Søk...",
         "select_language": "Velg et språk"
     },
+    "price": {
+        "annual": "${{price}}/år",
+        "lifetime": "${{price}}/livstid",
+        "monthly": "${{price}}/mnd"
+    },
     "setting": {
         "auto_pronounce": "Automatisk uttale",
         "dark_mode": "Mørk modus",

@@ -460,6 +460,11 @@
         "search": "Αναζήτηση...",
         "select_language": "Επιλέξτε μια γλώσσα"
     },
+    "price": {
+        "annual": "${{price}}/έτος",
+        "lifetime": "${{price}}/εφ' όρου ζωής",
+        "monthly": "${{price}}/μήνα"
+    },
     "setting": {
         "auto_pronounce": "Αυτόματη προφορά",
         "dark_mode": "Σκοτεινή λειτουργία",

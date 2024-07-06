@@ -458,6 +458,11 @@
         "search": "ค้นหา...",
         "select_language": "เลือกภาษา"
     },
+    "price": {
+        "annual": "${{price}}/ปี",
+        "lifetime": "${{price}}/ตลอดชีพ",
+        "monthly": "${{price}}/เดือน"
+    },
     "setting": {
         "auto_pronounce": "การออกเสียงอัตโนมัติ",
         "dark_mode": "โหมดมืด",

@@ -458,6 +458,11 @@
         "search": "Tìm kiếm...",
         "select_language": "Chọn một ngôn ngữ"
     },
+    "price": {
+        "annual": "${{price}}/năm",
+        "lifetime": "${{price}}/trọn đời",
+        "monthly": "${{price}}/tháng"
+    },
     "setting": {
         "auto_pronounce": "Phát âm tự động",
         "dark_mode": "Chế độ tối",

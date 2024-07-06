@@ -475,6 +475,11 @@
         "search": "Soek...",
         "select_language": "Kies 'n taal"
     },
+    "price": {
+        "annual": "${{price}}/jr",
+        "lifetime": "${{price}}/leeftyd",
+        "monthly": "${{price}}/md"
+    },
     "setting": {
         "auto_pronounce": "Outomatiese uitspraak",
         "dark_mode": "Donker modus",

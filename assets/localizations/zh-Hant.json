@@ -475,6 +475,11 @@
         "search": "搜尋...",
         "select_language": "選擇語言"
     },
+    "price": {
+        "annual": "${{price}}/年",
+        "lifetime": "${{price}}/終身",
+        "monthly": "${{price}}/月"
+    },
     "setting": {
         "auto_pronounce": "自動發音",
         "dark_mode": "深色模式",

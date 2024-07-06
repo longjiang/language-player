@@ -459,6 +459,11 @@
         "search": "Caută...",
         "select_language": "Selectează o limbă"
     },
+    "price": {
+        "annual": "${{price}}/an",
+        "lifetime": "${{price}}/pe viață",
+        "monthly": "${{price}}/lună"
+    },
     "setting": {
         "auto_pronounce": "Pronunție automată",
         "dark_mode": "Mod întunecat",

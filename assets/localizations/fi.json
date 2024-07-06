@@ -460,6 +460,11 @@
         "search": "Hae...",
         "select_language": "Valitse kieli"
     },
+    "price": {
+        "annual": "${{price}}/vuosi",
+        "lifetime": "${{price}}/elinikäinen",
+        "monthly": "${{price}}/kk"
+    },
     "setting": {
         "auto_pronounce": "Automaattinen ääntäminen",
         "dark_mode": "Tumma tila",

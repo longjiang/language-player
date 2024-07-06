@@ -460,6 +460,11 @@
         "search": "Keresés...",
         "select_language": "Nyelv kiválasztása"
     },
+    "price": {
+        "annual": "${{price}}/év",
+        "lifetime": "${{price}}/életre szóló",
+        "monthly": "${{price}}/hó"
+    },
     "setting": {
         "auto_pronounce": "Automatikus kiejtés",
         "dark_mode": "Sötét mód",

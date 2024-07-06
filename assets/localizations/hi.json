@@ -460,6 +460,11 @@
         "search": "खोजें...",
         "select_language": "एक भाषा का चयन करें"
     },
+    "price": {
+        "annual": "${{price}}/वर्ष",
+        "lifetime": "${{price}}/आजीवन",
+        "monthly": "${{price}}/माह"
+    },
     "setting": {
         "auto_pronounce": "स्वचालित उच्चारण",
         "dark_mode": "डार्क मोड",

@@ -460,6 +460,11 @@
         "search": "بحث...",
         "select_language": "اختر لغة"
     },
+    "price": {
+        "annual": "${{price}}/سنة",
+        "lifetime": "${{price}}/مدى الحياة",
+        "monthly": "${{price}}/شهر"
+    },
     "setting": {
         "auto_pronounce": "النطق التلقائي",
         "dark_mode": "الوضع الداكن",

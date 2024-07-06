@@ -459,6 +459,11 @@
         "search": "검색...",
         "select_language": "언어 선택"
     },
+    "price": {
+        "annual": "${{price}}/년",
+        "lifetime": "${{price}}/평생",
+        "monthly": "${{price}}/월"
+    },
     "setting": {
         "auto_pronounce": "자동 발음",
         "dark_mode": "다크 모드",

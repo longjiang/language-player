@@ -460,6 +460,11 @@
         "search": "Cari...",
         "select_language": "Pilih bahasa"
     },
+    "price": {
+        "annual": "${{price}}/tahun",
+        "lifetime": "${{price}}/seumur hidup",
+        "monthly": "${{price}}/bulan"
+    },
     "setting": {
         "auto_pronounce": "Pengucapan Otomatis",
         "dark_mode": "Mode Gelap",

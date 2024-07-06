@@ -459,6 +459,11 @@
         "search": "検索...",
         "select_language": "言語を選択してください"
     },
+    "price": {
+        "annual": "${{price}}/年",
+        "lifetime": "${{price}}/生涯",
+        "monthly": "${{price}}/月"
+    },
     "setting": {
         "auto_pronounce": "自動発音",
         "dark_mode": "ダークモード",

@@ -459,6 +459,11 @@
         "search": "Buscar...",
         "select_language": "Selecione um idioma"
     },
+    "price": {
+        "annual": "${{price}}/ano",
+        "lifetime": "${{price}}/vitalício",
+        "monthly": "${{price}}/mês"
+    },
     "setting": {
         "auto_pronounce": "Pronúncia Automática",
         "dark_mode": "Modo Escuro",

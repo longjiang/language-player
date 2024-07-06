@@ -459,6 +459,11 @@
         "search": "Pretraži...",
         "select_language": "Izaberi jezik"
     },
+    "price": {
+        "annual": "${{price}}/год",
+        "lifetime": "${{price}}/доживотно",
+        "monthly": "${{price}}/мес"
+    },
     "setting": {
         "auto_pronounce": "Automatski izgovor",
         "dark_mode": "Tamni režim",

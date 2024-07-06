@@ -459,6 +459,11 @@
         "search": "Tafuta...",
         "select_language": "Chagua lugha"
     },
+    "price": {
+        "annual": "${{price}}/mwaka",
+        "lifetime": "${{price}}/maisha",
+        "monthly": "${{price}}/mwezi"
+    },
     "setting": {
         "auto_pronounce": "Matamshi ya Moja kwa Moja",
         "dark_mode": "Hali Nyeusi",

@@ -458,6 +458,11 @@
         "search": "Ara...",
         "select_language": "Bir dil seçin"
     },
+    "price": {
+        "annual": "${{price}}/yıl",
+        "lifetime": "${{price}}/ömür boyu",
+        "monthly": "${{price}}/ay"
+    },
     "setting": {
         "auto_pronounce": "Otomatik Telaffuz",
         "dark_mode": "Karanlık Mod",

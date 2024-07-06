@@ -460,6 +460,11 @@
         "search": "Pretraži...",
         "select_language": "Odaberi jezik"
     },
+    "price": {
+        "annual": "${{price}}/god",
+        "lifetime": "${{price}}/doživotno",
+        "monthly": "${{price}}/mj"
+    },
     "setting": {
         "auto_pronounce": "Automatski izgovor",
         "dark_mode": "Tamni način rada",

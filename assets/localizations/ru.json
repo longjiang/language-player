@@ -459,6 +459,11 @@
         "search": "Поиск...",
         "select_language": "Выберите язык"
     },
+    "price": {
+        "annual": "${{price}}/год",
+        "lifetime": "${{price}}/пожизненно",
+        "monthly": "${{price}}/мес"
+    },
     "setting": {
         "auto_pronounce": "Автоматическое произношение",
         "dark_mode": "Темный режим",

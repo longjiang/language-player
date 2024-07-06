@@ -459,6 +459,11 @@
         "search": "Zoeken...",
         "select_language": "Selecteer een taal"
     },
+    "price": {
+        "annual": "${{price}}/jaar",
+        "lifetime": "${{price}}/levenslang",
+        "monthly": "${{price}}/mnd"
+    },
     "setting": {
         "auto_pronounce": "Automatische uitspraak",
         "dark_mode": "Donkere modus",

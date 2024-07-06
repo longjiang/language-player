@@ -460,6 +460,11 @@
         "search": "Rechercher...",
         "select_language": "Sélectionnez une langue"
     },
+    "price": {
+        "annual": "${{price}}/an",
+        "lifetime": "${{price}}/à vie",
+        "monthly": "${{price}}/mois"
+    },
     "setting": {
         "auto_pronounce": "Prononciation automatique",
         "dark_mode": "Mode sombre",
