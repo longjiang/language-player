@@ -1,5 +1,4 @@
 // @/components/IOSPaymentMethods.tsx
-
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -7,6 +6,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedButton } from '@/components/ThemedButton';
 import { inAppPurchaseSuccess } from '@/src/api/python/subscription';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import RNIap, {
   Product,
   PurchaseError,
@@ -22,12 +22,12 @@ const IOSPaymentMethods = ({ selectedPlan, onSelect }) => {
   const [purchaseProcessing, setPurchaseProcessing] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
       initializeIAP();
     }
-
     return () => {
       if (Platform.OS === 'ios') {
         RNIap.endConnection();
@@ -49,9 +49,7 @@ const IOSPaymentMethods = ({ selectedPlan, onSelect }) => {
 
   const handlePurchase = async () => {
     if (Platform.OS !== 'ios') return;
-
     setPurchaseProcessing(true);
-
     try {
       const purchase = await RNIap.requestPurchase(IOS_IAP_PRODUCT_ID);
       handleCompletedPurchase(purchase);
@@ -85,38 +83,21 @@ const IOSPaymentMethods = ({ selectedPlan, onSelect }) => {
 
   return (
     <View>
-      {selectedPlan === 'lifetime' ? (
-        <View>
-          <ThemedText type="subtitle" style={styles.centeredText}>
-            Confirm Your In-App Purchase
-          </ThemedText>
-          <ThemedText style={styles.leftAlignedText}>
-            Press "Purchase" and you will be asked to confirm your in-app
-            purchase from the Apple App Store.
-          </ThemedText>
-          <ThemedButton
-            type="neutral"
-            title={purchaseProcessing ? 'Processing...' : 'Purchase'}
-            style={styles.paymentButton}
-            leadingIcon={<Icon name="apple" />}
-            trailingIcon={<Icon name="chevron-right" />}
-            onPress={handlePurchase}
-            disabled={purchaseProcessing || !product}
-          />
-        </View>
-      ) : (
-        <View>
-          <ThemedText type="subtitle" style={styles.leftAlignedText}>
-            Only the Lifetime plan is available as an option for Apple In-App
-            Purchase.
-          </ThemedText>
-          <ThemedButton
-            type="neutral"
-            title="Switch to Lifetime"
-            onPress={() => onSelect('lifetime')}
-          />
-        </View>
-      )}
+      <ThemedText type="subtitle" style={styles.centeredText}>
+        {t('title.confirm_in_app_purchase')}
+      </ThemedText>
+      <ThemedText style={styles.leftAlignedText}>
+        {t('msg.purchase_confirmation')}
+      </ThemedText>
+      <ThemedButton
+        type="neutral"
+        title={purchaseProcessing ? t('button.processing') : t('button.purchase')}
+        style={styles.paymentButton}
+        leadingIcon={<Icon name="apple" />}
+        trailingIcon={<Icon name="chevron-right" />}
+        onPress={handlePurchase}
+        disabled={purchaseProcessing || !product}
+      />
     </View>
   );
 };
