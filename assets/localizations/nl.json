@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "Annuleren",
+        "clear": "Alles verwijderen",
         "confirm_cancellation": "Annulering bevestigen",
         "copy": "Kopiëren",
         "keep_subscription": "Abonnement behouden",
         "let_chatgpt_explain": "Vraag het aan AI",
+        "list_all": "Lijst Alles",
         "login": "Inloggen",
         "logout": "Logout",
         "next": "Volgend",
@@ -301,8 +303,7 @@
         "upgrade": "Opwaarderen",
         "upgrade_to_pro": "Upgrade naar Pro",
         "verify": "Verifiëren",
-        "watch": "Horloge",
-        "list_all": "Lijst Alles"
+        "watch": "Horloge"
     },
     "chatgpt": {
         "prompt": {
@@ -408,8 +409,8 @@
         "pro_transcript_limit_reached": "Transcriptielimiet bereikt. Upgrade naar Pro om toegang te krijgen tot meer transcripties.",
         "sort_by": "Sorteren op: {{sortBy}}",
         "time_spent_learning": "Besteed aan het leren {{language}} in Language Player",
-        "what_your_first_language": "Wat is je eerste taal?",
-        "upgrade_text": "Upgrade naar Pro om toegang te krijgen tot meer video's!"
+        "upgrade_text": "Upgrade naar Pro om toegang te krijgen tot meer video's!",
+        "what_your_first_language": "Wat is je eerste taal?"
     },
     "of": "van",
     "option": {

@@ -285,10 +285,12 @@
     },
     "action": {
         "cancel": "ยกเลิก",
+        "clear": "ลบทั้งหมด",
         "confirm_cancellation": "ยืนยันการยกเลิก",
         "copy": "ลอก",
         "keep_subscription": "สมัครสมาชิกต่อไป",
         "let_chatgpt_explain": "ถาม AI",
+        "list_all": "รายการทั้งหมด",
         "login": "เข้า สู่ ระบบ",
         "logout": "ออกจากระบบ",
         "next": "ต่อไป",
@@ -300,8 +302,7 @@
         "upgrade": "อัพ เกรด",
         "upgrade_to_pro": "อัปเกรดเป็น Pro",
         "verify": "ตรวจสอบ",
-        "watch": "ดู",
-        "list_all": "รายการทั้งหมด"
+        "watch": "ดู"
     },
     "chatgpt": {
         "prompt": {
@@ -407,8 +408,8 @@
         "pro_transcript_limit_reached": "ถึงขีดจํากัดการถอดเสียงแล้ว โปรดอัปเกรดเป็น Pro เพื่อเข้าถึงการถอดเสียงเพิ่มเติม",
         "sort_by": "เรียงตาม: {{sortBy}}",
         "time_spent_learning": "ใช้เวลาเรียนรู้ {{language}} ใน Language Player",
-        "what_your_first_language": "ภาษาแรกของคุณคืออะไร?",
-        "upgrade_text": "อัปเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!"
+        "upgrade_text": "อัปเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!",
+        "what_your_first_language": "ภาษาแรกของคุณคืออะไร?"
     },
     "of": "ของ",
     "option": {

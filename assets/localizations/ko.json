@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "취소",
+        "clear": "모두 제거",
         "confirm_cancellation": "취소 확인",
         "copy": "복사",
         "keep_subscription": "구독 유지",
         "let_chatgpt_explain": "AI에게 물어보기",
+        "list_all": "모두 나열",
         "login": "로그인",
         "logout": "로그아웃",
         "next": "다음",
@@ -301,8 +303,7 @@
         "upgrade": "업그레이드",
         "upgrade_to_pro": "Pro로 업그레이드",
         "verify": "확인",
-        "watch": "시계",
-        "list_all": "모두 나열"
+        "watch": "시계"
     },
     "chatgpt": {
         "prompt": {
@@ -408,8 +409,8 @@
         "pro_transcript_limit_reached": "대본 제한에 도달했습니다. 더 많은 대본에 액세스하려면 Pro로 업그레이드하십시오.",
         "sort_by": "정렬 기준: {{sortBy}}",
         "time_spent_learning": "언어 플레이어에서 {{language}}를 배우는 데 소요",
-        "what_your_first_language": "당신의 모국어는 무엇입니까?",
-        "upgrade_text": "Pro로 업그레이드하여 더 많은 비디오에 액세스하세요!"
+        "upgrade_text": "Pro로 업그레이드하여 더 많은 비디오에 액세스하세요!",
+        "what_your_first_language": "당신의 모국어는 무엇입니까?"
     },
     "of": "의",
     "option": {

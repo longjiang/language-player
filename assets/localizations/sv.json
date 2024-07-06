@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "Annullera",
+        "clear": "Ta bort alla",
         "confirm_cancellation": "Bekräfta avbokning",
         "copy": "Kopia",
         "keep_subscription": "Behåll prenumeration",
         "let_chatgpt_explain": "Fråga AI",
+        "list_all": "Lista alla",
         "login": "Logga in",
         "logout": "Utloggning",
         "next": "Nästa",
@@ -301,8 +303,7 @@
         "upgrade": "Uppgradera",
         "upgrade_to_pro": "Uppgradera till Pro",
         "verify": "Kontrollera",
-        "watch": "Klocka",
-        "list_all": "Lista alla"
+        "watch": "Klocka"
     },
     "chatgpt": {
         "prompt": {
@@ -408,8 +409,8 @@
         "pro_transcript_limit_reached": "Avskriftsgränsen har nåtts. Uppgradera till Pro för att få tillgång till fler utskrifter.",
         "sort_by": "Sortera efter: {{sortBy}}",
         "time_spent_learning": "Spenderat på att lära sig {{language}} i Language Player",
-        "what_your_first_language": "Vilket är ditt första språk?",
-        "upgrade_text": "Uppgradera till Pro för att få tillgång till fler videor!"
+        "upgrade_text": "Uppgradera till Pro för att få tillgång till fler videor!",
+        "what_your_first_language": "Vilket är ditt första språk?"
     },
     "of": "av",
     "option": {

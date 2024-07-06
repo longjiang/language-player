@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "Katisha",
+        "clear": "Ondoa Yote",
         "confirm_cancellation": "Thibitisha Kughairi",
         "copy": "Nakili",
         "keep_subscription": "Weka Usajili",
         "let_chatgpt_explain": "Uliza AI",
+        "list_all": "Orodha ya Wote",
         "login": "Kuingia",
         "logout": "Kuingia",
         "next": "Ijayo",
@@ -301,8 +303,7 @@
         "upgrade": "Kuboresha",
         "upgrade_to_pro": "Boresha kwa Pro",
         "verify": "Thibitisha",
-        "watch": "Kuangalia",
-        "list_all": "Orodha ya Wote"
+        "watch": "Kuangalia"
     },
     "chatgpt": {
         "prompt": {
@@ -408,8 +409,8 @@
         "pro_transcript_limit_reached": "Ukomo wa Transcript umefikiwa. Tafadhali sasisha hadi Pro ili kufikia nakala zaidi.",
         "sort_by": "Panga kwa: {{sortBy}}",
         "time_spent_learning": "Alitumia kujifunza {{language}} katika Kichezaji Lugha",
-        "what_your_first_language": "Lugha yako ya kwanza ni ipi?",
-        "upgrade_text": "Boresha kwa Pro ili kufikia video zaidi!"
+        "upgrade_text": "Boresha kwa Pro ili kufikia video zaidi!",
+        "what_your_first_language": "Lugha yako ya kwanza ni ipi?"
     },
     "of": "Ya",
     "option": {

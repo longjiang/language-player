@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 const SavedWordsScreen = () => {
   const { savedWords } = useUserData();
-  const { l2Lang } = useLanguage();
+  const { l2Lang, t } = useLanguage();
   const [savedWordIds, setSavedWordIds] = useState(null);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const SavedWordsScreen = () => {
 
   return (
     <ThemedScreen
-      title="Saved Words"
+      title={t('title.saved_words')}
       onBackPress={() => {
         router.navigate('/(tabs)/(me)');
       }}
@@ -35,7 +35,7 @@ const SavedWordsScreen = () => {
         <WordList wordIds={savedWordIds} />
         <View style={{ padding: 20, alignItems: 'center' }}>
           <ThemedButton
-            title="Clear"
+            title={t('action.clear')}
             type="neutral"
             size="medium"
             leadingIcon={<Ionicons name="trash-outline" />}

@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "取消",
+        "clear": "清除",
         "confirm_cancellation": "确认取消",
         "copy": "复制",
         "keep_subscription": "保持订阅",
         "let_chatgpt_explain": "让 AI 解释",
+        "list_all": "列出全部",
         "login": "登录",
         "logout": "登出",
         "next": "下一步",
@@ -302,8 +304,7 @@
         "upgrade": "升级",
         "upgrade_to_pro": "升级到 Pro",
         "verify": "验证",
-        "watch": "观看",
-        "list_all": "列出全部"
+        "watch": "观看"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "已达到字幕限制。请升级到 Pro 以访问更多字幕。",
         "sort_by": "排序方式：{{sortBy}}",
         "time_spent_learning": "在Language Player中学习{{language}}的时间",
-        "what_your_first_language": "你的第一语言是什么？",
-        "upgrade_text": "升级到 Pro 以访问更多视频！"
+        "upgrade_text": "升级到 Pro 以访问更多视频！",
+        "what_your_first_language": "你的第一语言是什么？"
     },
     "of": "之",
     "option": {

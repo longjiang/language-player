@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Annuler",
+        "clear": "Tout supprimer",
         "confirm_cancellation": "Confirmer l’annulation",
         "copy": "Copier",
         "keep_subscription": "Conserver l’abonnement",
         "let_chatgpt_explain": "Permettez à l'IA d'expliquer",
+        "list_all": "Tout afficher",
         "login": "Connectez-vous",
         "logout": "Déconnexion",
         "next": "Suivant",
@@ -302,8 +304,7 @@
         "upgrade": "Mise à niveau",
         "upgrade_to_pro": "Mettre à niveau vers Pro",
         "verify": "Vérifier",
-        "watch": "Kijken",
-        "list_all": "Tout afficher"
+        "watch": "Kijken"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "Limite de transcription atteinte. Veuillez passer à Pro pour accéder à plus de transcriptions.",
         "sort_by": "Trier par : {{sortBy}}",
         "time_spent_learning": "Passé à apprendre {{language}} dans Language Player",
-        "what_your_first_language": "Quelle est votre langue maternelle ?",
-        "upgrade_text": "Passez à Pro pour accéder à plus de vidéos !"
+        "upgrade_text": "Passez à Pro pour accéder à plus de vidéos !",
+        "what_your_first_language": "Quelle est votre langue maternelle ?"
     },
     "of": "of",
     "option": {

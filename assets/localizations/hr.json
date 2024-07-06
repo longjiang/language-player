@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Otkazati",
+        "clear": "Ukloni sve",
         "confirm_cancellation": "Potvrda otkazivanja",
         "copy": "Kopija",
         "keep_subscription": "Zadrži pretplatu",
         "let_chatgpt_explain": "Pitajte AI",
+        "list_all": "Popis svih",
         "login": "Prijava",
         "logout": "Odjava",
         "next": "Sljedeći",
@@ -302,8 +304,7 @@
         "upgrade": "Nadograditi",
         "upgrade_to_pro": "Nadogradnja na Pro",
         "verify": "Ovjeriti",
-        "watch": "Gledati",
-        "list_all": "Popis svih"
+        "watch": "Gledati"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "Dosegnuto je ograničenje transkripta. Nadogradite na Pro da biste pristupili većem broju transkripata.",
         "sort_by": "Sortiraj po: {{sortBy}}",
         "time_spent_learning": "Potrošeno učenje {{language}} u programu Language Player",
-        "what_your_first_language": "Koji ti je prvi jezik?",
-        "upgrade_text": "Nadogradite na Pro da biste pristupili više videozapisa!"
+        "upgrade_text": "Nadogradite na Pro da biste pristupili više videozapisa!",
+        "what_your_first_language": "Koji ti je prvi jezik?"
     },
     "of": "od",
     "option": {

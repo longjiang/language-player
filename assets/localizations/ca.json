@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Cancel·lar",
+        "clear": "Suprimeix-ho tot",
         "confirm_cancellation": "Confirmeu la cancel·lació",
         "copy": "Kopiar",
         "keep_subscription": "Mantenir subscripció",
         "let_chatgpt_explain": "Deixa que l'IA ho expliqui",
+        "list_all": "Llista tot",
         "login": "Connexió",
         "logout": "Tanca la sessió",
         "next": "Següent",
@@ -302,8 +304,7 @@
         "upgrade": "Rampa",
         "upgrade_to_pro": "Actualitza a Pro",
         "verify": "Verifica",
-        "watch": "Visualitza",
-        "list_all": "Llista tot"
+        "watch": "Visualitza"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "Límit de transcripció assolit. Actualitzeu a Pro per accedir a més transcripcions.",
         "sort_by": "Ordena per: {{sortBy}}",
         "time_spent_learning": "He passat temps aprenent {{language}} a Language Player",
-        "what_your_first_language": "Quin és el teu primer idioma?",
-        "upgrade_text": "Actualitzeu-vos a Pro per accedir a més vídeos."
+        "upgrade_text": "Actualitzeu-vos a Pro per accedir a més vídeos.",
+        "what_your_first_language": "Quin és el teu primer idioma?"
     },
     "of": "de",
     "option": {

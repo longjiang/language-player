@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "إلغاء الأمر",
+        "clear": "إزالة الكل",
         "confirm_cancellation": "تأكيد الإلغاء",
         "copy": "نسخ",
         "keep_subscription": "حافظ على الاشتراك",
         "let_chatgpt_explain": "اسأل الذكاء الاصطناعي",
+        "list_all": "عرض الكل",
         "login": "تسجيل الدخول",
         "logout": "تسجيل الخروج",
         "next": "التالي",
@@ -302,8 +304,7 @@
         "upgrade": "ترقيه",
         "upgrade_to_pro": "الترقية إلى النسخة المحترفة",
         "verify": "التحقق",
-        "watch": "شاهد",
-        "list_all": "عرض الكل"
+        "watch": "شاهد"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "تم الوصول إلى حد النص. يرجى الترقية إلى Pro للوصول إلى المزيد من النصوص.",
         "sort_by": "فرز حسب: {{sortBy}}",
         "time_spent_learning": "قضيت وقتًا في تعلم {{language}} في Language Player",
-        "what_your_first_language": "ما هي لغتك الأولى؟",
-        "upgrade_text": "قم بالترقية إلى Pro للوصول إلى المزيد من مقاطع الفيديو!"
+        "upgrade_text": "قم بالترقية إلى Pro للوصول إلى المزيد من مقاطع الفيديو!",
+        "what_your_first_language": "ما هي لغتك الأولى؟"
     },
     "of": "من",
     "option": {

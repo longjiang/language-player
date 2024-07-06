@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Membatalkan",
+        "clear": "Hapus Semua",
         "confirm_cancellation": "Konfirmasi Pembatalan",
         "copy": "Menyalin",
         "keep_subscription": "Tetap Berlangganan",
         "let_chatgpt_explain": "Tanya AI",
+        "list_all": "Daftar Semua",
         "login": "Login",
         "logout": "Logout",
         "next": "Depan",
@@ -302,8 +304,7 @@
         "upgrade": "Upgrade",
         "upgrade_to_pro": "Tingkatkan ke Pro",
         "verify": "Memverifikasi",
-        "watch": "Menonton",
-        "list_all": "Daftar Semua"
+        "watch": "Menonton"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip.",
         "sort_by": "Urut berdasarkan: {{sortBy}}",
         "time_spent_learning": "Menghabiskan belajar {{language}} di Language Player",
-        "what_your_first_language": "Apa bahasa pertama Anda?",
-        "upgrade_text": "Tingkatkan ke Pro untuk mengakses lebih banyak video!"
+        "upgrade_text": "Tingkatkan ke Pro untuk mengakses lebih banyak video!",
+        "what_your_first_language": "Apa bahasa pertama Anda?"
     },
     "of": "arab",
     "option": {

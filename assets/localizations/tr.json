@@ -285,10 +285,12 @@
     },
     "action": {
         "cancel": "İptal",
+        "clear": "Tümünü Kaldır",
         "confirm_cancellation": "İptali Onayla",
         "copy": "Kopya etmek",
         "keep_subscription": "Aboneliği Koru",
         "let_chatgpt_explain": "Yapay zekaya sorun",
+        "list_all": "Tümünü Listele",
         "login": "Oturum açma",
         "logout": "Oturum kapatma",
         "next": "Önümüzdeki",
@@ -300,8 +302,7 @@
         "upgrade": "Yükseltmek",
         "upgrade_to_pro": "Pro'ya yükseltin",
         "verify": "Doğrulamak",
-        "watch": "Bakmak",
-        "list_all": "Tümünü Listele"
+        "watch": "Bakmak"
     },
     "chatgpt": {
         "prompt": {
@@ -407,8 +408,8 @@
         "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
         "sort_by": "Sıralama ölçütü: {{sortBy}}",
         "time_spent_learning": "Language Player'da {{language}} öğrenmek için harcandı",
-        "what_your_first_language": "İlk diliniz nedir?",
-        "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!"
+        "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!",
+        "what_your_first_language": "İlk diliniz nedir?"
     },
     "of": "in",
     "option": {

@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Érvénytelenít",
+        "clear": "Összes eltávolítása",
         "confirm_cancellation": "Lemondás megerősítése",
         "copy": "Másolat",
         "keep_subscription": "Előfizetés megtartása",
         "let_chatgpt_explain": "Kérdezzen az AI-tól",
+        "list_all": "Összes listázása",
         "login": "Bejelentkezés",
         "logout": "Jel",
         "next": "Következő",
@@ -302,8 +304,7 @@
         "upgrade": "Feljavít",
         "upgrade_to_pro": "Frissítés Pro-ra",
         "verify": "Igazol",
-        "watch": "Néz",
-        "list_all": "Összes listázása"
+        "watch": "Néz"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "Elérte az átirati korlátot. Kérjük, frissítsen Pro-ra, hogy további átiratokhoz férjen hozzá.",
         "sort_by": "Sorrend: {{sortBy}}",
         "time_spent_learning": "{{language}} tanulásával töltött a Language Player alkalmazásban",
-        "what_your_first_language": "Mi az első nyelve?",
-        "upgrade_text": "Frissítsen Pro-ra, hogy még több videóhoz férjen hozzá!"
+        "upgrade_text": "Frissítsen Pro-ra, hogy még több videóhoz férjen hozzá!",
+        "what_your_first_language": "Mi az első nyelve?"
     },
     "of": "ból",
     "option": {

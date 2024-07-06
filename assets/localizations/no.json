@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "Annullere",
+        "clear": "Fjern alle",
         "confirm_cancellation": "Bekreft kansellering",
         "copy": "Kopi",
         "keep_subscription": "Behold abonnement",
         "let_chatgpt_explain": "Spør AI",
+        "list_all": "Liste over alle",
         "login": "Pålogging",
         "logout": "Logout",
         "next": "Neste",
@@ -301,8 +303,7 @@
         "upgrade": "Oppgradere",
         "upgrade_to_pro": "Oppgrader til Pro",
         "verify": "Verifisere",
-        "watch": "Armbåndsur",
-        "list_all": "Liste over alle"
+        "watch": "Armbåndsur"
     },
     "chatgpt": {
         "prompt": {
@@ -408,8 +409,8 @@
         "pro_transcript_limit_reached": "Transkripsjonsgrense nådd. Oppgrader til Pro for å få tilgang til flere transkripsjoner.",
         "sort_by": "Sorter etter: {{sortBy}}",
         "time_spent_learning": "Brukt på å lære {{language}} i språkspiller",
-        "what_your_first_language": "Hva er ditt morsmål?",
-        "upgrade_text": "Oppgrader til Pro for å få tilgang til flere videoer!"
+        "upgrade_text": "Oppgrader til Pro for å få tilgang til flere videoer!",
+        "what_your_first_language": "Hva er ditt morsmål?"
     },
     "of": "av",
     "option": {

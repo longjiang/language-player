@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Abbrechen",
+        "clear": "Alle entfernen",
         "confirm_cancellation": "Stornierung bestätigen",
         "copy": "Kopieren",
         "keep_subscription": "Abonnement beibehalten",
         "let_chatgpt_explain": "Lassen Sie die KI erklären",
+        "list_all": "Alle auflisten",
         "login": "Einloggen",
         "logout": "Abmelden",
         "next": "Weiter",
@@ -302,8 +304,7 @@
         "upgrade": "Upgrade",
         "upgrade_to_pro": "Upgrade auf Pro",
         "verify": "Bestätigen",
-        "watch": "Ansehen",
-        "list_all": "Alle auflisten"
+        "watch": "Ansehen"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "Transkript-Limit erreicht. Bitte aktualisieren Sie auf Pro, um auf weitere Transkripte zugreifen zu können.",
         "sort_by": "Sortieren nach: {{sortBy}}",
         "time_spent_learning": "Verbrachte Zeit beim Lernen von {{language}} im Language Player",
-        "what_your_first_language": "Was ist Ihre Muttersprache?",
-        "upgrade_text": "Führen Sie ein Upgrade auf Pro durch, um auf mehr Videos zuzugreifen!"
+        "upgrade_text": "Führen Sie ein Upgrade auf Pro durch, um auf mehr Videos zuzugreifen!",
+        "what_your_first_language": "Was ist Ihre Muttersprache?"
     },
     "of": "von",
     "option": {

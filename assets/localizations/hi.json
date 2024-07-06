@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "रद्द करना",
+        "clear": "सभी हटाएं",
         "confirm_cancellation": "रद्द करने की पुष्टि करें",
         "copy": "कॉपी",
         "keep_subscription": "सदस्यता रखें",
         "let_chatgpt_explain": "एआई से पूछें",
+        "list_all": "सभी दिखाएं",
         "login": "लॉगिन",
         "logout": "लॉग आउट",
         "next": "अगला",
@@ -302,8 +304,7 @@
         "upgrade": "अपग्रेड",
         "upgrade_to_pro": "प्रो में अपग्रेड करें",
         "verify": "सत्यापित करें",
-        "watch": "Tv देखें",
-        "list_all": "सभी दिखाएं"
+        "watch": "Tv देखें"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "प्रतिलेख सीमा तक पहुँच गया. अधिक टेप तक पहुंचने के लिए कृपया प्रो में अपग्रेड करें।",
         "sort_by": "क्रमबद्ध करें: {{sortBy}}",
         "time_spent_learning": "भाषा प्लेयर में {{language}} सीखने में बिताया",
-        "what_your_first_language": "आपकी पहली भाषा क्या है?",
-        "upgrade_text": "अधिक वीडियो तक पहुंचने के लिए प्रो में अपग्रेड करें!"
+        "upgrade_text": "अधिक वीडियो तक पहुंचने के लिए प्रो में अपग्रेड करें!",
+        "what_your_first_language": "आपकी पहली भाषा क्या है?"
     },
     "of": "का",
     "option": {

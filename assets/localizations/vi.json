@@ -285,10 +285,12 @@
     },
     "action": {
         "cancel": "Hủy",
+        "clear": "Xóa tất cả",
         "confirm_cancellation": "Xác nhận hủy",
         "copy": "Bản sao",
         "keep_subscription": "Giữ đăng ký",
         "let_chatgpt_explain": "Hỏi AI",
+        "list_all": "Liệt kê tất cả",
         "login": "Đăng nhập",
         "logout": "Đăng xuất",
         "next": "Sau",
@@ -300,8 +302,7 @@
         "upgrade": "Nâng cấp",
         "upgrade_to_pro": "Nâng cấp lên Pro",
         "verify": "Xác minh",
-        "watch": "Xem",
-        "list_all": "Liệt kê tất cả"
+        "watch": "Xem"
     },
     "chatgpt": {
         "prompt": {
@@ -407,8 +408,8 @@
         "pro_transcript_limit_reached": "Đã đạt đến giới hạn bảng điểm. Vui lòng nâng cấp lên Pro để truy cập thêm bảng điểm.",
         "sort_by": "Sắp xếp theo: {{sortBy}}",
         "time_spent_learning": "Dành thời gian học {{language}} trong Trình phát ngôn ngữ",
-        "what_your_first_language": "Ngôn ngữ đầu tiên của bạn là gì?",
-        "upgrade_text": "Nâng cấp lên Pro để truy cập nhiều video hơn!"
+        "upgrade_text": "Nâng cấp lên Pro để truy cập nhiều video hơn!",
+        "what_your_first_language": "Ngôn ngữ đầu tiên của bạn là gì?"
     },
     "of": "của",
     "option": {

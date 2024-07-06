@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "キャンセル",
+        "clear": "すべて削除",
         "confirm_cancellation": "キャンセルの確認",
         "copy": "写し",
         "keep_subscription": "サブスクリプションを維持する",
         "let_chatgpt_explain": "AIに聞く",
+        "list_all": "すべてリスト",
         "login": "ログイン",
         "logout": "ログアウト",
         "next": "次に",
@@ -301,8 +303,7 @@
         "upgrade": "アップグレード",
         "upgrade_to_pro": "Proにアップグレード",
         "verify": "確かめる",
-        "watch": "時計",
-        "list_all": "すべてリスト"
+        "watch": "時計"
     },
     "chatgpt": {
         "prompt": {
@@ -408,8 +409,8 @@
         "pro_transcript_limit_reached": "成績証明書の制限に達しました。より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。",
         "sort_by": "並び替え: {{sortBy}}",
         "time_spent_learning": "Language Playerで{{language}}の学習に費やした",
-        "what_your_first_language": "あなたの母国語は何ですか?",
-        "upgrade_text": "Proにアップグレードして、より多くのビデオにアクセスしましょう!"
+        "upgrade_text": "Proにアップグレードして、より多くのビデオにアクセスしましょう!",
+        "what_your_first_language": "あなたの母国語は何ですか?"
     },
     "of": "の",
     "option": {

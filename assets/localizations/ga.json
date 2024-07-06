@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Cuir ar ceal",
+        "clear": "Bain Gach Rud",
         "confirm_cancellation": "Deimhnigh cealú",
         "copy": "Copiar",
         "keep_subscription": "Coinnigh Síntiús",
         "let_chatgpt_explain": "Deixa que l'IA ho expliqui",
+        "list_all": "Mostra-ho tot",
         "login": "Logáil isteach",
         "logout": "Déconnexion",
         "next": "Ar aghaidh",
@@ -302,8 +304,7 @@
         "upgrade": "Uasghrádú",
         "upgrade_to_pro": "Actualitza a Pro",
         "verify": "Deimhnigh",
-        "watch": "Visualitza",
-        "list_all": "Mostra-ho tot"
+        "watch": "Visualitza"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "Sroicheadh teorainn trascríbhinne. Déan uasghrádú ar Pro chun rochtain a fháil ar níos mó tras-scríbhinní.",
         "sort_by": "Ordena per: {{sortBy}}",
         "time_spent_learning": "Chaith sé ag foghlaim {{language}} in Language Player",
-        "what_your_first_language": "Cad í do chéad teanga?",
-        "upgrade_text": "Uasghrádú go Pro chun rochtain a fháil ar níos mó físeáin!"
+        "upgrade_text": "Uasghrádú go Pro chun rochtain a fháil ar níos mó físeáin!",
+        "what_your_first_language": "Cad í do chéad teanga?"
     },
     "of": "de",
     "option": {
@@ -486,7 +487,7 @@
         "pro_feature": "Funció Pro",
         "register": "Cláraigh",
         "rightContext": "Context dret",
-        "saved_words": "Paraules desades",
+        "saved_words": "Focail Shábháilte",
         "select_language": "Cén teanga ba mhaith leat a fhoghlaim?",
         "settings": "Configuració",
         "start_learning": "Tosaigh Foghlaim",

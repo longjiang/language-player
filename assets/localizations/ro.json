@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "Anula",
+        "clear": "Eliminați tot",
         "confirm_cancellation": "Confirmați anularea",
         "copy": "Copie",
         "keep_subscription": "Păstrați abonamentul",
         "let_chatgpt_explain": "Întrebați AI",
+        "list_all": "Listează tot",
         "login": "Login",
         "logout": "Deconectare",
         "next": "Următor",
@@ -301,8 +303,7 @@
         "upgrade": "Face upgrade",
         "upgrade_to_pro": "Faceți upgrade la Pro",
         "verify": "Verifica",
-        "watch": "Ceas",
-        "list_all": "Listează tot"
+        "watch": "Ceas"
     },
     "chatgpt": {
         "prompt": {
@@ -408,8 +409,8 @@
         "pro_transcript_limit_reached": "Limita de transcriere a fost atinsă. Vă rugăm să faceți upgrade la Pro pentru a accesa mai multe transcrieri.",
         "sort_by": "Sortează după: {{sortBy}}",
         "time_spent_learning": "A petrecut învățând {{language}} în Language Player",
-        "what_your_first_language": "Care este prima ta limbă?",
-        "upgrade_text": "Faceți upgrade la Pro pentru a accesa mai multe videoclipuri!"
+        "upgrade_text": "Faceți upgrade la Pro pentru a accesa mai multe videoclipuri!",
+        "what_your_first_language": "Care este prima ta limbă?"
     },
     "of": "de",
     "option": {

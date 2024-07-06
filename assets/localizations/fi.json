@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Perua",
+        "clear": "Poista kaikki",
         "confirm_cancellation": "Vahvista peruutus",
         "copy": "Kopioi",
         "keep_subscription": "Pidä tilaus",
         "let_chatgpt_explain": "Anna tekoälyn selittää",
+        "list_all": "Näytä kaikki",
         "login": "Sisäänkirjautuminen",
         "logout": "Kirjaudu ulos",
         "next": "Seuraava",
@@ -302,8 +304,7 @@
         "upgrade": "Päivittää",
         "upgrade_to_pro": "Päivitä Pro-versioon",
         "verify": "Vahvista",
-        "watch": "Katso",
-        "list_all": "Näytä kaikki"
+        "watch": "Katso"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "Transkriptioraja saavutettu. Päivitä Pro-versioon saadaksesi lisää transkriptioita.",
         "sort_by": "Lajittele: {{sortBy}}",
         "time_spent_learning": "Käytetty oppiminen {{language}} Language Playerissa",
-        "what_your_first_language": "Mikä on ensimmäinen kielesi?",
-        "upgrade_text": "Päivitä Pro-versioon nähdäksesi lisää videoita!"
+        "upgrade_text": "Päivitä Pro-versioon nähdäksesi lisää videoita!",
+        "what_your_first_language": "Mikä on ensimmäinen kielesi?"
     },
     "of": "of",
     "option": {

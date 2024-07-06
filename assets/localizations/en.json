@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Cancel",
+        "clear": "Clear",
         "confirm_cancellation": "Confirm Cancellation",
         "copy": "Copy",
         "keep_subscription": "Keep Subscription",
         "let_chatgpt_explain": "Ask AI",
+        "list_all": "List All",
         "login": "Login",
         "logout": "Logout",
         "next": "Next",
@@ -302,8 +304,7 @@
         "upgrade": "Upgrade",
         "upgrade_to_pro": "Upgrade to Pro",
         "verify": "Verify",
-        "watch": "Watch",
-        "list_all": "List All"
+        "watch": "Watch"
     },
     "chatgpt": {
         "prompt": {
@@ -409,8 +410,8 @@
         "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts.",
         "sort_by": "Sort by: {{sortBy}}",
         "time_spent_learning": "Spent learning {{language}} in Language Player",
-        "what_your_first_language": "What’s your first language?",
-        "upgrade_text": "Upgrade to Pro to access more videos!"
+        "upgrade_text": "Upgrade to Pro to access more videos!",
+        "what_your_first_language": "What’s your first language?"
     },
     "of": "of",
     "option": {
