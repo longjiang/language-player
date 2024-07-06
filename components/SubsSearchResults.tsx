@@ -13,6 +13,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { ProFeatureModal } from "./ProFeatureModal";
 import { timeout } from "@/src/utils";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getBestTranslatedSubs } from "@/src/subs";
 
 const MAX_FREE_SUBS_SEARCH_RESULTS = 3;
 
@@ -24,7 +25,22 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   const { isProUser } = useSubscription();
   const [showProModal, setShowProModal] = useState(false);
   const previousIndexRef = useRef(currentVideoIndex);
-  const { t } = useLanguage();
+  const { t, l2Lang, l1Lang, languages } = useLanguage();
+  if (!languages || !l2Lang || !l1Lang) return null;
+  const l1Locales = languages.getLocales(l1Lang);
+
+  useEffect(() => {
+    const fetchBestTranslatedSubs = async () => {
+      if (video && !video.subs_l1?.length) {
+        const l1Subs = await getBestTranslatedSubs(video.youtube_id, l2Lang.code, l1Locales);
+        if (video.youtube_id === video.youtube_id) {
+          video.subs_l1 = l1Subs || [];
+        }
+      }
+    };
+
+    fetchBestTranslatedSubs();
+  }, [currentVideoIndex]);
 
   useEffect(() => {
     if (!isProUser() && currentVideoIndex >= MAX_FREE_SUBS_SEARCH_RESULTS) {

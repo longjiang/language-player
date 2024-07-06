@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
   subtitle: {
     paddingHorizontal: 10,
     paddingVertical: 4,
+    textAlign: 'center',
   },
   limitReachedText: {
     padding: 26,
