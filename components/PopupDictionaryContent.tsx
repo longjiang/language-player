@@ -12,6 +12,20 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
 import { DefinitionList } from "./DefinitionList";
+import { getTokenizer } from "@/src/tokenizer";
+
+/**
+ * Gets an array of lemma strings from a Token object.
+ * @param token The Token object to process.
+ * @returns An array of lemma strings, or an empty array if lemmas are not set or empty.
+ */
+export const getLemmas = (token: Token): string[] => {
+  if (!token.lemmas || token.lemmas.length === 0) {
+    return [];
+  }
+
+  return token.lemmas.map((lemma: Lemma) => lemma.lemma).filter((lemma: string) => lemma !== '');
+};
 
 export const PopupDictionaryContent: React.FC<{
   token: Token;
@@ -23,7 +37,7 @@ export const PopupDictionaryContent: React.FC<{
   if (!token) return null;
   
   const [dictionaryEntries, setDictionaryEntries] = useState<DictionaryEntry[]>([]);
-  const { dictionary } = useDictionary();
+  const { dictionary, tokenizer } = useDictionary();
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
   const { l2Lang } = useLanguage();
   const levels = languageLevelsByL2Code(l2Lang.code);
@@ -42,7 +56,18 @@ export const PopupDictionaryContent: React.FC<{
         setDictionaryEntries([]);
         return;
       }
-      const entries = await dictionary.findWordsInPhrase(token.text) || [];
+      const tokenizerName = l2Lang && getTokenizer(l2Lang.code)?.name || ''; // getTokenizer gets the tokenizer for the specific language
+      let entries: DictionaryEntry[] = []
+      if (["PyidaungsuTokenizer", "JiebaTokenizer"].includes(tokenizerName)) {
+        entries = await dictionary.findWordsInPhrase(token.text) || [];
+      } else {
+        // If there are lemmas, match lemmas
+        let lemmas = getLemmas(token);
+        console.log(lemmas);
+        // If not, do a fuzzy match token.text
+
+      }
+
       setDictionaryEntries(entries);
     };
 

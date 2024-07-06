@@ -23,6 +23,7 @@ export interface TokenizerModule {
 }
 
 export interface Tokenizer {
+  name: string; // Name of the tokenizer, same as the module name
   module: TokenizerModule,
   endPoint: string;
   languages: string[];
