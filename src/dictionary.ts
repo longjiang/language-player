@@ -129,4 +129,53 @@ export class Dictionary {
 
     return Array.from(results);
   }
+
+  /**
+   * Calculates a match score for an entry against the given lemmas.
+   * @param entry - The dictionary entry to score
+   * @param lemmas - The normalized lemmas to match against
+   * @returns A numerical score representing the closeness of the match
+   */
+  private calculateMatchScore(entry: DictionaryEntry, lemmas: string[]): number {
+    let score = 0;
+    const entryForms = [
+      stripAccents(entry.head.toLowerCase()),
+      ...(entry.alternate?.map(alt => stripAccents(alt.toLowerCase())) || [])
+    ];
+
+    for (const lemma of lemmas) {
+      if (entryForms.includes(lemma)) {
+        score += 2; // Exact match
+      } else if (entryForms.some(form => form.startsWith(lemma) || lemma.startsWith(form))) {
+        score += 1; // Partial match
+      }
+    }
+
+    return score;
+  }
+  
+  /**
+   * Retrieves dictionary entries whose head or alternate forms closely match the given lemmas.
+   * @param lemmas - An array of lemma strings to match against
+   * @returns An array of matching dictionary entries, sorted by relevance
+   */
+  async findEntriesByLemmas(lemmas: string[]): Promise<DictionaryEntry[]> {
+    const normalizedLemmas = lemmas.map(lemma => stripAccents(lemma.toLowerCase()));
+    
+    const rawResults = await this.dictionaryDB.flexibleSearch(
+      normalizedLemmas,
+      ['head', 'alternate'],
+      { matchType: 'contains', bidirectional: true, limit: 200 }
+    );
+  
+    const results = new Set(rawResults.map(transformToDictionaryEntry));
+  
+    const entries = Array.from(results);
+    
+    return entries.sort((a, b) => {
+      const aScore = this.calculateMatchScore(a, normalizedLemmas);
+      const bScore = this.calculateMatchScore(b, normalizedLemmas);
+      return bScore - aScore; // Higher score first
+    });
+  }
 }

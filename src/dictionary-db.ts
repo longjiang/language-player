@@ -149,4 +149,74 @@ export class DictionaryDB {
     return `"${identifier.replace(/"/g, '""')}"`;
   }
 
+
+  /**
+   * Performs a flexible search on specified fields of the dictionary.
+   * @param searchTerms - Array of terms to search for
+   * @param fields - Array of field names to search in
+   * @param options - Additional search options
+   * @returns An array of matching raw entries
+   */
+  async flexibleSearch(
+    searchTerms: string[],
+    fields: string[],
+    options: {
+      matchType?: 'exact' | 'contains' | 'startsWith' | 'endsWith';
+      limit?: number;
+      bidirectional?: boolean;
+    } = {}
+  ): Promise<any[]> {
+    const {
+      matchType = 'contains',
+      limit = 100,
+      bidirectional = true
+    } = options;
+
+    if (fields.length === 0 || searchTerms.length === 0) {
+      throw new Error("At least one field and one search term must be specified");
+    }
+
+    const escapedFields = fields.map(field => this.escapeIdentifier(field));
+    const escapedTerms = searchTerms.map(term => escapeSQLValue(stripAccents(term.toLowerCase())));
+
+    let conditions: string[] = [];
+    let params: string[] = [];
+
+    escapedFields.forEach(field => {
+      escapedTerms.forEach(term => {
+        switch (matchType) {
+          case 'exact':
+            conditions.push(`${field} = ?`);
+            params.push(term);
+            break;
+          case 'startsWith':
+            conditions.push(`${field} LIKE ? || '%'`);
+            params.push(term);
+            break;
+          case 'endsWith':
+            conditions.push(`${field} LIKE '%' || ?`);
+            params.push(term);
+            break;
+          case 'contains':
+          default:
+            conditions.push(`${field} LIKE '%' || ? || '%'`);
+            params.push(term);
+            if (bidirectional) {
+              conditions.push(`instr(?, ${field}) > 0`);
+              params.push(term);
+            }
+        }
+      });
+    });
+
+    const query = `
+      SELECT * FROM ${this.escapeIdentifier(this.dbName)}
+      WHERE ${conditions.join(' OR ')}
+      LIMIT ?
+    `;
+    params.push(limit.toString());
+
+    return await this.db!.getAllAsync(query, params);
+  }
+
 }
