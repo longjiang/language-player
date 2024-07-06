@@ -13,7 +13,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { ProFeatureModal } from "./ProFeatureModal";
 import { timeout } from "@/src/utils";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getBestTranslatedSubs } from "@/src/subs";
+import { getBestL1Subs } from '@/src/api/python/video';
 
 const MAX_FREE_SUBS_SEARCH_RESULTS = 3;
 
@@ -32,7 +32,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   useEffect(() => {
     const fetchBestTranslatedSubs = async () => {
       if (video && !video.subs_l1?.length) {
-        const l1Subs = await getBestTranslatedSubs(video.youtube_id, l2Lang.code, l1Locales);
+        const l1Subs = await getBestL1Subs(video.youtube_id, l1Lang.code, l2Lang.code);
         if (video.youtube_id === video.youtube_id) {
           video.subs_l1 = l1Subs || [];
         }

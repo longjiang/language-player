@@ -88,6 +88,15 @@ export const getVideosByL2Code = async (l2Lang: Language, includeSubs: boolean =
   return items.map(normalizeVideoData) as YouTubeVideo[];
 }
 
+// Function to normalize caption data
+const normalizeCaptionData = (data: any[]): Array<{ line: string; starttime: number; duration: number }> => {
+  return data.map(line => ({
+    line: line.text,
+    starttime: line.start,
+    duration: line.duration
+  })).sort((a, b) => a.starttime - b.starttime);
+};
+
 // Video-related functions
 export const getCaption = async (
   videoId: string,
@@ -106,11 +115,7 @@ export const getCaption = async (
   };
   const response = await request({ method: 'get', url: "/timedtext", params });
   if (response && Array.isArray(response)) {
-    return response.map(line => ({
-      line: line.text,
-      starttime: line.start,
-      duration: line.duration
-    })).sort((a, b) => a.starttime - b.starttime);
+    return normalizeCaptionData(response);
   }
   return [];
 };
@@ -180,4 +185,27 @@ export const getTokenizerCacheForVideo = async (videoId: string, l2Code: string)
   if (response && response.data) {
     return response.data;
   }
+};
+
+
+// Function to get the best L1 subtitles
+export const getBestL1Subs = async (
+  videoId: string,
+  l1Code: string,
+  l2Code: string
+): Promise<Array<{ line: string; starttime: number; duration: number }>> => {
+  const params = {
+    v: videoId,
+    l1: l1Code,
+    l2: l2Code
+  };
+  const response = await request<Array<{ line: string; starttime: number; duration: number }>>({
+    method: 'get',
+    url: "/get_best_l1_subs",
+    params
+  });
+  if (response && Array.isArray(response)) {
+    return normalizeCaptionData(response);
+  }
+  return [];
 };
