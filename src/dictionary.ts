@@ -1,5 +1,7 @@
 // @/src/dictionary.ts
 
+// @/src/dictionary.ts
+
 import axios from 'axios';
 import Papa from 'papaparse';
 import { DictionaryDB } from '@/src/dictionary-db';
@@ -9,6 +11,9 @@ import { DictionaryEntry, RawEntry, Level } from '@/src/dictionary-types';
 import { sortEntries, transformToDictionaryEntry } from '@/src/dictionary-utils';
 import { Language } from '@/src/languages';
 
+/**
+ * Manages dictionary operations including data loading, searching, and retrieval.
+ */
 export class Dictionary {
   private dictionaryDB: DictionaryDB;
   private dbName: string;
@@ -18,6 +23,11 @@ export class Dictionary {
 
   readonly l1Code: string;
 
+  /**
+   * Creates a new Dictionary instance.
+   * @param l2Lang - The target language
+   * @param t - Translation function for internationalization
+   */
   constructor(l2Lang: Language, t: (key: string, params?: Record<string, any>) => string) {
     const { dbName, l1Code, sourceUrl, normalizeEntry } = getDictionaryProfile(l2Lang);
     this.dbName = dbName;
@@ -28,6 +38,11 @@ export class Dictionary {
     this.t = t;
   }
 
+  /**
+   * Loads dictionary data from the source URL.
+   * @param forceRebuild - Whether to force a rebuild of the database
+   * @param addLog - Function to add log messages
+   */
   async loadData(forceRebuild: boolean = false, addLog: (message: string) => void): Promise<void> {
     await this.dictionaryDB.openDB();
     await this.dictionaryDB.createTable(forceRebuild);
@@ -62,11 +77,32 @@ export class Dictionary {
     await this.dictionaryDB.createIndexes();
   }
 
+  /**
+   * Retrieves the set of all words in the dictionary.
+   * This is for passing to the tokenizer for breaking text into words in continua languages.
+   * @returns A Set of all words
+   */
   async getWordSet(): Promise<Set<string>> {
     const words = await this.dictionaryDB.getWordList();
     return new Set(words);
   }
 
+  /**
+   * Retrieves a dictionary entry by its ID.
+   * @param id - The entry ID
+   * @returns The dictionary entry or undefined if not found
+   */
+  async getEntry(id: string): Promise<DictionaryEntry | undefined> {
+    const result = await this.dictionaryDB.get(id);
+    return result ? transformToDictionaryEntry(result) : undefined;
+  }
+
+  /**
+   * Searches the dictionary for entries matching the query.
+   * This is for the user to type in the dictionary search bar and get suggestions.
+   * @param query - The search query
+   * @returns An array of matching dictionary entries
+   */
   async search(query: string): Promise<DictionaryEntry[]> {
     query = stripAccents(query.toLowerCase()).replace(/\s+/g, ' ');
     const results = await this.dictionaryDB.search(query);
@@ -75,11 +111,13 @@ export class Dictionary {
     return sortEntries(entries, query);
   }
 
-  async getEntry(id: string): Promise<DictionaryEntry | undefined> {
-    const result = await this.dictionaryDB.get(id);
-    return result ? transformToDictionaryEntry(result) : undefined;
-  }
-
+  /**
+   * Finds dictionary entries for words contained in a phrase.
+   * For example, if the phrase is "ABCXYZ", this method will search for entries
+   * for "ABC" and "XYZ".
+   * @param phrase - The phrase to search within
+   * @returns An array of matching dictionary entries
+   */
   async findWordsInPhrase(phrase: string): Promise<DictionaryEntry[]> {
     const words = phrase.toLowerCase().split(/\s+/g);
     const results = new Set<DictionaryEntry>();
