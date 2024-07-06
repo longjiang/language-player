@@ -320,7 +320,9 @@
         "passwords_do_not_match": "Οι κωδικοί πρόσβασης δεν ταιριάζουν",
         "registration_failed": "Η εγγραφή απέτυχε",
         "updating_progress": "Σφάλμα κατά την ενημέρωση της προόδου:",
-        "user_info_not_found": "Δεν βρέθηκαν πληροφορίες χρήστη"
+        "user_info_not_found": "Δεν βρέθηκαν πληροφορίες χρήστη",
+        "language_not_selected": "Η γλώσσα δεν έχει επιλεγεί",
+        "failed_fetch_videos": "Αποτυχία λήψης βίντεο"
     },
     "level": {
         "cefr": {

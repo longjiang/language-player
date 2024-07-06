@@ -319,7 +319,9 @@
         "passwords_do_not_match": "비밀번호가 일치하지 않습니다.",
         "registration_failed": "등록 실패",
         "updating_progress": "진행 상황을 업데이트하는 중 오류가 발생했습니다.",
-        "user_info_not_found": "사용자 정보를 찾을 수 없음"
+        "user_info_not_found": "사용자 정보를 찾을 수 없음",
+        "language_not_selected": "언어가 선택되지 않음",
+        "failed_fetch_videos": "동영상을 가져오지 못했습니다."
     },
     "level": {
         "cefr": {
@@ -493,7 +495,7 @@
         "trial": "재판",
         "verify_your_email": "이메일 확인",
         "views": "{{numViews}} 레이아웃",
-        "watch_history": "시청 내역"
+        "watch_history": "시청 기록"
     },
     "video": {
         "comments": "코멘트",

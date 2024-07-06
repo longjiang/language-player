@@ -320,7 +320,9 @@
         "passwords_do_not_match": "Les contrasenyes no coincideixen",
         "registration_failed": "El registre ha fallat",
         "updating_progress": "Error actualitzant el progrés:",
-        "user_info_not_found": "Informació de l'usuari no trobada"
+        "user_info_not_found": "Informació de l'usuari no trobada",
+        "language_not_selected": "Idioma no seleccionat",
+        "failed_fetch_videos": "No s'han pogut obtenir vídeos"
     },
     "level": {
         "cefr": {
@@ -494,7 +496,7 @@
         "trial": "Prova",
         "verify_your_email": "Verifica el teu correu electrònic",
         "views": "{{numViews}} Vistes",
-        "watch_history": "Historial de visualització"
+        "watch_history": "Historial de visualitzacions"
     },
     "video": {
         "comments": "Comentaris",

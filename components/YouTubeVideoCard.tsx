@@ -36,7 +36,7 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
 
   const viewsText = video.views ? t('title.views', {numViews: video.views?.toLocaleString()}) : '';
   const durationText = video.duration ? formatDuration(video.duration) : '';
-  const localeText = t('lang.' + video.locale) || '';
+  const localeText = video.locale ? t('lang.' + video.locale) : '';
 
   const levels = languageLevelsByL2Code(l2Lang.code); 
   const videoDifficulty = video.difficulty || 1;

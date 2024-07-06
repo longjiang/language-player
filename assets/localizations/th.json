@@ -318,7 +318,9 @@
         "passwords_do_not_match": "รหัสผ่านไม่ตรงกัน",
         "registration_failed": "การลงทะเบียนล้มเหลว",
         "updating_progress": "ความคืบหน้าการอัปเดตข้อผิดพลาด:",
-        "user_info_not_found": "ไม่พบข้อมูลผู้ใช้"
+        "user_info_not_found": "ไม่พบข้อมูลผู้ใช้",
+        "language_not_selected": "ไม่ได้เลือกภาษา",
+        "failed_fetch_videos": "ดึงข้อมูลวิดีโอไม่สําเร็จ"
     },
     "level": {
         "cefr": {
@@ -492,7 +494,7 @@
         "trial": "การทดลอง",
         "verify_your_email": "ยืนยันอีเมลของคุณ",
         "views": "{{numViews}} มุมมอง",
-        "watch_history": "ดูประวัติ"
+        "watch_history": "ประวัติการดู"
     },
     "video": {
         "comments": "ความ คิด เห็น",

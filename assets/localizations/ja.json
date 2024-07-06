@@ -319,7 +319,9 @@
         "passwords_do_not_match": "パスワードが一致しない",
         "registration_failed": "登録に失敗しました",
         "updating_progress": "更新の進行状況にエラーが発生しました:",
-        "user_info_not_found": "ユーザー情報が見つかりません"
+        "user_info_not_found": "ユーザー情報が見つかりません",
+        "language_not_selected": "言語が選択されていない",
+        "failed_fetch_videos": "ビデオの取得に失敗しました"
     },
     "level": {
         "cefr": {
@@ -493,7 +495,7 @@
         "trial": "裁判",
         "verify_your_email": "メールを確認する",
         "views": "{{numViews}}表示モード",
-        "watch_history": "歴史を見る"
+        "watch_history": "視聴履歴"
     },
     "video": {
         "comments": "コメント",

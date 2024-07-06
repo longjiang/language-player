@@ -319,7 +319,9 @@
         "passwords_do_not_match": "Пароли не совпадают",
         "registration_failed": "Ошибка регистрации",
         "updating_progress": "Ход обновления ошибок:",
-        "user_info_not_found": "Информация о пользователе не найдена"
+        "user_info_not_found": "Информация о пользователе не найдена",
+        "language_not_selected": "Язык не выбран",
+        "failed_fetch_videos": "Не удалось получить видео"
     },
     "level": {
         "cefr": {
@@ -493,7 +495,7 @@
         "trial": "Испытание",
         "verify_your_email": "Подтвердите свой адрес электронной почты",
         "views": "{{numViews}} Представления",
-        "watch_history": "История часов"
+        "watch_history": "История просмотров"
     },
     "video": {
         "comments": "Комментарии",

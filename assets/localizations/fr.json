@@ -320,7 +320,9 @@
         "passwords_do_not_match": "Les mots de passe ne correspondent pas",
         "registration_failed": "Inscription échouée",
         "updating_progress": "Erreur lors de la mise à jour de la progression:",
-        "user_info_not_found": "Informations utilisateur non trouvées"
+        "user_info_not_found": "Informations utilisateur non trouvées",
+        "language_not_selected": "Langue non sélectionnée",
+        "failed_fetch_videos": "Échec de la récupération des vidéos"
     },
     "level": {
         "cefr": {

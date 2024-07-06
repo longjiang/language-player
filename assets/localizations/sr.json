@@ -319,7 +319,9 @@
         "passwords_do_not_match": "Lozinke se ne podudaraju",
         "registration_failed": "Registracija nije uspela",
         "updating_progress": "Greška pri ažuriranju toka:",
-        "user_info_not_found": "Korisničke informacije nisu pronađene"
+        "user_info_not_found": "Korisničke informacije nisu pronađene",
+        "language_not_selected": "Jezik nije izabran",
+        "failed_fetch_videos": "Dopremanje video zapisa nije uspelo"
     },
     "level": {
         "cefr": {
@@ -493,7 +495,7 @@
         "trial": "Suрenje",
         "verify_your_email": "Verifikacija e-pošte",
         "views": "{{numViews}} Prikazi",
-        "watch_history": "Istorija gleda"
+        "watch_history": "Istorija gledanja"
     },
     "video": {
         "comments": "Komentare",

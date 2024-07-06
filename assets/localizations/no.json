@@ -319,7 +319,9 @@
         "passwords_do_not_match": "Passordene stemmer ikke overens",
         "registration_failed": "Registrering mislyktes",
         "updating_progress": "Feil ved oppdatering av fremdrift:",
-        "user_info_not_found": "Finner ikke brukerinformasjon"
+        "user_info_not_found": "Finner ikke brukerinformasjon",
+        "language_not_selected": "Språk ikke valgt",
+        "failed_fetch_videos": "Kunne ikke hente videoer"
     },
     "level": {
         "cefr": {
@@ -493,7 +495,7 @@
         "trial": "Rettergang",
         "verify_your_email": "Bekreft e-postadressen din",
         "views": "{{numViews}} Visninger",
-        "watch_history": "Seerlogg"
+        "watch_history": "Seerhistorikk"
     },
     "video": {
         "comments": "Kommentarer",

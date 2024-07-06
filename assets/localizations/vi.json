@@ -318,7 +318,9 @@
         "passwords_do_not_match": "Mật khẩu không khớp",
         "registration_failed": "Đăng ký không thành công",
         "updating_progress": "Lỗi cập nhật tiến độ:",
-        "user_info_not_found": "Không tìm thấy thông tin người dùng"
+        "user_info_not_found": "Không tìm thấy thông tin người dùng",
+        "language_not_selected": "Ngôn ngữ không được chọn",
+        "failed_fetch_videos": "Không tìm nạp được video"
     },
     "level": {
         "cefr": {

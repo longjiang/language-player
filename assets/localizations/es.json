@@ -319,7 +319,9 @@
         "passwords_do_not_match": "Las contraseñas no coinciden",
         "registration_failed": "Registro fallido",
         "updating_progress": "Error al actualizar el progreso:",
-        "user_info_not_found": "Información del usuario no encontrada"
+        "user_info_not_found": "Información del usuario no encontrada",
+        "language_not_selected": "Idioma no seleccionado",
+        "failed_fetch_videos": "No se pudieron recuperar los vídeos"
     },
     "level": {
         "cefr": {

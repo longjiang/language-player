@@ -320,7 +320,9 @@
         "passwords_do_not_match": "A jelszavak nem egyeznek",
         "registration_failed": "A regisztráció sikertelen",
         "updating_progress": "Hiba történt a frissítés során:",
-        "user_info_not_found": "A felhasználói adatok nem találhatók"
+        "user_info_not_found": "A felhasználói adatok nem találhatók",
+        "language_not_selected": "Nincs kiválasztott nyelv",
+        "failed_fetch_videos": "Nem sikerült lekérni a videókat"
     },
     "level": {
         "cefr": {
@@ -494,7 +496,7 @@
         "trial": "Próba",
         "verify_your_email": "E-mail-cím megerősítése",
         "views": "{{numViews}} Kilátás nyílik",
-        "watch_history": "Megtekintési előzmények"
+        "watch_history": "Nézési előzmények"
     },
     "video": {
         "comments": "Megjegyzések",

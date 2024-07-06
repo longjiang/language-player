@@ -320,7 +320,9 @@
         "passwords_do_not_match": "पासवर्ड मेल नहीं खाते",
         "registration_failed": "पंजीकरण विफल हुआ",
         "updating_progress": "प्रगति अपडेट करते समय त्रुटि:",
-        "user_info_not_found": "उपयोगकर्ता जानकारी नहीं मिली"
+        "user_info_not_found": "उपयोगकर्ता जानकारी नहीं मिली",
+        "language_not_selected": "भाषा चयनित नहीं है",
+        "failed_fetch_videos": "वीडियो लाने में विफल"
     },
     "level": {
         "cefr": {
@@ -494,7 +496,7 @@
         "trial": "परीक्षण",
         "verify_your_email": "अपना ईमेल सत्यापित करें",
         "views": "{{numViews}} विचारों",
-        "watch_history": "देखने का इतिहास"
+        "watch_history": "देखें इतिहास"
     },
     "video": {
         "comments": "टिप्पणियाँ",

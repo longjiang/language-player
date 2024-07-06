@@ -319,7 +319,9 @@
         "passwords_do_not_match": "Wachtwoorden komen niet overeen",
         "registration_failed": "Registratie mislukt",
         "updating_progress": "Fout bij het bijwerken van de voortgang:",
-        "user_info_not_found": "Gebruikersinfo niet gevonden"
+        "user_info_not_found": "Gebruikersinfo niet gevonden",
+        "language_not_selected": "Taal niet geselecteerd",
+        "failed_fetch_videos": "Kan video's niet ophalen"
     },
     "level": {
         "cefr": {
@@ -493,7 +495,7 @@
         "trial": "Proces",
         "verify_your_email": "Verifieer uw e-mailadres",
         "views": "{{numViews}} Weergaven",
-        "watch_history": "Bekijk Geschiedenis"
+        "watch_history": "Kijkgeschiedenis"
     },
     "video": {
         "comments": "Opmerkingen",

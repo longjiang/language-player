@@ -320,7 +320,9 @@
         "passwords_do_not_match": "Lozinke se ne podudaraju",
         "registration_failed": "Registracija nije uspjela",
         "updating_progress": "Pogreška pri ažuriranju tijeka ažuriranja:",
-        "user_info_not_found": "Podaci o korisniku nisu pronađeni"
+        "user_info_not_found": "Podaci o korisniku nisu pronađeni",
+        "language_not_selected": "Jezik nije odabran",
+        "failed_fetch_videos": "Dohvaćanje videozapisa nije uspjelo"
     },
     "level": {
         "cefr": {

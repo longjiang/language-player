@@ -320,7 +320,9 @@
         "passwords_do_not_match": "密碼不匹配",
         "registration_failed": "註冊失敗",
         "updating_progress": "更新進度時出錯：",
-        "user_info_not_found": "未找到用戶信息"
+        "user_info_not_found": "未找到用戶信息",
+        "language_not_selected": "未選擇語言",
+        "failed_fetch_videos": "獲取視頻失敗"
     },
     "level": {
         "cefr": {

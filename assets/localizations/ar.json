@@ -320,7 +320,9 @@
         "passwords_do_not_match": "كلمات المرور غير متطابقة",
         "registration_failed": "فشل التسجيل",
         "updating_progress": "خطأ في تحديث التقدم:",
-        "user_info_not_found": "معلومات المستخدم غير موجودة"
+        "user_info_not_found": "معلومات المستخدم غير موجودة",
+        "language_not_selected": "اللغة غير محددة",
+        "failed_fetch_videos": "فشل جلب مقاطع الفيديو"
     },
     "level": {
         "cefr": {

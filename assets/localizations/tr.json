@@ -318,7 +318,9 @@
         "passwords_do_not_match": "Şifreler eşleşmiyor",
         "registration_failed": "Kayıt başarısız oldu",
         "updating_progress": "İlerleme güncelleştirme hatası:",
-        "user_info_not_found": "Kullanıcı bilgisi bulunamadı"
+        "user_info_not_found": "Kullanıcı bilgisi bulunamadı",
+        "language_not_selected": "Dil seçilmedi",
+        "failed_fetch_videos": "Videolar getirilemedi"
     },
     "level": {
         "cefr": {

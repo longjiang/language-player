@@ -319,7 +319,9 @@
         "passwords_do_not_match": "Lösenorden stämmer inte överens",
         "registration_failed": "Registreringen misslyckades",
         "updating_progress": "Fel vid uppdatering av förloppet:",
-        "user_info_not_found": "Det gick inte att hitta användarinformationen"
+        "user_info_not_found": "Det gick inte att hitta användarinformationen",
+        "language_not_selected": "Språk har inte valts",
+        "failed_fetch_videos": "Det gick inte att hämta videor"
     },
     "level": {
         "cefr": {
@@ -493,7 +495,7 @@
         "trial": "Rättegång",
         "verify_your_email": "Verifiera din e-postadress",
         "views": "{{numViews}} {{}} Visningar",
-        "watch_history": "Titta på historiken"
+        "watch_history": "Visningshistorik"
     },
     "video": {
         "comments": "Kommentarer",

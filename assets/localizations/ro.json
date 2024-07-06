@@ -319,7 +319,9 @@
         "passwords_do_not_match": "Parolele nu se potrivesc",
         "registration_failed": "Înregistrarea nu a reușit",
         "updating_progress": "Eroare la actualizarea progresului:",
-        "user_info_not_found": "Informațiile despre utilizator nu au fost găsite"
+        "user_info_not_found": "Informațiile despre utilizator nu au fost găsite",
+        "language_not_selected": "Limba nu a fost selectată",
+        "failed_fetch_videos": "Nu s-a reușit preluarea videoclipurilor"
     },
     "level": {
         "cefr": {
@@ -493,7 +495,7 @@
         "trial": "Proces",
         "verify_your_email": "Verificați-vă adresa de e-mail",
         "views": "{{numViews}} Vedere",
-        "watch_history": "Istoricul vizionărilor"
+        "watch_history": "Istoric de vizionare"
     },
     "video": {
         "comments": "Comentarii",

@@ -12,10 +12,11 @@ const WatchHistoryScreen = () => {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { l2Lang } = useLanguage()
+  const { l2Lang, t } = useLanguage();
   const { getStoredUserInfo } = useAuth();
+  
   if (!l2Lang) {
-    return <View><Text>Language not selected</Text></View>;
+    return <View><Text>{t('error.language_not_selected')}</Text></View>;
   }
 
   useEffect(() => {
@@ -28,6 +29,8 @@ const WatchHistoryScreen = () => {
       try {
         const userId = userInfo.id;
         const langCode = l2Lang.code;
+        console.log('userId', userId);
+        console.log('langCode', langCode);
         const response = await getUserWatchHistory(userId, langCode);
         const uniqueVideos = response.data.reduce((acc: any[], video: { youtube_id: any; }) => {
           if (!acc.find((v) => v.youtube_id === video.youtube_id)) {
@@ -39,7 +42,7 @@ const WatchHistoryScreen = () => {
         setLoading(false);
       } catch (err) {
         console.error(err);
-        setError('Failed to fetch videos');
+        setError(t('error.failed_fetch_videos'));
         setLoading(false);
       }
     };
@@ -57,7 +60,7 @@ const WatchHistoryScreen = () => {
 
   return (
     <ThemedScreen
-      title="Watch History"
+      title={t('title.watch_history')}
       onBackPress={() => router.navigate('/(tabs)/(me)')}
     >
       <YouTubeVideoList videos={videos} />

@@ -320,7 +320,9 @@
         "passwords_do_not_match": "Níl na pasfhocail comhtháite",
         "registration_failed": "Níor éirigh le clárú",
         "updating_progress": "Earráid agus an dul chun cinn a nuashonrú:",
-        "user_info_not_found": "Informació de l'usuari no trobada"
+        "user_info_not_found": "Informació de l'usuari no trobada",
+        "language_not_selected": "Teanga nár roghnaíodh",
+        "failed_fetch_videos": "Theip ar fhíseáin a fháil"
     },
     "level": {
         "cefr": {
@@ -487,14 +489,14 @@
         "pro_feature": "Funció Pro",
         "register": "Cláraigh",
         "rightContext": "Context dret",
-        "saved_words": "Focail Shábháilte",
+        "saved_words": "Paraules desades",
         "select_language": "Cén teanga ba mhaith leat a fhoghlaim?",
         "settings": "Configuració",
         "start_learning": "Tosaigh Foghlaim",
         "trial": "Trial",
         "verify_your_email": "Deimhnigh do ríomhphost",
         "views": "{{numViews}} Amhairc",
-        "watch_history": "Historial de visualització"
+        "watch_history": "Stair Amhar"
     },
     "video": {
         "comments": "Comentaris",

@@ -319,7 +319,9 @@
         "passwords_do_not_match": "As senhas não correspondem",
         "registration_failed": "Falha no registro",
         "updating_progress": "Erro ao atualizar o progresso:",
-        "user_info_not_found": "Informações do usuário não encontradas"
+        "user_info_not_found": "Informações do usuário não encontradas",
+        "language_not_selected": "Idioma não selecionado",
+        "failed_fetch_videos": "Falha ao buscar vídeos"
     },
     "level": {
         "cefr": {
@@ -493,7 +495,7 @@
         "trial": "Julgamento",
         "verify_your_email": "Verifique seu e-mail",
         "views": "{{numViews}} Modos de exibição",
-        "watch_history": "Assistir ao histórico"
+        "watch_history": "Histórico de visualizações"
     },
     "video": {
         "comments": "Comentários",

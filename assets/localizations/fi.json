@@ -320,7 +320,9 @@
         "passwords_do_not_match": "Salasanat eivät täsmää",
         "registration_failed": "Rekisteröinti epäonnistui",
         "updating_progress": "Virheen päivitys:",
-        "user_info_not_found": "Käyttäjätietoja ei löytynyt"
+        "user_info_not_found": "Käyttäjätietoja ei löytynyt",
+        "language_not_selected": "Kieltä ei valittu",
+        "failed_fetch_videos": "Videoiden noutaminen epäonnistui"
     },
     "level": {
         "cefr": {

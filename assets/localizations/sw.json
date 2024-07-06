@@ -319,7 +319,9 @@
         "passwords_do_not_match": "Nywila hazilingani na",
         "registration_failed": "Usajili umeshindwa",
         "updating_progress": "Kosa kusasisha maendeleo:",
-        "user_info_not_found": "Maelezo ya mtumiaji hayapatikani"
+        "user_info_not_found": "Maelezo ya mtumiaji hayapatikani",
+        "language_not_selected": "Lugha haijateuliwa",
+        "failed_fetch_videos": "Imeshindwa kutoa video"
     },
     "level": {
         "cefr": {
@@ -493,7 +495,7 @@
         "trial": "Kesi",
         "verify_your_email": "Thibitisha Barua pepe Yako",
         "views": "{{numViews}} Mionekano",
-        "watch_history": "Historia ya Tazama"
+        "watch_history": "Historia ya Kutazama"
     },
     "video": {
         "comments": "Maoni",

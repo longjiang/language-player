@@ -320,7 +320,9 @@
         "passwords_do_not_match": "Wagwoorde stem nie ooreen nie",
         "registration_failed": "Registrasie het misluk",
         "updating_progress": "Fout by die opdateer van vordering:",
-        "user_info_not_found": "Gebruikersinformatie niet gevonden"
+        "user_info_not_found": "Gebruikersinformatie niet gevonden",
+        "language_not_selected": "Taal nie gekies nie",
+        "failed_fetch_videos": "Kon nie video's laai nie"
     },
     "level": {
         "cefr": {

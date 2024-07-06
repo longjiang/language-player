@@ -319,7 +319,9 @@
         "passwords_do_not_match": "Hasła nie są zgodne",
         "registration_failed": "Rejestracja nie powiodła się",
         "updating_progress": "Błąd postępu aktualizacji:",
-        "user_info_not_found": "Nie znaleziono informacji o użytkowniku"
+        "user_info_not_found": "Nie znaleziono informacji o użytkowniku",
+        "language_not_selected": "Nie wybrano języka",
+        "failed_fetch_videos": "Nie udało się pobrać filmów"
     },
     "level": {
         "cefr": {
