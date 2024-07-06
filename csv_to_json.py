@@ -23,13 +23,13 @@ def process_directory(csv_directory, json_directory):
 
     # Process each CSV file in the directory
     for filename in os.listdir(csv_directory):
-        if filename.endswith('.csv'):
+        if filename.endswith('.csv') or filename.endswith('.txt'):
             csv_filepath = os.path.join(csv_directory, filename)
             json_filename = f"{Path(filename).stem}.json"
             json_filepath = os.path.join(json_directory, json_filename)
             csv_to_json(csv_filepath, json_filepath)
             print(f"Converted {csv_filepath} to {json_filepath}")
 
-source_dir = 'data/languages'
-export_dir = 'data/languages/json-export'
+source_dir = 'data/dictionaries'
+export_dir = 'data/dictionaries/json-export'
 process_directory(source_dir, export_dir)

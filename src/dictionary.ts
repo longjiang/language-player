@@ -18,6 +18,7 @@ export class Dictionary {
   private dictionaryDB: DictionaryDB;
   private dbName: string;
   private sourceUrl: string;
+  private localData: { csvData?: string } | undefined;
   private normalizeEntry: (entry: RawEntry, entryCount: Record<string, number>) => DictionaryEntry;
   private t: (key: string, params?: Record<string, any>) => string;
 
@@ -30,11 +31,12 @@ export class Dictionary {
    * @param t - Translation function for internationalization
    */
   constructor(l2Lang: Language, t: (key: string, params?: Record<string, any>) => string) {
-    const { dbName, l1Code, sourceUrl, normalizeEntry } = getDictionaryProfile(l2Lang);
+    const { dbName, l1Code, sourceUrl, localData, normalizeEntry } = getDictionaryProfile(l2Lang);
     this.dbName = dbName;
     this.l1Code = l1Code;
     this.l2Code = l2Lang.code;
     this.sourceUrl = sourceUrl;
+    this.localData = localData; // For 6 common languages we use locally stored data
     this.dictionaryDB = new DictionaryDB(this.dbName);
     this.normalizeEntry = normalizeEntry;
     this.t = t;
@@ -49,16 +51,24 @@ export class Dictionary {
     await this.dictionaryDB.openDB();
     await this.dictionaryDB.createTable(forceRebuild);
 
-    const loaded = await this.dictionaryDB.loaded();
+    if (!forceRebuild) {
+      const loaded = await this.dictionaryDB.loaded();
 
-    if (loaded) {
-      addLog(this.t('log.database_already_loaded'));
-      return;
+      if (loaded) {
+        addLog(this.t('log.database_already_loaded'));
+        return;
+      }
     }
 
-    addLog(this.t('log.downloading'));
-    const response = await axios.get(this.sourceUrl);
-    const parsedData = Papa.parse(response.data, { header: true });
+    let data: string;
+    if (this.localData) {
+      data = this.localData.csvData || '';
+    } else {
+      addLog(this.t('log.downloading'));
+      const response = await axios.get(this.sourceUrl);
+      data = response.data;
+    }
+    const parsedData = Papa.parse(data, { header: true });
 
     const entryCount: Record<string, number> = {};
     const entries = parsedData.data.map(entry => this.normalizeEntry(entry as RawEntry, entryCount)).filter(entry => entry.head);
@@ -71,9 +81,9 @@ export class Dictionary {
     addLog(this.t('log.entries_processed', { count: newCountResult?.count || 0 }));
 
     // Get 2 random records:
-    console.log('Preview of two random records:');
-    console.log(await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} ORDER BY RANDOM() LIMIT 1`));
-    console.log(await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} ORDER BY RANDOM() LIMIT 1`));
+    // console.log('Preview of two random records:');
+    // console.log(await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} ORDER BY RANDOM() LIMIT 1`));
+    // console.log(await this.dictionaryDB.db!.getAllAsync<DictionaryEntry>(`SELECT * FROM ${this.dbName} ORDER BY RANDOM() LIMIT 1`));
 
     addLog(this.t('log.dictionary_ready'));
 

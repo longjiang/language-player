@@ -23,13 +23,15 @@ export class DictionaryDB {
   }
 
   async loaded(): Promise<boolean> {
-    const result = await this.db!.getFirstAsync<{ count: number }>(`SELECT COUNT(*) as count FROM ${this.dbName}`);
+    const sql = `SELECT COUNT(*) as count FROM ${this.dbName}`
+    const result = await this.db!.getFirstAsync<{ count: number }>(sql);
     return !!result && result.count > 0;
   }
 
   async createTable(forceRebuild: boolean): Promise<void> {
     if (forceRebuild) {
-      await this.db!.execAsync(`DROP TABLE IF EXISTS ${this.dbName}`);
+      const sql = `DROP TABLE IF EXISTS ${this.dbName}`
+      await this.db!.execAsync(sql);
     }
 
     await this.db!.execAsync(`
