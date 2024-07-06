@@ -57,7 +57,7 @@ const LanguageProgressScreen = () => {
       <View style={{ flexDirection: "column" }}>
         <View style={{ flexDirection: "column", justifyContent: "space-between", alignItems: 'center', marginTop: 14, marginBottom: 42 }}>
           <ThemedText type="xlarge">{formatTime(l2Progress.time + currentTime)}</ThemedText>
-          <ThemedText style={{ marginTop: 8}}>{t('msg.time_spent_learning', { language: l2Lang.name })}</ThemedText>
+          <ThemedText style={{ marginTop: 8}}>{t('msg.time_spent_learning', { language: t('lang.' + l2Lang.code) })}</ThemedText>
         </View>
         <LevelButton
           key={l2Progress.level}

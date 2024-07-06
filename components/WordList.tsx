@@ -7,6 +7,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { wordListStyles as styles } from '@/src/styles'
+import DefinitionList from './DefinitionList';
 
 export const WordList = ({ wordIds }) => {
   const [words, setWords] = useState([]);
@@ -26,14 +27,14 @@ export const WordList = ({ wordIds }) => {
 
   const renderItem = ({ item }) => (
     <View style={styles.item}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <BookmarkButton wordId={item.id} head={item.head} alternate={item.alternate} />
-        <TouchableOpacity onPress={() => router.navigate('/dictionary/word/' + item.id)} style={{ marginLeft: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'top' }}>
+        <BookmarkButton wordId={item.id} head={item.head} alternate={item.alternate}/>
+        <TouchableOpacity onPress={() => router.navigate('/dictionary/word/' + item.id)} style={{ marginLeft: 10, marginTop: -4 }}>
           <Text>
             <ThemedText style={styles.chinese} type="subtitle">{item.head}</ThemedText>
             <ThemedText style={styles.pinyin}> ({item.pronunciation}) </ThemedText>
-            <ThemedText style={styles.english}>{item.definitions[0]}</ThemedText>
           </Text>
+          <DefinitionList definitions={item.definitions.slice(0, 2)} />
         </TouchableOpacity>
       </View>
     </View>
