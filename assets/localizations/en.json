@@ -465,7 +465,6 @@
     },
     "placeholder": {
         "confirm_password": "Confirm Password",
-        "dict_search": "Search {{l2Name}}, {{altField}} or {{dictL1Name}}...",
         "email": "Email",
         "first_name": "First",
         "last_name": "Last",
@@ -473,7 +472,10 @@
         "password": "Password",
         "please_specify": "Please specify",
         "search": "Search...",
-        "select_language": "Select a language"
+        "select_language": "Select a language",
+        "dict_search_1": "Search {{param1}}",
+        "dict_search_2": "Search {{param1}} or {{param2}}",
+        "dict_search_3": "Search {{param1}}, {{param2}}, or {{param3}}"
     },
     "price": {
         "annual": "${{price}}/yr",

@@ -450,7 +450,6 @@
     },
     "placeholder": {
         "confirm_password": "Potvrdi lozinku",
-        "dict_search": "Pretraži {{l2Name}}, {{altField}} ili {{dictL1Name}}...",
         "email": "E-mail",
         "first_name": "Ime",
         "last_name": "Prezime",
@@ -458,7 +457,10 @@
         "password": "Lozinka",
         "please_specify": "Molimo navedite",
         "search": "Pretraži...",
-        "select_language": "Odaberi jezik"
+        "select_language": "Odaberi jezik",
+        "dict_search_1": "Pretraži {{param1}}",
+        "dict_search_2": "Pretraži {{param1}} ili {{param2}}",
+        "dict_search_3": "Pretraži {{param1}}, {{param2}}, ili {{param3}}"
     },
     "price": {
         "annual": "${{price}}/god",

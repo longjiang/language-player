@@ -449,7 +449,6 @@
     },
     "placeholder": {
         "confirm_password": "Bekräfta lösenord",
-        "dict_search": "Sök {{l2Name}}, {{altField}} eller {{dictL1Name}}...",
         "email": "E-post",
         "first_name": "Förnamn",
         "last_name": "Efternamn",
@@ -457,7 +456,10 @@
         "password": "Lösenord",
         "please_specify": "Vänligen specificera",
         "search": "Sök...",
-        "select_language": "Välj ett språk"
+        "select_language": "Välj ett språk",
+        "dict_search_1": "Sök {{param1}}",
+        "dict_search_2": "Sök {{param1}} eller {{param2}}",
+        "dict_search_3": "Sök {{param1}}, {{param2}}, eller {{param3}}"
     },
     "price": {
         "annual": "${{price}}/år",

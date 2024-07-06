@@ -448,7 +448,6 @@
     },
     "placeholder": {
         "confirm_password": "Xác nhận mật khẩu",
-        "dict_search": "Tìm kiếm {{l2Name}}, {{altField}} hoặc {{dictL1Name}}...",
         "email": "Email",
         "first_name": "Tên",
         "last_name": "Họ",
@@ -456,7 +455,10 @@
         "password": "Mật khẩu",
         "please_specify": "Vui lòng nêu rõ",
         "search": "Tìm kiếm...",
-        "select_language": "Chọn một ngôn ngữ"
+        "select_language": "Chọn một ngôn ngữ",
+        "dict_search_1": "Tìm kiếm {{param1}}",
+        "dict_search_2": "Tìm kiếm {{param1}} hoặc {{param2}}",
+        "dict_search_3": "Tìm kiếm {{param1}}, {{param2}}, hoặc {{param3}}"
     },
     "price": {
         "annual": "${{price}}/năm",

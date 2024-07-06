@@ -450,7 +450,6 @@
     },
     "placeholder": {
         "confirm_password": "पासवर्ड की पुष्टि करें",
-        "dict_search": "{{l2Name}}, {{altField}} या {{dictL1Name}} खोजें...",
         "email": "ईमेल",
         "first_name": "पहला",
         "last_name": "अंतिम",
@@ -458,7 +457,10 @@
         "password": "पासवर्ड",
         "please_specify": "कृपया निर्दिष्ट करें",
         "search": "खोजें...",
-        "select_language": "एक भाषा का चयन करें"
+        "select_language": "एक भाषा का चयन करें",
+        "dict_search_1": "खोजें {{param1}}",
+        "dict_search_2": "खोजें {{param1}} या {{param2}}",
+        "dict_search_3": "खोजें {{param1}}, {{param2}}, या {{param3}}"
     },
     "price": {
         "annual": "${{price}}/वर्ष",

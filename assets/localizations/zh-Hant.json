@@ -465,7 +465,6 @@
     },
     "placeholder": {
         "confirm_password": "再輸入一次密碼",
-        "dict_search": "搜尋{{l2Name}}、{{altField}}或{{dictL1Name}}...",
         "email": "電子信箱",
         "first_name": "名",
         "last_name": "姓",
@@ -473,7 +472,10 @@
         "password": "密碼",
         "please_specify": "請說明",
         "search": "搜尋...",
-        "select_language": "選擇一種語言"
+        "select_language": "選擇一種語言",
+        "dict_search_1": "搜索{{param1}}",
+        "dict_search_2": "搜索{{param1}}或{{param2}}",
+        "dict_search_3": "搜索{{param1}}、{{param2}}或{{param3}}"
     },
     "price": {
         "annual": "${{price}}/年",

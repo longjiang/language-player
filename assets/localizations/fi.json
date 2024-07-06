@@ -450,7 +450,6 @@
     },
     "placeholder": {
         "confirm_password": "Vahvista salasana",
-        "dict_search": "Hae {{l2Name}}, {{altField}} tai {{dictL1Name}}...",
         "email": "Sähköposti",
         "first_name": "Etunimi",
         "last_name": "Sukunimi",
@@ -458,7 +457,10 @@
         "password": "Salasana",
         "please_specify": "Täsmennä",
         "search": "Hae...",
-        "select_language": "Valitse kieli"
+        "select_language": "Valitse kieli",
+        "dict_search_1": "Hae {{param1}}",
+        "dict_search_2": "Hae {{param1}} tai {{param2}}",
+        "dict_search_3": "Hae {{param1}}, {{param2}}, tai {{param3}}"
     },
     "price": {
         "annual": "${{price}}/vuosi",

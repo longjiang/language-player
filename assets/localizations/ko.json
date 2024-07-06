@@ -449,7 +449,6 @@
     },
     "placeholder": {
         "confirm_password": "비밀번호 확인",
-        "dict_search": "{{l2Name}}, {{altField}} 또는 {{dictL1Name}} 검색...",
         "email": "이메일",
         "first_name": "이름",
         "last_name": "성",
@@ -457,7 +456,10 @@
         "password": "비밀번호",
         "please_specify": "구체적으로 명시해 주세요",
         "search": "검색...",
-        "select_language": "언어 선택"
+        "select_language": "언어 선택",
+        "dict_search_1": "검색 {{param1}}",
+        "dict_search_2": "검색 {{param1}} 또는 {{param2}}",
+        "dict_search_3": "검색 {{param1}}, {{param2}}, 또는 {{param3}}"
     },
     "price": {
         "annual": "${{price}}/년",

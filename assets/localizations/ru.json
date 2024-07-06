@@ -449,7 +449,6 @@
     },
     "placeholder": {
         "confirm_password": "Подтвердить пароль",
-        "dict_search": "Искать {{l2Name}}, {{altField}} или {{dictL1Name}}...",
         "email": "Электронная почта",
         "first_name": "Имя",
         "last_name": "Фамилия",
@@ -457,7 +456,10 @@
         "password": "Пароль",
         "please_specify": "Пожалуйста, укажите",
         "search": "Поиск...",
-        "select_language": "Выберите язык"
+        "select_language": "Выберите язык",
+        "dict_search_1": "Искать {{param1}}",
+        "dict_search_2": "Искать {{param1}} или {{param2}}",
+        "dict_search_3": "Искать {{param1}}, {{param2}}, или {{param3}}"
     },
     "price": {
         "annual": "${{price}}/год",

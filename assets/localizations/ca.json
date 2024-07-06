@@ -450,7 +450,6 @@
     },
     "placeholder": {
         "confirm_password": "Confirmar contrasenya",
-        "dict_search": "Cerca {{l2Name}}, {{altField}} o {{dictL1Name}}...",
         "email": "Correu electrònic",
         "first_name": "Nom",
         "last_name": "Cognom",
@@ -458,7 +457,10 @@
         "password": "Contrasenya",
         "please_specify": "Si us plau, especifica",
         "search": "Cerca...",
-        "select_language": "Selecciona un idioma"
+        "select_language": "Selecciona un idioma",
+        "dict_search_1": "Cerca {{param1}}",
+        "dict_search_2": "Cerca {{param1}} o {{param2}}",
+        "dict_search_3": "Cerca {{param1}}, {{param2}}, o {{param3}}"
     },
     "price": {
         "annual": "${{price}}/any",

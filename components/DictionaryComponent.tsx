@@ -17,9 +17,9 @@ import { ThemedButton } from "./ThemedButton";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 export function getDictionaryPlaceholder(
-  l2Lang: Language,
-  dictionary: Dictionary | undefined,
-  t: Function
+  l2Lang,  // Assuming 'Language' type is properly imported and used in your actual code
+  dictionary,  // Assuming 'Dictionary' type is properly imported and used in your actual code
+  t
 ) {
   const altFieldKey = {
     zh: "pinyin",
@@ -27,16 +27,24 @@ export function getDictionaryPlaceholder(
     ko: "hanja",
   }[l2Lang.code];
 
-  const dictL1Name = t("lang." + dictionary?.l1Code);
-  const altField = t("word." + altFieldKey);
-  const l2Name = t("lang." + l2Lang.code);
+  const fields = [
+    t("lang." + dictionary?.l1Code),
+    altFieldKey ? t("word." + altFieldKey) : null,
+    t("lang." + l2Lang.code),
+  ].filter(Boolean);  // Filter out falsy values
 
-  return t("placeholder.dict_search", {
-    l2Name: l2Name,
-    altField: altField,
-    dictL1Name: dictL1Name,
-  });
+  const convertArrayToParams = (array) => {
+    return array.reduce((acc, item, index) => {
+      acc[`param${index + 1}`] = item;
+      return acc;
+    }, {});
+  };
+
+  if (fields.length === 3) return t("placeholder.dict_search_3", convertArrayToParams(fields));
+  if (fields.length === 2) return t("placeholder.dict_search_2", convertArrayToParams(fields));
+  return t("placeholder.dict_search_1", convertArrayToParams(fields));
 }
+
 
 interface DictionaryComponentProps {
   searchBarSize?: "small" | "medium" | "large";

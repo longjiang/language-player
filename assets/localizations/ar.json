@@ -450,7 +450,6 @@
     },
     "placeholder": {
         "confirm_password": "تأكيد كلمة المرور",
-        "dict_search": "البحث عن {{l2Name}}، {{altField}} أو {{dictL1Name}}...",
         "email": "البريد الإلكتروني",
         "first_name": "الاسم الأول",
         "last_name": "اسم العائلة",
@@ -458,7 +457,10 @@
         "password": "كلمة المرور",
         "please_specify": "يرجى التحديد",
         "search": "بحث...",
-        "select_language": "اختر لغة"
+        "select_language": "اختر لغة",
+        "dict_search_1": "البحث عن {{param1}}",
+        "dict_search_2": "البحث عن {{param1}} أو {{param2}}",
+        "dict_search_3": "البحث عن {{param1}}، {{param2}}، أو {{param3}}"
     },
     "price": {
         "annual": "${{price}}/سنة",

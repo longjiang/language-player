@@ -448,7 +448,6 @@
     },
     "placeholder": {
         "confirm_password": "ยืนยันรหัสผ่าน",
-        "dict_search": "ค้นหา {{l2Name}}, {{altField}} หรือ {{dictL1Name}}...",
         "email": "อีเมล",
         "first_name": "ชื่อ",
         "last_name": "นามสกุล",
@@ -456,7 +455,10 @@
         "password": "รหัสผ่าน",
         "please_specify": "โปรดระบุ",
         "search": "ค้นหา...",
-        "select_language": "เลือกภาษา"
+        "select_language": "เลือกภาษา",
+        "dict_search_1": "ค้นหา {{param1}}",
+        "dict_search_2": "ค้นหา {{param1}} หรือ {{param2}}",
+        "dict_search_3": "ค้นหา {{param1}}, {{param2}}, หรือ {{param3}}"
     },
     "price": {
         "annual": "${{price}}/ปี",

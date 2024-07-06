@@ -449,7 +449,6 @@
     },
     "placeholder": {
         "confirm_password": "Bevestig wachtwoord",
-        "dict_search": "Zoek {{l2Name}}, {{altField}} of {{dictL1Name}}...",
         "email": "E-mail",
         "first_name": "Voornaam",
         "last_name": "Achternaam",
@@ -457,7 +456,10 @@
         "password": "Wachtwoord",
         "please_specify": "Gelieve te specificeren",
         "search": "Zoeken...",
-        "select_language": "Selecteer een taal"
+        "select_language": "Selecteer een taal",
+        "dict_search_1": "Zoek {{param1}}",
+        "dict_search_2": "Zoek {{param1}} of {{param2}}",
+        "dict_search_3": "Zoek {{param1}}, {{param2}}, of {{param3}}"
     },
     "price": {
         "annual": "${{price}}/jaar",

@@ -449,7 +449,6 @@
     },
     "placeholder": {
         "confirm_password": "Confirmă parola",
-        "dict_search": "Caută {{l2Name}}, {{altField}} sau {{dictL1Name}}...",
         "email": "Email",
         "first_name": "Prenume",
         "last_name": "Nume",
@@ -457,7 +456,10 @@
         "password": "Parolă",
         "please_specify": "Te rugăm să specifici",
         "search": "Caută...",
-        "select_language": "Selectează o limbă"
+        "select_language": "Selectează o limbă",
+        "dict_search_1": "Căutați {{param1}}",
+        "dict_search_2": "Căutați {{param1}} sau {{param2}}",
+        "dict_search_3": "Căutați {{param1}}, {{param2}}, sau {{param3}}"
     },
     "price": {
         "annual": "${{price}}/an",

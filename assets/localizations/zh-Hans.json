@@ -465,7 +465,6 @@
     },
     "placeholder": {
         "confirm_password": "确认密码",
-        "dict_search": "搜索{{l2Name}}、{{altField}}或{{dictL1Name}}...",
         "email": "电子邮箱",
         "first_name": "名",
         "last_name": "姓",
@@ -473,7 +472,10 @@
         "password": "密码",
         "please_specify": "请说明",
         "search": "搜索...",
-        "select_language": "选择语言"
+        "select_language": "选择语言",
+        "dict_search_1": "搜索{{param1}}",
+        "dict_search_2": "搜索{{param1}}或{{param2}}",
+        "dict_search_3": "搜索{{param1}}、{{param2}}或{{param3}}"
     },
     "price": {
         "annual": "${{price}}/年",

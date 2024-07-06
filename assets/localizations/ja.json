@@ -449,7 +449,6 @@
     },
     "placeholder": {
         "confirm_password": "パスワードの確認",
-        "dict_search": "{{l2Name}}, {{altField}} または {{dictL1Name}} を検索...",
         "email": "メール",
         "first_name": "名",
         "last_name": "姓",
@@ -457,7 +456,10 @@
         "password": "パスワード",
         "please_specify": "ご指定ください",
         "search": "検索...",
-        "select_language": "言語を選択してください"
+        "select_language": "言語を選択してください",
+        "dict_search_1": "検索 {{param1}}",
+        "dict_search_2": "検索 {{param1}}または {{param2}}",
+        "dict_search_3": "検索 {{param1}}、{{param2}}または {{param3}}"
     },
     "price": {
         "annual": "${{price}}/年",

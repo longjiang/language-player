@@ -450,7 +450,6 @@
     },
     "placeholder": {
         "confirm_password": "Confirmer le mot de passe",
-        "dict_search": "Rechercher {{l2Name}}, {{altField}} ou {{dictL1Name}}...",
         "email": "Email",
         "first_name": "Prénom",
         "last_name": "Nom",
@@ -458,7 +457,10 @@
         "password": "Mot de passe",
         "please_specify": "Veuillez spécifier",
         "search": "Rechercher...",
-        "select_language": "Sélectionnez une langue"
+        "select_language": "Sélectionnez une langue",
+        "dict_search_1": "Rechercher {{param1}}",
+        "dict_search_2": "Rechercher {{param1}} ou {{param2}}",
+        "dict_search_3": "Rechercher {{param1}}, {{param2}}, ou {{param3}}"
     },
     "price": {
         "annual": "${{price}}/an",

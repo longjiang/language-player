@@ -465,7 +465,6 @@
     },
     "placeholder": {
         "confirm_password": "Bevestig wagwoord",
-        "dict_search": "Soek {{l2Name}}, {{altField}} of {{dictL1Name}}...",
         "email": "E-pos",
         "first_name": "Voornaam",
         "last_name": "Van",
@@ -473,7 +472,10 @@
         "password": "Wagwoord",
         "please_specify": "Spesifiseer asseblief",
         "search": "Soek...",
-        "select_language": "Kies 'n taal"
+        "select_language": "Kies 'n taal",
+        "dict_search_1": "Soek {{param1}}",
+        "dict_search_2": "Soek {{param1}} of {{param2}}",
+        "dict_search_3": "Soek {{param1}}, {{param2}}, of {{param3}}"
     },
     "price": {
         "annual": "${{price}}/jr",

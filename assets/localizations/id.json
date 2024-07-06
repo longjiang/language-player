@@ -450,7 +450,6 @@
     },
     "placeholder": {
         "confirm_password": "Konfirmasi Kata Sandi",
-        "dict_search": "Cari {{l2Name}}, {{altField}} atau {{dictL1Name}}...",
         "email": "Email",
         "first_name": "Depan",
         "last_name": "Belakang",
@@ -458,7 +457,10 @@
         "password": "Kata Sandi",
         "please_specify": "Silakan sebutkan",
         "search": "Cari...",
-        "select_language": "Pilih bahasa"
+        "select_language": "Pilih bahasa",
+        "dict_search_1": "Cari {{param1}}",
+        "dict_search_2": "Cari {{param1}} atau {{param2}}",
+        "dict_search_3": "Cari {{param1}}, {{param2}}, atau {{param3}}"
     },
     "price": {
         "annual": "${{price}}/tahun",

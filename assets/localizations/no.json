@@ -449,7 +449,6 @@
     },
     "placeholder": {
         "confirm_password": "Bekreft passord",
-        "dict_search": "Søk {{l2Name}}, {{altField}} eller {{dictL1Name}}...",
         "email": "E-post",
         "first_name": "Fornavn",
         "last_name": "Etternavn",
@@ -457,7 +456,10 @@
         "password": "Passord",
         "please_specify": "Vennligst spesifiser",
         "search": "Søk...",
-        "select_language": "Velg et språk"
+        "select_language": "Velg et språk",
+        "dict_search_1": "Søk {{param1}}",
+        "dict_search_2": "Søk {{param1}} eller {{param2}}",
+        "dict_search_3": "Søk {{param1}}, {{param2}}, eller {{param3}}"
     },
     "price": {
         "annual": "${{price}}/år",

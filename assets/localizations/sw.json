@@ -449,7 +449,6 @@
     },
     "placeholder": {
         "confirm_password": "Thibitisha Nenosiri",
-        "dict_search": "Tafuta {{l2Name}}, {{altField}} au {{dictL1Name}}...",
         "email": "Barua pepe",
         "first_name": "Jina la kwanza",
         "last_name": "Jina la mwisho",
@@ -457,7 +456,10 @@
         "password": "Nenosiri",
         "please_specify": "Tafadhali fafanua",
         "search": "Tafuta...",
-        "select_language": "Chagua lugha"
+        "select_language": "Chagua lugha",
+        "dict_search_1": "Tafuta {{param1}}",
+        "dict_search_2": "Tafuta {{param1}} au {{param2}}",
+        "dict_search_3": "Tafuta {{param1}}, {{param2}}, au {{param3}}"
     },
     "price": {
         "annual": "${{price}}/mwaka",

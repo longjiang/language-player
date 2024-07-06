@@ -448,7 +448,6 @@
     },
     "placeholder": {
         "confirm_password": "Şifreyi Doğrula",
-        "dict_search": "{{l2Name}}, {{altField}} veya {{dictL1Name}} ara...",
         "email": "E-posta",
         "first_name": "Ad",
         "last_name": "Soyad",
@@ -456,7 +455,10 @@
         "password": "Şifre",
         "please_specify": "Lütfen belirtin",
         "search": "Ara...",
-        "select_language": "Bir dil seçin"
+        "select_language": "Bir dil seçin",
+        "dict_search_1": "Ara {{param1}}",
+        "dict_search_2": "Ara {{param1}} veya {{param2}}",
+        "dict_search_3": "Ara {{param1}}, {{param2}}, veya {{param3}}"
     },
     "price": {
         "annual": "${{price}}/yıl",

@@ -450,7 +450,6 @@
     },
     "placeholder": {
         "confirm_password": "Επιβεβαίωση κωδικού πρόσβασης",
-        "dict_search": "Αναζήτηση {{l2Name}}, {{altField}} ή {{dictL1Name}}...",
         "email": "Ηλεκτρονικό ταχυδρομείο",
         "first_name": "Πρώτο",
         "last_name": "Επώνυμο",
@@ -458,7 +457,10 @@
         "password": "Κωδικός πρόσβασης",
         "please_specify": "Παρακαλώ καθορίστε",
         "search": "Αναζήτηση...",
-        "select_language": "Επιλέξτε μια γλώσσα"
+        "select_language": "Επιλέξτε μια γλώσσα",
+        "dict_search_1": "Αναζήτηση {{param1}}",
+        "dict_search_2": "Αναζήτηση {{param1}} ή {{param2}}",
+        "dict_search_3": "Αναζήτηση {{param1}}, {{param2}}, ή {{param3}}"
     },
     "price": {
         "annual": "${{price}}/έτος",

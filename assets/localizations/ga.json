@@ -450,7 +450,6 @@
     },
     "placeholder": {
         "confirm_password": "Deimhnigh pasfhocal",
-        "dict_search": "Cuardaigh {{l2Name}}, {{altField}} nó {{dictL1Name}}...",
         "email": "Ríomhphost",
         "first_name": "Céadainm",
         "last_name": "Sloinne",
@@ -458,7 +457,10 @@
         "password": "Pasfhocal",
         "please_specify": "Sonraigh le do thoil",
         "search": "Cuardaigh...",
-        "select_language": "Roghnaigh teanga"
+        "select_language": "Roghnaigh teanga",
+        "dict_search_1": "Cuardaigh {{param1}}",
+        "dict_search_2": "Cuardaigh {{param1}} nó {{param2}}",
+        "dict_search_3": "Cuardaigh {{param1}}, {{param2}}, nó {{param3}}"
     },
     "price": {
         "annual": "${{price}}/bliain",

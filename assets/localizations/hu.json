@@ -450,7 +450,6 @@
     },
     "placeholder": {
         "confirm_password": "Jelszó megerősítése",
-        "dict_search": "Keresés {{l2Name}}, {{altField}} vagy {{dictL1Name}}...",
         "email": "E-mail",
         "first_name": "Keresztnév",
         "last_name": "Vezetéknév",
@@ -458,7 +457,10 @@
         "password": "Jelszó",
         "please_specify": "Kérjük, adja meg",
         "search": "Keresés...",
-        "select_language": "Nyelv kiválasztása"
+        "select_language": "Nyelv kiválasztása",
+        "dict_search_1": "Keresés {{param1}}",
+        "dict_search_2": "Keresés {{param1}} vagy {{param2}}",
+        "dict_search_3": "Keresés {{param1}}, {{param2}}, vagy {{param3}}"
     },
     "price": {
         "annual": "${{price}}/év",
