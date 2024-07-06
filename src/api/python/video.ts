@@ -1,25 +1,22 @@
 // @/src/api/python/video
 
+import { YouTubeVideo } from "@/types";
+import { getCollectionItems } from "@/src/api/directus";
+import { Language } from "@/src/languages";
 import axios, { AxiosResponse } from "axios";
 import { API } from "@/src/api/python";
-import { YouTubeVideo } from "@/types";
+import { normalizeVideoData } from "@/src/api/directus/youtube-video";
 
-// Centralized error handling
+// Utility functions
 const handleResponse = <T>(response: AxiosResponse<T>): T => response.data;
-
 const handleError = (error: any): never => {
-  // Customize error handling logic as needed
   if (axios.isAxiosError(error)) {
-    // Handle Axios-specific errors
     console.error('Axios error:', error.message);
   } else {
-    // Handle non-Axios errors
     console.error('Unexpected error:', error);
   }
   throw error;
 };
-
-// Wrapper to handle responses and errors centrally
 const request = async <T>(config: any): Promise<T> => {
   try {
     const response = await API.request<T>(config);
@@ -29,31 +26,69 @@ const request = async <T>(config: any): Promise<T> => {
   }
 };
 
+// YouTube video tables configuration
+export const YOUTUBE_VIDEOS_TABLES = {
+  2: ['eu', 'vi'],
+  3: ['ko'],
+  4: ['zh'],
+  5: ['en'],
+  6: ['de'],
+  7: ['ja'],
+  8: ['fr'],
+  9: ['es', 'ca', 'ru'],
+  10: ['tr', 'pl', 'nl'],
+  11: ['he', 'pt', 'el', 'uk', 'cs', 'ar', 'sk', 'ms'],
+  12: ['it'],
+  13: ['id', 'sv', 'no', 'nan'],
+  14: ['th', 'my']
+};
 
-/**
- * Fetches and processes captions for a YouTube video.
- * 
- * @param {string} videoId - The YouTube video ID to fetch captions for.
- * @param {string} [name] - The name of the specific transcript to look for (e.g., 'English' or 'Spanish').
- * @param {string} [lang] - The language code of the desired caption (e.g., 'en' for English).
- * @param {string[]} [tlangs] - List of target language codes for translation.
- * @param {boolean} [generated] - Whether to accept auto-generated captions.
- * 
- * @returns {Promise<Array<{line: string, starttime: number, duration: number}>>} 
- *          A promise that resolves to an array of caption objects, each containing:
- *          - line: The text content of the caption.
- *          - starttime: The start time of the caption in seconds.
- *          - duration: The duration of the caption in seconds.
- * 
- * @throws {Error} If the request fails or returns an unexpected response format.
- * 
- * @example
- * // Fetch English captions for a video
- * const captions = await getCaption('dQw4w9WgXcQ', 'English', 'en');
- * 
- * // Fetch auto-generated captions in Spanish
- * const autoCaptions = await getCaption('dQw4w9WgXcQ', undefined, 'es', undefined, true);
- */
+export function youtubeVideoTableSuffixByL2Code(l2Code: string): string {
+  for (const [suffix, codes] of Object.entries(YOUTUBE_VIDEOS_TABLES)) {
+    if (codes.includes(l2Code)) {
+      return `_${suffix}`;
+    }
+  }
+  return '';
+}
+
+export function hasUniqueSuffix(l2Code: string) {
+  let unique = false;
+  let indexCount = 0;
+  for (const [key, codes] of Object.entries(YOUTUBE_VIDEOS_TABLES)) {
+    if (codes.includes(l2Code)) {
+      indexCount++;
+      unique = codes.length === 1;
+      if (indexCount > 1) {
+        return false;
+      }
+    }
+  }
+  return unique && indexCount === 1;
+}
+
+export const youtubeVideoCollectionName = (l2Code: string) => {
+  const suffix = youtubeVideoTableSuffixByL2Code(l2Code);
+  return `youtube_videos${suffix}`;
+}
+
+export const getVideosByL2Code = async (l2Lang: Language, includeSubs: boolean = false, params: any = {}) => {
+  const collectionName = youtubeVideoCollectionName(l2Lang.code);
+  let fields = 'id,l2,title,youtube_id,tv_show,talk,date,lex_div,word_freq,difficulty,views,tags,category,locale,duration,made_for_kids,views,likes,comments,type';
+  if (includeSubs) fields = fields + ',subs_l1,subs_l2';
+  const filter = 'filter' in params ? params.filter : {};
+  if (hasUniqueSuffix(l2Lang.code)) filter.l2 = {
+    eq: l2Lang.id,
+  };
+  const items = await getCollectionItems(collectionName, {
+    fields,
+    filter,
+    ...params
+  });
+  return items.map(normalizeVideoData) as YouTubeVideo[];
+}
+
+// Video-related functions
 export const getCaption = async (
   videoId: string,
   name?: string,
@@ -70,7 +105,6 @@ export const getCaption = async (
     generated
   };
   const response = await request({ method: 'get', url: "/timedtext", params });
-
   if (response && Array.isArray(response)) {
     return response.map(line => ({
       line: line.text,
@@ -78,7 +112,6 @@ export const getCaption = async (
       duration: line.duration
     })).sort((a, b) => a.starttime - b.starttime);
   }
-
   return [];
 };
 
@@ -116,7 +149,8 @@ export const recommendVideos = async (
     made_for_kids: madeForKids,
     limit,
   };
-  return request({ method: 'get', url: "/recommend-videos", params });
+  const response = await request<YouTubeVideo[]>({ method: 'get', url: "/recommend-videos", params });
+  return response.map(normalizeVideoData);
 };
 
 export const subsSearch = async (
@@ -127,7 +161,7 @@ export const subsSearch = async (
   limit: number = 500,
   context: number = 5,
   sort?: string
-): Promise<any> => {
+): Promise<YouTubeVideo[]> => {
   const params: any = {
     terms: terms.join(','),
     l2: langCode,
@@ -137,9 +171,9 @@ export const subsSearch = async (
     context,
     sort
   };
-  return request({ method: 'get', url: "/subs-search", params });
+  const response = await request<YouTubeVideo[]>({ method: 'get', url: "/subs-search", params });
+  return response.map(normalizeVideoData);
 };
-
 
 export const getTokenizerCacheForVideo = async (videoId: string, l2Code: string) => {
   const response = await API.get("/lemmatize-video", { params: { video_id: videoId, lang: l2Code } });

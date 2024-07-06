@@ -58,7 +58,7 @@ const MediaHomeScreen = () => {
         madeForKids,
         limit
       );
-      setItems(fetchedItems.map(normalizeVideoData) as YouTubeVideo[]);
+      setItems(fetchedItems);
     } catch (error) {
       console.error(t('error.failed_to_load_items'), error);
     }

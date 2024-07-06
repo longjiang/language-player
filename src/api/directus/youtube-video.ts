@@ -1,3 +1,5 @@
+// @/src/api/directus/youtube-video
+
 import { YouTubeVideo } from "@/types";
 import { parseDuration } from "@/src/utils";
 import { parseSubtitles } from "@/src/subs";
