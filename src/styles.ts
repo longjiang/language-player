@@ -491,20 +491,3 @@ export const mediaHomeScreenStyles = StyleSheet.create({
     alignItems: 'center',
   }
 });
-
-export const tokenStyles = StyleSheet.create({
-  token: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'flex-end',
-  },
-  segment: {
-    alignItems: 'center',
-  },
-  pronunciation: {
-    textAlign: 'center',
-  },
-  mainText: {
-    textAlign: 'center',
-  },
-});

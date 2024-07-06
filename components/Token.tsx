@@ -11,7 +11,6 @@ import { Token as TokenType } from "@/src/tokenizer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { addFurigana, FuriganaSegment } from "@/src/furigana";
-import { tokenStyles as styles } from "@/src/styles";
 
 export const Token: React.FC<{
   token: TokenType,
@@ -50,44 +49,62 @@ export const Token: React.FC<{
   }, [token.text, token.pronunciation, convert, l2Lang.code, l2Lang.han]);
 
   return (
-    <>
-      <TouchableOpacity onPress={handleTokenPress}>
-        <View style={styles.token}>
-          {displayContent.map((segment: FuriganaSegment, index: number) => (
-            <View key={index} style={styles.segment}>
-              {shouldShowPronunciation && segment.pronunciation !== segment.text && (
-                <Text
-                  style={[
-                    styles.pronunciation,
-                    {
-                      fontFamily,
-                      color: primaryTextColor,
-                      fontSize: defaultFontSize * textScale * 0.618,
-                    }
-                  ]}
-                >
-                  {segment.pronunciation}
-                </Text>
-              )}
+    <TouchableOpacity onPress={handleTokenPress}>
+      <View style={styles.token}>
+        {displayContent.map((segment: FuriganaSegment, index: number) => (
+          <View key={index} style={styles.segment}>
+            {shouldShowPronunciation && segment.pronunciation !== segment.text && (
               <Text
                 style={[
-                  styles.mainText,
+                  styles.pronunciation,
                   {
                     fontFamily,
                     color: primaryTextColor,
-                    fontSize: defaultFontSize * textScale,
+                    fontSize: defaultFontSize * textScale * 0.618,
+                    marginBottom: defaultFontSize * textScale * -0.1,
                   }
                 ]}
               >
-                {segment.text}
+                {segment.pronunciation}
               </Text>
-            </View>
-          ))}
-        </View>
-      </TouchableOpacity>
+            )}
+            <Text
+              style={[
+                styles.mainText,
+                {
+                  fontFamily,
+                  color: primaryTextColor,
+                  fontSize: defaultFontSize * textScale,
+                }
+              ]}
+            >
+              {segment.text}
+            </Text>
+          </View>
+        ))}
+      </View>
       <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} key={token.text} />
-    </>
+    </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  token: {
+    flexDirection: 'row',  // Changed to 'row' to align segments horizontally
+    alignItems: 'flex-end', // Aligns items to the bottom
+    marginHorizontal: 2,
+  },
+  segment: {
+    flexDirection: 'column', // Each segment is a column
+    alignItems: 'center',
+    justifyContent: 'flex-end', // Aligns content to the bottom within each segment
+  },
+  pronunciation: {
+    textAlign: 'center',
+  },
+  mainText: {
+    textAlign: 'center',
+  },
+});
 
 export default Token;
