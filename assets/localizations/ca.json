@@ -460,11 +460,6 @@
         "search": "Cerca...",
         "select_language": "Selecciona un idioma"
     },
-    "price": {
-        "annual": "89$/any",
-        "lifetime": "199$/per sempre",
-        "monthly": "12$/mes"
-    },
     "setting": {
         "auto_pronounce": "Pronunciació automàtica",
         "dark_mode": "Mode fosc",

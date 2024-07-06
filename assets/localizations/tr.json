@@ -458,11 +458,6 @@
         "search": "Ara...",
         "select_language": "Bir dil seçin"
     },
-    "price": {
-        "annual": "$89/yıl",
-        "lifetime": "$199/ömür boyu",
-        "monthly": "$12/ay"
-    },
     "setting": {
         "auto_pronounce": "Otomatik Telaffuz",
         "dark_mode": "Karanlık Mod",

@@ -460,11 +460,6 @@
         "search": "Hae...",
         "select_language": "Valitse kieli"
     },
-    "price": {
-        "annual": "89 $/vuosi",
-        "lifetime": "199 $/elinikäinen",
-        "monthly": "12 $/kuukausi"
-    },
     "setting": {
         "auto_pronounce": "Automaattinen ääntäminen",
         "dark_mode": "Tumma tila",

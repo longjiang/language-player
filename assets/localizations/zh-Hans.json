@@ -466,9 +466,9 @@
         "select_language": "选择语言"
     },
     "price": {
-        "annual": "$89/年",
-        "lifetime": "$199/终身",
-        "monthly": "$12/月"
+        "annual": "{{price}}/年",
+        "lifetime": "{{price}}/终身",
+        "monthly": "{{price}}/月"
     },
     "setting": {
         "auto_pronounce": "自动发音",

@@ -14,6 +14,7 @@ import OnlyLifetimePlan from "@/components/OnlyLifetimePlan";
 import { goProStyles as styles } from "@/src/styles";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getPriceTranslation } from '@/utils/translationUtils';
 
 const GoProScreen = () => {
   const [paymentError, setPaymentError] = useState<boolean>(false);
@@ -33,9 +34,9 @@ const GoProScreen = () => {
   const currentPlan = isProUser() ? subscription?.type : null;
 
   const plans = [
-    { type: "monthly", price: t('price.monthly'), duration: t('duration.monthly') },
-    { type: "annual", price: t('price.annual'), duration: t('duration.annual') },
-    { type: "lifetime", price: t('price.lifetime'), duration: t('duration.lifetime'), recommended: true },
+    { type: "monthly", price: t('price.monthly', { price: 12 }), duration: t('duration.monthly') },
+    { type: "annual", price: t('price.annual', { price: 89 }), duration: t('duration.annual') },
+    { type: "lifetime", price: t('price.lifetime', { price: 199 }), duration: t('duration.lifetime'), recommended: true },
   ];
 
   return (

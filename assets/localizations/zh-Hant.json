@@ -465,11 +465,6 @@
         "search": "搜尋...",
         "select_language": "選擇語言"
     },
-    "price": {
-        "annual": "$89/年",
-        "lifetime": "$199/終身",
-        "monthly": "$12/月"
-    },
     "setting": {
         "auto_pronounce": "自動發音",
         "dark_mode": "深色模式",

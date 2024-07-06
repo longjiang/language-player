@@ -460,11 +460,6 @@
         "search": "Cari...",
         "select_language": "Pilih bahasa"
     },
-    "price": {
-        "annual": "$89/tahun",
-        "lifetime": "$199/seumur hidup",
-        "monthly": "$12/bulan"
-    },
     "setting": {
         "auto_pronounce": "Pengucapan Otomatis",
         "dark_mode": "Mode Gelap",

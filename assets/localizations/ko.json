@@ -459,11 +459,6 @@
         "search": "검색...",
         "select_language": "언어 선택"
     },
-    "price": {
-        "annual": "연 $89",
-        "lifetime": "평생 $199",
-        "monthly": "월 $12"
-    },
     "setting": {
         "auto_pronounce": "자동 발음",
         "dark_mode": "다크 모드",

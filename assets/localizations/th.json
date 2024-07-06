@@ -458,11 +458,6 @@
         "search": "ค้นหา...",
         "select_language": "เลือกภาษา"
     },
-    "price": {
-        "annual": "$89/ปี",
-        "lifetime": "$199/ตลอดชีพ",
-        "monthly": "$12/เดือน"
-    },
     "setting": {
         "auto_pronounce": "การออกเสียงอัตโนมัติ",
         "dark_mode": "โหมดมืด",

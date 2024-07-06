@@ -460,11 +460,6 @@
         "search": "Suchen...",
         "select_language": "Sprache auswählen"
     },
-    "price": {
-        "annual": "89$/Jahr",
-        "lifetime": "199$/lebenslang",
-        "monthly": "12$/Monat"
-    },
     "setting": {
         "auto_pronounce": "Automatische Aussprache",
         "dark_mode": "Dunkelmodus",

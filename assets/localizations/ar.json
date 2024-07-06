@@ -460,11 +460,6 @@
         "search": "بحث...",
         "select_language": "اختر لغة"
     },
-    "price": {
-        "annual": "$89/سنة",
-        "lifetime": "$199/مدى الحياة",
-        "monthly": "$12/شهر"
-    },
     "setting": {
         "auto_pronounce": "النطق التلقائي",
         "dark_mode": "الوضع الداكن",

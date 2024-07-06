@@ -460,11 +460,6 @@
         "search": "Αναζήτηση...",
         "select_language": "Επιλέξτε μια γλώσσα"
     },
-    "price": {
-        "annual": "$89/έτος",
-        "lifetime": "$199/εφ' όρου ζωής",
-        "monthly": "$12/μήνα"
-    },
     "setting": {
         "auto_pronounce": "Αυτόματη προφορά",
         "dark_mode": "Σκοτεινή λειτουργία",

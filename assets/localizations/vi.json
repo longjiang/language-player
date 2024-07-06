@@ -458,11 +458,6 @@
         "search": "Tìm kiếm...",
         "select_language": "Chọn một ngôn ngữ"
     },
-    "price": {
-        "annual": "$89/năm",
-        "lifetime": "$199/trọn đời",
-        "monthly": "$12/tháng"
-    },
     "setting": {
         "auto_pronounce": "Phát âm tự động",
         "dark_mode": "Chế độ tối",

@@ -460,11 +460,6 @@
         "search": "खोजें...",
         "select_language": "एक भाषा का चयन करें"
     },
-    "price": {
-        "annual": "$89/वर्ष",
-        "lifetime": "$199/जीवन भर",
-        "monthly": "$12/माह"
-    },
     "setting": {
         "auto_pronounce": "स्वचालित उच्चारण",
         "dark_mode": "डार्क मोड",

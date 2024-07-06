@@ -459,11 +459,6 @@
         "search": "Buscar...",
         "select_language": "Selecione um idioma"
     },
-    "price": {
-        "annual": "$89/ano",
-        "lifetime": "$199/vitalício",
-        "monthly": "$12/mês"
-    },
     "setting": {
         "auto_pronounce": "Pronúncia Automática",
         "dark_mode": "Modo Escuro",

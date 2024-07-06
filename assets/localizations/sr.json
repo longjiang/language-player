@@ -459,11 +459,6 @@
         "search": "Pretraži...",
         "select_language": "Izaberi jezik"
     },
-    "price": {
-        "annual": "$89/godišnje",
-        "lifetime": "$199/doživotno",
-        "monthly": "$12/mesečno"
-    },
     "setting": {
         "auto_pronounce": "Automatski izgovor",
         "dark_mode": "Tamni režim",

@@ -459,11 +459,6 @@
         "search": "Buscar...",
         "select_language": "Seleccionar un idioma"
     },
-    "price": {
-        "annual": "$89/año",
-        "lifetime": "$199/de por vida",
-        "monthly": "$12/mes"
-    },
     "setting": {
         "auto_pronounce": "Pronunciación automática",
         "dark_mode": "Modo oscuro",

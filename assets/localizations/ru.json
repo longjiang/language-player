@@ -459,11 +459,6 @@
         "search": "Поиск...",
         "select_language": "Выберите язык"
     },
-    "price": {
-        "annual": "$89/год",
-        "lifetime": "$199/пожизненно",
-        "monthly": "$12/месяц"
-    },
     "setting": {
         "auto_pronounce": "Автоматическое произношение",
         "dark_mode": "Темный режим",

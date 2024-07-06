@@ -466,9 +466,9 @@
         "select_language": "Select a language"
     },
     "price": {
-        "annual": "$89/yr",
-        "lifetime": "$199/lifetime",
-        "monthly": "$12/mo"
+        "annual": "{{price}}/yr",
+        "lifetime": "{{price}}/lifetime",
+        "monthly": "{{price}}/mo"
     },
     "setting": {
         "auto_pronounce": "Auto Pronounce",

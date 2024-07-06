@@ -465,11 +465,6 @@
         "search": "Soek...",
         "select_language": "Kies 'n taal"
     },
-    "price": {
-        "annual": "$89/jaar",
-        "lifetime": "$199/leeftyd",
-        "monthly": "$12/maand"
-    },
     "setting": {
         "auto_pronounce": "Outomatiese uitspraak",
         "dark_mode": "Donker modus",

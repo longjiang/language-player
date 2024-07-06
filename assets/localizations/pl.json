@@ -459,11 +459,6 @@
         "search": "Szukaj...",
         "select_language": "Wybierz język"
     },
-    "price": {
-        "annual": "$89/rok",
-        "lifetime": "$199/dożywotnio",
-        "monthly": "$12/miesiąc"
-    },
     "setting": {
         "auto_pronounce": "Automatyczna wymowa",
         "dark_mode": "Tryb ciemny",

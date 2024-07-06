@@ -459,11 +459,6 @@
         "search": "Sök...",
         "select_language": "Välj ett språk"
     },
-    "price": {
-        "annual": "$89/år",
-        "lifetime": "$199/livstid",
-        "monthly": "$12/mån"
-    },
     "setting": {
         "auto_pronounce": "Automatiskt uttal",
         "dark_mode": "Mörkt läge",

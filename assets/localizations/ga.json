@@ -460,11 +460,6 @@
         "search": "Cuardaigh...",
         "select_language": "Roghnaigh teanga"
     },
-    "price": {
-        "annual": "$89/bliain",
-        "lifetime": "$199/ar feadh an tsaoil",
-        "monthly": "$12/mí"
-    },
     "setting": {
         "auto_pronounce": "Fuaimniú uathoibríoch",
         "dark_mode": "Mód dorcha",

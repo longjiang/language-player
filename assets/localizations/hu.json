@@ -460,11 +460,6 @@
         "search": "Keresés...",
         "select_language": "Nyelv kiválasztása"
     },
-    "price": {
-        "annual": "89$/év",
-        "lifetime": "199$/élettartam",
-        "monthly": "12$/hónap"
-    },
     "setting": {
         "auto_pronounce": "Automatikus kiejtés",
         "dark_mode": "Sötét mód",
