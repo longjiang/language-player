@@ -90,7 +90,7 @@ const DictionaryEntryScreen = () => {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: tertiaryBackgroundColor }}>
       <SafeAreaView style={{ marginTop: 16 }}>
         <View style={styles.header}>
-        <DictionaryComponent />
+        <DictionaryComponent showBackIcon={true} showSettingsIcon={true} />
         </View>
         {entry && (
           <DictionaryEntryContent entry={entry} headKey={headKey} alternateKey={alternateKey} />

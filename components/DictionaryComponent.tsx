@@ -38,7 +38,19 @@ export function getDictionaryPlaceholder(
   });
 }
 
-export const DictionaryComponent = ({ searchBarSize = "small" }) => {
+interface DictionaryComponentProps {
+  searchBarSize?: "small" | "medium" | "large";
+  showBackIcon?: boolean;
+  showSettingsIcon?: boolean;
+  setItems?: (items: DictionaryEntry[]) => void;
+}
+
+export const DictionaryComponent: React.FC<DictionaryComponentProps> = ({
+  searchBarSize = "small",
+  showBackIcon = false,
+  showSettingsIcon = false,
+  setItems = () => {},
+}) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<DictionaryEntry[]>([]);
   const { dictionary } = useDictionary();
@@ -55,19 +67,25 @@ export const DictionaryComponent = ({ searchBarSize = "small" }) => {
 
   const handleSearch = async (text: string) => {
     setQuery(text);
-    if (dictionary) setResults((await dictionary.search(text)).slice(0, 50));
+    if (dictionary) {
+      const searchResults = await dictionary.search(text, 25)
+      setResults(searchResults);
+      setItems(searchResults);
+    }
   };
 
   return (
     <View>
       <View style={{ flexDirection: "row", alignItems: 'center' }}>
-        <ThemedButton
-          type="ghost"
-          size="medium"
-          trailingIcon={<Icon name="chevron-left" />}
-          onPress={() => router.navigate("../")}
-          style={{ marginRight: 8 }}
-        />
+        {showBackIcon && (
+          <ThemedButton
+            type="ghost"
+            size="medium"
+            trailingIcon={<Icon name="chevron-left" />}
+            onPress={() => router.navigate("../")}
+            style={{ marginRight: 8 }}
+          />
+        )}
         <ThemedInput
           placeholder={getDictionaryPlaceholder(l2Lang, dictionary, t)}
           value={query}
@@ -76,13 +94,15 @@ export const DictionaryComponent = ({ searchBarSize = "small" }) => {
           size={searchBarSize}
           icon="magnify"
         />
-        <ThemedButton
-          type="ghost"
-          size="medium"
-          trailingIcon={<Icon name="cog-outline" />}
-          onPress={() => router.navigate("/(tabs)/(me)/settings")}
-          style={{ marginLeft: 8 }}
-        />
+        {showSettingsIcon && (
+          <ThemedButton
+            type="ghost"
+            size="medium"
+            trailingIcon={<Icon name="cog-outline" />}
+            onPress={() => router.navigate("/(tabs)/(me)/settings")}
+            style={{ marginLeft: 8 }}
+          />
+        )}
       </View>
       <ScrollView>
         {results.map((entry, index) => (

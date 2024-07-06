@@ -85,8 +85,47 @@ export class DictionaryDB {
     return await this.db!.getAllAsync(`SELECT DISTINCT head FROM ${this.dbName}`).then((results) => results.map((r: any) => r.head));
   }
 
-  async search(query: string): Promise<any[]> {
-    return await this.db!.getAllAsync(`SELECT * FROM ${this.dbName} WHERE search LIKE ?`, [`%${query}%`]);
+
+
+
+  /**
+   * Performs an optimized search on the dictionary database.
+   * Results are sorted by presence of level, then by level, then by relevance, and finally by length.
+   * Entries without a defined level are treated as having an "infinite" level.
+   * @param query - The search query
+   * @param limit - The maximum number of results to return
+   * @returns An array of matching raw entries
+   */
+  async search(query: string, limit: number): Promise<any[]> {
+    const escapedQuery = escapeSQLValue(query);
+    const searchTerms = query.split(/\s+/).map(term => `%${escapeSQLValue(term)}%`);
+    const placeholders = searchTerms.map(() => '?').join(' AND search LIKE ');
+
+    const sql = `
+      SELECT * FROM ${this.escapeIdentifier(this.dbName)}
+      WHERE search LIKE ${placeholders}
+      ORDER BY 
+        CASE WHEN level IS NULL THEN 1 ELSE 0 END,  -- Entries with level come first
+        COALESCE(level, 9999999) ASC,  -- Sort by level, treating NULL as highest level
+        CASE 
+          WHEN head = ? THEN 1
+          WHEN head LIKE ? THEN 2
+          WHEN alternate LIKE ? THEN 3
+          ELSE 4
+        END,
+        length(head) ASC
+      LIMIT ?
+    `;
+
+    const params = [
+      ...searchTerms,
+      escapedQuery,
+      `${escapedQuery}%`,
+      `%${escapedQuery}%`,
+      limit.toString()
+    ];
+
+    return await this.db!.getAllAsync(sql, params);
   }
 
   // match any records where the `field` contains any part of the input `phrase`

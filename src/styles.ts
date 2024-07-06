@@ -96,7 +96,7 @@ export const videoControlBarStyles = StyleSheet.create({
 
 export const dictionaryEntryStyles = StyleSheet.create({
   header: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 26,
   },
   character: {
 

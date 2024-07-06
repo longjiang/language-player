@@ -12,36 +12,10 @@ import { DictionaryEntry } from "@/src/dictionary-types";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const DictionaryScreen = () => {
-  const [items, setItems] = useState<DictionaryEntry[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const primaryBrandColor = useThemeColor({}, "primaryBrand");
-  const { dictionary } = useDictionary();
   const { t } = useLanguage();
+  const [items, setItems] = useState<DictionaryEntry[]>([]);
 
-  useEffect(() => {
-    if (searchQuery) {
-      loadItems();
-    }
-  }, []);
-
-  const handleInputChange = (text: string) => {
-    setSearchQuery(text);
-  };
-
-  const handleSearch = () => {
-    loadItems();
-  };
-
-  const loadItems = async () => {
-    setItems([]);
-    setIsLoading(true);
-    if (!dictionary) return;
-    dictionary.search(searchQuery).then((results) => {
-      setItems(results);
-    })
-    setIsLoading(false);
-  };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -49,7 +23,9 @@ const DictionaryScreen = () => {
           title={t('title.dictionary')}
           showFlag={true}
         >
-          <DictionaryComponent />
+          <View style={{ marginTop: items.length ? 0 : 32 }}>
+            <DictionaryComponent searchBarSize={ items.length ? "small" : "medium" }  setItems={setItems} />
+          </View>
           {isLoading && (
             <View style={styles.spinnerContainer}>
               <ActivityIndicator size="large" color="#a772d0" />

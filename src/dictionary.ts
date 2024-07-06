@@ -97,18 +97,20 @@ export class Dictionary {
     return result ? transformToDictionaryEntry(result) : null;
   }
 
+
   /**
    * Searches the dictionary for entries matching the query.
    * This is for the user to type in the dictionary search bar and get suggestions.
    * @param query - The search query
+   * @param limit - Optional limit for the number of results (default: 50)
    * @returns An array of matching dictionary entries
    */
-  async search(query: string): Promise<DictionaryEntry[]> {
+  async search(query: string, limit: number = 50): Promise<DictionaryEntry[]> {
     query = stripAccents(query.toLowerCase()).replace(/\s+/g, ' ');
-    const results = await this.dictionaryDB.search(query);
+    const results = await this.dictionaryDB.search(query, limit);
 
     const entries = results.map(transformToDictionaryEntry);
-    return sortEntries(entries, query);
+    return sortEntries(entries, query).slice(0, limit);
   }
 
   /**
