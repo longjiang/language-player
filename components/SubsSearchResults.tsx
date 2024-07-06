@@ -27,7 +27,6 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   const previousIndexRef = useRef(currentVideoIndex);
   const { t, l2Lang, l1Lang, languages } = useLanguage();
   if (!languages || !l2Lang || !l1Lang) return null;
-  const l1Locales = languages.getLocales(l1Lang);
 
   useEffect(() => {
     const fetchBestTranslatedSubs = async () => {

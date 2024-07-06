@@ -15,7 +15,7 @@ import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { addToWatchHistory } from "@/src/api/directus/user-watch-history";
-import { getBestTranslatedSubs } from "@/src/subs";
+import { getBestL1Subs } from "@/src/api/python/video";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { getTokenizerCacheForVideo } from "@/src/api/python/video";
 
@@ -41,7 +41,7 @@ const YouTubeVideoScreen = () => {
 
   useEffect(() => {
     const fetchVideo = async () => {
-      if (!l2Lang) return;
+      if (!l2Lang || !l1Lang) return;
       try {
         const videos = await getVideosByL2Code(l2Lang, true, {
           filter: {
@@ -53,9 +53,7 @@ const YouTubeVideoScreen = () => {
         if (!videos) return;
         const newVideo = videos[0];
         if (!newVideo.subs_l1?.length) {
-          
-          const l1Locales = languages.getLocales(l1Lang);
-          const l1Subs = await getBestTranslatedSubs(newVideo.youtube_id, l2Lang.code, l1Locales);
+          const l1Subs = await getBestL1Subs(newVideo.youtube_id, l1Lang.code, l2Lang.code);
           newVideo.subs_l1 = l1Subs || [];
         }
         
