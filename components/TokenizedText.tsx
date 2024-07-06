@@ -5,7 +5,6 @@ import { View, StyleSheet } from 'react-native';
 import { Token } from './Token';
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useUserData } from '@/contexts/UserDataContext';
 
 export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({ 
   text, 

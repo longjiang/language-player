@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { storageManager } from "@/src/StorageManager";
 
 const UPDATE_INTERVAL = 1000; // 1 second
+const SYNC_INTERVAL = 60000; // 1 minute
 
 export interface Context {
   form: string;
@@ -82,28 +83,44 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    const updateLocalProgress = () => {
-      if (l2Lang && userData) {
-        const langCode = l2Lang.code;
-        let currentProgress = userData.progress[langCode];
-
-        if (!currentProgress) {
-          currentProgress = { level: undefined, time: 0 };
-        } else {
-          currentProgress.time += UPDATE_INTERVAL;
-        }
-
-        setUserData(prevData => ({
-          ...prevData!,
-          progress: {
-            ...prevData!.progress,
-            [langCode]: currentProgress
-          }
-        }));
+    const updateLocalTime = async () => {
+      try {
+        const time = await storageManager.getTime();
+        await storageManager.setTime(time + UPDATE_INTERVAL);
+      } catch (error) {
+        console.error('Error updating local time:', error);
       }
     };
 
-    const localUpdateInterval = setInterval(updateLocalProgress, UPDATE_INTERVAL);
+    const localUpdateInterval = setInterval(updateLocalTime, UPDATE_INTERVAL);
+
+    const progressUpdateInterval = setInterval(async () => {
+      try {
+        const time = await storageManager.getTime();
+        if (l2Lang && userData) {
+          const langCode = l2Lang.code;
+          let currentProgress = userData.progress[langCode];
+
+          if (!currentProgress) {
+            currentProgress = { level: undefined, time: 0 };
+          }
+
+          currentProgress.time += time; // Update progress with accumulated time
+
+          setUserData(prevData => ({
+            ...prevData!,
+            progress: {
+              ...prevData!.progress,
+              [langCode]: currentProgress
+            }
+          }));
+
+          await storageManager.resetTime(); // Reset local time after updating progress
+        }
+      } catch (error) {
+        console.error('Error updating progress:', error);
+      }
+    }, SYNC_INTERVAL);
 
     const serverSyncInterval = setInterval(async () => {
       try {
@@ -115,15 +132,16 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
           saved_words: JSON.stringify(userData.saved_words),
           progress: JSON.stringify(userData.progress),
         }, authToken);
-        
+
         await storageManager.setUserData(userData);
       } catch (error) {
         console.error('Error syncing user data with server:', error);
       }
-    }, 60000);
+    }, SYNC_INTERVAL);
 
     return () => {
       clearInterval(localUpdateInterval);
+      clearInterval(progressUpdateInterval);
       clearInterval(serverSyncInterval);
     };
   }, [userData, l2Lang]);

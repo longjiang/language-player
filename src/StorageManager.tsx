@@ -105,6 +105,20 @@ class StorageManager {
     await SecureStore.deleteItemAsync('userInfo');
     await SecureStore.deleteItemAsync('tempPassword');
   }
+
+  // New methods for managing time
+  async setTime(time: number): Promise<void> {
+    await SecureStore.setItemAsync('userProgressTime', time.toString());
+  }
+
+  async getTime(): Promise<number> {
+    const storedTime = await SecureStore.getItemAsync('userProgressTime');
+    return storedTime ? parseInt(storedTime, 10) : 0;
+  }
+
+  async resetTime(): Promise<void> {
+    await SecureStore.setItemAsync('userProgressTime', '0');
+  }
 }
 
 export const storageManager = StorageManager.getInstance();

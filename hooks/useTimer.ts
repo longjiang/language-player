@@ -1,23 +1,23 @@
-// @/hooks/useTimer.tsx
-import { useEffect, useRef } from 'react';
+// @/hooks/useTimer.ts
+import { useState, useEffect, useRef } from 'react';
 
-export const useTimer = (callback: () => void, interval: number) => {
+export const useTimer = (interval: number) => {
+  const [tick, setTick] = useState(0);
   const savedCallback = useRef<() => void>();
 
   useEffect(() => {
+    const callback = () => setTick(tick => tick + 1);
     savedCallback.current = callback;
-  }, [callback]);
+  }, []);
 
   useEffect(() => {
-    const tick = () => {
+    const tickInterval = setInterval(() => {
       if (savedCallback.current) {
         savedCallback.current();
       }
-    };
-
-    if (interval !== null) {
-      const id = setInterval(tick, interval);
-      return () => clearInterval(id);
-    }
+    }, interval);
+    return () => clearInterval(tickInterval);
   }, [interval]);
+
+  return tick;
 };
