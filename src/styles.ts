@@ -216,7 +216,7 @@ export const youtubeVideoCardStyles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: 8,
+    bottom: 8,
     left: 8,
     backgroundColor: '#6c757d',
     paddingHorizontal: 8,
@@ -227,6 +227,19 @@ export const youtubeVideoCardStyles = StyleSheet.create({
   badgeText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  durationBadge: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  durationText: {
+    color: 'white',
   },
 });
 

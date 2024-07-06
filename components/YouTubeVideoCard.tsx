@@ -26,14 +26,11 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
   if (!l2Lang) return null;
 
   const handlePress = () => {
-    // Set the current video and queue in the global state
     setVideoPlayerState(state => ({
       ...state,
-      video: video, // set the current video
-      queue: videos // set the full list of videos
+      video: video,
+      queue: videos
     }));
-  
-    // Navigate to the YouTube video screen
     router.navigate(`/video/youtube/${video.youtube_id}`);
   };
 
@@ -41,9 +38,8 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
   const durationText = video.duration ? formatDuration(video.duration) : '';
   const localeText = video.locale || '';
 
-  // Determine the CEFR level based on the video's difficulty
   const levels = languageLevelsByL2Code(l2Lang.code); 
-  const videoDifficulty = video.difficulty || 1; // Replace with actual difficulty value from video data
+  const videoDifficulty = video.difficulty || 1;
   const level = Object.values(levels).find(l => videoDifficulty <= l.maxDifficulty);
   const badgeText = level ? level.examLevelName : '';
 
@@ -59,7 +55,12 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
           />
           {badgeText && level && (
             <View style={{...styles.badge, backgroundColor: useThemeColorForLevel({}, level.level)}}>
-              <ThemedText style={{...styles.badgeText }} type="defaultBold">{badgeText}</ThemedText>
+              <ThemedText style={{...styles.badgeText }} type="smallBold">{badgeText}</ThemedText>
+            </View>
+          )}
+          {durationText && (
+            <View style={styles.durationBadge}>
+              <ThemedText style={styles.durationText} type="smallBold">{durationText}</ThemedText>
             </View>
           )}
         </View>
@@ -68,10 +69,11 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
             {video.title}
           </ThemedText>
           <ThemedText style={styles.details} type="small" variant="secondary">
-            { [viewsText, durationText, localeText].filter(Boolean).join(' • ') }
+            { [viewsText, localeText].filter(Boolean).join(' • ') }
           </ThemedText>
         </View>
       </View>
     </TouchableOpacity>
   );
 };
+// Make sure to add these new styles to your youtubeVideoCardStyles
