@@ -289,7 +289,9 @@
         "cancel": "Abbrechen",
         "clear": "Alle entfernen",
         "confirm_cancellation": "Stornierung bestätigen",
+        "confirm_deletion": "Bestätigung der Löschung",
         "copy": "Kopieren",
+        "keep_account": "Konto behalten",
         "keep_subscription": "Abonnement beibehalten",
         "let_chatgpt_explain": "Lassen Sie die KI erklären",
         "list_all": "Alle auflisten",
@@ -301,12 +303,10 @@
         "speak": "Sprechen",
         "start_learning": "Lernen beginnen",
         "tv_shows": "TV-Sendungen",
-        "upgrade": "Upgrade",
         "upgrade_to_pro": "Upgrade auf Pro",
+        "upgrade": "Upgrade",
         "verify": "Bestätigen",
-        "watch": "Ansehen",
-        "confirm_deletion": "Bestätigung der Löschung",
-        "keep_account": "Konto behalten"
+        "watch": "Ansehen"
     },
     "chatgpt": {
         "prompt": {
@@ -316,15 +316,15 @@
     },
     "error": {
         "entry_not_found": "Eintrag nicht gefunden oder Wörterbuch nicht geladen",
+        "failed_fetch_videos": "Fehler beim Abrufen von Videos",
         "failed_retrieve_password": "Fehler beim Abrufen des gespeicherten Passworts",
         "failed_to_load_items": "Fehler beim Laden von Elementen:",
         "generic": "Fehler",
+        "language_not_selected": "Sprache nicht ausgewählt",
         "passwords_do_not_match": "Passwörter stimmen nicht überein",
         "registration_failed": "Registrierung fehlgeschlagen",
         "updating_progress": "Fehler beim Aktualisieren des Fortschritts:",
-        "user_info_not_found": "Benutzerinformationen nicht gefunden",
-        "language_not_selected": "Sprache nicht ausgewählt",
-        "failed_fetch_videos": "Fehler beim Abrufen von Videos"
+        "user_info_not_found": "Benutzerinformationen nicht gefunden"
     },
     "level": {
         "cefr": {
@@ -397,6 +397,7 @@
         "auto_renews_in": "Automatische Verlängerung in {{days}} Tagen",
         "confirm_cancel_subscription": "Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten?",
         "copy_success": "Text in die Zwischenablage kopiert",
+        "delete_confirmation": "Möchten Sie Ihr Konto wirklich dauerhaft löschen? Sie verlieren alle gespeicherten Wörter und Fortschritte. Diese Aktion kann nicht rückgängig gemacht werden.",
         "discover_the_power_of_comprehensible_input": "Entdecken Sie die Leistungsfähigkeit von Comprehensible Input durch Hunderttausende von Videos in über 100 Sprachen.",
         "dont_have_an_account": "Sie haben noch kein Konto?",
         "enrich_your_language_learning_journey": "Bereichern Sie Ihre Sprachlernreise",
@@ -410,13 +411,12 @@
         "or_login_with": "Oder melden Sie sich an mit:",
         "or_register_with": "Oder registrieren Sie sich mit:",
         "pro_feature_chatgpt": "Nur Pro-Benutzer können KI-Funktionen in Language Player Go verwenden. Um diese Funktion zu verwenden, aktualisieren Sie auf Pro.",
-        "pro_transcript": "Upgrade auf Pro",
         "pro_transcript_limit_reached": "Transkript-Limit erreicht. Bitte aktualisieren Sie auf Pro, um auf weitere Transkripte zugreifen zu können.",
+        "pro_transcript": "Upgrade auf Pro",
         "sort_by": "Sortieren nach: {{sortBy}}",
         "time_spent_learning": "Verbrachte Zeit beim Lernen von {{language}} im Language Player",
         "upgrade_text": "Führen Sie ein Upgrade auf Pro durch, um auf mehr Videos zuzugreifen!",
-        "what_your_first_language": "Was ist Ihre Muttersprache?",
-        "delete_confirmation": "Möchten Sie Ihr Konto wirklich dauerhaft löschen? Sie verlieren alle gespeicherten Wörter und Fortschritte. Diese Aktion kann nicht rückgängig gemacht werden."
+        "what_your_first_language": "Was ist Ihre Muttersprache?"
     },
     "of": "von",
     "option": {
@@ -470,6 +470,7 @@
         "current_level": "Was ist Ihr aktuelles Niveau in {{language}}?",
         "current_plan": "Aktueller Plan",
         "date": "Datum",
+        "delete_account": "Konto löschen",
         "delete_my_account": "Mein Konto löschen",
         "dictionary": "Wörterbuch",
         "email": "E-Mail",
@@ -499,8 +500,7 @@
         "trial": "Probe",
         "verify_your_email": "Bestätigen Sie Ihre E-Mail",
         "views": "{{numViews}} Ansichten",
-        "watch_history": "Sehverlauf",
-        "delete_account": "Konto löschen"
+        "watch_history": "Sehverlauf"
     },
     "video": {
         "comments": "Kommentare",

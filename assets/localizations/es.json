@@ -288,7 +288,9 @@
         "cancel": "Cancelar",
         "clear": "Eliminar todo",
         "confirm_cancellation": "Confirmar cancelación",
+        "confirm_deletion": "Confirmar eliminación",
         "copy": "Copiar",
+        "keep_account": "Conservar cuenta",
         "keep_subscription": "Mantener la suscripción",
         "let_chatgpt_explain": "Deja que la IA lo explique",
         "list_all": "Mostrar todo",
@@ -300,12 +302,10 @@
         "speak": "Hablar",
         "start_learning": "Comenzar a aprender",
         "tv_shows": "Programas de televisión",
-        "upgrade": "Actualizar",
         "upgrade_to_pro": "Actualizar a Pro",
+        "upgrade": "Actualizar",
         "verify": "Verificar",
-        "watch": "Ver",
-        "confirm_deletion": "Confirmar eliminación",
-        "keep_account": "Conservar cuenta"
+        "watch": "Ver"
     },
     "chatgpt": {
         "prompt": {
@@ -315,15 +315,15 @@
     },
     "error": {
         "entry_not_found": "Entrada no encontrada o diccionario no cargado",
+        "failed_fetch_videos": "No se pudieron recuperar los vídeos",
         "failed_retrieve_password": "Fallo al recuperar la contraseña almacenada",
         "failed_to_load_items": "Error al cargar elementos:",
         "generic": "Error",
+        "language_not_selected": "Idioma no seleccionado",
         "passwords_do_not_match": "Las contraseñas no coinciden",
         "registration_failed": "Registro fallido",
         "updating_progress": "Error al actualizar el progreso:",
-        "user_info_not_found": "Información del usuario no encontrada",
-        "language_not_selected": "Idioma no seleccionado",
-        "failed_fetch_videos": "No se pudieron recuperar los vídeos"
+        "user_info_not_found": "Información del usuario no encontrada"
     },
     "level": {
         "cefr": {
@@ -396,6 +396,7 @@
         "auto_renews_in": "Se renueva automáticamente en {{days}} días",
         "confirm_cancel_subscription": "¿Estás seguro de que quieres cancelar tu suscripción?",
         "copy_success": "Texto copiado al portapapeles",
+        "delete_confirmation": "¿Estás seguro de que quieres eliminar tu cuenta de forma permanente? Perderás todas tus palabras guardadas y tu progreso. Esta acción no se puede deshacer.",
         "discover_the_power_of_comprehensible_input": "Descubra el poder de la entrada comprensible a través de cientos de miles de videos en más de 100 idiomas.",
         "dont_have_an_account": "¿No tienes una cuenta?",
         "enrich_your_language_learning_journey": "Enriquezca su viaje de aprendizaje de idiomas",
@@ -409,13 +410,12 @@
         "or_login_with": "O inicie sesión con:",
         "or_register_with": "O registra con:",
         "pro_feature_chatgpt": "Solo los usuarios Pro pueden usar funciones de IA en Language Player Go. Para usar esta función, actualiza a Pro.",
-        "pro_transcript": "Αναβαθμίστε σε Pro για να δείτε την πλήρη μεταγραφή!",
         "pro_transcript_limit_reached": "Se ha alcanzado el límite de transcripciones. Actualice a Pro para acceder a más transcripciones.",
+        "pro_transcript": "Αναβαθμίστε σε Pro για να δείτε την πλήρη μεταγραφή!",
         "sort_by": "Ordenar por: {{sortBy}}",
         "time_spent_learning": "Tiempo invertido en aprender {{language}} en Language Player",
         "upgrade_text": "¡Actualice a Pro para acceder a más videos!",
-        "what_your_first_language": "¿Cuál es tu lengua materna?",
-        "delete_confirmation": "¿Estás seguro de que quieres eliminar tu cuenta de forma permanente? Perderás todas tus palabras guardadas y tu progreso. Esta acción no se puede deshacer."
+        "what_your_first_language": "¿Cuál es tu lengua materna?"
     },
     "of": "de",
     "option": {
@@ -469,6 +469,7 @@
         "current_level": "¿Cuál es tu nivel actual de {{language}}?",
         "current_plan": "Plan actual",
         "date": "Fecha",
+        "delete_account": "Eliminar cuenta",
         "delete_my_account": "Eliminar mi cuenta",
         "dictionary": "Diccionario",
         "email": "Correo electrónico",
@@ -498,8 +499,7 @@
         "trial": "Prueba",
         "verify_your_email": "Verifica tu correo electrónico",
         "views": "{{numViews}} Vistas",
-        "watch_history": "Historial de visualización",
-        "delete_account": "Eliminar cuenta"
+        "watch_history": "Historial de visualización"
     },
     "video": {
         "comments": "Comentarios",

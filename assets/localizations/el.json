@@ -289,7 +289,9 @@
         "cancel": "Ακυρώνω",
         "clear": "Κατάργηση όλων",
         "confirm_cancellation": "Επιβεβαίωση ακύρωσης",
+        "confirm_deletion": "Επιβεβαίωση διαγραφής",
         "copy": "Αντιγραφή",
+        "keep_account": "Διατήρηση λογαριασμού",
         "keep_subscription": "Διατήρηση συνδρομής",
         "let_chatgpt_explain": "Ερωτήστε την τεχνητή νοημοσύνη",
         "list_all": "Εμφάνιση όλων",
@@ -301,12 +303,10 @@
         "speak": "Μιλήστε",
         "start_learning": "Ξεκινήστε τη μάθηση",
         "tv_shows": "Τηλεοπτικές εκπομπές",
-        "upgrade": "Αναβαθμίζω",
         "upgrade_to_pro": "Αναβάθμιση σε Pro",
+        "upgrade": "Αναβαθμίζω",
         "verify": "Επαλήθευση",
-        "watch": "Παρακολούθηση",
-        "confirm_deletion": "Επιβεβαίωση διαγραφής",
-        "keep_account": "Διατήρηση λογαριασμού"
+        "watch": "Παρακολούθηση"
     },
     "chatgpt": {
         "prompt": {
@@ -316,15 +316,15 @@
     },
     "error": {
         "entry_not_found": "Δεν βρέθηκε η καταχώρηση ή το λεξικό δεν φορτώθηκε",
+        "failed_fetch_videos": "Αποτυχία λήψης βίντεο",
         "failed_retrieve_password": "Αποτυχία ανάκτησης αποθηκευμένου κωδικού πρόσβασης",
         "failed_to_load_items": "Αποτυχία φόρτωσης στοιχείων:",
         "generic": "Σφάλμα",
+        "language_not_selected": "Η γλώσσα δεν έχει επιλεγεί",
         "passwords_do_not_match": "Οι κωδικοί πρόσβασης δεν ταιριάζουν",
         "registration_failed": "Η εγγραφή απέτυχε",
         "updating_progress": "Σφάλμα κατά την ενημέρωση της προόδου:",
-        "user_info_not_found": "Δεν βρέθηκαν πληροφορίες χρήστη",
-        "language_not_selected": "Η γλώσσα δεν έχει επιλεγεί",
-        "failed_fetch_videos": "Αποτυχία λήψης βίντεο"
+        "user_info_not_found": "Δεν βρέθηκαν πληροφορίες χρήστη"
     },
     "level": {
         "cefr": {
@@ -397,6 +397,7 @@
         "auto_renews_in": "Αυτόματη ανανέωση σε {{days}} ημέρες",
         "confirm_cancel_subscription": "Είστε βέβαιοι ότι θέλετε να ακυρώσετε τη συνδρομή σας;",
         "copy_success": "Το κείμενο αντιγράφηκε στο πρόχειρο",
+        "delete_confirmation": "Είστε σίγουρος ότι θέλετε να διαγράψετε μόνιμα τον λογαριασμό σας; Θα χάσετε όλες τις αποθηκευμένες λέξεις και την πρόοδό σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.",
         "discover_the_power_of_comprehensible_input": "Ανακαλύψτε τη δύναμη της Κατανοητής Εισόδου μέσα από εκατοντάδες χιλιάδες βίντεο σε περισσότερες από 100 γλώσσες.",
         "dont_have_an_account": "Δεν έχετε λογαριασμό;",
         "enrich_your_language_learning_journey": "Εμπλουτίστε το ταξίδι εκμάθησης γλωσσών",
@@ -410,13 +411,12 @@
         "or_login_with": "Ή συνδεθείτε με:",
         "or_register_with": "Ή εγγραφείτε με:",
         "pro_feature_chatgpt": "Μόνο οι χρήστες Pro μπορούν να χρησιμοποιήσουν τις λειτουργίες τεχνητής νοημοσύνης στο Language Player Go. Για να χρησιμοποιήσετε αυτήν τη λειτουργία, αναβαθμίστε σε Pro.",
-        "pro_transcript": " um die vollständige Transkription zu sehen!",
         "pro_transcript_limit_reached": "Συμπληρώθηκε το όριο μεταγραφής. Αναβαθμίστε σε Pro για να αποκτήσετε πρόσβαση σε περισσότερες μεταγραφές.",
+        "pro_transcript": " um die vollständige Transkription zu sehen!",
         "sort_by": "Ταξινόμηση κατά: {{sortBy}}",
         "time_spent_learning": "Χρόνος που δαπανήθηκε για την εκμάθηση της {{language}} στο Language Player",
         "upgrade_text": "Αναβαθμίστε σε Pro για πρόσβαση σε περισσότερα βίντεο!",
-        "what_your_first_language": "Ποια είναι η πρώτη σας γλώσσα;",
-        "delete_confirmation": "Είστε σίγουρος ότι θέλετε να διαγράψετε μόνιμα τον λογαριασμό σας; Θα χάσετε όλες τις αποθηκευμένες λέξεις και την πρόοδό σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί."
+        "what_your_first_language": "Ποια είναι η πρώτη σας γλώσσα;"
     },
     "of": "του",
     "option": {
@@ -470,6 +470,7 @@
         "current_level": "Ποιο είναι το τρέχον επίπεδό σας στα {{language}};",
         "current_plan": "Τρέχον σχέδιο",
         "date": "Ημερομηνία",
+        "delete_account": "Διαγραφή λογαριασμού",
         "delete_my_account": "Διαγραφή του λογαριασμού μου",
         "dictionary": "Λεξικό",
         "email": "Email",
@@ -499,8 +500,7 @@
         "trial": "Δοκιμή",
         "verify_your_email": "Επιβεβαιώστε το email σας",
         "views": "{{numViews}} Θέα",
-        "watch_history": "Ιστορικό παρακολούθησης",
-        "delete_account": "Διαγραφή λογαριασμού"
+        "watch_history": "Ιστορικό παρακολούθησης"
     },
     "video": {
         "comments": "Σχόλια",

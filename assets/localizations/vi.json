@@ -287,7 +287,9 @@
         "cancel": "Hủy",
         "clear": "Xóa tất cả",
         "confirm_cancellation": "Xác nhận hủy",
+        "confirm_deletion": "Xác nhận xóa",
         "copy": "Bản sao",
+        "keep_account": "Giữ tài khoản",
         "keep_subscription": "Giữ đăng ký",
         "let_chatgpt_explain": "Hỏi AI",
         "list_all": "Liệt kê tất cả",
@@ -299,12 +301,10 @@
         "speak": "Nói",
         "start_learning": "Bắt đầu học",
         "tv_shows": "Chương trình truyền hình",
-        "upgrade": "Nâng cấp",
         "upgrade_to_pro": "Nâng cấp lên Pro",
+        "upgrade": "Nâng cấp",
         "verify": "Xác minh",
-        "watch": "Xem",
-        "confirm_deletion": "Xác nhận xóa",
-        "keep_account": "Giữ tài khoản"
+        "watch": "Xem"
     },
     "chatgpt": {
         "prompt": {
@@ -314,15 +314,15 @@
     },
     "error": {
         "entry_not_found": "Không tìm thấy mục nhập hoặc từ điển không được tải",
+        "failed_fetch_videos": "Không tìm nạp được video",
         "failed_retrieve_password": "Không thể truy xuất mật khẩu đã lưu trữ",
         "failed_to_load_items": "Không tải được mục:",
         "generic": "Lỗi",
+        "language_not_selected": "Ngôn ngữ không được chọn",
         "passwords_do_not_match": "Mật khẩu không khớp",
         "registration_failed": "Đăng ký không thành công",
         "updating_progress": "Lỗi cập nhật tiến độ:",
-        "user_info_not_found": "Không tìm thấy thông tin người dùng",
-        "language_not_selected": "Ngôn ngữ không được chọn",
-        "failed_fetch_videos": "Không tìm nạp được video"
+        "user_info_not_found": "Không tìm thấy thông tin người dùng"
     },
     "level": {
         "cefr": {
@@ -408,8 +408,8 @@
         "or_login_with": "Hoặc đăng nhập bằng:",
         "or_register_with": "Hoặc đăng ký với:",
         "pro_feature_chatgpt": "Chỉ người dùng Pro mới có thể sử dụng các tính năng AI trong Language Player Go. Để sử dụng tính năng này, hãy nâng cấp lên Pro.",
-        "pro_transcript": "Nâng cấp lên Pro để xem bảng điểm đầy đủ!",
         "pro_transcript_limit_reached": "Đã đạt đến giới hạn bảng điểm. Vui lòng nâng cấp lên Pro để truy cập thêm bảng điểm.",
+        "pro_transcript": "Nâng cấp lên Pro để xem bảng điểm đầy đủ!",
         "sort_by": "Sắp xếp theo: {{sortBy}}",
         "time_spent_learning": "Dành thời gian học {{language}} trong Trình phát ngôn ngữ",
         "upgrade_text": "Nâng cấp lên Pro để truy cập nhiều video hơn!",
@@ -467,6 +467,7 @@
         "current_level": "Cấp độ {{language}} hiện tại của bạn là bao nhiêu?",
         "current_plan": "Kế hoạch hiện tại",
         "date": "Ngày",
+        "delete_account": "Xóa tài khoản",
         "delete_my_account": "Xóa tài khoản của tôi",
         "dictionary": "Từ điển",
         "email": "Email",
@@ -496,8 +497,7 @@
         "trial": "Thử nghiệm",
         "verify_your_email": "Xác minh email của bạn",
         "views": "{{numViews}} Views",
-        "watch_history": "Lịch sử xem",
-        "delete_account": "Xóa tài khoản"
+        "watch_history": "Lịch sử xem"
     },
     "video": {
         "comments": "Ý kiến",

@@ -289,7 +289,9 @@
         "cancel": "Otkazati",
         "clear": "Ukloni sve",
         "confirm_cancellation": "Potvrda otkazivanja",
+        "confirm_deletion": "Potvrdi brisanje",
         "copy": "Kopija",
+        "keep_account": "Zadrži račun",
         "keep_subscription": "Zadrži pretplatu",
         "let_chatgpt_explain": "Pitajte AI",
         "list_all": "Popis svih",
@@ -301,12 +303,10 @@
         "speak": "Govoriti",
         "start_learning": "Započnite učenje",
         "tv_shows": "TV emisije",
-        "upgrade": "Nadograditi",
         "upgrade_to_pro": "Nadogradnja na Pro",
+        "upgrade": "Nadograditi",
         "verify": "Ovjeriti",
-        "watch": "Gledati",
-        "confirm_deletion": "Potvrdi brisanje",
-        "keep_account": "Zadrži račun"
+        "watch": "Gledati"
     },
     "chatgpt": {
         "prompt": {
@@ -316,15 +316,15 @@
     },
     "error": {
         "entry_not_found": "Unos nije pronađen ili rječnik nije učitan",
+        "failed_fetch_videos": "Dohvaćanje videozapisa nije uspjelo",
         "failed_retrieve_password": "Dohvaćanje spremljene lozinke nije uspjelo",
         "failed_to_load_items": "Učitavanje stavki nije uspjelo:",
         "generic": "Greška",
+        "language_not_selected": "Jezik nije odabran",
         "passwords_do_not_match": "Lozinke se ne podudaraju",
         "registration_failed": "Registracija nije uspjela",
         "updating_progress": "Pogreška pri ažuriranju tijeka ažuriranja:",
-        "user_info_not_found": "Podaci o korisniku nisu pronađeni",
-        "language_not_selected": "Jezik nije odabran",
-        "failed_fetch_videos": "Dohvaćanje videozapisa nije uspjelo"
+        "user_info_not_found": "Podaci o korisniku nisu pronađeni"
     },
     "level": {
         "cefr": {
@@ -410,8 +410,8 @@
         "or_login_with": "Ili se prijavite s:",
         "or_register_with": "Ili se registrirajte na:",
         "pro_feature_chatgpt": "Samo Pro korisnici mogu koristiti značajke umjetne inteligencije u aplikaciji Language Player Go. Da biste koristili ovu značajku, nadogradite na Pro.",
-        "pro_transcript": "Nadogradite na Pro da biste vidjeli cijeli transkript!",
         "pro_transcript_limit_reached": "Dosegnuto je ograničenje transkripta. Nadogradite na Pro da biste pristupili većem broju transkripata.",
+        "pro_transcript": "Nadogradite na Pro da biste vidjeli cijeli transkript!",
         "sort_by": "Sortiraj po: {{sortBy}}",
         "time_spent_learning": "Potrošeno učenje {{language}} u programu Language Player",
         "upgrade_text": "Nadogradite na Pro da biste pristupili više videozapisa!",
@@ -469,6 +469,7 @@
         "current_level": "Koja je trenutna razina {{{language}}?",
         "current_plan": "Trenutni plan",
         "date": "Datum",
+        "delete_account": "Izbriši račun",
         "delete_my_account": "Izbriši moj račun",
         "dictionary": "Rječnik",
         "email": "E-pošta",
@@ -498,8 +499,7 @@
         "trial": "Suđenje",
         "verify_your_email": "Potvrda e-pošte",
         "views": "{{numViews}} Pogledi",
-        "watch_history": "Povijest gledanja",
-        "delete_account": "Izbriši račun"
+        "watch_history": "Povijest gledanja"
     },
     "video": {
         "comments": "Komentari",

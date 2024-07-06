@@ -289,7 +289,9 @@
         "cancel": "إلغاء الأمر",
         "clear": "إزالة الكل",
         "confirm_cancellation": "تأكيد الإلغاء",
+        "confirm_deletion": "تأكيد الحذف",
         "copy": "نسخ",
+        "keep_account": "الاحتفاظ بالحساب",
         "keep_subscription": "حافظ على الاشتراك",
         "let_chatgpt_explain": "اسأل الذكاء الاصطناعي",
         "list_all": "عرض الكل",
@@ -301,12 +303,10 @@
         "speak": "تحدث",
         "start_learning": "ابدأ التعلم",
         "tv_shows": "البرامج التلفزيونية",
-        "upgrade": "ترقيه",
         "upgrade_to_pro": "الترقية إلى النسخة المحترفة",
+        "upgrade": "ترقيه",
         "verify": "التحقق",
-        "watch": "شاهد",
-        "confirm_deletion": "تأكيد الحذف",
-        "keep_account": "الاحتفاظ بالحساب"
+        "watch": "شاهد"
     },
     "chatgpt": {
         "prompt": {
@@ -316,15 +316,15 @@
     },
     "error": {
         "entry_not_found": "لم يتم العثور على الإدخال أو لم يتم تحميل القاموس",
+        "failed_fetch_videos": "فشل جلب مقاطع الفيديو",
         "failed_retrieve_password": "فشل في استرداد كلمة المرور المخزنة",
         "failed_to_load_items": "فشل تحميل العناصر:",
         "generic": "خطأ",
+        "language_not_selected": "اللغة غير محددة",
         "passwords_do_not_match": "كلمات المرور غير متطابقة",
         "registration_failed": "فشل التسجيل",
         "updating_progress": "خطأ في تحديث التقدم:",
-        "user_info_not_found": "معلومات المستخدم غير موجودة",
-        "language_not_selected": "اللغة غير محددة",
-        "failed_fetch_videos": "فشل جلب مقاطع الفيديو"
+        "user_info_not_found": "معلومات المستخدم غير موجودة"
     },
     "level": {
         "cefr": {
@@ -397,6 +397,7 @@
         "auto_renews_in": "التجديد التلقائي في {{days}} أيام",
         "confirm_cancel_subscription": "هل أنت متأكد من رغبتك في إلغاء اشتراكك؟",
         "copy_success": "تم نسخ النص إلى الحافظة",
+        "delete_confirmation": "هل أنت متأكد من رغبتك في حذف حسابك نهائيًا؟ ستفقد جميع الكلمات المحفوظة والتقدم الخاص بك. لا يمكن التراجع عن هذا الإجراء.",
         "discover_the_power_of_comprehensible_input": "اكتشف قوة الإدخال المفهوم من خلال مئات الآلاف من مقاطع الفيديو بأكثر من 100 لغة.",
         "dont_have_an_account": "ليس لديك حساب؟",
         "enrich_your_language_learning_journey": "إثراء رحلة تعلم اللغة الخاصة بك",
@@ -410,13 +411,12 @@
         "or_login_with": "أو تسجيل الدخول باستخدام:",
         "or_register_with": "أو سجل بواسطة:",
         "pro_feature_chatgpt": "يمكن لمستخدمي Pro فقط استخدام ميزات الذكاء الاصطناعي في Language Player Go. لاستخدام هذه الميزة، قم بالترقية إلى Pro.",
-        "pro_transcript": "الترقية إلى النسخة المحترفة لعرض النص الكامل!",
         "pro_transcript_limit_reached": "تم الوصول إلى حد النص. يرجى الترقية إلى Pro للوصول إلى المزيد من النصوص.",
+        "pro_transcript": "الترقية إلى النسخة المحترفة لعرض النص الكامل!",
         "sort_by": "فرز حسب: {{sortBy}}",
         "time_spent_learning": "قضيت وقتًا في تعلم {{language}} في Language Player",
         "upgrade_text": "قم بالترقية إلى Pro للوصول إلى المزيد من مقاطع الفيديو!",
-        "what_your_first_language": "ما هي لغتك الأولى؟",
-        "delete_confirmation": "هل أنت متأكد من رغبتك في حذف حسابك نهائيًا؟ ستفقد جميع الكلمات المحفوظة والتقدم الخاص بك. لا يمكن التراجع عن هذا الإجراء."
+        "what_your_first_language": "ما هي لغتك الأولى؟"
     },
     "of": "من",
     "option": {
@@ -470,6 +470,7 @@
         "current_level": "ما هو مستواك الحالي في {{language}}؟",
         "current_plan": "الخطة الحالية",
         "date": "تاريخ",
+        "delete_account": "حذف الحساب",
         "delete_my_account": "حذف حسابي",
         "dictionary": "القاموس",
         "email": "البريد الإلكتروني",
@@ -499,8 +500,7 @@
         "trial": "تجربة",
         "verify_your_email": "تحقق من بريدك الإلكتروني",
         "views": "{{numViews}} طرق عرض",
-        "watch_history": "تاريخ المشاهدة",
-        "delete_account": "حذف الحساب"
+        "watch_history": "تاريخ المشاهدة"
     },
     "video": {
         "comments": "تعليقات",

@@ -288,7 +288,9 @@
         "cancel": "Annullera",
         "clear": "Ta bort alla",
         "confirm_cancellation": "Bekräfta avbokning",
+        "confirm_deletion": "Bekräfta radering",
         "copy": "Kopia",
+        "keep_account": "Behåll konto",
         "keep_subscription": "Behåll prenumeration",
         "let_chatgpt_explain": "Fråga AI",
         "list_all": "Lista alla",
@@ -300,12 +302,10 @@
         "speak": "Tala",
         "start_learning": "Börja lära dig",
         "tv_shows": "TV-program",
-        "upgrade": "Uppgradera",
         "upgrade_to_pro": "Uppgradera till Pro",
+        "upgrade": "Uppgradera",
         "verify": "Kontrollera",
-        "watch": "Klocka",
-        "confirm_deletion": "Bekräfta radering",
-        "keep_account": "Behåll konto"
+        "watch": "Klocka"
     },
     "chatgpt": {
         "prompt": {
@@ -315,15 +315,15 @@
     },
     "error": {
         "entry_not_found": "Det gick inte att hitta posten eller ordlistan har inte lästs in",
+        "failed_fetch_videos": "Det gick inte att hämta videor",
         "failed_retrieve_password": "Det gick inte att hämta det lagrade lösenordet",
         "failed_to_load_items": "Det gick inte att ladda objekt:",
         "generic": "Fel",
+        "language_not_selected": "Språk har inte valts",
         "passwords_do_not_match": "Lösenorden stämmer inte överens",
         "registration_failed": "Registreringen misslyckades",
         "updating_progress": "Fel vid uppdatering av förloppet:",
-        "user_info_not_found": "Det gick inte att hitta användarinformationen",
-        "language_not_selected": "Språk har inte valts",
-        "failed_fetch_videos": "Det gick inte att hämta videor"
+        "user_info_not_found": "Det gick inte att hitta användarinformationen"
     },
     "level": {
         "cefr": {
@@ -409,8 +409,8 @@
         "or_login_with": "Eller logga in med:",
         "or_register_with": "Eller registrera dig hos:",
         "pro_feature_chatgpt": "Endast Pro-användare kan använda AI-funktioner i Language Player Go. Om du vill använda den här funktionen uppgraderar du till Pro.",
-        "pro_transcript": "Uppgradera till Pro för att se hela utskriften!",
         "pro_transcript_limit_reached": "Avskriftsgränsen har nåtts. Uppgradera till Pro för att få tillgång till fler utskrifter.",
+        "pro_transcript": "Uppgradera till Pro för att se hela utskriften!",
         "sort_by": "Sortera efter: {{sortBy}}",
         "time_spent_learning": "Spenderat på att lära sig {{language}} i Language Player",
         "upgrade_text": "Uppgradera till Pro för att få tillgång till fler videor!",
@@ -468,6 +468,7 @@
         "current_level": "Vilken är din nuvarande {{language}}-nivå?",
         "current_plan": "Nuvarande plan",
         "date": "Datum",
+        "delete_account": "Radera konto",
         "delete_my_account": "Ta bort mitt konto",
         "dictionary": "Ordbok",
         "email": "E-post",
@@ -497,8 +498,7 @@
         "trial": "Rättegång",
         "verify_your_email": "Verifiera din e-postadress",
         "views": "{{numViews}} {{}} Visningar",
-        "watch_history": "Visningshistorik",
-        "delete_account": "Radera konto"
+        "watch_history": "Visningshistorik"
     },
     "video": {
         "comments": "Kommentarer",

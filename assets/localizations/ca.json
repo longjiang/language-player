@@ -289,7 +289,9 @@
         "cancel": "Cancel·lar",
         "clear": "Suprimeix-ho tot",
         "confirm_cancellation": "Confirmeu la cancel·lació",
+        "confirm_deletion": "Confirma la supressió",
         "copy": "Kopiar",
+        "keep_account": "Conserva el compte",
         "keep_subscription": "Mantenir subscripció",
         "let_chatgpt_explain": "Deixa que l'IA ho expliqui",
         "list_all": "Llista tot",
@@ -301,12 +303,10 @@
         "speak": "Parla",
         "start_learning": "Comença a aprendre",
         "tv_shows": "Programmes de televisió",
-        "upgrade": "Rampa",
         "upgrade_to_pro": "Actualitza a Pro",
+        "upgrade": "Rampa",
         "verify": "Verifica",
-        "watch": "Visualitza",
-        "confirm_deletion": "Confirma la supressió",
-        "keep_account": "Conserva el compte"
+        "watch": "Visualitza"
     },
     "chatgpt": {
         "prompt": {
@@ -316,15 +316,15 @@
     },
     "error": {
         "entry_not_found": "No s'ha trobat l'entrada o el diccionari no s'ha carregat",
+        "failed_fetch_videos": "No s'han pogut obtenir vídeos",
         "failed_retrieve_password": "Error en recuperar la contrasenya emmagatzemada",
         "failed_to_load_items": "Error al carregar els elements:",
         "generic": "Error",
+        "language_not_selected": "Idioma no seleccionat",
         "passwords_do_not_match": "Les contrasenyes no coincideixen",
         "registration_failed": "El registre ha fallat",
         "updating_progress": "Error actualitzant el progrés:",
-        "user_info_not_found": "Informació de l'usuari no trobada",
-        "language_not_selected": "Idioma no seleccionat",
-        "failed_fetch_videos": "No s'han pogut obtenir vídeos"
+        "user_info_not_found": "Informació de l'usuari no trobada"
     },
     "level": {
         "cefr": {
@@ -397,6 +397,7 @@
         "auto_renews_in": "Es renova automàticament en {{days}} dies",
         "confirm_cancel_subscription": "Estàs segur que vols cancel·lar la teva subscripció?",
         "copy_success": "Text copiat al porta-retalls",
+        "delete_confirmation": "Estàs segur que vols eliminar el teu compte permanentment? Perdràs totes les paraules i el progrés desats. Aquesta acció no es pot desfer.",
         "discover_the_power_of_comprehensible_input": "Descobreix el poder de l'entrada comprensible a través de centenars de milers de vídeos en més de 100 idiomes.",
         "dont_have_an_account": "No tens compte?",
         "enrich_your_language_learning_journey": "Enriqueix el teu viatge d'aprenentatge d'idiomes",
@@ -410,13 +411,12 @@
         "or_login_with": "O inicieu sessió amb:",
         "or_register_with": "O registrau amb:",
         "pro_feature_chatgpt": "Només els usuaris Pro poden utilitzar les funcions d'IA a Language Player Go. Per utilitzar aquesta funció, actualitza a Pro.",
-        "pro_transcript": "Actualitza a Pro per veure la transcripció completa!",
         "pro_transcript_limit_reached": "Límit de transcripció assolit. Actualitzeu a Pro per accedir a més transcripcions.",
+        "pro_transcript": "Actualitza a Pro per veure la transcripció completa!",
         "sort_by": "Ordena per: {{sortBy}}",
         "time_spent_learning": "He passat temps aprenent {{language}} a Language Player",
         "upgrade_text": "Actualitzeu-vos a Pro per accedir a més vídeos.",
-        "what_your_first_language": "Quin és el teu primer idioma?",
-        "delete_confirmation": "Estàs segur que vols eliminar el teu compte permanentment? Perdràs totes les paraules i el progrés desats. Aquesta acció no es pot desfer."
+        "what_your_first_language": "Quin és el teu primer idioma?"
     },
     "of": "de",
     "option": {
@@ -470,6 +470,7 @@
         "current_level": "Quin és el teu nivell actual de {{language}}?",
         "current_plan": "Pla actual",
         "date": "Data",
+        "delete_account": "Suprimeix el compte",
         "delete_my_account": "Eliminar el meu compte",
         "dictionary": "Diccionari",
         "email": "Correu electrònic",
@@ -499,8 +500,7 @@
         "trial": "Prova",
         "verify_your_email": "Verifica el teu correu electrònic",
         "views": "{{numViews}} Vistes",
-        "watch_history": "Historial de visualitzacions",
-        "delete_account": "Suprimeix el compte"
+        "watch_history": "Historial de visualitzacions"
     },
     "video": {
         "comments": "Comentaris",

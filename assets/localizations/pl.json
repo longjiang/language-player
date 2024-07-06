@@ -288,7 +288,9 @@
         "cancel": "Anuluj",
         "clear": "Usuń wszystko",
         "confirm_cancellation": "Potwierdź anulowanie",
+        "confirm_deletion": "Potwierdź usunięcie",
         "copy": "Kopiować",
+        "keep_account": "Zachowaj konto",
         "keep_subscription": "Zachowaj subskrypcję",
         "let_chatgpt_explain": "Zapytaj sztuczną inteligencję",
         "list_all": "Lista wszystko",
@@ -300,12 +302,10 @@
         "speak": "Mówić",
         "start_learning": "Rozpocznij naukę",
         "tv_shows": "Telewizyjne",
-        "upgrade": "Upgrade",
         "upgrade_to_pro": "Uaktualnij do wersji Pro",
+        "upgrade": "Upgrade",
         "verify": "Zweryfikować",
-        "watch": "Zegarek",
-        "confirm_deletion": "Potwierdź usunięcie",
-        "keep_account": "Zachowaj konto"
+        "watch": "Zegarek"
     },
     "chatgpt": {
         "prompt": {
@@ -315,15 +315,15 @@
     },
     "error": {
         "entry_not_found": "Nie znaleziono wpisu lub nie załadowano słownika",
+        "failed_fetch_videos": "Nie udało się pobrać filmów",
         "failed_retrieve_password": "Nie udało się odzyskać zapisanego hasła",
         "failed_to_load_items": "Nie udało się załadować elementów:",
         "generic": "Błąd",
+        "language_not_selected": "Nie wybrano języka",
         "passwords_do_not_match": "Hasła nie są zgodne",
         "registration_failed": "Rejestracja nie powiodła się",
         "updating_progress": "Błąd postępu aktualizacji:",
-        "user_info_not_found": "Nie znaleziono informacji o użytkowniku",
-        "language_not_selected": "Nie wybrano języka",
-        "failed_fetch_videos": "Nie udało się pobrać filmów"
+        "user_info_not_found": "Nie znaleziono informacji o użytkowniku"
     },
     "level": {
         "cefr": {
@@ -409,8 +409,8 @@
         "or_login_with": "Lub zaloguj się za pomocą:",
         "or_register_with": "Lub zarejestruj się za pomocą:",
         "pro_feature_chatgpt": "Tylko użytkownicy wersji Pro mogą korzystać z funkcji sztucznej inteligencji w Language Player Go. Aby korzystać z tej funkcji, uaktualnij do wersji Pro.",
-        "pro_transcript": "Uaktualnij do wersji Pro, aby wyświetlić pełną transkrypcję!",
         "pro_transcript_limit_reached": "Osiągnięto limit transkrypcji. Uaktualnij do wersji Pro, aby uzyskać dostęp do większej liczby transkrypcji.",
+        "pro_transcript": "Uaktualnij do wersji Pro, aby wyświetlić pełną transkrypcję!",
         "sort_by": "Sortuj według: {{sortBy}}",
         "time_spent_learning": "Spędzone na nauce {{language}} w odtwarzaczu językowym",
         "upgrade_text": "Uaktualnij do wersji Pro, aby uzyskać dostęp do większej liczby filmów!",
@@ -468,6 +468,7 @@
         "current_level": "Jaki jest twój obecny poziom {{language}}?",
         "current_plan": "Bieżący plan",
         "date": "Data",
+        "delete_account": "Usuń konto",
         "delete_my_account": "Usuń moje konto",
         "dictionary": "Słownik",
         "email": "E-mail",
@@ -497,8 +498,7 @@
         "trial": "Proces",
         "verify_your_email": "Zweryfikuj swój adres e-mail",
         "views": "{{numViews}} Widoki",
-        "watch_history": "Historia oglądania",
-        "delete_account": "Usuń konto"
+        "watch_history": "Historia oglądania"
     },
     "video": {
         "comments": "Komentarze",

@@ -289,7 +289,9 @@
         "cancel": "Membatalkan",
         "clear": "Hapus Semua",
         "confirm_cancellation": "Konfirmasi Pembatalan",
+        "confirm_deletion": "Konfirmasi Penghapusan",
         "copy": "Menyalin",
+        "keep_account": "Simpan Akun",
         "keep_subscription": "Tetap Berlangganan",
         "let_chatgpt_explain": "Tanya AI",
         "list_all": "Daftar Semua",
@@ -301,12 +303,10 @@
         "speak": "Berbicara",
         "start_learning": "Mulai Belajar",
         "tv_shows": "Acara TV",
-        "upgrade": "Upgrade",
         "upgrade_to_pro": "Tingkatkan ke Pro",
+        "upgrade": "Upgrade",
         "verify": "Memverifikasi",
-        "watch": "Menonton",
-        "confirm_deletion": "Konfirmasi Penghapusan",
-        "keep_account": "Simpan Akun"
+        "watch": "Menonton"
     },
     "chatgpt": {
         "prompt": {
@@ -316,15 +316,15 @@
     },
     "error": {
         "entry_not_found": "Entri tidak ditemukan atau kamus tidak dimuat",
+        "failed_fetch_videos": "Gagal mengambil video",
         "failed_retrieve_password": "Gagal mengambil kata sandi yang disimpan",
         "failed_to_load_items": "Gagal memuat item:",
         "generic": "Kesalahan",
+        "language_not_selected": "Bahasa tidak dipilih",
         "passwords_do_not_match": "Kata sandi tidak cocok",
         "registration_failed": "Pendaftaran gagal",
         "updating_progress": "Kemajuan pembaruan kesalahan:",
-        "user_info_not_found": "Info pengguna tidak ditemukan",
-        "language_not_selected": "Bahasa tidak dipilih",
-        "failed_fetch_videos": "Gagal mengambil video"
+        "user_info_not_found": "Info pengguna tidak ditemukan"
     },
     "level": {
         "cefr": {
@@ -410,8 +410,8 @@
         "or_login_with": "Atau login dengan:",
         "or_register_with": "Atau daftar dengan:",
         "pro_feature_chatgpt": "Hanya pengguna Pro yang dapat menggunakan fitur AI di Language Player Go. Untuk menggunakan fitur ini, tingkatkan ke Pro.",
-        "pro_transcript": "Tingkatkan ke Pro untuk melihat transkrip lengkap!",
         "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip.",
+        "pro_transcript": "Tingkatkan ke Pro untuk melihat transkrip lengkap!",
         "sort_by": "Urut berdasarkan: {{sortBy}}",
         "time_spent_learning": "Menghabiskan belajar {{language}} di Language Player",
         "upgrade_text": "Tingkatkan ke Pro untuk mengakses lebih banyak video!",
@@ -469,6 +469,7 @@
         "current_level": "Berapa level {{language}} Anda saat ini?",
         "current_plan": "Paket Saat Ini",
         "date": "Tanggal",
+        "delete_account": "Hapus Akun",
         "delete_my_account": "Hapus Akun Saya",
         "dictionary": "Kamus",
         "email": "Email",
@@ -498,8 +499,7 @@
         "trial": "Percobaan",
         "verify_your_email": "Verifikasi Email Anda",
         "views": "{{numViews}} Dilihat",
-        "watch_history": "Riwayat Tontonan",
-        "delete_account": "Hapus Akun"
+        "watch_history": "Riwayat Tontonan"
     },
     "video": {
         "comments": "Komentar",

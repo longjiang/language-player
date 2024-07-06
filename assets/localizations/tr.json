@@ -287,7 +287,9 @@
         "cancel": "İptal",
         "clear": "Tümünü Kaldır",
         "confirm_cancellation": "İptali Onayla",
+        "confirm_deletion": "Hesabı Sil'i Onayla",
         "copy": "Kopya etmek",
+        "keep_account": "Hesabı Sakla",
         "keep_subscription": "Aboneliği Koru",
         "let_chatgpt_explain": "Yapay zekaya sorun",
         "list_all": "Tümünü Listele",
@@ -299,12 +301,10 @@
         "speak": "Konuşmak",
         "start_learning": "Öğrenmeye Başla",
         "tv_shows": "TV Şovları",
-        "upgrade": "Yükseltmek",
         "upgrade_to_pro": "Pro'ya yükseltin",
+        "upgrade": "Yükseltmek",
         "verify": "Doğrulamak",
-        "watch": "Bakmak",
-        "confirm_deletion": "Hesabı Sil'i Onayla",
-        "keep_account": "Hesabı Sakla"
+        "watch": "Bakmak"
     },
     "chatgpt": {
         "prompt": {
@@ -314,15 +314,15 @@
     },
     "error": {
         "entry_not_found": "Giriş bulunamadı veya sözlük yüklenmedi",
+        "failed_fetch_videos": "Videolar getirilemedi",
         "failed_retrieve_password": "Saklanan parola alınamadı",
         "failed_to_load_items": "Öğeler yüklenemedi:",
         "generic": "Hata",
+        "language_not_selected": "Dil seçilmedi",
         "passwords_do_not_match": "Şifreler eşleşmiyor",
         "registration_failed": "Kayıt başarısız oldu",
         "updating_progress": "İlerleme güncelleştirme hatası:",
-        "user_info_not_found": "Kullanıcı bilgisi bulunamadı",
-        "language_not_selected": "Dil seçilmedi",
-        "failed_fetch_videos": "Videolar getirilemedi"
+        "user_info_not_found": "Kullanıcı bilgisi bulunamadı"
     },
     "level": {
         "cefr": {
@@ -408,8 +408,8 @@
         "or_login_with": "Veya şununla giriş yapın:",
         "or_register_with": "Veya şununla kaydolun:",
         "pro_feature_chatgpt": "Language Player Go'da AI özelliklerini yalnızca Pro kullanıcıları kullanabilir. Bu özelliği kullanmak için Pro'ya yükseltin.",
-        "pro_transcript": "Tam transkripti görüntülemek için Pro'ya yükseltin!",
         "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
+        "pro_transcript": "Tam transkripti görüntülemek için Pro'ya yükseltin!",
         "sort_by": "Sıralama ölçütü: {{sortBy}}",
         "time_spent_learning": "Language Player'da {{language}} öğrenmek için harcandı",
         "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!",
@@ -467,6 +467,7 @@
         "current_level": "Şu anki {{language}} seviyeniz nedir?",
         "current_plan": "Mevcut Plan",
         "date": "Tarih",
+        "delete_account": "Hesabı Sil",
         "delete_my_account": "Hesabımı Sil",
         "dictionary": "Sözlük",
         "email": "E-posta",
@@ -496,8 +497,7 @@
         "trial": "Deneme",
         "verify_your_email": "E-postanızı Doğrulayın",
         "views": "{{numViews}} Görünümler",
-        "watch_history": "İzleme Geçmişi",
-        "delete_account": "Hesabı Sil"
+        "watch_history": "İzleme Geçmişi"
     },
     "video": {
         "comments": "Yorum",

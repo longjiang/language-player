@@ -289,7 +289,9 @@
         "cancel": "Perua",
         "clear": "Poista kaikki",
         "confirm_cancellation": "Vahvista peruutus",
+        "confirm_deletion": "Vahvista poistaminen",
         "copy": "Kopioi",
+        "keep_account": "Säilytä tili",
         "keep_subscription": "Pidä tilaus",
         "let_chatgpt_explain": "Anna tekoälyn selittää",
         "list_all": "Näytä kaikki",
@@ -301,12 +303,10 @@
         "speak": "Puhu",
         "start_learning": "Aloita oppiminen",
         "tv_shows": "TV-ohjelmat",
-        "upgrade": "Päivittää",
         "upgrade_to_pro": "Päivitä Pro-versioon",
+        "upgrade": "Päivittää",
         "verify": "Vahvista",
-        "watch": "Katso",
-        "confirm_deletion": "Vahvista poistaminen",
-        "keep_account": "Säilytä tili"
+        "watch": "Katso"
     },
     "chatgpt": {
         "prompt": {
@@ -316,15 +316,15 @@
     },
     "error": {
         "entry_not_found": "Merkintää ei löytynyt tai sanakirjaa ei ole ladattu",
+        "failed_fetch_videos": "Videoiden noutaminen epäonnistui",
         "failed_retrieve_password": "Salasanan haku epäonnistui",
         "failed_to_load_items": "Kohteiden lataaminen epäonnistui:",
         "generic": "Virhe",
+        "language_not_selected": "Kieltä ei valittu",
         "passwords_do_not_match": "Salasanat eivät täsmää",
         "registration_failed": "Rekisteröinti epäonnistui",
         "updating_progress": "Virheen päivitys:",
-        "user_info_not_found": "Käyttäjätietoja ei löytynyt",
-        "language_not_selected": "Kieltä ei valittu",
-        "failed_fetch_videos": "Videoiden noutaminen epäonnistui"
+        "user_info_not_found": "Käyttäjätietoja ei löytynyt"
     },
     "level": {
         "cefr": {
@@ -397,6 +397,7 @@
         "auto_renews_in": "Automaattinen uusiminen {{days}} päivässä",
         "confirm_cancel_subscription": "Haluatko varmasti peruuttaa tilauksesi?",
         "copy_success": "Teksti kopioitu leikepöydälle",
+        "delete_confirmation": "Oletko varma",
         "discover_the_power_of_comprehensible_input": "Tutustu ymmärrettävän syötteen voimaan satojen tuhansien videoiden avulla yli 100 kielellä.",
         "dont_have_an_account": "Eikö sinulla ole tiliä?",
         "enrich_your_language_learning_journey": "Rikastuta kieltenoppimismatkaasi",
@@ -410,13 +411,12 @@
         "or_login_with": "Tai kirjaudu sisään:",
         "or_register_with": "Tai rekisteröidy:",
         "pro_feature_chatgpt": "Vain Pro-käyttäjät voivat käyttää tekoälyn ominaisuuksia Language Player Go -sovelluksessa. Käyttääksesi tätä ominaisuutta, päivitä Pro-versioon.",
-        "pro_transcript": "¡Actualiza a Pro para ver la transcripción completa!",
         "pro_transcript_limit_reached": "Transkriptioraja saavutettu. Päivitä Pro-versioon saadaksesi lisää transkriptioita.",
+        "pro_transcript": "¡Actualiza a Pro para ver la transcripción completa!",
         "sort_by": "Lajittele: {{sortBy}}",
         "time_spent_learning": "Käytetty oppiminen {{language}} Language Playerissa",
         "upgrade_text": "Päivitä Pro-versioon nähdäksesi lisää videoita!",
-        "what_your_first_language": "Mikä on ensimmäinen kielesi?",
-        "delete_confirmation": "Oletko varma"
+        "what_your_first_language": "Mikä on ensimmäinen kielesi?"
     },
     "of": "of",
     "option": {
@@ -470,6 +470,7 @@
         "current_level": "Mikä on nykyinen taitotasosi {{language}}?",
         "current_plan": "Nykyinen suunnitelma",
         "date": "Päivämäärä",
+        "delete_account": "Poista tili",
         "delete_my_account": "Poista tilini",
         "dictionary": "Sanakirja",
         "email": "Sähköposti",
@@ -499,8 +500,7 @@
         "trial": "Kokeilu",
         "verify_your_email": "Vahvista sähköpostisi",
         "views": "{{numViews}} Näkymät",
-        "watch_history": "Katseluhistoria",
-        "delete_account": "Poista tili"
+        "watch_history": "Katseluhistoria"
     },
     "video": {
         "comments": "Kommentit",

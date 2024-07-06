@@ -287,7 +287,9 @@
         "cancel": "ยกเลิก",
         "clear": "ลบทั้งหมด",
         "confirm_cancellation": "ยืนยันการยกเลิก",
+        "confirm_deletion": "ยืนยันการลบ",
         "copy": "ลอก",
+        "keep_account": "บัญชีเก็บ",
         "keep_subscription": "สมัครสมาชิกต่อไป",
         "let_chatgpt_explain": "ถาม AI",
         "list_all": "รายการทั้งหมด",
@@ -299,12 +301,10 @@
         "speak": "พูด",
         "start_learning": "เริ่มเรียนรู้",
         "tv_shows": "ทีวี",
-        "upgrade": "อัพ เกรด",
         "upgrade_to_pro": "อัปเกรดเป็น Pro",
+        "upgrade": "อัพ เกรด",
         "verify": "ตรวจสอบ",
-        "watch": "ดู",
-        "confirm_deletion": "ยืนยันการลบ",
-        "keep_account": "บัญชีเก็บ"
+        "watch": "ดู"
     },
     "chatgpt": {
         "prompt": {
@@ -314,15 +314,15 @@
     },
     "error": {
         "entry_not_found": "ไม่พบรายการหรือไม่ได้โหลดพจนานุกรม",
+        "failed_fetch_videos": "ดึงข้อมูลวิดีโอไม่สําเร็จ",
         "failed_retrieve_password": "ไม่สามารถดึงรหัสผ่านที่เก็บไว้ได้",
         "failed_to_load_items": "ไม่สามารถโหลดรายการ:",
         "generic": "ความผิดพลาด",
+        "language_not_selected": "ไม่ได้เลือกภาษา",
         "passwords_do_not_match": "รหัสผ่านไม่ตรงกัน",
         "registration_failed": "การลงทะเบียนล้มเหลว",
         "updating_progress": "ความคืบหน้าการอัปเดตข้อผิดพลาด:",
-        "user_info_not_found": "ไม่พบข้อมูลผู้ใช้",
-        "language_not_selected": "ไม่ได้เลือกภาษา",
-        "failed_fetch_videos": "ดึงข้อมูลวิดีโอไม่สําเร็จ"
+        "user_info_not_found": "ไม่พบข้อมูลผู้ใช้"
     },
     "level": {
         "cefr": {
@@ -408,8 +408,8 @@
         "or_login_with": "หรือเข้าสู่ระบบด้วย:",
         "or_register_with": "หรือลงทะเบียนกับ:",
         "pro_feature_chatgpt": "เฉพาะผู้ใช้ Pro เท่านั้นที่สามารถใช้คุณสมบัติ AI ใน Language Player Go ได้ หากต้องการใช้คุณสมบัตินี้ ให้อัปเกรดเป็น Pro",
-        "pro_transcript": "อัปเกรดเป็น Pro เพื่อดูการถอดเสียงฉบับเต็ม!",
         "pro_transcript_limit_reached": "ถึงขีดจํากัดการถอดเสียงแล้ว โปรดอัปเกรดเป็น Pro เพื่อเข้าถึงการถอดเสียงเพิ่มเติม",
+        "pro_transcript": "อัปเกรดเป็น Pro เพื่อดูการถอดเสียงฉบับเต็ม!",
         "sort_by": "เรียงตาม: {{sortBy}}",
         "time_spent_learning": "ใช้เวลาเรียนรู้ {{language}} ใน Language Player",
         "upgrade_text": "อัปเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!",
@@ -467,6 +467,7 @@
         "current_level": "ระดับ {{language}} ปัจจุบันของคุณคืออะไร?",
         "current_plan": "แผนปัจจุบัน",
         "date": "วันที่",
+        "delete_account": "ลบบัญชี",
         "delete_my_account": "ลบบัญชีของฉัน",
         "dictionary": "พจนานุกรม",
         "email": "อีเมล",
@@ -496,8 +497,7 @@
         "trial": "การทดลอง",
         "verify_your_email": "ยืนยันอีเมลของคุณ",
         "views": "{{numViews}} มุมมอง",
-        "watch_history": "ประวัติการดู",
-        "delete_account": "ลบบัญชี"
+        "watch_history": "ประวัติการดู"
     },
     "video": {
         "comments": "ความ คิด เห็น",

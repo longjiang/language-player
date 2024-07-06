@@ -288,7 +288,9 @@
         "cancel": "Отмена",
         "clear": "Удалить все",
         "confirm_cancellation": "Подтвердить отмену",
+        "confirm_deletion": "Подтвердить удаление",
         "copy": "Копировать",
+        "keep_account": "Сохранить аккаунт",
         "keep_subscription": "Сохранить подписку",
         "let_chatgpt_explain": "Спросите ИИ",
         "list_all": "Список всех",
@@ -300,12 +302,10 @@
         "speak": "Говорить",
         "start_learning": "Начать обучение",
         "tv_shows": "ТВ шоу",
-        "upgrade": "Модернизировать",
         "upgrade_to_pro": "Перейти на Pro",
+        "upgrade": "Модернизировать",
         "verify": "Проверять",
-        "watch": "Часы",
-        "confirm_deletion": "Подтвердить удаление",
-        "keep_account": "Сохранить аккаунт"
+        "watch": "Часы"
     },
     "chatgpt": {
         "prompt": {
@@ -315,15 +315,15 @@
     },
     "error": {
         "entry_not_found": "Запись не найдена или словарь не загружен",
+        "failed_fetch_videos": "Не удалось получить видео",
         "failed_retrieve_password": "Не удалось восстановить сохраненный пароль",
         "failed_to_load_items": "Не удалось загрузить элементы:",
         "generic": "Ошибка",
+        "language_not_selected": "Язык не выбран",
         "passwords_do_not_match": "Пароли не совпадают",
         "registration_failed": "Ошибка регистрации",
         "updating_progress": "Ход обновления ошибок:",
-        "user_info_not_found": "Информация о пользователе не найдена",
-        "language_not_selected": "Язык не выбран",
-        "failed_fetch_videos": "Не удалось получить видео"
+        "user_info_not_found": "Информация о пользователе не найдена"
     },
     "level": {
         "cefr": {
@@ -409,8 +409,8 @@
         "or_login_with": "Или войдите в систему с помощью:",
         "or_register_with": "Или зарегистрируйтесь с помощью:",
         "pro_feature_chatgpt": "Только пользователи Pro могут использовать функции ИИ в Language Player Go. Чтобы использовать эту функцию, выполните обновление до Pro.",
-        "pro_transcript": "Перейдите на Pro для просмотра полной стенограммы!",
         "pro_transcript_limit_reached": "Достигнут лимит стенограммы. Пожалуйста, обновите статус до Pro, чтобы получить доступ к большему количеству стенограмм.",
+        "pro_transcript": "Перейдите на Pro для просмотра полной стенограммы!",
         "sort_by": "Сортировать по: {{sortBy}}",
         "time_spent_learning": "Потрачено на изучение {{language}} в языковом проигрывателе",
         "upgrade_text": "Обновитесь до Pro, чтобы получить доступ к большему количеству видео!",
@@ -468,6 +468,7 @@
         "current_level": "Каков ваш текущий уровень {{language}}?",
         "current_plan": "Текущий план",
         "date": "Дата",
+        "delete_account": "Удалить аккаунт",
         "delete_my_account": "Удалить мою учетную запись",
         "dictionary": "Словарь",
         "email": "Отправить по электронной почте",
@@ -497,8 +498,7 @@
         "trial": "Испытание",
         "verify_your_email": "Подтвердите свой адрес электронной почты",
         "views": "{{numViews}} Представления",
-        "watch_history": "История просмотров",
-        "delete_account": "Удалить аккаунт"
+        "watch_history": "История просмотров"
     },
     "video": {
         "comments": "Комментарии",

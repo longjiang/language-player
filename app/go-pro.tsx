@@ -13,12 +13,14 @@ import Failure from "@/components/Failure";
 import OnlyLifetimePlan from "@/components/OnlyLifetimePlan";
 import { goProStyles as styles } from "@/src/styles";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const GoProScreen = () => {
   const [paymentError, setPaymentError] = useState<boolean>(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const refRBSheet = useRef();
   const { subscription, isProUser } = useSubscription();
+  const { t } = useLanguage();
 
   const onSelect = (value: string) => {
     console.log("Selected:", value);
@@ -32,52 +34,59 @@ const GoProScreen = () => {
 
   const getExpirationText = () => {
     if (!subscription || !isProUser()) return "";
-
+  
     const expiresOn = new Date(subscription.expires_on);
     const now = new Date();
     const diffTime = Math.abs(expiresOn.getTime() - now.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    const formatTimeRemaining = (days) => {
+  
+    const formatTimeRemaining = (days: number) => {
       if (days < 31) {
-        return `${days} day${days > 1 ? 's' : ''}`;
+        return { days: t('time.days', { count: days }) };
       } else {
         const months = Math.floor(days / 30);
         const remainingDays = days % 30;
-        return `${months} month${months > 1 ? 's' : ''} ${remainingDays} day${remainingDays > 1 ? 's' : ''}`;
+        return {
+          months: t('time.months', { count: months }),
+          days: remainingDays > 0 ? t('time.days', { count: remainingDays }) : null
+        };
       }
     };
-
+  
     const timeRemaining = formatTimeRemaining(diffDays);
-
+  
+    const formattedTime = timeRemaining.days 
+      ? timeRemaining.days 
+      : t('time.months_and_days', { months: timeRemaining.months, days: timeRemaining.days });
+  
     if (subscription.payment_customer_id) {
-      return `Auto-renews in ${timeRemaining}.`;
+      return t('msg.auto_renews', { time: formattedTime });
     } else {
-      return `Expiring in ${timeRemaining}.`;
+      return t('msg.expiring', { time: formattedTime });
     }
   };
 
   return (
-    <ThemedScreen title="Go Pro" onBackPress={() => router.back()}>
+    <ThemedScreen title={t('title.go_pro')} onBackPress={() => router.back()}>
       <Image
         source={require("@/assets/images/pro-rocket.png")}
         style={styles.rocketImage}
       />
 
-      <ThemedText style={styles.subHeader}>With Pro, you can:</ThemedText>
+      <ThemedText style={styles.subHeader}>{t('msg.with_pro_you_can')}</ThemedText>
       <View style={styles.features}>
         {[
           {
             source: require("@/assets/images/go-pro-icon-speech.png"),
-            text: "View entire transcripts beyond the first ten lines.",
+            text: t('feature.view_entire_transcripts'),
           },
           {
             source: require("@/assets/images/go-pro-icon-bubble.png"),
-            text: "See all subtitles search results beyond the first three.",
+            text: t('feature.see_all_subtitles'),
           },
           {
             source: require("@/assets/images/go-pro-icon-light.png"),
-            text: "Use all AI features throughout the app.",
+            text: t('feature.use_all_ai'),
           },
         ].map((feature, index) => (
           <View style={styles.feature} key={index}>
@@ -87,12 +96,12 @@ const GoProScreen = () => {
         ))}
       </View>
       <ThemedText style={styles.choosePlan} type="subtitle">
-        {isProUser() ? "Your Current Plan" : "Choose Your Plan"}
+        {isProUser() ? t('title.your_current_plan') : t('title.choose_your_plan')}
       </ThemedText>
       {[
-        { price: "$12/mo", duration: "Billed each month.", plan: "monthly" },
-        { price: "$89/yr", duration: "Billed annually.", plan: "annual" },
-        { price: "$199/lifetime", duration: "Never Expires.", plan: "lifetime", recommended: true },
+        { price: t('price.monthly'), duration: t('duration.monthly'), plan: "monthly" },
+        { price: t('price.annual'), duration: t('duration.annual'), plan: "annual" },
+        { price: t('price.lifetime'), duration: t('duration.lifetime'), plan: "lifetime", recommended: true },
       ].map((pricing) => (
         <PricingBlock
           key={pricing.plan}
@@ -105,10 +114,10 @@ const GoProScreen = () => {
         />
       ))}
       <ThemedText style={styles.footerText} type="small">
-        1. Assuming you will live longer than 2.4 years.
+        {t('footnote.lifetime_assumption')}
       </ThemedText>
       <ThemedText style={styles.footerText} type="small">
-        2. All currencies in US dollars (USD).
+        {t('footnote.currency')}
       </ThemedText>
       <ThemedRBSheet ref={refRBSheet} height={500}>
         {paymentError ? (

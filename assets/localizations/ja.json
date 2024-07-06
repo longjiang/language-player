@@ -288,7 +288,9 @@
         "cancel": "キャンセル",
         "clear": "すべて削除",
         "confirm_cancellation": "キャンセルの確認",
+        "confirm_deletion": "削除の確認",
         "copy": "写し",
+        "keep_account": "アカウントを保持",
         "keep_subscription": "サブスクリプションを維持する",
         "let_chatgpt_explain": "AIに聞く",
         "list_all": "すべてリスト",
@@ -300,12 +302,10 @@
         "speak": "話す",
         "start_learning": "学習を始める",
         "tv_shows": "テレビ番組",
-        "upgrade": "アップグレード",
         "upgrade_to_pro": "Proにアップグレード",
+        "upgrade": "アップグレード",
         "verify": "確かめる",
-        "watch": "時計",
-        "confirm_deletion": "削除の確認",
-        "keep_account": "アカウントを保持"
+        "watch": "時計"
     },
     "chatgpt": {
         "prompt": {
@@ -315,15 +315,15 @@
     },
     "error": {
         "entry_not_found": "エントリが見つからないか、辞書がロードされていません",
+        "failed_fetch_videos": "ビデオの取得に失敗しました",
         "failed_retrieve_password": "保存されているパスワードを取得できませんでした",
         "failed_to_load_items": "アイテムの読み込みに失敗しました:",
         "generic": "エラー",
+        "language_not_selected": "言語が選択されていない",
         "passwords_do_not_match": "パスワードが一致しない",
         "registration_failed": "登録に失敗しました",
         "updating_progress": "更新の進行状況にエラーが発生しました:",
-        "user_info_not_found": "ユーザー情報が見つかりません",
-        "language_not_selected": "言語が選択されていない",
-        "failed_fetch_videos": "ビデオの取得に失敗しました"
+        "user_info_not_found": "ユーザー情報が見つかりません"
     },
     "level": {
         "cefr": {
@@ -409,8 +409,8 @@
         "or_login_with": "または、以下でログインします。",
         "or_register_with": "または、次の方法で登録します。",
         "pro_feature_chatgpt": "Language Player Go で AI 機能を使用できるのは Pro ユーザーのみです。この機能を使用するには、Pro にアップグレードしてください。",
-        "pro_transcript": "Proにアップグレードして、完全なトランスクリプトを表示してください!",
         "pro_transcript_limit_reached": "成績証明書の制限に達しました。より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。",
+        "pro_transcript": "Proにアップグレードして、完全なトランスクリプトを表示してください!",
         "sort_by": "並び替え: {{sortBy}}",
         "time_spent_learning": "Language Playerで{{language}}の学習に費やした",
         "upgrade_text": "Proにアップグレードして、より多くのビデオにアクセスしましょう!",
@@ -468,6 +468,7 @@
         "current_level": "現在の{{language}}レベルはどれくらいですか?",
         "current_plan": "現在の計画",
         "date": "日付",
+        "delete_account": "アカウントを削除",
         "delete_my_account": "マイアカウントの削除",
         "dictionary": "辞書",
         "email": "電子メール",
@@ -497,8 +498,7 @@
         "trial": "裁判",
         "verify_your_email": "メールを確認する",
         "views": "{{numViews}}表示モード",
-        "watch_history": "視聴履歴",
-        "delete_account": "アカウントを削除"
+        "watch_history": "視聴履歴"
     },
     "video": {
         "comments": "コメント",

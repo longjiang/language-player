@@ -289,7 +289,9 @@
         "cancel": "Cuir ar ceal",
         "clear": "Bain Gach Rud",
         "confirm_cancellation": "Deimhnigh cealú",
+        "confirm_deletion": "Deimhnigh Scriosadh",
         "copy": "Copiar",
+        "keep_account": "Coinnigh Cuntas",
         "keep_subscription": "Coinnigh Síntiús",
         "let_chatgpt_explain": "Deixa que l'IA ho expliqui",
         "list_all": "Mostra-ho tot",
@@ -301,12 +303,10 @@
         "speak": "Parla",
         "start_learning": "Tosaigh ag foghlaim",
         "tv_shows": "TV-programmer",
-        "upgrade": "Uasghrádú",
         "upgrade_to_pro": "Actualitza a Pro",
+        "upgrade": "Uasghrádú",
         "verify": "Deimhnigh",
-        "watch": "Visualitza",
-        "confirm_deletion": "Deimhnigh Scriosadh",
-        "keep_account": "Coinnigh Cuntas"
+        "watch": "Visualitza"
     },
     "chatgpt": {
         "prompt": {
@@ -316,15 +316,15 @@
     },
     "error": {
         "entry_not_found": "Entrada no trobada o diccionari no carregat",
+        "failed_fetch_videos": "Theip ar fhíseáin a fháil",
         "failed_retrieve_password": "Níor éirigh leis an bhfocal faire a stóráil",
         "failed_to_load_items": "Error al carregar elements:",
         "generic": "Earráid",
+        "language_not_selected": "Teanga nár roghnaíodh",
         "passwords_do_not_match": "Níl na pasfhocail comhtháite",
         "registration_failed": "Níor éirigh le clárú",
         "updating_progress": "Earráid agus an dul chun cinn a nuashonrú:",
-        "user_info_not_found": "Informació de l'usuari no trobada",
-        "language_not_selected": "Teanga nár roghnaíodh",
-        "failed_fetch_videos": "Theip ar fhíseáin a fháil"
+        "user_info_not_found": "Informació de l'usuari no trobada"
     },
     "level": {
         "cefr": {
@@ -410,8 +410,8 @@
         "or_login_with": "Nó logáil isteach le:",
         "or_register_with": "Nó cláraigh le:",
         "pro_feature_chatgpt": "Ní féidir ach le húsáideoirí Pro gnéithe AI a úsáid i Language Player Go. Chun an ghné seo a úsáid, uasghrádú go Pro.",
-        "pro_transcript": "Mettez à niveau vers Pro pour voir la transcription complète!",
         "pro_transcript_limit_reached": "Sroicheadh teorainn trascríbhinne. Déan uasghrádú ar Pro chun rochtain a fháil ar níos mó tras-scríbhinní.",
+        "pro_transcript": "Mettez à niveau vers Pro pour voir la transcription complète!",
         "sort_by": "Ordena per: {{sortBy}}",
         "time_spent_learning": "Chaith sé ag foghlaim {{language}} in Language Player",
         "upgrade_text": "Uasghrádú go Pro chun rochtain a fháil ar níos mó físeáin!",
@@ -469,6 +469,7 @@
         "current_level": "Cén leibhéal atá agat i láthair i {{language}}?",
         "current_plan": "Plean Reatha",
         "date": "Data",
+        "delete_account": "Ar Scrios an Cuntas",
         "delete_my_account": "Scrios Mo Chuntas",
         "dictionary": "Diccionari",
         "email": "Ríomhphost",
@@ -498,8 +499,7 @@
         "trial": "Trial",
         "verify_your_email": "Deimhnigh do ríomhphost",
         "views": "{{numViews}} Amhairc",
-        "watch_history": "Stair Amhar",
-        "delete_account": "Ar Scrios an Cuntas"
+        "watch_history": "Stair Amhar"
     },
     "video": {
         "comments": "Comentaris",

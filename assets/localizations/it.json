@@ -289,7 +289,9 @@
         "cancel": "Annulla",
         "clear": "Rimuovi tutto",
         "confirm_cancellation": "Conferma cancellazione",
+        "confirm_deletion": "Conferma Eliminazione",
         "copy": "Copiare",
+        "keep_account": "Conserva Account",
         "keep_subscription": "Mantieni l'abbonamento",
         "let_chatgpt_explain": "Chiedi all'intelligenza artificiale",
         "list_all": "Elenca tutto",
@@ -301,12 +303,10 @@
         "speak": "Parlare",
         "start_learning": "Inizia a imparare",
         "tv_shows": "Programmi TV",
-        "upgrade": "Aggiornamento",
         "upgrade_to_pro": "Passa a Pro",
+        "upgrade": "Aggiornamento",
         "verify": "Verificare",
-        "watch": "Orologio",
-        "confirm_deletion": "Conferma Eliminazione",
-        "keep_account": "Conserva Account"
+        "watch": "Orologio"
     },
     "chatgpt": {
         "prompt": {
@@ -316,15 +316,15 @@
     },
     "error": {
         "entry_not_found": "Voce non trovata o dizionario non caricato",
+        "failed_fetch_videos": "Impossibile recuperare i video",
         "failed_retrieve_password": "Impossibile recuperare la password memorizzata",
         "failed_to_load_items": "Impossibile caricare gli elementi:",
         "generic": "Errore",
+        "language_not_selected": "Lingua non selezionata",
         "passwords_do_not_match": "Le password non corrispondono",
         "registration_failed": "Registrazione non riuscita",
         "updating_progress": "Errore durante l'aggiornamento dell'avanzamento:",
-        "user_info_not_found": "Informazioni utente non trovate",
-        "language_not_selected": "Lingua non selezionata",
-        "failed_fetch_videos": "Impossibile recuperare i video"
+        "user_info_not_found": "Informazioni utente non trovate"
     },
     "level": {
         "cefr": {
@@ -410,8 +410,8 @@
         "or_login_with": "Oppure accedi con:",
         "or_register_with": "Oppure registrati con:",
         "pro_feature_chatgpt": "Solo gli utenti Pro possono utilizzare le funzionalità AI in Language Player Go. Per utilizzare questa funzione, eseguire l'aggiornamento a Pro.",
-        "pro_transcript": "Esegui l'upgrade a Pro per visualizzare la trascrizione completa!",
         "pro_transcript_limit_reached": "Limite di trascrizione raggiunto. Si prega di eseguire l'upgrade a Pro per accedere a più trascrizioni.",
+        "pro_transcript": "Esegui l'upgrade a Pro per visualizzare la trascrizione completa!",
         "sort_by": "Ordina per: {{sortBy}}",
         "time_spent_learning": "Speso per imparare {{language}} in Language Player",
         "upgrade_text": "Passa a Pro per accedere a più video!",
@@ -469,6 +469,7 @@
         "current_level": "Qual è il tuo attuale livello {{language}}?",
         "current_plan": "Piano attuale",
         "date": "Dattero",
+        "delete_account": "Elimina Account",
         "delete_my_account": "Elimina il mio account",
         "dictionary": "Dizionario",
         "email": "E-mail",
@@ -498,8 +499,7 @@
         "trial": "Prova",
         "verify_your_email": "Verifica la tua email",
         "views": "{{numViews}} Visualizzazioni",
-        "watch_history": "Storia di visualizzazione",
-        "delete_account": "Elimina Account"
+        "watch_history": "Storia di visualizzazione"
     },
     "video": {
         "comments": "Commenti",

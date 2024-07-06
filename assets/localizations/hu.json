@@ -289,7 +289,9 @@
         "cancel": "Érvénytelenít",
         "clear": "Összes eltávolítása",
         "confirm_cancellation": "Lemondás megerősítése",
+        "confirm_deletion": "Megerősítés törlése",
         "copy": "Másolat",
+        "keep_account": "Fiók megtartása",
         "keep_subscription": "Előfizetés megtartása",
         "let_chatgpt_explain": "Kérdezzen az AI-tól",
         "list_all": "Összes listázása",
@@ -301,12 +303,10 @@
         "speak": "Beszél",
         "start_learning": "Kezdje el a tanulást",
         "tv_shows": "TV-műsorok",
-        "upgrade": "Feljavít",
         "upgrade_to_pro": "Frissítés Pro-ra",
+        "upgrade": "Feljavít",
         "verify": "Igazol",
-        "watch": "Néz",
-        "confirm_deletion": "Megerősítés törlése",
-        "keep_account": "Fiók megtartása"
+        "watch": "Néz"
     },
     "chatgpt": {
         "prompt": {
@@ -316,15 +316,15 @@
     },
     "error": {
         "entry_not_found": "A bejegyzés nem található vagy a szótár nincs betöltve",
+        "failed_fetch_videos": "Nem sikerült lekérni a videókat",
         "failed_retrieve_password": "Nem sikerült lekérni a tárolt jelszót",
         "failed_to_load_items": "Nem sikerült betölteni az elemeket:",
         "generic": "Hiba",
+        "language_not_selected": "Nincs kiválasztott nyelv",
         "passwords_do_not_match": "A jelszavak nem egyeznek",
         "registration_failed": "A regisztráció sikertelen",
         "updating_progress": "Hiba történt a frissítés során:",
-        "user_info_not_found": "A felhasználói adatok nem találhatók",
-        "language_not_selected": "Nincs kiválasztott nyelv",
-        "failed_fetch_videos": "Nem sikerült lekérni a videókat"
+        "user_info_not_found": "A felhasználói adatok nem találhatók"
     },
     "level": {
         "cefr": {
@@ -410,8 +410,8 @@
         "or_login_with": "Vagy jelentkezzen be:",
         "or_register_with": "Vagy regisztráljon:",
         "pro_feature_chatgpt": "Csak a Pro felhasználók használhatják a Language Player Go AI funkcióit. A funkció használatához frissítsen Pro-ra.",
-        "pro_transcript": "Frissítsen Pro-ra a teljes átirat megtekintéséhez!",
         "pro_transcript_limit_reached": "Elérte az átirati korlátot. Kérjük, frissítsen Pro-ra, hogy további átiratokhoz férjen hozzá.",
+        "pro_transcript": "Frissítsen Pro-ra a teljes átirat megtekintéséhez!",
         "sort_by": "Sorrend: {{sortBy}}",
         "time_spent_learning": "{{language}} tanulásával töltött a Language Player alkalmazásban",
         "upgrade_text": "Frissítsen Pro-ra, hogy még több videóhoz férjen hozzá!",
@@ -469,6 +469,7 @@
         "current_level": "Mi a jelenlegi {{language}} szinted?",
         "current_plan": "Jelenlegi terv",
         "date": "Dátum",
+        "delete_account": "Fiók törlése",
         "delete_my_account": "Saját fiók törlése",
         "dictionary": "Szótár",
         "email": "E-mail",
@@ -498,8 +499,7 @@
         "trial": "Próba",
         "verify_your_email": "E-mail-cím megerősítése",
         "views": "{{numViews}} Kilátás nyílik",
-        "watch_history": "Nézési előzmények",
-        "delete_account": "Fiók törlése"
+        "watch_history": "Nézési előzmények"
     },
     "video": {
         "comments": "Megjegyzések",

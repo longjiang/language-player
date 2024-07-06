@@ -288,7 +288,9 @@
         "cancel": "Annullere",
         "clear": "Fjern alle",
         "confirm_cancellation": "Bekreft kansellering",
+        "confirm_deletion": "Bekreft sletting",
         "copy": "Kopi",
+        "keep_account": "Behold konto",
         "keep_subscription": "Behold abonnement",
         "let_chatgpt_explain": "Spør AI",
         "list_all": "Liste over alle",
@@ -300,12 +302,10 @@
         "speak": "Snakke",
         "start_learning": "Begynn å lære",
         "tv_shows": "TV-serier",
-        "upgrade": "Oppgradere",
         "upgrade_to_pro": "Oppgrader til Pro",
+        "upgrade": "Oppgradere",
         "verify": "Verifisere",
-        "watch": "Armbåndsur",
-        "confirm_deletion": "Bekreft sletting",
-        "keep_account": "Behold konto"
+        "watch": "Armbåndsur"
     },
     "chatgpt": {
         "prompt": {
@@ -315,15 +315,15 @@
     },
     "error": {
         "entry_not_found": "Finner ikke oppføring eller ordlisten er ikke lastet inn",
+        "failed_fetch_videos": "Kunne ikke hente videoer",
         "failed_retrieve_password": "Kan ikke hente lagret passord",
         "failed_to_load_items": "Kunne ikke laste inn elementer:",
         "generic": "Feil",
+        "language_not_selected": "Språk ikke valgt",
         "passwords_do_not_match": "Passordene stemmer ikke overens",
         "registration_failed": "Registrering mislyktes",
         "updating_progress": "Feil ved oppdatering av fremdrift:",
-        "user_info_not_found": "Finner ikke brukerinformasjon",
-        "language_not_selected": "Språk ikke valgt",
-        "failed_fetch_videos": "Kunne ikke hente videoer"
+        "user_info_not_found": "Finner ikke brukerinformasjon"
     },
     "level": {
         "cefr": {
@@ -409,8 +409,8 @@
         "or_login_with": "Eller logg inn med:",
         "or_register_with": "Eller registrer deg med:",
         "pro_feature_chatgpt": "Bare Pro-brukere kan bruke AI-funksjoner i Language Player Go. For å bruke denne funksjonen, oppgrader til Pro.",
-        "pro_transcript": "Oppgrader til Pro for å se hele transkripsjonen!",
         "pro_transcript_limit_reached": "Transkripsjonsgrense nådd. Oppgrader til Pro for å få tilgang til flere transkripsjoner.",
+        "pro_transcript": "Oppgrader til Pro for å se hele transkripsjonen!",
         "sort_by": "Sorter etter: {{sortBy}}",
         "time_spent_learning": "Brukt på å lære {{language}} i språkspiller",
         "upgrade_text": "Oppgrader til Pro for å få tilgang til flere videoer!",
@@ -468,6 +468,7 @@
         "current_level": "Hva er ditt nåværende {{language}}-nivå?",
         "current_plan": "Gjeldende plan",
         "date": "Daddel",
+        "delete_account": "Slette konto",
         "delete_my_account": "Slett kontoen min",
         "dictionary": "Ordbok",
         "email": "E-post",
@@ -497,8 +498,7 @@
         "trial": "Rettergang",
         "verify_your_email": "Bekreft e-postadressen din",
         "views": "{{numViews}} Visninger",
-        "watch_history": "Seerhistorikk",
-        "delete_account": "Slette konto"
+        "watch_history": "Seerhistorikk"
     },
     "video": {
         "comments": "Kommentarer",

@@ -288,7 +288,9 @@
         "cancel": "Anula",
         "clear": "Eliminați tot",
         "confirm_cancellation": "Confirmați anularea",
+        "confirm_deletion": "Confirmare Ștergere",
         "copy": "Copie",
+        "keep_account": "Păstrați contul",
         "keep_subscription": "Păstrați abonamentul",
         "let_chatgpt_explain": "Întrebați AI",
         "list_all": "Listează tot",
@@ -300,12 +302,10 @@
         "speak": "Vorbi",
         "start_learning": "Începeți să învățați",
         "tv_shows": "Emisiuni TV",
-        "upgrade": "Face upgrade",
         "upgrade_to_pro": "Faceți upgrade la Pro",
+        "upgrade": "Face upgrade",
         "verify": "Verifica",
-        "watch": "Ceas",
-        "confirm_deletion": "Confirmare Ștergere",
-        "keep_account": "Păstrați contul"
+        "watch": "Ceas"
     },
     "chatgpt": {
         "prompt": {
@@ -315,15 +315,15 @@
     },
     "error": {
         "entry_not_found": "Intrarea nu a fost găsită sau dicționarul nu a fost încărcat",
+        "failed_fetch_videos": "Nu s-a reușit preluarea videoclipurilor",
         "failed_retrieve_password": "Nu s-a reușit recuperarea parolei stocate",
         "failed_to_load_items": "Încărcarea elementelor nu a reușit:",
         "generic": "Eroare",
+        "language_not_selected": "Limba nu a fost selectată",
         "passwords_do_not_match": "Parolele nu se potrivesc",
         "registration_failed": "Înregistrarea nu a reușit",
         "updating_progress": "Eroare la actualizarea progresului:",
-        "user_info_not_found": "Informațiile despre utilizator nu au fost găsite",
-        "language_not_selected": "Limba nu a fost selectată",
-        "failed_fetch_videos": "Nu s-a reușit preluarea videoclipurilor"
+        "user_info_not_found": "Informațiile despre utilizator nu au fost găsite"
     },
     "level": {
         "cefr": {
@@ -409,8 +409,8 @@
         "or_login_with": "Sau conectați-vă cu:",
         "or_register_with": "Sau înregistrați-vă cu:",
         "pro_feature_chatgpt": "Numai utilizatorii Pro pot utiliza funcțiile AI în Language Player Go. Pentru a utiliza această caracteristică, faceți upgrade la Pro.",
-        "pro_transcript": "Faceți upgrade la Pro pentru a vizualiza transcrierea completă!",
         "pro_transcript_limit_reached": "Limita de transcriere a fost atinsă. Vă rugăm să faceți upgrade la Pro pentru a accesa mai multe transcrieri.",
+        "pro_transcript": "Faceți upgrade la Pro pentru a vizualiza transcrierea completă!",
         "sort_by": "Sortează după: {{sortBy}}",
         "time_spent_learning": "A petrecut învățând {{language}} în Language Player",
         "upgrade_text": "Faceți upgrade la Pro pentru a accesa mai multe videoclipuri!",
@@ -468,6 +468,7 @@
         "current_level": "Care este nivelul curent {{language}}?",
         "current_plan": "Planul curent",
         "date": "Dată",
+        "delete_account": "Ștergeți contul",
         "delete_my_account": "Ștergere cont",
         "dictionary": "Dicționar",
         "email": "E-mail",
@@ -497,8 +498,7 @@
         "trial": "Proces",
         "verify_your_email": "Verificați-vă adresa de e-mail",
         "views": "{{numViews}} Vedere",
-        "watch_history": "Istoric de vizionare",
-        "delete_account": "Ștergeți contul"
+        "watch_history": "Istoric de vizionare"
     },
     "video": {
         "comments": "Comentarii",

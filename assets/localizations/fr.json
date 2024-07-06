@@ -289,7 +289,9 @@
         "cancel": "Annuler",
         "clear": "Tout supprimer",
         "confirm_cancellation": "Confirmer l’annulation",
+        "confirm_deletion": "Confirmer la suppression",
         "copy": "Copier",
+        "keep_account": "Conserver le compte",
         "keep_subscription": "Conserver l’abonnement",
         "let_chatgpt_explain": "Permettez à l'IA d'expliquer",
         "list_all": "Tout afficher",
@@ -301,12 +303,10 @@
         "speak": "Parler",
         "start_learning": "Commencer à apprendre",
         "tv_shows": "Émissions de télévision",
-        "upgrade": "Mise à niveau",
         "upgrade_to_pro": "Mettre à niveau vers Pro",
+        "upgrade": "Mise à niveau",
         "verify": "Vérifier",
-        "watch": "Kijken",
-        "confirm_deletion": "Confirmer la suppression",
-        "keep_account": "Conserver le compte"
+        "watch": "Kijken"
     },
     "chatgpt": {
         "prompt": {
@@ -316,15 +316,15 @@
     },
     "error": {
         "entry_not_found": "Entrée non trouvée ou dictionnaire non chargé",
+        "failed_fetch_videos": "Échec de la récupération des vidéos",
         "failed_retrieve_password": "Échec de la récupération du mot de passe stocké",
         "failed_to_load_items": "Échec du chargement des éléments :",
         "generic": "Erreur",
+        "language_not_selected": "Langue non sélectionnée",
         "passwords_do_not_match": "Les mots de passe ne correspondent pas",
         "registration_failed": "Inscription échouée",
         "updating_progress": "Erreur lors de la mise à jour de la progression:",
-        "user_info_not_found": "Informations utilisateur non trouvées",
-        "language_not_selected": "Langue non sélectionnée",
-        "failed_fetch_videos": "Échec de la récupération des vidéos"
+        "user_info_not_found": "Informations utilisateur non trouvées"
     },
     "level": {
         "cefr": {
@@ -397,6 +397,7 @@
         "auto_renews_in": "Renouvellement automatique en {{days}} jours",
         "confirm_cancel_subscription": "Êtes-vous sûr de vouloir résilier votre abonnement ?",
         "copy_success": "Texte copié dans le presse-papiers",
+        "delete_confirmation": " että haluat poistaa",
         "discover_the_power_of_comprehensible_input": "Découvrez la puissance de l’entrée compréhensible à travers des centaines de milliers de vidéos dans plus de 100 langues.",
         "dont_have_an_account": "Vous n’avez pas de compte ?",
         "enrich_your_language_learning_journey": "Enrichissez votre parcours d’apprentissage des langues",
@@ -410,13 +411,12 @@
         "or_login_with": "Ou connectez-vous avec :",
         "or_register_with": "Ou inscrivez-vous avec :",
         "pro_feature_chatgpt": "Seuls les utilisateurs Pro peuvent utiliser les fonctionnalités d'IA dans Language Player Go. Pour utiliser cette fonctionnalité, passez à Pro.",
-        "pro_transcript": "Päivitä Pro-versioon nähdäksesi koko transkriptio!",
         "pro_transcript_limit_reached": "Limite de transcription atteinte. Veuillez passer à Pro pour accéder à plus de transcriptions.",
+        "pro_transcript": "Päivitä Pro-versioon nähdäksesi koko transkriptio!",
         "sort_by": "Trier par : {{sortBy}}",
         "time_spent_learning": "Passé à apprendre {{language}} dans Language Player",
         "upgrade_text": "Passez à Pro pour accéder à plus de vidéos !",
-        "what_your_first_language": "Quelle est votre langue maternelle ?",
-        "delete_confirmation": " että haluat poistaa"
+        "what_your_first_language": "Quelle est votre langue maternelle ?"
     },
     "of": "of",
     "option": {
@@ -470,6 +470,7 @@
         "current_level": "Quel est votre niveau actuel en {{language}}?",
         "current_plan": "Plan actuel",
         "date": "Date",
+        "delete_account": "Supprimer le compte",
         "delete_my_account": "Supprimer mon compte",
         "dictionary": "Dictionnaire",
         "email": "Messagerie électronique",
@@ -499,8 +500,7 @@
         "trial": "Période d’essai",
         "verify_your_email": "Vérifiez votre e-mail",
         "views": "{{numViews}} Affichage",
-        "watch_history": "Historique de visionnage",
-        "delete_account": "Supprimer le compte"
+        "watch_history": "Historique de visionnage"
     },
     "video": {
         "comments": "Commentaires",

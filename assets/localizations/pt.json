@@ -288,7 +288,9 @@
         "cancel": "Cancelar",
         "clear": "Remover tudo",
         "confirm_cancellation": "Confirme o cancelamento",
+        "confirm_deletion": "Confirmar Exclusão",
         "copy": "Copiar",
+        "keep_account": "Manter Conta",
         "keep_subscription": "Manter assinatura",
         "let_chatgpt_explain": "Pergunte à IA",
         "list_all": "Listar tudo",
@@ -300,12 +302,10 @@
         "speak": "Falar",
         "start_learning": "Comece a aprender",
         "tv_shows": "Programas de TV",
-        "upgrade": "Melhoramento",
         "upgrade_to_pro": "Atualize para o Pro",
+        "upgrade": "Melhoramento",
         "verify": "Verificar",
-        "watch": "Relógio",
-        "confirm_deletion": "Confirmar Exclusão",
-        "keep_account": "Manter Conta"
+        "watch": "Relógio"
     },
     "chatgpt": {
         "prompt": {
@@ -315,15 +315,15 @@
     },
     "error": {
         "entry_not_found": "Entrada não encontrada ou dicionário não carregado",
+        "failed_fetch_videos": "Falha ao buscar vídeos",
         "failed_retrieve_password": "Falha ao recuperar a senha armazenada",
         "failed_to_load_items": "Falha ao carregar itens:",
         "generic": "Erro",
+        "language_not_selected": "Idioma não selecionado",
         "passwords_do_not_match": "As senhas não correspondem",
         "registration_failed": "Falha no registro",
         "updating_progress": "Erro ao atualizar o progresso:",
-        "user_info_not_found": "Informações do usuário não encontradas",
-        "language_not_selected": "Idioma não selecionado",
-        "failed_fetch_videos": "Falha ao buscar vídeos"
+        "user_info_not_found": "Informações do usuário não encontradas"
     },
     "level": {
         "cefr": {
@@ -409,8 +409,8 @@
         "or_login_with": "Ou faça login com:",
         "or_register_with": "Ou registre-se com:",
         "pro_feature_chatgpt": "Apenas usuários Pro podem usar recursos de IA no Language Player Go. Para usar esse recurso, atualize para o Pro.",
-        "pro_transcript": "Atualize para o Pro para ver a transcrição completa!",
         "pro_transcript_limit_reached": "Limite de transcrição atingido. Atualize para o Pro para acessar mais transcrições.",
+        "pro_transcript": "Atualize para o Pro para ver a transcrição completa!",
         "sort_by": "Ordenar por: {{sortBy}}",
         "time_spent_learning": "Gasto aprendendo {{language}} no Language Player",
         "upgrade_text": "Atualize para o Pro para acessar mais vídeos!",
@@ -468,6 +468,7 @@
         "current_level": "Qual é o seu nível atual de {{language}}?",
         "current_plan": "Plano atual",
         "date": "Data",
+        "delete_account": "Excluir Conta",
         "delete_my_account": "Excluir minha conta",
         "dictionary": "Dicionário",
         "email": "Email",
@@ -497,8 +498,7 @@
         "trial": "Julgamento",
         "verify_your_email": "Verifique seu e-mail",
         "views": "{{numViews}} Modos de exibição",
-        "watch_history": "Histórico de visualizações",
-        "delete_account": "Excluir Conta"
+        "watch_history": "Histórico de visualizações"
     },
     "video": {
         "comments": "Comentários",

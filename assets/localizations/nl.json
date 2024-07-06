@@ -288,7 +288,9 @@
         "cancel": "Annuleren",
         "clear": "Alles verwijderen",
         "confirm_cancellation": "Annulering bevestigen",
+        "confirm_deletion": "Bevestig verwijdering",
         "copy": "Kopiëren",
+        "keep_account": "Account behouden",
         "keep_subscription": "Abonnement behouden",
         "let_chatgpt_explain": "Vraag het aan AI",
         "list_all": "Lijst Alles",
@@ -300,12 +302,10 @@
         "speak": "Spreken",
         "start_learning": "Begin met leren",
         "tv_shows": "Tv-programma's",
-        "upgrade": "Opwaarderen",
         "upgrade_to_pro": "Upgrade naar Pro",
+        "upgrade": "Opwaarderen",
         "verify": "Verifiëren",
-        "watch": "Horloge",
-        "confirm_deletion": "Bevestig verwijdering",
-        "keep_account": "Account behouden"
+        "watch": "Horloge"
     },
     "chatgpt": {
         "prompt": {
@@ -315,15 +315,15 @@
     },
     "error": {
         "entry_not_found": "Invoer niet gevonden of woordenboek niet geladen",
+        "failed_fetch_videos": "Kan video's niet ophalen",
         "failed_retrieve_password": "Kan opgeslagen wachtwoord niet ophalen",
         "failed_to_load_items": "Artikelen kunnen niet worden geladen:",
         "generic": "Fout",
+        "language_not_selected": "Taal niet geselecteerd",
         "passwords_do_not_match": "Wachtwoorden komen niet overeen",
         "registration_failed": "Registratie mislukt",
         "updating_progress": "Fout bij het bijwerken van de voortgang:",
-        "user_info_not_found": "Gebruikersinfo niet gevonden",
-        "language_not_selected": "Taal niet geselecteerd",
-        "failed_fetch_videos": "Kan video's niet ophalen"
+        "user_info_not_found": "Gebruikersinfo niet gevonden"
     },
     "level": {
         "cefr": {
@@ -409,8 +409,8 @@
         "or_login_with": "Of log in met:",
         "or_register_with": "Of schrijf je in bij:",
         "pro_feature_chatgpt": "Alleen Pro-gebruikers kunnen AI-functies gebruiken in Language Player Go. Als u deze functie wilt gebruiken, moet u upgraden naar Pro.",
-        "pro_transcript": "Upgrade naar Pro om het volledige transcript te bekijken!",
         "pro_transcript_limit_reached": "Transcriptielimiet bereikt. Upgrade naar Pro om toegang te krijgen tot meer transcripties.",
+        "pro_transcript": "Upgrade naar Pro om het volledige transcript te bekijken!",
         "sort_by": "Sorteren op: {{sortBy}}",
         "time_spent_learning": "Besteed aan het leren {{language}} in Language Player",
         "upgrade_text": "Upgrade naar Pro om toegang te krijgen tot meer video's!",
@@ -468,6 +468,7 @@
         "current_level": "Wat is je huidige {{language}} niveau?",
         "current_plan": "Huidig plan",
         "date": "Datum",
+        "delete_account": "Account verwijderen",
         "delete_my_account": "Mijn account verwijderen",
         "dictionary": "Woordenboek",
         "email": "E-mail",
@@ -497,8 +498,7 @@
         "trial": "Proces",
         "verify_your_email": "Verifieer uw e-mailadres",
         "views": "{{numViews}} Weergaven",
-        "watch_history": "Kijkgeschiedenis",
-        "delete_account": "Account verwijderen"
+        "watch_history": "Kijkgeschiedenis"
     },
     "video": {
         "comments": "Opmerkingen",

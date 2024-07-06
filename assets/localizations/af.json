@@ -289,7 +289,9 @@
         "cancel": "Kanselleer",
         "clear": "Verwyder alles",
         "confirm_cancellation": "Bevestig kansellasie",
+        "confirm_deletion": "Bevestig Verwydering",
         "copy": "Kopiëren",
+        "keep_account": "Behou Rekening",
         "keep_subscription": "Hou intekening",
         "let_chatgpt_explain": "Laat AI uitleggen",
         "list_all": "Lys Alles",
@@ -301,12 +303,10 @@
         "speak": "Spreken",
         "start_learning": "Begin leer",
         "tv_shows": "TV-programma's",
-        "upgrade": "Opgradering",
         "upgrade_to_pro": "Upgrade naar Pro",
+        "upgrade": "Opgradering",
         "verify": "Verifieer",
-        "watch": "Bekijken",
-        "confirm_deletion": "Bevestig Verwydering",
-        "keep_account": "Behou Rekening"
+        "watch": "Bekijken"
     },
     "chatgpt": {
         "prompt": {
@@ -314,17 +314,31 @@
             "inflection": "Gee sy lemma, verbuiging en morfologie."
         }
     },
+    "duration": {
+        "annual": "Jaarliks gefaktureer.",
+        "lifetime": "Verval nooit.",
+        "monthly": "Maandeliks gefaktureer."
+    },
     "error": {
         "entry_not_found": "Inskrywing nie gevind nie of woordeboek nie gelaai nie",
+        "failed_fetch_videos": "Kon nie video's laai nie",
         "failed_retrieve_password": "Misluk om gestoorde wagwoord te herwin",
         "failed_to_load_items": "Kan items niet laden:",
         "generic": "Fout",
+        "language_not_selected": "Taal nie gekies nie",
         "passwords_do_not_match": "Wagwoorde stem nie ooreen nie",
         "registration_failed": "Registrasie het misluk",
         "updating_progress": "Fout by die opdateer van vordering:",
-        "user_info_not_found": "Gebruikersinformatie niet gevonden",
-        "language_not_selected": "Taal nie gekies nie",
-        "failed_fetch_videos": "Kon nie video's laai nie"
+        "user_info_not_found": "Gebruikersinformatie niet gevonden"
+    },
+    "feature": {
+        "see_all_subtitles": "Sien alle ondertitel-soekresultate verder as die eerste drie.",
+        "use_all_ai": "Gebruik alle KI-funksies regdeur die app.",
+        "view_entire_transcripts": "Bekyk volledige transkripsies verder as die eerste tien reëls."
+    },
+    "footnote": {
+        "currency": "2. Alle pryse in Amerikaanse dollars (USD).",
+        "lifetime_assumption": "1. Aangeneem dat jy langer as 2.4 jaar sal lewe."
     },
     "level": {
         "cefr": {
@@ -395,13 +409,16 @@
     "msg": {
         "already_have_account": "Het u reeds 'n rekening?",
         "auto_renews_in": "Auto renews in {{days}} dae",
+        "auto_renews": "Hernu outomaties in {{time}}",
         "confirm_cancel_subscription": "Is jy seker jy wil jou intekening kanselleer?",
         "copy_success": "Tekst gekopieerd naar klembord",
+        "delete_confirmation": "Is u seker dat u u rekening permanent wil verwyder? U sal al u gestoorde woorde en vordering verloor. Hierdie aksie kan nie ongedaan gemaak word nie.",
         "discover_the_power_of_comprehensible_input": "Ontdek die krag van verstaanbare insette deur honderdduisende video's in meer as 100 tale.",
         "dont_have_an_account": "Het jy nie 'n rekening nie?",
         "enrich_your_language_learning_journey": "Verryk jou taalleerreis",
         "enter_verification_code": "Voer asseblief die verifikasiekode in wat na die e-pos gestuur is",
         "expires_in": "Verval in {{days}} dae",
+        "expiring": "Verval in {{time}}",
         "forgot_password": "Wagwoord vergeet?",
         "hsk_explanation": "\"HSK\" is die amptelike Chinese vaardigheidstoets, met vlak 1 die laagste en vlak 9 die hoogste.",
         "initializing": "Initialiseren...",
@@ -410,13 +427,13 @@
         "or_login_with": "Of meld aan met:",
         "or_register_with": "Of registreer met:",
         "pro_feature_chatgpt": "Alleen Pro-gebruikers kunnen AI-functies in Language Player Go gebruiken. Om deze functie te gebruiken, upgrade naar Pro.",
-        "pro_transcript": "Upgrade naar Pro om de volledige transcriptie te bekijken!",
         "pro_transcript_limit_reached": "Transkripsie limiet bereik. Gradeer asseblief op na Pro om toegang tot meer transkripsies te kry.",
+        "pro_transcript": "Upgrade naar Pro om de volledige transcriptie te bekijken!",
         "sort_by": "Sorteer op: {{sortBy}}",
         "time_spent_learning": "Tyd spandeer om {{language}} in Language Player te leer",
         "upgrade_text": "Gradeer op na Pro om toegang tot meer video's te kry!",
         "what_your_first_language": "Wat is jou eerste taal?",
-        "delete_confirmation": "Is u seker dat u u rekening permanent wil verwyder? U sal al u gestoorde woorde en vordering verloor. Hierdie aksie kan nie ongedaan gemaak word nie."
+        "with_pro_you_can": "Met Pro kan jy:"
     },
     "of": "van",
     "option": {
@@ -443,6 +460,11 @@
         "search": "Zoeken...",
         "select_language": "Kies een taal"
     },
+    "price": {
+        "annual": "$89/jr",
+        "lifetime": "$199/lewenslank",
+        "monthly": "$12/md"
+    },
     "setting": {
         "auto_pronounce": "Outomatiese Uitspraak",
         "dark_mode": "Donker Modus",
@@ -458,7 +480,10 @@
     "time": {
         "hours": "ure",
         "min": "min",
-        "sec": "sek"
+        "sec": "sek",
+        "days": "{{count, plural, one {# dag} other {# dae}}}",
+        "months": "{{count, plural, one {# maand} other {# maande}}}",
+        "months_and_days": "{{months}} en {{days}}"
     },
     "title": {
         "account": "Rekening",
@@ -466,14 +491,17 @@
         "app_settings": "App-instellings",
         "best_value": "Beste waarde",
         "choose_language": "Kies Taal",
+        "choose_your_plan": "Kies Jou Plan",
         "continue_learning": "Continue Learning {{l2Code}}",
         "current_level": "Wat is jou huidige vlak van {{language}}?",
         "current_plan": "Huidige plan",
         "date": "Datum",
+        "delete_account": "Verwyder Rekening",
         "delete_my_account": "Vee my rekening uit",
         "dictionary": "Dictionary",
         "email": "E-pos",
         "examples_from_videos": "Voorbeelden uit video's",
+        "go_pro": "Gaan Pro",
         "how_did_you_hear": "Hoe het jy van ons gehoor?",
         "language_settings": "Taalinstellings",
         "leftContext": "Linkercontext",
@@ -500,7 +528,7 @@
         "verify_your_email": "Verifieer jou e-pos",
         "views": "{{numViews}} Sieninge",
         "watch_history": "Kykgeskiedenis",
-        "delete_account": "Verwyder Rekening"
+        "your_current_plan": "Jou Huidige Plan"
     },
     "video": {
         "comments": "Reacties",

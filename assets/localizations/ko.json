@@ -288,7 +288,9 @@
         "cancel": "취소",
         "clear": "모두 제거",
         "confirm_cancellation": "취소 확인",
+        "confirm_deletion": "삭제 확인",
         "copy": "복사",
+        "keep_account": "계정 유지",
         "keep_subscription": "구독 유지",
         "let_chatgpt_explain": "AI에게 물어보기",
         "list_all": "모두 나열",
@@ -300,12 +302,10 @@
         "speak": "말하다",
         "start_learning": "학습 시작하기",
         "tv_shows": "TV 쇼",
-        "upgrade": "업그레이드",
         "upgrade_to_pro": "Pro로 업그레이드",
+        "upgrade": "업그레이드",
         "verify": "확인",
-        "watch": "시계",
-        "confirm_deletion": "삭제 확인",
-        "keep_account": "계정 유지"
+        "watch": "시계"
     },
     "chatgpt": {
         "prompt": {
@@ -315,15 +315,15 @@
     },
     "error": {
         "entry_not_found": "항목을 찾을 수 없거나 사전이 로드되지 않았습니다.",
+        "failed_fetch_videos": "동영상을 가져오지 못했습니다.",
         "failed_retrieve_password": "저장된 암호를 검색하지 못했습니다.",
         "failed_to_load_items": "항목을 로드하지 못했습니다.",
         "generic": "오류",
+        "language_not_selected": "언어가 선택되지 않음",
         "passwords_do_not_match": "비밀번호가 일치하지 않습니다.",
         "registration_failed": "등록 실패",
         "updating_progress": "진행 상황을 업데이트하는 중 오류가 발생했습니다.",
-        "user_info_not_found": "사용자 정보를 찾을 수 없음",
-        "language_not_selected": "언어가 선택되지 않음",
-        "failed_fetch_videos": "동영상을 가져오지 못했습니다."
+        "user_info_not_found": "사용자 정보를 찾을 수 없음"
     },
     "level": {
         "cefr": {
@@ -409,8 +409,8 @@
         "or_login_with": "또는 다음으로 로그인하십시오.",
         "or_register_with": "또는 다음을 사용하여 등록하십시오.",
         "pro_feature_chatgpt": "Pro 사용자만 Language Player Go에서 AI 기능을 사용할 수 있습니다. 이 기능을 사용하려면 Pro로 업그레이드하십시오.",
-        "pro_transcript": "Pro로 업그레이드하여 전체 대본을 확인하세요!",
         "pro_transcript_limit_reached": "대본 제한에 도달했습니다. 더 많은 대본에 액세스하려면 Pro로 업그레이드하십시오.",
+        "pro_transcript": "Pro로 업그레이드하여 전체 대본을 확인하세요!",
         "sort_by": "정렬 기준: {{sortBy}}",
         "time_spent_learning": "언어 플레이어에서 {{language}}를 배우는 데 소요",
         "upgrade_text": "Pro로 업그레이드하여 더 많은 비디오에 액세스하세요!",
@@ -468,6 +468,7 @@
         "current_level": "현재 {{language}} 레벨은 어느 정도인가요?",
         "current_plan": "현재 계획",
         "date": "날짜",
+        "delete_account": "계정 삭제",
         "delete_my_account": "내 계정 삭제",
         "dictionary": "사전",
         "email": "메일 주소",
@@ -497,8 +498,7 @@
         "trial": "재판",
         "verify_your_email": "이메일 확인",
         "views": "{{numViews}} 레이아웃",
-        "watch_history": "시청 기록",
-        "delete_account": "계정 삭제"
+        "watch_history": "시청 기록"
     },
     "video": {
         "comments": "코멘트",

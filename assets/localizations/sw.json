@@ -288,7 +288,9 @@
         "cancel": "Katisha",
         "clear": "Ondoa Yote",
         "confirm_cancellation": "Thibitisha Kughairi",
+        "confirm_deletion": "Thibitisha Kufuta",
         "copy": "Nakili",
+        "keep_account": "Hifadhi Akaunti",
         "keep_subscription": "Weka Usajili",
         "let_chatgpt_explain": "Uliza AI",
         "list_all": "Orodha ya Wote",
@@ -300,12 +302,10 @@
         "speak": "Kusema",
         "start_learning": "Anza Kujifunza",
         "tv_shows": "Maonyesho ya Runinga",
-        "upgrade": "Kuboresha",
         "upgrade_to_pro": "Boresha kwa Pro",
+        "upgrade": "Kuboresha",
         "verify": "Thibitisha",
-        "watch": "Kuangalia",
-        "confirm_deletion": "Thibitisha Kufuta",
-        "keep_account": "Hifadhi Akaunti"
+        "watch": "Kuangalia"
     },
     "chatgpt": {
         "prompt": {
@@ -315,15 +315,15 @@
     },
     "error": {
         "entry_not_found": "Ingizo halipatikani au kamusi haijapakiwa",
+        "failed_fetch_videos": "Imeshindwa kutoa video",
         "failed_retrieve_password": "Imeshindwa kurejesha nywila iliyohifadhiwa",
         "failed_to_load_items": "Imeshindwa kupakia vipengee:",
         "generic": "Kosa",
+        "language_not_selected": "Lugha haijateuliwa",
         "passwords_do_not_match": "Nywila hazilingani na",
         "registration_failed": "Usajili umeshindwa",
         "updating_progress": "Kosa kusasisha maendeleo:",
-        "user_info_not_found": "Maelezo ya mtumiaji hayapatikani",
-        "language_not_selected": "Lugha haijateuliwa",
-        "failed_fetch_videos": "Imeshindwa kutoa video"
+        "user_info_not_found": "Maelezo ya mtumiaji hayapatikani"
     },
     "level": {
         "cefr": {
@@ -409,8 +409,8 @@
         "or_login_with": "Au kuingia na:",
         "or_register_with": "Au jiandikishe kwa:",
         "pro_feature_chatgpt": "Watumiaji wa Pro tu ndio wanaweza kutumia vipengele vya AI katika Kicheza Lugha Go. Ili kutumia kipengele hiki, boresha hadi Pro.",
-        "pro_transcript": "Boresha kwa Pro ili kuona nakala kamili!",
         "pro_transcript_limit_reached": "Ukomo wa Transcript umefikiwa. Tafadhali sasisha hadi Pro ili kufikia nakala zaidi.",
+        "pro_transcript": "Boresha kwa Pro ili kuona nakala kamili!",
         "sort_by": "Panga kwa: {{sortBy}}",
         "time_spent_learning": "Alitumia kujifunza {{language}} katika Kichezaji Lugha",
         "upgrade_text": "Boresha kwa Pro ili kufikia video zaidi!",
@@ -468,6 +468,7 @@
         "current_level": "Kiwango chako cha sasa cha {{language}} ni nini?",
         "current_plan": "Mpango wa sasa",
         "date": "Tarehe",
+        "delete_account": "Futa Akaunti",
         "delete_my_account": "Futa Akaunti Yangu",
         "dictionary": "Kamusi",
         "email": "Barua pepe",
@@ -497,8 +498,7 @@
         "trial": "Kesi",
         "verify_your_email": "Thibitisha Barua pepe Yako",
         "views": "{{numViews}} Mionekano",
-        "watch_history": "Historia ya Kutazama",
-        "delete_account": "Futa Akaunti"
+        "watch_history": "Historia ya Kutazama"
     },
     "video": {
         "comments": "Maoni",
