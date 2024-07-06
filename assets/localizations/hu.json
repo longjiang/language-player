@@ -539,5 +539,11 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "key": "hu",
+    "tab": {
+        "media": "Média",
+        "dictionary": "Szótár",
+        "me": "Én"
     }
 }

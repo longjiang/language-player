@@ -538,5 +538,11 @@
         "hanja": "漢字",
         "kana": "仮名",
         "pinyin": "ピンイン"
+    },
+    "key": "ja",
+    "tab": {
+        "media": "メディア",
+        "dictionary": "辞書",
+        "me": "私"
     }
 }

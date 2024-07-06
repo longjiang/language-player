@@ -538,5 +538,11 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "key": "ro",
+    "tab": {
+        "media": "Media",
+        "dictionary": "Dicționar",
+        "me": "Eu"
     }
 }

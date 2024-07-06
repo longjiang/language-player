@@ -539,5 +539,11 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "key": "id",
+    "tab": {
+        "media": "Media",
+        "dictionary": "Kamus",
+        "me": "Saya"
     }
 }

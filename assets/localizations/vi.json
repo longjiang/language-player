@@ -537,5 +537,11 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "key": "vi",
+    "tab": {
+        "media": "Phương tiện truyền thông",
+        "dictionary": "Từ điển",
+        "me": "Tôi"
     }
 }

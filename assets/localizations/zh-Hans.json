@@ -556,5 +556,11 @@
         "hanja": "汉字",
         "kana": "假名",
         "pinyin": "拼音"
+    },
+    "key": "zh-Hans",
+    "tab": {
+        "media": "媒体",
+        "dictionary": "词典",
+        "me": "我的"
     }
 }

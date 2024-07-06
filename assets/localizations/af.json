@@ -556,5 +556,11 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "key": "af",
+    "tab": {
+        "media": "Media",
+        "dictionary": "Woordeboek",
+        "me": "Ek"
     }
 }

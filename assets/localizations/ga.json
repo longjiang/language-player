@@ -539,5 +539,11 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "key": "ga",
+    "tab": {
+        "media": "Meáin",
+        "dictionary": "Foclóir",
+        "me": "Mise"
     }
 }

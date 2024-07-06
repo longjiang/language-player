@@ -538,5 +538,11 @@
         "hanja": "한자",
         "kana": "가나",
         "pinyin": "병음"
+    },
+    "key": "ko",
+    "tab": {
+        "media": "미디어",
+        "dictionary": "사전",
+        "me": "나"
     }
 }
