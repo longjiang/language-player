@@ -303,7 +303,9 @@
         "upgrade": "Face upgrade",
         "upgrade_to_pro": "Faceți upgrade la Pro",
         "verify": "Verifica",
-        "watch": "Ceas"
+        "watch": "Ceas",
+        "confirm_deletion": "Confirmare Ștergere",
+        "keep_account": "Păstrați contul"
     },
     "chatgpt": {
         "prompt": {
@@ -495,7 +497,8 @@
         "trial": "Proces",
         "verify_your_email": "Verificați-vă adresa de e-mail",
         "views": "{{numViews}} Vedere",
-        "watch_history": "Istoric de vizionare"
+        "watch_history": "Istoric de vizionare",
+        "delete_account": "Ștergeți contul"
     },
     "video": {
         "comments": "Comentarii",

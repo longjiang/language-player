@@ -304,7 +304,9 @@
         "upgrade": "ترقيه",
         "upgrade_to_pro": "الترقية إلى النسخة المحترفة",
         "verify": "التحقق",
-        "watch": "شاهد"
+        "watch": "شاهد",
+        "confirm_deletion": "تأكيد الحذف",
+        "keep_account": "الاحتفاظ بالحساب"
     },
     "chatgpt": {
         "prompt": {
@@ -413,7 +415,8 @@
         "sort_by": "فرز حسب: {{sortBy}}",
         "time_spent_learning": "قضيت وقتًا في تعلم {{language}} في Language Player",
         "upgrade_text": "قم بالترقية إلى Pro للوصول إلى المزيد من مقاطع الفيديو!",
-        "what_your_first_language": "ما هي لغتك الأولى؟"
+        "what_your_first_language": "ما هي لغتك الأولى؟",
+        "delete_confirmation": "هل أنت متأكد من رغبتك في حذف حسابك نهائيًا؟ ستفقد جميع الكلمات المحفوظة والتقدم الخاص بك. لا يمكن التراجع عن هذا الإجراء."
     },
     "of": "من",
     "option": {
@@ -496,7 +499,8 @@
         "trial": "تجربة",
         "verify_your_email": "تحقق من بريدك الإلكتروني",
         "views": "{{numViews}} طرق عرض",
-        "watch_history": "تاريخ المشاهدة"
+        "watch_history": "تاريخ المشاهدة",
+        "delete_account": "حذف الحساب"
     },
     "video": {
         "comments": "تعليقات",

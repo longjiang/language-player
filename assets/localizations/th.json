@@ -302,7 +302,9 @@
         "upgrade": "อัพ เกรด",
         "upgrade_to_pro": "อัปเกรดเป็น Pro",
         "verify": "ตรวจสอบ",
-        "watch": "ดู"
+        "watch": "ดู",
+        "confirm_deletion": "ยืนยันการลบ",
+        "keep_account": "บัญชีเก็บ"
     },
     "chatgpt": {
         "prompt": {
@@ -494,7 +496,8 @@
         "trial": "การทดลอง",
         "verify_your_email": "ยืนยันอีเมลของคุณ",
         "views": "{{numViews}} มุมมอง",
-        "watch_history": "ประวัติการดู"
+        "watch_history": "ประวัติการดู",
+        "delete_account": "ลบบัญชี"
     },
     "video": {
         "comments": "ความ คิด เห็น",

@@ -304,7 +304,9 @@
         "upgrade": "Mise à niveau",
         "upgrade_to_pro": "Mettre à niveau vers Pro",
         "verify": "Vérifier",
-        "watch": "Kijken"
+        "watch": "Kijken",
+        "confirm_deletion": "Confirmer la suppression",
+        "keep_account": "Conserver le compte"
     },
     "chatgpt": {
         "prompt": {
@@ -413,7 +415,8 @@
         "sort_by": "Trier par : {{sortBy}}",
         "time_spent_learning": "Passé à apprendre {{language}} dans Language Player",
         "upgrade_text": "Passez à Pro pour accéder à plus de vidéos !",
-        "what_your_first_language": "Quelle est votre langue maternelle ?"
+        "what_your_first_language": "Quelle est votre langue maternelle ?",
+        "delete_confirmation": " että haluat poistaa"
     },
     "of": "of",
     "option": {
@@ -496,7 +499,8 @@
         "trial": "Période d’essai",
         "verify_your_email": "Vérifiez votre e-mail",
         "views": "{{numViews}} Affichage",
-        "watch_history": "Historique de visionnage"
+        "watch_history": "Historique de visionnage",
+        "delete_account": "Supprimer le compte"
     },
     "video": {
         "comments": "Commentaires",

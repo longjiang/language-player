@@ -304,7 +304,9 @@
         "upgrade": "Rampa",
         "upgrade_to_pro": "Actualitza a Pro",
         "verify": "Verifica",
-        "watch": "Visualitza"
+        "watch": "Visualitza",
+        "confirm_deletion": "Confirma la supressió",
+        "keep_account": "Conserva el compte"
     },
     "chatgpt": {
         "prompt": {
@@ -413,7 +415,8 @@
         "sort_by": "Ordena per: {{sortBy}}",
         "time_spent_learning": "He passat temps aprenent {{language}} a Language Player",
         "upgrade_text": "Actualitzeu-vos a Pro per accedir a més vídeos.",
-        "what_your_first_language": "Quin és el teu primer idioma?"
+        "what_your_first_language": "Quin és el teu primer idioma?",
+        "delete_confirmation": "Estàs segur que vols eliminar el teu compte permanentment? Perdràs totes les paraules i el progrés desats. Aquesta acció no es pot desfer."
     },
     "of": "de",
     "option": {
@@ -496,7 +499,8 @@
         "trial": "Prova",
         "verify_your_email": "Verifica el teu correu electrònic",
         "views": "{{numViews}} Vistes",
-        "watch_history": "Historial de visualitzacions"
+        "watch_history": "Historial de visualitzacions",
+        "delete_account": "Suprimeix el compte"
     },
     "video": {
         "comments": "Comentaris",

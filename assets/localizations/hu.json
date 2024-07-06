@@ -304,7 +304,9 @@
         "upgrade": "Feljavít",
         "upgrade_to_pro": "Frissítés Pro-ra",
         "verify": "Igazol",
-        "watch": "Néz"
+        "watch": "Néz",
+        "confirm_deletion": "Megerősítés törlése",
+        "keep_account": "Fiók megtartása"
     },
     "chatgpt": {
         "prompt": {
@@ -496,7 +498,8 @@
         "trial": "Próba",
         "verify_your_email": "E-mail-cím megerősítése",
         "views": "{{numViews}} Kilátás nyílik",
-        "watch_history": "Nézési előzmények"
+        "watch_history": "Nézési előzmények",
+        "delete_account": "Fiók törlése"
     },
     "video": {
         "comments": "Megjegyzések",

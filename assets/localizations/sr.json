@@ -303,7 +303,9 @@
         "upgrade": "Nadogradnju",
         "upgrade_to_pro": "Nadogradi na Pro",
         "verify": "Proverite",
-        "watch": "Gledaj"
+        "watch": "Gledaj",
+        "confirm_deletion": "Potvrdi brisanje",
+        "keep_account": "Sačuvaj nalog"
     },
     "chatgpt": {
         "prompt": {
@@ -495,7 +497,8 @@
         "trial": "Suрenje",
         "verify_your_email": "Verifikacija e-pošte",
         "views": "{{numViews}} Prikazi",
-        "watch_history": "Istorija gledanja"
+        "watch_history": "Istorija gledanja",
+        "delete_account": "Izbriši nalog"
     },
     "video": {
         "comments": "Komentare",

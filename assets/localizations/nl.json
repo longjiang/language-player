@@ -303,7 +303,9 @@
         "upgrade": "Opwaarderen",
         "upgrade_to_pro": "Upgrade naar Pro",
         "verify": "Verifiëren",
-        "watch": "Horloge"
+        "watch": "Horloge",
+        "confirm_deletion": "Bevestig verwijdering",
+        "keep_account": "Account behouden"
     },
     "chatgpt": {
         "prompt": {
@@ -495,7 +497,8 @@
         "trial": "Proces",
         "verify_your_email": "Verifieer uw e-mailadres",
         "views": "{{numViews}} Weergaven",
-        "watch_history": "Kijkgeschiedenis"
+        "watch_history": "Kijkgeschiedenis",
+        "delete_account": "Account verwijderen"
     },
     "video": {
         "comments": "Opmerkingen",

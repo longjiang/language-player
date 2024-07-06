@@ -303,7 +303,9 @@
         "upgrade": "Модернизировать",
         "upgrade_to_pro": "Перейти на Pro",
         "verify": "Проверять",
-        "watch": "Часы"
+        "watch": "Часы",
+        "confirm_deletion": "Подтвердить удаление",
+        "keep_account": "Сохранить аккаунт"
     },
     "chatgpt": {
         "prompt": {
@@ -495,7 +497,8 @@
         "trial": "Испытание",
         "verify_your_email": "Подтвердите свой адрес электронной почты",
         "views": "{{numViews}} Представления",
-        "watch_history": "История просмотров"
+        "watch_history": "История просмотров",
+        "delete_account": "Удалить аккаунт"
     },
     "video": {
         "comments": "Комментарии",

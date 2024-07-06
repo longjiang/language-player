@@ -304,7 +304,9 @@
         "upgrade": "Opgradering",
         "upgrade_to_pro": "Upgrade naar Pro",
         "verify": "Verifieer",
-        "watch": "Bekijken"
+        "watch": "Bekijken",
+        "confirm_deletion": "Bevestig Verwydering",
+        "keep_account": "Behou Rekening"
     },
     "chatgpt": {
         "prompt": {
@@ -413,7 +415,8 @@
         "sort_by": "Sorteer op: {{sortBy}}",
         "time_spent_learning": "Tyd spandeer om {{language}} in Language Player te leer",
         "upgrade_text": "Gradeer op na Pro om toegang tot meer video's te kry!",
-        "what_your_first_language": "Wat is jou eerste taal?"
+        "what_your_first_language": "Wat is jou eerste taal?",
+        "delete_confirmation": "Is u seker dat u u rekening permanent wil verwyder? U sal al u gestoorde woorde en vordering verloor. Hierdie aksie kan nie ongedaan gemaak word nie."
     },
     "of": "van",
     "option": {
@@ -496,7 +499,8 @@
         "trial": "Proeflopie",
         "verify_your_email": "Verifieer jou e-pos",
         "views": "{{numViews}} Sieninge",
-        "watch_history": "Kykgeskiedenis"
+        "watch_history": "Kykgeskiedenis",
+        "delete_account": "Verwyder Rekening"
     },
     "video": {
         "comments": "Reacties",

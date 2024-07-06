@@ -303,7 +303,9 @@
         "upgrade": "Uppgradera",
         "upgrade_to_pro": "Uppgradera till Pro",
         "verify": "Kontrollera",
-        "watch": "Klocka"
+        "watch": "Klocka",
+        "confirm_deletion": "Bekräfta radering",
+        "keep_account": "Behåll konto"
     },
     "chatgpt": {
         "prompt": {
@@ -495,7 +497,8 @@
         "trial": "Rättegång",
         "verify_your_email": "Verifiera din e-postadress",
         "views": "{{numViews}} {{}} Visningar",
-        "watch_history": "Visningshistorik"
+        "watch_history": "Visningshistorik",
+        "delete_account": "Radera konto"
     },
     "video": {
         "comments": "Kommentarer",

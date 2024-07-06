@@ -304,7 +304,9 @@
         "upgrade": "升級",
         "upgrade_to_pro": "升級到 Pro",
         "verify": "驗證",
-        "watch": "觀看"
+        "watch": "觀看",
+        "confirm_deletion": "確認刪除",
+        "keep_account": "保留帳戶"
     },
     "chatgpt": {
         "prompt": {
@@ -413,7 +415,8 @@
         "sort_by": "排序方式：{{sortBy}}",
         "time_spent_learning": "在Language Player中學習{{language}}的時間",
         "upgrade_text": "升級到 Pro 以訪問更多視頻！",
-        "what_your_first_language": "你的第一語言是什麼？"
+        "what_your_first_language": "你的第一語言是什麼？",
+        "delete_confirmation": "您確定要永久刪除您的帳戶嗎？您將失去所有保存的單詞和進度。此操作無法撤消。"
     },
     "of": "之",
     "option": {
@@ -496,7 +499,8 @@
         "trial": "試用",
         "verify_your_email": "验证您的邮箱",
         "views": "{{numViews}}視圖",
-        "watch_history": "觀看歷史"
+        "watch_history": "觀看歷史",
+        "delete_account": "刪除帳戶"
     },
     "video": {
         "comments": "評論",

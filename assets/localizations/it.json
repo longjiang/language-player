@@ -304,7 +304,9 @@
         "upgrade": "Aggiornamento",
         "upgrade_to_pro": "Passa a Pro",
         "verify": "Verificare",
-        "watch": "Orologio"
+        "watch": "Orologio",
+        "confirm_deletion": "Conferma Eliminazione",
+        "keep_account": "Conserva Account"
     },
     "chatgpt": {
         "prompt": {
@@ -496,7 +498,8 @@
         "trial": "Prova",
         "verify_your_email": "Verifica la tua email",
         "views": "{{numViews}} Visualizzazioni",
-        "watch_history": "Storia di visualizzazione"
+        "watch_history": "Storia di visualizzazione",
+        "delete_account": "Elimina Account"
     },
     "video": {
         "comments": "Commenti",

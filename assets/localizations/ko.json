@@ -303,7 +303,9 @@
         "upgrade": "업그레이드",
         "upgrade_to_pro": "Pro로 업그레이드",
         "verify": "확인",
-        "watch": "시계"
+        "watch": "시계",
+        "confirm_deletion": "삭제 확인",
+        "keep_account": "계정 유지"
     },
     "chatgpt": {
         "prompt": {
@@ -495,7 +497,8 @@
         "trial": "재판",
         "verify_your_email": "이메일 확인",
         "views": "{{numViews}} 레이아웃",
-        "watch_history": "시청 기록"
+        "watch_history": "시청 기록",
+        "delete_account": "계정 삭제"
     },
     "video": {
         "comments": "코멘트",

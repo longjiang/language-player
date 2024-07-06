@@ -304,7 +304,9 @@
         "upgrade": "Päivittää",
         "upgrade_to_pro": "Päivitä Pro-versioon",
         "verify": "Vahvista",
-        "watch": "Katso"
+        "watch": "Katso",
+        "confirm_deletion": "Vahvista poistaminen",
+        "keep_account": "Säilytä tili"
     },
     "chatgpt": {
         "prompt": {
@@ -413,7 +415,8 @@
         "sort_by": "Lajittele: {{sortBy}}",
         "time_spent_learning": "Käytetty oppiminen {{language}} Language Playerissa",
         "upgrade_text": "Päivitä Pro-versioon nähdäksesi lisää videoita!",
-        "what_your_first_language": "Mikä on ensimmäinen kielesi?"
+        "what_your_first_language": "Mikä on ensimmäinen kielesi?",
+        "delete_confirmation": "Oletko varma"
     },
     "of": "of",
     "option": {
@@ -496,7 +499,8 @@
         "trial": "Kokeilu",
         "verify_your_email": "Vahvista sähköpostisi",
         "views": "{{numViews}} Näkymät",
-        "watch_history": "Katseluhistoria"
+        "watch_history": "Katseluhistoria",
+        "delete_account": "Poista tili"
     },
     "video": {
         "comments": "Kommentit",

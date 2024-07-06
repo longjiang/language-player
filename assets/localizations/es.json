@@ -303,7 +303,9 @@
         "upgrade": "Actualizar",
         "upgrade_to_pro": "Actualizar a Pro",
         "verify": "Verificar",
-        "watch": "Ver"
+        "watch": "Ver",
+        "confirm_deletion": "Confirmar eliminación",
+        "keep_account": "Conservar cuenta"
     },
     "chatgpt": {
         "prompt": {
@@ -412,7 +414,8 @@
         "sort_by": "Ordenar por: {{sortBy}}",
         "time_spent_learning": "Tiempo invertido en aprender {{language}} en Language Player",
         "upgrade_text": "¡Actualice a Pro para acceder a más videos!",
-        "what_your_first_language": "¿Cuál es tu lengua materna?"
+        "what_your_first_language": "¿Cuál es tu lengua materna?",
+        "delete_confirmation": "¿Estás seguro de que quieres eliminar tu cuenta de forma permanente? Perderás todas tus palabras guardadas y tu progreso. Esta acción no se puede deshacer."
     },
     "of": "de",
     "option": {
@@ -495,7 +498,8 @@
         "trial": "Prueba",
         "verify_your_email": "Verifica tu correo electrónico",
         "views": "{{numViews}} Vistas",
-        "watch_history": "Historial de visualización"
+        "watch_history": "Historial de visualización",
+        "delete_account": "Eliminar cuenta"
     },
     "video": {
         "comments": "Comentarios",

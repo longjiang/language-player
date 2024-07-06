@@ -304,7 +304,9 @@
         "upgrade": "Upgrade",
         "upgrade_to_pro": "Tingkatkan ke Pro",
         "verify": "Memverifikasi",
-        "watch": "Menonton"
+        "watch": "Menonton",
+        "confirm_deletion": "Konfirmasi Penghapusan",
+        "keep_account": "Simpan Akun"
     },
     "chatgpt": {
         "prompt": {
@@ -496,7 +498,8 @@
         "trial": "Percobaan",
         "verify_your_email": "Verifikasi Email Anda",
         "views": "{{numViews}} Dilihat",
-        "watch_history": "Riwayat Tontonan"
+        "watch_history": "Riwayat Tontonan",
+        "delete_account": "Hapus Akun"
     },
     "video": {
         "comments": "Komentar",

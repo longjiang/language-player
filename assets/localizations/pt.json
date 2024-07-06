@@ -303,7 +303,9 @@
         "upgrade": "Melhoramento",
         "upgrade_to_pro": "Atualize para o Pro",
         "verify": "Verificar",
-        "watch": "Relógio"
+        "watch": "Relógio",
+        "confirm_deletion": "Confirmar Exclusão",
+        "keep_account": "Manter Conta"
     },
     "chatgpt": {
         "prompt": {
@@ -495,7 +497,8 @@
         "trial": "Julgamento",
         "verify_your_email": "Verifique seu e-mail",
         "views": "{{numViews}} Modos de exibição",
-        "watch_history": "Histórico de visualizações"
+        "watch_history": "Histórico de visualizações",
+        "delete_account": "Excluir Conta"
     },
     "video": {
         "comments": "Comentários",

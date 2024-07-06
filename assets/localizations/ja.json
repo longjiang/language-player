@@ -303,7 +303,9 @@
         "upgrade": "アップグレード",
         "upgrade_to_pro": "Proにアップグレード",
         "verify": "確かめる",
-        "watch": "時計"
+        "watch": "時計",
+        "confirm_deletion": "削除の確認",
+        "keep_account": "アカウントを保持"
     },
     "chatgpt": {
         "prompt": {
@@ -495,7 +497,8 @@
         "trial": "裁判",
         "verify_your_email": "メールを確認する",
         "views": "{{numViews}}表示モード",
-        "watch_history": "視聴履歴"
+        "watch_history": "視聴履歴",
+        "delete_account": "アカウントを削除"
     },
     "video": {
         "comments": "コメント",

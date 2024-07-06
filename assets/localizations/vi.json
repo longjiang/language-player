@@ -302,7 +302,9 @@
         "upgrade": "Nâng cấp",
         "upgrade_to_pro": "Nâng cấp lên Pro",
         "verify": "Xác minh",
-        "watch": "Xem"
+        "watch": "Xem",
+        "confirm_deletion": "Xác nhận xóa",
+        "keep_account": "Giữ tài khoản"
     },
     "chatgpt": {
         "prompt": {
@@ -494,7 +496,8 @@
         "trial": "Thử nghiệm",
         "verify_your_email": "Xác minh email của bạn",
         "views": "{{numViews}} Views",
-        "watch_history": "Lịch sử xem"
+        "watch_history": "Lịch sử xem",
+        "delete_account": "Xóa tài khoản"
     },
     "video": {
         "comments": "Ý kiến",

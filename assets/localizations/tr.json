@@ -302,7 +302,9 @@
         "upgrade": "Yükseltmek",
         "upgrade_to_pro": "Pro'ya yükseltin",
         "verify": "Doğrulamak",
-        "watch": "Bakmak"
+        "watch": "Bakmak",
+        "confirm_deletion": "Hesabı Sil'i Onayla",
+        "keep_account": "Hesabı Sakla"
     },
     "chatgpt": {
         "prompt": {
@@ -494,7 +496,8 @@
         "trial": "Deneme",
         "verify_your_email": "E-postanızı Doğrulayın",
         "views": "{{numViews}} Görünümler",
-        "watch_history": "İzleme Geçmişi"
+        "watch_history": "İzleme Geçmişi",
+        "delete_account": "Hesabı Sil"
     },
     "video": {
         "comments": "Yorum",

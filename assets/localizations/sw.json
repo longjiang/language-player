@@ -303,7 +303,9 @@
         "upgrade": "Kuboresha",
         "upgrade_to_pro": "Boresha kwa Pro",
         "verify": "Thibitisha",
-        "watch": "Kuangalia"
+        "watch": "Kuangalia",
+        "confirm_deletion": "Thibitisha Kufuta",
+        "keep_account": "Hifadhi Akaunti"
     },
     "chatgpt": {
         "prompt": {
@@ -495,7 +497,8 @@
         "trial": "Kesi",
         "verify_your_email": "Thibitisha Barua pepe Yako",
         "views": "{{numViews}} Mionekano",
-        "watch_history": "Historia ya Kutazama"
+        "watch_history": "Historia ya Kutazama",
+        "delete_account": "Futa Akaunti"
     },
     "video": {
         "comments": "Maoni",

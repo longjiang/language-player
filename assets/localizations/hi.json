@@ -304,7 +304,9 @@
         "upgrade": "अपग्रेड",
         "upgrade_to_pro": "प्रो में अपग्रेड करें",
         "verify": "सत्यापित करें",
-        "watch": "Tv देखें"
+        "watch": "Tv देखें",
+        "confirm_deletion": "विलयन की पुष्टि करें",
+        "keep_account": "खाता रखें"
     },
     "chatgpt": {
         "prompt": {
@@ -496,7 +498,8 @@
         "trial": "परीक्षण",
         "verify_your_email": "अपना ईमेल सत्यापित करें",
         "views": "{{numViews}} विचारों",
-        "watch_history": "देखें इतिहास"
+        "watch_history": "देखें इतिहास",
+        "delete_account": "खाता हटाएं"
     },
     "video": {
         "comments": "टिप्पणियाँ",

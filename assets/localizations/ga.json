@@ -304,7 +304,9 @@
         "upgrade": "Uasghrádú",
         "upgrade_to_pro": "Actualitza a Pro",
         "verify": "Deimhnigh",
-        "watch": "Visualitza"
+        "watch": "Visualitza",
+        "confirm_deletion": "Deimhnigh Scriosadh",
+        "keep_account": "Coinnigh Cuntas"
     },
     "chatgpt": {
         "prompt": {
@@ -496,7 +498,8 @@
         "trial": "Trial",
         "verify_your_email": "Deimhnigh do ríomhphost",
         "views": "{{numViews}} Amhairc",
-        "watch_history": "Stair Amhar"
+        "watch_history": "Stair Amhar",
+        "delete_account": "Ar Scrios an Cuntas"
     },
     "video": {
         "comments": "Comentaris",

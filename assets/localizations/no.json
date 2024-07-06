@@ -303,7 +303,9 @@
         "upgrade": "Oppgradere",
         "upgrade_to_pro": "Oppgrader til Pro",
         "verify": "Verifisere",
-        "watch": "Armbåndsur"
+        "watch": "Armbåndsur",
+        "confirm_deletion": "Bekreft sletting",
+        "keep_account": "Behold konto"
     },
     "chatgpt": {
         "prompt": {
@@ -495,7 +497,8 @@
         "trial": "Rettergang",
         "verify_your_email": "Bekreft e-postadressen din",
         "views": "{{numViews}} Visninger",
-        "watch_history": "Seerhistorikk"
+        "watch_history": "Seerhistorikk",
+        "delete_account": "Slette konto"
     },
     "video": {
         "comments": "Kommentarer",
