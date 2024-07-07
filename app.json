@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "language-player-3",
-    "slug": "language-player-3",
+    "name": "Language Player GO",
+    "slug": "language-player-go",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

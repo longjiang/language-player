@@ -88,7 +88,7 @@ const MediaHomeScreen = () => {
             source={require('@/assets/images/language-player-logo-64.png')}
             style={styles.logo}
           />
-          <ThemedText style={{...styles.headerTitle, color: 'white'}} type="defaultBold">Language Player</ThemedText>
+          <ThemedText style={{...styles.headerTitle, color: 'white', width: 100, lineHeight: 20 }} type="defaultBold">Language Player GO</ThemedText>
         </View>
         <View style={styles.iconsContainer}>
           <ThemedButton type="ghost" size="large" leadingIcon={<Icon name="magnify" />} onPress={ () => { router.navigate('/search') }} />
