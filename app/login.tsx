@@ -10,6 +10,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSettings } from '@/contexts/SettingsContext';
 
 const LoginScreen = () => {
     const { handleLogin, isAuthenticated, loading } = useAuth();
@@ -17,6 +18,7 @@ const LoginScreen = () => {
     const [password, setPassword] = useState('');
     const { userData } = useUserData();
     const { t } = useLanguage();
+    const { settings } = useSettings();
 
     useEffect(() => {
         if (isAuthenticated && userData) {
@@ -26,7 +28,14 @@ const LoginScreen = () => {
 
     const onLoginPress = async () => {
         try {
-            await handleLogin(email, password);
+            const token = await handleLogin(email, password);
+            if (token) {
+              if (!settings.l1LangCode || !settings.l2LangCode) {
+                router.push("/select-l2");
+              } else {
+                router.push("/(tabs)/(media)");
+              }
+            }
         } catch (error: any) {
             Alert.alert('Login Error', error.message);
         }

@@ -16,7 +16,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   loading: boolean;
   userInfo: User | null;
-  handleLogin: (email: string, password: string) => Promise<void>;
+  handleLogin: (email: string, password: string) => Promise<string | void>;
   handleLogout: () => Promise<void>;
   handleRegister: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
   handleVerify: (email: string, code: string) => Promise<void>;
