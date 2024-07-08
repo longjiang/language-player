@@ -69,7 +69,7 @@ export default function RootLayout() {
                         <Stack.Screen name="test" options={{ headerShown: false }} />
                         <Stack.Screen
                           name="video/youtube/[youtube_id]"
-                          options={{ headerShown: false, presentation: "modal" }}
+                          options={{ headerShown: false, animation: 'slide_from_bottom', gestureDirection: 'vertical', }}
                         />
                         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                         <Stack.Screen name="+not-found" />
