@@ -1,42 +1,117 @@
-// @/app/components/MiniPlayer.tsx
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useEffect } from "react";
+import { View, StyleSheet } from "react-native";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { YouTubeVideo } from "@/components/YouTubeVideo";
 import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { addToWatchHistory } from "@/src/api/directus/user-watch-history";
+import { getBestL1Subs, getBestL2Subs } from "@/src/api/python/video";
+import { useDictionary } from "@/contexts/DictionaryContext";
+import { getTokenizerCacheForVideo } from "@/src/api/python/video";
+import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
 
 export const MiniPlayer = () => {
-  const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
-  const { videoPlayerState, maximizePlayer } = useVideoPlayer();
-  // Only render the component if video is loaded in context and isMini is true
+  const { videoPlayerState, setVideoPlayerState } = useVideoPlayer();
+  const { l1Lang, l2Lang } = useLanguage();
+  const { getStoredAuthToken } = useAuth();
+  const { tokenizer } = useDictionary();
+
+  useEffect(() => {
+    const fetchVideoDetails = async () => {
+      if (!videoPlayerState.video?.youtube_id || !l2Lang || !l1Lang) return;
+
+      try {
+        // Fetch video details
+        const videos = await getVideosByL2Code(l2Lang, true, {
+          filter: {
+            youtube_id: {
+              eq: videoPlayerState.video.youtube_id,
+            },
+          },
+        });
+        let updatedVideo = videos?.length ? videos[0] : { ...videoPlayerState.video };
+
+        // Fetch L2 subtitles if they don't exist
+        if (!updatedVideo.subs_l2?.length) {
+          try {
+            const l2Subs = await getBestL2Subs(updatedVideo.youtube_id, l2Lang.code);
+            updatedVideo.subs_l2 = l2Subs || [];
+          } catch (error) {
+            console.error("Failed to fetch L2 subs", error);
+          }
+        }
+
+        // Fetch L1 subtitles if they don't exist
+        if (!updatedVideo.subs_l1?.length) {
+          try {
+            const l1Subs = await getBestL1Subs(updatedVideo.youtube_id, l1Lang.code, l2Lang.code);
+            updatedVideo.subs_l1 = l1Subs || [];
+          } catch (error) {
+            console.error("Failed to fetch L1 subs", error);
+          }
+        }
+
+        // Update video player state
+        setVideoPlayerState((prev) => ({
+          ...prev,
+          video: updatedVideo,
+          queue: prev.queue.map(v => 
+            v.youtube_id === updatedVideo.youtube_id ? updatedVideo : v
+          ),
+        }));
+
+        // Add to watch history
+        if (updatedVideo.id) {
+          const authToken = await getStoredAuthToken();
+          if (authToken) {
+            await addToWatchHistory(l2Lang.id, Number(updatedVideo.id), 0, authToken);
+          }
+        }
+
+        // Fetch and load tokenizer cache
+        const tokenizerCache = await getTokenizerCacheForVideo(updatedVideo.id, l2Lang.code);
+        if (tokenizerCache && tokenizer) {
+          tokenizer.loadCache(tokenizerCache);
+        }
+      } catch (error) {
+        console.error("Failed to fetch video details", error);
+      }
+    };
+
+    fetchVideoDetails();
+  }, [videoPlayerState.video?.youtube_id, l1Lang, l2Lang]);
+
   if (!videoPlayerState.video) {
     return null;
   }
+
   return (
-
-      <GestureHandlerRootView style={{...(videoPlayerState.isMini ? styles.safeAreaMini : styles.safeAreaFull), backgroundColor: videoPlayerState.isMini ? primaryBrandColor : primaryBackgroundColor }}>
-        <View>
-          <VideoWithTranscriptProvider
-            initialVideo={ videoPlayerState.video }
-            initialPlaylist={ videoPlayerState.queue }
-            isMainPlayer={true}
-            key={`video-with-transcript-provider-${videoPlayerState.video.youtube_id}-${videoPlayerState?.video?.subs_l2?.length}`}
-          >
-            <VideoWithTranscript
-              isMini={ videoPlayerState.isMini }
-              showHeader={ !videoPlayerState.isMini }
-            />
-          </VideoWithTranscriptProvider>
-        </View>
-      </GestureHandlerRootView>
-
+    <GestureHandlerRootView 
+      style={{
+        ...(videoPlayerState.isMini ? styles.safeAreaMini : styles.safeAreaFull), 
+        backgroundColor: videoPlayerState.isMini ? primaryBrandColor : primaryBackgroundColor 
+      }}
+    >
+      <View>
+        <VideoWithTranscriptProvider
+          initialVideo={videoPlayerState.video}
+          initialPlaylist={videoPlayerState.queue}
+          isMainPlayer={true}
+          key={`video-with-transcript-provider-${videoPlayerState.video.youtube_id}-${videoPlayerState?.video?.subs_l2?.length}`}
+        >
+          <VideoWithTranscript
+            isMini={videoPlayerState.isMini}
+            showHeader={!videoPlayerState.isMini}
+          />
+        </VideoWithTranscriptProvider>
+      </View>
+    </GestureHandlerRootView>
   );
 };
 
