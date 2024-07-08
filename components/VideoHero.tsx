@@ -7,8 +7,8 @@ import { YouTubeVideo } from "@/components/YouTubeVideo";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { router } from "expo-router";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 
 export const VideoHero: React.FC<{
   youtubeId: string;
@@ -28,6 +28,7 @@ export const VideoHero: React.FC<{
   // Add a mute state
   const [isMuted, setIsMuted] = useState(true); // Default to muted
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
+  const { setVideoPlayerState } = useVideoPlayer();
 
   return (
     <View style={styles.container}>
@@ -55,7 +56,11 @@ export const VideoHero: React.FC<{
             leadingIcon={<Icon name="play" />}
             style={styles.button}
             onPress={() => {
-              router.navigate(`/video/youtube/${youtubeId}`);
+              setVideoPlayerState(state => ({
+                ...state,
+                isMini: false,
+                video: { youtube_id: youtubeId },
+              }));
             }}
           />
           <ThemedButton

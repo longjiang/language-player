@@ -7,6 +7,7 @@ import {
 import { ThemedText } from "./ThemedText";
 import { router } from "expo-router";
 import { showCardStyles as styles } from "@/src/styles";
+import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 
 export interface Show {
   id: number;
@@ -24,10 +25,15 @@ interface ShowCardProps {
 
 export const ShowCard: React.FC<ShowCardProps> = ({ show, style }) => {
 
+  const { setVideoPlayerState } = useVideoPlayer();
+
   const handlePress = () => {
     // Navigate to the YouTube video screen
-    // Replace 'YouTubeVideoScreen' with the actual name of your screen
-    router.navigate(`/video/youtube/${show.youtube_id}`);
+    setVideoPlayerState(state => ({
+      ...state,
+      isMini: false,
+      video: { youtube_id: show.youtube_id, tv_show: show.id },
+    }));
   };
 
   return (

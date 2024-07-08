@@ -13,6 +13,7 @@ import { useThemeColor } from "@/hooks";
 import { YouTubeVideo } from "@/types/videoTypes";
 import { normalizeVideoData } from "@/src/api/directus/youtube-video";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 
 const SearchScreen = () => {
   const [items, setItems] = useState<YouTubeVideo[]>([]);
@@ -20,6 +21,7 @@ const SearchScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const { t, l2Lang } = useLanguage();
+  const { setVideoPlayerState } = useVideoPlayer();
   if (!l2Lang) return null;
 
   useEffect(() => {
@@ -32,7 +34,11 @@ const SearchScreen = () => {
     setSearchQuery(text);
     const youtubeId = extractYouTubeID(text);
     if (youtubeId) {
-      router.navigate(`/video/youtube/${youtubeId}`);
+      setVideoPlayerState(state => ({
+        ...state,
+        isMini: false,
+        video: { youtube_id: youtubeId },
+      }));
     }
   };
 
