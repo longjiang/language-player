@@ -54,6 +54,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const minimizePlayer = () => {
     setVideoPlayerState(prev => ({ ...prev, isMini: true }))
   };
+  
   const maximizePlayer = () => setVideoPlayerState(prev => ({ ...prev, isMini: false }));
 
   const playNext = () => {

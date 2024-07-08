@@ -6,12 +6,12 @@ import { Link } from "expo-router";
 import { router } from "expo-router";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { YouTubeVideo } from "../YouTubeVideo";
-import { VideoControlBar } from "../VideoControlBar";
-import { SyncedTranscript } from "../SyncedTranscript";
-import { ThemedButton } from "../ThemedButton";
-import { ThemedText } from "../ThemedText";
-import { ProFeatureModal } from '../ProFeatureModal';
+import { YouTubeVideo } from "./YouTubeVideo";
+import { VideoControlBar } from "./VideoControlBar";
+import { SyncedTranscript } from "./SyncedTranscript";
+import { ThemedButton } from "./ThemedButton";
+import { ThemedText } from "./ThemedText";
+import { ProFeatureModal } from './ProFeatureModal';
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
@@ -20,6 +20,7 @@ import { SyncedLine } from "@/types";
 import { Swatches } from "@/constants/Swatches";
 import { formatDuration } from "@/src/utils";
 import { videoWithTranscriptStyles as styles } from "@/src/styles";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const MAX_FREE_LINES = 10;
 
@@ -37,7 +38,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   const { syncedLines, currentLine, video, playVideo, updatePlayVideo, currentTime, startTime } = useVideoWithTranscriptContext();
   const { isProUser } = useSubscription();
   const { t } = useLanguage();
-  const { closePlayer, minimizePlayer } = useVideoPlayer();
+  const { closePlayer, minimizePlayer, maximizePlayer } = useVideoPlayer();
   const [showProModal, setShowProModal] = useState(false);
   const hasShownModalRef = useRef(false);
 
@@ -80,7 +81,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
               type="ghost"
               style={styles.headerButton}
               trailingIcon={<Icon name="chevron-down" />}
-              onPress={() => router.push("../")}
+              onPress={minimizePlayer}
             />
           </View>
           <View style={{ flexDirection: "row" }}>
@@ -108,8 +109,8 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
       
       {isMini ? (
         <>
-          <Link href={`/video/youtube/${video.youtube_id}`} style={{ marginLeft: 10, flex: 1 }}>
-            <View style={styles.miniPlayerVideoInfo}>
+          <TouchableOpacity style={{ ...styles.miniPlayerTextContainer }} onPress={maximizePlayer}>
+            <View >
               {video.title && (
                 <ThemedText
                   style={styles.miniPlayerVideoTitle}
@@ -127,7 +128,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
                 {formatDuration(currentTime)}
               </ThemedText>
             </View>
-          </Link>
+          </TouchableOpacity>
           <View style={styles.miniPlayerControlsContainer}>
             <Ionicon
               name={playVideo ? "pause" : "play"}

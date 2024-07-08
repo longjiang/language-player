@@ -261,6 +261,10 @@ export const videoWithTranscriptStyles = StyleSheet.create({
     paddingHorizontal: 13,
     flexDirection: "row",
   },
+  miniPlayerTextContainer: {
+    justifyContent: "center",
+    marginLeft: 10,
+  },
 });
 
 // @/src/styles.ts

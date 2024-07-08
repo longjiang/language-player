@@ -28,10 +28,10 @@ export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; 
   const handlePress = () => {
     setVideoPlayerState(state => ({
       ...state,
+      isMini: false,
       video: video,
       queue: videos
     }));
-    router.navigate(`/video/youtube/${video.youtube_id}`);
   };
 
   const viewsText = video.views ? t('title.views', {numViews: video.views?.toLocaleString()}) : '';
