@@ -12,6 +12,7 @@ export interface YouTubeVideo {
   likes?: number;
   duration?: number; // Duration in seconds
   locale?: string;
+  tv_show?: string; // ID of the TV show
 }
 
 export interface VideoWithTranscriptProps {

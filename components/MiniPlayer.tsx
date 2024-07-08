@@ -57,13 +57,32 @@ export const MiniPlayer = () => {
           }
         }
 
+        // If the video has a tv_show id, load the show episodes
+        let updatedQueue = [...videoPlayerState.queue];
+        if (updatedVideo.tv_show) {
+          const showEpisodes = await getVideosByL2Code(l2Lang, false, {
+            filter: {
+              tv_show: {
+                eq: updatedVideo.tv_show,
+              },
+            },
+            sort: ['title'],
+          });
+
+          // Find the index of the current video in the show episodes
+          const currentIndex = showEpisodes.findIndex(ep => ep.youtube_id === updatedVideo.youtube_id);
+          
+          // Queue up the next episodes
+          if (currentIndex !== -1 && currentIndex < showEpisodes.length - 1) {
+            updatedQueue = Array.from(new Set(showEpisodes.slice(currentIndex + 1)));
+          }
+        }
+
         // Update video player state
         setVideoPlayerState((prev) => ({
           ...prev,
           video: updatedVideo,
-          queue: prev.queue.map(v => 
-            v.youtube_id === updatedVideo.youtube_id ? updatedVideo : v
-          ),
+          queue: updatedQueue,
         }));
 
         // Add to watch history
