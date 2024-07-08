@@ -1,7 +1,7 @@
 // @/app/(tabs)/(media)/index.tsx
 
-import React, { useState, useEffect } from "react";
-import { SafeAreaView, Dimensions, View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState, useEffect, useMemo } from "react";
+import { SafeAreaView, Dimensions, View, Image, TouchableOpacity } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { VideoHero } from "@/components/VideoHero";
@@ -10,20 +10,23 @@ import CountryFlag from "react-native-country-flag";
 import { router } from "expo-router";
 import { YouTubeVideoList } from "@/components/YouTubeVideoList";
 import { YouTubeVideo } from '@/types';
-import { normalizeVideoData } from "@/src/api/directus/youtube-video"
 import { recommendVideos } from "@/src/api/python/video";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUserData } from "@/contexts/UserDataContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTVShows } from "@/contexts/TVShowsContext";
 import { mediaHomeScreenStyles as styles } from "@/src/styles";
 
 const MediaHomeScreen = () => {
-  const { languages, i18n, l2Lang, t } = useLanguage();
+  const { languages, l2Lang, t } = useLanguage();
   const { progress, lastSignificantChange } = useUserData();
   const { getStoredUserInfo } = useAuth();
+  const { shows, isLoading: isLoadingShows } = useTVShows();
   const [items, setItems] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
   if (!l2Lang) return null;
+
   const videoHeight = 300;
   const padding = 26;
   const videoWidth = videoHeight * 1.777777777777778;
@@ -34,13 +37,22 @@ const MediaHomeScreen = () => {
   const l2Progress = progress[l2Lang.code] || { level: '1', time: 0 };
   const level = Number(l2Progress.level);
 
+  // Select a random TV show
+  const randomShow = useMemo(() => {
+    if (shows.length > 0) {
+      const randomIndex = Math.floor(Math.random() * shows.length);
+      return shows[randomIndex];
+    }
+    return null;
+  }, [shows]);
+
   useEffect(() => {
     loadItems();
-  }, [lastSignificantChange]); // Reload when lastSignificantChange updates
+  }, [lastSignificantChange]);
 
   const loadItems = async () => {
-    setItems([]); // Clear items
-    setIsLoading(true); // Start loading
+    setItems([]);
+    setIsLoading(true);
     const userInfo = await getStoredUserInfo();
     if (!userInfo) throw new Error(t('error.user_info_not_found'));
     const userId = Number(userInfo.id);
@@ -62,7 +74,7 @@ const MediaHomeScreen = () => {
     } catch (error) {
       console.error(t('error.failed_to_load_items'), error);
     }
-    setIsLoading(false); // Stop loading
+    setIsLoading(false);
   };
 
   const headerComponent = (
@@ -76,11 +88,13 @@ const MediaHomeScreen = () => {
           marginBottom: 26
         }}
       >
-        {(items?.length > 0 && <VideoHero
-          youtubeId={items[0]?.youtube_id}
-          title={items[0].title || ''}
-          height={videoHeight}
-        />)}
+        {randomShow && (
+          <VideoHero
+            youtubeId={randomShow.youtube_id}
+            title={randomShow.title || ''}
+            height={videoHeight}
+          />
+        )}
       </View>
       <SafeAreaView style={[styles.header, { width: headerWidth }]}>
         <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
@@ -112,6 +126,10 @@ const MediaHomeScreen = () => {
       </View>
     </View>
   );
+
+  if (isLoading || isLoadingShows) {
+    return <View style={styles.loadingContainer}><ThemedText>Loading...</ThemedText></View>;
+  }
 
   return (
     <YouTubeVideoList videos={items} header={headerComponent} style={{ marginHorizontal: 26, marginBottom: 26 }} />
