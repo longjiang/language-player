@@ -1,19 +1,17 @@
 // @/app/search.tsx
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { ThemedButton, ThemedScreen, ThemedInput, ThemedText, YouTubeVideoCard } from "@/components";
+import { ThemedButton, ThemedScreen, ThemedInput, ThemedText } from "@/components";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import { getCollectionItems } from "@/src/api/directus";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks";
 import { YouTubeVideo } from "@/types/videoTypes";
-import { normalizeVideoData } from "@/src/api/directus/youtube-video";
+import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
-// New import for YouTubeVideoList
 import { YouTubeVideoList } from "@/components/YouTubeVideoList";
 
 const SearchScreen = () => {
@@ -57,11 +55,10 @@ const SearchScreen = () => {
     setItems([]);
     setIsLoading(true);
     try {
-      const data = await getCollectionItems("youtube_videos_4", {
-        filter: { title: { contains: searchQuery } },
-        fields: 'id,l2,title,youtube_id,tv_show,talk,date,lex_div,word_freq,difficulty,views,tags,category,locale,duration,made_for_kids,views,likes,comments,type'
+      const data = await getVideosByL2Code(l2Lang, false, {
+        filter: { title: { contains: searchQuery } }
       });
-      if (data) setItems(data.map(item => normalizeVideoData(item)));
+      if (data) setItems(data);
     } catch (error) {
       console.error("Failed to load items:", error);
     }
@@ -70,7 +67,6 @@ const SearchScreen = () => {
 
   const l2Name = t('lang.' + l2Lang.code);
 
-  // New header component for YouTubeVideoList
   const ListHeader = () => (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -127,7 +123,6 @@ const SearchScreen = () => {
       )}
       {items.length > 0 && (
         <SafeAreaView style={styles.resultsContainer}>
-          {/* Replace FlatList with YouTubeVideoList */}
           <YouTubeVideoList
             videos={items}
             header={<ListHeader />}
