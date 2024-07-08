@@ -38,3 +38,16 @@ export const getDeltaDate = (expiresOn) => {
 export const timeout = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+// Function to construct a URL with query parameters
+export function constructUrlWithQueryParams(baseUrl: string | URL, params: { [s: string]: unknown; } | ArrayLike<unknown>) {
+  const url = new URL(baseUrl);
+  const searchParams = new URLSearchParams(url.search);
+
+  for (const [key, value] of Object.entries(params)) {
+    searchParams.append(key, value as string);
+  }
+
+  url.search = searchParams.toString();
+  return url.toString();
+}

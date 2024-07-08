@@ -305,7 +305,8 @@
         "upgrade": "업그레이드",
         "upgrade_to_pro": "프로로 업그레이드",
         "verify": "확인",
-        "watch": "보기"
+        "watch": "보기",
+        "share": "공유"
     },
     "chatgpt": {
         "prompt": {

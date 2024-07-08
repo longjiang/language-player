@@ -305,7 +305,8 @@
         "upgrade": "Oppgrader",
         "upgrade_to_pro": "Oppgrader til Pro",
         "verify": "Bekreft",
-        "watch": "Se"
+        "watch": "Se",
+        "share": "Del"
     },
     "chatgpt": {
         "prompt": {

@@ -305,7 +305,8 @@
         "upgrade": "Ulepsz",
         "upgrade_to_pro": "Przejdź na wersję Pro",
         "verify": "Zweryfikuj",
-        "watch": "Oglądaj"
+        "watch": "Oglądaj",
+        "share": "Udostępnij"
     },
     "chatgpt": {
         "prompt": {

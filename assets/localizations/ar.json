@@ -306,7 +306,8 @@
         "upgrade": "ترقية",
         "upgrade_to_pro": "الترقية إلى النسخة المتقدمة",
         "verify": "التحقق",
-        "watch": "مشاهدة"
+        "watch": "مشاهدة",
+        "share": "مشاركة"
     },
     "chatgpt": {
         "prompt": {

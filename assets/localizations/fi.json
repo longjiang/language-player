@@ -306,7 +306,8 @@
         "upgrade": "Päivitä",
         "upgrade_to_pro": "Päivitä Pro-versioon",
         "verify": "Vahvista",
-        "watch": "Katso"
+        "watch": "Katso",
+        "share": "Jaa"
     },
     "chatgpt": {
         "prompt": {

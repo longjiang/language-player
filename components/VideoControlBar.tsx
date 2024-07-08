@@ -1,4 +1,3 @@
-// @/components/VideoControlBar.tsx
 import React, { useRef, useMemo } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedButton } from "./ThemedButton";
@@ -13,6 +12,9 @@ import { formatDuration } from "@/src/utils";
 import { ThemedRBSheet } from "./ThemedRBSheet";
 import { videoControlBarStyles as styles } from "@/src/styles";
 import { useLanguage } from "@/contexts/LanguageContext";
+import * as Sharing from 'expo-sharing';
+import { constructUrlWithQueryParams } from "@/src/utils";
+
 
 const formatNumber = (num: number): string => {
   if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
@@ -22,7 +24,8 @@ const formatNumber = (num: number): string => {
 };
 
 export const VideoControlBar: React.FC = () => {
-  const { t, i18n } = useLanguage();
+  const { t, i18n, l1Lang, l2Lang } = useLanguage();
+  if (!l1Lang || !l2Lang) return null;
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const disabledColor = useThemeColor({}, "disabled");
   const {
@@ -66,6 +69,17 @@ export const VideoControlBar: React.FC = () => {
     video.date instanceof Date ? video.date.toLocaleDateString(i18n.locale, { month: 'long', day: 'numeric', year: 'numeric' }) : undefined,
     t('lang.' + video.locale)
   ];
+
+  const handleShare = async () => {
+    const shareUrl = constructUrlWithQueryParams(`https://languageplayer.io/${l1Lang.code}/${l2Lang.code}/video-view/youtube`, { l1: l1Lang.code, l2: l2Lang.code, v: video.youtube_id });
+    
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(shareUrl);
+    } else {
+      // Fallback for platforms where Sharing is not available
+      alert('Sharing is not available on this device');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -145,6 +159,13 @@ export const VideoControlBar: React.FC = () => {
             <Ionicon name="thumbs-up" size={16} style={{ marginLeft: 5 }} /> {formatNumber(video.likes || 0)} {t('video.likes')} {" "}
             <Ionicon name="chatbubble" size={16} style={{ marginLeft: 5 }} /> {formatNumber(video.comments || 0)} {t('video.comments')}
           </ThemedText>
+          <ThemedButton
+            title={t('action.share')}
+            trailingIcon={<Ionicon name="share-outline" size={20} />}
+            style={{marginTop: 26}}
+            type="primary"
+            onPress={handleShare}
+          />
         </View>
       </ThemedRBSheet>
     </View>

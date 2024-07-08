@@ -305,7 +305,8 @@
         "upgrade": "Обновить",
         "upgrade_to_pro": "Обновить до Pro",
         "verify": "Подтвердить",
-        "watch": "Смотреть"
+        "watch": "Смотреть",
+        "share": "Поделиться"
     },
     "chatgpt": {
         "prompt": {

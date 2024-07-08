@@ -305,7 +305,8 @@
         "upgrade": "Upgraden",
         "upgrade_to_pro": "Upgraden naar Pro",
         "verify": "Verifiëren",
-        "watch": "Bekijken"
+        "watch": "Bekijken",
+        "share": "Delen"
     },
     "chatgpt": {
         "prompt": {

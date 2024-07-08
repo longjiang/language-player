@@ -306,7 +306,8 @@
         "upgrade": "Actualitzar",
         "upgrade_to_pro": "Actualitzar a Pro",
         "verify": "Verificar",
-        "watch": "Mirar"
+        "watch": "Mirar",
+        "share": "Compartir"
     },
     "chatgpt": {
         "prompt": {

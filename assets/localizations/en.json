@@ -306,7 +306,8 @@
         "upgrade": "Upgrade",
         "upgrade_to_pro": "Upgrade to Pro",
         "verify": "Verify",
-        "watch": "Watch"
+        "watch": "Watch",
+        "share": "Share"
     },
     "button": {
         "email_support": "Email Support",

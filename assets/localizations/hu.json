@@ -306,7 +306,8 @@
         "upgrade": "Frissítés",
         "upgrade_to_pro": "Frissítés Pro-ra",
         "verify": "Ellenőrzés",
-        "watch": "Megtekintés"
+        "watch": "Megtekintés",
+        "share": "Megosztás"
     },
     "chatgpt": {
         "prompt": {

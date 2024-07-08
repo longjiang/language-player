@@ -304,7 +304,8 @@
         "upgrade": "อัพเกรด",
         "upgrade_to_pro": "อัพเกรดเป็น Pro",
         "verify": "ยืนยัน",
-        "watch": "ดู"
+        "watch": "ดู",
+        "share": "แชร์"
     },
     "chatgpt": {
         "prompt": {

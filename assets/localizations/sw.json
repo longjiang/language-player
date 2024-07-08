@@ -305,7 +305,8 @@
         "upgrade": "Boresha",
         "upgrade_to_pro": "Boresha hadi Pro",
         "verify": "Thibitisha",
-        "watch": "Tazama"
+        "watch": "Tazama",
+        "share": "Shiriki"
     },
     "chatgpt": {
         "prompt": {

@@ -305,7 +305,8 @@
         "upgrade": "アップグレード",
         "upgrade_to_pro": "Proにアップグレードする",
         "verify": "確認する",
-        "watch": "見る"
+        "watch": "見る",
+        "share": "共有"
     },
     "chatgpt": {
         "prompt": {

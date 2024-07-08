@@ -305,7 +305,8 @@
         "upgrade": "Nadogradi",
         "upgrade_to_pro": "Nadogradi na Pro",
         "verify": "Potvrdi",
-        "watch": "Gledaj"
+        "watch": "Gledaj",
+        "share": "Подели"
     },
     "chatgpt": {
         "prompt": {

@@ -305,7 +305,8 @@
         "upgrade": "Uppgradera",
         "upgrade_to_pro": "Uppgradera till Pro",
         "verify": "Verifiera",
-        "watch": "Titta"
+        "watch": "Titta",
+        "share": "Dela"
     },
     "chatgpt": {
         "prompt": {

@@ -306,7 +306,8 @@
         "upgrade": "升级",
         "upgrade_to_pro": "升级到专业版",
         "verify": "验证",
-        "watch": "观看"
+        "watch": "观看",
+        "share": "分享"
     },
     "button": {
         "email_support": "发邮件给客服",

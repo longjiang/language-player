@@ -305,7 +305,8 @@
         "upgrade": "Upgrade",
         "upgrade_to_pro": "Upgrade la Pro",
         "verify": "Verifică",
-        "watch": "Vizionează"
+        "watch": "Vizionează",
+        "share": "Distribuie"
     },
     "chatgpt": {
         "prompt": {

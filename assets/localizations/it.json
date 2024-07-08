@@ -306,7 +306,8 @@
         "upgrade": "Aggiorna",
         "upgrade_to_pro": "Passa a Pro",
         "verify": "Verifica",
-        "watch": "Guarda"
+        "watch": "Guarda",
+        "share": "Condividi"
     },
     "chatgpt": {
         "prompt": {
