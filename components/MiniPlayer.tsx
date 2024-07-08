@@ -20,8 +20,8 @@ export const MiniPlayer = () => {
     return null;
   }
   return (
-    <SafeAreaView style={{...(videoPlayerState.isMini ? styles.safeAreaMini : styles.safeAreaFull), backgroundColor: videoPlayerState.isMini ? primaryBrandColor : primaryBackgroundColor }}>
-      <GestureHandlerRootView>
+
+      <GestureHandlerRootView style={{...(videoPlayerState.isMini ? styles.safeAreaMini : styles.safeAreaFull), backgroundColor: videoPlayerState.isMini ? primaryBrandColor : primaryBackgroundColor }}>
         <View>
           <VideoWithTranscriptProvider
             initialVideo={ videoPlayerState.video }
@@ -36,14 +36,14 @@ export const MiniPlayer = () => {
           </VideoWithTranscriptProvider>
         </View>
       </GestureHandlerRootView>
-    </SafeAreaView>
+
   );
 };
 
 const styles = StyleSheet.create({
   safeAreaMini: {
     position: "absolute",
-    bottom: 65,
+    bottom: 100,
     width: "100%"
   },
   safeAreaFull: {
