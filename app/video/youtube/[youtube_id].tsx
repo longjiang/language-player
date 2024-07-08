@@ -50,11 +50,15 @@ const YouTubeVideoScreen = () => {
             },
           },
         });
-        if (!videos) return;
-        const newVideo = videos[0];
-        if (!newVideo.subs_l1?.length) {
-          const l1Subs = await getBestL1Subs(newVideo.youtube_id, l1Lang.code, l2Lang.code);
-          newVideo.subs_l1 = l1Subs || [];
+        const newVideo = videos?.length ? videos[0] : { youtube_id: youtubeIdFromParams };
+        try {
+          if (!newVideo.subs_l1?.length) {
+            const l1Subs = await getBestL1Subs(newVideo.youtube_id, l1Lang.code, l2Lang.code);
+            newVideo.subs_l1 = l1Subs || [];
+            return null;
+          }
+        } catch (error) {
+          console.error("Failed to fetch L1 subs", error);
         }
         
         setVideoPlayerState((prev) => {
@@ -73,10 +77,12 @@ const YouTubeVideoScreen = () => {
             isMini: false,
           };
         });
-
-        const authToken = await getStoredAuthToken();
-        if (authToken) {
-          await addToWatchHistory(l2Lang.id, newVideo.id, 0, authToken);
+        
+        if (newVideo.id) {
+          const authToken = await getStoredAuthToken();
+          if (authToken) {
+            await addToWatchHistory(l2Lang.id, Number(newVideo.id), 0, authToken);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch video", error);
