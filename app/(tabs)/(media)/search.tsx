@@ -1,19 +1,15 @@
 // @/app/search.tsx
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { ThemedButton } from "@/components/ThemedButton";
-import { ThemedScreen } from "@/components/ThemedScreen";
+import { ThemedButton, ThemedScreen, ThemedInput, ThemedText, YouTubeVideoCard } from "@/components";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import { getCollectionItems } from "@/src/api/directus";
-import { ThemedInput } from "@/components/ThemedInput";
-import { ThemedText } from "@/components/ThemedText";
-import { YouTubeVideoCard } from "@/components/YouTubeVideoCard";
 import { FlatList } from "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
-import { useThemeColor } from "@/hooks/useThemeColor";
+import { useThemeColor } from "@/hooks";
 import { YouTubeVideo } from "@/types/videoTypes";
 import { normalizeVideoData } from "@/src/api/directus/youtube-video";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -30,10 +26,20 @@ const SearchScreen = () => {
     if (searchQuery) {
       loadItems();
     }
-  }, []);
+  }, [searchQuery]);
 
   const handleInputChange = (text: string) => {
     setSearchQuery(text);
+    const youtubeId = extractYouTubeID(text);
+    if (youtubeId) {
+      router.navigate(`/video/youtube/${youtubeId}`);
+    }
+  };
+
+  const extractYouTubeID = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
   };
 
   const handleSearch = () => {
@@ -128,6 +134,7 @@ const SearchScreen = () => {
     </GestureHandlerRootView>
   );
 };
+
 
 const styles = StyleSheet.create({
   resultsContainer: {
