@@ -105,9 +105,9 @@ const LanguageProgressScreen = () => {
         />
         <ThemedButton
           title={t('action.logout')}
-          trailingIcon={<Icon name="chevron-right" />}
-          type="accent"
-          style={styles.button}
+          leadingIcon={<Icon name="logout" size={20} />}
+          type="ghost"
+          style={{ marginTop: 20 }}
           onPress={handleLogoutPress}
         />
       </View>
