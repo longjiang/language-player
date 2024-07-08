@@ -7,13 +7,13 @@ import { useLanguage } from './LanguageContext';
 
 // Initial state for settings
 const initialState = {
-  showPinyin: false,
+  showPinyin: true,
   showDefinition: false,
   useTraditional: false,
-  showTranslation: false,
-  showQuickGloss: false,
-  autoPronounce: false,
-  darkMode: false,
+  showTranslation: true,
+  showQuickGloss: true,
+  autoPronounce: true,
+  darkMode: true,
   quizMode: false,
   l1LangCode: '',
   l2LangCode: '',
