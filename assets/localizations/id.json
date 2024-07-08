@@ -307,7 +307,8 @@
         "upgrade_to_pro": "Tingkatkan ke Pro",
         "verify": "Verifikasi",
         "watch": "Tonton",
-        "share": "Bagikan"
+        "share": "Bagikan",
+        "clear_words": "Hapus Kata-kata"
     },
     "chatgpt": {
         "prompt": {
@@ -436,7 +437,8 @@
         "what_your_first_language": "Apa bahasa ibu Anda?",
         "with_pro_you_can": "Dengan Pro, Anda dapat:",
         "keep_or_reset_time": "Apakah Anda ingin mempertahankan waktu saat ini atau mengatur ulang ke nol?",
-        "paste_youtube_url": "Anda juga dapat menempelkan URL YouTube untuk mengimpor."
+        "paste_youtube_url": "Anda juga dapat menempelkan URL YouTube untuk mengimpor.",
+        "no_saved_words": "Belum ada kata yang disimpan"
     },
     "option": {
         "app_store": "App Store",

@@ -306,7 +306,8 @@
         "upgrade_to_pro": "Upgrade la Pro",
         "verify": "Verifică",
         "watch": "Vizionează",
-        "share": "Distribuie"
+        "share": "Distribuie",
+        "clear_words": "Șterge Cuvinte"
     },
     "chatgpt": {
         "prompt": {
@@ -435,7 +436,8 @@
         "what_your_first_language": "Care este limba ta maternă?",
         "with_pro_you_can": "Cu Pro, poți:",
         "keep_or_reset_time": "Doriți să păstrați timpul curent sau să îl resetați la zero?",
-        "paste_youtube_url": "De asemenea, puteți lipi URL-ul YouTube pentru a importa."
+        "paste_youtube_url": "De asemenea, puteți lipi URL-ul YouTube pentru a importa.",
+        "no_saved_words": "Nu sunt cuvinte salvate încă"
     },
     "option": {
         "app_store": "App Store",

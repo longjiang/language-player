@@ -307,7 +307,8 @@
         "upgrade_to_pro": "Päivitä Pro-versioon",
         "verify": "Vahvista",
         "watch": "Katso",
-        "share": "Jaa"
+        "share": "Jaa",
+        "clear_words": "Tyhjennä Sanat"
     },
     "chatgpt": {
         "prompt": {
@@ -436,7 +437,8 @@
         "what_your_first_language": "Mikä on äidinkielesi?",
         "with_pro_you_can": "Pro-versiolla voit:",
         "keep_or_reset_time": "Haluatko säilyttää nykyisen aikasi vai nollata sen?",
-        "paste_youtube_url": "Voit myös liittää YouTube-URL-osoitteen tuodaksesi sen."
+        "paste_youtube_url": "Voit myös liittää YouTube-URL-osoitteen tuodaksesi sen.",
+        "no_saved_words": "Ei tallennettuja sanoja vielä"
     },
     "option": {
         "app_store": "App Store",

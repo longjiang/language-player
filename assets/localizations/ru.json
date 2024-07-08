@@ -306,7 +306,8 @@
         "upgrade_to_pro": "Обновить до Pro",
         "verify": "Подтвердить",
         "watch": "Смотреть",
-        "share": "Поделиться"
+        "share": "Поделиться",
+        "clear_words": "Очистить Слова"
     },
     "chatgpt": {
         "prompt": {
@@ -435,7 +436,8 @@
         "what_your_first_language": "Какой ваш родной язык?",
         "with_pro_you_can": "С Pro вы можете:",
         "keep_or_reset_time": "Вы хотите сохранить текущее время или сбросить его на ноль?",
-        "paste_youtube_url": "Вы также можете вставить URL YouTube для импорта."
+        "paste_youtube_url": "Вы также можете вставить URL YouTube для импорта.",
+        "no_saved_words": "Слова еще не сохранены"
     },
     "option": {
         "app_store": "App Store",

@@ -305,7 +305,8 @@
         "upgrade_to_pro": "Nâng cấp lên Pro",
         "verify": "Xác minh",
         "watch": "Xem",
-        "share": "Chia sẻ"
+        "share": "Chia sẻ",
+        "clear_words": "Xóa Từ"
     },
     "chatgpt": {
         "prompt": {
@@ -434,7 +435,8 @@
         "what_your_first_language": "Tiếng mẹ đẻ của bạn là gì?",
         "with_pro_you_can": "Với Pro, bạn có thể:",
         "keep_or_reset_time": "Bạn muốn giữ thời gian hiện tại hay đặt lại về không?",
-        "paste_youtube_url": "Bạn cũng có thể dán URL YouTube để nhập."
+        "paste_youtube_url": "Bạn cũng có thể dán URL YouTube để nhập.",
+        "no_saved_words": "Chưa có từ nào được lưu"
     },
     "option": {
         "app_store": "App Store",

@@ -306,7 +306,8 @@
         "upgrade_to_pro": "Proにアップグレードする",
         "verify": "確認する",
         "watch": "見る",
-        "share": "共有"
+        "share": "共有",
+        "clear_words": "単語を消去"
     },
     "chatgpt": {
         "prompt": {
@@ -435,7 +436,8 @@
         "what_your_first_language": "あなたの第一言語は何ですか？",
         "with_pro_you_can": "Proでは、次のことができます:",
         "keep_or_reset_time": "現在の時間を保持しますか、それともゼロにリセットしますか？",
-        "paste_youtube_url": "YouTubeのURLを貼り付けてインポートすることもできます。"
+        "paste_youtube_url": "YouTubeのURLを貼り付けてインポートすることもできます。",
+        "no_saved_words": "まだ保存された単語はありません"
     },
     "option": {
         "app_store": "App Store",

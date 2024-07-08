@@ -307,7 +307,8 @@
         "upgrade_to_pro": "Uasghrádaigh go Pro",
         "verify": "Deimhnigh",
         "watch": "Féach",
-        "share": "Comhroinn"
+        "share": "Comhroinn",
+        "clear_words": "Glan Focail"
     },
     "chatgpt": {
         "prompt": {
@@ -436,7 +437,8 @@
         "what_your_first_language": "Cad é do mháthairtheanga?",
         "with_pro_you_can": "Le Pro, is féidir leat:",
         "keep_or_reset_time": "An mian leat d'am reatha a choinneáil nó é a athshocrú go náid?",
-        "paste_youtube_url": "Is féidir leat URL YouTube a ghreamú freisin chun iompórtáil."
+        "paste_youtube_url": "Is féidir leat URL YouTube a ghreamú freisin chun iompórtáil.",
+        "no_saved_words": "Níl aon fhocail sábháilte fós"
     },
     "option": {
         "app_store": "App Store",

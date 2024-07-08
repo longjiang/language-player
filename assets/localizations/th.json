@@ -305,7 +305,8 @@
         "upgrade_to_pro": "อัพเกรดเป็น Pro",
         "verify": "ยืนยัน",
         "watch": "ดู",
-        "share": "แชร์"
+        "share": "แชร์",
+        "clear_words": "ล้างคำศัพท์"
     },
     "chatgpt": {
         "prompt": {
@@ -434,7 +435,8 @@
         "what_your_first_language": "ภาษาแม่ของคุณคืออะไร?",
         "with_pro_you_can": "ด้วย Pro คุณสามารถ:",
         "keep_or_reset_time": "คุณต้องการเก็บเวลาปัจจุบันไว้หรือรีเซ็ตเป็นศูนย์?",
-        "paste_youtube_url": "คุณยังสามารถวาง URL ของ YouTube เพื่อนำเข้าได้"
+        "paste_youtube_url": "คุณยังสามารถวาง URL ของ YouTube เพื่อนำเข้าได้",
+        "no_saved_words": "ยังไม่มีคำที่บันทึกไว้"
     },
     "option": {
         "app_store": "App Store",

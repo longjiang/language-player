@@ -306,7 +306,8 @@
         "upgrade_to_pro": "Boresha hadi Pro",
         "verify": "Thibitisha",
         "watch": "Tazama",
-        "share": "Shiriki"
+        "share": "Shiriki",
+        "clear_words": "Futa Maneno"
     },
     "chatgpt": {
         "prompt": {
@@ -435,7 +436,8 @@
         "what_your_first_language": "Lugha yako ya kwanza ni ipi?",
         "with_pro_you_can": "Ukiwa na Pro, unaweza:",
         "keep_or_reset_time": "Je, unataka kuweka muda wako wa sasa au kuuweka upya kuwa sifuri?",
-        "paste_youtube_url": "Unaweza pia kubandika URL ya YouTube kuingiza."
+        "paste_youtube_url": "Unaweza pia kubandika URL ya YouTube kuingiza.",
+        "no_saved_words": "Hakuna maneno yaliyohifadhiwa bado"
     },
     "option": {
         "app_store": "Duka la Programu",

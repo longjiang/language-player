@@ -307,7 +307,8 @@
         "upgrade_to_pro": "升級成專業版",
         "verify": "驗證",
         "watch": "看看",
-        "share": "分享"
+        "share": "分享",
+        "clear_words": "清除單詞"
     },
     "button": {
         "email_support": "寄信給客服",
@@ -453,7 +454,8 @@
         "what_your_first_language": "你的母語是什麼呢？",
         "with_pro_you_can": "用專業版，你就可以：",
         "keep_or_reset_time": "您要保留目前的時間還是重設為零？",
-        "paste_youtube_url": "您也可以貼上YouTube網址來匯入。"
+        "paste_youtube_url": "您也可以貼上YouTube網址來匯入。",
+        "no_saved_words": "尚未儲存單詞"
     },
     "option": {
         "app_store": "App Store",

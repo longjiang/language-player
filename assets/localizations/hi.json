@@ -307,7 +307,8 @@
         "upgrade_to_pro": "प्रो में अपग्रेड करें",
         "verify": "सत्यापित करें",
         "watch": "देखें",
-        "share": "साझा करें"
+        "share": "साझा करें",
+        "clear_words": "शब्द हटाएँ"
     },
     "chatgpt": {
         "prompt": {
@@ -436,7 +437,8 @@
         "what_your_first_language": "आपकी पहली भाषा क्या है?",
         "with_pro_you_can": "प्रो के साथ, आप कर सकते हैं:",
         "keep_or_reset_time": "क्या आप अपना वर्तमान समय रखना चाहते हैं या इसे शून्य पर रीसेट करना चाहते हैं?",
-        "paste_youtube_url": "आप इम्पोर्ट करने के लिए YouTube URL भी पेस्ट कर सकते हैं।"
+        "paste_youtube_url": "आप इम्पोर्ट करने के लिए YouTube URL भी पेस्ट कर सकते हैं।",
+        "no_saved_words": "अभी तक कोई शब्द सहेजा नहीं गया"
     },
     "option": {
         "app_store": "ऐप स्टोर",

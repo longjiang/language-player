@@ -305,7 +305,8 @@
         "upgrade_to_pro": "Pro'ya Yükselt",
         "verify": "Doğrula",
         "watch": "İzle",
-        "share": "Paylaş"
+        "share": "Paylaş",
+        "clear_words": "Kelimeleri Temizle"
     },
     "chatgpt": {
         "prompt": {
@@ -434,7 +435,8 @@
         "what_your_first_language": "Anadiliniz nedir?",
         "with_pro_you_can": "Pro ile şunları yapabilirsiniz:",
         "keep_or_reset_time": "Mevcut zamanınızı korumak mı yoksa sıfırlamak mı istiyorsunuz?",
-        "paste_youtube_url": "İçe aktarmak için YouTube URL'sini de yapıştırabilirsiniz."
+        "paste_youtube_url": "İçe aktarmak için YouTube URL'sini de yapıştırabilirsiniz.",
+        "no_saved_words": "Henüz kaydedilmiş kelime yok"
     },
     "option": {
         "app_store": "App Store",

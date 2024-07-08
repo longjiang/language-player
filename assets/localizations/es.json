@@ -306,7 +306,8 @@
         "upgrade_to_pro": "Actualizar a Pro",
         "verify": "Verificar",
         "watch": "Ver",
-        "share": "Compartir"
+        "share": "Compartir",
+        "clear_words": "Borrar Palabras"
     },
     "chatgpt": {
         "prompt": {
@@ -435,7 +436,8 @@
         "what_your_first_language": "¿Cuál es tu lengua materna?",
         "with_pro_you_can": "Con Pro, puedes:",
         "keep_or_reset_time": "¿Quieres mantener tu tiempo actual o restablecerlo a cero?",
-        "paste_youtube_url": "También puedes pegar la URL de YouTube para importar."
+        "paste_youtube_url": "También puedes pegar la URL de YouTube para importar.",
+        "no_saved_words": "Aún no hay palabras guardadas"
     },
     "option": {
         "app_store": "App Store",

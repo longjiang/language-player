@@ -307,7 +307,8 @@
         "upgrade_to_pro": "Frissítés Pro-ra",
         "verify": "Ellenőrzés",
         "watch": "Megtekintés",
-        "share": "Megosztás"
+        "share": "Megosztás",
+        "clear_words": "Szavak Törlése"
     },
     "chatgpt": {
         "prompt": {
@@ -436,7 +437,8 @@
         "what_your_first_language": "Mi az első nyelve?",
         "with_pro_you_can": "A Pro-val teheti:",
         "keep_or_reset_time": "Meg szeretné tartani a jelenlegi időt, vagy nullára állítja?",
-        "paste_youtube_url": "Beillesztheti a YouTube URL-t is az importáláshoz."
+        "paste_youtube_url": "Beillesztheti a YouTube URL-t is az importáláshoz.",
+        "no_saved_words": "Még nincsenek mentett szavak"
     },
     "option": {
         "app_store": "App Store",

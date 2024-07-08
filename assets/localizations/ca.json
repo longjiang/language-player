@@ -307,7 +307,8 @@
         "upgrade_to_pro": "Actualitzar a Pro",
         "verify": "Verificar",
         "watch": "Mirar",
-        "share": "Compartir"
+        "share": "Compartir",
+        "clear_words": "Esborrar Paraules"
     },
     "chatgpt": {
         "prompt": {
@@ -436,7 +437,8 @@
         "what_your_first_language": "Quina és la teva llengua materna?",
         "with_pro_you_can": "Amb Pro, pots:",
         "keep_or_reset_time": "Vols mantenir el temps actual o restablir-lo a zero?",
-        "paste_youtube_url": "També pots enganxar l'URL de YouTube per importar."
+        "paste_youtube_url": "També pots enganxar l'URL de YouTube per importar.",
+        "no_saved_words": "Encara no s'han desat paraules"
     },
     "option": {
         "app_store": "App Store",

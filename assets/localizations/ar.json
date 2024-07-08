@@ -307,7 +307,8 @@
         "upgrade_to_pro": "الترقية إلى النسخة المتقدمة",
         "verify": "التحقق",
         "watch": "مشاهدة",
-        "share": "مشاركة"
+        "share": "مشاركة",
+        "clear_words": "مسح الكلمات"
     },
     "chatgpt": {
         "prompt": {
@@ -436,7 +437,8 @@
         "what_your_first_language": "ما هي لغتك الأم؟",
         "with_pro_you_can": "مع النسخة المتقدمة، يمكنك:",
         "keep_or_reset_time": "هل تريد الاحتفاظ بالوقت الحالي أم إعادة تعيينه إلى الصفر؟",
-        "paste_youtube_url": "يمكنك أيضًا لصق عنوان URL من YouTube للاستيراد."
+        "paste_youtube_url": "يمكنك أيضًا لصق عنوان URL من YouTube للاستيراد.",
+        "no_saved_words": "لم يتم حفظ أي كلمات بعد"
     },
     "option": {
         "app_store": "متجر التطبيقات",

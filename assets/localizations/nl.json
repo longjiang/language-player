@@ -306,7 +306,8 @@
         "upgrade_to_pro": "Upgraden naar Pro",
         "verify": "Verifiëren",
         "watch": "Bekijken",
-        "share": "Delen"
+        "share": "Delen",
+        "clear_words": "Woorden Wissen"
     },
     "chatgpt": {
         "prompt": {
@@ -435,7 +436,8 @@
         "what_your_first_language": "Wat is je moedertaal?",
         "with_pro_you_can": "Met Pro kun je:",
         "keep_or_reset_time": "Wil je je huidige tijd behouden of op nul zetten?",
-        "paste_youtube_url": "Je kunt ook een YouTube-URL plakken om te importeren."
+        "paste_youtube_url": "Je kunt ook een YouTube-URL plakken om te importeren.",
+        "no_saved_words": "Nog geen woorden opgeslagen"
     },
     "option": {
         "app_store": "App Store",

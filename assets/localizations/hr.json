@@ -307,7 +307,8 @@
         "upgrade_to_pro": "Nadogradi na Pro",
         "verify": "Potvrdi",
         "watch": "Gledaj",
-        "share": "Podijeli"
+        "share": "Podijeli",
+        "clear_words": "Očisti Riječi"
     },
     "chatgpt": {
         "prompt": {
@@ -436,7 +437,8 @@
         "what_your_first_language": "Koji je tvoj materinski jezik?",
         "with_pro_you_can": "S Pro verzijom možeš:",
         "keep_or_reset_time": "Želite li zadržati trenutno vrijeme ili ga resetirati na nulu?",
-        "paste_youtube_url": "Možete zalijepiti i YouTube URL za uvoz."
+        "paste_youtube_url": "Možete zalijepiti i YouTube URL za uvoz.",
+        "no_saved_words": "Još nema spremljenih riječi"
     },
     "option": {
         "app_store": "App Store",

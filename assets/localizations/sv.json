@@ -306,7 +306,8 @@
         "upgrade_to_pro": "Uppgradera till Pro",
         "verify": "Verifiera",
         "watch": "Titta",
-        "share": "Dela"
+        "share": "Dela",
+        "clear_words": "Rensa Ord"
     },
     "chatgpt": {
         "prompt": {
@@ -435,7 +436,8 @@
         "what_your_first_language": "Vad är ditt modersmål?",
         "with_pro_you_can": "Med Pro kan du:",
         "keep_or_reset_time": "Vill du behålla din nuvarande tid eller återställa den till noll?",
-        "paste_youtube_url": "Du kan också klistra in YouTube-URL för att importera."
+        "paste_youtube_url": "Du kan också klistra in YouTube-URL för att importera.",
+        "no_saved_words": "Inga ord sparade än"
     },
     "option": {
         "app_store": "App Store",

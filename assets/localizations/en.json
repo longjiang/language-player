@@ -307,7 +307,8 @@
         "upgrade_to_pro": "Upgrade to Pro",
         "verify": "Verify",
         "watch": "Watch",
-        "share": "Share"
+        "share": "Share",
+        "clear_words": "Clear Words"
     },
     "button": {
         "email_support": "Email Support",
@@ -453,7 +454,8 @@
         "what_your_first_language": "What’s your first language?",
         "with_pro_you_can": "With Pro, you can:",
         "keep_or_reset_time": "Do you want to keep your current time or reset it to zero?",
-        "paste_youtube_url": "You can also paste in YouTube URL to import."
+        "paste_youtube_url": "You can also paste in YouTube URL to import.",
+        "no_saved_words": "No words saved yet"
     },
     "option": {
         "app_store": "App Store",

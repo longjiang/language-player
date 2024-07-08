@@ -306,7 +306,8 @@
         "upgrade_to_pro": "Oppgrader til Pro",
         "verify": "Bekreft",
         "watch": "Se",
-        "share": "Del"
+        "share": "Del",
+        "clear_words": "Tøm Ord"
     },
     "chatgpt": {
         "prompt": {
@@ -435,7 +436,8 @@
         "what_your_first_language": "Hva er ditt morsmål?",
         "with_pro_you_can": "Med Pro kan du:",
         "keep_or_reset_time": "Vil du beholde gjeldende tid eller nullstille den?",
-        "paste_youtube_url": "Du kan også lime inn YouTube-URL for å importere."
+        "paste_youtube_url": "Du kan også lime inn YouTube-URL for å importere.",
+        "no_saved_words": "Ingen ord lagret ennå"
     },
     "option": {
         "app_store": "App Store",
