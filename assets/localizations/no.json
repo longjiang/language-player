@@ -432,7 +432,8 @@
         "time_spent_learning": "Tid brukt på å lære {{language}} i Language Player",
         "upgrade_text": "Oppgrader til Pro for tilgang til flere videoer!",
         "what_your_first_language": "Hva er ditt morsmål?",
-        "with_pro_you_can": "Med Pro kan du:"
+        "with_pro_you_can": "Med Pro kan du:",
+        "keep_or_reset_time": "Vil du beholde gjeldende tid eller nullstille den?"
     },
     "of": "av",
     "option": {
@@ -529,7 +530,8 @@
         "verify_your_email": "Verifiser e-posten din",
         "views": "{{numViews}} visninger",
         "watch_history": "Seerhistorikk",
-        "your_current_plan": "Din nåværende plan"
+        "your_current_plan": "Din nåværende plan",
+        "update_progress": "Oppdater Fremgang"
     },
     "video": {
         "comments": "Kommentarer",
@@ -546,5 +548,9 @@
         "media": "Media",
         "dictionary": "Ordbok",
         "me": "Meg"
+    },
+    "button": {
+        "keep_current_time": "Behold Nåværende Tid",
+        "reset_time_to_zero": "Nullstill Tid"
     }
 }

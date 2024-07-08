@@ -432,7 +432,8 @@
         "time_spent_learning": "Время, проведенное на изучении {{language}} в Language Player",
         "upgrade_text": "Обновитесь до Pro для доступа к большему количеству видео!",
         "what_your_first_language": "Какой ваш родной язык?",
-        "with_pro_you_can": "С Pro вы можете:"
+        "with_pro_you_can": "С Pro вы можете:",
+        "keep_or_reset_time": "Вы хотите сохранить текущее время или сбросить его на ноль?"
     },
     "of": "из",
     "option": {
@@ -529,7 +530,8 @@
         "verify_your_email": "Подтвердите свою электронную почту",
         "views": "{{numViews}} просмотров",
         "watch_history": "История просмотров",
-        "your_current_plan": "Ваш текущий план"
+        "your_current_plan": "Ваш текущий план",
+        "update_progress": "Обновить Прогресс"
     },
     "video": {
         "comments": "Комментарии",
@@ -546,5 +548,9 @@
         "media": "Медиа",
         "dictionary": "Словарь",
         "me": "Я"
+    },
+    "button": {
+        "keep_current_time": "Сохранить Текущее Время",
+        "reset_time_to_zero": "Сбросить Время на Ноль"
     }
 }

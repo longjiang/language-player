@@ -431,7 +431,8 @@
         "time_spent_learning": "เวลาที่ใช้ในการเรียนรู้ {{language}} ใน Language Player",
         "upgrade_text": "อัพเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!",
         "what_your_first_language": "ภาษาแม่ของคุณคืออะไร?",
-        "with_pro_you_can": "ด้วย Pro คุณสามารถ:"
+        "with_pro_you_can": "ด้วย Pro คุณสามารถ:",
+        "keep_or_reset_time": "คุณต้องการเก็บเวลาปัจจุบันไว้หรือรีเซ็ตเป็นศูนย์?"
     },
     "of": "จาก",
     "option": {
@@ -528,7 +529,8 @@
         "verify_your_email": "ยืนยันอีเมลของคุณ",
         "views": "{{numViews}} การรับชม",
         "watch_history": "ประวัติการรับชม",
-        "your_current_plan": "แผนปัจจุบันของคุณ"
+        "your_current_plan": "แผนปัจจุบันของคุณ",
+        "update_progress": "อัปเดตความคืบหน้า"
     },
     "video": {
         "comments": "ความคิดเห็น",
@@ -545,5 +547,9 @@
         "media": "สื่อ",
         "dictionary": "พจนานุกรม",
         "me": "ฉัน"
+    },
+    "button": {
+        "keep_current_time": "เก็บเวลาปัจจุบัน",
+        "reset_time_to_zero": "รีเซ็ตเวลาเป็นศูนย์"
     }
 }

@@ -433,7 +433,8 @@
         "time_spent_learning": "Vrijeme provedeno učeći {{language}} u Language Playeru",
         "upgrade_text": "Nadogradi na Pro za pristup većem broju videozapisa!",
         "what_your_first_language": "Koji je tvoj materinski jezik?",
-        "with_pro_you_can": "S Pro verzijom možeš:"
+        "with_pro_you_can": "S Pro verzijom možeš:",
+        "keep_or_reset_time": "Želite li zadržati trenutno vrijeme ili ga resetirati na nulu?"
     },
     "of": "od",
     "option": {
@@ -530,7 +531,8 @@
         "verify_your_email": "Potvrdi svoj e-mail",
         "views": "{{numViews}} pregleda",
         "watch_history": "Povijest gledanja",
-        "your_current_plan": "Tvoj trenutni plan"
+        "your_current_plan": "Tvoj trenutni plan",
+        "update_progress": "Ažuriraj Napredak"
     },
     "video": {
         "comments": "Komentari",
@@ -547,5 +549,9 @@
         "media": "Mediji",
         "dictionary": "Rječnik",
         "me": "Ja"
+    },
+    "button": {
+        "keep_current_time": "Zadrži Trenutno Vrijeme",
+        "reset_time_to_zero": "Resetiraj Vrijeme na Nulu"
     }
 }

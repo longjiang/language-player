@@ -433,7 +433,8 @@
         "time_spent_learning": "Nyelvtanulásra fordított idő a Language Player-ben {{language}}",
         "upgrade_text": "Frissítsen Pro-ra a további videók eléréséhez!",
         "what_your_first_language": "Mi az első nyelve?",
-        "with_pro_you_can": "A Pro-val teheti:"
+        "with_pro_you_can": "A Pro-val teheti:",
+        "keep_or_reset_time": "Meg szeretné tartani a jelenlegi időt, vagy nullára állítja?"
     },
     "of": "nak, nek",
     "option": {
@@ -530,7 +531,8 @@
         "verify_your_email": "E-mail ellenőrzése",
         "views": "{{numViews}} megtekintés",
         "watch_history": "Nézési előzmények",
-        "your_current_plan": "Jelenlegi terv"
+        "your_current_plan": "Jelenlegi terv",
+        "update_progress": "Frissítse az Előrehaladást"
     },
     "video": {
         "comments": "Hozzászólások",
@@ -547,5 +549,9 @@
         "media": "Média",
         "dictionary": "Szótár",
         "me": "Én"
+    },
+    "button": {
+        "keep_current_time": "Jelenlegi Idő Megtartása",
+        "reset_time_to_zero": "Idő Nullázása"
     }
 }

@@ -431,7 +431,8 @@
         "time_spent_learning": "Thời gian dành để học {{language}} trong Language Player",
         "upgrade_text": "Nâng cấp lên Pro để truy cập thêm video!",
         "what_your_first_language": "Tiếng mẹ đẻ của bạn là gì?",
-        "with_pro_you_can": "Với Pro, bạn có thể:"
+        "with_pro_you_can": "Với Pro, bạn có thể:",
+        "keep_or_reset_time": "Bạn muốn giữ thời gian hiện tại hay đặt lại về không?"
     },
     "of": "của",
     "option": {
@@ -528,7 +529,8 @@
         "verify_your_email": "Xác minh email của bạn",
         "views": "{{numViews}} lượt xem",
         "watch_history": "Lịch sử xem",
-        "your_current_plan": "Gói hiện tại của bạn"
+        "your_current_plan": "Gói hiện tại của bạn",
+        "update_progress": "Cập Nhật Tiến Độ"
     },
     "video": {
         "comments": "Bình luận",
@@ -545,5 +547,9 @@
         "media": "Phương tiện truyền thông",
         "dictionary": "Từ điển",
         "me": "Tôi"
+    },
+    "button": {
+        "keep_current_time": "Giữ Thời Gian Hiện Tại",
+        "reset_time_to_zero": "Đặt Lại Thời Gian Về Không"
     }
 }

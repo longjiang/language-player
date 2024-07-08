@@ -312,7 +312,9 @@
         "email_support": "发邮件给客服",
         "processing": "处理中...",
         "purchase": "购买",
-        "switch_to_lifetime": "切换到终身计划"
+        "switch_to_lifetime": "切换到终身计划",
+        "keep_current_time": "保留当前时间",
+        "reset_time_to_zero": "将时间重置为零"
     },
     "chatgpt": {
         "prompt": {
@@ -448,7 +450,8 @@
         "time_spent_learning": "在Language Player中学习{{language}}的时间",
         "upgrade_text": "升级到专业版以访问更多视频！",
         "what_your_first_language": "您的母语是什么？",
-        "with_pro_you_can": "使用专业版，您可以："
+        "with_pro_you_can": "使用专业版，您可以：",
+        "keep_or_reset_time": "您想保留当前时间还是将其重置为零？"
     },
     "of": "的",
     "option": {
@@ -547,7 +550,8 @@
         "verify_your_email": "验证您的邮箱",
         "views": "{{numViews}}次观看",
         "watch_history": "观看历史",
-        "your_current_plan": "您当前的计划"
+        "your_current_plan": "您当前的计划",
+        "update_progress": "更新进度"
     },
     "video": {
         "comments": "评论",

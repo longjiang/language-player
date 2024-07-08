@@ -433,7 +433,8 @@
         "time_spent_learning": "Language Player में {{language}} सीखने में व्यतीत समय",
         "upgrade_text": "अधिक वीडियो तक पहुँचने के लिए प्रो में अपग्रेड करें!",
         "what_your_first_language": "आपकी पहली भाषा क्या है?",
-        "with_pro_you_can": "प्रो के साथ, आप कर सकते हैं:"
+        "with_pro_you_can": "प्रो के साथ, आप कर सकते हैं:",
+        "keep_or_reset_time": "क्या आप अपना वर्तमान समय रखना चाहते हैं या इसे शून्य पर रीसेट करना चाहते हैं?"
     },
     "of": "का",
     "option": {
@@ -530,7 +531,8 @@
         "verify_your_email": "अपना ईमेल सत्यापित करें",
         "views": "{{numViews}} दृश्य",
         "watch_history": "देखने का इतिहास",
-        "your_current_plan": "आपकी वर्तमान योजना"
+        "your_current_plan": "आपकी वर्तमान योजना",
+        "update_progress": "प्रगति अपडेट करें"
     },
     "video": {
         "comments": "टिप्पणियाँ",
@@ -547,5 +549,9 @@
         "media": "मीडिया",
         "dictionary": "शब्दकोश",
         "me": "मैं"
+    },
+    "button": {
+        "keep_current_time": "वर्तमान समय रखें",
+        "reset_time_to_zero": "समय को शून्य पर रीसेट करें"
     }
 }

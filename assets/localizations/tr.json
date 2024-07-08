@@ -431,7 +431,8 @@
         "time_spent_learning": "Language Player'da {{language}} öğrenmeye harcanan süre",
         "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!",
         "what_your_first_language": "Anadiliniz nedir?",
-        "with_pro_you_can": "Pro ile şunları yapabilirsiniz:"
+        "with_pro_you_can": "Pro ile şunları yapabilirsiniz:",
+        "keep_or_reset_time": "Mevcut zamanınızı korumak mı yoksa sıfırlamak mı istiyorsunuz?"
     },
     "of": "şunun",
     "option": {
@@ -528,7 +529,8 @@
         "verify_your_email": "E-postanızı doğrulayın",
         "views": "{{numViews}} Görüntüleme",
         "watch_history": "İzleme Geçmişi",
-        "your_current_plan": "Mevcut Planınız"
+        "your_current_plan": "Mevcut Planınız",
+        "update_progress": "İlerlemeyi Güncelle"
     },
     "video": {
         "comments": "Yorumlar",
@@ -545,5 +547,9 @@
         "media": "Medya",
         "dictionary": "Sözlük",
         "me": "Ben"
+    },
+    "button": {
+        "keep_current_time": "Mevcut Zamanı Koru",
+        "reset_time_to_zero": "Zamanı Sıfırla"
     }
 }

@@ -433,7 +433,8 @@
         "time_spent_learning": "Aika käytetty {{language}} oppimiseen Language Playerissa",
         "upgrade_text": "Päivitä Pro-versioon saadaksesi lisää videoita!",
         "what_your_first_language": "Mikä on äidinkielesi?",
-        "with_pro_you_can": "Pro-versiolla voit:"
+        "with_pro_you_can": "Pro-versiolla voit:",
+        "keep_or_reset_time": "Haluatko säilyttää nykyisen aikasi vai nollata sen?"
     },
     "of": "/",
     "option": {
@@ -530,7 +531,8 @@
         "verify_your_email": "Vahvista sähköpostisi",
         "views": "{{numViews}} näyttökertaa",
         "watch_history": "Katseluhistoria",
-        "your_current_plan": "Nykyinen suunnitelmasi"
+        "your_current_plan": "Nykyinen suunnitelmasi",
+        "update_progress": "Päivitä Edistyminen"
     },
     "video": {
         "comments": "Kommentit",
@@ -547,5 +549,9 @@
         "media": "Media",
         "dictionary": "Sanakirja",
         "me": "Minä"
+    },
+    "button": {
+        "keep_current_time": "Säilytä Nykyinen Aika",
+        "reset_time_to_zero": "Nollaa Aika"
     }
 }

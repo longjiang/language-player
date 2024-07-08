@@ -432,7 +432,8 @@
         "time_spent_learning": "Tid spenderad på att lära sig {{language}} i Language Player",
         "upgrade_text": "Uppgradera till Pro för att få åtkomst till fler videor!",
         "what_your_first_language": "Vad är ditt modersmål?",
-        "with_pro_you_can": "Med Pro kan du:"
+        "with_pro_you_can": "Med Pro kan du:",
+        "keep_or_reset_time": "Vill du behålla din nuvarande tid eller återställa den till noll?"
     },
     "of": "av",
     "option": {
@@ -529,7 +530,8 @@
         "verify_your_email": "Verifiera din e-post",
         "views": "{{numViews}} visningar",
         "watch_history": "Tittarhistorik",
-        "your_current_plan": "Din nuvarande plan"
+        "your_current_plan": "Din nuvarande plan",
+        "update_progress": "Uppdatera Framsteg"
     },
     "video": {
         "comments": "Kommentarer",
@@ -546,5 +548,9 @@
         "media": "Media",
         "dictionary": "Ordbok",
         "me": "Jag"
+    },
+    "button": {
+        "keep_current_time": "Behåll Nuvarande Tid",
+        "reset_time_to_zero": "Återställ Tid till Noll"
     }
 }

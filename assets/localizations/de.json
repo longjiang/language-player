@@ -433,7 +433,8 @@
         "time_spent_learning": "Zeit, die mit dem Lernen von {{language}} in Language Player verbracht wurde",
         "upgrade_text": "Upgraden Sie auf Pro, um Zugang zu mehr Videos zu erhalten!",
         "what_your_first_language": "Was ist Ihre Muttersprache?",
-        "with_pro_you_can": "Mit Pro können Sie:"
+        "with_pro_you_can": "Mit Pro können Sie:",
+        "keep_or_reset_time": "Möchten Sie Ihre aktuelle Zeit behalten oder auf Null zurücksetzen?"
     },
     "of": "von",
     "option": {
@@ -530,7 +531,8 @@
         "verify_your_email": "Verifizieren Sie Ihre E-Mail",
         "views": "{{numViews}} Aufrufe",
         "watch_history": "Verlauf ansehen",
-        "your_current_plan": "Ihr aktueller Plan"
+        "your_current_plan": "Ihr aktueller Plan",
+        "update_progress": "Fortschritt Aktualisieren"
     },
     "video": {
         "comments": "Kommentare",
@@ -547,5 +549,9 @@
         "media": "Medien",
         "dictionary": "Wörterbuch",
         "me": "Ich"
+    },
+    "button": {
+        "keep_current_time": "Aktuelle Zeit Behalten",
+        "reset_time_to_zero": "Zeit auf Null Zurücksetzen"
     }
 }

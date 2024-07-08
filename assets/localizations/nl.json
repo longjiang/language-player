@@ -432,7 +432,8 @@
         "time_spent_learning": "Tijd besteed aan het leren van {{language}} in Language Player",
         "upgrade_text": "Upgrade naar Pro voor toegang tot meer video's!",
         "what_your_first_language": "Wat is je moedertaal?",
-        "with_pro_you_can": "Met Pro kun je:"
+        "with_pro_you_can": "Met Pro kun je:",
+        "keep_or_reset_time": "Wil je je huidige tijd behouden of op nul zetten?"
     },
     "of": "van",
     "option": {
@@ -529,7 +530,8 @@
         "verify_your_email": "Verifieer je e-mail",
         "views": "{{numViews}} weergaven",
         "watch_history": "Kijkgeschiedenis",
-        "your_current_plan": "Je huidige abonnement"
+        "your_current_plan": "Je huidige abonnement",
+        "update_progress": "Voortgang Bijwerken"
     },
     "video": {
         "comments": "Reacties",
@@ -546,5 +548,9 @@
         "media": "Media",
         "dictionary": "Woordenboek",
         "me": "Ik"
+    },
+    "button": {
+        "keep_current_time": "Huidige Tijd Behouden",
+        "reset_time_to_zero": "Tijd op Nul Zetten"
     }
 }

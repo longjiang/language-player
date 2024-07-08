@@ -433,7 +433,8 @@
         "time_spent_learning": "Waktu yang dihabiskan belajar {{language}} di Language Player",
         "upgrade_text": "Tingkatkan ke Pro untuk mengakses lebih banyak video!",
         "what_your_first_language": "Apa bahasa ibu Anda?",
-        "with_pro_you_can": "Dengan Pro, Anda dapat:"
+        "with_pro_you_can": "Dengan Pro, Anda dapat:",
+        "keep_or_reset_time": "Apakah Anda ingin mempertahankan waktu saat ini atau mengatur ulang ke nol?"
     },
     "of": "dari",
     "option": {
@@ -530,7 +531,8 @@
         "verify_your_email": "Verifikasi Email Anda",
         "views": "{{numViews}} Penayangan",
         "watch_history": "Riwayat Tontonan",
-        "your_current_plan": "Rencana Anda Saat Ini"
+        "your_current_plan": "Rencana Anda Saat Ini",
+        "update_progress": "Perbarui Kemajuan"
     },
     "video": {
         "comments": "Komentar",
@@ -547,5 +549,9 @@
         "media": "Media",
         "dictionary": "Kamus",
         "me": "Saya"
+    },
+    "button": {
+        "keep_current_time": "Pertahankan Waktu Saat Ini",
+        "reset_time_to_zero": "Setel Ulang Waktu ke Nol"
     }
 }

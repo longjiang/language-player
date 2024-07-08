@@ -432,7 +432,8 @@
         "time_spent_learning": "Language Player에서 {{language}} 학습에 소요된 시간",
         "upgrade_text": "더 많은 동영상에 접근하려면 프로로 업그레이드하세요!",
         "what_your_first_language": "모국어가 무엇인가요?",
-        "with_pro_you_can": "프로 버전으로 다음을 할 수 있습니다:"
+        "with_pro_you_can": "프로 버전으로 다음을 할 수 있습니다:",
+        "keep_or_reset_time": "현재 시간을 유지하시겠습니까 아니면 0으로 재설정하시겠습니까?"
     },
     "of": "의",
     "option": {
@@ -529,7 +530,8 @@
         "verify_your_email": "이메일 인증",
         "views": "조회수 {{numViews}}회",
         "watch_history": "시청 기록",
-        "your_current_plan": "현재 플랜"
+        "your_current_plan": "현재 플랜",
+        "update_progress": "진행 상황 업데이트"
     },
     "video": {
         "comments": "댓글",
@@ -546,5 +548,9 @@
         "media": "미디어",
         "dictionary": "사전",
         "me": "나"
+    },
+    "button": {
+        "keep_current_time": "현재 시간 유지",
+        "reset_time_to_zero": "시간을 0으로 재설정"
     }
 }

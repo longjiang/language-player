@@ -312,7 +312,9 @@
         "email_support": "Email Support",
         "processing": "Processing...",
         "purchase": "Purchase",
-        "switch_to_lifetime": "Switch to Lifetime"
+        "switch_to_lifetime": "Switch to Lifetime",
+        "keep_current_time": "Keep Current Time",
+        "reset_time_to_zero": "Reset Time to Zero"
     },
     "chatgpt": {
         "prompt": {
@@ -448,7 +450,8 @@
         "time_spent_learning": "Spent learning {{language}} in Language Player",
         "upgrade_text": "Upgrade to Pro to access more videos!",
         "what_your_first_language": "What’s your first language?",
-        "with_pro_you_can": "With Pro, you can:"
+        "with_pro_you_can": "With Pro, you can:",
+        "keep_or_reset_time": "Do you want to keep your current time or reset it to zero?"
     },
     "of": "of",
     "option": {
@@ -547,7 +550,8 @@
         "verify_your_email": "Verify Your Email",
         "views": "{{numViews}} Views",
         "watch_history": "Watch History",
-        "your_current_plan": "Your Current Plan"
+        "your_current_plan": "Your Current Plan",
+        "update_progress": "Update Progress"
     },
     "video": {
         "comments": "Comments",

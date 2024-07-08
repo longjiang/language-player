@@ -433,7 +433,8 @@
         "time_spent_learning": "Tempo trascorso a imparare {{language}} in Language Player",
         "upgrade_text": "Passa a Pro per accedere a più video!",
         "what_your_first_language": "Qual è la tua lingua madre?",
-        "with_pro_you_can": "Con Pro puoi:"
+        "with_pro_you_can": "Con Pro puoi:",
+        "keep_or_reset_time": "Vuoi mantenere il tempo attuale o azzerarlo?"
     },
     "of": "di",
     "option": {
@@ -530,7 +531,8 @@
         "verify_your_email": "Verifica la tua email",
         "views": "{{numViews}} visualizzazioni",
         "watch_history": "Cronologia visualizzazioni",
-        "your_current_plan": "Il tuo piano attuale"
+        "your_current_plan": "Il tuo piano attuale",
+        "update_progress": "Aggiorna Progressi"
     },
     "video": {
         "comments": "Commenti",
@@ -547,5 +549,9 @@
         "media": "Media",
         "dictionary": "Dizionario",
         "me": "Io"
+    },
+    "button": {
+        "keep_current_time": "Mantieni Tempo Attuale",
+        "reset_time_to_zero": "Azzera il Tempo"
     }
 }

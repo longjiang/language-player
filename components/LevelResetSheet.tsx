@@ -4,26 +4,33 @@ import { StyleSheet, View } from "react-native";
 import { ThemedRBSheet } from "./ThemedRBSheet";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedButton } from "@/components/ThemedButton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface LevelResetSheetProps {
   onConfirm: (resetTime: boolean) => void;
 }
 
 const LevelResetSheet = forwardRef<RBSheet, LevelResetSheetProps>(({ onConfirm }, ref) => {
+  const { t } = useLanguage();
+
   return (
     <ThemedRBSheet ref={ref}>
       <View style={styles.container}>
-        <ThemedText style={styles.title} type="subtitle">Update Progress</ThemedText>
-        <ThemedText style={styles.message}>Do you want to keep your current time or reset it to zero?</ThemedText>
+        <ThemedText style={styles.title} type="subtitle">
+          {t('title.update_progress')}
+        </ThemedText>
+        <ThemedText style={styles.message}>
+          {t('msg.keep_or_reset_time')}
+        </ThemedText>
         <ThemedButton
-          title="Keep Current Time"
-          type="primary"
+          title={t('button.keep_current_time')}
+          type="neutral"
           onPress={() => onConfirm(false)}
           style={styles.button}
         />
         <ThemedButton
-          title="Reset Time to Zero"
-          type="neutral"
+          title={t('button.reset_time_to_zero')}
+          type="primary"
           onPress={() => onConfirm(true)}
           style={styles.button}
         />

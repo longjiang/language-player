@@ -433,7 +433,8 @@
         "time_spent_learning": "الوقت المستغرق في تعلم {{language}} في Language Player",
         "upgrade_text": "قم بالترقية إلى النسخة المتقدمة للوصول إلى المزيد من مقاطع الفيديو!",
         "what_your_first_language": "ما هي لغتك الأم؟",
-        "with_pro_you_can": "مع النسخة المتقدمة، يمكنك:"
+        "with_pro_you_can": "مع النسخة المتقدمة، يمكنك:",
+        "keep_or_reset_time": "هل تريد الاحتفاظ بالوقت الحالي أم إعادة تعيينه إلى الصفر؟"
     },
     "of": "من",
     "option": {
@@ -530,7 +531,8 @@
         "verify_your_email": "تحقق من بريدك الإلكتروني",
         "views": "{{numViews}} مشاهدة",
         "watch_history": "سجل المشاهدة",
-        "your_current_plan": "خطتك الحالية"
+        "your_current_plan": "خطتك الحالية",
+        "update_progress": "تحديث التقدم"
     },
     "video": {
         "comments": "التعليقات",
@@ -547,5 +549,9 @@
         "media": "وسائط",
         "dictionary": "قاموس",
         "me": "أنا"
+    },
+    "button": {
+        "keep_current_time": "الاحتفاظ بالوقت الحالي",
+        "reset_time_to_zero": "إعادة تعيين الوقت إلى الصفر"
     }
 }

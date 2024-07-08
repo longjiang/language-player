@@ -432,7 +432,8 @@
         "time_spent_learning": "Muda uliotumika kujifunza {{language}} katika Language Player",
         "upgrade_text": "Boresha hadi Pro ili kupata video zaidi!",
         "what_your_first_language": "Lugha yako ya kwanza ni ipi?",
-        "with_pro_you_can": "Ukiwa na Pro, unaweza:"
+        "with_pro_you_can": "Ukiwa na Pro, unaweza:",
+        "keep_or_reset_time": "Je, unataka kuweka muda wako wa sasa au kuuweka upya kuwa sifuri?"
     },
     "of": "ya",
     "option": {
@@ -529,7 +530,8 @@
         "verify_your_email": "Thibitisha barua pepe yako",
         "views": "{{numViews}} Maoni",
         "watch_history": "Historia ya Kutazama",
-        "your_current_plan": "Mpango wako wa sasa"
+        "your_current_plan": "Mpango wako wa sasa",
+        "update_progress": "Sasisha Maendeleo"
     },
     "video": {
         "comments": "Maoni",
@@ -546,5 +548,9 @@
         "media": "Vyombo vya habari",
         "dictionary": "Kamusi",
         "me": "Mimi"
+    },
+    "button": {
+        "keep_current_time": "Weka Muda wa Sasa",
+        "reset_time_to_zero": "Weka Upya Muda Kuwa Sifuri"
     }
 }

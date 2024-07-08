@@ -433,7 +433,8 @@
         "time_spent_learning": "Am caite ag foghlaim {{language}} in Language Player",
         "upgrade_text": "Uasghrádaigh go Pro chun rochtain a fháil ar níos mó físeán!",
         "what_your_first_language": "Cad é do mháthairtheanga?",
-        "with_pro_you_can": "Le Pro, is féidir leat:"
+        "with_pro_you_can": "Le Pro, is féidir leat:",
+        "keep_or_reset_time": "An mian leat d'am reatha a choinneáil nó é a athshocrú go náid?"
     },
     "of": "de",
     "option": {
@@ -530,7 +531,8 @@
         "verify_your_email": "Deimhnigh do ríomhphost",
         "views": "{{numViews}} amharc",
         "watch_history": "Stair féachana",
-        "your_current_plan": "Do phlean reatha"
+        "your_current_plan": "Do phlean reatha",
+        "update_progress": "Nuashonraigh Dul Chun Cinn"
     },
     "video": {
         "comments": "Tráchtanna",
@@ -547,5 +549,9 @@
         "media": "Meáin",
         "dictionary": "Foclóir",
         "me": "Mise"
+    },
+    "button": {
+        "keep_current_time": "Coinnigh Am Reatha",
+        "reset_time_to_zero": "Athshocraigh Am go Náid"
     }
 }

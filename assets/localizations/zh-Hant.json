@@ -312,7 +312,9 @@
         "email_support": "寄信給客服",
         "processing": "處理中喔...",
         "purchase": "買啦",
-        "switch_to_lifetime": "改成終身方案"
+        "switch_to_lifetime": "改成終身方案",
+        "keep_current_time": "保留目前時間",
+        "reset_time_to_zero": "將時間歸零"
     },
     "chatgpt": {
         "prompt": {
@@ -448,7 +450,8 @@
         "time_spent_learning": "在Language Player學習{{language}}的時間",
         "upgrade_text": "升級成專業版就可以看更多影片喔！",
         "what_your_first_language": "你的母語是什麼呢？",
-        "with_pro_you_can": "用專業版，你就可以："
+        "with_pro_you_can": "用專業版，你就可以：",
+        "keep_or_reset_time": "您要保留目前的時間還是重設為零？"
     },
     "of": "的",
     "option": {
@@ -547,7 +550,8 @@
         "verify_your_email": "驗證你的信箱",
         "views": "{{numViews}}次觀看",
         "watch_history": "觀看紀錄",
-        "your_current_plan": "你目前的方案"
+        "your_current_plan": "你目前的方案",
+        "update_progress": "更新進度"
     },
     "video": {
         "comments": "留言",
@@ -562,7 +566,7 @@
     "key": "zh-Hant",
     "tab": {
         "media": "媒體",
-        "dictionary": "詞典",
+        "dictionary": "字典",
         "me": "我的"
     }
 }

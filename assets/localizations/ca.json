@@ -433,7 +433,8 @@
         "time_spent_learning": "Temps dedicat a aprendre {{language}} a Language Player",
         "upgrade_text": "Actualitza a Pro per accedir a més vídeos!",
         "what_your_first_language": "Quina és la teva llengua materna?",
-        "with_pro_you_can": "Amb Pro, pots:"
+        "with_pro_you_can": "Amb Pro, pots:",
+        "keep_or_reset_time": "Vols mantenir el temps actual o restablir-lo a zero?"
     },
     "of": "de",
     "option": {
@@ -530,7 +531,8 @@
         "verify_your_email": "Verifica el teu correu electrònic",
         "views": "{{numViews}} visualitzacions",
         "watch_history": "Historial de visualització",
-        "your_current_plan": "El teu pla actual"
+        "your_current_plan": "El teu pla actual",
+        "update_progress": "Actualitzar Progrés"
     },
     "video": {
         "comments": "Comentaris",
@@ -547,5 +549,9 @@
         "media": "Mitjans",
         "dictionary": "Diccionari",
         "me": "Jo"
+    },
+    "button": {
+        "keep_current_time": "Mantenir Temps Actual",
+        "reset_time_to_zero": "Restablir Temps a Zero"
     }
 }
