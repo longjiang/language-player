@@ -434,7 +434,8 @@
         "upgrade_text": "Αναβάθμιση σε επαγγελματική έκδοση για πρόσβαση σε περισσότερα βίντεο!",
         "what_your_first_language": "Ποια είναι η μητρική σας γλώσσα;",
         "with_pro_you_can": "Με την επαγγελματική έκδοση, μπορείτε να:",
-        "keep_or_reset_time": "Θέλετε να διατηρήσετε τον τρέχοντα χρόνο σας ή να τον μηδενίσετε;"
+        "keep_or_reset_time": "Θέλετε να διατηρήσετε τον τρέχοντα χρόνο σας ή να τον μηδενίσετε;",
+        "paste_youtube_url": "Μπορείτε επίσης να επικολλήσετε τη διεύθυνση URL του YouTube για εισαγωγή."
     },
     "of": "του",
     "option": {
@@ -461,7 +462,8 @@
         "select_language": "Επιλέξτε μια γλώσσα",
         "dict_search_1": "Αναζήτηση {{param1}}",
         "dict_search_2": "Αναζήτηση {{param1}} ή {{param2}}",
-        "dict_search_3": "Αναζήτηση {{param1}}, {{param2}}, ή {{param3}}"
+        "dict_search_3": "Αναζήτηση {{param1}}, {{param2}}, ή {{param3}}",
+        "search_all_content": "Αναζήτηση σε όλο το περιεχόμενο στα {{language}}"
     },
     "price": {
         "annual": "${{price}}/έτος",
@@ -532,7 +534,8 @@
         "views": "{{numViews}} Προβολές",
         "watch_history": "Ιστορικό προβολών",
         "your_current_plan": "Το τρέχον πλάνο σας",
-        "update_progress": "Ενημέρωση Προόδου"
+        "update_progress": "Ενημέρωση Προόδου",
+        "search": "Αναζήτηση"
     },
     "video": {
         "comments": "Σχόλια",

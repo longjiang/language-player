@@ -451,7 +451,8 @@
         "upgrade_text": "升级到专业版以访问更多视频！",
         "what_your_first_language": "您的母语是什么？",
         "with_pro_you_can": "使用专业版，您可以：",
-        "keep_or_reset_time": "您想保留当前时间还是将其重置为零？"
+        "keep_or_reset_time": "您想保留当前时间还是将其重置为零？",
+        "paste_youtube_url": "您也可以粘贴YouTube网址以导入。"
     },
     "of": "的",
     "option": {
@@ -478,7 +479,8 @@
         "select_language": "选择语言",
         "dict_search_1": "搜索{{param1}}",
         "dict_search_2": "搜索{{param1}}或{{param2}}",
-        "dict_search_3": "搜索{{param1}}、{{param2}}或{{param3}}"
+        "dict_search_3": "搜索{{param1}}、{{param2}}或{{param3}}",
+        "search_all_content": "搜索所有{{language}}内容"
     },
     "price": {
         "annual": "${{price}}/年",
@@ -551,7 +553,8 @@
         "views": "{{numViews}}次观看",
         "watch_history": "观看历史",
         "your_current_plan": "您当前的计划",
-        "update_progress": "更新进度"
+        "update_progress": "更新进度",
+        "search": "搜索"
     },
     "video": {
         "comments": "评论",

@@ -433,7 +433,8 @@
         "upgrade_text": "Boresha hadi Pro ili kupata video zaidi!",
         "what_your_first_language": "Lugha yako ya kwanza ni ipi?",
         "with_pro_you_can": "Ukiwa na Pro, unaweza:",
-        "keep_or_reset_time": "Je, unataka kuweka muda wako wa sasa au kuuweka upya kuwa sifuri?"
+        "keep_or_reset_time": "Je, unataka kuweka muda wako wa sasa au kuuweka upya kuwa sifuri?",
+        "paste_youtube_url": "Unaweza pia kubandika URL ya YouTube kuingiza."
     },
     "of": "ya",
     "option": {
@@ -460,7 +461,8 @@
         "select_language": "Chagua lugha",
         "dict_search_1": "Tafuta {{param1}}",
         "dict_search_2": "Tafuta {{param1}} au {{param2}}",
-        "dict_search_3": "Tafuta {{param1}}, {{param2}}, au {{param3}}"
+        "dict_search_3": "Tafuta {{param1}}, {{param2}}, au {{param3}}",
+        "search_all_content": "Tafuta maudhui yote ya {{language}}"
     },
     "price": {
         "annual": "${{price}}/mwaka",
@@ -531,7 +533,8 @@
         "views": "{{numViews}} Maoni",
         "watch_history": "Historia ya Kutazama",
         "your_current_plan": "Mpango wako wa sasa",
-        "update_progress": "Sasisha Maendeleo"
+        "update_progress": "Sasisha Maendeleo",
+        "search": "Tafuta"
     },
     "video": {
         "comments": "Maoni",

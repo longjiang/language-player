@@ -434,7 +434,8 @@
         "upgrade_text": "अधिक वीडियो तक पहुँचने के लिए प्रो में अपग्रेड करें!",
         "what_your_first_language": "आपकी पहली भाषा क्या है?",
         "with_pro_you_can": "प्रो के साथ, आप कर सकते हैं:",
-        "keep_or_reset_time": "क्या आप अपना वर्तमान समय रखना चाहते हैं या इसे शून्य पर रीसेट करना चाहते हैं?"
+        "keep_or_reset_time": "क्या आप अपना वर्तमान समय रखना चाहते हैं या इसे शून्य पर रीसेट करना चाहते हैं?",
+        "paste_youtube_url": "आप इम्पोर्ट करने के लिए YouTube URL भी पेस्ट कर सकते हैं।"
     },
     "of": "का",
     "option": {
@@ -461,7 +462,8 @@
         "select_language": "एक भाषा का चयन करें",
         "dict_search_1": "खोजें {{param1}}",
         "dict_search_2": "खोजें {{param1}} या {{param2}}",
-        "dict_search_3": "खोजें {{param1}}, {{param2}}, या {{param3}}"
+        "dict_search_3": "खोजें {{param1}}, {{param2}}, या {{param3}}",
+        "search_all_content": "सभी {{language}} सामग्री खोजें"
     },
     "price": {
         "annual": "${{price}}/वर्ष",
@@ -532,7 +534,8 @@
         "views": "{{numViews}} दृश्य",
         "watch_history": "देखने का इतिहास",
         "your_current_plan": "आपकी वर्तमान योजना",
-        "update_progress": "प्रगति अपडेट करें"
+        "update_progress": "प्रगति अपडेट करें",
+        "search": "खोज"
     },
     "video": {
         "comments": "टिप्पणियाँ",

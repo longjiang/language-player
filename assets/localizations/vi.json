@@ -432,7 +432,8 @@
         "upgrade_text": "Nâng cấp lên Pro để truy cập thêm video!",
         "what_your_first_language": "Tiếng mẹ đẻ của bạn là gì?",
         "with_pro_you_can": "Với Pro, bạn có thể:",
-        "keep_or_reset_time": "Bạn muốn giữ thời gian hiện tại hay đặt lại về không?"
+        "keep_or_reset_time": "Bạn muốn giữ thời gian hiện tại hay đặt lại về không?",
+        "paste_youtube_url": "Bạn cũng có thể dán URL YouTube để nhập."
     },
     "of": "của",
     "option": {
@@ -459,7 +460,8 @@
         "select_language": "Chọn một ngôn ngữ",
         "dict_search_1": "Tìm kiếm {{param1}}",
         "dict_search_2": "Tìm kiếm {{param1}} hoặc {{param2}}",
-        "dict_search_3": "Tìm kiếm {{param1}}, {{param2}}, hoặc {{param3}}"
+        "dict_search_3": "Tìm kiếm {{param1}}, {{param2}}, hoặc {{param3}}",
+        "search_all_content": "Tìm kiếm tất cả nội dung {{language}}"
     },
     "price": {
         "annual": "${{price}}/năm",
@@ -530,7 +532,8 @@
         "views": "{{numViews}} lượt xem",
         "watch_history": "Lịch sử xem",
         "your_current_plan": "Gói hiện tại của bạn",
-        "update_progress": "Cập Nhật Tiến Độ"
+        "update_progress": "Cập Nhật Tiến Độ",
+        "search": "Tìm kiếm"
     },
     "video": {
         "comments": "Bình luận",

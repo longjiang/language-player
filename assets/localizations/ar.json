@@ -434,7 +434,8 @@
         "upgrade_text": "قم بالترقية إلى النسخة المتقدمة للوصول إلى المزيد من مقاطع الفيديو!",
         "what_your_first_language": "ما هي لغتك الأم؟",
         "with_pro_you_can": "مع النسخة المتقدمة، يمكنك:",
-        "keep_or_reset_time": "هل تريد الاحتفاظ بالوقت الحالي أم إعادة تعيينه إلى الصفر؟"
+        "keep_or_reset_time": "هل تريد الاحتفاظ بالوقت الحالي أم إعادة تعيينه إلى الصفر؟",
+        "paste_youtube_url": "يمكنك أيضًا لصق عنوان URL من YouTube للاستيراد."
     },
     "of": "من",
     "option": {
@@ -461,7 +462,8 @@
         "select_language": "اختر لغة",
         "dict_search_1": "البحث عن {{param1}}",
         "dict_search_2": "البحث عن {{param1}} أو {{param2}}",
-        "dict_search_3": "البحث عن {{param1}}، {{param2}}، أو {{param3}}"
+        "dict_search_3": "البحث عن {{param1}}، {{param2}}، أو {{param3}}",
+        "search_all_content": "البحث في كل محتوى {{language}}"
     },
     "price": {
         "annual": "${{price}}/سنة",
@@ -532,7 +534,8 @@
         "views": "{{numViews}} مشاهدة",
         "watch_history": "سجل المشاهدة",
         "your_current_plan": "خطتك الحالية",
-        "update_progress": "تحديث التقدم"
+        "update_progress": "تحديث التقدم",
+        "search": "بحث"
     },
     "video": {
         "comments": "التعليقات",

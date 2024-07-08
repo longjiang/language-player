@@ -434,7 +434,8 @@
         "upgrade_text": "Passa a Pro per accedere a più video!",
         "what_your_first_language": "Qual è la tua lingua madre?",
         "with_pro_you_can": "Con Pro puoi:",
-        "keep_or_reset_time": "Vuoi mantenere il tempo attuale o azzerarlo?"
+        "keep_or_reset_time": "Vuoi mantenere il tempo attuale o azzerarlo?",
+        "paste_youtube_url": "Puoi anche incollare l'URL di YouTube per importare."
     },
     "of": "di",
     "option": {
@@ -461,7 +462,8 @@
         "select_language": "Seleziona una lingua",
         "dict_search_1": "Cerca {{param1}}",
         "dict_search_2": "Cerca {{param1}} o {{param2}}",
-        "dict_search_3": "Cerca {{param1}}, {{param2}}, o {{param3}}"
+        "dict_search_3": "Cerca {{param1}}, {{param2}}, o {{param3}}",
+        "search_all_content": "Cerca tutti i contenuti in {{language}}"
     },
     "price": {
         "annual": "${{price}}/anno",
@@ -532,7 +534,8 @@
         "views": "{{numViews}} visualizzazioni",
         "watch_history": "Cronologia visualizzazioni",
         "your_current_plan": "Il tuo piano attuale",
-        "update_progress": "Aggiorna Progressi"
+        "update_progress": "Aggiorna Progressi",
+        "search": "Cerca"
     },
     "video": {
         "comments": "Commenti",

@@ -433,7 +433,8 @@
         "upgrade_text": "Fă upgrade la Pro pentru a accesa mai multe videoclipuri!",
         "what_your_first_language": "Care este limba ta maternă?",
         "with_pro_you_can": "Cu Pro, poți:",
-        "keep_or_reset_time": "Doriți să păstrați timpul curent sau să îl resetați la zero?"
+        "keep_or_reset_time": "Doriți să păstrați timpul curent sau să îl resetați la zero?",
+        "paste_youtube_url": "De asemenea, puteți lipi URL-ul YouTube pentru a importa."
     },
     "of": "din",
     "option": {
@@ -460,7 +461,8 @@
         "select_language": "Selectează o limbă",
         "dict_search_1": "Căutați {{param1}}",
         "dict_search_2": "Căutați {{param1}} sau {{param2}}",
-        "dict_search_3": "Căutați {{param1}}, {{param2}}, sau {{param3}}"
+        "dict_search_3": "Căutați {{param1}}, {{param2}}, sau {{param3}}",
+        "search_all_content": "Caută în tot conținutul în {{language}}"
     },
     "price": {
         "annual": "${{price}}/an",
@@ -531,7 +533,8 @@
         "views": "{{numViews}} vizualizări",
         "watch_history": "Istoric vizionări",
         "your_current_plan": "Planul tău curent",
-        "update_progress": "Actualizare Progres"
+        "update_progress": "Actualizare Progres",
+        "search": "Căutare"
     },
     "video": {
         "comments": "Comentarii",

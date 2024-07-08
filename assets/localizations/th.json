@@ -432,7 +432,8 @@
         "upgrade_text": "อัพเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!",
         "what_your_first_language": "ภาษาแม่ของคุณคืออะไร?",
         "with_pro_you_can": "ด้วย Pro คุณสามารถ:",
-        "keep_or_reset_time": "คุณต้องการเก็บเวลาปัจจุบันไว้หรือรีเซ็ตเป็นศูนย์?"
+        "keep_or_reset_time": "คุณต้องการเก็บเวลาปัจจุบันไว้หรือรีเซ็ตเป็นศูนย์?",
+        "paste_youtube_url": "คุณยังสามารถวาง URL ของ YouTube เพื่อนำเข้าได้"
     },
     "of": "จาก",
     "option": {
@@ -459,7 +460,8 @@
         "select_language": "เลือกภาษา",
         "dict_search_1": "ค้นหา {{param1}}",
         "dict_search_2": "ค้นหา {{param1}} หรือ {{param2}}",
-        "dict_search_3": "ค้นหา {{param1}}, {{param2}}, หรือ {{param3}}"
+        "dict_search_3": "ค้นหา {{param1}}, {{param2}}, หรือ {{param3}}",
+        "search_all_content": "ค้นหาเนื้อหาภาษา{{language}}ทั้งหมด"
     },
     "price": {
         "annual": "${{price}}/ปี",
@@ -530,7 +532,8 @@
         "views": "{{numViews}} การรับชม",
         "watch_history": "ประวัติการรับชม",
         "your_current_plan": "แผนปัจจุบันของคุณ",
-        "update_progress": "อัปเดตความคืบหน้า"
+        "update_progress": "อัปเดตความคืบหน้า",
+        "search": "ค้นหา"
     },
     "video": {
         "comments": "ความคิดเห็น",

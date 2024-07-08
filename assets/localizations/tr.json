@@ -432,7 +432,8 @@
         "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!",
         "what_your_first_language": "Anadiliniz nedir?",
         "with_pro_you_can": "Pro ile şunları yapabilirsiniz:",
-        "keep_or_reset_time": "Mevcut zamanınızı korumak mı yoksa sıfırlamak mı istiyorsunuz?"
+        "keep_or_reset_time": "Mevcut zamanınızı korumak mı yoksa sıfırlamak mı istiyorsunuz?",
+        "paste_youtube_url": "İçe aktarmak için YouTube URL'sini de yapıştırabilirsiniz."
     },
     "of": "şunun",
     "option": {
@@ -459,7 +460,8 @@
         "select_language": "Bir dil seçin",
         "dict_search_1": "Ara {{param1}}",
         "dict_search_2": "Ara {{param1}} veya {{param2}}",
-        "dict_search_3": "Ara {{param1}}, {{param2}}, veya {{param3}}"
+        "dict_search_3": "Ara {{param1}}, {{param2}}, veya {{param3}}",
+        "search_all_content": "Tüm {{language}} içeriği ara"
     },
     "price": {
         "annual": "${{price}}/yıl",
@@ -530,7 +532,8 @@
         "views": "{{numViews}} Görüntüleme",
         "watch_history": "İzleme Geçmişi",
         "your_current_plan": "Mevcut Planınız",
-        "update_progress": "İlerlemeyi Güncelle"
+        "update_progress": "İlerlemeyi Güncelle",
+        "search": "Ara"
     },
     "video": {
         "comments": "Yorumlar",

@@ -434,7 +434,8 @@
         "upgrade_text": "Päivitä Pro-versioon saadaksesi lisää videoita!",
         "what_your_first_language": "Mikä on äidinkielesi?",
         "with_pro_you_can": "Pro-versiolla voit:",
-        "keep_or_reset_time": "Haluatko säilyttää nykyisen aikasi vai nollata sen?"
+        "keep_or_reset_time": "Haluatko säilyttää nykyisen aikasi vai nollata sen?",
+        "paste_youtube_url": "Voit myös liittää YouTube-URL-osoitteen tuodaksesi sen."
     },
     "of": "/",
     "option": {
@@ -461,7 +462,8 @@
         "select_language": "Valitse kieli",
         "dict_search_1": "Hae {{param1}}",
         "dict_search_2": "Hae {{param1}} tai {{param2}}",
-        "dict_search_3": "Hae {{param1}}, {{param2}}, tai {{param3}}"
+        "dict_search_3": "Hae {{param1}}, {{param2}}, tai {{param3}}",
+        "search_all_content": "Hae kaikesta {{language}} sisällöstä"
     },
     "price": {
         "annual": "${{price}}/vuosi",
@@ -532,7 +534,8 @@
         "views": "{{numViews}} näyttökertaa",
         "watch_history": "Katseluhistoria",
         "your_current_plan": "Nykyinen suunnitelmasi",
-        "update_progress": "Päivitä Edistyminen"
+        "update_progress": "Päivitä Edistyminen",
+        "search": "Haku"
     },
     "video": {
         "comments": "Kommentit",

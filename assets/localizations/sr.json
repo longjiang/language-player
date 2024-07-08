@@ -433,7 +433,8 @@
         "upgrade_text": "Nadogradi na Pro za pristup većem broju video zapisa!",
         "what_your_first_language": "Koji je tvoj maternji jezik?",
         "with_pro_you_can": "Sa Pro verzijom možeš:",
-        "keep_or_reset_time": "Да ли желите да задржите тренутно време или да га ресетујете на нулу?"
+        "keep_or_reset_time": "Да ли желите да задржите тренутно време или да га ресетујете на нулу?",
+        "paste_youtube_url": "Такође можете налепити YouTube URL за увоз."
     },
     "of": "od",
     "option": {
@@ -460,7 +461,8 @@
         "select_language": "Izaberi jezik",
         "dict_search_1": "Претрагај {{param1}}",
         "dict_search_2": "Претрагај {{param1}} или {{param2}}",
-        "dict_search_3": "Претрагај {{param1}}, {{param2}}, или {{param3}}"
+        "dict_search_3": "Претрагај {{param1}}, {{param2}}, или {{param3}}",
+        "search_all_content": "Претражи сав {{language}} садржај"
     },
     "price": {
         "annual": "${{price}}/год",
@@ -531,7 +533,8 @@
         "views": "{{numViews}} pregleda",
         "watch_history": "Istorija gledanja",
         "your_current_plan": "Tvoj trenutni plan",
-        "update_progress": "Ажурирај Напредак"
+        "update_progress": "Ажурирај Напредак",
+        "search": "Претрага"
     },
     "video": {
         "comments": "Komentari",

@@ -434,7 +434,8 @@
         "upgrade_text": "Actualitza a Pro per accedir a més vídeos!",
         "what_your_first_language": "Quina és la teva llengua materna?",
         "with_pro_you_can": "Amb Pro, pots:",
-        "keep_or_reset_time": "Vols mantenir el temps actual o restablir-lo a zero?"
+        "keep_or_reset_time": "Vols mantenir el temps actual o restablir-lo a zero?",
+        "paste_youtube_url": "També pots enganxar l'URL de YouTube per importar."
     },
     "of": "de",
     "option": {
@@ -461,7 +462,8 @@
         "select_language": "Selecciona un idioma",
         "dict_search_1": "Cerca {{param1}}",
         "dict_search_2": "Cerca {{param1}} o {{param2}}",
-        "dict_search_3": "Cerca {{param1}}, {{param2}}, o {{param3}}"
+        "dict_search_3": "Cerca {{param1}}, {{param2}}, o {{param3}}",
+        "search_all_content": "Cerca tot el contingut en {{language}}"
     },
     "price": {
         "annual": "${{price}}/any",
@@ -532,7 +534,8 @@
         "views": "{{numViews}} visualitzacions",
         "watch_history": "Historial de visualització",
         "your_current_plan": "El teu pla actual",
-        "update_progress": "Actualitzar Progrés"
+        "update_progress": "Actualitzar Progrés",
+        "search": "Cerca"
     },
     "video": {
         "comments": "Comentaris",

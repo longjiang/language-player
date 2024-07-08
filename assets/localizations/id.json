@@ -434,7 +434,8 @@
         "upgrade_text": "Tingkatkan ke Pro untuk mengakses lebih banyak video!",
         "what_your_first_language": "Apa bahasa ibu Anda?",
         "with_pro_you_can": "Dengan Pro, Anda dapat:",
-        "keep_or_reset_time": "Apakah Anda ingin mempertahankan waktu saat ini atau mengatur ulang ke nol?"
+        "keep_or_reset_time": "Apakah Anda ingin mempertahankan waktu saat ini atau mengatur ulang ke nol?",
+        "paste_youtube_url": "Anda juga dapat menempelkan URL YouTube untuk mengimpor."
     },
     "of": "dari",
     "option": {
@@ -461,7 +462,8 @@
         "select_language": "Pilih bahasa",
         "dict_search_1": "Cari {{param1}}",
         "dict_search_2": "Cari {{param1}} atau {{param2}}",
-        "dict_search_3": "Cari {{param1}}, {{param2}}, atau {{param3}}"
+        "dict_search_3": "Cari {{param1}}, {{param2}}, atau {{param3}}",
+        "search_all_content": "Cari semua konten {{language}}"
     },
     "price": {
         "annual": "${{price}}/tahun",
@@ -532,7 +534,8 @@
         "views": "{{numViews}} Penayangan",
         "watch_history": "Riwayat Tontonan",
         "your_current_plan": "Rencana Anda Saat Ini",
-        "update_progress": "Perbarui Kemajuan"
+        "update_progress": "Perbarui Kemajuan",
+        "search": "Cari"
     },
     "video": {
         "comments": "Komentar",

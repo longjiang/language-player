@@ -433,7 +433,8 @@
         "upgrade_text": "Обновитесь до Pro для доступа к большему количеству видео!",
         "what_your_first_language": "Какой ваш родной язык?",
         "with_pro_you_can": "С Pro вы можете:",
-        "keep_or_reset_time": "Вы хотите сохранить текущее время или сбросить его на ноль?"
+        "keep_or_reset_time": "Вы хотите сохранить текущее время или сбросить его на ноль?",
+        "paste_youtube_url": "Вы также можете вставить URL YouTube для импорта."
     },
     "of": "из",
     "option": {
@@ -460,7 +461,8 @@
         "select_language": "Выберите язык",
         "dict_search_1": "Искать {{param1}}",
         "dict_search_2": "Искать {{param1}} или {{param2}}",
-        "dict_search_3": "Искать {{param1}}, {{param2}}, или {{param3}}"
+        "dict_search_3": "Искать {{param1}}, {{param2}}, или {{param3}}",
+        "search_all_content": "Поиск по всему контенту на {{language}}"
     },
     "price": {
         "annual": "${{price}}/год",
@@ -531,7 +533,8 @@
         "views": "{{numViews}} просмотров",
         "watch_history": "История просмотров",
         "your_current_plan": "Ваш текущий план",
-        "update_progress": "Обновить Прогресс"
+        "update_progress": "Обновить Прогресс",
+        "search": "Поиск"
     },
     "video": {
         "comments": "Комментарии",

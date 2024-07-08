@@ -433,7 +433,8 @@
         "upgrade_text": "Uppgradera till Pro för att få åtkomst till fler videor!",
         "what_your_first_language": "Vad är ditt modersmål?",
         "with_pro_you_can": "Med Pro kan du:",
-        "keep_or_reset_time": "Vill du behålla din nuvarande tid eller återställa den till noll?"
+        "keep_or_reset_time": "Vill du behålla din nuvarande tid eller återställa den till noll?",
+        "paste_youtube_url": "Du kan också klistra in YouTube-URL för att importera."
     },
     "of": "av",
     "option": {
@@ -460,7 +461,8 @@
         "select_language": "Välj ett språk",
         "dict_search_1": "Sök {{param1}}",
         "dict_search_2": "Sök {{param1}} eller {{param2}}",
-        "dict_search_3": "Sök {{param1}}, {{param2}}, eller {{param3}}"
+        "dict_search_3": "Sök {{param1}}, {{param2}}, eller {{param3}}",
+        "search_all_content": "Sök i allt {{language}} innehåll"
     },
     "price": {
         "annual": "${{price}}/år",
@@ -531,7 +533,8 @@
         "views": "{{numViews}} visningar",
         "watch_history": "Tittarhistorik",
         "your_current_plan": "Din nuvarande plan",
-        "update_progress": "Uppdatera Framsteg"
+        "update_progress": "Uppdatera Framsteg",
+        "search": "Sök"
     },
     "video": {
         "comments": "Kommentarer",

@@ -16,19 +16,18 @@ import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { YouTubeVideo } from "@/types/videoTypes";
 import { normalizeVideoData } from "@/src/api/directus/youtube-video";
-
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const SearchScreen = () => {
   const [items, setItems] = useState<YouTubeVideo[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
-
+  const { t, l2Lang } = useLanguage();
+  if (!l2Lang) return null;
 
   useEffect(() => {
-    // Search screen mounted
     if (searchQuery) {
-      // Load items based on search query
       loadItems();
     }
   }, []);
@@ -38,13 +37,12 @@ const SearchScreen = () => {
   };
 
   const handleSearch = () => {
-    // Trigger search based on searchQuery
     loadItems();
   };
 
   const loadItems = async () => {
-    setItems([]); // Clear items
-    setIsLoading(true); // Start loading
+    setItems([]);
+    setIsLoading(true);
     try {
       const data = await getCollectionItems("youtube_videos_4", {
         filter: { title: { contains: searchQuery } },
@@ -54,20 +52,21 @@ const SearchScreen = () => {
     } catch (error) {
       console.error("Failed to load items:", error);
     }
-    setIsLoading(false); // Stop loading
+    setIsLoading(false);
   };
-  
+
+  const l2Name = t('lang.' + l2Lang.code);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       {items.length === 0 && (
         <ThemedScreen
-          title="Search"
+          title={t('title.search')}
           onBackPress={() => router.back()}
           showFlag={true}
         >
           <ThemedInput
-            placeholder="Search all Chinese content"
+            placeholder={t('placeholder.search_all_content', { language: l2Name })}
             style={{ marginBottom: 20 }}
             icon="magnify"
             onChangeText={handleInputChange}
@@ -75,7 +74,7 @@ const SearchScreen = () => {
             value={searchQuery}
           />
           <ThemedText type="default" variant="secondary">
-            You can also paste in YouTube URL to import.
+            {t('msg.paste_youtube_url')}
           </ThemedText>
           {isLoading && (
             <View style={styles.spinnerContainer}>
@@ -95,7 +94,7 @@ const SearchScreen = () => {
                 onPress={() => router.navigate("/(tabs)/(media)")}
               />
               <ThemedInput
-                placeholder="Search all Chinese content"
+                placeholder={t('placeholder.search_all_content', { language: l2Name })}
                 style={{ flex: 1, marginRight: 8 }}
                 size="small"
                 icon="magnify"
@@ -126,7 +125,6 @@ const SearchScreen = () => {
           )}
         </SafeAreaView>
       )}
-
     </GestureHandlerRootView>
   );
 };

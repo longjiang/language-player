@@ -451,7 +451,8 @@
         "upgrade_text": "升級成專業版就可以看更多影片喔！",
         "what_your_first_language": "你的母語是什麼呢？",
         "with_pro_you_can": "用專業版，你就可以：",
-        "keep_or_reset_time": "您要保留目前的時間還是重設為零？"
+        "keep_or_reset_time": "您要保留目前的時間還是重設為零？",
+        "paste_youtube_url": "您也可以貼上YouTube網址來匯入。"
     },
     "of": "的",
     "option": {
@@ -478,7 +479,8 @@
         "select_language": "選擇一種語言",
         "dict_search_1": "搜索{{param1}}",
         "dict_search_2": "搜索{{param1}}或{{param2}}",
-        "dict_search_3": "搜索{{param1}}、{{param2}}或{{param3}}"
+        "dict_search_3": "搜索{{param1}}、{{param2}}或{{param3}}",
+        "search_all_content": "搜尋所有{{language}}內容"
     },
     "price": {
         "annual": "${{price}}/年",
@@ -551,7 +553,8 @@
         "views": "{{numViews}}次觀看",
         "watch_history": "觀看紀錄",
         "your_current_plan": "你目前的方案",
-        "update_progress": "更新進度"
+        "update_progress": "更新進度",
+        "search": "搜尋"
     },
     "video": {
         "comments": "留言",

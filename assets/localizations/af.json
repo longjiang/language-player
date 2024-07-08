@@ -451,7 +451,8 @@
         "upgrade_text": "Opgradeer na Pro om toegang tot meer video's te kry!",
         "what_your_first_language": "Wat is jou moedertaal?",
         "with_pro_you_can": "Met Pro kan jy:",
-        "keep_or_reset_time": "Wil jy jou huidige tyd behou of dit na nul herstel?"
+        "keep_or_reset_time": "Wil jy jou huidige tyd behou of dit na nul herstel?",
+        "paste_youtube_url": "Jy kan ook 'n YouTube-URL plak om in te voer."
     },
     "of": "van",
     "option": {
@@ -478,7 +479,8 @@
         "select_language": "Kies 'n taal",
         "dict_search_1": "Soek {{param1}}",
         "dict_search_2": "Soek {{param1}} of {{param2}}",
-        "dict_search_3": "Soek {{param1}}, {{param2}}, of {{param3}}"
+        "dict_search_3": "Soek {{param1}}, {{param2}}, of {{param3}}",
+        "search_all_content": "Soek alle {{language}} inhoud"
     },
     "price": {
         "annual": "${{price}}/jr",
@@ -551,7 +553,8 @@
         "views": "{{numViews}} keer gekyk",
         "watch_history": "Kykgeskiedenis",
         "your_current_plan": "Jou huidige plan",
-        "update_progress": "Dateer Vordering Op"
+        "update_progress": "Dateer Vordering Op",
+        "search": "Soek"
     },
     "video": {
         "comments": "Kommentaar",
