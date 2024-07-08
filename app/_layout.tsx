@@ -17,6 +17,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { UserDataProvider } from '@/contexts/UserDataContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { useSoundEffect } from "@/hooks/useSoundEffect";
+import { TVShowsProvider } from "@/contexts/TVShowsContext";
 
 const soundObject = new Audio.Sound();
 
@@ -49,33 +50,35 @@ export default function RootLayout() {
             <SettingsProvider>
                 <DictionaryProvider>
                   <ThemeProvider>
-                    <VideoPlayerProvider>
-                      <Stack>
-                        <Stack.Screen name="index" options={{ headerShown: false }} />
-                        <Stack.Screen name="login" options={{ headerShown: false }} />
-                        <Stack.Screen name="register" options={{ headerShown: false }} />
-                        <Stack.Screen name="verify-email" options={{ headerShown: false }} />
-                        <Stack.Screen
-                          name="acquisition-survey"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen name="select-l2" options={{ headerShown: false }} />
-                        <Stack.Screen name="select-l1" options={{ headerShown: false }} />
-                        <Stack.Screen name="select-level" options={{ headerShown: false }} />
-                        <Stack.Screen name="account" options={{ headerShown: false }} />
-                        <Stack.Screen name="go-pro" options={{ headerShown: false }} />
-                        <Stack.Screen name="delete-account" options={{ headerShown: false }} />
-                        <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
-                        <Stack.Screen name="test" options={{ headerShown: false }} />
-                        <Stack.Screen
-                          name="video/youtube/[youtube_id]"
-                          options={{ headerShown: false, animation: 'slide_from_bottom', gestureDirection: 'vertical', }}
-                        />
-                        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                        <Stack.Screen name="+not-found" />
-                      </Stack>
-                      <MiniPlayer />
-                    </VideoPlayerProvider>
+                    <TVShowsProvider>
+                      <VideoPlayerProvider>
+                        <Stack>
+                          <Stack.Screen name="index" options={{ headerShown: false }} />
+                          <Stack.Screen name="login" options={{ headerShown: false }} />
+                          <Stack.Screen name="register" options={{ headerShown: false }} />
+                          <Stack.Screen name="verify-email" options={{ headerShown: false }} />
+                          <Stack.Screen
+                            name="acquisition-survey"
+                            options={{ headerShown: false }}
+                          />
+                          <Stack.Screen name="select-l2" options={{ headerShown: false }} />
+                          <Stack.Screen name="select-l1" options={{ headerShown: false }} />
+                          <Stack.Screen name="select-level" options={{ headerShown: false }} />
+                          <Stack.Screen name="account" options={{ headerShown: false }} />
+                          <Stack.Screen name="go-pro" options={{ headerShown: false }} />
+                          <Stack.Screen name="delete-account" options={{ headerShown: false }} />
+                          <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
+                          <Stack.Screen name="test" options={{ headerShown: false }} />
+                          <Stack.Screen
+                            name="video/youtube/[youtube_id]"
+                            options={{ headerShown: false, animation: 'slide_from_bottom', gestureDirection: 'vertical', }}
+                          />
+                          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                          <Stack.Screen name="+not-found" />
+                        </Stack>
+                        <MiniPlayer />
+                      </VideoPlayerProvider>
+                    </TVShowsProvider>
                   </ThemeProvider>
                 </DictionaryProvider>
             </SettingsProvider>

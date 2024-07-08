@@ -1,102 +1,65 @@
 // @/app/tv-shows.tsx
 
-import React, { useEffect, useState, useRef } from "react";
-import { StyleSheet, View, TouchableOpacity } from "react-native";
+import React, { useRef, useState, useMemo } from "react";
+import { View, TouchableOpacity } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import { getCollectionItems } from "@/src/api/directus";
 import { ThemedInput } from "@/components/ThemedInput";
 import { FlatList } from "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ActivityIndicator } from 'react-native';
-import { useThemeColor } from "@/hooks/useThemeColor";
 import { ShowCard, Show } from "@/components/ShowCard";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { tvShowsStyles as styles } from "@/src/styles";
 import { ThemedRBSheet } from "@/components/ThemedRBSheet";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedRadio } from "@/components/ThemedRadio";
+import { useTVShows } from "@/contexts/TVShowsContext";
 
 const TVShowsScreen = () => {
-  const [items, setItems] = useState<Show[]>([]);
-  const [filteredItems, setFilteredItems] = useState<Show[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [sortOption, setSortOption] = useState("title");
-  const [localeFilter, setLocaleFilter] = useState("all");
-  const primaryBrandColor = useThemeColor({}, "primaryBrand");
-  const { l2Lang } = useLanguage();
+  const { shows, isLoading } = useTVShows();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState('title');
+  const [localeFilter, setLocaleFilter] = useState('all');
+
   const rbSheetRef = useRef(null);
 
-  useEffect(() => {
-    loadItems();
-  }, []);
-
-  useEffect(() => {
-    sortItems(sortOption);
-    filterItems(searchQuery, localeFilter);
-  }, [sortOption, items, localeFilter]);
+  const filteredAndSortedShows = useMemo(() => {
+    return shows
+      .filter(show => 
+        show.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        (localeFilter === 'all' || show.locale === localeFilter)
+      )
+      .sort((a, b) => {
+        switch (sortOption) {
+          case 'title':
+            return a.title.localeCompare(b.title);
+          case 'views':
+            return b.avg_views - a.avg_views;
+          case 'year':
+            return (b.year || 0) - (a.year || 0);
+          default:
+            return 0;
+        }
+      });
+  }, [shows, searchQuery, sortOption, localeFilter]);
 
   const handleInputChange = (text: string) => {
     setSearchQuery(text);
-    filterItems(text, localeFilter);
-  };
-
-  const filterItems = (query: string, locale: string) => {
-    const filtered = items.filter(item =>
-      item.title.toLowerCase().includes(query.toLowerCase()) &&
-      (locale === "all" || item.locale === locale)
-    );
-    setFilteredItems(filtered);
-  };
-
-  const loadItems = async () => {
-    if (!l2Lang) return;
-    setItems([]);
-    setFilteredItems([]);
-    setIsLoading(true);
-    try {
-      const tvShows = await getCollectionItems("tv_shows", {
-        filter: { l2: { eq: l2Lang.id } },
-      });
-      setItems(tvShows as Show[]);
-      setFilteredItems(tvShows as Show[]);
-    } catch (error) {
-      console.error("Failed to load items:", error);
-    }
-    setIsLoading(false);
   };
 
   const handleActions = () => {
     rbSheetRef.current?.open();
   };
 
-  const sortItems = (option: string) => {
-    const sorted = [...items].sort((a, b) => {
-      switch (option) {
-        case "title":
-          return a.title.localeCompare(b.title);
-        case "views":
-          return b.avg_views - a.avg_views;
-        case "year":
-          return (b.year || 0) - (a.year || 0);
-        default:
-          return 0;
-      }
-    });
-    setFilteredItems(sorted);
-  };
-
   const handleLocaleFilter = (locale: string) => {
     setLocaleFilter(locale);
-    filterItems(searchQuery, locale);
     rbSheetRef.current?.close();
   };
 
   const getUniqueLocales = () => {
-    const locales = new Set(items.map(item => item.locale).filter(Boolean));
+    const locales = new Set(shows.map(item => item.locale).filter(Boolean));
     return ["all", ...Array.from(locales)];
   };
 
@@ -165,7 +128,7 @@ const TVShowsScreen = () => {
 
         <View>
           <FlatList
-            data={filteredItems}
+            data={filteredAndSortedShows}
             renderItem={({ item }) => (
               <ShowCard show={item} style={{ marginBottom: 26 }} />
             )}
@@ -178,6 +141,7 @@ const TVShowsScreen = () => {
         <ThemedText type="subtitle" style={{ marginBottom: 12 }}>SORT BY</ThemedText>
         <SortOption title="Title" option="title" />
         <SortOption title="Most Viewed" option="views" />
+        <SortOption title="Year" option="year" />
         
         <ThemedText type="subtitle" style={{ marginTop: 20, marginBottom: 12 }}>FILTER BY LOCALE</ThemedText>
         {getUniqueLocales().map(locale => (
