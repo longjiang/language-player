@@ -1,5 +1,3 @@
-// @/components/Token
-
 import React, { useRef, useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
@@ -74,42 +72,44 @@ export const Token: React.FC<{
     return [{ text: token.text, pronunciation: token.pronunciation }];
   }, [token.text, token.pronunciation, convert, l2Lang.code, l2Lang.han]);
 
+  const renderSegment = (segment: Segment, index: number) => (
+    <View key={index} style={styles.segment}>
+      {shouldShowPronunciation && segment.pronunciation !== segment.text && (
+        <Text
+          style={[
+            styles.pronunciation,
+            {
+              fontFamily,
+              color: primaryTextColor,
+              fontSize: defaultFontSize * textScale * 0.618,
+              marginBottom: defaultFontSize * textScale * -0.1,
+            },
+            ...(savedWord ? [{ color: savedWordColor(savedWord.level) }] : []),
+          ]}
+        >
+          {segment.pronunciation}
+        </Text>
+      )}
+      <Text
+        style={[
+          styles.mainText,
+          {
+            fontFamily,
+            color: primaryTextColor,
+            fontSize: defaultFontSize * textScale,
+          },
+          ...(savedWord ? [{ color: savedWordColor(savedWord.level) }] : []),
+        ]}
+      >
+        {segment.text}
+      </Text>
+    </View>
+  );
+
   return (
     <TouchableOpacity onPress={handleTokenPress}>
       <View style={{ ...styles.token, marginHorizontal: shouldShowPronunciation ? 4 : 0 }}>
-        {displayContent.map((segment: Segment, index: number) => (
-          <View key={index} style={styles.segment}>
-            {shouldShowPronunciation && segment.pronunciation !== segment.text && (
-              <Text
-                style={[
-                  styles.pronunciation,
-                  {
-                    fontFamily,
-                    color: primaryTextColor,
-                    fontSize: defaultFontSize * textScale * 0.618,
-                    marginBottom: defaultFontSize * textScale * -0.1,
-                  },
-                  ...(savedWord ? [{ color: savedWordColor(savedWord.level) }] : []),
-                ]}
-              >
-                {segment.pronunciation}
-              </Text>
-            )}
-            <Text
-              style={[
-                styles.mainText,
-                {
-                  fontFamily,
-                  color: primaryTextColor,
-                  fontSize: defaultFontSize * textScale,
-                },
-                ...(savedWord ? [{ color: savedWordColor(savedWord.level) }] : []),
-              ]}
-            >
-              {segment.text}
-            </Text>
-          </View>
-        ))}
+        {displayContent.map(renderSegment)}
       </View>
       <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} key={token.text} />
     </TouchableOpacity>
@@ -118,13 +118,13 @@ export const Token: React.FC<{
 
 const styles = StyleSheet.create({
   token: {
-    flexDirection: 'row',  // Changed to 'row' to align segments horizontally
-    alignItems: 'flex-end', // Aligns items to the bottom
+    flexDirection: 'row',
+    alignItems: 'flex-end',
   },
   segment: {
-    flexDirection: 'column', // Each segment is a column
+    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'flex-end', // Aligns content to the bottom within each segment
+    justifyContent: 'flex-end',
   },
   pronunciation: {
     textAlign: 'center',

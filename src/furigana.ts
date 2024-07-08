@@ -4,7 +4,7 @@ import wanakana from 'wanakana';
 export type Segment = {
   type: 'kanji' | 'non-kanji';
   text: string;
-  reading: string;
+  pronunciation: string;
 };
 
 // helper function to check if a character is a kanji
@@ -31,13 +31,13 @@ function segmentKanjisAndNonKanjis(text: string): Segment[] {
       parts.push({
         type: 'kanji',
         text: originalSegments[i],
-        reading: segments[i]
+        pronunciation: segments[i]
       });
     } else {
       parts.push({
         type: 'non-kanji',
         text: originalSegments[i],
-        reading: segments[i]
+        pronunciation: segments[i]
       });
     }
     i++;
@@ -63,23 +63,23 @@ function createRegex(segments: Segment[]): RegExp {
   let regexStr = '';
   for (let segment of segments) {
     if (segment.type === 'kanji') regexStr += '(.+)';
-    else regexStr += `(${sanitizeRegexString(segment.reading)})`;
+    else regexStr += `(${sanitizeRegexString(segment.pronunciation)})`;
   }
   return new RegExp(regexStr);
 }
 
-export function addFurigana({ text, pronunciation }: { text: string; pronunciation: string }): { text: string; reading: string }[] {
+export function addFurigana({ text, pronunciation }: { text: string; pronunciation: string }): { text: string; pronunciation: string }[] {
   let segments = segmentKanjisAndNonKanjis(text);
   let readings = pronunciation.match(createRegex(segments));
   if (readings) {
     readings = readings.slice(1);
     for (let index in segments) {
       let segment = segments[index];
-      segment.reading = readings[index];
+      segment.pronunciation = readings[index];
     }
-    return segments.map(segment => ({ text: segment.text, pronunciation: convertKatakanaToHiragana(segment.reading) }));
+    return segments.map(segment => ({ text: segment.text, pronunciation: convertKatakanaToHiragana(segment.pronunciation) }));
   } else {
-    return [{ text }];
+    return [{ text, pronunciation }];
   }
 }
 
