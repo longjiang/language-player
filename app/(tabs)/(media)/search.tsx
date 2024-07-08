@@ -5,7 +5,6 @@ import { ThemedButton, ThemedScreen, ThemedInput, ThemedText, YouTubeVideoCard }
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import { getCollectionItems } from "@/src/api/directus";
-import { FlatList } from "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
@@ -14,6 +13,8 @@ import { YouTubeVideo } from "@/types/videoTypes";
 import { normalizeVideoData } from "@/src/api/directus/youtube-video";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
+// New import for YouTubeVideoList
+import { YouTubeVideoList } from "@/components/YouTubeVideoList";
 
 const SearchScreen = () => {
   const [items, setItems] = useState<YouTubeVideo[]>([]);
@@ -69,6 +70,35 @@ const SearchScreen = () => {
 
   const l2Name = t('lang.' + l2Lang.code);
 
+  // New header component for YouTubeVideoList
+  const ListHeader = () => (
+    <View style={styles.header}>
+      <View style={styles.headerLeft}>
+        <ThemedButton
+          type="ghost"
+          size="medium"
+          trailingIcon={<Icon name="chevron-left" />}
+          onPress={() => router.navigate("/(tabs)/(media)")}
+        />
+        <ThemedInput
+          placeholder={t('placeholder.search_all_content', { language: l2Name })}
+          style={{ flex: 1, marginRight: 8 }}
+          size="small"
+          icon="magnify"
+          onChangeText={handleInputChange}
+          onSubmitEditing={handleSearch}
+          value={searchQuery}
+        />
+        <ThemedButton
+          type="ghost"
+          size="medium"
+          trailingIcon={<Icon name="dots-horizontal-circle" />}
+          onPress={() => router.navigate("/(tabs)/(media)")}
+        />
+      </View>
+    </View>
+  );
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       {items.length === 0 && (
@@ -97,38 +127,11 @@ const SearchScreen = () => {
       )}
       {items.length > 0 && (
         <SafeAreaView style={styles.resultsContainer}>
-          <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <ThemedButton
-                type="ghost"
-                size="medium"
-                trailingIcon={<Icon name="chevron-left" />}
-                onPress={() => router.navigate("/(tabs)/(media)")}
-              />
-              <ThemedInput
-                placeholder={t('placeholder.search_all_content', { language: l2Name })}
-                style={{ flex: 1, marginRight: 8 }}
-                size="small"
-                icon="magnify"
-                onChangeText={handleInputChange}
-                onSubmitEditing={handleSearch}
-                value={searchQuery}
-              />
-              <ThemedButton
-                type="ghost"
-                size="medium"
-                trailingIcon={<Icon name="dots-horizontal-circle" />}
-                onPress={() => router.navigate("/(tabs)/(media)")}
-              />
-            </View>
-          </View>
-          <FlatList
-            data={items}
-            renderItem={({ item }) => (
-              <YouTubeVideoCard video={item} style={{ marginBottom: 20 }} />
-            )}
-            style={{ padding: 26 }}
-            keyExtractor={(item, index) => item.youtube_id}
+          {/* Replace FlatList with YouTubeVideoList */}
+          <YouTubeVideoList
+            videos={items}
+            header={<ListHeader />}
+            style={{ padding: 12 }}
           />
           {isLoading && (
             <View style={styles.spinnerContainer}>
@@ -141,10 +144,9 @@ const SearchScreen = () => {
   );
 };
 
-
 const styles = StyleSheet.create({
   resultsContainer: {
-    
+    flex: 1,
   },
   headerLeft: {
     flexDirection: "row",
