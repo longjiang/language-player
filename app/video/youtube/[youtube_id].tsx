@@ -141,22 +141,8 @@ const YouTubeVideoScreen = () => {
   // console.log(videoPlayerState.video);
 
   return (
-    <GestureHandlerRootView>
-      <View>
-        <VideoWithTranscriptProvider
-          initialVideo={ videoPlayerState.video }
-          initialPlaylist={ videoPlayerState.queue }
-          isMainPlayer={true}
-          key={`video-with-transcript-provider-${videoPlayerState.video.youtube_id}-${videoPlayerState?.video?.subs_l2?.length}`}
-
-        >
-          <VideoWithTranscript
-            isMini={false}
-            showHeader={true}
-          />
-        </VideoWithTranscriptProvider>
-      </View>
-    </GestureHandlerRootView>
+    <>
+    </>
   );
 };
 
