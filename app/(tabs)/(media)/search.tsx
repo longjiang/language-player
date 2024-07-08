@@ -1,5 +1,5 @@
 // @/app/search.tsx
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedButton, ThemedScreen, ThemedInput, ThemedText } from "@/components";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -23,12 +23,6 @@ const SearchScreen = () => {
   const { setVideoPlayerState } = useVideoPlayer();
   if (!l2Lang) return null;
 
-  useEffect(() => {
-    if (searchQuery) {
-      loadItems();
-    }
-  }, [searchQuery]);
-
   const handleInputChange = (text: string) => {
     setSearchQuery(text);
     const youtubeId = extractYouTubeID(text);
@@ -48,7 +42,9 @@ const SearchScreen = () => {
   };
 
   const handleSearch = () => {
-    loadItems();
+    if (searchQuery) {
+      loadItems();
+    }
   };
 
   const loadItems = async () => {
@@ -56,7 +52,7 @@ const SearchScreen = () => {
     setIsLoading(true);
     try {
       const data = await getVideosByL2Code(l2Lang, false, {
-        filter: { title: { contains: searchQuery } }
+        filter: { title: { contains: searchQuery } },
       });
       if (data) setItems(data);
     } catch (error) {
@@ -88,8 +84,8 @@ const SearchScreen = () => {
         <ThemedButton
           type="ghost"
           size="medium"
-          trailingIcon={<Icon name="dots-horizontal-circle" />}
-          onPress={() => router.navigate("/(tabs)/(media)")}
+          icon="magnify"
+          onPress={handleSearch}
         />
       </View>
     </View>
@@ -103,14 +99,22 @@ const SearchScreen = () => {
           onBackPress={() => router.back()}
           showFlag={true}
         >
-          <ThemedInput
-            placeholder={t('placeholder.search_all_content', { language: l2Name })}
-            style={{ marginBottom: 20 }}
-            icon="magnify"
-            onChangeText={handleInputChange}
-            onSubmitEditing={handleSearch}
-            value={searchQuery}
-          />
+          <View style={styles.searchContainer}>
+            <ThemedInput
+              placeholder={t('placeholder.search_all_content', { language: l2Name })}
+              style={{ flex: 1, marginRight: 8 }}
+              icon="magnify"
+              onChangeText={handleInputChange}
+              onSubmitEditing={handleSearch}
+              value={searchQuery}
+            />
+            <ThemedButton
+              type="primary"
+              size="medium"
+              icon="magnify"
+              onPress={handleSearch}
+            />
+          </View>
           <ThemedText type="default" variant="secondary">
             {t('msg.paste_youtube_url')}
           </ThemedText>
@@ -160,6 +164,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 100,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
   },
 });
 

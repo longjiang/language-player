@@ -113,14 +113,14 @@ export const getVideosByL2Code = async (l2Lang: Language, includeSubs: boolean =
   const collectionName = youtubeVideoCollectionName(l2Lang.code);
   let fields = 'id,l2,title,youtube_id,tv_show,talk,date,lex_div,word_freq,difficulty,views,tags,category,locale,duration,made_for_kids,views,likes,comments,type'
   if (includeSubs) fields = fields + ',subs_l1,subs_l2'
-  const filter = 'filter' in params ? params.filter : {};
+  const filter = 'filter' in params ? params.filter : {}; 
   if (hasUniqueSuffix(l2Lang.code)) filter.l2 = {
     eq: l2Lang.id,
   };
   const items = await getCollectionItems(collectionName, {
     fields,
     filter,
-    ...params
+    ...params  // Note that most of the videos in the db are pre-sorted by views
   });
   return items.map(normalizeVideoData) as YouTubeVideo[];
 }
