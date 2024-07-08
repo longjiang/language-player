@@ -15,7 +15,7 @@ import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { addToWatchHistory } from "@/src/api/directus/user-watch-history";
-import { getBestL1Subs } from "@/src/api/python/video";
+import { getBestL1Subs, getBestL2Subs } from "@/src/api/python/video";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { getTokenizerCacheForVideo } from "@/src/api/python/video";
 
@@ -51,11 +51,11 @@ const YouTubeVideoScreen = () => {
           },
         });
         const newVideo = videos?.length ? videos[0] : { youtube_id: youtubeIdFromParams };
+        // https://www.youtube.com/watch?v=Q_EYoV1kZWk
         try {
           if (!newVideo.subs_l1?.length) {
             const l1Subs = await getBestL1Subs(newVideo.youtube_id, l1Lang.code, l2Lang.code);
             newVideo.subs_l1 = l1Subs || [];
-            return null;
           }
         } catch (error) {
           console.error("Failed to fetch L1 subs", error);

@@ -209,3 +209,23 @@ export const getBestL1Subs = async (
   }
   return [];
 };
+
+// Function to get the best L2 subtitles
+export const getBestL2Subs = async (
+  videoId: string,
+  l2Code: string
+): Promise<Array<{ line: string; starttime: number; duration: number }>> => {
+  const params = {
+    v: videoId,
+    l2: l2Code
+  };
+  const response = await request<Array<{ line: string; starttime: number; duration: number }>>({
+    method: 'get',
+    url: "/get_best_l2_subs",
+    params
+  });
+  if (response && Array.isArray(response)) {
+    return normalizeCaptionData(response);
+  }
+  return [];
+};
