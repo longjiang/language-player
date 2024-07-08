@@ -435,7 +435,6 @@
         "keep_or_reset_time": "Mevcut zamanınızı korumak mı yoksa sıfırlamak mı istiyorsunuz?",
         "paste_youtube_url": "İçe aktarmak için YouTube URL'sini de yapıştırabilirsiniz."
     },
-    "of": "şunun",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -533,7 +532,8 @@
         "watch_history": "İzleme Geçmişi",
         "your_current_plan": "Mevcut Planınız",
         "update_progress": "İlerlemeyi Güncelle",
-        "search": "Ara"
+        "search": "Ara",
+        "video_count": "Video {{index}} / {{total}}"
     },
     "video": {
         "comments": "Yorumlar",

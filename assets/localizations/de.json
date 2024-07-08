@@ -437,7 +437,6 @@
         "keep_or_reset_time": "Möchten Sie Ihre aktuelle Zeit behalten oder auf Null zurücksetzen?",
         "paste_youtube_url": "Sie können auch eine YouTube-URL zum Importieren einfügen."
     },
-    "of": "von",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -535,7 +534,8 @@
         "watch_history": "Verlauf ansehen",
         "your_current_plan": "Ihr aktueller Plan",
         "update_progress": "Fortschritt Aktualisieren",
-        "search": "Suche"
+        "search": "Suche",
+        "video_count": "Video {{index}} von {{total}}"
     },
     "video": {
         "comments": "Kommentare",

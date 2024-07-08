@@ -436,7 +436,6 @@
         "keep_or_reset_time": "Vill du behålla din nuvarande tid eller återställa den till noll?",
         "paste_youtube_url": "Du kan också klistra in YouTube-URL för att importera."
     },
-    "of": "av",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -534,7 +533,8 @@
         "watch_history": "Tittarhistorik",
         "your_current_plan": "Din nuvarande plan",
         "update_progress": "Uppdatera Framsteg",
-        "search": "Sök"
+        "search": "Sök",
+        "video_count": "Video {{index}} av {{total}}"
     },
     "video": {
         "comments": "Kommentarer",

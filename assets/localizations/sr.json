@@ -436,7 +436,6 @@
         "keep_or_reset_time": "Да ли желите да задржите тренутно време или да га ресетујете на нулу?",
         "paste_youtube_url": "Такође можете налепити YouTube URL за увоз."
     },
-    "of": "od",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -534,7 +533,8 @@
         "watch_history": "Istorija gledanja",
         "your_current_plan": "Tvoj trenutni plan",
         "update_progress": "Ажурирај Напредак",
-        "search": "Претрага"
+        "search": "Претрага",
+        "video_count": "Видео {{index}} од {{total}}"
     },
     "video": {
         "comments": "Komentari",

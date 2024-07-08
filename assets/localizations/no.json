@@ -436,7 +436,6 @@
         "keep_or_reset_time": "Vil du beholde gjeldende tid eller nullstille den?",
         "paste_youtube_url": "Du kan også lime inn YouTube-URL for å importere."
     },
-    "of": "av",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -534,7 +533,8 @@
         "watch_history": "Seerhistorikk",
         "your_current_plan": "Din nåværende plan",
         "update_progress": "Oppdater Fremgang",
-        "search": "Søk"
+        "search": "Søk",
+        "video_count": "Video {{index}} av {{total}}"
     },
     "video": {
         "comments": "Kommentarer",

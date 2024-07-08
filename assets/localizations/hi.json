@@ -437,7 +437,6 @@
         "keep_or_reset_time": "क्या आप अपना वर्तमान समय रखना चाहते हैं या इसे शून्य पर रीसेट करना चाहते हैं?",
         "paste_youtube_url": "आप इम्पोर्ट करने के लिए YouTube URL भी पेस्ट कर सकते हैं।"
     },
-    "of": "का",
     "option": {
         "app_store": "ऐप स्टोर",
         "bilibili": "Bilibili",
@@ -535,7 +534,8 @@
         "watch_history": "देखने का इतिहास",
         "your_current_plan": "आपकी वर्तमान योजना",
         "update_progress": "प्रगति अपडेट करें",
-        "search": "खोज"
+        "search": "खोज",
+        "video_count": "वीडियो {{index}} / {{total}}"
     },
     "video": {
         "comments": "टिप्पणियाँ",

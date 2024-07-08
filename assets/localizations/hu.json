@@ -437,7 +437,6 @@
         "keep_or_reset_time": "Meg szeretné tartani a jelenlegi időt, vagy nullára állítja?",
         "paste_youtube_url": "Beillesztheti a YouTube URL-t is az importáláshoz."
     },
-    "of": "nak, nek",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -535,7 +534,8 @@
         "watch_history": "Nézési előzmények",
         "your_current_plan": "Jelenlegi terv",
         "update_progress": "Frissítse az Előrehaladást",
-        "search": "Keresés"
+        "search": "Keresés",
+        "video_count": "{{index}}. videó a {{total}}-ból"
     },
     "video": {
         "comments": "Hozzászólások",

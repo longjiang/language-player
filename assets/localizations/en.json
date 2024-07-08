@@ -454,7 +454,6 @@
         "keep_or_reset_time": "Do you want to keep your current time or reset it to zero?",
         "paste_youtube_url": "You can also paste in YouTube URL to import."
     },
-    "of": "of",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -554,7 +553,8 @@
         "watch_history": "Watch History",
         "your_current_plan": "Your Current Plan",
         "update_progress": "Update Progress",
-        "search": "Search"
+        "search": "Search",
+        "video_count": "Video {{index}} of {{total}}"
     },
     "video": {
         "comments": "Comments",

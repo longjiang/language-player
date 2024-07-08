@@ -454,7 +454,6 @@
         "keep_or_reset_time": "您要保留目前的時間還是重設為零？",
         "paste_youtube_url": "您也可以貼上YouTube網址來匯入。"
     },
-    "of": "的",
     "option": {
         "app_store": "App Store",
         "bilibili": "嗶哩嗶哩",
@@ -554,7 +553,8 @@
         "watch_history": "觀看紀錄",
         "your_current_plan": "你目前的方案",
         "update_progress": "更新進度",
-        "search": "搜尋"
+        "search": "搜尋",
+        "video_count": "影片 {{index}} 共 {{total}}"
     },
     "video": {
         "comments": "留言",

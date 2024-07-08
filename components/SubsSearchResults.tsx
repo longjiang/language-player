@@ -89,7 +89,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
     <View>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: "space-between", paddingHorizontal: 26, paddingBottom: 16 }}>
         <ThemedText>
-          {currentVideoIndex + 1} {t('of')} {playlist.length}
+          {t('title.video_count', { index: currentVideoIndex + 1, total: playlist.length })}
         </ThemedText>
         <ThemedButton
           type="ghost"

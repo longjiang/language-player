@@ -437,7 +437,6 @@
         "keep_or_reset_time": "Haluatko säilyttää nykyisen aikasi vai nollata sen?",
         "paste_youtube_url": "Voit myös liittää YouTube-URL-osoitteen tuodaksesi sen."
     },
-    "of": "/",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -535,7 +534,8 @@
         "watch_history": "Katseluhistoria",
         "your_current_plan": "Nykyinen suunnitelmasi",
         "update_progress": "Päivitä Edistyminen",
-        "search": "Haku"
+        "search": "Haku",
+        "video_count": "Video {{index}} / {{total}}"
     },
     "video": {
         "comments": "Kommentit",

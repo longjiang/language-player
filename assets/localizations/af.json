@@ -454,7 +454,6 @@
         "keep_or_reset_time": "Wil jy jou huidige tyd behou of dit na nul herstel?",
         "paste_youtube_url": "Jy kan ook 'n YouTube-URL plak om in te voer."
     },
-    "of": "van",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -554,7 +553,8 @@
         "watch_history": "Kykgeskiedenis",
         "your_current_plan": "Jou huidige plan",
         "update_progress": "Dateer Vordering Op",
-        "search": "Soek"
+        "search": "Soek",
+        "video_count": "Video {{index}} van {{total}}"
     },
     "video": {
         "comments": "Kommentaar",

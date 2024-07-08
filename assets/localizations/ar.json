@@ -437,7 +437,6 @@
         "keep_or_reset_time": "هل تريد الاحتفاظ بالوقت الحالي أم إعادة تعيينه إلى الصفر؟",
         "paste_youtube_url": "يمكنك أيضًا لصق عنوان URL من YouTube للاستيراد."
     },
-    "of": "من",
     "option": {
         "app_store": "متجر التطبيقات",
         "bilibili": "بيليبيلي",
@@ -535,7 +534,8 @@
         "watch_history": "سجل المشاهدة",
         "your_current_plan": "خطتك الحالية",
         "update_progress": "تحديث التقدم",
-        "search": "بحث"
+        "search": "بحث",
+        "video_count": "الفيديو {{index}} من {{total}}"
     },
     "video": {
         "comments": "التعليقات",

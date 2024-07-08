@@ -436,7 +436,6 @@
         "keep_or_reset_time": "現在の時間を保持しますか、それともゼロにリセットしますか？",
         "paste_youtube_url": "YouTubeのURLを貼り付けてインポートすることもできます。"
     },
-    "of": "の",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -534,7 +533,8 @@
         "watch_history": "閲覧履歴",
         "your_current_plan": "現在のプラン",
         "update_progress": "進捗状況を更新",
-        "search": "検索"
+        "search": "検索",
+        "video_count": "動画 {{index}} / {{total}}"
     },
     "video": {
         "comments": "コメント",

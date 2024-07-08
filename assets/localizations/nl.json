@@ -436,7 +436,6 @@
         "keep_or_reset_time": "Wil je je huidige tijd behouden of op nul zetten?",
         "paste_youtube_url": "Je kunt ook een YouTube-URL plakken om te importeren."
     },
-    "of": "van",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -534,7 +533,8 @@
         "watch_history": "Kijkgeschiedenis",
         "your_current_plan": "Je huidige abonnement",
         "update_progress": "Voortgang Bijwerken",
-        "search": "Zoeken"
+        "search": "Zoeken",
+        "video_count": "Video {{index}} van {{total}}"
     },
     "video": {
         "comments": "Reacties",

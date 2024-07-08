@@ -435,7 +435,6 @@
         "keep_or_reset_time": "Bạn muốn giữ thời gian hiện tại hay đặt lại về không?",
         "paste_youtube_url": "Bạn cũng có thể dán URL YouTube để nhập."
     },
-    "of": "của",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -533,7 +532,8 @@
         "watch_history": "Lịch sử xem",
         "your_current_plan": "Gói hiện tại của bạn",
         "update_progress": "Cập Nhật Tiến Độ",
-        "search": "Tìm kiếm"
+        "search": "Tìm kiếm",
+        "video_count": "Video {{index}} trên {{total}}"
     },
     "video": {
         "comments": "Bình luận",

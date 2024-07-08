@@ -436,7 +436,6 @@
         "keep_or_reset_time": "Вы хотите сохранить текущее время или сбросить его на ноль?",
         "paste_youtube_url": "Вы также можете вставить URL YouTube для импорта."
     },
-    "of": "из",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -534,7 +533,8 @@
         "watch_history": "История просмотров",
         "your_current_plan": "Ваш текущий план",
         "update_progress": "Обновить Прогресс",
-        "search": "Поиск"
+        "search": "Поиск",
+        "video_count": "Видео {{index}} из {{total}}"
     },
     "video": {
         "comments": "Комментарии",

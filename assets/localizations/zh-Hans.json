@@ -454,7 +454,6 @@
         "keep_or_reset_time": "您想保留当前时间还是将其重置为零？",
         "paste_youtube_url": "您也可以粘贴YouTube网址以导入。"
     },
-    "of": "的",
     "option": {
         "app_store": "应用商店",
         "bilibili": "哔哩哔哩",
@@ -554,7 +553,8 @@
         "watch_history": "观看历史",
         "your_current_plan": "您当前的计划",
         "update_progress": "更新进度",
-        "search": "搜索"
+        "search": "搜索",
+        "video_count": "视频 {{index}} 共 {{total}}"
     },
     "video": {
         "comments": "评论",

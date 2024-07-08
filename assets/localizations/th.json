@@ -435,7 +435,6 @@
         "keep_or_reset_time": "คุณต้องการเก็บเวลาปัจจุบันไว้หรือรีเซ็ตเป็นศูนย์?",
         "paste_youtube_url": "คุณยังสามารถวาง URL ของ YouTube เพื่อนำเข้าได้"
     },
-    "of": "จาก",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -533,7 +532,8 @@
         "watch_history": "ประวัติการรับชม",
         "your_current_plan": "แผนปัจจุบันของคุณ",
         "update_progress": "อัปเดตความคืบหน้า",
-        "search": "ค้นหา"
+        "search": "ค้นหา",
+        "video_count": "วิดีโอที่ {{index}} จาก {{total}}"
     },
     "video": {
         "comments": "ความคิดเห็น",

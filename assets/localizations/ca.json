@@ -437,7 +437,6 @@
         "keep_or_reset_time": "Vols mantenir el temps actual o restablir-lo a zero?",
         "paste_youtube_url": "També pots enganxar l'URL de YouTube per importar."
     },
-    "of": "de",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -535,7 +534,8 @@
         "watch_history": "Historial de visualització",
         "your_current_plan": "El teu pla actual",
         "update_progress": "Actualitzar Progrés",
-        "search": "Cerca"
+        "search": "Cerca",
+        "video_count": "Vídeo {{index}} de {{total}}"
     },
     "video": {
         "comments": "Comentaris",

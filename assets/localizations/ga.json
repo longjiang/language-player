@@ -437,7 +437,6 @@
         "keep_or_reset_time": "An mian leat d'am reatha a choinneáil nó é a athshocrú go náid?",
         "paste_youtube_url": "Is féidir leat URL YouTube a ghreamú freisin chun iompórtáil."
     },
-    "of": "de",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -535,7 +534,8 @@
         "watch_history": "Stair féachana",
         "your_current_plan": "Do phlean reatha",
         "update_progress": "Nuashonraigh Dul Chun Cinn",
-        "search": "Cuardaigh"
+        "search": "Cuardaigh",
+        "video_count": "Físeán {{index}} as {{total}}"
     },
     "video": {
         "comments": "Tráchtanna",

@@ -437,7 +437,6 @@
         "keep_or_reset_time": "Θέλετε να διατηρήσετε τον τρέχοντα χρόνο σας ή να τον μηδενίσετε;",
         "paste_youtube_url": "Μπορείτε επίσης να επικολλήσετε τη διεύθυνση URL του YouTube για εισαγωγή."
     },
-    "of": "του",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -535,7 +534,8 @@
         "watch_history": "Ιστορικό προβολών",
         "your_current_plan": "Το τρέχον πλάνο σας",
         "update_progress": "Ενημέρωση Προόδου",
-        "search": "Αναζήτηση"
+        "search": "Αναζήτηση",
+        "video_count": "Βίντεο {{index}} από {{total}}"
     },
     "video": {
         "comments": "Σχόλια",

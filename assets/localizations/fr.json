@@ -437,7 +437,6 @@
         "keep_or_reset_time": "Voulez-vous garder votre temps actuel ou le remettre à zéro ?",
         "paste_youtube_url": "Vous pouvez également coller l'URL YouTube pour importer."
     },
-    "of": "de",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -535,7 +534,8 @@
         "watch_history": "Historique des visionnages",
         "your_current_plan": "Votre plan actuel",
         "update_progress": "Mettre à Jour le Progrès",
-        "search": "Rechercher"
+        "search": "Rechercher",
+        "video_count": "Vidéo {{index}} sur {{total}}"
     },
     "video": {
         "comments": "Commentaires",

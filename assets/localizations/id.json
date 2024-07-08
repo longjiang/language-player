@@ -437,7 +437,6 @@
         "keep_or_reset_time": "Apakah Anda ingin mempertahankan waktu saat ini atau mengatur ulang ke nol?",
         "paste_youtube_url": "Anda juga dapat menempelkan URL YouTube untuk mengimpor."
     },
-    "of": "dari",
     "option": {
         "app_store": "App Store",
         "bilibili": "Bilibili",
@@ -535,7 +534,8 @@
         "watch_history": "Riwayat Tontonan",
         "your_current_plan": "Rencana Anda Saat Ini",
         "update_progress": "Perbarui Kemajuan",
-        "search": "Cari"
+        "search": "Cari",
+        "video_count": "Video {{index}} dari {{total}}"
     },
     "video": {
         "comments": "Komentar",
