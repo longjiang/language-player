@@ -1,19 +1,18 @@
 // @/components/ThemedInput.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Typography } from '@/constants/Typography';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-// Define the type for the props of ThemedInput component
 interface ThemedInputProps {
   placeholder: string;
   size?: 'small' | 'medium';
   icon?: string;
   iconOnPress?: () => void;
   style?: ViewStyle;
-  value?: string;
+  initialValue?: string;  // New prop for prefilling
   onChangeText?: (text: string) => void;
   onSubmitEditing?: () => void;
   secureTextEntry?: boolean;
@@ -27,7 +26,7 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
   icon,
   iconOnPress,
   style,
-  value,
+  initialValue = '',  // Default to empty string
   onChangeText,
   onSubmitEditing,
   secureTextEntry = false,
@@ -35,11 +34,24 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
   autoCapitalize = 'sentences',
   ...rest
 }) => {
+  const [inputValue, setInputValue] = useState(initialValue);
+
+  useEffect(() => {
+    setInputValue(initialValue);
+  }, [initialValue]);
+
   const borderColor = useThemeColor({}, 'secondaryStroke');
   const backgroundColor = useThemeColor({}, 'secondaryBackground');
   const placeholderTextColor = useThemeColor({}, 'secondaryText');
   const containerStyles = [styles.container, size === 'small' ? styles.small : styles.medium, { borderColor, backgroundColor }, style];
   const iconSize = Typography.fontSize.medium;
+
+  const handleChangeText = (text: string) => {
+    setInputValue(text);
+    if (onChangeText) {
+      onChangeText(text);
+    }
+  };
 
   return (
     <View style={containerStyles}>
@@ -48,7 +60,8 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
         placeholder={placeholder}
         placeholderTextColor={placeholderTextColor}
         onSubmitEditing={onSubmitEditing}
-        onChangeText={onChangeText}
+        onChangeText={handleChangeText}
+        value={inputValue}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
         secureTextEntry={secureTextEntry}
