@@ -8,6 +8,7 @@ import { ThemedText } from "./ThemedText";
 import { router } from "expo-router";
 import { showCardStyles as styles } from "@/src/styles";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
+import { YouTubeVideo } from "@/types";
 
 export interface Show {
   id: number;
@@ -16,6 +17,7 @@ export interface Show {
   avg_views: number;
   locale: string;
   created_on?: string;
+  episodes?: YouTubeVideo[];
 }
 
 interface ShowCardProps {
