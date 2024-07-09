@@ -1,3 +1,5 @@
+// @/src/tokenizer/index.ts
+
 import { PYTHON_SERVER } from "@/src/api/python"
 import { Language } from '@/src/languages';
 import LocalTokenizer from './local-tokenizer';
@@ -23,10 +25,15 @@ export interface TokenizerModule {
 }
 
 export interface Tokenizer {
-  name: string; // Name of the tokenizer, same as the module name
+  name: string;
   module: TokenizerModule,
   endPoint: string;
   languages: string[];
+}
+
+interface CacheEntry {
+  rawTokens: Token[];
+  originalText: string;
 }
 
 export const getTokenizer = (languageCode: string): Tokenizer | null => {
@@ -40,11 +47,11 @@ export const getTokenizer = (languageCode: string): Tokenizer | null => {
 
 export class TokenizerService {
   private static instance: TokenizerService;
-  private cache: Map<string, Token[]>;
+  private cache: Map<string, CacheEntry>;
   private localTokenizer: LocalTokenizer;
 
   private constructor(wordset?: Set<string>) {
-    this.cache = new Map<string, Token[]>();
+    this.cache = new Map<string, CacheEntry>();
     this.localTokenizer = new LocalTokenizer(wordset);
   }
 
@@ -56,14 +63,10 @@ export class TokenizerService {
   }
 
   public loadCache(initialCache: { [key: string]: Token[] }): void {
-    const tokenizer = getTokenizer("en");
     for (const [key, tokenData] of Object.entries(initialCache)) {
       const text = tokenData.map(token => token.text).join(" ");
-      // Normalize the tokens
-      const tokens = tokenizer ? tokenizer.module.normalizeTokens(tokenData, text) : tokenData;
-      this.cache.set(key, tokens);
+      this.cache.set(key, { rawTokens: tokenData, originalText: text });
     }
-    // console.log("🍒 Cache loaded");
   }
 
   private generateCacheKey(text: string): string {
@@ -75,34 +78,47 @@ export class TokenizerService {
     const uri = `${PYTHON_SERVER}/${tokenizer.endPoint}?text=${encodeURIComponent(text)}&lang=${l2Lang.iso639_3}`;
     const response = await fetch(uri);
     const tokenData = await response.json();
-
-    return tokenizer.module.normalizeTokens(tokenData, text);
+    return tokenData;
   }
 
   public async tokenize(text: string, l2Lang: Language): Promise<Token[] | undefined> {
     const cacheKey = this.generateCacheKey(text);
+    const remoteTokenizer = getTokenizer(l2Lang.code);
+
     if (this.cache.has(cacheKey)) {
-      // console.log("🍎 Loading from cache:", cacheKey);
-      return this.cache.get(cacheKey);
+      const cacheEntry = this.cache.get(cacheKey)!;
+      return remoteTokenizer
+        ? remoteTokenizer.module.normalizeTokens(cacheEntry.rawTokens, cacheEntry.originalText)
+        : cacheEntry.rawTokens;
     }
 
     try {
-      let tokens: Token[] | undefined = undefined;
-      const remoteTokenizer = getTokenizer(l2Lang.code);
+      let rawTokens: Token[] | undefined = undefined;
       if (remoteTokenizer) {
-        // console.log("🍌 Fetching from remote tokenizer:", cacheKey);
-        tokens = await this.fetchTokens(remoteTokenizer, text, l2Lang);
+        rawTokens = await this.fetchTokens(remoteTokenizer, text, l2Lang);
       } else {
-        // console.log("🍊 Tokenizing locally:", cacheKey);
-        tokens = await this.localTokenizer.tokenize(text, l2Lang);
+        rawTokens = await this.localTokenizer.tokenize(text, l2Lang);
       }
 
-      // Cache the results
-      this.cache.set(cacheKey, tokens || []);
-      // console.log("🍓 Caching result:", cacheKey);
-      return tokens;
+      if (!rawTokens || rawTokens.length === 0) {
+        console.error("Tokenization returned empty result");
+        rawTokens = [{ text }];
+      }
+
+      // Cache the raw results
+      this.cache.set(cacheKey, { rawTokens, originalText: text });
+
+      // Return normalized tokens
+      return remoteTokenizer
+        ? remoteTokenizer.module.normalizeTokens(rawTokens, text)
+        : rawTokens;
     } catch (error) {
       console.error("Error fetching tokens:", error);
+      return [{ text }];
     }
+  }
+
+  public clearCache(): void {
+    this.cache.clear();
   }
 }
