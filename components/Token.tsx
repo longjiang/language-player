@@ -16,6 +16,7 @@ import { DictionaryEntry } from "@/src/dictionary-types";
 import { LevelColors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { ThemedText } from "./ThemedText";
+import { DefinitionList } from "./DefinitionList";
 
 export const Token: React.FC<{
   token: TokenType,
@@ -132,16 +133,7 @@ export const Token: React.FC<{
       ]}>
         {displayContent.map(renderSegment)}
       </View>
-      {firstDefinition && (
-        <ThemedText style={{
-          ...styles.firstDefinition,
-          marginLeft: 4,
-          color: savedWordColor(savedWord.level),
-          opacity: isBlank ? 0 : 1,
-        }}>
-          {firstDefinition}
-        </ThemedText>
-      )}
+      {firstDefinition && <DefinitionList definitions={[firstDefinition]} style={{ marginBottom: 2 }} />}
       <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} key={token.text} />
     </TouchableOpacity>
   );

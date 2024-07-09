@@ -1,7 +1,7 @@
 // @/components/DefinitionList
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { View } from 'react-native';
+import { View, ViewStyle } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -9,12 +9,13 @@ import { useLanguage } from '@/contexts/LanguageContext';
 interface DefinitionListProps {
   definitions: string[];
   type?: 'default' | 'defaultBold' | 'link' | 'linkBold' | 'large' | 'subtitle' | 'xlarge' | 'title' | 'xxlarge';
+  style?: ViewStyle;
 }
 
-export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, type = "default" }) => {
+export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, type = "default", style }) => {
   const [translatedDefinitions, setTranslatedDefinitions] = useState<string[]>(definitions);
   const { dictionary, translationManager } = useDictionary();
-  const { l1Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const viewRef = useRef<View>(null);
   const [isWithinViewport, setIsWithinViewport] = useState(false);
   const hasTranslatedRef = useRef(false);
@@ -22,8 +23,9 @@ export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, typ
 
   const translateDefinitions = useCallback(async () => {
     if (hasTranslatedRef.current) return; // Prevent multiple translations
+    const l1Code = l1Lang?.code;
     try {
-      if (dictionary && l1Lang && dictionary.l1Code !== l1Lang.code) {
+      if (dictionary && l1Lang && dictionary.l1Code !== l1Code && l1Code !== l2Lang.code) {
         const translated = await translationManager.translateArray(definitions, l1Lang.code, dictionary.l1Code);
         // console.log('Translated definitions:', translated);
         setTranslatedDefinitions(translated);
@@ -86,8 +88,8 @@ export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, typ
   }
 
   return (
-    <View ref={viewRef} onLayout={debouncedCheckPosition}>
-      <ThemedText type={type} style={{ marginBottom: 8 }}>
+    <View ref={viewRef} onLayout={debouncedCheckPosition} style={style}>
+      <ThemedText type={type}>
         {translatedDefinitions.map((definition, index) => (
           <React.Fragment key={index}>
             {index > 0 && '; '}
