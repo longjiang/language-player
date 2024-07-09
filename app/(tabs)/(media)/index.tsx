@@ -50,7 +50,7 @@ const MediaHomeScreen = () => {
       const level = Number(l2Progress.level);
 
       const preferredCategories = [];
-      const excludeIds = [4265, 17213, 33658, 11662];
+      const excludeIds = [];
       const madeForKids = 0;
       const limit = 50;
 
