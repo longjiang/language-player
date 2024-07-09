@@ -1,11 +1,12 @@
+// @/contexts/VideoWithTranscriptContext/index
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { YouTubeVideo, SyncedLine } from "@/types";
 import { PLAYER_STATES } from "react-native-youtube-iframe";
 import { findSubtitle } from "@/src/subs";
 import { VideoWithTranscriptContextType } from "./types";
 import { syncLines } from "@/src/subs";
-import { router } from "expo-router";
-import { useRoute } from "@react-navigation/native";
+import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 
 const VideoWithTranscriptContext = createContext<VideoWithTranscriptContextType | undefined>(undefined);
 
@@ -31,12 +32,8 @@ export const VideoWithTranscriptProvider: React.FC<{
   const [fullscreen, setFullscreen] = useState(false);
   const [duration, setDuration] = useState(0);
   const [startTime, setStartTime] = useState(0);
-  let route;
-  try {
-    route = useRoute();
-  } catch (e) {
-    // Not in a navigator
-  }
+  
+  const videoPlayerContext = useVideoPlayer();
 
   // Merged usePlaylist logic
   const [video, setVideo] = useState<YouTubeVideo>(initialVideo);
@@ -74,15 +71,13 @@ export const VideoWithTranscriptProvider: React.FC<{
 
   const skipToVideo = useCallback((index: number) => {
     const newVideo = playlist[index];
-    // console.log('🍉 route', route?.name)
-    if (route?.name === "video/youtube/[youtube_id]") {
-      // console.log('🍉 ROUTING TO', `video/youtube/${newVideo.youtube_id}`)
-      router.navigate(`video/youtube/${newVideo.youtube_id}`);
+    if (isMainPlayer && videoPlayerContext) {
+      videoPlayerContext.setVideoAndQueue(newVideo, playlist);
     } else if (index >= 0 && index < playlist.length) {
       setCurrentVideoIndex(index);
       updateVideo(newVideo);
     }
-  }, [playlist, updateVideo]);
+  }, [playlist, updateVideo, isMainPlayer, videoPlayerContext]);
 
   useEffect(() => {
     if (!video?.subs_l2?.length) {
@@ -133,8 +128,6 @@ export const VideoWithTranscriptProvider: React.FC<{
     const previousLine = syncedLines.slice().reverse().find((line) => line.starttime < currentTime);
     if (previousLine) seekTo(previousLine.starttime);
   };
-
-  // if (video) console.log('vwtContext END', 'syncedLines=', syncedLines, 'video=', video);
 
   return (
     <VideoWithTranscriptContext.Provider
