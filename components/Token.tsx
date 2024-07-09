@@ -84,7 +84,7 @@ export const Token: React.FC<{
     onPopupClose?.();
   };
 
-  const shouldShowPronunciation = settings.showPinyin && token.pronunciation && token.pronunciation !== token.text;
+  const shouldShowPronunciation = settings.showPinyin && token.pronunciation && token.pronunciation !== token.text && !isBlank;
 
   const savedWordColor = (level: number) => {
     if (!level) return semanticWarningColor;
