@@ -53,7 +53,9 @@ export const Token: React.FC<{
     const savedWordMeta = getSavedWordByForm(l2Lang.code, token.text);
     const savedWord = dictionary && savedWordMeta ? await dictionary.getEntry(savedWordMeta.id) : null;
     setSavedWord(savedWord);
-    if (savedWord && settings.showQuickGloss && savedWord.definitions.length > 0) {
+    const l1Code = l1Lang?.code.split('-')[0];
+    const l2Code = l2Lang.code;
+    if (savedWord && settings.showQuickGloss && savedWord.definitions.length > 0 && l1Code !== l2Code) {
       setFirstDefinition(savedWord.definitions[0]);
     } else {
       setFirstDefinition(null);

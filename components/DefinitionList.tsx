@@ -25,7 +25,7 @@ export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, typ
     if (hasTranslatedRef.current) return; // Prevent multiple translations
     const l1Code = l1Lang?.code;
     try {
-      if (dictionary && l1Lang && dictionary.l1Code !== l1Code && l1Code !== l2Lang.code) {
+      if (dictionary && l1Lang && dictionary.l1Code !== l1Code) {
         const translated = await translationManager.translateArray(definitions, l1Lang.code, dictionary.l1Code);
         // console.log('Translated definitions:', translated);
         setTranslatedDefinitions(translated);
