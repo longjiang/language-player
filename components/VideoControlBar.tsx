@@ -73,7 +73,8 @@ export const VideoControlBar: React.FC = () => {
   ];
 
   const handleShare = async () => {
-    const shareUrl = constructUrlWithQueryParams(`https://languageplayer.io/${l1Lang.code}/${l2Lang.code}/video-view/youtube`, { l1: l1Lang.code, l2: l2Lang.code, v: video.youtube_id });
+    const l1Code = l1Lang.code.split('-')[0]; // 'zh-Hans' should be 'zh' on languageplayer.io
+    const shareUrl = constructUrlWithQueryParams(`https://languageplayer.io/${l1Code}/${l2Lang.code}/video-view/youtube`, { l1: l1Lang.code, l2: l2Lang.code, v: video.youtube_id });
     
     if (await Sharing.isAvailableAsync()) {
       await Sharing.shareAsync(shareUrl);
