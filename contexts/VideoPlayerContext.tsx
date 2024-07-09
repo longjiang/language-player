@@ -1,6 +1,6 @@
 // @/contexts/VideoPlayerContext.tsx
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { YouTubeVideo } from "@/types/videoTypes";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,7 +22,7 @@ type VideoPlayerContextType = {
   closePlayer: () => void;
   minimizePlayer: () => void;
   maximizePlayer: () => void;
-  setVideoAndQueue: (video: YouTubeVideo, queue: YouTubeVideo[]) => void;
+  setVideoAndQueue: (video: YouTubeVideo, queue: YouTubeVideo[]) => Promise<void>;
 };
 
 const initialVideoPlayerState: VideoPlayerState = {
@@ -56,7 +56,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     const nextIndex = currentIndex + 1;
     if (nextIndex < videoPlayerState.queue.length) {
       const nextVideo = videoPlayerState.queue[nextIndex];
-      setVideoPlayerState(prev => ({ ...prev, video: nextVideo }));
+      setVideoAndQueue(nextVideo, videoPlayerState.queue);
     }
   };
 
@@ -65,32 +65,23 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     const prevIndex = currentIndex - 1;
     if (prevIndex >= 0) {
       const previousVideo = videoPlayerState.queue[prevIndex];
-      setVideoPlayerState(prev => ({ ...prev, video: previousVideo }));
+      setVideoAndQueue(previousVideo, videoPlayerState.queue);
     }
   };
 
-  const setVideoAndQueue = (video: YouTubeVideo, queue: YouTubeVideo[]) => {
-    setVideoPlayerState(state => ({
-      ...state,
-      isMini: false,
-      video: video,
-      queue: queue
-    }));
-  };
-
-  const fetchVideoDetails = async (youtubeId: string) => {
-    if (!youtubeId || !l2Lang || !l1Lang) return;
+  const fetchVideoDetails = async (video: YouTubeVideo): Promise<YouTubeVideo> => {
+    if (!video.youtube_id || !l2Lang || !l1Lang) return video;
 
     try {
       // Fetch video details
       const videos = await getVideosByL2Code(l2Lang, true, {
         filter: {
           youtube_id: {
-            eq: youtubeId,
+            eq: video.youtube_id,
           },
         },
       });
-      let updatedVideo = videos?.length ? videos[0] : { ...videoPlayerState.video, youtube_id: youtubeId };
+      let updatedVideo = videos?.length ? videos[0] : { ...video };
 
       // Fetch L2 subtitles if they don't exist
       if (!updatedVideo.subs_l2?.length) {
@@ -112,30 +103,6 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         }
       }
 
-      // If the video has a tv_show id, load the show episodes
-      let updatedQueue = [...videoPlayerState.queue];
-      if (updatedVideo.tv_show) {
-        const showEpisodes = await getVideosByL2Code(l2Lang, false, {
-          filter: {
-            tv_show: {
-              eq: updatedVideo.tv_show,
-            },
-          },
-          sort: ['title'],
-        });
-
-        // Find the index of the current video in the show episodes
-        const currentIndex = showEpisodes.findIndex(ep => ep.youtube_id === updatedVideo.youtube_id);
-        
-        // Queue up the next episodes
-        if (currentIndex !== -1 && currentIndex < showEpisodes.length - 1) {
-          updatedQueue = Array.from(new Set(showEpisodes.slice(currentIndex + 1)));
-        }
-      }
-
-      // Update video player state
-      setVideoAndQueue(updatedVideo, updatedQueue);
-
       // Add to watch history
       if (updatedVideo.id) {
         const authToken = await getStoredAuthToken();
@@ -153,17 +120,45 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
       } catch (error) {
         console.error("Failed to fetch and load tokenizer cache", error);
       }
+
+      return updatedVideo;
     } catch (error) {
       console.error("Failed to fetch video details", error);
+      return video;
     }
   };
 
-  // New useEffect hook to fetch video details when the video changes
-  useEffect(() => {
-    if (videoPlayerState.video?.youtube_id) {
-      fetchVideoDetails(videoPlayerState.video.youtube_id);
-    }
-  }, [videoPlayerState.video?.youtube_id, l1Lang, l2Lang]);
+  const setVideoAndQueue = async (newVideo: YouTubeVideo, newQueue: YouTubeVideo[]) => {
+    setVideoPlayerState(prevState => {
+      // If the new video has the same youtube_id as the existing video, do nothing
+      if (newVideo.youtube_id === prevState.video?.youtube_id) {
+        return prevState;
+      }
+
+      // Fetch video details if the youtube_id is different
+      fetchVideoDetails(newVideo).then(updatedVideo => {
+        // Update the queue, replacing the current video if it exists
+        const updatedQueue = newQueue.map(queueVideo => 
+          queueVideo.youtube_id === updatedVideo.youtube_id ? updatedVideo : queueVideo
+        );
+
+        setVideoPlayerState(latestState => ({
+          ...latestState,
+          video: updatedVideo,
+          queue: updatedQueue,
+          isMini: false,
+        }));
+      });
+
+      // Return an intermediate state while we're fetching the details
+      return {
+        ...prevState,
+        video: newVideo,
+        queue: newQueue,
+        isMini: false,
+      };
+    });
+  };
 
   const value = {
     videoPlayerState,
