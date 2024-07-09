@@ -3,8 +3,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Token } from './Token';
+import { Token as TokenType } from '@/src/tokenizer';
 import { useDictionary } from '@/contexts/DictionaryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+export interface TokenizedTextProps {
+  text: string;
+  translation?: string;
+  textScale?: number;
+  textWeight?: "regular" | "bold";
+  align?: 'left' | 'center' | 'right';
+}
 
 export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({ 
   text, 
@@ -13,17 +22,18 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
   textWeight, 
   align = 'left' 
 }) => {
-  const [tokens, setTokens] = useState<Array<{ text: string }>>([]);
+  const [tokens, setTokens] = useState<TokenType[]>([]);
   const { tokenizer } = useDictionary();
   const { l2Lang } = useLanguage();
+  if (!l2Lang) return null;
   
 
   useEffect(() => {
     const tokenizeText = async () => {
 
       try {
-        const result = await tokenizer.tokenize(text, l2Lang);
-        setTokens(result);
+        const result = tokenizer ? await tokenizer.tokenize(text, l2Lang) : [] as TokenType[];
+        setTokens(result || []);
       } catch (error) {
         console.error('Tokenization error:', error);
         setTokens([{ text }]);
