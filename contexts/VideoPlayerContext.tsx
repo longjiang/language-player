@@ -11,7 +11,6 @@ type VideoPlayerState = {
 
 type VideoPlayerContextType = {
   videoPlayerState: VideoPlayerState;
-  setVideoPlayerState: Dispatch<SetStateAction<VideoPlayerState>>;
   playNext: () => void;
   playPrevious: () => void;
   closePlayer: () => void;
@@ -28,9 +27,6 @@ const initialVideoPlayerState: VideoPlayerState = {
 
 const VideoPlayerContext = createContext<VideoPlayerContextType>({
   videoPlayerState: initialVideoPlayerState,
-  setVideoPlayerState: function (): void {
-    throw new Error('Function not implemented.');
-  },
   closePlayer: function (): void {
     throw new Error('Function not implemented.');
   },
@@ -93,7 +89,6 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   const value = {
     videoPlayerState,
-    setVideoPlayerState,
     playNext,
     playPrevious,
     closePlayer,

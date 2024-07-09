@@ -17,7 +17,7 @@ export const MiniPlayer = () => {
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
-  const { videoPlayerState, setVideoPlayerState } = useVideoPlayer();
+  const { videoPlayerState, setVideoAndQueue } = useVideoPlayer();
   const { l1Lang, l2Lang } = useLanguage();
   const { getStoredAuthToken } = useAuth();
   const { tokenizer } = useDictionary();
@@ -79,11 +79,7 @@ export const MiniPlayer = () => {
         }
 
         // Update video player state
-        setVideoPlayerState((prev) => ({
-          ...prev,
-          video: updatedVideo,
-          queue: updatedQueue,
-        }));
+        setVideoAndQueue(updatedVideo, updatedQueue);
 
         // Add to watch history
         if (updatedVideo.id) {
