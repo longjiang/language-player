@@ -46,7 +46,7 @@ export const getTokenizer = (languageCode: string): Tokenizer | null => {
 }
 
 
-export const addSpaceTokens = (tokens: Token[], text: string): Token[] => {
+export const addSpaceTokens = (tokens: Token[]): Token[] => {
   let newTokens: Token[] = [];
   let prevWasPunctuation = false;
   let insideQuote = false;
