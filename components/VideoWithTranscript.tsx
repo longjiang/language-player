@@ -91,7 +91,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
               trailingIcon={<Icon name="cog-outline" />}
               onPress={() => {
                 minimizePlayer();
-                router.navigate("/(tabs)/(me)/settings");
+                router.navigate("/settings");
               }}
             />
           </View>

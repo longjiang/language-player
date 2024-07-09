@@ -107,7 +107,7 @@ export const DictionaryComponent: React.FC<DictionaryComponentProps> = ({
             type="ghost"
             size="medium"
             trailingIcon={<Icon name="cog-outline" />}
-            onPress={() => router.navigate("/(tabs)/(me)/settings")}
+            onPress={() => router.navigate("/settings")}
             style={{ marginLeft: 8 }}
           />
         )}
