@@ -1,3 +1,5 @@
+// @/components/PopupDictionaryModal
+
 import React, { useContext, useRef, useImperativeHandle, forwardRef } from 'react';
 import { ScrollView, Dimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';

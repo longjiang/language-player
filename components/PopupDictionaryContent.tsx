@@ -1,3 +1,5 @@
+// @/components/PopupDictionaryContent
+
 import React, { useEffect, useState } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { ThemedText } from "./ThemedText";

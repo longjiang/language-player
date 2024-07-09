@@ -15,6 +15,7 @@ import { useUserData } from "@/contexts/UserDataContext";
 import { DictionaryEntry } from "@/src/dictionary-types";
 import { LevelColors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { ThemedText } from "./ThemedText";
 
 export const Token: React.FC<{
   token: TokenType,
@@ -37,7 +38,8 @@ export const Token: React.FC<{
   const { convert, dictionary } = useDictionary();
   const modalRef = useRef();
   const { savedWords, getSavedWordByForm } = useUserData();
-  const [ savedWord, setSavedWord ] = useState<DictionaryEntry | null>(null);
+  const [savedWord, setSavedWord] = useState<DictionaryEntry | null>(null);
+  const [firstDefinition, setFirstDefinition] = useState<string | null>(null);
   const colorScheme = useColorScheme();
   const semanticSuccessColor = useThemeColor({}, "semanticSuccess");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
@@ -48,6 +50,11 @@ export const Token: React.FC<{
     const savedWordMeta = getSavedWordByForm(l2Lang.code, token.text)
     const savedWord = dictionary && savedWordMeta ? await dictionary.getEntry(savedWordMeta.id) : null;
     setSavedWord(savedWord);
+    if (savedWord && settings.showQuickGloss && savedWord.definitions.length > 0) {
+      setFirstDefinition(savedWord.definitions[0]);
+    } else {
+      setFirstDefinition(null);
+    }
   }
 
   useEffect(() => {
@@ -61,10 +68,10 @@ export const Token: React.FC<{
   const shouldShowPronunciation = settings.showPinyin && token.pronunciation !== token.text;
 
   const savedWordColor = (level: number) => {
-    if (!level) return semanticWarningColor;
+    if (!level) return semanticSuccessColor;
     return LevelColors[colorScheme][level]
   }
-  
+
   const displayContent = useMemo(() => {
     if (l2Lang.code === 'ja') {
       return addFurigana({ text: token.text, pronunciation: token.pronunciation });
@@ -109,13 +116,18 @@ export const Token: React.FC<{
   );
 
   return (
-    <TouchableOpacity onPress={handleTokenPress}>
+    <TouchableOpacity onPress={handleTokenPress} style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
       <View style={[
         styles.token,
         shouldShowPronunciation ? styles.tokenWithPronunciation : null
       ]}>
         {displayContent.map(renderSegment)}
       </View>
+      {firstDefinition && (
+        <ThemedText style={{...styles.firstDefinition, marginLeft: 4, color: savedWordColor(savedWord.level)}}>
+          {firstDefinition}
+        </ThemedText>
+      )}
       <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} key={token.text} />
     </TouchableOpacity>
   );
@@ -139,6 +151,8 @@ const styles = StyleSheet.create({
   },
   mainText: {
     textAlign: 'center',
+  },
+  firstDefinition: {
   },
 });
 
