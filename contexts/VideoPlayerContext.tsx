@@ -130,17 +130,23 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   const setVideoAndQueue = async (newVideo: YouTubeVideo, newQueue: YouTubeVideo[]) => {
     setVideoPlayerState(prevState => {
-      // If the new video has the same youtube_id as the existing video, do nothing
+      // If the new video has the same youtube_id as the existing video, preserve the existing video data
       if (newVideo.youtube_id === prevState.video?.youtube_id) {
-        return prevState;
+        return {
+          ...prevState,
+          queue: newQueue.map(queueVideo => 
+            queueVideo.youtube_id === prevState.video?.youtube_id ? prevState.video : queueVideo
+          ),
+        };
       }
 
       // Fetch video details if the youtube_id is different
       fetchVideoDetails(newVideo).then(updatedVideo => {
-        // Update the queue, replacing the current video if it exists
-        const updatedQueue = newQueue.map(queueVideo => 
-          queueVideo.youtube_id === updatedVideo.youtube_id ? updatedVideo : queueVideo
-        );
+        // Update the queue, preserving existing video data for videos already in the queue
+        const updatedQueue = newQueue.map(queueVideo => {
+          const existingVideo = prevState.queue.find(v => v.youtube_id === queueVideo.youtube_id);
+          return existingVideo || queueVideo;
+        });
 
         setVideoPlayerState(latestState => ({
           ...latestState,
