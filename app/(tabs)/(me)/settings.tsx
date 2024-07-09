@@ -12,7 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 const SettingsScreen = () => {
   const { settings, dispatch } = useSettings();
-  const { t } = useLanguage();
+  const { t, l2Lang } = useLanguage();
   const secondaryBrandColor = useThemeColor({}, 'secondaryBrand');
 
   const toggleSetting = async (settingKey: keyof SettingsState) => {
@@ -33,7 +33,7 @@ const SettingsScreen = () => {
           {t('title.language_settings')}
         </ThemedText>
         {renderSwitch('setting.show_phonetics', 'showPinyin')}
-        {renderSwitch('setting.use_traditional', 'useTraditional')}
+        {l2Lang.han && renderSwitch('setting.use_traditional', 'useTraditional')}
         {renderSwitch('setting.show_translation', 'showTranslation')}
         {renderSwitch('setting.show_gloss_saved', 'showQuickGloss')}
         {renderSwitch('setting.saved_words_blanks', 'quizMode')}
