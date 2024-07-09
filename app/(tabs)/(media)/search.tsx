@@ -20,18 +20,14 @@ const SearchScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const { t, l2Lang } = useLanguage();
-  const { setVideoPlayerState } = useVideoPlayer();
+  const { setVideoAndQueue } = useVideoPlayer();
   if (!l2Lang) return null;
 
   const handleInputChange = (text: string) => {
     setSearchQuery(text);
     const youtubeId = extractYouTubeID(text);
     if (youtubeId) {
-      setVideoPlayerState(state => ({
-        ...state,
-        isMini: false,
-        video: { youtube_id: youtubeId },
-      }));
+      setVideoAndQueue({ youtube_id: youtubeId }, []);
     }
   };
 

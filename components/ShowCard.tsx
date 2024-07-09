@@ -24,16 +24,11 @@ interface ShowCardProps {
 }
 
 export const ShowCard: React.FC<ShowCardProps> = ({ show, style }) => {
-
-  const { setVideoPlayerState } = useVideoPlayer();
+  const { setVideoAndQueue } = useVideoPlayer();
 
   const handlePress = () => {
     // Navigate to the YouTube video screen
-    setVideoPlayerState(state => ({
-      ...state,
-      isMini: false,
-      video: { youtube_id: show.youtube_id, tv_show: show.id },
-    }));
+    setVideoAndQueue({ youtube_id: show.youtube_id, tv_show: show.id }, []);
   };
 
   return (

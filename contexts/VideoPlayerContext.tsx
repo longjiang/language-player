@@ -1,3 +1,5 @@
+// @/contexts/VideoPlayerContext
+
 import React, { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from 'react';
 import { YouTubeVideo } from "@/types/videoTypes"
 
@@ -15,6 +17,7 @@ type VideoPlayerContextType = {
   closePlayer: () => void;
   minimizePlayer: () => void;
   maximizePlayer:  () => void;
+  setVideoAndQueue: (video: YouTubeVideo, queue: YouTubeVideo[]) => void;
 };
 
 const initialVideoPlayerState: VideoPlayerState = {
@@ -43,12 +46,16 @@ const VideoPlayerContext = createContext<VideoPlayerContextType>({
   playPrevious: function (): void {
     throw new Error('Function not implemented.');
   },
+  setVideoAndQueue: function (): void {
+    throw new Error('Function not implemented.');
+  },
 });
 
 export const useVideoPlayer = () => useContext(VideoPlayerContext);
 
 export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [videoPlayerState, setVideoPlayerState] = useState(initialVideoPlayerState);
+  
   // Helper functions to modify state
   const closePlayer = () => setVideoPlayerState({ isMini: false, video: undefined, queue: [] });
   const minimizePlayer = () => {
@@ -75,6 +82,14 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
   };
 
+  const setVideoAndQueue = (video: YouTubeVideo, queue: YouTubeVideo[]) => {
+    setVideoPlayerState(state => ({
+      ...state,
+      isMini: false,
+      video: video,
+      queue: queue
+    }));
+  };
 
   const value = {
     videoPlayerState,
@@ -84,6 +99,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     closePlayer,
     minimizePlayer,
     maximizePlayer,
+    setVideoAndQueue,
   };
 
   // console.log('vp Context: videoPlayerState.queue=', videoPlayerState.queue.length)

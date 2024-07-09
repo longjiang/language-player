@@ -28,7 +28,7 @@ export const VideoHero: React.FC<{
   // Add a mute state
   const [isMuted, setIsMuted] = useState(true); // Default to muted
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
-  const { setVideoPlayerState } = useVideoPlayer();
+  const { setVideoAndQueue } = useVideoPlayer();
 
   return (
     <View style={styles.container}>
@@ -56,11 +56,7 @@ export const VideoHero: React.FC<{
             leadingIcon={<Icon name="play" />}
             style={styles.button}
             onPress={() => {
-              setVideoPlayerState(state => ({
-                ...state,
-                isMini: false,
-                video: { youtube_id: youtubeId },
-              }));
+              setVideoAndQueue({ youtube_id: youtubeId }, []);
             }}
           />
           <ThemedButton

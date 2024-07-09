@@ -21,17 +21,12 @@ import { Typography } from "@/constants";
 
 export const YouTubeVideoCard = ({ video, videos = [] }: { video: YouTubeVideo; videos: YouTubeVideo[]; style?: object }) => {
   if (videos.length === 0) videos = [video];
-  const { setVideoPlayerState } = useVideoPlayer();
+  const { setVideoAndQueue } = useVideoPlayer();
   const { l2Lang, t } = useLanguage();
   if (!l2Lang) return null;
 
   const handlePress = () => {
-    setVideoPlayerState(state => ({
-      ...state,
-      isMini: false,
-      video: video,
-      queue: videos
-    }));
+    setVideoAndQueue(video, videos);
   };
 
   const viewsText = video.views ? t('title.views', {numViews: video.views?.toLocaleString()}) : '';
