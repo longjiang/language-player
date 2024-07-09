@@ -76,7 +76,7 @@ class LocalTokenizer {
       }
     }
     
-    return tokens;
+    return addSpaceTokens(tokens);
   }
 
   public static normalizeTokens(tokens: Token[], text: string): Token[] {
