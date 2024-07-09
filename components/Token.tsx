@@ -72,7 +72,7 @@ export const Token: React.FC<{
     }
   };
 
-  const shouldShowPronunciation = settings.showPinyin && token.pronunciation !== token.text;
+  const shouldShowPronunciation = settings.showPinyin && token.pronunciation && token.pronunciation !== token.text;
 
   const savedWordColor = (level: number) => {
     if (!level) return semanticWarningColor;
