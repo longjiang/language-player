@@ -107,8 +107,11 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         filter: { youtube_id: { eq: newVideo.youtube_id } },
       });
       if (videos?.length) {
-        updateVideoField('id', videos[0].id);
-        // Update other fields as needed
+        for (const key in videos[0]) {
+          if (key !== 'youtube_id') {
+            updateVideoField(key as keyof YouTubeVideo, videos[0][key]);
+          }
+        }
       }
     } catch (error) {
       console.error("Failed to fetch video details", error);
