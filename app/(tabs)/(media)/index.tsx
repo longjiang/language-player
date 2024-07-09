@@ -162,7 +162,7 @@ const MediaHomeScreen = () => {
   };
 
   if (isLoadingShows) {
-    return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={semanticSuccessColor} />;</View>;
+    return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={semanticSuccessColor} /></View>;
   }
 
   return (
