@@ -153,10 +153,10 @@ const MediaHomeScreen = () => {
 
   const footerComponent = () => {
     if (isLoading) {
-      return <ActivityIndicator size="large" color={semanticSuccessColor} />;
+      return <View style={{ margin: 26 }}><ActivityIndicator size="large" color={semanticSuccessColor} /></View>;
     }
     if (!hasMore) {
-      return <ThemedText type="default">{ t('msg.no_more_videos') }</ThemedText>;
+      return <View style={{ margin: 26, flexDirection: 'column', alignItems: 'center' }}><ThemedText type="large">{ t('msg.no_more_videos') }</ThemedText></View>;
     }
     return null;
   };
