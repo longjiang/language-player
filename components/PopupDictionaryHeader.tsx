@@ -1,7 +1,7 @@
 // @/components/PopupDictionaryHeader.tsx
 
 import React, { useCallback, useState, useEffect, useMemo } from "react";
-import { View, Text, Clipboard, ToastAndroid, Platform, AlertIOS } from "react-native";
+import { View, Text, Clipboard, ToastAndroid, Platform, Alert } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
 import { Translate } from "@/components/Translate";
@@ -70,7 +70,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
     if (Platform.OS === 'android') {
       ToastAndroid.show(t('msg.copy_success'), ToastAndroid.SHORT);
     } else {
-      AlertIOS.alert(t('msg.copy_success'));
+      Alert.alert(t('msg.copy_success'));
     }
   };
 
