@@ -20,7 +20,7 @@ import { useTVShows } from "@/contexts/TVShowsContext";
 const TVShowsScreen = () => {
   const { shows, isLoading } = useTVShows();
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState('title');
+  const [sortOption, setSortOption] = useState('views');  // Changed default to 'views'
   const [localeFilter, setLocaleFilter] = useState('all');
 
   const rbSheetRef = useRef(null);
@@ -139,9 +139,9 @@ const TVShowsScreen = () => {
 
       <ThemedRBSheet ref={rbSheetRef} height={400}>
         <ThemedText type="subtitle" style={{ marginBottom: 12 }}>SORT BY</ThemedText>
-        <SortOption title="Title" option="title" />
         <SortOption title="Most Viewed" option="views" />
-        <SortOption title="Year" option="year" />
+        <SortOption title="Title" option="title" />
+        {/* <SortOption title="Year" option="year" /> */}
         
         <ThemedText type="subtitle" style={{ marginTop: 20, marginBottom: 12 }}>FILTER BY LOCALE</ThemedText>
         {getUniqueLocales().map(locale => (
