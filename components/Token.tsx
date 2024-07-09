@@ -32,6 +32,7 @@ export const Token: React.FC<{
 }) => {
   const defaultFontSize = 16;
   const primaryTextColor = useThemeColor({}, "primaryText");
+  const primaryStrokeColor = useThemeColor({}, "primaryStroke");
   const fontFamily = textWeight === "bold" ? Typography.fontFamilyBold : Typography.fontFamilyRegular;
   const { l2Lang } = useLanguage();
   const { settings } = useSettings();
@@ -40,6 +41,7 @@ export const Token: React.FC<{
   const { savedWords, getSavedWordByForm } = useUserData();
   const [savedWord, setSavedWord] = useState<DictionaryEntry | null>(null);
   const [firstDefinition, setFirstDefinition] = useState<string | null>(null);
+  const [isBlank, setIsBlank] = useState<boolean>(false);
   const colorScheme = useColorScheme();
   const semanticSuccessColor = useThemeColor({}, "semanticSuccess");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
@@ -47,7 +49,7 @@ export const Token: React.FC<{
 
   const checkSavedWord = async () => {
     if (!l2Lang) return;
-    const savedWordMeta = getSavedWordByForm(l2Lang.code, token.text)
+    const savedWordMeta = getSavedWordByForm(l2Lang.code, token.text);
     const savedWord = dictionary && savedWordMeta ? await dictionary.getEntry(savedWordMeta.id) : null;
     setSavedWord(savedWord);
     if (savedWord && settings.showQuickGloss && savedWord.definitions.length > 0) {
@@ -55,22 +57,27 @@ export const Token: React.FC<{
     } else {
       setFirstDefinition(null);
     }
-  }
+    setIsBlank(settings.quizMode && !!savedWord); // Initialize isBlank state based on quizMode and whether the word is saved
+  };
 
   useEffect(() => {
     checkSavedWord();
   }, [savedWords, token.text, dictionary]);
 
   const handleTokenPress = () => {
-    modalRef.current?.open();
+    if (settings.quizMode && savedWord) {
+      setIsBlank(!isBlank);
+    } else {
+      modalRef.current?.open();
+    }
   };
 
   const shouldShowPronunciation = settings.showPinyin && token.pronunciation !== token.text;
 
   const savedWordColor = (level: number) => {
-    if (!level) return semanticSuccessColor;
-    return LevelColors[colorScheme][level]
-  }
+    if (!level) return semanticWarningColor;
+    return LevelColors[colorScheme][level];
+  };
 
   const displayContent = useMemo(() => {
     if (l2Lang.code === 'ja') {
@@ -106,6 +113,7 @@ export const Token: React.FC<{
             fontFamily,
             color: primaryTextColor,
             fontSize: defaultFontSize * textScale,
+            opacity: isBlank ? 0 : 1,
           },
           ...(savedWord ? [{ color: savedWordColor(savedWord.level) }] : []),
         ]}
@@ -116,7 +124,7 @@ export const Token: React.FC<{
   );
 
   return (
-    <TouchableOpacity onPress={handleTokenPress} style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+    <TouchableOpacity onPress={handleTokenPress} style={{ flexDirection: 'row', alignItems: 'flex-end', borderColor: isBlank ? primaryStrokeColor : 'transparent', borderBottomWidth: 1 }}>
       <View style={[
         styles.token,
         shouldShowPronunciation ? styles.tokenWithPronunciation : null
@@ -124,7 +132,12 @@ export const Token: React.FC<{
         {displayContent.map(renderSegment)}
       </View>
       {firstDefinition && (
-        <ThemedText style={{...styles.firstDefinition, marginLeft: 4, color: savedWordColor(savedWord.level)}}>
+        <ThemedText style={{
+          ...styles.firstDefinition,
+          marginLeft: 4,
+          color: savedWordColor(savedWord.level),
+          opacity: isBlank ? 0 : 1,
+        }}>
           {firstDefinition}
         </ThemedText>
       )}
@@ -153,6 +166,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   firstDefinition: {
+    marginTop: 4,
   },
 });
 
