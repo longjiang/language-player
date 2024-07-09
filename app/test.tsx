@@ -5,6 +5,7 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { router } from "expo-router";
 
 // Sample texts for different languages
 const sampleTexts = {
@@ -44,7 +45,7 @@ function Test() {
           router.back();
         }}
       >
-        <TokenizedText text={text} />
+        <TokenizedText text={text} textScale={1.3} />
       </ThemedScreen>
     </GestureHandlerRootView>
   );
