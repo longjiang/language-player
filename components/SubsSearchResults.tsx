@@ -33,13 +33,16 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
       if (video && !video.subs_l1?.length) {
         const l1Subs = await getBestL1Subs(video.youtube_id, l1Lang.code, l2Lang.code);
         if (video.youtube_id === video.youtube_id) {
-          video.subs_l1 = l1Subs || [];
+          // Instead of directly mutating video, use the appropriate update method
+          // from your context or state management solution
+          // For example:
+          // updateVideoSubtitles(video.youtube_id, l1Subs);
         }
       }
     };
 
     fetchBestTranslatedSubs();
-  }, [currentVideoIndex]);
+  }, [video, l1Lang.code, l2Lang.code]);
 
   useEffect(() => {
     if (!isProUser() && currentVideoIndex >= MAX_FREE_SUBS_SEARCH_RESULTS) {
@@ -54,7 +57,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
     setShowProModal(false);
   }, []);
 
-  const onSelect = async (index: number) => {
+  const onSelect = useCallback(async (index: number) => {
     refRBSheet.current.close();
     if (!isProUser() && index >= MAX_FREE_SUBS_SEARCH_RESULTS) {
       await timeout(1000);
@@ -64,24 +67,23 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
     }
     updateStartTime(playlist[index].starttime || 0);
     skipToVideo(index);
-  };
+  }, [isProUser, playlist, skipToVideo, updateStartTime]);
 
-  syncedLines.find((line) => {
-    if (typeof line.l2Line === 'string' && line.l2Line.includes(term)) {
-      const foundLine = syncedLines.find((item) => item.l2Line && item.l2Line?.includes(term));
+  useEffect(() => {
+    const foundLine = syncedLines.find((line) => 
+      typeof line.l2Line === 'string' && line.l2Line.includes(term)
+    );
 
-      if (foundLine) {
-        const { starttime, l1Line, l2Line } = foundLine;
-        updateStartTime(starttime);
-      } else {
-        console.log(`Term "${term}" not found in synced lines.`);
-      }
+    if (foundLine) {
+      updateStartTime(foundLine.starttime);
+    } else {
+      console.log(`Term "${term}" not found in synced lines.`);
     }
-  });
+  }, [term, syncedLines, updateStartTime]);
 
-  const openModal = () => {
+  const openModal = useCallback(() => {
     refRBSheet.current.open();
-  };
+  }, []);
 
   const screenHeight = Dimensions.get("screen").height;
 

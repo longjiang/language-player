@@ -4,22 +4,19 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { VideoWithTranscriptProvider } from '@/contexts/VideoWithTranscriptContext';
 import { SubsSearchResults } from './SubsSearchResults';
-import { parseSubtitles } from '@/src/subs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { subsSearch } from '@/src/api/python/video';
 
 export const SubsSearch = ({ term }: { term: string }): JSX.Element => {
   const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const { l2Lang, t } = useLanguage();
   
-  if (!l2Lang) return <Text>{t('loading')}</Text>;
-
   useEffect(() => {
-    if (term) {
+    if (l2Lang && term) {
       fetchResults(term);
     }
-  }, [term]);
+  }, [term, l2Lang]);
 
   const fetchResults = async (searchTerm: string): Promise<void> => {
     setLoading(true);
@@ -42,20 +39,21 @@ export const SubsSearch = ({ term }: { term: string }): JSX.Element => {
     }
   };
 
+  if (!l2Lang) return <Text>{t('loading')}</Text>;
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
   return (
     <View>
-      {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
+      {results.length > 0 ? (
         <VideoWithTranscriptProvider initialVideo={results[0]} initialPlaylist={results}>
           <SubsSearchResults term={term} />
         </VideoWithTranscriptProvider>
+      ) : (
+        <Text>{t('no_results')}</Text>
       )}
     </View>
   );
-};
-
-const handleSubtitlePress = (time: number) => {
-  // You'll need to integrate with your video player to seek to this time
-  console.log('Seek video to:', time);
 };
