@@ -71,6 +71,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   const fetchVideoDetails = async (video: YouTubeVideo): Promise<YouTubeVideo> => {
     if (!video.youtube_id || !l2Lang || !l1Lang) return video;
+    console.log("Fetching video details", video.title);
 
     try {
       // Fetch video details
@@ -82,15 +83,19 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         },
       });
       let updatedVideo = videos?.length ? videos[0] : { ...video };
+      console.log("1. Video details fetched");
 
       // Fetch L2 subtitles if they don't exist
       if (!updatedVideo.subs_l2?.length) {
         try {
           const l2Subs = await getBestL2Subs(updatedVideo.youtube_id, l2Lang.code);
           updatedVideo.subs_l2 = l2Subs || [];
+          console.log("2. L2 subtitles fetched");
         } catch (error) {
           console.error("Failed to fetch L2 subs", error);
         }
+      } else {
+        console.log("2. L2 subtitles already exist");
       }
 
       // Fetch L1 subtitles if they don't exist
@@ -98,32 +103,69 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         try {
           const l1Subs = await getBestL1Subs(updatedVideo.youtube_id, l1Lang.code, l2Lang.code);
           updatedVideo.subs_l1 = l1Subs || [];
+          console.log("3. L1 subtitles fetched");
         } catch (error) {
           console.error("Failed to fetch L1 subs", error);
         }
+      } else {
+        console.log("3. L1 subtitles already exist");
       }
 
       // Add to watch history
       if (updatedVideo.id) {
         const authToken = await getStoredAuthToken();
         if (authToken) {
-          await addToWatchHistory(l2Lang.id, Number(updatedVideo.id), 0, authToken);
+          try {
+            console.log("4. Adding to watch history...");
+            console.log(`Debug: l2Lang.id=${l2Lang.id}, videoId=${updatedVideo.id}`);
+            
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Timeout while adding to watch history')), 10000)
+            );
+            
+            const watchHistoryResult = await Promise.race([
+              addToWatchHistory(l2Lang.id, Number(updatedVideo.id), 0, authToken),
+              timeoutPromise
+            ]);
+            
+            console.log("4. Added to watch history successfully", watchHistoryResult);
+          } catch (error) {
+            console.error("Failed to add video to watch history", error);
+            if (error instanceof Error) {
+              console.error("Error message:", error.message);
+              console.error("Error stack:", error.stack);
+            }
+          }
+        } else {
+          console.log("4. Skipped adding to watch history (no auth token)");
         }
+      } else {
+        console.log("4. Skipped adding to watch history (no video id)");
       }
 
       // Fetch and load tokenizer cache
       try {
+        console.log("5. Fetching tokenizer cache...");
         const tokenizerCache = await getTokenizerCacheForVideo(updatedVideo.id, l2Lang.code);
         if (tokenizerCache && tokenizer) {
           tokenizer.loadCache(tokenizerCache);
+          console.log("5. Tokenizer cache loaded successfully");
+        } else {
+          console.log("5. No tokenizer cache to load");
         }
       } catch (error) {
         console.error("Failed to fetch and load tokenizer cache", error);
       }
 
+      console.log("Updated video details", updatedVideo);
+
       return updatedVideo;
     } catch (error) {
       console.error("Failed to fetch video details", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
       return video;
     }
   };
@@ -154,6 +196,9 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
           queue: updatedQueue,
           isMini: false,
         }));
+      }).catch(error => {
+        console.error("Error in fetchVideoDetails:", error);
+        // Handle the error appropriately, maybe set an error state
       });
 
       // Return an intermediate state while we're fetching the details
