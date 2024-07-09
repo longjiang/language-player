@@ -7,11 +7,6 @@ import { tokenizers } from './tokenizer-list';
 import CryptoJS from 'crypto-js';
 import { Token, Lemma, TokenizerModule } from '@/types/tokenTypes';
 
-interface CacheEntry {
-  rawTokens: Token[];
-  originalText: string;
-}
-
 export const getTokenizer = (languageCode: string): Tokenizer | null => {
   for (let tokenizer of tokenizers) {
     if (tokenizer.languages.includes(languageCode)) {
@@ -23,11 +18,11 @@ export const getTokenizer = (languageCode: string): Tokenizer | null => {
 
 export class TokenizerService {
   private static instance: TokenizerService;
-  private cache: Map<string, CacheEntry>;
+  private cache: Map<string, string>;
   private localTokenizer: LocalTokenizer;
 
   private constructor(wordset?: Set<string>) {
-    this.cache = new Map<string, CacheEntry>();
+    this.cache = new Map<string, string>();
     this.localTokenizer = new LocalTokenizer(wordset);
   }
 
@@ -40,8 +35,7 @@ export class TokenizerService {
 
   public loadCache(initialCache: { [key: string]: Token[] }): void {
     for (const [key, tokenData] of Object.entries(initialCache)) {
-      const text = tokenData.map(token => token.text).join(" ");
-      this.cache.set(key, { rawTokens: tokenData, originalText: text });
+      this.cache.set(key, tokenData);
     }
   }
 
@@ -63,16 +57,17 @@ export class TokenizerService {
 
     if (this.cache.has(cacheKey)) {
       const cacheEntry = this.cache.get(cacheKey)!;
-      return remoteTokenizer
-        ? remoteTokenizer.module.normalizeTokens(cacheEntry.rawTokens, cacheEntry.originalText)
+      const normalizedTokens = remoteTokenizer
+        ? remoteTokenizer.module.normalizeTokens(cacheEntry.rawTokens, text)
         : cacheEntry.rawTokens;
+      return normalizedTokens
     }
 
     try {
       let rawTokens: Token[] | undefined = undefined;
       if (remoteTokenizer) {
         rawTokens = await this.fetchTokens(remoteTokenizer, text, l2Lang);
-        console.log("Remote tokens:", rawTokens);
+        // console.log("Remote tokens:", rawTokens);
       } else {
         rawTokens = await this.localTokenizer.tokenize(text, l2Lang);
       }
@@ -83,7 +78,7 @@ export class TokenizerService {
       }
 
       // Cache the raw results
-      this.cache.set(cacheKey, { rawTokens, originalText: text });
+      this.cache.set(cacheKey, rawTokens);
 
       // Return normalized tokens
       return remoteTokenizer
