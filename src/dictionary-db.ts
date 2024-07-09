@@ -212,6 +212,9 @@ export class DictionaryDB {
     options: {
       limit?: number;
       exactMatch?: boolean;
+      matchTypes?: Array<'exact' | 'contains'>;
+      bidirectional?: boolean;
+      priorityWeights?: number[];
     } = {}
   ): Promise<any[]> {
     const {
