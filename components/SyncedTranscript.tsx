@@ -12,8 +12,17 @@ interface SyncedTranscriptProps {
 }
 
 export const SyncedTranscript: React.FC<SyncedTranscriptProps> = ({ transcriptLimitReached = false }) => {
-  const { video, syncedLines, currentLine } = useVideoWithTranscriptContext();
+  const { video, syncedLines, currentLine, updatePlayVideo } = useVideoWithTranscriptContext();
   const { t } = useLanguage();
+
+  const handlePopupOpen = () => {
+    updatePlayVideo(false);
+  };
+
+  const handlePopupClose = () => {
+    updatePlayVideo(true);
+  };
+
   const renderContent = () => {
     if (transcriptLimitReached) {
       return (
@@ -32,6 +41,8 @@ export const SyncedTranscript: React.FC<SyncedTranscriptProps> = ({ transcriptLi
             textScale={1.5} 
             textWeight="bold" 
             align='center' 
+            onPopupOpen={handlePopupOpen}
+            onPopupClose={handlePopupClose}
           />
         )}
         {currentLine?.l1Line && (

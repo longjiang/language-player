@@ -13,6 +13,8 @@ export interface TokenizedTextProps {
   textScale?: number;
   textWeight?: "regular" | "bold";
   align?: 'left' | 'center' | 'right';
+  onPopupOpen?: () => void;
+  onPopupClose?: () => void;
 }
 
 export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({ 
@@ -20,7 +22,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
   translation, 
   textScale = 1, 
   textWeight, 
-  align = 'left' 
+  align = 'left',
+  onPopupOpen,
+  onPopupClose
 }) => {
   const [tokens, setTokens] = useState<TokenType[]>([]);
   const { tokenizer } = useDictionary();
@@ -30,7 +34,6 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
 
   useEffect(() => {
     const tokenizeText = async () => {
-
       try {
         const result = tokenizer ? await tokenizer.tokenize(text, l2Lang) : [] as TokenType[];
         setTokens(result || []);
@@ -53,6 +56,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
           textWeight={textWeight}
           context={text}
           translatedContext={translation}
+          onPopupOpen={onPopupOpen}
+          onPopupClose={onPopupClose}
         />
       ))}
     </View>

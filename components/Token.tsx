@@ -24,12 +24,16 @@ export const Token: React.FC<{
   textWeight?: "regular" | "bold",
   context?: string,
   translatedContext?: string,
+  onPopupOpen?: () => void,
+  onPopupClose?: () => void,
 }> = ({
   token,
   textScale = 1,
   textWeight = "regular",
   context = "",
   translatedContext = "",
+  onPopupOpen,
+  onPopupClose,
 }) => {
   const defaultFontSize = 16;
   const primaryTextColor = useThemeColor({}, "primaryText");
@@ -60,7 +64,7 @@ export const Token: React.FC<{
     } else {
       setFirstDefinition(null);
     }
-    setIsBlank(settings.quizMode && !!savedWord); // Initialize isBlank state based on quizMode and whether the word is saved
+    setIsBlank(settings.quizMode && !!savedWord);
   };
 
   useEffect(() => {
@@ -71,8 +75,13 @@ export const Token: React.FC<{
     if (settings.quizMode && savedWord) {
       setIsBlank(!isBlank);
     } else {
+      onPopupOpen?.();
       modalRef.current?.open();
     }
+  };
+
+  const handlePopupClose = () => {
+    onPopupClose?.();
   };
 
   const shouldShowPronunciation = settings.showPinyin && token.pronunciation && token.pronunciation !== token.text;
@@ -136,7 +145,7 @@ export const Token: React.FC<{
         {displayContent.map(renderSegment)}
       </View>
       {firstDefinition && <DefinitionList definitions={[firstDefinition]} style={{ marginBottom: 2 }} />}
-      <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} key={token.text} />
+      <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} key={token.text} onClose={handlePopupClose} />
     </TouchableOpacity>
   );
 };
