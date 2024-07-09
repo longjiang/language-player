@@ -69,6 +69,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
   };
 
+  
   const fetchVideoDetails = async (video: YouTubeVideo): Promise<YouTubeVideo> => {
     if (!video.youtube_id || !l2Lang || !l1Lang) return video;
     console.log("Fetching video details", video.title);
@@ -111,53 +112,21 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         console.log("3. L1 subtitles already exist");
       }
 
-      // Add to watch history
-      if (updatedVideo.id) {
-        const authToken = await getStoredAuthToken();
-        if (authToken) {
-          try {
-            console.log("4. Adding to watch history...");
-            console.log(`Debug: l2Lang.id=${l2Lang.id}, videoId=${updatedVideo.id}`);
-            
-            const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Timeout while adding to watch history')), 10000)
-            );
-            
-            const watchHistoryResult = await Promise.race([
-              addToWatchHistory(l2Lang.id, Number(updatedVideo.id), 0, authToken),
-              timeoutPromise
-            ]);
-            
-            console.log("4. Added to watch history successfully", watchHistoryResult);
-          } catch (error) {
-            console.error("Failed to add video to watch history", error);
-            if (error instanceof Error) {
-              console.error("Error message:", error.message);
-              console.error("Error stack:", error.stack);
-            }
-          }
-        } else {
-          console.log("4. Skipped adding to watch history (no auth token)");
-        }
-      } else {
-        console.log("4. Skipped adding to watch history (no video id)");
-      }
-
       // Fetch and load tokenizer cache
       try {
-        console.log("5. Fetching tokenizer cache...");
+        console.log("4. Fetching tokenizer cache...");
         const tokenizerCache = await getTokenizerCacheForVideo(updatedVideo.id, l2Lang.code);
         if (tokenizerCache && tokenizer) {
           tokenizer.loadCache(tokenizerCache);
-          console.log("5. Tokenizer cache loaded successfully");
+          console.log("4. Tokenizer cache loaded successfully");
         } else {
-          console.log("5. No tokenizer cache to load");
+          console.log("4. No tokenizer cache to load");
         }
       } catch (error) {
         console.error("Failed to fetch and load tokenizer cache", error);
       }
 
-      console.log("Updated video details", updatedVideo);
+      console.log("Updated video details", updatedVideo.title, ' with ', updatedVideo.subs_l2?.length, 'subs lines');
 
       return updatedVideo;
     } catch (error) {
@@ -167,6 +136,41 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         console.error("Error stack:", error.stack);
       }
       return video;
+    }
+  };
+
+  const addToHistory = async (video: YouTubeVideo) => {
+    if (!video.id || !l2Lang) {
+      console.log("Skipped adding to watch history (missing video id or l2Lang)");
+      return;
+    }
+
+    const authToken = await getStoredAuthToken();
+    if (!authToken) {
+      console.log("Skipped adding to watch history (no auth token)");
+      return;
+    }
+
+    try {
+      console.log("Adding to watch history...");
+      console.log(`Debug: l2Lang.id=${l2Lang.id}, videoId=${video.id}`);
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout while adding to watch history')), 10000)
+      );
+      
+      const watchHistoryResult = await Promise.race([
+        addToWatchHistory(l2Lang.id, Number(video.id), 0, authToken),
+        timeoutPromise
+      ]);
+      
+      console.log("Added to watch history successfully", watchHistoryResult);
+    } catch (error) {
+      console.error("Failed to add video to watch history", error);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
     }
   };
 
@@ -182,8 +186,11 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         };
       }
 
-      // Fetch video details if the youtube_id is different
-      fetchVideoDetails(newVideo).then(updatedVideo => {
+      // Concurrently fetch video details and add to watch history
+      Promise.all([
+        fetchVideoDetails(newVideo),
+        addToHistory(newVideo)
+      ]).then(([updatedVideo]) => {
         // Update the queue, preserving existing video data for videos already in the queue
         const updatedQueue = newQueue.map(queueVideo => {
           const existingVideo = prevState.queue.find(v => v.youtube_id === queueVideo.youtube_id);
@@ -197,7 +204,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
           isMini: false,
         }));
       }).catch(error => {
-        console.error("Error in fetchVideoDetails:", error);
+        console.error("Error in concurrent operations:", error);
         // Handle the error appropriately, maybe set an error state
       });
 
