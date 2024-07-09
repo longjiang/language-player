@@ -1,3 +1,5 @@
+// @/components/Token.tsx
+
 import React, { useRef, useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
@@ -72,7 +74,7 @@ export const Token: React.FC<{
     return [{ text: token.text, pronunciation: token.pronunciation }];
   }, [token.text, token.pronunciation, convert, l2Lang.code, l2Lang.han]);
 
-  const renderSegment = (segment: Segment, index: number) => (
+  const renderSegment = (segment: { text: string; pronunciation: string }, index: number) => (
     <View key={index} style={styles.segment}>
       {shouldShowPronunciation && segment.pronunciation !== segment.text && (
         <Text
@@ -108,7 +110,10 @@ export const Token: React.FC<{
 
   return (
     <TouchableOpacity onPress={handleTokenPress}>
-      <View style={{ ...styles.token, marginHorizontal: shouldShowPronunciation ? 4 : 0 }}>
+      <View style={[
+        styles.token,
+        shouldShowPronunciation ? styles.tokenWithPronunciation : null
+      ]}>
         {displayContent.map(renderSegment)}
       </View>
       <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} key={token.text} />
@@ -120,6 +125,9 @@ const styles = StyleSheet.create({
   token: {
     flexDirection: 'row',
     alignItems: 'flex-end',
+  },
+  tokenWithPronunciation: {
+    marginHorizontal: 4,
   },
   segment: {
     flexDirection: 'column',
