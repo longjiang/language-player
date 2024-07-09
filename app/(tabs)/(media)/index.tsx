@@ -25,42 +25,35 @@ const MediaHomeScreen = () => {
   const [items, setItems] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  if (!l2Lang) return null;
-
-  const videoHeight = 300;
-  const padding = 26;
-  const videoWidth = videoHeight * 1.777777777777778;
-  const screenWidth = Dimensions.get('window').width;
-  const headerWidth = screenWidth - padding * 2;
-  const country = l2Lang ? languages?.getCountry(l2Lang) : null;
-  const langCode = l2Lang.code;
-  const l2Progress = progress[l2Lang.code] || { level: '1', time: 0 };
-  const level = Number(l2Progress.level);
-
-  // Select a random TV show
-  const randomShow = useMemo(() => {
-    if (shows.length > 0) {
-      const randomIndex = Math.floor(Math.random() * shows.length);
-      return shows[randomIndex];
-    }
-    return null;
-  }, [shows]);
-
   useEffect(() => {
-    loadItems();
-  }, [lastSignificantChange]);
+    if (l2Lang && progress[l2Lang.code]) {
+      loadItems();
+    }
+  }, [lastSignificantChange, l2Lang, progress]);
 
   const loadItems = async () => {
     setItems([]);
     setIsLoading(true);
-    const userInfo = await getStoredUserInfo();
-    if (!userInfo) throw new Error(t('error.user_info_not_found'));
-    const userId = Number(userInfo.id);
-    const preferredCategories = [];
-    const excludeIds = [4265,17213,33658,11662];
-    const madeForKids = 0;
-    const limit = 50;
     try {
+      const userInfo = await getStoredUserInfo();
+      if (!userInfo) throw new Error(t('error.user_info_not_found'));
+
+      const userId = Number(userInfo.id);
+
+      const langCode = l2Lang.code;
+
+      const l2Progress = progress[langCode];
+      if (!l2Progress) {
+        throw new Error('Progress data not available');
+      }
+
+      const level = Number(l2Progress.level);
+
+      const preferredCategories = [];
+      const excludeIds = [4265, 17213, 33658, 11662];
+      const madeForKids = 0;
+      const limit = 50;
+
       const fetchedItems = await recommendVideos(
         userId,
         langCode,
@@ -70,12 +63,28 @@ const MediaHomeScreen = () => {
         madeForKids,
         limit
       );
+
       setItems(fetchedItems);
     } catch (error) {
       console.error(t('error.failed_to_load_items'), error);
     }
     setIsLoading(false);
   };
+
+  const videoHeight = 300;
+  const padding = 26;
+  const videoWidth = videoHeight * 1.777777777777778;
+  const screenWidth = Dimensions.get('window').width;
+  const headerWidth = screenWidth - padding * 2;
+  const country = l2Lang ? languages?.getCountry(l2Lang) : null;
+
+  const randomShow = useMemo(() => {
+    if (shows.length > 0) {
+      const randomIndex = Math.floor(Math.random() * shows.length);
+      return shows[randomIndex];
+    }
+    return null;
+  }, [shows]);
 
   const headerComponent = (
     <View>
