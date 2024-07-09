@@ -6,6 +6,8 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { router } from "expo-router";
+import { Link } from "@react-navigation/native";
+import { ThemedButton } from "@/components/ThemedButton";
 
 // Sample texts for different languages
 const sampleTexts = {
@@ -39,13 +41,12 @@ function Test() {
       <ThemedScreen
         title="Test"
         showFlag={true}
-        imageName={require("../assets/images/splash-image.png")}
-        imageStyle={{ marginTop: -400 }}
         onBackPress={() => {
           router.back();
         }}
       >
         <TokenizedText text={text} textScale={1.3} />
+        <ThemedButton title="Settings" onPress={() => router.navigate("/settings")} style={{ marginTop: 20 }} type="neutral" />
       </ThemedScreen>
     </GestureHandlerRootView>
   );

@@ -5,9 +5,10 @@ export default function MeLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="settings" options={{ headerShown: false }} />
+      <Stack.Screen name="settings" options={{ headerShown: false, presentation: "modal" }} />
       <Stack.Screen name="saved-words" options={{ headerShown: false }} />
       <Stack.Screen name="watch-history" options={{ headerShown: false }} />
+      <Stack.Screen name="test" options={{ headerShown: false }} />
     </Stack>
   );
 }

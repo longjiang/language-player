@@ -68,7 +68,6 @@ export default function RootLayout() {
                           <Stack.Screen name="go-pro" options={{ headerShown: false }} />
                           <Stack.Screen name="delete-account" options={{ headerShown: false }} />
                           <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
-                          <Stack.Screen name="test" options={{ headerShown: false }} />
                           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                           <Stack.Screen name="+not-found" />
                         </Stack>
