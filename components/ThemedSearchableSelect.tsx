@@ -1,4 +1,5 @@
 // @/components/ThemedSearchableSelect
+
 import React, { useState, useEffect, ReactElement, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, FlatList, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -25,6 +26,8 @@ type ThemedSearchableSelectProps = {
   style?: object;
   renderItem?: (info: { item: Option }) => ReactElement;
   initialValue?: string;
+  onFocus?: () => void; // Add onFocus prop
+  onBlur?: () => void; // Add onBlur prop
 };
 
 export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
@@ -33,7 +36,9 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
   placeholder,
   style,
   renderItem: customRenderItem,
-  initialValue
+  initialValue,
+  onFocus, // Destructure onFocus prop
+  onBlur // Destructure onBlur prop
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -69,11 +74,28 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
     onSelect(value);
     setSelectedLabel(label);
     setIsOpen(false);
+    if (onBlur) {
+      onBlur(); // Call onBlur when an option is selected
+    }
   };
 
   const handleChangeText = useCallback((text: string) => {
     setSearchTerm(text);
   }, []);
+
+  const handleOpen = () => {
+    setIsOpen(true);
+    if (onFocus) {
+      onFocus(); // Call onFocus when the dropdown opens
+    }
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    if (onBlur) {
+      onBlur(); // Call onBlur when the dropdown closes
+    }
+  };
 
   const renderItemWrapper = ({ item }: { item: Option }) => {
     const itemPress = () => handleSelect(item.value, item.label);
@@ -84,23 +106,22 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
     );
   };
   
-  // Use useCallback to memoize the header component
   const renderHeader = useCallback(() => (
     <ThemedInput
-    placeholder={placeholder}
-    onChangeText={handleChangeText}
-    style={{ backgroundColor: inputColor, borderColor, marginBottom: 8 }}
-    icon="magnify"
-    size="small"
-  />
+      placeholder={placeholder}
+      onChangeText={handleChangeText}
+      style={{ backgroundColor: inputColor, borderColor, marginBottom: 8 }}
+      icon="magnify"
+      size="small"
+    />
   ), []);
 
   return (
-    <TouchableWithoutFeedback onPress={() => isOpen && setIsOpen(false)}>
+    <TouchableWithoutFeedback onPress={() => isOpen && handleClose()}>
       <View style={[styles.container, { borderColor, backgroundColor }, style]}>
-        <TouchableOpacity style={styles.input} onPress={() => setIsOpen(!isOpen)}>
+        <TouchableOpacity style={styles.input} onPress={() => isOpen ? handleClose() : handleOpen()}>
           <ThemedText style={{ color: textColor }} variant="secondary">
-          {i18n.t(selectedLabel || placeholder, { missingBehavior: "guess"})}
+            {i18n.t(selectedLabel || placeholder, { missingBehavior: "guess" })}
           </ThemedText>
           <Icon name={isOpen ? "chevron-up" : "chevron-down"} size={24} color={placeholderTextColor} />
         </TouchableOpacity>

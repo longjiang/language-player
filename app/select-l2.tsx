@@ -12,6 +12,7 @@ import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 const SelectL2Screen = () => {
   const { l2Lang, setL2Lang, languages, t } = useLanguage();
   const [selectedLanguage, setSelectedLanguage] = useState(l2Lang?.iso639_1 || l2Lang?.iso639_3 || "");
+  const [showIcons, setShowIcons] = useState(true);
 
   const languageCircleIcons: { [key: string]: string } = {
     zh: require("@/assets/flags/china.png"),
@@ -40,6 +41,14 @@ const SelectL2Screen = () => {
     setSelectedLanguage(value);
   };
 
+  const handleFocus = () => {
+    setShowIcons(false);
+  };
+
+  const handleBlur = () => {
+    setShowIcons(true);
+  };
+
   // Function to get an option based on the value
   const getOption: (value: string) => Option | undefined = (value) => {
     return languageOptions.find((lang: Option) => lang.value === value);
@@ -57,22 +66,26 @@ const SelectL2Screen = () => {
       title={t('title.select_language')}
       onBackPress={() => router.back()}
     >
-      <ScrollView contentContainerStyle={styles.iconLayout}>
-        {languageOptions.filter(lang => lang.icon).map((lang: Option) => (
-          <LanguageIcon
-            key={lang.value}
-            icon={lang.icon}
-            label={lang.label}
-            onPress={() => onSelect(lang.value)}
-            selected={selectedLanguage === lang.value}
-          />
-        ))}
-      </ScrollView>
+      {showIcons && (
+        <ScrollView contentContainerStyle={styles.iconLayout}>
+          {languageOptions.filter(lang => lang.icon).map((lang: Option) => (
+            <LanguageIcon
+              key={lang.value}
+              icon={lang.icon}
+              label={lang.label}
+              onPress={() => onSelect(lang.value)}
+              selected={selectedLanguage === lang.value}
+            />
+          ))}
+        </ScrollView>
+      )}
       <ThemedLanguageSelect
         onSelect={onSelect}
         initialValue={getOption(selectedLanguage)?.value}
         placeholder={t('placeholder.more_languages', { count: languageOptions.length })}
         scope="l2"
+        onFocus={handleFocus}
+        onBlur={handleBlur}
       />
 
       <ThemedButton

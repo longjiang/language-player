@@ -1,3 +1,5 @@
+// @/components/ThemedLanguageSelect
+
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from "@/components/ThemedText";
@@ -11,12 +13,16 @@ export const ThemedLanguageSelect: React.FC<{
   onSelect: (value: string) => void;
   placeholder?: string;
   scope: 'l1' | 'l2';
-  initialValue?: string; // Change the type of initialValue prop to string
+  initialValue?: string;
+  onFocus?: () => void; // Add onFocus prop
+  onBlur?: () => void;  // Add onBlur prop
 }> = ({
   onSelect,
   placeholder = 'Select a language',
   scope = 'l2',
-  initialValue
+  initialValue,
+  onFocus,  // Destructure onFocus prop
+  onBlur   // Destructure onBlur prop
 }) => {
   const { languages, t } = useLanguage();
 
@@ -24,7 +30,7 @@ export const ThemedLanguageSelect: React.FC<{
     const country = languages?.getCountry(lang)
     return {
       value: lang.code,
-      label: 'lang.' + lang.code, // Will be translated in the app
+      label: 'lang.' + lang.code,
       translatedLabel: t('lang.' + lang.code),
       alternateLabel: lang.vernacularName,
       englishLabel: lang.name,
@@ -38,11 +44,10 @@ export const ThemedLanguageSelect: React.FC<{
 
   let l1Options = l2Options
     .filter((option) => SUPPORTED_L1S.includes(option.value))
-    // Add simplified and traditional Chinese as options
     .concat([
       {
         value: "zh-Hans",
-        label: "lang.zh-Hans",  // Will be translated in the app
+        label: "lang.zh-Hans",
         translatedLabel: t('lang.zh-Hant'),
         alternateLabel: '简体中文',
         englishLabel: 'Chinese (Simplified)',
@@ -50,7 +55,7 @@ export const ThemedLanguageSelect: React.FC<{
       },
       {
         value: "zh-Hant",
-        label: "lang.zh-Hant", // Will be translated in the app
+        label: "lang.zh-Hant",
         translatedLabel: t('lang.zh-Hans'),
         alternateLabel: '繁體中文',
         englishLabel: 'Chinese (Traditional)',
@@ -64,7 +69,9 @@ export const ThemedLanguageSelect: React.FC<{
       options={scope === 'l1' ? l1Options : l2Options}
       onSelect={onSelect}
       placeholder={t('placeholder.select_language')}
-      initialValue={initialValue}  // Pass initialValue to ThemedSearchableSelect
+      initialValue={initialValue}
+      onFocus={onFocus}  // Pass onFocus to ThemedSearchableSelect
+      onBlur={onBlur}    // Pass onBlur to ThemedSearchableSelect
       renderItem={({ item }) => (
         <TouchableOpacity style={styles.item} onPress={() => onSelect(item.value)}>
           <ThemedText>{item.flag} {t('lang.' + item.value)}</ThemedText>
