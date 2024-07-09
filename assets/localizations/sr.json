@@ -467,7 +467,8 @@
         "dict_search_1": "Претрагај {{param1}}",
         "dict_search_2": "Претрагај {{param1}} или {{param2}}",
         "dict_search_3": "Претрагај {{param1}}, {{param2}}, или {{param3}}",
-        "search_all_content": "Претражи сав {{language}} садржај"
+        "search_all_content": "Претражи сав {{language}} садржај",
+        "filter_by_title": "Филтрирај по наслову..."
     },
     "price": {
         "annual": "${{price}}/год",
@@ -540,7 +541,10 @@
         "your_current_plan": "Tvoj trenutni plan",
         "update_progress": "Ажурирај Напредак",
         "search": "Претрага",
-        "video_count": "Видео {{index}} од {{total}}"
+        "video_count": "Видео {{index}} од {{total}}",
+        "tv_shows": "ТВ емисије",
+        "sort_by": "СОРТИРАЈ ПО",
+        "filter_by_locale": "ФИЛТРИРАЈ ПО ЛОКАЦИЈИ"
     },
     "video": {
         "comments": "Komentari",
@@ -561,5 +565,13 @@
     "button": {
         "keep_current_time": "Задржи Тренутно Време",
         "reset_time_to_zero": "Ресетуј Време на Нулу"
+    },
+    "sort": {
+        "most_viewed": "Највише прегледано",
+        "title": "Наслов",
+        "year": "Година"
+    },
+    "filter": {
+        "all_locales": "Све локације"
     }
 }

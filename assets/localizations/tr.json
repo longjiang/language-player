@@ -466,7 +466,8 @@
         "dict_search_1": "Ara {{param1}}",
         "dict_search_2": "Ara {{param1}} veya {{param2}}",
         "dict_search_3": "Ara {{param1}}, {{param2}}, veya {{param3}}",
-        "search_all_content": "Tüm {{language}} içeriği ara"
+        "search_all_content": "Tüm {{language}} içeriği ara",
+        "filter_by_title": "Başlığa göre filtrele..."
     },
     "price": {
         "annual": "${{price}}/yıl",
@@ -539,7 +540,10 @@
         "your_current_plan": "Mevcut Planınız",
         "update_progress": "İlerlemeyi Güncelle",
         "search": "Ara",
-        "video_count": "Video {{index}} / {{total}}"
+        "video_count": "Video {{index}} / {{total}}",
+        "tv_shows": "TV Programları",
+        "sort_by": "SIRALA",
+        "filter_by_locale": "KONUMA GÖRE FİLTRELE"
     },
     "video": {
         "comments": "Yorumlar",
@@ -560,5 +564,13 @@
     "button": {
         "keep_current_time": "Mevcut Zamanı Koru",
         "reset_time_to_zero": "Zamanı Sıfırla"
+    },
+    "sort": {
+        "most_viewed": "En Çok İzlenen",
+        "title": "Başlık",
+        "year": "Yıl"
+    },
+    "filter": {
+        "all_locales": "Tüm Konumlar"
     }
 }

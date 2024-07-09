@@ -468,7 +468,8 @@
         "dict_search_1": "Hae {{param1}}",
         "dict_search_2": "Hae {{param1}} tai {{param2}}",
         "dict_search_3": "Hae {{param1}}, {{param2}}, tai {{param3}}",
-        "search_all_content": "Hae kaikesta {{language}} sisällöstä"
+        "search_all_content": "Hae kaikesta {{language}} sisällöstä",
+        "filter_by_title": "Suodata otsikon mukaan..."
     },
     "price": {
         "annual": "${{price}}/vuosi",
@@ -541,7 +542,10 @@
         "your_current_plan": "Nykyinen suunnitelmasi",
         "update_progress": "Päivitä Edistyminen",
         "search": "Haku",
-        "video_count": "Video {{index}} / {{total}}"
+        "video_count": "Video {{index}} / {{total}}",
+        "tv_shows": "TV-ohjelmat",
+        "sort_by": "LAJITTELE",
+        "filter_by_locale": "SUODATA KIELIALUEEN MUKAAN"
     },
     "video": {
         "comments": "Kommentit",
@@ -562,5 +566,13 @@
     "button": {
         "keep_current_time": "Säilytä Nykyinen Aika",
         "reset_time_to_zero": "Nollaa Aika"
+    },
+    "sort": {
+        "most_viewed": "Katsotuimmat",
+        "title": "Otsikko",
+        "year": "Vuosi"
+    },
+    "filter": {
+        "all_locales": "Kaikki kielialueet"
     }
 }

@@ -467,7 +467,8 @@
         "dict_search_1": "検索 {{param1}}",
         "dict_search_2": "検索 {{param1}}または {{param2}}",
         "dict_search_3": "検索 {{param1}}、{{param2}}または {{param3}}",
-        "search_all_content": "{{language}}のコンテンツをすべて検索"
+        "search_all_content": "{{language}}のコンテンツをすべて検索",
+        "filter_by_title": "タイトルで絞り込む..."
     },
     "price": {
         "annual": "${{price}}/年",
@@ -540,7 +541,10 @@
         "your_current_plan": "現在のプラン",
         "update_progress": "進捗状況を更新",
         "search": "検索",
-        "video_count": "動画 {{index}} / {{total}}"
+        "video_count": "動画 {{index}} / {{total}}",
+        "tv_shows": "テレビ番組",
+        "sort_by": "並び替え",
+        "filter_by_locale": "地域でフィルター"
     },
     "video": {
         "comments": "コメント",
@@ -561,5 +565,13 @@
     "button": {
         "keep_current_time": "現在の時間を保持",
         "reset_time_to_zero": "時間をゼロにリセット"
+    },
+    "sort": {
+        "most_viewed": "最も視聴された",
+        "title": "タイトル",
+        "year": "年"
+    },
+    "filter": {
+        "all_locales": "すべての地域"
     }
 }

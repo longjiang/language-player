@@ -16,12 +16,14 @@ import { ThemedRBSheet } from "@/components/ThemedRBSheet";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedRadio } from "@/components/ThemedRadio";
 import { useTVShows } from "@/contexts/TVShowsContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const TVShowsScreen = () => {
   const { shows, isLoading } = useTVShows();
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState('views');  // Changed default to 'views'
+  const [sortOption, setSortOption] = useState('views');
   const [localeFilter, setLocaleFilter] = useState('all');
+  const { t } = useLanguage();
 
   const rbSheetRef = useRef(null);
 
@@ -86,7 +88,7 @@ const TVShowsScreen = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemedScreen
-        title="TV Shows"
+        title={t('title.tv_shows')}
         onBackPress={() => router.back()}
         showFlag={false}
         onAction={handleActions}
@@ -103,7 +105,7 @@ const TVShowsScreen = () => {
               />
             )}
             <ThemedInput
-              placeholder="Filter by title..."
+              placeholder={t('placeholder.filter_by_title')}
               style={{ flex: 1, marginRight: 6 }}
               icon="magnify"
               size="small"
@@ -137,13 +139,13 @@ const TVShowsScreen = () => {
         </View>
       </ThemedScreen>
 
-      <ThemedRBSheet ref={rbSheetRef} height={400}>
-        <ThemedText type="subtitle" style={{ marginBottom: 12 }}>SORT BY</ThemedText>
-        <SortOption title="Most Viewed" option="views" />
-        <SortOption title="Title" option="title" />
-        {/* <SortOption title="Year" option="year" /> */}
+      <ThemedRBSheet ref={rbSheetRef} height={700}>
+        <ThemedText type="subtitle" style={{ marginBottom: 12 }}>{t('title.sort_by')}</ThemedText>
+        <SortOption title={t('sort.most_viewed')} option="views" />
+        <SortOption title={t('sort.title')} option="title" />
+        {/* <SortOption title={t('sort.year')} option="year" /> */}
         
-        <ThemedText type="subtitle" style={{ marginTop: 20, marginBottom: 12 }}>FILTER BY LOCALE</ThemedText>
+        <ThemedText type="subtitle" style={{ marginTop: 20, marginBottom: 12 }}>{t('title.filter_by_locale')}</ThemedText>
         {getUniqueLocales().map(locale => (
           <TouchableOpacity 
             key={locale}
@@ -151,7 +153,7 @@ const TVShowsScreen = () => {
             onPress={() => handleLocaleFilter(locale)}
           >
             <ThemedRadio
-              label={locale === "all" ? "All Locales" : locale}
+              label={locale === "all" ? t('filter.all_locales') : t('lang.' + locale)}
               isSelected={localeFilter === locale}
               onPress={() => handleLocaleFilter(locale)}
             />

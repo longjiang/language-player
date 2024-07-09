@@ -468,7 +468,8 @@
         "dict_search_1": "Pretraži {{param1}}",
         "dict_search_2": "Pretraži {{param1}} ili {{param2}}",
         "dict_search_3": "Pretraži {{param1}}, {{param2}}, ili {{param3}}",
-        "search_all_content": "Pretraži sav {{language}} sadržaj"
+        "search_all_content": "Pretraži sav {{language}} sadržaj",
+        "filter_by_title": "Filtriraj po naslovu..."
     },
     "price": {
         "annual": "${{price}}/god",
@@ -541,7 +542,10 @@
         "your_current_plan": "Tvoj trenutni plan",
         "update_progress": "Ažuriraj Napredak",
         "search": "Pretraži",
-        "video_count": "Video {{index}} od {{total}}"
+        "video_count": "Video {{index}} od {{total}}",
+        "tv_shows": "TV emisije",
+        "sort_by": "SORTIRAJ PO",
+        "filter_by_locale": "FILTRIRAJ PO LOKACIJI"
     },
     "video": {
         "comments": "Komentari",
@@ -562,5 +566,13 @@
     "button": {
         "keep_current_time": "Zadrži Trenutno Vrijeme",
         "reset_time_to_zero": "Resetiraj Vrijeme na Nulu"
+    },
+    "sort": {
+        "most_viewed": "Najgledanije",
+        "title": "Naslov",
+        "year": "Godina"
+    },
+    "filter": {
+        "all_locales": "Sve lokacije"
     }
 }

@@ -467,7 +467,8 @@
         "dict_search_1": "Sök {{param1}}",
         "dict_search_2": "Sök {{param1}} eller {{param2}}",
         "dict_search_3": "Sök {{param1}}, {{param2}}, eller {{param3}}",
-        "search_all_content": "Sök i allt {{language}} innehåll"
+        "search_all_content": "Sök i allt {{language}} innehåll",
+        "filter_by_title": "Filtrera efter titel..."
     },
     "price": {
         "annual": "${{price}}/år",
@@ -540,7 +541,10 @@
         "your_current_plan": "Din nuvarande plan",
         "update_progress": "Uppdatera Framsteg",
         "search": "Sök",
-        "video_count": "Video {{index}} av {{total}}"
+        "video_count": "Video {{index}} av {{total}}",
+        "tv_shows": "TV-program",
+        "sort_by": "SORTERA EFTER",
+        "filter_by_locale": "FILTRERA EFTER PLATS"
     },
     "video": {
         "comments": "Kommentarer",
@@ -561,5 +565,13 @@
     "button": {
         "keep_current_time": "Behåll Nuvarande Tid",
         "reset_time_to_zero": "Återställ Tid till Noll"
+    },
+    "sort": {
+        "most_viewed": "Mest sedda",
+        "title": "Titel",
+        "year": "År"
+    },
+    "filter": {
+        "all_locales": "Alla platser"
     }
 }

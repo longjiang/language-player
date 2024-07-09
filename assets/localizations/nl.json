@@ -467,7 +467,8 @@
         "dict_search_1": "Zoek {{param1}}",
         "dict_search_2": "Zoek {{param1}} of {{param2}}",
         "dict_search_3": "Zoek {{param1}}, {{param2}}, of {{param3}}",
-        "search_all_content": "Doorzoek alle {{language}} inhoud"
+        "search_all_content": "Doorzoek alle {{language}} inhoud",
+        "filter_by_title": "Filter op titel..."
     },
     "price": {
         "annual": "${{price}}/jaar",
@@ -540,7 +541,10 @@
         "your_current_plan": "Je huidige abonnement",
         "update_progress": "Voortgang Bijwerken",
         "search": "Zoeken",
-        "video_count": "Video {{index}} van {{total}}"
+        "video_count": "Video {{index}} van {{total}}",
+        "tv_shows": "TV-programma's",
+        "sort_by": "SORTEER OP",
+        "filter_by_locale": "FILTEREN OP TAAL"
     },
     "video": {
         "comments": "Reacties",
@@ -561,5 +565,13 @@
     "button": {
         "keep_current_time": "Huidige Tijd Behouden",
         "reset_time_to_zero": "Tijd op Nul Zetten"
+    },
+    "sort": {
+        "most_viewed": "Meest bekeken",
+        "title": "Titel",
+        "year": "Jaar"
+    },
+    "filter": {
+        "all_locales": "Alle talen"
     }
 }

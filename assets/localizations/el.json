@@ -468,7 +468,8 @@
         "dict_search_1": "Αναζήτηση {{param1}}",
         "dict_search_2": "Αναζήτηση {{param1}} ή {{param2}}",
         "dict_search_3": "Αναζήτηση {{param1}}, {{param2}}, ή {{param3}}",
-        "search_all_content": "Αναζήτηση σε όλο το περιεχόμενο στα {{language}}"
+        "search_all_content": "Αναζήτηση σε όλο το περιεχόμενο στα {{language}}",
+        "filter_by_title": "Φιλτράρισμα κατά τίτλο..."
     },
     "price": {
         "annual": "${{price}}/έτος",
@@ -541,7 +542,10 @@
         "your_current_plan": "Το τρέχον πλάνο σας",
         "update_progress": "Ενημέρωση Προόδου",
         "search": "Αναζήτηση",
-        "video_count": "Βίντεο {{index}} από {{total}}"
+        "video_count": "Βίντεο {{index}} από {{total}}",
+        "tv_shows": "Τηλεοπτικές Εκπομπές",
+        "sort_by": "ΤΑΞΙΝΟΜΗΣΗ ΚΑΤΑ",
+        "filter_by_locale": "ΦΙΛΤΡΟ ΑΝΑ ΤΟΠΟΘΕΣΙΑ"
     },
     "video": {
         "comments": "Σχόλια",
@@ -562,5 +566,13 @@
     "button": {
         "keep_current_time": "Διατήρηση Τρέχοντος Χρόνου",
         "reset_time_to_zero": "Μηδενισμός Χρόνου"
+    },
+    "sort": {
+        "most_viewed": "Με τις περισσότερες προβολές",
+        "title": "Τίτλος",
+        "year": "Έτος"
+    },
+    "filter": {
+        "all_locales": "Όλες οι τοποθεσίες"
     }
 }

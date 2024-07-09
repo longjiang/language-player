@@ -467,7 +467,8 @@
         "dict_search_1": "Buscar {{param1}}",
         "dict_search_2": "Buscar {{param1}} o {{param2}}",
         "dict_search_3": "Buscar {{param1}}, {{param2}}, o {{param3}}",
-        "search_all_content": "Buscar todo el contenido en {{language}}"
+        "search_all_content": "Buscar todo el contenido en {{language}}",
+        "filter_by_title": "Filtrar por título..."
     },
     "price": {
         "annual": "${{price}}/año",
@@ -540,7 +541,10 @@
         "your_current_plan": "Tu plan actual",
         "update_progress": "Actualizar Progreso",
         "search": "Buscar",
-        "video_count": "Video {{index}} de {{total}}"
+        "video_count": "Video {{index}} de {{total}}",
+        "tv_shows": "Programas de TV",
+        "sort_by": "ORDENAR POR",
+        "filter_by_locale": "FILTRAR POR UBICACIÓN"
     },
     "video": {
         "comments": "Comentarios",
@@ -561,5 +565,13 @@
     "button": {
         "keep_current_time": "Mantener Tiempo Actual",
         "reset_time_to_zero": "Reiniciar Tiempo a Cero"
+    },
+    "sort": {
+        "most_viewed": "Más vistos",
+        "title": "Título",
+        "year": "Año"
+    },
+    "filter": {
+        "all_locales": "Todas las ubicaciones"
     }
 }

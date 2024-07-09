@@ -467,7 +467,8 @@
         "dict_search_1": "Tafuta {{param1}}",
         "dict_search_2": "Tafuta {{param1}} au {{param2}}",
         "dict_search_3": "Tafuta {{param1}}, {{param2}}, au {{param3}}",
-        "search_all_content": "Tafuta maudhui yote ya {{language}}"
+        "search_all_content": "Tafuta maudhui yote ya {{language}}",
+        "filter_by_title": "Chuja kwa kichwa..."
     },
     "price": {
         "annual": "${{price}}/mwaka",
@@ -540,7 +541,10 @@
         "your_current_plan": "Mpango wako wa sasa",
         "update_progress": "Sasisha Maendeleo",
         "search": "Tafuta",
-        "video_count": "Video {{index}} kati ya {{total}}"
+        "video_count": "Video {{index}} kati ya {{total}}",
+        "tv_shows": "Vipindi vya TV",
+        "sort_by": "PANGA KWA",
+        "filter_by_locale": "CHUJA KWA ENEO"
     },
     "video": {
         "comments": "Maoni",
@@ -561,5 +565,13 @@
     "button": {
         "keep_current_time": "Weka Muda wa Sasa",
         "reset_time_to_zero": "Weka Upya Muda Kuwa Sifuri"
+    },
+    "sort": {
+        "most_viewed": "Yaliyoangaliwa zaidi",
+        "title": "Kichwa",
+        "year": "Mwaka"
+    },
+    "filter": {
+        "all_locales": "Maeneo Yote"
     }
 }

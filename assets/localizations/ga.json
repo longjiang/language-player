@@ -468,7 +468,8 @@
         "dict_search_1": "Cuardaigh {{param1}}",
         "dict_search_2": "Cuardaigh {{param1}} nó {{param2}}",
         "dict_search_3": "Cuardaigh {{param1}}, {{param2}}, nó {{param3}}",
-        "search_all_content": "Cuardaigh gach ábhar {{language}}"
+        "search_all_content": "Cuardaigh gach ábhar {{language}}",
+        "filter_by_title": "Scag de réir teidil..."
     },
     "price": {
         "annual": "${{price}}/bliain",
@@ -541,7 +542,10 @@
         "your_current_plan": "Do phlean reatha",
         "update_progress": "Nuashonraigh Dul Chun Cinn",
         "search": "Cuardaigh",
-        "video_count": "Físeán {{index}} as {{total}}"
+        "video_count": "Físeán {{index}} as {{total}}",
+        "tv_shows": "Cláir Theilifíse",
+        "sort_by": "SÓRTÁIL DE RÉIR",
+        "filter_by_locale": "SCAG DE RÉIR LOGCHAIGHDEÁIN"
     },
     "video": {
         "comments": "Tráchtanna",
@@ -562,5 +566,13 @@
     "button": {
         "keep_current_time": "Coinnigh Am Reatha",
         "reset_time_to_zero": "Athshocraigh Am go Náid"
+    },
+    "sort": {
+        "most_viewed": "Is mó a breathnaíodh",
+        "title": "Teideal",
+        "year": "Bliain"
+    },
+    "filter": {
+        "all_locales": "Gach Logchaighdeán"
     }
 }

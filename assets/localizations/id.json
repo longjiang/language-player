@@ -468,7 +468,8 @@
         "dict_search_1": "Cari {{param1}}",
         "dict_search_2": "Cari {{param1}} atau {{param2}}",
         "dict_search_3": "Cari {{param1}}, {{param2}}, atau {{param3}}",
-        "search_all_content": "Cari semua konten {{language}}"
+        "search_all_content": "Cari semua konten {{language}}",
+        "filter_by_title": "Filter berdasarkan judul..."
     },
     "price": {
         "annual": "${{price}}/tahun",
@@ -541,7 +542,10 @@
         "your_current_plan": "Rencana Anda Saat Ini",
         "update_progress": "Perbarui Kemajuan",
         "search": "Cari",
-        "video_count": "Video {{index}} dari {{total}}"
+        "video_count": "Video {{index}} dari {{total}}",
+        "tv_shows": "Acara TV",
+        "sort_by": "URUTKAN BERDASARKAN",
+        "filter_by_locale": "FILTER BERDASARKAN LOKAL"
     },
     "video": {
         "comments": "Komentar",
@@ -562,5 +566,13 @@
     "button": {
         "keep_current_time": "Pertahankan Waktu Saat Ini",
         "reset_time_to_zero": "Setel Ulang Waktu ke Nol"
+    },
+    "sort": {
+        "most_viewed": "Paling Banyak Dilihat",
+        "title": "Judul",
+        "year": "Tahun"
+    },
+    "filter": {
+        "all_locales": "Semua Lokal"
     }
 }

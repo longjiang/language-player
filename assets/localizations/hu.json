@@ -468,7 +468,8 @@
         "dict_search_1": "Keresés {{param1}}",
         "dict_search_2": "Keresés {{param1}} vagy {{param2}}",
         "dict_search_3": "Keresés {{param1}}, {{param2}}, vagy {{param3}}",
-        "search_all_content": "Keresés minden {{language}} tartalomban"
+        "search_all_content": "Keresés minden {{language}} tartalomban",
+        "filter_by_title": "Szűrés cím szerint..."
     },
     "price": {
         "annual": "${{price}}/év",
@@ -541,7 +542,10 @@
         "your_current_plan": "Jelenlegi terv",
         "update_progress": "Frissítse az Előrehaladást",
         "search": "Keresés",
-        "video_count": "{{index}}. videó a {{total}}-ból"
+        "video_count": "{{index}}. videó a {{total}}-ból",
+        "tv_shows": "TV-műsorok",
+        "sort_by": "RENDEZÉS",
+        "filter_by_locale": "SZŰRÉS TERÜLET SZERINT"
     },
     "video": {
         "comments": "Hozzászólások",
@@ -562,5 +566,13 @@
     "button": {
         "keep_current_time": "Jelenlegi Idő Megtartása",
         "reset_time_to_zero": "Idő Nullázása"
+    },
+    "sort": {
+        "most_viewed": "Legnézettebb",
+        "title": "Cím",
+        "year": "Év"
+    },
+    "filter": {
+        "all_locales": "Minden terület"
     }
 }

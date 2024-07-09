@@ -485,7 +485,8 @@
         "dict_search_1": "Soek {{param1}}",
         "dict_search_2": "Soek {{param1}} of {{param2}}",
         "dict_search_3": "Soek {{param1}}, {{param2}}, of {{param3}}",
-        "search_all_content": "Soek alle {{language}} inhoud"
+        "search_all_content": "Soek alle {{language}} inhoud",
+        "filter_by_title": "Filter volgens titel..."
     },
     "price": {
         "annual": "${{price}}/jr",
@@ -560,7 +561,10 @@
         "your_current_plan": "Jou huidige plan",
         "update_progress": "Dateer Vordering Op",
         "search": "Soek",
-        "video_count": "Video {{index}} van {{total}}"
+        "video_count": "Video {{index}} van {{total}}",
+        "tv_shows": "TV-programme",
+        "sort_by": "SORTEER VOLGENS",
+        "filter_by_locale": "FILTER VOLGENS LIGGING"
     },
     "video": {
         "comments": "Kommentaar",
@@ -577,5 +581,13 @@
         "media": "Media",
         "dictionary": "Woordeboek",
         "me": "Ek"
+    },
+    "sort": {
+        "most_viewed": "Mees bekyk",
+        "title": "Titel",
+        "year": "Jaar"
+    },
+    "filter": {
+        "all_locales": "Alle liggings"
     }
 }

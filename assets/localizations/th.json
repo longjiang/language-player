@@ -466,7 +466,8 @@
         "dict_search_1": "ค้นหา {{param1}}",
         "dict_search_2": "ค้นหา {{param1}} หรือ {{param2}}",
         "dict_search_3": "ค้นหา {{param1}}, {{param2}}, หรือ {{param3}}",
-        "search_all_content": "ค้นหาเนื้อหาภาษา{{language}}ทั้งหมด"
+        "search_all_content": "ค้นหาเนื้อหาภาษา{{language}}ทั้งหมด",
+        "filter_by_title": "กรองตามชื่อเรื่อง..."
     },
     "price": {
         "annual": "${{price}}/ปี",
@@ -539,7 +540,10 @@
         "your_current_plan": "แผนปัจจุบันของคุณ",
         "update_progress": "อัปเดตความคืบหน้า",
         "search": "ค้นหา",
-        "video_count": "วิดีโอที่ {{index}} จาก {{total}}"
+        "video_count": "วิดีโอที่ {{index}} จาก {{total}}",
+        "tv_shows": "รายการทีวี",
+        "sort_by": "เรียงตาม",
+        "filter_by_locale": "กรองตามภาษา"
     },
     "video": {
         "comments": "ความคิดเห็น",
@@ -560,5 +564,13 @@
     "button": {
         "keep_current_time": "เก็บเวลาปัจจุบัน",
         "reset_time_to_zero": "รีเซ็ตเวลาเป็นศูนย์"
+    },
+    "sort": {
+        "most_viewed": "ดูมากที่สุด",
+        "title": "ชื่อเรื่อง",
+        "year": "ปี"
+    },
+    "filter": {
+        "all_locales": "ทุกภาษา"
     }
 }

@@ -468,7 +468,8 @@
         "dict_search_1": "البحث عن {{param1}}",
         "dict_search_2": "البحث عن {{param1}} أو {{param2}}",
         "dict_search_3": "البحث عن {{param1}}، {{param2}}، أو {{param3}}",
-        "search_all_content": "البحث في كل محتوى {{language}}"
+        "search_all_content": "البحث في كل محتوى {{language}}",
+        "filter_by_title": "تصفية حسب العنوان..."
     },
     "price": {
         "annual": "${{price}}/سنة",
@@ -541,7 +542,10 @@
         "your_current_plan": "خطتك الحالية",
         "update_progress": "تحديث التقدم",
         "search": "بحث",
-        "video_count": "الفيديو {{index}} من {{total}}"
+        "video_count": "الفيديو {{index}} من {{total}}",
+        "tv_shows": "البرامج التلفزيونية",
+        "sort_by": "ترتيب حسب",
+        "filter_by_locale": "تصفية حسب الموقع"
     },
     "video": {
         "comments": "التعليقات",
@@ -562,5 +566,13 @@
     "button": {
         "keep_current_time": "الاحتفاظ بالوقت الحالي",
         "reset_time_to_zero": "إعادة تعيين الوقت إلى الصفر"
+    },
+    "sort": {
+        "most_viewed": "الأكثر مشاهدة",
+        "title": "العنوان",
+        "year": "السنة"
+    },
+    "filter": {
+        "all_locales": "جميع المواقع"
     }
 }

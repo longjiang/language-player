@@ -485,7 +485,8 @@
         "dict_search_1": "搜索{{param1}}",
         "dict_search_2": "搜索{{param1}}或{{param2}}",
         "dict_search_3": "搜索{{param1}}、{{param2}}或{{param3}}",
-        "search_all_content": "搜尋所有{{language}}內容"
+        "search_all_content": "搜尋所有{{language}}內容",
+        "filter_by_title": "按標題篩選..."
     },
     "price": {
         "annual": "${{price}}/年",
@@ -560,7 +561,10 @@
         "your_current_plan": "你目前的方案",
         "update_progress": "更新進度",
         "search": "搜尋",
-        "video_count": "影片 {{index}} 共 {{total}}"
+        "video_count": "影片 {{index}} 共 {{total}}",
+        "tv_shows": "電視節目",
+        "sort_by": "排序方式",
+        "filter_by_locale": "按地區篩選"
     },
     "video": {
         "comments": "留言",
@@ -577,5 +581,13 @@
         "media": "媒體",
         "dictionary": "字典",
         "me": "我的"
+    },
+    "sort": {
+        "most_viewed": "最多觀看",
+        "title": "標題",
+        "year": "年份"
+    },
+    "filter": {
+        "all_locales": "所有地區"
     }
 }

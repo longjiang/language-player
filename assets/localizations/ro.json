@@ -467,7 +467,8 @@
         "dict_search_1": "Căutați {{param1}}",
         "dict_search_2": "Căutați {{param1}} sau {{param2}}",
         "dict_search_3": "Căutați {{param1}}, {{param2}}, sau {{param3}}",
-        "search_all_content": "Caută în tot conținutul în {{language}}"
+        "search_all_content": "Caută în tot conținutul în {{language}}",
+        "filter_by_title": "Filtrează după titlu..."
     },
     "price": {
         "annual": "${{price}}/an",
@@ -540,7 +541,10 @@
         "your_current_plan": "Planul tău curent",
         "update_progress": "Actualizare Progres",
         "search": "Căutare",
-        "video_count": "Videoclipul {{index}} din {{total}}"
+        "video_count": "Videoclipul {{index}} din {{total}}",
+        "tv_shows": "Emisiuni TV",
+        "sort_by": "SORTARE DUPĂ",
+        "filter_by_locale": "FILTRARE DUPĂ LOCAȚIE"
     },
     "video": {
         "comments": "Comentarii",
@@ -561,5 +565,13 @@
     "button": {
         "keep_current_time": "Păstrează Timpul Curent",
         "reset_time_to_zero": "Resetează Timpul la Zero"
+    },
+    "sort": {
+        "most_viewed": "Cele mai vizionate",
+        "title": "Titlu",
+        "year": "An"
+    },
+    "filter": {
+        "all_locales": "Toate locațiile"
     }
 }

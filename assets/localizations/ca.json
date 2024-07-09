@@ -468,7 +468,8 @@
         "dict_search_1": "Cerca {{param1}}",
         "dict_search_2": "Cerca {{param1}} o {{param2}}",
         "dict_search_3": "Cerca {{param1}}, {{param2}}, o {{param3}}",
-        "search_all_content": "Cerca tot el contingut en {{language}}"
+        "search_all_content": "Cerca tot el contingut en {{language}}",
+        "filter_by_title": "Filtra per títol..."
     },
     "price": {
         "annual": "${{price}}/any",
@@ -541,7 +542,10 @@
         "your_current_plan": "El teu pla actual",
         "update_progress": "Actualitzar Progrés",
         "search": "Cerca",
-        "video_count": "Vídeo {{index}} de {{total}}"
+        "video_count": "Vídeo {{index}} de {{total}}",
+        "tv_shows": "Programes de TV",
+        "sort_by": "ORDENA PER",
+        "filter_by_locale": "FILTRA PER UBICACIÓ"
     },
     "video": {
         "comments": "Comentaris",
@@ -562,5 +566,13 @@
     "button": {
         "keep_current_time": "Mantenir Temps Actual",
         "reset_time_to_zero": "Restablir Temps a Zero"
+    },
+    "sort": {
+        "most_viewed": "Més vistos",
+        "title": "Títol",
+        "year": "Any"
+    },
+    "filter": {
+        "all_locales": "Totes les ubicacions"
     }
 }

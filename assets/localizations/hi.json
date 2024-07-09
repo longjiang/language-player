@@ -468,7 +468,8 @@
         "dict_search_1": "खोजें {{param1}}",
         "dict_search_2": "खोजें {{param1}} या {{param2}}",
         "dict_search_3": "खोजें {{param1}}, {{param2}}, या {{param3}}",
-        "search_all_content": "सभी {{language}} सामग्री खोजें"
+        "search_all_content": "सभी {{language}} सामग्री खोजें",
+        "filter_by_title": "शीर्षक से फ़िल्टर करें..."
     },
     "price": {
         "annual": "${{price}}/वर्ष",
@@ -541,7 +542,10 @@
         "your_current_plan": "आपकी वर्तमान योजना",
         "update_progress": "प्रगति अपडेट करें",
         "search": "खोज",
-        "video_count": "वीडियो {{index}} / {{total}}"
+        "video_count": "वीडियो {{index}} / {{total}}",
+        "tv_shows": "टीवी शो",
+        "sort_by": "क्रमबद्ध करें",
+        "filter_by_locale": "स्थान के अनुसार फ़िल्टर करें"
     },
     "video": {
         "comments": "टिप्पणियाँ",
@@ -562,5 +566,13 @@
     "button": {
         "keep_current_time": "वर्तमान समय रखें",
         "reset_time_to_zero": "समय को शून्य पर रीसेट करें"
+    },
+    "sort": {
+        "most_viewed": "सबसे अधिक देखा गया",
+        "title": "शीर्षक",
+        "year": "वर्ष"
+    },
+    "filter": {
+        "all_locales": "सभी स्थान"
     }
 }

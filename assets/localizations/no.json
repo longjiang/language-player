@@ -467,7 +467,8 @@
         "dict_search_1": "Søk {{param1}}",
         "dict_search_2": "Søk {{param1}} eller {{param2}}",
         "dict_search_3": "Søk {{param1}}, {{param2}}, eller {{param3}}",
-        "search_all_content": "Søk i alt {{language}} innhold"
+        "search_all_content": "Søk i alt {{language}} innhold",
+        "filter_by_title": "Filtrer etter tittel..."
     },
     "price": {
         "annual": "${{price}}/år",
@@ -540,7 +541,10 @@
         "your_current_plan": "Din nåværende plan",
         "update_progress": "Oppdater Fremgang",
         "search": "Søk",
-        "video_count": "Video {{index}} av {{total}}"
+        "video_count": "Video {{index}} av {{total}}",
+        "tv_shows": "TV-programmer",
+        "sort_by": "SORTER ETTER",
+        "filter_by_locale": "FILTRER ETTER LOKASJON"
     },
     "video": {
         "comments": "Kommentarer",
@@ -561,5 +565,13 @@
     "button": {
         "keep_current_time": "Behold Nåværende Tid",
         "reset_time_to_zero": "Nullstill Tid"
+    },
+    "sort": {
+        "most_viewed": "Mest sett",
+        "title": "Tittel",
+        "year": "År"
+    },
+    "filter": {
+        "all_locales": "Alle lokasjoner"
     }
 }

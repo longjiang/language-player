@@ -485,7 +485,8 @@
         "dict_search_1": "Search {{param1}}",
         "dict_search_2": "Search {{param1}} or {{param2}}",
         "dict_search_3": "Search {{param1}}, {{param2}}, or {{param3}}",
-        "search_all_content": "Search all {{language}} content"
+        "search_all_content": "Search all {{language}} content",
+        "filter_by_title": "Filter by title..."
     },
     "price": {
         "annual": "${{price}}/yr",
@@ -560,7 +561,10 @@
         "your_current_plan": "Your Current Plan",
         "update_progress": "Update Progress",
         "search": "Search",
-        "video_count": "Video {{index}} of {{total}}"
+        "video_count": "Video {{index}} of {{total}}",
+        "tv_shows": "TV Shows",
+        "sort_by": "SORT BY",
+        "filter_by_locale": "FILTER BY LOCALE"
     },
     "video": {
         "comments": "Comments",
@@ -577,5 +581,13 @@
         "media": "Media",
         "dictionary": "Dictionary",
         "me": "Me"
+    },
+    "sort": {
+        "most_viewed": "Most Viewed",
+        "title": "Title",
+        "year": "Year"
+    },
+    "filter": {
+        "all_locales": "All Locales"
     }
 }

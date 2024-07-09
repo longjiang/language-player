@@ -467,7 +467,8 @@
         "dict_search_1": "Искать {{param1}}",
         "dict_search_2": "Искать {{param1}} или {{param2}}",
         "dict_search_3": "Искать {{param1}}, {{param2}}, или {{param3}}",
-        "search_all_content": "Поиск по всему контенту на {{language}}"
+        "search_all_content": "Поиск по всему контенту на {{language}}",
+        "filter_by_title": "Фильтр по названию..."
     },
     "price": {
         "annual": "${{price}}/год",
@@ -540,7 +541,10 @@
         "your_current_plan": "Ваш текущий план",
         "update_progress": "Обновить Прогресс",
         "search": "Поиск",
-        "video_count": "Видео {{index}} из {{total}}"
+        "video_count": "Видео {{index}} из {{total}}",
+        "tv_shows": "Телепередачи",
+        "sort_by": "СОРТИРОВАТЬ ПО",
+        "filter_by_locale": "ФИЛЬТР ПО РЕГИОНУ"
     },
     "video": {
         "comments": "Комментарии",
@@ -561,5 +565,13 @@
     "button": {
         "keep_current_time": "Сохранить Текущее Время",
         "reset_time_to_zero": "Сбросить Время на Ноль"
+    },
+    "sort": {
+        "most_viewed": "Самые просматриваемые",
+        "title": "Название",
+        "year": "Год"
+    },
+    "filter": {
+        "all_locales": "Все регионы"
     }
 }
