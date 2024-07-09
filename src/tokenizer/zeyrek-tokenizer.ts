@@ -1,4 +1,5 @@
-import { Token, Lemma, addSpaceTokens } from '@/src/tokenizer';
+import { addSpaceTokens } from './tokenizer-utils';
+import { Token, Lemma } from '@/types/tokenTypes';
 
 interface RawEntry {
   lemma: string;

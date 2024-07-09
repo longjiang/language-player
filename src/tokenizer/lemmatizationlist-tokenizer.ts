@@ -1,8 +1,9 @@
-import { Token, Lemma } from '@/src/tokenizer';
+import { addSpaceTokens } from './tokenizer-utils';
+import { Token } from '@/types/tokenTypes';
 
 
 export const normalizeTokens = (tokens: Token[], text: string): Token[] => {
-  return tokens.map(normalizeToken);
+  return addSpaceTokens(tokens.map(normalizeToken));
 }
 
 function normalizeToken(token: any): Token {

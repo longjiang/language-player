@@ -11,7 +11,7 @@ import SpacyTokenizer from './spacy-tokenizer';
 import SimplemmaTokenizer from './simplemma-tokenizer';
 import LemmatizationListTokenizer from './lemmatizationlist-tokenizer';
 import PyidaungsuTokenizer from './pyidaungsu-tokenizer';
-import { Tokenizer } from '.';
+import { Tokenizer } from '@/types/tokenTypes';
 
 export const tokenizers: Tokenizer[] = [
   {

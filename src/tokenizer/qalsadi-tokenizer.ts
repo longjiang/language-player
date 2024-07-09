@@ -1,4 +1,5 @@
-import { Token, addSpaceTokens } from '@/src/tokenizer';
+import { addSpaceTokens } from './tokenizer-utils';
+import { Token } from '@/types/tokenTypes';
 
 
 interface Entry {

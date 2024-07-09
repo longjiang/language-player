@@ -1,6 +1,7 @@
 // @/src/tokenizer/spacy-tokenizer.ts
 
-import { Token, addSpaceTokens } from '@/src/tokenizer';
+import { addSpaceTokens } from './tokenizer-utils';
+import { Token } from '@/types/tokenTypes';
 
 export const normalizeTokens = (tokens: Token[], text: string): Token[] => {
   let normalizedTokens = tokens.map(normalizeToken);

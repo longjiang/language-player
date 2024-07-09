@@ -5,31 +5,7 @@ import { Language } from '@/src/languages';
 import LocalTokenizer from './local-tokenizer';
 import { tokenizers } from './tokenizer-list';
 import CryptoJS from 'crypto-js';
-
-export interface Lemma {
-  lemma: string;
-  pos?: string;
-  morphologies?: string[];
-}
-
-export interface Token {
-  text: string;
-  pos?: string;
-  stem?: string;
-  lemmas?: Lemma[];
-  pronunciation?: string;
-}
-
-export interface TokenizerModule {
-  normalizeTokens: (tokens: Token[], text: string) => Token[];
-}
-
-export interface Tokenizer {
-  name: string;
-  module: TokenizerModule,
-  endPoint: string;
-  languages: string[];
-}
+import { Token, Lemma, TokenizerModule } from '@/types/tokenTypes';
 
 interface CacheEntry {
   rawTokens: Token[];
@@ -43,43 +19,6 @@ export const getTokenizer = (languageCode: string): Tokenizer | null => {
     }
   }
   return null;
-}
-
-
-export const addSpaceTokens = (tokens: Token[]): Token[] => {
-  let newTokens: Token[] = [];
-  let prevWasPunctuation = false;
-  let insideQuote = false;
-
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i];
-    const word = token.text;
-
-    if (word === '"' || word === "'") {
-      if (insideQuote) {
-        newTokens.push(token);
-        insideQuote = false;
-      } else {
-        if (newTokens.length > 0 && !prevWasPunctuation) {
-          newTokens.push({ text: " ", pos: undefined, lemmas: [], pronunciation: undefined });
-        }
-        newTokens.push(token);
-        insideQuote = true;
-      }
-      prevWasPunctuation = true;
-    } else if (word === "," || word === "." || word === ":" || word === ";") {
-      newTokens.push(token);
-      prevWasPunctuation = true;
-    } else {
-      if (newTokens.length > 0 && !prevWasPunctuation && !insideQuote) {
-        newTokens.push({ text: " ", pos: undefined, lemmas: [], pronunciation: undefined });
-      }
-      newTokens.push(token);
-      prevWasPunctuation = false;
-    }
-  }
-
-  return newTokens;
 }
 
 export class TokenizerService {
@@ -133,6 +72,7 @@ export class TokenizerService {
       let rawTokens: Token[] | undefined = undefined;
       if (remoteTokenizer) {
         rawTokens = await this.fetchTokens(remoteTokenizer, text, l2Lang);
+        console.log("Remote tokens:", rawTokens);
       } else {
         rawTokens = await this.localTokenizer.tokenize(text, l2Lang);
       }

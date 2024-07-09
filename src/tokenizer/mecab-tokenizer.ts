@@ -1,4 +1,4 @@
-import { Token, Lemma } from '@/src/tokenizer';
+import { Token } from '@/types/tokenTypes';
 
 
 export const normalizeTokens = (tokens: Token[], text: string): Token[] => {
