@@ -46,10 +46,16 @@ export const TVShowsProvider: React.FC<{ children: ReactNode }> = ({ children })
     try {
       const videoEpisodes = await getVideosByL2Code(l2Lang, false, {
         filter: { tv_show: { eq: showId } },
-      });
-      setShows(prevShows => prevShows.map(show => 
-        show.id === showId ? { ...show, episodes: videoEpisodes } : show
-      ));
+      });  
+      setShows(prevShows => {
+        const newShows = prevShows.map(show => {
+          if (show.id === showId) {
+            return { ...show, episodes: videoEpisodes };
+          }
+          return show;
+        });
+        return newShows
+    });
     } catch (error) {
       console.error(`Failed to load episodes for show ${showId}:`, error);
     }

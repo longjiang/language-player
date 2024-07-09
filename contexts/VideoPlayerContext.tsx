@@ -1,6 +1,6 @@
 // @/contexts/VideoPlayerContext.tsx
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { YouTubeVideo } from "@/types/videoTypes";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +8,7 @@ import { useDictionary } from "@/contexts/DictionaryContext";
 import { addToWatchHistory } from "@/src/api/directus/user-watch-history";
 import { getBestL1Subs, getBestL2Subs, getTokenizerCacheForVideo } from "@/src/api/python/video";
 import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
+import { useTVShows } from "@/contexts/TVShowsContext";
 
 type VideoPlayerState = {
   isMini: boolean;
@@ -46,52 +47,64 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const { l1Lang, l2Lang } = useLanguage();
   const { getStoredAuthToken } = useAuth();
   const { tokenizer } = useDictionary();
+  const { loadEpisodes, shows } = useTVShows();
 
-  const closePlayer = useCallback(() => 
-    setVideoPlayerState({ isMini: false, video: undefined, queue: [] }),
-  []);
+  useEffect(() => {
+    const newVideo = videoPlayerState.video
+    if (!newVideo || !newVideo.tv_show) return;
+    const currentShow = shows.find(show => show.id === newVideo.tv_show);
+    if (currentShow && currentShow.episodes.length > 0) {
+      const currentIndex = currentShow.episodes.findIndex(ep => ep.youtube_id === newVideo.youtube_id);
+      let reorganizedQueue: YouTubeVideo[];
+      if (currentIndex !== -1) {
+        const beforeCurrent = currentShow.episodes.slice(0, currentIndex);
+        const afterCurrent = currentShow.episodes.slice(currentIndex + 1);
+        reorganizedQueue = [...afterCurrent, newVideo, ...beforeCurrent];
+      } else {
+        reorganizedQueue = [newVideo, ...currentShow.episodes];
+      }
 
-  const minimizePlayer = useCallback(() => 
-    setVideoPlayerState(prev => ({ ...prev, isMini: true })),
-  []);
+      setVideoPlayerState(prevState => ({
+        ...prevState,
+        queue: reorganizedQueue,
+      }));
+    }
+  }, [shows]);
 
-  const maximizePlayer = useCallback(() => 
-    setVideoPlayerState(prev => ({ ...prev, isMini: false })),
-  []);
+  useEffect(() => {
+  }, [videoPlayerState.queue, videoPlayerState.video]);
+
+  const closePlayer = useCallback(() => {
+    setVideoAndQueue(undefined, []);
+  }, []);
+
+  const minimizePlayer = useCallback(() => {
+    setVideoPlayerState(prev => ({ ...prev, isMini: true }));
+  }, []);
+
+  const maximizePlayer = useCallback(() => {
+    setVideoPlayerState(prev => ({ ...prev, isMini: false }));
+  }, []);
 
   const playNext = useCallback(() => {
-    setVideoPlayerState(prevState => {
-      const currentIndex = prevState.queue.findIndex(v => v.youtube_id === prevState.video?.youtube_id);
-      const nextIndex = currentIndex + 1;
-      if (nextIndex < prevState.queue.length) {
-        const nextVideo = prevState.queue[nextIndex];
-        setVideoAndQueue(nextVideo, prevState.queue);
-      }
-      return prevState;
-    });
-  }, []);
+    const currentIndex = videoPlayerState.queue.findIndex(v => v.youtube_id === videoPlayerState.video?.youtube_id);
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < videoPlayerState.queue.length) {
+      const nextVideo = videoPlayerState.queue[nextIndex];
+      setVideoAndQueue(nextVideo, videoPlayerState.queue);
+    }
+  }, [videoPlayerState]);
 
   const playPrevious = useCallback(() => {
-    setVideoPlayerState(prevState => {
-      const currentIndex = prevState.queue.findIndex(v => v.youtube_id === prevState.video?.youtube_id);
-      const prevIndex = currentIndex - 1;
-      if (prevIndex >= 0) {
-        const previousVideo = prevState.queue[prevIndex];
-        setVideoAndQueue(previousVideo, prevState.queue);
-      }
-      return prevState;
-    });
-  }, []);
+    const currentIndex = videoPlayerState.queue.findIndex(v => v.youtube_id === videoPlayerState.video?.youtube_id);
+    const prevIndex = currentIndex - 1;
+    if (prevIndex >= 0) {
+      const previousVideo = videoPlayerState.queue[prevIndex];
+      setVideoAndQueue(previousVideo, videoPlayerState.queue);
+    }
+  }, [videoPlayerState]);
 
-  const updateVideoField = useCallback((field: keyof YouTubeVideo, value: any) => {
-    setVideoPlayerState(prevState => ({
-      ...prevState,
-      video: prevState.video ? { ...prevState.video, [field]: value } : undefined
-    }));
-  }, []);
-
-  const setVideoAndQueue = useCallback(async (newVideo: YouTubeVideo, newQueue: YouTubeVideo[]) => {
-    // Set initial state
+  const setVideoAndQueue = useCallback(async (newVideo: YouTubeVideo | undefined, newQueue: YouTubeVideo[]) => {
     setVideoPlayerState(prevState => ({
       ...prevState,
       video: newVideo,
@@ -99,7 +112,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
       isMini: false,
     }));
 
-    if (!newVideo.youtube_id || !l2Lang || !l1Lang) return;
+    if (!newVideo?.youtube_id || !l2Lang || !l1Lang) return;
 
     // Fetch video details
     try {
@@ -107,11 +120,12 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         filter: { youtube_id: { eq: newVideo.youtube_id } },
       });
       if (videos?.length) {
-        for (const key in videos[0]) {
-          if (key !== 'youtube_id') {
-            updateVideoField(key as keyof YouTubeVideo, videos[0][key]);
-          }
-        }
+        const updatedVideo = { ...newVideo, ...videos[0] };
+        setVideoPlayerState(prevState => ({
+          ...prevState,
+          video: updatedVideo,
+        }));
+        newVideo = updatedVideo;
       }
     } catch (error) {
       console.error("Failed to fetch video details", error);
@@ -121,7 +135,10 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     if (!newVideo.subs_l2?.length) {
       try {
         const l2Subs = await getBestL2Subs(newVideo.youtube_id, l2Lang.code);
-        updateVideoField('subs_l2', l2Subs || []);
+        setVideoPlayerState(prevState => ({
+          ...prevState,
+          video: { ...prevState.video, subs_l2: l2Subs || [] } as YouTubeVideo,
+        }));
       } catch (error) {
         console.error("Failed to fetch L2 subs", error);
       }
@@ -131,9 +148,21 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     if (!newVideo.subs_l1?.length) {
       try {
         const l1Subs = await getBestL1Subs(newVideo.youtube_id, l1Lang.code, l2Lang.code);
-        updateVideoField('subs_l1', l1Subs || []);
+        setVideoPlayerState(prevState => ({
+          ...prevState,
+          video: { ...prevState.video, subs_l1: l1Subs || [] } as YouTubeVideo,
+        }));
       } catch (error) {
         console.error("Failed to fetch L1 subs", error);
+      }
+    }
+
+    // Fetch tv show episodes
+    if (newVideo.tv_show) {
+      try {
+        await loadEpisodes(newVideo.tv_show);
+      } catch (error) {
+        console.error("Failed to fetch tv show episodes", error);
       }
     }
 
@@ -156,7 +185,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         console.error("Failed to add video to watch history", error);
       }
     }
-  }, [l1Lang, l2Lang, getStoredAuthToken, tokenizer, updateVideoField]);
+  }, [l1Lang, l2Lang, getStoredAuthToken, tokenizer, loadEpisodes, shows]);
 
   const value = {
     videoPlayerState,
