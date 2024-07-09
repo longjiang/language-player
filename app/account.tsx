@@ -111,6 +111,15 @@ const AccountScreen = () => {
           }}
           style={{ color: secondaryTextColor }}
         />
+        <ThemedButton
+          title={t('title.test')}
+          size="small"
+          type="ghost"
+          onPress={() => {
+            router.navigate("/test");
+          }}
+          style={{ color: secondaryTextColor }}
+        />
       </View>
     </ThemedScreen>
   );
