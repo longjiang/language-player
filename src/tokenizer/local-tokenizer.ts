@@ -1,4 +1,4 @@
-import { Token, Lemma } from '@/src/tokenizer';
+import { Token, addSpaceTokens } from '@/src/tokenizer';
 import { Language } from '@/src/languages';
 
 class LocalTokenizer {
