@@ -92,11 +92,14 @@ export const MiniPlayer = () => {
             await addToWatchHistory(l2Lang.id, Number(updatedVideo.id), 0, authToken);
           }
         }
-
         // Fetch and load tokenizer cache
-        const tokenizerCache = await getTokenizerCacheForVideo(updatedVideo.id, l2Lang.code);
-        if (tokenizerCache && tokenizer) {
-          tokenizer.loadCache(tokenizerCache);
+        try {
+          const tokenizerCache = await getTokenizerCacheForVideo(updatedVideo.id, l2Lang.code);
+          if (tokenizerCache && tokenizer) {
+            tokenizer.loadCache(tokenizerCache);
+          }
+        } catch (error) {
+          console.error("Failed to fetch and load tokenizer cache", error);
         }
       } catch (error) {
         console.error("Failed to fetch video details", error);
