@@ -264,6 +264,7 @@ export const videoWithTranscriptStyles = StyleSheet.create({
   miniPlayerTextContainer: {
     justifyContent: "center",
     marginLeft: 10,
+    width: 160,
   },
 });
 
