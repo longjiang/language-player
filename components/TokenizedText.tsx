@@ -36,7 +36,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
   useEffect(() => {
     const tokenizeText = async () => {
       try {
-        const result = tokenizer ? await tokenizer.tokenize(text, l2Lang) : [] as TokenType[];
+        if (!tokenizer) {
+          throw new Error('Tokenizer is not available');
+        }
+        const result = await tokenizer.tokenize(text, l2Lang);
         setTokens(result || []);
       } catch (error) {
         console.error('Tokenization error:', error);

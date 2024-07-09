@@ -18,11 +18,11 @@ export const getTokenizer = (languageCode: string): Tokenizer | null => {
 
 export class TokenizerService {
   private static instance: TokenizerService;
-  private cache: Map<string, string>;
+  private cache: Map<string, Token[]>;
   private localTokenizer: LocalTokenizer;
 
   private constructor(wordset?: Set<string>) {
-    this.cache = new Map<string, string>();
+    this.cache = new Map<string, Token[]>();
     this.localTokenizer = new LocalTokenizer(wordset);
   }
 
@@ -57,9 +57,10 @@ export class TokenizerService {
 
     if (this.cache.has(cacheKey)) {
       const cacheEntry = this.cache.get(cacheKey)!;
+
       const normalizedTokens = remoteTokenizer
-        ? remoteTokenizer.module.normalizeTokens(cacheEntry.rawTokens, text)
-        : cacheEntry.rawTokens;
+        ? remoteTokenizer.module.normalizeTokens(cacheEntry, text)
+        : cacheEntry;
       return normalizedTokens
     }
 
