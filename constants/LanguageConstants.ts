@@ -225,3 +225,20 @@ export const HAN_LANGUAGES = [
   "yue",
   "zho",
 ];
+
+export const RTL_LANGUAGES = [
+  "ar",  // Arabic
+  "arc", // Aramaic
+  "arz", // Egyptian Arabic
+  "he",  // Hebrew
+  "hbo", // Ancient Hebrew
+  "ur",  // Urdu
+  "fa",  // Persian
+  "ckb", // Central Kurdish
+  "prs", // Dari
+  "ps",  // Pashto
+  "sd",  // Sindhi
+  "ug",  // Uyghur
+  "yi",  // Yiddish
+  "nqo"  // N'Ko
+]

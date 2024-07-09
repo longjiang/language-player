@@ -31,6 +31,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
   const { l2Lang } = useLanguage();
   if (!l2Lang) return null;
   
+  const isRTL = l2Lang.direction === 'rtl';
 
   useEffect(() => {
     const tokenizeText = async () => {
@@ -47,7 +48,11 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
   }, [text, tokenizer, l2Lang]);
 
   return (
-    <View style={[styles.container, { justifyContent: align }]}>
+    <View style={[
+      styles.container, 
+      { justifyContent: align === 'center' ? 'center' : isRTL ? 'flex-end' : 'flex-start' },
+      isRTL ? styles.rtl : styles.ltr
+    ]}>
       {tokens.map((token, index) => (
         <Token 
           key={index} 
@@ -71,5 +76,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'flex-end', // This ensures all tokens align at the bottom
+  },
+  ltr: {
+    flexDirection: 'row',
+  },
+  rtl: {
+    flexDirection: 'row-reverse',
   },
 });

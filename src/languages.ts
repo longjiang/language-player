@@ -12,6 +12,7 @@ import {
   PREFERRED_COUNTRY_CODES,
   CONTINUA_LANGUAGES,
   HAN_LANGUAGES,
+  RTL_LANGUAGES,
 } from "@/constants/LanguageConstants";
 
 export type Language = {
@@ -24,6 +25,7 @@ export type Language = {
   glottologFamilyId: string;
   glottologParentId: string;
   han: boolean;
+  direction: 'ltr' | 'rtl';
   level: string;
   lat: number;
   long: number;
@@ -73,6 +75,7 @@ class Languages {
         code,
         continua,
         han: HAN_LANGUAGES.includes(lang.iso639_3),
+        direction: RTL_LANGUAGES.includes(lang.iso639_3) ? 'rtl' : 'ltr',
         has: {
           content: LANGS_WITH_CONTENT.includes(lang.iso639_3),
           youtube: LANGS_YOUTUBE_SUPPORTS.includes(lang.iso639_3),
