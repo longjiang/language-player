@@ -439,7 +439,9 @@
         "keep_or_reset_time": "Haluatko säilyttää nykyisen aikasi vai nollata sen?",
         "paste_youtube_url": "Voit myös liittää YouTube-URL-osoitteen tuodaksesi sen.",
         "no_saved_words": "Ei tallennettuja sanoja vielä",
-        "no_more_videos": "Ei enempää videoita"
+        "no_more_videos": "Ei enempää videoita",
+        "options": "Vaihtoehdot",
+        "choose_action": "Valitse toiminto"
     },
     "option": {
         "app_store": "App Store",

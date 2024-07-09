@@ -290,7 +290,7 @@
         "clear": "साफ करें",
         "confirm_cancellation": "रद्द करने की पुष्टि करें",
         "confirm_deletion": "हटाने की पुष्टि करें",
-        "copy": "प्रतिलिपि बनाएँ",
+        "copy": "कॉपी करें",
         "keep_account": "खाता बनाए रखें",
         "keep_subscription": "सदस्यता बनाए रखें",
         "let_chatgpt_explain": "AI से पूछें",
@@ -439,7 +439,9 @@
         "keep_or_reset_time": "क्या आप अपना वर्तमान समय रखना चाहते हैं या इसे शून्य पर रीसेट करना चाहते हैं?",
         "paste_youtube_url": "आप इम्पोर्ट करने के लिए YouTube URL भी पेस्ट कर सकते हैं।",
         "no_saved_words": "अभी तक कोई शब्द सहेजा नहीं गया",
-        "no_more_videos": "और वीडियो नहीं हैं"
+        "no_more_videos": "और वीडियो नहीं हैं",
+        "options": "विकल्प",
+        "choose_action": "एक कार्रवाई चुनें"
     },
     "option": {
         "app_store": "ऐप स्टोर",

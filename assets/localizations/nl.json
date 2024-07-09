@@ -438,7 +438,9 @@
         "keep_or_reset_time": "Wil je je huidige tijd behouden of op nul zetten?",
         "paste_youtube_url": "Je kunt ook een YouTube-URL plakken om te importeren.",
         "no_saved_words": "Nog geen woorden opgeslagen",
-        "no_more_videos": "Geen video's meer"
+        "no_more_videos": "Geen video's meer",
+        "options": "Opties",
+        "choose_action": "Kies een actie"
     },
     "option": {
         "app_store": "App Store",

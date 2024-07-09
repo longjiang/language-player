@@ -300,7 +300,7 @@
         "next": "Következő",
         "register": "Regisztráció",
         "resend_code": "Kód újraküldése",
-        "speak": "Beszéljen",
+        "speak": "Beszéd",
         "start_learning": "Tanulás megkezdése",
         "tv_shows": "TV-műsorok",
         "upgrade": "Frissítés",
@@ -439,7 +439,9 @@
         "keep_or_reset_time": "Meg szeretné tartani a jelenlegi időt, vagy nullára állítja?",
         "paste_youtube_url": "Beillesztheti a YouTube URL-t is az importáláshoz.",
         "no_saved_words": "Még nincsenek mentett szavak",
-        "no_more_videos": "Nincs több videó"
+        "no_more_videos": "Nincs több videó",
+        "options": "Opciók",
+        "choose_action": "Válasszon egy műveletet"
     },
     "option": {
         "app_store": "App Store",

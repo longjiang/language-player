@@ -299,7 +299,7 @@
         "next": "次へ",
         "register": "登録",
         "resend_code": "コードを再送する",
-        "speak": "話す",
+        "speak": "読み上げ",
         "start_learning": "学習を開始する",
         "tv_shows": "テレビ番組",
         "upgrade": "アップグレード",
@@ -438,7 +438,9 @@
         "keep_or_reset_time": "現在の時間を保持しますか、それともゼロにリセットしますか？",
         "paste_youtube_url": "YouTubeのURLを貼り付けてインポートすることもできます。",
         "no_saved_words": "まだ保存された単語はありません",
-        "no_more_videos": "これ以上動画はありません"
+        "no_more_videos": "これ以上動画はありません",
+        "options": "オプション",
+        "choose_action": "アクションを選択"
     },
     "option": {
         "app_store": "App Store",

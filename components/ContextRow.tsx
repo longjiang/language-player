@@ -1,11 +1,13 @@
 // @/components/ContextRow.tsx
 
 import React from "react";
-import { View } from "react-native";
+import { View, TouchableOpacity, Platform, ActionSheetIOS, Alert, Clipboard } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
 import { ThemedButton } from "./ThemedButton";
 import { popupDictionaryHeaderStyles as styles } from "@/src/styles";
+import { speakText } from "@/src/speech";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ContextRowProps {
   context: string;
@@ -14,6 +16,42 @@ interface ContextRowProps {
 }
 
 export const ContextRow: React.FC<ContextRowProps> = ({ context, translatedContext, translation }) => {
+  const { l2Lang, t } = useLanguage();
+
+  const handleMenuPress = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [t('action.cancel'), t('action.copy'), t('action.speak')],
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            Clipboard.setString(context);
+          } else if (buttonIndex === 2) {
+            speakText(context, l2Lang.code);
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        t('msg.options'),
+        t('msg.choose_action'),
+        [
+          { text: t('action.cancel'), style: 'cancel' },
+          { 
+            text: t('action.copy'), 
+            onPress: () => Clipboard.setString(context)
+          },
+          { 
+            text: t('action.speak'), 
+            onPress: () => speakText(context, l2Lang.code)
+          },
+        ]
+      );
+    }
+  };
+
   return (
     <View style={styles.contextRow}>
       <View style={{ flex: 1 }}>
@@ -27,6 +65,7 @@ export const ContextRow: React.FC<ContextRowProps> = ({ context, translatedConte
       <ThemedButton
         type="ghost"
         trailingIcon={<Icon name="dots-vertical" size={20} />}
+        onPress={handleMenuPress}
       />
     </View>
   );

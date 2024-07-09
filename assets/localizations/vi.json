@@ -284,7 +284,7 @@
         "yue-HK": "Tiếng Quảng Đông (Hồng Kông)"
     },
     "action": {
-        "cancel": "Hủy",
+        "cancel": "Hủy bỏ",
         "clear": "Xóa",
         "confirm_cancellation": "Xác nhận hủy",
         "confirm_deletion": "Xác nhận xóa",
@@ -437,7 +437,9 @@
         "keep_or_reset_time": "Bạn muốn giữ thời gian hiện tại hay đặt lại về không?",
         "paste_youtube_url": "Bạn cũng có thể dán URL YouTube để nhập.",
         "no_saved_words": "Chưa có từ nào được lưu",
-        "no_more_videos": "Không còn video nào"
+        "no_more_videos": "Không còn video nào",
+        "options": "Tùy chọn",
+        "choose_action": "Chọn một hành động"
     },
     "option": {
         "app_store": "App Store",

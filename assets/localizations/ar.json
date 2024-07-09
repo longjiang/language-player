@@ -439,7 +439,9 @@
         "keep_or_reset_time": "هل تريد الاحتفاظ بالوقت الحالي أم إعادة تعيينه إلى الصفر؟",
         "paste_youtube_url": "يمكنك أيضًا لصق عنوان URL من YouTube للاستيراد.",
         "no_saved_words": "لم يتم حفظ أي كلمات بعد",
-        "no_more_videos": "لا مزيد من مقاطع الفيديو"
+        "no_more_videos": "لا مزيد من مقاطع الفيديو",
+        "options": "خيارات",
+        "choose_action": "اختر إجراء"
     },
     "option": {
         "app_store": "متجر التطبيقات",

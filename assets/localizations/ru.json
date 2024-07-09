@@ -438,7 +438,9 @@
         "keep_or_reset_time": "Вы хотите сохранить текущее время или сбросить его на ноль?",
         "paste_youtube_url": "Вы также можете вставить URL YouTube для импорта.",
         "no_saved_words": "Слова еще не сохранены",
-        "no_more_videos": "Больше нет видео"
+        "no_more_videos": "Больше нет видео",
+        "options": "Опции",
+        "choose_action": "Выберите действие"
     },
     "option": {
         "app_store": "App Store",

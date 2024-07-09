@@ -437,7 +437,9 @@
         "keep_or_reset_time": "Mevcut zamanınızı korumak mı yoksa sıfırlamak mı istiyorsunuz?",
         "paste_youtube_url": "İçe aktarmak için YouTube URL'sini de yapıştırabilirsiniz.",
         "no_saved_words": "Henüz kaydedilmiş kelime yok",
-        "no_more_videos": "Başka video yok"
+        "no_more_videos": "Başka video yok",
+        "options": "Seçenekler",
+        "choose_action": "Bir eylem seçin"
     },
     "option": {
         "app_store": "App Store",

@@ -289,7 +289,7 @@
         "clear": "Futa",
         "confirm_cancellation": "Thibitisha Kufutwa",
         "confirm_deletion": "Thibitisha Ufutaji",
-        "copy": "Nakala",
+        "copy": "Nakili",
         "keep_account": "Hifadhi Akaunti",
         "keep_subscription": "Hifadhi Usajili",
         "let_chatgpt_explain": "Uliza AI",
@@ -438,7 +438,9 @@
         "keep_or_reset_time": "Je, unataka kuweka muda wako wa sasa au kuuweka upya kuwa sifuri?",
         "paste_youtube_url": "Unaweza pia kubandika URL ya YouTube kuingiza.",
         "no_saved_words": "Hakuna maneno yaliyohifadhiwa bado",
-        "no_more_videos": "Hakuna video zaidi"
+        "no_more_videos": "Hakuna video zaidi",
+        "options": "Chaguo",
+        "choose_action": "Chagua kitendo"
     },
     "option": {
         "app_store": "Duka la Programu",

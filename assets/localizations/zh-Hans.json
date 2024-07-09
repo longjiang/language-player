@@ -456,7 +456,9 @@
         "keep_or_reset_time": "您想保留当前时间还是将其重置为零？",
         "paste_youtube_url": "您也可以粘贴YouTube网址以导入。",
         "no_saved_words": "尚未保存单词",
-        "no_more_videos": "没有更多视频"
+        "no_more_videos": "没有更多视频",
+        "options": "选项",
+        "choose_action": "选择一个操作"
     },
     "option": {
         "app_store": "应用商店",

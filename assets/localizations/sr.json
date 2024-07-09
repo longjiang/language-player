@@ -285,11 +285,11 @@
         "yue-HK": "Кантонски (Хонг Конг)"
     },
     "action": {
-        "cancel": "Otkaži",
+        "cancel": "Откажи",
         "clear": "Obriši",
         "confirm_cancellation": "Potvrdi otkazivanje",
         "confirm_deletion": "Potvrdi brisanje",
-        "copy": "Kopiraj",
+        "copy": "Копирај",
         "keep_account": "Zadrži nalog",
         "keep_subscription": "Zadrži pretplatu",
         "let_chatgpt_explain": "Pitaj AI",
@@ -299,7 +299,7 @@
         "next": "Sledeće",
         "register": "Registruj se",
         "resend_code": "Ponovo pošalji kod",
-        "speak": "Govori",
+        "speak": "Изговори",
         "start_learning": "Počni da učiš",
         "tv_shows": "TV emisije",
         "upgrade": "Nadogradi",
@@ -438,7 +438,9 @@
         "keep_or_reset_time": "Да ли желите да задржите тренутно време или да га ресетујете на нулу?",
         "paste_youtube_url": "Такође можете налепити YouTube URL за увоз.",
         "no_saved_words": "Још нема сачуваних речи",
-        "no_more_videos": "Нема више видеа"
+        "no_more_videos": "Нема више видеа",
+        "options": "Опције",
+        "choose_action": "Изаберите радњу"
     },
     "option": {
         "app_store": "App Store",

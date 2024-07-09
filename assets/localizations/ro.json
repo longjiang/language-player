@@ -285,11 +285,11 @@
         "yue-HK": "Cantoneză (Hong Kong)"
     },
     "action": {
-        "cancel": "Anulează",
+        "cancel": "Anulare",
         "clear": "Șterge",
         "confirm_cancellation": "Confirmă anularea",
         "confirm_deletion": "Confirmă ștergerea",
-        "copy": "Copiază",
+        "copy": "Copiere",
         "keep_account": "Păstrează contul",
         "keep_subscription": "Păstrează abonamentul",
         "let_chatgpt_explain": "Întreabă AI",
@@ -299,7 +299,7 @@
         "next": "Următorul",
         "register": "Înregistrare",
         "resend_code": "Retrimite codul",
-        "speak": "Vorbește",
+        "speak": "Vorbiți",
         "start_learning": "Începe să înveți",
         "tv_shows": "Programe TV",
         "upgrade": "Upgrade",
@@ -438,7 +438,9 @@
         "keep_or_reset_time": "Doriți să păstrați timpul curent sau să îl resetați la zero?",
         "paste_youtube_url": "De asemenea, puteți lipi URL-ul YouTube pentru a importa.",
         "no_saved_words": "Nu sunt cuvinte salvate încă",
-        "no_more_videos": "Nu mai sunt videoclipuri"
+        "no_more_videos": "Nu mai sunt videoclipuri",
+        "options": "Opțiuni",
+        "choose_action": "Alegeți o acțiune"
     },
     "option": {
         "app_store": "App Store",

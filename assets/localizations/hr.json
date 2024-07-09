@@ -300,7 +300,7 @@
         "next": "Sljedeće",
         "register": "Registracija",
         "resend_code": "Ponovno pošalji kod",
-        "speak": "Govori",
+        "speak": "Izgovori",
         "start_learning": "Započni učenje",
         "tv_shows": "TV emisije",
         "upgrade": "Nadogradi",
@@ -439,7 +439,9 @@
         "keep_or_reset_time": "Želite li zadržati trenutno vrijeme ili ga resetirati na nulu?",
         "paste_youtube_url": "Možete zalijepiti i YouTube URL za uvoz.",
         "no_saved_words": "Još nema spremljenih riječi",
-        "no_more_videos": "Nema više videa"
+        "no_more_videos": "Nema više videa",
+        "options": "Opcije",
+        "choose_action": "Odaberite radnju"
     },
     "option": {
         "app_store": "App Store",

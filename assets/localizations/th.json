@@ -437,7 +437,9 @@
         "keep_or_reset_time": "คุณต้องการเก็บเวลาปัจจุบันไว้หรือรีเซ็ตเป็นศูนย์?",
         "paste_youtube_url": "คุณยังสามารถวาง URL ของ YouTube เพื่อนำเข้าได้",
         "no_saved_words": "ยังไม่มีคำที่บันทึกไว้",
-        "no_more_videos": "ไม่มีวิดีโอเพิ่มเติม"
+        "no_more_videos": "ไม่มีวิดีโอเพิ่มเติม",
+        "options": "ตัวเลือก",
+        "choose_action": "เลือกการดำเนินการ"
     },
     "option": {
         "app_store": "App Store",

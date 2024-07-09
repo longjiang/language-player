@@ -456,7 +456,9 @@
         "keep_or_reset_time": "Do you want to keep your current time or reset it to zero?",
         "paste_youtube_url": "You can also paste in YouTube URL to import.",
         "no_saved_words": "No words saved yet",
-        "no_more_videos": "No more videos"
+        "no_more_videos": "No more videos",
+        "options": "Options",
+        "choose_action": "Choose an action"
     },
     "option": {
         "app_store": "App Store",

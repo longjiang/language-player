@@ -439,7 +439,9 @@
         "keep_or_reset_time": "An mian leat d'am reatha a choinneáil nó é a athshocrú go náid?",
         "paste_youtube_url": "Is féidir leat URL YouTube a ghreamú freisin chun iompórtáil.",
         "no_saved_words": "Níl aon fhocail sábháilte fós",
-        "no_more_videos": "Níl a thuilleadh físeán"
+        "no_more_videos": "Níl a thuilleadh físeán",
+        "options": "Roghanna",
+        "choose_action": "Roghnaigh gníomh"
     },
     "option": {
         "app_store": "App Store",

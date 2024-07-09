@@ -438,7 +438,9 @@
         "keep_or_reset_time": "Czy chcesz zachować bieżący czas czy zresetować go do zera?",
         "paste_youtube_url": "Możesz również wkleić adres URL YouTube, aby zaimportować.",
         "no_saved_words": "Brak zapisanych słów",
-        "no_more_videos": "Brak więcej filmów"
+        "no_more_videos": "Brak więcej filmów",
+        "options": "Opcje",
+        "choose_action": "Wybierz akcję"
     },
     "option": {
         "app_store": "App Store",

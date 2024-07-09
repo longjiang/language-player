@@ -300,7 +300,7 @@
         "next": "下一步",
         "register": "註冊",
         "resend_code": "重發驗證碼",
-        "speak": "唸出來",
+        "speak": "朗讀",
         "start_learning": "開始學習囉",
         "tv_shows": "電視節目",
         "upgrade": "升級",
@@ -456,7 +456,9 @@
         "keep_or_reset_time": "您要保留目前的時間還是重設為零？",
         "paste_youtube_url": "您也可以貼上YouTube網址來匯入。",
         "no_saved_words": "尚未儲存單詞",
-        "no_more_videos": "沒有更多視頻"
+        "no_more_videos": "沒有更多視頻",
+        "options": "選項",
+        "choose_action": "選擇一個操作"
     },
     "option": {
         "app_store": "App Store",

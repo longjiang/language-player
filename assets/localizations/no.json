@@ -438,7 +438,9 @@
         "keep_or_reset_time": "Vil du beholde gjeldende tid eller nullstille den?",
         "paste_youtube_url": "Du kan også lime inn YouTube-URL for å importere.",
         "no_saved_words": "Ingen ord lagret ennå",
-        "no_more_videos": "Ingen flere videoer"
+        "no_more_videos": "Ingen flere videoer",
+        "options": "Alternativer",
+        "choose_action": "Velg en handling"
     },
     "option": {
         "app_store": "App Store",

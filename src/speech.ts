@@ -1,3 +1,5 @@
+// @/src/speech.ts
+
 import * as Speech from 'expo-speech';
 
 export const speakText = async (text: string, language: string) => {
