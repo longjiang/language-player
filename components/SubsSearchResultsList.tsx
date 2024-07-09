@@ -1,3 +1,5 @@
+// @/src/components/SubsSearchResultsList.tsx
+
 import React, { useState, useEffect } from "react";
 import { StyleSheet, TouchableOpacity, View, ActionSheetIOS, Platform } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
@@ -53,7 +55,7 @@ export const SubsSearchResultsList = ({
 }: {
   results: any[];
   term: string;
-  onSelect: (index: number) => void;
+  onSelect: (item: any) => void;
 }) => {
   const [filteredResults, setFilteredResults] = useState(results);
   const [searchTerm, setSearchTerm] = useState(term);
@@ -133,8 +135,8 @@ export const SubsSearchResultsList = ({
     setFilteredResults(filtered);
   };
 
-  const handleSubtitlePress = (index: number) => {
-    onSelect(index);
+  const handleSubtitlePress = (item: any) => {
+    onSelect(item);
   };
 
   const handleSearchChange = (text: string) => {
@@ -197,7 +199,7 @@ export const SubsSearchResultsList = ({
           renderItem={({ item, index }) => (
             <TouchableOpacity
               style={styles.item}
-              onPress={() => handleSubtitlePress(index)}
+              onPress={() => handleSubtitlePress(item)}
             >
               <Image
                 source={{

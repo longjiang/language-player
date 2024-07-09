@@ -57,8 +57,10 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
     setShowProModal(false);
   }, []);
 
-  const onSelect = useCallback(async (index: number) => {
+  const onSelect = useCallback(async (item: any) => {
     refRBSheet.current.close();
+    const index = playlist.findIndex(result => result.youtube_id === item.youtube_id);
+
     if (!isProUser() && index >= MAX_FREE_SUBS_SEARCH_RESULTS) {
       await timeout(1000);
       setShowProModal(true);
