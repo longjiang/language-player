@@ -10,7 +10,7 @@ import { PopupDictionaryModal } from "./PopupDictionaryModal";
 import { Token as TokenType } from "@/src/tokenizer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDictionary } from "@/contexts/DictionaryContext";
-import { addFurigana, Segment } from "@/src/furigana";
+import { matchHiragana, Segment } from "@/src/furigana";
 import { useUserData } from "@/contexts/UserDataContext";
 import { DictionaryEntry } from "@/src/dictionary-types";
 import { LevelColors } from "@/constants/Colors";
@@ -81,7 +81,8 @@ export const Token: React.FC<{
 
   const displayContent = useMemo(() => {
     if (l2Lang.code === 'ja') {
-      return addFurigana({ text: token.text, pronunciation: token.pronunciation });
+      const segments = matchHiragana({ text: token.text, pronunciation: token.pronunciation || ''});
+      return segments;
     } else if (convert && l2Lang.han && token.text) {
       return [{ text: convert(token.text), pronunciation: token.pronunciation }];
     }

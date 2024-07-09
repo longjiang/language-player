@@ -68,7 +68,9 @@ function createRegex(segments: Segment[]): RegExp {
   return new RegExp(regexStr);
 }
 
-export function addFurigana({ text, pronunciation }: { text: string; pronunciation: string }): { text: string; pronunciation: string }[] {
+// Pronunciation will be auto-converted to hiragana
+export function matchHiragana({ text, pronunciation }: { text: string; pronunciation: string }): { text: string; pronunciation: string }[] {
+  if (!isHiragana(pronunciation[0])) pronunciation = convertKatakanaToHiragana(pronunciation);
   let segments = segmentKanjisAndNonKanjis(text);
   let readings = pronunciation.match(createRegex(segments));
   if (readings) {
@@ -77,18 +79,18 @@ export function addFurigana({ text, pronunciation }: { text: string; pronunciati
       let segment = segments[index];
       segment.pronunciation = readings[index];
     }
-    return segments.map(segment => ({ text: segment.text, pronunciation: convertKatakanaToHiragana(segment.pronunciation) }));
+    return segments
   } else {
     return [{ text, pronunciation }];
   }
 }
 
 function test(): void {
-  console.log(addFurigana({ text: '乗り遅れる', pronunciation: 'のりおくれる' }));
-  console.log(addFurigana({ text: '朝ご飯', pronunciation: 'あさごはん' }));
-  console.log(addFurigana({ text: '食べ物', pronunciation: 'たべもの' }));
-  console.log(addFurigana({ text: 'お金', pronunciation: 'おかね' }));
-  console.log(addFurigana({ text: 'お弁当', pronunciation: 'おべんとう' }));
-  console.log(addFurigana({ text: '食パン', pronunciation: 'しょくぱん' }));
-  console.log(addFurigana({ text: '占める', pronunciation: 'しめる' }));
+  console.log(matchHiragana({ text: '乗り遅れる', pronunciation: 'のりおくれる' })); // [{"pronunciation": "の", "text": "乗"}, {"pronunciation": "り", "text": "り"}, {"pronunciation": "おく", "text": "遅"}, {"pronunciation": "れる", "text": "れる"}]
+  console.log(matchHiragana({ text: '朝ご飯', pronunciation: 'あさごはん' })); // [{"pronunciation": "あさ", "text": "朝"}, {"pronunciation": "ご", "text": "ご"}, {"pronunciation": "はん", "text": "飯"}]
+  console.log(matchHiragana({ text: '食べ物', pronunciation: 'たべもの' })); // [{"pronunciation": "た", "text": "食"}, {"pronunciation": "べ", "text": "べ"}, {"pronunciation": "もの", "text": "物"}]
+  console.log(matchHiragana({ text: 'お金', pronunciation: 'おかね' })); // [{"pronunciation": "お", "text": "お"}, {"pronunciation": "かね", "text": "金"}]
+  console.log(matchHiragana({ text: 'お弁当', pronunciation: 'おべんとう' })); // [{"pronunciation": "お", "text": "お"}, {"pronunciation": "べんとう", "text": "弁当"}]
+  console.log(matchHiragana({ text: '食パン', pronunciation: 'しょくぱん' })); // [{"pronunciation": "しょく", "text": "食"}, {"pronunciation": "ぱん", "text": "パン"}]
+  console.log(matchHiragana({ text: '占める', pronunciation: 'しめる' })); // [{"pronunciation": "し", "text": "占"}, {"pronunciation": "める", "text": "める"}]
 }
