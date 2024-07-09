@@ -1,5 +1,6 @@
 // @/app/search.tsx
-import React, { useState } from "react";
+// @/app/search.tsx
+import React, { useState, useCallback, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedButton, ThemedScreen, ThemedInput, ThemedText } from "@/components";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -21,29 +22,24 @@ const SearchScreen = () => {
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const { t, l2Lang } = useLanguage();
   const { setVideoAndQueue } = useVideoPlayer();
+
   if (!l2Lang) return null;
 
-  const handleInputChange = (text: string) => {
+  const extractYouTubeID = useCallback((url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  }, []);
+
+  const handleInputChange = useCallback((text: string) => {
     setSearchQuery(text);
     const youtubeId = extractYouTubeID(text);
     if (youtubeId) {
       setVideoAndQueue({ youtube_id: youtubeId }, []);
     }
-  };
+  }, [setVideoAndQueue, extractYouTubeID]);
 
-  const extractYouTubeID = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-  };
-
-  const handleSearch = () => {
-    if (searchQuery) {
-      loadItems();
-    }
-  };
-
-  const loadItems = async () => {
+  const loadItems = useCallback(async () => {
     setItems([]);
     setIsLoading(true);
     try {
@@ -55,37 +51,45 @@ const SearchScreen = () => {
       console.error("Failed to load items:", error);
     }
     setIsLoading(false);
-  };
+  }, [l2Lang, searchQuery]);
 
-  const l2Name = t('lang.' + l2Lang.code);
+  const handleSearch = useCallback(() => {
+    if (searchQuery) {
+      loadItems();
+    }
+  }, [searchQuery, loadItems]);
 
-  const ListHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.headerLeft}>
-        <ThemedButton
-          type="ghost"
-          size="medium"
-          trailingIcon={<Icon name="chevron-left" />}
-          onPress={() => router.navigate("/(tabs)/(media)")}
-        />
-        <ThemedInput
-          placeholder={t('placeholder.search_all_content', { language: l2Name })}
-          style={{ flex: 1, marginRight: 8 }}
-          size="small"
-          icon="magnify"
-          onChangeText={handleInputChange}
-          onSubmitEditing={handleSearch}
-          value={searchQuery}
-        />
-        <ThemedButton
-          type="ghost"
-          size="medium"
-          icon="magnify"
-          onPress={handleSearch}
-        />
+  const l2Name = useMemo(() => t('lang.' + l2Lang.code), [t, l2Lang]);
+
+  const ListHeader = useMemo(() => {
+    return () => (
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <ThemedButton
+            type="ghost"
+            size="medium"
+            trailingIcon={<Icon name="chevron-left" />}
+            onPress={() => router.navigate("/(tabs)/(media)")}
+          />
+          <ThemedInput
+            placeholder={t('placeholder.search_all_content', { language: l2Name })}
+            style={{ flex: 1, marginRight: 8 }}
+            size="small"
+            icon="magnify"
+            onChangeText={handleInputChange}
+            onSubmitEditing={handleSearch}
+            value={searchQuery}
+          />
+          <ThemedButton
+            type="ghost"
+            size="medium"
+            icon="magnify"
+            onPress={handleSearch}
+          />
+        </View>
       </View>
-    </View>
-  );
+    );
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
