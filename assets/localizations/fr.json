@@ -438,7 +438,8 @@
         "with_pro_you_can": "Avec Pro, vous pouvez :",
         "keep_or_reset_time": "Voulez-vous garder votre temps actuel ou le remettre à zéro ?",
         "paste_youtube_url": "Vous pouvez également coller l'URL YouTube pour importer.",
-        "no_saved_words": "Aucun mot enregistré pour le moment"
+        "no_saved_words": "Aucun mot enregistré pour le moment",
+        "no_more_videos": "Plus de vidéos"
     },
     "option": {
         "app_store": "App Store",

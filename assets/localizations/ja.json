@@ -437,7 +437,8 @@
         "with_pro_you_can": "Proでは、次のことができます:",
         "keep_or_reset_time": "現在の時間を保持しますか、それともゼロにリセットしますか？",
         "paste_youtube_url": "YouTubeのURLを貼り付けてインポートすることもできます。",
-        "no_saved_words": "まだ保存された単語はありません"
+        "no_saved_words": "まだ保存された単語はありません",
+        "no_more_videos": "これ以上動画はありません"
     },
     "option": {
         "app_store": "App Store",

@@ -1,17 +1,27 @@
 // @/components/YouTubeVideoList.tsx
-import React, { ReactElement, ReactNode } from "react";
-import { FlatList, View, StyleSheet, ViewStyle } from "react-native";
+
+import React, { ReactElement } from "react";
+import { FlatList, View, ViewStyle } from "react-native";
 import { YouTubeVideoCard } from '@/components/YouTubeVideoCard';
 import { useThemeColor } from "@/hooks/useThemeColor";
 
-
 interface YouTubeVideoListProps {
   videos: Array<any>;
-  header?: ReactElement | null;  // Adjusted type
+  header?: ReactElement | null;
   style?: ViewStyle;
+  onEndReached?: () => void;
+  onEndReachedThreshold?: number;
+  ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
-export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({ videos, header, style = {} }) => {
+export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
+  videos,
+  header,
+  style = {},
+  onEndReached,
+  onEndReachedThreshold,
+  ListFooterComponent
+}) => {
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
   const renderVideoCard = ({ item, index }: { item: any, index: number }) => (
@@ -25,8 +35,11 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({ videos, head
       style={{ backgroundColor: primaryBackgroundColor }}
       data={videos}
       renderItem={renderVideoCard}
-      ListHeaderComponent={header} // Directly passed; will not render if undefined
+      ListHeaderComponent={header}
       keyExtractor={(item, index) => index.toString()}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={onEndReachedThreshold}
+      ListFooterComponent={ListFooterComponent}
     />
   );
 };

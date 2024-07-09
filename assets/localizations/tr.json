@@ -436,7 +436,8 @@
         "with_pro_you_can": "Pro ile şunları yapabilirsiniz:",
         "keep_or_reset_time": "Mevcut zamanınızı korumak mı yoksa sıfırlamak mı istiyorsunuz?",
         "paste_youtube_url": "İçe aktarmak için YouTube URL'sini de yapıştırabilirsiniz.",
-        "no_saved_words": "Henüz kaydedilmiş kelime yok"
+        "no_saved_words": "Henüz kaydedilmiş kelime yok",
+        "no_more_videos": "Başka video yok"
     },
     "option": {
         "app_store": "App Store",

@@ -437,7 +437,8 @@
         "with_pro_you_can": "Cu Pro, poți:",
         "keep_or_reset_time": "Doriți să păstrați timpul curent sau să îl resetați la zero?",
         "paste_youtube_url": "De asemenea, puteți lipi URL-ul YouTube pentru a importa.",
-        "no_saved_words": "Nu sunt cuvinte salvate încă"
+        "no_saved_words": "Nu sunt cuvinte salvate încă",
+        "no_more_videos": "Nu mai sunt videoclipuri"
     },
     "option": {
         "app_store": "App Store",

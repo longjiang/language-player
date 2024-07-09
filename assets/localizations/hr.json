@@ -438,7 +438,8 @@
         "with_pro_you_can": "S Pro verzijom možeš:",
         "keep_or_reset_time": "Želite li zadržati trenutno vrijeme ili ga resetirati na nulu?",
         "paste_youtube_url": "Možete zalijepiti i YouTube URL za uvoz.",
-        "no_saved_words": "Još nema spremljenih riječi"
+        "no_saved_words": "Još nema spremljenih riječi",
+        "no_more_videos": "Nema više videa"
     },
     "option": {
         "app_store": "App Store",

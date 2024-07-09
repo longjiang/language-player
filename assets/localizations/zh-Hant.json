@@ -455,7 +455,8 @@
         "with_pro_you_can": "用專業版，你就可以：",
         "keep_or_reset_time": "您要保留目前的時間還是重設為零？",
         "paste_youtube_url": "您也可以貼上YouTube網址來匯入。",
-        "no_saved_words": "尚未儲存單詞"
+        "no_saved_words": "尚未儲存單詞",
+        "no_more_videos": "沒有更多視頻"
     },
     "option": {
         "app_store": "App Store",

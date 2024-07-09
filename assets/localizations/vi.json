@@ -436,7 +436,8 @@
         "with_pro_you_can": "Với Pro, bạn có thể:",
         "keep_or_reset_time": "Bạn muốn giữ thời gian hiện tại hay đặt lại về không?",
         "paste_youtube_url": "Bạn cũng có thể dán URL YouTube để nhập.",
-        "no_saved_words": "Chưa có từ nào được lưu"
+        "no_saved_words": "Chưa có từ nào được lưu",
+        "no_more_videos": "Không còn video nào"
     },
     "option": {
         "app_store": "App Store",

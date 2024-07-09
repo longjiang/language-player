@@ -437,7 +437,8 @@
         "with_pro_you_can": "Med Pro kan du:",
         "keep_or_reset_time": "Vill du behålla din nuvarande tid eller återställa den till noll?",
         "paste_youtube_url": "Du kan också klistra in YouTube-URL för att importera.",
-        "no_saved_words": "Inga ord sparade än"
+        "no_saved_words": "Inga ord sparade än",
+        "no_more_videos": "Inga fler videor"
     },
     "option": {
         "app_store": "App Store",

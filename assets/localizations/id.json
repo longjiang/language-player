@@ -438,7 +438,8 @@
         "with_pro_you_can": "Dengan Pro, Anda dapat:",
         "keep_or_reset_time": "Apakah Anda ingin mempertahankan waktu saat ini atau mengatur ulang ke nol?",
         "paste_youtube_url": "Anda juga dapat menempelkan URL YouTube untuk mengimpor.",
-        "no_saved_words": "Belum ada kata yang disimpan"
+        "no_saved_words": "Belum ada kata yang disimpan",
+        "no_more_videos": "Tidak ada video lagi"
     },
     "option": {
         "app_store": "App Store",

@@ -1,7 +1,7 @@
 // @/app/(tabs)/(media)/index.tsx
 
 import React, { useState, useEffect, useMemo } from "react";
-import { SafeAreaView, Dimensions, View, Image, TouchableOpacity } from "react-native";
+import { SafeAreaView, Dimensions, View, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { VideoHero } from "@/components/VideoHero";
@@ -16,6 +16,7 @@ import { useUserData } from "@/contexts/UserDataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTVShows } from "@/contexts/TVShowsContext";
 import { mediaHomeScreenStyles as styles } from "@/src/styles";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 const MediaHomeScreen = () => {
   const { languages, l2Lang, t } = useLanguage();
@@ -24,35 +25,29 @@ const MediaHomeScreen = () => {
   const { shows, isLoading: isLoadingShows } = useTVShows();
   const [items, setItems] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const semanticSuccessColor = useThemeColor({}, 'semanticSuccess');
 
-  useEffect(() => {
-    if (l2Lang && progress[l2Lang.code]) {
-      loadItems();
-    }
-  }, [lastSignificantChange, l2Lang, progress]);
-
-  const loadItems = async () => {
-    setItems([]);
+  const loadItems = async (pageToLoad: number) => {
+    if (isLoading || !hasMore) return;
     setIsLoading(true);
     try {
       const userInfo = await getStoredUserInfo();
       if (!userInfo) throw new Error(t('error.user_info_not_found'));
 
       const userId = Number(userInfo.id);
-
       const langCode = l2Lang.code;
-
       const l2Progress = progress[langCode];
       if (!l2Progress) {
         throw new Error('Progress data not available');
       }
 
       const level = Number(l2Progress.level);
-
       const preferredCategories = [];
-      const excludeIds = [];
+      const excludeIds = items.map(item => item.id);
       const madeForKids = 0;
-      const limit = 50;
+      const limit = 20;
 
       const fetchedItems = await recommendVideos(
         userId,
@@ -64,11 +59,31 @@ const MediaHomeScreen = () => {
         limit
       );
 
-      setItems(fetchedItems);
+      if (fetchedItems.length === 0) {
+        setHasMore(false);
+      } else {
+        setItems(prevItems => [...prevItems, ...fetchedItems]);
+        setPage(pageToLoad);
+      }
     } catch (error) {
       console.error(t('error.failed_to_load_items'), error);
     }
     setIsLoading(false);
+  };
+
+  useEffect(() => {
+    if (l2Lang && progress[l2Lang.code]) {
+      setItems([]);
+      setPage(1);
+      setHasMore(true);
+      loadItems(1);
+    }
+  }, [lastSignificantChange, l2Lang, progress]);
+
+  const handleLoadMore = () => {
+    if (!isLoading && hasMore) {
+      loadItems(page + 1);
+    }
   };
 
   const videoHeight = 300;
@@ -136,12 +151,29 @@ const MediaHomeScreen = () => {
     </View>
   );
 
-  if (isLoading || isLoadingShows) {
-    return <View style={styles.loadingContainer}><ThemedText>Loading...</ThemedText></View>;
+  const footerComponent = () => {
+    if (isLoading) {
+      return <ActivityIndicator size="large" color={semanticSuccessColor} />;
+    }
+    if (!hasMore) {
+      return <ThemedText type="default">{ t('msg.no_more_videos') }</ThemedText>;
+    }
+    return null;
+  };
+
+  if (isLoadingShows) {
+    return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={semanticSuccessColor} />;</View>;
   }
 
   return (
-    <YouTubeVideoList videos={items} header={headerComponent} style={{ marginHorizontal: 26, marginBottom: 26 }} />
+    <YouTubeVideoList
+      videos={items}
+      header={headerComponent}
+      style={{ marginHorizontal: 26, marginBottom: 26 }}
+      onEndReached={handleLoadMore}
+      onEndReachedThreshold={0.1}
+      ListFooterComponent={footerComponent}
+    />
   );
 };
 

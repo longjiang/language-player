@@ -438,7 +438,8 @@
         "with_pro_you_can": "Pro-versiolla voit:",
         "keep_or_reset_time": "Haluatko säilyttää nykyisen aikasi vai nollata sen?",
         "paste_youtube_url": "Voit myös liittää YouTube-URL-osoitteen tuodaksesi sen.",
-        "no_saved_words": "Ei tallennettuja sanoja vielä"
+        "no_saved_words": "Ei tallennettuja sanoja vielä",
+        "no_more_videos": "Ei enempää videoita"
     },
     "option": {
         "app_store": "App Store",
