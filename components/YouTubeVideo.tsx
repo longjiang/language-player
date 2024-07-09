@@ -32,6 +32,7 @@ export const YouTubeVideo: React.FC<{
   let updatePlaybackState: (state: PLAYER_STATES) => void;
   let updateCurrentTime: (time: number, isSeeking?: boolean) => void;
   let updateDuration: (duration: number) => void;
+  let updatePlayVideo: (isPlaying: boolean) => void;
 
   // Determine if I'm in the VideoWithTranscriptProvider with try/catch
   // If in the provider, get the playbackState currentTime values, and the updatePlaybackState, and updateCurrentTime functions
@@ -44,57 +45,57 @@ export const YouTubeVideo: React.FC<{
     updateCurrentTime = context.updateCurrentTime;
     updateDuration = context.updateDuration;
     playVideo = context.playVideo;
+    updatePlayVideo = context.updatePlayVideo;
     inVideoWithTranscriptProvider = true;
     seekTime = context.seekTime;
   } catch (error) {
     // not in the VideoWithTranscriptProvider
   }
 
-  const onChangeState = (newState: PLAYER_STATES) => {
+  const onChangeState = useCallback((newState: PLAYER_STATES) => {
     if (!inVideoWithTranscriptProvider) return;
-    if (newState !== playbackState) updatePlaybackState(newState);
-  };
+    if (newState !== playbackState) {
+      updatePlaybackState(newState);
+      // Update play state when video starts playing or pauses
+      if (newState === PLAYER_STATES.PLAYING) {
+        updatePlayVideo(true);
+      } else if (newState === PLAYER_STATES.PAUSED) {
+        updatePlayVideo(false);
+      }
+    }
+  }, [inVideoWithTranscriptProvider, playbackState, updatePlaybackState, updatePlayVideo]);
 
-  // Assuming playerRef and other state variables are defined here
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null); // To store the interval ID
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  
   if (inVideoWithTranscriptProvider) {
-    // Use the useEffect hook to run the interval, so we don't accidentally set up multiple intervals
     useEffect(() => {
-      // Clear any existing interval
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
 
-      // Set the interval and store its ID
       intervalRef.current = setInterval(async () => {
         if (!playerRef.current) return;
         if (!inVideoWithTranscriptProvider) return;
         const newTime = await playerRef.current.getCurrentTime();
         if (playbackState === PLAYER_STATES.PLAYING && newTime !== currentTime) {
-          // console.log("NT ", newTime);
-          updateCurrentTime(newTime); // Use newTime to reflect the updated value
+          updateCurrentTime(newTime);
         }
       }, 200);
       
       if (seekTime && playerRef.current?.seekTo) {
-        // Only seek if the currentTime is different from the current time of the video by 100ms
-        playerRef.current.seekTo(currentTime, true); // The second allowSeekAhead parameter determines whether the player will make a new request to the server if the seconds parameter specifies a time outside of the currently buffered video data.
+        playerRef.current.seekTo(currentTime, true);
         resetSeekTime();
       }
 
-      // Cleanup function to clear the interval
       return () => {
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
-          intervalRef.current = null; // Reset interval reference to null after clearing it
+          intervalRef.current = null;
         }
       };
-    }, [playbackState, seekTime, inVideoWithTranscriptProvider, currentTime, updateCurrentTime]); // Added necessary dependencies
+    }, [playbackState, seekTime, inVideoWithTranscriptProvider, currentTime, updateCurrentTime]);
   }
 
-  // Update the duration of the video once it's loaded
   const onReady = async () => {
     if (!inVideoWithTranscriptProvider) return;
     if (!playerRef.current) return;
@@ -105,8 +106,8 @@ export const YouTubeVideo: React.FC<{
   return (
     <YoutubePlayer
       videoId={youtubeId}
-      play={playVideo} // Control playback of video with true/false
-      mute={mute} // Control sound
+      play={playVideo}
+      mute={mute}
       height={height}
       ref={playerRef}
       onReady={onReady}
@@ -116,16 +117,15 @@ export const YouTubeVideo: React.FC<{
         allowsInlineMediaPlayback: true,
       }}
       webViewStyle={{
-        opacity: 0.99, // This is a known trick to prevent a black screen on initial render in some Android devices
+        opacity: 0.99,
       }}
-      // Additional player options can be set here
       initialPlayerParams={{
-        start: Math.floor(startTime), // Must be integer otherwise won't work
-        cc_lang_pref: "us", // Closed captions language
+        start: Math.floor(startTime),
+        cc_lang_pref: "us",
         showClosedCaptions: true,
-        controls, // Use the controls prop to toggle visibility
-        rel: false, // This ensures that related videos are not shown from other channels.
-        modestbranding: true, // This limits YouTube branding as much as possible
+        controls,
+        rel: false,
+        modestbranding: true,
       }}
       key={`${youtubeId}-${startTime}`}
     />

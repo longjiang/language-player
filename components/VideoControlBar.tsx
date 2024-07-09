@@ -1,3 +1,5 @@
+// @/components/VideoControlBar.tsx
+
 import React, { useRef, useMemo } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedButton } from "./ThemedButton";

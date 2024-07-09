@@ -1,4 +1,4 @@
-// @/contexts/VideoWithTranscriptContext/index
+// @/contexts/VideoWithTranscriptContext/index.tsx
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { YouTubeVideo, SyncedLine } from "@/types";
@@ -32,7 +32,6 @@ export const VideoWithTranscriptProvider: React.FC<{
   const [fullscreen, setFullscreen] = useState(false);
   const [duration, setDuration] = useState(0);
   const [startTime, setStartTime] = useState(0);
-  
   const videoPlayerContext = useVideoPlayer();
 
   // Merged usePlaylist logic
@@ -95,7 +94,15 @@ export const VideoWithTranscriptProvider: React.FC<{
     setCurrentLine(subtitle || null);
   }, [currentTime, syncedLines]);
 
-  const updatePlaybackState = (state: PLAYER_STATES) => setPlaybackState(state);
+  const updatePlaybackState = useCallback((state: PLAYER_STATES) => {
+    setPlaybackState(state);
+    if (state === PLAYER_STATES.PLAYING) {
+      setPlayVideo(true);
+    } else if (state === PLAYER_STATES.PAUSED) {
+      setPlayVideo(false);
+    }
+  }, []);
+
   const updateCurrentTime = (time: number) => setCurrentTime(time);
   const updateFullscreen = (state: boolean) => setFullscreen(state);
   const updateDuration = (duration: number) => setDuration(duration);
@@ -123,7 +130,9 @@ export const VideoWithTranscriptProvider: React.FC<{
   const skipToPreviousVideo = () => {
     if (currentVideoIndex > 0) skipToVideo(currentVideoIndex - 1);
   };
-  const updatePlayVideo = (newVal: boolean) => setPlayVideo(newVal);
+  const updatePlayVideo = useCallback((newVal: boolean) => {
+    setPlayVideo(newVal);
+  }, []);
   const rewind = () => {
     const previousLine = syncedLines.slice().reverse().find((line) => line.starttime < currentTime);
     if (previousLine) seekTo(previousLine.starttime);
