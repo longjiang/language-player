@@ -126,10 +126,10 @@ export const DictionaryComponent: React.FC<DictionaryComponentProps> = ({
                   {" "}
                   {entry[alternateKey]}
                 </ThemedText>
-                <ThemedText type="defaultBold">
+                {entry.pronunciation && <ThemedText type="default" variant="secondary">
                   {" "}
-                  {entry.pronunciation}
-                </ThemedText>
+                  [{entry.pronunciation}]
+                </ThemedText>}
               </ThemedText>
               {entry.definitions?.length && (
                 <DefinitionList

@@ -114,7 +114,7 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
         </View>
       </View>
       <Text style={styles.translationText}>
-        <ThemedText>{token.pronunciation} • </ThemedText>
+        {token.pronunciation && <ThemedText>{token.pronunciation} • </ThemedText>}
         <Translate
           l1Code={l1Lang.code}
           l2Code={l2Lang.code}
