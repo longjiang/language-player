@@ -1,10 +1,8 @@
-// @/components/ThemedInput.tsx
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';
+import React, { useState, useCallback, memo } from 'react';
+import { View, TextInput, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Typography } from '@/constants/Typography';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ThemedInputProps {
   placeholder: string;
@@ -12,21 +10,21 @@ interface ThemedInputProps {
   icon?: string;
   iconOnPress?: () => void;
   style?: ViewStyle;
-  initialValue?: string;  // New prop for prefilling
-  onChangeText?: (text: string) => void;
+  value: string;
+  onChangeText: (text: string) => void;
   onSubmitEditing?: () => void;
   secureTextEntry?: boolean;
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 }
 
-export const ThemedInput: React.FC<ThemedInputProps> = ({
+export const ThemedInput: React.FC<ThemedInputProps> = memo(({
   placeholder,
   size = 'medium',
   icon,
   iconOnPress,
   style,
-  initialValue = '',  // Default to empty string
+  value,
   onChangeText,
   onSubmitEditing,
   secureTextEntry = false,
@@ -34,24 +32,15 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
   autoCapitalize = 'sentences',
   ...rest
 }) => {
-  const [inputValue, setInputValue] = useState(initialValue);
-
-  useEffect(() => {
-    setInputValue(initialValue);
-  }, [initialValue]);
-
   const borderColor = useThemeColor({}, 'secondaryStroke');
   const backgroundColor = useThemeColor({}, 'secondaryBackground');
   const placeholderTextColor = useThemeColor({}, 'secondaryText');
   const containerStyles = [styles.container, size === 'small' ? styles.small : styles.medium, { borderColor, backgroundColor }, style];
   const iconSize = Typography.fontSize.medium;
 
-  const handleChangeText = (text: string) => {
-    setInputValue(text);
-    if (onChangeText) {
-      onChangeText(text);
-    }
-  };
+  const handleChangeText = useCallback((text: string) => {
+    onChangeText(text);
+  }, [onChangeText]);
 
   return (
     <View style={containerStyles}>
@@ -61,7 +50,6 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
         placeholderTextColor={placeholderTextColor}
         onSubmitEditing={onSubmitEditing}
         onChangeText={handleChangeText}
-        value={inputValue}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
         secureTextEntry={secureTextEntry}
@@ -69,12 +57,12 @@ export const ThemedInput: React.FC<ThemedInputProps> = ({
       />
       {icon && (
         <TouchableOpacity onPress={iconOnPress} style={{ padding: size === 'small' ? 2 : 6 }}>
-          <Icon name={icon} size={iconSize} color={placeholderTextColor} onPress={onSubmitEditing} />
+          <Icon name={icon} size={iconSize} color={placeholderTextColor} />
         </TouchableOpacity>
       )}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
