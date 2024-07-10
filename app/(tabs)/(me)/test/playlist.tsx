@@ -8,13 +8,14 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { router } from "expo-router";
 import { YouTubeVideoList } from "@/components/YouTubeVideoList";
+import { ThemedText } from "@/components";
 
 const mockVideos = [
-  { youtube_id: "dQw4w9WgXcQ", title: "Never Gonna Give You Up", difficulty: 3 },
-  { youtube_id: "kJQP7kiw5Fk", title: "Despacito", difficulty: 5 },
-  { youtube_id: "JGwWNGJdvx8", title: "Shape of You", difficulty: 4 },
-  { youtube_id: "9bZkp7q19f0", title: "Gangnam Style", difficulty: 6 },
-  { youtube_id: "RgKAFK5djSk", title: "See You Again", difficulty: 2 },
+  { youtube_id: "dQw4w9WgXcQ", title: "Never Gonna Give You Up", level: 3 },
+  { youtube_id: "kJQP7kiw5Fk", title: "Despacito", level: 5 },
+  { youtube_id: "JGwWNGJdvx8", title: "Shape of You", level: 4 },
+  { youtube_id: "9bZkp7q19f0", title: "Gangnam Style", level: 6 },
+  { youtube_id: "RgKAFK5djSk", title: "See You Again", level: 2 },
 ];
 
 function Test() {
@@ -40,8 +41,6 @@ function Test() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 16,
   },
 });
 
