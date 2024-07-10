@@ -12,7 +12,7 @@ export const MiniPlayer = () => {
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
-  const { videoPlayerState, currentVideo, queue } = useVideoPlayer();
+  const { videoPlayerState, currentVideo, queue, queueType, tvShow, searchTerm } = useVideoPlayer();
 
   if (!currentVideo) {
     return null;
@@ -30,6 +30,9 @@ export const MiniPlayer = () => {
           initialVideo={currentVideo}
           initialPlaylist={queue}
           isMainPlayer={true}
+          queueType={queueType}
+          tvShow={tvShow}
+          searchTerm={searchTerm}
           key={`video-with-transcript-provider-${currentVideo.youtube_id}-${currentVideo?.subs_l2?.length}`}
         >
           <VideoWithTranscript

@@ -23,12 +23,18 @@ export const YouTubeVideoCard = ({
   variant = 'vertical',
   isCurrentVideo = false,
   style = {},
+  queueType = 'recommended',
+  tvShow,
+  searchTerm
 }: { 
   video: YouTubeVideo; 
   videos: YouTubeVideo[]; 
   variant?: 'vertical' | 'horizontal';
   isCurrentVideo?: boolean;
-  style?: object 
+  style?: object;
+  queueType?: 'recommended' | 'tvShow' | 'search';
+  tvShow?: {id: string, title: string, episodes: YouTubeVideo[]};
+  searchTerm?: string;
 }) => {
   if (videos.length === 0) videos = [video];
   const { setVideoAndQueue } = useVideoPlayer();
@@ -37,7 +43,7 @@ export const YouTubeVideoCard = ({
   if (!l2Lang) return null;
 
   const handlePress = () => {
-    setVideoAndQueue(video, videos);
+    setVideoAndQueue(video, videos, queueType, queueType === 'tvShow' ? tvShow : searchTerm);
   };
 
   const viewsText = video.views ? t('title.views', {numViews: video.views?.toLocaleString()}) : '';

@@ -26,13 +26,16 @@ type VideoPlayerContextType = {
   closePlayer: () => void;
   minimizePlayer: () => void;
   maximizePlayer: () => void;
-  setVideoAndQueue: (video: YouTubeVideo | undefined, queue: YouTubeVideo[]) => Promise<void>;
+  setVideoAndQueue: (video: YouTubeVideo | undefined, queue: YouTubeVideo[], queueType: 'recommended' | 'tvShow' | 'search', metadata?: TVShow | string) => Promise<void>;
   skipToVideo: (index: number) => void;
   skipToPreviousVideo: () => void;
   skipToNextVideo: () => void;
   currentVideoIndex: number;
   currentVideo: YouTubeVideo | undefined;
   queue: YouTubeVideo[];
+  queueType: 'recommended' | 'tvShow' | 'search';
+  tvShow: TVShow | undefined;
+  searchTerm: string | undefined;
 };
 
 const initialVideoPlayerState: VideoPlayerState = {
@@ -74,13 +77,13 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         reorganizedQueue = [newVideo, ...currentShow.episodes];
       }
 
-      videoPlayerState.queueManager.setVideoAndQueue(newVideo, reorganizedQueue);
+      videoPlayerState.queueManager.setVideoAndQueue(newVideo, reorganizedQueue, 'tvShow', currentShow);
       setVideoPlayerState(prevState => ({ ...prevState }));
     }
   }, [shows, videoPlayerState.queueManager.currentVideo]);
 
   const closePlayer = useCallback(() => {
-    setVideoAndQueue(undefined, []);
+    setVideoAndQueue(undefined, [], 'recommended');
   }, []);
 
   const minimizePlayer = useCallback(() => {
@@ -101,8 +104,8 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     setVideoPlayerState(prev => ({ ...prev }));
   }, [videoPlayerState]);
 
-  const setVideoAndQueue = useCallback(async (newVideo: YouTubeVideo | undefined, newQueue: YouTubeVideo[]) => {
-    videoPlayerState.queueManager.setVideoAndQueue(newVideo, newQueue);
+  const setVideoAndQueue = useCallback(async (newVideo: YouTubeVideo | undefined, newQueue: YouTubeVideo[], queueType: 'recommended' | 'tvShow' | 'search', metadata?: TVShow | string) => {
+    videoPlayerState.queueManager.setVideoAndQueue(newVideo, newQueue, queueType, metadata);
     setVideoPlayerState(prevState => ({
       ...prevState,
       isMini: false,
@@ -117,7 +120,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
       });
       if (videos?.length) {
         const updatedVideo = { ...newVideo, ...videos[0] };
-        videoPlayerState.queueManager.setVideoAndQueue(updatedVideo, newQueue);
+        videoPlayerState.queueManager.setVideoAndQueue(updatedVideo, newQueue, queueType, metadata);
         setVideoPlayerState(prevState => ({ ...prevState }));
         newVideo = updatedVideo;
       }
@@ -130,7 +133,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
       try {
         const l2Subs = await getBestL2Subs(newVideo.youtube_id, l2Lang.code);
         const updatedVideo = { ...newVideo, subs_l2: l2Subs || [] };
-        videoPlayerState.queueManager.setVideoAndQueue(updatedVideo, newQueue);
+        videoPlayerState.queueManager.setVideoAndQueue(updatedVideo, newQueue, queueType, metadata);
         setVideoPlayerState(prevState => ({ ...prevState }));
       } catch (error) {
         console.error("Failed to fetch L2 subs", error);
@@ -142,7 +145,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
       try {
         const l1Subs = await getBestL1Subs(newVideo.youtube_id, l1Lang.code, l2Lang.code);
         const updatedVideo = { ...newVideo, subs_l1: l1Subs || [] };
-        videoPlayerState.queueManager.setVideoAndQueue(updatedVideo, newQueue);
+        videoPlayerState.queueManager.setVideoAndQueue(updatedVideo, newQueue, queueType, metadata);
         setVideoPlayerState(prevState => ({ ...prevState }));
       } catch (error) {
         console.error("Failed to fetch L1 subs", error);
@@ -208,6 +211,9 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     currentVideoIndex: videoPlayerState.queueManager.currentVideoIndex,
     currentVideo: videoPlayerState.queueManager.currentVideo,
     queue: videoPlayerState.queueManager.queue,
+    queueType: videoPlayerState.queueManager.queueType,
+    tvShow: videoPlayerState.queueManager.tvShow,
+    searchTerm: videoPlayerState.queueManager.searchTerm,
   };
 
   return (
