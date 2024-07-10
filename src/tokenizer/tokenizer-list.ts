@@ -71,16 +71,16 @@ export const tokenizers: Tokenizer[] = [
     languages: ['ar'],
   },
   {
-    module: SpacyTokenizer,
-    name: 'SpacyTokenizer',
-    endPoint: 'lemmatize-spacy',
-    languages: ['es'],
-  },
-  {
     module: SimplemmaTokenizer,
     name: 'SimplemmaTokenizer',
     endPoint: 'lemmatize-simple',
     languages: ['ast', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'enm', 'et', 'fi', 'gd', 'ga', 'gl', 'gv', 'sh', 'hu', 'hy', 'id', 'is', 'it', 'ka', 'la', 'lv', 'lt', 'lb', 'mk', 'ms', 'nl', 'nn', 'no', 'nb', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'se', 'es', 'sq', 'sw', 'sv', 'tl', 'tr', 'uk'],
+  },
+  {
+    module: SpacyTokenizer,
+    name: 'SpacyTokenizer',
+    endPoint: 'lemmatize-spacy',
+    languages: languagesWithSpaCyCache, // If too slow, revert to only ['fr', 'es']
   },
   // Disable for now – it's too slow
   // {
