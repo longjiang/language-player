@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -11,22 +11,16 @@ import Animated, {
 } from 'react-native-reanimated';
 import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 
-const ToggleableBackground = () => {
+const ToggleableBackground = ({ children, minHeight = 70, maxHeight = Dimensions.get('window').height, minBottom = 100, colorFrom = 'purple', colorTo = 'green' }) => {
   const [isMinimized, setIsMinimized] = useState(false);
   const progress = useSharedValue(0);
-  const screenHeight = Dimensions.get('window').height;
-
-  const toggleMinimize = () => {
-    setIsMinimized(!isMinimized);
-    progress.value = withTiming(isMinimized ? 0 : 1, { duration: 300 });
-  };
 
   const gestureHandler = useAnimatedGestureHandler({
     onStart: (_, context) => {
       context.startY = progress.value;
     },
     onActive: (event, context) => {
-      const newProgress = context.startY + event.translationY / screenHeight;
+      const newProgress = context.startY + event.translationY / (maxHeight - minHeight);
       progress.value = Math.max(0, Math.min(1, newProgress));
     },
     onEnd: (event) => {
@@ -44,23 +38,21 @@ const ToggleableBackground = () => {
     const height = interpolate(
       progress.value,
       [0, 1],
-      [screenHeight, 70] // Set the minimized height to 70px
+      [maxHeight, minHeight]
     );
     const bottom = interpolate(
       progress.value,
       [0, 1],
-      [0, 100] // Set the bottom distance to 100px when minimized
+      [0, minBottom]
     );
     const backgroundColor = interpolateColor(
       progress.value,
       [0, 1],
-      ['purple', 'green']
+      [colorFrom, colorTo]
     );
     return {
       height,
       bottom,
-      borderTopLeftRadius: 0, // No border radius when minimized
-      borderTopRightRadius: 0, // No border radius when minimized
       backgroundColor,
     };
   });
@@ -69,11 +61,7 @@ const ToggleableBackground = () => {
     <GestureHandlerRootView style={styles.rootContainer}>
       <PanGestureHandler onGestureEvent={gestureHandler}>
         <Animated.View style={[styles.container, animatedContainerStyle]}>
-          <TouchableOpacity style={styles.button} onPress={toggleMinimize}>
-            <Text style={styles.buttonText}>
-              {isMinimized ? 'Maximize' : 'Minimize'}
-            </Text>
-          </TouchableOpacity>
+          {children}
         </Animated.View>
       </PanGestureHandler>
     </GestureHandlerRootView>
@@ -92,20 +80,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    borderColor: 'white',
-    borderWidth: 1,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    padding: 20,
   },
 });
 
