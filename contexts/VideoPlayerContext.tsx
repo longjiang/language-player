@@ -69,14 +69,15 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     if (currentShow && currentShow.episodes.length > 0) {
       const currentIndex = currentShow.episodes.findIndex(ep => ep.youtube_id === newVideo.youtube_id);
       let reorganizedQueue: YouTubeVideo[];
+      
       if (currentIndex !== -1) {
-        const beforeCurrent = currentShow.episodes.slice(0, currentIndex);
-        const afterCurrent = currentShow.episodes.slice(currentIndex + 1);
-        reorganizedQueue = [...afterCurrent, newVideo, ...beforeCurrent];
+        // If the video is already in the queue, keep it where it is
+        reorganizedQueue = [...currentShow.episodes];
       } else {
+        // If the video is not in the queue, add it to the beginning
         reorganizedQueue = [newVideo, ...currentShow.episodes];
       }
-
+  
       videoPlayerState.queueManager.setVideoAndQueue(newVideo, reorganizedQueue, 'tvShow', currentShow);
       setVideoPlayerState(prevState => ({ ...prevState }));
     }

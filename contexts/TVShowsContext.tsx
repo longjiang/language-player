@@ -47,6 +47,7 @@ export const TVShowsProvider: React.FC<{ children: ReactNode }> = ({ children })
     try {
       const videoEpisodes = await getVideosByL2Code(l2Lang, false, {
         filter: { tv_show: { eq: showId } },
+        sort: 'title',
       });  
       setShows(prevShows => {
         const newShows = prevShows.map(show => {
