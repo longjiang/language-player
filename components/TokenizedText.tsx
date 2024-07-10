@@ -41,8 +41,27 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
         if (!tokenizer) {
           throw new Error('Tokenizer is not available');
         }
-        const result = await tokenizer.tokenize(text, l2Lang);
-        setTokens(result || []);
+        
+        // Replace newlines with spaces in the input text
+        const processedText = text.replace(/[\r\n]+/g, ' ');
+        
+        let result = await tokenizer.tokenize(processedText, l2Lang);
+        
+        // Preprocess tokens: consolidate consecutive space tokens
+        const preprocessedTokens = result.reduce((acc: TokenType[], token: TokenType) => {
+          if (token.text.trim() === '') {
+            // If the current token is a space and the last token in acc is also a space, skip this token
+            if (acc.length > 0 && acc[acc.length - 1].text.trim() === '') {
+              return acc;
+            }
+            // Otherwise, add a single space token
+            return [...acc, { ...token, text: ' ' }];
+          }
+          // For non-space tokens, add them as-is
+          return [...acc, token];
+        }, []);
+
+        setTokens(preprocessedTokens);
       } catch (error) {
         console.error('Tokenization error:', error);
         setTokens([{ text }]);
