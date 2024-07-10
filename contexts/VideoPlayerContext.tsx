@@ -9,6 +9,8 @@ import { addToWatchHistory } from "@/src/api/directus/user-watch-history";
 import { getBestL1Subs, getBestL2Subs, getTokenizerCacheForVideo } from "@/src/api/python/video";
 import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
 import { useTVShows } from "@/contexts/TVShowsContext";
+import { ResizablePanel } from "@/components/ResizablePanel";
+import { MiniPlayer } from "@/components/MiniPlayer";
 
 type VideoPlayerState = {
   isMini: boolean;
@@ -200,6 +202,9 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   return (
     <VideoPlayerContext.Provider value={value}>
       {children}
+      <ResizablePanel visible={!!videoPlayerState.video}>
+        <MiniPlayer />
+      </ResizablePanel>
     </VideoPlayerContext.Provider>
   );
 };

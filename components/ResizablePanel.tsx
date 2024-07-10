@@ -20,15 +20,21 @@ import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-
  * @param {number} props.minBottom - The minimum bottom spacing of the container.
  * @param {string} props.colorFrom - Initial color of the container background.
  * @param {string} props.colorTo - Final color of the container background.
+ * @param {boolean} props.visible - Whether the component should be visible.
  */
-const ResizablePanel = ({
+export const ResizablePanel = ({
   children,
   minHeight = 70,
   maxHeight = Dimensions.get('window').height,
   minBottom = 100,
   colorFrom = 'purple',
-  colorTo = 'green'
+  colorTo = 'green',
+  visible = false
 }) => {
+  if (!visible) {
+    return null;
+  }
+
   const [isMinimized, setIsMinimized] = useState(false);
   const progress = useSharedValue(0);
 
@@ -84,5 +90,3 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 });
-
-export default ResizablePanel;
