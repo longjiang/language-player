@@ -22,6 +22,7 @@ import { videoWithTranscriptStyles as styles } from "@/src/styles";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { ThemedRBSheet } from "./ThemedRBSheet";
 import { YouTubeVideoList } from "./YouTubeVideoList";
+import { useTVShows } from "@/contexts/TVShowsContext";
 
 const MAX_FREE_LINES = 10;
 
@@ -43,6 +44,14 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   const [showProModal, setShowProModal] = useState(false);
   const hasShownModalRef = useRef(false);
   const refRBSheet = useRef<typeof ThemedRBSheet>(null);
+  const { getShow } = useTVShows();
+  const [tvShow, setTvShow] = useState<string | undefined>(undefined);
+  
+  useEffect(() => {
+    if (video) {
+      setTvShow(getShow(video.tv_show));
+    }
+  }, [video]);
 
   const screenWidth = Dimensions.get("window").width;
   const videoHeight = isMini ? 70 : screenWidth * 0.5625; // 16:9 aspect ratio for full mode
@@ -167,7 +176,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
 
       <ThemedRBSheet ref={refRBSheet}>
         <View>
-          <ThemedText type="subtitle">{t('video.queue')}</ThemedText>
+          { tvShow && <ThemedText type="subtitle">{tvShow.title}</ThemedText>}
           
           <YouTubeVideoList videos={playlist} variant="horizontal" currentVideoId={ video ? video.youtube_id : undefined } showDetails={false}/>
         </View>

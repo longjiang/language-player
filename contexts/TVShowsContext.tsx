@@ -9,6 +9,7 @@ interface TVShowsContextType {
   isLoading: boolean;
   loadShows: () => Promise<void>;
   loadEpisodes: (showId: number) => Promise<void>;
+  getShow: (showId: number) => Show | undefined;
 }
 
 const TVShowsContext = createContext<TVShowsContextType | undefined>(undefined);
@@ -62,6 +63,10 @@ export const TVShowsProvider: React.FC<{ children: ReactNode }> = ({ children })
     setIsLoading(false);
   };
 
+  const getShow = (showId: number) => {
+    return shows.find(show => show.id === showId);
+  }
+
   useEffect(() => {
     loadShows();
   }, [l2Lang]);
@@ -71,6 +76,7 @@ export const TVShowsProvider: React.FC<{ children: ReactNode }> = ({ children })
     isLoading,
     loadShows,
     loadEpisodes,
+    getShow,
   };
 
   return <TVShowsContext.Provider value={value}>{children}</TVShowsContext.Provider>;
