@@ -104,10 +104,10 @@ export const PopupDictionaryContent: React.FC<{
               color={primaryTextColor}
             />
           </View>
-          <ThemedText style={styles.entryText}>
-            {entry.pronunciation}{" "}
+          <ThemedText style={styles.entryText} variant="secondary">
+            [{entry.pronunciation}]{" "}
             <ThemedText type="smallBold" level={entry.level}>
-              {entry.level ? " • " + levels[entry.level].examLevelName : ""}
+              {entry.level ? "  " + levels[entry.level].examLevelName : ""}
             </ThemedText>{" "}
           </ThemedText>
           <DefinitionList definitions={entry.definitions} type="default" />

@@ -46,8 +46,8 @@ const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, 
           />
         </View>
         <Text>
-          {entry.pronunciation && <ThemedText type="large">{entry.pronunciation}</ThemedText>}
-          {entry.pronunciation && entry.level && <ThemedText type="large"> • </ThemedText>}
+          {entry.pronunciation && <ThemedText type="large">[{entry.pronunciation}]</ThemedText>}
+          {entry.pronunciation && entry.level && <ThemedText type="large"> </ThemedText>}
           {entry.level && <ThemedText type="defaultBold" level={entry.level}>{levels[entry.level].examLevelName}</ThemedText>}
         </Text>
       </View>
