@@ -18,7 +18,7 @@ import { Tokenizer } from '@/types/tokenTypes';
 export const languagesWithSpaCyCache = [
   'ca', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'hr',
   'it', 'lt', 'mk', 'no', 'nl', 'pl', 'pt', 'ro', 'sv',
-  'uk', 'ko'
+  'uk'
 ];
 
 export const tokenizers: Tokenizer[] = [
