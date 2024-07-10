@@ -441,7 +441,9 @@
         "no_saved_words": "Ei tallennettuja sanoja vielä",
         "no_more_videos": "Ei enempää videoita",
         "options": "Vaihtoehdot",
-        "choose_action": "Valitse toiminto"
+        "choose_action": "Valitse toiminto",
+        "content_tailored": "Sinulle räätälöity sisältö",
+        "videos_matching": "Videot hakusanalla \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -545,7 +547,10 @@
         "video_count": "Video {{index}} / {{total}}",
         "tv_shows": "TV-ohjelmat",
         "sort_by": "LAJITTELE",
-        "filter_by_locale": "SUODATA KIELIALUEEN MUKAAN"
+        "filter_by_locale": "SUODATA KIELIALUEEN MUKAAN",
+        "tv_show": "TV-ohjelma",
+        "recommended": "Suositeltu",
+        "search_results": "Hakutulokset"
     },
     "video": {
         "comments": "Kommentit",

@@ -441,7 +441,9 @@
         "no_saved_words": "Još nema spremljenih riječi",
         "no_more_videos": "Nema više videa",
         "options": "Opcije",
-        "choose_action": "Odaberite radnju"
+        "choose_action": "Odaberite radnju",
+        "content_tailored": "Sadržaj prilagođen vama",
+        "videos_matching": "Videozapisi koji odgovaraju \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -545,7 +547,10 @@
         "video_count": "Video {{index}} od {{total}}",
         "tv_shows": "TV emisije",
         "sort_by": "SORTIRAJ PO",
-        "filter_by_locale": "FILTRIRAJ PO LOKACIJI"
+        "filter_by_locale": "FILTRIRAJ PO LOKACIJI",
+        "tv_show": "TV emisija",
+        "recommended": "Preporučeno",
+        "search_results": "Rezultati pretraživanja"
     },
     "video": {
         "comments": "Komentari",

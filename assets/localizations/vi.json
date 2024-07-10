@@ -439,7 +439,9 @@
         "no_saved_words": "Chưa có từ nào được lưu",
         "no_more_videos": "Không còn video nào",
         "options": "Tùy chọn",
-        "choose_action": "Chọn một hành động"
+        "choose_action": "Chọn một hành động",
+        "content_tailored": "Nội dung được điều chỉnh cho bạn",
+        "videos_matching": "Video phù hợp với \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -543,7 +545,10 @@
         "video_count": "Video {{index}} trên {{total}}",
         "tv_shows": "Chương trình TV",
         "sort_by": "SẮP XẾP THEO",
-        "filter_by_locale": "LỌC THEO KHU VỰC"
+        "filter_by_locale": "LỌC THEO KHU VỰC",
+        "tv_show": "Chương trình TV",
+        "recommended": "Đề xuất",
+        "search_results": "Kết quả tìm kiếm"
     },
     "video": {
         "comments": "Bình luận",

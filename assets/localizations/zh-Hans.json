@@ -458,7 +458,9 @@
         "no_saved_words": "尚未保存单词",
         "no_more_videos": "没有更多视频",
         "options": "选项",
-        "choose_action": "选择一个操作"
+        "choose_action": "选择一个操作",
+        "content_tailored": "为您量身定制的内容",
+        "videos_matching": "匹配\"{{searchTerm}}\"的视频"
     },
     "option": {
         "app_store": "应用商店",
@@ -564,7 +566,10 @@
         "video_count": "视频 {{index}} 共 {{total}}",
         "tv_shows": "电视节目",
         "sort_by": "排序方式",
-        "filter_by_locale": "按地区筛选"
+        "filter_by_locale": "按地区筛选",
+        "tv_show": "电视节目",
+        "recommended": "推荐",
+        "search_results": "搜索结果"
     },
     "video": {
         "comments": "评论",

@@ -441,7 +441,9 @@
         "no_saved_words": "Noch keine Wörter gespeichert",
         "no_more_videos": "Keine weiteren Videos",
         "options": "Optionen",
-        "choose_action": "Wähle eine Aktion"
+        "choose_action": "Wähle eine Aktion",
+        "content_tailored": "Auf Sie zugeschnittene Inhalte",
+        "videos_matching": "Videos passend zu \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -545,7 +547,10 @@
         "video_count": "Video {{index}} von {{total}}",
         "tv_shows": "Fernsehsendungen",
         "sort_by": "SORTIEREN NACH",
-        "filter_by_locale": "NACH SPRACHE FILTERN"
+        "filter_by_locale": "NACH SPRACHE FILTERN",
+        "tv_show": "TV-Sendung",
+        "recommended": "Empfohlen",
+        "search_results": "Suchergebnisse"
     },
     "video": {
         "comments": "Kommentare",

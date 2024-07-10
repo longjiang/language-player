@@ -441,7 +441,9 @@
         "no_saved_words": "لم يتم حفظ أي كلمات بعد",
         "no_more_videos": "لا مزيد من مقاطع الفيديو",
         "options": "خيارات",
-        "choose_action": "اختر إجراء"
+        "choose_action": "اختر إجراء",
+        "content_tailored": "محتوى مخصص لك",
+        "videos_matching": "مقاطع الفيديو المطابقة لـ \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "متجر التطبيقات",
@@ -545,7 +547,10 @@
         "video_count": "الفيديو {{index}} من {{total}}",
         "tv_shows": "البرامج التلفزيونية",
         "sort_by": "ترتيب حسب",
-        "filter_by_locale": "تصفية حسب الموقع"
+        "filter_by_locale": "تصفية حسب الموقع",
+        "tv_show": "برنامج تلفزيوني",
+        "recommended": "موصى به",
+        "search_results": "نتائج البحث"
     },
     "video": {
         "comments": "التعليقات",

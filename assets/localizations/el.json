@@ -441,7 +441,9 @@
         "no_saved_words": "Δεν έχουν αποθηκευτεί λέξεις ακόμα",
         "no_more_videos": "Δεν υπάρχουν άλλα βίντεο",
         "options": "Επιλογές",
-        "choose_action": "Επιλέξτε μια ενέργεια"
+        "choose_action": "Επιλέξτε μια ενέργεια",
+        "content_tailored": "Περιεχόμενο προσαρμοσμένο για εσάς",
+        "videos_matching": "Βίντεο που ταιριάζουν με \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -545,7 +547,10 @@
         "video_count": "Βίντεο {{index}} από {{total}}",
         "tv_shows": "Τηλεοπτικές Εκπομπές",
         "sort_by": "ΤΑΞΙΝΟΜΗΣΗ ΚΑΤΑ",
-        "filter_by_locale": "ΦΙΛΤΡΟ ΑΝΑ ΤΟΠΟΘΕΣΙΑ"
+        "filter_by_locale": "ΦΙΛΤΡΟ ΑΝΑ ΤΟΠΟΘΕΣΙΑ",
+        "tv_show": "Τηλεοπτική εκπομπή",
+        "recommended": "Προτεινόμενα",
+        "search_results": "Αποτελέσματα αναζήτησης"
     },
     "video": {
         "comments": "Σχόλια",

@@ -441,7 +441,9 @@
         "no_saved_words": "Aucun mot enregistré pour le moment",
         "no_more_videos": "Plus de vidéos",
         "options": "Options",
-        "choose_action": "Choisissez une action"
+        "choose_action": "Choisissez une action",
+        "content_tailored": "Contenu personnalisé pour vous",
+        "videos_matching": "Vidéos correspondant à \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -545,7 +547,10 @@
         "video_count": "Vidéo {{index}} sur {{total}}",
         "tv_shows": "Émissions TV",
         "sort_by": "TRIER PAR",
-        "filter_by_locale": "FILTRER PAR PAYS"
+        "filter_by_locale": "FILTRER PAR PAYS",
+        "tv_show": "Émission TV",
+        "recommended": "Recommandé",
+        "search_results": "Résultats de recherche"
     },
     "video": {
         "comments": "Commentaires",

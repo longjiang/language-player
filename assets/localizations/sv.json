@@ -440,7 +440,9 @@
         "no_saved_words": "Inga ord sparade än",
         "no_more_videos": "Inga fler videor",
         "options": "Alternativ",
-        "choose_action": "Välj en åtgärd"
+        "choose_action": "Välj en åtgärd",
+        "content_tailored": "Innehåll skräddarsytt för dig",
+        "videos_matching": "Videor som matchar \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -544,7 +546,10 @@
         "video_count": "Video {{index}} av {{total}}",
         "tv_shows": "TV-program",
         "sort_by": "SORTERA EFTER",
-        "filter_by_locale": "FILTRERA EFTER PLATS"
+        "filter_by_locale": "FILTRERA EFTER PLATS",
+        "tv_show": "TV-program",
+        "recommended": "Rekommenderat",
+        "search_results": "Sökresultat"
     },
     "video": {
         "comments": "Kommentarer",

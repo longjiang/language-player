@@ -441,7 +441,9 @@
         "no_saved_words": "Még nincsenek mentett szavak",
         "no_more_videos": "Nincs több videó",
         "options": "Opciók",
-        "choose_action": "Válasszon egy műveletet"
+        "choose_action": "Válasszon egy műveletet",
+        "content_tailored": "Önnek szabott tartalom",
+        "videos_matching": "A(z) \"{{searchTerm}}\" kifejezésnek megfelelő videók"
     },
     "option": {
         "app_store": "App Store",
@@ -545,7 +547,10 @@
         "video_count": "{{index}}. videó a {{total}}-ból",
         "tv_shows": "TV-műsorok",
         "sort_by": "RENDEZÉS",
-        "filter_by_locale": "SZŰRÉS TERÜLET SZERINT"
+        "filter_by_locale": "SZŰRÉS TERÜLET SZERINT",
+        "tv_show": "TV-műsor",
+        "recommended": "Ajánlott",
+        "search_results": "Keresési eredmények"
     },
     "video": {
         "comments": "Hozzászólások",

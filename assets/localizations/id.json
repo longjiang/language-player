@@ -441,7 +441,9 @@
         "no_saved_words": "Belum ada kata yang disimpan",
         "no_more_videos": "Tidak ada video lagi",
         "options": "Pilihan",
-        "choose_action": "Pilih tindakan"
+        "choose_action": "Pilih tindakan",
+        "content_tailored": "Konten yang Disesuaikan untuk Anda",
+        "videos_matching": "Video yang cocok dengan \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -545,7 +547,10 @@
         "video_count": "Video {{index}} dari {{total}}",
         "tv_shows": "Acara TV",
         "sort_by": "URUTKAN BERDASARKAN",
-        "filter_by_locale": "FILTER BERDASARKAN LOKAL"
+        "filter_by_locale": "FILTER BERDASARKAN LOKAL",
+        "tv_show": "Acara TV",
+        "recommended": "Direkomendasikan",
+        "search_results": "Hasil Pencarian"
     },
     "video": {
         "comments": "Komentar",

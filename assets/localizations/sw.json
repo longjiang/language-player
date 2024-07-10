@@ -440,7 +440,9 @@
         "no_saved_words": "Hakuna maneno yaliyohifadhiwa bado",
         "no_more_videos": "Hakuna video zaidi",
         "options": "Chaguo",
-        "choose_action": "Chagua kitendo"
+        "choose_action": "Chagua kitendo",
+        "content_tailored": "Maudhui Yaliyoundwa kwa Ajili Yako",
+        "videos_matching": "Video zinazofanana na \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "Duka la Programu",
@@ -544,7 +546,10 @@
         "video_count": "Video {{index}} kati ya {{total}}",
         "tv_shows": "Vipindi vya TV",
         "sort_by": "PANGA KWA",
-        "filter_by_locale": "CHUJA KWA ENEO"
+        "filter_by_locale": "CHUJA KWA ENEO",
+        "tv_show": "Kipindi cha TV",
+        "recommended": "Pendekezo",
+        "search_results": "Matokeo ya utafutaji"
     },
     "video": {
         "comments": "Maoni",

@@ -439,7 +439,9 @@
         "no_saved_words": "Henüz kaydedilmiş kelime yok",
         "no_more_videos": "Başka video yok",
         "options": "Seçenekler",
-        "choose_action": "Bir eylem seçin"
+        "choose_action": "Bir eylem seçin",
+        "content_tailored": "Size Özel İçerik",
+        "videos_matching": "\"{{searchTerm}}\" ile eşleşen videolar"
     },
     "option": {
         "app_store": "App Store",
@@ -543,7 +545,10 @@
         "video_count": "Video {{index}} / {{total}}",
         "tv_shows": "TV Programları",
         "sort_by": "SIRALA",
-        "filter_by_locale": "KONUMA GÖRE FİLTRELE"
+        "filter_by_locale": "KONUMA GÖRE FİLTRELE",
+        "tv_show": "TV Programı",
+        "recommended": "Önerilen",
+        "search_results": "Arama Sonuçları"
     },
     "video": {
         "comments": "Yorumlar",

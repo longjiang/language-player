@@ -458,7 +458,9 @@
         "no_saved_words": "尚未儲存單詞",
         "no_more_videos": "沒有更多視頻",
         "options": "選項",
-        "choose_action": "選擇一個操作"
+        "choose_action": "選擇一個操作",
+        "content_tailored": "為您量身定制的內容",
+        "videos_matching": "匹配\"{{searchTerm}}\"的視頻"
     },
     "option": {
         "app_store": "App Store",
@@ -564,7 +566,10 @@
         "video_count": "影片 {{index}} 共 {{total}}",
         "tv_shows": "電視節目",
         "sort_by": "排序方式",
-        "filter_by_locale": "按地區篩選"
+        "filter_by_locale": "按地區篩選",
+        "tv_show": "電視節目",
+        "recommended": "推薦",
+        "search_results": "搜索結果"
     },
     "video": {
         "comments": "留言",

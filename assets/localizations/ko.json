@@ -440,7 +440,9 @@
         "no_saved_words": "저장된 단어가 아직 없습니다",
         "no_more_videos": "더 이상 동영상이 없습니다",
         "options": "옵션",
-        "choose_action": "작업 선택"
+        "choose_action": "작업 선택",
+        "content_tailored": "맞춤형 콘텐츠",
+        "videos_matching": "\"{{searchTerm}}\"와(과) 일치하는 동영상"
     },
     "option": {
         "app_store": "App Store",
@@ -544,7 +546,10 @@
         "video_count": "동영상 {{index}} / {{total}}",
         "tv_shows": "TV 프로그램",
         "sort_by": "정렬 기준",
-        "filter_by_locale": "위치별 필터"
+        "filter_by_locale": "위치별 필터",
+        "tv_show": "TV 프로그램",
+        "recommended": "추천",
+        "search_results": "검색 결과"
     },
     "video": {
         "comments": "댓글",

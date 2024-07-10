@@ -440,7 +440,9 @@
         "no_saved_words": "まだ保存された単語はありません",
         "no_more_videos": "これ以上動画はありません",
         "options": "オプション",
-        "choose_action": "アクションを選択"
+        "choose_action": "アクションを選択",
+        "content_tailored": "あなたに合わせたコンテンツ",
+        "videos_matching": "\"{{searchTerm}}\"に一致する動画"
     },
     "option": {
         "app_store": "App Store",
@@ -544,7 +546,10 @@
         "video_count": "動画 {{index}} / {{total}}",
         "tv_shows": "テレビ番組",
         "sort_by": "並び替え",
-        "filter_by_locale": "地域でフィルター"
+        "filter_by_locale": "地域でフィルター",
+        "tv_show": "テレビ番組",
+        "recommended": "おすすめ",
+        "search_results": "検索結果"
     },
     "video": {
         "comments": "コメント",

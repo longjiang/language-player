@@ -441,7 +441,9 @@
         "no_saved_words": "Encara no s'han desat paraules",
         "no_more_videos": "No hi ha més vídeos",
         "options": "Opcions",
-        "choose_action": "Tria una acció"
+        "choose_action": "Tria una acció",
+        "content_tailored": "Contingut adaptat per a tu",
+        "videos_matching": "Vídeos que coincideixen amb \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -545,7 +547,10 @@
         "video_count": "Vídeo {{index}} de {{total}}",
         "tv_shows": "Programes de TV",
         "sort_by": "ORDENA PER",
-        "filter_by_locale": "FILTRA PER UBICACIÓ"
+        "filter_by_locale": "FILTRA PER UBICACIÓ",
+        "tv_show": "Programa de TV",
+        "recommended": "Recomanat",
+        "search_results": "Resultats de cerca"
     },
     "video": {
         "comments": "Comentaris",

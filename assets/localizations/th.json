@@ -439,7 +439,9 @@
         "no_saved_words": "ยังไม่มีคำที่บันทึกไว้",
         "no_more_videos": "ไม่มีวิดีโอเพิ่มเติม",
         "options": "ตัวเลือก",
-        "choose_action": "เลือกการดำเนินการ"
+        "choose_action": "เลือกการดำเนินการ",
+        "content_tailored": "เนื้อหาที่ปรับแต่งสำหรับคุณ",
+        "videos_matching": "วิดีโอที่ตรงกับ \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -543,7 +545,10 @@
         "video_count": "วิดีโอที่ {{index}} จาก {{total}}",
         "tv_shows": "รายการทีวี",
         "sort_by": "เรียงตาม",
-        "filter_by_locale": "กรองตามภาษา"
+        "filter_by_locale": "กรองตามภาษา",
+        "tv_show": "รายการทีวี",
+        "recommended": "แนะนำ",
+        "search_results": "ผลการค้นหา"
     },
     "video": {
         "comments": "ความคิดเห็น",

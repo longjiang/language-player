@@ -440,7 +440,9 @@
         "no_saved_words": "Aún no hay palabras guardadas",
         "no_more_videos": "No hay más videos",
         "options": "Opciones",
-        "choose_action": "Elige una acción"
+        "choose_action": "Elige una acción",
+        "content_tailored": "Contenido adaptado para ti",
+        "videos_matching": "Videos que coinciden con \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -544,7 +546,10 @@
         "video_count": "Video {{index}} de {{total}}",
         "tv_shows": "Programas de TV",
         "sort_by": "ORDENAR POR",
-        "filter_by_locale": "FILTRAR POR UBICACIÓN"
+        "filter_by_locale": "FILTRAR POR UBICACIÓN",
+        "tv_show": "Programa de TV",
+        "recommended": "Recomendado",
+        "search_results": "Resultados de búsqueda"
     },
     "video": {
         "comments": "Comentarios",

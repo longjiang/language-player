@@ -11,6 +11,7 @@ import { ThemedText } from './ThemedText';
 import { YouTubeVideoList } from './YouTubeVideoList';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface HeaderProps {
   minimizePlayer: () => void;
@@ -20,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({ minimizePlayer }) => {
   const { tvShow, searchTerm, queue, queueType, currentVideo } = useVideoPlayer();
   const refRBSheet = useRef<ThemedRBSheet>(null);
   const secondaryBrandColor = useThemeColor({}, 'secondaryBrand');
+  const { t } = useLanguage();
 
   const openQueueSheet = useCallback(() => {
     refRBSheet.current?.open();
@@ -70,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({ minimizePlayer }) => {
             <>
               <View style={{ flexDirection: 'row', marginBottom: 8 }}>
                 <Ionicon name="tv-outline" size={20} color={secondaryBrandColor} />
-                <ThemedText style={{ marginLeft: 8, color: secondaryBrandColor }} type="defaultBold">TV Show</ThemedText>
+                <ThemedText style={{ marginLeft: 8, color: secondaryBrandColor }} type="defaultBold">{t('title.tv_show')}</ThemedText>
               </View>
               <ThemedText type="subtitle" style={{ marginBottom: 26 }}>{tvShow.title}</ThemedText>
             </>
@@ -79,18 +81,18 @@ export const Header: React.FC<HeaderProps> = ({ minimizePlayer }) => {
             <>
               <View style={{ flexDirection: 'row', marginBottom: 8 }}>
                 <Ionicon name="sparkles" size={20} color={secondaryBrandColor} />
-                <ThemedText style={{ marginLeft: 8, color: secondaryBrandColor }} type="defaultBold">Recommended</ThemedText>
+                <ThemedText style={{ marginLeft: 8, color: secondaryBrandColor }} type="defaultBold">{t('title.recommended')}</ThemedText>
               </View>
-              <ThemedText type="subtitle" style={{ marginBottom: 26 }}>Content Tailored to You</ThemedText>
+              <ThemedText type="subtitle" style={{ marginBottom: 26 }}>{t('msg.content_tailored')}</ThemedText>
             </>
           )}
           {queueType === "search" && searchTerm && (
             <>
               <View style={{ flexDirection: 'row', marginBottom: 8 }}>
                 <Ionicon name="search" size={20} color={secondaryBrandColor} />
-                <ThemedText style={{ marginLeft: 8, color: secondaryBrandColor }} type="defaultBold">Search Results</ThemedText>
+                <ThemedText style={{ marginLeft: 8, color: secondaryBrandColor }} type="defaultBold">{t('title.search_results')}</ThemedText>
               </View>
-              <ThemedText type="subtitle" style={{ marginBottom: 26 }}>Videos matching "{searchTerm}"</ThemedText>
+              <ThemedText type="subtitle" style={{ marginBottom: 26 }}>{t('msg.videos_matching', { searchTerm })}</ThemedText>
             </>
           )}
 

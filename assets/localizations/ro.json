@@ -440,7 +440,9 @@
         "no_saved_words": "Nu sunt cuvinte salvate încă",
         "no_more_videos": "Nu mai sunt videoclipuri",
         "options": "Opțiuni",
-        "choose_action": "Alegeți o acțiune"
+        "choose_action": "Alegeți o acțiune",
+        "content_tailored": "Conținut personalizat pentru tine",
+        "videos_matching": "Videoclipuri care se potrivesc cu \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -544,7 +546,10 @@
         "video_count": "Videoclipul {{index}} din {{total}}",
         "tv_shows": "Emisiuni TV",
         "sort_by": "SORTARE DUPĂ",
-        "filter_by_locale": "FILTRARE DUPĂ LOCAȚIE"
+        "filter_by_locale": "FILTRARE DUPĂ LOCAȚIE",
+        "tv_show": "Emisiune TV",
+        "recommended": "Recomandat",
+        "search_results": "Rezultate căutare"
     },
     "video": {
         "comments": "Comentarii",

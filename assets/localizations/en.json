@@ -458,7 +458,9 @@
         "no_saved_words": "No words saved yet",
         "no_more_videos": "No more videos",
         "options": "Options",
-        "choose_action": "Choose an action"
+        "choose_action": "Choose an action",
+        "content_tailored": "Content Tailored to You",
+        "videos_matching": "Videos matching \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -564,7 +566,10 @@
         "video_count": "Video {{index}} of {{total}}",
         "tv_shows": "TV Shows",
         "sort_by": "SORT BY",
-        "filter_by_locale": "FILTER BY LOCALE"
+        "filter_by_locale": "FILTER BY LOCALE",
+        "tv_show": "TV Show",
+        "recommended": "Recommended",
+        "search_results": "Search Results"
     },
     "video": {
         "comments": "Comments",

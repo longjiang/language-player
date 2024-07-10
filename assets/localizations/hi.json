@@ -441,7 +441,9 @@
         "no_saved_words": "अभी तक कोई शब्द सहेजा नहीं गया",
         "no_more_videos": "और वीडियो नहीं हैं",
         "options": "विकल्प",
-        "choose_action": "एक कार्रवाई चुनें"
+        "choose_action": "एक कार्रवाई चुनें",
+        "content_tailored": "आपके लिए अनुकूलित सामग्री",
+        "videos_matching": "\"{{searchTerm}}\" से मेल खाते वीडियो"
     },
     "option": {
         "app_store": "ऐप स्टोर",
@@ -545,7 +547,10 @@
         "video_count": "वीडियो {{index}} / {{total}}",
         "tv_shows": "टीवी शो",
         "sort_by": "क्रमबद्ध करें",
-        "filter_by_locale": "स्थान के अनुसार फ़िल्टर करें"
+        "filter_by_locale": "स्थान के अनुसार फ़िल्टर करें",
+        "tv_show": "टीवी शो",
+        "recommended": "अनुशंसित",
+        "search_results": "खोज परिणाम"
     },
     "video": {
         "comments": "टिप्पणियाँ",

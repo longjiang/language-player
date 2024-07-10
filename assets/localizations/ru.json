@@ -440,7 +440,9 @@
         "no_saved_words": "Слова еще не сохранены",
         "no_more_videos": "Больше нет видео",
         "options": "Опции",
-        "choose_action": "Выберите действие"
+        "choose_action": "Выберите действие",
+        "content_tailored": "Контент, подобранный для вас",
+        "videos_matching": "Видео, соответствующие \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -544,7 +546,10 @@
         "video_count": "Видео {{index}} из {{total}}",
         "tv_shows": "Телепередачи",
         "sort_by": "СОРТИРОВАТЬ ПО",
-        "filter_by_locale": "ФИЛЬТР ПО РЕГИОНУ"
+        "filter_by_locale": "ФИЛЬТР ПО РЕГИОНУ",
+        "tv_show": "Телепередача",
+        "recommended": "Рекомендованное",
+        "search_results": "Результаты поиска"
     },
     "video": {
         "comments": "Комментарии",

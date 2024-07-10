@@ -458,7 +458,9 @@
         "no_saved_words": "Nog geen woorde gestoor nie",
         "no_more_videos": "Geen meer video's",
         "options": "Opsies",
-        "choose_action": "Kies 'n aksie"
+        "choose_action": "Kies 'n aksie",
+        "content_tailored": "Inhoud op maat vir jou",
+        "videos_matching": "Video's wat ooreenstem met \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -564,7 +566,10 @@
         "video_count": "Video {{index}} van {{total}}",
         "tv_shows": "TV-programme",
         "sort_by": "SORTEER VOLGENS",
-        "filter_by_locale": "FILTER VOLGENS LIGGING"
+        "filter_by_locale": "FILTER VOLGENS LIGGING",
+        "tv_show": "TV-program",
+        "recommended": "Aanbeveel",
+        "search_results": "Soekresultate"
     },
     "video": {
         "comments": "Kommentaar",

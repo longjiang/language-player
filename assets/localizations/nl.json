@@ -440,7 +440,9 @@
         "no_saved_words": "Nog geen woorden opgeslagen",
         "no_more_videos": "Geen video's meer",
         "options": "Opties",
-        "choose_action": "Kies een actie"
+        "choose_action": "Kies een actie",
+        "content_tailored": "Op maat gemaakte inhoud voor jou",
+        "videos_matching": "Video's die overeenkomen met \"{{searchTerm}}\""
     },
     "option": {
         "app_store": "App Store",
@@ -544,7 +546,10 @@
         "video_count": "Video {{index}} van {{total}}",
         "tv_shows": "TV-programma's",
         "sort_by": "SORTEER OP",
-        "filter_by_locale": "FILTEREN OP TAAL"
+        "filter_by_locale": "FILTEREN OP TAAL",
+        "tv_show": "TV-programma",
+        "recommended": "Aanbevolen",
+        "search_results": "Zoekresultaten"
     },
     "video": {
         "comments": "Reacties",
