@@ -25,13 +25,11 @@ const MAX_FREE_LINES = 10;
 
 interface VideoWithTranscriptProps {
   isMini: boolean;
-  refRBSheet: React.RefObject<typeof ThemedRBSheet>;
   isProCheckEnabled?: boolean;
 }
 
 export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   isMini,
-  refRBSheet,
   isProCheckEnabled = true
 }) => {
   const { syncedLines, currentLine, video, playVideo, updatePlayVideo, currentTime, startTime, playlist } = useVideoWithTranscriptContext();
@@ -135,14 +133,6 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
           </View>
         </>
       )}
-
-      <ThemedRBSheet ref={refRBSheet}>
-        <View>
-          { tvShow && <ThemedText type="subtitle">{tvShow.title}</ThemedText>}
-          
-          <YouTubeVideoList videos={playlist} variant="horizontal" currentVideoId={ video ? video.youtube_id : undefined } showDetails={false}/>
-        </View>
-      </ThemedRBSheet>
       
       <ProFeatureModal
         visible={showProModal}

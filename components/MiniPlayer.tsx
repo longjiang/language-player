@@ -15,11 +15,6 @@ export const MiniPlayer = () => {
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
   const { videoPlayerState, currentVideo, queue, queueType, tvShow, searchTerm, minimizePlayer, maximizePlayer } = useVideoPlayer();
-  const refRBSheet = useRef<typeof ThemedRBSheet>(null);
-
-  const openQueueSheet = useCallback(() => {
-    refRBSheet.current?.open();
-  }, []);
 
   if (!currentVideo) {
     return null;
@@ -33,7 +28,7 @@ export const MiniPlayer = () => {
       }}
     >
       <View>
-        {!videoPlayerState.isMini && <Header minimizePlayer={minimizePlayer} openQueueSheet={openQueueSheet} />}
+        {!videoPlayerState.isMini && <Header minimizePlayer={minimizePlayer} />}
         <VideoWithTranscriptProvider
           initialVideo={currentVideo}
           initialPlaylist={queue}
@@ -45,7 +40,6 @@ export const MiniPlayer = () => {
         >
           <VideoWithTranscript
             isMini={videoPlayerState.isMini}
-            refRBSheet={refRBSheet}
           />
         </VideoWithTranscriptProvider>
       </View>
