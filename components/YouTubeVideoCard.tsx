@@ -80,14 +80,14 @@ export const YouTubeVideoCard = ({
               <ThemedText style={{...styles.badgeText }} type={ variant === 'horizontal' ? 'xxsmallBold' : 'smallBold'}>{badgeText}</ThemedText>
             </View>
           )}
-          {durationText && (
+          {variant !== 'horizontal' && durationText && (
             <View style={styles.durationBadge}>
               <ThemedText style={styles.durationText} type="smallBold">{durationText}</ThemedText>
             </View>
           )}
         </View>
         <View style={[styles.infoContainer, infoContainerStyle]}>
-          <ThemedText style={styles.title} type="defaultBold" numberOfLines={2}>
+          <ThemedText style={{... styles.title }} type="defaultBold" numberOfLines={variant === 'horizontal' ? 1 : 2} ellipsizeMode="tail">
             {video.title}
           </ThemedText>
           {showDetails && <ThemedText style={styles.details} type="small" variant="secondary">
