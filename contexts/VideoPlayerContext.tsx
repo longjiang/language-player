@@ -13,6 +13,8 @@ import { ResizablePanel } from "@/components/ResizablePanel";
 import { MiniPlayer } from "@/components/MiniPlayer";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { QueueManager } from "@/src/QueueManager";
+import { Show } from '@/components/ShowCard';
+
 
 type VideoPlayerState = {
   isMini: boolean;
@@ -26,7 +28,7 @@ type VideoPlayerContextType = {
   closePlayer: () => void;
   minimizePlayer: () => void;
   maximizePlayer: () => void;
-  setVideoAndQueue: (video: YouTubeVideo | undefined, queue: YouTubeVideo[], queueType: 'recommended' | 'tvShow' | 'search', metadata?: TVShow | string) => Promise<void>;
+  setVideoAndQueue: (video: YouTubeVideo | undefined, queue: YouTubeVideo[], queueType: 'recommended' | 'tvShow' | 'search', metadata?: Show | string) => Promise<void>;
   skipToVideo: (index: number) => void;
   skipToPreviousVideo: () => void;
   skipToNextVideo: () => void;
@@ -34,7 +36,7 @@ type VideoPlayerContextType = {
   currentVideo: YouTubeVideo | undefined;
   queue: YouTubeVideo[];
   queueType: 'recommended' | 'tvShow' | 'search';
-  tvShow: TVShow | undefined;
+  tvShow: Show | undefined;
   searchTerm: string | undefined;
 };
 
@@ -65,8 +67,8 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   useEffect(() => {
     const newVideo = videoPlayerState.queueManager.currentVideo;
     if (!newVideo || !newVideo.tv_show) return;
-    const currentShow = shows.find(show => show.id === newVideo.tv_show);
-    if (currentShow && currentShow.episodes.length > 0) {
+    const currentShow = shows.find(show => newVideo.tv_show && show.id === parseInt(newVideo.tv_show));
+    if (currentShow && currentShow.episodes && currentShow.episodes.length > 0) {
       const currentIndex = currentShow.episodes.findIndex(ep => ep.youtube_id === newVideo.youtube_id);
       let reorganizedQueue: YouTubeVideo[];
       
@@ -105,7 +107,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     setVideoPlayerState(prev => ({ ...prev }));
   }, [videoPlayerState]);
 
-  const setVideoAndQueue = useCallback(async (newVideo: YouTubeVideo | undefined, newQueue: YouTubeVideo[], queueType: 'recommended' | 'tvShow' | 'search', metadata?: TVShow | string) => {
+  const setVideoAndQueue = useCallback(async (newVideo: YouTubeVideo | undefined, newQueue: YouTubeVideo[], queueType: 'recommended' | 'tvShow' | 'search', metadata?: Show | string) => {
     videoPlayerState.queueManager.setVideoAndQueue(newVideo, newQueue, queueType, metadata);
     setVideoPlayerState(prevState => ({
       ...prevState,
@@ -156,7 +158,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     // Fetch tv show episodes
     if (newVideo.tv_show) {
       try {
-        await loadEpisodes(newVideo.tv_show);
+        await loadEpisodes(parseInt(newVideo.tv_show));
       } catch (error) {
         console.error("Failed to fetch tv show episodes", error);
       }
@@ -164,7 +166,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
 
     // Fetch and load tokenizer cache
     try {
-      const tokenizerCache = await getTokenizerCacheForVideo(newVideo.id, l2Lang.code);
+      const tokenizerCache = await getTokenizerCacheForVideo(newVideo.id || '', l2Lang.code);
       if (tokenizerCache && tokenizer) {
         tokenizer.loadCache(tokenizerCache);
       }
@@ -176,7 +178,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     const authToken = await getStoredAuthToken();
     if (authToken && newVideo.id) {
       try {
-        await addToWatchHistory(l2Lang.id, Number(newVideo.id), 0, authToken);
+        await addToWatchHistory(l2Lang.id, parseInt(newVideo.id), 0, authToken);
       } catch (error) {
         console.error("Failed to add video to watch history", error);
       }
@@ -222,12 +224,10 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
       {children}
       <ResizablePanel
         visible={!!videoPlayerState.queueManager.currentVideo}
-        onMinimize={minimizePlayer}
-        onMaximize={maximizePlayer}
         colorFrom={primaryBackgroundColor}
         colorTo={primaryBrandColor}
         isMinimized={videoPlayerState.isMini}
-        setIsMinimized={(isMini) => setVideoPlayerState(prev => ({ ...prev, isMini }))}
+        setIsMinimized={(isMini: boolean) => setVideoPlayerState(prev => ({ ...prev, isMini }))}
       >
         <MiniPlayer />
       </ResizablePanel>

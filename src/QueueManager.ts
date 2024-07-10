@@ -1,12 +1,7 @@
 // @/src/QueueManager.ts
 
 import { YouTubeVideo } from "@/types/videoTypes";
-
-type TVShow = {
-  id: string;
-  title: string;
-  episodes: YouTubeVideo[];
-};
+import { Show } from '@/components/ShowCard';
 
 type QueueType = 'recommended' | 'tvShow' | 'search';
 
@@ -14,7 +9,7 @@ export class QueueManager {
   private _currentVideo: YouTubeVideo | undefined;
   private _queue: YouTubeVideo[];
   private _queueType: QueueType;
-  private _tvShow: TVShow | undefined;
+  private _tvShow: Show | undefined;
   private _searchTerm: string | undefined;
 
   constructor(initialVideo?: YouTubeVideo, initialQueue: YouTubeVideo[] = [], queueType: QueueType = 'recommended') {
@@ -35,7 +30,7 @@ export class QueueManager {
     return this._queueType;
   }
 
-  get tvShow(): TVShow | undefined {
+  get tvShow(): Show | undefined {
     return this._tvShow;
   }
 
@@ -47,7 +42,7 @@ export class QueueManager {
     return this._currentVideo ? this._queue.findIndex(v => v.youtube_id === this._currentVideo?.youtube_id) : -1;
   }
 
-  setVideoAndQueue(newVideo: YouTubeVideo | undefined, newQueue: YouTubeVideo[], queueType: QueueType, metadata?: TVShow | string): void {
+  setVideoAndQueue(newVideo: YouTubeVideo | undefined, newQueue: YouTubeVideo[], queueType: QueueType, metadata?: Show | string): void {
     this._currentVideo = newVideo;
     this._queue = newQueue;
     this._queueType = queueType;
