@@ -4,7 +4,6 @@ import { Token } from '@/types/tokenTypes';
 
 export const addSpaceTokens = (tokens: Token[]): Token[] => {
   let newTokens: Token[] = [];
-  let prevWasPunctuation = false;
   let insideQuote = false;
 
   for (let i = 0; i < tokens.length; i++) {
@@ -16,22 +15,22 @@ export const addSpaceTokens = (tokens: Token[]): Token[] => {
         newTokens.push(token);
         insideQuote = false;
       } else {
-        if (newTokens.length > 0 && !prevWasPunctuation) {
+        if (newTokens.length > 0 && newTokens[newTokens.length - 1].text !== " ") {
           newTokens.push({ text: " ", pos: undefined, lemmas: [], pronunciation: undefined });
         }
         newTokens.push(token);
         insideQuote = true;
       }
-      prevWasPunctuation = true;
     } else if (word === "," || word === "." || word === ":" || word === ";") {
       newTokens.push(token);
-      prevWasPunctuation = true;
+      if (i < tokens.length - 1 && tokens[i + 1].text !== '"' && tokens[i + 1].text !== "'") {
+        newTokens.push({ text: " ", pos: undefined, lemmas: [], pronunciation: undefined });
+      }
     } else {
-      if (newTokens.length > 0 && !prevWasPunctuation && !insideQuote) {
+      if (newTokens.length > 0 && newTokens[newTokens.length - 1].text !== " " && !insideQuote) {
         newTokens.push({ text: " ", pos: undefined, lemmas: [], pronunciation: undefined });
       }
       newTokens.push(token);
-      prevWasPunctuation = false;
     }
   }
 

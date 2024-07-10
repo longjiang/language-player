@@ -66,18 +66,20 @@ class LocalTokenizer {
 
   private async tokenizeDiscreta(text: string): Promise<Token[]> {
     const tokens: Token[] = [];
-    const regex = /\w+|[^\w\s]/g;
+    const regex = /\p{L}+|\p{N}+|\p{P}|\p{S}/gu;
     
     let match: RegExpExecArray | null;
     while ((match = regex.exec(text)) !== null) {
-      if (/\w/.test(match[0])) {
+      if (/\p{L}|\p{N}/.test(match[0])) {
         tokens.push({ text: match[0], pos: 'word' });
       } else {
         tokens.push({ text: match[0], pos: 'punct' });
       }
     }
+
+    const tokensWithSpaces = addSpaceTokens(tokens);
     
-    return addSpaceTokens(tokens);
+    return tokensWithSpaces;
   }
 
   public static normalizeTokens(tokens: Token[], text: string): Token[] {

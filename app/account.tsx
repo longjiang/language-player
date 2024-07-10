@@ -116,7 +116,7 @@ const AccountScreen = () => {
           size="small"
           type="ghost"
           onPress={() => {
-            router.navigate("/test/playlist");
+            router.navigate("/test/tokenizer");
           }}
           style={{ color: secondaryTextColor }}
         />
