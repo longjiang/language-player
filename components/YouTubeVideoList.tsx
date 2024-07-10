@@ -27,7 +27,7 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
   const renderVideoCard = ({ item, index }: { item: any, index: number }) => (
-    <View style={[style, variant === 'horizontal' && { marginBottom: 8 }]}>
+    <View style={[style, { marginBottom: 16 }]}>
       <YouTubeVideoCard key={index} video={item} videos={videos} variant={variant} />
     </View>
   );
@@ -42,7 +42,6 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
       onEndReached={onEndReached}
       onEndReachedThreshold={onEndReachedThreshold}
       ListFooterComponent={ListFooterComponent}
-      scrollEnabled={variant === 'vertical'}
     />
   );
 };
