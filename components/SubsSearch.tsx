@@ -22,13 +22,13 @@ export const SubsSearch = ({ term }: { term: string }): JSX.Element => {
     setLoading(true);
     try {
       const videos = await subsSearch(
-        [searchTerm],
-        l2Lang.code,
-        undefined,
-        undefined,
-        50,
-        5,
-        '-views'
+        [searchTerm], // searchTerms
+        l2Lang.code, // l2Code
+        undefined, // category
+        l2Lang.stats.videoCount > 50000 ? 'nnull' : undefined, // tvShow
+        50, // limit
+        5, // context
+        // Sorts by views by default
       );
       
       setResults(videos);

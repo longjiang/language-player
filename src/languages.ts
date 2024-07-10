@@ -4,7 +4,7 @@ import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
 import * as Papa from 'papaparse';
 import {
-  LANGS_WITH_CONTENT,
+  LANGUAGE_VIDEO_COUNT,
   LANGS_YOUTUBE_SUPPORTS,
   LANGS_WITH_LIVE_TV,
   LANGS_WITH_AZURE_TRANSLATE,
@@ -39,6 +39,9 @@ export type Language = {
   logo: string;
   logoDesc: string;
   continua: boolean;
+  stats: {
+    videoCount: number;
+  };
   has: {
     content: boolean;
     youtube: boolean;
@@ -76,8 +79,11 @@ class Languages {
         continua,
         han: HAN_LANGUAGES.includes(lang.iso639_3),
         direction: RTL_LANGUAGES.includes(lang.iso639_3) ? 'rtl' : 'ltr',
+        stats: {
+          videoCount: LANGUAGE_VIDEO_COUNT[code] || 0
+        },
         has: {
-          content: LANGS_WITH_CONTENT.includes(lang.iso639_3),
+          content: lang.iso639_3 in LANGUAGE_VIDEO_COUNT,
           youtube: LANGS_YOUTUBE_SUPPORTS.includes(lang.iso639_3),
           liveTV: LANGS_WITH_LIVE_TV.includes(lang.iso639_3),
           azureTranslate: LANGS_WITH_AZURE_TRANSLATE.includes(lang.iso639_3),

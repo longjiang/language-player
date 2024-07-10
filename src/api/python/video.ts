@@ -158,6 +158,23 @@ export const recommendVideos = async (
   return response.map(normalizeVideoData);
 };
 
+/**
+ * Searches for YouTube videos based on subtitle content and other criteria.
+ * 
+ * @param terms - Array of search terms to look for in the subtitles.
+ * @param langCode - Two-letter language code for the subtitle language.
+ * @param category - Optional. Category ID(s) to filter by. Can be a comma-separated string of IDs,
+ *                   or 'nnull' to filter for non-null categories.
+ * @param tvShow - Optional. TV show ID(s) to filter by. Can be a comma-separated string of IDs,
+ *                 or 'nnull' to filter for non-null TV shows.
+ * @param limit - Optional. Maximum number of results to return. Default is 500.
+ * @param context - Optional. Number of context lines to include around matched terms. Default is 5.
+ * @param sort - Optional. Sorting criteria for the results. 
+ *               '-date' for descending date, 'title' for ascending title.
+ *               If not specified, results are sorted by views in descending order.
+ * @returns A promise that resolves to an array of normalized YouTube video objects.
+ * @throws Will throw an error if the request fails or if the 'l2' parameter is missing.
+ */
 export const subsSearch = async (
   terms: string[],
   langCode: string,
@@ -165,9 +182,9 @@ export const subsSearch = async (
   tvShow?: string,
   limit: number = 500,
   context: number = 5,
-  sort?: string
+  sort?: '-date' | 'title' | undefined
 ): Promise<YouTubeVideo[]> => {
-  const params: any = {
+  const params: Record<string, string | number | undefined> = {
     terms: terms.join(','),
     l2: langCode,
     category,
@@ -176,6 +193,7 @@ export const subsSearch = async (
     context,
     sort
   };
+
   const response = await request<YouTubeVideo[]>({ method: 'get', url: "/subs-search", params });
   return response.map(normalizeVideoData);
 };
