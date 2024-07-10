@@ -183,63 +183,6 @@ export const dictionaryLoadingModalStyles = StyleSheet.create({
   },
 });
 
-// @/src/styles.ts
-
-
-export const youtubeVideoCardStyles = StyleSheet.create({
-  details: {
-  },
-  card: {
-    overflow: "hidden",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.2,
-  },
-  thumbnailContainer: {
-    position: 'relative',
-  },
-  thumbnail: {
-    width: "100%", // Makes the image fill the container
-    aspectRatio: 16 / 9, // Maintains a 16:9 aspect ratio
-    borderRadius: 8,
-  },
-  title: {
-    marginBottom: 3,
-  },
-  infoContainer: {
-    marginTop: 16,
-  },
-  badge: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
-    backgroundColor: '#6c757d',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-  },
-  badgeText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  durationBadge: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-  },
-  durationText: {
-    color: 'white',
-  },
-});
-
 export const videoWithTranscriptStyles = StyleSheet.create({
   headerButton: { padding: 8 },
   header: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 8 },

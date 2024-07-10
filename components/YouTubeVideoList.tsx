@@ -12,6 +12,7 @@ interface YouTubeVideoListProps {
   onEndReached?: () => void;
   onEndReachedThreshold?: number;
   ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null;
+  variant?: 'vertical' | 'horizontal';
 }
 
 export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
@@ -20,13 +21,14 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
   style = {},
   onEndReached,
   onEndReachedThreshold,
-  ListFooterComponent
+  ListFooterComponent,
+  variant = 'vertical'
 }) => {
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
   const renderVideoCard = ({ item, index }: { item: any, index: number }) => (
-    <View style={style}>
-      <YouTubeVideoCard key={index} video={item} videos={videos} />
+    <View style={[style, variant === 'horizontal' && { marginBottom: 8 }]}>
+      <YouTubeVideoCard key={index} video={item} videos={videos} variant={variant} />
     </View>
   );
 
@@ -40,6 +42,7 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
       onEndReached={onEndReached}
       onEndReachedThreshold={onEndReachedThreshold}
       ListFooterComponent={ListFooterComponent}
+      scrollEnabled={variant === 'vertical'}
     />
   );
 };

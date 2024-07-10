@@ -7,7 +7,8 @@ export default function MeLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="saved-words" options={{ headerShown: false }} />
       <Stack.Screen name="watch-history" options={{ headerShown: false }} />
-      <Stack.Screen name="test" options={{ headerShown: false }} />
+      <Stack.Screen name="test/tokenizer" options={{ headerShown: false }} />
+      <Stack.Screen name="test/playlist" options={{ headerShown: false }} />
     </Stack>
   );
 }
