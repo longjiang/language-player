@@ -1,6 +1,6 @@
 // @/components/MiniPlayer.tsx
 
-import React, { useCallback, useRef } from "react";
+import React from "react";
 import { View, StyleSheet } from "react-native";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { VideoWithTranscript } from "@/components/VideoWithTranscript";
@@ -8,13 +8,17 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Header } from "@/components/Header";
-import { ThemedRBSheet } from "@/components/ThemedRBSheet";
+import { useNavigation } from '@react-navigation/native';
+import { useRouteChange } from '@/hooks/useRouteChange';
 
 export const MiniPlayer = () => {
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
-  const { videoPlayerState, currentVideo, queue, queueType, tvShow, searchTerm, minimizePlayer, maximizePlayer } = useVideoPlayer();
+  const { videoPlayerState, currentVideo, queue, queueType, tvShow, searchTerm, minimizePlayer } = useVideoPlayer();
+  const navigation = useNavigation();
+
+  useRouteChange(navigation, minimizePlayer);
 
   if (!currentVideo) {
     return null;
