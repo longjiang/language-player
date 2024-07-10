@@ -1,7 +1,7 @@
 // @/app/tv-shows.tsx
 
 import React, { useRef, useState, useMemo } from "react";
-import { View, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, ViewStyle } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -12,11 +12,12 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ActivityIndicator } from 'react-native';
 import { ShowCard, Show } from "@/components/ShowCard";
 import { tvShowsStyles as styles } from "@/src/styles";
-import { ThemedRBSheet } from "@/components/ThemedRBSheet";
+import { ThemedRBSheet, ThemedRBSheetProps } from "@/components/ThemedRBSheet";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedRadio } from "@/components/ThemedRadio";
 import { useTVShows } from "@/contexts/TVShowsContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+
 
 const TVShowsScreen = () => {
   const { shows, isLoading } = useTVShows();
@@ -25,10 +26,10 @@ const TVShowsScreen = () => {
   const [localeFilter, setLocaleFilter] = useState('all');
   const { t } = useLanguage();
 
-  const rbSheetRef = useRef(null);
+  const rbSheetRef = useRef<any>(null);
 
   const filteredAndSortedShows = useMemo(() => {
-    return shows
+    return (shows as Show[])
       .filter(show => 
         show.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
         (localeFilter === 'all' || show.locale === localeFilter)
@@ -40,7 +41,7 @@ const TVShowsScreen = () => {
           case 'views':
             return b.avg_views - a.avg_views;
           case 'year':
-            return (b.year || 0) - (a.year || 0);
+            return ((b.year || 0) - (a.year || 0));
           default:
             return 0;
         }
@@ -65,9 +66,14 @@ const TVShowsScreen = () => {
     return ["all", ...Array.from(locales)];
   };
 
-  const SortOption = ({ title, option }) => (
+  interface SortOptionProps {
+    title: string;
+    option: string;
+  }
+
+  const SortOption: React.FC<SortOptionProps> = ({ title, option }) => (
     <TouchableOpacity 
-      style={styles.sortOption} 
+      style={styles.sortOption as ViewStyle} 
       onPress={() => {
         setSortOption(option);
         rbSheetRef.current?.close();

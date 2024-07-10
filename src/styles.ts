@@ -321,6 +321,8 @@ export const goProStyles = StyleSheet.create({
 });
 
 export const tvShowsStyles = StyleSheet.create({
+  sortOption: {
+  },
   header: {
     flexDirection: "row",
     marginBottom: 26,

@@ -19,7 +19,8 @@ export interface Show {
   avg_views: number;
   locale: string;
   created_on?: string;
-  episodes?: YouTubeVideo[];
+  year?: number; // Not presently in the db
+  episodes?: YouTubeVideo[]; // Not in the db
 }
 
 interface ShowCardProps {

@@ -6,10 +6,12 @@ import { SafeAreaView, StyleSheet, ViewStyle } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";  // Assuming the hook is defined as seen in your file
 
 // Define the types for the props of the ThemedRBSheet
-interface ThemedRBSheetProps {
+export interface ThemedRBSheetProps {
   children?: ReactNode;
   height?: number;
   closeOnPressMask?: boolean;
+  open: () => void;
+  close: () => void;
   customStyles?: {
     wrapper?: ViewStyle;
     draggableIcon?: ViewStyle;
