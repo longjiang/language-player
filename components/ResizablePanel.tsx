@@ -1,5 +1,3 @@
-// @/components/ResizablePanel.tsx
-
 import React, { useEffect } from 'react';
 import { StyleSheet, Dimensions } from 'react-native';
 import Animated, {
@@ -21,8 +19,6 @@ export const ResizablePanel = ({
   colorFrom = 'purple',
   colorTo = 'green',
   visible = false,
-  onMaximize,
-  onMinimize,
   isMinimized,
   setIsMinimized,
 }) => {
@@ -66,13 +62,13 @@ export const ResizablePanel = ({
     };
   });
 
-  const rootContainerHeight = isMinimized ? minHeight + minBottom : maxHeight;
-
   return (
-    <GestureHandlerRootView style={[styles.rootContainer, { height: rootContainerHeight }]}>
+    <GestureHandlerRootView style={styles.rootContainer}>
       <PanGestureHandler onGestureEvent={handleGesture}>
         <Animated.View style={[styles.container, animatedContainerStyle]}>
-          {children}
+          <Animated.View style={[styles.overlay]}>
+            {children}
+          </Animated.View>
         </Animated.View>
       </PanGestureHandler>
     </GestureHandlerRootView>
@@ -90,5 +86,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
   },
 });
