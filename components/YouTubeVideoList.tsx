@@ -19,6 +19,7 @@ interface YouTubeVideoListProps {
   queueType?: 'recommended' | 'tvShow' | 'search';
   tvShow?: {id: string, title: string, episodes: YouTubeVideo[]};
   searchTerm?: string;
+  onVideoPress?: () => void;
 }
 
 export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
@@ -33,7 +34,8 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
   currentVideoId,
   queueType = 'recommended',
   tvShow,
-  searchTerm
+  searchTerm,
+  onVideoPress
 }) => {
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
@@ -49,6 +51,7 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
         queueType={queueType}
         tvShow={tvShow}
         searchTerm={searchTerm}
+        onPress={onVideoPress}
       />
     </View>
   );

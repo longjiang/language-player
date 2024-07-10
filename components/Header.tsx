@@ -14,16 +14,24 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface HeaderProps {
   minimizePlayer: () => void;
-  openQueueSheet: () => void;
-  refRBSheet: React.RefObject<typeof ThemedRBSheet>;
 }
 
 export const Header: React.FC<HeaderProps> = ({ minimizePlayer }) => {
   const { tvShow, searchTerm, queue, queueType, currentVideo } = useVideoPlayer();
   const refRBSheet = useRef<ThemedRBSheet>(null);
   const secondaryBrandColor = useThemeColor({}, 'secondaryBrand');
+
   const openQueueSheet = useCallback(() => {
     refRBSheet.current?.open();
+  }, []);
+
+  const closeQueueSheet = useCallback(() => {
+    refRBSheet.current?.close();
+  }, []);
+
+  const handleVideoPress = useCallback(() => {
+    closeQueueSheet();
+    // Any other actions you want to perform when a video is selected
   }, []);
 
   return (
@@ -64,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({ minimizePlayer }) => {
                 <Ionicon name="tv-outline" size={20} color={secondaryBrandColor} />
                 <ThemedText style={{ marginLeft: 8, color: secondaryBrandColor }} type="defaultBold">TV Show</ThemedText>
               </View>
-              <ThemedText type="subtitle" style={{ marginBottom: 26 }}>{tvShow.title}</ThemedText>'
+              <ThemedText type="subtitle" style={{ marginBottom: 26 }}>{tvShow.title}</ThemedText>
             </>
           )}
           {queueType === "recommended" && (
@@ -91,6 +99,10 @@ export const Header: React.FC<HeaderProps> = ({ minimizePlayer }) => {
             variant="horizontal"
             currentVideoId={currentVideo ? currentVideo.youtube_id : undefined}
             showDetails={false}
+            queueType={queueType}
+            tvShow={tvShow}
+            searchTerm={searchTerm}
+            onVideoPress={handleVideoPress}
           />
         </ScrollView>
       </ThemedRBSheet>

@@ -27,6 +27,7 @@ export const YouTubeVideoCard = ({
   tvShow,
   searchTerm,
   showDetails = true,
+  onPress,
 }: { 
   video: YouTubeVideo; 
   videos: YouTubeVideo[]; 
@@ -37,6 +38,7 @@ export const YouTubeVideoCard = ({
   tvShow?: {id: string, title: string, episodes: YouTubeVideo[]};
   searchTerm?: string;
   showDetails?: boolean;
+  onPress?: () => void;
 }) => {
   if (videos.length === 0) videos = [video];
   const { setVideoAndQueue } = useVideoPlayer();
@@ -46,6 +48,9 @@ export const YouTubeVideoCard = ({
 
   const handlePress = () => {
     setVideoAndQueue(video, videos, queueType, queueType === 'tvShow' ? tvShow : searchTerm);
+    if (onPress) {
+      onPress();
+    }
   };
 
   const viewsText = video.views ? t('title.views', {numViews: video.views?.toLocaleString()}) : '';
@@ -90,6 +95,11 @@ export const YouTubeVideoCard = ({
           <ThemedText style={{... styles.title }} type="defaultBold" numberOfLines={variant === 'horizontal' ? 1 : 2} ellipsizeMode="tail">
             {video.title}
           </ThemedText>
+          {showDetails && (
+            <ThemedText style={styles.details} type="small" variant="secondary">
+              { [viewsText, localeText].filter(Boolean).join(' • ') }
+            </ThemedText>
+          )}
         </View>
       </View>
     </TouchableOpacity>
