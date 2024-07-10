@@ -248,7 +248,7 @@ export const videoWithTranscriptStyles = StyleSheet.create({
   },
   miniPlayerVideoTitle: { fontSize: 14, color: Swatches.neutral[0] },
   miniPlayerVideoSubTitle: { fontSize: 12, color: Swatches.neutral[0] },
-  fullPlayerContainer: { marginBottom: 26 },
+  fullPlayerContainer: { paddingVertical: 26 },
   miniPlayerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
