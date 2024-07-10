@@ -11,17 +11,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 
-/**
- * A component that allows vertical resizing and color transitioning via a pan gesture.
- * @param {object} props - Component props.
- * @param {React.ReactNode} props.children - Children nodes to be rendered inside the component.
- * @param {number} props.minHeight - The minimum height of the container.
- * @param {number} props.maxHeight - The maximum height of the container.
- * @param {number} props.minBottom - The minimum bottom spacing of the container.
- * @param {string} props.colorFrom - Initial color of the container background.
- * @param {string} props.colorTo - Final color of the container background.
- * @param {boolean} props.visible - Whether the component should be visible.
- */
 export const ResizablePanel = ({
   children,
   minHeight = 70,
@@ -29,7 +18,7 @@ export const ResizablePanel = ({
   minBottom = 100,
   colorFrom = 'purple',
   colorTo = 'green',
-  visible = false
+  visible = false,
 }) => {
   if (!visible) {
     return null;
@@ -61,11 +50,17 @@ export const ResizablePanel = ({
     const height = interpolate(progress.value, [0, 1], [maxHeight, minHeight]);
     const bottom = interpolate(progress.value, [0, 1], [0, minBottom]);
     const backgroundColor = interpolateColor(progress.value, [0, 1], [colorFrom, colorTo]);
-    return { height, bottom, backgroundColor };
+    return {
+      height,
+      bottom,
+      backgroundColor,
+    };
   });
 
+  const rootContainerHeight = isMinimized ? minHeight + minBottom : maxHeight;
+
   return (
-    <GestureHandlerRootView style={styles.rootContainer}>
+    <GestureHandlerRootView style={[styles.rootContainer, { height: rootContainerHeight }]}>
       <PanGestureHandler onGestureEvent={handleGesture}>
         <Animated.View style={[styles.container, animatedContainerStyle]}>
           {children}
@@ -81,7 +76,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    top: 0,
   },
   container: {
     position: 'absolute',
