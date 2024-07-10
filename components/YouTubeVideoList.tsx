@@ -13,6 +13,7 @@ interface YouTubeVideoListProps {
   onEndReachedThreshold?: number;
   ListFooterComponent?: React.ComponentType<any> | React.ReactElement | null;
   variant?: 'vertical' | 'horizontal';
+  showDetails?: boolean;
   currentVideoId?: string;
 }
 
@@ -24,6 +25,7 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
   onEndReachedThreshold,
   ListFooterComponent,
   variant = 'vertical',
+  showDetails = true,
   currentVideoId
 }) => {
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
@@ -36,13 +38,13 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
         videos={videos} 
         variant={variant} 
         isCurrentVideo={item.youtube_id === currentVideoId}
+        showDetails={showDetails}
       />
     </View>
   );
 
   return (
     <FlatList
-      style={{ backgroundColor: primaryBackgroundColor }}
       data={videos}
       renderItem={renderVideoCard}
       ListHeaderComponent={header}

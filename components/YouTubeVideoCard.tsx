@@ -25,7 +25,8 @@ export const YouTubeVideoCard = ({
   style = {},
   queueType = 'recommended',
   tvShow,
-  searchTerm
+  searchTerm,
+  showDetails = true,
 }: { 
   video: YouTubeVideo; 
   videos: YouTubeVideo[]; 
@@ -35,6 +36,7 @@ export const YouTubeVideoCard = ({
   queueType?: 'recommended' | 'tvShow' | 'search';
   tvShow?: {id: string, title: string, episodes: YouTubeVideo[]};
   searchTerm?: string;
+  showDetails?: boolean;
 }) => {
   if (videos.length === 0) videos = [video];
   const { setVideoAndQueue } = useVideoPlayer();
@@ -88,9 +90,9 @@ export const YouTubeVideoCard = ({
           <ThemedText style={styles.title} type="defaultBold" numberOfLines={2}>
             {video.title}
           </ThemedText>
-          <ThemedText style={styles.details} type="small" variant="secondary">
+          {showDetails && <ThemedText style={styles.details} type="small" variant="secondary">
             { [viewsText, localeText].filter(Boolean).join(' • ') }
-          </ThemedText>
+          </ThemedText>}
         </View>
       </View>
     </TouchableOpacity>

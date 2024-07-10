@@ -169,7 +169,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
         <View>
           <ThemedText type="subtitle">{t('video.queue')}</ThemedText>
           
-          <YouTubeVideoList videos={playlist} variant="horizontal" currentVideoId={ video ? video.youtube_id : undefined }/>
+          <YouTubeVideoList videos={playlist} variant="horizontal" currentVideoId={ video ? video.youtube_id : undefined } showDetails={false}/>
         </View>
       </ThemedRBSheet>
       
