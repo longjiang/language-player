@@ -18,12 +18,12 @@ export const ThemedScreen = ({
   onBackPress,
   imageName,
   imageStyle,
-  showFlag,
+  showFlag = false,
   showHeader = true,
   onAction
 }: {
   title: string,
-  titleParams: any,
+  titleParams?: any,
   children: React.ReactNode,
   onBackPress?: () => void,
   imageName?: any,

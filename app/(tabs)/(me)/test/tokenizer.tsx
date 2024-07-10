@@ -27,17 +27,19 @@ const sampleTexts = {
 };
 
 
-function getSampleText(languageCode) {
-  return sampleTexts[languageCode] || sampleTexts.en; // Default to English if the language is not supported
+
+function getSampleText(languageCode: string): string {
+  return sampleTexts[languageCode as keyof typeof sampleTexts] || sampleTexts.en;
 }
 
 function Test() {
   const { l2Lang } = useLanguage();
+  if (!l2Lang) return null;
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
   const text = getSampleText(l2Lang.code);
 
   return (
-    <GestureHandlerRootView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemedScreen
         title="Test"
         showFlag={true}
@@ -46,7 +48,12 @@ function Test() {
         }}
       >
         <TokenizedText text={text} textScale={1.3} />
-        <ThemedButton title="Settings" onPress={() => router.navigate("/settings")} style={{ marginTop: 20 }} type="neutral" />
+        <ThemedButton 
+          title="Settings" 
+          onPress={() => router.push("/settings" as never)} 
+          style={{ marginTop: 20 }} 
+          type="neutral" 
+        />
       </ThemedScreen>
     </GestureHandlerRootView>
   );
