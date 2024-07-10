@@ -5,7 +5,6 @@ import { View, SafeAreaView, Dimensions } from "react-native";
 import { Link } from "expo-router";
 import { router } from "expo-router";
 import Ionicon from "react-native-vector-icons/Ionicons";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { YouTubeVideo } from "./YouTubeVideo";
 import { VideoControlBar } from "./VideoControlBar";
 import { SyncedTranscript } from "./SyncedTranscript";
@@ -21,6 +20,8 @@ import { Swatches } from "@/constants/Swatches";
 import { formatDuration } from "@/src/utils";
 import { videoWithTranscriptStyles as styles } from "@/src/styles";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { ThemedRBSheet } from "./ThemedRBSheet";
+import { YouTubeVideoList } from "./YouTubeVideoList";
 
 const MAX_FREE_LINES = 10;
 
@@ -35,12 +36,13 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   showHeader = false,
   isProCheckEnabled = true
 }) => {
-  const { syncedLines, currentLine, video, playVideo, updatePlayVideo, currentTime, startTime } = useVideoWithTranscriptContext();
+  const { syncedLines, currentLine, video, playVideo, updatePlayVideo, currentTime, startTime, playlist } = useVideoWithTranscriptContext();
   const { isProUser } = useSubscription();
   const { t } = useLanguage();
   const { closePlayer, minimizePlayer, maximizePlayer } = useVideoPlayer();
   const [showProModal, setShowProModal] = useState(false);
   const hasShownModalRef = useRef(false);
+  const refRBSheet = useRef<typeof ThemedRBSheet>(null);
 
   const screenWidth = Dimensions.get("window").width;
   const videoHeight = isMini ? 70 : screenWidth * 0.5625; // 16:9 aspect ratio for full mode
@@ -63,6 +65,10 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
     setShowProModal(false);
   }, []);
 
+  const openQueueSheet = useCallback(() => {
+    refRBSheet.current?.open();
+  }, []);
+
   function removeTextInBrackets(text: string) {
     const regex = /[\(\[\{［【｛].*?[\)\]\}］】｝]/g;
     return text.replace(regex, "");
@@ -80,7 +86,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
             <ThemedButton
               type="ghost"
               style={styles.headerButton}
-              trailingIcon={<Icon name="chevron-down" />}
+              trailingIcon={<Ionicon name="chevron-down" />}
               onPress={minimizePlayer}
             />
           </View>
@@ -88,7 +94,13 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
             <ThemedButton
               type="ghost"
               style={styles.headerButton}
-              trailingIcon={<Icon name="cog-outline" />}
+              trailingIcon={<Ionicon name="list" />}
+              onPress={openQueueSheet}
+            />
+            <ThemedButton
+              type="ghost"
+              style={styles.headerButton}
+              trailingIcon={<Ionicon name="cog" />}
               onPress={() => {
                 minimizePlayer();
                 router.navigate("/settings");
@@ -97,7 +109,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
           </View>
         </SafeAreaView>
       )}
-      
+
       <View style={isMini ? styles.miniPlayerVideoContainer : null}>
         <YouTubeVideo
           youtubeId={video.youtube_id}
@@ -152,6 +164,14 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
           </View>
         </>
       )}
+
+      <ThemedRBSheet ref={refRBSheet}>
+        <View>
+          <ThemedText type="subtitle">{t('video.queue')}</ThemedText>
+          
+          <YouTubeVideoList videos={playlist} variant="horizontal" currentVideoId={ video ? video.youtube_id : undefined }/>
+        </View>
+      </ThemedRBSheet>
       
       <ProFeatureModal
         visible={showProModal}
