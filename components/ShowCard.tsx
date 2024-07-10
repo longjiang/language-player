@@ -1,3 +1,5 @@
+// @/components/ShowCard.tsx
+
 import React from "react";
 import {
   View,
@@ -29,8 +31,23 @@ export const ShowCard: React.FC<ShowCardProps> = ({ show, style }) => {
   const { setVideoAndQueue } = useVideoPlayer();
 
   const handlePress = () => {
-    // Navigate to the YouTube video screen
-    setVideoAndQueue({ youtube_id: show.youtube_id, tv_show: show.id }, []);
+    // Create a video object from the show data
+    const video: YouTubeVideo = {
+      youtube_id: show.youtube_id,
+      tv_show: show.id,
+      title: show.title,
+      // Add other properties that YouTubeVideo might require
+    };
+
+    // Use the episodes if available, otherwise use an array with just the current video
+    const queue = show.episodes || [video];
+
+    // Call setVideoAndQueue with the TV show queue type and show object
+    setVideoAndQueue(video, queue, 'tvShow', {
+      id: show.id,
+      title: show.title,
+      episodes: queue
+    });
   };
 
   return (

@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   },
   smallLevelBadge: {
     position: 'absolute',
-    top: 4,
+    bottom: 4,
     left: 4,
     paddingHorizontal: 4,
     paddingVertical: 2,
