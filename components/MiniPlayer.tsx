@@ -1,6 +1,6 @@
 // @/components/MiniPlayer.tsx
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { View, StyleSheet } from "react-native";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { VideoWithTranscript } from "@/components/VideoWithTranscript";
@@ -10,15 +10,25 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Header } from "@/components/Header";
 import { useNavigation } from '@react-navigation/native';
 import { useRouteChange } from '@/hooks/useRouteChange';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const MiniPlayer = () => {
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
-  const { videoPlayerState, currentVideo, queue, queueType, tvShow, searchTerm, minimizePlayer } = useVideoPlayer();
+  const { videoPlayerState, currentVideo, queue, queueType, tvShow, searchTerm, minimizePlayer, closePlayer } = useVideoPlayer();
+  const { l2Lang } = useLanguage();
   const navigation = useNavigation();
+  const prevL2LangRef = useRef(l2Lang);
 
   useRouteChange(navigation, minimizePlayer);
+
+  useEffect(() => {
+    if (prevL2LangRef.current !== l2Lang && currentVideo) {
+      closePlayer();
+    }
+    prevL2LangRef.current = l2Lang;
+  }, [l2Lang, currentVideo, closePlayer]);
 
   if (!currentVideo) {
     return null;
