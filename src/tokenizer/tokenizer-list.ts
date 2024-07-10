@@ -13,6 +13,14 @@ import LemmatizationListTokenizer from './lemmatizationlist-tokenizer';
 import PyidaungsuTokenizer from './pyidaungsu-tokenizer';
 import { Tokenizer } from '@/types/tokenTypes';
 
+
+// For these languages, we're not tokenizing with SpaCy, but their remote cache are tokenized with SpaCy
+export const languagesWithSpaCyCache = [
+  'ca', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'hr',
+  'it', 'lt', 'mk', 'no', 'nl', 'pl', 'pt', 'ro', 'sv',
+  'uk', 'ko'
+];
+
 export const tokenizers: Tokenizer[] = [
   {
     module: OpenKoreanTextTokenizer,

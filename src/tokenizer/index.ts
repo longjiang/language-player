@@ -3,9 +3,10 @@
 import { PYTHON_SERVER } from "@/src/api/python"
 import { Language } from '@/src/languages';
 import LocalTokenizer from './local-tokenizer';
-import { tokenizers } from './tokenizer-list';
+import { tokenizers, languagesWithSpaCyCache } from './tokenizer-list';
 import CryptoJS from 'crypto-js';
 import { Token, Lemma, TokenizerModule } from '@/types/tokenTypes';
+import SpacyTokenizer from './spacy-tokenizer';
 
 export const getTokenizer = (languageCode: string): Tokenizer | null => {
   for (let tokenizer of tokenizers) {
@@ -57,9 +58,17 @@ export class TokenizerService {
 
     if (this.cache.has(cacheKey)) {
       const cacheEntry = this.cache.get(cacheKey)!;
+      
+      // For some languages such as French and German, we're not using SpaCy to tokenize due to performance
+      // However, they have tokenization cache done in SpaCy, so we need to normalize them as such.
+      let tokenizerForNormalizing = remoteTokenizer.module
+
+      if (languagesWithSpaCyCache.includes(l2Lang.code)) {
+        tokenizerForNormalizing = SpacyTokenizer
+      }
 
       const normalizedTokens = remoteTokenizer
-        ? remoteTokenizer.module.normalizeTokens(cacheEntry, text)
+        ? tokenizerForNormalizing.normalizeTokens(cacheEntry, text)
         : cacheEntry;
       return normalizedTokens
     }
