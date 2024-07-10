@@ -19,7 +19,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ minimizePlayer }) => {
-  const { tvShow, queue, queueType, currentVideo } = useVideoPlayer();
+  const { tvShow, searchTerm, queue, queueType, currentVideo } = useVideoPlayer();
   const refRBSheet = useRef<ThemedRBSheet>(null);
   const secondaryBrandColor = useThemeColor({}, 'secondaryBrand');
   const openQueueSheet = useCallback(() => {
@@ -59,13 +59,31 @@ export const Header: React.FC<HeaderProps> = ({ minimizePlayer }) => {
       <ThemedRBSheet ref={refRBSheet} height={600}>
         <ScrollView>
           {queueType === "tvShow" && tvShow && (
-            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-              <Ionicon name="tv-outline" size={20} color={secondaryBrandColor} />
-              <ThemedText style={{ marginLeft: 8, color: secondaryBrandColor }} type="defaultBold">TV Show</ThemedText>
-            </View>
+            <>
+              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <Ionicon name="tv-outline" size={20} color={secondaryBrandColor} />
+                <ThemedText style={{ marginLeft: 8, color: secondaryBrandColor }} type="defaultBold">TV Show</ThemedText>
+              </View>
+              <ThemedText type="subtitle" style={{ marginBottom: 26 }}>{tvShow.title}</ThemedText>'
+            </>
           )}
-          {queueType === "tvShow" && tvShow && (
-            <ThemedText type="subtitle" style={{ marginBottom: 26 }}>{tvShow.title}</ThemedText>
+          {queueType === "recommended" && (
+            <>
+              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <Ionicon name="sparkles" size={20} color={secondaryBrandColor} />
+                <ThemedText style={{ marginLeft: 8, color: secondaryBrandColor }} type="defaultBold">Recommended</ThemedText>
+              </View>
+              <ThemedText type="subtitle" style={{ marginBottom: 26 }}>Content Tailored to You</ThemedText>
+            </>
+          )}
+          {queueType === "search" && searchTerm && (
+            <>
+              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <Ionicon name="search" size={20} color={secondaryBrandColor} />
+                <ThemedText style={{ marginLeft: 8, color: secondaryBrandColor }} type="defaultBold">Search Results</ThemedText>
+              </View>
+              <ThemedText type="subtitle" style={{ marginBottom: 26 }}>Videos matching "{searchTerm}"</ThemedText>
+            </>
           )}
 
           <YouTubeVideoList

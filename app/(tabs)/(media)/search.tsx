@@ -80,12 +80,6 @@ const SearchScreen = () => {
             onSubmitEditing={handleSearch}
             value={searchQuery}
           />
-          <ThemedButton
-            type="ghost"
-            size="medium"
-            icon="magnify"
-            onPress={handleSearch}
-          />
         </View>
       </View>
     );
@@ -131,6 +125,8 @@ const SearchScreen = () => {
             videos={items}
             header={<ListHeader />}
             style={{ padding: 12 }}
+            queueType="search"
+            searchTerm={searchQuery}
           />
           {isLoading && (
             <View style={styles.spinnerContainer}>

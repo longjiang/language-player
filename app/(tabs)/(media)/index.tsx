@@ -173,6 +173,7 @@ const MediaHomeScreen = () => {
       onEndReached={handleLoadMore}
       onEndReachedThreshold={0.1}
       ListFooterComponent={footerComponent}
+      queueType="recommended"
     />
   );
 };

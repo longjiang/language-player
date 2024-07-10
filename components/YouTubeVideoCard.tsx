@@ -90,9 +90,6 @@ export const YouTubeVideoCard = ({
           <ThemedText style={{... styles.title }} type="defaultBold" numberOfLines={variant === 'horizontal' ? 1 : 2} ellipsizeMode="tail">
             {video.title}
           </ThemedText>
-          {showDetails && <ThemedText style={styles.details} type="small" variant="secondary">
-            { [viewsText, localeText].filter(Boolean).join(' • ') }
-          </ThemedText>}
         </View>
       </View>
     </TouchableOpacity>

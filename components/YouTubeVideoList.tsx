@@ -4,9 +4,10 @@ import React, { ReactElement } from "react";
 import { FlatList, View, ViewStyle } from "react-native";
 import { YouTubeVideoCard } from '@/components/YouTubeVideoCard';
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { YouTubeVideo } from '@/types';
 
 interface YouTubeVideoListProps {
-  videos: Array<any>;
+  videos: Array<YouTubeVideo>;
   header?: ReactElement | null;
   style?: ViewStyle;
   onEndReached?: () => void;
@@ -15,6 +16,9 @@ interface YouTubeVideoListProps {
   variant?: 'vertical' | 'horizontal';
   showDetails?: boolean;
   currentVideoId?: string;
+  queueType?: 'recommended' | 'tvShow' | 'search';
+  tvShow?: {id: string, title: string, episodes: YouTubeVideo[]};
+  searchTerm?: string;
 }
 
 export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
@@ -26,11 +30,14 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
   ListFooterComponent,
   variant = 'vertical',
   showDetails = true,
-  currentVideoId
+  currentVideoId,
+  queueType = 'recommended',
+  tvShow,
+  searchTerm
 }) => {
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
-  const renderVideoCard = ({ item, index }: { item: any, index: number }) => (
+  const renderVideoCard = ({ item, index }: { item: YouTubeVideo, index: number }) => (
     <View style={[style, variant === 'horizontal' && { marginBottom: 4 }]}>
       <YouTubeVideoCard 
         key={index} 
@@ -39,6 +46,9 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
         variant={variant} 
         isCurrentVideo={item.youtube_id === currentVideoId}
         showDetails={showDetails}
+        queueType={queueType}
+        tvShow={tvShow}
+        searchTerm={searchTerm}
       />
     </View>
   );
@@ -48,7 +58,7 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
       data={videos}
       renderItem={renderVideoCard}
       ListHeaderComponent={header}
-      keyExtractor={(item, index) => index.toString()}
+      keyExtractor={(item, index) => item.youtube_id || index.toString()}
       onEndReached={onEndReached}
       onEndReachedThreshold={onEndReachedThreshold}
       ListFooterComponent={ListFooterComponent}
