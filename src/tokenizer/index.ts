@@ -58,16 +58,15 @@ export class TokenizerService {
 
     if (this.cache.has(cacheKey)) {
       const cacheEntry = this.cache.get(cacheKey)!;
-      
+      let tokenizerForNormalizing = remoteTokenizer?.module
+
       // For some languages such as French and German, we're not using SpaCy to tokenize due to performance
       // However, they have tokenization cache done in SpaCy, so we need to normalize them as such.
-      let tokenizerForNormalizing = remoteTokenizer.module
-
       if (languagesWithSpaCyCache.includes(l2Lang.code)) {
         tokenizerForNormalizing = SpacyTokenizer
       }
 
-      const normalizedTokens = remoteTokenizer
+      const normalizedTokens = tokenizerForNormalizing
         ? tokenizerForNormalizing.normalizeTokens(cacheEntry, text)
         : cacheEntry;
       return normalizedTokens
