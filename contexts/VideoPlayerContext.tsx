@@ -11,6 +11,7 @@ import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
 import { useTVShows } from "@/contexts/TVShowsContext";
 import { ResizablePanel } from "@/components/ResizablePanel";
 import { MiniPlayer } from "@/components/MiniPlayer";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 type VideoPlayerState = {
   isMini: boolean;
@@ -50,6 +51,8 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const { getStoredAuthToken } = useAuth();
   const { tokenizer } = useDictionary();
   const { loadEpisodes, shows } = useTVShows();
+  const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
+  const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
   useEffect(() => {
     const newVideo = videoPlayerState.video
@@ -215,6 +218,10 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         visible={!!videoPlayerState.video}
         onMinimize={handleMinimize}
         onMaximize={handleMaximize}
+        colorFrom={primaryBackgroundColor}
+        colorTo={primaryBrandColor}
+        isMinimized={videoPlayerState.isMini}
+        setIsMinimized={(isMini) => setVideoPlayerState(prev => ({ ...prev, isMini }))}
       >
         <MiniPlayer />
       </ResizablePanel>

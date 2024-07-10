@@ -1,6 +1,6 @@
 // @/components/ResizablePanel.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Dimensions } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -23,21 +23,18 @@ export const ResizablePanel = ({
   visible = false,
   onMaximize,
   onMinimize,
+  isMinimized,
+  setIsMinimized,
 }) => {
   if (!visible) {
     return null;
   }
 
-  const [isMinimized, setIsMinimized] = useState(false);
-  const progress = useSharedValue(0);
+  const progress = useSharedValue(isMinimized ? 1 : 0);
 
   useEffect(() => {
-    if (isMinimized) {
-      onMinimize && onMinimize();
-    } else {
-      onMaximize && onMaximize();
-    }
-  }, [isMinimized, onMinimize, onMaximize]);
+    progress.value = withTiming(isMinimized ? 1 : 0);
+  }, [isMinimized, progress]);
 
   const handleGesture = useAnimatedGestureHandler({
     onStart: (_, context) => {
