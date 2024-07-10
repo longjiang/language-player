@@ -39,7 +39,7 @@ export const Token: React.FC<{
   const primaryTextColor = useThemeColor({}, "primaryText");
   const primaryStrokeColor = useThemeColor({}, "primaryStroke");
   const fontFamily = textWeight === "bold" ? Typography.fontFamilyBold : Typography.fontFamilyRegular;
-  const { l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const { settings } = useSettings();
   const { convert, dictionary } = useDictionary();
   const modalRef = useRef();
