@@ -44,13 +44,8 @@ export const MiniPlayer = () => {
 
 const styles = StyleSheet.create({
   safeAreaMini: {
-    position: "absolute",
-    bottom: 100,
-    width: "100%"
   },
   safeAreaFull: {
-    width: "100%",
     height: "100%",
-    position: "absolute",
   },
 });

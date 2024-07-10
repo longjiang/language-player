@@ -25,7 +25,7 @@ type VideoPlayerContextType = {
   closePlayer: () => void;
   minimizePlayer: () => void;
   maximizePlayer: () => void;
-  setVideoAndQueue: (video: YouTubeVideo, queue: YouTubeVideo[]) => Promise<void>;
+  setVideoAndQueue: (video: YouTubeVideo | undefined, queue: YouTubeVideo[]) => Promise<void>;
 };
 
 const initialVideoPlayerState: VideoPlayerState = {
@@ -71,9 +71,10 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         queue: reorganizedQueue,
       }));
     }
-  }, [shows]);
+  }, [shows, videoPlayerState.video]);
 
   useEffect(() => {
+    // This effect is empty in the original code. You might want to add logic here if needed.
   }, [videoPlayerState.queue, videoPlayerState.video]);
 
   const closePlayer = useCallback(() => {
@@ -187,7 +188,15 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         console.error("Failed to add video to watch history", error);
       }
     }
-  }, [l1Lang, l2Lang, getStoredAuthToken, tokenizer, loadEpisodes, shows]);
+  }, [l1Lang, l2Lang, getStoredAuthToken, tokenizer, loadEpisodes]);
+
+  const handleMinimize = useCallback(() => {
+    setVideoPlayerState(prev => ({ ...prev, isMini: true }));
+  }, []);
+
+  const handleMaximize = useCallback(() => {
+    setVideoPlayerState(prev => ({ ...prev, isMini: false }));
+  }, []);
 
   const value = {
     videoPlayerState,
@@ -202,7 +211,11 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   return (
     <VideoPlayerContext.Provider value={value}>
       {children}
-      <ResizablePanel visible={!!videoPlayerState.video}>
+      <ResizablePanel
+        visible={!!videoPlayerState.video}
+        onMinimize={handleMinimize}
+        onMaximize={handleMaximize}
+      >
         <MiniPlayer />
       </ResizablePanel>
     </VideoPlayerContext.Provider>
