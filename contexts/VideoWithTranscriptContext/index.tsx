@@ -36,7 +36,7 @@ export const VideoWithTranscriptProvider: React.FC<{
 
   // Merged usePlaylist logic
   const [video, setVideo] = useState<YouTubeVideo>(initialVideo);
-  const [playlist, setPlaylist] = useState<YouTubeVideo[]>(initialPlaylist);
+  const playlist = initialPlaylist;
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 
   // Merged useSyncedLines logic
