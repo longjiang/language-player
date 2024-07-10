@@ -1,14 +1,11 @@
 // @/components/VideoWithTranscript/index.tsx
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { View, SafeAreaView, Dimensions } from "react-native";
-import { Link } from "expo-router";
-import { router } from "expo-router";
+import { View, Dimensions } from "react-native";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import { YouTubeVideo } from "./YouTubeVideo";
 import { VideoControlBar } from "./VideoControlBar";
 import { SyncedTranscript } from "./SyncedTranscript";
-import { ThemedButton } from "./ThemedButton";
 import { ThemedText } from "./ThemedText";
 import { ProFeatureModal } from './ProFeatureModal';
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -28,22 +25,21 @@ const MAX_FREE_LINES = 10;
 
 interface VideoWithTranscriptProps {
   isMini: boolean;
-  showHeader?: boolean;
+  refRBSheet: React.RefObject<typeof ThemedRBSheet>;
   isProCheckEnabled?: boolean;
 }
 
 export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   isMini,
-  showHeader = false,
+  refRBSheet,
   isProCheckEnabled = true
 }) => {
   const { syncedLines, currentLine, video, playVideo, updatePlayVideo, currentTime, startTime, playlist } = useVideoWithTranscriptContext();
   const { isProUser } = useSubscription();
   const { t } = useLanguage();
-  const { closePlayer, minimizePlayer, maximizePlayer } = useVideoPlayer();
+  const { closePlayer, maximizePlayer } = useVideoPlayer();
   const [showProModal, setShowProModal] = useState(false);
   const hasShownModalRef = useRef(false);
-  const refRBSheet = useRef<typeof ThemedRBSheet>(null);
   const { getShow } = useTVShows();
   const [tvShow, setTvShow] = useState<string | undefined>(undefined);
   
@@ -74,10 +70,6 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
     setShowProModal(false);
   }, []);
 
-  const openQueueSheet = useCallback(() => {
-    refRBSheet.current?.open();
-  }, []);
-
   function removeTextInBrackets(text: string) {
     const regex = /[\(\[\{［【｛].*?[\)\]\}］】｝]/g;
     return text.replace(regex, "");
@@ -89,36 +81,6 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
 
   return (
     <View style={isMini ? styles.miniPlayerContainer : styles.fullPlayerContainer}>
-      {showHeader && !isMini && (
-        <SafeAreaView style={styles.header}>
-          <View>
-            <ThemedButton
-              type="ghost"
-              style={styles.headerButton}
-              trailingIcon={<Ionicon name="chevron-down" />}
-              onPress={minimizePlayer}
-            />
-          </View>
-          <View style={{ flexDirection: "row" }}>
-            <ThemedButton
-              type="ghost"
-              style={styles.headerButton}
-              trailingIcon={<Ionicon name="list" />}
-              onPress={openQueueSheet}
-            />
-            <ThemedButton
-              type="ghost"
-              style={styles.headerButton}
-              trailingIcon={<Ionicon name="cog" />}
-              onPress={() => {
-                minimizePlayer();
-                router.navigate("/settings");
-              }}
-            />
-          </View>
-        </SafeAreaView>
-      )}
-
       <View style={isMini ? styles.miniPlayerVideoContainer : null}>
         <YouTubeVideo
           youtubeId={video.youtube_id}

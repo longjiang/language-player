@@ -1,18 +1,25 @@
 // @/components/MiniPlayer.tsx
 
-import React from "react";
+import React, { useCallback, useRef } from "react";
 import { View, StyleSheet } from "react-native";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Header } from "@/components/Header";
+import { ThemedRBSheet } from "@/components/ThemedRBSheet";
 
 export const MiniPlayer = () => {
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
-  const { videoPlayerState, currentVideo, queue, queueType, tvShow, searchTerm } = useVideoPlayer();
+  const { videoPlayerState, currentVideo, queue, queueType, tvShow, searchTerm, minimizePlayer, maximizePlayer } = useVideoPlayer();
+  const refRBSheet = useRef<typeof ThemedRBSheet>(null);
+
+  const openQueueSheet = useCallback(() => {
+    refRBSheet.current?.open();
+  }, []);
 
   if (!currentVideo) {
     return null;
@@ -26,6 +33,7 @@ export const MiniPlayer = () => {
       }}
     >
       <View>
+        {!videoPlayerState.isMini && <Header minimizePlayer={minimizePlayer} openQueueSheet={openQueueSheet} />}
         <VideoWithTranscriptProvider
           initialVideo={currentVideo}
           initialPlaylist={queue}
@@ -37,7 +45,7 @@ export const MiniPlayer = () => {
         >
           <VideoWithTranscript
             isMini={videoPlayerState.isMini}
-            showHeader={!videoPlayerState.isMini}
+            refRBSheet={refRBSheet}
           />
         </VideoWithTranscriptProvider>
       </View>
