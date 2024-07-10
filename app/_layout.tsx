@@ -18,6 +18,7 @@ import { UserDataProvider } from '@/contexts/UserDataContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { useSoundEffect } from "@/hooks/useSoundEffect";
 import { TVShowsProvider } from "@/contexts/TVShowsContext";
+import FullscreenPurpleBackground from "@/components/FullscreenPurpleBackground";
 
 const soundObject = new Audio.Sound();
 
@@ -72,7 +73,7 @@ export default function RootLayout() {
                           <Stack.Screen name="+not-found" />
                           <Stack.Screen name="settings" options={{ headerShown: false, presentation: "modal" }} />
                         </Stack>
-                        <MiniPlayer />
+                        <FullscreenPurpleBackground />
                       </VideoPlayerProvider>
                     </TVShowsProvider>
                   </ThemeProvider>
