@@ -15,7 +15,6 @@ const ToggleableBackground = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const progress = useSharedValue(0);
   const screenHeight = Dimensions.get('window').height;
-  const screenWidth = Dimensions.get('window').width;
 
   const toggleMinimize = () => {
     setIsMinimized(!isMinimized);
@@ -45,22 +44,12 @@ const ToggleableBackground = () => {
     const height = interpolate(
       progress.value,
       [0, 1],
-      [screenHeight, 60]
+      [screenHeight, 70] // Set the minimized height to 70px
     );
     const bottom = interpolate(
       progress.value,
       [0, 1],
-      [0, 0]
-    );
-    const borderTopLeftRadius = interpolate(
-      progress.value,
-      [0, 1],
-      [0, 20]
-    );
-    const borderTopRightRadius = interpolate(
-      progress.value,
-      [0, 1],
-      [0, 20]
+      [0, 100] // Set the bottom distance to 100px when minimized
     );
     const backgroundColor = interpolateColor(
       progress.value,
@@ -70,8 +59,8 @@ const ToggleableBackground = () => {
     return {
       height,
       bottom,
-      borderTopLeftRadius,
-      borderTopRightRadius,
+      borderTopLeftRadius: 0, // No border radius when minimized
+      borderTopRightRadius: 0, // No border radius when minimized
       backgroundColor,
     };
   });
