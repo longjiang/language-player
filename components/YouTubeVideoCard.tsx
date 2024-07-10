@@ -208,4 +208,4 @@ export const youtubeVideoCardStyles = StyleSheet.create({
   },
 });
 
-const style = youtubeVideoCardStyles
+const styles = youtubeVideoCardStyles
