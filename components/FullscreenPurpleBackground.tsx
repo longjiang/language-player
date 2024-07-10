@@ -1,24 +1,56 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  interpolate,
+  interpolateColor,
+} from 'react-native-reanimated';
 
 const ToggleableBackground = () => {
   const [isMinimized, setIsMinimized] = useState(false);
+  const progress = useSharedValue(0);
+
+  const screenHeight = Dimensions.get('window').height; // Get the screen height for dynamic sizing
 
   const toggleMinimize = () => {
     setIsMinimized(!isMinimized);
+    progress.value = withTiming(isMinimized ? 0 : 1, { duration: 300 });
   };
 
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    const height = interpolate(
+      progress.value,
+      [0, 1],
+      [screenHeight, 70] // Interpolate height from full screen to 70px
+    );
+    const bottom = interpolate(
+      progress.value,
+      [0, 1],
+      [0, 100] // Interpolate bottom from 0px to 100px
+    );
+    const backgroundColor = interpolateColor(
+      progress.value,
+      [0, 1],
+      ['purple', 'green']
+    );
+
+    return {
+      height,
+      bottom,
+      backgroundColor,
+    };
+  });
+
   return (
-    <View style={[
-      styles.container,
-      isMinimized ? styles.minimized : styles.maximized
-    ]}>
+    <Animated.View style={[styles.container, animatedContainerStyle]}>
       <TouchableOpacity style={styles.button} onPress={toggleMinimize}>
         <Text style={styles.buttonText}>
           {isMinimized ? 'Maximize' : 'Minimize'}
         </Text>
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -27,19 +59,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 70,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  maximized: {
-    top: 0,
-    bottom: 0,
-    height: '100%',
-    backgroundColor: 'purple',
-  },
-  minimized: {
-    bottom: 100,
-    backgroundColor: 'green',
   },
   button: {
     paddingVertical: 10,
