@@ -117,18 +117,21 @@ export const VideoWithTranscriptProvider: React.FC<{
     if (nextLine) seekTo(nextLine.starttime);
   };
   const seekToPreviousLine = () => {
-    // Find the current line index
-    const currentLineIndex = syncedLines.findIndex((line) => line.starttime > currentTime) - 1;
-    
-    // If we're at the start of a line, go to the previous line
+    // Find the index of the last line that starts before or at the current time
+    const currentLineIndex = syncedLines.findLastIndex((line) => line.starttime <= currentTime);
+  
+    if (currentLineIndex === -1) {
+      // If we're before the first line, do nothing
+      return;
+    }
+  
+    // If we're close to the start of the current line, go to the previous line
     if (currentLineIndex > 0 && Math.abs(syncedLines[currentLineIndex].starttime - currentTime) < 0.1) {
       seekTo(syncedLines[currentLineIndex - 1].starttime);
-    }
-    // Otherwise, go to the start of the current line
-    else if (currentLineIndex >= 0) {
+    } else {
+      // Otherwise, go to the start of the current line
       seekTo(syncedLines[currentLineIndex].starttime);
     }
-    // If we're before the first line, do nothing
   };
   const skipToNextVideo = () => {
     if (currentVideoIndex < playlist.length - 1) skipToVideo(currentVideoIndex + 1);
