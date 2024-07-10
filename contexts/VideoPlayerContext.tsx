@@ -12,11 +12,11 @@ import { useTVShows } from "@/contexts/TVShowsContext";
 import { ResizablePanel } from "@/components/ResizablePanel";
 import { MiniPlayer } from "@/components/MiniPlayer";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { QueueManager } from "@/src/QueueManager";
 
 type VideoPlayerState = {
   isMini: boolean;
-  video?: YouTubeVideo;
-  queue: YouTubeVideo[];
+  queueManager: QueueManager;
 };
 
 type VideoPlayerContextType = {
@@ -27,12 +27,17 @@ type VideoPlayerContextType = {
   minimizePlayer: () => void;
   maximizePlayer: () => void;
   setVideoAndQueue: (video: YouTubeVideo | undefined, queue: YouTubeVideo[]) => Promise<void>;
+  skipToVideo: (index: number) => void;
+  skipToPreviousVideo: () => void;
+  skipToNextVideo: () => void;
+  currentVideoIndex: number;
+  currentVideo: YouTubeVideo | undefined;
+  queue: YouTubeVideo[];
 };
 
 const initialVideoPlayerState: VideoPlayerState = {
   isMini: false,
-  video: undefined,
-  queue: [],
+  queueManager: new QueueManager(),
 };
 
 const VideoPlayerContext = createContext<VideoPlayerContextType | undefined>(undefined);
@@ -55,7 +60,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
 
   useEffect(() => {
-    const newVideo = videoPlayerState.video
+    const newVideo = videoPlayerState.queueManager.currentVideo;
     if (!newVideo || !newVideo.tv_show) return;
     const currentShow = shows.find(show => show.id === newVideo.tv_show);
     if (currentShow && currentShow.episodes.length > 0) {
@@ -69,16 +74,10 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         reorganizedQueue = [newVideo, ...currentShow.episodes];
       }
 
-      setVideoPlayerState(prevState => ({
-        ...prevState,
-        queue: reorganizedQueue,
-      }));
+      videoPlayerState.queueManager.setVideoAndQueue(newVideo, reorganizedQueue);
+      setVideoPlayerState(prevState => ({ ...prevState }));
     }
-  }, [shows, videoPlayerState.video]);
-
-  useEffect(() => {
-    // This effect is empty in the original code. You might want to add logic here if needed.
-  }, [videoPlayerState.queue, videoPlayerState.video]);
+  }, [shows, videoPlayerState.queueManager.currentVideo]);
 
   const closePlayer = useCallback(() => {
     setVideoAndQueue(undefined, []);
@@ -93,28 +92,19 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   }, []);
 
   const playNext = useCallback(() => {
-    const currentIndex = videoPlayerState.queue.findIndex(v => v.youtube_id === videoPlayerState.video?.youtube_id);
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < videoPlayerState.queue.length) {
-      const nextVideo = videoPlayerState.queue[nextIndex];
-      setVideoAndQueue(nextVideo, videoPlayerState.queue);
-    }
+    videoPlayerState.queueManager.skipToNextVideo();
+    setVideoPlayerState(prev => ({ ...prev }));
   }, [videoPlayerState]);
 
   const playPrevious = useCallback(() => {
-    const currentIndex = videoPlayerState.queue.findIndex(v => v.youtube_id === videoPlayerState.video?.youtube_id);
-    const prevIndex = currentIndex - 1;
-    if (prevIndex >= 0) {
-      const previousVideo = videoPlayerState.queue[prevIndex];
-      setVideoAndQueue(previousVideo, videoPlayerState.queue);
-    }
+    videoPlayerState.queueManager.skipToPreviousVideo();
+    setVideoPlayerState(prev => ({ ...prev }));
   }, [videoPlayerState]);
 
   const setVideoAndQueue = useCallback(async (newVideo: YouTubeVideo | undefined, newQueue: YouTubeVideo[]) => {
+    videoPlayerState.queueManager.setVideoAndQueue(newVideo, newQueue);
     setVideoPlayerState(prevState => ({
       ...prevState,
-      video: newVideo,
-      queue: newQueue,
       isMini: false,
     }));
 
@@ -127,10 +117,8 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
       });
       if (videos?.length) {
         const updatedVideo = { ...newVideo, ...videos[0] };
-        setVideoPlayerState(prevState => ({
-          ...prevState,
-          video: updatedVideo,
-        }));
+        videoPlayerState.queueManager.setVideoAndQueue(updatedVideo, newQueue);
+        setVideoPlayerState(prevState => ({ ...prevState }));
         newVideo = updatedVideo;
       }
     } catch (error) {
@@ -141,10 +129,9 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     if (!newVideo.subs_l2?.length) {
       try {
         const l2Subs = await getBestL2Subs(newVideo.youtube_id, l2Lang.code);
-        setVideoPlayerState(prevState => ({
-          ...prevState,
-          video: { ...prevState.video, subs_l2: l2Subs || [] } as YouTubeVideo,
-        }));
+        const updatedVideo = { ...newVideo, subs_l2: l2Subs || [] };
+        videoPlayerState.queueManager.setVideoAndQueue(updatedVideo, newQueue);
+        setVideoPlayerState(prevState => ({ ...prevState }));
       } catch (error) {
         console.error("Failed to fetch L2 subs", error);
       }
@@ -154,10 +141,9 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     if (!newVideo.subs_l1?.length) {
       try {
         const l1Subs = await getBestL1Subs(newVideo.youtube_id, l1Lang.code, l2Lang.code);
-        setVideoPlayerState(prevState => ({
-          ...prevState,
-          video: { ...prevState.video, subs_l1: l1Subs || [] } as YouTubeVideo,
-        }));
+        const updatedVideo = { ...newVideo, subs_l1: l1Subs || [] };
+        videoPlayerState.queueManager.setVideoAndQueue(updatedVideo, newQueue);
+        setVideoPlayerState(prevState => ({ ...prevState }));
       } catch (error) {
         console.error("Failed to fetch L1 subs", error);
       }
@@ -193,15 +179,22 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
   }, [l1Lang, l2Lang, getStoredAuthToken, tokenizer, loadEpisodes]);
 
-  const handleMinimize = useCallback(() => {
-    setVideoPlayerState(prev => ({ ...prev, isMini: true }));
-  }, []);
+  const skipToVideo = useCallback((index: number) => {
+    videoPlayerState.queueManager.skipToVideo(index);
+    setVideoPlayerState(prev => ({ ...prev }));
+  }, [videoPlayerState]);
 
-  const handleMaximize = useCallback(() => {
-    setVideoPlayerState(prev => ({ ...prev, isMini: false }));
-  }, []);
+  const skipToPreviousVideo = useCallback(() => {
+    videoPlayerState.queueManager.skipToPreviousVideo();
+    setVideoPlayerState(prev => ({ ...prev }));
+  }, [videoPlayerState]);
 
-  const value = {
+  const skipToNextVideo = useCallback(() => {
+    videoPlayerState.queueManager.skipToNextVideo();
+    setVideoPlayerState(prev => ({ ...prev }));
+  }, [videoPlayerState]);
+
+  const value: VideoPlayerContextType = {
     videoPlayerState,
     playNext,
     playPrevious,
@@ -209,15 +202,21 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     minimizePlayer,
     maximizePlayer,
     setVideoAndQueue,
+    skipToVideo,
+    skipToPreviousVideo,
+    skipToNextVideo,
+    currentVideoIndex: videoPlayerState.queueManager.currentVideoIndex,
+    currentVideo: videoPlayerState.queueManager.currentVideo,
+    queue: videoPlayerState.queueManager.queue,
   };
 
   return (
     <VideoPlayerContext.Provider value={value}>
       {children}
       <ResizablePanel
-        visible={!!videoPlayerState.video}
-        onMinimize={handleMinimize}
-        onMaximize={handleMaximize}
+        visible={!!videoPlayerState.queueManager.currentVideo}
+        onMinimize={minimizePlayer}
+        onMaximize={maximizePlayer}
         colorFrom={primaryBackgroundColor}
         colorTo={primaryBrandColor}
         isMinimized={videoPlayerState.isMini}

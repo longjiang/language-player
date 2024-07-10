@@ -3,11 +3,16 @@
 import { YouTubeVideo } from "@/types/videoTypes";
 
 export class QueueManager {
-  private _queue: YouTubeVideo[] = [];
-  private _currentIndex: number = -1;
+  private _currentVideo: YouTubeVideo | undefined;
+  private _queue: YouTubeVideo[];
+
+  constructor(initialVideo?: YouTubeVideo, initialQueue: YouTubeVideo[] = []) {
+    this._currentVideo = initialVideo;
+    this._queue = initialQueue;
+  }
 
   get currentVideo(): YouTubeVideo | undefined {
-    return this._currentIndex >= 0 ? this._queue[this._currentIndex] : undefined;
+    return this._currentVideo;
   }
 
   get queue(): YouTubeVideo[] {
@@ -15,50 +20,31 @@ export class QueueManager {
   }
 
   get currentVideoIndex(): number {
-    return this._currentIndex;
+    return this._currentVideo ? this._queue.findIndex(v => v.youtube_id === this._currentVideo?.youtube_id) : -1;
   }
 
-  setQueue(videos: YouTubeVideo[], currentVideo?: YouTubeVideo) {
-    this._queue = videos;
-    if (currentVideo) {
-      this._currentIndex = this._queue.findIndex(v => v.youtube_id === currentVideo.youtube_id);
-    } else {
-      this._currentIndex = 0;
-    }
+  setVideoAndQueue(newVideo: YouTubeVideo | undefined, newQueue: YouTubeVideo[]): void {
+    this._currentVideo = newVideo;
+    this._queue = newQueue;
   }
 
-  skipToVideo(index: number): YouTubeVideo | undefined {
+  skipToVideo(index: number): void {
     if (index >= 0 && index < this._queue.length) {
-      this._currentIndex = index;
-      return this.currentVideo;
-    }
-    return undefined;
-  }
-
-  skipToNextVideo(): YouTubeVideo | undefined {
-    return this.skipToVideo(this._currentIndex + 1);
-  }
-
-  skipToPreviousVideo(): YouTubeVideo | undefined {
-    return this.skipToVideo(this._currentIndex - 1);
-  }
-
-  updateCurrentVideo(video: YouTubeVideo) {
-    if (this._currentIndex >= 0) {
-      this._queue[this._currentIndex] = video;
+      this._currentVideo = this._queue[index];
     }
   }
 
-  reorderQueueForTVShow(newVideo: YouTubeVideo, showEpisodes: YouTubeVideo[]) {
-    const currentIndex = showEpisodes.findIndex(ep => ep.youtube_id === newVideo.youtube_id);
-    if (currentIndex !== -1) {
-      const beforeCurrent = showEpisodes.slice(0, currentIndex);
-      const afterCurrent = showEpisodes.slice(currentIndex + 1);
-      this._queue = [...afterCurrent, newVideo, ...beforeCurrent];
-      this._currentIndex = 0;
-    } else {
-      this._queue = [newVideo, ...showEpisodes];
-      this._currentIndex = 0;
+  skipToPreviousVideo(): void {
+    const prevIndex = this.currentVideoIndex - 1;
+    if (prevIndex >= 0) {
+      this._currentVideo = this._queue[prevIndex];
+    }
+  }
+
+  skipToNextVideo(): void {
+    const nextIndex = this.currentVideoIndex + 1;
+    if (nextIndex < this._queue.length) {
+      this._currentVideo = this._queue[nextIndex];
     }
   }
 }
