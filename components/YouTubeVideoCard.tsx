@@ -21,7 +21,8 @@ export const YouTubeVideoCard = ({
   video, 
   videos = [], 
   variant = 'vertical',
-  isCurrentVideo = false
+  isCurrentVideo = false,
+  style = {},
 }: { 
   video: YouTubeVideo; 
   videos: YouTubeVideo[]; 
@@ -57,8 +58,8 @@ export const YouTubeVideoCard = ({
   const infoContainerStyle = variant === 'horizontal' ? styles.horizontalInfoContainer : styles.verticalInfoContainer;
 
   return (
-    <TouchableOpacity onPress={handlePress} style={{ flex: 1 }}>
-      <View style={cardStyle}>
+    <TouchableOpacity onPress={handlePress}>
+      <View style={[...cardStyle, {flex: 1, ...style }]}>
         <View style={styles.thumbnailContainer}>
           <Image
             source={{
@@ -94,8 +95,10 @@ const styles = StyleSheet.create({
   ...youtubeVideoCardStyles,
   horizontalCard: {
     flexDirection: 'row',
-    height: 43,
+    height: 55,
     alignItems: 'center',
+    padding: 6,
+    borderRadius: 8,
   },
   verticalCard: {
     flexDirection: 'column',

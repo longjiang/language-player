@@ -33,7 +33,7 @@ function Test() {
         }}
       >
         <View style={styles.container}>
-          <YouTubeVideoList videos={mockVideos} variant="horizontal" currentVideoId={ currentVideo.youtube_id }/>
+          <YouTubeVideoList videos={mockVideos} variant="horizontal" currentVideoId={ currentVideo ? currentVideo.youtube_id : undefined }/>
         </View>
       </ThemedScreen>
     </GestureHandlerRootView>
