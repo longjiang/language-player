@@ -59,8 +59,8 @@ export const YouTubeVideoCard = ({
             style={[styles.thumbnail, thumbnailStyle]}
           />
           {badgeText && level && (
-            <View style={{...styles.badge, backgroundColor: useThemeColorForLevel({}, level.level)}}>
-              <ThemedText style={{...styles.badgeText }} type="smallBold">{badgeText}</ThemedText>
+            <View style={{...(variant === 'horizontal' ? styles.smallLevelBadge : styles.levelBadge), backgroundColor: useThemeColorForLevel({}, level.level)}}>
+              <ThemedText style={{...styles.badgeText }} type={ variant === 'horizontal' ? 'xxsmallBold' : 'smallBold'}>{badgeText}</ThemedText>
             </View>
           )}
           {durationText && (

@@ -208,7 +208,7 @@ export const youtubeVideoCardStyles = StyleSheet.create({
   infoContainer: {
     marginTop: 16,
   },
-  badge: {
+  levelBadge: {
     position: 'absolute',
     bottom: 8,
     left: 8,
@@ -216,6 +216,16 @@ export const youtubeVideoCardStyles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  smallLevelBadge: {
+    position: 'absolute',
+    bottom: 2,
+    left: 2,
+    backgroundColor: '#6c757d',
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 2,
     alignSelf: 'flex-start',
   },
   badgeText: {

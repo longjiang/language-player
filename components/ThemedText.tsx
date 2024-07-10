@@ -12,7 +12,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: 'small' | 'smallBold' | 'default' | 'defaultBold' | 'link' | 'linkBold' | 'large' | 'subtitle' | 'xlarge' | 'title' | 'xxlarge';
+  type?: 'xxxsmall' | 'xxxsmallBold' | 'xxsmall' | 'xxsmallBold' | 'small' | 'smallBold' | 'default' | 'defaultBold' | 'link' | 'linkBold' | 'large' | 'subtitle' | 'xlarge' | 'title' | 'xxlarge';
   variant?: 'primary' | 'secondary';
   level?: 1 | 2 | 3 | 4 | 5 | 6 | 7;
 };
@@ -70,6 +70,28 @@ const fontFamilyBold = 'Nunito_800ExtraBold';
 
 
 const styles = StyleSheet.create({
+  xxsmall: {
+    fontFamily: fontFamilyRegular,
+    fontSize: Typography.fontSize.xxxsmall,
+    lineHeight: Typography.fontSize.xxxsmall * 1.33,
+  },
+  xxsmallBold: {
+    fontFamily: fontFamilyBold,
+    fontSize: Typography.fontSize.xxxsmall,
+    lineHeight: Typography.fontSize.xxxsmall * 1.33,
+    fontWeight: 'bold',
+  },
+  xsmall: {
+    fontFamily: fontFamilyRegular,
+    fontSize: Typography.fontSize.xxsmall,
+    lineHeight: Typography.fontSize.xxsmall * 1.33,
+  },
+  xsmallBold: {
+    fontFamily: fontFamilyBold,
+    fontSize: Typography.fontSize.xxsmall,
+    lineHeight: Typography.fontSize.xxsmall * 1.33,
+    fontWeight: 'bold',
+  },
   small: {
     fontFamily: fontFamilyRegular,
     fontSize: Typography.fontSize.xsmall,

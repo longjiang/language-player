@@ -11,11 +11,11 @@ import { YouTubeVideoList } from "@/components/YouTubeVideoList";
 import { ThemedText } from "@/components";
 
 const mockVideos = [
-  { youtube_id: "dQw4w9WgXcQ", title: "Never Gonna Give You Up", level: 3 },
-  { youtube_id: "kJQP7kiw5Fk", title: "Despacito", level: 5 },
-  { youtube_id: "JGwWNGJdvx8", title: "Shape of You", level: 4 },
-  { youtube_id: "9bZkp7q19f0", title: "Gangnam Style", level: 6 },
-  { youtube_id: "RgKAFK5djSk", title: "See You Again", level: 2 },
+  { youtube_id: "dQw4w9WgXcQ", title: "Never Gonna Give You Up", difficulty: 0.003 },
+  { youtube_id: "kJQP7kiw5Fk", title: "Despacito", difficulty: 0.005 },
+  { youtube_id: "JGwWNGJdvx8", title: "Shape of You", difficulty: 0.004 },
+  { youtube_id: "9bZkp7q19f0", title: "Gangnam Style", difficulty: 0.006 },
+  { youtube_id: "RgKAFK5djSk", title: "See You Again", difficulty: 0.002 },
 ];
 
 function Test() {
