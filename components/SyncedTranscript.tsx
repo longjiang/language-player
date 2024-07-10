@@ -41,6 +41,7 @@ export const SyncedTranscript: React.FC<SyncedTranscriptProps> = ({ transcriptLi
             textScale={1.5} 
             textWeight="bold" 
             align='center' 
+            decodeHTML
             onPopupOpen={handlePopupOpen}
             onPopupClose={handlePopupClose}
           />

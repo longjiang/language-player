@@ -13,6 +13,7 @@ export interface TokenizedTextProps {
   textScale?: number;
   textWeight?: "regular" | "bold";
   align?: 'left' | 'center' | 'right';
+  decodeHTML?: boolean;
   onPopupOpen?: () => void;
   onPopupClose?: () => void;
 }
@@ -23,6 +24,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
   textScale = 1, 
   textWeight, 
   align = 'left',
+  decodeHTML = false,
   onPopupOpen,
   onPopupClose
 }) => {
@@ -64,6 +66,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
           textWeight={textWeight}
           context={text}
           translatedContext={translation}
+          decodeHTML={decodeHTML}
           onPopupOpen={onPopupOpen}
           onPopupClose={onPopupClose}
         />

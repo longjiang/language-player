@@ -51,6 +51,7 @@
     "expo-status-bar": "~1.12.1",
     "expo-system-ui": "~3.0.6",
     "expo-web-browser": "~13.0.3",
+    "he": "^1.2.0",
     "i18n-js": "^4.4.3",
     "langs": "^2.0.0",
     "lodash": "^4.17.21",

@@ -17,6 +17,7 @@ import { LevelColors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { ThemedText } from "./ThemedText";
 import { DefinitionList } from "./DefinitionList";
+import he from 'he';  // Import the he library for HTML entity decoding
 
 export const Token: React.FC<{
   token: TokenType,
@@ -24,6 +25,7 @@ export const Token: React.FC<{
   textWeight?: "regular" | "bold",
   context?: string,
   translatedContext?: string,
+  decodeHTML?: boolean,
   onPopupOpen?: () => void,
   onPopupClose?: () => void,
 }> = ({
@@ -32,6 +34,7 @@ export const Token: React.FC<{
   textWeight = "regular",
   context = "",
   translatedContext = "",
+  decodeHTML = false,
   onPopupOpen,
   onPopupClose,
 }) => {
@@ -91,15 +94,27 @@ export const Token: React.FC<{
     return LevelColors[colorScheme][level];
   };
 
-  const displayContent = useMemo(() => {
+  const { displayContent, decodedToken } = useMemo(() => {
+    let processedText = decodeHTML ? he.decode(token.text) : token.text;
+    let processedPronunciation = decodeHTML ? he.decode(token.pronunciation || '') : (token.pronunciation || '');
+
+    let segments;
     if (l2Lang.code === 'ja') {
-      const segments = matchHiragana({ text: token.text, pronunciation: token.pronunciation || ''});
-      return segments;
-    } else if (convert && l2Lang.han && token.text) {
-      return [{ text: convert(token.text), pronunciation: token.pronunciation }];
+      segments = matchHiragana({ text: processedText, pronunciation: processedPronunciation });
+    } else if (convert && l2Lang.han && processedText) {
+      segments = [{ text: convert(processedText), pronunciation: processedPronunciation }];
+    } else {
+      segments = [{ text: processedText, pronunciation: processedPronunciation }];
     }
-    return [{ text: token.text, pronunciation: token.pronunciation }];
-  }, [token.text, token.pronunciation, convert, l2Lang.code, l2Lang.han]);
+
+    const decodedToken = {
+      ...token,
+      text: processedText,
+      pronunciation: processedPronunciation
+    };
+
+    return { displayContent: segments, decodedToken };
+  }, [token, convert, l2Lang.code, l2Lang.han, decodeHTML]);
 
   const renderSegment = (segment: { text: string; pronunciation: string }, index: number) => (
     <View key={index} style={styles.segment}>
@@ -145,7 +160,7 @@ export const Token: React.FC<{
         {displayContent.map(renderSegment)}
       </View>
       {firstDefinition && <DefinitionList definitions={[firstDefinition]} style={{ marginBottom: 2 }} />}
-      <PopupDictionaryModal state={{ token, context, translatedContext }} ref={modalRef} key={token.text} onClose={handlePopupClose} />
+      <PopupDictionaryModal state={{ token: decodedToken, context: he.decode(context), translatedContext }} ref={modalRef} key={decodedToken.text} onClose={handlePopupClose} />
     </TouchableOpacity>
   );
 };
