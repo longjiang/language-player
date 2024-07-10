@@ -8,7 +8,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { router } from "expo-router";
 import { YouTubeVideoList } from "@/components/YouTubeVideoList";
-import { ThemedText } from "@/components";
+import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 
 const mockVideos = [
   { youtube_id: "dQw4w9WgXcQ", title: "Never Gonna Give You Up", difficulty: 0.003 },
@@ -21,6 +21,7 @@ const mockVideos = [
 function Test() {
   const { l2Lang } = useLanguage();
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
+  const { currentVideo } = useVideoPlayer();
 
   return (
     <GestureHandlerRootView>
@@ -32,7 +33,7 @@ function Test() {
         }}
       >
         <View style={styles.container}>
-          <YouTubeVideoList videos={mockVideos} variant="horizontal" />
+          <YouTubeVideoList videos={mockVideos} variant="horizontal" currentVideoId={ currentVideo.youtube_id }/>
         </View>
       </ThemedScreen>
     </GestureHandlerRootView>
@@ -41,6 +42,7 @@ function Test() {
 
 const styles = StyleSheet.create({
   container: {
+    // You can add any additional styles here if needed
   },
 });
 

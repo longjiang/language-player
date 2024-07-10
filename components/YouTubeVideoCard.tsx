@@ -15,20 +15,24 @@ import { languageLevelsByL2Code } from '@/src/language-levels';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { youtubeVideoCardStyles } from '@/src/styles';
 import { useThemeColorForLevel } from '@/hooks/useThemeColor';
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export const YouTubeVideoCard = ({ 
   video, 
   videos = [], 
-  variant = 'vertical' 
+  variant = 'vertical',
+  isCurrentVideo = false
 }: { 
   video: YouTubeVideo; 
   videos: YouTubeVideo[]; 
   variant?: 'vertical' | 'horizontal';
+  isCurrentVideo?: boolean;
   style?: object 
 }) => {
   if (videos.length === 0) videos = [video];
   const { setVideoAndQueue } = useVideoPlayer();
   const { l2Lang, t } = useLanguage();
+  const accent1Color = useThemeColor({}, 'accent1');
   if (!l2Lang) return null;
 
   const handlePress = () => {
@@ -44,13 +48,17 @@ export const YouTubeVideoCard = ({
   const level = Object.values(levels).find(l => videoDifficulty <= l.maxDifficulty);
   const badgeText = level ? level.examLevelName : '';
 
-  const cardStyle = variant === 'horizontal' ? styles.horizontalCard : styles.verticalCard;
+  const cardStyle = [
+    styles.card,
+    variant === 'horizontal' ? styles.horizontalCard : styles.verticalCard,
+    isCurrentVideo && { backgroundColor: accent1Color }
+  ];
   const thumbnailStyle = variant === 'horizontal' ? styles.horizontalThumbnail : styles.verticalThumbnail;
   const infoContainerStyle = variant === 'horizontal' ? styles.horizontalInfoContainer : styles.verticalInfoContainer;
 
   return (
     <TouchableOpacity onPress={handlePress} style={{ flex: 1 }}>
-      <View style={[styles.card, cardStyle]}>
+      <View style={cardStyle}>
         <View style={styles.thumbnailContainer}>
           <Image
             source={{
@@ -108,5 +116,13 @@ const styles = StyleSheet.create({
   },
   verticalInfoContainer: {
     marginTop: 16,
+  },
+  smallLevelBadge: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 2,
   },
 });
