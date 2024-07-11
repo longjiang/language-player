@@ -1,4 +1,5 @@
 // @/components/IOSPaymentMethods.tsx
+
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -7,43 +8,82 @@ import { ThemedButton } from '@/components/ThemedButton';
 import { inAppPurchaseSuccess } from '@/src/api/python/subscription';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import Toast from 'react-native-toast-message';
 import RNIap, {
-  Product,
-  PurchaseError,
-  SubscriptionPurchase,
-  InAppPurchase,
+  initConnection,
+  finishTransaction,
+  getProducts,
   purchaseErrorListener,
   purchaseUpdatedListener,
+  requestPurchase,
+  Product,
+  Purchase,
+  PurchaseError,
+  SubscriptionPurchase,
 } from 'react-native-iap';
 
-const IOS_IAP_PRODUCT_ID = 'pro';
+const IOS_IAP_PRODUCT_ID = 'pro_go';
+
+const showErrorToast = (message: string) => {
+  console.error(message);
+  Toast.show({
+    type: 'error',
+    text1: 'Error',
+    text2: message,
+    position: 'top',
+    visibilityTime: 4000,
+  });
+};
 
 const IOSPaymentMethods = ({ selectedPlan, onSelect }) => {
   const [purchaseProcessing, setPurchaseProcessing] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
-  const { user } = useAuth();
+  const { userInfo } = useAuth();
   const { t } = useLanguage();
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
       initializeIAP();
+      const purchaseUpdateSubscription = purchaseUpdatedListener(
+        async (purchase: Purchase | SubscriptionPurchase) => {
+          const receipt = purchase.transactionReceipt;
+          if (receipt) {
+            try {
+              await inAppPurchaseSuccess(userInfo.id, receipt);
+              await finishTransaction({ purchase, isConsumable: false });
+            } catch (error) {
+              showErrorToast('Error finishing transaction: ' + error.message);
+            }
+          }
+        }
+      );
+
+      const purchaseErrorSubscription = purchaseErrorListener(
+        (error: PurchaseError) => {
+          showErrorToast('Purchase error: ' + error.message);
+          setPurchaseProcessing(false);
+        }
+      );
+
+      return () => {
+        if (RNIap) RNIap.endConnection();
+        purchaseUpdateSubscription.remove();
+        purchaseErrorSubscription.remove();
+      };
     }
-    return () => {
-      if (Platform.OS === 'ios') {
-        RNIap.endConnection();
-      }
-    };
   }, []);
 
   const initializeIAP = async () => {
     try {
-      await RNIap.initConnection();
-      const products = await RNIap.getProducts([IOS_IAP_PRODUCT_ID]);
+      await initConnection();
+      const products = await getProducts({ skus: [IOS_IAP_PRODUCT_ID] });
       if (products.length > 0) {
         setProduct(products[0]);
+      } else {
+        showErrorToast(`Product with SKU (${IOS_IAP_PRODUCT_ID}) not found`);
       }
     } catch (error) {
-      console.error('Failed to initialize IAP:', error);
+      showErrorToast('Failed to initialize IAP: ' + error.message);
     }
   };
 
@@ -51,29 +91,13 @@ const IOSPaymentMethods = ({ selectedPlan, onSelect }) => {
     if (Platform.OS !== 'ios') return;
     setPurchaseProcessing(true);
     try {
-      const purchase = await RNIap.requestPurchase(IOS_IAP_PRODUCT_ID);
-      handleCompletedPurchase(purchase);
+      await requestPurchase({
+        sku: IOS_IAP_PRODUCT_ID,
+        andDangerouslyFinishTransactionAutomaticallyIOS: false,
+      });
     } catch (error) {
-      console.error('Purchase error:', error);
+      showErrorToast('Purchase error: ' + error.message);
       setPurchaseProcessing(false);
-    }
-  };
-
-  const handleCompletedPurchase = async (purchase: InAppPurchase | SubscriptionPurchase) => {
-    if (purchase.productId === IOS_IAP_PRODUCT_ID) {
-      try {
-        const receipt = purchase.transactionReceipt;
-        if (receipt) {
-          await inAppPurchaseSuccess(user.id, receipt);
-          // Navigate to success screen or update UI
-          // You might want to use React Navigation or your preferred navigation method here
-          // navigation.navigate('GoPro Success');
-        }
-      } catch (error) {
-        console.error('Error processing purchase:', error);
-      } finally {
-        setPurchaseProcessing(false);
-      }
     }
   };
 
@@ -98,6 +122,7 @@ const IOSPaymentMethods = ({ selectedPlan, onSelect }) => {
         onPress={handlePurchase}
         disabled={purchaseProcessing || !product}
       />
+      <Toast />
     </View>
   );
 };
