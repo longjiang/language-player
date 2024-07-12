@@ -1,8 +1,11 @@
 import { Token } from '@/types/tokenTypes';
+import { addSpaceTokens } from './tokenizer-utils';
 
 
 export const normalizeTokens = (tokens: Token[], text: string): Token[] => {
-  return tokens.map(normalizeToken);
+  let normalizedTokens = tokens.map(normalizeToken);
+  normalizedTokens = addSpaceTokens(normalizedTokens, text);
+  return normalizedTokens;
 }
 
 function normalizeToken(token: any): Token {
