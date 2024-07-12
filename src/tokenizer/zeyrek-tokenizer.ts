@@ -20,7 +20,7 @@ export const normalizeTokens = (data: RawEntry[][], text: string): Token[] => {
   });
 
   // Convert the map to an array of tokens
-  return addSpaceTokens(Array.from(tokenMap.values()));
+  return addSpaceTokens(Array.from(tokenMap.values()), text);
 };
 
 const normalizeToken = (entry: RawEntry, tokenMap: Map<string, Token>): void => {

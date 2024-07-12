@@ -3,7 +3,7 @@ import { Token } from '@/types/tokenTypes';
 
 
 export const normalizeTokens = (tokens: Token[], text: string): Token[] => {
-  return addSpaceTokens(tokens.map(normalizeToken));
+  return addSpaceTokens(tokens.map(normalizeToken), text);
 }
 
 function normalizeToken(token: any): Token {

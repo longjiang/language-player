@@ -77,7 +77,7 @@ class LocalTokenizer {
       }
     }
 
-    const tokensWithSpaces = addSpaceTokens(tokens);
+    const tokensWithSpaces = addSpaceTokens(tokens, text);
     
     return tokensWithSpaces;
   }

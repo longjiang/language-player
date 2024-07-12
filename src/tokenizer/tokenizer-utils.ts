@@ -2,35 +2,29 @@
 
 import { Token } from '@/types/tokenTypes';
 
-export const addSpaceTokens = (tokens: Token[]): Token[] => {
+export const addSpaceTokens = (tokens: Token[], originalText: string): Token[] => {
   let newTokens: Token[] = [];
-  let insideQuote = false;
+  const spaceToken = { text: " ", pos: undefined, lemmas: [], pronunciation: undefined };
 
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i];
-    const word = token.text;
+  let tokenIndex = 0;
+  let originalIndex = 0;
 
-    if (word === '"' || word === "'") {
-      if (insideQuote) {
-        newTokens.push(token);
-        insideQuote = false;
-      } else {
-        if (newTokens.length > 0 && newTokens[newTokens.length - 1].text !== " ") {
-          newTokens.push({ text: " ", pos: undefined, lemmas: [], pronunciation: undefined });
-        }
-        newTokens.push(token);
-        insideQuote = true;
-      }
-    } else if (word === "," || word === "." || word === ":" || word === ";") {
-      newTokens.push(token);
-      if (i < tokens.length - 1 && tokens[i + 1].text !== '"' && tokens[i + 1].text !== "'") {
-        newTokens.push({ text: " ", pos: undefined, lemmas: [], pronunciation: undefined });
-      }
+  while (originalIndex < originalText.length) {
+    const currentChar = originalText[originalIndex];
+
+    if (currentChar === ' ') {
+      newTokens.push({ ...spaceToken });
+      originalIndex++;
     } else {
-      if (newTokens.length > 0 && newTokens[newTokens.length - 1].text !== " " && !insideQuote) {
-        newTokens.push({ text: " ", pos: undefined, lemmas: [], pronunciation: undefined });
+      if (tokenIndex < tokens.length && originalText.startsWith(tokens[tokenIndex].text, originalIndex)) {
+        newTokens.push(tokens[tokenIndex]);
+        originalIndex += tokens[tokenIndex].text.length;
+        tokenIndex++;
+      } else {
+        // Handle cases where token and text do not align perfectly (e.g., punctuation, special characters)
+        newTokens.push({ text: currentChar, pos: undefined, lemmas: [], pronunciation: undefined });
+        originalIndex++;
       }
-      newTokens.push(token);
     }
   }
 

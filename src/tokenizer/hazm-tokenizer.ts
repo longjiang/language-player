@@ -4,7 +4,7 @@ import { Token } from '@/types/tokenTypes';
 
 export const normalizeTokens = (tokens: Token[], text: string): Token[] => {
   // console.log('🥝', tokens.slice(0,30))
-  const normalizedTokens = addSpaceTokens(tokens.map(normalizeToken))
+  const normalizedTokens = addSpaceTokens(tokens.map(normalizeToken), text)
   // console.log('🍅', normalizedTokens.slice(0,30))
   return normalizedTokens;
 }
