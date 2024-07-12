@@ -29,7 +29,7 @@ const Failure = () => {
         leadingIcon={<Icon name="email" />}
         trailingIcon={<Icon name="chevron-right" />}
         onPress={() => {
-          const email = "support@example.com";
+          const email = "jon.long@zerotohero.ca";
           const subject = encodeURIComponent("Support Request");
           const body = encodeURIComponent(
             "Please describe your issue or question."

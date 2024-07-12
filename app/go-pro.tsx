@@ -1,3 +1,5 @@
+// @/app/go-pro.tsx
+
 import React, { useRef, useState } from "react";
 import { StyleSheet, View, Image, Platform } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
@@ -13,11 +15,12 @@ import { goProStyles as styles } from "@/src/styles";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getPriceTranslation } from '@/utils/translationUtils';
+import Toast from 'react-native-toast-message';
 
 const GoProScreen = () => {
   const [paymentError, setPaymentError] = useState<boolean>(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const refRBSheet = useRef();
+  const refRBSheet = useRef<ThemedRBSheet>(null);
   const { subscription, isProUser } = useSubscription();
   const { t } = useLanguage();
 
@@ -25,6 +28,25 @@ const GoProScreen = () => {
     console.log("Selected:", value);
     setSelectedPlan(value);
     if (refRBSheet.current) refRBSheet.current.open();
+  };
+
+  const handlePurchaseSuccess = () => {
+    if (refRBSheet.current) refRBSheet.current.close();
+    Toast.show({
+      type: 'success',
+      text1: 'Success',
+      text2: 'Your purchase was successful!',
+      position: 'top',
+      visibilityTime: 4000,
+    });
+  };
+
+  const handlePurchaseFailure = () => {
+    setPaymentError(true);
+  };
+
+  const handleRBSheetClose = () => {
+    setPaymentError(false);
   };
 
   const showOnlyLifetimePlan = Platform.OS === "ios" && selectedPlan !== "lifetime";
@@ -87,17 +109,23 @@ const GoProScreen = () => {
       <ThemedText style={styles.footerText} type="small">
         {t('footnote.currency')}
       </ThemedText>
-      <ThemedRBSheet ref={refRBSheet} height={500}>
+      <ThemedRBSheet 
+        ref={refRBSheet} 
+        height={500} 
+        closeOnPressMask={true}
+        onClose={handleRBSheetClose}
+      >
         {paymentError ? (
           <Failure />
         ) : showOnlyLifetimePlan ? (
           <OnlyLifetimePlan />
         ) : Platform.OS === "ios" ? (
-          <IOSPaymentMethods selectedPlan={selectedPlan} onSelect={onSelect} />
+          <IOSPaymentMethods onSuccess={handlePurchaseSuccess} onFailure={handlePurchaseFailure} />
         ) : (
           <PaymentMethods />
         )}
       </ThemedRBSheet>
+      <Toast />
     </ThemedScreen>
   );
 };

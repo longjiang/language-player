@@ -8,6 +8,7 @@ import { ThemedButton } from '@/components/ThemedButton';
 import { inAppPurchaseSuccess } from '@/src/api/python/subscription';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import Toast from 'react-native-toast-message';
 import RNIap, {
   initConnection,
@@ -35,11 +36,17 @@ const showErrorToast = (message: string) => {
   });
 };
 
-const IOSPaymentMethods = ({ selectedPlan, onSelect }) => {
+const IOSPaymentMethods = ({ onSuccess, onFailure }) => {
   const [purchaseProcessing, setPurchaseProcessing] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const { userInfo } = useAuth();
+  const { subscription, fetchSubscription } = useSubscription();
   const { t } = useLanguage();
+  
+  if (!userInfo) {
+    console.error('IOSPaymentMethods requires user info');
+    return null;
+  }
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
@@ -51,8 +58,11 @@ const IOSPaymentMethods = ({ selectedPlan, onSelect }) => {
             try {
               await inAppPurchaseSuccess(userInfo.id, receipt);
               await finishTransaction({ purchase, isConsumable: false });
+              await fetchSubscription();
+              onSuccess(); // Call the success handler
             } catch (error) {
               showErrorToast('Error finishing transaction: ' + error.message);
+              onFailure(); // Call the failure handler
             }
           }
         }
@@ -62,6 +72,7 @@ const IOSPaymentMethods = ({ selectedPlan, onSelect }) => {
         (error: PurchaseError) => {
           showErrorToast('Purchase error: ' + error.message);
           setPurchaseProcessing(false);
+          onFailure(); // Call the failure handler
         }
       );
 
@@ -81,9 +92,11 @@ const IOSPaymentMethods = ({ selectedPlan, onSelect }) => {
         setProduct(products[0]);
       } else {
         showErrorToast(`Product with SKU (${IOS_IAP_PRODUCT_ID}) not found`);
+        onFailure(); // Call the failure handler
       }
     } catch (error) {
       showErrorToast('Failed to initialize IAP: ' + error.message);
+      onFailure(); // Call the failure handler
     }
   };
 
@@ -98,6 +111,7 @@ const IOSPaymentMethods = ({ selectedPlan, onSelect }) => {
     } catch (error) {
       showErrorToast('Purchase error: ' + error.message);
       setPurchaseProcessing(false);
+      onFailure(); // Call the failure handler
     }
   };
 
