@@ -17,7 +17,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import Toast from 'react-native-toast-message';
 
 const GoProScreen = () => {
-  const [paymentError, setPaymentError] = useState<boolean>(false);
+  const [message, setMessage] = useState<'default' | 'failure' | 'lifetime' | 'ios' | 'android'>(() => 
+    Platform.OS === "ios" ? 'ios' : 'android'
+  );
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const refRBSheet = useRef<ThemedRBSheet>(null);
   const { subscription, subscriptionIsActive, subscriptionWillAutoRenew } = useSubscription();
@@ -48,6 +50,11 @@ const GoProScreen = () => {
 
     // If no restrictions apply, open the RBSheet
     setSelectedPlan(planType);
+    if (Platform.OS === "ios" && planType !== "lifetime") {
+      setMessage('lifetime');
+    } else {
+      setMessage(Platform.OS === "ios" ? 'ios' : 'android');
+    }
     if (refRBSheet.current) refRBSheet.current.open();
   };
 
@@ -63,14 +70,27 @@ const GoProScreen = () => {
   };
 
   const handlePurchaseFailure = () => {
-    setPaymentError(true);
+    setMessage('failure');
   };
 
   const handleRBSheetClose = () => {
-    setPaymentError(false);
+    setMessage(Platform.OS === "ios" ? 'ios' : 'android');
   };
 
-  const showOnlyLifetimePlan = Platform.OS === "ios" && selectedPlan !== "lifetime";
+  const getSheetContent = () => {
+    switch (message) {
+      case 'failure':
+        return <Failure />;
+      case 'lifetime':
+        return <OnlyLifetimePlan />;
+      case 'ios':
+        return <IOSPaymentMethods onSuccess={handlePurchaseSuccess} onFailure={handlePurchaseFailure} />;
+      case 'android':
+        return <PaymentMethods />;
+      default:
+        return null; // This should never happen, but TypeScript will be happy
+    }
+  };
 
   const currentPlan = subscriptionIsActive(subscription) ? subscription?.type : null;
 
@@ -136,15 +156,7 @@ const GoProScreen = () => {
         closeOnPressMask={true}
         onClose={handleRBSheetClose}
       >
-        {paymentError ? (
-          <Failure />
-        ) : showOnlyLifetimePlan ? (
-          <OnlyLifetimePlan />
-        ) : Platform.OS === "ios" ? (
-          <IOSPaymentMethods onSuccess={handlePurchaseSuccess} onFailure={handlePurchaseFailure} />
-        ) : (
-          <PaymentMethods />
-        )}
+        {getSheetContent()}
       </ThemedRBSheet>
       <Toast />
     </ThemedScreen>
