@@ -10,12 +10,14 @@ import { getDeltaDate } from "@/src/utils";
 interface SubscriptionContextProps {
   subscription: GenericCollectionItem | null;
   subscriptionIsActive: (subscription: GenericCollectionItem | null) => boolean;
+  subscriptionWillAutoRenew: (subscription: GenericCollectionItem | null) => boolean;
   fetchSubscription: () => Promise<void>;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextProps>({
   subscription: null,
   subscriptionIsActive: () => false,
+  subscriptionWillAutoRenew: () => false,
   fetchSubscription: async () => {},
 });
 
@@ -47,6 +49,16 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return delta > 0;
   };
 
+  const subscriptionWillAutoRenew = (
+    subscription: GenericCollectionItem | null
+  ) => {
+    const willAutoRenew =
+      ["monthly", "annual"].includes(subscription?.type) &&
+      subscription?.payment_customer_id &&
+      subscriptionIsActive(subscription);
+    return willAutoRenew;
+  };
+  
   useEffect(() => {
     if (userInfo) {
       fetchSubscription();
@@ -54,7 +66,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [userInfo]);
 
   return (
-    <SubscriptionContext.Provider value={{ subscription, subscriptionIsActive, fetchSubscription }}>
+    <SubscriptionContext.Provider value={{ subscription, subscriptionIsActive, subscriptionWillAutoRenew, fetchSubscription }}>
       {children}
     </SubscriptionContext.Provider>
   );

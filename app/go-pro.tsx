@@ -20,7 +20,7 @@ const GoProScreen = () => {
   const [paymentError, setPaymentError] = useState<boolean>(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const refRBSheet = useRef<ThemedRBSheet>(null);
-  const { subscription, subscriptionIsActive } = useSubscription();
+  const { subscription, subscriptionIsActive, subscriptionWillAutoRenew } = useSubscription();
   const { t } = useLanguage();
 
   const handlePricingBlockPress = (planType: string) => {
@@ -34,7 +34,7 @@ const GoProScreen = () => {
       return;
     }
 
-    if (subscription?.type === "monthly" || subscription?.type === "annual") {
+    if (subscriptionWillAutoRenew(subscription)) {
       // Show message if user has an existing monthly or annual plan
       Toast.show({
         type: 'info',
