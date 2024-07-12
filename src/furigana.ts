@@ -46,12 +46,7 @@ function segmentKanjisAndNonKanjis(text: string): Segment[] {
 }
 
 function convertKatakanaToHiragana(katakana: string): string {
-  let converted = '';
-  for (let char of katakana) {
-    if (wanakana.isKatakana(char)) converted += wanakana.toHiragana(char);
-    else converted += char;
-  }
-  return converted;
+  return wanakana.toHiragana(katakana)
 }
 
 function sanitizeRegexString(str: string): string {
