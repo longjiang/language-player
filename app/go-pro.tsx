@@ -11,6 +11,7 @@ import PaymentMethods from "@/components/PaymentMethods";
 import IOSPaymentMethods from "@/components/IOSPaymentMethods";
 import Failure from "@/components/Failure";
 import OnlyLifetimePlan from "@/components/OnlyLifetimePlan";
+import { CancelSubscription } from "@/components/CancelSubscription";
 import { goProStyles as styles } from "@/src/styles";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -20,7 +21,7 @@ const GoProScreen = () => {
   const [currentMessage, setCurrentMessage] = useState<ReactElement | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const refRBSheet = useRef<ThemedRBSheet>(null);
-  const { subscription, subscriptionIsActive, subscriptionWillAutoRenew } = useSubscription();
+  const { subscription, subscriptionIsActive, subscriptionWillAutoRenew, cancelSubscription } = useSubscription();
   const { t } = useLanguage();
 
   const showMessage = (message: ReactElement) => {
@@ -40,14 +41,25 @@ const GoProScreen = () => {
     }
 
     if (subscriptionWillAutoRenew(subscription)) {
-      // Show message if user has an existing monthly or annual plan
-      Toast.show({
-        type: 'info',
-        text1: t('title.existing_plan'),
-        text2: t('msg.cancel_existing_plan_first'),
-        position: 'top',
-        visibilityTime: 4000,
-      });
+      // Show CancelSubscription component if user has an existing monthly or annual plan
+      showMessage(
+        <>
+          <ThemedText
+            type="subtitle"
+            style={{ textAlign: "left", marginBottom: 20 }}
+          >
+            {t('title.current_subscription_active')}
+          </ThemedText>
+          <ThemedText style={{ textAlign: "left", marginBottom: 26 }}>
+            {t('msg.existing_subscription_warning', { planType: t(`subscription.${subscription?.type}`) })}
+          </ThemedText>
+          <CancelSubscription
+            onConfirm={handleCancelSubscription}
+            onCancel={() => refRBSheet.current?.close()}
+            showTitle={false}
+          />
+        </>
+      );
       return;
     }
 
@@ -61,6 +73,28 @@ const GoProScreen = () => {
           ? <IOSPaymentMethods onSuccess={handlePurchaseSuccess} onFailure={handlePurchaseFailure} />
           : <PaymentMethods />
       );
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    try {
+      await cancelSubscription();
+      refRBSheet.current?.close();
+      Toast.show({
+        type: 'success',
+        text1: t('title.subscription_cancelled'),
+        text2: t('msg.subscription_cancel_success'),
+        position: 'top',
+        visibilityTime: 4000,
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: t('title.cancellation_failed'),
+        text2: t('msg.subscription_cancel_error'),
+        position: 'top',
+        visibilityTime: 4000,
+      });
     }
   };
 

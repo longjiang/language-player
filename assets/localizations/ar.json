@@ -445,7 +445,8 @@
         "content_tailored": "محتوى مخصص لك",
         "videos_matching": "مقاطع الفيديو المطابقة لـ \"{{searchTerm}}\"",
         "subscription_cancel_success": "تم إلغاء الاشتراك بنجاح",
-        "subscription_cancel_error": "خطأ في إلغاء الاشتراك"
+        "subscription_cancel_error": "خطأ في إلغاء الاشتراك",
+        "existing_subscription_warning": "لديك حاليًا خطة {{planType}} نشطة ستتجدد تلقائيًا. لتجنب الرسوم المزدوجة، يجب عليك إلغاء اشتراكك الحالي قبل شراء اشتراك جديد. هل ترغب في إلغاء اشتراك {{planType}} الحالي الخاص بك؟"
     },
     "option": {
         "app_store": "متجر التطبيقات",
@@ -554,7 +555,8 @@
         "recommended": "موصى به",
         "search_results": "نتائج البحث",
         "subscription_cancelled": "تم إلغاء الاشتراك",
-        "cancellation_failed": "فشل الإلغاء"
+        "cancellation_failed": "فشل الإلغاء",
+        "current_subscription_active": "الاشتراك الحالي نشط"
     },
     "video": {
         "comments": "التعليقات",
@@ -583,5 +585,10 @@
     },
     "filter": {
         "all_locales": "جميع المواقع"
+    },
+    "subscription": {
+        "monthly": "شهري",
+        "annual": "سنوي",
+        "lifetime": "مدى الحياة"
     }
 }

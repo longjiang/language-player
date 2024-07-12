@@ -445,7 +445,8 @@
         "content_tailored": "आपके लिए अनुकूलित सामग्री",
         "videos_matching": "\"{{searchTerm}}\" से मेल खाते वीडियो",
         "subscription_cancel_success": "सदस्यता सफलतापूर्वक रद्द की गई",
-        "subscription_cancel_error": "सदस्यता रद्द करने में त्रुटि"
+        "subscription_cancel_error": "सदस्यता रद्द करने में त्रुटि",
+        "existing_subscription_warning": "वर्तमान में आपके पास एक सक्रिय {{planType}} योजना है जो स्वचालित रूप से नवीनीकृत हो जाएगी। दोहरे शुल्क से बचने के लिए, आपको नया खरीदने से पहले अपनी मौजूदा सदस्यता रद्द करनी होगी। क्या आप अपनी मौजूदा {{planType}} सदस्यता रद्द करना चाहते हैं?"
     },
     "option": {
         "app_store": "ऐप स्टोर",
@@ -554,7 +555,8 @@
         "recommended": "अनुशंसित",
         "search_results": "खोज परिणाम",
         "subscription_cancelled": "सदस्यता रद्द की गई",
-        "cancellation_failed": "रद्दीकरण विफल रहा"
+        "cancellation_failed": "रद्दीकरण विफल रहा",
+        "current_subscription_active": "वर्तमान सदस्यता सक्रिय"
     },
     "video": {
         "comments": "टिप्पणियाँ",
@@ -583,5 +585,10 @@
     },
     "filter": {
         "all_locales": "सभी स्थान"
+    },
+    "subscription": {
+        "monthly": "मासिक",
+        "annual": "वार्षिक",
+        "lifetime": "आजीवन"
     }
 }

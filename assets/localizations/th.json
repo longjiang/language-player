@@ -443,7 +443,8 @@
         "content_tailored": "เนื้อหาที่ปรับแต่งสำหรับคุณ",
         "videos_matching": "วิดีโอที่ตรงกับ \"{{searchTerm}}\"",
         "subscription_cancel_success": "ยกเลิกการสมัครสมาชิกสำเร็จแล้ว",
-        "subscription_cancel_error": "เกิดข้อผิดพลาดในการยกเลิกการสมัครสมาชิก"
+        "subscription_cancel_error": "เกิดข้อผิดพลาดในการยกเลิกการสมัครสมาชิก",
+        "existing_subscription_warning": "ขณะนี้คุณมีแผน {{planType}} ที่ใช้งานอยู่ซึ่งจะต่ออายุโดยอัตโนมัติ เพื่อหลีกเลี่ยงการเรียกเก็บเงินซ้ำซ้อน คุณต้องยกเลิกการสมัครสมาชิกที่มีอยู่ก่อนที่จะซื้อรายการใหม่ คุณต้องการยกเลิกการสมัครสมาชิก {{planType}} ที่มีอยู่หรือไม่?"
     },
     "option": {
         "app_store": "App Store",
@@ -552,7 +553,8 @@
         "recommended": "แนะนำ",
         "search_results": "ผลการค้นหา",
         "subscription_cancelled": "ยกเลิกการสมัครสมาชิกแล้ว",
-        "cancellation_failed": "การยกเลิกล้มเหลว"
+        "cancellation_failed": "การยกเลิกล้มเหลว",
+        "current_subscription_active": "การสมัครสมาชิกปัจจุบันใช้งานอยู่"
     },
     "video": {
         "comments": "ความคิดเห็น",
@@ -581,5 +583,10 @@
     },
     "filter": {
         "all_locales": "ทุกภาษา"
+    },
+    "subscription": {
+        "monthly": "รายเดือน",
+        "annual": "รายปี",
+        "lifetime": "ตลอดชีพ"
     }
 }

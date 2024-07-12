@@ -462,7 +462,8 @@
         "content_tailored": "Inhoud op maat vir jou",
         "videos_matching": "Video's wat ooreenstem met \"{{searchTerm}}\"",
         "subscription_cancel_success": "Intekening suksesvol gekanselleer",
-        "subscription_cancel_error": "Fout met die kansellasie van intekening"
+        "subscription_cancel_error": "Fout met die kansellasie van intekening",
+        "existing_subscription_warning": "U het tans 'n aktiewe {{planType}}-plan wat outomaties hernieu sal word. Om dubbele heffings te vermy, moet u u bestaande inskrywing kanselleer voordat u 'n nuwe een koop. Wil u u bestaande {{planType}}-inskrywing kanselleer?"
     },
     "option": {
         "app_store": "App Store",
@@ -573,7 +574,8 @@
         "recommended": "Aanbeveel",
         "search_results": "Soekresultate",
         "subscription_cancelled": "Intekening gekanselleer",
-        "cancellation_failed": "Kansellasie misluk"
+        "cancellation_failed": "Kansellasie misluk",
+        "current_subscription_active": "Huidige Inskrywing Aktief"
     },
     "video": {
         "comments": "Kommentaar",
@@ -598,5 +600,10 @@
     },
     "filter": {
         "all_locales": "Alle liggings"
+    },
+    "subscription": {
+        "monthly": "maandeliks",
+        "annual": "jaarliks",
+        "lifetime": "lewenslank"
     }
 }

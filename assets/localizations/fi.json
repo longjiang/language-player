@@ -445,7 +445,8 @@
         "content_tailored": "Sinulle räätälöity sisältö",
         "videos_matching": "Videot hakusanalla \"{{searchTerm}}\"",
         "subscription_cancel_success": "Tilaus peruutettu onnistuneesti",
-        "subscription_cancel_error": "Virhe tilauksen peruuttamisessa"
+        "subscription_cancel_error": "Virhe tilauksen peruuttamisessa",
+        "existing_subscription_warning": "Sinulla on tällä hetkellä aktiivinen {{planType}}-suunnitelma, joka uusiutuu automaattisesti. Välttääksesi kaksinkertaiset veloitukset sinun on peruutettava nykyinen tilauksesi ennen uuden ostamista. Haluatko peruuttaa nykyisen {{planType}}-tilauksesi?"
     },
     "option": {
         "app_store": "App Store",
@@ -554,7 +555,8 @@
         "recommended": "Suositeltu",
         "search_results": "Hakutulokset",
         "subscription_cancelled": "Tilaus peruutettu",
-        "cancellation_failed": "Peruutus epäonnistui"
+        "cancellation_failed": "Peruutus epäonnistui",
+        "current_subscription_active": "Nykyinen Tilaus Aktiivinen"
     },
     "video": {
         "comments": "Kommentit",
@@ -583,5 +585,10 @@
     },
     "filter": {
         "all_locales": "Kaikki kielialueet"
+    },
+    "subscription": {
+        "monthly": "kuukausittainen",
+        "annual": "vuosittainen",
+        "lifetime": "elinikäinen"
     }
 }

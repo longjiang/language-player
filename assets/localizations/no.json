@@ -444,7 +444,8 @@
         "content_tailored": "Innhold skreddersydd for deg",
         "videos_matching": "Videoer som samsvarer med \"{{searchTerm}}\"",
         "subscription_cancel_success": "Abonnement vellykket kansellert",
-        "subscription_cancel_error": "Feil ved avbrytelse av abonnement"
+        "subscription_cancel_error": "Feil ved avbrytelse av abonnement",
+        "existing_subscription_warning": "Du har for øyeblikket en aktiv {{planType}}-plan som vil fornyes automatisk. For å unngå dobbel belastning må du kansellere ditt eksisterende abonnement før du kjøper et nytt. Ønsker du å kansellere ditt eksisterende {{planType}}-abonnement?"
     },
     "option": {
         "app_store": "App Store",
@@ -553,7 +554,8 @@
         "recommended": "Anbefalt",
         "search_results": "Søkeresultater",
         "subscription_cancelled": "Abonnement kansellert",
-        "cancellation_failed": "Kansellering mislyktes"
+        "cancellation_failed": "Kansellering mislyktes",
+        "current_subscription_active": "Nåværende Abonnement Aktivt"
     },
     "video": {
         "comments": "Kommentarer",
@@ -582,5 +584,10 @@
     },
     "filter": {
         "all_locales": "Alle lokasjoner"
+    },
+    "subscription": {
+        "monthly": "månedlig",
+        "annual": "årlig",
+        "lifetime": "livstid"
     }
 }

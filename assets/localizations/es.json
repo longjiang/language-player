@@ -444,7 +444,8 @@
         "content_tailored": "Contenido adaptado para ti",
         "videos_matching": "Videos que coinciden con \"{{searchTerm}}\"",
         "subscription_cancel_success": "Suscripción cancelada con éxito",
-        "subscription_cancel_error": "Error al cancelar la suscripción"
+        "subscription_cancel_error": "Error al cancelar la suscripción",
+        "existing_subscription_warning": "Actualmente tienes un plan {{planType}} activo que se renovará automáticamente. Para evitar cargos duplicados, debes cancelar tu suscripción existente antes de comprar una nueva. ¿Quieres cancelar tu suscripción {{planType}} existente?"
     },
     "option": {
         "app_store": "App Store",
@@ -553,7 +554,8 @@
         "recommended": "Recomendado",
         "search_results": "Resultados de búsqueda",
         "subscription_cancelled": "Suscripción cancelada",
-        "cancellation_failed": "Cancelación fallida"
+        "cancellation_failed": "Cancelación fallida",
+        "current_subscription_active": "Suscripción Actual Activa"
     },
     "video": {
         "comments": "Comentarios",
@@ -582,5 +584,10 @@
     },
     "filter": {
         "all_locales": "Todas las ubicaciones"
+    },
+    "subscription": {
+        "monthly": "mensual",
+        "annual": "anual",
+        "lifetime": "de por vida"
     }
 }

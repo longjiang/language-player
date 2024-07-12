@@ -445,7 +445,8 @@
         "content_tailored": "Auf Sie zugeschnittene Inhalte",
         "videos_matching": "Videos passend zu \"{{searchTerm}}\"",
         "subscription_cancel_success": "Abonnement erfolgreich gekündigt",
-        "subscription_cancel_error": "Fehler beim Kündigen des Abonnements"
+        "subscription_cancel_error": "Fehler beim Kündigen des Abonnements",
+        "existing_subscription_warning": "Sie haben derzeit einen aktiven {{planType}}-Plan, der sich automatisch verlängert. Um doppelte Gebühren zu vermeiden, müssen Sie Ihr bestehendes Abonnement kündigen, bevor Sie ein neues erwerben. Möchten Sie Ihr bestehendes {{planType}}-Abonnement kündigen?"
     },
     "option": {
         "app_store": "App Store",
@@ -554,7 +555,8 @@
         "recommended": "Empfohlen",
         "search_results": "Suchergebnisse",
         "subscription_cancelled": "Abonnement gekündigt",
-        "cancellation_failed": "Stornierung fehlgeschlagen"
+        "cancellation_failed": "Stornierung fehlgeschlagen",
+        "current_subscription_active": "Aktuelles Abonnement Aktiv"
     },
     "video": {
         "comments": "Kommentare",
@@ -583,5 +585,10 @@
     },
     "filter": {
         "all_locales": "Alle Sprachen"
+    },
+    "subscription": {
+        "monthly": "monatlich",
+        "annual": "jährlich",
+        "lifetime": "lebenslang"
     }
 }

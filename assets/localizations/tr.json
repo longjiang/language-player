@@ -443,7 +443,8 @@
         "content_tailored": "Size Özel İçerik",
         "videos_matching": "\"{{searchTerm}}\" ile eşleşen videolar",
         "subscription_cancel_success": "Abonelik başarıyla iptal edildi",
-        "subscription_cancel_error": "Abonelik iptal edilirken hata oluştu"
+        "subscription_cancel_error": "Abonelik iptal edilirken hata oluştu",
+        "existing_subscription_warning": "Şu anda otomatik olarak yenilenecek aktif bir {{planType}} planınız var. Çift ücretlendirmeden kaçınmak için, yeni bir plan satın almadan önce mevcut aboneliğinizi iptal etmeniz gerekir. Mevcut {{planType}} aboneliğinizi iptal etmek ister misiniz?"
     },
     "option": {
         "app_store": "App Store",
@@ -552,7 +553,8 @@
         "recommended": "Önerilen",
         "search_results": "Arama Sonuçları",
         "subscription_cancelled": "Abonelik İptal Edildi",
-        "cancellation_failed": "İptal Başarısız Oldu"
+        "cancellation_failed": "İptal Başarısız Oldu",
+        "current_subscription_active": "Mevcut Abonelik Etkin"
     },
     "video": {
         "comments": "Yorumlar",
@@ -581,5 +583,10 @@
     },
     "filter": {
         "all_locales": "Tüm Konumlar"
+    },
+    "subscription": {
+        "monthly": "aylık",
+        "annual": "yıllık",
+        "lifetime": "ömür boyu"
     }
 }

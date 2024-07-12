@@ -444,7 +444,8 @@
         "content_tailored": "Treści dostosowane do Ciebie",
         "videos_matching": "Filmy pasujące do \"{{searchTerm}}\"",
         "subscription_cancel_success": "Subskrypcja anulowana pomyślnie",
-        "subscription_cancel_error": "Błąd podczas anulowania subskrypcji"
+        "subscription_cancel_error": "Błąd podczas anulowania subskrypcji",
+        "existing_subscription_warning": "Masz obecnie aktywny plan {{planType}}, który odnowi się automatycznie. Aby uniknąć podwójnych opłat, musisz anulować istniejącą subskrypcję przed zakupem nowej. Czy chcesz anulować istniejącą subskrypcję {{planType}}?"
     },
     "option": {
         "app_store": "App Store",
@@ -553,7 +554,8 @@
         "recommended": "Polecane",
         "search_results": "Wyniki wyszukiwania",
         "subscription_cancelled": "Subskrypcja anulowana",
-        "cancellation_failed": "Anulowanie nie powiodło się"
+        "cancellation_failed": "Anulowanie nie powiodło się",
+        "current_subscription_active": "Aktywna Obecna Subskrypcja"
     },
     "video": {
         "comments": "Komentarze",
@@ -582,5 +584,10 @@
     },
     "filter": {
         "all_locales": "Wszystkie lokalizacje"
+    },
+    "subscription": {
+        "monthly": "miesięczny",
+        "annual": "roczny",
+        "lifetime": "dożywotni"
     }
 }

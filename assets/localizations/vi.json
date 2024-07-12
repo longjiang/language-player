@@ -443,7 +443,8 @@
         "content_tailored": "Nội dung được điều chỉnh cho bạn",
         "videos_matching": "Video phù hợp với \"{{searchTerm}}\"",
         "subscription_cancel_success": "Đã hủy đăng ký thành công",
-        "subscription_cancel_error": "Lỗi khi hủy đăng ký"
+        "subscription_cancel_error": "Lỗi khi hủy đăng ký",
+        "existing_subscription_warning": "Hiện tại bạn có một gói {{planType}} đang hoạt động sẽ tự động gia hạn. Để tránh bị tính phí trùng lặp, bạn phải hủy đăng ký hiện tại trước khi mua gói mới. Bạn có muốn hủy đăng ký {{planType}} hiện tại không?"
     },
     "option": {
         "app_store": "App Store",
@@ -552,7 +553,8 @@
         "recommended": "Đề xuất",
         "search_results": "Kết quả tìm kiếm",
         "subscription_cancelled": "Đã hủy đăng ký",
-        "cancellation_failed": "Hủy không thành công"
+        "cancellation_failed": "Hủy không thành công",
+        "current_subscription_active": "Đăng Ký Hiện Tại Đang Hoạt Động"
     },
     "video": {
         "comments": "Bình luận",
@@ -581,5 +583,10 @@
     },
     "filter": {
         "all_locales": "Tất cả khu vực"
+    },
+    "subscription": {
+        "monthly": "hàng tháng",
+        "annual": "hàng năm",
+        "lifetime": "trọn đời"
     }
 }

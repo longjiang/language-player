@@ -445,7 +445,8 @@
         "content_tailored": "Sadržaj prilagođen vama",
         "videos_matching": "Videozapisi koji odgovaraju \"{{searchTerm}}\"",
         "subscription_cancel_success": "Pretplata uspješno otkazana",
-        "subscription_cancel_error": "Greška prilikom otkazivanja pretplate"
+        "subscription_cancel_error": "Greška prilikom otkazivanja pretplate",
+        "existing_subscription_warning": "Trenutno imate aktivan {{planType}} plan koji će se automatski obnoviti. Da biste izbjegli dvostruke naplate, morate otkazati postojeću pretplatu prije kupnje nove. Želite li otkazati postojeću {{planType}} pretplatu?"
     },
     "option": {
         "app_store": "App Store",
@@ -554,7 +555,8 @@
         "recommended": "Preporučeno",
         "search_results": "Rezultati pretraživanja",
         "subscription_cancelled": "Pretplata otkazana",
-        "cancellation_failed": "Otkazivanje nije uspjelo"
+        "cancellation_failed": "Otkazivanje nije uspjelo",
+        "current_subscription_active": "Trenutna Pretplata Aktivna"
     },
     "video": {
         "comments": "Komentari",
@@ -583,5 +585,10 @@
     },
     "filter": {
         "all_locales": "Sve lokacije"
+    },
+    "subscription": {
+        "monthly": "mjesečno",
+        "annual": "godišnje",
+        "lifetime": "doživotno"
     }
 }

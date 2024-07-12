@@ -445,7 +445,8 @@
         "content_tailored": "Önnek szabott tartalom",
         "videos_matching": "A(z) \"{{searchTerm}}\" kifejezésnek megfelelő videók",
         "subscription_cancel_success": "Az előfizetés sikeresen lemondva",
-        "subscription_cancel_error": "Hiba történt az előfizetés lemondásakor"
+        "subscription_cancel_error": "Hiba történt az előfizetés lemondásakor",
+        "existing_subscription_warning": "Jelenleg van egy aktív {{planType}} előfizetésed, amely automatikusan megújul. A dupla díjak elkerülése érdekében le kell mondanod a meglévő előfizetésedet, mielőtt újat vásárolnál. Szeretnéd lemondani a meglévő {{planType}} előfizetésedet?"
     },
     "option": {
         "app_store": "App Store",
@@ -554,7 +555,8 @@
         "recommended": "Ajánlott",
         "search_results": "Keresési eredmények",
         "subscription_cancelled": "Előfizetés lemondva",
-        "cancellation_failed": "A lemondás sikertelen"
+        "cancellation_failed": "A lemondás sikertelen",
+        "current_subscription_active": "Jelenlegi Előfizetés Aktív"
     },
     "video": {
         "comments": "Hozzászólások",
@@ -583,5 +585,10 @@
     },
     "filter": {
         "all_locales": "Minden terület"
+    },
+    "subscription": {
+        "monthly": "havi",
+        "annual": "éves",
+        "lifetime": "élettartam"
     }
 }

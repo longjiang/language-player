@@ -444,7 +444,8 @@
         "content_tailored": "Conținut personalizat pentru tine",
         "videos_matching": "Videoclipuri care se potrivesc cu \"{{searchTerm}}\"",
         "subscription_cancel_success": "Abonament anulat cu succes",
-        "subscription_cancel_error": "Eroare la anularea abonamentului"
+        "subscription_cancel_error": "Eroare la anularea abonamentului",
+        "existing_subscription_warning": "Aveți în prezent un plan {{planType}} activ care se va reînnoi automat. Pentru a evita taxele duble, trebuie să anulați abonamentul existent înainte de a achiziționa unul nou. Doriți să anulați abonamentul {{planType}} existent?"
     },
     "option": {
         "app_store": "App Store",
@@ -553,7 +554,8 @@
         "recommended": "Recomandat",
         "search_results": "Rezultate căutare",
         "subscription_cancelled": "Abonament anulat",
-        "cancellation_failed": "Anulare eșuată"
+        "cancellation_failed": "Anulare eșuată",
+        "current_subscription_active": "Abonament Curent Activ"
     },
     "video": {
         "comments": "Comentarii",
@@ -582,5 +584,10 @@
     },
     "filter": {
         "all_locales": "Toate locațiile"
+    },
+    "subscription": {
+        "monthly": "lunar",
+        "annual": "anual",
+        "lifetime": "pe viață"
     }
 }

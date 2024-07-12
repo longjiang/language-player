@@ -445,7 +445,8 @@
         "content_tailored": "Ábhar Saincheaptha Duit",
         "videos_matching": "Físeáin ag meaitseáil \"{{searchTerm}}\"",
         "subscription_cancel_success": "Síntiús cealaithe go rathúil",
-        "subscription_cancel_error": "Earráid ag cealú an tsíntiúis"
+        "subscription_cancel_error": "Earráid ag cealú an tsíntiúis",
+        "existing_subscription_warning": "Tá plean {{planType}} gníomhach agat faoi láthair a athnuafaidh go huathoibríoch. Chun muirir dhúbailte a sheachaint, caithfidh tú do shíntiús reatha a chealú sula gceannóidh tú ceann nua. Ar mhaith leat do shíntiús {{planType}} reatha a chealú?"
     },
     "option": {
         "app_store": "App Store",
@@ -554,7 +555,8 @@
         "recommended": "Molta",
         "search_results": "Torthaí Cuardaigh",
         "subscription_cancelled": "Síntiús Cealaithe",
-        "cancellation_failed": "Theip ar an gCealú"
+        "cancellation_failed": "Theip ar an gCealú",
+        "current_subscription_active": "Síntiús Reatha Gníomhach"
     },
     "video": {
         "comments": "Tráchtanna",
@@ -583,5 +585,10 @@
     },
     "filter": {
         "all_locales": "Gach Logchaighdeán"
+    },
+    "subscription": {
+        "monthly": "míosúil",
+        "annual": "bliantúil",
+        "lifetime": "saoil"
     }
 }

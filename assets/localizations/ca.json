@@ -445,7 +445,8 @@
         "content_tailored": "Contingut adaptat per a tu",
         "videos_matching": "Vídeos que coincideixen amb \"{{searchTerm}}\"",
         "subscription_cancel_success": "Subscripció cancel·lada amb èxit",
-        "subscription_cancel_error": "Error en cancel·lar la subscripció"
+        "subscription_cancel_error": "Error en cancel·lar la subscripció",
+        "existing_subscription_warning": "Actualment tens un pla {{planType}} actiu que es renovarà automàticament. Per evitar càrrecs duplicats, has de cancel·lar la teva subscripció existent abans de comprar-ne una de nova. Vols cancel·lar la teva subscripció {{planType}} existent?"
     },
     "option": {
         "app_store": "App Store",
@@ -554,7 +555,8 @@
         "recommended": "Recomanat",
         "search_results": "Resultats de cerca",
         "subscription_cancelled": "Subscripció cancel·lada",
-        "cancellation_failed": "Error en la cancel·lació"
+        "cancellation_failed": "Error en la cancel·lació",
+        "current_subscription_active": "Subscripció Actual Activa"
     },
     "video": {
         "comments": "Comentaris",
@@ -583,5 +585,10 @@
     },
     "filter": {
         "all_locales": "Totes les ubicacions"
+    },
+    "subscription": {
+        "monthly": "mensual",
+        "annual": "anual",
+        "lifetime": "de per vida"
     }
 }

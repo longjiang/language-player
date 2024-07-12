@@ -462,7 +462,8 @@
         "content_tailored": "為您量身定制的內容",
         "videos_matching": "匹配\"{{searchTerm}}\"的視頻",
         "subscription_cancel_success": "訂閱成功取消",
-        "subscription_cancel_error": "取消訂閱時出錯"
+        "subscription_cancel_error": "取消訂閱時出錯",
+        "existing_subscription_warning": "您目前有一個會自動續訂的{{planType}}計劃。為避免重複收費，您必須在購買新計劃之前取消現有訂閱。您想取消現有的{{planType}}訂閱嗎？"
     },
     "option": {
         "app_store": "App Store",
@@ -573,7 +574,8 @@
         "recommended": "推薦",
         "search_results": "搜索結果",
         "subscription_cancelled": "訂閱已取消",
-        "cancellation_failed": "取消失敗"
+        "cancellation_failed": "取消失敗",
+        "current_subscription_active": "當前訂閱有效"
     },
     "video": {
         "comments": "留言",
@@ -598,5 +600,10 @@
     },
     "filter": {
         "all_locales": "所有地區"
+    },
+    "subscription": {
+        "monthly": "月度",
+        "annual": "年度",
+        "lifetime": "終身"
     }
 }

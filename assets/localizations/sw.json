@@ -444,7 +444,8 @@
         "content_tailored": "Maudhui Yaliyoundwa kwa Ajili Yako",
         "videos_matching": "Video zinazofanana na \"{{searchTerm}}\"",
         "subscription_cancel_success": "Usajili umefanikiwa kughairiwa",
-        "subscription_cancel_error": "Hitilafu katika kughairi usajili"
+        "subscription_cancel_error": "Hitilafu katika kughairi usajili",
+        "existing_subscription_warning": "Kwa sasa una mpango hai wa {{planType}} ambao utajididisha kiotomatiki. Ili kuepuka malipo ya ziada, lazima ughairi usajili wako uliopo kabla ya kununua mpya. Je, ungependa kughairi usajili wako wa {{planType}} uliopo?"
     },
     "option": {
         "app_store": "Duka la Programu",
@@ -553,7 +554,8 @@
         "recommended": "Pendekezo",
         "search_results": "Matokeo ya utafutaji",
         "subscription_cancelled": "Usajili umeghairiwa",
-        "cancellation_failed": "Kughairi kumeshindwa"
+        "cancellation_failed": "Kughairi kumeshindwa",
+        "current_subscription_active": "Usajili wa Sasa Unaotumika"
     },
     "video": {
         "comments": "Maoni",
@@ -582,5 +584,10 @@
     },
     "filter": {
         "all_locales": "Maeneo Yote"
+    },
+    "subscription": {
+        "monthly": "ya kila mwezi",
+        "annual": "ya kila mwaka",
+        "lifetime": "ya maisha"
     }
 }

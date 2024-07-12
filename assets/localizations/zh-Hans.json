@@ -462,7 +462,8 @@
         "content_tailored": "为您量身定制的内容",
         "videos_matching": "匹配\"{{searchTerm}}\"的视频",
         "subscription_cancel_success": "订阅成功取消",
-        "subscription_cancel_error": "取消订阅时出错"
+        "subscription_cancel_error": "取消订阅时出错",
+        "existing_subscription_warning": "您目前有一个会自动续订的{{planType}}计划。为避免重复收费，您必须在购买新计划之前取消现有订阅。您想取消现有的{{planType}}订阅吗？"
     },
     "option": {
         "app_store": "应用商店",
@@ -573,7 +574,8 @@
         "recommended": "推荐",
         "search_results": "搜索结果",
         "subscription_cancelled": "订阅已取消",
-        "cancellation_failed": "取消失败"
+        "cancellation_failed": "取消失败",
+        "current_subscription_active": "当前订阅有效"
     },
     "video": {
         "comments": "评论",
@@ -598,5 +600,10 @@
     },
     "filter": {
         "all_locales": "所有地区"
+    },
+    "subscription": {
+        "monthly": "月度",
+        "annual": "年度",
+        "lifetime": "终身"
     }
 }

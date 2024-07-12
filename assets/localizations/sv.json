@@ -444,7 +444,8 @@
         "content_tailored": "Innehåll skräddarsytt för dig",
         "videos_matching": "Videor som matchar \"{{searchTerm}}\"",
         "subscription_cancel_success": "Prenumeration avbruten framgångsrikt",
-        "subscription_cancel_error": "Fel vid avbrytning av prenumeration"
+        "subscription_cancel_error": "Fel vid avbrytning av prenumeration",
+        "existing_subscription_warning": "Du har för närvarande en aktiv {{planType}}-plan som kommer att förnyas automatiskt. För att undvika dubbla avgifter måste du avbryta din befintliga prenumeration innan du köper en ny. Vill du avbryta din befintliga {{planType}}-prenumeration?"
     },
     "option": {
         "app_store": "App Store",
@@ -553,7 +554,8 @@
         "recommended": "Rekommenderat",
         "search_results": "Sökresultat",
         "subscription_cancelled": "Prenumeration avbruten",
-        "cancellation_failed": "Avbrytning misslyckades"
+        "cancellation_failed": "Avbrytning misslyckades",
+        "current_subscription_active": "Nuvarande Prenumeration Aktiv"
     },
     "video": {
         "comments": "Kommentarer",
@@ -582,5 +584,10 @@
     },
     "filter": {
         "all_locales": "Alla platser"
+    },
+    "subscription": {
+        "monthly": "månadsvis",
+        "annual": "årlig",
+        "lifetime": "livstid"
     }
 }

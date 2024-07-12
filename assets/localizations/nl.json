@@ -444,7 +444,8 @@
         "content_tailored": "Op maat gemaakte inhoud voor jou",
         "videos_matching": "Video's die overeenkomen met \"{{searchTerm}}\"",
         "subscription_cancel_success": "Abonnement succesvol geannuleerd",
-        "subscription_cancel_error": "Fout bij het annuleren van het abonnement"
+        "subscription_cancel_error": "Fout bij het annuleren van het abonnement",
+        "existing_subscription_warning": "U heeft momenteel een actief {{planType}}-abonnement dat automatisch wordt verlengd. Om dubbele kosten te voorkomen, moet u uw bestaande abonnement opzeggen voordat u een nieuwe koopt. Wilt u uw bestaande {{planType}}-abonnement opzeggen?"
     },
     "option": {
         "app_store": "App Store",
@@ -553,7 +554,8 @@
         "recommended": "Aanbevolen",
         "search_results": "Zoekresultaten",
         "subscription_cancelled": "Abonnement geannuleerd",
-        "cancellation_failed": "Annulering mislukt"
+        "cancellation_failed": "Annulering mislukt",
+        "current_subscription_active": "Huidige Abonnement Actief"
     },
     "video": {
         "comments": "Reacties",
@@ -582,5 +584,10 @@
     },
     "filter": {
         "all_locales": "Alle talen"
+    },
+    "subscription": {
+        "monthly": "maandelijks",
+        "annual": "jaarlijks",
+        "lifetime": "levenslang"
     }
 }

@@ -444,7 +444,8 @@
         "content_tailored": "あなたに合わせたコンテンツ",
         "videos_matching": "\"{{searchTerm}}\"に一致する動画",
         "subscription_cancel_success": "サブスクリプションが正常にキャンセルされました",
-        "subscription_cancel_error": "サブスクリプションのキャンセル中にエラーが発生しました"
+        "subscription_cancel_error": "サブスクリプションのキャンセル中にエラーが発生しました",
+        "existing_subscription_warning": "現在、自動更新される有効な{{planType}}プランがあります。重複請求を避けるため、新しいプランを購入する前に既存のサブスクリプションをキャンセルする必要があります。既存の{{planType}}サブスクリプションをキャンセルしますか？"
     },
     "option": {
         "app_store": "App Store",
@@ -553,7 +554,8 @@
         "recommended": "おすすめ",
         "search_results": "検索結果",
         "subscription_cancelled": "サブスクリプションがキャンセルされました",
-        "cancellation_failed": "キャンセルに失敗しました"
+        "cancellation_failed": "キャンセルに失敗しました",
+        "current_subscription_active": "現在の購読がアクティブです"
     },
     "video": {
         "comments": "コメント",
@@ -582,5 +584,10 @@
     },
     "filter": {
         "all_locales": "すべての地域"
+    },
+    "subscription": {
+        "monthly": "月額",
+        "annual": "年間",
+        "lifetime": "生涯"
     }
 }

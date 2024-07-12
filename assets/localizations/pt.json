@@ -444,7 +444,8 @@
         "content_tailored": "Conteúdo personalizado para você",
         "videos_matching": "Vídeos correspondentes a \"{{searchTerm}}\"",
         "subscription_cancel_success": "Assinatura cancelada com sucesso",
-        "subscription_cancel_error": "Erro ao cancelar a assinatura"
+        "subscription_cancel_error": "Erro ao cancelar a assinatura",
+        "existing_subscription_warning": "Você tem atualmente um plano {{planType}} ativo que será renovado automaticamente. Para evitar cobranças duplicadas, você deve cancelar sua assinatura existente antes de comprar uma nova. Você gostaria de cancelar sua assinatura {{planType}} existente?"
     },
     "option": {
         "app_store": "App Store",
@@ -553,7 +554,8 @@
         "recommended": "Recomendado",
         "search_results": "Resultados da pesquisa",
         "subscription_cancelled": "Assinatura cancelada",
-        "cancellation_failed": "Falha no cancelamento"
+        "cancellation_failed": "Falha no cancelamento",
+        "current_subscription_active": "Assinatura Atual Ativa"
     },
     "video": {
         "comments": "Comentários",
@@ -582,5 +584,10 @@
     },
     "filter": {
         "all_locales": "Todas as localidades"
+    },
+    "subscription": {
+        "monthly": "mensal",
+        "annual": "anual",
+        "lifetime": "vitalício"
     }
 }

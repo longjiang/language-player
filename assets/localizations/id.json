@@ -445,7 +445,8 @@
         "content_tailored": "Konten yang Disesuaikan untuk Anda",
         "videos_matching": "Video yang cocok dengan \"{{searchTerm}}\"",
         "subscription_cancel_success": "Langganan berhasil dibatalkan",
-        "subscription_cancel_error": "Kesalahan membatalkan langganan"
+        "subscription_cancel_error": "Kesalahan membatalkan langganan",
+        "existing_subscription_warning": "Saat ini Anda memiliki rencana {{planType}} aktif yang akan diperpanjang secara otomatis. Untuk menghindari biaya ganda, Anda harus membatalkan langganan yang ada sebelum membeli yang baru. Apakah Anda ingin membatalkan langganan {{planType}} yang ada?"
     },
     "option": {
         "app_store": "App Store",
@@ -554,7 +555,8 @@
         "recommended": "Direkomendasikan",
         "search_results": "Hasil Pencarian",
         "subscription_cancelled": "Langganan Dibatalkan",
-        "cancellation_failed": "Pembatalan Gagal"
+        "cancellation_failed": "Pembatalan Gagal",
+        "current_subscription_active": "Langganan Saat Ini Aktif"
     },
     "video": {
         "comments": "Komentar",
@@ -583,5 +585,10 @@
     },
     "filter": {
         "all_locales": "Semua Lokal"
+    },
+    "subscription": {
+        "monthly": "bulanan",
+        "annual": "tahunan",
+        "lifetime": "seumur hidup"
     }
 }

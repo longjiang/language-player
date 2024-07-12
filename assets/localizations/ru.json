@@ -444,7 +444,8 @@
         "content_tailored": "Контент, подобранный для вас",
         "videos_matching": "Видео, соответствующие \"{{searchTerm}}\"",
         "subscription_cancel_success": "Подписка успешно отменена",
-        "subscription_cancel_error": "Ошибка при отмене подписки"
+        "subscription_cancel_error": "Ошибка при отмене подписки",
+        "existing_subscription_warning": "В настоящее время у вас есть активный план {{planType}}, который будет автоматически продлеваться. Чтобы избежать двойного списания средств, вы должны отменить существующую подписку перед покупкой новой. Хотите ли вы отменить существующую подписку {{planType}}?"
     },
     "option": {
         "app_store": "App Store",
@@ -553,7 +554,8 @@
         "recommended": "Рекомендованное",
         "search_results": "Результаты поиска",
         "subscription_cancelled": "Подписка отменена",
-        "cancellation_failed": "Ошибка отмены"
+        "cancellation_failed": "Ошибка отмены",
+        "current_subscription_active": "Текущая Подписка Активна"
     },
     "video": {
         "comments": "Комментарии",
@@ -582,5 +584,10 @@
     },
     "filter": {
         "all_locales": "Все регионы"
+    },
+    "subscription": {
+        "monthly": "ежемесячный",
+        "annual": "годовой",
+        "lifetime": "пожизненный"
     }
 }

@@ -445,7 +445,8 @@
         "content_tailored": "Περιεχόμενο προσαρμοσμένο για εσάς",
         "videos_matching": "Βίντεο που ταιριάζουν με \"{{searchTerm}}\"",
         "subscription_cancel_success": "Η συνδρομή ακυρώθηκε επιτυχώς",
-        "subscription_cancel_error": "Σφάλμα κατά την ακύρωση της συνδρομής"
+        "subscription_cancel_error": "Σφάλμα κατά την ακύρωση της συνδρομής",
+        "existing_subscription_warning": "Αυτή τη στιγμή έχετε ένα ενεργό πρόγραμμα {{planType}} που θα ανανεωθεί αυτόματα. Για να αποφύγετε διπλές χρεώσεις, πρέπει να ακυρώσετε την υπάρχουσα συνδρομή σας πριν αγοράσετε μια νέα. Θέλετε να ακυρώσετε την υπάρχουσα συνδρομή {{planType}};"
     },
     "option": {
         "app_store": "App Store",
@@ -554,7 +555,8 @@
         "recommended": "Προτεινόμενα",
         "search_results": "Αποτελέσματα αναζήτησης",
         "subscription_cancelled": "Η συνδρομή ακυρώθηκε",
-        "cancellation_failed": "Η ακύρωση απέτυχε"
+        "cancellation_failed": "Η ακύρωση απέτυχε",
+        "current_subscription_active": "Ενεργή Τρέχουσα Συνδρομή"
     },
     "video": {
         "comments": "Σχόλια",
@@ -583,5 +585,10 @@
     },
     "filter": {
         "all_locales": "Όλες οι τοποθεσίες"
+    },
+    "subscription": {
+        "monthly": "μηνιαίο",
+        "annual": "ετήσιο",
+        "lifetime": "εφ' όρου ζωής"
     }
 }

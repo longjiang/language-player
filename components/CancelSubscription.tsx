@@ -4,11 +4,13 @@ import { ThemedText, ThemedButton } from "@/components";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CancelSubscriptionProps {
+  showTitle: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
 export const CancelSubscription: React.FC<CancelSubscriptionProps> = ({
+  showTitle,
   onConfirm,
   onCancel
 }) => {
@@ -16,9 +18,9 @@ export const CancelSubscription: React.FC<CancelSubscriptionProps> = ({
 
   return (
     <>
-      <ThemedText style={styles.sheetText} type="subtitle">
+      { showTitle && <ThemedText style={styles.sheetText} type="subtitle">
         {t('msg.confirm_cancel_subscription')}
-      </ThemedText>
+      </ThemedText>}
       <ThemedButton
         title={t('action.confirm_cancellation')}
         type="primary"
