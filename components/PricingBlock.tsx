@@ -1,16 +1,15 @@
 // @/components/PricingBlock.tsx
 
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 import { ThemedText, ThemedButton } from "@/components";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { GenericCollectionItem } from "@/src/api/directus";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { ThemedRBSheet } from "./ThemedRBSheet";
 import { router } from "expo-router";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Subscription } from "@/src/types";
 import { getDeltaDate } from "@/src/utils";
-import Toast from 'react-native-toast-message';
 
 export interface PricingBlockProps {
   price: string;
@@ -18,7 +17,7 @@ export interface PricingBlockProps {
   current?: boolean;
   recommended?: boolean;
   onPress?: () => void;
-  subscription?: Subscription | null;
+  subscription?: GenericCollectionItem | null;
   showUpgrade?: boolean;
   showCancel?: boolean;
 }
@@ -45,33 +44,6 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
     refRBSheet.current?.open();
   };
 
-  const handlePricingBlockPress = () => {
-    if (current) {
-      // Do nothing if it's the current plan
-      return;
-    }
-
-    if (subscription?.type === "lifetime") {
-      // Do nothing if user has a lifetime subscription
-      return;
-    }
-
-    if (subscription?.type === "monthly" || subscription?.type === "annual") {
-      // Show message if user has an existing monthly or annual plan
-      Toast.show({
-        type: 'info',
-        text1: t('title.existing_plan'),
-        text2: t('msg.cancel_existing_plan_first'),
-        position: 'top',
-        visibilityTime: 4000,
-      });
-      return;
-    }
-
-    // If no restrictions apply, call the original onPress handler
-    onPress?.();
-  };
-
   const getExpirationText = () => {
     if (!subscription) return duration;
   
@@ -87,7 +59,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
 
   return (
     <TouchableOpacity
-      onPress={handlePricingBlockPress}
+      onPress={onPress}
       style={[
         styles.pricingBlock,
         { borderColor: secondaryStrokeColor },
@@ -161,7 +133,6 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
           onPress={() => refRBSheet.current?.close()}
         />
       </ThemedRBSheet>
-      <Toast />
     </TouchableOpacity>
   );
 };

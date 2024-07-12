@@ -14,7 +14,6 @@ import OnlyLifetimePlan from "@/components/OnlyLifetimePlan";
 import { goProStyles as styles } from "@/src/styles";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getPriceTranslation } from '@/utils/translationUtils';
 import Toast from 'react-native-toast-message';
 
 const GoProScreen = () => {
@@ -24,9 +23,31 @@ const GoProScreen = () => {
   const { subscription, subscriptionIsActive } = useSubscription();
   const { t } = useLanguage();
 
-  const onSelect = (value: string) => {
-    console.log("Selected:", value);
-    setSelectedPlan(value);
+  const handlePricingBlockPress = (planType: string) => {
+    if (subscriptionIsActive(subscription) && subscription?.type === planType) {
+      // Do nothing if it's the current plan
+      return;
+    }
+
+    if (subscription?.type === "lifetime") {
+      // Do nothing if user has a lifetime subscription
+      return;
+    }
+
+    if (subscription?.type === "monthly" || subscription?.type === "annual") {
+      // Show message if user has an existing monthly or annual plan
+      Toast.show({
+        type: 'info',
+        text1: t('title.existing_plan'),
+        text2: t('msg.cancel_existing_plan_first'),
+        position: 'top',
+        visibilityTime: 4000,
+      });
+      return;
+    }
+
+    // If no restrictions apply, open the RBSheet
+    setSelectedPlan(planType);
     if (refRBSheet.current) refRBSheet.current.open();
   };
 
@@ -98,8 +119,8 @@ const GoProScreen = () => {
           duration={plan.duration}
           current={subscriptionIsActive(subscription) && plan.type === currentPlan}
           recommended={plan.recommended}
-          onPress={() => onSelect(plan.type)}
-          subscription={subscriptionIsActive(subscription) && subscription}
+          onPress={() => handlePricingBlockPress(plan.type)}
+          subscription={subscriptionIsActive(subscription) ? subscription : null}
           showUpgrade={false}
         />
       ))}
