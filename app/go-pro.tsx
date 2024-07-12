@@ -1,6 +1,6 @@
 // @/app/go-pro.tsx
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, ReactElement } from "react";
 import { StyleSheet, View, Image, Platform } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedScreen } from "@/components/ThemedScreen";
@@ -17,13 +17,16 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import Toast from 'react-native-toast-message';
 
 const GoProScreen = () => {
-  const [message, setMessage] = useState<'default' | 'failure' | 'lifetime' | 'ios' | 'android'>(() => 
-    Platform.OS === "ios" ? 'ios' : 'android'
-  );
+  const [currentMessage, setCurrentMessage] = useState<ReactElement | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const refRBSheet = useRef<ThemedRBSheet>(null);
   const { subscription, subscriptionIsActive, subscriptionWillAutoRenew } = useSubscription();
   const { t } = useLanguage();
+
+  const showMessage = (message: ReactElement) => {
+    setCurrentMessage(message);
+    if (refRBSheet.current) refRBSheet.current.open();
+  };
 
   const handlePricingBlockPress = (planType: string) => {
     if (subscriptionIsActive(subscription) && subscription?.type === planType) {
@@ -48,14 +51,17 @@ const GoProScreen = () => {
       return;
     }
 
-    // If no restrictions apply, open the RBSheet
+    // If no restrictions apply, show the appropriate message
     setSelectedPlan(planType);
     if (Platform.OS === "ios" && planType !== "lifetime") {
-      setMessage('lifetime');
+      showMessage(<OnlyLifetimePlan />);
     } else {
-      setMessage(Platform.OS === "ios" ? 'ios' : 'android');
+      showMessage(
+        Platform.OS === "ios" 
+          ? <IOSPaymentMethods onSuccess={handlePurchaseSuccess} onFailure={handlePurchaseFailure} />
+          : <PaymentMethods />
+      );
     }
-    if (refRBSheet.current) refRBSheet.current.open();
   };
 
   const handlePurchaseSuccess = () => {
@@ -70,26 +76,11 @@ const GoProScreen = () => {
   };
 
   const handlePurchaseFailure = () => {
-    setMessage('failure');
+    showMessage(<Failure />);
   };
 
   const handleRBSheetClose = () => {
-    setMessage(Platform.OS === "ios" ? 'ios' : 'android');
-  };
-
-  const getSheetContent = () => {
-    switch (message) {
-      case 'failure':
-        return <Failure />;
-      case 'lifetime':
-        return <OnlyLifetimePlan />;
-      case 'ios':
-        return <IOSPaymentMethods onSuccess={handlePurchaseSuccess} onFailure={handlePurchaseFailure} />;
-      case 'android':
-        return <PaymentMethods />;
-      default:
-        return null; // This should never happen, but TypeScript will be happy
-    }
+    setCurrentMessage(null);
   };
 
   const currentPlan = subscriptionIsActive(subscription) ? subscription?.type : null;
@@ -156,7 +147,7 @@ const GoProScreen = () => {
         closeOnPressMask={true}
         onClose={handleRBSheetClose}
       >
-        {getSheetContent()}
+        {currentMessage}
       </ThemedRBSheet>
       <Toast />
     </ThemedScreen>
