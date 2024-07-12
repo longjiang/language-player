@@ -62,6 +62,7 @@ const AccountScreen = () => {
               duration=""  // We'll calculate this inside PricingBlock now
               current
               subscription={subscription}
+              showCancel={true}
             />
           ) : (
             <ThemedText style={{ alignSelf: "center", marginTop: 16 }} type="large">

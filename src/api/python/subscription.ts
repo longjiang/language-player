@@ -1,4 +1,4 @@
-// @/src/api/python/subscriptions.ts
+// @/src/api/python/subscription.ts
 
 import { AxiosResponse } from "axios";
 import { API } from "@/src/api/python";

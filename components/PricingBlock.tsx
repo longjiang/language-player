@@ -7,9 +7,10 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { GenericCollectionItem } from "@/src/api/directus";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { ThemedRBSheet } from "./ThemedRBSheet";
-import { router } from "expo-router";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getDeltaDate } from "@/src/utils";
+import { cancelSubscriptionAtEndOfPeriod } from "@/src/api/python/subscription";
+import Toast from 'react-native-toast-message';
 
 export interface PricingBlockProps {
   price: string;
@@ -42,6 +43,30 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
 
   const handleCancelPress = () => {
     refRBSheet.current?.open();
+  };
+
+  const handleCancelSubscription = async () => {
+    if (subscription?.payment_customer_id) {
+      try {
+        await cancelSubscriptionAtEndOfPeriod(subscription.payment_customer_id);
+        Toast.show({
+          type: 'success',
+          text1: t('title.subscription_cancelled'),
+          text2: t('msg.subscription_cancel_success'),
+          position: 'top',
+          visibilityTime: 4000,
+        });
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: t('title.cancellation_failed'),
+          text2: t('msg.subscription_cancel_error'),
+          position: 'top',
+          visibilityTime: 4000,
+        });
+      }
+    }
+    refRBSheet.current?.close();
   };
 
   const getExpirationText = () => {
@@ -97,7 +122,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
               title={t('action.upgrade')}
               size="small"
               trailingIcon={<Icon name="chevron-right" />}
-              onPress={() => router.navigate('/go-pro')}
+              onPress={onPress}
             />
           )}
           {shouldShowCancel && (
@@ -119,10 +144,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
         <ThemedButton
           title={t('action.confirm_cancellation')}
           type="primary"
-          onPress={() => {
-            console.log("Subscription cancelled");
-            refRBSheet.current?.close();
-          }}
+          onPress={handleCancelSubscription}
           style={{
             marginBottom: 10,
           }}
@@ -133,6 +155,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
           onPress={() => refRBSheet.current?.close()}
         />
       </ThemedRBSheet>
+      <Toast />
     </TouchableOpacity>
   );
 };
