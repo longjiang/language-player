@@ -63,7 +63,8 @@ export const Token: React.FC<{
     const l1Code = l1Lang?.code.split('-')[0];
     const l2Code = l2Lang.code;
     if (savedWord && settings.showQuickGloss && savedWord.definitions.length > 0 && l1Code !== l2Code) {
-      setFirstDefinition(savedWord.definitions[0]);
+      const defString = savedWord.definitions[0]
+      setFirstDefinition(defString);
     } else {
       setFirstDefinition(null);
     }
@@ -159,7 +160,7 @@ export const Token: React.FC<{
       ]}>
         {displayContent.map(renderSegment)}
       </View>
-      {firstDefinition && <DefinitionList definitions={[firstDefinition]} style={{ marginBottom: 2 }} />}
+      {firstDefinition && <DefinitionList definitions={[firstDefinition]} brief={true} style={{ marginBottom: 2 }} />}
       <PopupDictionaryModal state={{ token: decodedToken, context: he.decode(context), translatedContext }} ref={modalRef} key={decodedToken.text} onClose={handlePopupClose} />
     </TouchableOpacity>
   );

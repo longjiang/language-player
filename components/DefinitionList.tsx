@@ -10,9 +10,10 @@ interface DefinitionListProps {
   definitions: string[];
   type?: 'default' | 'defaultBold' | 'link' | 'linkBold' | 'large' | 'subtitle' | 'xlarge' | 'title' | 'xxlarge';
   style?: ViewStyle;
+  brief?: boolean; // Will split the definition by ", " or "、" and only show the first one
 }
 
-export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, type = "default", style }) => {
+export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, type = "default", style, brief = false }) => {
   const [translatedDefinitions, setTranslatedDefinitions] = useState<string[]>(definitions);
   const { dictionary, translationManager } = useDictionary();
   const { l1Lang, l2Lang } = useLanguage();
@@ -90,12 +91,19 @@ export const DefinitionList: React.FC<DefinitionListProps> = ({ definitions, typ
   return (
     <View ref={viewRef} onLayout={debouncedCheckPosition} style={style}>
       <ThemedText type={type}>
-        {translatedDefinitions.map((definition, index) => (
-          <React.Fragment key={index}>
-            {index > 0 && '; '}
-            {definition}
-          </React.Fragment>
-        ))}
+        {translatedDefinitions.map((definition, index) => {
+          let displayedDefinition = definition;
+          if (brief) {
+            const firstPart = definition.split(/[,、]/)[0];
+            displayedDefinition = firstPart.length < 10 ? firstPart : definition;
+          }
+          return (
+            <React.Fragment key={index}>
+              {index > 0 && '; '}
+              {displayedDefinition}
+            </React.Fragment>
+          );
+        })}
       </ThemedText>
     </View>
   );
