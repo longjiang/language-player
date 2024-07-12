@@ -22,12 +22,12 @@ export const ChatGPTExplanation: React.FC<ChatGPTExplanationProps> = ({
   chatGPTPrompt,
   onExplainPress,
 }) => {
-  const { isProUser } = useSubscription();
+  const { subscriptionIsActive, subscription } = useSubscription();
   const [modalVisible, setModalVisible] = useState(false);
   const { t } = useLanguage();
 
   const handlePress = () => {
-    if (isProUser()) {
+    if (subscriptionIsActive(subscription)) {
       onExplainPress();
     } else {
       setModalVisible(true);

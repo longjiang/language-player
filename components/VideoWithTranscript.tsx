@@ -33,7 +33,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   isProCheckEnabled = true
 }) => {
   const { syncedLines, currentLine, video, playVideo, updatePlayVideo, currentTime, startTime, playlist } = useVideoWithTranscriptContext();
-  const { isProUser } = useSubscription();
+  const { subscriptionIsActive, subscription } = useSubscription();
   const { t } = useLanguage();
   const { closePlayer, maximizePlayer } = useVideoPlayer();
   const [showProModal, setShowProModal] = useState(false);
@@ -58,11 +58,11 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
   );
 
   useEffect(() => {
-    if (isProCheckEnabled && !isProUser() && currentLineIndex >= MAX_FREE_LINES && !hasShownModalRef.current) {
+    if (isProCheckEnabled && !subscriptionIsActive(subscription) && currentLineIndex >= MAX_FREE_LINES && !hasShownModalRef.current) {
       setShowProModal(true);
       hasShownModalRef.current = true;
     }
-  }, [currentLineIndex, isProCheckEnabled, isProUser]);
+  }, [currentLineIndex, isProCheckEnabled, subscriptionIsActive(subscription)]);
 
   const closeProModal = useCallback(() => {
     setShowProModal(false);
@@ -129,7 +129,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
         <>
           <VideoControlBar />
           <View style={{ paddingHorizontal: 26 }}>
-            <SyncedTranscript transcriptLimitReached={isProCheckEnabled && !isProUser() && currentLineIndex >= MAX_FREE_LINES} />
+            <SyncedTranscript transcriptLimitReached={isProCheckEnabled && !subscriptionIsActive(subscription) && currentLineIndex >= MAX_FREE_LINES} />
           </View>
         </>
       )}

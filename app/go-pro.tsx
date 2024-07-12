@@ -21,7 +21,7 @@ const GoProScreen = () => {
   const [paymentError, setPaymentError] = useState<boolean>(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const refRBSheet = useRef<ThemedRBSheet>(null);
-  const { subscription, isProUser } = useSubscription();
+  const { subscription, subscriptionIsActive } = useSubscription();
   const { t } = useLanguage();
 
   const onSelect = (value: string) => {
@@ -51,7 +51,7 @@ const GoProScreen = () => {
 
   const showOnlyLifetimePlan = Platform.OS === "ios" && selectedPlan !== "lifetime";
 
-  const currentPlan = isProUser() ? subscription?.type : null;
+  const currentPlan = subscriptionIsActive(subscription) ? subscription?.type : null;
 
   const plans = [
     { type: "monthly", price: t('price.monthly', { price: 10 }), duration: t('duration.monthly') },
@@ -89,17 +89,17 @@ const GoProScreen = () => {
         ))}
       </View>
       <ThemedText style={styles.choosePlan} type="subtitle">
-        {isProUser() ? t('title.your_current_plan') : t('title.choose_your_plan')}
+        {subscriptionIsActive(subscription) ? t('title.your_current_plan') : t('title.choose_your_plan')}
       </ThemedText>
       {plans.map((plan) => (
         <PricingBlock
           key={plan.type}
           price={plan.price}
           duration={plan.duration}
-          current={isProUser() && plan.type === currentPlan}
+          current={subscriptionIsActive(subscription) && plan.type === currentPlan}
           recommended={plan.recommended}
           onPress={() => onSelect(plan.type)}
-          subscription={isProUser() && subscription}
+          subscription={subscriptionIsActive(subscription) && subscription}
           showUpgrade={false}
         />
       ))}

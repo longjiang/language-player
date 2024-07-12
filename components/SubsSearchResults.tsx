@@ -22,7 +22,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
     useVideoWithTranscriptContext();
   const refRBSheet = useRef();
 
-  const { isProUser } = useSubscription();
+  const { subscriptionIsActive, subscription } = useSubscription();
   const [showProModal, setShowProModal] = useState(false);
   const previousIndexRef = useRef(currentVideoIndex);
   const { t, l2Lang, l1Lang, languages } = useLanguage();
@@ -45,13 +45,13 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   }, [video, l1Lang.code, l2Lang.code]);
 
   useEffect(() => {
-    if (!isProUser() && currentVideoIndex >= MAX_FREE_SUBS_SEARCH_RESULTS) {
+    if (!subscriptionIsActive(subscription) && currentVideoIndex >= MAX_FREE_SUBS_SEARCH_RESULTS) {
       setShowProModal(true);
       skipToVideo(previousIndexRef.current); // Revert to previous index
     } else {
       previousIndexRef.current = currentVideoIndex; // Update the previous index
     }
-  }, [currentVideoIndex, isProUser, skipToVideo]);
+  }, [currentVideoIndex, subscription, skipToVideo]);
 
   const closeProModal = useCallback(() => {
     setShowProModal(false);
@@ -61,7 +61,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
     refRBSheet.current.close();
     const index = playlist.findIndex(result => result.youtube_id === item.youtube_id);
 
-    if (!isProUser() && index >= MAX_FREE_SUBS_SEARCH_RESULTS) {
+    if (!subscriptionIsActive(subscription) && index >= MAX_FREE_SUBS_SEARCH_RESULTS) {
       await timeout(1000);
       setShowProModal(true);
       skipToVideo(previousIndexRef.current); // Revert to previous index
@@ -69,7 +69,7 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
     }
     updateStartTime(playlist[index].starttime || 0);
     skipToVideo(index);
-  }, [isProUser, playlist, skipToVideo, updateStartTime]);
+  }, [subscription, playlist, skipToVideo, updateStartTime]);
 
   useEffect(() => {
     const foundLine = syncedLines.find((line) => 

@@ -9,13 +9,13 @@ import { getDeltaDate } from "@/src/utils";
 
 interface SubscriptionContextProps {
   subscription: GenericCollectionItem | null;
-  isProUser: () => boolean;
+  subscriptionIsActive: (subscription: GenericCollectionItem | null) => boolean;
   fetchSubscription: () => Promise<void>;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextProps>({
   subscription: null,
-  isProUser: () => false,
+  subscriptionIsActive: () => false,
   fetchSubscription: async () => {},
 });
 
@@ -40,7 +40,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   };
 
-  const isProUser = () => {
+  const subscriptionIsActive = (subscription: GenericCollectionItem | null) => {
     if (!subscription) return false;
     if (subscription.type === "lifetime") return true;
     const delta = getDeltaDate(subscription.expires_on);
@@ -54,7 +54,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [userInfo]);
 
   return (
-    <SubscriptionContext.Provider value={{ subscription, isProUser, fetchSubscription }}>
+    <SubscriptionContext.Provider value={{ subscription, subscriptionIsActive, fetchSubscription }}>
       {children}
     </SubscriptionContext.Provider>
   );
