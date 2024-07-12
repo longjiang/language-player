@@ -99,7 +99,7 @@ const GoProScreen = () => {
           current={isProUser() && plan.type === currentPlan}
           recommended={plan.recommended}
           onPress={() => onSelect(plan.type)}
-          subscription={isProUser() && plan.type === currentPlan ? subscription : null}
+          subscription={isProUser() && subscription}
           showUpgrade={false}
         />
       ))}
