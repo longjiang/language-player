@@ -4,7 +4,7 @@ import { NavigationContainerRef } from '@react-navigation/native';
 
 export const useRouteChange = (
   navigation: NavigationContainerRef<ReactNavigation.RootParamList>,
-  callback: () => void
+  callback: (routeName: string | undefined, previousRouteName: string | undefined) => void
 ) => {
   const routeNameRef = useRef<string | undefined>();
 
@@ -14,7 +14,7 @@ export const useRouteChange = (
       const currentRouteName = navigation.getCurrentRoute()?.name;
 
       if (previousRouteName !== currentRouteName) {
-        callback();
+        callback(previousRouteName, currentRouteName);
       }
 
       routeNameRef.current = currentRouteName;

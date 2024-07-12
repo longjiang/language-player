@@ -21,7 +21,11 @@ export const MiniPlayer = () => {
   const navigation = useNavigation();
   const prevL2LangRef = useRef(l2Lang);
 
-  useRouteChange(navigation, minimizePlayer);
+  useRouteChange(navigation, (prevRouteName, routeName) => {
+    if (![routeName, prevRouteName].includes("settings")) {
+      minimizePlayer();
+    }
+  });
 
   useEffect(() => {
     if (prevL2LangRef.current !== l2Lang && currentVideo) {

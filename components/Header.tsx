@@ -59,7 +59,6 @@ export const Header: React.FC<HeaderProps> = ({ minimizePlayer }) => {
             style={styles.headerButton}
             trailingIcon={<Ionicon name="cog" />}
             onPress={() => {
-              minimizePlayer();
               router.navigate("/settings");
             }}
           />
