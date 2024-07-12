@@ -1,7 +1,7 @@
 // @/components/Token.tsx
 
 import React, { useRef, useMemo, useState, useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ViewStyle, TextStyle } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Typography } from "@/constants/Typography";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -17,18 +17,38 @@ import { LevelColors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { ThemedText } from "./ThemedText";
 import { DefinitionList } from "./DefinitionList";
-import he from 'he';  // Import the he library for HTML entity decoding
+import he from 'he';
 
-export const Token: React.FC<{
-  token: TokenType,
-  textScale?: number,
-  textWeight?: "regular" | "bold",
-  context?: string,
-  translatedContext?: string,
-  decodeHTML?: boolean,
-  onPopupOpen?: () => void,
-  onPopupClose?: () => void,
-}> = ({
+interface TokenProps {
+  token: TokenType;
+  textScale?: number;
+  textWeight?: "regular" | "bold";
+  context?: string;
+  translatedContext?: string;
+  decodeHTML?: boolean;
+  onPopupOpen?: () => void;
+  onPopupClose?: () => void;
+}
+
+interface SegmentProps {
+  segment: Segment;
+  index: number;
+  shouldShowPronunciation: boolean;
+  styles: {
+    segment: ViewStyle;
+    pronunciation: TextStyle;
+    mainText: TextStyle;
+  };
+  fontFamily: string;
+  primaryTextColor: string;
+  defaultFontSize: number;
+  textScale: number;
+  savedWord: DictionaryEntry | null;
+  savedWordColor: (level?: number) => string;
+  isBlank: boolean;
+}
+
+export const Token: React.FC<TokenProps> = ({
   token,
   textScale = 1,
   textWeight = "regular",
@@ -43,9 +63,10 @@ export const Token: React.FC<{
   const primaryStrokeColor = useThemeColor({}, "primaryStroke");
   const fontFamily = textWeight === "bold" ? Typography.fontFamilyBold : Typography.fontFamilyRegular;
   const { l1Lang, l2Lang } = useLanguage();
+  if (!l2Lang) return;
   const { settings } = useSettings();
   const { convert, dictionary } = useDictionary();
-  const modalRef = useRef();
+  const modalRef = useRef<typeof PopupDictionaryModal>(null);
   const { savedWords, getSavedWordByForm } = useUserData();
   const [savedWord, setSavedWord] = useState<DictionaryEntry | null>(null);
   const [firstDefinition, setFirstDefinition] = useState<string | null>(null);
@@ -56,7 +77,6 @@ export const Token: React.FC<{
   const semanticWarningColor = useThemeColor({}, "semanticWarning");
 
   const checkSavedWord = async () => {
-    if (!l2Lang) return;
     const savedWordMeta = getSavedWordByForm(l2Lang.code, token.text);
     const savedWord = dictionary && savedWordMeta ? await dictionary.getEntry(savedWordMeta.id) : null;
     setSavedWord(savedWord);
@@ -90,25 +110,24 @@ export const Token: React.FC<{
 
   const shouldShowPronunciation = settings.showPinyin && token.pronunciation && token.pronunciation !== token.text && !isBlank;
 
-  const savedWordColor = (level: number) => {
-    if (!level) return semanticWarningColor;
-    return LevelColors[colorScheme][level];
+  const savedWordColor = (level: number | undefined = undefined): string => {
+    return level ? LevelColors[colorScheme][level] || semanticWarningColor : semanticWarningColor;
   };
 
   const { displayContent, decodedToken } = useMemo(() => {
     let processedText = decodeHTML ? he.decode(token.text) : token.text;
     let processedPronunciation = decodeHTML ? he.decode(token.pronunciation || '') : (token.pronunciation || '');
 
-    let segments;
-    if (l2Lang.code === 'ja') {
+    let segments: Segment[];
+    if (l2Lang?.code === 'ja') {
       segments = matchHiragana({ text: processedText, pronunciation: processedPronunciation });
-    } else if (convert && l2Lang.han && processedText) {
+    } else if (convert && l2Lang?.han && processedText) {
       segments = [{ text: convert(processedText), pronunciation: processedPronunciation }];
     } else {
       segments = [{ text: processedText, pronunciation: processedPronunciation }];
     }
 
-    const decodedToken = {
+    const decodedToken: TokenType = {
       ...token,
       text: processedText,
       pronunciation: processedPronunciation
@@ -117,7 +136,7 @@ export const Token: React.FC<{
     return { displayContent: segments, decodedToken };
   }, [token, convert, l2Lang.code, l2Lang.han, decodeHTML]);
 
-  const renderSegment = (segment: { text: string; pronunciation: string }, index: number) => (
+  const renderSegment = ({ segment, index, shouldShowPronunciation, styles, fontFamily, primaryTextColor, defaultFontSize, textScale, savedWord, savedWordColor, isBlank }: SegmentProps) => (
     <View key={index} style={styles.segment}>
       {shouldShowPronunciation && segment.pronunciation !== segment.text && (
         <Text
@@ -158,7 +177,19 @@ export const Token: React.FC<{
         styles.token,
         shouldShowPronunciation ? styles.tokenWithPronunciation : null
       ]}>
-        {displayContent.map(renderSegment)}
+        {displayContent.map((segment, index) => renderSegment({
+          segment,
+          index,
+          shouldShowPronunciation,
+          styles,
+          fontFamily,
+          primaryTextColor,
+          defaultFontSize,
+          textScale,
+          savedWord,
+          savedWordColor,
+          isBlank
+        }))}
       </View>
       {firstDefinition && <DefinitionList definitions={[firstDefinition]} brief={true} style={{ marginBottom: 2 }} />}
       <PopupDictionaryModal state={{ token: decodedToken, context: he.decode(context), translatedContext }} ref={modalRef} key={decodedToken.text} onClose={handlePopupClose} />

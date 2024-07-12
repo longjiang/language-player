@@ -2,9 +2,9 @@ import wanakana from 'wanakana';
 
 // Define types for the segments
 export type Segment = {
-  type: 'kanji' | 'non-kanji';
   text: string;
   pronunciation: string;
+  type?: 'kanji' | 'non-kanji';
 };
 
 // helper function to check if a character is a kanji
@@ -64,7 +64,7 @@ function createRegex(segments: Segment[]): RegExp {
 }
 
 // Pronunciation will be auto-converted to hiragana
-export function matchHiragana({ text, pronunciation }: { text: string; pronunciation: string }): { text: string; pronunciation: string }[] {
+export function matchHiragana({ text, pronunciation }: { text: string; pronunciation: string }): Segment[] {
   if (!isHiragana(pronunciation[0])) pronunciation = convertKatakanaToHiragana(pronunciation);
   let segments = segmentKanjisAndNonKanjis(text);
   let readings = pronunciation.match(createRegex(segments));
