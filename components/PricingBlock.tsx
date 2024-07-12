@@ -10,8 +10,10 @@ import { ThemedRBSheet } from "./ThemedRBSheet";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getDeltaDate } from "@/src/utils";
 import { cancelSubscriptionAtEndOfPeriod } from "@/src/api/python/subscription";
+import { CancelSubscription } from "./CancelSubscription";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import Toast from 'react-native-toast-message';
+import { router } from "expo-router";
 
 export interface PricingBlockProps {
   price: string;
@@ -32,7 +34,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
   onPress,
   subscription,
   showUpgrade = true,
-  showCancel = true,
+  showCancel = false,
 }) => {
   const { t } = useLanguage();
   const secondaryBrandColor = useThemeColor({}, 'semanticSuccess');
@@ -125,7 +127,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
               title={t('action.upgrade')}
               size="small"
               trailingIcon={<Icon name="chevron-right" />}
-              onPress={onPress}
+              onPress={() => { router.push("/go-pro"); }}
             />
           )}
           {shouldShowCancel && (
@@ -140,21 +142,9 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
         </View>
       )}
       <ThemedRBSheet ref={refRBSheet}>
-        <ThemedText style={styles.sheetText} type="subtitle">
-          {t('msg.confirm_cancel_subscription')}
-        </ThemedText>
-        <ThemedButton
-          title={t('action.confirm_cancellation')}
-          type="primary"
-          onPress={handleCancelSubscription}
-          style={{
-            marginBottom: 10,
-          }}
-        />
-        <ThemedButton
-          title={t('action.keep_subscription')}
-          type="neutral"
-          onPress={() => refRBSheet.current?.close()}
+        <CancelSubscription
+          onConfirm={handleCancelSubscription}
+          onCancel={() => refRBSheet.current?.close()}
         />
       </ThemedRBSheet>
       <Toast />
