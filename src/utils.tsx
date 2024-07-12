@@ -19,7 +19,7 @@ export const formatDuration = (seconds: number, locale: string): string => {
 };
 
 export const stripAccents = (str: string): string => {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').normalize('NFC');
 }
 
 export const isHangul = (text: string): boolean => {
