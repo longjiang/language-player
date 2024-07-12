@@ -285,10 +285,12 @@
     },
     "action": {
         "cancel": "İptal",
+        "clear_words": "Kelimeleri Temizle",
         "clear": "Temizle",
         "confirm_cancellation": "İptali Onayla",
         "confirm_deletion": "Silme İşlemini Onayla",
         "copy": "Kopyala",
+        "email_support": "E-posta Desteği",
         "keep_account": "Hesabı Sakla",
         "keep_subscription": "Aboneliği Sakla",
         "let_chatgpt_explain": "AI'ye Sor",
@@ -298,15 +300,18 @@
         "next": "Sonraki",
         "register": "Kayıt Ol",
         "resend_code": "Kodu Yeniden Gönder",
+        "share": "Paylaş",
         "speak": "Konuş",
         "start_learning": "Öğrenmeye Başla",
         "tv_shows": "TV Şovları",
-        "upgrade": "Yükselt",
         "upgrade_to_pro": "Pro'ya Yükselt",
+        "upgrade": "Yükselt",
         "verify": "Doğrula",
-        "watch": "İzle",
-        "share": "Paylaş",
-        "clear_words": "Kelimeleri Temizle"
+        "watch": "İzle"
+    },
+    "button": {
+        "keep_current_time": "Mevcut Zamanı Koru",
+        "reset_time_to_zero": "Zamanı Sıfırla"
     },
     "chatgpt": {
         "prompt": {
@@ -319,6 +324,10 @@
         "lifetime": "Asla sona ermez.",
         "monthly": "Aylık faturalandırılır."
     },
+    "email": {
+        "support_body": "Lütfen sorununuzu veya sorunuzu açıklayın.",
+        "support_subject": "Destek Talebi"
+    },
     "error": {
         "entry_not_found": "Girdi bulunamadı veya sözlük yüklenmedi",
         "failed_fetch_videos": "Videolar getirilemedi",
@@ -327,6 +336,7 @@
         "generic": "Hata",
         "language_not_selected": "Dil seçilmedi",
         "passwords_do_not_match": "Şifreler uyuşmuyor",
+        "payment_problem": "Ödemenizle ilgili bir sorun oluştu.",
         "registration_failed": "Kayıt başarısız",
         "updating_progress": "İlerleme güncellenirken hata:",
         "user_info_not_found": "Kullanıcı bilgisi bulunamadı"
@@ -336,10 +346,14 @@
         "use_all_ai": "Uygulama genelinde tüm AI özelliklerini kullanın.",
         "view_entire_transcripts": "İlk on satırın ötesindeki tüm transkriptleri görüntüleyin."
     },
+    "filter": {
+        "all_locales": "Tüm Konumlar"
+    },
     "footnote": {
         "currency": "2. Tüm para birimleri ABD doları (USD) cinsindendir.",
         "lifetime_assumption": "1. 2,4 yıldan fazla yaşayacağınızı varsayarak."
     },
+    "key": "tr",
     "level": {
         "cefr": {
             "1": "CEFR Pre-A1",
@@ -408,43 +422,44 @@
     },
     "msg": {
         "already_have_account": "Zaten hesabınız var mı?",
-        "auto_renews": "{{time}} içinde otomatik olarak yenilenir",
         "auto_renews_in": "{{days}} gün içinde otomatik yenilenir",
+        "auto_renews": "{{time}} içinde otomatik olarak yenilenir.",
+        "choose_action": "Bir eylem seçin",
         "confirm_cancel_subscription": "Aboneliğinizi iptal etmek istediğinizden emin misiniz?",
+        "contact_support": "Sorunlarla karşılaştıysanız, lütfen destekle iletişime geçin.",
+        "content_tailored": "Size Özel İçerik",
         "copy_success": "Metin panoya kopyalandı",
         "delete_confirmation": "Hesabınızı kalıcı olarak silmek istediğinizden emin misiniz? Tüm kaydedilmiş kelimelerinizi ve ilerlemenizi kaybedeceksiniz. Bu işlem geri alınamaz.",
         "discover_the_power_of_comprehensible_input": "100'den fazla dilde yüz binlerce video aracılığıyla Anlaşılabilir Girdinin gücünü keşfedin.",
         "dont_have_an_account": "Hesabınız yok mu?",
         "enrich_your_language_learning_journey": "Dil öğrenme yolculuğunuzu zenginleştirin",
         "enter_verification_code": "E-postaya gönderilen doğrulama kodunu girin",
+        "existing_subscription_warning": "Şu anda otomatik olarak yenilenecek aktif bir {{planType}} planınız var. Çift ücretlendirmeden kaçınmak için, yeni bir plan satın almadan önce mevcut aboneliğinizi iptal etmeniz gerekir. Mevcut {{planType}} aboneliğinizi iptal etmek ister misiniz?",
         "expires_in": "{{days}} gün içinde sona eriyor",
-        "expiring": "{{time}} içinde sona eriyor",
+        "expiring": "{{time}} içinde sona eriyor.",
         "forgot_password": "Şifrenizi mi unuttunuz?",
         "hsk_explanation": "\"HSK\", seviye 1 en düşük ve seviye 9 en yüksek olmak üzere resmi Çince yeterlilik testidir.",
         "initializing": "Başlatılıyor...",
+        "keep_or_reset_time": "Mevcut zamanınızı korumak mı yoksa sıfırlamak mı istiyorsunuz?",
         "loading": "Yükleniyor...",
         "no_active_subscription": "Aktif abonelik bulunamadı.",
+        "no_more_videos": "Başka video yok",
+        "no_saved_words": "Henüz kaydedilmiş kelime yok",
+        "options": "Seçenekler",
         "or_login_with": "Ya da şununla giriş yapın:",
         "or_register_with": "Ya da şununla kayıt olun:",
+        "paste_youtube_url": "İçe aktarmak için YouTube URL'sini de yapıştırabilirsiniz.",
         "pro_feature_chatgpt": "Sadece Pro kullanıcıları Language Player Go'da AI özelliklerini kullanabilir. Bu özelliği kullanmak için Pro'ya yükseltin.",
-        "pro_transcript": "Tam transkripti görmek için Pro'ya yükseltin!",
         "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
+        "pro_transcript": "Tam transkripti görmek için Pro'ya yükseltin!",
         "sort_by": "Şuna göre sırala: {{sortBy}}",
+        "subscription_cancel_error": "Abonelik iptal edilirken hata oluştu",
+        "subscription_cancel_success": "Abonelik başarıyla iptal edildi",
         "time_spent_learning": "Language Player'da {{language}} öğrenmeye harcanan süre",
         "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!",
-        "what_your_first_language": "Anadiliniz nedir?",
-        "with_pro_you_can": "Pro ile şunları yapabilirsiniz:",
-        "keep_or_reset_time": "Mevcut zamanınızı korumak mı yoksa sıfırlamak mı istiyorsunuz?",
-        "paste_youtube_url": "İçe aktarmak için YouTube URL'sini de yapıştırabilirsiniz.",
-        "no_saved_words": "Henüz kaydedilmiş kelime yok",
-        "no_more_videos": "Başka video yok",
-        "options": "Seçenekler",
-        "choose_action": "Bir eylem seçin",
-        "content_tailored": "Size Özel İçerik",
         "videos_matching": "\"{{searchTerm}}\" ile eşleşen videolar",
-        "subscription_cancel_success": "Abonelik başarıyla iptal edildi",
-        "subscription_cancel_error": "Abonelik iptal edilirken hata oluştu",
-        "existing_subscription_warning": "Şu anda otomatik olarak yenilenecek aktif bir {{planType}} planınız var. Çift ücretlendirmeden kaçınmak için, yeni bir plan satın almadan önce mevcut aboneliğinizi iptal etmeniz gerekir. Mevcut {{planType}} aboneliğinizi iptal etmek ister misiniz?"
+        "what_your_first_language": "Anadiliniz nedir?",
+        "with_pro_you_can": "Pro ile şunları yapabilirsiniz:"
     },
     "option": {
         "app_store": "App Store",
@@ -460,19 +475,19 @@
     },
     "placeholder": {
         "confirm_password": "Şifreyi Doğrula",
+        "dict_search_1": "Ara {{param1}}",
+        "dict_search_2": "Ara {{param1}} veya {{param2}}",
+        "dict_search_3": "Ara {{param1}}, {{param2}}, veya {{param3}}",
         "email": "E-posta",
+        "filter_by_title": "Başlığa göre filtrele...",
         "first_name": "Ad",
         "last_name": "Soyad",
         "more_languages": "Daha fazla dil ({{count}})",
         "password": "Şifre",
         "please_specify": "Lütfen belirtin",
-        "search": "Ara...",
-        "select_language": "Bir dil seçin",
-        "dict_search_1": "Ara {{param1}}",
-        "dict_search_2": "Ara {{param1}} veya {{param2}}",
-        "dict_search_3": "Ara {{param1}}, {{param2}}, veya {{param3}}",
         "search_all_content": "Tüm {{language}} içeriği ara",
-        "filter_by_title": "Başlığa göre filtrele..."
+        "search": "Ara...",
+        "select_language": "Bir dil seçin"
     },
     "price": {
         "annual": "${{price}}/yıl",
@@ -488,15 +503,30 @@
         "show_translation": "Çeviriyi Göster",
         "use_traditional": "Geleneksel Kullan"
     },
+    "sort": {
+        "most_viewed": "En Çok İzlenen",
+        "title": "Başlık",
+        "year": "Yıl"
+    },
+    "subscription": {
+        "annual": "yıllık",
+        "lifetime": "ömür boyu",
+        "monthly": "aylık"
+    },
     "success": {
         "code_resent": "Doğrulama kodu e-postanıza yeniden gönderildi."
+    },
+    "tab": {
+        "dictionary": "Sözlük",
+        "me": "Ben",
+        "media": "Medya"
     },
     "time": {
         "days": "{{count}} gün",
         "hours": "saat",
         "min": "dakika",
-        "months": "{{count}} ay",
         "months_and_days": "{{months}} ve {{days}}",
+        "months": "{{count}} ay",
         "sec": "saniye"
     },
     "title": {
@@ -504,17 +534,20 @@
         "annual": "Yıllık",
         "app_settings": "Uygulama Ayarları",
         "best_value": "En İyi Değer",
+        "cancellation_failed": "İptal Başarısız Oldu",
         "choose_language": "Dil Seçin",
         "choose_your_plan": "Planınızı Seçin",
         "continue_learning": "{{l2Code}} öğrenmeye devam et",
         "current_level": "Mevcut {{language}} seviyeniz nedir?",
         "current_plan": "Mevcut Plan",
+        "current_subscription_active": "Mevcut Abonelik Etkin",
         "date": "Tarih",
         "delete_account": "Hesabı Sil",
         "delete_my_account": "Hesabımı Sil",
         "dictionary": "Sözlük",
         "email": "E-posta",
         "examples_from_videos": "Videolardan Örnekler",
+        "filter_by_locale": "KONUMA GÖRE FİLTRELE",
         "go_pro": "Pro'ya Yükselt",
         "how_did_you_hear": "Bizi nereden duydunuz?",
         "language_settings": "Dil Ayarları",
@@ -532,29 +565,26 @@
         "popularity": "Popülerlik",
         "privacy_policy": "Gizlilik Politikası",
         "pro_feature": "Pro Özelliği",
+        "recommended": "Önerilen",
         "register": "Kayıt Ol",
         "rightContext": "Sağ Bağlam",
         "saved_words": "Kaydedilen Kelimeler",
+        "search_results": "Arama Sonuçları",
+        "search": "Ara",
         "select_language": "Dil Seçin",
         "settings": "Ayarlar",
+        "sort_by": "SIRALA",
         "start_learning": "Öğrenmeye Başla",
+        "subscription_cancelled": "Abonelik İptal Edildi",
         "trial": "Deneme",
+        "tv_show": "TV Programı",
+        "tv_shows": "TV Programları",
+        "update_progress": "İlerlemeyi Güncelle",
         "verify_your_email": "E-postanızı doğrulayın",
+        "video_count": "Video {{index}} / {{total}}",
         "views": "{{numViews}} Görüntüleme",
         "watch_history": "İzleme Geçmişi",
-        "your_current_plan": "Mevcut Planınız",
-        "update_progress": "İlerlemeyi Güncelle",
-        "search": "Ara",
-        "video_count": "Video {{index}} / {{total}}",
-        "tv_shows": "TV Programları",
-        "sort_by": "SIRALA",
-        "filter_by_locale": "KONUMA GÖRE FİLTRELE",
-        "tv_show": "TV Programı",
-        "recommended": "Önerilen",
-        "search_results": "Arama Sonuçları",
-        "subscription_cancelled": "Abonelik İptal Edildi",
-        "cancellation_failed": "İptal Başarısız Oldu",
-        "current_subscription_active": "Mevcut Abonelik Etkin"
+        "your_current_plan": "Mevcut Planınız"
     },
     "video": {
         "comments": "Yorumlar",
@@ -565,28 +595,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "tr",
-    "tab": {
-        "media": "Medya",
-        "dictionary": "Sözlük",
-        "me": "Ben"
-    },
-    "button": {
-        "keep_current_time": "Mevcut Zamanı Koru",
-        "reset_time_to_zero": "Zamanı Sıfırla"
-    },
-    "sort": {
-        "most_viewed": "En Çok İzlenen",
-        "title": "Başlık",
-        "year": "Yıl"
-    },
-    "filter": {
-        "all_locales": "Tüm Konumlar"
-    },
-    "subscription": {
-        "monthly": "aylık",
-        "annual": "yıllık",
-        "lifetime": "ömür boyu"
     }
 }

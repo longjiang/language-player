@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Batal",
+        "clear_words": "Hapus Kata-kata",
         "clear": "Bersihkan",
         "confirm_cancellation": "Konfirmasi Pembatalan",
         "confirm_deletion": "Konfirmasi Penghapusan",
         "copy": "Salin",
+        "email_support": "Dukungan Email",
         "keep_account": "Simpan Akun",
         "keep_subscription": "Simpan Langganan",
         "let_chatgpt_explain": "Tanya AI",
@@ -300,15 +302,18 @@
         "next": "Berikutnya",
         "register": "Daftar",
         "resend_code": "Kirim Ulang Kode",
+        "share": "Bagikan",
         "speak": "Bicara",
         "start_learning": "Mulai Belajar",
         "tv_shows": "Acara TV",
-        "upgrade": "Tingkatkan",
         "upgrade_to_pro": "Tingkatkan ke Pro",
+        "upgrade": "Tingkatkan",
         "verify": "Verifikasi",
-        "watch": "Tonton",
-        "share": "Bagikan",
-        "clear_words": "Hapus Kata-kata"
+        "watch": "Tonton"
+    },
+    "button": {
+        "keep_current_time": "Pertahankan Waktu Saat Ini",
+        "reset_time_to_zero": "Setel Ulang Waktu ke Nol"
     },
     "chatgpt": {
         "prompt": {
@@ -321,6 +326,10 @@
         "lifetime": "Tidak Pernah Kadaluarsa.",
         "monthly": "Ditagih setiap bulan."
     },
+    "email": {
+        "support_body": "Silakan jelaskan masalah atau pertanyaan Anda.",
+        "support_subject": "Permintaan Dukungan"
+    },
     "error": {
         "entry_not_found": "Entri tidak ditemukan atau kamus tidak dimuat",
         "failed_fetch_videos": "Gagal memuat video",
@@ -329,6 +338,7 @@
         "generic": "Kesalahan",
         "language_not_selected": "Bahasa belum dipilih",
         "passwords_do_not_match": "Kata sandi tidak cocok",
+        "payment_problem": "Ada masalah dengan pembayaran Anda.",
         "registration_failed": "Pendaftaran gagal",
         "updating_progress": "Kesalahan memperbarui kemajuan:",
         "user_info_not_found": "Info pengguna tidak ditemukan"
@@ -338,10 +348,14 @@
         "use_all_ai": "Gunakan semua fitur AI di seluruh aplikasi.",
         "view_entire_transcripts": "Lihat seluruh transkrip di luar sepuluh baris pertama."
     },
+    "filter": {
+        "all_locales": "Semua Lokal"
+    },
     "footnote": {
         "currency": "2. Semua mata uang dalam dolar AS (USD).",
         "lifetime_assumption": "1. Menganggap Anda akan hidup lebih dari 2,4 tahun."
     },
+    "key": "id",
     "level": {
         "cefr": {
             "1": "CEFR Pre-A1",
@@ -410,43 +424,44 @@
     },
     "msg": {
         "already_have_account": "Sudah memiliki akun?",
-        "auto_renews": "Otomatis diperbarui dalam {{time}}",
         "auto_renews_in": "Otomatis diperbarui dalam {{days}} hari",
+        "auto_renews": "Otomatis diperbarui dalam {{time}}.",
+        "choose_action": "Pilih tindakan",
         "confirm_cancel_subscription": "Apakah Anda yakin ingin membatalkan langganan Anda?",
+        "contact_support": "Jika Anda mengalami masalah, silakan hubungi dukungan.",
+        "content_tailored": "Konten yang Disesuaikan untuk Anda",
         "copy_success": "Teks disalin ke clipboard",
         "delete_confirmation": "Apakah Anda yakin ingin menghapus akun Anda secara permanen? Anda akan kehilangan semua kata dan kemajuan yang disimpan. Tindakan ini tidak dapat diurungkan.",
         "discover_the_power_of_comprehensible_input": "Temukan kekuatan Input yang Dapat Dipahami melalui ratusan ribu video dalam lebih dari 100 bahasa.",
         "dont_have_an_account": "Belum memiliki akun?",
         "enrich_your_language_learning_journey": "Perkaya perjalanan belajar bahasa Anda",
         "enter_verification_code": "Masukkan kode verifikasi yang dikirim ke email",
+        "existing_subscription_warning": "Saat ini Anda memiliki rencana {{planType}} aktif yang akan diperpanjang secara otomatis. Untuk menghindari biaya ganda, Anda harus membatalkan langganan yang ada sebelum membeli yang baru. Apakah Anda ingin membatalkan langganan {{planType}} yang ada?",
         "expires_in": "Berakhir dalam {{days}} hari",
-        "expiring": "Berakhir dalam {{time}}",
+        "expiring": "Berakhir dalam {{time}}.",
         "forgot_password": "Lupa kata sandi?",
         "hsk_explanation": "\"HSK\" adalah tes kemahiran bahasa Mandarin resmi, dengan Level 1 sebagai yang terendah dan Level 9 sebagai yang tertinggi.",
         "initializing": "Memulai...",
+        "keep_or_reset_time": "Apakah Anda ingin mempertahankan waktu saat ini atau mengatur ulang ke nol?",
         "loading": "Memuat...",
         "no_active_subscription": "Tidak ditemukan langganan aktif.",
+        "no_more_videos": "Tidak ada video lagi",
+        "no_saved_words": "Belum ada kata yang disimpan",
+        "options": "Pilihan",
         "or_login_with": "Atau masuk dengan:",
         "or_register_with": "Atau daftar dengan:",
+        "paste_youtube_url": "Anda juga dapat menempelkan URL YouTube untuk mengimpor.",
         "pro_feature_chatgpt": "Hanya pengguna Pro yang dapat menggunakan fitur AI di Language Player Go. Untuk menggunakan fitur ini, tingkatkan ke Pro.",
-        "pro_transcript": "Tingkatkan ke Pro untuk melihat transkrip lengkap!",
         "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip.",
+        "pro_transcript": "Tingkatkan ke Pro untuk melihat transkrip lengkap!",
         "sort_by": "Urutkan berdasarkan: {{sortBy}}",
+        "subscription_cancel_error": "Kesalahan membatalkan langganan",
+        "subscription_cancel_success": "Langganan berhasil dibatalkan",
         "time_spent_learning": "Waktu yang dihabiskan belajar {{language}} di Language Player",
         "upgrade_text": "Tingkatkan ke Pro untuk mengakses lebih banyak video!",
-        "what_your_first_language": "Apa bahasa ibu Anda?",
-        "with_pro_you_can": "Dengan Pro, Anda dapat:",
-        "keep_or_reset_time": "Apakah Anda ingin mempertahankan waktu saat ini atau mengatur ulang ke nol?",
-        "paste_youtube_url": "Anda juga dapat menempelkan URL YouTube untuk mengimpor.",
-        "no_saved_words": "Belum ada kata yang disimpan",
-        "no_more_videos": "Tidak ada video lagi",
-        "options": "Pilihan",
-        "choose_action": "Pilih tindakan",
-        "content_tailored": "Konten yang Disesuaikan untuk Anda",
         "videos_matching": "Video yang cocok dengan \"{{searchTerm}}\"",
-        "subscription_cancel_success": "Langganan berhasil dibatalkan",
-        "subscription_cancel_error": "Kesalahan membatalkan langganan",
-        "existing_subscription_warning": "Saat ini Anda memiliki rencana {{planType}} aktif yang akan diperpanjang secara otomatis. Untuk menghindari biaya ganda, Anda harus membatalkan langganan yang ada sebelum membeli yang baru. Apakah Anda ingin membatalkan langganan {{planType}} yang ada?"
+        "what_your_first_language": "Apa bahasa ibu Anda?",
+        "with_pro_you_can": "Dengan Pro, Anda dapat:"
     },
     "option": {
         "app_store": "App Store",
@@ -462,19 +477,19 @@
     },
     "placeholder": {
         "confirm_password": "Konfirmasi Kata Sandi",
+        "dict_search_1": "Cari {{param1}}",
+        "dict_search_2": "Cari {{param1}} atau {{param2}}",
+        "dict_search_3": "Cari {{param1}}, {{param2}}, atau {{param3}}",
         "email": "Email",
+        "filter_by_title": "Filter berdasarkan judul...",
         "first_name": "Depan",
         "last_name": "Belakang",
         "more_languages": "Bahasa lebih banyak ({{count}})",
         "password": "Kata Sandi",
         "please_specify": "Silakan sebutkan",
-        "search": "Cari...",
-        "select_language": "Pilih bahasa",
-        "dict_search_1": "Cari {{param1}}",
-        "dict_search_2": "Cari {{param1}} atau {{param2}}",
-        "dict_search_3": "Cari {{param1}}, {{param2}}, atau {{param3}}",
         "search_all_content": "Cari semua konten {{language}}",
-        "filter_by_title": "Filter berdasarkan judul..."
+        "search": "Cari...",
+        "select_language": "Pilih bahasa"
     },
     "price": {
         "annual": "${{price}}/tahun",
@@ -490,15 +505,30 @@
         "show_translation": "Tampilkan Terjemahan",
         "use_traditional": "Gunakan Tradisional"
     },
+    "sort": {
+        "most_viewed": "Paling Banyak Dilihat",
+        "title": "Judul",
+        "year": "Tahun"
+    },
+    "subscription": {
+        "annual": "tahunan",
+        "lifetime": "seumur hidup",
+        "monthly": "bulanan"
+    },
     "success": {
         "code_resent": "Kode verifikasi dikirim ulang ke email Anda."
+    },
+    "tab": {
+        "dictionary": "Kamus",
+        "me": "Saya",
+        "media": "Media"
     },
     "time": {
         "days": "{{count, plural, one {# hari} other {# hari}}}",
         "hours": "jam",
         "min": "menit",
-        "months": "{{count, plural, one {# bulan} other {# bulan}}}",
         "months_and_days": "{{months}} dan {{days}}",
+        "months": "{{count, plural, one {# bulan} other {# bulan}}}",
         "sec": "detik"
     },
     "title": {
@@ -506,17 +536,20 @@
         "annual": "Tahunan",
         "app_settings": "Pengaturan Aplikasi",
         "best_value": "Nilai Terbaik",
+        "cancellation_failed": "Pembatalan Gagal",
         "choose_language": "Pilih Bahasa",
         "choose_your_plan": "Pilih Rencana Anda",
         "continue_learning": "Lanjutkan belajar {{l2Code}}",
         "current_level": "Apa tingkat {{language}} Anda saat ini?",
         "current_plan": "Rencana Saat Ini",
+        "current_subscription_active": "Langganan Saat Ini Aktif",
         "date": "Tanggal",
         "delete_account": "Hapus Akun",
         "delete_my_account": "Hapus Akun Saya",
         "dictionary": "Kamus",
         "email": "Email",
         "examples_from_videos": "Contoh dari Video",
+        "filter_by_locale": "FILTER BERDASARKAN LOKAL",
         "go_pro": "Tingkatkan ke Pro",
         "how_did_you_hear": "Bagaimana Anda mendengar tentang kami?",
         "language_settings": "Pengaturan Bahasa",
@@ -534,29 +567,26 @@
         "popularity": "Popularitas",
         "privacy_policy": "Kebijakan Privasi",
         "pro_feature": "Fitur Pro",
+        "recommended": "Direkomendasikan",
         "register": "Daftar",
         "rightContext": "Konteks Kanan",
         "saved_words": "Kata yang Disimpan",
+        "search_results": "Hasil Pencarian",
+        "search": "Cari",
         "select_language": "Pilih Bahasa",
         "settings": "Pengaturan",
+        "sort_by": "URUTKAN BERDASARKAN",
         "start_learning": "Mulai Belajar",
+        "subscription_cancelled": "Langganan Dibatalkan",
         "trial": "Percobaan",
+        "tv_show": "Acara TV",
+        "tv_shows": "Acara TV",
+        "update_progress": "Perbarui Kemajuan",
         "verify_your_email": "Verifikasi Email Anda",
+        "video_count": "Video {{index}} dari {{total}}",
         "views": "{{numViews}} Penayangan",
         "watch_history": "Riwayat Tontonan",
-        "your_current_plan": "Rencana Anda Saat Ini",
-        "update_progress": "Perbarui Kemajuan",
-        "search": "Cari",
-        "video_count": "Video {{index}} dari {{total}}",
-        "tv_shows": "Acara TV",
-        "sort_by": "URUTKAN BERDASARKAN",
-        "filter_by_locale": "FILTER BERDASARKAN LOKAL",
-        "tv_show": "Acara TV",
-        "recommended": "Direkomendasikan",
-        "search_results": "Hasil Pencarian",
-        "subscription_cancelled": "Langganan Dibatalkan",
-        "cancellation_failed": "Pembatalan Gagal",
-        "current_subscription_active": "Langganan Saat Ini Aktif"
+        "your_current_plan": "Rencana Anda Saat Ini"
     },
     "video": {
         "comments": "Komentar",
@@ -567,28 +597,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "id",
-    "tab": {
-        "media": "Media",
-        "dictionary": "Kamus",
-        "me": "Saya"
-    },
-    "button": {
-        "keep_current_time": "Pertahankan Waktu Saat Ini",
-        "reset_time_to_zero": "Setel Ulang Waktu ke Nol"
-    },
-    "sort": {
-        "most_viewed": "Paling Banyak Dilihat",
-        "title": "Judul",
-        "year": "Tahun"
-    },
-    "filter": {
-        "all_locales": "Semua Lokal"
-    },
-    "subscription": {
-        "monthly": "bulanan",
-        "annual": "tahunan",
-        "lifetime": "seumur hidup"
     }
 }

@@ -285,10 +285,12 @@
     },
     "action": {
         "cancel": "ยกเลิก",
+        "clear_words": "ล้างคำศัพท์",
         "clear": "ล้าง",
         "confirm_cancellation": "ยืนยันการยกเลิก",
         "confirm_deletion": "ยืนยันการลบ",
         "copy": "คัดลอก",
+        "email_support": "อีเมลสนับสนุน",
         "keep_account": "เก็บบัญชี",
         "keep_subscription": "เก็บการสมัครสมาชิก",
         "let_chatgpt_explain": "ถาม AI",
@@ -298,15 +300,18 @@
         "next": "ถัดไป",
         "register": "ลงทะเบียน",
         "resend_code": "ส่งรหัสอีกครั้ง",
+        "share": "แชร์",
         "speak": "พูด",
         "start_learning": "เริ่มเรียนรู้",
         "tv_shows": "รายการทีวี",
-        "upgrade": "อัพเกรด",
         "upgrade_to_pro": "อัพเกรดเป็น Pro",
+        "upgrade": "อัพเกรด",
         "verify": "ยืนยัน",
-        "watch": "ดู",
-        "share": "แชร์",
-        "clear_words": "ล้างคำศัพท์"
+        "watch": "ดู"
+    },
+    "button": {
+        "keep_current_time": "เก็บเวลาปัจจุบัน",
+        "reset_time_to_zero": "รีเซ็ตเวลาเป็นศูนย์"
     },
     "chatgpt": {
         "prompt": {
@@ -319,6 +324,10 @@
         "lifetime": "ไม่มีวันหมดอายุ",
         "monthly": "เรียกเก็บเงินรายเดือน"
     },
+    "email": {
+        "support_body": "โปรดอธิบายปัญหาหรือคำถามของคุณ",
+        "support_subject": "คำขอการสนับสนุน"
+    },
     "error": {
         "entry_not_found": "ไม่พบรายการหรือไม่ได้โหลดพจนานุกรม",
         "failed_fetch_videos": "ไม่สามารถดึงวิดีโอได้",
@@ -327,6 +336,7 @@
         "generic": "ข้อผิดพลาด",
         "language_not_selected": "ไม่ได้เลือกภาษา",
         "passwords_do_not_match": "รหัสผ่านไม่ตรงกัน",
+        "payment_problem": "มีปัญหาเกี่ยวกับการชำระเงินของคุณ",
         "registration_failed": "การลงทะเบียนล้มเหลว",
         "updating_progress": "ข้อผิดพลาดในการอัปเดตความคืบหน้า:",
         "user_info_not_found": "ไม่พบข้อมูลผู้ใช้"
@@ -336,10 +346,14 @@
         "use_all_ai": "ใช้ฟีเจอร์ AI ทั้งหมดในแอป",
         "view_entire_transcripts": "ดูการถอดความทั้งหมดนอกเหนือจากสิบบรรทัดแรก"
     },
+    "filter": {
+        "all_locales": "ทุกภาษา"
+    },
     "footnote": {
         "currency": "2. สกุลเงินทั้งหมดเป็นดอลลาร์สหรัฐ (USD)",
         "lifetime_assumption": "1. สมมติว่าคุณจะมีชีวิตอยู่นานกว่า 2.4 ปี"
     },
+    "key": "th",
     "level": {
         "cefr": {
             "1": "CEFR ก่อน A1",
@@ -408,43 +422,44 @@
     },
     "msg": {
         "already_have_account": "มีบัญชีอยู่แล้ว?",
-        "auto_renews": "ต่ออายุอัตโนมัติใน {{time}}",
         "auto_renews_in": "ต่ออายุอัตโนมัติใน {{days}} วัน",
+        "auto_renews": "ต่ออายุอัตโนมัติใน {{time}}",
+        "choose_action": "เลือกการดำเนินการ",
         "confirm_cancel_subscription": "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการสมัครสมาชิก?",
+        "contact_support": "หากคุณพบปัญหา โปรดติดต่อฝ่ายสนับสนุน",
+        "content_tailored": "เนื้อหาที่ปรับแต่งสำหรับคุณ",
         "copy_success": "คัดลอกข้อความไปยังคลิปบอร์ดแล้ว",
         "delete_confirmation": "คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีของคุณอย่างถาวร? คุณจะสูญเสียคำศัพท์ที่บันทึกไว้และความคืบหน้าทั้งหมด การกระทำนี้ไม่สามารถยกเลิกได้",
         "discover_the_power_of_comprehensible_input": "ค้นพบพลังของการรับข้อมูลที่เข้าใจได้ผ่านวิดีโอหลายแสนรายการในกว่า 100 ภาษา",
         "dont_have_an_account": "ยังไม่มีบัญชี?",
         "enrich_your_language_learning_journey": "เพิ่มความหลากหลายให้กับการเรียนรู้ภาษาของคุณ",
         "enter_verification_code": "กรุณาใส่รหัสยืนยันที่ส่งไปยังอีเมล",
+        "existing_subscription_warning": "ขณะนี้คุณมีแผน {{planType}} ที่ใช้งานอยู่ซึ่งจะต่ออายุโดยอัตโนมัติ เพื่อหลีกเลี่ยงการเรียกเก็บเงินซ้ำซ้อน คุณต้องยกเลิกการสมัครสมาชิกที่มีอยู่ก่อนที่จะซื้อรายการใหม่ คุณต้องการยกเลิกการสมัครสมาชิก {{planType}} ที่มีอยู่หรือไม่?",
         "expires_in": "หมดอายุใน {{days}} วัน",
         "expiring": "กำลังจะหมดอายุใน {{time}}",
         "forgot_password": "ลืมรหัสผ่าน?",
         "hsk_explanation": "\"HSK\" คือการทดสอบความสามารถภาษาจีนอย่างเป็นทางการ โดยระดับ 1 เป็นระดับต่ำสุดและระดับ 9 เป็นระดับสูงสุด",
         "initializing": "กำลังเริ่มต้น...",
+        "keep_or_reset_time": "คุณต้องการเก็บเวลาปัจจุบันไว้หรือรีเซ็ตเป็นศูนย์?",
         "loading": "กำลังโหลด...",
         "no_active_subscription": "ไม่พบการสมัครสมาชิกที่ใช้งานอยู่",
+        "no_more_videos": "ไม่มีวิดีโอเพิ่มเติม",
+        "no_saved_words": "ยังไม่มีคำที่บันทึกไว้",
+        "options": "ตัวเลือก",
         "or_login_with": "หรือเข้าสู่ระบบด้วย:",
         "or_register_with": "หรือลงทะเบียนด้วย:",
+        "paste_youtube_url": "คุณยังสามารถวาง URL ของ YouTube เพื่อนำเข้าได้",
         "pro_feature_chatgpt": "เฉพาะผู้ใช้ Pro เท่านั้นที่สามารถใช้ฟีเจอร์ AI ใน Language Player Go ได้ หากต้องการใช้ฟีเจอร์นี้ กรุณาอัพเกรดเป็น Pro",
-        "pro_transcript": "อัพเกรดเป็น Pro เพื่อดูการถอดความทั้งหมด!",
         "pro_transcript_limit_reached": "ถึงขีดจำกัดการถอดความแล้ว กรุณาอัพเกรดเป็น Pro เพื่อเข้าถึงการถอดความเพิ่มเติม",
+        "pro_transcript": "อัพเกรดเป็น Pro เพื่อดูการถอดความทั้งหมด!",
         "sort_by": "เรียงตาม: {{sortBy}}",
+        "subscription_cancel_error": "เกิดข้อผิดพลาดในการยกเลิกการสมัครสมาชิก",
+        "subscription_cancel_success": "ยกเลิกการสมัครสมาชิกสำเร็จแล้ว",
         "time_spent_learning": "เวลาที่ใช้ในการเรียนรู้ {{language}} ใน Language Player",
         "upgrade_text": "อัพเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!",
-        "what_your_first_language": "ภาษาแม่ของคุณคืออะไร?",
-        "with_pro_you_can": "ด้วย Pro คุณสามารถ:",
-        "keep_or_reset_time": "คุณต้องการเก็บเวลาปัจจุบันไว้หรือรีเซ็ตเป็นศูนย์?",
-        "paste_youtube_url": "คุณยังสามารถวาง URL ของ YouTube เพื่อนำเข้าได้",
-        "no_saved_words": "ยังไม่มีคำที่บันทึกไว้",
-        "no_more_videos": "ไม่มีวิดีโอเพิ่มเติม",
-        "options": "ตัวเลือก",
-        "choose_action": "เลือกการดำเนินการ",
-        "content_tailored": "เนื้อหาที่ปรับแต่งสำหรับคุณ",
         "videos_matching": "วิดีโอที่ตรงกับ \"{{searchTerm}}\"",
-        "subscription_cancel_success": "ยกเลิกการสมัครสมาชิกสำเร็จแล้ว",
-        "subscription_cancel_error": "เกิดข้อผิดพลาดในการยกเลิกการสมัครสมาชิก",
-        "existing_subscription_warning": "ขณะนี้คุณมีแผน {{planType}} ที่ใช้งานอยู่ซึ่งจะต่ออายุโดยอัตโนมัติ เพื่อหลีกเลี่ยงการเรียกเก็บเงินซ้ำซ้อน คุณต้องยกเลิกการสมัครสมาชิกที่มีอยู่ก่อนที่จะซื้อรายการใหม่ คุณต้องการยกเลิกการสมัครสมาชิก {{planType}} ที่มีอยู่หรือไม่?"
+        "what_your_first_language": "ภาษาแม่ของคุณคืออะไร?",
+        "with_pro_you_can": "ด้วย Pro คุณสามารถ:"
     },
     "option": {
         "app_store": "App Store",
@@ -460,19 +475,19 @@
     },
     "placeholder": {
         "confirm_password": "ยืนยันรหัสผ่าน",
+        "dict_search_1": "ค้นหา {{param1}}",
+        "dict_search_2": "ค้นหา {{param1}} หรือ {{param2}}",
+        "dict_search_3": "ค้นหา {{param1}}, {{param2}}, หรือ {{param3}}",
         "email": "อีเมล",
+        "filter_by_title": "กรองตามชื่อเรื่อง...",
         "first_name": "ชื่อ",
         "last_name": "นามสกุล",
         "more_languages": "ภาษาเพิ่มเติม ({{count}})",
         "password": "รหัสผ่าน",
         "please_specify": "โปรดระบุ",
-        "search": "ค้นหา...",
-        "select_language": "เลือกภาษา",
-        "dict_search_1": "ค้นหา {{param1}}",
-        "dict_search_2": "ค้นหา {{param1}} หรือ {{param2}}",
-        "dict_search_3": "ค้นหา {{param1}}, {{param2}}, หรือ {{param3}}",
         "search_all_content": "ค้นหาเนื้อหาภาษา{{language}}ทั้งหมด",
-        "filter_by_title": "กรองตามชื่อเรื่อง..."
+        "search": "ค้นหา...",
+        "select_language": "เลือกภาษา"
     },
     "price": {
         "annual": "${{price}}/ปี",
@@ -488,15 +503,30 @@
         "show_translation": "แสดงการแปล",
         "use_traditional": "ใช้แบบดั้งเดิม"
     },
+    "sort": {
+        "most_viewed": "ดูมากที่สุด",
+        "title": "ชื่อเรื่อง",
+        "year": "ปี"
+    },
+    "subscription": {
+        "annual": "รายปี",
+        "lifetime": "ตลอดชีพ",
+        "monthly": "รายเดือน"
+    },
     "success": {
         "code_resent": "ส่งรหัสยืนยันไปยังอีเมลของคุณอีกครั้งแล้ว"
+    },
+    "tab": {
+        "dictionary": "พจนานุกรม",
+        "me": "ฉัน",
+        "media": "สื่อ"
     },
     "time": {
         "days": "{{count}} วัน",
         "hours": "ชั่วโมง",
         "min": "นาที",
-        "months": "{{count}} เดือน",
         "months_and_days": "{{months}} และ {{days}}",
+        "months": "{{count}} เดือน",
         "sec": "วินาที"
     },
     "title": {
@@ -504,17 +534,20 @@
         "annual": "รายปี",
         "app_settings": "การตั้งค่าแอป",
         "best_value": "คุ้มค่าที่สุด",
+        "cancellation_failed": "การยกเลิกล้มเหลว",
         "choose_language": "เลือกภาษา",
         "choose_your_plan": "เลือกแผนของคุณ",
         "continue_learning": "เรียน {{l2Code}} ต่อ",
         "current_level": "ระดับ {{language}} ปัจจุบันของคุณคืออะไร?",
         "current_plan": "แผนปัจจุบัน",
+        "current_subscription_active": "การสมัครสมาชิกปัจจุบันใช้งานอยู่",
         "date": "วันที่",
         "delete_account": "ลบบัญชี",
         "delete_my_account": "ลบบัญชีของฉัน",
         "dictionary": "พจนานุกรม",
         "email": "อีเมล",
         "examples_from_videos": "ตัวอย่างจากวิดีโอ",
+        "filter_by_locale": "กรองตามภาษา",
         "go_pro": "เปลี่ยนเป็น Pro",
         "how_did_you_hear": "คุณรู้จักเราได้อย่างไร?",
         "language_settings": "การตั้งค่าภาษา",
@@ -532,29 +565,26 @@
         "popularity": "ความนิยม",
         "privacy_policy": "นโยบายความเป็นส่วนตัว",
         "pro_feature": "ฟีเจอร์ Pro",
+        "recommended": "แนะนำ",
         "register": "ลงทะเบียน",
         "rightContext": "บริบทขวา",
         "saved_words": "คำที่บันทึก",
+        "search_results": "ผลการค้นหา",
+        "search": "ค้นหา",
         "select_language": "คุณอยากเรียนภาษาอะไร?",
         "settings": "การตั้งค่า",
+        "sort_by": "เรียงตาม",
         "start_learning": "เริ่มเรียนรู้",
+        "subscription_cancelled": "ยกเลิกการสมัครสมาชิกแล้ว",
         "trial": "ทดลองใช้",
+        "tv_show": "รายการทีวี",
+        "tv_shows": "รายการทีวี",
+        "update_progress": "อัปเดตความคืบหน้า",
         "verify_your_email": "ยืนยันอีเมลของคุณ",
+        "video_count": "วิดีโอที่ {{index}} จาก {{total}}",
         "views": "{{numViews}} การรับชม",
         "watch_history": "ประวัติการรับชม",
-        "your_current_plan": "แผนปัจจุบันของคุณ",
-        "update_progress": "อัปเดตความคืบหน้า",
-        "search": "ค้นหา",
-        "video_count": "วิดีโอที่ {{index}} จาก {{total}}",
-        "tv_shows": "รายการทีวี",
-        "sort_by": "เรียงตาม",
-        "filter_by_locale": "กรองตามภาษา",
-        "tv_show": "รายการทีวี",
-        "recommended": "แนะนำ",
-        "search_results": "ผลการค้นหา",
-        "subscription_cancelled": "ยกเลิกการสมัครสมาชิกแล้ว",
-        "cancellation_failed": "การยกเลิกล้มเหลว",
-        "current_subscription_active": "การสมัครสมาชิกปัจจุบันใช้งานอยู่"
+        "your_current_plan": "แผนปัจจุบันของคุณ"
     },
     "video": {
         "comments": "ความคิดเห็น",
@@ -565,28 +595,5 @@
         "hanja": "ฮันจา",
         "kana": "คานะ",
         "pinyin": "พินอิน"
-    },
-    "key": "th",
-    "tab": {
-        "media": "สื่อ",
-        "dictionary": "พจนานุกรม",
-        "me": "ฉัน"
-    },
-    "button": {
-        "keep_current_time": "เก็บเวลาปัจจุบัน",
-        "reset_time_to_zero": "รีเซ็ตเวลาเป็นศูนย์"
-    },
-    "sort": {
-        "most_viewed": "ดูมากที่สุด",
-        "title": "ชื่อเรื่อง",
-        "year": "ปี"
-    },
-    "filter": {
-        "all_locales": "ทุกภาษา"
-    },
-    "subscription": {
-        "monthly": "รายเดือน",
-        "annual": "รายปี",
-        "lifetime": "ตลอดชีพ"
     }
 }

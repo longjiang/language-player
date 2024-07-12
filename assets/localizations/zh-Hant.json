@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "取消",
+        "clear_words": "清除單詞",
         "clear": "清掉",
         "confirm_cancellation": "確定要取消嗎",
         "confirm_deletion": "確定要刪除嗎",
         "copy": "複製",
+        "email_support": "電子郵件支持",
         "keep_account": "保留帳號",
         "keep_subscription": "保留訂閱",
         "let_chatgpt_explain": "問問AI",
@@ -300,23 +302,22 @@
         "next": "下一步",
         "register": "註冊",
         "resend_code": "重發驗證碼",
+        "share": "分享",
         "speak": "朗讀",
         "start_learning": "開始學習囉",
         "tv_shows": "電視節目",
-        "upgrade": "升級",
         "upgrade_to_pro": "升級成專業版",
+        "upgrade": "升級",
         "verify": "驗證",
-        "watch": "看看",
-        "share": "分享",
-        "clear_words": "清除單詞"
+        "watch": "看看"
     },
     "button": {
         "email_support": "寄信給客服",
+        "keep_current_time": "保留目前時間",
         "processing": "處理中喔...",
         "purchase": "買啦",
-        "switch_to_lifetime": "改成終身方案",
-        "keep_current_time": "保留目前時間",
-        "reset_time_to_zero": "將時間歸零"
+        "reset_time_to_zero": "將時間歸零",
+        "switch_to_lifetime": "改成終身方案"
     },
     "chatgpt": {
         "prompt": {
@@ -331,7 +332,9 @@
     },
     "email": {
         "body": "請說明你遇到什麼問題或有什麼疑問。",
-        "subject": "客服幫幫忙"
+        "subject": "客服幫幫忙",
+        "support_body": "請描述您的問題。",
+        "support_subject": "支持請求"
     },
     "error": {
         "cannot_open_url": "不知道怎麼開這個網址耶：",
@@ -343,6 +346,7 @@
         "language_not_selected": "還沒選語言耶",
         "occurred": "哎呀，出錯啦",
         "passwords_do_not_match": "密碼不一樣耶",
+        "payment_problem": "您的付款出現問題。",
         "registration_failed": "註冊失敗啦",
         "updating_progress": "更新進度時出錯啦：",
         "user_info_not_found": "找不到使用者資料耶"
@@ -352,10 +356,14 @@
         "use_all_ai": "在整個APP裡使用所有AI功能。",
         "view_entire_transcripts": "看到第十行之後的完整逐字稿。"
     },
+    "filter": {
+        "all_locales": "所有地區"
+    },
     "footnote": {
         "currency": "2. 所有價格都是美金喔。",
         "lifetime_assumption": "1. 假設你活得比2.4年還久啦。"
     },
+    "key": "zh-Hant",
     "level": {
         "cefr": {
             "1": "歐標準A1級",
@@ -424,46 +432,47 @@
     },
     "msg": {
         "already_have_account": "已經有帳號了嗎？",
-        "auto_renews": "{{time}}後自動續訂",
         "auto_renews_in": "{{days}}天後自動續訂喔",
+        "auto_renews": "{{time}}後自動續訂喔。",
+        "choose_action": "選擇一個操作",
         "confirm_cancel_subscription": "你確定要取消訂閱嗎？",
+        "contact_support": "如果您遇到問題，請聯繫支持。",
+        "content_tailored": "為您量身定制的內容",
         "copy_success": "已經複製到剪貼簿囉",
         "delete_confirmation": "你確定要永久刪除你的帳號嗎？你會失去所有儲存的單字和進度喔。這個動作沒辦法復原呢。",
         "discover_the_power_of_comprehensible_input": "透過超過100種語言的數十萬個影片，發現可理解輸入的威力。",
         "dont_have_an_account": "還沒有帳號嗎？",
         "enrich_your_language_learning_journey": "讓你的語言學習之旅更豐富",
         "enter_verification_code": "請輸入寄到你信箱的驗證碼",
+        "existing_subscription_warning": "您目前有一個會自動續訂的{{planType}}計劃。為避免重複收費，您必須在購買新計劃之前取消現有訂閱。您想取消現有的{{planType}}訂閱嗎？",
         "expires_in": "{{days}}天後到期喔",
-        "expiring": "{{time}}後到期",
+        "expiring": "{{time}}後到期。",
         "forgot_password": "忘記密碼了嗎？",
         "hsk_explanation": "「HSK」是官方的HSK，1級最簡單，9級最難喔。",
         "initializing": "初始化中...",
+        "keep_or_reset_time": "您要保留目前的時間還是重設為零？",
         "lifetime_only": "Apple內購只能選終身方案喔。",
         "loading": "載入中...",
         "no_active_subscription": "找不到有效的訂閱耶。",
+        "no_more_videos": "沒有更多視頻",
+        "no_saved_words": "尚未儲存單詞",
+        "options": "選項",
         "or_login_with": "或用這些方式登入：",
         "or_register_with": "或用這些方式註冊：",
+        "paste_youtube_url": "您也可以貼上YouTube網址來匯入。",
         "pro_feature_chatgpt": "只有專業版用戶才能在Language Player Go中使用AI功能喔。要用這個功能的話，請升級成專業版。",
-        "pro_transcript": "升級成專業版就可以看完整的逐字稿喔！",
         "pro_transcript_limit_reached": "已經達到逐字稿的上限囉。請升級成專業版來看更多逐字稿。",
+        "pro_transcript": "升級成專業版就可以看完整的逐字稿喔！",
         "purchase_confirmation": "按下「購買」後，你會被要求確認從Apple App Store的內購喔。",
         "sort_by": "排序方式：{{sortBy}}",
+        "subscription_cancel_error": "取消訂閱時出錯",
+        "subscription_cancel_success": "訂閱成功取消",
         "subscription_explanation": "目前，因為我們的伺服器只能處理來自蘋果的一次性付款，所以不支援月費和年費的內購喔。要繼續購買的話，請選擇終身方案。",
         "time_spent_learning": "在Language Player學習{{language}}的時間",
         "upgrade_text": "升級成專業版就可以看更多影片喔！",
-        "what_your_first_language": "你的母語是什麼呢？",
-        "with_pro_you_can": "用專業版，你就可以：",
-        "keep_or_reset_time": "您要保留目前的時間還是重設為零？",
-        "paste_youtube_url": "您也可以貼上YouTube網址來匯入。",
-        "no_saved_words": "尚未儲存單詞",
-        "no_more_videos": "沒有更多視頻",
-        "options": "選項",
-        "choose_action": "選擇一個操作",
-        "content_tailored": "為您量身定制的內容",
         "videos_matching": "匹配\"{{searchTerm}}\"的視頻",
-        "subscription_cancel_success": "訂閱成功取消",
-        "subscription_cancel_error": "取消訂閱時出錯",
-        "existing_subscription_warning": "您目前有一個會自動續訂的{{planType}}計劃。為避免重複收費，您必須在購買新計劃之前取消現有訂閱。您想取消現有的{{planType}}訂閱嗎？"
+        "what_your_first_language": "你的母語是什麼呢？",
+        "with_pro_you_can": "用專業版，你就可以："
     },
     "option": {
         "app_store": "App Store",
@@ -479,19 +488,19 @@
     },
     "placeholder": {
         "confirm_password": "再輸入一次密碼",
+        "dict_search_1": "搜索{{param1}}",
+        "dict_search_2": "搜索{{param1}}或{{param2}}",
+        "dict_search_3": "搜索{{param1}}、{{param2}}或{{param3}}",
         "email": "電子信箱",
+        "filter_by_title": "按標題篩選...",
         "first_name": "名",
         "last_name": "姓",
         "more_languages": "更多語言（{{count}}種）",
         "password": "密碼",
         "please_specify": "請說明",
-        "search": "搜尋...",
-        "select_language": "選擇一種語言",
-        "dict_search_1": "搜索{{param1}}",
-        "dict_search_2": "搜索{{param1}}或{{param2}}",
-        "dict_search_3": "搜索{{param1}}、{{param2}}或{{param3}}",
         "search_all_content": "搜尋所有{{language}}內容",
-        "filter_by_title": "按標題篩選..."
+        "search": "搜尋...",
+        "select_language": "選擇一種語言"
     },
     "price": {
         "annual": "${{price}}/年",
@@ -507,15 +516,30 @@
         "show_translation": "顯示翻譯",
         "use_traditional": "用繁體字"
     },
+    "sort": {
+        "most_viewed": "最多觀看",
+        "title": "標題",
+        "year": "年份"
+    },
+    "subscription": {
+        "annual": "年度",
+        "lifetime": "終身",
+        "monthly": "月度"
+    },
     "success": {
         "code_resent": "驗證碼已經重新寄到你的信箱囉。"
+    },
+    "tab": {
+        "dictionary": "詞典",
+        "me": "我的",
+        "media": "媒體"
     },
     "time": {
         "days": "{{count, plural, one {# 天} other {# 天}}}",
         "hours": "小時",
         "min": "分鐘",
-        "months": "{{count, plural, one {# 個月} other {# 個月}}}",
         "months_and_days": "{{months}}又{{days}}",
+        "months": "{{count, plural, one {# 個月} other {# 個月}}}",
         "sec": "秒"
     },
     "title": {
@@ -523,18 +547,21 @@
         "annual": "年繳",
         "app_settings": "APP設定",
         "best_value": "最超值",
+        "cancellation_failed": "取消失敗",
         "choose_language": "選擇語言",
         "choose_your_plan": "選擇你的方案",
         "confirm_in_app_purchase": "確認你的內購",
         "continue_learning": "繼續學習{{l2Code}}",
         "current_level": "你現在的{{language}}程度如何？",
         "current_plan": "目前的方案",
+        "current_subscription_active": "當前訂閱有效",
         "date": "日期",
         "delete_account": "刪除帳號",
         "delete_my_account": "刪除我的帳號",
         "dictionary": "字典",
         "email": "電子信箱",
         "examples_from_videos": "影片中的例子",
+        "filter_by_locale": "按地區篩選",
         "go_pro": "升級專業版",
         "how_did_you_hear": "你是怎麼認識我們的？",
         "language_settings": "語言設定",
@@ -553,29 +580,26 @@
         "popularity": "熱門程度",
         "privacy_policy": "隱私權政策",
         "pro_feature": "專業版功能",
+        "recommended": "推薦",
         "register": "註冊",
         "rightContext": "右邊的內容",
         "saved_words": "已儲存的單字",
+        "search_results": "搜索結果",
+        "search": "搜尋",
         "select_language": "你想學哪種語言呢？",
         "settings": "設定",
+        "sort_by": "排序方式",
         "start_learning": "開始學習囉",
+        "subscription_cancelled": "訂閱已取消",
         "trial": "試用",
+        "tv_show": "電視節目",
+        "tv_shows": "電視節目",
+        "update_progress": "更新進度",
         "verify_your_email": "驗證你的信箱",
+        "video_count": "影片 {{index}} 共 {{total}}",
         "views": "{{numViews}}次觀看",
         "watch_history": "觀看紀錄",
-        "your_current_plan": "你目前的方案",
-        "update_progress": "更新進度",
-        "search": "搜尋",
-        "video_count": "影片 {{index}} 共 {{total}}",
-        "tv_shows": "電視節目",
-        "sort_by": "排序方式",
-        "filter_by_locale": "按地區篩選",
-        "tv_show": "電視節目",
-        "recommended": "推薦",
-        "search_results": "搜索結果",
-        "subscription_cancelled": "訂閱已取消",
-        "cancellation_failed": "取消失敗",
-        "current_subscription_active": "當前訂閱有效"
+        "your_current_plan": "你目前的方案"
     },
     "video": {
         "comments": "留言",
@@ -586,24 +610,5 @@
         "hanja": "漢字",
         "kana": "假名",
         "pinyin": "拼音"
-    },
-    "key": "zh-Hant",
-    "tab": {
-        "media": "媒體",
-        "dictionary": "字典",
-        "me": "我的"
-    },
-    "sort": {
-        "most_viewed": "最多觀看",
-        "title": "標題",
-        "year": "年份"
-    },
-    "filter": {
-        "all_locales": "所有地區"
-    },
-    "subscription": {
-        "monthly": "月度",
-        "annual": "年度",
-        "lifetime": "終身"
     }
 }

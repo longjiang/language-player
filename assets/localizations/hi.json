@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "रद्द करें",
+        "clear_words": "शब्द हटाएँ",
         "clear": "साफ करें",
         "confirm_cancellation": "रद्द करने की पुष्टि करें",
         "confirm_deletion": "हटाने की पुष्टि करें",
-        "copy": "कॉपी करें",
+        "copy": "प्रतिलिपि बनाएँ",
+        "email_support": "ईमेल समर्थन",
         "keep_account": "खाता बनाए रखें",
         "keep_subscription": "सदस्यता बनाए रखें",
         "let_chatgpt_explain": "AI से पूछें",
@@ -300,15 +302,18 @@
         "next": "अगला",
         "register": "रजिस्टर करें",
         "resend_code": "कोड पुनः भेजें",
+        "share": "साझा करें",
         "speak": "बोलें",
         "start_learning": "सीखना प्रारंभ करें",
         "tv_shows": "टीवी शो",
-        "upgrade": "अपग्रेड करें",
         "upgrade_to_pro": "प्रो में अपग्रेड करें",
+        "upgrade": "अपग्रेड करें",
         "verify": "सत्यापित करें",
-        "watch": "देखें",
-        "share": "साझा करें",
-        "clear_words": "शब्द हटाएँ"
+        "watch": "देखें"
+    },
+    "button": {
+        "keep_current_time": "वर्तमान समय रखें",
+        "reset_time_to_zero": "समय को शून्य पर रीसेट करें"
     },
     "chatgpt": {
         "prompt": {
@@ -321,6 +326,10 @@
         "lifetime": "कभी समाप्त नहीं होता।",
         "monthly": "प्रत्येक माह बिल किया गया।"
     },
+    "email": {
+        "support_body": "कृपया अपनी समस्या या प्रश्न का वर्णन करें।",
+        "support_subject": "सहायता अनुरोध"
+    },
     "error": {
         "entry_not_found": "प्रविष्टि नहीं मिली या शब्दकोश लोड नहीं हुआ",
         "failed_fetch_videos": "वीडियो प्राप्त करने में विफल",
@@ -329,6 +338,7 @@
         "generic": "त्रुटि",
         "language_not_selected": "भाषा का चयन नहीं किया गया",
         "passwords_do_not_match": "पासवर्ड मेल नहीं खाते",
+        "payment_problem": "आपके भुगतान में कोई समस्या थी।",
         "registration_failed": "पंजीकरण विफल",
         "updating_progress": "प्रगति अपडेट करने में त्रुटि:",
         "user_info_not_found": "उपयोगकर्ता जानकारी नहीं मिली"
@@ -338,10 +348,14 @@
         "use_all_ai": "ऐप में सभी एआई सुविधाओं का उपयोग करें।",
         "view_entire_transcripts": "पहली दस पंक्तियों से परे पूरे प्रतिलेख देखें।"
     },
+    "filter": {
+        "all_locales": "सभी स्थान"
+    },
     "footnote": {
         "currency": "2. सभी मुद्राएँ अमेरिकी डॉलर (USD) में।",
         "lifetime_assumption": "1. मान लें कि आप 2.4 वर्षों से अधिक जीवित रहेंगे।"
     },
+    "key": "hi",
     "level": {
         "cefr": {
             "1": "CEFR प्री-A1",
@@ -410,43 +424,44 @@
     },
     "msg": {
         "already_have_account": "क्या आपके पास पहले से एक खाता है?",
-        "auto_renews": "{{time}} में स्वत: नवीनीकरण",
         "auto_renews_in": "{{days}} दिनों में स्वत: नवीनीकरण",
+        "auto_renews": "{{time}} में स्वत: नवीनीकरण।",
+        "choose_action": "एक कार्रवाई चुनें",
         "confirm_cancel_subscription": "क्या आप वाकई अपनी सदस्यता रद्द करना चाहते हैं?",
+        "contact_support": "यदि आपको समस्याओं का सामना करना पड़ा है, तो कृपया सहायता से संपर्क करें।",
+        "content_tailored": "आपके लिए अनुकूलित सामग्री",
         "copy_success": "पाठ क्लिपबोर्ड पर कॉपी किया गया",
         "delete_confirmation": "क्या आप वाकई अपना खाता स्थायी रूप से हटाना चाहते हैं? आप अपने सभी सहेजे गए शब्दों और प्रगति को खो देंगे। इस क्रिया को पूर्ववत नहीं किया जा सकता।",
         "discover_the_power_of_comprehensible_input": "100 से अधिक भाषाओं में सैकड़ों हजारों वीडियो के माध्यम से समझने योग्य इनपुट की शक्ति की खोज करें।",
         "dont_have_an_account": "क्या आपके पास खाता नहीं है?",
         "enrich_your_language_learning_journey": "अपनी भाषा सीखने की यात्रा को समृद्ध करें",
         "enter_verification_code": "कृपया भेजे गए सत्यापन कोड को दर्ज करें",
+        "existing_subscription_warning": "वर्तमान में आपके पास एक सक्रिय {{planType}} योजना है जो स्वचालित रूप से नवीनीकृत हो जाएगी। दोहरे शुल्क से बचने के लिए, आपको नया खरीदने से पहले अपनी मौजूदा सदस्यता रद्द करनी होगी। क्या आप अपनी मौजूदा {{planType}} सदस्यता रद्द करना चाहते हैं?",
         "expires_in": "{{days}} दिनों में समाप्त हो रहा है",
-        "expiring": "{{time}} में समाप्त हो रहा है",
+        "expiring": "{{time}} में समाप्त हो रहा है।",
         "forgot_password": "पासवर्ड भूल गए?",
         "hsk_explanation": "\"HSK\" चीनी प्रवीणता परीक्षा है, जिसमें स्तर 1 सबसे कम और स्तर 9 सबसे अधिक है।",
         "initializing": "प्रारंभ हो रहा है...",
+        "keep_or_reset_time": "क्या आप अपना वर्तमान समय रखना चाहते हैं या इसे शून्य पर रीसेट करना चाहते हैं?",
         "loading": "लोड हो रहा है...",
         "no_active_subscription": "कोई सक्रिय सदस्यता नहीं मिली।",
+        "no_more_videos": "और वीडियो नहीं हैं",
+        "no_saved_words": "अभी तक कोई शब्द सहेजा नहीं गया",
+        "options": "विकल्प",
         "or_login_with": "या इसके साथ लॉगिन करें:",
         "or_register_with": "या इसके साथ रजिस्टर करें:",
+        "paste_youtube_url": "आप इम्पोर्ट करने के लिए YouTube URL भी पेस्ट कर सकते हैं।",
         "pro_feature_chatgpt": "केवल प्रो उपयोगकर्ता ही Language Player Go में AI सुविधाओं का उपयोग कर सकते हैं। इस सुविधा का उपयोग करने के लिए, प्रो में अपग्रेड करें।",
-        "pro_transcript": "पूर्ण प्रतिलेख देखने के लिए प्रो में अपग्रेड करें!",
         "pro_transcript_limit_reached": "प्रतिलेख सीमा तक पहुँच गया। अधिक प्रतिलेखों तक पहुँचने के लिए कृपया प्रो में अपग्रेड करें।",
+        "pro_transcript": "पूर्ण प्रतिलेख देखने के लिए प्रो में अपग्रेड करें!",
         "sort_by": "इस प्रकार से छाँटें: {{sortBy}}",
+        "subscription_cancel_error": "सदस्यता रद्द करने में त्रुटि",
+        "subscription_cancel_success": "सदस्यता सफलतापूर्वक रद्द की गई",
         "time_spent_learning": "Language Player में {{language}} सीखने में व्यतीत समय",
         "upgrade_text": "अधिक वीडियो तक पहुँचने के लिए प्रो में अपग्रेड करें!",
-        "what_your_first_language": "आपकी पहली भाषा क्या है?",
-        "with_pro_you_can": "प्रो के साथ, आप कर सकते हैं:",
-        "keep_or_reset_time": "क्या आप अपना वर्तमान समय रखना चाहते हैं या इसे शून्य पर रीसेट करना चाहते हैं?",
-        "paste_youtube_url": "आप इम्पोर्ट करने के लिए YouTube URL भी पेस्ट कर सकते हैं।",
-        "no_saved_words": "अभी तक कोई शब्द सहेजा नहीं गया",
-        "no_more_videos": "और वीडियो नहीं हैं",
-        "options": "विकल्प",
-        "choose_action": "एक कार्रवाई चुनें",
-        "content_tailored": "आपके लिए अनुकूलित सामग्री",
         "videos_matching": "\"{{searchTerm}}\" से मेल खाते वीडियो",
-        "subscription_cancel_success": "सदस्यता सफलतापूर्वक रद्द की गई",
-        "subscription_cancel_error": "सदस्यता रद्द करने में त्रुटि",
-        "existing_subscription_warning": "वर्तमान में आपके पास एक सक्रिय {{planType}} योजना है जो स्वचालित रूप से नवीनीकृत हो जाएगी। दोहरे शुल्क से बचने के लिए, आपको नया खरीदने से पहले अपनी मौजूदा सदस्यता रद्द करनी होगी। क्या आप अपनी मौजूदा {{planType}} सदस्यता रद्द करना चाहते हैं?"
+        "what_your_first_language": "आपकी पहली भाषा क्या है?",
+        "with_pro_you_can": "प्रो के साथ, आप कर सकते हैं:"
     },
     "option": {
         "app_store": "ऐप स्टोर",
@@ -462,19 +477,19 @@
     },
     "placeholder": {
         "confirm_password": "पासवर्ड की पुष्टि करें",
+        "dict_search_1": "खोजें {{param1}}",
+        "dict_search_2": "खोजें {{param1}} या {{param2}}",
+        "dict_search_3": "खोजें {{param1}}, {{param2}}, या {{param3}}",
         "email": "ईमेल",
+        "filter_by_title": "शीर्षक से फ़िल्टर करें...",
         "first_name": "पहला",
         "last_name": "अंतिम",
         "more_languages": "अधिक भाषाएँ ({{count}})",
         "password": "पासवर्ड",
         "please_specify": "कृपया निर्दिष्ट करें",
-        "search": "खोजें...",
-        "select_language": "एक भाषा का चयन करें",
-        "dict_search_1": "खोजें {{param1}}",
-        "dict_search_2": "खोजें {{param1}} या {{param2}}",
-        "dict_search_3": "खोजें {{param1}}, {{param2}}, या {{param3}}",
         "search_all_content": "सभी {{language}} सामग्री खोजें",
-        "filter_by_title": "शीर्षक से फ़िल्टर करें..."
+        "search": "खोजें...",
+        "select_language": "एक भाषा का चयन करें"
     },
     "price": {
         "annual": "${{price}}/वर्ष",
@@ -490,15 +505,30 @@
         "show_translation": "अनुवाद दिखाएँ",
         "use_traditional": "पारंपरिक का उपयोग करें"
     },
+    "sort": {
+        "most_viewed": "सबसे अधिक देखा गया",
+        "title": "शीर्षक",
+        "year": "वर्ष"
+    },
+    "subscription": {
+        "annual": "वार्षिक",
+        "lifetime": "आजीवन",
+        "monthly": "मासिक"
+    },
     "success": {
         "code_resent": "सत्यापन कोड आपके ईमेल पर पुनः भेजा गया।"
+    },
+    "tab": {
+        "dictionary": "शब्दकोश",
+        "me": "मैं",
+        "media": "मीडिया"
     },
     "time": {
         "days": "{{count, plural, one {# दिन} other {# दिन}}}",
         "hours": "घंटे",
         "min": "मिनट",
-        "months": "{{count, plural, one {# महीना} other {# महीने}}}",
         "months_and_days": "{{months}} और {{days}}",
+        "months": "{{count, plural, one {# महीना} other {# महीने}}}",
         "sec": "सेकंड"
     },
     "title": {
@@ -506,17 +536,20 @@
         "annual": "वार्षिक",
         "app_settings": "ऐप सेटिंग्स",
         "best_value": "सर्वश्रेष्ठ मूल्य",
+        "cancellation_failed": "रद्दीकरण विफल रहा",
         "choose_language": "भाषा का चयन करें",
         "choose_your_plan": "अपनी योजना चुनें",
         "continue_learning": "सीखना जारी रखें {{l2Code}}",
         "current_level": "आपका वर्तमान {{language}} स्तर क्या है?",
         "current_plan": "वर्तमान योजना",
+        "current_subscription_active": "वर्तमान सदस्यता सक्रिय",
         "date": "तारीख",
         "delete_account": "खाता हटाएं",
         "delete_my_account": "मेरा खाता हटाएं",
         "dictionary": "शब्दकोश",
         "email": "ईमेल",
         "examples_from_videos": "वीडियो से उदाहरण",
+        "filter_by_locale": "स्थान के अनुसार फ़िल्टर करें",
         "go_pro": "प्रो पर जाएं",
         "how_did_you_hear": "आपने हमारे बारे में कैसे सुना?",
         "language_settings": "भाषा सेटिंग्स",
@@ -534,29 +567,26 @@
         "popularity": "लोकप्रियता",
         "privacy_policy": "गोपनीयता नीति",
         "pro_feature": "प्रो सुविधा",
+        "recommended": "अनुशंसित",
         "register": "रजिस्टर करें",
         "rightContext": "दाएँ संदर्भ",
         "saved_words": "सहेजे गए शब्द",
+        "search_results": "खोज परिणाम",
+        "search": "खोज",
         "select_language": "भाषा का चयन करें",
         "settings": "सेटिंग्स",
+        "sort_by": "क्रमबद्ध करें",
         "start_learning": "सीखना प्रारंभ करें",
+        "subscription_cancelled": "सदस्यता रद्द की गई",
         "trial": "परीक्षण",
+        "tv_show": "टीवी शो",
+        "tv_shows": "टीवी शो",
+        "update_progress": "प्रगति अपडेट करें",
         "verify_your_email": "अपना ईमेल सत्यापित करें",
+        "video_count": "वीडियो {{index}} / {{total}}",
         "views": "{{numViews}} दृश्य",
         "watch_history": "देखने का इतिहास",
-        "your_current_plan": "आपकी वर्तमान योजना",
-        "update_progress": "प्रगति अपडेट करें",
-        "search": "खोज",
-        "video_count": "वीडियो {{index}} / {{total}}",
-        "tv_shows": "टीवी शो",
-        "sort_by": "क्रमबद्ध करें",
-        "filter_by_locale": "स्थान के अनुसार फ़िल्टर करें",
-        "tv_show": "टीवी शो",
-        "recommended": "अनुशंसित",
-        "search_results": "खोज परिणाम",
-        "subscription_cancelled": "सदस्यता रद्द की गई",
-        "cancellation_failed": "रद्दीकरण विफल रहा",
-        "current_subscription_active": "वर्तमान सदस्यता सक्रिय"
+        "your_current_plan": "आपकी वर्तमान योजना"
     },
     "video": {
         "comments": "टिप्पणियाँ",
@@ -567,28 +597,5 @@
         "hanja": "हंजा",
         "kana": "काना",
         "pinyin": "पिनयिन"
-    },
-    "key": "hi",
-    "tab": {
-        "media": "मीडिया",
-        "dictionary": "शब्दकोश",
-        "me": "मैं"
-    },
-    "button": {
-        "keep_current_time": "वर्तमान समय रखें",
-        "reset_time_to_zero": "समय को शून्य पर रीसेट करें"
-    },
-    "sort": {
-        "most_viewed": "सबसे अधिक देखा गया",
-        "title": "शीर्षक",
-        "year": "वर्ष"
-    },
-    "filter": {
-        "all_locales": "सभी स्थान"
-    },
-    "subscription": {
-        "monthly": "मासिक",
-        "annual": "वार्षिक",
-        "lifetime": "आजीवन"
     }
 }

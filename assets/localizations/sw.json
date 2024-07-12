@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "Ghairi",
+        "clear_words": "Futa Maneno",
         "clear": "Futa",
         "confirm_cancellation": "Thibitisha Kufutwa",
         "confirm_deletion": "Thibitisha Ufutaji",
-        "copy": "Nakili",
+        "copy": "Nakala",
+        "email_support": "Msaada wa Barua pepe",
         "keep_account": "Hifadhi Akaunti",
         "keep_subscription": "Hifadhi Usajili",
         "let_chatgpt_explain": "Uliza AI",
@@ -299,15 +301,18 @@
         "next": "Ifuatayo",
         "register": "Jisajili",
         "resend_code": "Tuma Msimbo Tena",
+        "share": "Shiriki",
         "speak": "Sema",
         "start_learning": "Anza Kujifunza",
         "tv_shows": "Vipindi vya TV",
-        "upgrade": "Boresha",
         "upgrade_to_pro": "Boresha hadi Pro",
+        "upgrade": "Boresha",
         "verify": "Thibitisha",
-        "watch": "Tazama",
-        "share": "Shiriki",
-        "clear_words": "Futa Maneno"
+        "watch": "Tazama"
+    },
+    "button": {
+        "keep_current_time": "Weka Muda wa Sasa",
+        "reset_time_to_zero": "Weka Upya Muda Kuwa Sifuri"
     },
     "chatgpt": {
         "prompt": {
@@ -320,6 +325,10 @@
         "lifetime": "Haiwezi Kuisha.",
         "monthly": "Inatozwa kila mwezi."
     },
+    "email": {
+        "support_body": "Tafadhali elezea suala au swali lako.",
+        "support_subject": "Ombi la Msaada"
+    },
     "error": {
         "entry_not_found": "Kiingizo hakijapatikana au kamusi haijapakiwa",
         "failed_fetch_videos": "Kushindwa kupakia video",
@@ -328,6 +337,7 @@
         "generic": "Hitilafu",
         "language_not_selected": "Lugha haijachaguliwa",
         "passwords_do_not_match": "Nenosiri halilingani",
+        "payment_problem": "Kulikuwa na tatizo na malipo yako.",
         "registration_failed": "Usajili umeshindikana",
         "updating_progress": "Hitilafu katika kusasisha maendeleo:",
         "user_info_not_found": "Maelezo ya mtumiaji hayajapatikana"
@@ -337,10 +347,14 @@
         "use_all_ai": "Tumia vipengele vyote vya AI katika programu.",
         "view_entire_transcripts": "Tazama nakala kamili zaidi ya mistari kumi ya kwanza."
     },
+    "filter": {
+        "all_locales": "Maeneo Yote"
+    },
     "footnote": {
         "currency": "2. Fedha zote ziko katika dola za Marekani (USD).",
         "lifetime_assumption": "1. Ukidhani utaishi zaidi ya miaka 2.4."
     },
+    "key": "sw",
     "level": {
         "cefr": {
             "1": "CEFR Pre-A1",
@@ -409,43 +423,44 @@
     },
     "msg": {
         "already_have_account": "Tayari una akaunti?",
-        "auto_renews": "Inasasishwa moja kwa moja baada ya {{time}}",
         "auto_renews_in": "Inasasishwa moja kwa moja baada ya {{days}} siku",
+        "auto_renews": "Inasasishwa moja kwa moja baada ya {{time}}.",
+        "choose_action": "Chagua kitendo",
         "confirm_cancel_subscription": "Una uhakika unataka kughairi usajili wako?",
+        "contact_support": "Ikiwa umekumbana na matatizo, tafadhali wasiliana na usaidizi.",
+        "content_tailored": "Maudhui Yaliyoundwa kwa Ajili Yako",
         "copy_success": "Maandishi yamenakiliwa kwenye ubao wa kunakili",
         "delete_confirmation": "Una uhakika unataka kufuta akaunti yako kabisa? Utapoteza maneno yote uliyookoa na maendeleo. Hatua hii haiwezi kubatilishwa.",
         "discover_the_power_of_comprehensible_input": "Gundua nguvu ya Ingizo Linaloeleweka kupitia mamia ya maelfu ya video katika lugha zaidi ya 100.",
         "dont_have_an_account": "Hauna akaunti?",
         "enrich_your_language_learning_journey": "Boresha safari yako ya kujifunza lugha",
         "enter_verification_code": "Tafadhali ingiza msimbo wa uthibitisho uliotumwa kwa barua pepe",
+        "existing_subscription_warning": "Kwa sasa una mpango hai wa {{planType}} ambao utajididisha kiotomatiki. Ili kuepuka malipo ya ziada, lazima ughairi usajili wako uliopo kabla ya kununua mpya. Je, ungependa kughairi usajili wako wa {{planType}} uliopo?",
         "expires_in": "Inakwisha baada ya {{days}} siku",
-        "expiring": "Inakwisha baada ya {{time}}",
+        "expiring": "Inakwisha baada ya {{time}}.",
         "forgot_password": "Umesahau nenosiri?",
         "hsk_explanation": "\"HSK\" ni mtihani rasmi wa ustadi wa Kichina, na Kiwango cha 1 ni cha chini kabisa na Kiwango cha 9 ni cha juu zaidi.",
         "initializing": "Inaanzisha...",
+        "keep_or_reset_time": "Je, unataka kuweka muda wako wa sasa au kuuweka upya kuwa sifuri?",
         "loading": "Inapakia...",
         "no_active_subscription": "Hakuna usajili unaopatikana.",
+        "no_more_videos": "Hakuna video zaidi",
+        "no_saved_words": "Hakuna maneno yaliyohifadhiwa bado",
+        "options": "Chaguo",
         "or_login_with": "Au ingia kwa:",
         "or_register_with": "Au jisajili kwa:",
+        "paste_youtube_url": "Unaweza pia kubandika URL ya YouTube kuingiza.",
         "pro_feature_chatgpt": "Watumiaji wa Pro pekee wanaweza kutumia vipengele vya AI katika Language Player Go. Ili kutumia kipengele hiki, boresha hadi Pro.",
-        "pro_transcript": "Boresha hadi Pro ili kuona nakala kamili!",
         "pro_transcript_limit_reached": "Kikomo cha nakala kimefikiwa. Tafadhali boresha hadi Pro ili kupata nakala zaidi.",
+        "pro_transcript": "Boresha hadi Pro ili kuona nakala kamili!",
         "sort_by": "Panga kwa: {{sortBy}}",
+        "subscription_cancel_error": "Hitilafu katika kughairi usajili",
+        "subscription_cancel_success": "Usajili umefanikiwa kughairiwa",
         "time_spent_learning": "Muda uliotumika kujifunza {{language}} katika Language Player",
         "upgrade_text": "Boresha hadi Pro ili kupata video zaidi!",
-        "what_your_first_language": "Lugha yako ya kwanza ni ipi?",
-        "with_pro_you_can": "Ukiwa na Pro, unaweza:",
-        "keep_or_reset_time": "Je, unataka kuweka muda wako wa sasa au kuuweka upya kuwa sifuri?",
-        "paste_youtube_url": "Unaweza pia kubandika URL ya YouTube kuingiza.",
-        "no_saved_words": "Hakuna maneno yaliyohifadhiwa bado",
-        "no_more_videos": "Hakuna video zaidi",
-        "options": "Chaguo",
-        "choose_action": "Chagua kitendo",
-        "content_tailored": "Maudhui Yaliyoundwa kwa Ajili Yako",
         "videos_matching": "Video zinazofanana na \"{{searchTerm}}\"",
-        "subscription_cancel_success": "Usajili umefanikiwa kughairiwa",
-        "subscription_cancel_error": "Hitilafu katika kughairi usajili",
-        "existing_subscription_warning": "Kwa sasa una mpango hai wa {{planType}} ambao utajididisha kiotomatiki. Ili kuepuka malipo ya ziada, lazima ughairi usajili wako uliopo kabla ya kununua mpya. Je, ungependa kughairi usajili wako wa {{planType}} uliopo?"
+        "what_your_first_language": "Lugha yako ya kwanza ni ipi?",
+        "with_pro_you_can": "Ukiwa na Pro, unaweza:"
     },
     "option": {
         "app_store": "Duka la Programu",
@@ -461,19 +476,19 @@
     },
     "placeholder": {
         "confirm_password": "Thibitisha Nenosiri",
+        "dict_search_1": "Tafuta {{param1}}",
+        "dict_search_2": "Tafuta {{param1}} au {{param2}}",
+        "dict_search_3": "Tafuta {{param1}}, {{param2}}, au {{param3}}",
         "email": "Barua pepe",
+        "filter_by_title": "Chuja kwa kichwa...",
         "first_name": "Jina la kwanza",
         "last_name": "Jina la mwisho",
         "more_languages": "Lugha zaidi ({{count}})",
         "password": "Nenosiri",
         "please_specify": "Tafadhali fafanua",
-        "search": "Tafuta...",
-        "select_language": "Chagua lugha",
-        "dict_search_1": "Tafuta {{param1}}",
-        "dict_search_2": "Tafuta {{param1}} au {{param2}}",
-        "dict_search_3": "Tafuta {{param1}}, {{param2}}, au {{param3}}",
         "search_all_content": "Tafuta maudhui yote ya {{language}}",
-        "filter_by_title": "Chuja kwa kichwa..."
+        "search": "Tafuta...",
+        "select_language": "Chagua lugha"
     },
     "price": {
         "annual": "${{price}}/mwaka",
@@ -489,15 +504,30 @@
         "show_translation": "Onyesha Tafsiri",
         "use_traditional": "Tumia ya Kawaida"
     },
+    "sort": {
+        "most_viewed": "Yaliyoangaliwa zaidi",
+        "title": "Kichwa",
+        "year": "Mwaka"
+    },
+    "subscription": {
+        "annual": "ya kila mwaka",
+        "lifetime": "ya maisha",
+        "monthly": "ya kila mwezi"
+    },
     "success": {
         "code_resent": "Msimbo wa uthibitisho umetumwa tena kwa barua pepe yako."
+    },
+    "tab": {
+        "dictionary": "Kamusi",
+        "me": "Mimi",
+        "media": "Vyombo vya habari"
     },
     "time": {
         "days": "{{count}} siku",
         "hours": "saa",
         "min": "dakika",
-        "months": "{{count}} miezi",
         "months_and_days": "{{months}} na {{days}}",
+        "months": "{{count}} miezi",
         "sec": "sekunde"
     },
     "title": {
@@ -505,17 +535,20 @@
         "annual": "Mwaka",
         "app_settings": "Mipangilio ya Programu",
         "best_value": "Thamani Bora",
+        "cancellation_failed": "Kughairi kumeshindwa",
         "choose_language": "Chagua Lugha",
         "choose_your_plan": "Chagua Mpango Wako",
         "continue_learning": "Endelea kujifunza {{l2Code}}",
         "current_level": "Kiwango chako cha sasa cha {{language}} ni kipi?",
         "current_plan": "Mpango wa Sasa",
+        "current_subscription_active": "Usajili wa Sasa Unaotumika",
         "date": "Tarehe",
         "delete_account": "Futa Akaunti",
         "delete_my_account": "Futa Akaunti Yangu",
         "dictionary": "Kamusi",
         "email": "Barua pepe",
         "examples_from_videos": "Mifano kutoka kwa Video",
+        "filter_by_locale": "CHUJA KWA ENEO",
         "go_pro": "Boresha hadi Pro",
         "how_did_you_hear": "Ulijuaje kuhusu sisi?",
         "language_settings": "Mipangilio ya Lugha",
@@ -533,29 +566,26 @@
         "popularity": "Umaarufu",
         "privacy_policy": "Sera ya Faragha",
         "pro_feature": "Kipengele cha Pro",
+        "recommended": "Pendekezo",
         "register": "Jisajili",
         "rightContext": "Muktadha wa Kulia",
         "saved_words": "Maneno Yaliyohifadhiwa",
+        "search_results": "Matokeo ya utafutaji",
+        "search": "Tafuta",
         "select_language": "Chagua Lugha",
         "settings": "Mipangilio",
+        "sort_by": "PANGA KWA",
         "start_learning": "Anza Kujifunza",
+        "subscription_cancelled": "Usajili umeghairiwa",
         "trial": "Jaribio",
+        "tv_show": "Kipindi cha TV",
+        "tv_shows": "Vipindi vya TV",
+        "update_progress": "Sasisha Maendeleo",
         "verify_your_email": "Thibitisha barua pepe yako",
+        "video_count": "Video {{index}} kati ya {{total}}",
         "views": "{{numViews}} Maoni",
         "watch_history": "Historia ya Kutazama",
-        "your_current_plan": "Mpango wako wa sasa",
-        "update_progress": "Sasisha Maendeleo",
-        "search": "Tafuta",
-        "video_count": "Video {{index}} kati ya {{total}}",
-        "tv_shows": "Vipindi vya TV",
-        "sort_by": "PANGA KWA",
-        "filter_by_locale": "CHUJA KWA ENEO",
-        "tv_show": "Kipindi cha TV",
-        "recommended": "Pendekezo",
-        "search_results": "Matokeo ya utafutaji",
-        "subscription_cancelled": "Usajili umeghairiwa",
-        "cancellation_failed": "Kughairi kumeshindwa",
-        "current_subscription_active": "Usajili wa Sasa Unaotumika"
+        "your_current_plan": "Mpango wako wa sasa"
     },
     "video": {
         "comments": "Maoni",
@@ -566,28 +596,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "sw",
-    "tab": {
-        "media": "Vyombo vya habari",
-        "dictionary": "Kamusi",
-        "me": "Mimi"
-    },
-    "button": {
-        "keep_current_time": "Weka Muda wa Sasa",
-        "reset_time_to_zero": "Weka Upya Muda Kuwa Sifuri"
-    },
-    "sort": {
-        "most_viewed": "Yaliyoangaliwa zaidi",
-        "title": "Kichwa",
-        "year": "Mwaka"
-    },
-    "filter": {
-        "all_locales": "Maeneo Yote"
-    },
-    "subscription": {
-        "monthly": "ya kila mwezi",
-        "annual": "ya kila mwaka",
-        "lifetime": "ya maisha"
     }
 }

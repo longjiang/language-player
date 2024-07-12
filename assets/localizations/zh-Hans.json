@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "取消",
+        "clear_words": "清除单词",
         "clear": "清除",
         "confirm_cancellation": "确认取消",
         "confirm_deletion": "确认删除",
         "copy": "复制",
+        "email_support": "邮件支持",
         "keep_account": "保留账户",
         "keep_subscription": "保留订阅",
         "let_chatgpt_explain": "询问人工智能",
@@ -300,23 +302,22 @@
         "next": "下一步",
         "register": "注册",
         "resend_code": "重新发送验证码",
+        "share": "分享",
         "speak": "朗读",
         "start_learning": "开始学习",
         "tv_shows": "电视节目",
-        "upgrade": "升级",
         "upgrade_to_pro": "升级到专业版",
+        "upgrade": "升级",
         "verify": "验证",
-        "watch": "观看",
-        "share": "分享",
-        "clear_words": "清除单词"
+        "watch": "观看"
     },
     "button": {
         "email_support": "发邮件给客服",
+        "keep_current_time": "保留当前时间",
         "processing": "处理中...",
         "purchase": "购买",
-        "switch_to_lifetime": "切换到终身计划",
-        "keep_current_time": "保留当前时间",
-        "reset_time_to_zero": "将时间重置为零"
+        "reset_time_to_zero": "将时间重置为零",
+        "switch_to_lifetime": "切换到终身计划"
     },
     "chatgpt": {
         "prompt": {
@@ -331,7 +332,9 @@
     },
     "email": {
         "body": "请描述您的问题或疑问。",
-        "subject": "客服请求"
+        "subject": "客服请求",
+        "support_body": "请描述您的问题。",
+        "support_subject": "支持请求"
     },
     "error": {
         "cannot_open_url": "不知道如何打开此URL：",
@@ -343,6 +346,7 @@
         "language_not_selected": "未选择语言",
         "occurred": "发生错误",
         "passwords_do_not_match": "密码不匹配",
+        "payment_problem": "您的付款出现问题。",
         "registration_failed": "注册失败",
         "updating_progress": "更新进度时出错：",
         "user_info_not_found": "未找到用户信息"
@@ -352,10 +356,14 @@
         "use_all_ai": "在整个应用中使用所有人工智能功能。",
         "view_entire_transcripts": "查看前十行之外的完整文字记录。"
     },
+    "filter": {
+        "all_locales": "所有地区"
+    },
     "footnote": {
         "currency": "2. 所有货币均以美元（USD）计。",
         "lifetime_assumption": "1. 假设你的寿命超过2.4年。"
     },
+    "key": "zh-Hans",
     "level": {
         "cefr": {
             "1": "欧标准A1级",
@@ -424,46 +432,47 @@
     },
     "msg": {
         "already_have_account": "已有账户？",
-        "auto_renews": "{{time}}后自动续订",
         "auto_renews_in": "{{days}}天后自动续订",
+        "auto_renews": "{{time}}后自动续订。",
+        "choose_action": "选择一个操作",
         "confirm_cancel_subscription": "您确定要取消订阅吗？",
+        "contact_support": "如果您遇到问题，请联系支持。",
+        "content_tailored": "为您量身定制的内容",
         "copy_success": "文本已复制到剪贴板",
         "delete_confirmation": "您确定要永久删除您的账户吗？您将丢失所有保存的单词和进度。此操作无法撤消。",
         "discover_the_power_of_comprehensible_input": "通过100多种语言的数十万个视频，探索可理解性输入的力量。",
         "dont_have_an_account": "没有账户？",
         "enrich_your_language_learning_journey": "丰富您的语言学习之旅",
         "enter_verification_code": "请输入发送到邮箱的验证码",
+        "existing_subscription_warning": "您目前有一个会自动续订的{{planType}}计划。为避免重复收费，您必须在购买新计划之前取消现有订阅。您想取消现有的{{planType}}订阅吗？",
         "expires_in": "{{days}}天后过期",
-        "expiring": "{{time}}后过期",
+        "expiring": "{{time}}后过期。",
         "forgot_password": "忘记密码？",
         "hsk_explanation": "\"HSK\"是官方HSK，1级为最低，9级为最高。",
         "initializing": "正在初始化...",
+        "keep_or_reset_time": "您想保留当前时间还是将其重置为零？",
         "lifetime_only": "只有终身计划可作为Apple应用内购买的选项。",
         "loading": "正在加载...",
         "no_active_subscription": "未找到活跃订阅。",
+        "no_more_videos": "没有更多视频",
+        "no_saved_words": "尚未保存单词",
+        "options": "选项",
         "or_login_with": "或使用以下方式登录：",
         "or_register_with": "或使用以下方式注册：",
+        "paste_youtube_url": "您也可以粘贴YouTube网址以导入。",
         "pro_feature_chatgpt": "只有专业版用户可以在Language Player Go中使用人工智能功能。要使用此功能，请升级到专业版。",
-        "pro_transcript": "升级到专业版以查看完整文字记录！",
         "pro_transcript_limit_reached": "已达到文字记录限制。请升级到专业版以访问更多文字记录。",
+        "pro_transcript": "升级到专业版以查看完整文字记录！",
         "purchase_confirmation": "点击\"购买\"，您将被要求确认来自Apple App Store的应用内购买。",
         "sort_by": "排序方式：{{sortBy}}",
+        "subscription_cancel_error": "取消订阅时出错",
+        "subscription_cancel_success": "订阅成功取消",
         "subscription_explanation": "目前，由于我们的服务器只能处理来自苹果的一次性付款，因此不支持月度和年度订阅作为应用内购买。要继续购买，请选择终身计划。",
         "time_spent_learning": "在Language Player中学习{{language}}的时间",
         "upgrade_text": "升级到专业版以访问更多视频！",
-        "what_your_first_language": "您的母语是什么？",
-        "with_pro_you_can": "使用专业版，您可以：",
-        "keep_or_reset_time": "您想保留当前时间还是将其重置为零？",
-        "paste_youtube_url": "您也可以粘贴YouTube网址以导入。",
-        "no_saved_words": "尚未保存单词",
-        "no_more_videos": "没有更多视频",
-        "options": "选项",
-        "choose_action": "选择一个操作",
-        "content_tailored": "为您量身定制的内容",
         "videos_matching": "匹配\"{{searchTerm}}\"的视频",
-        "subscription_cancel_success": "订阅成功取消",
-        "subscription_cancel_error": "取消订阅时出错",
-        "existing_subscription_warning": "您目前有一个会自动续订的{{planType}}计划。为避免重复收费，您必须在购买新计划之前取消现有订阅。您想取消现有的{{planType}}订阅吗？"
+        "what_your_first_language": "您的母语是什么？",
+        "with_pro_you_can": "使用专业版，您可以："
     },
     "option": {
         "app_store": "应用商店",
@@ -479,19 +488,19 @@
     },
     "placeholder": {
         "confirm_password": "确认密码",
+        "dict_search_1": "搜索{{param1}}",
+        "dict_search_2": "搜索{{param1}}或{{param2}}",
+        "dict_search_3": "搜索{{param1}}、{{param2}}或{{param3}}",
         "email": "电子邮箱",
+        "filter_by_title": "按标题筛选...",
         "first_name": "名",
         "last_name": "姓",
         "more_languages": "更多语言（{{count}}）",
         "password": "密码",
         "please_specify": "请说明",
-        "search": "搜索...",
-        "select_language": "选择语言",
-        "dict_search_1": "搜索{{param1}}",
-        "dict_search_2": "搜索{{param1}}或{{param2}}",
-        "dict_search_3": "搜索{{param1}}、{{param2}}或{{param3}}",
         "search_all_content": "搜索所有{{language}}内容",
-        "filter_by_title": "按标题筛选..."
+        "search": "搜索...",
+        "select_language": "选择语言"
     },
     "price": {
         "annual": "${{price}}/年",
@@ -507,15 +516,30 @@
         "show_translation": "显示翻译",
         "use_traditional": "使用繁体字"
     },
+    "sort": {
+        "most_viewed": "最多观看",
+        "title": "标题",
+        "year": "年份"
+    },
+    "subscription": {
+        "annual": "年度",
+        "lifetime": "终身",
+        "monthly": "月度"
+    },
     "success": {
         "code_resent": "验证码已重新发送到您的邮箱。"
+    },
+    "tab": {
+        "dictionary": "词典",
+        "me": "我的",
+        "media": "媒体"
     },
     "time": {
         "days": "{{count, plural, one {# 天} other {# 天}}}",
         "hours": "小时",
         "min": "分钟",
-        "months": "{{count, plural, one {# 个月} other {# 个月}}}",
         "months_and_days": "{{months}}和{{days}}",
+        "months": "{{count, plural, one {# 个月} other {# 个月}}}",
         "sec": "秒"
     },
     "title": {
@@ -523,18 +547,21 @@
         "annual": "年度",
         "app_settings": "应用设置",
         "best_value": "最佳价值",
+        "cancellation_failed": "取消失败",
         "choose_language": "选择语言",
         "choose_your_plan": "选择您的计划",
         "confirm_in_app_purchase": "确认您的应用内购买",
         "continue_learning": "继续学习{{l2Code}}",
         "current_level": "您当前的{{language}}水平是什么？",
         "current_plan": "当前计划",
+        "current_subscription_active": "当前订阅有效",
         "date": "日期",
         "delete_account": "删除账户",
         "delete_my_account": "删除我的账户",
         "dictionary": "字典",
         "email": "电子邮箱",
         "examples_from_videos": "视频示例",
+        "filter_by_locale": "按地区筛选",
         "go_pro": "升级到专业版",
         "how_did_you_hear": "您是如何了解到我们的？",
         "language_settings": "语言设置",
@@ -553,29 +580,26 @@
         "popularity": "热门程度",
         "privacy_policy": "隐私政策",
         "pro_feature": "专业版功能",
+        "recommended": "推荐",
         "register": "注册",
         "rightContext": "右侧上下文",
         "saved_words": "已保存的单词",
+        "search_results": "搜索结果",
+        "search": "搜索",
         "select_language": "您想学习哪种语言？",
         "settings": "设置",
+        "sort_by": "排序方式",
         "start_learning": "开始学习",
+        "subscription_cancelled": "订阅已取消",
         "trial": "试用",
+        "tv_show": "电视节目",
+        "tv_shows": "电视节目",
+        "update_progress": "更新进度",
         "verify_your_email": "验证您的邮箱",
+        "video_count": "视频 {{index}} 共 {{total}}",
         "views": "{{numViews}}次观看",
         "watch_history": "观看历史",
-        "your_current_plan": "您当前的计划",
-        "update_progress": "更新进度",
-        "search": "搜索",
-        "video_count": "视频 {{index}} 共 {{total}}",
-        "tv_shows": "电视节目",
-        "sort_by": "排序方式",
-        "filter_by_locale": "按地区筛选",
-        "tv_show": "电视节目",
-        "recommended": "推荐",
-        "search_results": "搜索结果",
-        "subscription_cancelled": "订阅已取消",
-        "cancellation_failed": "取消失败",
-        "current_subscription_active": "当前订阅有效"
+        "your_current_plan": "您当前的计划"
     },
     "video": {
         "comments": "评论",
@@ -586,24 +610,5 @@
         "hanja": "汉字",
         "kana": "假名",
         "pinyin": "拼音"
-    },
-    "key": "zh-Hans",
-    "tab": {
-        "media": "媒体",
-        "dictionary": "词典",
-        "me": "我的"
-    },
-    "sort": {
-        "most_viewed": "最多观看",
-        "title": "标题",
-        "year": "年份"
-    },
-    "filter": {
-        "all_locales": "所有地区"
-    },
-    "subscription": {
-        "monthly": "月度",
-        "annual": "年度",
-        "lifetime": "终身"
     }
 }

@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "Avbryt",
+        "clear_words": "Rensa Ord",
         "clear": "Rensa",
         "confirm_cancellation": "Bekräfta avbokning",
         "confirm_deletion": "Bekräfta radering",
         "copy": "Kopiera",
+        "email_support": "E-postsupport",
         "keep_account": "Behåll konto",
         "keep_subscription": "Behåll prenumeration",
         "let_chatgpt_explain": "Fråga AI",
@@ -299,15 +301,18 @@
         "next": "Nästa",
         "register": "Registrera",
         "resend_code": "Skicka kod igen",
+        "share": "Dela",
         "speak": "Tala",
         "start_learning": "Börja lära dig",
         "tv_shows": "TV-program",
-        "upgrade": "Uppgradera",
         "upgrade_to_pro": "Uppgradera till Pro",
+        "upgrade": "Uppgradera",
         "verify": "Verifiera",
-        "watch": "Titta",
-        "share": "Dela",
-        "clear_words": "Rensa Ord"
+        "watch": "Titta"
+    },
+    "button": {
+        "keep_current_time": "Behåll Nuvarande Tid",
+        "reset_time_to_zero": "Återställ Tid till Noll"
     },
     "chatgpt": {
         "prompt": {
@@ -320,6 +325,10 @@
         "lifetime": "Går aldrig ut.",
         "monthly": "Faktureras varje månad."
     },
+    "email": {
+        "support_body": "Vänligen beskriv ditt problem eller din fråga.",
+        "support_subject": "Supportförfrågan"
+    },
     "error": {
         "entry_not_found": "Inlägg hittades inte eller ordlistan laddades inte",
         "failed_fetch_videos": "Kunde inte hämta videor",
@@ -328,6 +337,7 @@
         "generic": "Fel",
         "language_not_selected": "Språk ej valt",
         "passwords_do_not_match": "Lösenorden matchar inte",
+        "payment_problem": "Det uppstod ett problem med din betalning.",
         "registration_failed": "Registrering misslyckades",
         "updating_progress": "Fel vid uppdatering av framsteg:",
         "user_info_not_found": "Användarinformation hittades inte"
@@ -337,10 +347,14 @@
         "use_all_ai": "Använd alla AI-funktioner i hela appen.",
         "view_entire_transcripts": "Visa hela transkript bortom de första tio raderna."
     },
+    "filter": {
+        "all_locales": "Alla platser"
+    },
     "footnote": {
         "currency": "2. Alla valutor är i amerikanska dollar (USD).",
         "lifetime_assumption": "1. Förutsatt att du lever längre än 2,4 år."
     },
+    "key": "sv",
     "level": {
         "cefr": {
             "1": "CEFR Pre-A1",
@@ -409,43 +423,44 @@
     },
     "msg": {
         "already_have_account": "Har du redan ett konto?",
-        "auto_renews": "Förnyas automatiskt om {{time}}",
         "auto_renews_in": "Förnyas automatiskt om {{days}} dagar",
+        "auto_renews": "Förnyas automatiskt om {{time}}.",
+        "choose_action": "Välj en åtgärd",
         "confirm_cancel_subscription": "Är du säker på att du vill avbryta prenumerationen?",
+        "contact_support": "Om du har stött på problem, vänligen kontakta support.",
+        "content_tailored": "Innehåll skräddarsytt för dig",
         "copy_success": "Text kopierad till urklipp",
         "delete_confirmation": "Är du säker på att du vill ta bort ditt konto permanent? Du kommer att förlora alla sparade ord och framsteg. Denna åtgärd kan inte ångras.",
         "discover_the_power_of_comprehensible_input": "Upptäck kraften i begriplig input genom hundratusentals videor på över 100 språk.",
         "dont_have_an_account": "Har du inget konto?",
         "enrich_your_language_learning_journey": "Berika din språkinlärningsresa",
         "enter_verification_code": "Ange verifieringskoden som skickats till e-posten",
+        "existing_subscription_warning": "Du har för närvarande en aktiv {{planType}}-plan som kommer att förnyas automatiskt. För att undvika dubbla avgifter måste du avbryta din befintliga prenumeration innan du köper en ny. Vill du avbryta din befintliga {{planType}}-prenumeration?",
         "expires_in": "Upphör om {{days}} dagar",
-        "expiring": "Upphör om {{time}}",
+        "expiring": "Upphör om {{time}}.",
         "forgot_password": "Glömt lösenord?",
         "hsk_explanation": "\"HSK\" är det officiella kinesiska färdighetsprovet, med nivå 1 som det lägsta och nivå 9 som det högsta.",
         "initializing": "Initierar...",
+        "keep_or_reset_time": "Vill du behålla din nuvarande tid eller återställa den till noll?",
         "loading": "Laddar...",
         "no_active_subscription": "Ingen aktiv prenumeration hittades.",
+        "no_more_videos": "Inga fler videor",
+        "no_saved_words": "Inga ord sparade än",
+        "options": "Alternativ",
         "or_login_with": "Eller logga in med:",
         "or_register_with": "Eller registrera med:",
+        "paste_youtube_url": "Du kan också klistra in YouTube-URL för att importera.",
         "pro_feature_chatgpt": "Endast Pro-användare kan använda AI-funktioner i Language Player Go. För att använda denna funktion, uppgradera till Pro.",
-        "pro_transcript": "Uppgradera till Pro för att se hela transkriptet!",
         "pro_transcript_limit_reached": "Transkriptionsgräns nådd. Vänligen uppgradera till Pro för att få åtkomst till fler transkriptioner.",
+        "pro_transcript": "Uppgradera till Pro för att se hela transkriptet!",
         "sort_by": "Sortera efter: {{sortBy}}",
+        "subscription_cancel_error": "Fel vid avbrytning av prenumeration",
+        "subscription_cancel_success": "Prenumeration avbruten framgångsrikt",
         "time_spent_learning": "Tid spenderad på att lära sig {{language}} i Language Player",
         "upgrade_text": "Uppgradera till Pro för att få åtkomst till fler videor!",
-        "what_your_first_language": "Vad är ditt modersmål?",
-        "with_pro_you_can": "Med Pro kan du:",
-        "keep_or_reset_time": "Vill du behålla din nuvarande tid eller återställa den till noll?",
-        "paste_youtube_url": "Du kan också klistra in YouTube-URL för att importera.",
-        "no_saved_words": "Inga ord sparade än",
-        "no_more_videos": "Inga fler videor",
-        "options": "Alternativ",
-        "choose_action": "Välj en åtgärd",
-        "content_tailored": "Innehåll skräddarsytt för dig",
         "videos_matching": "Videor som matchar \"{{searchTerm}}\"",
-        "subscription_cancel_success": "Prenumeration avbruten framgångsrikt",
-        "subscription_cancel_error": "Fel vid avbrytning av prenumeration",
-        "existing_subscription_warning": "Du har för närvarande en aktiv {{planType}}-plan som kommer att förnyas automatiskt. För att undvika dubbla avgifter måste du avbryta din befintliga prenumeration innan du köper en ny. Vill du avbryta din befintliga {{planType}}-prenumeration?"
+        "what_your_first_language": "Vad är ditt modersmål?",
+        "with_pro_you_can": "Med Pro kan du:"
     },
     "option": {
         "app_store": "App Store",
@@ -461,19 +476,19 @@
     },
     "placeholder": {
         "confirm_password": "Bekräfta lösenord",
+        "dict_search_1": "Sök {{param1}}",
+        "dict_search_2": "Sök {{param1}} eller {{param2}}",
+        "dict_search_3": "Sök {{param1}}, {{param2}}, eller {{param3}}",
         "email": "E-post",
+        "filter_by_title": "Filtrera efter titel...",
         "first_name": "Förnamn",
         "last_name": "Efternamn",
         "more_languages": "Fler språk ({{count}})",
         "password": "Lösenord",
         "please_specify": "Vänligen specificera",
-        "search": "Sök...",
-        "select_language": "Välj ett språk",
-        "dict_search_1": "Sök {{param1}}",
-        "dict_search_2": "Sök {{param1}} eller {{param2}}",
-        "dict_search_3": "Sök {{param1}}, {{param2}}, eller {{param3}}",
         "search_all_content": "Sök i allt {{language}} innehåll",
-        "filter_by_title": "Filtrera efter titel..."
+        "search": "Sök...",
+        "select_language": "Välj ett språk"
     },
     "price": {
         "annual": "${{price}}/år",
@@ -489,15 +504,30 @@
         "show_translation": "Visa översättning",
         "use_traditional": "Använd traditionell"
     },
+    "sort": {
+        "most_viewed": "Mest sedda",
+        "title": "Titel",
+        "year": "År"
+    },
+    "subscription": {
+        "annual": "årlig",
+        "lifetime": "livstid",
+        "monthly": "månadsvis"
+    },
     "success": {
         "code_resent": "Verifieringskod skickad igen till din e-post."
+    },
+    "tab": {
+        "dictionary": "Ordbok",
+        "me": "Jag",
+        "media": "Media"
     },
     "time": {
         "days": "{{count}} dagar",
         "hours": "timmar",
         "min": "min",
-        "months": "{{count}} månader",
         "months_and_days": "{{months}} och {{days}}",
+        "months": "{{count}} månader",
         "sec": "sek"
     },
     "title": {
@@ -505,17 +535,20 @@
         "annual": "Årlig",
         "app_settings": "App-inställningar",
         "best_value": "Bästa värde",
+        "cancellation_failed": "Avbrytning misslyckades",
         "choose_language": "Välj språk",
         "choose_your_plan": "Välj din plan",
         "continue_learning": "Fortsätt lära dig {{l2Code}}",
         "current_level": "Vad är din nuvarande nivå i {{language}}?",
         "current_plan": "Nuvarande plan",
+        "current_subscription_active": "Nuvarande Prenumeration Aktiv",
         "date": "Datum",
         "delete_account": "Ta bort konto",
         "delete_my_account": "Ta bort mitt konto",
         "dictionary": "Ordbok",
         "email": "E-post",
         "examples_from_videos": "Exempel från videor",
+        "filter_by_locale": "FILTRERA EFTER PLATS",
         "go_pro": "Uppgradera till Pro",
         "how_did_you_hear": "Hur fick du höra om oss?",
         "language_settings": "Språkinställningar",
@@ -533,29 +566,26 @@
         "popularity": "Popularitet",
         "privacy_policy": "Integritetspolicy",
         "pro_feature": "Pro-funktion",
+        "recommended": "Rekommenderat",
         "register": "Registrera",
         "rightContext": "Höger kontext",
         "saved_words": "Sparade ord",
+        "search_results": "Sökresultat",
+        "search": "Sök",
         "select_language": "Välj språk",
         "settings": "Inställningar",
+        "sort_by": "SORTERA EFTER",
         "start_learning": "Börja lära dig",
+        "subscription_cancelled": "Prenumeration avbruten",
         "trial": "Testa",
+        "tv_show": "TV-program",
+        "tv_shows": "TV-program",
+        "update_progress": "Uppdatera Framsteg",
         "verify_your_email": "Verifiera din e-post",
+        "video_count": "Video {{index}} av {{total}}",
         "views": "{{numViews}} visningar",
         "watch_history": "Tittarhistorik",
-        "your_current_plan": "Din nuvarande plan",
-        "update_progress": "Uppdatera Framsteg",
-        "search": "Sök",
-        "video_count": "Video {{index}} av {{total}}",
-        "tv_shows": "TV-program",
-        "sort_by": "SORTERA EFTER",
-        "filter_by_locale": "FILTRERA EFTER PLATS",
-        "tv_show": "TV-program",
-        "recommended": "Rekommenderat",
-        "search_results": "Sökresultat",
-        "subscription_cancelled": "Prenumeration avbruten",
-        "cancellation_failed": "Avbrytning misslyckades",
-        "current_subscription_active": "Nuvarande Prenumeration Aktiv"
+        "your_current_plan": "Din nuvarande plan"
     },
     "video": {
         "comments": "Kommentarer",
@@ -566,28 +596,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "sv",
-    "tab": {
-        "media": "Media",
-        "dictionary": "Ordbok",
-        "me": "Jag"
-    },
-    "button": {
-        "keep_current_time": "Behåll Nuvarande Tid",
-        "reset_time_to_zero": "Återställ Tid till Noll"
-    },
-    "sort": {
-        "most_viewed": "Mest sedda",
-        "title": "Titel",
-        "year": "År"
-    },
-    "filter": {
-        "all_locales": "Alla platser"
-    },
-    "subscription": {
-        "monthly": "månadsvis",
-        "annual": "årlig",
-        "lifetime": "livstid"
     }
 }

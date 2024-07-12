@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "إلغاء",
+        "clear_words": "مسح الكلمات",
         "clear": "مسح",
         "confirm_cancellation": "تأكيد الإلغاء",
         "confirm_deletion": "تأكيد الحذف",
         "copy": "نسخ",
+        "email_support": "دعم البريد الإلكتروني",
         "keep_account": "الاحتفاظ بالحساب",
         "keep_subscription": "الاحتفاظ بالاشتراك",
         "let_chatgpt_explain": "اسأل الذكاء الاصطناعي",
@@ -300,15 +302,18 @@
         "next": "التالي",
         "register": "التسجيل",
         "resend_code": "إعادة إرسال الرمز",
+        "share": "مشاركة",
         "speak": "تحدث",
         "start_learning": "ابدأ التعلم",
         "tv_shows": "البرامج التلفزيونية",
-        "upgrade": "ترقية",
         "upgrade_to_pro": "الترقية إلى النسخة المتقدمة",
+        "upgrade": "ترقية",
         "verify": "التحقق",
-        "watch": "مشاهدة",
-        "share": "مشاركة",
-        "clear_words": "مسح الكلمات"
+        "watch": "مشاهدة"
+    },
+    "button": {
+        "keep_current_time": "الاحتفاظ بالوقت الحالي",
+        "reset_time_to_zero": "إعادة تعيين الوقت إلى الصفر"
     },
     "chatgpt": {
         "prompt": {
@@ -321,6 +326,10 @@
         "lifetime": "لا تنتهي أبدًا.",
         "monthly": "يتم الدفع شهريًا."
     },
+    "email": {
+        "support_body": "يرجى وصف مشكلتك أو سؤالك.",
+        "support_subject": "طلب الدعم"
+    },
     "error": {
         "entry_not_found": "لم يتم العثور على الإدخال أو لم يتم تحميل القاموس",
         "failed_fetch_videos": "فشل في جلب مقاطع الفيديو",
@@ -329,6 +338,7 @@
         "generic": "خطأ",
         "language_not_selected": "لم يتم اختيار اللغة",
         "passwords_do_not_match": "كلمات المرور غير متطابقة",
+        "payment_problem": "كانت هناك مشكلة في الدفع الخاص بك.",
         "registration_failed": "فشل التسجيل",
         "updating_progress": "خطأ في تحديث التقدم:",
         "user_info_not_found": "لم يتم العثور على معلومات المستخدم"
@@ -338,10 +348,14 @@
         "use_all_ai": "استخدام جميع ميزات الذكاء الاصطناعي في جميع أنحاء التطبيق.",
         "view_entire_transcripts": "عرض النصوص الكاملة بعد الأسطر العشرة الأولى."
     },
+    "filter": {
+        "all_locales": "جميع المواقع"
+    },
     "footnote": {
         "currency": "2. جميع العملات بالدولار الأمريكي (USD).",
         "lifetime_assumption": "1. بافتراض أنك ستعيش أكثر من 2.4 سنة."
     },
+    "key": "ar",
     "level": {
         "cefr": {
             "1": "الإطار الأوروبي المرجعي المشترك ما قبل A1",
@@ -410,43 +424,44 @@
     },
     "msg": {
         "already_have_account": "هل لديك حساب بالفعل؟",
-        "auto_renews": "يتجدد تلقائيًا خلال {{time}}",
         "auto_renews_in": "يتجدد تلقائيًا خلال {{days}} يوم",
+        "auto_renews": "يتجدد تلقائيًا خلال {{time}}.",
+        "choose_action": "اختر إجراء",
         "confirm_cancel_subscription": "هل أنت متأكد أنك تريد إلغاء اشتراكك؟",
+        "contact_support": "إذا واجهت مشاكل، يرجى الاتصال بالدعم.",
+        "content_tailored": "محتوى مخصص لك",
         "copy_success": "تم نسخ النص إلى الحافظة",
         "delete_confirmation": "هل أنت متأكد أنك تريد حذف حسابك بشكل دائم؟ ستفقد جميع كلماتك المحفوظة وتقدمك. لا يمكن التراجع عن هذا الإجراء.",
         "discover_the_power_of_comprehensible_input": "اكتشف قوة المدخلات المفهومة من خلال مئات الآلاف من مقاطع الفيديو بأكثر من 100 لغة.",
         "dont_have_an_account": "ليس لديك حساب؟",
         "enrich_your_language_learning_journey": "أثري رحلة تعلم اللغة الخاصة بك",
         "enter_verification_code": "الرجاء إدخال رمز التحقق المرسل إلى البريد الإلكتروني",
+        "existing_subscription_warning": "لديك حاليًا خطة {{planType}} نشطة ستتجدد تلقائيًا. لتجنب الرسوم المزدوجة، يجب عليك إلغاء اشتراكك الحالي قبل شراء اشتراك جديد. هل ترغب في إلغاء اشتراك {{planType}} الحالي الخاص بك؟",
         "expires_in": "تنتهي الصلاحية خلال {{days}} يوم",
-        "expiring": "تنتهي الصلاحية خلال {{time}}",
+        "expiring": "تنتهي الصلاحية خلال {{time}}.",
         "forgot_password": "نسيت كلمة المرور؟",
         "hsk_explanation": "\"HSK\" هو اختبار الكفاءة الرسمي في اللغة الصينية، حيث يكون المستوى 1 هو الأدنى والمستوى 9 هو الأعلى.",
         "initializing": "جاري التهيئة...",
+        "keep_or_reset_time": "هل تريد الاحتفاظ بالوقت الحالي أم إعادة تعيينه إلى الصفر؟",
         "loading": "جاري التحميل...",
         "no_active_subscription": "لم يتم العثور على اشتراك نشط.",
+        "no_more_videos": "لا مزيد من مقاطع الفيديو",
+        "no_saved_words": "لم يتم حفظ أي كلمات بعد",
+        "options": "خيارات",
         "or_login_with": "أو تسجيل الدخول باستخدام:",
         "or_register_with": "أو التسجيل باستخدام:",
+        "paste_youtube_url": "يمكنك أيضًا لصق عنوان URL من YouTube للاستيراد.",
         "pro_feature_chatgpt": "يمكن فقط للمستخدمين المتقدمين استخدام ميزات الذكاء الاصطناعي في Language Player Go. لاستخدام هذه الميزة، قم بالترقية إلى النسخة المتقدمة.",
-        "pro_transcript": "قم بالترقية إلى النسخة المتقدمة لعرض النص الكامل!",
         "pro_transcript_limit_reached": "تم الوصول إلى حد النصوص. يرجى الترقية إلى النسخة المتقدمة للوصول إلى المزيد من النصوص.",
+        "pro_transcript": "قم بالترقية إلى النسخة المتقدمة لعرض النص الكامل!",
         "sort_by": "ترتيب حسب: {{sortBy}}",
+        "subscription_cancel_error": "خطأ في إلغاء الاشتراك",
+        "subscription_cancel_success": "تم إلغاء الاشتراك بنجاح",
         "time_spent_learning": "الوقت المستغرق في تعلم {{language}} في Language Player",
         "upgrade_text": "قم بالترقية إلى النسخة المتقدمة للوصول إلى المزيد من مقاطع الفيديو!",
-        "what_your_first_language": "ما هي لغتك الأم؟",
-        "with_pro_you_can": "مع النسخة المتقدمة، يمكنك:",
-        "keep_or_reset_time": "هل تريد الاحتفاظ بالوقت الحالي أم إعادة تعيينه إلى الصفر؟",
-        "paste_youtube_url": "يمكنك أيضًا لصق عنوان URL من YouTube للاستيراد.",
-        "no_saved_words": "لم يتم حفظ أي كلمات بعد",
-        "no_more_videos": "لا مزيد من مقاطع الفيديو",
-        "options": "خيارات",
-        "choose_action": "اختر إجراء",
-        "content_tailored": "محتوى مخصص لك",
         "videos_matching": "مقاطع الفيديو المطابقة لـ \"{{searchTerm}}\"",
-        "subscription_cancel_success": "تم إلغاء الاشتراك بنجاح",
-        "subscription_cancel_error": "خطأ في إلغاء الاشتراك",
-        "existing_subscription_warning": "لديك حاليًا خطة {{planType}} نشطة ستتجدد تلقائيًا. لتجنب الرسوم المزدوجة، يجب عليك إلغاء اشتراكك الحالي قبل شراء اشتراك جديد. هل ترغب في إلغاء اشتراك {{planType}} الحالي الخاص بك؟"
+        "what_your_first_language": "ما هي لغتك الأم؟",
+        "with_pro_you_can": "مع النسخة المتقدمة، يمكنك:"
     },
     "option": {
         "app_store": "متجر التطبيقات",
@@ -462,19 +477,19 @@
     },
     "placeholder": {
         "confirm_password": "تأكيد كلمة المرور",
+        "dict_search_1": "البحث عن {{param1}}",
+        "dict_search_2": "البحث عن {{param1}} أو {{param2}}",
+        "dict_search_3": "البحث عن {{param1}}، {{param2}}، أو {{param3}}",
         "email": "البريد الإلكتروني",
+        "filter_by_title": "تصفية حسب العنوان...",
         "first_name": "الاسم الأول",
         "last_name": "اسم العائلة",
         "more_languages": "المزيد من اللغات ({{count}})",
         "password": "كلمة المرور",
         "please_specify": "يرجى التحديد",
-        "search": "بحث...",
-        "select_language": "اختر لغة",
-        "dict_search_1": "البحث عن {{param1}}",
-        "dict_search_2": "البحث عن {{param1}} أو {{param2}}",
-        "dict_search_3": "البحث عن {{param1}}، {{param2}}، أو {{param3}}",
         "search_all_content": "البحث في كل محتوى {{language}}",
-        "filter_by_title": "تصفية حسب العنوان..."
+        "search": "بحث...",
+        "select_language": "اختر لغة"
     },
     "price": {
         "annual": "${{price}}/سنة",
@@ -490,15 +505,30 @@
         "show_translation": "عرض الترجمة",
         "use_traditional": "استخدام التقليدي"
     },
+    "sort": {
+        "most_viewed": "الأكثر مشاهدة",
+        "title": "العنوان",
+        "year": "السنة"
+    },
+    "subscription": {
+        "annual": "سنوي",
+        "lifetime": "مدى الحياة",
+        "monthly": "شهري"
+    },
     "success": {
         "code_resent": "تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني."
+    },
+    "tab": {
+        "dictionary": "قاموس",
+        "me": "أنا",
+        "media": "وسائط"
     },
     "time": {
         "days": "{{count, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}}",
         "hours": "ساعات",
         "min": "دقيقة",
-        "months": "{{count, plural, zero {# شهر} one {شهر واحد} two {شهران} few {# أشهر} many {# شهرًا} other {# شهر}}}",
         "months_and_days": "{{months}} و {{days}}",
+        "months": "{{count, plural, zero {# شهر} one {شهر واحد} two {شهران} few {# أشهر} many {# شهرًا} other {# شهر}}}",
         "sec": "ثانية"
     },
     "title": {
@@ -506,17 +536,20 @@
         "annual": "سنوي",
         "app_settings": "إعدادات التطبيق",
         "best_value": "أفضل قيمة",
+        "cancellation_failed": "فشل الإلغاء",
         "choose_language": "اختر اللغة",
         "choose_your_plan": "اختر خطتك",
         "continue_learning": "متابعة تعلم {{l2Code}}",
         "current_level": "ما هو مستواك الحالي في {{language}}؟",
         "current_plan": "الخطة الحالية",
+        "current_subscription_active": "الاشتراك الحالي نشط",
         "date": "التاريخ",
         "delete_account": "حذف الحساب",
         "delete_my_account": "حذف حسابي",
         "dictionary": "القاموس",
         "email": "البريد الإلكتروني",
         "examples_from_videos": "أمثلة من مقاطع الفيديو",
+        "filter_by_locale": "تصفية حسب الموقع",
         "go_pro": "الترقية إلى النسخة المتقدمة",
         "how_did_you_hear": "كيف سمعت عنا؟",
         "language_settings": "إعدادات اللغة",
@@ -534,29 +567,26 @@
         "popularity": "الشعبية",
         "privacy_policy": "سياسة الخصوصية",
         "pro_feature": "ميزة النسخة المتقدمة",
+        "recommended": "موصى به",
         "register": "التسجيل",
         "rightContext": "السياق الأيمن",
         "saved_words": "الكلمات المحفوظة",
+        "search_results": "نتائج البحث",
+        "search": "بحث",
         "select_language": "ما هي اللغة التي ترغب في تعلمها؟",
         "settings": "الإعدادات",
+        "sort_by": "ترتيب حسب",
         "start_learning": "ابدأ التعلم",
+        "subscription_cancelled": "تم إلغاء الاشتراك",
         "trial": "تجريبي",
+        "tv_show": "برنامج تلفزيوني",
+        "tv_shows": "البرامج التلفزيونية",
+        "update_progress": "تحديث التقدم",
         "verify_your_email": "تحقق من بريدك الإلكتروني",
+        "video_count": "الفيديو {{index}} من {{total}}",
         "views": "{{numViews}} مشاهدة",
         "watch_history": "سجل المشاهدة",
-        "your_current_plan": "خطتك الحالية",
-        "update_progress": "تحديث التقدم",
-        "search": "بحث",
-        "video_count": "الفيديو {{index}} من {{total}}",
-        "tv_shows": "البرامج التلفزيونية",
-        "sort_by": "ترتيب حسب",
-        "filter_by_locale": "تصفية حسب الموقع",
-        "tv_show": "برنامج تلفزيوني",
-        "recommended": "موصى به",
-        "search_results": "نتائج البحث",
-        "subscription_cancelled": "تم إلغاء الاشتراك",
-        "cancellation_failed": "فشل الإلغاء",
-        "current_subscription_active": "الاشتراك الحالي نشط"
+        "your_current_plan": "خطتك الحالية"
     },
     "video": {
         "comments": "التعليقات",
@@ -567,28 +597,5 @@
         "hanja": "هانجا",
         "kana": "كانا",
         "pinyin": "بينيين"
-    },
-    "key": "ar",
-    "tab": {
-        "media": "وسائط",
-        "dictionary": "قاموس",
-        "me": "أنا"
-    },
-    "button": {
-        "keep_current_time": "الاحتفاظ بالوقت الحالي",
-        "reset_time_to_zero": "إعادة تعيين الوقت إلى الصفر"
-    },
-    "sort": {
-        "most_viewed": "الأكثر مشاهدة",
-        "title": "العنوان",
-        "year": "السنة"
-    },
-    "filter": {
-        "all_locales": "جميع المواقع"
-    },
-    "subscription": {
-        "monthly": "شهري",
-        "annual": "سنوي",
-        "lifetime": "مدى الحياة"
     }
 }

@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "취소",
+        "clear_words": "단어 지우기",
         "clear": "지우기",
         "confirm_cancellation": "취소 확인",
         "confirm_deletion": "삭제 확인",
         "copy": "복사",
+        "email_support": "이메일 지원",
         "keep_account": "계정 유지",
         "keep_subscription": "구독 유지",
         "let_chatgpt_explain": "AI에 물어보기",
@@ -299,15 +301,18 @@
         "next": "다음",
         "register": "회원가입",
         "resend_code": "코드 재전송",
+        "share": "공유",
         "speak": "말하기",
         "start_learning": "학습 시작",
         "tv_shows": "TV 프로그램",
-        "upgrade": "업그레이드",
         "upgrade_to_pro": "프로로 업그레이드",
+        "upgrade": "업그레이드",
         "verify": "확인",
-        "watch": "보기",
-        "share": "공유",
-        "clear_words": "단어 지우기"
+        "watch": "보기"
+    },
+    "button": {
+        "keep_current_time": "현재 시간 유지",
+        "reset_time_to_zero": "시간을 0으로 재설정"
     },
     "chatgpt": {
         "prompt": {
@@ -320,6 +325,10 @@
         "lifetime": "만료되지 않음.",
         "monthly": "월간 요금 청구."
     },
+    "email": {
+        "support_body": "문제나 질문을 설명해 주세요.",
+        "support_subject": "지원 요청"
+    },
     "error": {
         "entry_not_found": "항목을 찾을 수 없거나 사전이 로드되지 않았습니다",
         "failed_fetch_videos": "동영상을 가져오지 못했습니다",
@@ -328,6 +337,7 @@
         "generic": "오류",
         "language_not_selected": "언어가 선택되지 않았습니다",
         "passwords_do_not_match": "비밀번호가 일치하지 않습니다",
+        "payment_problem": "결제에 문제가 있었습니다.",
         "registration_failed": "등록에 실패했습니다",
         "updating_progress": "진행 상황 업데이트 오류:",
         "user_info_not_found": "사용자 정보를 찾을 수 없습니다"
@@ -337,10 +347,14 @@
         "use_all_ai": "앱 전체에서 모든 AI 기능을 사용합니다.",
         "view_entire_transcripts": "처음 10줄 이후의 전체 대본을 봅니다."
     },
+    "filter": {
+        "all_locales": "모든 위치"
+    },
     "footnote": {
         "currency": "2. 모든 통화는 미국 달러(USD)로 표시됩니다.",
         "lifetime_assumption": "1. 2.4년 이상 살 것이라고 가정합니다."
     },
+    "key": "ko",
     "level": {
         "cefr": {
             "1": "CEFR Pre-A1",
@@ -409,43 +423,44 @@
     },
     "msg": {
         "already_have_account": "이미 계정이 있으신가요?",
-        "auto_renews": "{{time}} 후 자동 갱신됩니다",
         "auto_renews_in": "{{days}}일 후 자동 갱신됩니다",
+        "auto_renews": "{{time}} 후 자동 갱신됩니다.",
+        "choose_action": "작업 선택",
         "confirm_cancel_subscription": "구독을 취소하시겠습니까?",
+        "contact_support": "문제가 발생한 경우 지원팀에 문의하세요.",
+        "content_tailored": "맞춤형 콘텐츠",
         "copy_success": "텍스트가 클립보드에 복사되었습니다",
         "delete_confirmation": "계정을 영구적으로 삭제하시겠습니까? 저장된 모든 단어와 진행 상황이 손실됩니다. 이 작업은 취소할 수 없습니다.",
         "discover_the_power_of_comprehensible_input": "100개 이상의 언어로 된 수십만 개의 동영상을 통해 이해 가능한 입력의 힘을 발견하세요.",
         "dont_have_an_account": "계정이 없으신가요?",
         "enrich_your_language_learning_journey": "언어 학습 여정을 풍부하게 만드세요",
         "enter_verification_code": "이메일로 전송된 인증 코드를 입력하세요",
+        "existing_subscription_warning": "현재 자동 갱신되는 활성 {{planType}} 플랜이 있습니다. 중복 요금을 피하려면 새로운 플랜을 구매하기 전에 기존 구독을 취소해야 합니다. 기존 {{planType}} 구독을 취소하시겠습니까?",
         "expires_in": "{{days}}일 후 만료됩니다",
-        "expiring": "{{time}} 후 만료됩니다",
+        "expiring": "{{time}} 후 만료됩니다.",
         "forgot_password": "비밀번호를 잊으셨나요?",
         "hsk_explanation": "\"HSK\"는 공식 중국어 능력 시험으로, 1급이 가장 낮고 9급이 가장 높습니다.",
         "initializing": "초기화 중...",
+        "keep_or_reset_time": "현재 시간을 유지하시겠습니까 아니면 0으로 재설정하시겠습니까?",
         "loading": "로딩 중...",
         "no_active_subscription": "활성 구독을 찾을 수 없습니다.",
+        "no_more_videos": "더 이상 동영상이 없습니다",
+        "no_saved_words": "저장된 단어가 아직 없습니다",
+        "options": "옵션",
         "or_login_with": "또는 다음으로 로그인:",
         "or_register_with": "또는 다음으로 가입:",
+        "paste_youtube_url": "YouTube URL을 붙여넣어 가져올 수도 있습니다.",
         "pro_feature_chatgpt": "프로 사용자만 Language Player Go에서 AI 기능을 사용할 수 있습니다. 이 기능을 사용하려면 프로로 업그레이드하세요.",
-        "pro_transcript": "전체 대본을 보려면 프로로 업그레이드하세요!",
         "pro_transcript_limit_reached": "대본 한도에 도달했습니다. 더 많은 대본에 접근하려면 프로로 업그레이드하세요.",
+        "pro_transcript": "전체 대본을 보려면 프로로 업그레이드하세요!",
         "sort_by": "정렬 기준: {{sortBy}}",
+        "subscription_cancel_error": "구독 취소 중 오류 발생",
+        "subscription_cancel_success": "구독이 성공적으로 취소되었습니다",
         "time_spent_learning": "Language Player에서 {{language}} 학습에 소요된 시간",
         "upgrade_text": "더 많은 동영상에 접근하려면 프로로 업그레이드하세요!",
-        "what_your_first_language": "모국어가 무엇인가요?",
-        "with_pro_you_can": "프로 버전으로 다음을 할 수 있습니다:",
-        "keep_or_reset_time": "현재 시간을 유지하시겠습니까 아니면 0으로 재설정하시겠습니까?",
-        "paste_youtube_url": "YouTube URL을 붙여넣어 가져올 수도 있습니다.",
-        "no_saved_words": "저장된 단어가 아직 없습니다",
-        "no_more_videos": "더 이상 동영상이 없습니다",
-        "options": "옵션",
-        "choose_action": "작업 선택",
-        "content_tailored": "맞춤형 콘텐츠",
         "videos_matching": "\"{{searchTerm}}\"와(과) 일치하는 동영상",
-        "subscription_cancel_success": "구독이 성공적으로 취소되었습니다",
-        "subscription_cancel_error": "구독 취소 중 오류 발생",
-        "existing_subscription_warning": "현재 자동 갱신되는 활성 {{planType}} 플랜이 있습니다. 중복 요금을 피하려면 새로운 플랜을 구매하기 전에 기존 구독을 취소해야 합니다. 기존 {{planType}} 구독을 취소하시겠습니까?"
+        "what_your_first_language": "모국어가 무엇인가요?",
+        "with_pro_you_can": "프로 버전으로 다음을 할 수 있습니다:"
     },
     "option": {
         "app_store": "App Store",
@@ -461,19 +476,19 @@
     },
     "placeholder": {
         "confirm_password": "비밀번호 확인",
+        "dict_search_1": "검색 {{param1}}",
+        "dict_search_2": "검색 {{param1}} 또는 {{param2}}",
+        "dict_search_3": "검색 {{param1}}, {{param2}}, 또는 {{param3}}",
         "email": "이메일",
+        "filter_by_title": "제목으로 필터링...",
         "first_name": "이름",
         "last_name": "성",
         "more_languages": "더 많은 언어 ({{count}})",
         "password": "비밀번호",
         "please_specify": "구체적으로 명시해 주세요",
-        "search": "검색...",
-        "select_language": "언어 선택",
-        "dict_search_1": "검색 {{param1}}",
-        "dict_search_2": "검색 {{param1}} 또는 {{param2}}",
-        "dict_search_3": "검색 {{param1}}, {{param2}}, 또는 {{param3}}",
         "search_all_content": "모든 {{language}} 콘텐츠 검색",
-        "filter_by_title": "제목으로 필터링..."
+        "search": "검색...",
+        "select_language": "언어 선택"
     },
     "price": {
         "annual": "${{price}}/년",
@@ -489,15 +504,30 @@
         "show_translation": "번역 표시",
         "use_traditional": "번체 사용"
     },
+    "sort": {
+        "most_viewed": "가장 많이 본",
+        "title": "제목",
+        "year": "연도"
+    },
+    "subscription": {
+        "annual": "연간",
+        "lifetime": "평생",
+        "monthly": "월간"
+    },
     "success": {
         "code_resent": "인증 코드가 이메일로 다시 전송되었습니다."
+    },
+    "tab": {
+        "dictionary": "사전",
+        "me": "나",
+        "media": "미디어"
     },
     "time": {
         "days": "{{count}}일",
         "hours": "시간",
         "min": "분",
-        "months": "{{count}}개월",
         "months_and_days": "{{months}}와 {{days}}",
+        "months": "{{count}}개월",
         "sec": "초"
     },
     "title": {
@@ -505,17 +535,20 @@
         "annual": "연간",
         "app_settings": "앱 설정",
         "best_value": "최고의 가치",
+        "cancellation_failed": "취소 실패",
         "choose_language": "언어 선택",
         "choose_your_plan": "플랜 선택",
         "continue_learning": "{{l2Code}} 학습 계속하기",
         "current_level": "현재 {{language}} 수준이 어떻게 되시나요?",
         "current_plan": "현재 플랜",
+        "current_subscription_active": "현재 구독 활성화",
         "date": "날짜",
         "delete_account": "계정 삭제",
         "delete_my_account": "내 계정 삭제",
         "dictionary": "사전",
         "email": "이메일",
         "examples_from_videos": "동영상 예시",
+        "filter_by_locale": "위치별 필터",
         "go_pro": "프로로 전환",
         "how_did_you_hear": "어떻게 저희를 알게 되셨나요?",
         "language_settings": "언어 설정",
@@ -533,29 +566,26 @@
         "popularity": "인기도",
         "privacy_policy": "개인정보 보호정책",
         "pro_feature": "프로 기능",
+        "recommended": "추천",
         "register": "회원가입",
         "rightContext": "오른쪽 문맥",
         "saved_words": "저장된 단어",
+        "search_results": "검색 결과",
+        "search": "검색",
         "select_language": "어떤 언어를 배우고 싶으신가요?",
         "settings": "설정",
+        "sort_by": "정렬 기준",
         "start_learning": "학습 시작",
+        "subscription_cancelled": "구독이 취소되었습니다",
         "trial": "체험판",
+        "tv_show": "TV 프로그램",
+        "tv_shows": "TV 프로그램",
+        "update_progress": "진행 상황 업데이트",
         "verify_your_email": "이메일 인증",
+        "video_count": "동영상 {{index}} / {{total}}",
         "views": "조회수 {{numViews}}회",
         "watch_history": "시청 기록",
-        "your_current_plan": "현재 플랜",
-        "update_progress": "진행 상황 업데이트",
-        "search": "검색",
-        "video_count": "동영상 {{index}} / {{total}}",
-        "tv_shows": "TV 프로그램",
-        "sort_by": "정렬 기준",
-        "filter_by_locale": "위치별 필터",
-        "tv_show": "TV 프로그램",
-        "recommended": "추천",
-        "search_results": "검색 결과",
-        "subscription_cancelled": "구독이 취소되었습니다",
-        "cancellation_failed": "취소 실패",
-        "current_subscription_active": "현재 구독 활성화"
+        "your_current_plan": "현재 플랜"
     },
     "video": {
         "comments": "댓글",
@@ -566,28 +596,5 @@
         "hanja": "한자",
         "kana": "가나",
         "pinyin": "병음"
-    },
-    "key": "ko",
-    "tab": {
-        "media": "미디어",
-        "dictionary": "사전",
-        "me": "나"
-    },
-    "button": {
-        "keep_current_time": "현재 시간 유지",
-        "reset_time_to_zero": "시간을 0으로 재설정"
-    },
-    "sort": {
-        "most_viewed": "가장 많이 본",
-        "title": "제목",
-        "year": "연도"
-    },
-    "filter": {
-        "all_locales": "모든 위치"
-    },
-    "subscription": {
-        "monthly": "월간",
-        "annual": "연간",
-        "lifetime": "평생"
     }
 }

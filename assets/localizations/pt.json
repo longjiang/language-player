@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "Cancelar",
+        "clear_words": "Limpar Palavras",
         "clear": "Limpar",
         "confirm_cancellation": "Confirmar Cancelamento",
         "confirm_deletion": "Confirmar Exclusão",
         "copy": "Copiar",
+        "email_support": "Suporte por E-mail",
         "keep_account": "Manter Conta",
         "keep_subscription": "Manter Assinatura",
         "let_chatgpt_explain": "Perguntar à IA",
@@ -299,15 +301,18 @@
         "next": "Próximo",
         "register": "Registrar",
         "resend_code": "Reenviar Código",
+        "share": "Compartilhar",
         "speak": "Falar",
         "start_learning": "Começar a Aprender",
         "tv_shows": "Programas de TV",
-        "upgrade": "Atualizar",
         "upgrade_to_pro": "Atualizar para Pro",
+        "upgrade": "Atualizar",
         "verify": "Verificar",
-        "watch": "Assistir",
-        "share": "Compartilhar",
-        "clear_words": "Limpar Palavras"
+        "watch": "Assistir"
+    },
+    "button": {
+        "keep_current_time": "Manter Tempo Atual",
+        "reset_time_to_zero": "Redefinir Tempo para Zero"
     },
     "chatgpt": {
         "prompt": {
@@ -320,6 +325,10 @@
         "lifetime": "Nunca expira.",
         "monthly": "Cobrado mensalmente."
     },
+    "email": {
+        "support_body": "Por favor, descreva o seu problema ou pergunta.",
+        "support_subject": "Pedido de Suporte"
+    },
     "error": {
         "entry_not_found": "Entrada não encontrada ou dicionário não carregado",
         "failed_fetch_videos": "Falha ao buscar vídeos",
@@ -328,6 +337,7 @@
         "generic": "Erro",
         "language_not_selected": "Idioma não selecionado",
         "passwords_do_not_match": "Senhas não coincidem",
+        "payment_problem": "Houve um problema com o seu pagamento.",
         "registration_failed": "Falha no registro",
         "updating_progress": "Erro ao atualizar progresso:",
         "user_info_not_found": "Informações do usuário não encontradas"
@@ -337,10 +347,14 @@
         "use_all_ai": "Use todos os recursos de IA em todo o aplicativo.",
         "view_entire_transcripts": "Veja todas as transcrições além das dez primeiras linhas."
     },
+    "filter": {
+        "all_locales": "Todas as localidades"
+    },
     "footnote": {
         "currency": "2. Todas as moedas em dólares americanos (USD).",
         "lifetime_assumption": "1. Supondo que você viva mais de 2,4 anos."
     },
+    "key": "pt",
     "level": {
         "cefr": {
             "1": "CEFR Pre-A1",
@@ -409,43 +423,44 @@
     },
     "msg": {
         "already_have_account": "Já tem uma conta?",
-        "auto_renews": "Renova automaticamente em {{time}}",
         "auto_renews_in": "Renovação automática em {{days}} dias",
+        "auto_renews": "Renova automaticamente em {{time}}.",
+        "choose_action": "Escolha uma ação",
         "confirm_cancel_subscription": "Tem certeza de que deseja cancelar sua assinatura?",
+        "contact_support": "Se encontrou problemas, entre em contacto com o suporte.",
+        "content_tailored": "Conteúdo personalizado para você",
         "copy_success": "Texto copiado para a área de transferência",
         "delete_confirmation": "Tem certeza de que deseja excluir sua conta permanentemente? Você perderá todas as palavras salvas e o progresso. Esta ação não pode ser desfeita.",
         "discover_the_power_of_comprehensible_input": "Descubra o poder da Entrada Compreensível através de centenas de milhares de vídeos em mais de 100 idiomas.",
         "dont_have_an_account": "Não tem uma conta?",
         "enrich_your_language_learning_journey": "Enriqueça sua jornada de aprendizado de idiomas",
         "enter_verification_code": "Insira o código de verificação enviado para o e-mail",
+        "existing_subscription_warning": "Você tem atualmente um plano {{planType}} ativo que será renovado automaticamente. Para evitar cobranças duplicadas, você deve cancelar sua assinatura existente antes de comprar uma nova. Você gostaria de cancelar sua assinatura {{planType}} existente?",
         "expires_in": "Expira em {{days}} dias",
-        "expiring": "Expira em {{time}}",
+        "expiring": "Expira em {{time}}.",
         "forgot_password": "Esqueceu a senha?",
         "hsk_explanation": "O \"HSK\" é o teste oficial de proficiência em chinês, com o Nível 1 sendo o mais baixo e o Nível 9 o mais alto.",
         "initializing": "Inicializando...",
+        "keep_or_reset_time": "Você quer manter seu tempo atual ou redefini-lo para zero?",
         "loading": "Carregando...",
         "no_active_subscription": "Nenhuma assinatura ativa encontrada.",
+        "no_more_videos": "Sem mais vídeos",
+        "no_saved_words": "Nenhuma palavra salva ainda",
+        "options": "Opções",
         "or_login_with": "Ou entre com:",
         "or_register_with": "Ou registre-se com:",
+        "paste_youtube_url": "Você também pode colar o URL do YouTube para importar.",
         "pro_feature_chatgpt": "Apenas usuários Pro podem usar recursos de IA no Language Player Go. Para usar esse recurso, atualize para Pro.",
-        "pro_transcript": "Atualize para Pro para ver a transcrição completa!",
         "pro_transcript_limit_reached": "Limite de transcrição atingido. Por favor, atualize para Pro para acessar mais transcrições.",
+        "pro_transcript": "Atualize para Pro para ver a transcrição completa!",
         "sort_by": "Ordenar por: {{sortBy}}",
+        "subscription_cancel_error": "Erro ao cancelar a assinatura",
+        "subscription_cancel_success": "Assinatura cancelada com sucesso",
         "time_spent_learning": "Tempo gasto aprendendo {{language}} no Language Player",
         "upgrade_text": "Atualize para Pro para acessar mais vídeos!",
-        "what_your_first_language": "Qual é a sua primeira língua?",
-        "with_pro_you_can": "Com o Pro, você pode:",
-        "keep_or_reset_time": "Você quer manter seu tempo atual ou redefini-lo para zero?",
-        "paste_youtube_url": "Você também pode colar o URL do YouTube para importar.",
-        "no_saved_words": "Nenhuma palavra salva ainda",
-        "no_more_videos": "Sem mais vídeos",
-        "options": "Opções",
-        "choose_action": "Escolha uma ação",
-        "content_tailored": "Conteúdo personalizado para você",
         "videos_matching": "Vídeos correspondentes a \"{{searchTerm}}\"",
-        "subscription_cancel_success": "Assinatura cancelada com sucesso",
-        "subscription_cancel_error": "Erro ao cancelar a assinatura",
-        "existing_subscription_warning": "Você tem atualmente um plano {{planType}} ativo que será renovado automaticamente. Para evitar cobranças duplicadas, você deve cancelar sua assinatura existente antes de comprar uma nova. Você gostaria de cancelar sua assinatura {{planType}} existente?"
+        "what_your_first_language": "Qual é a sua primeira língua?",
+        "with_pro_you_can": "Com o Pro, você pode:"
     },
     "option": {
         "app_store": "App Store",
@@ -461,19 +476,19 @@
     },
     "placeholder": {
         "confirm_password": "Confirmar Senha",
+        "dict_search_1": "Procurar {{param1}}",
+        "dict_search_2": "Procurar {{param1}} ou {{param2}}",
+        "dict_search_3": "Procurar {{param1}}, {{param2}}, ou {{param3}}",
         "email": "E-mail",
+        "filter_by_title": "Filtrar por título...",
         "first_name": "Primeiro Nome",
         "last_name": "Último Nome",
         "more_languages": "Mais idiomas ({{count}})",
         "password": "Senha",
         "please_specify": "Por favor, especifique",
-        "search": "Buscar...",
-        "select_language": "Selecione um idioma",
-        "dict_search_1": "Procurar {{param1}}",
-        "dict_search_2": "Procurar {{param1}} ou {{param2}}",
-        "dict_search_3": "Procurar {{param1}}, {{param2}}, ou {{param3}}",
         "search_all_content": "Pesquisar todo o conteúdo em {{language}}",
-        "filter_by_title": "Filtrar por título..."
+        "search": "Buscar...",
+        "select_language": "Selecione um idioma"
     },
     "price": {
         "annual": "${{price}}/ano",
@@ -489,15 +504,30 @@
         "show_translation": "Mostrar Tradução",
         "use_traditional": "Usar Tradicional"
     },
+    "sort": {
+        "most_viewed": "Mais vistos",
+        "title": "Título",
+        "year": "Ano"
+    },
+    "subscription": {
+        "annual": "anual",
+        "lifetime": "vitalício",
+        "monthly": "mensal"
+    },
     "success": {
         "code_resent": "Código de verificação reenviado para o seu e-mail."
+    },
+    "tab": {
+        "dictionary": "Dicionário",
+        "me": "Eu",
+        "media": "Mídia"
     },
     "time": {
         "days": "{{count, plural, one {# dia} other {# dias}}}",
         "hours": "horas",
         "min": "min",
-        "months": "{{count, plural, one {# mês} other {# meses}}}",
         "months_and_days": "{{months}} e {{days}}",
+        "months": "{{count, plural, one {# mês} other {# meses}}}",
         "sec": "seg"
     },
     "title": {
@@ -505,17 +535,20 @@
         "annual": "Anual",
         "app_settings": "Configurações do Aplicativo",
         "best_value": "Melhor Valor",
+        "cancellation_failed": "Falha no cancelamento",
         "choose_language": "Escolha um Idioma",
         "choose_your_plan": "Escolha o Seu Plano",
         "continue_learning": "Continue aprendendo {{l2Code}}",
         "current_level": "Qual é o seu nível atual de {{language}}?",
         "current_plan": "Plano Atual",
+        "current_subscription_active": "Assinatura Atual Ativa",
         "date": "Data",
         "delete_account": "Excluir Conta",
         "delete_my_account": "Excluir Minha Conta",
         "dictionary": "Dicionário",
         "email": "E-mail",
         "examples_from_videos": "Exemplos de Vídeos",
+        "filter_by_locale": "FILTRAR POR LOCALIDADE",
         "go_pro": "Atualizar para Pro",
         "how_did_you_hear": "Como você soube sobre nós?",
         "language_settings": "Configurações de Idioma",
@@ -533,29 +566,26 @@
         "popularity": "Popularidade",
         "privacy_policy": "Política de Privacidade",
         "pro_feature": "Recurso Pro",
+        "recommended": "Recomendado",
         "register": "Registrar",
         "rightContext": "Contexto à Direita",
         "saved_words": "Palavras Salvas",
+        "search_results": "Resultados da pesquisa",
+        "search": "Pesquisar",
         "select_language": "Escolha um Idioma",
         "settings": "Configurações",
+        "sort_by": "ORDENAR POR",
         "start_learning": "Começar a Aprender",
+        "subscription_cancelled": "Assinatura cancelada",
         "trial": "Teste",
+        "tv_show": "Programa de TV",
+        "tv_shows": "Programas de TV",
+        "update_progress": "Atualizar Progresso",
         "verify_your_email": "Verifique seu e-mail",
+        "video_count": "Vídeo {{index}} de {{total}}",
         "views": "{{numViews}} Visualizações",
         "watch_history": "Histórico de Visualizações",
-        "your_current_plan": "Seu Plano Atual",
-        "update_progress": "Atualizar Progresso",
-        "search": "Pesquisar",
-        "video_count": "Vídeo {{index}} de {{total}}",
-        "tv_shows": "Programas de TV",
-        "sort_by": "ORDENAR POR",
-        "filter_by_locale": "FILTRAR POR LOCALIDADE",
-        "tv_show": "Programa de TV",
-        "recommended": "Recomendado",
-        "search_results": "Resultados da pesquisa",
-        "subscription_cancelled": "Assinatura cancelada",
-        "cancellation_failed": "Falha no cancelamento",
-        "current_subscription_active": "Assinatura Atual Ativa"
+        "your_current_plan": "Seu Plano Atual"
     },
     "video": {
         "comments": "Comentários",
@@ -566,28 +596,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "pt",
-    "tab": {
-        "media": "Mídia",
-        "dictionary": "Dicionário",
-        "me": "Eu"
-    },
-    "button": {
-        "keep_current_time": "Manter Tempo Atual",
-        "reset_time_to_zero": "Redefinir Tempo para Zero"
-    },
-    "sort": {
-        "most_viewed": "Mais vistos",
-        "title": "Título",
-        "year": "Ano"
-    },
-    "filter": {
-        "all_locales": "Todas as localidades"
-    },
-    "subscription": {
-        "monthly": "mensal",
-        "annual": "anual",
-        "lifetime": "vitalício"
     }
 }

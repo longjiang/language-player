@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Mégse",
+        "clear_words": "Szavak Törlése",
         "clear": "Törlés",
         "confirm_cancellation": "Megerősítés törlése",
         "confirm_deletion": "Törlés megerősítése",
         "copy": "Másolás",
+        "email_support": "E-mail Támogatás",
         "keep_account": "Fiók megtartása",
         "keep_subscription": "Előfizetés megtartása",
         "let_chatgpt_explain": "Kérdezd a mesterséges intelligenciát",
@@ -300,15 +302,18 @@
         "next": "Következő",
         "register": "Regisztráció",
         "resend_code": "Kód újraküldése",
+        "share": "Megosztás",
         "speak": "Beszéd",
         "start_learning": "Tanulás megkezdése",
         "tv_shows": "TV-műsorok",
-        "upgrade": "Frissítés",
         "upgrade_to_pro": "Frissítés Pro-ra",
+        "upgrade": "Frissítés",
         "verify": "Ellenőrzés",
-        "watch": "Megtekintés",
-        "share": "Megosztás",
-        "clear_words": "Szavak Törlése"
+        "watch": "Megtekintés"
+    },
+    "button": {
+        "keep_current_time": "Jelenlegi Idő Megtartása",
+        "reset_time_to_zero": "Idő Nullázása"
     },
     "chatgpt": {
         "prompt": {
@@ -321,6 +326,10 @@
         "lifetime": "Soha nem jár le.",
         "monthly": "Havonta számlázva."
     },
+    "email": {
+        "support_body": "Kérjük, írja le a problémáját vagy kérdését.",
+        "support_subject": "Támogatási Kérelem"
+    },
     "error": {
         "entry_not_found": "Bejegyzés nem található vagy a szótár nem töltődött be",
         "failed_fetch_videos": "Videók letöltése sikertelen",
@@ -329,6 +338,7 @@
         "generic": "Hiba",
         "language_not_selected": "Nyelv nincs kiválasztva",
         "passwords_do_not_match": "A jelszavak nem egyeznek",
+        "payment_problem": "Probléma volt a fizetésével.",
         "registration_failed": "Regisztráció sikertelen",
         "updating_progress": "Hiba a folyamat frissítése közben:",
         "user_info_not_found": "Felhasználói információk nem találhatók"
@@ -338,10 +348,14 @@
         "use_all_ai": "Az alkalmazás összes AI-funkciójának használata.",
         "view_entire_transcripts": "Az egész átiratok megtekintése az első tíz soron túl."
     },
+    "filter": {
+        "all_locales": "Minden terület"
+    },
     "footnote": {
         "currency": "2. Minden pénznem amerikai dollárban (USD).",
         "lifetime_assumption": "1. Feltételezve, hogy 2,4 évnél tovább él."
     },
+    "key": "hu",
     "level": {
         "cefr": {
             "1": "CEFR Pre-A1",
@@ -410,43 +424,44 @@
     },
     "msg": {
         "already_have_account": "Már van fiókja?",
-        "auto_renews": "Automatikus megújítás {{time}} múlva",
         "auto_renews_in": "Automatikus megújítás {{days}} nap múlva",
+        "auto_renews": "Automatikusan megújul {{time}} múlva.",
+        "choose_action": "Válasszon egy műveletet",
         "confirm_cancel_subscription": "Biztos benne, hogy le szeretné mondani az előfizetését?",
+        "contact_support": "Ha problémákba ütközött, kérjük, lépjen kapcsolatba az ügyfélszolgálattal.",
+        "content_tailored": "Önnek szabott tartalom",
         "copy_success": "A szöveg a vágólapra lett másolva",
         "delete_confirmation": "Biztos benne, hogy véglegesen törli a fiókját? Elveszíti az összes mentett szavát és előrehaladását. Ez a művelet nem vonható vissza.",
         "discover_the_power_of_comprehensible_input": "Fedezze fel az Érthető Bemenet erejét több száz ezer videón keresztül több mint 100 nyelven.",
         "dont_have_an_account": "Nincs fiókja?",
         "enrich_your_language_learning_journey": "Gazdagítsa nyelvtanulási útját",
         "enter_verification_code": "Kérjük, írja be az e-mailben elküldött ellenőrző kódot",
+        "existing_subscription_warning": "Jelenleg van egy aktív {{planType}} előfizetésed, amely automatikusan megújul. A dupla díjak elkerülése érdekében le kell mondanod a meglévő előfizetésedet, mielőtt újat vásárolnál. Szeretnéd lemondani a meglévő {{planType}} előfizetésedet?",
         "expires_in": "{{days}} nap múlva lejár",
-        "expiring": "Lejár {{time}} múlva",
+        "expiring": "Lejár {{time}} múlva.",
         "forgot_password": "Elfelejtette a jelszavát?",
         "hsk_explanation": "Az \"HSK\" a hivatalos kínai nyelvvizsga, ahol az 1. szint a legalacsonyabb és a 9. szint a legmagasabb.",
         "initializing": "Inicializálás...",
+        "keep_or_reset_time": "Meg szeretné tartani a jelenlegi időt, vagy nullára állítja?",
         "loading": "Betöltés...",
         "no_active_subscription": "Nem található aktív előfizetés.",
+        "no_more_videos": "Nincs több videó",
+        "no_saved_words": "Még nincsenek mentett szavak",
+        "options": "Opciók",
         "or_login_with": "Vagy jelentkezzen be ezzel:",
         "or_register_with": "Vagy regisztráljon ezzel:",
+        "paste_youtube_url": "Beillesztheti a YouTube URL-t is az importáláshoz.",
         "pro_feature_chatgpt": "Csak Pro felhasználók használhatják az AI-funkciókat a Language Player Go-ban. Ennek a funkciónak a használatához frissítsen Pro-ra.",
-        "pro_transcript": "Frissítés Pro-ra a teljes átirat megtekintéséhez!",
         "pro_transcript_limit_reached": "Átirat limit elérve. További átiratok eléréséhez frissítsen Pro-ra.",
+        "pro_transcript": "Frissítés Pro-ra a teljes átirat megtekintéséhez!",
         "sort_by": "Rendezés: {{sortBy}}",
+        "subscription_cancel_error": "Hiba történt az előfizetés lemondásakor",
+        "subscription_cancel_success": "Az előfizetés sikeresen lemondva",
         "time_spent_learning": "Nyelvtanulásra fordított idő a Language Player-ben {{language}}",
         "upgrade_text": "Frissítsen Pro-ra a további videók eléréséhez!",
-        "what_your_first_language": "Mi az első nyelve?",
-        "with_pro_you_can": "A Pro-val teheti:",
-        "keep_or_reset_time": "Meg szeretné tartani a jelenlegi időt, vagy nullára állítja?",
-        "paste_youtube_url": "Beillesztheti a YouTube URL-t is az importáláshoz.",
-        "no_saved_words": "Még nincsenek mentett szavak",
-        "no_more_videos": "Nincs több videó",
-        "options": "Opciók",
-        "choose_action": "Válasszon egy műveletet",
-        "content_tailored": "Önnek szabott tartalom",
         "videos_matching": "A(z) \"{{searchTerm}}\" kifejezésnek megfelelő videók",
-        "subscription_cancel_success": "Az előfizetés sikeresen lemondva",
-        "subscription_cancel_error": "Hiba történt az előfizetés lemondásakor",
-        "existing_subscription_warning": "Jelenleg van egy aktív {{planType}} előfizetésed, amely automatikusan megújul. A dupla díjak elkerülése érdekében le kell mondanod a meglévő előfizetésedet, mielőtt újat vásárolnál. Szeretnéd lemondani a meglévő {{planType}} előfizetésedet?"
+        "what_your_first_language": "Mi az első nyelve?",
+        "with_pro_you_can": "A Pro-val teheti:"
     },
     "option": {
         "app_store": "App Store",
@@ -462,19 +477,19 @@
     },
     "placeholder": {
         "confirm_password": "Jelszó megerősítése",
+        "dict_search_1": "Keresés {{param1}}",
+        "dict_search_2": "Keresés {{param1}} vagy {{param2}}",
+        "dict_search_3": "Keresés {{param1}}, {{param2}}, vagy {{param3}}",
         "email": "E-mail",
+        "filter_by_title": "Szűrés cím szerint...",
         "first_name": "Keresztnév",
         "last_name": "Vezetéknév",
         "more_languages": "További nyelvek ({{count}})",
         "password": "Jelszó",
         "please_specify": "Kérjük, adja meg",
-        "search": "Keresés...",
-        "select_language": "Nyelv kiválasztása",
-        "dict_search_1": "Keresés {{param1}}",
-        "dict_search_2": "Keresés {{param1}} vagy {{param2}}",
-        "dict_search_3": "Keresés {{param1}}, {{param2}}, vagy {{param3}}",
         "search_all_content": "Keresés minden {{language}} tartalomban",
-        "filter_by_title": "Szűrés cím szerint..."
+        "search": "Keresés...",
+        "select_language": "Nyelv kiválasztása"
     },
     "price": {
         "annual": "${{price}}/év",
@@ -490,15 +505,30 @@
         "show_translation": "Fordítás megjelenítése",
         "use_traditional": "Használja a hagyományosat"
     },
+    "sort": {
+        "most_viewed": "Legnézettebb",
+        "title": "Cím",
+        "year": "Év"
+    },
+    "subscription": {
+        "annual": "éves",
+        "lifetime": "élettartam",
+        "monthly": "havi"
+    },
     "success": {
         "code_resent": "Az ellenőrző kód újra lett küldve az e-mail címére."
+    },
+    "tab": {
+        "dictionary": "Szótár",
+        "me": "Én",
+        "media": "Média"
     },
     "time": {
         "days": "{{count, plural, one {# nap} other {# nap}}}",
         "hours": "óra",
         "min": "perc",
-        "months": "{{count, plural, one {# hónap} other {# hónap}}}",
         "months_and_days": "{{months}} és {{days}}",
+        "months": "{{count, plural, one {# hónap} other {# hónap}}}",
         "sec": "mp"
     },
     "title": {
@@ -506,17 +536,20 @@
         "annual": "Éves",
         "app_settings": "Alkalmazás beállításai",
         "best_value": "Legjobb érték",
+        "cancellation_failed": "A lemondás sikertelen",
         "choose_language": "Nyelv választása",
         "choose_your_plan": "Válassza ki a tervét",
         "continue_learning": "Folytassa a {{l2Code}} tanulást",
         "current_level": "Mi a jelenlegi {{language}} szintje?",
         "current_plan": "Jelenlegi terv",
+        "current_subscription_active": "Jelenlegi Előfizetés Aktív",
         "date": "Dátum",
         "delete_account": "Fiók törlése",
         "delete_my_account": "Fiókom törlése",
         "dictionary": "Szótár",
         "email": "E-mail",
         "examples_from_videos": "Példák videókból",
+        "filter_by_locale": "SZŰRÉS TERÜLET SZERINT",
         "go_pro": "Pro-ra frissítés",
         "how_did_you_hear": "Hogyan hallott rólunk?",
         "language_settings": "Nyelv beállításai",
@@ -534,29 +567,26 @@
         "popularity": "Népszerűség",
         "privacy_policy": "Adatvédelmi irányelvek",
         "pro_feature": "Pro funkció",
+        "recommended": "Ajánlott",
         "register": "Regisztráció",
         "rightContext": "Jobb kontextus",
         "saved_words": "Mentett szavak",
+        "search_results": "Keresési eredmények",
+        "search": "Keresés",
         "select_language": "Nyelv választása",
         "settings": "Beállítások",
+        "sort_by": "RENDEZÉS",
         "start_learning": "Tanulás megkezdése",
+        "subscription_cancelled": "Előfizetés lemondva",
         "trial": "Próba",
+        "tv_show": "TV-műsor",
+        "tv_shows": "TV-műsorok",
+        "update_progress": "Frissítse az Előrehaladást",
         "verify_your_email": "E-mail ellenőrzése",
+        "video_count": "{{index}}. videó a {{total}}-ból",
         "views": "{{numViews}} megtekintés",
         "watch_history": "Nézési előzmények",
-        "your_current_plan": "Jelenlegi terv",
-        "update_progress": "Frissítse az Előrehaladást",
-        "search": "Keresés",
-        "video_count": "{{index}}. videó a {{total}}-ból",
-        "tv_shows": "TV-műsorok",
-        "sort_by": "RENDEZÉS",
-        "filter_by_locale": "SZŰRÉS TERÜLET SZERINT",
-        "tv_show": "TV-műsor",
-        "recommended": "Ajánlott",
-        "search_results": "Keresési eredmények",
-        "subscription_cancelled": "Előfizetés lemondva",
-        "cancellation_failed": "A lemondás sikertelen",
-        "current_subscription_active": "Jelenlegi Előfizetés Aktív"
+        "your_current_plan": "Jelenlegi terv"
     },
     "video": {
         "comments": "Hozzászólások",
@@ -567,28 +597,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "hu",
-    "tab": {
-        "media": "Média",
-        "dictionary": "Szótár",
-        "me": "Én"
-    },
-    "button": {
-        "keep_current_time": "Jelenlegi Idő Megtartása",
-        "reset_time_to_zero": "Idő Nullázása"
-    },
-    "sort": {
-        "most_viewed": "Legnézettebb",
-        "title": "Cím",
-        "year": "Év"
-    },
-    "filter": {
-        "all_locales": "Minden terület"
-    },
-    "subscription": {
-        "monthly": "havi",
-        "annual": "éves",
-        "lifetime": "élettartam"
     }
 }

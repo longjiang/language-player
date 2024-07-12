@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Cancel·lar",
+        "clear_words": "Esborrar Paraules",
         "clear": "Esborrar",
         "confirm_cancellation": "Confirmar cancel·lació",
         "confirm_deletion": "Confirmar eliminació",
         "copy": "Copiar",
+        "email_support": "Suport per Correu Electrònic",
         "keep_account": "Mantenir compte",
         "keep_subscription": "Mantenir subscripció",
         "let_chatgpt_explain": "Preguntar a la IA",
@@ -300,15 +302,18 @@
         "next": "Següent",
         "register": "Registrar-se",
         "resend_code": "Reenviar codi",
+        "share": "Compartir",
         "speak": "Parlar",
         "start_learning": "Començar a aprendre",
         "tv_shows": "Programes de TV",
-        "upgrade": "Actualitzar",
         "upgrade_to_pro": "Actualitzar a Pro",
+        "upgrade": "Actualitzar",
         "verify": "Verificar",
-        "watch": "Mirar",
-        "share": "Compartir",
-        "clear_words": "Esborrar Paraules"
+        "watch": "Mirar"
+    },
+    "button": {
+        "keep_current_time": "Mantenir Temps Actual",
+        "reset_time_to_zero": "Restablir Temps a Zero"
     },
     "chatgpt": {
         "prompt": {
@@ -321,6 +326,10 @@
         "lifetime": "Mai caduca.",
         "monthly": "Facturació mensual."
     },
+    "email": {
+        "support_body": "Si us plau, descrigui el seu problema o pregunta.",
+        "support_subject": "Sol·licitud de Suport"
+    },
     "error": {
         "entry_not_found": "Entrada no trobada o diccionari no carregat",
         "failed_fetch_videos": "Error en carregar vídeos",
@@ -329,6 +338,7 @@
         "generic": "Error",
         "language_not_selected": "Idioma no seleccionat",
         "passwords_do_not_match": "Les contrasenyes no coincideixen",
+        "payment_problem": "Hi ha hagut un problema amb el seu pagament.",
         "registration_failed": "Error en el registre",
         "updating_progress": "Error en actualitzar el progrés:",
         "user_info_not_found": "Informació d'usuari no trobada"
@@ -338,10 +348,14 @@
         "use_all_ai": "Utilitzar totes les funcions d'IA a tota l'aplicació.",
         "view_entire_transcripts": "Veure transcripcions completes més enllà de les deu primeres línies."
     },
+    "filter": {
+        "all_locales": "Totes les ubicacions"
+    },
     "footnote": {
         "currency": "2. Totes les monedes en dòlars americans (USD).",
         "lifetime_assumption": "1. Suposant que viuràs més de 2,4 anys."
     },
+    "key": "ca",
     "level": {
         "cefr": {
             "1": "MECR Pre-A1",
@@ -410,43 +424,44 @@
     },
     "msg": {
         "already_have_account": "Ja tens un compte?",
-        "auto_renews": "Es renova automàticament en {{time}}",
         "auto_renews_in": "Es renova automàticament en {{days}} dies",
+        "auto_renews": "Es renova automàticament en {{time}}.",
+        "choose_action": "Tria una acció",
         "confirm_cancel_subscription": "Estàs segur que vols cancel·lar la teva subscripció?",
+        "contact_support": "Si ha trobat problemes, si us plau, contacti amb suport.",
+        "content_tailored": "Contingut adaptat per a tu",
         "copy_success": "Text copiat al portapapers",
         "delete_confirmation": "Estàs segur que vols eliminar permanentment el teu compte? Perdràs totes les teves paraules guardades i el progrés. Aquesta acció no es pot desfer.",
         "discover_the_power_of_comprehensible_input": "Descobreix el poder de l'Input Comprensible a través de centenars de milers de vídeos en més de 100 idiomes.",
         "dont_have_an_account": "No tens un compte?",
         "enrich_your_language_learning_journey": "Enriqueix el teu viatge d'aprenentatge d'idiomes",
         "enter_verification_code": "Si us plau, introdueix el codi de verificació enviat al correu electrònic",
+        "existing_subscription_warning": "Actualment tens un pla {{planType}} actiu que es renovarà automàticament. Per evitar càrrecs duplicats, has de cancel·lar la teva subscripció existent abans de comprar-ne una de nova. Vols cancel·lar la teva subscripció {{planType}} existent?",
         "expires_in": "Caduca en {{days}} dies",
-        "expiring": "Caducant en {{time}}",
+        "expiring": "Caducant en {{time}}.",
         "forgot_password": "Has oblidat la contrasenya?",
         "hsk_explanation": "\"HSK\" és la prova oficial de competència en xinès, amb el Nivell 1 com el més baix i el Nivell 9 com el més alt.",
         "initializing": "Inicialitzant...",
+        "keep_or_reset_time": "Vols mantenir el temps actual o restablir-lo a zero?",
         "loading": "Carregant...",
         "no_active_subscription": "No s'ha trobat cap subscripció activa.",
+        "no_more_videos": "No hi ha més vídeos",
+        "no_saved_words": "Encara no s'han desat paraules",
+        "options": "Opcions",
         "or_login_with": "O inicia sessió amb:",
         "or_register_with": "O registra't amb:",
+        "paste_youtube_url": "També pots enganxar l'URL de YouTube per importar.",
         "pro_feature_chatgpt": "Només els usuaris Pro poden utilitzar funcions d'IA a Language Player Go. Per utilitzar aquesta funció, actualitza a Pro.",
-        "pro_transcript": "Actualitza a Pro per veure la transcripció completa!",
         "pro_transcript_limit_reached": "S'ha arribat al límit de transcripció. Si us plau, actualitza a Pro per accedir a més transcripcions.",
+        "pro_transcript": "Actualitza a Pro per veure la transcripció completa!",
         "sort_by": "Ordenar per: {{sortBy}}",
+        "subscription_cancel_error": "Error en cancel·lar la subscripció",
+        "subscription_cancel_success": "Subscripció cancel·lada amb èxit",
         "time_spent_learning": "Temps dedicat a aprendre {{language}} a Language Player",
         "upgrade_text": "Actualitza a Pro per accedir a més vídeos!",
-        "what_your_first_language": "Quina és la teva llengua materna?",
-        "with_pro_you_can": "Amb Pro, pots:",
-        "keep_or_reset_time": "Vols mantenir el temps actual o restablir-lo a zero?",
-        "paste_youtube_url": "També pots enganxar l'URL de YouTube per importar.",
-        "no_saved_words": "Encara no s'han desat paraules",
-        "no_more_videos": "No hi ha més vídeos",
-        "options": "Opcions",
-        "choose_action": "Tria una acció",
-        "content_tailored": "Contingut adaptat per a tu",
         "videos_matching": "Vídeos que coincideixen amb \"{{searchTerm}}\"",
-        "subscription_cancel_success": "Subscripció cancel·lada amb èxit",
-        "subscription_cancel_error": "Error en cancel·lar la subscripció",
-        "existing_subscription_warning": "Actualment tens un pla {{planType}} actiu que es renovarà automàticament. Per evitar càrrecs duplicats, has de cancel·lar la teva subscripció existent abans de comprar-ne una de nova. Vols cancel·lar la teva subscripció {{planType}} existent?"
+        "what_your_first_language": "Quina és la teva llengua materna?",
+        "with_pro_you_can": "Amb Pro, pots:"
     },
     "option": {
         "app_store": "App Store",
@@ -462,19 +477,19 @@
     },
     "placeholder": {
         "confirm_password": "Confirmar contrasenya",
+        "dict_search_1": "Cerca {{param1}}",
+        "dict_search_2": "Cerca {{param1}} o {{param2}}",
+        "dict_search_3": "Cerca {{param1}}, {{param2}}, o {{param3}}",
         "email": "Correu electrònic",
+        "filter_by_title": "Filtra per títol...",
         "first_name": "Nom",
         "last_name": "Cognom",
         "more_languages": "Més idiomes ({{count}})",
         "password": "Contrasenya",
         "please_specify": "Si us plau, especifica",
-        "search": "Cerca...",
-        "select_language": "Selecciona un idioma",
-        "dict_search_1": "Cerca {{param1}}",
-        "dict_search_2": "Cerca {{param1}} o {{param2}}",
-        "dict_search_3": "Cerca {{param1}}, {{param2}}, o {{param3}}",
         "search_all_content": "Cerca tot el contingut en {{language}}",
-        "filter_by_title": "Filtra per títol..."
+        "search": "Cerca...",
+        "select_language": "Selecciona un idioma"
     },
     "price": {
         "annual": "${{price}}/any",
@@ -490,15 +505,30 @@
         "show_translation": "Mostrar traducció",
         "use_traditional": "Usar tradicional"
     },
+    "sort": {
+        "most_viewed": "Més vistos",
+        "title": "Títol",
+        "year": "Any"
+    },
+    "subscription": {
+        "annual": "anual",
+        "lifetime": "de per vida",
+        "monthly": "mensual"
+    },
     "success": {
         "code_resent": "Codi de verificació reenviat al teu correu electrònic."
+    },
+    "tab": {
+        "dictionary": "Diccionari",
+        "me": "Jo",
+        "media": "Mitjans"
     },
     "time": {
         "days": "{{count, plural, one {# dia} other {# dies}}}",
         "hours": "hores",
         "min": "min",
-        "months": "{{count, plural, one {# mes} other {# mesos}}}",
         "months_and_days": "{{months}} i {{days}}",
+        "months": "{{count, plural, one {# mes} other {# mesos}}}",
         "sec": "seg"
     },
     "title": {
@@ -506,17 +536,20 @@
         "annual": "Anual",
         "app_settings": "Configuració de l'aplicació",
         "best_value": "Millor valor",
+        "cancellation_failed": "Error en la cancel·lació",
         "choose_language": "Triar idioma",
         "choose_your_plan": "Tria el teu pla",
         "continue_learning": "Continua aprenent {{l2Code}}",
         "current_level": "Quin és el teu nivell actual de {{language}}?",
         "current_plan": "Pla actual",
+        "current_subscription_active": "Subscripció Actual Activa",
         "date": "Data",
         "delete_account": "Eliminar compte",
         "delete_my_account": "Eliminar el meu compte",
         "dictionary": "Diccionari",
         "email": "Correu electrònic",
         "examples_from_videos": "Exemples de vídeos",
+        "filter_by_locale": "FILTRA PER UBICACIÓ",
         "go_pro": "Passa a Pro",
         "how_did_you_hear": "Com vas conèixer-nos?",
         "language_settings": "Configuració d'idioma",
@@ -534,29 +567,26 @@
         "popularity": "Popularitat",
         "privacy_policy": "Política de privadesa",
         "pro_feature": "Funció Pro",
+        "recommended": "Recomanat",
         "register": "Registrar-se",
         "rightContext": "Context dret",
         "saved_words": "Paraules guardades",
+        "search_results": "Resultats de cerca",
+        "search": "Cerca",
         "select_language": "Quin idioma t'agradaria aprendre?",
         "settings": "Configuració",
+        "sort_by": "ORDENA PER",
         "start_learning": "Començar a aprendre",
+        "subscription_cancelled": "Subscripció cancel·lada",
         "trial": "Prova",
+        "tv_show": "Programa de TV",
+        "tv_shows": "Programes de TV",
+        "update_progress": "Actualitzar Progrés",
         "verify_your_email": "Verifica el teu correu electrònic",
+        "video_count": "Vídeo {{index}} de {{total}}",
         "views": "{{numViews}} visualitzacions",
         "watch_history": "Historial de visualització",
-        "your_current_plan": "El teu pla actual",
-        "update_progress": "Actualitzar Progrés",
-        "search": "Cerca",
-        "video_count": "Vídeo {{index}} de {{total}}",
-        "tv_shows": "Programes de TV",
-        "sort_by": "ORDENA PER",
-        "filter_by_locale": "FILTRA PER UBICACIÓ",
-        "tv_show": "Programa de TV",
-        "recommended": "Recomanat",
-        "search_results": "Resultats de cerca",
-        "subscription_cancelled": "Subscripció cancel·lada",
-        "cancellation_failed": "Error en la cancel·lació",
-        "current_subscription_active": "Subscripció Actual Activa"
+        "your_current_plan": "El teu pla actual"
     },
     "video": {
         "comments": "Comentaris",
@@ -567,28 +597,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "ca",
-    "tab": {
-        "media": "Mitjans",
-        "dictionary": "Diccionari",
-        "me": "Jo"
-    },
-    "button": {
-        "keep_current_time": "Mantenir Temps Actual",
-        "reset_time_to_zero": "Restablir Temps a Zero"
-    },
-    "sort": {
-        "most_viewed": "Més vistos",
-        "title": "Títol",
-        "year": "Any"
-    },
-    "filter": {
-        "all_locales": "Totes les ubicacions"
-    },
-    "subscription": {
-        "monthly": "mensual",
-        "annual": "anual",
-        "lifetime": "de per vida"
     }
 }

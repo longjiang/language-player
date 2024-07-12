@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "Annuleren",
+        "clear_words": "Woorden Wissen",
         "clear": "Wissen",
         "confirm_cancellation": "Annulering bevestigen",
         "confirm_deletion": "Verwijdering bevestigen",
         "copy": "Kopiëren",
+        "email_support": "E-mailondersteuning",
         "keep_account": "Account behouden",
         "keep_subscription": "Abonnement behouden",
         "let_chatgpt_explain": "Vraag AI",
@@ -299,15 +301,18 @@
         "next": "Volgende",
         "register": "Registreren",
         "resend_code": "Code opnieuw verzenden",
+        "share": "Delen",
         "speak": "Spreken",
         "start_learning": "Begin met leren",
         "tv_shows": "TV-programma's",
-        "upgrade": "Upgraden",
         "upgrade_to_pro": "Upgraden naar Pro",
+        "upgrade": "Upgraden",
         "verify": "Verifiëren",
-        "watch": "Bekijken",
-        "share": "Delen",
-        "clear_words": "Woorden Wissen"
+        "watch": "Bekijken"
+    },
+    "button": {
+        "keep_current_time": "Huidige Tijd Behouden",
+        "reset_time_to_zero": "Tijd op Nul Zetten"
     },
     "chatgpt": {
         "prompt": {
@@ -320,6 +325,10 @@
         "lifetime": "Verloopt nooit.",
         "monthly": "Maandelijks gefactureerd."
     },
+    "email": {
+        "support_body": "Beschrijf alstublieft uw probleem of vraag.",
+        "support_subject": "Ondersteuningsverzoek"
+    },
     "error": {
         "entry_not_found": "Item niet gevonden of woordenboek niet geladen",
         "failed_fetch_videos": "Kon video's niet ophalen",
@@ -328,6 +337,7 @@
         "generic": "Fout",
         "language_not_selected": "Taal niet geselecteerd",
         "passwords_do_not_match": "Wachtwoorden komen niet overeen",
+        "payment_problem": "Er was een probleem met uw betaling.",
         "registration_failed": "Registratie mislukt",
         "updating_progress": "Fout bij het bijwerken van de voortgang:",
         "user_info_not_found": "Gebruikersinformatie niet gevonden"
@@ -337,10 +347,14 @@
         "use_all_ai": "Gebruik alle AI-functies in de hele app.",
         "view_entire_transcripts": "Bekijk volledige transcripties na de eerste tien regels."
     },
+    "filter": {
+        "all_locales": "Alle talen"
+    },
     "footnote": {
         "currency": "2. Alle valuta in Amerikaanse dollars (USD).",
         "lifetime_assumption": "1. Ervan uitgaande dat je langer dan 2,4 jaar zult leven."
     },
+    "key": "nl",
     "level": {
         "cefr": {
             "1": "ERK Pre-A1",
@@ -409,43 +423,44 @@
     },
     "msg": {
         "already_have_account": "Heb je al een account?",
-        "auto_renews": "Wordt automatisch verlengd over {{time}}",
         "auto_renews_in": "Wordt automatisch verlengd over {{days}} dagen",
+        "auto_renews": "Wordt automatisch verlengd over {{time}}.",
+        "choose_action": "Kies een actie",
         "confirm_cancel_subscription": "Weet je zeker dat je je abonnement wilt annuleren?",
+        "contact_support": "Als u problemen bent tegengekomen, neem dan contact op met de ondersteuning.",
+        "content_tailored": "Op maat gemaakte inhoud voor jou",
         "copy_success": "Tekst gekopieerd naar klembord",
         "delete_confirmation": "Weet je zeker dat je je account permanent wilt verwijderen? Je verliest al je opgeslagen woorden en voortgang. Deze actie kan niet ongedaan worden gemaakt.",
         "discover_the_power_of_comprehensible_input": "Ontdek de kracht van begrijpelijke input via honderdduizenden video's in meer dan 100 talen.",
         "dont_have_an_account": "Heb je geen account?",
         "enrich_your_language_learning_journey": "Verrijk je taalleermethode",
         "enter_verification_code": "Voer de verificatiecode in die naar je e-mail is verzonden",
+        "existing_subscription_warning": "U heeft momenteel een actief {{planType}}-abonnement dat automatisch wordt verlengd. Om dubbele kosten te voorkomen, moet u uw bestaande abonnement opzeggen voordat u een nieuwe koopt. Wilt u uw bestaande {{planType}}-abonnement opzeggen?",
         "expires_in": "Verloopt over {{days}} dagen",
-        "expiring": "Verloopt over {{time}}",
+        "expiring": "Verloopt over {{time}}.",
         "forgot_password": "Wachtwoord vergeten?",
         "hsk_explanation": "\"HSK\" is de officiële Chinese vaardigheidstest, waarbij niveau 1 het laagste is en niveau 9 het hoogste.",
         "initializing": "Initialiseren...",
+        "keep_or_reset_time": "Wil je je huidige tijd behouden of op nul zetten?",
         "loading": "Laden...",
         "no_active_subscription": "Geen actief abonnement gevonden.",
+        "no_more_videos": "Geen video's meer",
+        "no_saved_words": "Nog geen woorden opgeslagen",
+        "options": "Opties",
         "or_login_with": "Of log in met:",
         "or_register_with": "Of registreer met:",
+        "paste_youtube_url": "Je kunt ook een YouTube-URL plakken om te importeren.",
         "pro_feature_chatgpt": "Alleen Pro-gebruikers kunnen AI-functies gebruiken in Language Player Go. Upgrade naar Pro om deze functie te gebruiken.",
-        "pro_transcript": "Upgrade naar Pro om de volledige transcriptie te bekijken!",
         "pro_transcript_limit_reached": "Transcriptielimiet bereikt. Upgrade naar Pro voor toegang tot meer transcripties.",
+        "pro_transcript": "Upgrade naar Pro om de volledige transcriptie te bekijken!",
         "sort_by": "Sorteren op: {{sortBy}}",
+        "subscription_cancel_error": "Fout bij het annuleren van het abonnement",
+        "subscription_cancel_success": "Abonnement succesvol geannuleerd",
         "time_spent_learning": "Tijd besteed aan het leren van {{language}} in Language Player",
         "upgrade_text": "Upgrade naar Pro voor toegang tot meer video's!",
-        "what_your_first_language": "Wat is je moedertaal?",
-        "with_pro_you_can": "Met Pro kun je:",
-        "keep_or_reset_time": "Wil je je huidige tijd behouden of op nul zetten?",
-        "paste_youtube_url": "Je kunt ook een YouTube-URL plakken om te importeren.",
-        "no_saved_words": "Nog geen woorden opgeslagen",
-        "no_more_videos": "Geen video's meer",
-        "options": "Opties",
-        "choose_action": "Kies een actie",
-        "content_tailored": "Op maat gemaakte inhoud voor jou",
         "videos_matching": "Video's die overeenkomen met \"{{searchTerm}}\"",
-        "subscription_cancel_success": "Abonnement succesvol geannuleerd",
-        "subscription_cancel_error": "Fout bij het annuleren van het abonnement",
-        "existing_subscription_warning": "U heeft momenteel een actief {{planType}}-abonnement dat automatisch wordt verlengd. Om dubbele kosten te voorkomen, moet u uw bestaande abonnement opzeggen voordat u een nieuwe koopt. Wilt u uw bestaande {{planType}}-abonnement opzeggen?"
+        "what_your_first_language": "Wat is je moedertaal?",
+        "with_pro_you_can": "Met Pro kun je:"
     },
     "option": {
         "app_store": "App Store",
@@ -461,19 +476,19 @@
     },
     "placeholder": {
         "confirm_password": "Bevestig wachtwoord",
+        "dict_search_1": "Zoek {{param1}}",
+        "dict_search_2": "Zoek {{param1}} of {{param2}}",
+        "dict_search_3": "Zoek {{param1}}, {{param2}}, of {{param3}}",
         "email": "E-mail",
+        "filter_by_title": "Filter op titel...",
         "first_name": "Voornaam",
         "last_name": "Achternaam",
         "more_languages": "Meer talen ({{count}})",
         "password": "Wachtwoord",
         "please_specify": "Gelieve te specificeren",
-        "search": "Zoeken...",
-        "select_language": "Selecteer een taal",
-        "dict_search_1": "Zoek {{param1}}",
-        "dict_search_2": "Zoek {{param1}} of {{param2}}",
-        "dict_search_3": "Zoek {{param1}}, {{param2}}, of {{param3}}",
         "search_all_content": "Doorzoek alle {{language}} inhoud",
-        "filter_by_title": "Filter op titel..."
+        "search": "Zoeken...",
+        "select_language": "Selecteer een taal"
     },
     "price": {
         "annual": "${{price}}/jaar",
@@ -489,15 +504,30 @@
         "show_translation": "Toon vertaling",
         "use_traditional": "Gebruik traditioneel"
     },
+    "sort": {
+        "most_viewed": "Meest bekeken",
+        "title": "Titel",
+        "year": "Jaar"
+    },
+    "subscription": {
+        "annual": "jaarlijks",
+        "lifetime": "levenslang",
+        "monthly": "maandelijks"
+    },
     "success": {
         "code_resent": "Verificatiecode opnieuw naar je e-mail verzonden."
+    },
+    "tab": {
+        "dictionary": "Woordenboek",
+        "me": "Ik",
+        "media": "Media"
     },
     "time": {
         "days": "{{count, plural, one {# dag} other {# dagen}}}",
         "hours": "uur",
         "min": "min",
-        "months": "{{count, plural, one {# maand} other {# maanden}}}",
         "months_and_days": "{{months}} en {{days}}",
+        "months": "{{count, plural, one {# maand} other {# maanden}}}",
         "sec": "sec"
     },
     "title": {
@@ -505,17 +535,20 @@
         "annual": "Jaarlijks",
         "app_settings": "App-instellingen",
         "best_value": "Beste waarde",
+        "cancellation_failed": "Annulering mislukt",
         "choose_language": "Kies taal",
         "choose_your_plan": "Kies je abonnement",
         "continue_learning": "Ga door met {{l2Code}} leren",
         "current_level": "Wat is je huidige {{language}} niveau?",
         "current_plan": "Huidig abonnement",
+        "current_subscription_active": "Huidige Abonnement Actief",
         "date": "Datum",
         "delete_account": "Account verwijderen",
         "delete_my_account": "Mijn account verwijderen",
         "dictionary": "Woordenboek",
         "email": "E-mail",
         "examples_from_videos": "Voorbeelden uit video's",
+        "filter_by_locale": "FILTEREN OP TAAL",
         "go_pro": "Ga Pro",
         "how_did_you_hear": "Hoe heb je over ons gehoord?",
         "language_settings": "Taalinstellingen",
@@ -533,29 +566,26 @@
         "popularity": "Populariteit",
         "privacy_policy": "Privacybeleid",
         "pro_feature": "Pro-functie",
+        "recommended": "Aanbevolen",
         "register": "Registreren",
         "rightContext": "Rechter context",
         "saved_words": "Opgeslagen woorden",
+        "search_results": "Zoekresultaten",
+        "search": "Zoeken",
         "select_language": "Welke taal wil je leren?",
         "settings": "Instellingen",
+        "sort_by": "SORTEER OP",
         "start_learning": "Begin met leren",
+        "subscription_cancelled": "Abonnement geannuleerd",
         "trial": "Proefversie",
+        "tv_show": "TV-programma",
+        "tv_shows": "TV-programma's",
+        "update_progress": "Voortgang Bijwerken",
         "verify_your_email": "Verifieer je e-mail",
+        "video_count": "Video {{index}} van {{total}}",
         "views": "{{numViews}} weergaven",
         "watch_history": "Kijkgeschiedenis",
-        "your_current_plan": "Je huidige abonnement",
-        "update_progress": "Voortgang Bijwerken",
-        "search": "Zoeken",
-        "video_count": "Video {{index}} van {{total}}",
-        "tv_shows": "TV-programma's",
-        "sort_by": "SORTEER OP",
-        "filter_by_locale": "FILTEREN OP TAAL",
-        "tv_show": "TV-programma",
-        "recommended": "Aanbevolen",
-        "search_results": "Zoekresultaten",
-        "subscription_cancelled": "Abonnement geannuleerd",
-        "cancellation_failed": "Annulering mislukt",
-        "current_subscription_active": "Huidige Abonnement Actief"
+        "your_current_plan": "Je huidige abonnement"
     },
     "video": {
         "comments": "Reacties",
@@ -566,28 +596,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "nl",
-    "tab": {
-        "media": "Media",
-        "dictionary": "Woordenboek",
-        "me": "Ik"
-    },
-    "button": {
-        "keep_current_time": "Huidige Tijd Behouden",
-        "reset_time_to_zero": "Tijd op Nul Zetten"
-    },
-    "sort": {
-        "most_viewed": "Meest bekeken",
-        "title": "Titel",
-        "year": "Jaar"
-    },
-    "filter": {
-        "all_locales": "Alle talen"
-    },
-    "subscription": {
-        "monthly": "maandelijks",
-        "annual": "jaarlijks",
-        "lifetime": "levenslang"
     }
 }

@@ -285,11 +285,13 @@
         "yue-HK": "Cantoneză (Hong Kong)"
     },
     "action": {
-        "cancel": "Anulare",
+        "cancel": "Anulează",
+        "clear_words": "Șterge Cuvinte",
         "clear": "Șterge",
         "confirm_cancellation": "Confirmă anularea",
         "confirm_deletion": "Confirmă ștergerea",
-        "copy": "Copiere",
+        "copy": "Copiază",
+        "email_support": "Suport prin E-mail",
         "keep_account": "Păstrează contul",
         "keep_subscription": "Păstrează abonamentul",
         "let_chatgpt_explain": "Întreabă AI",
@@ -299,15 +301,18 @@
         "next": "Următorul",
         "register": "Înregistrare",
         "resend_code": "Retrimite codul",
+        "share": "Distribuie",
         "speak": "Vorbiți",
         "start_learning": "Începe să înveți",
         "tv_shows": "Programe TV",
-        "upgrade": "Upgrade",
         "upgrade_to_pro": "Upgrade la Pro",
+        "upgrade": "Upgrade",
         "verify": "Verifică",
-        "watch": "Vizionează",
-        "share": "Distribuie",
-        "clear_words": "Șterge Cuvinte"
+        "watch": "Vizionează"
+    },
+    "button": {
+        "keep_current_time": "Păstrează Timpul Curent",
+        "reset_time_to_zero": "Resetează Timpul la Zero"
     },
     "chatgpt": {
         "prompt": {
@@ -320,6 +325,10 @@
         "lifetime": "Nu expiră niciodată.",
         "monthly": "Facturat lunar."
     },
+    "email": {
+        "support_body": "Vă rugăm să descrieți problema sau întrebarea dvs.",
+        "support_subject": "Cerere de Asistență"
+    },
     "error": {
         "entry_not_found": "Intrarea nu a fost găsită sau dicționarul nu a fost încărcat",
         "failed_fetch_videos": "Eșec la încărcarea videoclipurilor",
@@ -328,6 +337,7 @@
         "generic": "Eroare",
         "language_not_selected": "Limba nu a fost selectată",
         "passwords_do_not_match": "Parolele nu se potrivesc",
+        "payment_problem": "A apărut o problemă cu plata dvs.",
         "registration_failed": "Înregistrarea a eșuat",
         "updating_progress": "Eroare la actualizarea progresului:",
         "user_info_not_found": "Informațiile utilizatorului nu au fost găsite"
@@ -337,10 +347,14 @@
         "use_all_ai": "Folosește toate funcțiile AI în întreaga aplicație.",
         "view_entire_transcripts": "Vezi transcripțiile complete dincolo de primele zece rânduri."
     },
+    "filter": {
+        "all_locales": "Toate locațiile"
+    },
     "footnote": {
         "currency": "2. Toate valutele sunt în dolari americani (USD).",
         "lifetime_assumption": "1. Presupunând că vei trăi mai mult de 2,4 ani."
     },
+    "key": "ro",
     "level": {
         "cefr": {
             "1": "CECRL Pre-A1",
@@ -409,43 +423,44 @@
     },
     "msg": {
         "already_have_account": "Ai deja un cont?",
-        "auto_renews": "Se reînnoiește automat în {{time}}",
         "auto_renews_in": "Se reînnoiește automat în {{days}} zile",
+        "auto_renews": "Se reînnoiește automat în {{time}}.",
+        "choose_action": "Alegeți o acțiune",
         "confirm_cancel_subscription": "Ești sigur că vrei să anulezi abonamentul?",
+        "contact_support": "Dacă ați întâmpinat probleme, vă rugăm să contactați asistența.",
+        "content_tailored": "Conținut personalizat pentru tine",
         "copy_success": "Textul a fost copiat în clipboard",
         "delete_confirmation": "Ești sigur că vrei să ștergi definitiv contul tău? Vei pierde toate cuvintele salvate și progresul. Această acțiune nu poate fi anulată.",
         "discover_the_power_of_comprehensible_input": "Descoperă puterea Input-ului Comprehensibil prin sute de mii de videoclipuri în peste 100 de limbi.",
         "dont_have_an_account": "Nu ai un cont?",
         "enrich_your_language_learning_journey": "Îmbogățește-ți călătoria de învățare a limbilor",
         "enter_verification_code": "Te rugăm să introduci codul de verificare trimis pe email",
+        "existing_subscription_warning": "Aveți în prezent un plan {{planType}} activ care se va reînnoi automat. Pentru a evita taxele duble, trebuie să anulați abonamentul existent înainte de a achiziționa unul nou. Doriți să anulați abonamentul {{planType}} existent?",
         "expires_in": "Expiră în {{days}} zile",
-        "expiring": "Expiră în {{time}}",
+        "expiring": "Expiră în {{time}}.",
         "forgot_password": "Ai uitat parola?",
         "hsk_explanation": "\"HSK\" este testul oficial de competență în limba chineză, cu Nivelul 1 fiind cel mai scăzut și Nivelul 9 cel mai înalt.",
         "initializing": "Se inițializează...",
+        "keep_or_reset_time": "Doriți să păstrați timpul curent sau să îl resetați la zero?",
         "loading": "Se încarcă...",
         "no_active_subscription": "Nu s-a găsit niciun abonament activ.",
+        "no_more_videos": "Nu mai sunt videoclipuri",
+        "no_saved_words": "Nu sunt cuvinte salvate încă",
+        "options": "Opțiuni",
         "or_login_with": "Sau conectează-te cu:",
         "or_register_with": "Sau înregistrează-te cu:",
+        "paste_youtube_url": "De asemenea, puteți lipi URL-ul YouTube pentru a importa.",
         "pro_feature_chatgpt": "Doar utilizatorii Pro pot folosi funcțiile AI în Language Player Go. Pentru a utiliza această funcție, fă upgrade la Pro.",
-        "pro_transcript": "Fă upgrade la Pro pentru a vedea transcrierea completă!",
         "pro_transcript_limit_reached": "S-a atins limita de transcrieri. Te rugăm să faci upgrade la Pro pentru a accesa mai multe transcrieri.",
+        "pro_transcript": "Fă upgrade la Pro pentru a vedea transcrierea completă!",
         "sort_by": "Sortează după: {{sortBy}}",
+        "subscription_cancel_error": "Eroare la anularea abonamentului",
+        "subscription_cancel_success": "Abonament anulat cu succes",
         "time_spent_learning": "Timp petrecut învățând {{language}} în Language Player",
         "upgrade_text": "Fă upgrade la Pro pentru a accesa mai multe videoclipuri!",
-        "what_your_first_language": "Care este limba ta maternă?",
-        "with_pro_you_can": "Cu Pro, poți:",
-        "keep_or_reset_time": "Doriți să păstrați timpul curent sau să îl resetați la zero?",
-        "paste_youtube_url": "De asemenea, puteți lipi URL-ul YouTube pentru a importa.",
-        "no_saved_words": "Nu sunt cuvinte salvate încă",
-        "no_more_videos": "Nu mai sunt videoclipuri",
-        "options": "Opțiuni",
-        "choose_action": "Alegeți o acțiune",
-        "content_tailored": "Conținut personalizat pentru tine",
         "videos_matching": "Videoclipuri care se potrivesc cu \"{{searchTerm}}\"",
-        "subscription_cancel_success": "Abonament anulat cu succes",
-        "subscription_cancel_error": "Eroare la anularea abonamentului",
-        "existing_subscription_warning": "Aveți în prezent un plan {{planType}} activ care se va reînnoi automat. Pentru a evita taxele duble, trebuie să anulați abonamentul existent înainte de a achiziționa unul nou. Doriți să anulați abonamentul {{planType}} existent?"
+        "what_your_first_language": "Care este limba ta maternă?",
+        "with_pro_you_can": "Cu Pro, poți:"
     },
     "option": {
         "app_store": "App Store",
@@ -461,19 +476,19 @@
     },
     "placeholder": {
         "confirm_password": "Confirmă parola",
+        "dict_search_1": "Căutați {{param1}}",
+        "dict_search_2": "Căutați {{param1}} sau {{param2}}",
+        "dict_search_3": "Căutați {{param1}}, {{param2}}, sau {{param3}}",
         "email": "Email",
+        "filter_by_title": "Filtrează după titlu...",
         "first_name": "Prenume",
         "last_name": "Nume",
         "more_languages": "Mai multe limbi ({{count}})",
         "password": "Parolă",
         "please_specify": "Te rugăm să specifici",
-        "search": "Caută...",
-        "select_language": "Selectează o limbă",
-        "dict_search_1": "Căutați {{param1}}",
-        "dict_search_2": "Căutați {{param1}} sau {{param2}}",
-        "dict_search_3": "Căutați {{param1}}, {{param2}}, sau {{param3}}",
         "search_all_content": "Caută în tot conținutul în {{language}}",
-        "filter_by_title": "Filtrează după titlu..."
+        "search": "Caută...",
+        "select_language": "Selectează o limbă"
     },
     "price": {
         "annual": "${{price}}/an",
@@ -489,15 +504,30 @@
         "show_translation": "Arată traducerea",
         "use_traditional": "Folosește tradițional"
     },
+    "sort": {
+        "most_viewed": "Cele mai vizionate",
+        "title": "Titlu",
+        "year": "An"
+    },
+    "subscription": {
+        "annual": "anual",
+        "lifetime": "pe viață",
+        "monthly": "lunar"
+    },
     "success": {
         "code_resent": "Codul de verificare a fost retrimis pe emailul tău."
+    },
+    "tab": {
+        "dictionary": "Dicționar",
+        "me": "Eu",
+        "media": "Media"
     },
     "time": {
         "days": "{{count, plural, one {# zi} few {# zile} other {# de zile}}}",
         "hours": "ore",
         "min": "min",
-        "months": "{{count, plural, one {# lună} few {# luni} other {# de luni}}}",
         "months_and_days": "{{months}} și {{days}}",
+        "months": "{{count, plural, one {# lună} few {# luni} other {# de luni}}}",
         "sec": "sec"
     },
     "title": {
@@ -505,17 +535,20 @@
         "annual": "Anual",
         "app_settings": "Setări aplicație",
         "best_value": "Cea mai bună valoare",
+        "cancellation_failed": "Anulare eșuată",
         "choose_language": "Alege limba",
         "choose_your_plan": "Alege planul tău",
         "continue_learning": "Continuă să înveți {{l2Code}}",
         "current_level": "Care este nivelul tău actual de {{language}}?",
         "current_plan": "Planul curent",
+        "current_subscription_active": "Abonament Curent Activ",
         "date": "Dată",
         "delete_account": "Șterge contul",
         "delete_my_account": "Șterge contul meu",
         "dictionary": "Dicționar",
         "email": "Email",
         "examples_from_videos": "Exemple din videoclipuri",
+        "filter_by_locale": "FILTRARE DUPĂ LOCAȚIE",
         "go_pro": "Treci la Pro",
         "how_did_you_hear": "Cum ai auzit despre noi?",
         "language_settings": "Setări de limbă",
@@ -533,29 +566,26 @@
         "popularity": "Popularitate",
         "privacy_policy": "Politica de confidențialitate",
         "pro_feature": "Funcție Pro",
+        "recommended": "Recomandat",
         "register": "Înregistrare",
         "rightContext": "Context dreapta",
         "saved_words": "Cuvinte salvate",
+        "search_results": "Rezultate căutare",
+        "search": "Căutare",
         "select_language": "Ce limbă ai vrea să înveți?",
         "settings": "Setări",
+        "sort_by": "SORTARE DUPĂ",
         "start_learning": "Începe să înveți",
+        "subscription_cancelled": "Abonament anulat",
         "trial": "Probă",
+        "tv_show": "Emisiune TV",
+        "tv_shows": "Emisiuni TV",
+        "update_progress": "Actualizare Progres",
         "verify_your_email": "Verifică-ți emailul",
+        "video_count": "Videoclipul {{index}} din {{total}}",
         "views": "{{numViews}} vizualizări",
         "watch_history": "Istoric vizionări",
-        "your_current_plan": "Planul tău curent",
-        "update_progress": "Actualizare Progres",
-        "search": "Căutare",
-        "video_count": "Videoclipul {{index}} din {{total}}",
-        "tv_shows": "Emisiuni TV",
-        "sort_by": "SORTARE DUPĂ",
-        "filter_by_locale": "FILTRARE DUPĂ LOCAȚIE",
-        "tv_show": "Emisiune TV",
-        "recommended": "Recomandat",
-        "search_results": "Rezultate căutare",
-        "subscription_cancelled": "Abonament anulat",
-        "cancellation_failed": "Anulare eșuată",
-        "current_subscription_active": "Abonament Curent Activ"
+        "your_current_plan": "Planul tău curent"
     },
     "video": {
         "comments": "Comentarii",
@@ -566,28 +596,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "ro",
-    "tab": {
-        "media": "Media",
-        "dictionary": "Dicționar",
-        "me": "Eu"
-    },
-    "button": {
-        "keep_current_time": "Păstrează Timpul Curent",
-        "reset_time_to_zero": "Resetează Timpul la Zero"
-    },
-    "sort": {
-        "most_viewed": "Cele mai vizionate",
-        "title": "Titlu",
-        "year": "An"
-    },
-    "filter": {
-        "all_locales": "Toate locațiile"
-    },
-    "subscription": {
-        "monthly": "lunar",
-        "annual": "anual",
-        "lifetime": "pe viață"
     }
 }

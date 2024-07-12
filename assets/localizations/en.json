@@ -287,10 +287,12 @@
     },
     "action": {
         "cancel": "Cancel",
+        "clear_words": "Clear Words",
         "clear": "Clear",
         "confirm_cancellation": "Confirm Cancellation",
         "confirm_deletion": "Confirm Deletion",
         "copy": "Copy",
+        "email_support": "Email Support",
         "keep_account": "Keep Account",
         "keep_subscription": "Keep Subscription",
         "let_chatgpt_explain": "Ask AI",
@@ -300,23 +302,22 @@
         "next": "Next",
         "register": "Register",
         "resend_code": "Resend Code",
+        "share": "Share",
         "speak": "Speak",
         "start_learning": "Start Learning",
         "tv_shows": "TV Shows",
-        "upgrade": "Upgrade",
         "upgrade_to_pro": "Upgrade to Pro",
+        "upgrade": "Upgrade",
         "verify": "Verify",
-        "watch": "Watch",
-        "share": "Share",
-        "clear_words": "Clear Words"
+        "watch": "Watch"
     },
     "button": {
         "email_support": "Email Support",
+        "keep_current_time": "Keep Current Time",
         "processing": "Processing...",
         "purchase": "Purchase",
-        "switch_to_lifetime": "Switch to Lifetime",
-        "keep_current_time": "Keep Current Time",
-        "reset_time_to_zero": "Reset Time to Zero"
+        "reset_time_to_zero": "Reset Time to Zero",
+        "switch_to_lifetime": "Switch to Lifetime"
     },
     "chatgpt": {
         "prompt": {
@@ -331,7 +332,9 @@
     },
     "email": {
         "body": "Please describe your issue or question.",
-        "subject": "Support Request"
+        "subject": "Support Request",
+        "support_body": "Please describe your issue or question.",
+        "support_subject": "Support Request"
     },
     "error": {
         "cannot_open_url": "Don't know how to open this URL:",
@@ -343,6 +346,7 @@
         "language_not_selected": "Language not selected",
         "occurred": "An error occurred",
         "passwords_do_not_match": "Passwords do not match",
+        "payment_problem": "There was a problem with your payment.",
         "registration_failed": "Registration failed",
         "updating_progress": "Error updating progress:",
         "user_info_not_found": "User info not found"
@@ -352,10 +356,14 @@
         "use_all_ai": "Use all AI features throughout the app.",
         "view_entire_transcripts": "View entire transcripts beyond the first ten lines."
     },
+    "filter": {
+        "all_locales": "All Locales"
+    },
     "footnote": {
         "currency": "2. All currencies in US dollars (USD).",
         "lifetime_assumption": "1. Assuming you will live longer than 2.4 years."
     },
+    "key": "en",
     "level": {
         "cefr": {
             "1": "CEFR Pre-A1",
@@ -424,46 +432,47 @@
     },
     "msg": {
         "already_have_account": "Already have an account?",
-        "auto_renews": "Auto-renews in {{time}}",
         "auto_renews_in": "Auto renews in {{days}} days",
+        "auto_renews": "Auto-renews in {{time}}.",
+        "choose_action": "Choose an action",
         "confirm_cancel_subscription": "Are you sure you want to cancel your subscription?",
+        "contact_support": "If you have encountered issues, please contact support.",
+        "content_tailored": "Content Tailored to You",
         "copy_success": "Text copied to clipboard",
         "delete_confirmation": "Are you sure you want to permanently delete your account? You will lose all your saved words and progress. This action cannot be undone.",
         "discover_the_power_of_comprehensible_input": "Discover the power of Comprehensible Input through hundreds of thousands of videos in over 100 languages.",
         "dont_have_an_account": "Don't have an account?",
         "enrich_your_language_learning_journey": "Enrich your language-learning journey",
         "enter_verification_code": "Please enter the verification code sent to the email",
+        "existing_subscription_warning": "You currently have an active {{planType}} plan that will auto-renew. To avoid duplicate charges, you must cancel your existing subscription before purchasing a new one. Would you like to cancel your existing {{planType}} subscription?",
         "expires_in": "Expires in {{days}} days",
-        "expiring": "Expiring in {{time}}",
+        "expiring": "Expiring in {{time}}.",
         "forgot_password": "Forgot password?",
         "hsk_explanation": "\"HSK\" is the official Chinese proficiency test, with Level 1 being the lowest and Level 9 being the highest.",
         "initializing": "Initializing...",
+        "keep_or_reset_time": "Do you want to keep your current time or reset it to zero?",
         "lifetime_only": "Only the Lifetime plan is available as an option for Apple In-App Purchase.",
         "loading": "Loading...",
         "no_active_subscription": "No active subscription found.",
+        "no_more_videos": "No more videos",
+        "no_saved_words": "No words saved yet",
+        "options": "Options",
         "or_login_with": "Or login with:",
         "or_register_with": "Or register with:",
+        "paste_youtube_url": "You can also paste in YouTube URL to import.",
         "pro_feature_chatgpt": "Only Pro users can use AI features in Language Player Go. To use this feature, upgrade to Pro.",
-        "pro_transcript": "Upgrade to Pro to view the full transcript!",
         "pro_transcript_limit_reached": "Transcript limit reached. Please upgrade to Pro to access more transcripts.",
+        "pro_transcript": "Upgrade to Pro to view the full transcript!",
         "purchase_confirmation": "Press \"Purchase\" and you will be asked to confirm your in-app purchase from the Apple App Store.",
         "sort_by": "Sort by: {{sortBy}}",
+        "subscription_cancel_error": "Error cancelling subscription",
+        "subscription_cancel_success": "Subscription successfully cancelled",
         "subscription_explanation": "Currently, monthly and annual subscriptions are not supported as in-app purchase because our server can only handle one-time payments from Apple. To continue the purchase, please choose the Lifetime Plan.",
         "time_spent_learning": "Spent learning {{language}} in Language Player",
         "upgrade_text": "Upgrade to Pro to access more videos!",
-        "what_your_first_language": "What’s your first language?",
-        "with_pro_you_can": "With Pro, you can:",
-        "keep_or_reset_time": "Do you want to keep your current time or reset it to zero?",
-        "paste_youtube_url": "You can also paste in YouTube URL to import.",
-        "no_saved_words": "No words saved yet",
-        "no_more_videos": "No more videos",
-        "options": "Options",
-        "choose_action": "Choose an action",
-        "content_tailored": "Content Tailored to You",
         "videos_matching": "Videos matching \"{{searchTerm}}\"",
-        "subscription_cancel_success": "Subscription successfully cancelled",
-        "subscription_cancel_error": "Error cancelling subscription",
-        "existing_subscription_warning": "You currently have an active {{planType}} plan that will auto-renew. To avoid duplicate charges, you must cancel your existing subscription before purchasing a new one. Would you like to cancel your existing {{planType}} subscription?"
+        "what_your_first_language": "What’s your first language?",
+        "with_pro_you_can": "With Pro, you can:"
     },
     "option": {
         "app_store": "App Store",
@@ -479,19 +488,19 @@
     },
     "placeholder": {
         "confirm_password": "Confirm Password",
+        "dict_search_1": "Search {{param1}}",
+        "dict_search_2": "Search {{param1}} or {{param2}}",
+        "dict_search_3": "Search {{param1}}, {{param2}}, or {{param3}}",
         "email": "Email",
+        "filter_by_title": "Filter by title...",
         "first_name": "First",
         "last_name": "Last",
         "more_languages": "More languages ({{count}})",
         "password": "Password",
         "please_specify": "Please specify",
-        "search": "Search...",
-        "select_language": "Select a language",
-        "dict_search_1": "Search {{param1}}",
-        "dict_search_2": "Search {{param1}} or {{param2}}",
-        "dict_search_3": "Search {{param1}}, {{param2}}, or {{param3}}",
         "search_all_content": "Search all {{language}} content",
-        "filter_by_title": "Filter by title..."
+        "search": "Search...",
+        "select_language": "Select a language"
     },
     "price": {
         "annual": "${{price}}/yr",
@@ -507,15 +516,30 @@
         "show_translation": "Show Translation",
         "use_traditional": "Use Traditional"
     },
+    "sort": {
+        "most_viewed": "Most Viewed",
+        "title": "Title",
+        "year": "Year"
+    },
+    "subscription": {
+        "annual": "annual",
+        "lifetime": "lifetime",
+        "monthly": "monthly"
+    },
     "success": {
         "code_resent": "Verification code resent to your email."
+    },
+    "tab": {
+        "dictionary": "Dictionary",
+        "me": "Me",
+        "media": "Media"
     },
     "time": {
         "days": "{{count, plural, one {# day} other {# days}}}",
         "hours": "hours",
         "min": "min",
-        "months": "{{count, plural, one {# month} other {# months}}}",
         "months_and_days": "{{months}} and {{days}}",
+        "months": "{{count, plural, one {# month} other {# months}}}",
         "sec": "sec"
     },
     "title": {
@@ -523,18 +547,21 @@
         "annual": "Annual",
         "app_settings": "App Settings",
         "best_value": "Best Value",
+        "cancellation_failed": "Cancellation Failed",
         "choose_language": "Choose Language",
         "choose_your_plan": "Choose Your Plan",
         "confirm_in_app_purchase": "Confirm Your In-App Purchase",
         "continue_learning": "Continue Learning {{l2Code}}",
         "current_level": "What's your current {{language}} level?",
         "current_plan": "Current Plan",
+        "current_subscription_active": "Current Subscription Active",
         "date": "Date",
         "delete_account": "Delete Account",
         "delete_my_account": "Delete My Account",
         "dictionary": "Dictionary",
         "email": "Email",
         "examples_from_videos": "Examples from Videos",
+        "filter_by_locale": "FILTER BY LOCALE",
         "go_pro": "Go Pro",
         "how_did_you_hear": "How did you hear about us?",
         "language_settings": "Language Settings",
@@ -553,29 +580,26 @@
         "popularity": "Popularity",
         "privacy_policy": "Privacy Policy",
         "pro_feature": "Pro Feature",
+        "recommended": "Recommended",
         "register": "Register",
         "rightContext": "Right Context",
         "saved_words": "Saved Words",
+        "search_results": "Search Results",
+        "search": "Search",
         "select_language": "What language would you like to learn?",
         "settings": "Settings",
+        "sort_by": "SORT BY",
         "start_learning": "Start Learning",
+        "subscription_cancelled": "Subscription Cancelled",
         "trial": "Trial",
+        "tv_show": "TV Show",
+        "tv_shows": "TV Shows",
+        "update_progress": "Update Progress",
         "verify_your_email": "Verify Your Email",
+        "video_count": "Video {{index}} of {{total}}",
         "views": "{{numViews}} Views",
         "watch_history": "Watch History",
-        "your_current_plan": "Your Current Plan",
-        "update_progress": "Update Progress",
-        "search": "Search",
-        "video_count": "Video {{index}} of {{total}}",
-        "tv_shows": "TV Shows",
-        "sort_by": "SORT BY",
-        "filter_by_locale": "FILTER BY LOCALE",
-        "tv_show": "TV Show",
-        "recommended": "Recommended",
-        "search_results": "Search Results",
-        "subscription_cancelled": "Subscription Cancelled",
-        "cancellation_failed": "Cancellation Failed",
-        "current_subscription_active": "Current Subscription Active"
+        "your_current_plan": "Your Current Plan"
     },
     "video": {
         "comments": "Comments",
@@ -586,24 +610,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "en",
-    "tab": {
-        "media": "Media",
-        "dictionary": "Dictionary",
-        "me": "Me"
-    },
-    "sort": {
-        "most_viewed": "Most Viewed",
-        "title": "Title",
-        "year": "Year"
-    },
-    "filter": {
-        "all_locales": "All Locales"
-    },
-    "subscription": {
-        "monthly": "monthly",
-        "annual": "annual",
-        "lifetime": "lifetime"
     }
 }

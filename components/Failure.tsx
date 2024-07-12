@@ -4,9 +4,11 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedButton } from "@/components/ThemedButton";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Failure = () => {
   const semanticWarningColor = useThemeColor({}, "semanticWarning");
+  const { t } = useLanguage();
 
   return (
     <View>
@@ -17,23 +19,21 @@ const Failure = () => {
         style={styles.centeredIcon}
       />
       <ThemedText type="subtitle" style={styles.centeredText}>
-        There was a problem with your payment.
+        {t("error.payment_problem")}
       </ThemedText>
       <ThemedText style={styles.centeredText}>
-        If you have encountered issues, please contact support.
+        {t("msg.contact_support")}
       </ThemedText>
       <ThemedButton
         type="neutral"
-        title="Email Support"
+        title={t("action.email_support")}
         style={styles.paymentButton}
         leadingIcon={<Icon name="email" />}
         trailingIcon={<Icon name="chevron-right" />}
         onPress={() => {
           const email = "jon.long@zerotohero.ca";
-          const subject = encodeURIComponent("Support Request");
-          const body = encodeURIComponent(
-            "Please describe your issue or question."
-          );
+          const subject = encodeURIComponent(t("email.support_subject"));
+          const body = encodeURIComponent(t("email.support_body"));
           const mailtoURL = `mailto:${email}?subject=${subject}&body=${body}`;
           Linking.canOpenURL(mailtoURL)
             .then((supported) => {

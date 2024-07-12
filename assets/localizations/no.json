@@ -286,10 +286,12 @@
     },
     "action": {
         "cancel": "Avbryt",
+        "clear_words": "Tøm Ord",
         "clear": "Tøm",
         "confirm_cancellation": "Bekreft avbestilling",
         "confirm_deletion": "Bekreft sletting",
         "copy": "Kopier",
+        "email_support": "E-poststøtte",
         "keep_account": "Behold konto",
         "keep_subscription": "Behold abonnement",
         "let_chatgpt_explain": "Spør AI",
@@ -299,15 +301,18 @@
         "next": "Neste",
         "register": "Registrer",
         "resend_code": "Send kode på nytt",
+        "share": "Del",
         "speak": "Snakk",
         "start_learning": "Start læring",
         "tv_shows": "TV-serier",
-        "upgrade": "Oppgrader",
         "upgrade_to_pro": "Oppgrader til Pro",
+        "upgrade": "Oppgrader",
         "verify": "Bekreft",
-        "watch": "Se",
-        "share": "Del",
-        "clear_words": "Tøm Ord"
+        "watch": "Se"
+    },
+    "button": {
+        "keep_current_time": "Behold Nåværende Tid",
+        "reset_time_to_zero": "Nullstill Tid"
     },
     "chatgpt": {
         "prompt": {
@@ -320,6 +325,10 @@
         "lifetime": "Utløper aldri.",
         "monthly": "Fakturert hver måned."
     },
+    "email": {
+        "support_body": "Vennligst beskriv problemet eller spørsmålet ditt.",
+        "support_subject": "Støtteforespørsel"
+    },
     "error": {
         "entry_not_found": "Oppføring ikke funnet eller ordbok ikke lastet",
         "failed_fetch_videos": "Kunne ikke laste inn videoer",
@@ -328,6 +337,7 @@
         "generic": "Feil",
         "language_not_selected": "Språk ikke valgt",
         "passwords_do_not_match": "Passordene stemmer ikke overens",
+        "payment_problem": "Det oppstod et problem med betalingen din.",
         "registration_failed": "Registrering mislyktes",
         "updating_progress": "Feil ved oppdatering av fremdrift:",
         "user_info_not_found": "Brukerinformasjon ikke funnet"
@@ -337,10 +347,14 @@
         "use_all_ai": "Bruk alle AI-funksjoner i hele appen.",
         "view_entire_transcripts": "Vis hele transkripsjoner utover de ti første linjene."
     },
+    "filter": {
+        "all_locales": "Alle lokasjoner"
+    },
     "footnote": {
         "currency": "2. Alle valutaer i amerikanske dollar (USD).",
         "lifetime_assumption": "1. Forutsatt at du lever lenger enn 2,4 år."
     },
+    "key": "no",
     "level": {
         "cefr": {
             "1": "CEFR Pre-A1",
@@ -409,43 +423,44 @@
     },
     "msg": {
         "already_have_account": "Har du allerede en konto?",
-        "auto_renews": "Fornyes automatisk om {{time}}",
         "auto_renews_in": "Fornyes automatisk om {{days}} dager",
+        "auto_renews": "Fornyes automatisk om {{time}}.",
+        "choose_action": "Velg en handling",
         "confirm_cancel_subscription": "Er du sikker på at du vil avbryte abonnementet?",
+        "contact_support": "Hvis du har støtt på problemer, vennligst kontakt support.",
+        "content_tailored": "Innhold skreddersydd for deg",
         "copy_success": "Tekst kopiert til utklippstavle",
         "delete_confirmation": "Er du sikker på at du vil slette kontoen din permanent? Du mister alle lagrede ord og fremgang. Denne handlingen kan ikke angres.",
         "discover_the_power_of_comprehensible_input": "Oppdag kraften til forståelig input gjennom hundretusenvis av videoer på over 100 språk.",
         "dont_have_an_account": "Har du ikke en konto?",
         "enrich_your_language_learning_journey": "Berik språklæringsreisen din",
         "enter_verification_code": "Vennligst skriv inn verifikasjonskoden sendt til e-posten",
+        "existing_subscription_warning": "Du har for øyeblikket en aktiv {{planType}}-plan som vil fornyes automatisk. For å unngå dobbel belastning må du kansellere ditt eksisterende abonnement før du kjøper et nytt. Ønsker du å kansellere ditt eksisterende {{planType}}-abonnement?",
         "expires_in": "Utløper om {{days}} dager",
-        "expiring": "Utløper om {{time}}",
+        "expiring": "Utløper om {{time}}.",
         "forgot_password": "Glemt passord?",
         "hsk_explanation": "\"HSK\" er den offisielle kinesiske ferdighetstesten, med nivå 1 som det laveste og nivå 9 som det høyeste.",
         "initializing": "Initialiserer...",
+        "keep_or_reset_time": "Vil du beholde gjeldende tid eller nullstille den?",
         "loading": "Laster...",
         "no_active_subscription": "Ingen aktivt abonnement funnet.",
+        "no_more_videos": "Ingen flere videoer",
+        "no_saved_words": "Ingen ord lagret ennå",
+        "options": "Alternativer",
         "or_login_with": "Eller logg inn med:",
         "or_register_with": "Eller registrer deg med:",
+        "paste_youtube_url": "Du kan også lime inn YouTube-URL for å importere.",
         "pro_feature_chatgpt": "Bare Pro-brukere kan bruke AI-funksjoner i Language Player Go. For å bruke denne funksjonen, oppgrader til Pro.",
-        "pro_transcript": "Oppgrader til Pro for å se hele transkripsjonen!",
         "pro_transcript_limit_reached": "Transkripsjonsgrense nådd. Vennligst oppgrader til Pro for tilgang til flere transkripsjoner.",
+        "pro_transcript": "Oppgrader til Pro for å se hele transkripsjonen!",
         "sort_by": "Sorter etter: {{sortBy}}",
+        "subscription_cancel_error": "Feil ved avbrytelse av abonnement",
+        "subscription_cancel_success": "Abonnement vellykket kansellert",
         "time_spent_learning": "Tid brukt på å lære {{language}} i Language Player",
         "upgrade_text": "Oppgrader til Pro for tilgang til flere videoer!",
-        "what_your_first_language": "Hva er ditt morsmål?",
-        "with_pro_you_can": "Med Pro kan du:",
-        "keep_or_reset_time": "Vil du beholde gjeldende tid eller nullstille den?",
-        "paste_youtube_url": "Du kan også lime inn YouTube-URL for å importere.",
-        "no_saved_words": "Ingen ord lagret ennå",
-        "no_more_videos": "Ingen flere videoer",
-        "options": "Alternativer",
-        "choose_action": "Velg en handling",
-        "content_tailored": "Innhold skreddersydd for deg",
         "videos_matching": "Videoer som samsvarer med \"{{searchTerm}}\"",
-        "subscription_cancel_success": "Abonnement vellykket kansellert",
-        "subscription_cancel_error": "Feil ved avbrytelse av abonnement",
-        "existing_subscription_warning": "Du har for øyeblikket en aktiv {{planType}}-plan som vil fornyes automatisk. For å unngå dobbel belastning må du kansellere ditt eksisterende abonnement før du kjøper et nytt. Ønsker du å kansellere ditt eksisterende {{planType}}-abonnement?"
+        "what_your_first_language": "Hva er ditt morsmål?",
+        "with_pro_you_can": "Med Pro kan du:"
     },
     "option": {
         "app_store": "App Store",
@@ -461,19 +476,19 @@
     },
     "placeholder": {
         "confirm_password": "Bekreft passord",
+        "dict_search_1": "Søk {{param1}}",
+        "dict_search_2": "Søk {{param1}} eller {{param2}}",
+        "dict_search_3": "Søk {{param1}}, {{param2}}, eller {{param3}}",
         "email": "E-post",
+        "filter_by_title": "Filtrer etter tittel...",
         "first_name": "Fornavn",
         "last_name": "Etternavn",
         "more_languages": "Flere språk ({{count}})",
         "password": "Passord",
         "please_specify": "Vennligst spesifiser",
-        "search": "Søk...",
-        "select_language": "Velg et språk",
-        "dict_search_1": "Søk {{param1}}",
-        "dict_search_2": "Søk {{param1}} eller {{param2}}",
-        "dict_search_3": "Søk {{param1}}, {{param2}}, eller {{param3}}",
         "search_all_content": "Søk i alt {{language}} innhold",
-        "filter_by_title": "Filtrer etter tittel..."
+        "search": "Søk...",
+        "select_language": "Velg et språk"
     },
     "price": {
         "annual": "${{price}}/år",
@@ -489,15 +504,30 @@
         "show_translation": "Vis oversettelse",
         "use_traditional": "Bruk tradisjonell"
     },
+    "sort": {
+        "most_viewed": "Mest sett",
+        "title": "Tittel",
+        "year": "År"
+    },
+    "subscription": {
+        "annual": "årlig",
+        "lifetime": "livstid",
+        "monthly": "månedlig"
+    },
     "success": {
         "code_resent": "Verifikasjonskoden er sendt på nytt til e-posten din."
+    },
+    "tab": {
+        "dictionary": "Ordbok",
+        "me": "Meg",
+        "media": "Media"
     },
     "time": {
         "days": "{{count}} dager",
         "hours": "timer",
         "min": "min",
-        "months": "{{count}} måneder",
         "months_and_days": "{{months}} og {{days}}",
+        "months": "{{count}} måneder",
         "sec": "sek"
     },
     "title": {
@@ -505,17 +535,20 @@
         "annual": "Årlig",
         "app_settings": "App-innstillinger",
         "best_value": "Beste verdi",
+        "cancellation_failed": "Kansellering mislyktes",
         "choose_language": "Velg språk",
         "choose_your_plan": "Velg planen din",
         "continue_learning": "Fortsett å lære {{l2Code}}",
         "current_level": "Hva er ditt nåværende {{language}} nivå?",
         "current_plan": "Nåværende plan",
+        "current_subscription_active": "Nåværende Abonnement Aktivt",
         "date": "Dato",
         "delete_account": "Slett konto",
         "delete_my_account": "Slett kontoen min",
         "dictionary": "Ordbok",
         "email": "E-post",
         "examples_from_videos": "Eksempler fra videoer",
+        "filter_by_locale": "FILTRER ETTER LOKASJON",
         "go_pro": "Oppgrader til Pro",
         "how_did_you_hear": "Hvordan hørte du om oss?",
         "language_settings": "Språkinnstillinger",
@@ -533,29 +566,26 @@
         "popularity": "Popularitet",
         "privacy_policy": "Personvernregler",
         "pro_feature": "Pro-funksjon",
+        "recommended": "Anbefalt",
         "register": "Registrer",
         "rightContext": "Høyre kontekst",
         "saved_words": "Lagrede ord",
+        "search_results": "Søkeresultater",
+        "search": "Søk",
         "select_language": "Velg språk",
         "settings": "Innstillinger",
+        "sort_by": "SORTER ETTER",
         "start_learning": "Start læring",
+        "subscription_cancelled": "Abonnement kansellert",
         "trial": "Prøve",
+        "tv_show": "TV-program",
+        "tv_shows": "TV-programmer",
+        "update_progress": "Oppdater Fremgang",
         "verify_your_email": "Verifiser e-posten din",
+        "video_count": "Video {{index}} av {{total}}",
         "views": "{{numViews}} visninger",
         "watch_history": "Seerhistorikk",
-        "your_current_plan": "Din nåværende plan",
-        "update_progress": "Oppdater Fremgang",
-        "search": "Søk",
-        "video_count": "Video {{index}} av {{total}}",
-        "tv_shows": "TV-programmer",
-        "sort_by": "SORTER ETTER",
-        "filter_by_locale": "FILTRER ETTER LOKASJON",
-        "tv_show": "TV-program",
-        "recommended": "Anbefalt",
-        "search_results": "Søkeresultater",
-        "subscription_cancelled": "Abonnement kansellert",
-        "cancellation_failed": "Kansellering mislyktes",
-        "current_subscription_active": "Nåværende Abonnement Aktivt"
+        "your_current_plan": "Din nåværende plan"
     },
     "video": {
         "comments": "Kommentarer",
@@ -566,28 +596,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "no",
-    "tab": {
-        "media": "Media",
-        "dictionary": "Ordbok",
-        "me": "Meg"
-    },
-    "button": {
-        "keep_current_time": "Behold Nåværende Tid",
-        "reset_time_to_zero": "Nullstill Tid"
-    },
-    "sort": {
-        "most_viewed": "Mest sett",
-        "title": "Tittel",
-        "year": "År"
-    },
-    "filter": {
-        "all_locales": "Alle lokasjoner"
-    },
-    "subscription": {
-        "monthly": "månedlig",
-        "annual": "årlig",
-        "lifetime": "livstid"
     }
 }

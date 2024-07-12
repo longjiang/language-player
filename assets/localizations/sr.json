@@ -285,11 +285,13 @@
         "yue-HK": "Кантонски (Хонг Конг)"
     },
     "action": {
-        "cancel": "Откажи",
+        "cancel": "Otkaži",
+        "clear_words": "Обриши Речи",
         "clear": "Obriši",
         "confirm_cancellation": "Potvrdi otkazivanje",
         "confirm_deletion": "Potvrdi brisanje",
-        "copy": "Копирај",
+        "copy": "Kopiraj",
+        "email_support": "Подршка путем е-поште",
         "keep_account": "Zadrži nalog",
         "keep_subscription": "Zadrži pretplatu",
         "let_chatgpt_explain": "Pitaj AI",
@@ -299,15 +301,18 @@
         "next": "Sledeće",
         "register": "Registruj se",
         "resend_code": "Ponovo pošalji kod",
+        "share": "Подели",
         "speak": "Изговори",
         "start_learning": "Počni da učiš",
         "tv_shows": "TV emisije",
-        "upgrade": "Nadogradi",
         "upgrade_to_pro": "Nadogradi na Pro",
+        "upgrade": "Nadogradi",
         "verify": "Potvrdi",
-        "watch": "Gledaj",
-        "share": "Подели",
-        "clear_words": "Обриши Речи"
+        "watch": "Gledaj"
+    },
+    "button": {
+        "keep_current_time": "Задржи Тренутно Време",
+        "reset_time_to_zero": "Ресетуј Време на Нулу"
     },
     "chatgpt": {
         "prompt": {
@@ -320,6 +325,10 @@
         "lifetime": "Nikad ne ističe.",
         "monthly": "Naplaćuje se mesečno."
     },
+    "email": {
+        "support_body": "Молимо опишите свој проблем или питање.",
+        "support_subject": "Захтев за подршку"
+    },
     "error": {
         "entry_not_found": "Unos nije pronađen ili rečnik nije učitan",
         "failed_fetch_videos": "Neuspelo preuzimanje videa",
@@ -328,6 +337,7 @@
         "generic": "Greška",
         "language_not_selected": "Jezik nije izabran",
         "passwords_do_not_match": "Lozinke se ne podudaraju",
+        "payment_problem": "Дошло је до проблема са вашим плаћањем.",
         "registration_failed": "Registracija nije uspela",
         "updating_progress": "Greška pri ažuriranju napretka:",
         "user_info_not_found": "Informacije o korisniku nisu pronađene"
@@ -337,10 +347,14 @@
         "use_all_ai": "Koristi sve AI funkcije u celoj aplikaciji.",
         "view_entire_transcripts": "Pogledaj cele transkripte nakon prvih deset redova."
     },
+    "filter": {
+        "all_locales": "Све локације"
+    },
     "footnote": {
         "currency": "2. Sve valute su u američkim dolarima (USD).",
         "lifetime_assumption": "1. Pod pretpostavkom da ćeš živeti duže od 2,4 godine."
     },
+    "key": "sr",
     "level": {
         "cefr": {
             "1": "ZEO Pre-A1",
@@ -409,43 +423,44 @@
     },
     "msg": {
         "already_have_account": "Već imaš nalog?",
-        "auto_renews": "Automatski se obnavlja za {{time}}",
         "auto_renews_in": "Automatski se obnavlja za {{days}} dana",
+        "auto_renews": "Automatski se obnavlja za {{time}}.",
+        "choose_action": "Изаберите радњу",
         "confirm_cancel_subscription": "Da li si siguran/na da želiš da otkažeš pretplatu?",
+        "contact_support": "Ако сте наишли на проблеме, молимо вас да контактирате подршку.",
+        "content_tailored": "Садржај прилагођен вама",
         "copy_success": "Tekst kopiran u međumemoriju",
         "delete_confirmation": "Da li si siguran/na da želiš trajno da obrišeš svoj nalog? Izgubićeš sve sačuvane reči i napredak. Ova radnja ne može biti poništena.",
         "discover_the_power_of_comprehensible_input": "Otkrij moć razumljivog unosa kroz stotine hiljada video zapisa na preko 100 jezika.",
         "dont_have_an_account": "Nemaš nalog?",
         "enrich_your_language_learning_journey": "Obogati svoje putovanje učenja jezika",
         "enter_verification_code": "Unesi verifikacioni kod poslat na e-poštu",
+        "existing_subscription_warning": "Тренутно имате активан {{planType}} план који ће се аутоматски обновити. Да бисте избегли дупле наплате, морате отказати постојећу претплату пре куповине нове. Да ли желите да откажете постојећу {{planType}} претплату?",
         "expires_in": "Ističe za {{days}} dana",
-        "expiring": "Ističe za {{time}}",
+        "expiring": "Ističe za {{time}}.",
         "forgot_password": "Zaboravljena lozinka?",
         "hsk_explanation": "\"HSK\" je zvanični test poznavanja kineskog jezika, gde je Nivo 1 najniži, a Nivo 9 najviši.",
         "initializing": "Inicijalizacija...",
+        "keep_or_reset_time": "Да ли желите да задржите тренутно време или да га ресетујете на нулу?",
         "loading": "Učitavanje...",
         "no_active_subscription": "Nije pronađena aktivna pretplata.",
+        "no_more_videos": "Нема више видеа",
+        "no_saved_words": "Још нема сачуваних речи",
+        "options": "Опције",
         "or_login_with": "Ili se prijavi preko:",
         "or_register_with": "Ili se registruj preko:",
+        "paste_youtube_url": "Такође можете налепити YouTube URL за увоз.",
         "pro_feature_chatgpt": "Samo Pro korisnici mogu da koriste AI funkcije u Language Player Go. Da bi koristio ovu funkciju, nadogradi na Pro.",
-        "pro_transcript": "Nadogradi na Pro da bi video ceo transkript!",
         "pro_transcript_limit_reached": "Dostignut je limit transkripta. Nadogradi na Pro za pristup većem broju transkripata.",
+        "pro_transcript": "Nadogradi na Pro da bi video ceo transkript!",
         "sort_by": "Sortiraj po: {{sortBy}}",
+        "subscription_cancel_error": "Грешка приликом отказивања претплате",
+        "subscription_cancel_success": "Претплата успешно отказана",
         "time_spent_learning": "Vreme provedeno učeći {{language}} u Language Player-u",
         "upgrade_text": "Nadogradi na Pro za pristup većem broju video zapisa!",
-        "what_your_first_language": "Koji je tvoj maternji jezik?",
-        "with_pro_you_can": "Sa Pro verzijom možeš:",
-        "keep_or_reset_time": "Да ли желите да задржите тренутно време или да га ресетујете на нулу?",
-        "paste_youtube_url": "Такође можете налепити YouTube URL за увоз.",
-        "no_saved_words": "Још нема сачуваних речи",
-        "no_more_videos": "Нема више видеа",
-        "options": "Опције",
-        "choose_action": "Изаберите радњу",
-        "content_tailored": "Садржај прилагођен вама",
         "videos_matching": "Видео записи који одговарају \"{{searchTerm}}\"",
-        "subscription_cancel_success": "Претплата успешно отказана",
-        "subscription_cancel_error": "Грешка приликом отказивања претплате",
-        "existing_subscription_warning": "Тренутно имате активан {{planType}} план који ће се аутоматски обновити. Да бисте избегли дупле наплате, морате отказати постојећу претплату пре куповине нове. Да ли желите да откажете постојећу {{planType}} претплату?"
+        "what_your_first_language": "Koji je tvoj maternji jezik?",
+        "with_pro_you_can": "Sa Pro verzijom možeš:"
     },
     "option": {
         "app_store": "App Store",
@@ -461,19 +476,19 @@
     },
     "placeholder": {
         "confirm_password": "Potvrdi lozinku",
+        "dict_search_1": "Претрагај {{param1}}",
+        "dict_search_2": "Претрагај {{param1}} или {{param2}}",
+        "dict_search_3": "Претрагај {{param1}}, {{param2}}, или {{param3}}",
         "email": "E-pošta",
+        "filter_by_title": "Филтрирај по наслову...",
         "first_name": "Ime",
         "last_name": "Prezime",
         "more_languages": "Više jezika ({{count}})",
         "password": "Lozinka",
         "please_specify": "Molimo navedite",
-        "search": "Pretraži...",
-        "select_language": "Izaberi jezik",
-        "dict_search_1": "Претрагај {{param1}}",
-        "dict_search_2": "Претрагај {{param1}} или {{param2}}",
-        "dict_search_3": "Претрагај {{param1}}, {{param2}}, или {{param3}}",
         "search_all_content": "Претражи сав {{language}} садржај",
-        "filter_by_title": "Филтрирај по наслову..."
+        "search": "Pretraži...",
+        "select_language": "Izaberi jezik"
     },
     "price": {
         "annual": "${{price}}/год",
@@ -489,15 +504,30 @@
         "show_translation": "Prikaži prevod",
         "use_traditional": "Koristi tradicionalno"
     },
+    "sort": {
+        "most_viewed": "Највише прегледано",
+        "title": "Наслов",
+        "year": "Година"
+    },
+    "subscription": {
+        "annual": "годишње",
+        "lifetime": "доживотно",
+        "monthly": "месечно"
+    },
     "success": {
         "code_resent": "Verifikacioni kod je ponovo poslat na tvoju e-poštu."
+    },
+    "tab": {
+        "dictionary": "Речник",
+        "me": "Ја",
+        "media": "Медији"
     },
     "time": {
         "days": "{{count, plural, one {# dan} few {# dana} many {# dana} other {# dana}}}",
         "hours": "sati",
         "min": "min",
-        "months": "{{count, plural, one {# mesec} few {# meseca} many {# meseci} other {# meseci}}}",
         "months_and_days": "{{months}} i {{days}}",
+        "months": "{{count, plural, one {# mesec} few {# meseca} many {# meseci} other {# meseci}}}",
         "sec": "sek"
     },
     "title": {
@@ -505,17 +535,20 @@
         "annual": "Godišnje",
         "app_settings": "Podešavanja aplikacije",
         "best_value": "Najbolja vrednost",
+        "cancellation_failed": "Отказивање није успело",
         "choose_language": "Izaberi jezik",
         "choose_your_plan": "Izaberi svoj plan",
         "continue_learning": "Nastavi da učiš {{l2Code}}",
         "current_level": "Koji je tvoj trenutni nivo {{language}}?",
         "current_plan": "Trenutni plan",
+        "current_subscription_active": "Тренутна Претплата Активна",
         "date": "Datum",
         "delete_account": "Obriši nalog",
         "delete_my_account": "Obriši moj nalog",
         "dictionary": "Rečnik",
         "email": "E-pošta",
         "examples_from_videos": "Primeri iz videa",
+        "filter_by_locale": "ФИЛТРИРАЈ ПО ЛОКАЦИЈИ",
         "go_pro": "Pređi na Pro",
         "how_did_you_hear": "Kako si čuo/la za nas?",
         "language_settings": "Podešavanja jezika",
@@ -533,29 +566,26 @@
         "popularity": "Popularnost",
         "privacy_policy": "Politika privatnosti",
         "pro_feature": "Pro funkcija",
+        "recommended": "Препоручено",
         "register": "Registruj se",
         "rightContext": "Desni kontekst",
         "saved_words": "Sačuvane reči",
+        "search_results": "Резултати претраге",
+        "search": "Претрага",
         "select_language": "Koji jezik želiš da naučiš?",
         "settings": "Podešavanja",
+        "sort_by": "СОРТИРАЈ ПО",
         "start_learning": "Počni da učiš",
+        "subscription_cancelled": "Претплата отказана",
         "trial": "Proba",
+        "tv_show": "ТВ емисија",
+        "tv_shows": "ТВ емисије",
+        "update_progress": "Ажурирај Напредак",
         "verify_your_email": "Potvrdi svoju e-poštu",
+        "video_count": "Видео {{index}} од {{total}}",
         "views": "{{numViews}} pregleda",
         "watch_history": "Istorija gledanja",
-        "your_current_plan": "Tvoj trenutni plan",
-        "update_progress": "Ажурирај Напредак",
-        "search": "Претрага",
-        "video_count": "Видео {{index}} од {{total}}",
-        "tv_shows": "ТВ емисије",
-        "sort_by": "СОРТИРАЈ ПО",
-        "filter_by_locale": "ФИЛТРИРАЈ ПО ЛОКАЦИЈИ",
-        "tv_show": "ТВ емисија",
-        "recommended": "Препоручено",
-        "search_results": "Резултати претраге",
-        "subscription_cancelled": "Претплата отказана",
-        "cancellation_failed": "Отказивање није успело",
-        "current_subscription_active": "Тренутна Претплата Активна"
+        "your_current_plan": "Tvoj trenutni plan"
     },
     "video": {
         "comments": "Komentari",
@@ -566,28 +596,5 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
-    },
-    "key": "sr",
-    "tab": {
-        "media": "Медији",
-        "dictionary": "Речник",
-        "me": "Ја"
-    },
-    "button": {
-        "keep_current_time": "Задржи Тренутно Време",
-        "reset_time_to_zero": "Ресетуј Време на Нулу"
-    },
-    "sort": {
-        "most_viewed": "Највише прегледано",
-        "title": "Наслов",
-        "year": "Година"
-    },
-    "filter": {
-        "all_locales": "Све локације"
-    },
-    "subscription": {
-        "monthly": "месечно",
-        "annual": "годишње",
-        "lifetime": "доживотно"
     }
 }
