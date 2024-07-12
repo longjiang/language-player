@@ -133,7 +133,7 @@ export const DictionaryComponent: React.FC<DictionaryComponentProps> = ({
               </ThemedText>
               {entry.definitions?.length && (
                 <DefinitionList
-                  definitions={entry.definitions.slice(0, 2)}
+                  definitions={entry.definitions.slice(0, 1)}
                   type="default"
                 />
               )}
