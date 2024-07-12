@@ -48,6 +48,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
     if (!subscription) return duration;
   
     const days = getDeltaDate(subscription.expires_on);
+    if (subscription.type === "lifetime") return t('duration.lifetime');
     return subscription.payment_customer_id
       ? t('msg.auto_renews_in', { days })
       : t('msg.expires_in', { days });
@@ -62,8 +63,8 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
       style={[
         styles.pricingBlock,
         { borderColor: secondaryStrokeColor },
-        current && { ...styles.current, borderColor: primaryTextColor, borderWidth: 5 },
         recommended && { borderColor: secondaryBrandColor },
+        current && { ...styles.current, borderColor: primaryTextColor, borderWidth: 5 },
       ]}
     >
       {current && (
@@ -164,8 +165,8 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     padding: 5,
-    borderTopRightRadius: 8,
-    borderBottomLeftRadius: 8,
+    borderTopRightRadius: 5,
+    borderBottomLeftRadius: 5,
   },
   tagText: {
     color: 'white',
