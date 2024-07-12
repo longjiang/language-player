@@ -442,7 +442,9 @@
         "options": "Опције",
         "choose_action": "Изаберите радњу",
         "content_tailored": "Садржај прилагођен вама",
-        "videos_matching": "Видео записи који одговарају \"{{searchTerm}}\""
+        "videos_matching": "Видео записи који одговарају \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Претплата успешно отказана",
+        "subscription_cancel_error": "Грешка приликом отказивања претплате"
     },
     "option": {
         "app_store": "App Store",
@@ -549,7 +551,9 @@
         "filter_by_locale": "ФИЛТРИРАЈ ПО ЛОКАЦИЈИ",
         "tv_show": "ТВ емисија",
         "recommended": "Препоручено",
-        "search_results": "Резултати претраге"
+        "search_results": "Резултати претраге",
+        "subscription_cancelled": "Претплата отказана",
+        "cancellation_failed": "Отказивање није успело"
     },
     "video": {
         "comments": "Komentari",

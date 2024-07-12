@@ -10,6 +10,7 @@ import { ThemedRBSheet } from "./ThemedRBSheet";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getDeltaDate } from "@/src/utils";
 import { cancelSubscriptionAtEndOfPeriod } from "@/src/api/python/subscription";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import Toast from 'react-native-toast-message';
 
 export interface PricingBlockProps {
@@ -38,6 +39,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
   const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
   const primaryTextColor = useThemeColor({}, 'primaryText');
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
+  const { fetchSubscription } = useSubscription();
 
   const refRBSheet = useRef<ThemedRBSheet>(null);
 
@@ -49,6 +51,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
     if (subscription?.payment_customer_id) {
       try {
         await cancelSubscriptionAtEndOfPeriod(subscription.payment_customer_id);
+        await fetchSubscription();
         Toast.show({
           type: 'success',
           text1: t('title.subscription_cancelled'),
@@ -131,7 +134,6 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
               size="small"
               type="neutral"
               style={{ marginLeft: 8 }}
-              trailingIcon={<Icon name="chevron-right" />}
               onPress={handleCancelPress}
             />
           )}

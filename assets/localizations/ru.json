@@ -442,7 +442,9 @@
         "options": "Опции",
         "choose_action": "Выберите действие",
         "content_tailored": "Контент, подобранный для вас",
-        "videos_matching": "Видео, соответствующие \"{{searchTerm}}\""
+        "videos_matching": "Видео, соответствующие \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Подписка успешно отменена",
+        "subscription_cancel_error": "Ошибка при отмене подписки"
     },
     "option": {
         "app_store": "App Store",
@@ -549,7 +551,9 @@
         "filter_by_locale": "ФИЛЬТР ПО РЕГИОНУ",
         "tv_show": "Телепередача",
         "recommended": "Рекомендованное",
-        "search_results": "Результаты поиска"
+        "search_results": "Результаты поиска",
+        "subscription_cancelled": "Подписка отменена",
+        "cancellation_failed": "Ошибка отмены"
     },
     "video": {
         "comments": "Комментарии",

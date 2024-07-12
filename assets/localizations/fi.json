@@ -443,7 +443,9 @@
         "options": "Vaihtoehdot",
         "choose_action": "Valitse toiminto",
         "content_tailored": "Sinulle räätälöity sisältö",
-        "videos_matching": "Videot hakusanalla \"{{searchTerm}}\""
+        "videos_matching": "Videot hakusanalla \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Tilaus peruutettu onnistuneesti",
+        "subscription_cancel_error": "Virhe tilauksen peruuttamisessa"
     },
     "option": {
         "app_store": "App Store",
@@ -550,7 +552,9 @@
         "filter_by_locale": "SUODATA KIELIALUEEN MUKAAN",
         "tv_show": "TV-ohjelma",
         "recommended": "Suositeltu",
-        "search_results": "Hakutulokset"
+        "search_results": "Hakutulokset",
+        "subscription_cancelled": "Tilaus peruutettu",
+        "cancellation_failed": "Peruutus epäonnistui"
     },
     "video": {
         "comments": "Kommentit",

@@ -442,7 +442,9 @@
         "options": "Chaguo",
         "choose_action": "Chagua kitendo",
         "content_tailored": "Maudhui Yaliyoundwa kwa Ajili Yako",
-        "videos_matching": "Video zinazofanana na \"{{searchTerm}}\""
+        "videos_matching": "Video zinazofanana na \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Usajili umefanikiwa kughairiwa",
+        "subscription_cancel_error": "Hitilafu katika kughairi usajili"
     },
     "option": {
         "app_store": "Duka la Programu",
@@ -549,7 +551,9 @@
         "filter_by_locale": "CHUJA KWA ENEO",
         "tv_show": "Kipindi cha TV",
         "recommended": "Pendekezo",
-        "search_results": "Matokeo ya utafutaji"
+        "search_results": "Matokeo ya utafutaji",
+        "subscription_cancelled": "Usajili umeghairiwa",
+        "cancellation_failed": "Kughairi kumeshindwa"
     },
     "video": {
         "comments": "Maoni",

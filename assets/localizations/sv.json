@@ -442,7 +442,9 @@
         "options": "Alternativ",
         "choose_action": "Välj en åtgärd",
         "content_tailored": "Innehåll skräddarsytt för dig",
-        "videos_matching": "Videor som matchar \"{{searchTerm}}\""
+        "videos_matching": "Videor som matchar \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Prenumeration avbruten framgångsrikt",
+        "subscription_cancel_error": "Fel vid avbrytning av prenumeration"
     },
     "option": {
         "app_store": "App Store",
@@ -549,7 +551,9 @@
         "filter_by_locale": "FILTRERA EFTER PLATS",
         "tv_show": "TV-program",
         "recommended": "Rekommenderat",
-        "search_results": "Sökresultat"
+        "search_results": "Sökresultat",
+        "subscription_cancelled": "Prenumeration avbruten",
+        "cancellation_failed": "Avbrytning misslyckades"
     },
     "video": {
         "comments": "Kommentarer",

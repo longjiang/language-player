@@ -441,7 +441,9 @@
         "options": "Seçenekler",
         "choose_action": "Bir eylem seçin",
         "content_tailored": "Size Özel İçerik",
-        "videos_matching": "\"{{searchTerm}}\" ile eşleşen videolar"
+        "videos_matching": "\"{{searchTerm}}\" ile eşleşen videolar",
+        "subscription_cancel_success": "Abonelik başarıyla iptal edildi",
+        "subscription_cancel_error": "Abonelik iptal edilirken hata oluştu"
     },
     "option": {
         "app_store": "App Store",
@@ -548,7 +550,9 @@
         "filter_by_locale": "KONUMA GÖRE FİLTRELE",
         "tv_show": "TV Programı",
         "recommended": "Önerilen",
-        "search_results": "Arama Sonuçları"
+        "search_results": "Arama Sonuçları",
+        "subscription_cancelled": "Abonelik İptal Edildi",
+        "cancellation_failed": "İptal Başarısız Oldu"
     },
     "video": {
         "comments": "Yorumlar",

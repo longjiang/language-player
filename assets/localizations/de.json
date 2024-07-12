@@ -443,7 +443,9 @@
         "options": "Optionen",
         "choose_action": "Wähle eine Aktion",
         "content_tailored": "Auf Sie zugeschnittene Inhalte",
-        "videos_matching": "Videos passend zu \"{{searchTerm}}\""
+        "videos_matching": "Videos passend zu \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Abonnement erfolgreich gekündigt",
+        "subscription_cancel_error": "Fehler beim Kündigen des Abonnements"
     },
     "option": {
         "app_store": "App Store",
@@ -550,7 +552,9 @@
         "filter_by_locale": "NACH SPRACHE FILTERN",
         "tv_show": "TV-Sendung",
         "recommended": "Empfohlen",
-        "search_results": "Suchergebnisse"
+        "search_results": "Suchergebnisse",
+        "subscription_cancelled": "Abonnement gekündigt",
+        "cancellation_failed": "Stornierung fehlgeschlagen"
     },
     "video": {
         "comments": "Kommentare",

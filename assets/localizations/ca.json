@@ -443,7 +443,9 @@
         "options": "Opcions",
         "choose_action": "Tria una acció",
         "content_tailored": "Contingut adaptat per a tu",
-        "videos_matching": "Vídeos que coincideixen amb \"{{searchTerm}}\""
+        "videos_matching": "Vídeos que coincideixen amb \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Subscripció cancel·lada amb èxit",
+        "subscription_cancel_error": "Error en cancel·lar la subscripció"
     },
     "option": {
         "app_store": "App Store",
@@ -550,7 +552,9 @@
         "filter_by_locale": "FILTRA PER UBICACIÓ",
         "tv_show": "Programa de TV",
         "recommended": "Recomanat",
-        "search_results": "Resultats de cerca"
+        "search_results": "Resultats de cerca",
+        "subscription_cancelled": "Subscripció cancel·lada",
+        "cancellation_failed": "Error en la cancel·lació"
     },
     "video": {
         "comments": "Comentaris",

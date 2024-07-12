@@ -442,7 +442,9 @@
         "options": "Opções",
         "choose_action": "Escolha uma ação",
         "content_tailored": "Conteúdo personalizado para você",
-        "videos_matching": "Vídeos correspondentes a \"{{searchTerm}}\""
+        "videos_matching": "Vídeos correspondentes a \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Assinatura cancelada com sucesso",
+        "subscription_cancel_error": "Erro ao cancelar a assinatura"
     },
     "option": {
         "app_store": "App Store",
@@ -549,7 +551,9 @@
         "filter_by_locale": "FILTRAR POR LOCALIDADE",
         "tv_show": "Programa de TV",
         "recommended": "Recomendado",
-        "search_results": "Resultados da pesquisa"
+        "search_results": "Resultados da pesquisa",
+        "subscription_cancelled": "Assinatura cancelada",
+        "cancellation_failed": "Falha no cancelamento"
     },
     "video": {
         "comments": "Comentários",

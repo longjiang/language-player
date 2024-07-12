@@ -443,7 +443,9 @@
         "options": "Επιλογές",
         "choose_action": "Επιλέξτε μια ενέργεια",
         "content_tailored": "Περιεχόμενο προσαρμοσμένο για εσάς",
-        "videos_matching": "Βίντεο που ταιριάζουν με \"{{searchTerm}}\""
+        "videos_matching": "Βίντεο που ταιριάζουν με \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Η συνδρομή ακυρώθηκε επιτυχώς",
+        "subscription_cancel_error": "Σφάλμα κατά την ακύρωση της συνδρομής"
     },
     "option": {
         "app_store": "App Store",
@@ -550,7 +552,9 @@
         "filter_by_locale": "ΦΙΛΤΡΟ ΑΝΑ ΤΟΠΟΘΕΣΙΑ",
         "tv_show": "Τηλεοπτική εκπομπή",
         "recommended": "Προτεινόμενα",
-        "search_results": "Αποτελέσματα αναζήτησης"
+        "search_results": "Αποτελέσματα αναζήτησης",
+        "subscription_cancelled": "Η συνδρομή ακυρώθηκε",
+        "cancellation_failed": "Η ακύρωση απέτυχε"
     },
     "video": {
         "comments": "Σχόλια",

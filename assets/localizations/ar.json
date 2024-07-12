@@ -443,7 +443,9 @@
         "options": "خيارات",
         "choose_action": "اختر إجراء",
         "content_tailored": "محتوى مخصص لك",
-        "videos_matching": "مقاطع الفيديو المطابقة لـ \"{{searchTerm}}\""
+        "videos_matching": "مقاطع الفيديو المطابقة لـ \"{{searchTerm}}\"",
+        "subscription_cancel_success": "تم إلغاء الاشتراك بنجاح",
+        "subscription_cancel_error": "خطأ في إلغاء الاشتراك"
     },
     "option": {
         "app_store": "متجر التطبيقات",
@@ -550,7 +552,9 @@
         "filter_by_locale": "تصفية حسب الموقع",
         "tv_show": "برنامج تلفزيوني",
         "recommended": "موصى به",
-        "search_results": "نتائج البحث"
+        "search_results": "نتائج البحث",
+        "subscription_cancelled": "تم إلغاء الاشتراك",
+        "cancellation_failed": "فشل الإلغاء"
     },
     "video": {
         "comments": "التعليقات",

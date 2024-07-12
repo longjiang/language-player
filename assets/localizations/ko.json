@@ -442,7 +442,9 @@
         "options": "옵션",
         "choose_action": "작업 선택",
         "content_tailored": "맞춤형 콘텐츠",
-        "videos_matching": "\"{{searchTerm}}\"와(과) 일치하는 동영상"
+        "videos_matching": "\"{{searchTerm}}\"와(과) 일치하는 동영상",
+        "subscription_cancel_success": "구독이 성공적으로 취소되었습니다",
+        "subscription_cancel_error": "구독 취소 중 오류 발생"
     },
     "option": {
         "app_store": "App Store",
@@ -549,7 +551,9 @@
         "filter_by_locale": "위치별 필터",
         "tv_show": "TV 프로그램",
         "recommended": "추천",
-        "search_results": "검색 결과"
+        "search_results": "검색 결과",
+        "subscription_cancelled": "구독이 취소되었습니다",
+        "cancellation_failed": "취소 실패"
     },
     "video": {
         "comments": "댓글",

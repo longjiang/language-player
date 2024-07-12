@@ -442,7 +442,9 @@
         "options": "Alternativer",
         "choose_action": "Velg en handling",
         "content_tailored": "Innhold skreddersydd for deg",
-        "videos_matching": "Videoer som samsvarer med \"{{searchTerm}}\""
+        "videos_matching": "Videoer som samsvarer med \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Abonnement vellykket kansellert",
+        "subscription_cancel_error": "Feil ved avbrytelse av abonnement"
     },
     "option": {
         "app_store": "App Store",
@@ -549,7 +551,9 @@
         "filter_by_locale": "FILTRER ETTER LOKASJON",
         "tv_show": "TV-program",
         "recommended": "Anbefalt",
-        "search_results": "Søkeresultater"
+        "search_results": "Søkeresultater",
+        "subscription_cancelled": "Abonnement kansellert",
+        "cancellation_failed": "Kansellering mislyktes"
     },
     "video": {
         "comments": "Kommentarer",

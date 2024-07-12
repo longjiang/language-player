@@ -443,7 +443,9 @@
         "options": "Opciók",
         "choose_action": "Válasszon egy műveletet",
         "content_tailored": "Önnek szabott tartalom",
-        "videos_matching": "A(z) \"{{searchTerm}}\" kifejezésnek megfelelő videók"
+        "videos_matching": "A(z) \"{{searchTerm}}\" kifejezésnek megfelelő videók",
+        "subscription_cancel_success": "Az előfizetés sikeresen lemondva",
+        "subscription_cancel_error": "Hiba történt az előfizetés lemondásakor"
     },
     "option": {
         "app_store": "App Store",
@@ -550,7 +552,9 @@
         "filter_by_locale": "SZŰRÉS TERÜLET SZERINT",
         "tv_show": "TV-műsor",
         "recommended": "Ajánlott",
-        "search_results": "Keresési eredmények"
+        "search_results": "Keresési eredmények",
+        "subscription_cancelled": "Előfizetés lemondva",
+        "cancellation_failed": "A lemondás sikertelen"
     },
     "video": {
         "comments": "Hozzászólások",

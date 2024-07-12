@@ -441,7 +441,9 @@
         "options": "Tùy chọn",
         "choose_action": "Chọn một hành động",
         "content_tailored": "Nội dung được điều chỉnh cho bạn",
-        "videos_matching": "Video phù hợp với \"{{searchTerm}}\""
+        "videos_matching": "Video phù hợp với \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Đã hủy đăng ký thành công",
+        "subscription_cancel_error": "Lỗi khi hủy đăng ký"
     },
     "option": {
         "app_store": "App Store",
@@ -548,7 +550,9 @@
         "filter_by_locale": "LỌC THEO KHU VỰC",
         "tv_show": "Chương trình TV",
         "recommended": "Đề xuất",
-        "search_results": "Kết quả tìm kiếm"
+        "search_results": "Kết quả tìm kiếm",
+        "subscription_cancelled": "Đã hủy đăng ký",
+        "cancellation_failed": "Hủy không thành công"
     },
     "video": {
         "comments": "Bình luận",

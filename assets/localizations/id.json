@@ -443,7 +443,9 @@
         "options": "Pilihan",
         "choose_action": "Pilih tindakan",
         "content_tailored": "Konten yang Disesuaikan untuk Anda",
-        "videos_matching": "Video yang cocok dengan \"{{searchTerm}}\""
+        "videos_matching": "Video yang cocok dengan \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Langganan berhasil dibatalkan",
+        "subscription_cancel_error": "Kesalahan membatalkan langganan"
     },
     "option": {
         "app_store": "App Store",
@@ -550,7 +552,9 @@
         "filter_by_locale": "FILTER BERDASARKAN LOKAL",
         "tv_show": "Acara TV",
         "recommended": "Direkomendasikan",
-        "search_results": "Hasil Pencarian"
+        "search_results": "Hasil Pencarian",
+        "subscription_cancelled": "Langganan Dibatalkan",
+        "cancellation_failed": "Pembatalan Gagal"
     },
     "video": {
         "comments": "Komentar",

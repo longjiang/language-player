@@ -443,7 +443,9 @@
         "options": "Opcije",
         "choose_action": "Odaberite radnju",
         "content_tailored": "Sadržaj prilagođen vama",
-        "videos_matching": "Videozapisi koji odgovaraju \"{{searchTerm}}\""
+        "videos_matching": "Videozapisi koji odgovaraju \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Pretplata uspješno otkazana",
+        "subscription_cancel_error": "Greška prilikom otkazivanja pretplate"
     },
     "option": {
         "app_store": "App Store",
@@ -550,7 +552,9 @@
         "filter_by_locale": "FILTRIRAJ PO LOKACIJI",
         "tv_show": "TV emisija",
         "recommended": "Preporučeno",
-        "search_results": "Rezultati pretraživanja"
+        "search_results": "Rezultati pretraživanja",
+        "subscription_cancelled": "Pretplata otkazana",
+        "cancellation_failed": "Otkazivanje nije uspjelo"
     },
     "video": {
         "comments": "Komentari",

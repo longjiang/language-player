@@ -460,7 +460,9 @@
         "options": "Options",
         "choose_action": "Choose an action",
         "content_tailored": "Content Tailored to You",
-        "videos_matching": "Videos matching \"{{searchTerm}}\""
+        "videos_matching": "Videos matching \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Subscription successfully cancelled",
+        "subscription_cancel_error": "Error cancelling subscription"
     },
     "option": {
         "app_store": "App Store",
@@ -569,7 +571,9 @@
         "filter_by_locale": "FILTER BY LOCALE",
         "tv_show": "TV Show",
         "recommended": "Recommended",
-        "search_results": "Search Results"
+        "search_results": "Search Results",
+        "subscription_cancelled": "Subscription Cancelled",
+        "cancellation_failed": "Cancellation Failed"
     },
     "video": {
         "comments": "Comments",

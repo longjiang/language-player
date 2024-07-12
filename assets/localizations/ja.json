@@ -442,7 +442,9 @@
         "options": "オプション",
         "choose_action": "アクションを選択",
         "content_tailored": "あなたに合わせたコンテンツ",
-        "videos_matching": "\"{{searchTerm}}\"に一致する動画"
+        "videos_matching": "\"{{searchTerm}}\"に一致する動画",
+        "subscription_cancel_success": "サブスクリプションが正常にキャンセルされました",
+        "subscription_cancel_error": "サブスクリプションのキャンセル中にエラーが発生しました"
     },
     "option": {
         "app_store": "App Store",
@@ -549,7 +551,9 @@
         "filter_by_locale": "地域でフィルター",
         "tv_show": "テレビ番組",
         "recommended": "おすすめ",
-        "search_results": "検索結果"
+        "search_results": "検索結果",
+        "subscription_cancelled": "サブスクリプションがキャンセルされました",
+        "cancellation_failed": "キャンセルに失敗しました"
     },
     "video": {
         "comments": "コメント",

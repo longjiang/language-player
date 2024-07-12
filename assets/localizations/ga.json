@@ -443,7 +443,9 @@
         "options": "Roghanna",
         "choose_action": "Roghnaigh gníomh",
         "content_tailored": "Ábhar Saincheaptha Duit",
-        "videos_matching": "Físeáin ag meaitseáil \"{{searchTerm}}\""
+        "videos_matching": "Físeáin ag meaitseáil \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Síntiús cealaithe go rathúil",
+        "subscription_cancel_error": "Earráid ag cealú an tsíntiúis"
     },
     "option": {
         "app_store": "App Store",
@@ -550,7 +552,9 @@
         "filter_by_locale": "SCAG DE RÉIR LOGCHAIGHDEÁIN",
         "tv_show": "Clár Teilifíse",
         "recommended": "Molta",
-        "search_results": "Torthaí Cuardaigh"
+        "search_results": "Torthaí Cuardaigh",
+        "subscription_cancelled": "Síntiús Cealaithe",
+        "cancellation_failed": "Theip ar an gCealú"
     },
     "video": {
         "comments": "Tráchtanna",

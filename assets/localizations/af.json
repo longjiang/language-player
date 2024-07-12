@@ -460,7 +460,9 @@
         "options": "Opsies",
         "choose_action": "Kies 'n aksie",
         "content_tailored": "Inhoud op maat vir jou",
-        "videos_matching": "Video's wat ooreenstem met \"{{searchTerm}}\""
+        "videos_matching": "Video's wat ooreenstem met \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Intekening suksesvol gekanselleer",
+        "subscription_cancel_error": "Fout met die kansellasie van intekening"
     },
     "option": {
         "app_store": "App Store",
@@ -569,7 +571,9 @@
         "filter_by_locale": "FILTER VOLGENS LIGGING",
         "tv_show": "TV-program",
         "recommended": "Aanbeveel",
-        "search_results": "Soekresultate"
+        "search_results": "Soekresultate",
+        "subscription_cancelled": "Intekening gekanselleer",
+        "cancellation_failed": "Kansellasie misluk"
     },
     "video": {
         "comments": "Kommentaar",

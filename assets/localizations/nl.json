@@ -442,7 +442,9 @@
         "options": "Opties",
         "choose_action": "Kies een actie",
         "content_tailored": "Op maat gemaakte inhoud voor jou",
-        "videos_matching": "Video's die overeenkomen met \"{{searchTerm}}\""
+        "videos_matching": "Video's die overeenkomen met \"{{searchTerm}}\"",
+        "subscription_cancel_success": "Abonnement succesvol geannuleerd",
+        "subscription_cancel_error": "Fout bij het annuleren van het abonnement"
     },
     "option": {
         "app_store": "App Store",
@@ -549,7 +551,9 @@
         "filter_by_locale": "FILTEREN OP TAAL",
         "tv_show": "TV-programma",
         "recommended": "Aanbevolen",
-        "search_results": "Zoekresultaten"
+        "search_results": "Zoekresultaten",
+        "subscription_cancelled": "Abonnement geannuleerd",
+        "cancellation_failed": "Annulering mislukt"
     },
     "video": {
         "comments": "Reacties",

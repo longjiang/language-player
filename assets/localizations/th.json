@@ -441,7 +441,9 @@
         "options": "ตัวเลือก",
         "choose_action": "เลือกการดำเนินการ",
         "content_tailored": "เนื้อหาที่ปรับแต่งสำหรับคุณ",
-        "videos_matching": "วิดีโอที่ตรงกับ \"{{searchTerm}}\""
+        "videos_matching": "วิดีโอที่ตรงกับ \"{{searchTerm}}\"",
+        "subscription_cancel_success": "ยกเลิกการสมัครสมาชิกสำเร็จแล้ว",
+        "subscription_cancel_error": "เกิดข้อผิดพลาดในการยกเลิกการสมัครสมาชิก"
     },
     "option": {
         "app_store": "App Store",
@@ -548,7 +550,9 @@
         "filter_by_locale": "กรองตามภาษา",
         "tv_show": "รายการทีวี",
         "recommended": "แนะนำ",
-        "search_results": "ผลการค้นหา"
+        "search_results": "ผลการค้นหา",
+        "subscription_cancelled": "ยกเลิกการสมัครสมาชิกแล้ว",
+        "cancellation_failed": "การยกเลิกล้มเหลว"
     },
     "video": {
         "comments": "ความคิดเห็น",

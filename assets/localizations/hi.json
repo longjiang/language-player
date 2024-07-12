@@ -443,7 +443,9 @@
         "options": "विकल्प",
         "choose_action": "एक कार्रवाई चुनें",
         "content_tailored": "आपके लिए अनुकूलित सामग्री",
-        "videos_matching": "\"{{searchTerm}}\" से मेल खाते वीडियो"
+        "videos_matching": "\"{{searchTerm}}\" से मेल खाते वीडियो",
+        "subscription_cancel_success": "सदस्यता सफलतापूर्वक रद्द की गई",
+        "subscription_cancel_error": "सदस्यता रद्द करने में त्रुटि"
     },
     "option": {
         "app_store": "ऐप स्टोर",
@@ -550,7 +552,9 @@
         "filter_by_locale": "स्थान के अनुसार फ़िल्टर करें",
         "tv_show": "टीवी शो",
         "recommended": "अनुशंसित",
-        "search_results": "खोज परिणाम"
+        "search_results": "खोज परिणाम",
+        "subscription_cancelled": "सदस्यता रद्द की गई",
+        "cancellation_failed": "रद्दीकरण विफल रहा"
     },
     "video": {
         "comments": "टिप्पणियाँ",

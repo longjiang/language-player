@@ -460,7 +460,9 @@
         "options": "选项",
         "choose_action": "选择一个操作",
         "content_tailored": "为您量身定制的内容",
-        "videos_matching": "匹配\"{{searchTerm}}\"的视频"
+        "videos_matching": "匹配\"{{searchTerm}}\"的视频",
+        "subscription_cancel_success": "订阅成功取消",
+        "subscription_cancel_error": "取消订阅时出错"
     },
     "option": {
         "app_store": "应用商店",
@@ -569,7 +571,9 @@
         "filter_by_locale": "按地区筛选",
         "tv_show": "电视节目",
         "recommended": "推荐",
-        "search_results": "搜索结果"
+        "search_results": "搜索结果",
+        "subscription_cancelled": "订阅已取消",
+        "cancellation_failed": "取消失败"
     },
     "video": {
         "comments": "评论",

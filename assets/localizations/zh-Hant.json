@@ -460,7 +460,9 @@
         "options": "選項",
         "choose_action": "選擇一個操作",
         "content_tailored": "為您量身定制的內容",
-        "videos_matching": "匹配\"{{searchTerm}}\"的視頻"
+        "videos_matching": "匹配\"{{searchTerm}}\"的視頻",
+        "subscription_cancel_success": "訂閱成功取消",
+        "subscription_cancel_error": "取消訂閱時出錯"
     },
     "option": {
         "app_store": "App Store",
@@ -569,7 +571,9 @@
         "filter_by_locale": "按地區篩選",
         "tv_show": "電視節目",
         "recommended": "推薦",
-        "search_results": "搜索結果"
+        "search_results": "搜索結果",
+        "subscription_cancelled": "訂閱已取消",
+        "cancellation_failed": "取消失敗"
     },
     "video": {
         "comments": "留言",
