@@ -83,7 +83,10 @@ export const PopupDictionaryContent: React.FC<{
       {dictionaryEntries.map((entry: DictionaryEntry, index: number) => (
         <TouchableOpacity
           key={index}
-          style={[styles.entryContainer, {backgroundColor: primaryBackgroundColor}]}
+          style={[
+            styles.entryContainer,
+            { backgroundColor: primaryBackgroundColor },
+          ]}
           onPress={() => handleEntryPress(entry.id)}
         >
           <ThemedText
@@ -94,22 +97,26 @@ export const PopupDictionaryContent: React.FC<{
             {entry.head}
           </ThemedText>
           <View style={{ position: "absolute", top: 16, right: 16 }}>
-            <BookmarkButton 
+            <BookmarkButton
               wordId={entry.id}
               head={entry.head}
               alternate={entry.alternate}
               forms={[entry.head, entry.alternate, token.text].filter(Boolean)}
-              context={{ form: token.text, text: context || '' }}
+              context={{ form: token.text, text: context || "" }}
               size="large"
               color={primaryTextColor}
             />
           </View>
-          <ThemedText style={styles.entryText} variant="secondary">
-            [{entry.pronunciation}]{" "}
-            <ThemedText type="smallBold" level={entry.level}>
-              {entry.level ? "  " + levels[entry.level].examLevelName : ""}
-            </ThemedText>{" "}
-          </ThemedText>
+          {(entry.pronunciation || entry.level) && (
+            <ThemedText style={styles.entryText} variant="secondary">
+              {entry.pronunciation && <>[{entry.pronunciation}] </>}
+              {entry.level && (
+                <ThemedText type="smallBold" level={entry.level}>
+                  {entry.level ? "  " + levels[entry.level].examLevelName : ""}
+                </ThemedText>
+              )}
+            </ThemedText>
+          )}
           <DefinitionList definitions={entry.definitions} type="default" />
         </TouchableOpacity>
       ))}
