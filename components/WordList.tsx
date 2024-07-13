@@ -6,7 +6,6 @@ import BookmarkButton from './BookmarkButton'; // Updated import
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
 import { useDictionary } from '@/contexts/DictionaryContext';
-import { wordListStyles as styles } from '@/src/styles'
 import DefinitionList from './DefinitionList';
 
 export const WordList = ({ wordIds }) => {
@@ -49,3 +48,19 @@ export const WordList = ({ wordIds }) => {
     />
   );
 };
+
+
+export const styles = StyleSheet.create({
+  container: {
+  },
+  item: {
+    marginVertical: 8,
+  },
+  chinese: {},
+  pinyin: {
+    fontSize: 16,
+  },
+  english: {
+    fontSize: 14,
+  }
+});

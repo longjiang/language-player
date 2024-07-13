@@ -121,24 +121,6 @@ export const dictionaryEntryStyles = StyleSheet.create({
   }
 });
 
-
-
-export const wordListStyles = StyleSheet.create({
-  container: {
-    marginBottom: 250,
-  },
-  item: {
-    marginVertical: 8,
-  },
-  chinese: {},
-  pinyin: {
-    fontSize: 16,
-  },
-  english: {
-    fontSize: 14,
-  }
-});
-
 export const selectL1Styles = StyleSheet.create({
   item: {
     padding: 16,
