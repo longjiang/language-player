@@ -62,7 +62,6 @@ const ClippedImage: React.FC<ClippedImageProps> = ({
   const style: StyleProp<ViewStyle> = {
     width,
     height,
-    backgroundColor: 'green',
     overflow: 'hidden',
     justifyContent: justifyContentMap[verticalAlign],
     alignItems: alignItemsMap[horizontalAlign]
