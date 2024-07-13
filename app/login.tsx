@@ -45,8 +45,7 @@ const LoginScreen = () => {
         <ThemedScreen
             title={t('title.login')}
             onBackPress={() => router.navigate('/')}
-            imageName={require('../assets/images/splash-image.png')}
-            imageStyle={{ marginTop: -400 }}
+            imageHeight={150}
         >
             <ThemedInput
                 style={styles.input}

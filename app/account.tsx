@@ -39,8 +39,7 @@ const AccountScreen = () => {
   return (
     <ThemedScreen
       title={t('title.account')}
-      imageName={require("../assets/images/splash-image.png")}
-      imageStyle={{ marginTop: -400 }}
+      imageHeight={150}
       onBackPress={() => {
         router.back();
       }}

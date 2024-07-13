@@ -63,8 +63,7 @@ const SelectL1Screen = () => {
     <ThemedScreen
       title='msg.what_your_first_language'
       onBackPress={() => router.navigate("/select-l2")}
-      imageName={require("../assets/images/splash-image.png")}
-      imageStyle={{ marginTop: -400 }}
+      imageHeight={150}
     >
       <ThemedLanguageSelect onSelect={onSelect} initialValue={defaultLanguage} scope="l1" />
 

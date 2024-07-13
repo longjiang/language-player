@@ -68,8 +68,7 @@ const AcquisitionSurveyScreen = () => {
     <ThemedScreen
       title={t('title.how_did_you_hear')}
       onBackPress={() => router.navigate("/register")}
-      imageName={require("../assets/images/splash-image.png")}
-      imageStyle={{ marginTop: -400 }}
+      imageHeight={150}
     >
       <View>
         {options.map((option, index) => (

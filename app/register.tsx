@@ -51,8 +51,7 @@ const RegisterScreen = () => {
         <ThemedScreen
           title={t('title.register')}
           onBackPress={() => router.navigate("/")}
-          imageName={require("../assets/images/splash-image.png")}
-          imageStyle={{ marginTop: -400 }}
+          imageHeight={150}
         >
             <View style={styles.row}>
                 <ThemedInput

@@ -46,8 +46,7 @@ const VerifyEmailScreen = () => {
     <ThemedScreen
       title={t('title.verify_your_email')}
       onBackPress={() => router.navigate("/register")}
-      imageName={require("../assets/images/splash-image.png")}
-      imageStyle={{ marginTop: -400 }}
+      imageHeight={150}
     >
       <ThemedText style={styles.instructions}>
         {t('msg.enter_verification_code')} {email}

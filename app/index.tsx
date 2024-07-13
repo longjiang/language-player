@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, Platform, Dimensions } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
-import ClippedImage from '@/components/ClippedImage';
+import { ClippedImage } from '@/components/ClippedImage';
 import { useThemeColor } from '@/hooks';
 import { ThemedText, ThemedButton } from '@/components';
 import Icon from "react-native-vector-icons/MaterialIcons";

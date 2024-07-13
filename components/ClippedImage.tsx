@@ -11,7 +11,7 @@ interface ClippedImageProps {
   resizeMode?: 'cover' | 'contain' | 'stretch' | 'repeat' | 'center';
 }
 
-const ClippedImage: React.FC<ClippedImageProps> = ({
+export const ClippedImage: React.FC<ClippedImageProps> = ({
   width,
   height,
   source,
@@ -95,5 +95,3 @@ const alignItemsMap: Record<string, ViewStyle['alignItems']> = {
   center: 'center',
   right: 'flex-end'
 };
-
-export default ClippedImage;
