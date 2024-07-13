@@ -25,7 +25,7 @@ const IndexScreen = () => {
         verticalAlign='bottom'
         horizontalAlign='center'
         resizeMode='cover'
-        aspectRatio={0.5937}
+        aspectRatio={0.7264}
       />
       <SafeAreaView style={styles.contentContainer}>
         <View 
