@@ -14,6 +14,7 @@ import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { YouTubeVideoList } from "@/components/YouTubeVideoList";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const SearchScreen = () => {
   const [items, setItems] = useState<YouTubeVideo[]>([]);
@@ -22,6 +23,7 @@ const SearchScreen = () => {
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const { t, l2Lang } = useLanguage();
   const { setVideoAndQueue } = useVideoPlayer();
+  const insets = useSafeAreaInsets();
 
   if (!l2Lang) return null;
 
@@ -73,7 +75,7 @@ const SearchScreen = () => {
           />
           <ThemedInput
             placeholder={t('placeholder.search_all_content', { language: l2Name })}
-            style={{ flex: 1, marginRight: 8 }}
+            style={{ flex: 1 }}
             size="small"
             icon="magnify"
             onChangeText={handleInputChange}
@@ -96,17 +98,11 @@ const SearchScreen = () => {
           <View style={styles.searchContainer}>
             <ThemedInput
               placeholder={t('placeholder.search_all_content', { language: l2Name })}
-              style={{ flex: 1, marginRight: 8 }}
+              style={{ flex: 1 }}
               icon="magnify"
               onChangeText={handleInputChange}
               onSubmitEditing={handleSearch}
               value={searchQuery}
-            />
-            <ThemedButton
-              type="primary"
-              size="medium"
-              icon="magnify"
-              onPress={handleSearch}
             />
           </View>
           <ThemedText type="default" variant="secondary">
@@ -120,11 +116,11 @@ const SearchScreen = () => {
         </ThemedScreen>
       )}
       {items.length > 0 && (
-        <SafeAreaView style={styles.resultsContainer}>
+        <View style={{ flex: 1, marginTop: insets.top }}>
           <YouTubeVideoList
             videos={items}
             header={<ListHeader />}
-            style={{ padding: 12 }}
+            style={{ paddingHorizontal: 26 }}
             queueType="search"
             searchTerm={searchQuery}
           />
@@ -133,16 +129,13 @@ const SearchScreen = () => {
               <ActivityIndicator size="large" color={primaryBrandColor} />
             </View>
           )}
-        </SafeAreaView>
+        </View>
       )}
     </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
-  resultsContainer: {
-    flex: 1,
-  },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
@@ -153,7 +146,6 @@ const styles = StyleSheet.create({
     marginLeft: -15,
     alignItems: "flex-start",
     justifyContent: "space-between",
-    paddingHorizontal: 26,
   },
   spinnerContainer: {
     flex: 1,

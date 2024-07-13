@@ -82,7 +82,7 @@ export const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    padding: 26,
+    paddingHorizontal: 26,
     width: "100%",
   },
   content: {

@@ -40,7 +40,7 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
 
   const renderVideoCard = ({ item, index }: { item: YouTubeVideo, index: number }) => (
-    <View style={[style, variant === 'horizontal' && { marginBottom: 4 }]}>
+    <View style={[variant === 'horizontal' && { marginBottom: 4 }, variant === 'vertical' && { marginBottom: 26 }]}>
       <YouTubeVideoCard 
         key={index} 
         video={item} 
@@ -52,6 +52,7 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
         tvShow={tvShow}
         searchTerm={searchTerm}
         onPress={onVideoPress}
+        style={style}
       />
     </View>
   );

@@ -14,6 +14,7 @@ import { MiniPlayer } from "@/components/MiniPlayer";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { QueueManager } from "@/src/QueueManager";
 import { Show } from '@/components/ShowCard';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 type VideoPlayerState = {
@@ -63,6 +64,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const { loadEpisodes, shows } = useTVShows();
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const newVideo = videoPlayerState.queueManager.currentVideo;
@@ -226,6 +228,8 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
         visible={!!videoPlayerState.queueManager.currentVideo}
         colorFrom={primaryBackgroundColor}
         colorTo={primaryBrandColor}
+        minHeight={70}
+        minBottom={insets.bottom + 66}
         isMinimized={videoPlayerState.isMini}
         setIsMinimized={(isMini: boolean) => setVideoPlayerState(prev => ({ ...prev, isMini }))}
       >
