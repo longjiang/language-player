@@ -5,10 +5,11 @@ interface ClippedImageProps {
   width: number;
   height: number;
   source: ImageSourcePropType;
-  aspectRatio: number; // Aspect ratio of the image as a prop
+  aspectRatio: number;
   verticalAlign?: 'top' | 'center' | 'bottom';
   horizontalAlign?: 'left' | 'center' | 'right';
   resizeMode?: 'cover' | 'contain' | 'stretch' | 'repeat' | 'center';
+  style?: StyleProp<ViewStyle>; // New style prop
 }
 
 export const ClippedImage: React.FC<ClippedImageProps> = ({
@@ -18,10 +19,11 @@ export const ClippedImage: React.FC<ClippedImageProps> = ({
   aspectRatio,
   verticalAlign = 'center',
   horizontalAlign = 'center',
-  resizeMode = 'cover' // default to 'cover' if not specified
+  resizeMode = 'cover',
+  style // New style prop
 }) => {
-  let imageWidth: number = width; // Default to container width
-  let imageHeight: number = height; // Default to container height
+  let imageWidth: number = width;
+  let imageHeight: number = height;
 
   switch (resizeMode) {
     case 'cover':
@@ -48,33 +50,35 @@ export const ClippedImage: React.FC<ClippedImageProps> = ({
       break;
     case 'repeat':
       // Not natively supported in React Native for the Image component
-      // Would potentially require a custom implementation or external library
       break;
     case 'center':
       imageWidth = width / aspectRatio;
       imageHeight = height;
       break;
     default:
-      imageWidth = width; // Fallback to stretch
+      imageWidth = width;
       imageHeight = height;
   }
 
-  const style: StyleProp<ViewStyle> = {
-    width,
-    height,
-    overflow: 'hidden',
-    justifyContent: justifyContentMap[verticalAlign],
-    alignItems: alignItemsMap[horizontalAlign]
-  };
+  const containerStyle: StyleProp<ViewStyle> = [
+    {
+      width,
+      height,
+      overflow: 'hidden',
+      justifyContent: justifyContentMap[verticalAlign],
+      alignItems: alignItemsMap[horizontalAlign]
+    },
+    style // Merge the external style
+  ];
 
   const imageStyle: StyleProp<ImageStyle> = {
     width: imageWidth,
     height: imageHeight,
-    resizeMode: resizeMode !== 'repeat' ? resizeMode : 'cover' // 'repeat' is not supported natively
+    resizeMode: resizeMode !== 'repeat' ? resizeMode : 'cover'
   };
 
   return (
-    <View style={style}>
+    <View style={containerStyle}>
       <Image
         source={source}
         style={imageStyle}

@@ -47,6 +47,7 @@ export const ThemedScreen = ({
         horizontalAlign='center'
         resizeMode='cover'
         aspectRatio={0.59371}
+        style={{ marginBottom: 20 }}
       />}
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.contentContainer}>
