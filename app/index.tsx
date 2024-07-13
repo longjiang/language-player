@@ -1,23 +1,49 @@
-// @/app/index.tsx
-
-
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, StyleSheet, Platform, Dimensions } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ClippedImage from '@/components/ClippedImage';
+import { useThemeColor } from '@/hooks';
+import { ThemedText, ThemedButton } from '@/components';
+import Icon from "react-native-vector-icons/MaterialIcons";
+import { router } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSettings } from '@/contexts/SettingsContext';
 
 const { width, height } = Dimensions.get('window');
 
 const IndexScreen = () => {
-  const { t } = useLanguage();
+  const { t, l2Lang } = useLanguage();
   const insets = useSafeAreaInsets();
   const [bottomContentHeight, setBottomContentHeight] = useState(0);
+  const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
+  const { isAuthenticated } = useAuth();
+  const { settings } = useSettings();
 
   const imageHeight = height - bottomContentHeight - insets.top;
 
+  const buttonText = useMemo(() => {
+    if (!isAuthenticated) {
+      return t("title.start_learning");
+    } else if (!settings.l1LangCode || !settings.l2LangCode) {
+      return t("title.choose_language");
+    } else {
+      return t('title.continue_learning', { l2Code: t('lang.' + l2Lang?.code) || '' });
+    }
+  }, [isAuthenticated, settings.l1LangCode, settings.l2LangCode, l2Lang]);
+
+  const handleStartPress = () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    } else if (!settings.l1LangCode || !settings.l2LangCode) {
+      router.push("/select-l2");
+    } else {
+      router.push("/(tabs)/(media)");
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={{...styles.container, backgroundColor: primaryBackgroundColor}}>
       <ClippedImage
         source={require("../assets/images/splash-image.png")}
         width={width}
@@ -25,7 +51,7 @@ const IndexScreen = () => {
         verticalAlign='bottom'
         horizontalAlign='center'
         resizeMode='cover'
-        aspectRatio={0.7264}
+        aspectRatio={0.59371}
       />
       <SafeAreaView style={styles.contentContainer}>
         <View 
@@ -35,13 +61,15 @@ const IndexScreen = () => {
             setBottomContentHeight(height);
           }}
         >
-          <Text style={styles.title}>{t('msg.enrich_your_language_learning_journey')}</Text>
-          <Text style={styles.blurb}>
+          <ThemedText type="title" style={{ marginBottom: 10 }}>{t('msg.enrich_your_language_learning_journey')}</ThemedText>
+          <ThemedText style={styles.blurb}>
             {t('msg.discover_the_power_of_comprehensible_input')}
-          </Text>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>{t('btn.start_learning')}</Text>
-          </TouchableOpacity>
+          </ThemedText>
+          <ThemedButton
+            title={buttonText}
+            trailingIcon={<Icon name="chevron-right" />}
+            onPress={handleStartPress}
+          />
         </View>
       </SafeAreaView>
     </View>
@@ -51,7 +79,6 @@ const IndexScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   contentContainer: {
     position: 'absolute',
@@ -63,27 +90,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 26,
     paddingBottom: Platform.OS === 'ios' ? 20 : 26,
     paddingTop: 20,
-    backgroundColor: 'white',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
   },
   blurb: {
-    fontSize: 16,
     marginBottom: 20,
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });
 
