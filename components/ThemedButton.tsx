@@ -48,22 +48,22 @@ export function ThemedButton({
   const stylesBasedOnSize = {
     title: {
       fontSize: Typography.fontSize.large,
-      paddingVertical: 16,
+      paddingVertical: 12,
       paddingHorizontal: 20,
     },
     large: {
       fontSize: Typography.fontSize.medium,
-      paddingVertical: 12,
+      paddingVertical: 8,
       paddingHorizontal: 20,
     },
     medium: {
       fontSize: Typography.fontSize.medium,
-      paddingVertical: 6,
+      paddingVertical: 4,
       paddingHorizontal: 10,
     },
     small: {
       fontSize: Typography.fontSize.small,
-      paddingVertical: 3,
+      paddingVertical: 2,
       paddingHorizontal: 16,
     },
   };

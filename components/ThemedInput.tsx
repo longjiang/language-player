@@ -32,7 +32,7 @@ export const ThemedInput: React.FC<ThemedInputProps> = memo(({
   autoCapitalize = 'sentences',
   ...rest
 }) => {
-  const borderColor = useThemeColor({}, 'secondaryStroke');
+  const borderColor = useThemeColor({}, 'secondaryBackground');
   const backgroundColor = useThemeColor({}, 'secondaryBackground');
   const placeholderTextColor = useThemeColor({}, 'secondaryText');
   const containerStyles = [styles.container, size === 'small' ? styles.small : styles.medium, { borderColor, backgroundColor }, style];

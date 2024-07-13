@@ -28,7 +28,7 @@ export const ThemedRadio: React.FC<{
           { backgroundColor: checkedRadioFillColor }
         ]} />}
       </View>
-      <ThemedText type="large">{label}</ThemedText>
+      <ThemedText >{label}</ThemedText>
     </TouchableOpacity>
   );
 };
