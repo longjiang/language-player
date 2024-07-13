@@ -3,21 +3,23 @@
 
 import React from 'react';
 import { View, Text, Image, StyleSheet, SafeAreaView, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width, height } = Dimensions.get('window');
 
 const IndexScreen = () => {
+  const { t } = useLanguage();
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <Image
-          source={{ uri: 'https://placeholder.com/600x400' }}
+          source={require("../assets/images/splash-image.png")}
           style={styles.splashImage}
         />
         <View style={styles.bottomContent}>
-          <Text style={styles.title}>Learn a New Language</Text>
+          <Text style={styles.title}>{ t('msg.enrich_your_language_learning_journey') }</Text>
           <Text style={styles.blurb}>
-            Unlock new opportunities with our effective language learning method.
+            {t('msg.discover_the_power_of_comprehensible_input')}
           </Text>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Start Learning</Text>
