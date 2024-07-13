@@ -62,8 +62,8 @@ const IndexScreen = () => {
             setBottomContentHeight(height);
           }}
         >
-          <TestLinks />
-          {/* <ThemedText type="title" style={{ marginBottom: 10 }}>{t('msg.enrich_your_language_learning_journey')}</ThemedText>
+          {/* <TestLinks /> */}
+          <ThemedText type="title" style={{ marginBottom: 10 }}>{t('msg.enrich_your_language_learning_journey')}</ThemedText>
           <ThemedText style={styles.blurb}>
             {t('msg.discover_the_power_of_comprehensible_input')}
           </ThemedText>
@@ -71,7 +71,7 @@ const IndexScreen = () => {
             title={buttonText}
             trailingIcon={<Icon name="chevron-right" />}
             onPress={handleStartPress}
-          /> */}
+          />
         </View>
       </SafeAreaView>
     </View>

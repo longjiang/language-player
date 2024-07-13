@@ -95,7 +95,7 @@ const AccountScreen = () => {
       <View style={styles.buttonRow}>
         <ThemedButton
           title={t('title.delete_my_account')}
-          size="small"
+          size="xsmall"
           type="ghost"
           onPress={() => {
             router.navigate("/delete-account");
@@ -104,19 +104,10 @@ const AccountScreen = () => {
         />
         <ThemedButton
           title={t('title.privacy_policy')}
-          size="small"
+          size="xsmall"
           type="ghost"
           onPress={() => {
             router.navigate("/privacy-policy");
-          }}
-          style={{ color: secondaryTextColor }}
-        />
-        <ThemedButton
-          title={t('title.test')}
-          size="small"
-          type="ghost"
-          onPress={() => {
-            router.navigate("/test/tokenizer");
           }}
           style={{ color: secondaryTextColor }}
         />
@@ -136,7 +127,6 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
     marginTop: 16,
   },
 });

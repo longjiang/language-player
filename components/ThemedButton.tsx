@@ -14,7 +14,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export type ButtonProps = {
   type?: "neutral" | "accent" | "primary" | "ghost" | "pro";
-  size?: "title" | "large" | "medium" | "small";
+  size?: "title" | "large" | "medium" | "small" | "xsmall";
   title?: string;
   onPress?: () => void;
   leadingIcon?: React.ReactNode;
@@ -65,6 +65,11 @@ export function ThemedButton({
       fontSize: Typography.fontSize.small,
       paddingVertical: 2,
       paddingHorizontal: 16,
+    },
+    xsmall: {
+      fontSize: Typography.fontSize.xsmall || Typography.fontSize.small - 2,
+      paddingVertical: 1,
+      paddingHorizontal: 12,
     },
   };
 
@@ -121,7 +126,7 @@ export function ThemedButton({
   const styledLeadingIcon = leadingIcon && React.isValidElement(leadingIcon) ? (
     <View style={{ marginRight: title ? 5 : 0, alignItems: "center" }}>
       {React.cloneElement(leadingIcon, {
-        color: style?.color || stylesBasedOnType[type].color, // Ignore the lint error here
+        color: style?.color || stylesBasedOnType[type].color,
         size: stylesBasedOnSize[size].fontSize * 1.2,
       })}
     </View>
@@ -130,7 +135,7 @@ export function ThemedButton({
   const styledTrailingIcon = trailingIcon && React.isValidElement(trailingIcon) ? (
     <View style={{ marginLeft: title ? 5 : 0, alignItems: "center" }}>
       {React.cloneElement(trailingIcon, {
-        color: style?.color || stylesBasedOnType[type].color, // Ignore the lint error here
+        color: style?.color || stylesBasedOnType[type].color,
         size: stylesBasedOnSize[size].fontSize * 1.2,
       })}
     </View>
@@ -139,20 +144,13 @@ export function ThemedButton({
   const gradientColors = [
     '#00B2FF', '#6C7CDE', '#DB0DC6'
   ];
+
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
       style={{ opacity: disabled ? 0.5 : 1, ...style }}
     >
-      {/* {type === "pro" && (
-        <ThemedText
-          type="smallBold"
-          style={{ color: "#2EC0FF", alignSelf: "center" }}
-        >
-          PRO FEATURE
-        </ThemedText>
-      )} */}
       <LinearGradient
         colors={type === "pro" ? gradientColors : []}
         style={{
@@ -167,7 +165,7 @@ export function ThemedButton({
           {title && (
             <ThemedText
               type="title"
-              style={{ fontSize: stylesBasedOnSize[size].fontSize, color: style?.color || mergedViewStyle.color }} // Ignore the lint error here
+              style={{ fontSize: stylesBasedOnSize[size].fontSize, color: style?.color || mergedViewStyle.color }}
             >
               {title}
             </ThemedText>
