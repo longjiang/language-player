@@ -1,30 +1,27 @@
-// @/app/index.tsx
-
-
 import React from 'react';
 import { View, Text, Image, StyleSheet, SafeAreaView, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const IndexScreen = () => {
   const { t } = useLanguage();
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <View style={styles.imageContainer}>
         <Image
           source={require("../assets/images/splash-image.png")}
           style={styles.splashImage}
         />
-        <View style={styles.bottomContent}>
-          <Text style={styles.title}>{ t('msg.enrich_your_language_learning_journey') }</Text>
-          <Text style={styles.blurb}>
-            {t('msg.discover_the_power_of_comprehensible_input')}
-          </Text>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Start Learning</Text>
-          </TouchableOpacity>
-        </View>
+      </View>
+      <View style={styles.bottomContent}>
+        <Text style={styles.title}>{t('msg.enrich_your_language_learning_journey')}</Text>
+        <Text style={styles.blurb}>
+          {t('msg.discover_the_power_of_comprehensible_input')}
+        </Text>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>{t('btn.start_learning')}</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -35,19 +32,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  content: {
+  imageContainer: {
     flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
   splashImage: {
     width: width,
-    height: height * 0.6,
-    resizeMode: 'cover',
+    height: undefined,
+    aspectRatio: 0.75, // Adjust this value based on your image's aspect ratio
   },
   bottomContent: {
-    flex: 1,
-    justifyContent: 'flex-end',
     paddingHorizontal: 26,
-    paddingBottom: Platform.OS === 'ios' ? 0 : 26, // Account for Android's lack of bottom safe area
+    paddingBottom: Platform.OS === 'ios' ? 20 : 26,
+    paddingTop: 20,
   },
   title: {
     fontSize: 24,
@@ -63,7 +62,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: Platform.OS === 'ios' ? 20 : 0, // Add some bottom margin on iOS
   },
   buttonText: {
     color: '#fff',
