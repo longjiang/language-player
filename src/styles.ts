@@ -427,36 +427,6 @@ export const indexScreenStyles = StyleSheet.create({
 });
 
 
-export const themedScreenStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingBottom: 20,
-  },
-  contentContainer: {
-    padding: 26,
-    textAlign: "left",
-    width: "100%", // Full width container
-  },
-  header: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    marginLeft: -15,
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-  },
-  headerLeft: {
-    flexDirection: 'row',
-  },
-  title: {
-    marginLeft: 10,
-  },
-  image: {
-    width: "100%",
-    marginBottom: 20,
-  },
-});
-
-
 
 export const registerScreenStyles = StyleSheet.create({
   input: {

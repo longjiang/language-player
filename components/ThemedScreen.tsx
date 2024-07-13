@@ -1,7 +1,7 @@
 // @/components/ThemedScreen.tsx
 
 import React from 'react';
-import { View, SafeAreaView, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { View, SafeAreaView, StyleSheet, Image, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedButton } from '@/components/ThemedButton';
@@ -9,20 +9,20 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CountryFlag from 'react-native-country-flag';
 import { router } from "expo-router";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { themedScreenStyles as styles } from '@/src/styles';
 import { ClippedImage } from '@/components/ClippedImage';
 
 const { width, height } = Dimensions.get('window');
 
 export const ThemedScreen = ({
   title,
-  titleParams = {}, // for translations with parameters
+  titleParams = {},
   children,
   onBackPress,
   showFlag = false,
   showHeader = true,
   imageHeight,
-  onAction
+  onAction,
+  scroll = true
 }: {
   title: string,
   titleParams?: any,
@@ -31,10 +31,14 @@ export const ThemedScreen = ({
   showFlag?: boolean,
   showHeader?: boolean,
   imageHeight?: number,
-  onAction?: () => void
+  onAction?: () => void,
+  scroll?: boolean
 }) => {
   const { languages, i18n, l2Lang } = useLanguage();
   const country = l2Lang ? languages?.getCountry(l2Lang) : null;
+
+  const ContentWrapper = scroll ? ScrollView : View;
+
   return (
     <ThemedView style={styles.container}>
       {imageHeight && <ClippedImage
@@ -46,21 +50,62 @@ export const ThemedScreen = ({
         resizeMode='cover'
         aspectRatio={0.59371}
       />}
-      <SafeAreaView>
-        <View style={styles.contentContainer}>
-          {(showHeader && <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              {onBackPress && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="chevron-left" />} onPress={onBackPress} />}
-              <ThemedText type="title" style={styles.title}>{i18n.t(title, titleParams)}</ThemedText>
+      <SafeAreaView style={{ flex: 1 }}>
+        <ContentWrapper 
+          contentContainerStyle={[
+            styles.contentContainer,
+            scroll && styles.scrollContentContainer
+          ]}
+        >
+          {showHeader && (
+            <View style={styles.header}>
+              <View style={styles.headerLeft}>
+                {onBackPress && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="chevron-left" />} onPress={onBackPress} />}
+                <ThemedText type="title" style={styles.title}>{i18n.t(title, titleParams)}</ThemedText>
+              </View>
+              {onAction && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="dots-horizontal-circle" />} onPress={onAction} />}
+              {showFlag && (
+                <TouchableOpacity onPress={() => { router.navigate('/select-l2') }}>
+                  {country && <CountryFlag isoCode={country.alpha2Code} size={16} style={{ marginTop: 10, borderRadius: 3 }} />}
+                </TouchableOpacity>
+              )}
             </View>
-            {(onAction && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="dots-horizontal-circle" />} onPress={onAction} />)}
-            {(showFlag && <TouchableOpacity onPress={() => { router.navigate('/select-l2') }}>
-              {(country &&<CountryFlag isoCode={country.alpha2Code} size={16} style={{ marginTop: 10, borderRadius: 3 }} />)}
-            </TouchableOpacity>)}
-          </View>)}
+          )}
           {children}
-        </View>
+        </ContentWrapper>
       </SafeAreaView>
     </ThemedView>
   );
 };
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingBottom: 20,
+  },
+  contentContainer: {
+    padding: 26,
+    textAlign: "left",
+    width: "100%", // Full width container
+  },
+  scrollContentContainer: {
+    flexGrow: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    marginLeft: -15,
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  headerLeft: {
+    flexDirection: 'row',
+  },
+  title: {
+    marginLeft: 10,
+  },
+  image: {
+    width: "100%",
+    marginBottom: 20,
+  },
+});
