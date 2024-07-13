@@ -17,6 +17,15 @@ const routes = [
   '/settings',
   '/verify-email',
   '/(tabs)',
+  '/dictionary',
+  '/(tabs)/(me)',
+  '/(tabs)/(me)/index',
+  '/(tabs)/(me)/saved-words',
+  '/(tabs)/(me)/watch-history',
+  '/(tabs)/(media)',
+  '/(tabs)/(media)/index',
+  '/(tabs)/(media)/search',
+  '/(tabs)/(media)/tv-shows',
 ];
 
 export const TestLinks = () => {

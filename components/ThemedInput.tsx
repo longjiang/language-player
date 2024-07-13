@@ -16,6 +16,7 @@ interface ThemedInputProps {
   secureTextEntry?: boolean;
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  backgroundColor?: string;
 }
 
 export const ThemedInput: React.FC<ThemedInputProps> = memo(({
@@ -30,12 +31,13 @@ export const ThemedInput: React.FC<ThemedInputProps> = memo(({
   secureTextEntry = false,
   keyboardType = 'default',
   autoCapitalize = 'sentences',
+  backgroundColor = 'secondaryBackground',
   ...rest
 }) => {
-  const borderColor = useThemeColor({}, 'secondaryBackground');
-  const backgroundColor = useThemeColor({}, 'secondaryBackground');
+  const inputBackgroundColor = useThemeColor({}, backgroundColor as any);
+  const borderColor = inputBackgroundColor
   const placeholderTextColor = useThemeColor({}, 'secondaryText');
-  const containerStyles = [styles.container, size === 'small' ? styles.small : styles.medium, { borderColor, backgroundColor }, style];
+  const containerStyles = [styles.container, size === 'small' ? styles.small : styles.medium, { borderColor, backgroundColor: inputBackgroundColor }, style];
   const iconSize = Typography.fontSize.medium;
 
   const handleChangeText = useCallback((text: string) => {

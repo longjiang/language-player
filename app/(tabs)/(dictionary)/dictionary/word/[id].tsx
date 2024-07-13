@@ -30,6 +30,7 @@ const DictionaryEntryScreen = () => {
   const { dictionary } = useDictionary();
   const { l2Lang, t } = useLanguage();
   const { settings } = useSettings();
+  const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
   const tertiaryBackgroundColor = useThemeColor({}, 'tertiaryBackground');
 
   const [entry, setEntry] = useState<null | DictionaryEntry>(null);
@@ -90,7 +91,7 @@ const DictionaryEntryScreen = () => {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: tertiaryBackgroundColor }}>
       <SafeAreaView style={{ marginTop: 16 }}>
         <View style={styles.header}>
-        <DictionaryComponent showBackIcon={true} showSettingsIcon={true} />
+        <DictionaryComponent showBackIcon={true} showSettingsIcon={true} inputBackgroundColor="primaryBackground" />
         </View>
         {entry && (
           <DictionaryEntryContent entry={entry} headKey={headKey} alternateKey={alternateKey} />

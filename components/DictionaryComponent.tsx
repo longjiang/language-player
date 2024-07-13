@@ -50,6 +50,7 @@ interface DictionaryComponentProps {
   searchBarSize?: "small" | "medium" | "large";
   showBackIcon?: boolean;
   showSettingsIcon?: boolean;
+  inputBackgroundColor?: string;
   setItems?: (items: DictionaryEntry[]) => void;
 }
 
@@ -57,6 +58,7 @@ export const DictionaryComponent: React.FC<DictionaryComponentProps> = ({
   searchBarSize = "small",
   showBackIcon = false,
   showSettingsIcon = false,
+  inputBackgroundColor = "secondaryBackground",
   setItems = () => {},
 }) => {
   const [query, setQuery] = useState("");
@@ -100,6 +102,7 @@ export const DictionaryComponent: React.FC<DictionaryComponentProps> = ({
           onChangeText={debounce(handleSearch, 300)}
           style={{ flex: 1 }}
           size={searchBarSize}
+          backgroundColor={inputBackgroundColor}
           icon="magnify"
         />
         {showSettingsIcon && (
