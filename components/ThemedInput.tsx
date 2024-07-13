@@ -45,7 +45,7 @@ export const ThemedInput: React.FC<ThemedInputProps> = memo(({
   return (
     <View style={containerStyles}>
       <TextInput
-        style={{ flex: 1, fontSize: Typography.fontSize[size], color: useThemeColor({}, 'primaryText'), width: '100%' }}
+        style={{ flex: 1, fontFamily: Typography.fontFamilyRegular, fontSize: Typography.fontSize.small, color: useThemeColor({}, 'primaryText'), width: '100%' }}
         placeholder={placeholder}
         placeholderTextColor={placeholderTextColor}
         onSubmitEditing={onSubmitEditing}

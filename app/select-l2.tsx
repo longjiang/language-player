@@ -67,7 +67,7 @@ const SelectL2Screen = () => {
       onBackPress={() => router.back()}
     >
       {showIcons && (
-        <ScrollView contentContainerStyle={styles.iconLayout}>
+        <View style={styles.iconLayout}>
           {languageOptions.filter(lang => lang.icon).map((lang: Option) => (
             <LanguageIcon
               key={lang.value}
@@ -77,7 +77,7 @@ const SelectL2Screen = () => {
               selected={selectedLanguage === lang.value}
             />
           ))}
-        </ScrollView>
+        </View>
       )}
       <ThemedLanguageSelect
         onSelect={onSelect}
@@ -112,7 +112,6 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 20,
-    marginBottom: 110,
   },
 });
 

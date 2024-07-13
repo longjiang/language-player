@@ -22,7 +22,7 @@ export const ThemedCodeInput:React.FC<{
     }
   };
 
-  const borderColor = useThemeColor({}, 'secondaryStroke');
+  const borderColor = useThemeColor({}, 'secondaryBackground');
   const backgroundColor = useThemeColor({}, 'secondaryBackground');
 
   return (
