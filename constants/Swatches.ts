@@ -1,6 +1,7 @@
 export const Swatches = {
   neutral: {
     0: '#ededee',
+    25: '#d9d9db',
     50: '#c0c1cb',
     100: '#aeb0bc',
     200: '#8b8d9e',
