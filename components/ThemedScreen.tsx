@@ -1,5 +1,3 @@
-// @/components/ThemedScreen.tsx
-
 import React from 'react';
 import { View, SafeAreaView, StyleSheet, Image, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
@@ -50,13 +48,8 @@ export const ThemedScreen = ({
         resizeMode='cover'
         aspectRatio={0.59371}
       />}
-      <SafeAreaView style={{ flex: 1 }}>
-        <ContentWrapper 
-          contentContainerStyle={[
-            styles.contentContainer,
-            scroll && styles.scrollContentContainer
-          ]}
-        >
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.contentContainer}>
           {showHeader && (
             <View style={styles.header}>
               <View style={styles.headerLeft}>
@@ -71,8 +64,10 @@ export const ThemedScreen = ({
               )}
             </View>
           )}
-          {children}
-        </ContentWrapper>
+          <ContentWrapper contentContainerStyle={scroll ? styles.scrollContent : styles.content}>
+            {children}
+          </ContentWrapper>
+        </View>
       </SafeAreaView>
     </ThemedView>
   );
@@ -81,14 +76,19 @@ export const ThemedScreen = ({
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 20,
+  },
+  safeArea: {
+    flex: 1,
   },
   contentContainer: {
+    flex: 1,
     padding: 26,
-    textAlign: "left",
-    width: "100%", // Full width container
+    width: "100%",
   },
-  scrollContentContainer: {
+  content: {
+    flex: 1,
+  },
+  scrollContent: {
     flexGrow: 1,
   },
   header: {

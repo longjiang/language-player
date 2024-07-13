@@ -84,6 +84,7 @@ const SavedWordsScreen = () => {
         router.navigate('/(tabs)/(me)');
       }}
       onAction={handleAction}
+      scroll={false}
     >
       {savedWordIds && savedWordIds.length > 0 ? (
         <WordList wordIds={savedWordIds} />
