@@ -340,7 +340,11 @@
         "payment_problem": "Wystąpił problem z Twoją płatnością.",
         "registration_failed": "Rejestracja nie powiodła się",
         "updating_progress": "Błąd podczas aktualizacji postępu:",
-        "user_info_not_found": "Nie znaleziono informacji o użytkowniku"
+        "user_info_not_found": "Nie znaleziono informacji o użytkowniku",
+        "login": "Błąd logowania",
+        "cannot_open_url": "Nie można otworzyć strony zapomnianego hasła",
+        "invalid_user_credentials": "Nieprawidłowy e-mail lub hasło",
+        "general": "Wystąpił błąd"
     },
     "feature": {
         "see_all_subtitles": "Zobacz wszystkie wyniki wyszukiwania napisów poza pierwszymi trzema.",

@@ -341,7 +341,11 @@
         "payment_problem": "आपके भुगतान में कोई समस्या थी।",
         "registration_failed": "पंजीकरण विफल",
         "updating_progress": "प्रगति अपडेट करने में त्रुटि:",
-        "user_info_not_found": "उपयोगकर्ता जानकारी नहीं मिली"
+        "user_info_not_found": "उपयोगकर्ता जानकारी नहीं मिली",
+        "login": "लॉगिन त्रुटि",
+        "cannot_open_url": "भूला हुआ पासवर्ड पृष्ठ नहीं खोल सकते",
+        "invalid_user_credentials": "अमान्य ईमेल या पासवर्ड",
+        "general": "एक त्रुटि उत्पन्न हुई"
     },
     "feature": {
         "see_all_subtitles": "प्रथम तीन से परे सभी उपशीर्षक खोज परिणाम देखें।",

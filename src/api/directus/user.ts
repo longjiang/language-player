@@ -29,7 +29,7 @@ export async function login(email: string, password: string) {
     if (response.ok) {
         return data.data.token;
     } else {
-        throw new Error(data.errors[0].message);
+        throw new Error(data.error.message);
     }
 }
 

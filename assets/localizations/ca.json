@@ -341,7 +341,11 @@
         "payment_problem": "Hi ha hagut un problema amb el seu pagament.",
         "registration_failed": "Error en el registre",
         "updating_progress": "Error en actualitzar el progrés:",
-        "user_info_not_found": "Informació d'usuari no trobada"
+        "user_info_not_found": "Informació d'usuari no trobada",
+        "login": "Error d'inici de sessió",
+        "cannot_open_url": "No es pot obrir la pàgina de contrasenya oblidada",
+        "invalid_user_credentials": "Correu electrònic o contrasenya no vàlids",
+        "general": "S'ha produït un error"
     },
     "feature": {
         "see_all_subtitles": "Veure tots els resultats de cerca de subtítols més enllà dels tres primers.",

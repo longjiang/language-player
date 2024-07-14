@@ -341,7 +341,11 @@
         "payment_problem": "Probléma volt a fizetésével.",
         "registration_failed": "Regisztráció sikertelen",
         "updating_progress": "Hiba a folyamat frissítése közben:",
-        "user_info_not_found": "Felhasználói információk nem találhatók"
+        "user_info_not_found": "Felhasználói információk nem találhatók",
+        "login": "Bejelentkezési hiba",
+        "cannot_open_url": "Nem lehet megnyitni az elfelejtett jelszó oldalt",
+        "invalid_user_credentials": "Érvénytelen e-mail cím vagy jelszó",
+        "general": "Hiba történt"
     },
     "feature": {
         "see_all_subtitles": "Az összes felirat keresési eredményének megtekintése az első három után.",

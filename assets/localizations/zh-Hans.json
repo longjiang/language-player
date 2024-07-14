@@ -337,7 +337,7 @@
         "support_subject": "支持请求"
     },
     "error": {
-        "cannot_open_url": "不知道如何打开此URL：",
+        "cannot_open_url": "无法打开忘记密码页面",
         "entry_not_found": "未找到条目或字典未加载",
         "failed_fetch_videos": "获取视频失败",
         "failed_retrieve_password": "检索存储的密码失败",
@@ -349,7 +349,10 @@
         "payment_problem": "您的付款出现问题。",
         "registration_failed": "注册失败",
         "updating_progress": "更新进度时出错：",
-        "user_info_not_found": "未找到用户信息"
+        "user_info_not_found": "未找到用户信息",
+        "login": "登录错误",
+        "invalid_user_credentials": "邮箱或密码无效",
+        "general": "发生错误"
     },
     "feature": {
         "see_all_subtitles": "查看前三个之外的所有字幕搜索结果。",

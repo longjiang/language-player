@@ -340,7 +340,11 @@
         "payment_problem": "Hubo un problema con su pago.",
         "registration_failed": "Error en el registro",
         "updating_progress": "Error al actualizar el progreso:",
-        "user_info_not_found": "Información de usuario no encontrada"
+        "user_info_not_found": "Información de usuario no encontrada",
+        "login": "Error de inicio de sesión",
+        "cannot_open_url": "No se puede abrir la página de contraseña olvidada",
+        "invalid_user_credentials": "Correo electrónico o contraseña inválidos",
+        "general": "Ocurrió un error"
     },
     "feature": {
         "see_all_subtitles": "Ver todos los resultados de búsqueda de subtítulos más allá de los tres primeros.",

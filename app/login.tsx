@@ -26,6 +26,13 @@ const LoginScreen = () => {
         }
     }, [isAuthenticated]);
 
+    const translateError = (error: string): string => {
+        // Convert error message to a translation key
+        const key = `error.${error.toLowerCase().replace(/ /g, '_')}`;
+        // Attempt to translate, fall back to original message if no translation found
+        return t(key, error);
+    };
+
     const onLoginPress = async () => {
         try {
             const token = await handleLogin(email, password);
@@ -37,7 +44,8 @@ const LoginScreen = () => {
               }
             }
         } catch (error: any) {
-            Alert.alert('Login Error', error.message);
+            const errorMessage = translateError(error.message);
+            Alert.alert(t('error.login'), errorMessage);
         }
     };
 
@@ -48,7 +56,7 @@ const LoginScreen = () => {
         if (supported) {
             await Linking.openURL(url);
         } else {
-            Alert.alert("Error", "Cannot open the forgot password page");
+            Alert.alert(t('error.general'), t('error.cannot_open_url'));
         }
     };
 

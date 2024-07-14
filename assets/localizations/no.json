@@ -340,7 +340,11 @@
         "payment_problem": "Det oppstod et problem med betalingen din.",
         "registration_failed": "Registrering mislyktes",
         "updating_progress": "Feil ved oppdatering av fremdrift:",
-        "user_info_not_found": "Brukerinformasjon ikke funnet"
+        "user_info_not_found": "Brukerinformasjon ikke funnet",
+        "login": "Påloggingsfeil",
+        "cannot_open_url": "Kan ikke åpne siden for glemt passord",
+        "invalid_user_credentials": "Ugyldig e-post eller passord",
+        "general": "Det oppstod en feil"
     },
     "feature": {
         "see_all_subtitles": "Se alle undertittelens søkeresultater utover de tre første.",

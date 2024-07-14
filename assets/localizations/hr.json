@@ -341,7 +341,11 @@
         "payment_problem": "Došlo je do problema s vašim plaćanjem.",
         "registration_failed": "Registracija nije uspjela",
         "updating_progress": "Pogreška pri ažuriranju napretka:",
-        "user_info_not_found": "Informacije o korisniku nisu pronađene"
+        "user_info_not_found": "Informacije o korisniku nisu pronađene",
+        "login": "Greška pri prijavi",
+        "cannot_open_url": "Nije moguće otvoriti stranicu za zaboravljenu lozinku",
+        "invalid_user_credentials": "Nevažeća e-pošta ili lozinka",
+        "general": "Došlo je do pogreške"
     },
     "feature": {
         "see_all_subtitles": "Pogledaj sve rezultate pretraživanja podnaslova nakon prva tri.",

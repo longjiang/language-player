@@ -339,7 +339,11 @@
         "payment_problem": "Đã xảy ra sự cố với khoản thanh toán của bạn.",
         "registration_failed": "Đăng ký thất bại",
         "updating_progress": "Lỗi khi cập nhật tiến trình:",
-        "user_info_not_found": "Không tìm thấy thông tin người dùng"
+        "user_info_not_found": "Không tìm thấy thông tin người dùng",
+        "login": "Lỗi đăng nhập",
+        "cannot_open_url": "Không thể mở trang quên mật khẩu",
+        "invalid_user_credentials": "Email hoặc mật khẩu không hợp lệ",
+        "general": "Đã xảy ra lỗi"
     },
     "feature": {
         "see_all_subtitles": "Xem tất cả kết quả tìm kiếm phụ đề ngoài ba kết quả đầu tiên.",

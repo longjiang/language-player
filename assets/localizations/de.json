@@ -341,7 +341,11 @@
         "payment_problem": "Es gab ein Problem mit Ihrer Zahlung.",
         "registration_failed": "Registrierung fehlgeschlagen",
         "updating_progress": "Fehler beim Aktualisieren des Fortschritts:",
-        "user_info_not_found": "Benutzerinformationen nicht gefunden"
+        "user_info_not_found": "Benutzerinformationen nicht gefunden",
+        "login": "Anmeldefehler",
+        "cannot_open_url": "Die Seite zum Zurücksetzen des Passworts kann nicht geöffnet werden",
+        "invalid_user_credentials": "Ungültige E-Mail oder Passwort",
+        "general": "Ein Fehler ist aufgetreten"
     },
     "feature": {
         "see_all_subtitles": "Alle Untertitel-Suchergebnisse über die ersten drei hinaus anzeigen.",

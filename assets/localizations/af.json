@@ -337,7 +337,7 @@
         "support_subject": "Ondersteuningsversoek"
     },
     "error": {
-        "cannot_open_url": "Weet nie hoe om hierdie URL oop te maak nie:",
+        "cannot_open_url": "Kan nie die bladsy vir vergete wagwoord oopmaak nie",
         "entry_not_found": "Inskrywing nie gevind of woordeboek nie gelaai nie",
         "failed_fetch_videos": "Kon nie video's laai nie",
         "failed_retrieve_password": "Kon nie gestoorde wagwoord herwin nie",
@@ -349,7 +349,10 @@
         "payment_problem": "Daar was 'n probleem met jou betaling.",
         "registration_failed": "Registrasie het misluk",
         "updating_progress": "Fout met opdatering van vordering:",
-        "user_info_not_found": "Gebruikersinligting nie gevind nie"
+        "user_info_not_found": "Gebruikersinligting nie gevind nie",
+        "login": "Aanmeldfout",
+        "invalid_user_credentials": "Ongeldige e-pos of wagwoord",
+        "general": "'n Fout het voorgekom"
     },
     "feature": {
         "see_all_subtitles": "Sien alle onderskrifsoekresultate na die eerste drie.",

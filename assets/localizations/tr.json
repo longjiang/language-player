@@ -339,7 +339,11 @@
         "payment_problem": "Ödemenizle ilgili bir sorun oluştu.",
         "registration_failed": "Kayıt başarısız",
         "updating_progress": "İlerleme güncellenirken hata:",
-        "user_info_not_found": "Kullanıcı bilgisi bulunamadı"
+        "user_info_not_found": "Kullanıcı bilgisi bulunamadı",
+        "login": "Giriş hatası",
+        "cannot_open_url": "Unutulan şifre sayfası açılamıyor",
+        "invalid_user_credentials": "Geçersiz e-posta veya şifre",
+        "general": "Bir hata oluştu"
     },
     "feature": {
         "see_all_subtitles": "İlk üçten sonraki tüm altyazı arama sonuçlarını görün.",

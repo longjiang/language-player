@@ -340,7 +340,11 @@
         "payment_problem": "Er was een probleem met uw betaling.",
         "registration_failed": "Registratie mislukt",
         "updating_progress": "Fout bij het bijwerken van de voortgang:",
-        "user_info_not_found": "Gebruikersinformatie niet gevonden"
+        "user_info_not_found": "Gebruikersinformatie niet gevonden",
+        "login": "Inlogfout",
+        "cannot_open_url": "Kan de pagina voor vergeten wachtwoord niet openen",
+        "invalid_user_credentials": "Ongeldig e-mailadres of wachtwoord",
+        "general": "Er is een fout opgetreden"
     },
     "feature": {
         "see_all_subtitles": "Bekijk alle zoekresultaten voor ondertitels na de eerste drie.",

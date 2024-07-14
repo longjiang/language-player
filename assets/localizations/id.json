@@ -341,7 +341,11 @@
         "payment_problem": "Ada masalah dengan pembayaran Anda.",
         "registration_failed": "Pendaftaran gagal",
         "updating_progress": "Kesalahan memperbarui kemajuan:",
-        "user_info_not_found": "Info pengguna tidak ditemukan"
+        "user_info_not_found": "Info pengguna tidak ditemukan",
+        "login": "Kesalahan masuk",
+        "cannot_open_url": "Tidak dapat membuka halaman lupa kata sandi",
+        "invalid_user_credentials": "Email atau kata sandi tidak valid",
+        "general": "Terjadi kesalahan"
     },
     "feature": {
         "see_all_subtitles": "Lihat semua hasil pencarian subtitle di luar tiga pertama.",

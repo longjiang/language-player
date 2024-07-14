@@ -340,7 +340,11 @@
         "payment_problem": "Det uppstod ett problem med din betalning.",
         "registration_failed": "Registrering misslyckades",
         "updating_progress": "Fel vid uppdatering av framsteg:",
-        "user_info_not_found": "Användarinformation hittades inte"
+        "user_info_not_found": "Användarinformation hittades inte",
+        "login": "Inloggningsfel",
+        "cannot_open_url": "Kan inte öppna sidan för glömt lösenord",
+        "invalid_user_credentials": "Ogiltig e-post eller lösenord",
+        "general": "Ett fel uppstod"
     },
     "feature": {
         "see_all_subtitles": "Se alla undertextsökresultat bortom de tre första.",

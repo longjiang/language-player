@@ -341,7 +341,11 @@
         "payment_problem": "كانت هناك مشكلة في الدفع الخاص بك.",
         "registration_failed": "فشل التسجيل",
         "updating_progress": "خطأ في تحديث التقدم:",
-        "user_info_not_found": "لم يتم العثور على معلومات المستخدم"
+        "user_info_not_found": "لم يتم العثور على معلومات المستخدم",
+        "login": "خطأ في تسجيل الدخول",
+        "cannot_open_url": "لا يمكن فتح صفحة نسيت كلمة المرور",
+        "invalid_user_credentials": "البريد الإلكتروني أو كلمة المرور غير صالحة",
+        "general": "حدث خطأ"
     },
     "feature": {
         "see_all_subtitles": "عرض جميع نتائج البحث في الترجمات بعد الثلاثة الأولى.",

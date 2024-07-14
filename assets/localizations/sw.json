@@ -340,7 +340,11 @@
         "payment_problem": "Kulikuwa na tatizo na malipo yako.",
         "registration_failed": "Usajili umeshindikana",
         "updating_progress": "Hitilafu katika kusasisha maendeleo:",
-        "user_info_not_found": "Maelezo ya mtumiaji hayajapatikana"
+        "user_info_not_found": "Maelezo ya mtumiaji hayajapatikana",
+        "login": "Hitilafu ya kuingia",
+        "cannot_open_url": "Haiwezi kufungua ukurasa wa neno la siri lililosahaulika",
+        "invalid_user_credentials": "Barua pepe au nywila batili",
+        "general": "Hitilafu imetokea"
     },
     "feature": {
         "see_all_subtitles": "Angalia matokeo yote ya utafutaji wa manukuu zaidi ya matatu ya kwanza.",

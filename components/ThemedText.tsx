@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Text, type TextProps, StyleSheet } from 'react-native';
-import { useFonts, Nunito_400Regular, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Typography } from '@/constants/Typography';
@@ -26,10 +25,6 @@ export function ThemedText({
   level,
   ...rest
 }: ThemedTextProps) {
-  
-  useFonts({
-    Nunito_400Regular, Nunito_800ExtraBold
-  });
 
   const colorScheme = useColorScheme();
 

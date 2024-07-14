@@ -340,7 +340,11 @@
         "payment_problem": "Houve um problema com o seu pagamento.",
         "registration_failed": "Falha no registro",
         "updating_progress": "Erro ao atualizar progresso:",
-        "user_info_not_found": "Informações do usuário não encontradas"
+        "user_info_not_found": "Informações do usuário não encontradas",
+        "login": "Erro de login",
+        "cannot_open_url": "Não é possível abrir a página de senha esquecida",
+        "invalid_user_credentials": "E-mail ou senha inválidos",
+        "general": "Ocorreu um erro"
     },
     "feature": {
         "see_all_subtitles": "Veja todos os resultados de pesquisa de legendas além dos três primeiros.",

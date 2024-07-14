@@ -340,7 +340,11 @@
         "payment_problem": "결제에 문제가 있었습니다.",
         "registration_failed": "등록에 실패했습니다",
         "updating_progress": "진행 상황 업데이트 오류:",
-        "user_info_not_found": "사용자 정보를 찾을 수 없습니다"
+        "user_info_not_found": "사용자 정보를 찾을 수 없습니다",
+        "login": "로그인 오류",
+        "cannot_open_url": "비밀번호 찾기 페이지를 열 수 없습니다",
+        "invalid_user_credentials": "잘못된 이메일 또는 비밀번호",
+        "general": "오류가 발생했습니다"
     },
     "feature": {
         "see_all_subtitles": "처음 세 개 이후의 모든 자막 검색 결과를 봅니다.",

@@ -341,7 +341,11 @@
         "payment_problem": "Maksussasi ilmeni ongelma.",
         "registration_failed": "Rekisteröinti epäonnistui",
         "updating_progress": "Virhe edistymisen päivittämisessä:",
-        "user_info_not_found": "Käyttäjätietoja ei löytynyt"
+        "user_info_not_found": "Käyttäjätietoja ei löytynyt",
+        "login": "Kirjautumisvirhe",
+        "cannot_open_url": "Unohtunut salasana -sivua ei voi avata",
+        "invalid_user_credentials": "Virheellinen sähköposti tai salasana",
+        "general": "Tapahtui virhe"
     },
     "feature": {
         "see_all_subtitles": "Näytä kaikki tekstityshaun tulokset kolmen ensimmäisen jälkeen.",

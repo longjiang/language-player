@@ -340,7 +340,11 @@
         "payment_problem": "お支払いに問題がありました。",
         "registration_failed": "登録に失敗しました",
         "updating_progress": "進行状況の更新中にエラーが発生しました:",
-        "user_info_not_found": "ユーザー情報が見つかりません"
+        "user_info_not_found": "ユーザー情報が見つかりません",
+        "login": "ログインエラー",
+        "cannot_open_url": "パスワード忘れページを開けません",
+        "invalid_user_credentials": "メールアドレスまたはパスワードが無効です",
+        "general": "エラーが発生しました"
     },
     "feature": {
         "see_all_subtitles": "最初の3つ以外のすべての字幕検索結果を表示します。",

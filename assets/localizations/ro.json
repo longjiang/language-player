@@ -340,7 +340,11 @@
         "payment_problem": "A apărut o problemă cu plata dvs.",
         "registration_failed": "Înregistrarea a eșuat",
         "updating_progress": "Eroare la actualizarea progresului:",
-        "user_info_not_found": "Informațiile utilizatorului nu au fost găsite"
+        "user_info_not_found": "Informațiile utilizatorului nu au fost găsite",
+        "login": "Eroare de autentificare",
+        "cannot_open_url": "Nu se poate deschide pagina de parolă uitată",
+        "invalid_user_credentials": "E-mail sau parolă invalidă",
+        "general": "A apărut o eroare"
     },
     "feature": {
         "see_all_subtitles": "Vezi toate rezultatele căutării de subtitrări dincolo de primele trei.",

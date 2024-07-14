@@ -341,7 +341,11 @@
         "payment_problem": "Il y a eu un problème avec votre paiement.",
         "registration_failed": "Échec de l'inscription",
         "updating_progress": "Erreur lors de la mise à jour de la progression :",
-        "user_info_not_found": "Informations utilisateur introuvables"
+        "user_info_not_found": "Informations utilisateur introuvables",
+        "login": "Erreur de connexion",
+        "cannot_open_url": "Impossible d'ouvrir la page de mot de passe oublié",
+        "invalid_user_credentials": "E-mail ou mot de passe invalide",
+        "general": "Une erreur s'est produite"
     },
     "feature": {
         "see_all_subtitles": "Voir tous les résultats de recherche de sous-titres au-delà des trois premiers.",

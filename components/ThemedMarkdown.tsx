@@ -4,7 +4,6 @@ import React from 'react';
 import { StyleSheet, type ViewStyle, type TextStyle } from 'react-native';
 import Markdown, { MarkdownProps } from 'react-native-markdown-display';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { useFonts, Nunito_400Regular, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { LevelColors } from '@/constants/Colors';
 import { Typography } from '@/constants/Typography';
@@ -25,9 +24,6 @@ export function ThemedMarkdown({
   ...rest
 }: ThemedMarkdownProps) {
   
-  useFonts({
-    Nunito_400Regular, Nunito_800ExtraBold
-  });
 
   const colorScheme = useColorScheme();
   const primaryTextColor = useThemeColor({ light: lightColor, dark: darkColor }, `${variant}Text`);

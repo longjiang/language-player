@@ -341,7 +341,11 @@
         "payment_problem": "Bhí fadhb le d'íocaíocht.",
         "registration_failed": "Theip ar an gclárú",
         "updating_progress": "Earráid agus dul chun cinn á nuashonrú:",
-        "user_info_not_found": "Níor aimsíodh eolas úsáideora"
+        "user_info_not_found": "Níor aimsíodh eolas úsáideora",
+        "login": "Earráid logála isteach",
+        "cannot_open_url": "Ní féidir an leathanach pasfhocal dearmadta a oscailt",
+        "invalid_user_credentials": "Ríomhphost nó pasfhocal neamhbhailí",
+        "general": "Tharla earráid"
     },
     "feature": {
         "see_all_subtitles": "Féach ar gach toradh cuardaigh fotheideal thar na chéad trí cinn.",

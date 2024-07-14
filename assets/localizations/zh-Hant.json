@@ -337,7 +337,7 @@
         "support_subject": "支持請求"
     },
     "error": {
-        "cannot_open_url": "不知道怎麼開這個網址耶：",
+        "cannot_open_url": "無法打開忘記密碼頁面",
         "entry_not_found": "找不到這個詞或字典還沒載好",
         "failed_fetch_videos": "抓不到影片耶",
         "failed_retrieve_password": "找不到儲存的密碼耶",
@@ -349,7 +349,10 @@
         "payment_problem": "您的付款出現問題。",
         "registration_failed": "註冊失敗啦",
         "updating_progress": "更新進度時出錯啦：",
-        "user_info_not_found": "找不到使用者資料耶"
+        "user_info_not_found": "找不到使用者資料耶",
+        "login": "登錄錯誤",
+        "invalid_user_credentials": "電子郵件或密碼無效",
+        "general": "發生錯誤"
     },
     "feature": {
         "see_all_subtitles": "看到第三個之後的所有字幕搜尋結果。",

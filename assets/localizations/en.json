@@ -337,7 +337,7 @@
         "support_subject": "Support Request"
     },
     "error": {
-        "cannot_open_url": "Don't know how to open this URL:",
+        "cannot_open_url": "Cannot open the forgot password page",
         "entry_not_found": "Entry not found or dictionary not loaded",
         "failed_fetch_videos": "Failed to fetch videos",
         "failed_retrieve_password": "Failed to retrieve stored password",
@@ -349,7 +349,10 @@
         "payment_problem": "There was a problem with your payment.",
         "registration_failed": "Registration failed",
         "updating_progress": "Error updating progress:",
-        "user_info_not_found": "User info not found"
+        "user_info_not_found": "User info not found",
+        "login": "Login Error",
+        "invalid_user_credentials": "Invalid email or password",
+        "general": "An error occurred"
     },
     "feature": {
         "see_all_subtitles": "See all subtitles search results beyond the first three.",
