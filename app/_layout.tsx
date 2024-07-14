@@ -1,13 +1,11 @@
 // @/app/_layout.tsx
-import { useFonts } from "@expo-google-fonts/nunito";
+import { useFonts, Nunito_400Regular, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
-import { Platform } from "react-native";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { VideoPlayerProvider } from "@/contexts/VideoPlayerContext";
-import { MiniPlayer } from "@/components/MiniPlayer";
 import { DictionaryProvider } from "@/contexts/DictionaryContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -27,7 +25,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    Nunito_400Regular, Nunito_800ExtraBold
   });
 
   useSoundEffect();
