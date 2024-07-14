@@ -435,7 +435,7 @@
     },
     "msg": {
         "already_have_account": "已經有帳號了嗎？",
-        "auto_renews_in": "{{days}}天後自動續訂喔",
+        "auto_renews_in": "{{days}} 天後自動續訂",
         "auto_renews": "{{time}}後自動續訂喔。",
         "choose_action": "選擇一個操作",
         "confirm_cancel_subscription": "你確定要取消訂閱嗎？",
@@ -448,7 +448,7 @@
         "enrich_your_language_learning_journey": "讓你的語言學習之旅更豐富",
         "enter_verification_code": "請輸入寄到你信箱的驗證碼",
         "existing_subscription_warning": "您目前有一個會自動續訂的{{planType}}計劃。為避免重複收費，您必須在購買新計劃之前取消現有訂閱。您想取消現有的{{planType}}訂閱嗎？",
-        "expires_in": "{{days}}天後到期喔",
+        "expires_in": "{{days}} 天後到期",
         "expiring": "{{time}}後到期。",
         "forgot_password": "忘記密碼了嗎？",
         "hsk_explanation": "「HSK」是官方的HSK，1級最簡單，9級最難喔。",
@@ -475,7 +475,10 @@
         "upgrade_text": "升級成專業版就可以看更多影片喔！",
         "videos_matching": "匹配\"{{searchTerm}}\"的視頻",
         "what_your_first_language": "你的母語是什麼呢？",
-        "with_pro_you_can": "用專業版，你就可以："
+        "with_pro_you_can": "用專業版，你就可以：",
+        "renews_today": "今天續訂",
+        "renewal_failed_contact_support": "續訂失敗。請聯繫客戶支持。",
+        "expired": "已過期"
     },
     "option": {
         "app_store": "App Store",

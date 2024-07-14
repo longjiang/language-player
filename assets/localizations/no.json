@@ -464,7 +464,10 @@
         "upgrade_text": "Oppgrader til Pro for tilgang til flere videoer!",
         "videos_matching": "Videoer som samsvarer med \"{{searchTerm}}\"",
         "what_your_first_language": "Hva er ditt morsmål?",
-        "with_pro_you_can": "Med Pro kan du:"
+        "with_pro_you_can": "Med Pro kan du:",
+        "renews_today": "Fornyes i dag",
+        "renewal_failed_contact_support": "Fornyelse mislyktes. Vennligst kontakt kundeservice.",
+        "expired": "Utløpt"
     },
     "option": {
         "app_store": "App Store",

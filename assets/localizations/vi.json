@@ -463,7 +463,10 @@
         "upgrade_text": "Nâng cấp lên Pro để truy cập thêm video!",
         "videos_matching": "Video phù hợp với \"{{searchTerm}}\"",
         "what_your_first_language": "Tiếng mẹ đẻ của bạn là gì?",
-        "with_pro_you_can": "Với Pro, bạn có thể:"
+        "with_pro_you_can": "Với Pro, bạn có thể:",
+        "renews_today": "Gia hạn hôm nay",
+        "renewal_failed_contact_support": "Gia hạn thất bại. Vui lòng liên hệ bộ phận hỗ trợ khách hàng.",
+        "expired": "Đã hết hạn"
     },
     "option": {
         "app_store": "App Store",

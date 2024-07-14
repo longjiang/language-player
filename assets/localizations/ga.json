@@ -428,7 +428,7 @@
     },
     "msg": {
         "already_have_account": "An bhfuil cuntas agat cheana?",
-        "auto_renews_in": "Athnuaite go huathoibríoch i gceann {{days}} lá",
+        "auto_renews_in": "Athnuachan uathoibríoch i gceann {{days}} lá",
         "auto_renews": "Athnuaite go huathoibríoch i gceann {{time}}.",
         "choose_action": "Roghnaigh gníomh",
         "confirm_cancel_subscription": "An bhfuil tú cinnte gur mian leat do shíntiús a chealú?",
@@ -441,7 +441,7 @@
         "enrich_your_language_learning_journey": "Saibhrigh do thuras foghlama teanga",
         "enter_verification_code": "Iontráil an cód fíoraithe a seoladh chuig an ríomhphost",
         "existing_subscription_warning": "Tá plean {{planType}} gníomhach agat faoi láthair a athnuafaidh go huathoibríoch. Chun muirir dhúbailte a sheachaint, caithfidh tú do shíntiús reatha a chealú sula gceannóidh tú ceann nua. Ar mhaith leat do shíntiús {{planType}} reatha a chealú?",
-        "expires_in": "Téann as feidhm i gceann {{days}} lá",
+        "expires_in": "Rachaidh in éag i gceann {{days}} lá",
         "expiring": "Ag dul as feidhm i gceann {{time}}.",
         "forgot_password": "Ar dhearmad tú do phasfhocal?",
         "hsk_explanation": "Is é \"HSK\" an scrúdú oifigiúil inniúlachta Sínis, le Leibhéal 1 mar an leibhéal is ísle agus Leibhéal 9 mar an leibhéal is airde.",
@@ -465,7 +465,10 @@
         "upgrade_text": "Uasghrádaigh go Pro chun rochtain a fháil ar níos mó físeán!",
         "videos_matching": "Físeáin ag meaitseáil \"{{searchTerm}}\"",
         "what_your_first_language": "Cad é do mháthairtheanga?",
-        "with_pro_you_can": "Le Pro, is féidir leat:"
+        "with_pro_you_can": "Le Pro, is féidir leat:",
+        "renews_today": "Athnuaigh inniu",
+        "renewal_failed_contact_support": "Theip ar an athnuachan. Déan teagmháil le tacaíocht do chustaiméirí.",
+        "expired": "Imithe in éag"
     },
     "option": {
         "app_store": "App Store",

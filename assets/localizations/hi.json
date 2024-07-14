@@ -428,7 +428,7 @@
     },
     "msg": {
         "already_have_account": "क्या आपके पास पहले से एक खाता है?",
-        "auto_renews_in": "{{days}} दिनों में स्वत: नवीनीकरण",
+        "auto_renews_in": "{{days}} दिनों में स्वतः नवीनीकरण",
         "auto_renews": "{{time}} में स्वत: नवीनीकरण।",
         "choose_action": "एक कार्रवाई चुनें",
         "confirm_cancel_subscription": "क्या आप वाकई अपनी सदस्यता रद्द करना चाहते हैं?",
@@ -465,7 +465,10 @@
         "upgrade_text": "अधिक वीडियो तक पहुँचने के लिए प्रो में अपग्रेड करें!",
         "videos_matching": "\"{{searchTerm}}\" से मेल खाते वीडियो",
         "what_your_first_language": "आपकी पहली भाषा क्या है?",
-        "with_pro_you_can": "प्रो के साथ, आप कर सकते हैं:"
+        "with_pro_you_can": "प्रो के साथ, आप कर सकते हैं:",
+        "renews_today": "आज नवीनीकरण होता है",
+        "renewal_failed_contact_support": "नवीनीकरण विफल रहा। कृपया ग्राहक सहायता से संपर्क करें।",
+        "expired": "समाप्त हो गया"
     },
     "option": {
         "app_store": "ऐप स्टोर",

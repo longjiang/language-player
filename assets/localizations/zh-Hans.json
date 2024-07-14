@@ -435,7 +435,7 @@
     },
     "msg": {
         "already_have_account": "已有账户？",
-        "auto_renews_in": "{{days}}天后自动续订",
+        "auto_renews_in": "{{days}} 天后自动续订",
         "auto_renews": "{{time}}后自动续订。",
         "choose_action": "选择一个操作",
         "confirm_cancel_subscription": "您确定要取消订阅吗？",
@@ -448,7 +448,7 @@
         "enrich_your_language_learning_journey": "丰富您的语言学习之旅",
         "enter_verification_code": "请输入发送到邮箱的验证码",
         "existing_subscription_warning": "您目前有一个会自动续订的{{planType}}计划。为避免重复收费，您必须在购买新计划之前取消现有订阅。您想取消现有的{{planType}}订阅吗？",
-        "expires_in": "{{days}}天后过期",
+        "expires_in": "{{days}} 天后到期",
         "expiring": "{{time}}后过期。",
         "forgot_password": "忘记密码？",
         "hsk_explanation": "\"HSK\"是官方HSK，1级为最低，9级为最高。",
@@ -475,7 +475,10 @@
         "upgrade_text": "升级到专业版以访问更多视频！",
         "videos_matching": "匹配\"{{searchTerm}}\"的视频",
         "what_your_first_language": "您的母语是什么？",
-        "with_pro_you_can": "使用专业版，您可以："
+        "with_pro_you_can": "使用专业版，您可以：",
+        "renews_today": "今天续订",
+        "renewal_failed_contact_support": "续订失败。请联系客户支持。",
+        "expired": "已过期"
     },
     "option": {
         "app_store": "应用商店",

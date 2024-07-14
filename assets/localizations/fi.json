@@ -465,7 +465,10 @@
         "upgrade_text": "Päivitä Pro-versioon saadaksesi lisää videoita!",
         "videos_matching": "Videot hakusanalla \"{{searchTerm}}\"",
         "what_your_first_language": "Mikä on äidinkielesi?",
-        "with_pro_you_can": "Pro-versiolla voit:"
+        "with_pro_you_can": "Pro-versiolla voit:",
+        "renews_today": "Uusitaan tänään",
+        "renewal_failed_contact_support": "Uusiminen epäonnistui. Ota yhteyttä asiakastukeen.",
+        "expired": "Vanhentunut"
     },
     "option": {
         "app_store": "App Store",

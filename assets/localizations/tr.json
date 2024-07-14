@@ -463,7 +463,10 @@
         "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!",
         "videos_matching": "\"{{searchTerm}}\" ile eşleşen videolar",
         "what_your_first_language": "Anadiliniz nedir?",
-        "with_pro_you_can": "Pro ile şunları yapabilirsiniz:"
+        "with_pro_you_can": "Pro ile şunları yapabilirsiniz:",
+        "renews_today": "Bugün yenileniyor",
+        "renewal_failed_contact_support": "Yenileme başarısız oldu. Lütfen müşteri desteğiyle iletişime geçin.",
+        "expired": "Süresi doldu"
     },
     "option": {
         "app_store": "App Store",

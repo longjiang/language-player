@@ -435,7 +435,7 @@
     },
     "msg": {
         "already_have_account": "Already have an account?",
-        "auto_renews_in": "Auto renews in {{days}} days",
+        "auto_renews_in": "Auto-renews in {{days}} days",
         "auto_renews": "Auto-renews in {{time}}.",
         "choose_action": "Choose an action",
         "confirm_cancel_subscription": "Are you sure you want to cancel your subscription?",
@@ -475,7 +475,10 @@
         "upgrade_text": "Upgrade to Pro to access more videos!",
         "videos_matching": "Videos matching \"{{searchTerm}}\"",
         "what_your_first_language": "What’s your first language?",
-        "with_pro_you_can": "With Pro, you can:"
+        "with_pro_you_can": "With Pro, you can:",
+        "renews_today": "Renews today",
+        "renewal_failed_contact_support": "Renewal failed. Please contact customer support.",
+        "expired": "Expired"
     },
     "option": {
         "app_store": "App Store",

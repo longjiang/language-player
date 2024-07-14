@@ -427,7 +427,7 @@
     },
     "msg": {
         "already_have_account": "Već imaš nalog?",
-        "auto_renews_in": "Automatski se obnavlja za {{days}} dana",
+        "auto_renews_in": "Аутоматски се обнавља за {{days}} дана",
         "auto_renews": "Automatski se obnavlja za {{time}}.",
         "choose_action": "Изаберите радњу",
         "confirm_cancel_subscription": "Da li si siguran/na da želiš da otkažeš pretplatu?",
@@ -440,7 +440,7 @@
         "enrich_your_language_learning_journey": "Obogati svoje putovanje učenja jezika",
         "enter_verification_code": "Unesi verifikacioni kod poslat na e-poštu",
         "existing_subscription_warning": "Тренутно имате активан {{planType}} план који ће се аутоматски обновити. Да бисте избегли дупле наплате, морате отказати постојећу претплату пре куповине нове. Да ли желите да откажете постојећу {{planType}} претплату?",
-        "expires_in": "Ističe za {{days}} dana",
+        "expires_in": "Истиче за {{days}} дана",
         "expiring": "Ističe za {{time}}.",
         "forgot_password": "Zaboravljena lozinka?",
         "hsk_explanation": "\"HSK\" je zvanični test poznavanja kineskog jezika, gde je Nivo 1 najniži, a Nivo 9 najviši.",
@@ -464,7 +464,10 @@
         "upgrade_text": "Nadogradi na Pro za pristup većem broju video zapisa!",
         "videos_matching": "Видео записи који одговарају \"{{searchTerm}}\"",
         "what_your_first_language": "Koji je tvoj maternji jezik?",
-        "with_pro_you_can": "Sa Pro verzijom možeš:"
+        "with_pro_you_can": "Sa Pro verzijom možeš:",
+        "renews_today": "Обнавља се данас",
+        "renewal_failed_contact_support": "Обнова није успела. Молимо контактирајте корисничку подршку.",
+        "expired": "Истекло"
     },
     "option": {
         "app_store": "App Store",

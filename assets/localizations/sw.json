@@ -427,7 +427,7 @@
     },
     "msg": {
         "already_have_account": "Tayari una akaunti?",
-        "auto_renews_in": "Inasasishwa moja kwa moja baada ya {{days}} siku",
+        "auto_renews_in": "Huisha kiotomatiki baada ya siku {{days}}",
         "auto_renews": "Inasasishwa moja kwa moja baada ya {{time}}.",
         "choose_action": "Chagua kitendo",
         "confirm_cancel_subscription": "Una uhakika unataka kughairi usajili wako?",
@@ -440,7 +440,7 @@
         "enrich_your_language_learning_journey": "Boresha safari yako ya kujifunza lugha",
         "enter_verification_code": "Tafadhali ingiza msimbo wa uthibitisho uliotumwa kwa barua pepe",
         "existing_subscription_warning": "Kwa sasa una mpango hai wa {{planType}} ambao utajididisha kiotomatiki. Ili kuepuka malipo ya ziada, lazima ughairi usajili wako uliopo kabla ya kununua mpya. Je, ungependa kughairi usajili wako wa {{planType}} uliopo?",
-        "expires_in": "Inakwisha baada ya {{days}} siku",
+        "expires_in": "Inaisha baada ya siku {{days}}",
         "expiring": "Inakwisha baada ya {{time}}.",
         "forgot_password": "Umesahau nenosiri?",
         "hsk_explanation": "\"HSK\" ni mtihani rasmi wa ustadi wa Kichina, na Kiwango cha 1 ni cha chini kabisa na Kiwango cha 9 ni cha juu zaidi.",
@@ -464,7 +464,10 @@
         "upgrade_text": "Boresha hadi Pro ili kupata video zaidi!",
         "videos_matching": "Video zinazofanana na \"{{searchTerm}}\"",
         "what_your_first_language": "Lugha yako ya kwanza ni ipi?",
-        "with_pro_you_can": "Ukiwa na Pro, unaweza:"
+        "with_pro_you_can": "Ukiwa na Pro, unaweza:",
+        "renews_today": "Huisha leo",
+        "renewal_failed_contact_support": "Upyaji umeshindwa. Tafadhali wasiliana na huduma ya wateja.",
+        "expired": "Imeisha muda"
     },
     "option": {
         "app_store": "Duka la Programu",

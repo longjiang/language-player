@@ -440,7 +440,7 @@
         "enrich_your_language_learning_journey": "Berika din språkinlärningsresa",
         "enter_verification_code": "Ange verifieringskoden som skickats till e-posten",
         "existing_subscription_warning": "Du har för närvarande en aktiv {{planType}}-plan som kommer att förnyas automatiskt. För att undvika dubbla avgifter måste du avbryta din befintliga prenumeration innan du köper en ny. Vill du avbryta din befintliga {{planType}}-prenumeration?",
-        "expires_in": "Upphör om {{days}} dagar",
+        "expires_in": "Löper ut om {{days}} dagar",
         "expiring": "Upphör om {{time}}.",
         "forgot_password": "Glömt lösenord?",
         "hsk_explanation": "\"HSK\" är det officiella kinesiska färdighetsprovet, med nivå 1 som det lägsta och nivå 9 som det högsta.",
@@ -464,7 +464,10 @@
         "upgrade_text": "Uppgradera till Pro för att få åtkomst till fler videor!",
         "videos_matching": "Videor som matchar \"{{searchTerm}}\"",
         "what_your_first_language": "Vad är ditt modersmål?",
-        "with_pro_you_can": "Med Pro kan du:"
+        "with_pro_you_can": "Med Pro kan du:",
+        "renews_today": "Förnyas idag",
+        "renewal_failed_contact_support": "Förnyelsen misslyckades. Vänligen kontakta kundsupport.",
+        "expired": "Utgången"
     },
     "option": {
         "app_store": "App Store",

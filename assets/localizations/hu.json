@@ -428,7 +428,7 @@
     },
     "msg": {
         "already_have_account": "Már van fiókja?",
-        "auto_renews_in": "Automatikus megújítás {{days}} nap múlva",
+        "auto_renews_in": "{{days}} nap múlva automatikusan megújul",
         "auto_renews": "Automatikusan megújul {{time}} múlva.",
         "choose_action": "Válasszon egy műveletet",
         "confirm_cancel_subscription": "Biztos benne, hogy le szeretné mondani az előfizetését?",
@@ -465,7 +465,10 @@
         "upgrade_text": "Frissítsen Pro-ra a további videók eléréséhez!",
         "videos_matching": "A(z) \"{{searchTerm}}\" kifejezésnek megfelelő videók",
         "what_your_first_language": "Mi az első nyelve?",
-        "with_pro_you_can": "A Pro-val teheti:"
+        "with_pro_you_can": "A Pro-val teheti:",
+        "renews_today": "Ma megújul",
+        "renewal_failed_contact_support": "A megújítás sikertelen. Kérjük, lépjen kapcsolatba az ügyfélszolgálattal.",
+        "expired": "Lejárt"
     },
     "option": {
         "app_store": "App Store",

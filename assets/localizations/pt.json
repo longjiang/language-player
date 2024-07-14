@@ -464,7 +464,10 @@
         "upgrade_text": "Atualize para Pro para acessar mais vídeos!",
         "videos_matching": "Vídeos correspondentes a \"{{searchTerm}}\"",
         "what_your_first_language": "Qual é a sua primeira língua?",
-        "with_pro_you_can": "Com o Pro, você pode:"
+        "with_pro_you_can": "Com o Pro, você pode:",
+        "renews_today": "Renova-se hoje",
+        "renewal_failed_contact_support": "A renovação falhou. Por favor, contate o suporte ao cliente.",
+        "expired": "Expirado"
     },
     "option": {
         "app_store": "App Store",

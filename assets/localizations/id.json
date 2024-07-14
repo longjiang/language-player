@@ -428,7 +428,7 @@
     },
     "msg": {
         "already_have_account": "Sudah memiliki akun?",
-        "auto_renews_in": "Otomatis diperbarui dalam {{days}} hari",
+        "auto_renews_in": "Perpanjangan otomatis dalam {{days}} hari",
         "auto_renews": "Otomatis diperbarui dalam {{time}}.",
         "choose_action": "Pilih tindakan",
         "confirm_cancel_subscription": "Apakah Anda yakin ingin membatalkan langganan Anda?",
@@ -465,7 +465,10 @@
         "upgrade_text": "Tingkatkan ke Pro untuk mengakses lebih banyak video!",
         "videos_matching": "Video yang cocok dengan \"{{searchTerm}}\"",
         "what_your_first_language": "Apa bahasa ibu Anda?",
-        "with_pro_you_can": "Dengan Pro, Anda dapat:"
+        "with_pro_you_can": "Dengan Pro, Anda dapat:",
+        "renews_today": "Diperpanjang hari ini",
+        "renewal_failed_contact_support": "Pembaruan gagal. Silakan hubungi dukungan pelanggan.",
+        "expired": "Kedaluwarsa"
     },
     "option": {
         "app_store": "App Store",

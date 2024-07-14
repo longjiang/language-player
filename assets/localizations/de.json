@@ -428,7 +428,7 @@
     },
     "msg": {
         "already_have_account": "Haben Sie bereits ein Konto?",
-        "auto_renews_in": "Verlängert sich automatisch in {{days}} Tagen",
+        "auto_renews_in": "Automatische Erneuerung in {{days}} Tagen",
         "auto_renews": "Verlängert sich automatisch in {{time}}.",
         "choose_action": "Wähle eine Aktion",
         "confirm_cancel_subscription": "Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten?",
@@ -465,7 +465,10 @@
         "upgrade_text": "Upgraden Sie auf Pro, um Zugang zu mehr Videos zu erhalten!",
         "videos_matching": "Videos passend zu \"{{searchTerm}}\"",
         "what_your_first_language": "Was ist Ihre Muttersprache?",
-        "with_pro_you_can": "Mit Pro können Sie:"
+        "with_pro_you_can": "Mit Pro können Sie:",
+        "renews_today": "Erneuert sich heute",
+        "renewal_failed_contact_support": "Erneuerung fehlgeschlagen. Bitte kontaktieren Sie den Kundensupport.",
+        "expired": "Abgelaufen"
     },
     "option": {
         "app_store": "App Store",

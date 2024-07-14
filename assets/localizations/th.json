@@ -463,7 +463,10 @@
         "upgrade_text": "อัพเกรดเป็น Pro เพื่อเข้าถึงวิดีโอเพิ่มเติม!",
         "videos_matching": "วิดีโอที่ตรงกับ \"{{searchTerm}}\"",
         "what_your_first_language": "ภาษาแม่ของคุณคืออะไร?",
-        "with_pro_you_can": "ด้วย Pro คุณสามารถ:"
+        "with_pro_you_can": "ด้วย Pro คุณสามารถ:",
+        "renews_today": "ต่ออายุวันนี้",
+        "renewal_failed_contact_support": "การต่ออายุล้มเหลว โปรดติดต่อฝ่ายสนับสนุนลูกค้า",
+        "expired": "หมดอายุ"
     },
     "option": {
         "app_store": "App Store",

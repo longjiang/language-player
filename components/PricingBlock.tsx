@@ -79,9 +79,23 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
   
     const days = getDeltaDate(subscription.expires_on);
     if (subscription.type === "lifetime") return t('duration.lifetime');
-    return subscription.payment_customer_id
-      ? t('msg.auto_renews_in', { days })
-      : t('msg.expires_in', { days });
+    
+    if (subscription.payment_customer_id) {
+      if (days > 0) {
+        return t('msg.auto_renews_in', { days });
+      } else if (days === 0) {
+        return t('msg.renews_today');
+      } else {
+        // Renewal failed case
+        return t('msg.renewal_failed_contact_support');
+      }
+    } else {
+      if (days > 0) {
+        return t('msg.expires_in', { days });
+      } else {
+        return t('msg.expired');
+      }
+    }
   };
 
   const shouldShowUpgrade = showUpgrade && subscription && subscription.type !== "lifetime";

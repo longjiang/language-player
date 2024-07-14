@@ -464,7 +464,10 @@
         "upgrade_text": "Fă upgrade la Pro pentru a accesa mai multe videoclipuri!",
         "videos_matching": "Videoclipuri care se potrivesc cu \"{{searchTerm}}\"",
         "what_your_first_language": "Care este limba ta maternă?",
-        "with_pro_you_can": "Cu Pro, poți:"
+        "with_pro_you_can": "Cu Pro, poți:",
+        "renews_today": "Se reînnoiește astăzi",
+        "renewal_failed_contact_support": "Reînnoirea a eșuat. Vă rugăm să contactați asistența pentru clienți.",
+        "expired": "Expirat"
     },
     "option": {
         "app_store": "App Store",

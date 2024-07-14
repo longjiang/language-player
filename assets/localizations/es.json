@@ -440,7 +440,7 @@
         "enrich_your_language_learning_journey": "Enriquece tu viaje de aprendizaje de idiomas",
         "enter_verification_code": "Por favor, introduce el código de verificación enviado al correo electrónico",
         "existing_subscription_warning": "Actualmente tienes un plan {{planType}} activo que se renovará automáticamente. Para evitar cargos duplicados, debes cancelar tu suscripción existente antes de comprar una nueva. ¿Quieres cancelar tu suscripción {{planType}} existente?",
-        "expires_in": "Caduca en {{days}} días",
+        "expires_in": "Expira en {{days}} días",
         "expiring": "Caducando en {{time}}.",
         "forgot_password": "¿Olvidaste tu contraseña?",
         "hsk_explanation": "\"HSK\" es la prueba oficial de competencia en chino, siendo el Nivel 1 el más bajo y el Nivel 9 el más alto.",
@@ -464,7 +464,10 @@
         "upgrade_text": "¡Actualiza a Pro para acceder a más videos!",
         "videos_matching": "Videos que coinciden con \"{{searchTerm}}\"",
         "what_your_first_language": "¿Cuál es tu lengua materna?",
-        "with_pro_you_can": "Con Pro, puedes:"
+        "with_pro_you_can": "Con Pro, puedes:",
+        "renews_today": "Se renueva hoy",
+        "renewal_failed_contact_support": "La renovación falló. Por favor, contacte con atención al cliente.",
+        "expired": "Caducado"
     },
     "option": {
         "app_store": "App Store",

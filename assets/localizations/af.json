@@ -435,7 +435,7 @@
     },
     "msg": {
         "already_have_account": "Het jy reeds 'n rekening?",
-        "auto_renews_in": "Hernieu outomaties oor {{days}} dae",
+        "auto_renews_in": "Hernuwe outomaties oor {{days}} dae",
         "auto_renews": "Hernieu outomaties oor {{time}}.",
         "choose_action": "Kies 'n aksie",
         "confirm_cancel_subscription": "Is jy seker jy wil jou inskrywing kanselleer?",
@@ -475,7 +475,10 @@
         "upgrade_text": "Opgradeer na Pro om toegang tot meer video's te kry!",
         "videos_matching": "Video's wat ooreenstem met \"{{searchTerm}}\"",
         "what_your_first_language": "Wat is jou moedertaal?",
-        "with_pro_you_can": "Met Pro kan jy:"
+        "with_pro_you_can": "Met Pro kan jy:",
+        "renews_today": "Hernuwe vandag",
+        "renewal_failed_contact_support": "Hernuwing het misluk. Kontak asseblief kliëntediens.",
+        "expired": "Verval"
     },
     "option": {
         "app_store": "App Store",

@@ -427,7 +427,7 @@
     },
     "msg": {
         "already_have_account": "すでにアカウントをお持ちですか？",
-        "auto_renews_in": "自動更新まで{{days}}日",
+        "auto_renews_in": "{{days}}日後に自動更新",
         "auto_renews": "{{time}}後に自動更新されます。",
         "choose_action": "アクションを選択",
         "confirm_cancel_subscription": "サブスクリプションをキャンセルしてもよろしいですか？",
@@ -464,7 +464,10 @@
         "upgrade_text": "より多くのビデオにアクセスするには、Proにアップグレードしてください！",
         "videos_matching": "\"{{searchTerm}}\"に一致する動画",
         "what_your_first_language": "あなたの第一言語は何ですか？",
-        "with_pro_you_can": "Proでは、次のことができます:"
+        "with_pro_you_can": "Proでは、次のことができます:",
+        "renews_today": "本日更新",
+        "renewal_failed_contact_support": "更新に失敗しました。カスタマーサポートにお問い合わせください。",
+        "expired": "期限切れ"
     },
     "option": {
         "app_store": "App Store",

@@ -427,7 +427,7 @@
     },
     "msg": {
         "already_have_account": "이미 계정이 있으신가요?",
-        "auto_renews_in": "{{days}}일 후 자동 갱신됩니다",
+        "auto_renews_in": "{{days}}일 후 자동 갱신",
         "auto_renews": "{{time}} 후 자동 갱신됩니다.",
         "choose_action": "작업 선택",
         "confirm_cancel_subscription": "구독을 취소하시겠습니까?",
@@ -440,7 +440,7 @@
         "enrich_your_language_learning_journey": "언어 학습 여정을 풍부하게 만드세요",
         "enter_verification_code": "이메일로 전송된 인증 코드를 입력하세요",
         "existing_subscription_warning": "현재 자동 갱신되는 활성 {{planType}} 플랜이 있습니다. 중복 요금을 피하려면 새로운 플랜을 구매하기 전에 기존 구독을 취소해야 합니다. 기존 {{planType}} 구독을 취소하시겠습니까?",
-        "expires_in": "{{days}}일 후 만료됩니다",
+        "expires_in": "{{days}}일 후 만료",
         "expiring": "{{time}} 후 만료됩니다.",
         "forgot_password": "비밀번호를 잊으셨나요?",
         "hsk_explanation": "\"HSK\"는 공식 중국어 능력 시험으로, 1급이 가장 낮고 9급이 가장 높습니다.",
@@ -464,7 +464,10 @@
         "upgrade_text": "더 많은 동영상에 접근하려면 프로로 업그레이드하세요!",
         "videos_matching": "\"{{searchTerm}}\"와(과) 일치하는 동영상",
         "what_your_first_language": "모국어가 무엇인가요?",
-        "with_pro_you_can": "프로 버전으로 다음을 할 수 있습니다:"
+        "with_pro_you_can": "프로 버전으로 다음을 할 수 있습니다:",
+        "renews_today": "오늘 갱신",
+        "renewal_failed_contact_support": "갱신에 실패했습니다. 고객 지원에 문의하세요.",
+        "expired": "만료됨"
     },
     "option": {
         "app_store": "App Store",

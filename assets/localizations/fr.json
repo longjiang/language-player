@@ -465,7 +465,10 @@
         "upgrade_text": "Passer à la version Pro pour accéder à plus de vidéos !",
         "videos_matching": "Vidéos correspondant à \"{{searchTerm}}\"",
         "what_your_first_language": "Quelle est votre langue maternelle ?",
-        "with_pro_you_can": "Avec Pro, vous pouvez :"
+        "with_pro_you_can": "Avec Pro, vous pouvez :",
+        "renews_today": "Se renouvelle aujourd'hui",
+        "renewal_failed_contact_support": "Le renouvellement a échoué. Veuillez contacter le support client.",
+        "expired": "Expiré"
     },
     "option": {
         "app_store": "App Store",

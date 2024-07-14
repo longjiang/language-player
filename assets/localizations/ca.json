@@ -465,7 +465,10 @@
         "upgrade_text": "Actualitza a Pro per accedir a més vídeos!",
         "videos_matching": "Vídeos que coincideixen amb \"{{searchTerm}}\"",
         "what_your_first_language": "Quina és la teva llengua materna?",
-        "with_pro_you_can": "Amb Pro, pots:"
+        "with_pro_you_can": "Amb Pro, pots:",
+        "renews_today": "Es renova avui",
+        "renewal_failed_contact_support": "Ha fallat la renovació. Contacteu amb el suport al client.",
+        "expired": "Caducat"
     },
     "option": {
         "app_store": "App Store",

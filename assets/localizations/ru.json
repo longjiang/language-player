@@ -464,7 +464,10 @@
         "upgrade_text": "Обновитесь до Pro для доступа к большему количеству видео!",
         "videos_matching": "Видео, соответствующие \"{{searchTerm}}\"",
         "what_your_first_language": "Какой ваш родной язык?",
-        "with_pro_you_can": "С Pro вы можете:"
+        "with_pro_you_can": "С Pro вы можете:",
+        "renews_today": "Продлевается сегодня",
+        "renewal_failed_contact_support": "Не удалось продлить подписку. Пожалуйста, свяжитесь со службой поддержки.",
+        "expired": "Истек срок действия"
     },
     "option": {
         "app_store": "App Store",

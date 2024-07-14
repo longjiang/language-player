@@ -1,3 +1,5 @@
+// @/src/utils.tsx
+
 // Convert ISO 8601 duration string to total seconds
 export const parseDuration = (duration: string): number => {
   const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;

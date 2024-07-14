@@ -465,7 +465,10 @@
         "upgrade_text": "Nadogradi na Pro za pristup većem broju videozapisa!",
         "videos_matching": "Videozapisi koji odgovaraju \"{{searchTerm}}\"",
         "what_your_first_language": "Koji je tvoj materinski jezik?",
-        "with_pro_you_can": "S Pro verzijom možeš:"
+        "with_pro_you_can": "S Pro verzijom možeš:",
+        "renews_today": "Obnavlja se danas",
+        "renewal_failed_contact_support": "Obnova nije uspjela. Molimo kontaktirajte korisničku podršku.",
+        "expired": "Isteklo"
     },
     "option": {
         "app_store": "App Store",
