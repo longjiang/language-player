@@ -293,13 +293,13 @@ export const proFeatureModalStyles = StyleSheet.create({
 
 export const goProStyles = StyleSheet.create({
   paymentButton: { justifyContent: "space-between", marginBottom: 8 },
-  subHeader: { fontSize: 18, marginBottom: 20 },
+  subHeader: { fontSize: 18, marginTop: 32, marginBottom: 20 },
   features: { alignItems: "flex-start", marginBottom: 0 },
   feature: { flexDirection: "row", alignItems: "center", marginBottom: 10, justifyContent: "space-between", width: "100%" },
   featureText: { marginLeft: 10, width: 290 },
   choosePlan: { alignSelf: "center", marginBottom: 20 },
   footerText: { marginTop: 10 },
-  rocketImage: { width: 59, height: 51, position: "absolute", top: 20, right: 20 },
+  rocketImage: { width: 59, height: 51, position: "absolute", top: 0, right: 16 },
 });
 
 export const tvShowsStyles = StyleSheet.create({
