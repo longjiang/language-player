@@ -16,6 +16,7 @@ import { UserDataProvider } from '@/contexts/UserDataContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import { useSoundEffect } from "@/hooks/useSoundEffect";
 import { TVShowsProvider } from "@/contexts/TVShowsContext";
+import { StatusBar } from 'expo-status-bar';
 
 const soundObject = new Audio.Sound();
 
@@ -50,6 +51,7 @@ export default function RootLayout() {
                   <ThemeProvider>
                     <TVShowsProvider>
                       <VideoPlayerProvider>
+                        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
                         <Stack>
                           <Stack.Screen name="index" options={{ headerShown: false }} />
                           <Stack.Screen name="login" options={{ headerShown: false }} />
