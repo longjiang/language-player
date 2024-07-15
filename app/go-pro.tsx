@@ -125,6 +125,14 @@ const GoProScreen = () => {
     { type: "lifetime", price: t('price.lifetime', { price: 169 }), duration: t('duration.lifetime'), recommended: true },
   ];
 
+  // Filter plans based on the platform and current subscription
+  const filteredPlans = Platform.OS === 'ios'
+    ? plans.filter(plan => 
+        (plan.type === currentPlan && subscriptionIsActive(subscription)) || 
+        plan.type === 'lifetime'
+      )
+    : plans;
+
   return (
     <ThemedScreen title={t('title.go_pro')} onBackPress={() => router.back()}>
       <Image
@@ -157,13 +165,13 @@ const GoProScreen = () => {
       <ThemedText style={styles.choosePlan} type="subtitle">
         {subscriptionIsActive(subscription) ? t('title.your_current_plan') : t('title.choose_your_plan')}
       </ThemedText>
-      {plans.map((plan) => (
+      {filteredPlans.map((plan) => (
         <PricingBlock
           key={plan.type}
           price={plan.price}
           duration={plan.duration}
           current={subscriptionIsActive(subscription) && plan.type === currentPlan}
-          recommended={plan.recommended}
+          recommended={plan.type === 'lifetime'}
           onPress={() => handlePricingBlockPress(plan.type)}
           subscription={subscriptionIsActive(subscription) ? subscription : null}
           showUpgrade={false}
