@@ -163,7 +163,7 @@ const GoProScreen = () => {
         ))}
       </View>
       <ThemedText style={styles.choosePlan} type="subtitle">
-        {subscriptionIsActive(subscription) ? t('title.your_current_plan') : t('title.choose_your_plan')}
+        {t('title.choose_your_plan')}
       </ThemedText>
       {filteredPlans.map((plan) => (
         <PricingBlock
