@@ -45,7 +45,7 @@ const MediaHomeScreen = () => {
         throw new Error('Progress data not available');
       }
 
-      const level = Number(l2Progress.level);
+      const level = l2Progress.level ? Number(l2Progress.level) : undefined;
       const preferredCategories = [];
       const excludeIds = items.map(item => item.id);
       const madeForKids = 0;
