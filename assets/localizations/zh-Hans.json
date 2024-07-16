@@ -309,7 +309,8 @@
         "upgrade_to_pro": "升级到专业版",
         "upgrade": "升级",
         "verify": "验证",
-        "watch": "观看"
+        "watch": "观看",
+        "load_more": "加载更多"
     },
     "button": {
         "email_support": "发邮件给客服",
@@ -352,7 +353,8 @@
         "user_info_not_found": "未找到用户信息",
         "login": "登录错误",
         "invalid_user_credentials": "邮箱或密码无效",
-        "general": "发生错误"
+        "general": "发生错误",
+        "loading_failed": "加载失败"
     },
     "feature": {
         "see_all_subtitles": "查看前三个之外的所有字幕搜索结果。",

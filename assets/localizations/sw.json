@@ -308,7 +308,8 @@
         "upgrade_to_pro": "Boresha hadi Pro",
         "upgrade": "Boresha",
         "verify": "Thibitisha",
-        "watch": "Tazama"
+        "watch": "Tazama",
+        "load_more": "Pakia zaidi"
     },
     "button": {
         "keep_current_time": "Weka Muda wa Sasa",
@@ -344,7 +345,8 @@
         "login": "Hitilafu ya kuingia",
         "cannot_open_url": "Haiwezi kufungua ukurasa wa neno la siri lililosahaulika",
         "invalid_user_credentials": "Barua pepe au nywila batili",
-        "general": "Hitilafu imetokea"
+        "general": "Hitilafu imetokea",
+        "loading_failed": "Imeshindwa kupakia"
     },
     "feature": {
         "see_all_subtitles": "Angalia matokeo yote ya utafutaji wa manukuu zaidi ya matatu ya kwanza.",

@@ -308,7 +308,8 @@
         "upgrade_to_pro": "Uppgradera till Pro",
         "upgrade": "Uppgradera",
         "verify": "Verifiera",
-        "watch": "Titta"
+        "watch": "Titta",
+        "load_more": "Ladda mer"
     },
     "button": {
         "keep_current_time": "Behåll Nuvarande Tid",
@@ -344,7 +345,8 @@
         "login": "Inloggningsfel",
         "cannot_open_url": "Kan inte öppna sidan för glömt lösenord",
         "invalid_user_credentials": "Ogiltig e-post eller lösenord",
-        "general": "Ett fel uppstod"
+        "general": "Ett fel uppstod",
+        "loading_failed": "Laddningen misslyckades"
     },
     "feature": {
         "see_all_subtitles": "Se alla undertextsökresultat bortom de tre första.",

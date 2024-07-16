@@ -309,7 +309,8 @@
         "upgrade_to_pro": "Päivitä Pro-versioon",
         "upgrade": "Päivitä",
         "verify": "Vahvista",
-        "watch": "Katso"
+        "watch": "Katso",
+        "load_more": "Lataa lisää"
     },
     "button": {
         "keep_current_time": "Säilytä Nykyinen Aika",
@@ -345,7 +346,8 @@
         "login": "Kirjautumisvirhe",
         "cannot_open_url": "Unohtunut salasana -sivua ei voi avata",
         "invalid_user_credentials": "Virheellinen sähköposti tai salasana",
-        "general": "Tapahtui virhe"
+        "general": "Tapahtui virhe",
+        "loading_failed": "Lataus epäonnistui"
     },
     "feature": {
         "see_all_subtitles": "Näytä kaikki tekstityshaun tulokset kolmen ensimmäisen jälkeen.",

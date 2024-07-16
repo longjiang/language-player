@@ -309,7 +309,8 @@
         "upgrade_to_pro": "Upgrade to Pro",
         "upgrade": "Upgrade",
         "verify": "Verify",
-        "watch": "Watch"
+        "watch": "Watch",
+        "load_more": "Load More"
     },
     "button": {
         "email_support": "Email Support",
@@ -352,7 +353,8 @@
         "user_info_not_found": "User info not found",
         "login": "Login Error",
         "invalid_user_credentials": "Invalid email or password",
-        "general": "An error occurred"
+        "general": "An error occurred",
+        "loading_failed": "Loading failed"
     },
     "feature": {
         "see_all_subtitles": "See all subtitles search results beyond the first three.",

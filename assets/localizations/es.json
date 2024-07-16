@@ -308,7 +308,8 @@
         "upgrade_to_pro": "Actualizar a Pro",
         "upgrade": "Actualizar",
         "verify": "Verificar",
-        "watch": "Ver"
+        "watch": "Ver",
+        "load_more": "Cargar más"
     },
     "button": {
         "keep_current_time": "Mantener Tiempo Actual",
@@ -344,7 +345,8 @@
         "login": "Error de inicio de sesión",
         "cannot_open_url": "No se puede abrir la página de contraseña olvidada",
         "invalid_user_credentials": "Correo electrónico o contraseña inválidos",
-        "general": "Ocurrió un error"
+        "general": "Ocurrió un error",
+        "loading_failed": "Error de carga"
     },
     "feature": {
         "see_all_subtitles": "Ver todos los resultados de búsqueda de subtítulos más allá de los tres primeros.",

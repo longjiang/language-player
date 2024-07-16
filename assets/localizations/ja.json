@@ -308,7 +308,8 @@
         "upgrade_to_pro": "Proにアップグレードする",
         "upgrade": "アップグレード",
         "verify": "確認する",
-        "watch": "見る"
+        "watch": "見る",
+        "load_more": "もっと読み込む"
     },
     "button": {
         "keep_current_time": "現在の時間を保持",
@@ -344,7 +345,8 @@
         "login": "ログインエラー",
         "cannot_open_url": "パスワード忘れページを開けません",
         "invalid_user_credentials": "メールアドレスまたはパスワードが無効です",
-        "general": "エラーが発生しました"
+        "general": "エラーが発生しました",
+        "loading_failed": "読み込みに失敗しました"
     },
     "feature": {
         "see_all_subtitles": "最初の3つ以外のすべての字幕検索結果を表示します。",

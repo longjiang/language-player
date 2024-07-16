@@ -309,7 +309,8 @@
         "upgrade_to_pro": "Actualitzar a Pro",
         "upgrade": "Actualitzar",
         "verify": "Verificar",
-        "watch": "Mirar"
+        "watch": "Mirar",
+        "load_more": "Carrega'n més"
     },
     "button": {
         "keep_current_time": "Mantenir Temps Actual",
@@ -345,7 +346,8 @@
         "login": "Error d'inici de sessió",
         "cannot_open_url": "No es pot obrir la pàgina de contrasenya oblidada",
         "invalid_user_credentials": "Correu electrònic o contrasenya no vàlids",
-        "general": "S'ha produït un error"
+        "general": "S'ha produït un error",
+        "loading_failed": "Ha fallat la càrrega"
     },
     "feature": {
         "see_all_subtitles": "Veure tots els resultats de cerca de subtítols més enllà dels tres primers.",

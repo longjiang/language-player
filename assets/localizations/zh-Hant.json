@@ -309,7 +309,8 @@
         "upgrade_to_pro": "升級成專業版",
         "upgrade": "升級",
         "verify": "驗證",
-        "watch": "看看"
+        "watch": "看看",
+        "load_more": "載入更多"
     },
     "button": {
         "email_support": "寄信給客服",
@@ -352,7 +353,8 @@
         "user_info_not_found": "找不到使用者資料耶",
         "login": "登錄錯誤",
         "invalid_user_credentials": "電子郵件或密碼無效",
-        "general": "發生錯誤"
+        "general": "發生錯誤",
+        "loading_failed": "載入失敗"
     },
     "feature": {
         "see_all_subtitles": "看到第三個之後的所有字幕搜尋結果。",

@@ -309,7 +309,8 @@
         "upgrade_to_pro": "Tingkatkan ke Pro",
         "upgrade": "Tingkatkan",
         "verify": "Verifikasi",
-        "watch": "Tonton"
+        "watch": "Tonton",
+        "load_more": "Muat lebih banyak"
     },
     "button": {
         "keep_current_time": "Pertahankan Waktu Saat Ini",
@@ -345,7 +346,8 @@
         "login": "Kesalahan masuk",
         "cannot_open_url": "Tidak dapat membuka halaman lupa kata sandi",
         "invalid_user_credentials": "Email atau kata sandi tidak valid",
-        "general": "Terjadi kesalahan"
+        "general": "Terjadi kesalahan",
+        "loading_failed": "Gagal memuat"
     },
     "feature": {
         "see_all_subtitles": "Lihat semua hasil pencarian subtitle di luar tiga pertama.",

@@ -308,7 +308,8 @@
         "upgrade_to_pro": "Oppgrader til Pro",
         "upgrade": "Oppgrader",
         "verify": "Bekreft",
-        "watch": "Se"
+        "watch": "Se",
+        "load_more": "Last inn mer"
     },
     "button": {
         "keep_current_time": "Behold Nåværende Tid",
@@ -344,7 +345,8 @@
         "login": "Påloggingsfeil",
         "cannot_open_url": "Kan ikke åpne siden for glemt passord",
         "invalid_user_credentials": "Ugyldig e-post eller passord",
-        "general": "Det oppstod en feil"
+        "general": "Det oppstod en feil",
+        "loading_failed": "Lasting mislyktes"
     },
     "feature": {
         "see_all_subtitles": "Se alle undertittelens søkeresultater utover de tre første.",

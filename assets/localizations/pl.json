@@ -308,7 +308,8 @@
         "upgrade_to_pro": "Przejdź na wersję Pro",
         "upgrade": "Ulepsz",
         "verify": "Zweryfikuj",
-        "watch": "Oglądaj"
+        "watch": "Oglądaj",
+        "load_more": "Wczytaj więcej"
     },
     "button": {
         "keep_current_time": "Zachowaj Obecny Czas",
@@ -344,7 +345,8 @@
         "login": "Błąd logowania",
         "cannot_open_url": "Nie można otworzyć strony zapomnianego hasła",
         "invalid_user_credentials": "Nieprawidłowy e-mail lub hasło",
-        "general": "Wystąpił błąd"
+        "general": "Wystąpił błąd",
+        "loading_failed": "Błąd ładowania"
     },
     "feature": {
         "see_all_subtitles": "Zobacz wszystkie wyniki wyszukiwania napisów poza pierwszymi trzema.",

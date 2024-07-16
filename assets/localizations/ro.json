@@ -308,7 +308,8 @@
         "upgrade_to_pro": "Upgrade la Pro",
         "upgrade": "Upgrade",
         "verify": "Verifică",
-        "watch": "Vizionează"
+        "watch": "Vizionează",
+        "load_more": "Încarcă mai mult"
     },
     "button": {
         "keep_current_time": "Păstrează Timpul Curent",
@@ -344,7 +345,8 @@
         "login": "Eroare de autentificare",
         "cannot_open_url": "Nu se poate deschide pagina de parolă uitată",
         "invalid_user_credentials": "E-mail sau parolă invalidă",
-        "general": "A apărut o eroare"
+        "general": "A apărut o eroare",
+        "loading_failed": "Eroare la încărcare"
     },
     "feature": {
         "see_all_subtitles": "Vezi toate rezultatele căutării de subtitrări dincolo de primele trei.",

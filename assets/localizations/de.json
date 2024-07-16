@@ -309,7 +309,8 @@
         "upgrade_to_pro": "Auf Pro upgraden",
         "upgrade": "Upgraden",
         "verify": "Verifizieren",
-        "watch": "Ansehen"
+        "watch": "Ansehen",
+        "load_more": "Mehr laden"
     },
     "button": {
         "keep_current_time": "Aktuelle Zeit Behalten",
@@ -345,7 +346,8 @@
         "login": "Anmeldefehler",
         "cannot_open_url": "Die Seite zum Zurücksetzen des Passworts kann nicht geöffnet werden",
         "invalid_user_credentials": "Ungültige E-Mail oder Passwort",
-        "general": "Ein Fehler ist aufgetreten"
+        "general": "Ein Fehler ist aufgetreten",
+        "loading_failed": "Laden fehlgeschlagen"
     },
     "feature": {
         "see_all_subtitles": "Alle Untertitel-Suchergebnisse über die ersten drei hinaus anzeigen.",

@@ -59,7 +59,7 @@ export function ThemedButton({
     medium: {
       fontSize: Typography.fontSize.medium,
       paddingVertical: 4,
-      paddingHorizontal: 10,
+      paddingHorizontal: 16,
     },
     small: {
       fontSize: Typography.fontSize.small,

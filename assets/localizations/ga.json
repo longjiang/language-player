@@ -309,7 +309,8 @@
         "upgrade_to_pro": "Uasghrádaigh go Pro",
         "upgrade": "Uasghrádaigh",
         "verify": "Deimhnigh",
-        "watch": "Féach"
+        "watch": "Féach",
+        "load_more": "Lódáil tuilleadh"
     },
     "button": {
         "keep_current_time": "Coinnigh Am Reatha",
@@ -345,7 +346,8 @@
         "login": "Earráid logála isteach",
         "cannot_open_url": "Ní féidir an leathanach pasfhocal dearmadta a oscailt",
         "invalid_user_credentials": "Ríomhphost nó pasfhocal neamhbhailí",
-        "general": "Tharla earráid"
+        "general": "Tharla earráid",
+        "loading_failed": "Theip ar an lódáil"
     },
     "feature": {
         "see_all_subtitles": "Féach ar gach toradh cuardaigh fotheideal thar na chéad trí cinn.",

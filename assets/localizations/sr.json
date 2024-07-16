@@ -308,7 +308,8 @@
         "upgrade_to_pro": "Nadogradi na Pro",
         "upgrade": "Nadogradi",
         "verify": "Potvrdi",
-        "watch": "Gledaj"
+        "watch": "Gledaj",
+        "load_more": "Учитај више"
     },
     "button": {
         "keep_current_time": "Задржи Тренутно Време",
@@ -344,7 +345,8 @@
         "login": "Грешка при пријави",
         "cannot_open_url": "Није могуће отворити страницу за заборављену лозинку",
         "invalid_user_credentials": "Неважећа е-пошта или лозинка",
-        "general": "Дошло је до грешке"
+        "general": "Дошло је до грешке",
+        "loading_failed": "Учитавање није успело"
     },
     "feature": {
         "see_all_subtitles": "Pogledaj sve rezultate pretrage titlova nakon prva tri.",

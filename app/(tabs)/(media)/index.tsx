@@ -1,7 +1,7 @@
 // @/app/(tabs)/(media)/index.tsx
 
-import React, { useState, useEffect, useMemo } from "react";
-import { SafeAreaView, Dimensions, View, Image, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { SafeAreaView, Dimensions, View, Image, TouchableOpacity, ActivityIndicator, Button } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { VideoHero } from "@/components/VideoHero";
@@ -27,11 +27,13 @@ const MediaHomeScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const semanticSuccessColor = useThemeColor({}, 'semanticSuccess');
 
   const loadItems = async (pageToLoad: number) => {
-    if (isLoading || !hasMore) return;
+    if (isLoading || !hasMore || loadError) return;
     setIsLoading(true);
+    setLoadError(false);
     try {
       const userInfo = await getStoredUserInfo();
       if (!userInfo) throw new Error(t('error.user_info_not_found'));
@@ -67,24 +69,22 @@ const MediaHomeScreen = () => {
       }
     } catch (error) {
       console.error(t('error.failed_to_load_items'), error);
+      setLoadError(true);
     }
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    if (l2Lang && progress[l2Lang.code]) {
-      setItems([]);
-      setPage(1);
-      setHasMore(true);
-      loadItems(1);
-    }
-  }, [lastSignificantChange, l2Lang, progress]);
-
-  const handleLoadMore = () => {
-    if (!isLoading && hasMore) {
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && hasMore && !loadError) {
       loadItems(page + 1);
     }
+  }, [isLoading, hasMore, loadError, page]);
+
+  const retryLoading = () => {
+    setLoadError(false);
+    loadItems(page);
   };
+
 
   const videoHeight = 300;
   const padding = 26;
@@ -155,8 +155,16 @@ const MediaHomeScreen = () => {
     if (isLoading) {
       return <View style={{ margin: 26 }}><ActivityIndicator size="large" color={semanticSuccessColor} /></View>;
     }
+    if (loadError) {
+      return (
+        <View style={{ margin: 26, flexDirection: 'column', alignItems: 'center' }}>
+          <ThemedText type="large" style={{marginBottom: 26}}>{t('error.loading_failed')}</ThemedText>
+          <ThemedButton type="neutral" size="medium" title={t('action.load_more')} onPress={retryLoading} />
+        </View>
+      );
+    }
     if (!hasMore) {
-      return <View style={{ margin: 26, flexDirection: 'column', alignItems: 'center' }}><ThemedText type="large">{ t('msg.no_more_videos') }</ThemedText></View>;
+      return <View style={{ margin: 26, flexDirection: 'column', alignItems: 'center' }}><ThemedText type="large">{t('msg.no_more_videos')}</ThemedText></View>;
     }
     return null;
   };
@@ -164,6 +172,7 @@ const MediaHomeScreen = () => {
   if (isLoadingShows) {
     return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={semanticSuccessColor} /></View>;
   }
+
 
   return (
     <YouTubeVideoList

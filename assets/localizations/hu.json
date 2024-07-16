@@ -309,7 +309,8 @@
         "upgrade_to_pro": "Frissítés Pro-ra",
         "upgrade": "Frissítés",
         "verify": "Ellenőrzés",
-        "watch": "Megtekintés"
+        "watch": "Megtekintés",
+        "load_more": "Továbbiak betöltése"
     },
     "button": {
         "keep_current_time": "Jelenlegi Idő Megtartása",
@@ -345,7 +346,8 @@
         "login": "Bejelentkezési hiba",
         "cannot_open_url": "Nem lehet megnyitni az elfelejtett jelszó oldalt",
         "invalid_user_credentials": "Érvénytelen e-mail cím vagy jelszó",
-        "general": "Hiba történt"
+        "general": "Hiba történt",
+        "loading_failed": "Betöltés sikertelen"
     },
     "feature": {
         "see_all_subtitles": "Az összes felirat keresési eredményének megtekintése az első három után.",

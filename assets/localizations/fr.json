@@ -309,7 +309,8 @@
         "upgrade_to_pro": "Passer à la version Pro",
         "upgrade": "Mettre à jour",
         "verify": "Vérifier",
-        "watch": "Regarder"
+        "watch": "Regarder",
+        "load_more": "Charger plus"
     },
     "button": {
         "keep_current_time": "Garder le Temps Actuel",
@@ -345,7 +346,8 @@
         "login": "Erreur de connexion",
         "cannot_open_url": "Impossible d'ouvrir la page de mot de passe oublié",
         "invalid_user_credentials": "E-mail ou mot de passe invalide",
-        "general": "Une erreur s'est produite"
+        "general": "Une erreur s'est produite",
+        "loading_failed": "Échec du chargement"
     },
     "feature": {
         "see_all_subtitles": "Voir tous les résultats de recherche de sous-titres au-delà des trois premiers.",

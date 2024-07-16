@@ -309,7 +309,8 @@
         "upgrade_to_pro": "Opgradeer na Pro",
         "upgrade": "Opgradeer",
         "verify": "Verifieer",
-        "watch": "Kyk"
+        "watch": "Kyk",
+        "load_more": "Laai meer"
     },
     "button": {
         "email_support": "E-pos Ondersteuning",
@@ -352,7 +353,8 @@
         "user_info_not_found": "Gebruikersinligting nie gevind nie",
         "login": "Aanmeldfout",
         "invalid_user_credentials": "Ongeldige e-pos of wagwoord",
-        "general": "'n Fout het voorgekom"
+        "general": "'n Fout het voorgekom",
+        "loading_failed": "Laai het misluk"
     },
     "feature": {
         "see_all_subtitles": "Sien alle onderskrifsoekresultate na die eerste drie.",

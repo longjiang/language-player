@@ -308,7 +308,8 @@
         "upgrade_to_pro": "Upgraden naar Pro",
         "upgrade": "Upgraden",
         "verify": "Verifiëren",
-        "watch": "Bekijken"
+        "watch": "Bekijken",
+        "load_more": "Meer laden"
     },
     "button": {
         "keep_current_time": "Huidige Tijd Behouden",
@@ -344,7 +345,8 @@
         "login": "Inlogfout",
         "cannot_open_url": "Kan de pagina voor vergeten wachtwoord niet openen",
         "invalid_user_credentials": "Ongeldig e-mailadres of wachtwoord",
-        "general": "Er is een fout opgetreden"
+        "general": "Er is een fout opgetreden",
+        "loading_failed": "Laden mislukt"
     },
     "feature": {
         "see_all_subtitles": "Bekijk alle zoekresultaten voor ondertitels na de eerste drie.",

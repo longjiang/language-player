@@ -307,7 +307,8 @@
         "upgrade_to_pro": "Pro'ya Yükselt",
         "upgrade": "Yükselt",
         "verify": "Doğrula",
-        "watch": "İzle"
+        "watch": "İzle",
+        "load_more": "Daha fazla yükle"
     },
     "button": {
         "keep_current_time": "Mevcut Zamanı Koru",
@@ -343,7 +344,8 @@
         "login": "Giriş hatası",
         "cannot_open_url": "Unutulan şifre sayfası açılamıyor",
         "invalid_user_credentials": "Geçersiz e-posta veya şifre",
-        "general": "Bir hata oluştu"
+        "general": "Bir hata oluştu",
+        "loading_failed": "Yükleme başarısız oldu"
     },
     "feature": {
         "see_all_subtitles": "İlk üçten sonraki tüm altyazı arama sonuçlarını görün.",

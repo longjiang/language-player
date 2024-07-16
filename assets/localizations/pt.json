@@ -308,7 +308,8 @@
         "upgrade_to_pro": "Atualizar para Pro",
         "upgrade": "Atualizar",
         "verify": "Verificar",
-        "watch": "Assistir"
+        "watch": "Assistir",
+        "load_more": "Carregar mais"
     },
     "button": {
         "keep_current_time": "Manter Tempo Atual",
@@ -344,7 +345,8 @@
         "login": "Erro de login",
         "cannot_open_url": "Não é possível abrir a página de senha esquecida",
         "invalid_user_credentials": "E-mail ou senha inválidos",
-        "general": "Ocorreu um erro"
+        "general": "Ocorreu um erro",
+        "loading_failed": "Falha no carregamento"
     },
     "feature": {
         "see_all_subtitles": "Veja todos os resultados de pesquisa de legendas além dos três primeiros.",
