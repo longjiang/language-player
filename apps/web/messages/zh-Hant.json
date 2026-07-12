@@ -253,7 +253,7 @@
         "fr-CA": "法語（加拿大）",
         "fr-CH": "法語（瑞士）",
         "fr-FR": "法語（法國）",
-        "hak-TW": "客家話（台灣）",
+        "hak-TW": "客家語（台灣）",
         "zh-HK": "中文（香港）",
         "he-IL": "希伯來語（以色列）",
         "iw": "希伯來語",
@@ -310,15 +310,26 @@
         "upgrade": "升級",
         "verify": "驗證",
         "watch": "看看",
-        "load_more": "載入更多"
+        "load_more": "載入更多",
+        "forgot_password": "忘記密碼？",
+        "sign_up": "註冊",
+        "log_in": "登入",
+        "log_out": "登出",
+        "create_account": "建立帳戶",
+        "verify_email": "驗證電子郵件",
+        "send_reset_link": "傳送重設連結",
+        "back_to_login": "返回登入",
+        "continue": "繼續",
+        "try_again": "再試一次",
+        "start_watching": "開始觀看"
     },
     "button": {
-        "email_support": "寄信給客服",
+        "email_support": "電子郵件支援",
         "keep_current_time": "保留目前時間",
-        "processing": "處理中喔...",
-        "purchase": "買啦",
+        "processing": "處理中...",
+        "purchase": "購買",
         "reset_time_to_zero": "將時間歸零",
-        "switch_to_lifetime": "改成終身方案"
+        "switch_to_lifetime": "切換至終身計劃"
     },
     "chatgpt": {
         "prompt": {
@@ -332,8 +343,8 @@
         "monthly": "月繳喔。"
     },
     "email": {
-        "body": "請說明你遇到什麼問題或有什麼疑問。",
-        "subject": "客服幫幫忙",
+        "body": "請描述您的問題或疑問。",
+        "subject": "支援請求",
         "support_body": "請描述您的問題。",
         "support_subject": "支持請求"
     },
@@ -345,7 +356,7 @@
         "failed_to_load_items": "載入失敗：",
         "generic": "出錯啦",
         "language_not_selected": "還沒選語言耶",
-        "occurred": "哎呀，出錯啦",
+        "occurred": "發生錯誤",
         "passwords_do_not_match": "密碼不一樣耶",
         "payment_problem": "您的付款出現問題。",
         "registration_failed": "註冊失敗啦",
@@ -456,7 +467,7 @@
         "hsk_explanation": "「HSK」是官方的HSK，1級最簡單，9級最難喔。",
         "initializing": "初始化中...",
         "keep_or_reset_time": "您要保留目前的時間還是重設為零？",
-        "lifetime_only": "Apple內購只能選終身方案喔。",
+        "lifetime_only": "Apple 應用內購買僅支援終身計劃。",
         "loading": "載入中...",
         "no_active_subscription": "找不到有效的訂閱耶。",
         "no_more_videos": "沒有更多視頻",
@@ -480,7 +491,24 @@
         "with_pro_you_can": "用專業版，你就可以：",
         "renews_today": "今天續訂",
         "renewal_failed_contact_support": "續訂失敗。請聯繫客戶支持。",
-        "expired": "已過期"
+        "expired": "已過期",
+        "find_videos": "找到適合您程度的影片",
+        "lookup_words": "查詢單字並儲存詞彙",
+        "watch_live": "觀看直播頻道",
+        "customize_experience": "自訂您的體驗",
+        "coming_soon": "即將推出",
+        "log_in_to_continue": "登入以繼續學習。",
+        "dont_have_account": "還沒有帳戶？",
+        "start_learning": "透過真實影片內容開始學習語言。",
+        "creating_account": "正在建立帳戶...",
+        "logging_in": "正在登入...",
+        "verification_code_sent": "我們已傳送驗證碼到 {email}。請在下方輸入。",
+        "enter_email_for_reset": "輸入您的電子郵件，我們將傳送重設連結。",
+        "choose_languages": "選擇您的語言以開始",
+        "no_videos_found": "未找到影片。請嘗試其他級別或稍後再來。",
+        "end_of_list": "您已到達列表末尾。",
+        "subtitles_not_available": "此影片的字幕尚不可用。",
+        "video_unavailable": "無法載入此影片。可能已被刪除或設為私密。"
     },
     "option": {
         "app_store": "App Store",
@@ -508,7 +536,10 @@
         "please_specify": "請說明",
         "search_all_content": "搜尋所有{{language}}內容",
         "search": "搜尋...",
-        "select_language": "選擇一種語言"
+        "select_language": "選擇一種語言",
+        "password_min": "最少 8 個字元",
+        "verification_code": "驗證碼",
+        "search_languages": "搜尋語言..."
     },
     "price": {
         "annual": "${{price}}/年",
@@ -558,7 +589,7 @@
         "cancellation_failed": "取消失敗",
         "choose_language": "選擇語言",
         "choose_your_plan": "選擇你的方案",
-        "confirm_in_app_purchase": "確認你的內購",
+        "confirm_in_app_purchase": "確認您的應用內購買",
         "continue_learning": "繼續學習{{l2Code}}",
         "current_level": "你現在的{{language}}程度如何？",
         "current_plan": "目前的方案",
@@ -583,7 +614,7 @@
         "monthly": "月繳",
         "my_progress": "我的進度",
         "next": "下一步",
-        "only_lifetime_available": "App Store裡只有終身方案喔",
+        "only_lifetime_available": "App Store 中僅提供終身計劃",
         "password": "密碼",
         "popularity": "熱門程度",
         "privacy_policy": "隱私權政策",
@@ -607,7 +638,16 @@
         "video_count": "影片 {{index}} 共 {{total}}",
         "views": "{{numViews}}次觀看",
         "watch_history": "觀看紀錄",
-        "your_current_plan": "你目前的方案"
+        "your_current_plan": "你目前的方案",
+        "explore_media": "探索媒體",
+        "explore": "探索",
+        "welcome_back": "歡迎回來",
+        "create_account": "建立您的帳戶",
+        "welcome": "歡迎來到 Language Player",
+        "check_email": "查看您的電子郵件",
+        "reset_password": "重設密碼",
+        "i_speak": "我會說",
+        "i_learning": "我正在學"
     },
     "video": {
         "comments": "留言",
@@ -618,5 +658,10 @@
         "hanja": "漢字",
         "kana": "假名",
         "pinyin": "拼音"
+    },
+    "subtitle": {
+        "translation_on": "翻譯已開啟",
+        "translation_off": "翻譯已關閉",
+        "translating": "翻譯中…"
     }
 }

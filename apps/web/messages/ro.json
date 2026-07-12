@@ -282,7 +282,8 @@
         "sv-SE": "Suedeză (Suedia)",
         "th-TH": "Thailandeză (Thailanda)",
         "tr-TR": "Turcă (Turcia)",
-        "yue-HK": "Cantoneză (Hong Kong)"
+        "yue-HK": "Cantoneză (Hong Kong)",
+        "hak-TW": "Hakka (Taiwan)"
     },
     "action": {
         "cancel": "Anulează",
@@ -309,11 +310,26 @@
         "upgrade": "Upgrade",
         "verify": "Verifică",
         "watch": "Vizionează",
-        "load_more": "Încarcă mai mult"
+        "load_more": "Încarcă mai mult",
+        "forgot_password": "Ai uitat parola?",
+        "sign_up": "Înregistrare",
+        "log_in": "Autentificare",
+        "log_out": "Deconectare",
+        "create_account": "Creează cont",
+        "verify_email": "Verifică emailul",
+        "send_reset_link": "Trimite linkul de resetare",
+        "back_to_login": "Înapoi la autentificare",
+        "continue": "Continuă",
+        "try_again": "Încearcă din nou",
+        "start_watching": "Începe vizionarea"
     },
     "button": {
         "keep_current_time": "Păstrează Timpul Curent",
-        "reset_time_to_zero": "Resetează Timpul la Zero"
+        "reset_time_to_zero": "Resetează Timpul la Zero",
+        "email_support": "Suport prin email",
+        "processing": "Se procesează...",
+        "purchase": "Cumpără",
+        "switch_to_lifetime": "Treci la planul pe viață"
     },
     "chatgpt": {
         "prompt": {
@@ -328,7 +344,9 @@
     },
     "email": {
         "support_body": "Vă rugăm să descrieți problema sau întrebarea dvs.",
-        "support_subject": "Cerere de Asistență"
+        "support_subject": "Cerere de Asistență",
+        "body": "Vă rugăm să descrieți problema sau întrebarea dvs.",
+        "subject": "Cerere de asistență"
     },
     "error": {
         "entry_not_found": "Intrarea nu a fost găsită sau dicționarul nu a fost încărcat",
@@ -346,7 +364,8 @@
         "cannot_open_url": "Nu se poate deschide pagina de parolă uitată",
         "invalid_user_credentials": "E-mail sau parolă invalidă",
         "general": "A apărut o eroare",
-        "loading_failed": "Eroare la încărcare"
+        "loading_failed": "Eroare la încărcare",
+        "occurred": "A apărut o eroare"
     },
     "feature": {
         "see_all_subtitles": "Vezi toate rezultatele căutării de subtitrări dincolo de primele trei.",
@@ -469,7 +488,25 @@
         "with_pro_you_can": "Cu Pro, poți:",
         "renews_today": "Se reînnoiește astăzi",
         "renewal_failed_contact_support": "Reînnoirea a eșuat. Vă rugăm să contactați asistența pentru clienți.",
-        "expired": "Expirat"
+        "expired": "Expirat",
+        "find_videos": "Găsiți videoclipuri la nivelul dvs.",
+        "lookup_words": "Căutați cuvinte și salvați vocabularul",
+        "watch_live": "Urmăriți canale live",
+        "customize_experience": "Personalizați-vă experiența",
+        "coming_soon": "În curând",
+        "lifetime_only": "Doar planul pe viață este disponibil ca opțiune de achiziție în aplicație Apple.",
+        "log_in_to_continue": "Autentificați-vă pentru a continua învățarea.",
+        "dont_have_account": "Nu aveți un cont?",
+        "start_learning": "Începeți să învățați limbi prin conținut video autentic.",
+        "creating_account": "Se creează contul...",
+        "logging_in": "Se autentifică...",
+        "verification_code_sent": "Am trimis un cod de verificare la {email}. Introduceți-l mai jos.",
+        "enter_email_for_reset": "Introduceți emailul dvs. și vă vom trimite un link de resetare.",
+        "choose_languages": "Alegeți limbile dvs. pentru a începe",
+        "no_videos_found": "Nu s-au găsit videoclipuri. Încercați un alt nivel sau reveniți mai târziu.",
+        "end_of_list": "Ați ajuns la sfârșitul listei.",
+        "subtitles_not_available": "Subtitrările nu sunt încă disponibile pentru acest videoclip.",
+        "video_unavailable": "Acest videoclip nu a putut fi încărcat. Este posibil să fi fost eliminat sau făcut privat."
     },
     "option": {
         "app_store": "App Store",
@@ -497,7 +534,10 @@
         "please_specify": "Te rugăm să specifici",
         "search_all_content": "Caută în tot conținutul în {{language}}",
         "search": "Caută...",
-        "select_language": "Selectează o limbă"
+        "select_language": "Selectează o limbă",
+        "password_min": "Min. 8 caractere",
+        "verification_code": "Cod de verificare",
+        "search_languages": "Căutați limbi..."
     },
     "price": {
         "annual": "${{price}}/an",
@@ -594,7 +634,18 @@
         "video_count": "Videoclipul {{index}} din {{total}}",
         "views": "{{numViews}} vizualizări",
         "watch_history": "Istoric vizionări",
-        "your_current_plan": "Planul tău curent"
+        "your_current_plan": "Planul tău curent",
+        "explore_media": "Explorează media",
+        "explore": "Explorează",
+        "welcome_back": "Bine ai revenit",
+        "create_account": "Creează-ți contul",
+        "welcome": "Bun venit la Language Player",
+        "check_email": "Verifică-ți emailul",
+        "reset_password": "Resetează parola",
+        "i_speak": "Vorbesc",
+        "i_learning": "Învăț",
+        "confirm_in_app_purchase": "Confirmați achiziția în aplicație",
+        "only_lifetime_available": "Doar Planul pe Viață este disponibil în App Store"
     },
     "video": {
         "comments": "Comentarii",
@@ -605,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Traducere activată",
+        "translation_off": "Traducere dezactivată",
+        "translating": "Se traduce…"
     }
 }

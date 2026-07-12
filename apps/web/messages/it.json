@@ -253,7 +253,7 @@
         "fr-CA": "Francese (Canada)",
         "fr-CH": "Francese (Svizzera)",
         "fr-FR": "Francese (Francia)",
-        "hak-TW": "客家語 (台湾",
+        "hak-TW": "Hakka (Taiwan)",
         "zh-HK": "Cinese (Hong Kong)",
         "he-IL": "Ebraico (Israele)",
         "iw": "Ebraico",
@@ -310,11 +310,26 @@
         "upgrade": "Aggiorna",
         "verify": "Verifica",
         "watch": "Guarda",
-        "load_more": "Carica altro"
+        "load_more": "Carica altro",
+        "forgot_password": "Password dimenticata?",
+        "sign_up": "Registrati",
+        "log_in": "Accedi",
+        "log_out": "Esci",
+        "create_account": "Crea account",
+        "verify_email": "Verifica email",
+        "send_reset_link": "Invia link di ripristino",
+        "back_to_login": "Torna al login",
+        "continue": "Continua",
+        "try_again": "Riprova",
+        "start_watching": "Inizia a guardare"
     },
     "button": {
         "keep_current_time": "Mantieni Tempo Attuale",
-        "reset_time_to_zero": "Azzera il Tempo"
+        "reset_time_to_zero": "Azzera il Tempo",
+        "email_support": "Supporto email",
+        "processing": "Elaborazione...",
+        "purchase": "Acquista",
+        "switch_to_lifetime": "Passa al piano a vita"
     },
     "chatgpt": {
         "prompt": {
@@ -329,7 +344,9 @@
     },
     "email": {
         "support_body": "Per favore, descrivi il tuo problema o la tua domanda.",
-        "support_subject": "Richiesta di Supporto"
+        "support_subject": "Richiesta di Supporto",
+        "body": "Descrivi il tuo problema o domanda.",
+        "subject": "Richiesta di supporto"
     },
     "error": {
         "entry_not_found": "Voce non trovata o dizionario non caricato",
@@ -347,7 +364,8 @@
         "cannot_open_url": "Impossibile aprire la pagina della password dimenticata",
         "invalid_user_credentials": "Email o password non validi",
         "general": "Si è verificato un errore",
-        "loading_failed": "Caricamento fallito"
+        "loading_failed": "Caricamento fallito",
+        "occurred": "Si è verificato un errore"
     },
     "feature": {
         "see_all_subtitles": "Visualizza tutti i risultati di ricerca dei sottotitoli oltre i primi tre.",
@@ -470,7 +488,25 @@
         "with_pro_you_can": "Con Pro puoi:",
         "renews_today": "Si rinnova oggi",
         "renewal_failed_contact_support": "Rinnovo fallito. Si prega di contattare l'assistenza clienti.",
-        "expired": "Scaduto"
+        "expired": "Scaduto",
+        "find_videos": "Trova video al tuo livello",
+        "lookup_words": "Cerca parole e salva il vocabolario",
+        "watch_live": "Guarda i canali in diretta",
+        "customize_experience": "Personalizza la tua esperienza",
+        "coming_soon": "Prossimamente",
+        "lifetime_only": "Solo il piano a vita è disponibile come opzione di acquisto in-app Apple.",
+        "log_in_to_continue": "Accedi per continuare ad imparare.",
+        "dont_have_account": "Non hai un account?",
+        "start_learning": "Inizia a imparare le lingue con contenuti video autentici.",
+        "creating_account": "Creazione account...",
+        "logging_in": "Accesso in corso...",
+        "verification_code_sent": "Abbiamo inviato un codice di verifica a {email}. Inseriscilo qui sotto.",
+        "enter_email_for_reset": "Inserisci la tua email e ti invieremo un link di ripristino.",
+        "choose_languages": "Scegli le tue lingue per iniziare",
+        "no_videos_found": "Nessun video trovato. Prova un altro livello o torna più tardi.",
+        "end_of_list": "Hai raggiunto la fine della lista.",
+        "subtitles_not_available": "I sottotitoli non sono ancora disponibili per questo video.",
+        "video_unavailable": "Questo video non può essere caricato. Potrebbe essere stato rimosso o reso privato."
     },
     "option": {
         "app_store": "App Store",
@@ -498,7 +534,10 @@
         "please_specify": "Specifica per favore",
         "search_all_content": "Cerca tutti i contenuti in {{language}}",
         "search": "Cerca...",
-        "select_language": "Seleziona una lingua"
+        "select_language": "Seleziona una lingua",
+        "password_min": "Min. 8 caratteri",
+        "verification_code": "Codice di verifica",
+        "search_languages": "Cerca lingue..."
     },
     "price": {
         "annual": "${{price}}/anno",
@@ -595,7 +634,18 @@
         "video_count": "Video {{index}} di {{total}}",
         "views": "{{numViews}} visualizzazioni",
         "watch_history": "Cronologia visualizzazioni",
-        "your_current_plan": "Il tuo piano attuale"
+        "your_current_plan": "Il tuo piano attuale",
+        "explore_media": "Esplora i media",
+        "explore": "Esplora",
+        "welcome_back": "Bentornato",
+        "create_account": "Crea il tuo account",
+        "welcome": "Benvenuto su Language Player",
+        "check_email": "Controlla la tua email",
+        "reset_password": "Reimposta password",
+        "i_speak": "Parlo",
+        "i_learning": "Sto imparando",
+        "confirm_in_app_purchase": "Conferma il tuo acquisto in-app",
+        "only_lifetime_available": "Solo il Piano a Vita è disponibile nell'App Store"
     },
     "video": {
         "comments": "Commenti",
@@ -606,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Traduzione attiva",
+        "translation_off": "Traduzione disattivata",
+        "translating": "Traduzione in corso…"
     }
 }

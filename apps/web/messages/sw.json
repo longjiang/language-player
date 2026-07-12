@@ -282,7 +282,8 @@
         "sv-SE": "Kiswidi (Sweden)",
         "th-TH": "Kithai (Thailand)",
         "tr-TR": "Kituruki (Uturuki)",
-        "yue-HK": "Kikantoni (Hong Kong)"
+        "yue-HK": "Kikantoni (Hong Kong)",
+        "hak-TW": "Kihakka (Taiwan)"
     },
     "action": {
         "cancel": "Ghairi",
@@ -309,11 +310,26 @@
         "upgrade": "Boresha",
         "verify": "Thibitisha",
         "watch": "Tazama",
-        "load_more": "Pakia zaidi"
+        "load_more": "Pakia zaidi",
+        "forgot_password": "Umesahau nenosiri?",
+        "sign_up": "Jiandikishe",
+        "log_in": "Ingia",
+        "log_out": "Toka",
+        "create_account": "Unda akaunti",
+        "verify_email": "Thibitisha barua pepe",
+        "send_reset_link": "Tuma kiungo cha kuweka upya",
+        "back_to_login": "Rudi kwenye kuingia",
+        "continue": "Endelea",
+        "try_again": "Jaribu tena",
+        "start_watching": "Anza kutazama"
     },
     "button": {
         "keep_current_time": "Weka Muda wa Sasa",
-        "reset_time_to_zero": "Weka Upya Muda Kuwa Sifuri"
+        "reset_time_to_zero": "Weka Upya Muda Kuwa Sifuri",
+        "email_support": "Usaidizi wa barua pepe",
+        "processing": "Inashughulikia...",
+        "purchase": "Nunua",
+        "switch_to_lifetime": "Badilisha hadi mpango wa maisha"
     },
     "chatgpt": {
         "prompt": {
@@ -328,7 +344,9 @@
     },
     "email": {
         "support_body": "Tafadhali elezea suala au swali lako.",
-        "support_subject": "Ombi la Msaada"
+        "support_subject": "Ombi la Msaada",
+        "body": "Tafadhali elezea tatizo lako au swali lako.",
+        "subject": "Ombi la usaidizi"
     },
     "error": {
         "entry_not_found": "Kiingizo hakijapatikana au kamusi haijapakiwa",
@@ -346,7 +364,8 @@
         "cannot_open_url": "Haiwezi kufungua ukurasa wa neno la siri lililosahaulika",
         "invalid_user_credentials": "Barua pepe au nywila batili",
         "general": "Hitilafu imetokea",
-        "loading_failed": "Imeshindwa kupakia"
+        "loading_failed": "Imeshindwa kupakia",
+        "occurred": "Hitilafu imetokea"
     },
     "feature": {
         "see_all_subtitles": "Angalia matokeo yote ya utafutaji wa manukuu zaidi ya matatu ya kwanza.",
@@ -469,7 +488,25 @@
         "with_pro_you_can": "Ukiwa na Pro, unaweza:",
         "renews_today": "Huisha leo",
         "renewal_failed_contact_support": "Upyaji umeshindwa. Tafadhali wasiliana na huduma ya wateja.",
-        "expired": "Imeisha muda"
+        "expired": "Imeisha muda",
+        "find_videos": "Tafuta video katika kiwango chako",
+        "lookup_words": "Angalia maneno na uhifadhi msamiati",
+        "watch_live": "Tazama vituo vya moja kwa moja",
+        "customize_experience": "Geuza uzoefu wako kukufaa",
+        "coming_soon": "Inakuja hivi karibuni",
+        "lifetime_only": "Mpango wa maisha pekee ndio unaopatikana kama chaguo la ununuzi wa ndani ya programu ya Apple.",
+        "log_in_to_continue": "Ingia ili kuendelea kujifunza.",
+        "dont_have_account": "Huna akaunti?",
+        "start_learning": "Anza kujifunza lugha kupitia maudhui halisi ya video.",
+        "creating_account": "Inaunda akaunti...",
+        "logging_in": "Inaingia...",
+        "verification_code_sent": "Tumetuma nambari ya uthibitishaji kwa {email}. Iweke hapa chini.",
+        "enter_email_for_reset": "Weka barua pepe yako na tutakutumia kiungo cha kuweka upya.",
+        "choose_languages": "Chagua lugha zako ili kuanza",
+        "no_videos_found": "Hakuna video zilizopatikana. Jaribu kiwango kingine au angalia tena baadaye.",
+        "end_of_list": "Umefika mwisho wa orodha.",
+        "subtitles_not_available": "Manukuu bado hayapatikani kwa video hii.",
+        "video_unavailable": "Video hii haikuweza kupakiwa. Huenda imeondolewa au imefanywa kuwa ya faragha."
     },
     "option": {
         "app_store": "Duka la Programu",
@@ -497,7 +534,10 @@
         "please_specify": "Tafadhali fafanua",
         "search_all_content": "Tafuta maudhui yote ya {{language}}",
         "search": "Tafuta...",
-        "select_language": "Chagua lugha"
+        "select_language": "Chagua lugha",
+        "password_min": "Angalau herufi 8",
+        "verification_code": "Nambari ya uthibitishaji",
+        "search_languages": "Tafuta lugha..."
     },
     "price": {
         "annual": "${{price}}/mwaka",
@@ -594,7 +634,18 @@
         "video_count": "Video {{index}} kati ya {{total}}",
         "views": "{{numViews}} Maoni",
         "watch_history": "Historia ya Kutazama",
-        "your_current_plan": "Mpango wako wa sasa"
+        "your_current_plan": "Mpango wako wa sasa",
+        "explore_media": "Chunguza midia",
+        "explore": "Chunguza",
+        "welcome_back": "Karibu tena",
+        "create_account": "Unda akaunti yako",
+        "welcome": "Karibu kwenye Language Player",
+        "check_email": "Angalia barua pepe yako",
+        "reset_password": "Weka upya nenosiri",
+        "i_speak": "Ninazungumza",
+        "i_learning": "Ninajifunza",
+        "confirm_in_app_purchase": "Thibitisha ununuzi wako wa ndani ya programu",
+        "only_lifetime_available": "Mpango wa Maisha pekee ndio unaopatikana kwenye App Store"
     },
     "video": {
         "comments": "Maoni",
@@ -605,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Tafsiri imewashwa",
+        "translation_off": "Tafsiri imezimwa",
+        "translating": "Inatafsiri…"
     }
 }

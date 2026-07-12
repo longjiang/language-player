@@ -310,11 +310,26 @@
         "upgrade": "Tingkatkan",
         "verify": "Verifikasi",
         "watch": "Tonton",
-        "load_more": "Muat lebih banyak"
+        "load_more": "Muat lebih banyak",
+        "forgot_password": "Lupa kata sandi?",
+        "sign_up": "Daftar",
+        "log_in": "Masuk",
+        "log_out": "Keluar",
+        "create_account": "Buat Akun",
+        "verify_email": "Verifikasi Email",
+        "send_reset_link": "Kirim Tautan Reset",
+        "back_to_login": "Kembali ke login",
+        "continue": "Lanjutkan",
+        "try_again": "Coba Lagi",
+        "start_watching": "Mulai Menonton"
     },
     "button": {
         "keep_current_time": "Pertahankan Waktu Saat Ini",
-        "reset_time_to_zero": "Setel Ulang Waktu ke Nol"
+        "reset_time_to_zero": "Setel Ulang Waktu ke Nol",
+        "email_support": "Dukungan Email",
+        "processing": "Memproses...",
+        "purchase": "Beli",
+        "switch_to_lifetime": "Beralih ke Paket Seumur Hidup"
     },
     "chatgpt": {
         "prompt": {
@@ -329,7 +344,9 @@
     },
     "email": {
         "support_body": "Silakan jelaskan masalah atau pertanyaan Anda.",
-        "support_subject": "Permintaan Dukungan"
+        "support_subject": "Permintaan Dukungan",
+        "body": "Silakan jelaskan masalah atau pertanyaan Anda.",
+        "subject": "Permintaan Dukungan"
     },
     "error": {
         "entry_not_found": "Entri tidak ditemukan atau kamus tidak dimuat",
@@ -347,7 +364,8 @@
         "cannot_open_url": "Tidak dapat membuka halaman lupa kata sandi",
         "invalid_user_credentials": "Email atau kata sandi tidak valid",
         "general": "Terjadi kesalahan",
-        "loading_failed": "Gagal memuat"
+        "loading_failed": "Gagal memuat",
+        "occurred": "Terjadi kesalahan"
     },
     "feature": {
         "see_all_subtitles": "Lihat semua hasil pencarian subtitle di luar tiga pertama.",
@@ -470,7 +488,25 @@
         "with_pro_you_can": "Dengan Pro, Anda dapat:",
         "renews_today": "Diperpanjang hari ini",
         "renewal_failed_contact_support": "Pembaruan gagal. Silakan hubungi dukungan pelanggan.",
-        "expired": "Kedaluwarsa"
+        "expired": "Kedaluwarsa",
+        "find_videos": "Temukan video sesuai level Anda",
+        "lookup_words": "Cari kata & simpan kosakata",
+        "watch_live": "Tonton saluran langsung",
+        "customize_experience": "Sesuaikan pengalaman Anda",
+        "coming_soon": "Segera hadir",
+        "lifetime_only": "Hanya paket seumur hidup yang tersedia sebagai opsi pembelian dalam aplikasi Apple.",
+        "log_in_to_continue": "Masuk untuk melanjutkan belajar.",
+        "dont_have_account": "Belum punya akun?",
+        "start_learning": "Mulai belajar bahasa melalui konten video otentik.",
+        "creating_account": "Membuat akun...",
+        "logging_in": "Sedang masuk...",
+        "verification_code_sent": "Kami telah mengirim kode verifikasi ke {email}. Masukkan di bawah ini.",
+        "enter_email_for_reset": "Masukkan email Anda dan kami akan mengirimkan tautan reset.",
+        "choose_languages": "Pilih bahasa Anda untuk memulai",
+        "no_videos_found": "Tidak ada video ditemukan. Coba level lain atau periksa kembali nanti.",
+        "end_of_list": "Anda telah mencapai akhir daftar.",
+        "subtitles_not_available": "Subtitle belum tersedia untuk video ini.",
+        "video_unavailable": "Video ini tidak dapat dimuat. Mungkin telah dihapus atau dibuat pribadi."
     },
     "option": {
         "app_store": "App Store",
@@ -498,7 +534,10 @@
         "please_specify": "Silakan sebutkan",
         "search_all_content": "Cari semua konten {{language}}",
         "search": "Cari...",
-        "select_language": "Pilih bahasa"
+        "select_language": "Pilih bahasa",
+        "password_min": "Min. 8 karakter",
+        "verification_code": "Kode verifikasi",
+        "search_languages": "Cari bahasa..."
     },
     "price": {
         "annual": "${{price}}/tahun",
@@ -595,7 +634,18 @@
         "video_count": "Video {{index}} dari {{total}}",
         "views": "{{numViews}} Penayangan",
         "watch_history": "Riwayat Tontonan",
-        "your_current_plan": "Rencana Anda Saat Ini"
+        "your_current_plan": "Rencana Anda Saat Ini",
+        "explore_media": "Jelajahi Media",
+        "explore": "Jelajahi",
+        "welcome_back": "Selamat datang kembali",
+        "create_account": "Buat akun Anda",
+        "welcome": "Selamat datang di Language Player",
+        "check_email": "Periksa email Anda",
+        "reset_password": "Atur ulang kata sandi",
+        "i_speak": "Saya berbicara",
+        "i_learning": "Saya belajar",
+        "confirm_in_app_purchase": "Konfirmasi Pembelian Dalam Aplikasi Anda",
+        "only_lifetime_available": "Hanya Paket Seumur Hidup yang tersedia di App Store"
     },
     "video": {
         "comments": "Komentar",
@@ -606,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Terjemahan aktif",
+        "translation_off": "Terjemahan nonaktif",
+        "translating": "Menerjemahkan…"
     }
 }

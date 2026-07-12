@@ -253,7 +253,7 @@
         "fr-CA": "الفرنسية (كندا)",
         "fr-CH": "الفرنسية (سويسرا)",
         "fr-FR": "الفرنسية (فرنسا)",
-        "hak-TW": "الهاكا (تايوان)",
+        "hak-TW": "هاكا (تايوان)",
         "zh-HK": "الصينية (هونغ كونغ)",
         "he-IL": "العبرية (إسرائيل)",
         "iw": "العبرية",
@@ -310,11 +310,26 @@
         "upgrade": "ترقية",
         "verify": "التحقق",
         "watch": "مشاهدة",
-        "load_more": "تحميل المزيد"
+        "load_more": "تحميل المزيد",
+        "forgot_password": "نسيت كلمة المرور؟",
+        "sign_up": "التسجيل",
+        "log_in": "تسجيل الدخول",
+        "log_out": "تسجيل الخروج",
+        "create_account": "إنشاء حساب",
+        "verify_email": "تأكيد البريد الإلكتروني",
+        "send_reset_link": "إرسال رابط إعادة التعيين",
+        "back_to_login": "العودة إلى تسجيل الدخول",
+        "continue": "متابعة",
+        "try_again": "حاول مرة أخرى",
+        "start_watching": "بدء المشاهدة"
     },
     "button": {
         "keep_current_time": "الاحتفاظ بالوقت الحالي",
-        "reset_time_to_zero": "إعادة تعيين الوقت إلى الصفر"
+        "reset_time_to_zero": "إعادة تعيين الوقت إلى الصفر",
+        "email_support": "الدعم عبر البريد الإلكتروني",
+        "processing": "جارٍ المعالجة...",
+        "purchase": "شراء",
+        "switch_to_lifetime": "التبديل إلى الخطة مدى الحياة"
     },
     "chatgpt": {
         "prompt": {
@@ -329,7 +344,9 @@
     },
     "email": {
         "support_body": "يرجى وصف مشكلتك أو سؤالك.",
-        "support_subject": "طلب الدعم"
+        "support_subject": "طلب الدعم",
+        "body": "يرجى وصف مشكلتك أو سؤالك.",
+        "subject": "طلب دعم"
     },
     "error": {
         "entry_not_found": "لم يتم العثور على الإدخال أو لم يتم تحميل القاموس",
@@ -347,7 +364,8 @@
         "cannot_open_url": "لا يمكن فتح صفحة نسيت كلمة المرور",
         "invalid_user_credentials": "البريد الإلكتروني أو كلمة المرور غير صالحة",
         "general": "حدث خطأ",
-        "loading_failed": "فشل التحميل"
+        "loading_failed": "فشل التحميل",
+        "occurred": "حدث خطأ"
     },
     "feature": {
         "see_all_subtitles": "عرض جميع نتائج البحث في الترجمات بعد الثلاثة الأولى.",
@@ -470,7 +488,25 @@
         "with_pro_you_can": "مع النسخة المتقدمة، يمكنك:",
         "renews_today": "يتجدد اليوم",
         "renewal_failed_contact_support": "فشل التجديد. يرجى الاتصال بدعم العملاء.",
-        "expired": "منتهية الصلاحية"
+        "expired": "منتهية الصلاحية",
+        "find_videos": "ابحث عن فيديوهات بمستواك",
+        "lookup_words": "ابحث عن الكلمات واحفظ المفردات",
+        "watch_live": "مشاهدة القنوات المباشرة",
+        "customize_experience": "خصص تجربتك",
+        "coming_soon": "قريبًا",
+        "lifetime_only": "فقط الخطة مدى الحياة متاحة كخيار للشراء داخل التطبيق من Apple.",
+        "log_in_to_continue": "سجل الدخول لمواصلة التعلم.",
+        "dont_have_account": "ليس لديك حساب؟",
+        "start_learning": "ابدأ في تعلم اللغات من خلال محتوى فيديو أصلي.",
+        "creating_account": "جارٍ إنشاء الحساب...",
+        "logging_in": "جارٍ تسجيل الدخول...",
+        "verification_code_sent": "أرسلنا رمز التحقق إلى {email}. أدخله أدناه.",
+        "enter_email_for_reset": "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين.",
+        "choose_languages": "اختر لغاتك للبدء",
+        "no_videos_found": "لم يتم العثور على فيديوهات. جرب مستوى آخر أو عد لاحقًا.",
+        "end_of_list": "لقد وصلت إلى نهاية القائمة.",
+        "subtitles_not_available": "الترجمات غير متاحة لهذا الفيديو بعد.",
+        "video_unavailable": "تعذر تحميل هذا الفيديو. ربما تم حذفه أو جعله خاصًا."
     },
     "option": {
         "app_store": "متجر التطبيقات",
@@ -498,7 +534,10 @@
         "please_specify": "يرجى التحديد",
         "search_all_content": "البحث في كل محتوى {{language}}",
         "search": "بحث...",
-        "select_language": "اختر لغة"
+        "select_language": "اختر لغة",
+        "password_min": "الحد الأدنى 8 أحرف",
+        "verification_code": "رمز التحقق",
+        "search_languages": "البحث عن اللغات..."
     },
     "price": {
         "annual": "${{price}}/سنة",
@@ -595,7 +634,18 @@
         "video_count": "الفيديو {{index}} من {{total}}",
         "views": "{{numViews}} مشاهدة",
         "watch_history": "سجل المشاهدة",
-        "your_current_plan": "خطتك الحالية"
+        "your_current_plan": "خطتك الحالية",
+        "explore_media": "استكشاف الوسائط",
+        "explore": "استكشاف",
+        "welcome_back": "مرحبًا بعودتك",
+        "create_account": "أنشئ حسابك",
+        "welcome": "مرحبًا بك في Language Player",
+        "check_email": "تحقق من بريدك الإلكتروني",
+        "reset_password": "إعادة تعيين كلمة المرور",
+        "i_speak": "أتحدث",
+        "i_learning": "أتعلم",
+        "confirm_in_app_purchase": "تأكيد الشراء داخل التطبيق",
+        "only_lifetime_available": "فقط الخطة مدى الحياة متاحة في App Store"
     },
     "video": {
         "comments": "التعليقات",
@@ -606,5 +656,10 @@
         "hanja": "هانجا",
         "kana": "كانا",
         "pinyin": "بينيين"
+    },
+    "subtitle": {
+        "translation_on": "الترجمة مفعلة",
+        "translation_off": "الترجمة معطلة",
+        "translating": "جارٍ الترجمة…"
     }
 }

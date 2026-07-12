@@ -310,11 +310,26 @@
         "upgrade": "Actualitzar",
         "verify": "Verificar",
         "watch": "Mirar",
-        "load_more": "Carrega'n més"
+        "load_more": "Carrega'n més",
+        "forgot_password": "Has oblidat la contrasenya?",
+        "sign_up": "Registrar-se",
+        "log_in": "Iniciar sessió",
+        "log_out": "Tancar sessió",
+        "create_account": "Crear compte",
+        "verify_email": "Verificar correu",
+        "send_reset_link": "Enviar enllaç de restabliment",
+        "back_to_login": "Tornar a l'inici de sessió",
+        "continue": "Continuar",
+        "try_again": "Tornar a provar",
+        "start_watching": "Començar a veure"
     },
     "button": {
         "keep_current_time": "Mantenir Temps Actual",
-        "reset_time_to_zero": "Restablir Temps a Zero"
+        "reset_time_to_zero": "Restablir Temps a Zero",
+        "email_support": "Assistència per correu",
+        "processing": "Processant...",
+        "purchase": "Comprar",
+        "switch_to_lifetime": "Canviar al pla vitalici"
     },
     "chatgpt": {
         "prompt": {
@@ -329,7 +344,9 @@
     },
     "email": {
         "support_body": "Si us plau, descrigui el seu problema o pregunta.",
-        "support_subject": "Sol·licitud de Suport"
+        "support_subject": "Sol·licitud de Suport",
+        "body": "Descriu el teu problema o consulta.",
+        "subject": "Sol·licitud d'assistència"
     },
     "error": {
         "entry_not_found": "Entrada no trobada o diccionari no carregat",
@@ -347,7 +364,8 @@
         "cannot_open_url": "No es pot obrir la pàgina de contrasenya oblidada",
         "invalid_user_credentials": "Correu electrònic o contrasenya no vàlids",
         "general": "S'ha produït un error",
-        "loading_failed": "Ha fallat la càrrega"
+        "loading_failed": "Ha fallat la càrrega",
+        "occurred": "S'ha produït un error"
     },
     "feature": {
         "see_all_subtitles": "Veure tots els resultats de cerca de subtítols més enllà dels tres primers.",
@@ -470,7 +488,25 @@
         "with_pro_you_can": "Amb Pro, pots:",
         "renews_today": "Es renova avui",
         "renewal_failed_contact_support": "Ha fallat la renovació. Contacteu amb el suport al client.",
-        "expired": "Caducat"
+        "expired": "Caducat",
+        "find_videos": "Troba vídeos del teu nivell",
+        "lookup_words": "Cerca paraules i desa vocabulari",
+        "watch_live": "Veure canals en directe",
+        "customize_experience": "Personalitza la teva experiència",
+        "coming_soon": "Properament",
+        "lifetime_only": "Només el pla vitalici està disponible com a opció de compra dins de l'app d'Apple.",
+        "log_in_to_continue": "Inicia sessió per continuar aprenent.",
+        "dont_have_account": "No tens un compte?",
+        "start_learning": "Comença a aprendre idiomes amb contingut de vídeo autèntic.",
+        "creating_account": "Creant compte...",
+        "logging_in": "Iniciant sessió...",
+        "verification_code_sent": "Hem enviat un codi de verificació a {email}. Introdueix-lo a continuació.",
+        "enter_email_for_reset": "Introdueix el teu correu electrònic i t'enviarem un enllaç de restabliment.",
+        "choose_languages": "Tria els teus idiomes per començar",
+        "no_videos_found": "No s'han trobat vídeos. Prova un altre nivell o torna més tard.",
+        "end_of_list": "Has arribat al final de la llista.",
+        "subtitles_not_available": "Els subtítols encara no estan disponibles per a aquest vídeo.",
+        "video_unavailable": "Aquest vídeo no s'ha pogut carregar. Pot haver estat eliminat o fet privat."
     },
     "option": {
         "app_store": "App Store",
@@ -498,7 +534,10 @@
         "please_specify": "Si us plau, especifica",
         "search_all_content": "Cerca tot el contingut en {{language}}",
         "search": "Cerca...",
-        "select_language": "Selecciona un idioma"
+        "select_language": "Selecciona un idioma",
+        "password_min": "Mín. 8 caràcters",
+        "verification_code": "Codi de verificació",
+        "search_languages": "Cercar idiomes..."
     },
     "price": {
         "annual": "${{price}}/any",
@@ -595,7 +634,18 @@
         "video_count": "Vídeo {{index}} de {{total}}",
         "views": "{{numViews}} visualitzacions",
         "watch_history": "Historial de visualització",
-        "your_current_plan": "El teu pla actual"
+        "your_current_plan": "El teu pla actual",
+        "explore_media": "Explorar contingut",
+        "explore": "Explorar",
+        "welcome_back": "Benvingut de nou",
+        "create_account": "Crea el teu compte",
+        "welcome": "Benvingut a Language Player",
+        "check_email": "Revisa el teu correu",
+        "reset_password": "Restablir contrasenya",
+        "i_speak": "Parlo",
+        "i_learning": "Estic aprenent",
+        "confirm_in_app_purchase": "Confirma la teva compra dins de l'app",
+        "only_lifetime_available": "Només el Pla Vitalici està disponible a l'App Store"
     },
     "video": {
         "comments": "Comentaris",
@@ -606,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Traducció activada",
+        "translation_off": "Traducció desactivada",
+        "translating": "Traduint…"
     }
 }

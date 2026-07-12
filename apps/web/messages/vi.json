@@ -281,7 +281,8 @@
         "sv-SE": "Tiếng Thụy Điển (Thụy Điển)",
         "th-TH": "Tiếng Thái (Thái Lan)",
         "tr-TR": "Tiếng Thổ Nhĩ Kỳ (Thổ Nhĩ Kỳ)",
-        "yue-HK": "Tiếng Quảng Đông (Hồng Kông)"
+        "yue-HK": "Tiếng Quảng Đông (Hồng Kông)",
+        "hak-TW": "Tiếng Khách Gia (Đài Loan)"
     },
     "action": {
         "cancel": "Hủy",
@@ -308,11 +309,26 @@
         "upgrade": "Nâng cấp",
         "verify": "Xác minh",
         "watch": "Xem",
-        "load_more": "Tải thêm"
+        "load_more": "Tải thêm",
+        "forgot_password": "Quên mật khẩu?",
+        "sign_up": "Đăng ký",
+        "log_in": "Đăng nhập",
+        "log_out": "Đăng xuất",
+        "create_account": "Tạo tài khoản",
+        "verify_email": "Xác minh email",
+        "send_reset_link": "Gửi liên kết đặt lại",
+        "back_to_login": "Quay lại đăng nhập",
+        "continue": "Tiếp tục",
+        "try_again": "Thử lại",
+        "start_watching": "Bắt đầu xem"
     },
     "button": {
         "keep_current_time": "Giữ Thời Gian Hiện Tại",
-        "reset_time_to_zero": "Đặt Lại Thời Gian Về Không"
+        "reset_time_to_zero": "Đặt Lại Thời Gian Về Không",
+        "email_support": "Hỗ trợ qua email",
+        "processing": "Đang xử lý...",
+        "purchase": "Mua",
+        "switch_to_lifetime": "Chuyển sang gói trọn đời"
     },
     "chatgpt": {
         "prompt": {
@@ -327,7 +343,9 @@
     },
     "email": {
         "support_body": "Vui lòng mô tả vấn đề hoặc câu hỏi của bạn.",
-        "support_subject": "Yêu cầu Hỗ trợ"
+        "support_subject": "Yêu cầu Hỗ trợ",
+        "body": "Vui lòng mô tả vấn đề hoặc câu hỏi của bạn.",
+        "subject": "Yêu cầu hỗ trợ"
     },
     "error": {
         "entry_not_found": "Không tìm thấy mục nhập hoặc từ điển chưa được tải",
@@ -345,7 +363,8 @@
         "cannot_open_url": "Không thể mở trang quên mật khẩu",
         "invalid_user_credentials": "Email hoặc mật khẩu không hợp lệ",
         "general": "Đã xảy ra lỗi",
-        "loading_failed": "Tải không thành công"
+        "loading_failed": "Tải không thành công",
+        "occurred": "Đã xảy ra lỗi"
     },
     "feature": {
         "see_all_subtitles": "Xem tất cả kết quả tìm kiếm phụ đề ngoài ba kết quả đầu tiên.",
@@ -468,7 +487,25 @@
         "with_pro_you_can": "Với Pro, bạn có thể:",
         "renews_today": "Gia hạn hôm nay",
         "renewal_failed_contact_support": "Gia hạn thất bại. Vui lòng liên hệ bộ phận hỗ trợ khách hàng.",
-        "expired": "Đã hết hạn"
+        "expired": "Đã hết hạn",
+        "find_videos": "Tìm video phù hợp trình độ của bạn",
+        "lookup_words": "Tra từ và lưu từ vựng",
+        "watch_live": "Xem kênh trực tiếp",
+        "customize_experience": "Tùy chỉnh trải nghiệm của bạn",
+        "coming_soon": "Sắp ra mắt",
+        "lifetime_only": "Chỉ có gói trọn đời khả dụng dưới dạng mua trong ứng dụng Apple.",
+        "log_in_to_continue": "Đăng nhập để tiếp tục học.",
+        "dont_have_account": "Chưa có tài khoản?",
+        "start_learning": "Bắt đầu học ngôn ngữ qua nội dung video thực tế.",
+        "creating_account": "Đang tạo tài khoản...",
+        "logging_in": "Đang đăng nhập...",
+        "verification_code_sent": "Chúng tôi đã gửi mã xác minh đến {email}. Nhập mã bên dưới.",
+        "enter_email_for_reset": "Nhập email của bạn và chúng tôi sẽ gửi liên kết đặt lại.",
+        "choose_languages": "Chọn ngôn ngữ của bạn để bắt đầu",
+        "no_videos_found": "Không tìm thấy video. Hãy thử cấp độ khác hoặc kiểm tra lại sau.",
+        "end_of_list": "Bạn đã đến cuối danh sách.",
+        "subtitles_not_available": "Phụ đề chưa có sẵn cho video này.",
+        "video_unavailable": "Không thể tải video này. Có thể video đã bị xóa hoặc đặt ở chế độ riêng tư."
     },
     "option": {
         "app_store": "App Store",
@@ -496,7 +533,10 @@
         "please_specify": "Vui lòng nêu rõ",
         "search_all_content": "Tìm kiếm tất cả nội dung {{language}}",
         "search": "Tìm kiếm...",
-        "select_language": "Chọn một ngôn ngữ"
+        "select_language": "Chọn một ngôn ngữ",
+        "password_min": "Tối thiểu 8 ký tự",
+        "verification_code": "Mã xác minh",
+        "search_languages": "Tìm kiếm ngôn ngữ..."
     },
     "price": {
         "annual": "${{price}}/năm",
@@ -593,7 +633,18 @@
         "video_count": "Video {{index}} trên {{total}}",
         "views": "{{numViews}} lượt xem",
         "watch_history": "Lịch sử xem",
-        "your_current_plan": "Gói hiện tại của bạn"
+        "your_current_plan": "Gói hiện tại của bạn",
+        "explore_media": "Khám phá phương tiện",
+        "explore": "Khám phá",
+        "welcome_back": "Chào mừng trở lại",
+        "create_account": "Tạo tài khoản của bạn",
+        "welcome": "Chào mừng đến với Language Player",
+        "check_email": "Kiểm tra email của bạn",
+        "reset_password": "Đặt lại mật khẩu",
+        "i_speak": "Tôi nói",
+        "i_learning": "Tôi đang học",
+        "confirm_in_app_purchase": "Xác nhận mua trong ứng dụng",
+        "only_lifetime_available": "Chỉ có Gói Trọn Đời khả dụng trên App Store"
     },
     "video": {
         "comments": "Bình luận",
@@ -604,5 +655,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Bật dịch",
+        "translation_off": "Tắt dịch",
+        "translating": "Đang dịch…"
     }
 }

@@ -310,15 +310,26 @@
         "upgrade": "Opgradeer",
         "verify": "Verifieer",
         "watch": "Kyk",
-        "load_more": "Laai meer"
+        "load_more": "Laai meer",
+        "forgot_password": "Wagwoord vergeet?",
+        "sign_up": "Teken aan",
+        "log_in": "Meld aan",
+        "log_out": "Meld af",
+        "create_account": "Skep rekening",
+        "verify_email": "Verifieer e-pos",
+        "send_reset_link": "Stuur terugstelskakel",
+        "back_to_login": "Terug na aanmelding",
+        "continue": "Gaan voort",
+        "try_again": "Probeer weer",
+        "start_watching": "Begin kyk"
     },
     "button": {
-        "email_support": "E-pos Ondersteuning",
+        "email_support": "E-posondersteuning",
         "keep_current_time": "Behou Huidige Tyd",
-        "processing": "Besig...",
+        "processing": "Verwerk...",
         "purchase": "Koop",
         "reset_time_to_zero": "Herstel Tyd na Nul",
-        "switch_to_lifetime": "Skakel oor na Lewenslank"
+        "switch_to_lifetime": "Skakel oor na lewenslange plan"
     },
     "chatgpt": {
         "prompt": {
@@ -456,7 +467,7 @@
         "hsk_explanation": "\"HSK\" is die amptelike Chinese vaardigheidstoets, met Vlak 1 as die laagste en Vlak 9 as die hoogste.",
         "initializing": "Besig om te inisialiseer...",
         "keep_or_reset_time": "Wil jy jou huidige tyd behou of dit na nul herstel?",
-        "lifetime_only": "Slegs die Lewenslange plan is beskikbaar as 'n opsie vir Apple In-App Aankope.",
+        "lifetime_only": "Slegs die lewenslange plan is beskikbaar as 'n Apple-inprogram-aankoopopsie.",
         "loading": "Besig om te laai...",
         "no_active_subscription": "Geen aktiewe inskrywing gevind nie.",
         "no_more_videos": "Geen meer video's",
@@ -480,7 +491,24 @@
         "with_pro_you_can": "Met Pro kan jy:",
         "renews_today": "Hernuwe vandag",
         "renewal_failed_contact_support": "Hernuwing het misluk. Kontak asseblief kliëntediens.",
-        "expired": "Verval"
+        "expired": "Verval",
+        "find_videos": "Vind video's op jou vlak",
+        "lookup_words": "Soek woorde op en stoor woordeskat",
+        "watch_live": "Kyk na regstreekse kanale",
+        "customize_experience": "Pas jou ervaring aan",
+        "coming_soon": "Binnekort beskikbaar",
+        "log_in_to_continue": "Meld aan om aan te hou leer.",
+        "dont_have_account": "Het jy nie 'n rekening nie?",
+        "start_learning": "Begin tale leer deur outentieke video-inhoud.",
+        "creating_account": "Skep rekening...",
+        "logging_in": "Meld aan...",
+        "verification_code_sent": "Ons het 'n verifikasiekode na {email} gestuur. Voer dit hieronder in.",
+        "enter_email_for_reset": "Voer jou e-posadres in en ons sal vir jou 'n terugstelskakel stuur.",
+        "choose_languages": "Kies jou tale om te begin",
+        "no_videos_found": "Geen video's gevind nie. Probeer 'n ander vlak of kom later terug.",
+        "end_of_list": "Jy het die einde van die lys bereik.",
+        "subtitles_not_available": "Onderskrifte is nog nie vir hierdie video beskikbaar nie.",
+        "video_unavailable": "Hierdie video kon nie gelaai word nie. Dit is moontlik verwyder of privaat gemaak."
     },
     "option": {
         "app_store": "App Store",
@@ -508,7 +536,10 @@
         "please_specify": "Spesifiseer asseblief",
         "search_all_content": "Soek alle {{language}} inhoud",
         "search": "Soek...",
-        "select_language": "Kies 'n taal"
+        "select_language": "Kies 'n taal",
+        "password_min": "Min. 8 karakters",
+        "verification_code": "Verifikasiekode",
+        "search_languages": "Soek tale..."
     },
     "price": {
         "annual": "${{price}}/jr",
@@ -558,7 +589,7 @@
         "cancellation_failed": "Kansellasie misluk",
         "choose_language": "Kies taal",
         "choose_your_plan": "Kies jou plan",
-        "confirm_in_app_purchase": "Bevestig jou in-app aankoop",
+        "confirm_in_app_purchase": "Bevestig jou inprogram-aankoop",
         "continue_learning": "Gaan voort met {{l2Code}} leer",
         "current_level": "Wat is jou huidige {{language}}-vlak?",
         "current_plan": "Huidige plan",
@@ -583,7 +614,7 @@
         "monthly": "Maandeliks",
         "my_progress": "My vordering",
         "next": "Volgende",
-        "only_lifetime_available": "Slegs die Lewenslange Plan is beskikbaar in die App Store",
+        "only_lifetime_available": "Slegs die Lewenslange Plan is in die App Store beskikbaar",
         "password": "Wagwoord",
         "popularity": "Gewildheid",
         "privacy_policy": "Privaatheidsbeleid",
@@ -607,7 +638,16 @@
         "video_count": "Video {{index}} van {{total}}",
         "views": "{{numViews}} keer gekyk",
         "watch_history": "Kykgeskiedenis",
-        "your_current_plan": "Jou huidige plan"
+        "your_current_plan": "Jou huidige plan",
+        "explore_media": "Verken media",
+        "explore": "Verken",
+        "welcome_back": "Welkom terug",
+        "create_account": "Skep jou rekening",
+        "welcome": "Welkom by Language Player",
+        "check_email": "Gaan jou e-pos na",
+        "reset_password": "Stel wagwoord terug",
+        "i_speak": "Ek praat",
+        "i_learning": "Ek leer"
     },
     "video": {
         "comments": "Kommentaar",
@@ -618,5 +658,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Vertaling aan",
+        "translation_off": "Vertaling af",
+        "translating": "Vertaal tans…"
     }
 }

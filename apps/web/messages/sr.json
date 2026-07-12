@@ -282,7 +282,8 @@
         "sv-SE": "Шведски (Шведска)",
         "th-TH": "Тајландски (Тајланд)",
         "tr-TR": "Турски (Турска)",
-        "yue-HK": "Кантонски (Хонг Конг)"
+        "yue-HK": "Кантонски (Хонг Конг)",
+        "hak-TW": "Хака (Тајван)"
     },
     "action": {
         "cancel": "Otkaži",
@@ -309,11 +310,26 @@
         "upgrade": "Nadogradi",
         "verify": "Potvrdi",
         "watch": "Gledaj",
-        "load_more": "Учитај више"
+        "load_more": "Учитај више",
+        "forgot_password": "Заборавили сте лозинку?",
+        "sign_up": "Региструј се",
+        "log_in": "Пријави се",
+        "log_out": "Одјави се",
+        "create_account": "Направи налог",
+        "verify_email": "Потврди е-пошту",
+        "send_reset_link": "Пошаљи линк за ресетовање",
+        "back_to_login": "Назад на пријаву",
+        "continue": "Настави",
+        "try_again": "Покушај поново",
+        "start_watching": "Почни да гледаш"
     },
     "button": {
         "keep_current_time": "Задржи Тренутно Време",
-        "reset_time_to_zero": "Ресетуј Време на Нулу"
+        "reset_time_to_zero": "Ресетуј Време на Нулу",
+        "email_support": "Подршка путем е-поште",
+        "processing": "Обрада...",
+        "purchase": "Купи",
+        "switch_to_lifetime": "Пребаци на доживотни план"
     },
     "chatgpt": {
         "prompt": {
@@ -328,7 +344,9 @@
     },
     "email": {
         "support_body": "Молимо опишите свој проблем или питање.",
-        "support_subject": "Захтев за подршку"
+        "support_subject": "Захтев за подршку",
+        "body": "Опишите свој проблем или питање.",
+        "subject": "Захтев за подршку"
     },
     "error": {
         "entry_not_found": "Unos nije pronađen ili rečnik nije učitan",
@@ -346,7 +364,8 @@
         "cannot_open_url": "Није могуће отворити страницу за заборављену лозинку",
         "invalid_user_credentials": "Неважећа е-пошта или лозинка",
         "general": "Дошло је до грешке",
-        "loading_failed": "Учитавање није успело"
+        "loading_failed": "Учитавање није успело",
+        "occurred": "Дошло је до грешке"
     },
     "feature": {
         "see_all_subtitles": "Pogledaj sve rezultate pretrage titlova nakon prva tri.",
@@ -469,7 +488,25 @@
         "with_pro_you_can": "Sa Pro verzijom možeš:",
         "renews_today": "Обнавља се данас",
         "renewal_failed_contact_support": "Обнова није успела. Молимо контактирајте корисничку подршку.",
-        "expired": "Истекло"
+        "expired": "Истекло",
+        "find_videos": "Пронађите видео снимке на свом нивоу",
+        "lookup_words": "Потражите речи и сачувајте речник",
+        "watch_live": "Гледајте канале уживо",
+        "customize_experience": "Прилагодите своје искуство",
+        "coming_soon": "Долази ускоро",
+        "lifetime_only": "Само је доживотни план доступан као опција куповине унутар апликације Apple.",
+        "log_in_to_continue": "Пријавите се да бисте наставили са учењем.",
+        "dont_have_account": "Немате налог?",
+        "start_learning": "Започните учење језика кроз аутентични видео садржај.",
+        "creating_account": "Прављење налога...",
+        "logging_in": "Пријављивање...",
+        "verification_code_sent": "Послали смо верификациони код на {email}. Унесите га испод.",
+        "enter_email_for_reset": "Унесите своју е-пошту и послаћемо вам линк за ресетовање.",
+        "choose_languages": "Изаберите своје језике за почетак",
+        "no_videos_found": "Нису пронађени видео снимци. Покушајте други ниво или проверите касније.",
+        "end_of_list": "Дошли сте до краја листе.",
+        "subtitles_not_available": "Титлови још нису доступни за овај видео.",
+        "video_unavailable": "Овај видео није могао да се учита. Можда је уклоњен или постављен као приватан."
     },
     "option": {
         "app_store": "App Store",
@@ -497,7 +534,10 @@
         "please_specify": "Molimo navedite",
         "search_all_content": "Претражи сав {{language}} садржај",
         "search": "Pretraži...",
-        "select_language": "Izaberi jezik"
+        "select_language": "Izaberi jezik",
+        "password_min": "Мин. 8 карактера",
+        "verification_code": "Верификациони код",
+        "search_languages": "Претражи језике..."
     },
     "price": {
         "annual": "${{price}}/год",
@@ -594,7 +634,18 @@
         "video_count": "Видео {{index}} од {{total}}",
         "views": "{{numViews}} pregleda",
         "watch_history": "Istorija gledanja",
-        "your_current_plan": "Tvoj trenutni plan"
+        "your_current_plan": "Tvoj trenutni plan",
+        "explore_media": "Истражи медије",
+        "explore": "Истражи",
+        "welcome_back": "Добродошли назад",
+        "create_account": "Направите свој налог",
+        "welcome": "Добродошли у Language Player",
+        "check_email": "Проверите своју е-пошту",
+        "reset_password": "Ресетуј лозинку",
+        "i_speak": "Говорим",
+        "i_learning": "Учим",
+        "confirm_in_app_purchase": "Потврдите куповину унутар апликације",
+        "only_lifetime_available": "Само је Доживотни План доступан у App Store-у"
     },
     "video": {
         "comments": "Komentari",
@@ -605,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Превод укључен",
+        "translation_off": "Превод искључен",
+        "translating": "Превођење…"
     }
 }

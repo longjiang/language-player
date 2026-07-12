@@ -282,7 +282,8 @@
         "sv-SE": "Шведский (Швеция)",
         "th-TH": "Тайский (Таиланд)",
         "tr-TR": "Турецкий (Турция)",
-        "yue-HK": "Кантонский (Гонконг)"
+        "yue-HK": "Кантонский (Гонконг)",
+        "hak-TW": "Хакка (Тайвань)"
     },
     "action": {
         "cancel": "Отмена",
@@ -309,11 +310,26 @@
         "upgrade": "Обновить",
         "verify": "Подтвердить",
         "watch": "Смотреть",
-        "load_more": "Загрузить ещё"
+        "load_more": "Загрузить ещё",
+        "forgot_password": "Забыли пароль?",
+        "sign_up": "Регистрация",
+        "log_in": "Войти",
+        "log_out": "Выйти",
+        "create_account": "Создать аккаунт",
+        "verify_email": "Подтвердить email",
+        "send_reset_link": "Отправить ссылку для сброса",
+        "back_to_login": "Вернуться ко входу",
+        "continue": "Продолжить",
+        "try_again": "Попробовать снова",
+        "start_watching": "Начать просмотр"
     },
     "button": {
         "keep_current_time": "Сохранить Текущее Время",
-        "reset_time_to_zero": "Сбросить Время на Ноль"
+        "reset_time_to_zero": "Сбросить Время на Ноль",
+        "email_support": "Поддержка по email",
+        "processing": "Обработка...",
+        "purchase": "Купить",
+        "switch_to_lifetime": "Перейти на пожизненный план"
     },
     "chatgpt": {
         "prompt": {
@@ -328,7 +344,9 @@
     },
     "email": {
         "support_body": "Пожалуйста, опишите вашу проблему или вопрос.",
-        "support_subject": "Запрос на поддержку"
+        "support_subject": "Запрос на поддержку",
+        "body": "Опишите вашу проблему или вопрос.",
+        "subject": "Запрос в поддержку"
     },
     "error": {
         "entry_not_found": "Запись не найдена или словарь не загружен",
@@ -346,7 +364,8 @@
         "cannot_open_url": "Не удается открыть страницу восстановления пароля",
         "invalid_user_credentials": "Неверный email или пароль",
         "general": "Произошла ошибка",
-        "loading_failed": "Ошибка загрузки"
+        "loading_failed": "Ошибка загрузки",
+        "occurred": "Произошла ошибка"
     },
     "feature": {
         "see_all_subtitles": "Просмотреть все результаты поиска субтитров за пределами первых трех.",
@@ -469,7 +488,25 @@
         "with_pro_you_can": "С Pro вы можете:",
         "renews_today": "Продлевается сегодня",
         "renewal_failed_contact_support": "Не удалось продлить подписку. Пожалуйста, свяжитесь со службой поддержки.",
-        "expired": "Истек срок действия"
+        "expired": "Истек срок действия",
+        "find_videos": "Найдите видео своего уровня",
+        "lookup_words": "Ищите слова и сохраняйте словарь",
+        "watch_live": "Смотреть прямые эфиры",
+        "customize_experience": "Настройте свой опыт",
+        "coming_soon": "Скоро",
+        "lifetime_only": "Только пожизненный план доступен в качестве встроенной покупки Apple.",
+        "log_in_to_continue": "Войдите, чтобы продолжить обучение.",
+        "dont_have_account": "Нет аккаунта?",
+        "start_learning": "Начните изучать языки с помощью аутентичного видеоконтента.",
+        "creating_account": "Создание аккаунта...",
+        "logging_in": "Вход в систему...",
+        "verification_code_sent": "Мы отправили код подтверждения на {email}. Введите его ниже.",
+        "enter_email_for_reset": "Введите ваш email, и мы отправим ссылку для сброса.",
+        "choose_languages": "Выберите языки, чтобы начать",
+        "no_videos_found": "Видео не найдены. Попробуйте другой уровень или зайдите позже.",
+        "end_of_list": "Вы достигли конца списка.",
+        "subtitles_not_available": "Субтитры для этого видео пока недоступны.",
+        "video_unavailable": "Это видео не может быть загружено. Возможно, оно было удалено или сделано приватным."
     },
     "option": {
         "app_store": "App Store",
@@ -497,7 +534,10 @@
         "please_specify": "Пожалуйста, укажите",
         "search_all_content": "Поиск по всему контенту на {{language}}",
         "search": "Поиск...",
-        "select_language": "Выберите язык"
+        "select_language": "Выберите язык",
+        "password_min": "Мин. 8 символов",
+        "verification_code": "Код подтверждения",
+        "search_languages": "Поиск языков..."
     },
     "price": {
         "annual": "${{price}}/год",
@@ -594,7 +634,18 @@
         "video_count": "Видео {{index}} из {{total}}",
         "views": "{{numViews}} просмотров",
         "watch_history": "История просмотров",
-        "your_current_plan": "Ваш текущий план"
+        "your_current_plan": "Ваш текущий план",
+        "explore_media": "Обзор медиа",
+        "explore": "Обзор",
+        "welcome_back": "С возвращением",
+        "create_account": "Создайте аккаунт",
+        "welcome": "Добро пожаловать в Language Player",
+        "check_email": "Проверьте почту",
+        "reset_password": "Сбросить пароль",
+        "i_speak": "Я говорю",
+        "i_learning": "Я изучаю",
+        "confirm_in_app_purchase": "Подтвердите встроенную покупку",
+        "only_lifetime_available": "В App Store доступен только Пожизненный план"
     },
     "video": {
         "comments": "Комментарии",
@@ -605,5 +656,10 @@
         "hanja": "Ханджа",
         "kana": "Кана",
         "pinyin": "Пиньинь"
+    },
+    "subtitle": {
+        "translation_on": "Перевод включён",
+        "translation_off": "Перевод выключен",
+        "translating": "Перевод…"
     }
 }

@@ -310,11 +310,26 @@
         "upgrade": "Upgraden",
         "verify": "Verifizieren",
         "watch": "Ansehen",
-        "load_more": "Mehr laden"
+        "load_more": "Mehr laden",
+        "forgot_password": "Passwort vergessen?",
+        "sign_up": "Registrieren",
+        "log_in": "Anmelden",
+        "log_out": "Abmelden",
+        "create_account": "Konto erstellen",
+        "verify_email": "E-Mail bestätigen",
+        "send_reset_link": "Reset-Link senden",
+        "back_to_login": "Zurück zur Anmeldung",
+        "continue": "Weiter",
+        "try_again": "Erneut versuchen",
+        "start_watching": "Anschauen starten"
     },
     "button": {
         "keep_current_time": "Aktuelle Zeit Behalten",
-        "reset_time_to_zero": "Zeit auf Null Zurücksetzen"
+        "reset_time_to_zero": "Zeit auf Null Zurücksetzen",
+        "email_support": "E-Mail-Support",
+        "processing": "Wird verarbeitet...",
+        "purchase": "Kaufen",
+        "switch_to_lifetime": "Zum Lifetime-Plan wechseln"
     },
     "chatgpt": {
         "prompt": {
@@ -329,7 +344,9 @@
     },
     "email": {
         "support_body": "Bitte beschreiben Sie Ihr Problem oder Ihre Frage.",
-        "support_subject": "Unterstützungsanfrage"
+        "support_subject": "Unterstützungsanfrage",
+        "body": "Bitte beschreiben Sie Ihr Problem oder Ihre Frage.",
+        "subject": "Support-Anfrage"
     },
     "error": {
         "entry_not_found": "Eintrag nicht gefunden oder Wörterbuch nicht geladen",
@@ -347,7 +364,8 @@
         "cannot_open_url": "Die Seite zum Zurücksetzen des Passworts kann nicht geöffnet werden",
         "invalid_user_credentials": "Ungültige E-Mail oder Passwort",
         "general": "Ein Fehler ist aufgetreten",
-        "loading_failed": "Laden fehlgeschlagen"
+        "loading_failed": "Laden fehlgeschlagen",
+        "occurred": "Ein Fehler ist aufgetreten"
     },
     "feature": {
         "see_all_subtitles": "Alle Untertitel-Suchergebnisse über die ersten drei hinaus anzeigen.",
@@ -470,7 +488,25 @@
         "with_pro_you_can": "Mit Pro können Sie:",
         "renews_today": "Erneuert sich heute",
         "renewal_failed_contact_support": "Erneuerung fehlgeschlagen. Bitte kontaktieren Sie den Kundensupport.",
-        "expired": "Abgelaufen"
+        "expired": "Abgelaufen",
+        "find_videos": "Finden Sie Videos auf Ihrem Niveau",
+        "lookup_words": "Wörter nachschlagen & Vokabeln speichern",
+        "watch_live": "Live-Kanäle ansehen",
+        "customize_experience": "Passen Sie Ihr Erlebnis an",
+        "coming_soon": "Demnächst verfügbar",
+        "lifetime_only": "Nur der Lifetime-Plan ist als In-App-Kauf bei Apple verfügbar.",
+        "log_in_to_continue": "Melden Sie sich an, um weiter zu lernen.",
+        "dont_have_account": "Sie haben noch kein Konto?",
+        "start_learning": "Lernen Sie Sprachen mit authentischen Videoinhalten.",
+        "creating_account": "Konto wird erstellt...",
+        "logging_in": "Anmeldung läuft...",
+        "verification_code_sent": "Wir haben einen Bestätigungscode an {email} gesendet. Geben Sie ihn unten ein.",
+        "enter_email_for_reset": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Reset-Link.",
+        "choose_languages": "Wählen Sie Ihre Sprachen zum Starten",
+        "no_videos_found": "Keine Videos gefunden. Versuchen Sie ein anderes Niveau oder schauen Sie später wieder vorbei.",
+        "end_of_list": "Sie haben das Ende der Liste erreicht.",
+        "subtitles_not_available": "Untertitel sind für dieses Video noch nicht verfügbar.",
+        "video_unavailable": "Dieses Video konnte nicht geladen werden. Es wurde möglicherweise entfernt oder auf privat gesetzt."
     },
     "option": {
         "app_store": "App Store",
@@ -498,7 +534,10 @@
         "please_specify": "Bitte angeben",
         "search_all_content": "Durchsuche alle {{language}} Inhalte",
         "search": "Suchen...",
-        "select_language": "Sprache auswählen"
+        "select_language": "Sprache auswählen",
+        "password_min": "Mind. 8 Zeichen",
+        "verification_code": "Bestätigungscode",
+        "search_languages": "Sprachen suchen..."
     },
     "price": {
         "annual": "${{price}}/Jahr",
@@ -595,7 +634,18 @@
         "video_count": "Video {{index}} von {{total}}",
         "views": "{{numViews}} Aufrufe",
         "watch_history": "Verlauf ansehen",
-        "your_current_plan": "Ihr aktueller Plan"
+        "your_current_plan": "Ihr aktueller Plan",
+        "explore_media": "Medien entdecken",
+        "explore": "Entdecken",
+        "welcome_back": "Willkommen zurück",
+        "create_account": "Konto erstellen",
+        "welcome": "Willkommen bei Language Player",
+        "check_email": "Überprüfen Sie Ihre E-Mail",
+        "reset_password": "Passwort zurücksetzen",
+        "i_speak": "Ich spreche",
+        "i_learning": "Ich lerne",
+        "confirm_in_app_purchase": "In-App-Kauf bestätigen",
+        "only_lifetime_available": "Nur der Lifetime-Plan ist im App Store verfügbar"
     },
     "video": {
         "comments": "Kommentare",
@@ -606,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Übersetzung ein",
+        "translation_off": "Übersetzung aus",
+        "translating": "Übersetzung läuft…"
     }
 }

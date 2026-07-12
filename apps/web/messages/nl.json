@@ -282,7 +282,8 @@
         "sv-SE": "Zweeds (Zweden)",
         "th-TH": "Thais (Thailand)",
         "tr-TR": "Turks (Turkije)",
-        "yue-HK": "Kantonees (Hongkong)"
+        "yue-HK": "Kantonees (Hongkong)",
+        "hak-TW": "Hakka (Taiwan)"
     },
     "action": {
         "cancel": "Annuleren",
@@ -309,11 +310,26 @@
         "upgrade": "Upgraden",
         "verify": "Verifiëren",
         "watch": "Bekijken",
-        "load_more": "Meer laden"
+        "load_more": "Meer laden",
+        "forgot_password": "Wachtwoord vergeten?",
+        "sign_up": "Registreren",
+        "log_in": "Inloggen",
+        "log_out": "Uitloggen",
+        "create_account": "Account aanmaken",
+        "verify_email": "E-mail verifiëren",
+        "send_reset_link": "Resetlink versturen",
+        "back_to_login": "Terug naar inloggen",
+        "continue": "Doorgaan",
+        "try_again": "Opnieuw proberen",
+        "start_watching": "Beginnen met kijken"
     },
     "button": {
         "keep_current_time": "Huidige Tijd Behouden",
-        "reset_time_to_zero": "Tijd op Nul Zetten"
+        "reset_time_to_zero": "Tijd op Nul Zetten",
+        "email_support": "E-mailondersteuning",
+        "processing": "Verwerken...",
+        "purchase": "Kopen",
+        "switch_to_lifetime": "Overstappen naar levenslang abonnement"
     },
     "chatgpt": {
         "prompt": {
@@ -328,7 +344,9 @@
     },
     "email": {
         "support_body": "Beschrijf alstublieft uw probleem of vraag.",
-        "support_subject": "Ondersteuningsverzoek"
+        "support_subject": "Ondersteuningsverzoek",
+        "body": "Beschrijf uw probleem of vraag.",
+        "subject": "Ondersteuningsverzoek"
     },
     "error": {
         "entry_not_found": "Item niet gevonden of woordenboek niet geladen",
@@ -346,7 +364,8 @@
         "cannot_open_url": "Kan de pagina voor vergeten wachtwoord niet openen",
         "invalid_user_credentials": "Ongeldig e-mailadres of wachtwoord",
         "general": "Er is een fout opgetreden",
-        "loading_failed": "Laden mislukt"
+        "loading_failed": "Laden mislukt",
+        "occurred": "Er is een fout opgetreden"
     },
     "feature": {
         "see_all_subtitles": "Bekijk alle zoekresultaten voor ondertitels na de eerste drie.",
@@ -469,7 +488,25 @@
         "with_pro_you_can": "Met Pro kun je:",
         "renews_today": "Wordt vandaag verlengd",
         "renewal_failed_contact_support": "Verlenging mislukt. Neem contact op met de klantenondersteuning.",
-        "expired": "Verlopen"
+        "expired": "Verlopen",
+        "find_videos": "Vind video's op uw niveau",
+        "lookup_words": "Zoek woorden op en sla woordenschat op",
+        "watch_live": "Live kanalen bekijken",
+        "customize_experience": "Pas uw ervaring aan",
+        "coming_soon": "Binnenkort beschikbaar",
+        "lifetime_only": "Alleen het levenslange abonnement is beschikbaar als in-app aankoopoptie van Apple.",
+        "log_in_to_continue": "Log in om verder te leren.",
+        "dont_have_account": "Nog geen account?",
+        "start_learning": "Begin met talen leren via authentieke videocontent.",
+        "creating_account": "Account aanmaken...",
+        "logging_in": "Inloggen...",
+        "verification_code_sent": "We hebben een verificatiecode gestuurd naar {email}. Voer deze hieronder in.",
+        "enter_email_for_reset": "Voer uw e-mailadres in en we sturen u een resetlink.",
+        "choose_languages": "Kies uw talen om te beginnen",
+        "no_videos_found": "Geen video's gevonden. Probeer een ander niveau of kom later terug.",
+        "end_of_list": "U hebt het einde van de lijst bereikt.",
+        "subtitles_not_available": "Ondertiteling is nog niet beschikbaar voor deze video.",
+        "video_unavailable": "Deze video kon niet worden geladen. Mogelijk is deze verwijderd of privé gemaakt."
     },
     "option": {
         "app_store": "App Store",
@@ -497,7 +534,10 @@
         "please_specify": "Gelieve te specificeren",
         "search_all_content": "Doorzoek alle {{language}} inhoud",
         "search": "Zoeken...",
-        "select_language": "Selecteer een taal"
+        "select_language": "Selecteer een taal",
+        "password_min": "Min. 8 tekens",
+        "verification_code": "Verificatiecode",
+        "search_languages": "Talen zoeken..."
     },
     "price": {
         "annual": "${{price}}/jaar",
@@ -594,7 +634,18 @@
         "video_count": "Video {{index}} van {{total}}",
         "views": "{{numViews}} weergaven",
         "watch_history": "Kijkgeschiedenis",
-        "your_current_plan": "Je huidige abonnement"
+        "your_current_plan": "Je huidige abonnement",
+        "explore_media": "Media verkennen",
+        "explore": "Verkennen",
+        "welcome_back": "Welkom terug",
+        "create_account": "Maak uw account aan",
+        "welcome": "Welkom bij Language Player",
+        "check_email": "Controleer uw e-mail",
+        "reset_password": "Wachtwoord opnieuw instellen",
+        "i_speak": "Ik spreek",
+        "i_learning": "Ik leer",
+        "confirm_in_app_purchase": "Bevestig uw in-app aankoop",
+        "only_lifetime_available": "Alleen het Levenslang Abonnement is beschikbaar in de App Store"
     },
     "video": {
         "comments": "Reacties",
@@ -605,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Vertaling aan",
+        "translation_off": "Vertaling uit",
+        "translating": "Vertalen…"
     }
 }

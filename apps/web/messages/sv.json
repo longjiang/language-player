@@ -282,7 +282,8 @@
         "sv-SE": "Svenska (Sverige)",
         "th-TH": "Thai (Thailand)",
         "tr-TR": "Turkiska (Turkiet)",
-        "yue-HK": "Kantonesiska (Hongkong)"
+        "yue-HK": "Kantonesiska (Hongkong)",
+        "hak-TW": "Hakka (Taiwan)"
     },
     "action": {
         "cancel": "Avbryt",
@@ -309,11 +310,26 @@
         "upgrade": "Uppgradera",
         "verify": "Verifiera",
         "watch": "Titta",
-        "load_more": "Ladda mer"
+        "load_more": "Ladda mer",
+        "forgot_password": "Glömt lösenord?",
+        "sign_up": "Registrera dig",
+        "log_in": "Logga in",
+        "log_out": "Logga ut",
+        "create_account": "Skapa konto",
+        "verify_email": "Verifiera e-post",
+        "send_reset_link": "Skicka återställningslänk",
+        "back_to_login": "Tillbaka till inloggning",
+        "continue": "Fortsätt",
+        "try_again": "Försök igen",
+        "start_watching": "Börja titta"
     },
     "button": {
         "keep_current_time": "Behåll Nuvarande Tid",
-        "reset_time_to_zero": "Återställ Tid till Noll"
+        "reset_time_to_zero": "Återställ Tid till Noll",
+        "email_support": "E-postsupport",
+        "processing": "Bearbetar...",
+        "purchase": "Köp",
+        "switch_to_lifetime": "Byt till livstidsplan"
     },
     "chatgpt": {
         "prompt": {
@@ -328,7 +344,9 @@
     },
     "email": {
         "support_body": "Vänligen beskriv ditt problem eller din fråga.",
-        "support_subject": "Supportförfrågan"
+        "support_subject": "Supportförfrågan",
+        "body": "Beskriv ditt problem eller din fråga.",
+        "subject": "Supportförfrågan"
     },
     "error": {
         "entry_not_found": "Inlägg hittades inte eller ordlistan laddades inte",
@@ -346,7 +364,8 @@
         "cannot_open_url": "Kan inte öppna sidan för glömt lösenord",
         "invalid_user_credentials": "Ogiltig e-post eller lösenord",
         "general": "Ett fel uppstod",
-        "loading_failed": "Laddningen misslyckades"
+        "loading_failed": "Laddningen misslyckades",
+        "occurred": "Ett fel inträffade"
     },
     "feature": {
         "see_all_subtitles": "Se alla undertextsökresultat bortom de tre första.",
@@ -469,7 +488,25 @@
         "with_pro_you_can": "Med Pro kan du:",
         "renews_today": "Förnyas idag",
         "renewal_failed_contact_support": "Förnyelsen misslyckades. Vänligen kontakta kundsupport.",
-        "expired": "Utgången"
+        "expired": "Utgången",
+        "find_videos": "Hitta videor på din nivå",
+        "lookup_words": "Slå upp ord och spara ordförråd",
+        "watch_live": "Titta på livekanaler",
+        "customize_experience": "Anpassa din upplevelse",
+        "coming_soon": "Kommer snart",
+        "lifetime_only": "Endast livstidsplanen är tillgänglig som köpalternativ i Apple-appen.",
+        "log_in_to_continue": "Logga in för att fortsätta lära dig.",
+        "dont_have_account": "Har du inget konto?",
+        "start_learning": "Börja lära dig språk genom autentiskt videoinnehåll.",
+        "creating_account": "Skapar konto...",
+        "logging_in": "Loggar in...",
+        "verification_code_sent": "Vi har skickat en verifieringskod till {email}. Ange den nedan.",
+        "enter_email_for_reset": "Ange din e-postadress så skickar vi en återställningslänk.",
+        "choose_languages": "Välj dina språk för att komma igång",
+        "no_videos_found": "Inga videor hittades. Testa en annan nivå eller kom tillbaka senare.",
+        "end_of_list": "Du har nått slutet av listan.",
+        "subtitles_not_available": "Undertexter är inte tillgängliga för denna video än.",
+        "video_unavailable": "Denna video kunde inte laddas. Den kan ha tagits bort eller gjorts privat."
     },
     "option": {
         "app_store": "App Store",
@@ -497,7 +534,10 @@
         "please_specify": "Vänligen specificera",
         "search_all_content": "Sök i allt {{language}} innehåll",
         "search": "Sök...",
-        "select_language": "Välj ett språk"
+        "select_language": "Välj ett språk",
+        "password_min": "Minst 8 tecken",
+        "verification_code": "Verifieringskod",
+        "search_languages": "Sök språk..."
     },
     "price": {
         "annual": "${{price}}/år",
@@ -594,7 +634,18 @@
         "video_count": "Video {{index}} av {{total}}",
         "views": "{{numViews}} visningar",
         "watch_history": "Tittarhistorik",
-        "your_current_plan": "Din nuvarande plan"
+        "your_current_plan": "Din nuvarande plan",
+        "explore_media": "Utforska media",
+        "explore": "Utforska",
+        "welcome_back": "Välkommen tillbaka",
+        "create_account": "Skapa ditt konto",
+        "welcome": "Välkommen till Language Player",
+        "check_email": "Kontrollera din e-post",
+        "reset_password": "Återställ lösenord",
+        "i_speak": "Jag talar",
+        "i_learning": "Jag lär mig",
+        "confirm_in_app_purchase": "Bekräfta ditt köp i appen",
+        "only_lifetime_available": "Endast livstidsplanen är tillgänglig i App Store"
     },
     "video": {
         "comments": "Kommentarer",
@@ -605,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Översättning på",
+        "translation_off": "Översättning av",
+        "translating": "Översätter…"
     }
 }

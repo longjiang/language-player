@@ -282,7 +282,8 @@
         "sv-SE": "スウェーデン語 (スウェーデン)",
         "th-TH": "タイ語 (タイ)",
         "tr-TR": "トルコ語 (トルコ)",
-        "yue-HK": "広東語 (香港)"
+        "yue-HK": "広東語 (香港)",
+        "hak-TW": "客家語（台湾）"
     },
     "action": {
         "cancel": "キャンセル",
@@ -309,11 +310,26 @@
         "upgrade": "アップグレード",
         "verify": "確認する",
         "watch": "見る",
-        "load_more": "もっと読み込む"
+        "load_more": "もっと読み込む",
+        "forgot_password": "パスワードをお忘れですか？",
+        "sign_up": "登録",
+        "log_in": "ログイン",
+        "log_out": "ログアウト",
+        "create_account": "アカウント作成",
+        "verify_email": "メールを確認",
+        "send_reset_link": "リセットリンクを送信",
+        "back_to_login": "ログインに戻る",
+        "continue": "続ける",
+        "try_again": "もう一度試す",
+        "start_watching": "視聴を開始"
     },
     "button": {
         "keep_current_time": "現在の時間を保持",
-        "reset_time_to_zero": "時間をゼロにリセット"
+        "reset_time_to_zero": "時間をゼロにリセット",
+        "email_support": "メールサポート",
+        "processing": "処理中...",
+        "purchase": "購入",
+        "switch_to_lifetime": "ライフタイムプランに切り替え"
     },
     "chatgpt": {
         "prompt": {
@@ -328,7 +344,9 @@
     },
     "email": {
         "support_body": "問題や質問を説明してください。",
-        "support_subject": "サポートリクエスト"
+        "support_subject": "サポートリクエスト",
+        "body": "問題や質問の内容を記入してください。",
+        "subject": "サポートリクエスト"
     },
     "error": {
         "entry_not_found": "エントリが見つからないか、辞書が読み込まれていません",
@@ -346,7 +364,8 @@
         "cannot_open_url": "パスワード忘れページを開けません",
         "invalid_user_credentials": "メールアドレスまたはパスワードが無効です",
         "general": "エラーが発生しました",
-        "loading_failed": "読み込みに失敗しました"
+        "loading_failed": "読み込みに失敗しました",
+        "occurred": "エラーが発生しました"
     },
     "feature": {
         "see_all_subtitles": "最初の3つ以外のすべての字幕検索結果を表示します。",
@@ -469,7 +488,25 @@
         "with_pro_you_can": "Proでは、次のことができます:",
         "renews_today": "本日更新",
         "renewal_failed_contact_support": "更新に失敗しました。カスタマーサポートにお問い合わせください。",
-        "expired": "期限切れ"
+        "expired": "期限切れ",
+        "find_videos": "自分のレベルに合った動画を見つける",
+        "lookup_words": "単語を調べて語彙を保存",
+        "watch_live": "ライブチャンネルを視聴",
+        "customize_experience": "体験をカスタマイズ",
+        "coming_soon": "近日公開",
+        "lifetime_only": "Appleのアプリ内購入では、ライフタイムプランのみが利用可能です。",
+        "log_in_to_continue": "ログインして学習を続けましょう。",
+        "dont_have_account": "アカウントをお持ちではありませんか？",
+        "start_learning": "本格的な動画コンテンツで言語を学び始めましょう。",
+        "creating_account": "アカウントを作成中...",
+        "logging_in": "ログイン中...",
+        "verification_code_sent": "{email} に確認コードを送信しました。以下に入力してください。",
+        "enter_email_for_reset": "メールアドレスを入力してください。リセットリンクをお送りします。",
+        "choose_languages": "学習する言語を選択してください",
+        "no_videos_found": "動画が見つかりません。別のレベルを試すか、後でもう一度確認してください。",
+        "end_of_list": "リストの最後に達しました。",
+        "subtitles_not_available": "この動画の字幕はまだ利用できません。",
+        "video_unavailable": "この動画を読み込めませんでした。削除されたか非公開になった可能性があります。"
     },
     "option": {
         "app_store": "App Store",
@@ -497,7 +534,10 @@
         "please_specify": "ご指定ください",
         "search_all_content": "{{language}}のコンテンツをすべて検索",
         "search": "検索...",
-        "select_language": "言語を選択してください"
+        "select_language": "言語を選択してください",
+        "password_min": "最低8文字",
+        "verification_code": "確認コード",
+        "search_languages": "言語を検索..."
     },
     "price": {
         "annual": "${{price}}/年",
@@ -594,7 +634,18 @@
         "video_count": "動画 {{index}} / {{total}}",
         "views": "{{numViews}}ビュー",
         "watch_history": "閲覧履歴",
-        "your_current_plan": "現在のプラン"
+        "your_current_plan": "現在のプラン",
+        "explore_media": "メディアを探索",
+        "explore": "探索",
+        "welcome_back": "おかえりなさい",
+        "create_account": "アカウントを作成",
+        "welcome": "Language Player へようこそ",
+        "check_email": "メールを確認してください",
+        "reset_password": "パスワードをリセット",
+        "i_speak": "話せる言語",
+        "i_learning": "学習中の言語",
+        "confirm_in_app_purchase": "アプリ内購入を確認",
+        "only_lifetime_available": "App Storeではライフタイムプランのみ利用可能"
     },
     "video": {
         "comments": "コメント",
@@ -605,5 +656,10 @@
         "hanja": "漢字",
         "kana": "仮名",
         "pinyin": "ピンイン"
+    },
+    "subtitle": {
+        "translation_on": "翻訳オン",
+        "translation_off": "翻訳オフ",
+        "translating": "翻訳中…"
     }
 }

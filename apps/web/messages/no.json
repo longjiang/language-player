@@ -282,7 +282,8 @@
         "sv-SE": "Svensk (Sverige)",
         "th-TH": "Thai (Thailand)",
         "tr-TR": "Tyrkisk (Tyrkia)",
-        "yue-HK": "Kantonesisk (Hongkong)"
+        "yue-HK": "Kantonesisk (Hongkong)",
+        "hak-TW": "Hakka (Taiwan)"
     },
     "action": {
         "cancel": "Avbryt",
@@ -309,11 +310,26 @@
         "upgrade": "Oppgrader",
         "verify": "Bekreft",
         "watch": "Se",
-        "load_more": "Last inn mer"
+        "load_more": "Last inn mer",
+        "forgot_password": "Glemt passord?",
+        "sign_up": "Registrer deg",
+        "log_in": "Logg inn",
+        "log_out": "Logg ut",
+        "create_account": "Opprett konto",
+        "verify_email": "Bekreft e-post",
+        "send_reset_link": "Send tilbakestillingslenke",
+        "back_to_login": "Tilbake til innlogging",
+        "continue": "Fortsett",
+        "try_again": "Prøv igjen",
+        "start_watching": "Begynn å se"
     },
     "button": {
         "keep_current_time": "Behold Nåværende Tid",
-        "reset_time_to_zero": "Nullstill Tid"
+        "reset_time_to_zero": "Nullstill Tid",
+        "email_support": "E-poststøtte",
+        "processing": "Behandler...",
+        "purchase": "Kjøp",
+        "switch_to_lifetime": "Bytt til livstidsplan"
     },
     "chatgpt": {
         "prompt": {
@@ -328,7 +344,9 @@
     },
     "email": {
         "support_body": "Vennligst beskriv problemet eller spørsmålet ditt.",
-        "support_subject": "Støtteforespørsel"
+        "support_subject": "Støtteforespørsel",
+        "body": "Beskriv problemet eller spørsmålet ditt.",
+        "subject": "Støtteforespørsel"
     },
     "error": {
         "entry_not_found": "Oppføring ikke funnet eller ordbok ikke lastet",
@@ -346,7 +364,8 @@
         "cannot_open_url": "Kan ikke åpne siden for glemt passord",
         "invalid_user_credentials": "Ugyldig e-post eller passord",
         "general": "Det oppstod en feil",
-        "loading_failed": "Lasting mislyktes"
+        "loading_failed": "Lasting mislyktes",
+        "occurred": "Det oppstod en feil"
     },
     "feature": {
         "see_all_subtitles": "Se alle undertittelens søkeresultater utover de tre første.",
@@ -469,7 +488,25 @@
         "with_pro_you_can": "Med Pro kan du:",
         "renews_today": "Fornyes i dag",
         "renewal_failed_contact_support": "Fornyelse mislyktes. Vennligst kontakt kundeservice.",
-        "expired": "Utløpt"
+        "expired": "Utløpt",
+        "find_videos": "Finn videoer på ditt nivå",
+        "lookup_words": "Slå opp ord og lagre ordforråd",
+        "watch_live": "Se direktesendte kanaler",
+        "customize_experience": "Tilpass opplevelsen din",
+        "coming_soon": "Kommer snart",
+        "lifetime_only": "Kun livstidsplanen er tilgjengelig som kjøpsalternativ i Apple-appen.",
+        "log_in_to_continue": "Logg inn for å fortsette å lære.",
+        "dont_have_account": "Har du ikke en konto?",
+        "start_learning": "Begynn å lære språk gjennom autentisk videoinnhold.",
+        "creating_account": "Oppretter konto...",
+        "logging_in": "Logger inn...",
+        "verification_code_sent": "Vi har sendt en bekreftelseskode til {email}. Skriv den inn nedenfor.",
+        "enter_email_for_reset": "Skriv inn e-posten din så sender vi deg en tilbakestillingslenke.",
+        "choose_languages": "Velg språkene dine for å komme i gang",
+        "no_videos_found": "Ingen videoer funnet. Prøv et annet nivå eller kom tilbake senere.",
+        "end_of_list": "Du har nådd slutten av listen.",
+        "subtitles_not_available": "Undertekster er ikke tilgjengelig for denne videoen ennå.",
+        "video_unavailable": "Denne videoen kunne ikke lastes inn. Den kan ha blitt fjernet eller gjort privat."
     },
     "option": {
         "app_store": "App Store",
@@ -497,7 +534,10 @@
         "please_specify": "Vennligst spesifiser",
         "search_all_content": "Søk i alt {{language}} innhold",
         "search": "Søk...",
-        "select_language": "Velg et språk"
+        "select_language": "Velg et språk",
+        "password_min": "Min. 8 tegn",
+        "verification_code": "Bekreftelseskode",
+        "search_languages": "Søk etter språk..."
     },
     "price": {
         "annual": "${{price}}/år",
@@ -594,7 +634,18 @@
         "video_count": "Video {{index}} av {{total}}",
         "views": "{{numViews}} visninger",
         "watch_history": "Seerhistorikk",
-        "your_current_plan": "Din nåværende plan"
+        "your_current_plan": "Din nåværende plan",
+        "explore_media": "Utforsk medier",
+        "explore": "Utforsk",
+        "welcome_back": "Velkommen tilbake",
+        "create_account": "Opprett kontoen din",
+        "welcome": "Velkommen til Language Player",
+        "check_email": "Sjekk e-posten din",
+        "reset_password": "Tilbakestill passord",
+        "i_speak": "Jeg snakker",
+        "i_learning": "Jeg lærer",
+        "confirm_in_app_purchase": "Bekreft kjøpet ditt i appen",
+        "only_lifetime_available": "Kun Livstidsplanen er tilgjengelig i App Store"
     },
     "video": {
         "comments": "Kommentarer",
@@ -605,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Oversettelse på",
+        "translation_off": "Oversettelse av",
+        "translating": "Oversetter…"
     }
 }

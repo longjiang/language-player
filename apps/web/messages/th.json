@@ -281,7 +281,8 @@
         "sv-SE": "ภาษาสวีเดน (สวีเดน)",
         "th-TH": "ภาษาไทย (ไทย)",
         "tr-TR": "ภาษาตุรกี (ตุรกี)",
-        "yue-HK": "ภาษากวางตุ้ง (ฮ่องกง)"
+        "yue-HK": "ภาษากวางตุ้ง (ฮ่องกง)",
+        "hak-TW": "แคะ (ไต้หวัน)"
     },
     "action": {
         "cancel": "ยกเลิก",
@@ -308,11 +309,26 @@
         "upgrade": "อัพเกรด",
         "verify": "ยืนยัน",
         "watch": "ดู",
-        "load_more": "โหลดเพิ่มเติม"
+        "load_more": "โหลดเพิ่มเติม",
+        "forgot_password": "ลืมรหัสผ่าน?",
+        "sign_up": "สมัครสมาชิก",
+        "log_in": "เข้าสู่ระบบ",
+        "log_out": "ออกจากระบบ",
+        "create_account": "สร้างบัญชี",
+        "verify_email": "ยืนยันอีเมล",
+        "send_reset_link": "ส่งลิงก์รีเซ็ต",
+        "back_to_login": "กลับไปเข้าสู่ระบบ",
+        "continue": "ดำเนินการต่อ",
+        "try_again": "ลองอีกครั้ง",
+        "start_watching": "เริ่มรับชม"
     },
     "button": {
         "keep_current_time": "เก็บเวลาปัจจุบัน",
-        "reset_time_to_zero": "รีเซ็ตเวลาเป็นศูนย์"
+        "reset_time_to_zero": "รีเซ็ตเวลาเป็นศูนย์",
+        "email_support": "สนับสนุนทางอีเมล",
+        "processing": "กำลังดำเนินการ...",
+        "purchase": "ซื้อ",
+        "switch_to_lifetime": "เปลี่ยนเป็นแผนตลอดชีพ"
     },
     "chatgpt": {
         "prompt": {
@@ -327,7 +343,9 @@
     },
     "email": {
         "support_body": "โปรดอธิบายปัญหาหรือคำถามของคุณ",
-        "support_subject": "คำขอการสนับสนุน"
+        "support_subject": "คำขอการสนับสนุน",
+        "body": "กรุณาอธิบายปัญหาหรือคำถามของคุณ",
+        "subject": "คำขอรับการสนับสนุน"
     },
     "error": {
         "entry_not_found": "ไม่พบรายการหรือไม่ได้โหลดพจนานุกรม",
@@ -345,7 +363,8 @@
         "cannot_open_url": "ไม่สามารถเปิดหน้าลืมรหัสผ่านได้",
         "invalid_user_credentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
         "general": "เกิดข้อผิดพลาด",
-        "loading_failed": "โหลดล้มเหลว"
+        "loading_failed": "โหลดล้มเหลว",
+        "occurred": "เกิดข้อผิดพลาด"
     },
     "feature": {
         "see_all_subtitles": "ดูผลการค้นหาคำบรรยายทั้งหมดนอกเหนือจากสามรายการแรก",
@@ -468,7 +487,25 @@
         "with_pro_you_can": "ด้วย Pro คุณสามารถ:",
         "renews_today": "ต่ออายุวันนี้",
         "renewal_failed_contact_support": "การต่ออายุล้มเหลว โปรดติดต่อฝ่ายสนับสนุนลูกค้า",
-        "expired": "หมดอายุ"
+        "expired": "หมดอายุ",
+        "find_videos": "ค้นหาวิดีโอในระดับของคุณ",
+        "lookup_words": "ค้นหาคำศัพท์และบันทึกคำศัพท์",
+        "watch_live": "ดูช่องถ่ายทอดสด",
+        "customize_experience": "ปรับแต่งประสบการณ์ของคุณ",
+        "coming_soon": "เร็วๆ นี้",
+        "lifetime_only": "เฉพาะแผนตลอดชีพเท่านั้นที่มีให้เลือกในการซื้อในแอปของ Apple",
+        "log_in_to_continue": "เข้าสู่ระบบเพื่อเรียนรู้ต่อ",
+        "dont_have_account": "ยังไม่มีบัญชี?",
+        "start_learning": "เริ่มเรียนภาษาผ่านเนื้อหาวิดีโอจริง",
+        "creating_account": "กำลังสร้างบัญชี...",
+        "logging_in": "กำลังเข้าสู่ระบบ...",
+        "verification_code_sent": "เราได้ส่งรหัสยืนยันไปยัง {email} กรุณากรอกด้านล่าง",
+        "enter_email_for_reset": "กรอกอีเมลของคุณแล้วเราจะส่งลิงก์รีเซ็ตให้",
+        "choose_languages": "เลือกภาษาของคุณเพื่อเริ่มต้น",
+        "no_videos_found": "ไม่พบวิดีโอ ลองเปลี่ยนระดับหรือกลับมาใหม่ทีหลัง",
+        "end_of_list": "คุณมาถึงจุดสิ้นสุดของรายการแล้ว",
+        "subtitles_not_available": "คำบรรยายยังไม่พร้อมสำหรับวิดีโอนี้",
+        "video_unavailable": "ไม่สามารถโหลดวิดีโอนี้ อาจถูกลบหรือตั้งเป็นส่วนตัว"
     },
     "option": {
         "app_store": "App Store",
@@ -496,7 +533,10 @@
         "please_specify": "โปรดระบุ",
         "search_all_content": "ค้นหาเนื้อหาภาษา{{language}}ทั้งหมด",
         "search": "ค้นหา...",
-        "select_language": "เลือกภาษา"
+        "select_language": "เลือกภาษา",
+        "password_min": "ขั้นต่ำ 8 ตัวอักษร",
+        "verification_code": "รหัสยืนยัน",
+        "search_languages": "ค้นหาภาษา..."
     },
     "price": {
         "annual": "${{price}}/ปี",
@@ -593,7 +633,18 @@
         "video_count": "วิดีโอที่ {{index}} จาก {{total}}",
         "views": "{{numViews}} การรับชม",
         "watch_history": "ประวัติการรับชม",
-        "your_current_plan": "แผนปัจจุบันของคุณ"
+        "your_current_plan": "แผนปัจจุบันของคุณ",
+        "explore_media": "สำรวจสื่อ",
+        "explore": "สำรวจ",
+        "welcome_back": "ยินดีต้อนรับกลับ",
+        "create_account": "สร้างบัญชีของคุณ",
+        "welcome": "ยินดีต้อนรับสู่ Language Player",
+        "check_email": "ตรวจสอบอีเมลของคุณ",
+        "reset_password": "รีเซ็ตรหัสผ่าน",
+        "i_speak": "ฉันพูด",
+        "i_learning": "ฉันกำลังเรียน",
+        "confirm_in_app_purchase": "ยืนยันการซื้อในแอปของคุณ",
+        "only_lifetime_available": "เฉพาะแผนตลอดชีพเท่านั้นที่มีใน App Store"
     },
     "video": {
         "comments": "ความคิดเห็น",
@@ -604,5 +655,10 @@
         "hanja": "ฮันจา",
         "kana": "คานะ",
         "pinyin": "พินอิน"
+    },
+    "subtitle": {
+        "translation_on": "เปิดการแปล",
+        "translation_off": "ปิดการแปล",
+        "translating": "กำลังแปล…"
     }
 }

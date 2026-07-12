@@ -253,7 +253,7 @@
         "fr-CA": "法语（加拿大）",
         "fr-CH": "法语（瑞士）",
         "fr-FR": "法语（法国）",
-        "hak-TW": "客家话（台湾）",
+        "hak-TW": "客家语（台湾）",
         "zh-HK": "中文（香港）",
         "he-IL": "希伯来语（以色列）",
         "iw": "希伯来语",
@@ -310,15 +310,26 @@
         "upgrade": "升级",
         "verify": "验证",
         "watch": "观看",
-        "load_more": "加载更多"
+        "load_more": "加载更多",
+        "forgot_password": "忘记密码？",
+        "sign_up": "注册",
+        "log_in": "登录",
+        "log_out": "退出登录",
+        "create_account": "创建账户",
+        "verify_email": "验证邮箱",
+        "send_reset_link": "发送重置链接",
+        "back_to_login": "返回登录",
+        "continue": "继续",
+        "try_again": "重试",
+        "start_watching": "开始观看"
     },
     "button": {
-        "email_support": "发邮件给客服",
+        "email_support": "邮件支持",
         "keep_current_time": "保留当前时间",
         "processing": "处理中...",
         "purchase": "购买",
         "reset_time_to_zero": "将时间重置为零",
-        "switch_to_lifetime": "切换到终身计划"
+        "switch_to_lifetime": "切换至终身计划"
     },
     "chatgpt": {
         "prompt": {
@@ -333,7 +344,7 @@
     },
     "email": {
         "body": "请描述您的问题或疑问。",
-        "subject": "客服请求",
+        "subject": "支持请求",
         "support_body": "请描述您的问题。",
         "support_subject": "支持请求"
     },
@@ -456,7 +467,7 @@
         "hsk_explanation": "\"HSK\"是官方HSK，1级为最低，9级为最高。",
         "initializing": "正在初始化...",
         "keep_or_reset_time": "您想保留当前时间还是将其重置为零？",
-        "lifetime_only": "只有终身计划可作为Apple应用内购买的选项。",
+        "lifetime_only": "Apple 应用内购买仅支持终身计划。",
         "loading": "正在加载...",
         "no_active_subscription": "未找到活跃订阅。",
         "no_more_videos": "没有更多视频",
@@ -480,7 +491,24 @@
         "with_pro_you_can": "使用专业版，您可以：",
         "renews_today": "今天续订",
         "renewal_failed_contact_support": "续订失败。请联系客户支持。",
-        "expired": "已过期"
+        "expired": "已过期",
+        "find_videos": "找到适合您水平的视频",
+        "lookup_words": "查词并保存词汇",
+        "watch_live": "观看直播频道",
+        "customize_experience": "自定义您的体验",
+        "coming_soon": "即将推出",
+        "log_in_to_continue": "登录以继续学习。",
+        "dont_have_account": "还没有账户？",
+        "start_learning": "通过真实视频内容开始学习语言。",
+        "creating_account": "正在创建账户...",
+        "logging_in": "正在登录...",
+        "verification_code_sent": "我们已发送验证码到 {email}。请在下方输入。",
+        "enter_email_for_reset": "输入您的邮箱，我们将发送重置链接。",
+        "choose_languages": "选择您的语言以开始",
+        "no_videos_found": "未找到视频。请尝试其他级别或稍后再来。",
+        "end_of_list": "您已到达列表末尾。",
+        "subtitles_not_available": "此视频的字幕尚不可用。",
+        "video_unavailable": "无法加载此视频。可能已被删除或设为私密。"
     },
     "option": {
         "app_store": "应用商店",
@@ -508,7 +536,10 @@
         "please_specify": "请说明",
         "search_all_content": "搜索所有{{language}}内容",
         "search": "搜索...",
-        "select_language": "选择语言"
+        "select_language": "选择语言",
+        "password_min": "最少 8 个字符",
+        "verification_code": "验证码",
+        "search_languages": "搜索语言..."
     },
     "price": {
         "annual": "${{price}}/年",
@@ -583,7 +614,7 @@
         "monthly": "月度",
         "my_progress": "我的进度",
         "next": "下一步",
-        "only_lifetime_available": "App Store中只提供终身计划",
+        "only_lifetime_available": "App Store 中仅提供终身计划",
         "password": "密码",
         "popularity": "热门程度",
         "privacy_policy": "隐私政策",
@@ -607,7 +638,16 @@
         "video_count": "视频 {{index}} 共 {{total}}",
         "views": "{{numViews}}次观看",
         "watch_history": "观看历史",
-        "your_current_plan": "您当前的计划"
+        "your_current_plan": "您当前的计划",
+        "explore_media": "探索媒体",
+        "explore": "探索",
+        "welcome_back": "欢迎回来",
+        "create_account": "创建您的账户",
+        "welcome": "欢迎来到 Language Player",
+        "check_email": "查看您的邮箱",
+        "reset_password": "重置密码",
+        "i_speak": "我会说",
+        "i_learning": "我正在学"
     },
     "video": {
         "comments": "评论",
@@ -618,5 +658,10 @@
         "hanja": "汉字",
         "kana": "假名",
         "pinyin": "拼音"
+    },
+    "subtitle": {
+        "translation_on": "翻译已开启",
+        "translation_off": "翻译已关闭",
+        "translating": "翻译中…"
     }
 }

@@ -281,7 +281,8 @@
         "sv-SE": "İsveççe (İsveç)",
         "th-TH": "Tayca (Tayland)",
         "tr-TR": "Türkçe (Türkiye)",
-        "yue-HK": "Kantonca (Hong Kong)"
+        "yue-HK": "Kantonca (Hong Kong)",
+        "hak-TW": "Hakka (Tayvan)"
     },
     "action": {
         "cancel": "İptal",
@@ -308,11 +309,26 @@
         "upgrade": "Yükselt",
         "verify": "Doğrula",
         "watch": "İzle",
-        "load_more": "Daha fazla yükle"
+        "load_more": "Daha fazla yükle",
+        "forgot_password": "Şifrenizi mi unuttunuz?",
+        "sign_up": "Kaydol",
+        "log_in": "Giriş Yap",
+        "log_out": "Çıkış Yap",
+        "create_account": "Hesap Oluştur",
+        "verify_email": "E-postayı Doğrula",
+        "send_reset_link": "Sıfırlama Bağlantısı Gönder",
+        "back_to_login": "Girişe geri dön",
+        "continue": "Devam Et",
+        "try_again": "Tekrar Dene",
+        "start_watching": "İzlemeye Başla"
     },
     "button": {
         "keep_current_time": "Mevcut Zamanı Koru",
-        "reset_time_to_zero": "Zamanı Sıfırla"
+        "reset_time_to_zero": "Zamanı Sıfırla",
+        "email_support": "E-posta Desteği",
+        "processing": "İşleniyor...",
+        "purchase": "Satın Al",
+        "switch_to_lifetime": "Ömür Boyu Plana Geç"
     },
     "chatgpt": {
         "prompt": {
@@ -327,7 +343,9 @@
     },
     "email": {
         "support_body": "Lütfen sorununuzu veya sorunuzu açıklayın.",
-        "support_subject": "Destek Talebi"
+        "support_subject": "Destek Talebi",
+        "body": "Lütfen sorununuzu veya sorunuzu açıklayın.",
+        "subject": "Destek Talebi"
     },
     "error": {
         "entry_not_found": "Girdi bulunamadı veya sözlük yüklenmedi",
@@ -345,7 +363,8 @@
         "cannot_open_url": "Unutulan şifre sayfası açılamıyor",
         "invalid_user_credentials": "Geçersiz e-posta veya şifre",
         "general": "Bir hata oluştu",
-        "loading_failed": "Yükleme başarısız oldu"
+        "loading_failed": "Yükleme başarısız oldu",
+        "occurred": "Bir hata oluştu"
     },
     "feature": {
         "see_all_subtitles": "İlk üçten sonraki tüm altyazı arama sonuçlarını görün.",
@@ -468,7 +487,25 @@
         "with_pro_you_can": "Pro ile şunları yapabilirsiniz:",
         "renews_today": "Bugün yenileniyor",
         "renewal_failed_contact_support": "Yenileme başarısız oldu. Lütfen müşteri desteğiyle iletişime geçin.",
-        "expired": "Süresi doldu"
+        "expired": "Süresi doldu",
+        "find_videos": "Seviyenize uygun videolar bulun",
+        "lookup_words": "Kelimelere bakın ve kelime dağarcığınızı kaydedin",
+        "watch_live": "Canlı kanalları izle",
+        "customize_experience": "Deneyiminizi özelleştirin",
+        "coming_soon": "Çok yakında",
+        "lifetime_only": "Apple uygulama içi satın alma seçeneği olarak yalnızca Ömür Boyu plan mevcuttur.",
+        "log_in_to_continue": "Öğrenmeye devam etmek için giriş yapın.",
+        "dont_have_account": "Hesabınız yok mu?",
+        "start_learning": "Otantik video içerikleriyle dil öğrenmeye başlayın.",
+        "creating_account": "Hesap oluşturuluyor...",
+        "logging_in": "Giriş yapılıyor...",
+        "verification_code_sent": "{email} adresine bir doğrulama kodu gönderdik. Aşağıya girin.",
+        "enter_email_for_reset": "E-postanızı girin, size bir sıfırlama bağlantısı gönderelim.",
+        "choose_languages": "Başlamak için dillerinizi seçin",
+        "no_videos_found": "Video bulunamadı. Farklı bir seviye deneyin veya daha sonra tekrar kontrol edin.",
+        "end_of_list": "Listenin sonuna ulaştınız.",
+        "subtitles_not_available": "Bu video için altyazılar henüz mevcut değil.",
+        "video_unavailable": "Bu video yüklenemedi. Kaldırılmış veya gizli yapılmış olabilir."
     },
     "option": {
         "app_store": "App Store",
@@ -496,7 +533,10 @@
         "please_specify": "Lütfen belirtin",
         "search_all_content": "Tüm {{language}} içeriği ara",
         "search": "Ara...",
-        "select_language": "Bir dil seçin"
+        "select_language": "Bir dil seçin",
+        "password_min": "En az 8 karakter",
+        "verification_code": "Doğrulama kodu",
+        "search_languages": "Dil ara..."
     },
     "price": {
         "annual": "${{price}}/yıl",
@@ -593,7 +633,18 @@
         "video_count": "Video {{index}} / {{total}}",
         "views": "{{numViews}} Görüntüleme",
         "watch_history": "İzleme Geçmişi",
-        "your_current_plan": "Mevcut Planınız"
+        "your_current_plan": "Mevcut Planınız",
+        "explore_media": "Medyayı Keşfet",
+        "explore": "Keşfet",
+        "welcome_back": "Tekrar hoş geldiniz",
+        "create_account": "Hesabınızı oluşturun",
+        "welcome": "Language Player'a hoş geldiniz",
+        "check_email": "E-postanızı kontrol edin",
+        "reset_password": "Şifrenizi sıfırlayın",
+        "i_speak": "Konuşuyorum",
+        "i_learning": "Öğreniyorum",
+        "confirm_in_app_purchase": "Uygulama İçi Satın Almanızı Onaylayın",
+        "only_lifetime_available": "App Store'da yalnızca Ömür Boyu Plan mevcut"
     },
     "video": {
         "comments": "Yorumlar",
@@ -604,5 +655,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Çeviri açık",
+        "translation_off": "Çeviri kapalı",
+        "translating": "Çevriliyor…"
     }
 }

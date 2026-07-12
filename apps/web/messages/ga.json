@@ -253,7 +253,7 @@
         "fr-CA": "Fraincis (Canada)",
         "fr-CH": "Fraincis (An Eilvéis)",
         "fr-FR": "Fraincis (An Fhrainc)",
-        "hak-TW": "Hakka (Taiwan)",
+        "hak-TW": "Hakka (An Téaváin)",
         "zh-HK": "Sínis (Hong Kong)",
         "he-IL": "Eabhrais (Iosrael)",
         "iw": "Eabhrais",
@@ -310,11 +310,26 @@
         "upgrade": "Uasghrádaigh",
         "verify": "Deimhnigh",
         "watch": "Féach",
-        "load_more": "Lódáil tuilleadh"
+        "load_more": "Lódáil tuilleadh",
+        "forgot_password": "An ndearna tú dearmad ar do phasfhocal?",
+        "sign_up": "Cláraigh",
+        "log_in": "Logáil isteach",
+        "log_out": "Logáil amach",
+        "create_account": "Cruthaigh cuntas",
+        "verify_email": "Fíoraigh ríomhphost",
+        "send_reset_link": "Seol nasc athshocraithe",
+        "back_to_login": "Ar ais go dtí logáil isteach",
+        "continue": "Lean ar aghaidh",
+        "try_again": "Bain triail eile as",
+        "start_watching": "Tosaigh ag féachaint"
     },
     "button": {
         "keep_current_time": "Coinnigh Am Reatha",
-        "reset_time_to_zero": "Athshocraigh Am go Náid"
+        "reset_time_to_zero": "Athshocraigh Am go Náid",
+        "email_support": "Tacaíocht ríomhphoist",
+        "processing": "Á phróiseáil...",
+        "purchase": "Ceannaigh",
+        "switch_to_lifetime": "Athraigh go dtí plean saoil"
     },
     "chatgpt": {
         "prompt": {
@@ -329,7 +344,9 @@
     },
     "email": {
         "support_body": "Déan cur síos ar do fhadhb nó do cheist.",
-        "support_subject": "Iarratas ar Thacaíocht"
+        "support_subject": "Iarratas ar Thacaíocht",
+        "body": "Cuir síos ar d'fhadhb nó ar do cheist.",
+        "subject": "Iarratas tacaíochta"
     },
     "error": {
         "entry_not_found": "Níor aimsíodh an iontráil nó níor luchtaíodh an foclóir",
@@ -347,7 +364,8 @@
         "cannot_open_url": "Ní féidir an leathanach pasfhocal dearmadta a oscailt",
         "invalid_user_credentials": "Ríomhphost nó pasfhocal neamhbhailí",
         "general": "Tharla earráid",
-        "loading_failed": "Theip ar an lódáil"
+        "loading_failed": "Theip ar an lódáil",
+        "occurred": "Tharla earráid"
     },
     "feature": {
         "see_all_subtitles": "Féach ar gach toradh cuardaigh fotheideal thar na chéad trí cinn.",
@@ -470,7 +488,25 @@
         "with_pro_you_can": "Le Pro, is féidir leat:",
         "renews_today": "Athnuaigh inniu",
         "renewal_failed_contact_support": "Theip ar an athnuachan. Déan teagmháil le tacaíocht do chustaiméirí.",
-        "expired": "Imithe in éag"
+        "expired": "Imithe in éag",
+        "find_videos": "Aimsigh físeáin ag do leibhéal",
+        "lookup_words": "Cuardaigh focail agus sábháil stór focal",
+        "watch_live": "Féach ar bhealaí beo",
+        "customize_experience": "Saincheap d'eispéireas",
+        "coming_soon": "Ag teacht go luath",
+        "lifetime_only": "Níl ach an plean saoil ar fáil mar rogha ceannacháin in-app Apple.",
+        "log_in_to_continue": "Logáil isteach chun leanúint ag foghlaim.",
+        "dont_have_account": "Níl cuntas agat?",
+        "start_learning": "Tosaigh ag foghlaim teangacha trí ábhar físe barántúil.",
+        "creating_account": "Cuntas á chruthú...",
+        "logging_in": "Ag logáil isteach...",
+        "verification_code_sent": "Sheolamar cód fíorúcháin chuig {email}. Iontráil thíos é.",
+        "enter_email_for_reset": "Iontráil do ríomhphost agus seolfaimid nasc athshocraithe chugat.",
+        "choose_languages": "Roghnaigh do theangacha chun tosú",
+        "no_videos_found": "Níor aimsíodh aon fhíseáin. Bain triail as leibhéal eile nó seiceáil arís níos déanaí.",
+        "end_of_list": "Tá deireadh an liosta bainte amach agat.",
+        "subtitles_not_available": "Níl fotheidil ar fáil don fhíseán seo go fóill.",
+        "video_unavailable": "Níorbh fhéidir an físeán seo a lódáil. Seans gur baineadh é nó gur rinneadh príobháideach é."
     },
     "option": {
         "app_store": "App Store",
@@ -498,7 +534,10 @@
         "please_specify": "Sonraigh le do thoil",
         "search_all_content": "Cuardaigh gach ábhar {{language}}",
         "search": "Cuardaigh...",
-        "select_language": "Roghnaigh teanga"
+        "select_language": "Roghnaigh teanga",
+        "password_min": "Íosmhéid 8 gcarachtar",
+        "verification_code": "Cód fíorúcháin",
+        "search_languages": "Cuardaigh teangacha..."
     },
     "price": {
         "annual": "${{price}}/bliain",
@@ -595,7 +634,18 @@
         "video_count": "Físeán {{index}} as {{total}}",
         "views": "{{numViews}} amharc",
         "watch_history": "Stair féachana",
-        "your_current_plan": "Do phlean reatha"
+        "your_current_plan": "Do phlean reatha",
+        "explore_media": "Fiosraigh na meáin",
+        "explore": "Fiosraigh",
+        "welcome_back": "Fáilte ar ais",
+        "create_account": "Cruthaigh do chuntas",
+        "welcome": "Fáilte go Language Player",
+        "check_email": "Seiceáil do ríomhphost",
+        "reset_password": "Athshocraigh pasfhocal",
+        "i_speak": "Labhraím",
+        "i_learning": "Tá mé ag foghlaim",
+        "confirm_in_app_purchase": "Deimhnigh do cheannachán in-app",
+        "only_lifetime_available": "Níl ach an Plean Saoil ar fáil san App Store"
     },
     "video": {
         "comments": "Tráchtanna",
@@ -606,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Aistriúchán ar siúl",
+        "translation_off": "Aistriúchán múchta",
+        "translating": "Á aistriú…"
     }
 }

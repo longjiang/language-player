@@ -253,7 +253,7 @@
         "fr-CA": "Francia (Kanada)",
         "fr-CH": "Francia (Svájc)",
         "fr-FR": "Francia (Francia)",
-        "hak-TW": "Bahasa Hakka (Taiwan)",
+        "hak-TW": "Hakka (Tajvan)",
         "zh-HK": "Kínai (Hongkong)",
         "he-IL": "Héber (Izrael)",
         "iw": "Héber",
@@ -310,11 +310,26 @@
         "upgrade": "Frissítés",
         "verify": "Ellenőrzés",
         "watch": "Megtekintés",
-        "load_more": "Továbbiak betöltése"
+        "load_more": "Továbbiak betöltése",
+        "forgot_password": "Elfelejtette jelszavát?",
+        "sign_up": "Regisztráció",
+        "log_in": "Bejelentkezés",
+        "log_out": "Kijelentkezés",
+        "create_account": "Fiók létrehozása",
+        "verify_email": "E-mail megerősítése",
+        "send_reset_link": "Visszaállítási link küldése",
+        "back_to_login": "Vissza a bejelentkezéshez",
+        "continue": "Folytatás",
+        "try_again": "Próbálja újra",
+        "start_watching": "Nézés indítása"
     },
     "button": {
         "keep_current_time": "Jelenlegi Idő Megtartása",
-        "reset_time_to_zero": "Idő Nullázása"
+        "reset_time_to_zero": "Idő Nullázása",
+        "email_support": "E-mail támogatás",
+        "processing": "Feldolgozás...",
+        "purchase": "Vásárlás",
+        "switch_to_lifetime": "Váltás élettartam csomagra"
     },
     "chatgpt": {
         "prompt": {
@@ -329,7 +344,9 @@
     },
     "email": {
         "support_body": "Kérjük, írja le a problémáját vagy kérdését.",
-        "support_subject": "Támogatási Kérelem"
+        "support_subject": "Támogatási Kérelem",
+        "body": "Kérjük, írja le a problémáját vagy kérdését.",
+        "subject": "Támogatási kérelem"
     },
     "error": {
         "entry_not_found": "Bejegyzés nem található vagy a szótár nem töltődött be",
@@ -347,7 +364,8 @@
         "cannot_open_url": "Nem lehet megnyitni az elfelejtett jelszó oldalt",
         "invalid_user_credentials": "Érvénytelen e-mail cím vagy jelszó",
         "general": "Hiba történt",
-        "loading_failed": "Betöltés sikertelen"
+        "loading_failed": "Betöltés sikertelen",
+        "occurred": "Hiba történt"
     },
     "feature": {
         "see_all_subtitles": "Az összes felirat keresési eredményének megtekintése az első három után.",
@@ -470,7 +488,25 @@
         "with_pro_you_can": "A Pro-val teheti:",
         "renews_today": "Ma megújul",
         "renewal_failed_contact_support": "A megújítás sikertelen. Kérjük, lépjen kapcsolatba az ügyfélszolgálattal.",
-        "expired": "Lejárt"
+        "expired": "Lejárt",
+        "find_videos": "Találjon videókat a saját szintjén",
+        "lookup_words": "Keressen szavakat és mentse a szókincset",
+        "watch_live": "Élő csatornák nézése",
+        "customize_experience": "Szabja testre az élményt",
+        "coming_soon": "Hamarosan",
+        "lifetime_only": "Csak az élettartam csomag érhető el Apple alkalmazáson belüli vásárlási lehetőségként.",
+        "log_in_to_continue": "Jelentkezzen be a tanulás folytatásához.",
+        "dont_have_account": "Nincs még fiókja?",
+        "start_learning": "Kezdjen el nyelveket tanulni autentikus videótartalmakon keresztül.",
+        "creating_account": "Fiók létrehozása...",
+        "logging_in": "Bejelentkezés...",
+        "verification_code_sent": "Küldtünk egy megerősítő kódot a következő címre: {email}. Írja be alább.",
+        "enter_email_for_reset": "Adja meg az e-mail címét, és küldünk egy visszaállítási linket.",
+        "choose_languages": "Válassza ki a nyelveit a kezdéshez",
+        "no_videos_found": "Nem találhatók videók. Próbáljon másik szintet, vagy nézzen vissza később.",
+        "end_of_list": "Elérte a lista végét.",
+        "subtitles_not_available": "A felirat még nem érhető el ehhez a videóhoz.",
+        "video_unavailable": "Ezt a videót nem sikerült betölteni. Lehet, hogy eltávolították vagy priváttá tették."
     },
     "option": {
         "app_store": "App Store",
@@ -498,7 +534,10 @@
         "please_specify": "Kérjük, adja meg",
         "search_all_content": "Keresés minden {{language}} tartalomban",
         "search": "Keresés...",
-        "select_language": "Nyelv kiválasztása"
+        "select_language": "Nyelv kiválasztása",
+        "password_min": "Min. 8 karakter",
+        "verification_code": "Megerősítő kód",
+        "search_languages": "Nyelvek keresése..."
     },
     "price": {
         "annual": "${{price}}/év",
@@ -595,7 +634,18 @@
         "video_count": "{{index}}. videó a {{total}}-ból",
         "views": "{{numViews}} megtekintés",
         "watch_history": "Nézési előzmények",
-        "your_current_plan": "Jelenlegi terv"
+        "your_current_plan": "Jelenlegi terv",
+        "explore_media": "Média felfedezése",
+        "explore": "Felfedezés",
+        "welcome_back": "Üdvözöljük újra",
+        "create_account": "Hozza létre fiókját",
+        "welcome": "Üdvözöljük a Language Playerben",
+        "check_email": "Ellenőrizze az e-mailjét",
+        "reset_password": "Jelszó visszaállítása",
+        "i_speak": "Beszélek",
+        "i_learning": "Tanulok",
+        "confirm_in_app_purchase": "Erősítse meg az alkalmazáson belüli vásárlást",
+        "only_lifetime_available": "Csak az Élettartam Csomag érhető el az App Store-ban"
     },
     "video": {
         "comments": "Hozzászólások",
@@ -606,5 +656,10 @@
         "hanja": "Hanja",
         "kana": "Kana",
         "pinyin": "Pinyin"
+    },
+    "subtitle": {
+        "translation_on": "Fordítás be",
+        "translation_off": "Fordítás ki",
+        "translating": "Fordítás…"
     }
 }
