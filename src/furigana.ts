@@ -1,4 +1,4 @@
-import wanakana from 'wanakana';
+import { toHiragana } from 'wanakana';
 
 // Define types for the segments
 export type Segment = {
@@ -46,7 +46,7 @@ function segmentKanjisAndNonKanjis(text: string): Segment[] {
 }
 
 function convertKatakanaToHiragana(katakana: string): string {
-  return wanakana.toHiragana(katakana)
+  return toHiragana(katakana)
 }
 
 function sanitizeRegexString(str: string): string {
@@ -67,9 +67,9 @@ function createRegex(segments: Segment[]): RegExp {
 export function matchHiragana({ text, pronunciation }: { text: string; pronunciation: string }): Segment[] {
   if (!isHiragana(pronunciation[0])) pronunciation = convertKatakanaToHiragana(pronunciation);
   let segments = segmentKanjisAndNonKanjis(text);
-  let readings = pronunciation.match(createRegex(segments));
-  if (readings) {
-    readings = readings.slice(1);
+  const matchResult = pronunciation.match(createRegex(segments));
+  if (matchResult) {
+    const readings: string[] = matchResult.slice(1);
     for (let index in segments) {
       let segment = segments[index];
       segment.pronunciation = readings[index];
