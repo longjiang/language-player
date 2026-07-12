@@ -1,7 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useLanguage } from '@/providers/language-provider';
+import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
+import { getShowTranslation, setShowTranslation } from '@/lib/settings';
+import type { SubtitleLine } from '@langplayer/shared';
+import { Settings2 } from 'lucide-react';
+
+interface SyncedLine {
+  l1Line: string;
+  l2Line: string;
+  starttime: number;
+}
+
+function syncLines(l1Lines: SubtitleLine[], l2Lines: SubtitleLine[]): SyncedLine[] {
+  l1Lines = [...l1Lines].sort((a, b) => a.starttime - b.starttime);
+  l2Lines = [...l2Lines].sort((a, b) => a.starttime - b.starttime);
+  const synced: SyncedLine[] = [];
+  const used = new Set<number>();
+
+  for (const l1 of l1Lines) {
+    let bestIdx = -1;
+    let bestDiff = Infinity;
+    for (let i = 0; i < l2Lines.length; i++) {
+      if (!used.has(i)) {
+        const diff = Math.abs(l1.starttime - l2Lines[i]!.starttime);
+        if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+      }
+    }
+    if (bestIdx !== -1) {
+      used.add(bestIdx);
+      synced.push({ starttime: l1.starttime, l1Line: l1.line, l2Line: l2Lines[bestIdx]!.line });
+    }
+  }
+  for (let i = 0; i < l2Lines.length; i++) {
+    if (!used.has(i)) {
+      synced.push({ starttime: l2Lines[i]!.starttime, l1Line: '', l2Line: l2Lines[i]!.line });
+    }
+  }
+  return synced.sort((a, b) => a.starttime - b.starttime);
+}
 
 interface SubtitleDisplayProps {
   youtubeId: string;
@@ -10,9 +48,8 @@ interface SubtitleDisplayProps {
 
 export function SubtitleDisplay({ youtubeId, currentTime }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
-  const [lines, setLines] = useState<{ l1Line: string; l2Line: string; starttime: number }[]>([]);
-  const [showL1, setShowL1] = useState(true);
-  const [showL2, setShowL2] = useState(true);
+  const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
+  const [showTranslation, setShowTranslationState] = useState(true);
   const [activeIndex, setActiveIndex] = useState(-1);
 
   useEffect(() => {
@@ -20,30 +57,46 @@ export function SubtitleDisplay({ youtubeId, currentTime }: SubtitleDisplayProps
       const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${l2.code}`);
       if (!res.ok) return;
       const data = await res.json();
-      setLines(data.lines ?? []);
+      setL2Lines(data.lines?.map((l: any) => ({ line: l.l2Line, starttime: l.starttime })) ?? []);
     };
     fetchSubtitles().catch(() => {});
   }, [youtubeId, l2.code]);
 
-  // Find the active line based on current playback time
   useEffect(() => {
-    if (lines.length === 0) {
-      setActiveIndex(-1);
-      return;
+    setShowTranslationState(getShowTranslation());
+  }, []);
+
+  const { translatedLines, loading: translating, progress } = useSubtitleTranslation(
+    l2Lines,
+    l1.code,
+    l2.code,
+    showTranslation,
+  );
+
+  const syncedLines = useMemo(() => {
+    if (translatedLines.length > 0) {
+      return syncLines(translatedLines, l2Lines);
     }
-    // Find the last line whose starttime <= currentTime
+    return l2Lines.map((l) => ({ starttime: l.starttime, l1Line: '', l2Line: l.line }));
+  }, [l2Lines, translatedLines]);
+
+  useEffect(() => {
+    if (syncedLines.length === 0) { setActiveIndex(-1); return; }
     let idx = -1;
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i]!.starttime <= currentTime) {
-        idx = i;
-      } else {
-        break;
-      }
+    for (let i = 0; i < syncedLines.length; i++) {
+      if (syncedLines[i]!.starttime <= currentTime) idx = i;
+      else break;
     }
     setActiveIndex(idx);
-  }, [currentTime, lines]);
+  }, [currentTime, syncedLines]);
 
-  if (lines.length === 0) {
+  const toggleTranslation = () => {
+    const next = !showTranslation;
+    setShowTranslationState(next);
+    setShowTranslation(next);
+  };
+
+  if (l2Lines.length === 0) {
     return (
       <div className="rounded-xl border border-border p-8 text-center text-sm text-muted-foreground">
         Subtitles are not available for this video yet.
@@ -53,33 +106,27 @@ export function SubtitleDisplay({ youtubeId, currentTime }: SubtitleDisplayProps
 
   return (
     <div>
-      {/* Toggle buttons */}
-      <div className="mb-3 flex items-center gap-2">
-        <button
-          onClick={() => setShowL2(!showL2)}
-          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-            showL2
-              ? 'bg-primary/10 text-primary'
-              : 'bg-muted text-muted-foreground'
-          }`}
-        >
-          {l2.name} captions
-        </button>
-        <button
-          onClick={() => setShowL1(!showL1)}
-          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-            showL1
-              ? 'bg-primary/10 text-primary'
-              : 'bg-muted text-muted-foreground'
-          }`}
-        >
-          {l1.name} translation
-        </button>
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <button
+            onClick={toggleTranslation}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium transition-colors ${
+              showTranslation ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+            }`}
+          >
+            <Settings2 className="h-3 w-3" />
+            {showTranslation ? 'Translation on' : 'Translation off'}
+          </button>
+          {translating && (
+            <span className="tabular-nums">
+              Translating… {progress}/{l2Lines.length}
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Subtitle lines */}
       <div className="max-h-64 space-y-2 overflow-y-auto rounded-xl border border-border bg-card/50 p-4">
-        {lines.map((line, i) => {
+        {syncedLines.map((line, i) => {
           const isActive = i === activeIndex;
           return (
             <div
@@ -89,13 +136,11 @@ export function SubtitleDisplay({ youtubeId, currentTime }: SubtitleDisplayProps
               }`}
               ref={isActive ? (el) => el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }) : undefined}
             >
-              {showL2 && (
-                <p className={`text-sm ${isActive ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
-                  {line.l2Line}
-                </p>
-              )}
-              {showL1 && (
-                <p className={`text-xs ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
+              <p className={`text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
+                {line.l2Line}
+              </p>
+              {showTranslation && line.l1Line && (
+                <p className={`mt-0.5 text-xs ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
                   {line.l1Line}
                 </p>
               )}
