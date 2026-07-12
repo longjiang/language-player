@@ -46,6 +46,17 @@
 - ✅ Loading skeletons, error states, empty states
 - ✅ Client settings (localStorage) for translation toggle
 
+## Phase 2.5: UI Internationalization 🔄
+
+> 📋 **Spec**: `specs/005-phase2.5-i18n.md`
+
+- ⬜ Wire up `next-intl` with App Router (middleware, provider, request config)
+- ⬜ Copy 31 locale files from GO (`assets/localizations/` → `apps/web/messages/`)
+- ⬜ Supported L1 languages: af, ar, ca, de, el, en, es, fi, fr, ga, hi, hr, hu, id, it, ja, ko, nl, no, pl, pt, ro, ru, sr, sv, sw, th, tr, vi, zh-Hans, zh-Hant
+- ⬜ Replace hardcoded English strings with `t()` in all pages and components
+- ⬜ Add missing keys to `en.json` (estimated ~15 new keys)
+- ⬜ L1 cookie → locale passthrough in middleware
+
 ## Phase 4: Dictionary
 
 - ⬜ Tap-to-lookup (click a word → dictionary popup)
@@ -106,7 +117,7 @@
 ---
 
 ## Currently Working On
-- Phase 4: Dictionary
+- Phase 2.5: UI Internationalization
 
 ## Up Next
-- Phase 5: Content Features
+- Phase 4: Dictionary
