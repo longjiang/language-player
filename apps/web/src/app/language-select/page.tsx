@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { Search, ArrowRight, Globe, BookOpen } from 'lucide-react';
 import {
@@ -16,6 +17,7 @@ import {
 
 export default function LanguageSelectPage() {
   const router = useRouter();
+  const t = useT();
   const [l1Search, setL1Search] = useState('');
   const [l2Search, setL2Search] = useState('');
   const [selectedL1, setSelectedL1] = useState('en');
@@ -50,9 +52,9 @@ export default function LanguageSelectPage() {
     <main className="flex min-h-screen items-center justify-center px-4 py-8">
       <div className="w-full max-w-2xl">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold">Welcome to Language Player</h1>
+          <h1 className="text-3xl font-bold">{t('title.welcome')}</h1>
           <p className="mt-2 text-muted-foreground">
-            Choose your languages to get started
+            {t('msg.choose_languages')}
           </p>
         </div>
 
@@ -61,7 +63,7 @@ export default function LanguageSelectPage() {
           <div className="rounded-2xl border border-border bg-card p-6">
             <div className="mb-4 flex items-center gap-2">
               <Globe className="h-5 w-5 text-primary" />
-              <h2 className="font-semibold">I speak</h2>
+              <h2 className="font-semibold">{t('title.i_speak')}</h2>
             </div>
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -99,7 +101,7 @@ export default function LanguageSelectPage() {
           <div className="rounded-2xl border border-border bg-card p-6">
             <div className="mb-4 flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-warm-500" />
-              <h2 className="font-semibold">I&apos;m learning</h2>
+              <h2 className="font-semibold">{t('title.i_learning')}</h2>
             </div>
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -146,7 +148,7 @@ export default function LanguageSelectPage() {
               <strong>{languageName(selectedL2!)}</strong>
             </div>
             <Button onClick={handleContinue} className="ml-4">
-              Continue <ArrowRight className="ml-1 h-4 w-4" />
+              {t('action.continue')} <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
         )}

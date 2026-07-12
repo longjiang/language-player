@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-005
 - **Feature**: Multi-language UI translation for the Next.js web app
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-07-12
 - **ROADMAP Phase**: Phase 2.5 — UI Internationalization
 

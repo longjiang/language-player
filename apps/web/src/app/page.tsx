@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import { useT } from '@/hooks/use-t';
 import { Play, Search, BookOpen, Languages, Tv, Sparkles } from 'lucide-react';
 
 export default function HomePage() {
+  const t = useT();
   return (
     <main className="flex min-h-screen flex-col">
       {/* ── Hero ── */}
@@ -28,13 +30,13 @@ export default function HomePage() {
               href="/login"
               className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-8 py-3 font-semibold text-white shadow-lg shadow-brand-500/25 transition-all hover:bg-brand-700 hover:shadow-xl"
             >
-              <Play className="h-5 w-5" /> Start Watching
+              <Play className="h-5 w-5" /> {t('action.start_watching')}
             </Link>
             <Link
               href="/login"
               className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-8 py-3 font-semibold transition-all hover:bg-surface-secondary"
             >
-              <Search className="h-5 w-5" /> Explore Media
+              <Search className="h-5 w-5" /> {t('title.explore_media')}
             </Link>
           </div>
         </div>
@@ -73,7 +75,7 @@ export default function HomePage() {
             href="/register"
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-warm-500 px-10 py-3.5 font-semibold text-white shadow-lg shadow-warm-500/25 transition-all hover:bg-warm-600"
           >
-            Get Started Free
+              {t('action.sign_up')}
           </Link>
         </div>
       </section>

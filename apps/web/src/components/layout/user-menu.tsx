@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+import { useT } from '@/hooks/use-t';
 import { User, LogOut, Settings } from 'lucide-react';
 
 export function UserMenu() {
   const { data: session, status } = useSession();
+  const t = useT();
   const [open, setOpen] = useState(false);
 
   if (status === 'loading') {
@@ -19,7 +21,7 @@ export function UserMenu() {
         href="/login"
         className="rounded-lg px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
       >
-        Log in
+        {t('action.log_in')}
       </Link>
     );
   }
@@ -46,13 +48,13 @@ export function UserMenu() {
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
               onClick={() => setOpen(false)}
             >
-              <Settings className="h-4 w-4" /> Settings
+              <Settings className="h-4 w-4" /> {t('title.settings')}
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/' })}
               className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10"
             >
-              <LogOut className="h-4 w-4" /> Log out
+              <LogOut className="h-4 w-4" /> {t('action.log_out')}
             </button>
           </div>
         </>

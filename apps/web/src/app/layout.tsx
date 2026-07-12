@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages, setRequestLocale } from 'next-intl/server';
 import { ThemeProvider } from '@/components/theme-provider';
 import { SessionProvider } from '@/providers/session-provider';
 import { Toaster } from '@/components/ui/sonner';
@@ -27,16 +29,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const dynamic = 'force-dynamic';
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  setRequestLocale(locale);
+  const messages = await getMessages();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} font-sans`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <SessionProvider>
-            {children}
-          </SessionProvider>
-          <Toaster richColors closeButton />
-        </ThemeProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            <SessionProvider>
+              {children}
+            </SessionProvider>
+            <Toaster richColors closeButton />
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

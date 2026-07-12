@@ -1,17 +1,19 @@
 'use client';
 
 import { useLanguage } from '@/providers/language-provider';
+import { useT } from '@/hooks/use-t';
 import { Play, BookOpen, Tv, Layers } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LanguageDashboard() {
   const { l1, l2 } = useLanguage();
+  const t = useT();
 
   const links = [
-    { href: `/${l1.code}/${l2.code}/explore`, label: 'Explore Media', icon: Play, desc: 'Find videos at your level' },
-    { href: `/${l1.code}/${l2.code}/dictionary`, label: 'Dictionary', icon: BookOpen, desc: 'Look up words & save vocabulary' },
-    { href: `/${l1.code}/${l2.code}/live-tv`, label: 'Live TV', icon: Tv, desc: 'Watch live channels', disabled: !l2.has.liveTV },
-    { href: `/${l1.code}/${l2.code}/settings`, label: 'Settings', icon: Layers, desc: 'Customize your experience' },
+    { href: `/${l1.code}/${l2.code}/explore`, label: t('title.explore_media'), icon: Play, desc: t('msg.find_videos') },
+    { href: `/${l1.code}/${l2.code}/dictionary`, label: t('title.dictionary'), icon: BookOpen, desc: t('msg.lookup_words') },
+    { href: `/${l1.code}/${l2.code}/live-tv`, label: 'Live TV', icon: Tv, desc: t('msg.watch_live'), disabled: !l2.has.liveTV },
+    { href: `/${l1.code}/${l2.code}/settings`, label: t('title.settings'), icon: Layers, desc: t('msg.customize_experience') },
   ];
 
   return (

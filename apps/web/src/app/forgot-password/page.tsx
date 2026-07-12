@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'https://languageplayer.io';
 
 export default function ForgotPasswordPage() {
+  const t = useT();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
@@ -40,12 +42,12 @@ export default function ForgotPasswordPage() {
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-lg">
           <CheckCircle className="mx-auto h-12 w-12 text-success" />
-          <h1 className="mt-4 text-2xl font-bold">Check your email</h1>
+          <h1 className="mt-4 text-2xl font-bold">{t('title.check_email')}</h1>
           <p className="mt-2 text-muted-foreground">
             If an account exists for <strong>{email}</strong>, you&apos;ll receive a password reset link shortly.
           </p>
           <Link href="/login" className="mt-6 inline-block">
-            <Button variant="outline">Back to login</Button>
+            <Button variant="outline">{t('action.back_to_login')}</Button>
           </Link>
         </div>
       </main>
@@ -55,9 +57,9 @@ export default function ForgotPasswordPage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-lg">
-        <h1 className="text-2xl font-bold">Reset your password</h1>
+        <h1 className="text-2xl font-bold">{t('title.reset_password')}</h1>
         <p className="mt-2 text-muted-foreground">
-          Enter your email and we&apos;ll send you a reset link.
+          {t('msg.enter_email_for_reset')}
         </p>
 
         {error && (
@@ -81,13 +83,13 @@ export default function ForgotPasswordPage() {
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Sending...' : 'Send Reset Link'}
+            {loading ? 'Sending...' : t('action.send_reset_link')}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           <Link href="/login" className="font-medium text-primary hover:underline">
-            Back to login
+            {t('action.back_to_login')}
           </Link>
         </p>
       </div>

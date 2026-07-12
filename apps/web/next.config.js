@@ -1,3 +1,7 @@
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -17,7 +21,6 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        // Proxy /api/* to the Python backend during development
         source: '/api/python/:path*',
         destination: 'http://localhost:5001/:path*',
       },
@@ -25,4 +28,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withNextIntl(nextConfig);

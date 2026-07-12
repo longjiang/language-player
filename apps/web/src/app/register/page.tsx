@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 
@@ -14,6 +15,7 @@ type Step = 'form' | 'verify' | 'complete';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const t = useT();
   const [step, setStep] = useState<Step>('form');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -110,8 +112,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-lg">
         {step === 'form' && (
           <>
-            <h1 className="text-2xl font-bold">Create your account</h1>
-            <p className="mt-2 text-muted-foreground">Start learning languages through authentic video content.</p>
+            <h1 className="text-2xl font-bold">{t('title.create_account')}</h1>
+            <p className="mt-2 text-muted-foreground">{t('msg.start_learning')}</p>
 
             {error && (
               <div className="mt-4 flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
@@ -123,7 +125,7 @@ export default function RegisterPage() {
             <form onSubmit={handleRegister} className="mt-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium">First name</label>
+                  <label htmlFor="firstName" className="block text-sm font-medium">{t('placeholder.first_name')}</label>
                   <input
                     id="firstName" type="text" value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
@@ -132,7 +134,7 @@ export default function RegisterPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium">Last name</label>
+                  <label htmlFor="lastName" className="block text-sm font-medium">{t('placeholder.last_name')}</label>
                   <input
                     id="lastName" type="text" value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
@@ -142,41 +144,41 @@ export default function RegisterPage() {
                 </div>
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium">Email</label>
+                <label htmlFor="email" className="block text-sm font-medium">{t('placeholder.email')}</label>
                 <input
                   id="email" type="email" value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="mt-1.5 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20"
-                  placeholder="you@example.com" required autoComplete="email"
+                  placeholder={t('placeholder.email')} required autoComplete="email"
                 />
               </div>
               <div>
-                <label htmlFor="password" className="block text-sm font-medium">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium">{t('placeholder.password')}</label>
                 <input
                   id="password" type="password" value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="mt-1.5 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20"
-                  placeholder="Min. 8 characters" minLength={8} required autoComplete="new-password"
+                  placeholder={t('placeholder.password_min')} minLength={8} required autoComplete="new-password"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {loading ? 'Creating account...' : 'Create Account'}
+                {loading ? t('msg.creating_account') : t('action.create_account')}
               </Button>
             </form>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
-              Already have an account?{' '}
-              <Link href="/login" className="font-medium text-primary hover:underline">Log in</Link>
+              {t('msg.already_have_account')}{' '}
+              <Link href="/login" className="font-medium text-primary hover:underline">{t('action.log_in')}</Link>
             </p>
           </>
         )}
 
         {step === 'verify' && (
           <>
-            <h1 className="text-2xl font-bold">Check your email</h1>
+            <h1 className="text-2xl font-bold">{t('title.check_email')}</h1>
             <p className="mt-2 text-muted-foreground">
-              We sent a verification code to <strong>{email}</strong>. Enter it below.
+              {t('msg.verification_code_sent').replace('{email}', email)}
             </p>
 
             {error && (
@@ -188,7 +190,7 @@ export default function RegisterPage() {
 
             <form onSubmit={handleVerify} className="mt-6 space-y-4">
               <div>
-                <label htmlFor="code" className="block text-sm font-medium">Verification code</label>
+                <label htmlFor="code" className="block text-sm font-medium">{t('placeholder.verification_code')}</label>
                 <input
                   id="code" type="text" inputMode="numeric" maxLength={6}
                   value={code}
@@ -198,7 +200,7 @@ export default function RegisterPage() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading || code.length < 6}>
-                {loading ? 'Verifying...' : 'Verify Email'}
+                {loading ? 'Verifying...' : t('action.verify_email')}
               </Button>
             </form>
 

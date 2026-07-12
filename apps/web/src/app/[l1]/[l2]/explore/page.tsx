@@ -2,15 +2,17 @@
 
 import { useState } from 'react';
 import { useLanguage } from '@/providers/language-provider';
+import { useT } from '@/hooks/use-t';
 import { VideoGrid } from '@/components/video/video-grid';
 import { LevelFilter } from '@/components/video/level-filter';
 import { useVideos } from '@/hooks/use-videos';
-import { languageName } from '@/lib/language-data';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { languageName } from '@/lib/language-data';
 
 export default function ExplorePage() {
-  const { l1, l2 } = useLanguage();
+  const { l2 } = useLanguage();
+  const t = useT();
   const [level, setLevel] = useState<number | undefined>(undefined);
   const { videos, loading, error, hasMore, loadMore, retry } = useVideos({
     l2: l2.code,
@@ -56,9 +58,7 @@ export default function ExplorePage() {
         <div className="flex flex-col items-center gap-4 rounded-2xl border-2 border-dashed border-destructive/30 p-12 text-center">
           <AlertCircle className="h-10 w-10 text-destructive" />
           <p className="text-muted-foreground">{error}</p>
-          <Button variant="outline" onClick={retry}>
-            Try Again
-          </Button>
+          <Button variant="outline" onClick={retry}>{t('action.try_again')}</Button>
         </div>
       )}
 
@@ -66,7 +66,7 @@ export default function ExplorePage() {
       {!loading && !error && videos.length === 0 && (
         <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center">
           <p className="text-muted-foreground">
-            No videos found{level ? ' at this level' : ''}. Try a different level or check back later.
+            {t('msg.no_videos_found')}
           </p>
         </div>
       )}
@@ -86,14 +86,14 @@ export default function ExplorePage() {
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Load More
+                {t('action.load_more')}
               </Button>
             </div>
           )}
 
           {!hasMore && videos.length > 0 && (
             <p className="mt-8 text-center text-sm text-muted-foreground">
-              You&apos;ve reached the end of the list.
+              {t('msg.end_of_list')}
             </p>
           )}
         </>
