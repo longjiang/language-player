@@ -23,7 +23,7 @@ export default function WatchPage() {
   useEffect(() => {
     const fetchVideo = async () => {
       try {
-        const res = await fetch(`/api/videos/${videoId}`);
+        const res = await fetch(`/api/videos/${videoId}?l2=${l2.code}`);
         if (!res.ok) throw new Error('Video not found');
         const data = await res.json();
         setVideo(data);
