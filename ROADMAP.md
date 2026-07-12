@@ -39,10 +39,12 @@
 - ✅ `/explore` page — fetch videos from API, lazy load, level filter
 - ✅ Video cards with thumbnails, difficulty badges, duration, views
 - ✅ Video player page (`/[l1]/[l2]/watch/[videoId]`)
-- ✅ YouTube iframe integration with IFrame API
-- ✅ Basic subtitle display (L1 + L2 lines, show/hide toggles, auto-scroll)
+- ✅ YouTube iframe integration with IFrame API (play/pause/seek)
+- ✅ Subtitle display — L2 captions always shown, L1 translation below (DeepSeek LLM)
+- ✅ Live translation via Python /translate_array (5 lines/chunk, progressive)
 - ✅ "Up next" sidebar (stub)
 - ✅ Loading skeletons, error states, empty states
+- ✅ Client settings (localStorage) for translation toggle
 
 ## Phase 4: Dictionary
 

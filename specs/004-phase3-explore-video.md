@@ -2,14 +2,59 @@
 
 ## Metadata
 - **Spec ID**: SPEC-004
-- **Feature**: Video browse, search, and YouTube playback
-- **Status**: draft
+- **Feature**: Video browse, search, YouTube playback, and subtitle display
+- **Status**: complete
 - **Created**: 2026-07-12
 - **ROADMAP Phase**: Phase 3 — Explore + Video Player
 
-## Overview
+---
 
-Implement video discovery and playback. Users can browse videos by language/level, see recommended content, watch a YouTube video with embedded player, and view basic video metadata (title, duration, difficulty, thumbnail).
+## What Was Built
+
+### Part A: Data Layer
+
+- **`lib/video-service.ts`** — Server-side video fetching from Python backend
+  - `getRecommendedVideos(l2, level?, page, pageSize)` → calls `/recommend-videos`
+  - `getVideoById(youtubeId)` → calls `/check-youtube`
+  - `youtubeThumbnail(id, quality)` — thumbnail URL builder
+- **`hooks/use-videos.ts`** — Client-side pagination + level filtering hook
+  - States: loading skeleton, empty, error with retry, load more
+- **`app/api/videos/recommend/route.ts`** — Proxy endpoint: `/api/videos/recommend?l2=ja&limit=24`
+- **`app/api/videos/[videoId]/route.ts`** — Single video lookup: `/api/videos/{id}?l2=ja`
+- **`app/api/videos/[videoId]/subtitles/route.ts`** — Subtitle data from Directus
+- Added `category`, `tags`, `type`, `made_for_kids` fields to `YouTubeVideo` type in `@langplayer/shared`
+
+### Part B: Explore Page (`/[l1]/[l2]/explore`)
+
+- **`VideoCard`** — Thumbnail (`mqdefault.jpg`), play overlay on hover, difficulty badge (C1/B2 etc.), duration badge (MM:SS), views count
+- **`VideoGrid`** — Responsive grid: 4 cols → 2 cols → 1 col
+- **`LevelFilter`** — CEFR pill selector: All / A1 / A2 / B1 / B2 / C1 / C2 / Native, color-coded
+- **Explore page** — Real data fetching, loading skeleton cards (8-placeholder), error state with retry, empty state with suggestion, "Load More" button with spinner
+
+### Part C: Video Player (`/[l1]/[l2]/watch/[videoId]`)
+
+- **`YouTubePlayer`** — Iframe-based embed with YouTube IFrame API
+  - Play/pause/seek via `postMessage`
+  - Time polling at 500ms intervals
+  - Dynamic script injection for IFrame API
+  - ID-based container (not element ref) for API compatibility
+- **`VideoMeta`** — Title, views, likes, comments, date, CEFR level badge, locale, category
+- **Watch page** — Player + metadata + subtitles + up-next sidebar (stub)
+
+### Part D: Subtitle Display
+
+- **`SubtitleDisplay`** — L2 captions always shown, L1 translations below (when enabled)
+  - Auto-scroll to current line based on playback time
+  - Active line highlighted with ring + background
+  - Translation toggle button (single pill, not dual pills)
+  - Progress counter: "Translating… 15/89"
+- **`hooks/use-subtitle-translation.ts`** — Chunked translation via DeepSeek LLM
+  - Ported from Classic's `autoTranslateMixin.js`
+  - 5 lines per API call to `POST /translate_array`
+  - AbortController for cancellation on navigation
+  - Progressive UI update as chunks arrive
+- **`lib/settings.ts`** — localStorage wrapper for client preferences
+  - `showTranslation` key, default: `true`
 
 ## Research Summary
 
@@ -49,184 +94,131 @@ Implement video discovery and playback. Users can browse videos by language/leve
 
 ---
 
-## Implementation Plan
+## Research Summary (Updated with Discoveries)
 
-### Part A: Data Layer — Video API Client
+### Directus 8 API
 
-Add video endpoints to `@langplayer/api-client` that both web and (eventually) mobile can use.
+**Base URL**: `https://directusvps.zerotohero.ca/zerotohero`
 
-#### Tasks
+**Table Sharding** — Videos are split across 13 sharded tables by language:
+| Table | Languages |
+|-------|-----------|
+| `youtube_videos_2` | eu, vi |
+| `youtube_videos_3` | ko |
+| `youtube_videos_4` | zh |
+| `youtube_videos_5` | en |
+| `youtube_videos_6` | de |
+| `youtube_videos_7` | ja |
+| `youtube_videos_8` | fr |
+| `youtube_videos_9` | es, ca, ru |
+| `youtube_videos_10` | tr, pl, nl |
+| `youtube_videos_11` | he, pt, el, uk, cs, ar, sk, ms |
+| `youtube_videos_12` | it |
+| `youtube_videos_13` | id, sv, no, nan |
+| `youtube_videos_14` | th, my |
 
-1. **`packages/api-client/src/videos.ts`** — enhance existing stubs:
-   - `getRecommended(l2: string, level?: number, page?: number)` → fetches from Python `/video/recommend`
-   - `getByL2(l2: string, params: { level?, page?, search?, category? })` → fetches from Directus via Python
-   - `getById(id: string)` → single video with subtitles
-   - `getSubtitles(videoId: string)` → synced L1/L2 subtitle lines
-   - `searchSubtitles(q: string, l2: string)` → Python `/video/subs-search`
+**Filter format**: Directus 8 uses bracket notation, NOT JSON:
+```
+✅ filter[youtube_id][eq]=VHKMwue-jUE
+❌ filter={"youtube_id":{"eq":"VHKMwue-jUE"}}
+```
 
-2. **`apps/web/src/lib/video-service.ts`** — Next.js-specific service layer:
-   - Server Component-friendly data fetching (without hooks)
-   - Caches responses where appropriate
-   - Handles Directus table sharding internally
+**Subtitle storage format**: `subs_l2` and `subs_l1` are stored as **CSV strings**, not JSON arrays:
+```
+starttime,line
+31.54,SO CHECK IT OUT AND TURN UP THE BASS
+33.78,AND LET YOU KNOW THAT WE&#39;RE THE BEST
+```
+- Must parse with CSV parser (header row: `starttime,line`)
+- HTML entities need unescaping: `&#39;` → `'`, `&amp;` → `&`
+- GO app uses PapaParse; our implementation uses a simple manual parser
 
-### Part B: Explore Page
+### Python Backend Endpoints (Actual)
 
-Rebuild Classic's `explore-media.vue` for the Next.js App Router at `/[l1]/[l2]/explore`.
+**Base URL**: `https://pythonvps.zerotohero.ca`
 
-#### Tasks
+| Endpoint | Method | Purpose | Key Params |
+|----------|--------|---------|------------|
+| `/recommend-videos` | GET | Video recommendations | `l2`, `limit`, `level` |
+| `/translate_array` | POST | Translate batch of lines | `{ texts, l1, l2 }` → `{ translated_texts }` |
+| `/translate` | GET/POST | Translate single text | `text`, `l1`, `l2` |
+| `/check-youtube` | GET | Check YouTube availability | `youtube_ids` |
+| `/subs-search` | GET | Search subtitles | `terms`, `l2` |
+| `/sync-srt` | POST | Sync subtitle timing | `youtube_id`, `srt_content` |
 
-1. **Video grid** — `YouTubeVideoCard` component:
-   - Thumbnail: `https://img.youtube.com/vi/{youtube_id}/mqdefault.jpg`
-   - Title (truncated to 2 lines)
-   - Difficulty badge (CEFR level with color)
-   - Duration badge
-   - Views count
-   - Responsive grid: 4 cols desktop → 2 cols tablet → 1 col mobile
+**Translation API**: Uses DeepSeek LLM (not Azure). Called via `app_translator_chatgpt.chatgpt_translate_text_array()`.
 
-2. **Difficulty filter bar** — horizontal pill selector:
-   - Levels 1–7 with labels (Beginner I → Mastery)
-   - Color-coded to match Classic/GO's level colors
-   - Default to user's saved level
+**Key discovery**: The `/recommend-videos` endpoint uses `limit` parameter (not `page`/`page_size`). Our implementation initially used `page_size` which returned empty results.
 
-3. **Infinite scroll** / "Load more" button:
-   - Fetch next page when user scrolls to bottom
-   - Loading skeleton cards while fetching
+### Classic Nuxt App Reference
 
-4. **Video card states**:
-   - **Loading**: skeleton pulse animation
-   - **Empty**: "No videos found for this level" with suggestion to try lower level
-   - **Error**: retry button
-   - **Loaded**: thumbnail + metadata
+**Subtitle flow**:
+1. `videoLoaderMixin.js` → `getVideoFromDB()` fetches video from Directus with `subs_l2`
+2. `delete video.subs_l1` — stored translations are ALWAYS discarded (quality may be stale)
+3. `autoTranslateMixin.js` → `translateSubtitlesInChunks()` sends 5 lines at a time to `POST /translate_array`
+4. Results stored in Vuex `shows/MODIFY_ITEM` — progressive UI update
+5. `syncLines(l1Lines, l2Lines)` matches by closest `starttime`
 
-5. **URL search params** (optional, nice-to-have):
-   - `?level=3` — filter by level
-   - `?q=search+term` — search query
-   - Enables shareable filtered views
+**Translation cancellation**: Uses `AbortController` passed to Axios. Navigation away from video cancels in-flight translation requests.
 
-### Part C: Video Player Page
+### GO App Reference
 
-Create `/[l1]/[l2]/watch/[videoId]` — the video playback page.
-
-#### Tasks
-
-1. **YouTube player embed** — `YouTubePlayer` component:
-   - Iframe-based (not WebView — web only for now)
-   - YouTube IFrame API for play/pause/seek control
-   - Responsive 16:9 container
-   - Autoplay support
-   - Mute/unmute toggle
-
-2. **Video metadata sidebar/below**:
-   - Title, channel, published date
-   - Difficulty level badge
-   - Views, likes, comments count
-   - "Save to watch later" button (stub — actual saving in Phase 6)
-
-3. **"Up next" / recommended sidebar**:
-   - 3–5 related videos (same L2, similar difficulty)
-   - Click to navigate to next video
-
-4. **Player states**:
-   - **Loading**: skeleton for video container
-   - **Video unavailable**: "This video is no longer available" with suggestion
-   - **Error**: retry / report issue
-
-### Part D: Simple Subtitle Display (no interaction yet)
-
-Display subtitles below the video — no tap-to-dictionary yet (that's Phase 4).
-
-#### Tasks
-
-1. **Subtitle line display**:
-   - L2 line (target language) — larger, prominent
-   - L1 line (native translation) — smaller, muted
-   - Current line highlighted
-   - Auto-scroll to current line
-
-2. **Subtitle toggle**:
-   - Show/hide L1 translation
-   - Show/hide L2 captions
-
-### What We're NOT Building in Phase 3
-
-- ❌ Tap-to-dictionary (Phase 4)
-- ❌ Tokenization/lemmatization display (Phase 4)
-- ❌ Word saving (Phase 4)
-- ❌ Synced transcript with precise timing (Phase 3 uses basic line sync)
-- ❌ Live TV (Phase 5)
-- ❌ TV Shows page (Phase 5)
-- ❌ Playback speed control (nice-to-have, can add in Phase 3 if time allows)
+**Subtitle sync algorithm** (`src/subs.ts`):
+- `syncLines(l1Lines, l2Lines)` — greedy matching by closest starttime difference
+- `findSubtitle(currentTime, syncedLines)` — binary search for current line
+- Uses `subs_l1` from Directus if available, otherwise calls translation API
 
 ---
 
-## Component Tree
+## Implementation Notes & Lessons Learned
 
-```
-/[l1]/[l2]/layout.tsx (existing)
-└── Explore Page
-    ├── LevelFilterBar          ← Horizontal pill selector (level 1–7)
-    ├── VideoGrid               ← Responsive grid
-    │   └── VideoCard[]         ← Thumbnail, title, difficulty, duration
-    └── LoadMore                ← Infinite scroll trigger
+### Bugs Encountered & Fixed
 
-/[l1]/[l2]/watch/[videoId]
-├── YouTubePlayer              ← Iframe embed with controls
-├── VideoMeta                  ← Title, stats, level badge
-├── SubtitleDisplay            ← L1 + L2 lines, highlighted current
-└── UpNext[]                   ← Recommended videos sidebar
-```
+1. **API route 404** — Middleware blocked `/api/videos/*`. Fixed by adding to bypass list.
+2. **Empty video results** — Used wrong endpoint path (`/video/recommend` → `/recommend-videos`) and wrong param (`page_size` → `limit`).
+3. **Single video 404** — Python has no `/video/{id}` endpoint. Fixed by passing `l2` param and fetching from `/recommend-videos` with filtering.
+4. **Empty subtitles** — Directus stores `subs_l2` as CSV string, not JSON. Fixed with `parseCSVSubtitles()` including HTML entity decoding.
+5. **TS2742 type error** — NextAuth v5 beta cannot export destructured `auth`. Fixed by not exporting `auth`, using manual cookie checks in middleware.
+6. **`useSearchParams()` prerender error** — Must be wrapped in `<Suspense>` boundary. Fixed login page component structure.
+7. **Missing `'use client'`** — `/[l1]/[l2]/*` pages calling hooks without the directive. Fixed all 4 language-scoped pages.
 
-## Files to Create / Modify
+### Architecture Decisions
 
-### New Files
-| File | Purpose |
-|------|---------|
-| `apps/web/src/components/video/video-card.tsx` | Thumbnail card with metadata |
-| `apps/web/src/components/video/video-grid.tsx` | Responsive grid of VideoCards |
-| `apps/web/src/components/video/level-filter.tsx` | Level pill selector |
-| `apps/web/src/components/video/youtube-player.tsx` | YouTube iframe embed |
-| `apps/web/src/components/video/video-meta.tsx` | Title, stats, level badge |
-| `apps/web/src/components/video/subtitle-display.tsx` | L1/L2 subtitle lines |
-| `apps/web/src/components/video/up-next.tsx` | Recommended sidebar |
-| `apps/web/src/app/[l1]/[l2]/watch/[videoId]/page.tsx` | Video player page |
-| `apps/web/src/lib/video-service.ts` | Data fetching layer |
-| `apps/web/src/hooks/use-videos.ts` | SWR/React Query hook for videos |
-| `apps/web/src/hooks/use-youtube-player.ts` | YouTube IFrame API hook |
+- **No shared UI between web and mobile** — confirmed by ADR-0003
+- **npm workspaces with `*` version** — not `workspace:*` (npm limitation, see ADR-0001)
+- **L1/L2 routing via URL params** — matches Classic pattern, enables shareable URLs
+- **Translation default ON** — matches Classic behavior, with toggle to disable
 
-### Modified Files
-| File | Change |
-|------|--------|
-| `apps/web/src/app/[l1]/[l2]/explore/page.tsx` | Replace stub with real implementation |
-| `packages/api-client/src/videos.ts` | Add real endpoint implementations |
-| `apps/web/next.config.js` | Add YouTube image domains |
+### What Was NOT Built (Deferred)
 
-## API Flow
+- ❌ VideoHero / featured video banner (lower priority than grid browse)
+- ❌ Continue Watching carousel (needs watch history — Phase 6)
+- ❌ Tap-to-dictionary (Phase 4)
+- ❌ Tokenization/lemmatization display (Phase 4)
+- ❌ TV Shows / Live TV pages (Phase 5)
+- ❌ Persisting translations to Directus (Classic doesn't either)
 
-```
-User visits /en/zh/explore
-  → page loads
-  → useVideos() hook fetches GET /video/recommend?l2=zh&level=3&page=1
-  → Python backend queries Directus youtube_videos_4 table
-  → Returns: [{ id, youtube_id, title, difficulty, duration, views, ... }]
-  → VideoGrid renders VideoCards with thumbnails from img.youtube.com
+---
 
-User clicks a video card
-  → navigates to /en/zh/watch/{youtube_id}
-  → page loads video metadata + subtitles
-  → GET /video/sync-subtitles?video_id=xxx&l1=en&l2=zh
-  → YouTubePlayer mounts iframe with youtube_id
-  → SubtitleDisplay shows L1/L2 lines
-```
+## Files Created (Final)
 
-## Verification Checklist
+| File | Lines | Purpose |
+|------|-------|---------|
+| `components/video/video-card.tsx` | 103 | Thumbnail card with metadata badges |
+| `components/video/video-grid.tsx` | 19 | Responsive 4→2→1 column grid |
+| `components/video/level-filter.tsx` | 52 | CEFR pill selector |
+| `components/video/youtube-player.tsx` | 165 | YouTube IFrame API embed |
+| `components/video/video-meta.tsx` | 107 | Title, stats, level badge |
+| `components/video/subtitle-display.tsx` | 135 | L2 captions + L1 translation display |
+| `components/video/index.ts` | 6 | Barrel export |
+| `hooks/use-videos.ts` | 78 | Pagination + level filtering |
+| `hooks/use-subtitle-translation.ts` | 78 | Chunked DeepSeek translation |
+| `lib/video-service.ts` | 99 | Server-side video data fetching |
+| `lib/settings.ts` | 43 | localStorage preferences wrapper |
+| `app/[l1]/[l2]/explore/page.tsx` | 109 | Explore page (rewritten from stub) |
+| `app/[l1]/[l2]/watch/[videoId]/page.tsx` | 91 | Video player page |
+| `app/api/videos/recommend/route.ts` | 20 | Proxy: Python recommendations |
+| `app/api/videos/[videoId]/route.ts` | 26 | Proxy: single video lookup |
+| `app/api/videos/[videoId]/subtitles/route.ts` | 117 | Directus CSV subtitle fetch |
 
-- [ ] `npx turbo build` passes
-- [ ] `/en/zh/explore` shows video grid with thumbnails, titles, difficulty badges
-- [ ] Level filter changes which videos are shown
-- [ ] Clicking a video card navigates to `/en/zh/watch/{youtube_id}`
-- [ ] YouTube player loads and plays the video
-- [ ] Subtitle lines display below the player
-- [ ] "Up next" shows related videos
-- [ ] Video card skeleton shows while loading
-- [ ] Empty state shows when no videos match filter
-- [ ] Error state shows retry button on fetch failure
+**Total**: 16 files, ~1,250 lines of new code.
