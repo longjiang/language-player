@@ -1,50 +1,102 @@
 'use client';
 
+import { useState } from 'react';
 import { useLanguage } from '@/providers/language-provider';
-import { Button } from '@/components/ui/button';
-import { Play, Search } from 'lucide-react';
+import { VideoGrid } from '@/components/video/video-grid';
+import { LevelFilter } from '@/components/video/level-filter';
+import { useVideos } from '@/hooks/use-videos';
 import { languageName } from '@/lib/language-data';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function ExplorePage() {
   const { l1, l2 } = useLanguage();
+  const [level, setLevel] = useState<number | undefined>(undefined);
+  const { videos, loading, error, hasMore, loadMore, retry } = useVideos({
+    l2: l2.code,
+    level,
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Explore {languageName(l2.code)} Media
-          </h1>
-          <p className="mt-1 text-muted-foreground">
-            Find videos in {languageName(l2.code)} matched to your level
-            {l2.has.youtube && ' • YouTube captions available'}
-            {l2.has.liveTV && ' • Live TV available'}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Search className="h-4 w-4" /> Search
-          </Button>
-        </div>
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">
+          Explore {languageName(l2.code)} Media
+        </h1>
+        <p className="mt-1 text-muted-foreground">
+          Find videos matched to your level •{' '}
+          {l2.has.youtube ? 'YouTube captions available' : 'Translated subtitles available'}
+          {l2.has.liveTV ? ' • Live TV available' : ''}
+        </p>
       </div>
 
-      {l2.has.youtube ? (
+      {/* Level filter */}
+      <div className="mb-6">
+        <LevelFilter selected={level} onChange={setLevel} />
+      </div>
+
+      {/* Loading — first load */}
+      {loading && videos.length === 0 && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="overflow-hidden rounded-xl border border-border">
+              <div className="aspect-video animate-pulse bg-muted" />
+              <div className="space-y-2 p-3">
+                <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+                <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Error state */}
+      {error && videos.length === 0 && (
+        <div className="flex flex-col items-center gap-4 rounded-2xl border-2 border-dashed border-destructive/30 p-12 text-center">
+          <AlertCircle className="h-10 w-10 text-destructive" />
+          <p className="text-muted-foreground">{error}</p>
+          <Button variant="outline" onClick={retry}>
+            Try Again
+          </Button>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && !error && videos.length === 0 && (
         <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center">
-          <Play className="mx-auto h-10 w-10 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-semibold">Video feed coming soon</h3>
-          <p className="mt-1 text-muted-foreground">
-            The video listing will be ported from the Classic Nuxt app.
-            {l2.has.liveTV && ' Live TV channels will also be available.'}
+          <p className="text-muted-foreground">
+            No videos found{level ? ' at this level' : ''}. Try a different level or check back later.
           </p>
         </div>
-      ) : (
-        <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center">
-          <Search className="mx-auto h-10 w-10 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-semibold">Limited content for {languageName(l2.code)}</h3>
-          <p className="mt-1 text-muted-foreground">
-            We don&apos;t have YouTube captions for this language yet, but translated subtitles may still be available.
-          </p>
-        </div>
+      )}
+
+      {/* Video grid */}
+      {videos.length > 0 && (
+        <>
+          <VideoGrid videos={videos} />
+
+          {/* Load more */}
+          {hasMore && (
+            <div className="mt-8 text-center">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={loadMore}
+                disabled={loading}
+              >
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Load More
+              </Button>
+            </div>
+          )}
+
+          {!hasMore && videos.length > 0 && (
+            <p className="mt-8 text-center text-sm text-muted-foreground">
+              You&apos;ve reached the end of the list.
+            </p>
+          )}
+        </>
       )}
     </div>
   );

@@ -19,6 +19,11 @@ export interface YouTubeVideo {
   duration?: number; // seconds
   locale?: string;
   tv_show?: string;
+  category?: string;
+  tags?: string;
+  talk?: string;
+  type?: string;
+  made_for_kids?: boolean;
 }
 
 export interface SubtitleLine {
