@@ -45,8 +45,10 @@ const buildYouTubeHTML = (
   videoId: string,
   startTime: number,
   showControls: boolean,
+  parentOrigin: string,
 ): string => {
   const escapedId = videoId.replace(/[\\`]/g, "\\$&");
+  const escapedOrigin = parentOrigin.replace(/[\\`]/g, "\\$&");
   return `
 <!DOCTYPE html>
 <html>
@@ -70,12 +72,16 @@ const buildYouTubeHTML = (
   var pollTimer = null;
   var queuedCommands = [];
 
-  function postMessage(msg) {
+  function postToParent(msg) {
     var payload = JSON.stringify(msg);
     if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
       window.ReactNativeWebView.postMessage(payload);
     } else {
-      window.parent.postMessage(payload, '*');
+      try {
+        window.parent.postMessage(payload, '*');
+      } catch(e) {
+        console.error('[YT iframe] postToParent error:', e);
+      }
     }
   }
 
@@ -108,7 +114,7 @@ const buildYouTubeHTML = (
     stopPolling();
     pollTimer = setInterval(function() {
       if (player && player.getCurrentTime) {
-        postMessage({ type: 'currentTime', time: player.getCurrentTime() });
+        postToParent({ type: 'currentTime', time: player.getCurrentTime() });
       }
     }, 200);
   }
@@ -128,18 +134,18 @@ const buildYouTubeHTML = (
         cc_load_policy: 1,
         cc_lang_pref: 'us',
         playsinline: 1,
-        origin: (window.location && window.location.origin) || 'https://www.youtube.com',
+        origin: '${escapedOrigin}',
       },
       events: {
         onReady: function() {
-          postMessage({ type: 'ready', duration: player.getDuration() });
+          postToParent({ type: 'ready', duration: player.getDuration() });
           flushQueuedCommands();
         },
         onStateChange: function(event) {
-          postMessage({ type: 'stateChange', state: event.data });
+          postToParent({ type: 'stateChange', state: event.data });
         },
         onError: function(event) {
-          postMessage({ type: 'error', data: event.data });
+          postToParent({ type: 'error', data: event.data });
         },
       }
     });
@@ -149,28 +155,12 @@ const buildYouTubeHTML = (
   window.addEventListener('message', function(e) {
     try {
       var msg = JSON.parse(e.data);
-      if (msg.command) executeCommand(msg);
+      if (msg && msg.command) executeCommand(msg);
     } catch(err) {}
   });
 </script>
 </body>
 </html>`;
-};
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-/** Send a JSON command into the player (works for both iframe and WebView). */
-const postCommandToPlayer = (
-  target: HTMLIFrameElement | WebView | null,
-  command: YouTubeCommand,
-) => {
-  const json = JSON.stringify(command);
-  if (!target) return;
-  if (IS_WEB) {
-    (target as HTMLIFrameElement).contentWindow?.postMessage(json, "*");
-  } else {
-    (target as WebView).postMessage(json);
-  }
 };
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -183,8 +173,9 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
   height = 300,
   controls = true,
 }) => {
-  // Single ref — typed as any to satisfy both iframe (web) and WebView (native)
-  const playerRef = useRef<HTMLIFrameElement | WebView | null>(null);
+  // Platform-specific refs — only one is used depending on IS_WEB
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const webViewRef = useRef<WebView | null>(null);
 
   // ── Context (same try/catch pattern as before) ─────────────────────────
   let playbackState: PLAYER_STATES = PLAYER_STATES.UNSTARTED;
@@ -214,115 +205,135 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
     // Not wrapped in a VideoWithTranscriptProvider — operate standalone
   }
 
-  // ── Memoize injected HTML ──────────────────────────────────────────────
-  const html = useMemo(
-    () => buildYouTubeHTML(youtubeId, startTime, controls),
-    [youtubeId, startTime, controls],
-  );
-
-  // ── Shared message handler (dispatches incoming player messages) ───────
-  const handleMessage = useCallback(
-    (data: YouTubeMessage) => {
-      switch (data.type) {
-        case "ready":
-          if (inVideoWithTranscriptProvider && data.duration != null) {
-            updateDuration(data.duration);
-            postCommandToPlayer(playerRef.current, { command: "startPoll" });
-          }
-          break;
-        case "stateChange":
-          if (
-            inVideoWithTranscriptProvider &&
-            data.state != null &&
-            data.state !== playbackState
-          ) {
-            updatePlaybackState(data.state as PLAYER_STATES);
-            if (data.state === PLAYER_STATES.PLAYING) {
-              updatePlayVideo(true);
-            } else if (data.state === PLAYER_STATES.PAUSED) {
-              updatePlayVideo(false);
-            }
-          }
-          break;
-        case "currentTime":
-          if (
-            inVideoWithTranscriptProvider &&
-            playbackState === PLAYER_STATES.PLAYING &&
-            data.time != null
-          ) {
-            updateCurrentTime(data.time);
-          }
-          break;
-        case "duration":
-          if (inVideoWithTranscriptProvider && data.duration != null) {
-            updateDuration(data.duration);
-          }
-          break;
-        case "error":
-          console.warn("[YouTubeVideo] Player error:", data.data);
-          break;
-        default:
-          break;
+  // ── Helper: send a command to whichever player is active ───────────────
+  const postCommand = useCallback(
+    (command: YouTubeCommand) => {
+      const json = JSON.stringify(command);
+      if (IS_WEB) {
+        const win = iframeRef.current?.contentWindow;
+        if (win) {
+          win.postMessage(json, "*");
+        }
+      } else {
+        webViewRef.current?.postMessage(json);
       }
     },
-    [
-      inVideoWithTranscriptProvider,
-      playbackState,
-      updatePlaybackState,
-      updatePlayVideo,
-      updateCurrentTime,
-      updateDuration,
-    ],
+    [],
   );
+
+  // ── Memoize injected HTML ──────────────────────────────────────────────
+  const html = useMemo(() => {
+    // On web, pass the parent page's real origin so YouTube accepts the embed.
+    // On native (WebView), the origin isn't validated the same way — use a safe fallback.
+    const origin = IS_WEB
+      ? (typeof window !== "undefined" ? window.location.origin : "http://localhost")
+      : "https://www.youtube.com";
+    return buildYouTubeHTML(youtubeId, startTime, controls, origin);
+  }, [youtubeId, startTime, controls]);
+
+  // ── Stable message handler via ref ─────────────────────────────────────
+  // The handler lives in a ref so the event listener (registered ONCE below)
+  // always calls the latest version. This avoids listener re-registration
+  // churn on every context update, which was dropping messages.
+  const handlerRef = useRef<(data: YouTubeMessage) => void>(() => {});
+
+  handlerRef.current = (data: YouTubeMessage) => {
+    switch (data.type) {
+      case "ready":
+        if (inVideoWithTranscriptProvider && data.duration != null) {
+          updateDuration(data.duration);
+          postCommand({ command: "startPoll" });
+        }
+        break;
+      case "stateChange":
+        if (
+          inVideoWithTranscriptProvider &&
+          data.state != null &&
+          data.state !== playbackState
+        ) {
+          updatePlaybackState(data.state as PLAYER_STATES);
+          if (data.state === PLAYER_STATES.PLAYING) {
+            updatePlayVideo(true);
+          } else if (data.state === PLAYER_STATES.PAUSED) {
+            updatePlayVideo(false);
+          }
+        }
+        break;
+      case "currentTime":
+        if (
+          inVideoWithTranscriptProvider &&
+          playbackState === PLAYER_STATES.PLAYING &&
+          data.time != null
+        ) {
+          updateCurrentTime(data.time);
+        }
+        break;
+      case "duration":
+        if (inVideoWithTranscriptProvider && data.duration != null) {
+          updateDuration(data.duration);
+        }
+        break;
+      case "error":
+        console.warn("[YouTubeVideo] Player error:", data.data);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // ── Web message listener ───────────────────────────────────────────────
+  // Registered ONCE (empty deps) and uses handlerRef for latest values.
+  useEffect(() => {
+    if (!IS_WEB) return;
+
+    const onWindowMessage = (event: MessageEvent) => {
+      // Must be a JSON string with our expected shape
+      if (!event.data || typeof event.data !== "string") return;
+      let parsed: YouTubeMessage;
+      try {
+        parsed = JSON.parse(event.data);
+      } catch {
+        return;
+      }
+      if (!parsed || typeof parsed !== "object" || !("type" in parsed)) return;
+
+      handlerRef.current(parsed);
+    };
+
+    window.addEventListener("message", onWindowMessage);
+    return () => window.removeEventListener("message", onWindowMessage);
+  }, []);
 
   // ── Native message handler (WebView onMessage) ─────────────────────────
   const onWebViewMessage = useCallback(
     (event: WebViewMessageEvent) => {
       try {
-        handleMessage(JSON.parse(event.nativeEvent.data));
+        const parsed: YouTubeMessage = JSON.parse(event.nativeEvent.data);
+        if (parsed && parsed.type) {
+          handlerRef.current(parsed);
+        }
       } catch (_e) { /* ignore malformed */ }
     },
-    [handleMessage],
+    [],
   );
-
-  // ── Web message handler (window postMessage listener) ──────────────────
-  useEffect(() => {
-    if (!IS_WEB) return;
-
-    const listener = (event: MessageEvent) => {
-      // Only accept messages from our own iframe
-      const iframe = playerRef.current as HTMLIFrameElement | null;
-      if (!iframe || event.source !== iframe.contentWindow) return;
-      try {
-        handleMessage(JSON.parse(event.data));
-      } catch (_e) { /* ignore malformed */ }
-    };
-
-    window.addEventListener("message", listener);
-    return () => window.removeEventListener("message", listener);
-  }, [handleMessage]);
 
   // ── Sync play / pause ──────────────────────────────────────────────────
   const prevPlayRef = useRef(playVideo);
   useEffect(() => {
     if (prevPlayRef.current !== playVideo) {
-      postCommandToPlayer(playerRef.current, {
-        command: playVideo ? "play" : "pause",
-      });
+      postCommand({ command: playVideo ? "play" : "pause" });
     }
     prevPlayRef.current = playVideo;
-  }, [playVideo]);
+  }, [playVideo, postCommand]);
 
   // ── Sync mute ──────────────────────────────────────────────────────────
   const prevMuteRef = useRef(mute);
   useEffect(() => {
     if (prevMuteRef.current !== mute) {
-      postCommandToPlayer(playerRef.current, {
-        command: mute ? "mute" : "unmute",
-      });
+      postCommand({ command: mute ? "mute" : "unmute" });
     }
     prevMuteRef.current = mute;
-  }, [mute]);
+  }, [mute, postCommand]);
 
   // ── Handle seek (context-driven) ───────────────────────────────────────
   const prevSeekRef = useRef(seekTime);
@@ -332,21 +343,18 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
       seekTime !== undefined &&
       seekTime !== prevSeekRef.current
     ) {
-      postCommandToPlayer(playerRef.current, {
-        command: "seekTo",
-        seconds: currentTime,
-      });
+      postCommand({ command: "seekTo", seconds: currentTime });
       resetSeekTime();
     }
     prevSeekRef.current = seekTime;
-  }, [seekTime, currentTime, inVideoWithTranscriptProvider, resetSeekTime]);
+  }, [seekTime, currentTime, inVideoWithTranscriptProvider, resetSeekTime, postCommand]);
 
   // ── Cleanup polling on unmount ─────────────────────────────────────────
   useEffect(() => {
     return () => {
-      postCommandToPlayer(playerRef.current, { command: "stopPoll" });
+      postCommand({ command: "stopPoll" });
     };
-  }, []);
+  }, [postCommand]);
 
   // ── Shared style ───────────────────────────────────────────────────────
   const playerStyle = useMemo(
@@ -355,33 +363,31 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
       width: "100%" as const,
       backgroundColor: "#000" as const,
       border: "none" as const,
-      // opacity 0.99 workaround for Android rendering quirk
       ...(IS_WEB ? {} : { opacity: 0.99 as const }),
     }),
     [height],
   );
 
+  const playerKey = `${youtubeId}-${startTime}`;
+
   // ── Render ─────────────────────────────────────────────────────────────
   if (IS_WEB) {
     return (
       <iframe
-        ref={(el) => {
-          (playerRef as React.MutableRefObject<HTMLIFrameElement | null>).current = el;
-        }}
-        key={`${youtubeId}-${startTime}`}
+        ref={iframeRef}
+        key={playerKey}
         srcDoc={html}
         style={playerStyle}
         title={`YouTube video ${youtubeId}`}
         allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-        sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
       />
     );
   }
 
   return (
     <WebView
-      ref={playerRef as React.Ref<WebView>}
-      key={`${youtubeId}-${startTime}`}
+      ref={webViewRef}
+      key={playerKey}
       source={{ html }}
       style={playerStyle}
       javaScriptEnabled
