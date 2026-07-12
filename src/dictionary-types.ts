@@ -47,5 +47,5 @@ export interface RawEntry {
 
   // wiktionary
   word?: string;
-  han? string;
+  han?: string;
 }

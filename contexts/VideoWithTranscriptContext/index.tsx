@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { YouTubeVideo, SyncedLine } from "@/types";
-import { PLAYER_STATES } from "react-native-youtube-iframe";
+import { PLAYER_STATES } from "@/constants/PlayerStates";
 import { findSubtitle } from "@/src/subs";
 import { VideoWithTranscriptContextType } from "./types";
 import { syncLines } from "@/src/subs";

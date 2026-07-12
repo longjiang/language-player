@@ -71,7 +71,6 @@
     "react-native-web": "~0.19.10",
     "react-native-web-webview": "^1.0.2",
     "react-native-webview": "13.8.6",
-    "react-native-youtube-iframe": "^2.3.0",
     "string-hash": "^1.1.3",
     "wanakana": "^5.3.1",
     "yarn": "^1.22.22"
