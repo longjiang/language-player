@@ -34,15 +34,15 @@
 - ✅ Dashboard stub with feature links
 - ✅ Login, Register, Forgot Password, Language Select pages
 
-## Phase 3: Explore + Video Player
+## Phase 3: Explore + Video Player 🔄
 
 - ⬜ `/explore` page — fetch videos from API, lazy load, filters
 - ⬜ `/explore/[l2]` — language-specific browse with difficulty levels
 - ⬜ Video player page (`/[l1]/[l2]/watch/[videoId]`)
 - ⬜ YouTube iframe integration with dual subtitles
-- ⬜ Synced transcript view
+- ⬜ Basic subtitle display (L1 + L2 lines, no interaction yet)
 - ⬜ Playback speed control
-- ⬜ Auto-pause after subtitle
+- ⬜ "Up next" recommended videos sidebar
 
 ## Phase 4: Dictionary
 
