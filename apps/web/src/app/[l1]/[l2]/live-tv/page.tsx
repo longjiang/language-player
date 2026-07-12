@@ -1,3 +1,5 @@
+'use client';
+
 import { useLanguage } from '@/providers/language-provider';
 import { languageName } from '@/lib/language-data';
 import { Tv } from 'lucide-react';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useLanguage } from '@/providers/language-provider';
 import { Play, BookOpen, Tv, Layers } from 'lucide-react';
 import Link from 'next/link';
