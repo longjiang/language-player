@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const PYTHON_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://python.zerotohero.ca';
+const PYTHON_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://pythonvps.zerotohero.ca';
 
 /** GET /api/videos/[videoId] — get a single video by YouTube ID */
 export async function GET(

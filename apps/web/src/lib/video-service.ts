@@ -5,7 +5,7 @@
 
 import type { YouTubeVideo } from '@langplayer/shared';
 
-const PYTHON_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://python.zerotohero.ca';
+const PYTHON_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://pythonvps.zerotohero.ca';
 
 export interface VideoListParams {
   l2: string;
@@ -34,14 +34,16 @@ export async function getRecommendedVideos(
     const params = new URLSearchParams();
     params.set('l2', l2);
     if (level) params.set('level', String(level));
-    params.set('page', String(page));
-    params.set('page_size', String(pageSize));
+    params.set('limit', String(pageSize));
 
-    const res = await fetch(`${PYTHON_URL}/video/recommend?${params}`, {
-      cache: 'no-store', // recommendations are personalized
+    const res = await fetch(`${PYTHON_URL}/recommend-videos?${params}`, {
+      cache: 'no-store',
     });
 
-    if (!res.ok) throw new Error(`Failed to fetch videos: ${res.status}`);
+    if (!res.ok) {
+      console.error('Python backend error:', res.status, await res.text().catch(() => ''));
+      throw new Error(`Failed to fetch videos: ${res.status}`);
+    }
 
     const data = await res.json();
     const videos: YouTubeVideo[] = Array.isArray(data) ? data : data?.data ?? [];
@@ -58,16 +60,23 @@ export async function getRecommendedVideos(
   }
 }
 
-/** Get a single video by its YouTube ID. */
+/** Get a single video by its YouTube ID (checks availability via Python). */
 export async function getVideoById(youtubeId: string): Promise<YouTubeVideo | null> {
   try {
-    const res = await fetch(`${PYTHON_URL}/video/${youtubeId}`, {
+    const res = await fetch(`${PYTHON_URL}/check-youtube?youtube_ids=${youtubeId}`, {
       cache: 'no-store',
     });
 
     if (!res.ok) return null;
     const data = await res.json();
-    return data?.data ?? data ?? null;
+    // check-youtube returns availability info; construct a minimal video object
+    const available = data?.available ?? data?.[youtubeId];
+    if (!available) return null;
+
+    return {
+      youtube_id: youtubeId,
+      title: 'YouTube Video',
+    };
   } catch {
     return null;
   }
@@ -85,7 +94,7 @@ export async function getSyncedSubtitles(
     params.set('l1', l1);
     params.set('l2', l2);
 
-    const res = await fetch(`${PYTHON_URL}/video/sync-subtitles?${params}`, {
+    const res = await fetch(`${PYTHON_URL}/sync-srt?${params}`, {
       cache: 'no-store',
     });
 
