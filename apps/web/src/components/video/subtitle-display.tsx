@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/providers/language-provider';
-import type { YouTubeVideo } from '@langplayer/shared';
-import { getSyncedSubtitles } from '@/lib/video-service';
 
 interface SubtitleDisplayProps {
   youtubeId: string;
@@ -18,8 +16,14 @@ export function SubtitleDisplay({ youtubeId, currentTime }: SubtitleDisplayProps
   const [activeIndex, setActiveIndex] = useState(-1);
 
   useEffect(() => {
-    getSyncedSubtitles(youtubeId, l1.code, l2.code).then(setLines).catch(() => {});
-  }, [youtubeId, l1.code, l2.code]);
+    const fetchSubtitles = async () => {
+      const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${l2.code}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setLines(data.lines ?? []);
+    };
+    fetchSubtitles().catch(() => {});
+  }, [youtubeId, l2.code]);
 
   // Find the active line based on current playback time
   useEffect(() => {
