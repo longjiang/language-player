@@ -66,6 +66,17 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const insets = useSafeAreaInsets();
 
+  // Store pending tokenizer cache to load when tokenizer becomes available
+  const pendingTokenizerCache = React.useRef<{ [key: string]: any } | null>(null);
+
+  // When tokenizer becomes available, load any pending cache
+  useEffect(() => {
+    if (tokenizer && pendingTokenizerCache.current) {
+      tokenizer.loadCache(pendingTokenizerCache.current);
+      pendingTokenizerCache.current = null;
+    }
+  }, [tokenizer]);
+
   useEffect(() => {
     const newVideo = videoPlayerState.queueManager.currentVideo;
     if (!newVideo || !newVideo.tv_show) return;
@@ -169,8 +180,13 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     // Fetch and load tokenizer cache
     try {
       const tokenizerCache = await getTokenizerCacheForVideo(newVideo.id || '', l2Lang.code);
-      if (tokenizerCache && tokenizer) {
-        tokenizer.loadCache(tokenizerCache);
+      if (tokenizerCache) {
+        if (tokenizer) {
+          tokenizer.loadCache(tokenizerCache);
+        } else {
+          // Tokenizer not ready yet — store cache to load when it becomes available
+          pendingTokenizerCache.current = tokenizerCache;
+        }
       }
     } catch (error) {
       console.error("Failed to fetch and load tokenizer cache", error);

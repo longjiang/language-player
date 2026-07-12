@@ -35,29 +35,62 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
 
   useEffect(() => {
     if (!l2Lang) return;
-    setIsLoading(true);
-    const newDictionary = new Dictionary(l2Lang, t);
+
+    let aborted = false;
 
     const addLog = (message: string) => {
+      if (aborted) return;
       setLogs((prevLogs) => [...prevLogs, message]);
       console.log(message);
     };
 
-    addLog(t('log.loading_dictionary'));
-    newDictionary.loadData(false, addLog).then(() => {
-      setDictionary(newDictionary);
-      const initializeTokenizer = async () => {
-        const tokenizer = TokenizerService.getInstance(await newDictionary.getWordSet());
-        setTokenizer(tokenizer);
-      };
-      initializeTokenizer();
+    // Initialize tokenizer IMMEDIATELY — don't wait for dictionary to load.
+    // The tokenizer uses remote endpoints for most languages and doesn't need
+    // the dictionary wordset for basic tokenization.
+    const tokenizerInstance = TokenizerService.getInstance(new Set<string>());
+    setTokenizer(tokenizerInstance);
 
-      addLog(t('log.dictionary_ready'));
-      setIsLoading(false);
-    }).catch(error => {
-      addLog(t('log.failed_load_dictionary', { error }));
-      setIsLoading(false);
-    });
+    const initDictionary = async () => {
+      setIsLoading(true);
+      const newDictionary = new Dictionary(l2Lang, t);
+
+      addLog(t('log.loading_dictionary'));
+
+      try {
+        await newDictionary.loadData(false, addLog);
+        if (aborted) return;
+
+        setDictionary(newDictionary);
+
+        // Optionally update tokenizer's wordset after dictionary loads
+        // (for continua languages that use the local tokenizer)
+        try {
+          const wordSet = await newDictionary.getWordSet();
+          if (!aborted) {
+            // Re-initialize with the real wordset for better local tokenization
+            const updatedTokenizer = TokenizerService.getInstance(wordSet);
+            setTokenizer(updatedTokenizer);
+          }
+        } catch (tokenizerError) {
+          console.error('Failed to update tokenizer wordset:', tokenizerError);
+        }
+
+        addLog(t('log.dictionary_ready'));
+      } catch (error) {
+        console.error('Failed to load dictionary:', error);
+        addLog(t('log.failed_load_dictionary', { error }));
+      } finally {
+        if (!aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initDictionary();
+
+    return () => {
+      aborted = true;
+    };
   }, [l2Lang, t]);
 
   useEffect(() => {

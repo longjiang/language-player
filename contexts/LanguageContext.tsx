@@ -1,6 +1,6 @@
 // @/contexts/LanguageContext.tsx
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { I18n } from 'i18n-js';
 import Languages from '@/src/languages';
 import { Language } from '@/src/languages';  // Import the Language type from your languages module
@@ -98,16 +98,19 @@ export const LanguageProvider: React.FC<{children: ReactNode}> = ({ children }) 
   }, [l1Lang]);
 
 
+  // Stable t function — avoids re-running downstream effects on every render
+  const t = useMemo(() => i18n.t.bind(i18n), []);
+
   // Context value that will be exposed to other components
-  const value = {
+  const value = useMemo(() => ({
     setL1Lang,
     setL2Lang,
     l1Lang,
     l2Lang,
     languages,
     i18n,
-    t: i18n.t.bind(i18n)
-  };
+    t
+  }), [l1Lang, l2Lang, languages, i18n, t]);
 
   return (
     <LanguageContext.Provider value={value}>

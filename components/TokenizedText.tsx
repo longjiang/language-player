@@ -39,7 +39,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
     const tokenizeText = async () => {
       try {
         if (!tokenizer) {
-          throw new Error('Tokenizer is not available');
+          // Tokenizer not yet initialized — render plain text until it's ready
+          setTokens([{ text }]);
+          return;
         }
         
         // Replace newlines with spaces in the input text
@@ -48,7 +50,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = React.memo(({
         let result = await tokenizer.tokenize(processedText, l2Lang);
         
         // Preprocess tokens: consolidate consecutive space tokens
-        const preprocessedTokens = result.reduce((acc: TokenType[], token: TokenType) => {
+        const preprocessedTokens = (result || [{ text }]).reduce((acc: TokenType[], token: TokenType) => {
           if (token.text.trim() === '') {
             // If the current token is a space and the last token in acc is also a space, skip this token
             if (acc.length > 0 && acc[acc.length - 1].text.trim() === '') {

@@ -48,6 +48,9 @@ export class TokenizerService {
   public async fetchTokens(tokenizer: Tokenizer, text: string, l2Lang: Language): Promise<Token[]> {
     const uri = `${PYTHON_SERVER}/${tokenizer.endPoint}?text=${encodeURIComponent(text)}&lang=${l2Lang.iso639_3}`;
     const response = await fetch(uri);
+    if (!response.ok) {
+      throw new Error(`Tokenization endpoint returned ${response.status}: ${response.statusText}`);
+    }
     const tokenData = await response.json();
     return tokenData;
   }
@@ -76,7 +79,6 @@ export class TokenizerService {
       let rawTokens: Token[] | undefined = undefined;
       if (remoteTokenizer) {
         rawTokens = await this.fetchTokens(remoteTokenizer, text, l2Lang);
-        // console.log("Remote tokens:", rawTokens);
       } else {
         rawTokens = await this.localTokenizer.tokenize(text, l2Lang);
       }
