@@ -1,15 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import createIntlMiddleware from 'next-intl/middleware';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
 
 const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/language-select'];
 const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
-
-// next-intl middleware for locale detection
-const intlMiddleware = createIntlMiddleware({
-  locales: [...SUPPORTED_L1S],
-  defaultLocale: 'en',
-});
 
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -22,7 +15,7 @@ export default function middleware(req: NextRequest) {
     pathname.startsWith('/favicon') ||
     /\.(ico|png|jpg|jpeg|svg|css|js)$/.test(pathname)
   ) {
-    return intlMiddleware(req);
+    return NextResponse.next();
   }
 
   // Check auth via session cookie (NextAuth sets this)
@@ -58,9 +51,10 @@ export default function middleware(req: NextRequest) {
     if (!SUPPORTED_L1S.includes(l1 as any) || !SUPPORTED_L2S.includes(l2 as any)) {
       return NextResponse.rewrite(new URL('/_not-found', req.url));
     }
-    const response = intlMiddleware(req);
+    const response = NextResponse.next();
     response.cookies.set('l1', l1, { path: '/', maxAge: 365 * 24 * 60 * 60 });
     response.cookies.set('l2', l2, { path: '/', maxAge: 365 * 24 * 60 * 60 });
+    response.cookies.set('NEXT_LOCALE', l1, { path: '/', maxAge: 365 * 24 * 60 * 60 });
     return response;
   }
 
@@ -74,7 +68,7 @@ export default function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/language-select', req.url));
   }
 
-  return intlMiddleware(req);
+  return NextResponse.next();
 }
 
 export const config = {

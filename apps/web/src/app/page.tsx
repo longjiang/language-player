@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
 import { Play, Search, BookOpen, Languages, Tv, Sparkles } from 'lucide-react';
