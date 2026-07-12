@@ -321,7 +321,8 @@
         "back_to_login": "लॉगिन पर वापस जाएं",
         "continue": "जारी रखें",
         "try_again": "पुनः प्रयास करें",
-        "start_watching": "देखना शुरू करें"
+        "start_watching": "देखना शुरू करें",
+        "resend": "पुनः भेजें"
     },
     "button": {
         "keep_current_time": "वर्तमान समय रखें",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "अमान्य ईमेल या पासवर्ड",
         "general": "एक त्रुटि उत्पन्न हुई",
         "loading_failed": "लोड करने में विफल",
-        "occurred": "एक त्रुटि हुई"
+        "occurred": "एक त्रुटि हुई",
+        "invalid_credentials": "अमान्य ईमेल या पासवर्ड। कृपया पुनः प्रयास करें।",
+        "something_went_wrong": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+        "email_exists": "इस ईमेल से पहले से एक खाता मौजूद है।",
+        "create_account_failed": "खाता बनाने में विफल। कृपया पुनः प्रयास करें।",
+        "invalid_verification_code": "अमान्य सत्यापन कोड। कृपया पुनः प्रयास करें।",
+        "verification_failed": "सत्यापन विफल।"
     },
     "feature": {
         "see_all_subtitles": "प्रथम तीन से परे सभी उपशीर्षक खोज परिणाम देखें।",
@@ -506,7 +513,21 @@
         "no_videos_found": "कोई वीडियो नहीं मिला। कोई अन्य स्तर आज़माएं या बाद में पुनः जांचें।",
         "end_of_list": "आप सूची के अंत तक पहुँच गए हैं।",
         "subtitles_not_available": "इस वीडियो के लिए उपशीर्षक अभी उपलब्ध नहीं हैं।",
-        "video_unavailable": "यह वीडियो लोड नहीं किया जा सका। हो सकता है इसे हटा दिया गया हो या निजी बना दिया गया हो।"
+        "video_unavailable": "यह वीडियो लोड नहीं किया जा सका। हो सकता है इसे हटा दिया गया हो या निजी बना दिया गया हो।",
+        "learning_from": "{l1} से {l2} सीखें",
+        "dashboard_for": "आपका डैशबोर्ड {l1} → {l2} के लिए",
+        "explore_media_for": "{l2} मीडिया अन्वेषण करें",
+        "find_videos_matched": "अपने स्तर के अनुसार वीडियो खोजें",
+        "youtube_captions": "YouTube कैप्शन उपलब्ध",
+        "translated_subtitles": "अनुवादित उपशीर्षक उपलब्ध",
+        "live_tv_available": "लाइव टीवी उपलब्ध",
+        "verifying": "सत्यापित हो रहा है...",
+        "didnt_receive_code": "कोड प्राप्त नहीं हुआ?",
+        "related_videos": "संबंधित वीडियो यहां दिखाई देंगे।",
+        "landing_hero_badge": "60+ भाषाएँ समर्थित",
+        "landing_hero_title_1": "भाषाएँ सीखें",
+        "landing_hero_title_2": "वीडियो",
+        "landing_hero_desc": "इंटरैक्टिव दोहरे उपशीर्षकों के साथ YouTube वीडियो, फिल्में और टीवी शो देखें। तुरंत शब्दकोश खोज के लिए किसी भी शब्द पर टैप करें।"
     },
     "option": {
         "app_store": "ऐप स्टोर",
@@ -645,7 +666,9 @@
         "i_speak": "मैं बोलता हूँ",
         "i_learning": "मैं सीख रहा हूँ",
         "confirm_in_app_purchase": "अपनी इन-ऐप खरीदारी की पुष्टि करें",
-        "only_lifetime_available": "App Store में केवल आजीवन योजना उपलब्ध है"
+        "only_lifetime_available": "App Store में केवल आजीवन योजना उपलब्ध है",
+        "live_tv": "लाइव टीवी",
+        "up_next": "अगला"
     },
     "video": {
         "comments": "टिप्पणियाँ",

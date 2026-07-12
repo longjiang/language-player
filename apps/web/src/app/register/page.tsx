@@ -47,9 +47,9 @@ export default function RegisterPage() {
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
         if (errData?.error?.message?.includes('unique')) {
-          throw new Error('An account with this email already exists.');
+          throw new Error(t('error.email_exists'));
         }
-        throw new Error('Failed to create account. Please try again.');
+        throw new Error(t('error.create_account_failed'));
       }
 
       const verifyRes = await fetch(`${PYTHON_URL}/verification_email`, {
@@ -64,7 +64,7 @@ export default function RegisterPage() {
 
       setStep('verify');
     } catch (err: any) {
-      setError(err.message || 'Something went wrong.');
+      setError(err.message || t('error.something_went_wrong'));
     } finally {
       setLoading(false);
     }
@@ -83,7 +83,7 @@ export default function RegisterPage() {
       });
 
       if (!res.ok) {
-        throw new Error('Invalid verification code. Please try again.');
+        throw new Error(t('error.invalid_verification_code'));
       }
 
       const result = await signIn('credentials', {
@@ -101,7 +101,7 @@ export default function RegisterPage() {
         setTimeout(() => router.push('/login'), 2000);
       }
     } catch (err: any) {
-      setError(err.message || 'Verification failed.');
+      setError(err.message || t('error.verification_failed'));
     } finally {
       setLoading(false);
     }
@@ -200,18 +200,18 @@ export default function RegisterPage() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading || code.length < 6}>
-                {loading ? 'Verifying...' : t('action.verify_email')}
+                {loading ? t('msg.verifying') : t('action.verify_email')}
               </Button>
             </form>
 
             <p className="mt-4 text-center text-sm text-muted-foreground">
-              Didn&apos;t receive a code?{' '}
+              {t('msg.didnt_receive_code')}{' '}
               <button
                 type="button"
                 onClick={() => handleRegister({ preventDefault: () => {} } as any)}
                 className="font-medium text-primary hover:underline"
               >
-                Resend
+                {t('action.resend')}
               </button>
             </p>
           </>

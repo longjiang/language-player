@@ -31,13 +31,13 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        setError('Invalid email or password. Please try again.');
+        setError(t('error.invalid_credentials'));
       } else if (result?.ok) {
         router.push(callbackUrl);
         router.refresh();
       }
     } catch {
-      setError('Something went wrong. Please try again.');
+      setError(t('error.something_went_wrong'));
     } finally {
       setLoading(false);
     }

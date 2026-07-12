@@ -321,7 +321,8 @@
         "back_to_login": "로그인으로 돌아가기",
         "continue": "계속",
         "try_again": "다시 시도",
-        "start_watching": "시청 시작"
+        "start_watching": "시청 시작",
+        "resend": "재전송"
     },
     "button": {
         "keep_current_time": "현재 시간 유지",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "잘못된 이메일 또는 비밀번호",
         "general": "오류가 발생했습니다",
         "loading_failed": "로딩 실패",
-        "occurred": "오류가 발생했습니다"
+        "occurred": "오류가 발생했습니다",
+        "invalid_credentials": "잘못된 이메일 또는 비밀번호입니다. 다시 시도해 주세요.",
+        "something_went_wrong": "문제가 발생했습니다. 다시 시도해 주세요.",
+        "email_exists": "이 이메일로 이미 계정이 존재합니다.",
+        "create_account_failed": "계정 생성에 실패했습니다. 다시 시도해 주세요.",
+        "invalid_verification_code": "잘못된 인증 코드입니다. 다시 시도해 주세요.",
+        "verification_failed": "인증에 실패했습니다."
     },
     "feature": {
         "see_all_subtitles": "처음 세 개 이후의 모든 자막 검색 결과를 봅니다.",
@@ -506,7 +513,21 @@
         "no_videos_found": "비디오를 찾을 수 없습니다. 다른 레벨을 시도하거나 나중에 다시 확인하세요.",
         "end_of_list": "목록의 끝에 도달했습니다.",
         "subtitles_not_available": "이 비디오의 자막은 아직 사용할 수 없습니다.",
-        "video_unavailable": "이 비디오를 로드할 수 없습니다. 삭제되었거나 비공개로 설정되었을 수 있습니다."
+        "video_unavailable": "이 비디오를 로드할 수 없습니다. 삭제되었거나 비공개로 설정되었을 수 있습니다.",
+        "learning_from": "{l1}로 {l2} 배우기",
+        "dashboard_for": "{l1} → {l2} 대시보드",
+        "explore_media_for": "{l2} 미디어 탐색",
+        "find_videos_matched": "내 레벨에 맞는 비디오 찾기",
+        "youtube_captions": "YouTube 자막 가능",
+        "translated_subtitles": "번역 자막 가능",
+        "live_tv_available": "실시간 TV 가능",
+        "verifying": "확인 중...",
+        "didnt_receive_code": "코드를 받지 못하셨나요?",
+        "related_videos": "관련 비디오가 여기에 표시됩니다.",
+        "landing_hero_badge": "60개 이상 언어 지원",
+        "landing_hero_title_1": "영상으로 배우는",
+        "landing_hero_title_2": "언어 학습",
+        "landing_hero_desc": "양방향 이중 자막으로 YouTube 동영상, 영화, TV 프로그램을 시청하세요. 단어를 탭하면 즉시 사전 검색이 가능합니다."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "할 수 있는 언어",
         "i_learning": "배우는 언어",
         "confirm_in_app_purchase": "인앱 구매 확인",
-        "only_lifetime_available": "App Store에서 평생 플랜만 이용 가능"
+        "only_lifetime_available": "App Store에서 평생 플랜만 이용 가능",
+        "live_tv": "실시간 TV",
+        "up_next": "다음"
     },
     "video": {
         "comments": "댓글",

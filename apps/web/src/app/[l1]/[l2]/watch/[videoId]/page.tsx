@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
+import { useT } from '@/hooks/use-t';
 import { YouTubePlayer } from '@/components/video/youtube-player';
 import { VideoMeta } from '@/components/video/video-meta';
 import { SubtitleDisplay } from '@/components/video/subtitle-display';
@@ -12,6 +13,7 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 export default function WatchPage() {
   const params = useParams<{ videoId: string }>();
   const { l1, l2 } = useLanguage();
+  const t = useT();
   const videoId = params.videoId;
 
   const [video, setVideo] = useState<YouTubeVideo | null>(null);
@@ -48,9 +50,9 @@ export default function WatchPage() {
     return (
       <div className="mx-auto max-w-4xl px-4 py-12 text-center">
         <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
-        <h1 className="mt-4 text-2xl font-bold">Video Unavailable</h1>
+        <h1 className="mt-4 text-2xl font-bold">{t('msg.video_unavailable')}</h1>
         <p className="mt-2 text-muted-foreground">
-          {error ?? 'This video could not be loaded. It may have been removed or made private.'}
+          {error ?? t('msg.video_unavailable')}
         </p>
       </div>
     );
@@ -73,9 +75,9 @@ export default function WatchPage() {
         {/* Sidebar: Up Next */}
         <aside className="hidden lg:block">
           <div className="rounded-xl border border-border bg-card p-4">
-            <h3 className="mb-3 font-semibold">Up Next</h3>
+            <h3 className="mb-3 font-semibold">{t('title.up_next')}</h3>
             <p className="text-sm text-muted-foreground">
-              Related videos will appear here.
+              {t('msg.related_videos')}
             </p>
           </div>
         </aside>

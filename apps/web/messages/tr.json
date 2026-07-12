@@ -320,7 +320,8 @@
         "back_to_login": "Girişe geri dön",
         "continue": "Devam Et",
         "try_again": "Tekrar Dene",
-        "start_watching": "İzlemeye Başla"
+        "start_watching": "İzlemeye Başla",
+        "resend": "Tekrar gönder"
     },
     "button": {
         "keep_current_time": "Mevcut Zamanı Koru",
@@ -364,7 +365,13 @@
         "invalid_user_credentials": "Geçersiz e-posta veya şifre",
         "general": "Bir hata oluştu",
         "loading_failed": "Yükleme başarısız oldu",
-        "occurred": "Bir hata oluştu"
+        "occurred": "Bir hata oluştu",
+        "invalid_credentials": "Geçersiz e-posta veya şifre. Lütfen tekrar deneyin.",
+        "something_went_wrong": "Bir şeyler yanlış gitti. Lütfen tekrar deneyin.",
+        "email_exists": "Bu e-postaya sahip bir hesap zaten var.",
+        "create_account_failed": "Hesap oluşturulamadı. Lütfen tekrar deneyin.",
+        "invalid_verification_code": "Geçersiz doğrulama kodu. Lütfen tekrar deneyin.",
+        "verification_failed": "Doğrulama başarısız oldu."
     },
     "feature": {
         "see_all_subtitles": "İlk üçten sonraki tüm altyazı arama sonuçlarını görün.",
@@ -505,7 +512,21 @@
         "no_videos_found": "Video bulunamadı. Farklı bir seviye deneyin veya daha sonra tekrar kontrol edin.",
         "end_of_list": "Listenin sonuna ulaştınız.",
         "subtitles_not_available": "Bu video için altyazılar henüz mevcut değil.",
-        "video_unavailable": "Bu video yüklenemedi. Kaldırılmış veya gizli yapılmış olabilir."
+        "video_unavailable": "Bu video yüklenemedi. Kaldırılmış veya gizli yapılmış olabilir.",
+        "learning_from": "{l1}dan {l2} öğren",
+        "dashboard_for": "Gösterge paneliniz: {l1} → {l2}",
+        "explore_media_for": "{l2} Medyasını Keşfet",
+        "find_videos_matched": "Seviyenize uygun videolar bulun",
+        "youtube_captions": "YouTube altyazıları mevcut",
+        "translated_subtitles": "Çevrilmiş altyazılar mevcut",
+        "live_tv_available": "Canlı TV mevcut",
+        "verifying": "Doğrulanıyor...",
+        "didnt_receive_code": "Kod almadınız mı?",
+        "related_videos": "İlgili videolar burada görünecek.",
+        "landing_hero_badge": "60'tan fazla dil desteklenir",
+        "landing_hero_title_1": "Dilleri öğrenin",
+        "landing_hero_title_2": "video ile",
+        "landing_hero_desc": "Etkileşimli çift altyazılı YouTube videoları, filmler ve TV şovları izleyin. Anında sözlük araması için herhangi bir kelimeye dokunun."
     },
     "option": {
         "app_store": "App Store",
@@ -644,7 +665,9 @@
         "i_speak": "Konuşuyorum",
         "i_learning": "Öğreniyorum",
         "confirm_in_app_purchase": "Uygulama İçi Satın Almanızı Onaylayın",
-        "only_lifetime_available": "App Store'da yalnızca Ömür Boyu Plan mevcut"
+        "only_lifetime_available": "App Store'da yalnızca Ömür Boyu Plan mevcut",
+        "live_tv": "Canlı TV",
+        "up_next": "Sıradaki"
     },
     "video": {
         "comments": "Yorumlar",

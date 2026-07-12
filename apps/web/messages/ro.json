@@ -321,7 +321,8 @@
         "back_to_login": "Înapoi la autentificare",
         "continue": "Continuă",
         "try_again": "Încearcă din nou",
-        "start_watching": "Începe vizionarea"
+        "start_watching": "Începe vizionarea",
+        "resend": "Retrimite"
     },
     "button": {
         "keep_current_time": "Păstrează Timpul Curent",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "E-mail sau parolă invalidă",
         "general": "A apărut o eroare",
         "loading_failed": "Eroare la încărcare",
-        "occurred": "A apărut o eroare"
+        "occurred": "A apărut o eroare",
+        "invalid_credentials": "Email sau parolă invalidă. Vă rugăm să încercați din nou.",
+        "something_went_wrong": "Ceva nu a funcționat. Vă rugăm să încercați din nou.",
+        "email_exists": "Există deja un cont cu acest email.",
+        "create_account_failed": "Crearea contului a eșuat. Vă rugăm să încercați din nou.",
+        "invalid_verification_code": "Cod de verificare invalid. Vă rugăm să încercați din nou.",
+        "verification_failed": "Verificarea a eșuat."
     },
     "feature": {
         "see_all_subtitles": "Vezi toate rezultatele căutării de subtitrări dincolo de primele trei.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Nu s-au găsit videoclipuri. Încercați un alt nivel sau reveniți mai târziu.",
         "end_of_list": "Ați ajuns la sfârșitul listei.",
         "subtitles_not_available": "Subtitrările nu sunt încă disponibile pentru acest videoclip.",
-        "video_unavailable": "Acest videoclip nu a putut fi încărcat. Este posibil să fi fost eliminat sau făcut privat."
+        "video_unavailable": "Acest videoclip nu a putut fi încărcat. Este posibil să fi fost eliminat sau făcut privat.",
+        "learning_from": "Învăț {l2} din {l1}",
+        "dashboard_for": "Panoul tău pentru {l1} → {l2}",
+        "explore_media_for": "Explorează media {l2}",
+        "find_videos_matched": "Găsiți videoclipuri potrivite nivelului dvs.",
+        "youtube_captions": "Subtitrări YouTube disponibile",
+        "translated_subtitles": "Subtitrări traduse disponibile",
+        "live_tv_available": "TV live disponibil",
+        "verifying": "Se verifică...",
+        "didnt_receive_code": "Nu ați primit un cod?",
+        "related_videos": "Videoclipurile asociate vor apărea aici.",
+        "landing_hero_badge": "Peste 60 de limbi acceptate",
+        "landing_hero_title_1": "Învață limbi prin",
+        "landing_hero_title_2": "videoclipuri",
+        "landing_hero_desc": "Urmăriți videoclipuri YouTube, filme și emisiuni TV cu subtitrări duble interactive. Atingeți orice cuvânt pentru o căutare instantanee în dicționar."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Vorbesc",
         "i_learning": "Învăț",
         "confirm_in_app_purchase": "Confirmați achiziția în aplicație",
-        "only_lifetime_available": "Doar Planul pe Viață este disponibil în App Store"
+        "only_lifetime_available": "Doar Planul pe Viață este disponibil în App Store",
+        "live_tv": "TV live",
+        "up_next": "Urmează"
     },
     "video": {
         "comments": "Comentarii",

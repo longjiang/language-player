@@ -24,12 +24,12 @@ export default function ExplorePage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold">
-          Explore {languageName(l2.code)} Media
+          {t('msg.explore_media_for', { l2: languageName(l2.code) })}
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Find videos matched to your level •{' '}
-          {l2.has.youtube ? 'YouTube captions available' : 'Translated subtitles available'}
-          {l2.has.liveTV ? ' • Live TV available' : ''}
+          {t('msg.find_videos_matched')} •{' '}
+          {l2.has.youtube ? t('msg.youtube_captions') : t('msg.translated_subtitles')}
+          {l2.has.liveTV ? ` • ${t('msg.live_tv_available')}` : ''}
         </p>
       </div>
 

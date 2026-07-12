@@ -321,7 +321,8 @@
         "back_to_login": "返回登录",
         "continue": "继续",
         "try_again": "重试",
-        "start_watching": "开始观看"
+        "start_watching": "开始观看",
+        "resend": "重新发送"
     },
     "button": {
         "email_support": "邮件支持",
@@ -365,7 +366,13 @@
         "login": "登录错误",
         "invalid_user_credentials": "邮箱或密码无效",
         "general": "发生错误",
-        "loading_failed": "加载失败"
+        "loading_failed": "加载失败",
+        "invalid_credentials": "邮箱或密码无效，请重试。",
+        "something_went_wrong": "出了点问题，请重试。",
+        "email_exists": "该邮箱已注册账户。",
+        "create_account_failed": "创建账户失败，请重试。",
+        "invalid_verification_code": "验证码无效，请重试。",
+        "verification_failed": "验证失败。"
     },
     "feature": {
         "see_all_subtitles": "查看前三个之外的所有字幕搜索结果。",
@@ -468,7 +475,7 @@
         "initializing": "正在初始化...",
         "keep_or_reset_time": "您想保留当前时间还是将其重置为零？",
         "lifetime_only": "Apple 应用内购买仅支持终身计划。",
-        "loading": "正在加载...",
+        "loading": "加载中...",
         "no_active_subscription": "未找到活跃订阅。",
         "no_more_videos": "没有更多视频",
         "no_saved_words": "尚未保存单词",
@@ -508,7 +515,21 @@
         "no_videos_found": "未找到视频。请尝试其他级别或稍后再来。",
         "end_of_list": "您已到达列表末尾。",
         "subtitles_not_available": "此视频的字幕尚不可用。",
-        "video_unavailable": "无法加载此视频。可能已被删除或设为私密。"
+        "video_unavailable": "无法加载此视频。可能已被删除或设为私密。",
+        "learning_from": "从{l1}学习{l2}",
+        "dashboard_for": "您的 {l1} → {l2} 仪表板",
+        "explore_media_for": "探索{l2}媒体",
+        "find_videos_matched": "找到适合您水平的视频",
+        "youtube_captions": "提供 YouTube 字幕",
+        "translated_subtitles": "提供翻译字幕",
+        "live_tv_available": "提供直播电视",
+        "verifying": "验证中...",
+        "didnt_receive_code": "没有收到验证码？",
+        "related_videos": "相关视频将显示在这里。",
+        "landing_hero_badge": "支持 60 多种语言",
+        "landing_hero_title_1": "通过",
+        "landing_hero_title_2": "视频学习语言",
+        "landing_hero_desc": "观看带有交互式双语字幕的 YouTube 视频、电影和电视节目。点击任意单词即可即时查词。"
     },
     "option": {
         "app_store": "应用商店",
@@ -647,7 +668,9 @@
         "check_email": "查看您的邮箱",
         "reset_password": "重置密码",
         "i_speak": "我会说",
-        "i_learning": "我正在学"
+        "i_learning": "我正在学",
+        "live_tv": "直播电视",
+        "up_next": "接下来"
     },
     "video": {
         "comments": "评论",

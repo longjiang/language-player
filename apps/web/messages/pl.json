@@ -321,7 +321,8 @@
         "back_to_login": "Powrót do logowania",
         "continue": "Kontynuuj",
         "try_again": "Spróbuj ponownie",
-        "start_watching": "Zacznij oglądać"
+        "start_watching": "Zacznij oglądać",
+        "resend": "Wyślij ponownie"
     },
     "button": {
         "keep_current_time": "Zachowaj Obecny Czas",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Nieprawidłowy e-mail lub hasło",
         "general": "Wystąpił błąd",
         "loading_failed": "Błąd ładowania",
-        "occurred": "Wystąpił błąd"
+        "occurred": "Wystąpił błąd",
+        "invalid_credentials": "Nieprawidłowy e-mail lub hasło. Spróbuj ponownie.",
+        "something_went_wrong": "Coś poszło nie tak. Spróbuj ponownie.",
+        "email_exists": "Konto z tym adresem e-mail już istnieje.",
+        "create_account_failed": "Nie udało się utworzyć konta. Spróbuj ponownie.",
+        "invalid_verification_code": "Nieprawidłowy kod weryfikacyjny. Spróbuj ponownie.",
+        "verification_failed": "Weryfikacja nie powiodła się."
     },
     "feature": {
         "see_all_subtitles": "Zobacz wszystkie wyniki wyszukiwania napisów poza pierwszymi trzema.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Nie znaleziono filmów. Wypróbuj inny poziom lub sprawdź później.",
         "end_of_list": "Osiągnąłeś koniec listy.",
         "subtitles_not_available": "Napisy nie są jeszcze dostępne dla tego filmu.",
-        "video_unavailable": "Ten film nie mógł zostać załadowany. Mógł zostać usunięty lub ustawiony jako prywatny."
+        "video_unavailable": "Ten film nie mógł zostać załadowany. Mógł zostać usunięty lub ustawiony jako prywatny.",
+        "learning_from": "Nauka {l2} z {l1}",
+        "dashboard_for": "Twój panel dla {l1} → {l2}",
+        "explore_media_for": "Odkrywaj media {l2}",
+        "find_videos_matched": "Znajdź filmy dopasowane do Twojego poziomu",
+        "youtube_captions": "Napisy YouTube dostępne",
+        "translated_subtitles": "Przetłumaczone napisy dostępne",
+        "live_tv_available": "TV na żywo dostępna",
+        "verifying": "Weryfikacja...",
+        "didnt_receive_code": "Nie otrzymałeś kodu?",
+        "related_videos": "Powiązane filmy pojawią się tutaj.",
+        "landing_hero_badge": "Obsługa ponad 60 języków",
+        "landing_hero_title_1": "Ucz się języków poprzez",
+        "landing_hero_title_2": "filmy",
+        "landing_hero_desc": "Oglądaj filmy YouTube, filmy i programy telewizyjne z interaktywnymi podwójnymi napisami. Stuknij dowolne słowo, aby natychmiast sprawdzić je w słowniku."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Mówię",
         "i_learning": "Uczę się",
         "confirm_in_app_purchase": "Potwierdź zakup w aplikacji",
-        "only_lifetime_available": "Tylko Plan Dożywotni jest dostępny w App Store"
+        "only_lifetime_available": "Tylko Plan Dożywotni jest dostępny w App Store",
+        "live_tv": "TV na żywo",
+        "up_next": "Następny"
     },
     "video": {
         "comments": "Komentarze",

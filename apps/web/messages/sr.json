@@ -321,7 +321,8 @@
         "back_to_login": "Назад на пријаву",
         "continue": "Настави",
         "try_again": "Покушај поново",
-        "start_watching": "Почни да гледаш"
+        "start_watching": "Почни да гледаш",
+        "resend": "Пошаљи поново"
     },
     "button": {
         "keep_current_time": "Задржи Тренутно Време",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Неважећа е-пошта или лозинка",
         "general": "Дошло је до грешке",
         "loading_failed": "Учитавање није успело",
-        "occurred": "Дошло је до грешке"
+        "occurred": "Дошло је до грешке",
+        "invalid_credentials": "Неважећа е-пошта или лозинка. Покушајте поново.",
+        "something_went_wrong": "Нешто је пошло по злу. Покушајте поново.",
+        "email_exists": "Налог са овом е-поштом већ постоји.",
+        "create_account_failed": "Прављење налога није успело. Покушајте поново.",
+        "invalid_verification_code": "Неважећи верификациони код. Покушајте поново.",
+        "verification_failed": "Провера није успела."
     },
     "feature": {
         "see_all_subtitles": "Pogledaj sve rezultate pretrage titlova nakon prva tri.",
@@ -467,7 +474,7 @@
         "hsk_explanation": "\"HSK\" je zvanični test poznavanja kineskog jezika, gde je Nivo 1 najniži, a Nivo 9 najviši.",
         "initializing": "Inicijalizacija...",
         "keep_or_reset_time": "Да ли желите да задржите тренутно време или да га ресетујете на нулу?",
-        "loading": "Učitavanje...",
+        "loading": "Учитавање...",
         "no_active_subscription": "Nije pronađena aktivna pretplata.",
         "no_more_videos": "Нема више видеа",
         "no_saved_words": "Још нема сачуваних речи",
@@ -506,7 +513,21 @@
         "no_videos_found": "Нису пронађени видео снимци. Покушајте други ниво или проверите касније.",
         "end_of_list": "Дошли сте до краја листе.",
         "subtitles_not_available": "Титлови још нису доступни за овај видео.",
-        "video_unavailable": "Овај видео није могао да се учита. Можда је уклоњен или постављен као приватан."
+        "video_unavailable": "Овај видео није могао да се учита. Можда је уклоњен или постављен као приватан.",
+        "learning_from": "Учење {l2} из {l1}",
+        "dashboard_for": "Vaša kontrolna tabla za {l1} → {l2}",
+        "explore_media_for": "Истражи {l2} медије",
+        "find_videos_matched": "Пронађите видео снимке прилагођене вашем нивоу",
+        "youtube_captions": "YouTube titlovi dostupni",
+        "translated_subtitles": "Преведени титлови доступни",
+        "live_tv_available": "ТВ уживо доступан",
+        "verifying": "Провера...",
+        "didnt_receive_code": "Нисте примили код?",
+        "related_videos": "Повезани видео снимци ће се појавити овде.",
+        "landing_hero_badge": "Подржано 60+ језика",
+        "landing_hero_title_1": "Учите језике кроз",
+        "landing_hero_title_2": "видео записе",
+        "landing_hero_desc": "Гледајте YouTube видео записе, филмове и ТВ емисије са интерактивним двоструким титловима. Додирните било коју реч за тренутну претрагу речника."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Говорим",
         "i_learning": "Учим",
         "confirm_in_app_purchase": "Потврдите куповину унутар апликације",
-        "only_lifetime_available": "Само је Доживотни План доступан у App Store-у"
+        "only_lifetime_available": "Само је Доживотни План доступан у App Store-у",
+        "live_tv": "ТВ уживо",
+        "up_next": "Следеће"
     },
     "video": {
         "comments": "Komentari",

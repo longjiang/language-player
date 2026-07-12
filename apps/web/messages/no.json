@@ -321,7 +321,8 @@
         "back_to_login": "Tilbake til innlogging",
         "continue": "Fortsett",
         "try_again": "Prøv igjen",
-        "start_watching": "Begynn å se"
+        "start_watching": "Begynn å se",
+        "resend": "Send på nytt"
     },
     "button": {
         "keep_current_time": "Behold Nåværende Tid",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Ugyldig e-post eller passord",
         "general": "Det oppstod en feil",
         "loading_failed": "Lasting mislyktes",
-        "occurred": "Det oppstod en feil"
+        "occurred": "Det oppstod en feil",
+        "invalid_credentials": "Ugyldig e-post eller passord. Vennligst prøv igjen.",
+        "something_went_wrong": "Noe gikk galt. Vennligst prøv igjen.",
+        "email_exists": "En konto med denne e-posten eksisterer allerede.",
+        "create_account_failed": "Kunne ikke opprette konto. Vennligst prøv igjen.",
+        "invalid_verification_code": "Ugyldig bekreftelseskode. Vennligst prøv igjen.",
+        "verification_failed": "Bekreftelse mislyktes."
     },
     "feature": {
         "see_all_subtitles": "Se alle undertittelens søkeresultater utover de tre første.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Ingen videoer funnet. Prøv et annet nivå eller kom tilbake senere.",
         "end_of_list": "Du har nådd slutten av listen.",
         "subtitles_not_available": "Undertekster er ikke tilgjengelig for denne videoen ennå.",
-        "video_unavailable": "Denne videoen kunne ikke lastes inn. Den kan ha blitt fjernet eller gjort privat."
+        "video_unavailable": "Denne videoen kunne ikke lastes inn. Den kan ha blitt fjernet eller gjort privat.",
+        "learning_from": "Lærer {l2} fra {l1}",
+        "dashboard_for": "Ditt dashbord for {l1} → {l2}",
+        "explore_media_for": "Utforsk {l2} medier",
+        "find_videos_matched": "Finn videoer som passer ditt nivå",
+        "youtube_captions": "YouTube-teksting tilgjengelig",
+        "translated_subtitles": "Oversatt teksting tilgjengelig",
+        "live_tv_available": "Direkte-TV tilgjengelig",
+        "verifying": "Bekrefter...",
+        "didnt_receive_code": "Ikke mottatt kode?",
+        "related_videos": "Relaterte videoer vises her.",
+        "landing_hero_badge": "60+ språk støttes",
+        "landing_hero_title_1": "Lær språk gjennom",
+        "landing_hero_title_2": "video",
+        "landing_hero_desc": "Se YouTube-videoer, filmer og TV-serier med interaktive doble undertekster. Trykk på et hvilket som helst ord for umiddelbart ordboksoppslag."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Jeg snakker",
         "i_learning": "Jeg lærer",
         "confirm_in_app_purchase": "Bekreft kjøpet ditt i appen",
-        "only_lifetime_available": "Kun Livstidsplanen er tilgjengelig i App Store"
+        "only_lifetime_available": "Kun Livstidsplanen er tilgjengelig i App Store",
+        "live_tv": "Direkte-TV",
+        "up_next": "Neste"
     },
     "video": {
         "comments": "Kommentarer",

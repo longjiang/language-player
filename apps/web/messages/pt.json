@@ -321,7 +321,8 @@
         "back_to_login": "Voltar ao login",
         "continue": "Continuar",
         "try_again": "Tentar novamente",
-        "start_watching": "Começar a assistir"
+        "start_watching": "Começar a assistir",
+        "resend": "Reenviar"
     },
     "button": {
         "keep_current_time": "Manter Tempo Atual",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "E-mail ou senha inválidos",
         "general": "Ocorreu um erro",
         "loading_failed": "Falha no carregamento",
-        "occurred": "Ocorreu um erro"
+        "occurred": "Ocorreu um erro",
+        "invalid_credentials": "Email ou senha inválidos. Por favor, tente novamente.",
+        "something_went_wrong": "Algo deu errado. Por favor, tente novamente.",
+        "email_exists": "Já existe uma conta com este email.",
+        "create_account_failed": "Falha ao criar conta. Por favor, tente novamente.",
+        "invalid_verification_code": "Código de verificação inválido. Por favor, tente novamente.",
+        "verification_failed": "Verificação falhou."
     },
     "feature": {
         "see_all_subtitles": "Veja todos os resultados de pesquisa de legendas além dos três primeiros.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Nenhum vídeo encontrado. Tente outro nível ou volte mais tarde.",
         "end_of_list": "Você chegou ao fim da lista.",
         "subtitles_not_available": "As legendas ainda não estão disponíveis para este vídeo.",
-        "video_unavailable": "Este vídeo não pôde ser carregado. Pode ter sido removido ou tornado privado."
+        "video_unavailable": "Este vídeo não pôde ser carregado. Pode ter sido removido ou tornado privado.",
+        "learning_from": "Aprendendo {l2} de {l1}",
+        "dashboard_for": "Seu painel para {l1} → {l2}",
+        "explore_media_for": "Explorar mídia {l2}",
+        "find_videos_matched": "Encontre vídeos adequados ao seu nível",
+        "youtube_captions": "Legendas do YouTube disponíveis",
+        "translated_subtitles": "Legendas traduzidas disponíveis",
+        "live_tv_available": "TV ao vivo disponível",
+        "verifying": "Verificando...",
+        "didnt_receive_code": "Não recebeu um código?",
+        "related_videos": "Vídeos relacionados aparecerão aqui.",
+        "landing_hero_badge": "Mais de 60 idiomas",
+        "landing_hero_title_1": "Aprenda idiomas através de",
+        "landing_hero_title_2": "vídeos",
+        "landing_hero_desc": "Assista a vídeos do YouTube, filmes e programas de TV com legendas duplas interativas. Toque em qualquer palavra para uma consulta instantânea ao dicionário."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Eu falo",
         "i_learning": "Estou aprendendo",
         "confirm_in_app_purchase": "Confirmar sua compra no app",
-        "only_lifetime_available": "Apenas o Plano Vitalício está disponível na App Store"
+        "only_lifetime_available": "Apenas o Plano Vitalício está disponível na App Store",
+        "live_tv": "TV ao vivo",
+        "up_next": "A seguir"
     },
     "video": {
         "comments": "Comentários",

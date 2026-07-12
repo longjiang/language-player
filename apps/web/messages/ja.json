@@ -321,7 +321,8 @@
         "back_to_login": "ログインに戻る",
         "continue": "続ける",
         "try_again": "もう一度試す",
-        "start_watching": "視聴を開始"
+        "start_watching": "視聴を開始",
+        "resend": "再送信"
     },
     "button": {
         "keep_current_time": "現在の時間を保持",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "メールアドレスまたはパスワードが無効です",
         "general": "エラーが発生しました",
         "loading_failed": "読み込みに失敗しました",
-        "occurred": "エラーが発生しました"
+        "occurred": "エラーが発生しました",
+        "invalid_credentials": "メールアドレスまたはパスワードが無効です。もう一度お試しください。",
+        "something_went_wrong": "問題が発生しました。もう一度お試しください。",
+        "email_exists": "このメールアドレスは既に登録されています。",
+        "create_account_failed": "アカウントの作成に失敗しました。もう一度お試しください。",
+        "invalid_verification_code": "確認コードが無効です。もう一度お試しください。",
+        "verification_failed": "確認に失敗しました。"
     },
     "feature": {
         "see_all_subtitles": "最初の3つ以外のすべての字幕検索結果を表示します。",
@@ -506,7 +513,21 @@
         "no_videos_found": "動画が見つかりません。別のレベルを試すか、後でもう一度確認してください。",
         "end_of_list": "リストの最後に達しました。",
         "subtitles_not_available": "この動画の字幕はまだ利用できません。",
-        "video_unavailable": "この動画を読み込めませんでした。削除されたか非公開になった可能性があります。"
+        "video_unavailable": "この動画を読み込めませんでした。削除されたか非公開になった可能性があります。",
+        "learning_from": "{l1}から{l2}を学習中",
+        "dashboard_for": "{l1} → {l2} のダッシュボード",
+        "explore_media_for": "{l2}メディアを探索",
+        "find_videos_matched": "自分のレベルに合った動画を見つける",
+        "youtube_captions": "YouTube字幕あり",
+        "translated_subtitles": "翻訳字幕あり",
+        "live_tv_available": "ライブTVあり",
+        "verifying": "確認中...",
+        "didnt_receive_code": "コードが届かない場合",
+        "related_videos": "関連動画がここに表示されます。",
+        "landing_hero_badge": "60以上の言語に対応",
+        "landing_hero_title_1": "動画で学ぶ",
+        "landing_hero_title_2": "言語学習",
+        "landing_hero_desc": "インタラクティブな二重字幕付きでYouTube動画、映画、テレビ番組を視聴。単語をタップするだけで辞書検索ができます。"
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "話せる言語",
         "i_learning": "学習中の言語",
         "confirm_in_app_purchase": "アプリ内購入を確認",
-        "only_lifetime_available": "App Storeではライフタイムプランのみ利用可能"
+        "only_lifetime_available": "App Storeではライフタイムプランのみ利用可能",
+        "live_tv": "ライブTV",
+        "up_next": "次へ"
     },
     "video": {
         "comments": "コメント",

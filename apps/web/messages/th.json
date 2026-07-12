@@ -320,7 +320,8 @@
         "back_to_login": "กลับไปเข้าสู่ระบบ",
         "continue": "ดำเนินการต่อ",
         "try_again": "ลองอีกครั้ง",
-        "start_watching": "เริ่มรับชม"
+        "start_watching": "เริ่มรับชม",
+        "resend": "ส่งอีกครั้ง"
     },
     "button": {
         "keep_current_time": "เก็บเวลาปัจจุบัน",
@@ -364,7 +365,13 @@
         "invalid_user_credentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
         "general": "เกิดข้อผิดพลาด",
         "loading_failed": "โหลดล้มเหลว",
-        "occurred": "เกิดข้อผิดพลาด"
+        "occurred": "เกิดข้อผิดพลาด",
+        "invalid_credentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง",
+        "something_went_wrong": "เกิดข้อผิดพลาดบางอย่าง กรุณาลองอีกครั้ง",
+        "email_exists": "มีบัญชีด้วยอีเมลนี้อยู่แล้ว",
+        "create_account_failed": "สร้างบัญชีไม่สำเร็จ กรุณาลองอีกครั้ง",
+        "invalid_verification_code": "รหัสยืนยันไม่ถูกต้อง กรุณาลองอีกครั้ง",
+        "verification_failed": "การตรวจสอบล้มเหลว"
     },
     "feature": {
         "see_all_subtitles": "ดูผลการค้นหาคำบรรยายทั้งหมดนอกเหนือจากสามรายการแรก",
@@ -505,7 +512,21 @@
         "no_videos_found": "ไม่พบวิดีโอ ลองเปลี่ยนระดับหรือกลับมาใหม่ทีหลัง",
         "end_of_list": "คุณมาถึงจุดสิ้นสุดของรายการแล้ว",
         "subtitles_not_available": "คำบรรยายยังไม่พร้อมสำหรับวิดีโอนี้",
-        "video_unavailable": "ไม่สามารถโหลดวิดีโอนี้ อาจถูกลบหรือตั้งเป็นส่วนตัว"
+        "video_unavailable": "ไม่สามารถโหลดวิดีโอนี้ อาจถูกลบหรือตั้งเป็นส่วนตัว",
+        "learning_from": "เรียน{l2}จาก{l1}",
+        "dashboard_for": "แดชบอร์ดของคุณสำหรับ {l1} → {l2}",
+        "explore_media_for": "สำรวจสื่อ {l2}",
+        "find_videos_matched": "ค้นหาวิดีโอที่ตรงกับระดับของคุณ",
+        "youtube_captions": "มีคำบรรยาย YouTube",
+        "translated_subtitles": "มีคำบรรยายแปล",
+        "live_tv_available": "มีทีวีสด",
+        "verifying": "กำลังตรวจสอบ...",
+        "didnt_receive_code": "ไม่ได้รับรหัส?",
+        "related_videos": "วิดีโอที่เกี่ยวข้องจะปรากฏที่นี่",
+        "landing_hero_badge": "รองรับมากกว่า 60 ภาษา",
+        "landing_hero_title_1": "เรียนภาษาผ่าน",
+        "landing_hero_title_2": "วิดีโอ",
+        "landing_hero_desc": "ดูวิดีโอ YouTube ภาพยนตร์ และรายการทีวีพร้อมคำบรรยายคู่แบบโต้ตอบ แตะคำใดก็ได้เพื่อค้นหาพจนานุกรมทันที"
     },
     "option": {
         "app_store": "App Store",
@@ -644,7 +665,9 @@
         "i_speak": "ฉันพูด",
         "i_learning": "ฉันกำลังเรียน",
         "confirm_in_app_purchase": "ยืนยันการซื้อในแอปของคุณ",
-        "only_lifetime_available": "เฉพาะแผนตลอดชีพเท่านั้นที่มีใน App Store"
+        "only_lifetime_available": "เฉพาะแผนตลอดชีพเท่านั้นที่มีใน App Store",
+        "live_tv": "ทีวีสด",
+        "up_next": "ถัดไป"
     },
     "video": {
         "comments": "ความคิดเห็น",

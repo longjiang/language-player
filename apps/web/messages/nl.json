@@ -321,7 +321,8 @@
         "back_to_login": "Terug naar inloggen",
         "continue": "Doorgaan",
         "try_again": "Opnieuw proberen",
-        "start_watching": "Beginnen met kijken"
+        "start_watching": "Beginnen met kijken",
+        "resend": "Opnieuw verzenden"
     },
     "button": {
         "keep_current_time": "Huidige Tijd Behouden",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Ongeldig e-mailadres of wachtwoord",
         "general": "Er is een fout opgetreden",
         "loading_failed": "Laden mislukt",
-        "occurred": "Er is een fout opgetreden"
+        "occurred": "Er is een fout opgetreden",
+        "invalid_credentials": "Ongeldige e-mail of wachtwoord. Probeer het opnieuw.",
+        "something_went_wrong": "Er is iets misgegaan. Probeer het opnieuw.",
+        "email_exists": "Er bestaat al een account met dit e-mailadres.",
+        "create_account_failed": "Account aanmaken mislukt. Probeer het opnieuw.",
+        "invalid_verification_code": "Ongeldige verificatiecode. Probeer het opnieuw.",
+        "verification_failed": "Verificatie mislukt."
     },
     "feature": {
         "see_all_subtitles": "Bekijk alle zoekresultaten voor ondertitels na de eerste drie.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Geen video's gevonden. Probeer een ander niveau of kom later terug.",
         "end_of_list": "U hebt het einde van de lijst bereikt.",
         "subtitles_not_available": "Ondertiteling is nog niet beschikbaar voor deze video.",
-        "video_unavailable": "Deze video kon niet worden geladen. Mogelijk is deze verwijderd of privé gemaakt."
+        "video_unavailable": "Deze video kon niet worden geladen. Mogelijk is deze verwijderd of privé gemaakt.",
+        "learning_from": "{l2} leren vanuit {l1}",
+        "dashboard_for": "Uw dashboard voor {l1} → {l2}",
+        "explore_media_for": "{l2} media verkennen",
+        "find_videos_matched": "Vind video's die bij uw niveau passen",
+        "youtube_captions": "YouTube-ondertiteling beschikbaar",
+        "translated_subtitles": "Vertaalde ondertiteling beschikbaar",
+        "live_tv_available": "Live TV beschikbaar",
+        "verifying": "Verifiëren...",
+        "didnt_receive_code": "Geen code ontvangen?",
+        "related_videos": "Gerelateerde video's verschijnen hier.",
+        "landing_hero_badge": "60+ talen ondersteund",
+        "landing_hero_title_1": "Leer talen via",
+        "landing_hero_title_2": "video",
+        "landing_hero_desc": "Bekijk YouTube-video's, films en tv-programma's met interactieve dubbele ondertiteling. Tik op een woord voor directe woordenboekraadpleging."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Ik spreek",
         "i_learning": "Ik leer",
         "confirm_in_app_purchase": "Bevestig uw in-app aankoop",
-        "only_lifetime_available": "Alleen het Levenslang Abonnement is beschikbaar in de App Store"
+        "only_lifetime_available": "Alleen het Levenslang Abonnement is beschikbaar in de App Store",
+        "live_tv": "Live TV",
+        "up_next": "Volgende"
     },
     "video": {
         "comments": "Reacties",

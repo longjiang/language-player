@@ -321,7 +321,8 @@
         "back_to_login": "Retour à la connexion",
         "continue": "Continuer",
         "try_again": "Réessayer",
-        "start_watching": "Commencer à regarder"
+        "start_watching": "Commencer à regarder",
+        "resend": "Renvoyer"
     },
     "button": {
         "keep_current_time": "Garder le Temps Actuel",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "E-mail ou mot de passe invalide",
         "general": "Une erreur s'est produite",
         "loading_failed": "Échec du chargement",
-        "occurred": "Une erreur est survenue"
+        "occurred": "Une erreur est survenue",
+        "invalid_credentials": "Email ou mot de passe invalide. Veuillez réessayer.",
+        "something_went_wrong": "Quelque chose s'est mal passé. Veuillez réessayer.",
+        "email_exists": "Un compte avec cet email existe déjà.",
+        "create_account_failed": "Échec de la création du compte. Veuillez réessayer.",
+        "invalid_verification_code": "Code de vérification invalide. Veuillez réessayer.",
+        "verification_failed": "La vérification a échoué."
     },
     "feature": {
         "see_all_subtitles": "Voir tous les résultats de recherche de sous-titres au-delà des trois premiers.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Aucune vidéo trouvée. Essayez un autre niveau ou revenez plus tard.",
         "end_of_list": "Vous avez atteint la fin de la liste.",
         "subtitles_not_available": "Les sous-titres ne sont pas encore disponibles pour cette vidéo.",
-        "video_unavailable": "Cette vidéo n'a pas pu être chargée. Elle a peut-être été supprimée ou rendue privée."
+        "video_unavailable": "Cette vidéo n'a pas pu être chargée. Elle a peut-être été supprimée ou rendue privée.",
+        "learning_from": "Apprendre {l2} depuis {l1}",
+        "dashboard_for": "Votre tableau de bord pour {l1} → {l2}",
+        "explore_media_for": "Explorer les médias {l2}",
+        "find_videos_matched": "Trouvez des vidéos adaptées à votre niveau",
+        "youtube_captions": "Sous-titres YouTube disponibles",
+        "translated_subtitles": "Sous-titres traduits disponibles",
+        "live_tv_available": "TV en direct disponible",
+        "verifying": "Vérification...",
+        "didnt_receive_code": "Vous n'avez pas reçu de code ?",
+        "related_videos": "Les vidéos associées apparaîtront ici.",
+        "landing_hero_badge": "Plus de 60 langues",
+        "landing_hero_title_1": "Apprenez des langues grâce aux",
+        "landing_hero_title_2": "vidéos",
+        "landing_hero_desc": "Regardez des vidéos YouTube, des films et des séries avec des sous-titres doubles interactifs. Appuyez sur n'importe quel mot pour une recherche instantanée dans le dictionnaire."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Je parle",
         "i_learning": "J'apprends",
         "confirm_in_app_purchase": "Confirmer votre achat intégré",
-        "only_lifetime_available": "Seul le Plan à Vie est disponible sur l'App Store"
+        "only_lifetime_available": "Seul le Plan à Vie est disponible sur l'App Store",
+        "live_tv": "TV en direct",
+        "up_next": "À suivre"
     },
     "video": {
         "comments": "Commentaires",

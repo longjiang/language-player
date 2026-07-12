@@ -321,7 +321,8 @@
         "back_to_login": "Kembali ke login",
         "continue": "Lanjutkan",
         "try_again": "Coba Lagi",
-        "start_watching": "Mulai Menonton"
+        "start_watching": "Mulai Menonton",
+        "resend": "Kirim ulang"
     },
     "button": {
         "keep_current_time": "Pertahankan Waktu Saat Ini",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Email atau kata sandi tidak valid",
         "general": "Terjadi kesalahan",
         "loading_failed": "Gagal memuat",
-        "occurred": "Terjadi kesalahan"
+        "occurred": "Terjadi kesalahan",
+        "invalid_credentials": "Email atau kata sandi tidak valid. Silakan coba lagi.",
+        "something_went_wrong": "Terjadi kesalahan. Silakan coba lagi.",
+        "email_exists": "Akun dengan email ini sudah ada.",
+        "create_account_failed": "Gagal membuat akun. Silakan coba lagi.",
+        "invalid_verification_code": "Kode verifikasi tidak valid. Silakan coba lagi.",
+        "verification_failed": "Verifikasi gagal."
     },
     "feature": {
         "see_all_subtitles": "Lihat semua hasil pencarian subtitle di luar tiga pertama.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Tidak ada video ditemukan. Coba level lain atau periksa kembali nanti.",
         "end_of_list": "Anda telah mencapai akhir daftar.",
         "subtitles_not_available": "Subtitle belum tersedia untuk video ini.",
-        "video_unavailable": "Video ini tidak dapat dimuat. Mungkin telah dihapus atau dibuat pribadi."
+        "video_unavailable": "Video ini tidak dapat dimuat. Mungkin telah dihapus atau dibuat pribadi.",
+        "learning_from": "Belajar {l2} dari {l1}",
+        "dashboard_for": "Dasbor Anda untuk {l1} → {l2}",
+        "explore_media_for": "Jelajahi Media {l2}",
+        "find_videos_matched": "Temukan video yang cocok dengan level Anda",
+        "youtube_captions": "Teks YouTube tersedia",
+        "translated_subtitles": "Subtitle terjemahan tersedia",
+        "live_tv_available": "TV Langsung tersedia",
+        "verifying": "Memverifikasi...",
+        "didnt_receive_code": "Tidak menerima kode?",
+        "related_videos": "Video terkait akan muncul di sini.",
+        "landing_hero_badge": "60+ bahasa didukung",
+        "landing_hero_title_1": "Belajar bahasa melalui",
+        "landing_hero_title_2": "video",
+        "landing_hero_desc": "Tonton video YouTube, film, dan acara TV dengan subtitle ganda interaktif. Ketuk kata apa pun untuk pencarian kamus instan."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Saya berbicara",
         "i_learning": "Saya belajar",
         "confirm_in_app_purchase": "Konfirmasi Pembelian Dalam Aplikasi Anda",
-        "only_lifetime_available": "Hanya Paket Seumur Hidup yang tersedia di App Store"
+        "only_lifetime_available": "Hanya Paket Seumur Hidup yang tersedia di App Store",
+        "live_tv": "TV Langsung",
+        "up_next": "Selanjutnya"
     },
     "video": {
         "comments": "Komentar",

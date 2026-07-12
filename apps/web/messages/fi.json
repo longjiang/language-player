@@ -321,7 +321,8 @@
         "back_to_login": "Takaisin kirjautumiseen",
         "continue": "Jatka",
         "try_again": "Yritä uudelleen",
-        "start_watching": "Aloita katselu"
+        "start_watching": "Aloita katselu",
+        "resend": "Lähetä uudelleen"
     },
     "button": {
         "keep_current_time": "Säilytä Nykyinen Aika",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Virheellinen sähköposti tai salasana",
         "general": "Tapahtui virhe",
         "loading_failed": "Lataus epäonnistui",
-        "occurred": "Tapahtui virhe"
+        "occurred": "Tapahtui virhe",
+        "invalid_credentials": "Virheellinen sähköposti tai salasana. Yritä uudelleen.",
+        "something_went_wrong": "Jokin meni pieleen. Yritä uudelleen.",
+        "email_exists": "Tällä sähköpostilla on jo tili.",
+        "create_account_failed": "Tilin luominen epäonnistui. Yritä uudelleen.",
+        "invalid_verification_code": "Virheellinen vahvistuskoodi. Yritä uudelleen.",
+        "verification_failed": "Vahvistus epäonnistui."
     },
     "feature": {
         "see_all_subtitles": "Näytä kaikki tekstityshaun tulokset kolmen ensimmäisen jälkeen.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Videoita ei löytynyt. Kokeile toista tasoa tai palaa myöhemmin.",
         "end_of_list": "Olet saavuttanut listan lopun.",
         "subtitles_not_available": "Tekstitykset eivät ole vielä saatavilla tälle videolle.",
-        "video_unavailable": "Tätä videota ei voitu ladata. Se on saatettu poistaa tai asettaa yksityiseksi."
+        "video_unavailable": "Tätä videota ei voitu ladata. Se on saatettu poistaa tai asettaa yksityiseksi.",
+        "learning_from": "Opitaan {l2} kielestä {l1}",
+        "dashboard_for": "Kojelautasi kielelle {l1} → {l2}",
+        "explore_media_for": "Tutki {l2} mediaa",
+        "find_videos_matched": "Löydä tasollesi sopivia videoita",
+        "youtube_captions": "YouTube-tekstitykset saatavilla",
+        "translated_subtitles": "Käännetty tekstitys saatavilla",
+        "live_tv_available": "Suora TV saatavilla",
+        "verifying": "Vahvistetaan...",
+        "didnt_receive_code": "Etkö saanut koodia?",
+        "related_videos": "Aiheeseen liittyvät videot näkyvät täällä.",
+        "landing_hero_badge": "Yli 60 kieltä tuettu",
+        "landing_hero_title_1": "Opi kieliä",
+        "landing_hero_title_2": "videoiden avulla",
+        "landing_hero_desc": "Katso YouTube-videoita, elokuvia ja TV-ohjelmia interaktiivisilla kaksikielisillä tekstityksillä. Napauta mitä tahansa sanaa nähdäksesi sanakirjamääritelmän."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Puhun",
         "i_learning": "Opettelen",
         "confirm_in_app_purchase": "Vahvista sovelluksen sisäinen ostoksesi",
-        "only_lifetime_available": "Vain Elinikäinen Sopimus on saatavilla App Storessa"
+        "only_lifetime_available": "Vain Elinikäinen Sopimus on saatavilla App Storessa",
+        "live_tv": "Suora TV",
+        "up_next": "Seuraavaksi"
     },
     "video": {
         "comments": "Kommentit",

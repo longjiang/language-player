@@ -321,7 +321,8 @@
         "back_to_login": "Vissza a bejelentkezéshez",
         "continue": "Folytatás",
         "try_again": "Próbálja újra",
-        "start_watching": "Nézés indítása"
+        "start_watching": "Nézés indítása",
+        "resend": "Újraküldés"
     },
     "button": {
         "keep_current_time": "Jelenlegi Idő Megtartása",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Érvénytelen e-mail cím vagy jelszó",
         "general": "Hiba történt",
         "loading_failed": "Betöltés sikertelen",
-        "occurred": "Hiba történt"
+        "occurred": "Hiba történt",
+        "invalid_credentials": "Érvénytelen e-mail vagy jelszó. Kérjük, próbálja újra.",
+        "something_went_wrong": "Valami hiba történt. Kérjük, próbálja újra.",
+        "email_exists": "Ezzel az e-mail címmel már létezik fiók.",
+        "create_account_failed": "A fiók létrehozása sikertelen. Kérjük, próbálja újra.",
+        "invalid_verification_code": "Érvénytelen megerősítő kód. Kérjük, próbálja újra.",
+        "verification_failed": "Az ellenőrzés sikertelen."
     },
     "feature": {
         "see_all_subtitles": "Az összes felirat keresési eredményének megtekintése az első három után.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Nem találhatók videók. Próbáljon másik szintet, vagy nézzen vissza később.",
         "end_of_list": "Elérte a lista végét.",
         "subtitles_not_available": "A felirat még nem érhető el ehhez a videóhoz.",
-        "video_unavailable": "Ezt a videót nem sikerült betölteni. Lehet, hogy eltávolították vagy priváttá tették."
+        "video_unavailable": "Ezt a videót nem sikerült betölteni. Lehet, hogy eltávolították vagy priváttá tették.",
+        "learning_from": "{l2} tanulása {l1} nyelvről",
+        "dashboard_for": "Az Ön irányítópultja: {l1} → {l2}",
+        "explore_media_for": "{l2} média felfedezése",
+        "find_videos_matched": "Találjon a szintjének megfelelő videókat",
+        "youtube_captions": "YouTube feliratok elérhetők",
+        "translated_subtitles": "Fordított feliratok elérhetők",
+        "live_tv_available": "Élő TV elérhető",
+        "verifying": "Ellenőrzés...",
+        "didnt_receive_code": "Nem kapott kódot?",
+        "related_videos": "A kapcsolódó videók itt jelennek meg.",
+        "landing_hero_badge": "60+ támogatott nyelv",
+        "landing_hero_title_1": "Tanuljon nyelveket",
+        "landing_hero_title_2": "videókon keresztül",
+        "landing_hero_desc": "Nézzen YouTube-videókat, filmeket és TV-műsorokat interaktív kettős feliratokkal. Koppintson bármelyik szóra az azonnali szótárkereséshez."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Beszélek",
         "i_learning": "Tanulok",
         "confirm_in_app_purchase": "Erősítse meg az alkalmazáson belüli vásárlást",
-        "only_lifetime_available": "Csak az Élettartam Csomag érhető el az App Store-ban"
+        "only_lifetime_available": "Csak az Élettartam Csomag érhető el az App Store-ban",
+        "live_tv": "Élő TV",
+        "up_next": "Következő"
     },
     "video": {
         "comments": "Hozzászólások",

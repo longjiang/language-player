@@ -321,7 +321,8 @@
         "back_to_login": "Terug na aanmelding",
         "continue": "Gaan voort",
         "try_again": "Probeer weer",
-        "start_watching": "Begin kyk"
+        "start_watching": "Begin kyk",
+        "resend": "Stuur weer"
     },
     "button": {
         "email_support": "E-posondersteuning",
@@ -365,7 +366,13 @@
         "login": "Aanmeldfout",
         "invalid_user_credentials": "Ongeldige e-pos of wagwoord",
         "general": "'n Fout het voorgekom",
-        "loading_failed": "Laai het misluk"
+        "loading_failed": "Laai het misluk",
+        "invalid_credentials": "Ongeldige e-pos of wagwoord. Probeer asseblief weer.",
+        "something_went_wrong": "Iets het verkeerd geloop. Probeer asseblief weer.",
+        "email_exists": "'n Rekening met hierdie e-pos bestaan reeds.",
+        "create_account_failed": "Kon nie rekening skep nie. Probeer asseblief weer.",
+        "invalid_verification_code": "Ongeldige verifikasiekode. Probeer asseblief weer.",
+        "verification_failed": "Verifikasie het misluk."
     },
     "feature": {
         "see_all_subtitles": "Sien alle onderskrifsoekresultate na die eerste drie.",
@@ -468,7 +475,7 @@
         "initializing": "Besig om te inisialiseer...",
         "keep_or_reset_time": "Wil jy jou huidige tyd behou of dit na nul herstel?",
         "lifetime_only": "Slegs die lewenslange plan is beskikbaar as 'n Apple-inprogram-aankoopopsie.",
-        "loading": "Besig om te laai...",
+        "loading": "Laai...",
         "no_active_subscription": "Geen aktiewe inskrywing gevind nie.",
         "no_more_videos": "Geen meer video's",
         "no_saved_words": "Nog geen woorde gestoor nie",
@@ -508,7 +515,21 @@
         "no_videos_found": "Geen video's gevind nie. Probeer 'n ander vlak of kom later terug.",
         "end_of_list": "Jy het die einde van die lys bereik.",
         "subtitles_not_available": "Onderskrifte is nog nie vir hierdie video beskikbaar nie.",
-        "video_unavailable": "Hierdie video kon nie gelaai word nie. Dit is moontlik verwyder of privaat gemaak."
+        "video_unavailable": "Hierdie video kon nie gelaai word nie. Dit is moontlik verwyder of privaat gemaak.",
+        "learning_from": "Leer {l2} van {l1}",
+        "dashboard_for": "Jou paneel vir {l1} → {l2}",
+        "explore_media_for": "Verken {l2} Media",
+        "find_videos_matched": "Vind video's wat by jou vlak pas",
+        "youtube_captions": "YouTube-onderskrifte beskikbaar",
+        "translated_subtitles": "Vertaalde onderskrifte beskikbaar",
+        "live_tv_available": "Regstreekse TV beskikbaar",
+        "verifying": "Verifieer...",
+        "didnt_receive_code": "Het jy nie 'n kode ontvang nie?",
+        "related_videos": "Verwante video's sal hier verskyn.",
+        "landing_hero_badge": "60+ tale ondersteun",
+        "landing_hero_title_1": "Leer tale deur",
+        "landing_hero_title_2": "video",
+        "landing_hero_desc": "Kyk YouTube-video's, flieks en TV-programme met interaktiewe dubbele onderskrifte. Tik enige woord vir 'n onmiddellike woordeboekopsoeking."
     },
     "option": {
         "app_store": "App Store",
@@ -647,7 +668,9 @@
         "check_email": "Gaan jou e-pos na",
         "reset_password": "Stel wagwoord terug",
         "i_speak": "Ek praat",
-        "i_learning": "Ek leer"
+        "i_learning": "Ek leer",
+        "live_tv": "Regstreekse TV",
+        "up_next": "Volgende"
     },
     "video": {
         "comments": "Kommentaar",

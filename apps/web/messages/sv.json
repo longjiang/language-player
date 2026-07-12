@@ -321,7 +321,8 @@
         "back_to_login": "Tillbaka till inloggning",
         "continue": "Fortsätt",
         "try_again": "Försök igen",
-        "start_watching": "Börja titta"
+        "start_watching": "Börja titta",
+        "resend": "Skicka igen"
     },
     "button": {
         "keep_current_time": "Behåll Nuvarande Tid",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Ogiltig e-post eller lösenord",
         "general": "Ett fel uppstod",
         "loading_failed": "Laddningen misslyckades",
-        "occurred": "Ett fel inträffade"
+        "occurred": "Ett fel inträffade",
+        "invalid_credentials": "Ogiltig e-post eller lösenord. Försök igen.",
+        "something_went_wrong": "Något gick fel. Försök igen.",
+        "email_exists": "Ett konto med denna e-post finns redan.",
+        "create_account_failed": "Det gick inte att skapa kontot. Försök igen.",
+        "invalid_verification_code": "Ogiltig verifieringskod. Försök igen.",
+        "verification_failed": "Verifieringen misslyckades."
     },
     "feature": {
         "see_all_subtitles": "Se alla undertextsökresultat bortom de tre första.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Inga videor hittades. Testa en annan nivå eller kom tillbaka senare.",
         "end_of_list": "Du har nått slutet av listan.",
         "subtitles_not_available": "Undertexter är inte tillgängliga för denna video än.",
-        "video_unavailable": "Denna video kunde inte laddas. Den kan ha tagits bort eller gjorts privat."
+        "video_unavailable": "Denna video kunde inte laddas. Den kan ha tagits bort eller gjorts privat.",
+        "learning_from": "Lär dig {l2} från {l1}",
+        "dashboard_for": "Din instrumentpanel för {l1} → {l2}",
+        "explore_media_for": "Utforska {l2} media",
+        "find_videos_matched": "Hitta videor som matchar din nivå",
+        "youtube_captions": "YouTube-textning tillgänglig",
+        "translated_subtitles": "Översatt textning tillgänglig",
+        "live_tv_available": "Live-TV tillgänglig",
+        "verifying": "Verifierar...",
+        "didnt_receive_code": "Har du inte fått någon kod?",
+        "related_videos": "Relaterade videor visas här.",
+        "landing_hero_badge": "60+ språk stöds",
+        "landing_hero_title_1": "Lär dig språk genom",
+        "landing_hero_title_2": "video",
+        "landing_hero_desc": "Titta på YouTube-videor, filmer och TV-program med interaktiva dubbla undertexter. Tryck på valfritt ord för omedelbar ordboksslagning."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Jag talar",
         "i_learning": "Jag lär mig",
         "confirm_in_app_purchase": "Bekräfta ditt köp i appen",
-        "only_lifetime_available": "Endast livstidsplanen är tillgänglig i App Store"
+        "only_lifetime_available": "Endast livstidsplanen är tillgänglig i App Store",
+        "live_tv": "Live-TV",
+        "up_next": "Nästa"
     },
     "video": {
         "comments": "Kommentarer",

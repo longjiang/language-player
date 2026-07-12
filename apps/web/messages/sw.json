@@ -321,7 +321,8 @@
         "back_to_login": "Rudi kwenye kuingia",
         "continue": "Endelea",
         "try_again": "Jaribu tena",
-        "start_watching": "Anza kutazama"
+        "start_watching": "Anza kutazama",
+        "resend": "Tuma tena"
     },
     "button": {
         "keep_current_time": "Weka Muda wa Sasa",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Barua pepe au nywila batili",
         "general": "Hitilafu imetokea",
         "loading_failed": "Imeshindwa kupakia",
-        "occurred": "Hitilafu imetokea"
+        "occurred": "Hitilafu imetokea",
+        "invalid_credentials": "Barua pepe au nenosiri batili. Tafadhali jaribu tena.",
+        "something_went_wrong": "Hitilafu imetokea. Tafadhali jaribu tena.",
+        "email_exists": "Akaunti yenye barua pepe hii tayari ipo.",
+        "create_account_failed": "Imeshindwa kuunda akaunti. Tafadhali jaribu tena.",
+        "invalid_verification_code": "Nambari batili ya uthibitishaji. Tafadhali jaribu tena.",
+        "verification_failed": "Uthibitishaji umeshindwa."
     },
     "feature": {
         "see_all_subtitles": "Angalia matokeo yote ya utafutaji wa manukuu zaidi ya matatu ya kwanza.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Hakuna video zilizopatikana. Jaribu kiwango kingine au angalia tena baadaye.",
         "end_of_list": "Umefika mwisho wa orodha.",
         "subtitles_not_available": "Manukuu bado hayapatikani kwa video hii.",
-        "video_unavailable": "Video hii haikuweza kupakiwa. Huenda imeondolewa au imefanywa kuwa ya faragha."
+        "video_unavailable": "Video hii haikuweza kupakiwa. Huenda imeondolewa au imefanywa kuwa ya faragha.",
+        "learning_from": "Kujifunza {l2} kutoka {l1}",
+        "dashboard_for": "Dashibodi yako ya {l1} → {l2}",
+        "explore_media_for": "Chunguza Midia ya {l2}",
+        "find_videos_matched": "Tafuta video zinazolingana na kiwango chako",
+        "youtube_captions": "Manukuu ya YouTube yanapatikana",
+        "translated_subtitles": "Manukuu yaliyotafsiriwa yanapatikana",
+        "live_tv_available": "Runinga ya Moja kwa Moja inapatikana",
+        "verifying": "Inathibitisha...",
+        "didnt_receive_code": "Hukupokea nambari?",
+        "related_videos": "Video zinazohusiana zitaonekana hapa.",
+        "landing_hero_badge": "Lugha 60+ zinatumika",
+        "landing_hero_title_1": "Jifunze lugha kupitia",
+        "landing_hero_title_2": "video",
+        "landing_hero_desc": "Tazama video za YouTube, filamu na vipindi vya TV kwa manukuu mawili shirikishi. Gusa neno lolote kwa utafutaji wa kamusi wa papo hapo."
     },
     "option": {
         "app_store": "Duka la Programu",
@@ -645,7 +666,9 @@
         "i_speak": "Ninazungumza",
         "i_learning": "Ninajifunza",
         "confirm_in_app_purchase": "Thibitisha ununuzi wako wa ndani ya programu",
-        "only_lifetime_available": "Mpango wa Maisha pekee ndio unaopatikana kwenye App Store"
+        "only_lifetime_available": "Mpango wa Maisha pekee ndio unaopatikana kwenye App Store",
+        "live_tv": "Runinga ya Moja kwa Moja",
+        "up_next": "Ifuatayo"
     },
     "video": {
         "comments": "Maoni",

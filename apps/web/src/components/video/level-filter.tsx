@@ -1,19 +1,21 @@
 'use client';
 
+import { useT } from '@/hooks/use-t';
+
 interface LevelFilterProps {
   selected: number | undefined;
   onChange: (level: number | undefined) => void;
 }
 
-const LEVELS = [
-  { value: undefined, label: 'All' },
-  { value: 1, label: 'A1' },
-  { value: 2, label: 'A2' },
-  { value: 3, label: 'B1' },
-  { value: 4, label: 'B2' },
-  { value: 5, label: 'C1' },
-  { value: 6, label: 'C2' },
-  { value: 7, label: 'Native' },
+const LEVEL_KEYS = [
+  { value: undefined, key: 'filter.all' },
+  { value: 1, key: 'filter.a1' },
+  { value: 2, key: 'filter.a2' },
+  { value: 3, key: 'filter.b1' },
+  { value: 4, key: 'filter.b2' },
+  { value: 5, key: 'filter.c1' },
+  { value: 6, key: 'filter.c2' },
+  { value: 7, key: 'filter.native' },
 ];
 
 const PILL_COLORS: Record<number, string> = {
@@ -27,9 +29,12 @@ const PILL_COLORS: Record<number, string> = {
 };
 
 export function LevelFilter({ selected, onChange }: LevelFilterProps) {
+  const t = useT();
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {LEVELS.map(({ value, label }) => {
+      {LEVEL_KEYS.map(({ value, key }) => {
+        const label = t(key);
         const isSelected = selected === value;
         const colorClass = value ? PILL_COLORS[value] ?? '' : '';
 

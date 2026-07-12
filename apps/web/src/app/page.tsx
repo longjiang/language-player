@@ -14,18 +14,16 @@ export default function HomePage() {
         <div className="relative z-10 max-w-3xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-700 dark:border-brand-800 dark:bg-brand-950 dark:text-brand-300">
             <Sparkles className="h-4 w-4" />
-            60+ languages supported
+            {t('msg.landing_hero_badge')}
           </div>
           <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">
-            Learn languages through{' '}
+            {t('msg.landing_hero_title_1')}{' '}
               <span className="bg-gradient-to-r from-brand-500 to-warm-500 bg-clip-text text-transparent">
-              video
+              {t('msg.landing_hero_title_2')}
             </span>
           </h1>
           <p className="mt-6 text-lg text-muted-foreground">
-            Watch YouTube videos, movies, and TV shows with interactive dual subtitles.
-            Tap any word for an instant dictionary lookup. Smart difficulty tracking adapts to your
-            level.
+            {t('msg.landing_hero_desc')}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link

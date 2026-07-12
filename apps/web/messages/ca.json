@@ -321,7 +321,8 @@
         "back_to_login": "Tornar a l'inici de sessió",
         "continue": "Continuar",
         "try_again": "Tornar a provar",
-        "start_watching": "Començar a veure"
+        "start_watching": "Començar a veure",
+        "resend": "Reenviar"
     },
     "button": {
         "keep_current_time": "Mantenir Temps Actual",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Correu electrònic o contrasenya no vàlids",
         "general": "S'ha produït un error",
         "loading_failed": "Ha fallat la càrrega",
-        "occurred": "S'ha produït un error"
+        "occurred": "S'ha produït un error",
+        "invalid_credentials": "Correu electrònic o contrasenya no vàlids. Torna-ho a provar.",
+        "something_went_wrong": "Alguna cosa ha anat malament. Torna-ho a provar.",
+        "email_exists": "Ja existeix un compte amb aquest correu electrònic.",
+        "create_account_failed": "No s'ha pogut crear el compte. Torna-ho a provar.",
+        "invalid_verification_code": "Codi de verificació no vàlid. Torna-ho a provar.",
+        "verification_failed": "La verificació ha fallat."
     },
     "feature": {
         "see_all_subtitles": "Veure tots els resultats de cerca de subtítols més enllà dels tres primers.",
@@ -467,7 +474,7 @@
         "hsk_explanation": "\"HSK\" és la prova oficial de competència en xinès, amb el Nivell 1 com el més baix i el Nivell 9 com el més alt.",
         "initializing": "Inicialitzant...",
         "keep_or_reset_time": "Vols mantenir el temps actual o restablir-lo a zero?",
-        "loading": "Carregant...",
+        "loading": "S'està carregant...",
         "no_active_subscription": "No s'ha trobat cap subscripció activa.",
         "no_more_videos": "No hi ha més vídeos",
         "no_saved_words": "Encara no s'han desat paraules",
@@ -506,7 +513,21 @@
         "no_videos_found": "No s'han trobat vídeos. Prova un altre nivell o torna més tard.",
         "end_of_list": "Has arribat al final de la llista.",
         "subtitles_not_available": "Els subtítols encara no estan disponibles per a aquest vídeo.",
-        "video_unavailable": "Aquest vídeo no s'ha pogut carregar. Pot haver estat eliminat o fet privat."
+        "video_unavailable": "Aquest vídeo no s'ha pogut carregar. Pot haver estat eliminat o fet privat.",
+        "learning_from": "Aprenent {l2} de {l1}",
+        "dashboard_for": "El teu tauler per a {l1} → {l2}",
+        "explore_media_for": "Explorar contingut de {l2}",
+        "find_videos_matched": "Troba vídeos adequats al teu nivell",
+        "youtube_captions": "Subtítols de YouTube disponibles",
+        "translated_subtitles": "Subtítols traduïts disponibles",
+        "live_tv_available": "TV en directe disponible",
+        "verifying": "Verificant...",
+        "didnt_receive_code": "No has rebut un codi?",
+        "related_videos": "Els vídeos relacionats apareixeran aquí.",
+        "landing_hero_badge": "Més de 60 idiomes disponibles",
+        "landing_hero_title_1": "Aprèn idiomes a través de",
+        "landing_hero_title_2": "vídeo",
+        "landing_hero_desc": "Mira vídeos de YouTube, pel·lícules i programes de TV amb subtítols duals interactius. Toca qualsevol paraula per a una cerca instantània al diccionari."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Parlo",
         "i_learning": "Estic aprenent",
         "confirm_in_app_purchase": "Confirma la teva compra dins de l'app",
-        "only_lifetime_available": "Només el Pla Vitalici està disponible a l'App Store"
+        "only_lifetime_available": "Només el Pla Vitalici està disponible a l'App Store",
+        "live_tv": "TV en directe",
+        "up_next": "A continuació"
     },
     "video": {
         "comments": "Comentaris",

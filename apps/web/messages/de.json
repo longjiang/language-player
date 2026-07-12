@@ -321,7 +321,8 @@
         "back_to_login": "Zurück zur Anmeldung",
         "continue": "Weiter",
         "try_again": "Erneut versuchen",
-        "start_watching": "Anschauen starten"
+        "start_watching": "Anschauen starten",
+        "resend": "Erneut senden"
     },
     "button": {
         "keep_current_time": "Aktuelle Zeit Behalten",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Ungültige E-Mail oder Passwort",
         "general": "Ein Fehler ist aufgetreten",
         "loading_failed": "Laden fehlgeschlagen",
-        "occurred": "Ein Fehler ist aufgetreten"
+        "occurred": "Ein Fehler ist aufgetreten",
+        "invalid_credentials": "Ungültige E-Mail oder Passwort. Bitte versuche es erneut.",
+        "something_went_wrong": "Etwas ist schief gelaufen. Bitte versuche es erneut.",
+        "email_exists": "Ein Konto mit dieser E-Mail existiert bereits.",
+        "create_account_failed": "Konto konnte nicht erstellt werden. Bitte versuche es erneut.",
+        "invalid_verification_code": "Ungültiger Bestätigungscode. Bitte versuche es erneut.",
+        "verification_failed": "Überprüfung fehlgeschlagen."
     },
     "feature": {
         "see_all_subtitles": "Alle Untertitel-Suchergebnisse über die ersten drei hinaus anzeigen.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Keine Videos gefunden. Versuchen Sie ein anderes Niveau oder schauen Sie später wieder vorbei.",
         "end_of_list": "Sie haben das Ende der Liste erreicht.",
         "subtitles_not_available": "Untertitel sind für dieses Video noch nicht verfügbar.",
-        "video_unavailable": "Dieses Video konnte nicht geladen werden. Es wurde möglicherweise entfernt oder auf privat gesetzt."
+        "video_unavailable": "Dieses Video konnte nicht geladen werden. Es wurde möglicherweise entfernt oder auf privat gesetzt.",
+        "learning_from": "Lerne {l2} aus {l1}",
+        "dashboard_for": "Dein Dashboard für {l1} → {l2}",
+        "explore_media_for": "{l2} Medien entdecken",
+        "find_videos_matched": "Finde Videos, die deinem Niveau entsprechen",
+        "youtube_captions": "YouTube-Untertitel verfügbar",
+        "translated_subtitles": "Übersetzte Untertitel verfügbar",
+        "live_tv_available": "Live-TV verfügbar",
+        "verifying": "Wird überprüft...",
+        "didnt_receive_code": "Keinen Code erhalten?",
+        "related_videos": "Ähnliche Videos erscheinen hier.",
+        "landing_hero_badge": "Über 60 Sprachen",
+        "landing_hero_title_1": "Lerne Sprachen durch",
+        "landing_hero_title_2": "Videos",
+        "landing_hero_desc": "Sieh dir YouTube-Videos, Filme und TV-Sendungen mit interaktiven Doppeluntertiteln an. Tippe auf ein beliebiges Wort für eine sofortige Wörterbuchsuche."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Ich spreche",
         "i_learning": "Ich lerne",
         "confirm_in_app_purchase": "In-App-Kauf bestätigen",
-        "only_lifetime_available": "Nur der Lifetime-Plan ist im App Store verfügbar"
+        "only_lifetime_available": "Nur der Lifetime-Plan ist im App Store verfügbar",
+        "live_tv": "Live-TV",
+        "up_next": "Als Nächstes"
     },
     "video": {
         "comments": "Kommentare",

@@ -321,7 +321,8 @@
         "back_to_login": "返回登入",
         "continue": "繼續",
         "try_again": "再試一次",
-        "start_watching": "開始觀看"
+        "start_watching": "開始觀看",
+        "resend": "重新傳送"
     },
     "button": {
         "email_support": "電子郵件支援",
@@ -365,7 +366,13 @@
         "login": "登錄錯誤",
         "invalid_user_credentials": "電子郵件或密碼無效",
         "general": "發生錯誤",
-        "loading_failed": "載入失敗"
+        "loading_failed": "載入失敗",
+        "invalid_credentials": "電子郵件或密碼無效，請重試。",
+        "something_went_wrong": "出了點問題，請重試。",
+        "email_exists": "該電子郵件已註冊帳戶。",
+        "create_account_failed": "建立帳戶失敗，請重試。",
+        "invalid_verification_code": "驗證碼無效，請重試。",
+        "verification_failed": "驗證失敗。"
     },
     "feature": {
         "see_all_subtitles": "看到第三個之後的所有字幕搜尋結果。",
@@ -508,7 +515,21 @@
         "no_videos_found": "未找到影片。請嘗試其他級別或稍後再來。",
         "end_of_list": "您已到達列表末尾。",
         "subtitles_not_available": "此影片的字幕尚不可用。",
-        "video_unavailable": "無法載入此影片。可能已被刪除或設為私密。"
+        "video_unavailable": "無法載入此影片。可能已被刪除或設為私密。",
+        "learning_from": "從{l1}學習{l2}",
+        "dashboard_for": "您的 {l1} → {l2} 儀表板",
+        "explore_media_for": "探索{l2}媒體",
+        "find_videos_matched": "找到適合您程度的影片",
+        "youtube_captions": "提供 YouTube 字幕",
+        "translated_subtitles": "提供翻譯字幕",
+        "live_tv_available": "提供直播電視",
+        "verifying": "驗證中...",
+        "didnt_receive_code": "沒有收到驗證碼？",
+        "related_videos": "相關影片將顯示在這裡。",
+        "landing_hero_badge": "支援 60 多種語言",
+        "landing_hero_title_1": "透過",
+        "landing_hero_title_2": "影片學習語言",
+        "landing_hero_desc": "觀看帶有互動式雙語字幕的 YouTube 影片、電影和電視節目。點擊任意單字即可即時查詢字典。"
     },
     "option": {
         "app_store": "App Store",
@@ -647,7 +668,9 @@
         "check_email": "查看您的電子郵件",
         "reset_password": "重設密碼",
         "i_speak": "我會說",
-        "i_learning": "我正在學"
+        "i_learning": "我正在學",
+        "live_tv": "直播電視",
+        "up_next": "接下來"
     },
     "video": {
         "comments": "留言",

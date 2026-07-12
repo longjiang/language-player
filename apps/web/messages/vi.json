@@ -320,7 +320,8 @@
         "back_to_login": "Quay lại đăng nhập",
         "continue": "Tiếp tục",
         "try_again": "Thử lại",
-        "start_watching": "Bắt đầu xem"
+        "start_watching": "Bắt đầu xem",
+        "resend": "Gửi lại"
     },
     "button": {
         "keep_current_time": "Giữ Thời Gian Hiện Tại",
@@ -364,7 +365,13 @@
         "invalid_user_credentials": "Email hoặc mật khẩu không hợp lệ",
         "general": "Đã xảy ra lỗi",
         "loading_failed": "Tải không thành công",
-        "occurred": "Đã xảy ra lỗi"
+        "occurred": "Đã xảy ra lỗi",
+        "invalid_credentials": "Email hoặc mật khẩu không hợp lệ. Vui lòng thử lại.",
+        "something_went_wrong": "Đã xảy ra lỗi. Vui lòng thử lại.",
+        "email_exists": "Tài khoản với email này đã tồn tại.",
+        "create_account_failed": "Tạo tài khoản thất bại. Vui lòng thử lại.",
+        "invalid_verification_code": "Mã xác minh không hợp lệ. Vui lòng thử lại.",
+        "verification_failed": "Xác minh thất bại."
     },
     "feature": {
         "see_all_subtitles": "Xem tất cả kết quả tìm kiếm phụ đề ngoài ba kết quả đầu tiên.",
@@ -505,7 +512,21 @@
         "no_videos_found": "Không tìm thấy video. Hãy thử cấp độ khác hoặc kiểm tra lại sau.",
         "end_of_list": "Bạn đã đến cuối danh sách.",
         "subtitles_not_available": "Phụ đề chưa có sẵn cho video này.",
-        "video_unavailable": "Không thể tải video này. Có thể video đã bị xóa hoặc đặt ở chế độ riêng tư."
+        "video_unavailable": "Không thể tải video này. Có thể video đã bị xóa hoặc đặt ở chế độ riêng tư.",
+        "learning_from": "Học {l2} từ {l1}",
+        "dashboard_for": "Bảng điều khiển của bạn cho {l1} → {l2}",
+        "explore_media_for": "Khám phá phương tiện {l2}",
+        "find_videos_matched": "Tìm video phù hợp với trình độ của bạn",
+        "youtube_captions": "Có phụ đề YouTube",
+        "translated_subtitles": "Có phụ đề dịch",
+        "live_tv_available": "Có TV trực tiếp",
+        "verifying": "Đang xác minh...",
+        "didnt_receive_code": "Không nhận được mã?",
+        "related_videos": "Video liên quan sẽ xuất hiện ở đây.",
+        "landing_hero_badge": "Hỗ trợ hơn 60 ngôn ngữ",
+        "landing_hero_title_1": "Học ngôn ngữ qua",
+        "landing_hero_title_2": "video",
+        "landing_hero_desc": "Xem video YouTube, phim và chương trình TV với phụ đề kép tương tác. Chạm vào bất kỳ từ nào để tra từ điển ngay lập tức."
     },
     "option": {
         "app_store": "App Store",
@@ -644,7 +665,9 @@
         "i_speak": "Tôi nói",
         "i_learning": "Tôi đang học",
         "confirm_in_app_purchase": "Xác nhận mua trong ứng dụng",
-        "only_lifetime_available": "Chỉ có Gói Trọn Đời khả dụng trên App Store"
+        "only_lifetime_available": "Chỉ có Gói Trọn Đời khả dụng trên App Store",
+        "live_tv": "TV trực tiếp",
+        "up_next": "Tiếp theo"
     },
     "video": {
         "comments": "Bình luận",

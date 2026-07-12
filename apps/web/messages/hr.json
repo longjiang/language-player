@@ -321,7 +321,8 @@
         "back_to_login": "Natrag na prijavu",
         "continue": "Nastavi",
         "try_again": "Pokušaj ponovno",
-        "start_watching": "Počni gledati"
+        "start_watching": "Počni gledati",
+        "resend": "Pošalji ponovno"
     },
     "button": {
         "keep_current_time": "Zadrži Trenutno Vrijeme",
@@ -365,7 +366,13 @@
         "invalid_user_credentials": "Nevažeća e-pošta ili lozinka",
         "general": "Došlo je do pogreške",
         "loading_failed": "Učitavanje nije uspjelo",
-        "occurred": "Došlo je do pogreške"
+        "occurred": "Došlo je do pogreške",
+        "invalid_credentials": "Nevažeća e-pošta ili lozinka. Pokušajte ponovno.",
+        "something_went_wrong": "Nešto je pošlo po zlu. Pokušajte ponovno.",
+        "email_exists": "Račun s ovom e-poštom već postoji.",
+        "create_account_failed": "Stvaranje računa nije uspjelo. Pokušajte ponovno.",
+        "invalid_verification_code": "Nevažeći verifikacijski kod. Pokušajte ponovno.",
+        "verification_failed": "Provjera nije uspjela."
     },
     "feature": {
         "see_all_subtitles": "Pogledaj sve rezultate pretraživanja podnaslova nakon prva tri.",
@@ -506,7 +513,21 @@
         "no_videos_found": "Nisu pronađeni videozapisi. Pokušajte drugu razinu ili provjerite kasnije.",
         "end_of_list": "Došli ste do kraja popisa.",
         "subtitles_not_available": "Titlovi još nisu dostupni za ovaj videozapis.",
-        "video_unavailable": "Ovaj se videozapis nije mogao učitati. Možda je uklonjen ili postavljen kao privatan."
+        "video_unavailable": "Ovaj se videozapis nije mogao učitati. Možda je uklonjen ili postavljen kao privatan.",
+        "learning_from": "Učenje {l2} iz {l1}",
+        "dashboard_for": "Vaša nadzorna ploča za {l1} → {l2}",
+        "explore_media_for": "Istraži {l2} medije",
+        "find_videos_matched": "Pronađite videozapise prilagođene vašoj razini",
+        "youtube_captions": "YouTube titlovi dostupni",
+        "translated_subtitles": "Prevedeni titlovi dostupni",
+        "live_tv_available": "TV uživo dostupan",
+        "verifying": "Provjera...",
+        "didnt_receive_code": "Niste primili kod?",
+        "related_videos": "Povezani videozapisi će se pojaviti ovdje.",
+        "landing_hero_badge": "Podržano 60+ jezika",
+        "landing_hero_title_1": "Učite jezike kroz",
+        "landing_hero_title_2": "videozapise",
+        "landing_hero_desc": "Gledajte YouTube videozapise, filmove i TV emisije s interaktivnim dvostrukim titlovima. Dodirnite bilo koju riječ za trenutno pretraživanje rječnika."
     },
     "option": {
         "app_store": "App Store",
@@ -645,7 +666,9 @@
         "i_speak": "Govorim",
         "i_learning": "Učim",
         "confirm_in_app_purchase": "Potvrdite kupnju unutar aplikacije",
-        "only_lifetime_available": "Samo je Doživotni Plan dostupan u App Storeu"
+        "only_lifetime_available": "Samo je Doživotni Plan dostupan u App Storeu",
+        "live_tv": "TV uživo",
+        "up_next": "Sljedeće"
     },
     "video": {
         "comments": "Komentari",

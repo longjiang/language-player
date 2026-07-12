@@ -72,7 +72,7 @@ export default function LanguageSelectPage() {
                 value={l1Search}
                 onChange={(e) => setL1Search(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20"
-                placeholder="Search languages..."
+                placeholder={t('placeholder.search_languages')}
               />
             </div>
             <div className="max-h-64 space-y-1 overflow-y-auto">
@@ -110,7 +110,7 @@ export default function LanguageSelectPage() {
                 value={l2Search}
                 onChange={(e) => setL2Search(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20"
-                placeholder="Search languages..."
+                placeholder={t('placeholder.search_languages')}
               />
             </div>
             <div className="max-h-64 space-y-1 overflow-y-auto">

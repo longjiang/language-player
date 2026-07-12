@@ -12,7 +12,7 @@ export default function LanguageDashboard() {
   const links = [
     { href: `/${l1.code}/${l2.code}/explore`, label: t('title.explore_media'), icon: Play, desc: t('msg.find_videos') },
     { href: `/${l1.code}/${l2.code}/dictionary`, label: t('title.dictionary'), icon: BookOpen, desc: t('msg.lookup_words') },
-    { href: `/${l1.code}/${l2.code}/live-tv`, label: 'Live TV', icon: Tv, desc: t('msg.watch_live'), disabled: !l2.has.liveTV },
+    { href: `/${l1.code}/${l2.code}/live-tv`, label: t('title.live_tv'), icon: Tv, desc: t('msg.watch_live'), disabled: !l2.has.liveTV },
     { href: `/${l1.code}/${l2.code}/settings`, label: t('title.settings'), icon: Layers, desc: t('msg.customize_experience') },
   ];
 
@@ -20,10 +20,10 @@ export default function LanguageDashboard() {
     <div className="mx-auto max-w-4xl px-4 py-12">
       <div className="mb-8">
         <h1 className="text-2xl font-bold">
-          Learning {l2.name} from {l1.name}
+          {t('msg.learning_from', { l1: l1.name, l2: l2.name })}
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Your dashboard for {l1.name} → {l2.name}
+          {t('msg.dashboard_for', { l1: l1.name, l2: l2.name })}
         </p>
       </div>
 
@@ -44,7 +44,7 @@ export default function LanguageDashboard() {
             <p className="mt-1 text-sm text-muted-foreground">{link.desc}</p>
             {link.disabled && (
               <span className="mt-2 inline-block rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
-                Coming soon
+                {t('msg.coming_soon')}
               </span>
             )}
           </Link>
