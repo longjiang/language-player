@@ -34,15 +34,15 @@
 - ✅ Dashboard stub with feature links
 - ✅ Login, Register, Forgot Password, Language Select pages
 
-## Phase 3: Explore + Video Player 🔄
+## Phase 3: Explore + Video Player ✅
 
-- ⬜ `/explore` page — fetch videos from API, lazy load, filters
-- ⬜ `/explore/[l2]` — language-specific browse with difficulty levels
-- ⬜ Video player page (`/[l1]/[l2]/watch/[videoId]`)
-- ⬜ YouTube iframe integration with dual subtitles
-- ⬜ Basic subtitle display (L1 + L2 lines, no interaction yet)
-- ⬜ Playback speed control
-- ⬜ "Up next" recommended videos sidebar
+- ✅ `/explore` page — fetch videos from API, lazy load, level filter
+- ✅ Video cards with thumbnails, difficulty badges, duration, views
+- ✅ Video player page (`/[l1]/[l2]/watch/[videoId]`)
+- ✅ YouTube iframe integration with IFrame API
+- ✅ Basic subtitle display (L1 + L2 lines, show/hide toggles, auto-scroll)
+- ✅ "Up next" sidebar (stub)
+- ✅ Loading skeletons, error states, empty states
 
 ## Phase 4: Dictionary
 
@@ -104,7 +104,7 @@
 ---
 
 ## Currently Working On
-- Phase 3: Explore + Video Player
+- Phase 4: Dictionary
 
 ## Up Next
-- Phase 4: Dictionary
+- Phase 5: Content Features
