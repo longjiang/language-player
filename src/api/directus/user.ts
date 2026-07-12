@@ -1,6 +1,6 @@
 // @/src/api/directus/user.ts
 import { DIRECTUS_URL } from '.';
-import * as SecureStore from 'expo-secure-store';
+import { secureStorage } from '@/src/storage';
 
 export type User = {
   id: string;
@@ -83,7 +83,7 @@ export async function registerUser(firstName: string, lastName: string, email: s
   }
 
   // Secure store the password
-  await SecureStore.setItemAsync('user_password', password);
+  await secureStorage.setItemAsync('user_password', password);
 
   return registerData;
 }

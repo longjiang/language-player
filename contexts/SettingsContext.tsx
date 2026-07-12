@@ -1,7 +1,7 @@
 // @/contexts/SettingsContext
 
 import React, { createContext, useReducer, useContext, useEffect, ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import { secureStorage } from '@/src/storage';
 import { useColorScheme } from 'react-native';
 import { useLanguage } from './LanguageContext';
 
@@ -73,7 +73,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   // Effect: Load settings from SecureStore on mount and set languages
   useEffect(() => {
     const loadSettings = async () => {
-      const savedSettings = await SecureStore.getItemAsync('userSettings');
+      const savedSettings = await secureStorage.getItemAsync('userSettings');
       if (savedSettings) {
         const parsedSettings = JSON.parse(savedSettings);
         dispatch({ type: 'SET_SETTINGS', payload: parsedSettings });
@@ -94,7 +94,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
           darkMode: systemColorScheme === 'dark',
         };
         dispatch({ type: 'SET_SETTINGS', payload: defaultSettings });
-        await SecureStore.setItemAsync('userSettings', JSON.stringify(defaultSettings));
+        await secureStorage.setItemAsync('userSettings', JSON.stringify(defaultSettings));
       }
     };
     loadSettings();
@@ -103,7 +103,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   // Effect: Save settings to SecureStore when they change
   useEffect(() => {
     const saveSettings = async () => {
-      await SecureStore.setItemAsync('userSettings', JSON.stringify(settings));
+      await secureStorage.setItemAsync('userSettings', JSON.stringify(settings));
     };
     // If languages aren't set, this is initial load, so don't save
     if (settings.l1LangCode && settings.l2LangCode) {
