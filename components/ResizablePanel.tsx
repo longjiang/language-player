@@ -22,10 +22,6 @@ export const ResizablePanel = ({
   isMinimized,
   setIsMinimized,
 }) => {
-  if (!visible) {
-    return null;
-  }
-
   const progress = useSharedValue(isMinimized ? 1 : 0);
 
   useEffect(() => {
@@ -61,6 +57,10 @@ export const ResizablePanel = ({
       backgroundColor,
     };
   });
+
+  if (!visible) {
+    return null;
+  }
 
   return (
     <GestureHandlerRootView style={styles.rootContainer}>
