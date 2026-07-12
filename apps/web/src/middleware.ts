@@ -33,7 +33,12 @@ export default function middleware(req: NextRequest) {
   if (!isAuthenticated && !isPublic && pathname !== '/') {
     const loginUrl = new URL('/login', req.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
-    return NextResponse.redirect(loginUrl);
+    const response = NextResponse.redirect(loginUrl);
+    // If URL contains valid L1, set locale cookie so login page renders in the right language
+    if (l1 && SUPPORTED_L1S.includes(l1 as any)) {
+      response.cookies.set('NEXT_LOCALE', l1, { path: '/', maxAge: 365 * 24 * 60 * 60 });
+    }
+    return response;
   }
 
   // 2. Redirect authenticated users away from auth pages
@@ -46,7 +51,18 @@ export default function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/language-select', req.url));
   }
 
-  // 3. Validate L1/L2 in URL
+  // 3. On public pages, set NEXT_LOCALE from existing l1 cookie if available
+  if (isPublic) {
+    const l1Cookie = req.cookies.get('l1');
+    if (l1Cookie?.value && SUPPORTED_L1S.includes(l1Cookie.value as any)) {
+      const response = NextResponse.next();
+      response.cookies.set('NEXT_LOCALE', l1Cookie.value, { path: '/', maxAge: 365 * 24 * 60 * 60 });
+      return response;
+    }
+    return NextResponse.next();
+  }
+
+  // 4. Validate L1/L2 in URL
   if (l1 && l2) {
     if (!SUPPORTED_L1S.includes(l1 as any) || !SUPPORTED_L2S.includes(l2 as any)) {
       return NextResponse.rewrite(new URL('/_not-found', req.url));
@@ -58,7 +74,7 @@ export default function middleware(req: NextRequest) {
     return response;
   }
 
-  // 4. Redirect root for authenticated users
+  // 5. Redirect root for authenticated users
   if (pathname === '/' && isAuthenticated) {
     const l1Cookie = req.cookies.get('l1');
     const l2Cookie = req.cookies.get('l2');
