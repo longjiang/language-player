@@ -25,13 +25,13 @@ export default function HomePage() {
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
-              href="/explore"
+              href="/login"
               className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-8 py-3 font-semibold text-white shadow-lg shadow-brand-500/25 transition-all hover:bg-brand-700 hover:shadow-xl"
             >
               <Play className="h-5 w-5" /> Start Watching
             </Link>
             <Link
-              href="/explore"
+              href="/login"
               className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-8 py-3 font-semibold transition-all hover:bg-surface-secondary"
             >
               <Search className="h-5 w-5" /> Explore Media

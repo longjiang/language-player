@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-003
 - **Feature**: Authentication, language selection, and URL-based navigation
-- **Status**: draft
+- **Status**: complete
 - **Created**: 2026-07-12
 - **ROADMAP Phase**: Phase 2 — Auth + Core Navigation
 
@@ -380,3 +380,29 @@ RootLayout (layout.tsx)
 - [ ] Returning user with cookie is redirected to their last L1/L2 pair
 - [ ] RTL language (ar) correctly sets `dir="rtl"` and mirrors layout
 - [ ] Auth token automatically attaches to `@langplayer/api-client` requests
+
+---
+
+## Implementation Notes & Lessons Learned
+
+### Directus URL Discovery
+
+The Directus 8 API lives at a **separate domain** from the web app:
+
+| Service | URL |
+|---------|-----|
+| Web app (Classic) | `https://languageplayer.io` |
+| Directus 8 API | `https://directusvps.zerotohero.ca/zerotohero` |
+| Python backend | `https://python.zerotohero.ca` |
+
+The path prefix `/zerotohero` is part of the base URL (matching GO's pattern). Endpoints are appended without the prefix: `{DIRECTUS_URL}/auth/authenticate`.
+
+### NextAuth v5 Beta Issues
+
+- **TS2742 type inference**: NextAuth v5 beta.31 has a known issue where `tsc` cannot name the inferred type of `auth`. Workaround: don't export `auth` from `auth.ts`; middleware uses manual cookie checks instead of `auth()` wrapper.
+- **Env var naming**: v5 uses `AUTH_SECRET` (not `NEXTAUTH_SECRET`). Missing this causes 500 on all `/api/auth/*` endpoints.
+- **`useSearchParams()` in pages**: Must be wrapped in `<Suspense>` boundary for static prerendering to work.
+
+### Middleware Design
+
+The middleware does NOT import `auth` from NextAuth. Instead, it checks the `authjs.session-token` cookie directly. This avoids the TS2742 type issue and keeps middleware lightweight (Edge-compatible). The tradeoff: middleware can tell if a session COOKIE exists but can't validate it cryptographically — that's handled by NextAuth's own route handlers.

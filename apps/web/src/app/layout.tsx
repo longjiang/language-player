@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
+import { SessionProvider } from '@/providers/session-provider';
 import { Toaster } from '@/components/ui/sonner';
-import { ApiClientProvider } from '@/components/api-client-provider';
 import './globals.css';
 
 const inter = Inter({
@@ -32,9 +32,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <ApiClientProvider>
+          <SessionProvider>
             {children}
-          </ApiClientProvider>
+          </SessionProvider>
           <Toaster richColors closeButton />
         </ThemeProvider>
       </body>

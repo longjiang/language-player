@@ -22,15 +22,17 @@
 - ✅ Build pipeline verified
 - ✅ Documentation (AGENTS.md, README, ROADMAP, specs/, docs/adr/)
 
-## Phase 2: Auth + Core Navigation 🔄
+## Phase 2: Auth + Core Navigation ✅
 
-- ⬜ NextAuth.js v5 integration with Flask JWT backend
-- ⬜ Auth middleware (protect routes, redirect to login)
-- ⬜ User registration flow (email verification)
-- ⬜ Password reset flow
-- ⬜ L1/L2 language selector (onboarding + settings)
-- ⬜ Header/navbar with language switcher
-- ⬜ URL-based language routing (`/[l1]/[l2]/...`)
+- ✅ NextAuth.js v5 (beta.31) integration with Directus 8 credentials provider
+- ✅ Auth middleware (cookie-based session check, protect routes, redirect to login)
+- ✅ User registration flow (3-step: form → email verification → auto-login)
+- ✅ Password reset flow (Directus)
+- ✅ L1/L2 language selector (onboarding dual-picker + search)
+- ✅ Header/navbar with language switcher + swap button
+- ✅ URL-based language routing (`/[l1]/[l2]/...`)
+- ✅ Dashboard stub with feature links
+- ✅ Login, Register, Forgot Password, Language Select pages
 
 ## Phase 3: Explore + Video Player
 
@@ -102,7 +104,7 @@
 ---
 
 ## Currently Working On
-- Phase 2: Auth + Core Navigation
+- Phase 3: Explore + Video Player
 
 ## Up Next
-- Phase 3: Explore + Video Player
+- Phase 4: Dictionary
