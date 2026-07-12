@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 228 74% 59%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 17% 94%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 17% 94%;
+    --muted-foreground: 215 14% 46%;
+    --accent: 24 100% 62%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 20% 85%;
+    --input: 214 20% 85%;
+    --ring: 228 74% 59%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 230 30% 8%;
+    --foreground: 0 0% 95%;
+    --card: 230 25% 12%;
+    --card-foreground: 0 0% 95%;
+    --popover: 230 25% 12%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 228 74% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 230 20% 18%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 230 20% 18%;
+    --muted-foreground: 215 14% 56%;
+    --accent: 24 100% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 230 20% 22%;
+    --input: 230 20% 22%;
+    --ring: 228 74% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+/* ── Video player aspect ratio ── */
+.video-container {
+  @apply relative w-full overflow-hidden rounded-lg bg-black;
+  aspect-ratio: 16 / 9;
+}
+
+/* ── Subtitle styles ── */
+.subtitle-l1 {
+  @apply text-lg font-semibold leading-relaxed;
+}
+.subtitle-l2 {
+  @apply text-base leading-relaxed text-muted-foreground;
+}

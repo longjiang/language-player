@@ -1,0 +1,86 @@
+# AGENTS.md — Instructions for AI Coding Agents
+
+## Project Identity
+
+**Language Player** — A language learning platform using authentic video content with interactive dual subtitles. 60+ languages. Web + Mobile + Python backend.
+
+## Essential Context
+
+### What This Project Is
+A monorepo consolidating three legacy codebases:
+1. `zerotohero-nuxt/` (Vue 2/Nuxt 2) — **Classic** full-featured web app. REFERENCE ONLY. Do not edit.
+2. `language-player-3/` (React Native/Expo 51) — **GO** mobile app. REFERENCE + eventual migration source.
+3. `zerotohero-python/` (Flask) — Backend. REFERENCE + eventual migration source.
+
+The **active development** happens in:
+- `apps/web/` — Next.js 14 (replaces Classic)
+- `packages/shared/` — Shared types & constants
+- `packages/api-client/` — Shared API client
+- `packages/utils/` — Shared utilities
+
+### Critical Architecture Rules
+
+1. **Shared packages must be platform-agnostic.** No React, React Native, Next.js, or Node-specific imports in `packages/*`. Use only pure TypeScript and cross-platform libraries (Axios, date-fns, etc.).
+
+2. **UI components are NOT shared** between web and mobile. The rendering models are fundamentally different (React DOM vs React Native). Share logic, not views.
+
+3. **The Nuxt Classic app is the source of truth for features.** When implementing a feature in the Next.js app, FIRST read the corresponding Nuxt page/component/store to understand how it works, THEN implement it in Next.js using the shared packages.
+
+4. **Language state flows L1 → L2.** Every language-specific page lives under `/[l1]/[l2]/...`. The middleware reads these params, looks up language objects, and provides them via React Context.
+
+5. **The backend is a Flask API at `localhost:5001`** (production: `languageplayer.io`). All data goes through it. Directus 8 is the headless CMS — but treat it as a black box accessed via the Flask API.
+
+### Before Implementing Any Feature
+
+1. Read the relevant Nuxt Classic implementation in `zerotohero-nuxt/`
+2. Check if `@langplayer/shared` already has the types you need
+3. Check if `@langplayer/api-client` already has the endpoint you need
+4. Read `specs/` for existing feature specifications
+5. Read `docs/adr/` for relevant architecture decisions
+
+### File Naming & Organization
+
+```
+apps/web/src/
+├── app/                    ← Next.js App Router pages
+│   ├── [l1]/[l2]/         ← Language-pair scoped routes
+│   └── (auth)/             ← Auth routes (no language context)
+├── components/
+│   ├── ui/                 ← shadcn/ui primitives (Button, Input, etc.)
+│   ├── video/              ← Video player components
+│   ├── dictionary/         ← Dictionary components
+│   └── layout/             ← Header, sidebar, navigation
+├── hooks/                  ← React hooks (useVideo, useDictionary, etc.)
+├── lib/                    ← Next.js-specific utilities
+└── providers/              ← React Context providers
+```
+
+### Key Terms
+
+- **L1** = Native language (UI language, e.g., `en`)
+- **L2** = Target language being learned (e.g., `zh`, `ja`)
+- **Directus** = Headless CMS at the database layer
+- **Lemma** = Base/dictionary form of a word
+- **Token** = A word or punctuation unit after tokenization
+- **CEFR** = Common European Framework of Reference (A1–C2)
+- **HSK** = Chinese proficiency test levels (1–6)
+- **JLPT** = Japanese proficiency test levels (N5–N1)
+
+### Commands
+
+```bash
+nvm use 22                    # Required Node version
+npm install                   # Install all workspace deps
+npx turbo dev                 # Start all dev servers
+npx turbo build               # Build all apps
+npx turbo build --filter=@langplayer/web  # Build only web
+npx turbo lint                # Lint all
+npx turbo typecheck           # Type-check all
+```
+
+### When You Make Changes
+
+- Update `specs/` if you implement a new feature or change behavior
+- Update `ROADMAP.md` if you complete a planned task
+- Add ADRs in `docs/adr/` for significant architectural decisions
+- Never edit files in `zerotohero-nuxt/` or `language-player-3/` — they are reference-only
