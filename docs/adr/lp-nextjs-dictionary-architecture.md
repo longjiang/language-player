@@ -164,6 +164,54 @@ interface WordEntry {
 
 ---
 
+## CSV Data Standard
+
+All dictionary source CSVs under `zerotohero-python/data/dictionaries/` follow a unified 8-column schema, with optional language-specific extra columns appended after column 8.
+
+### Common Columns (every dictionary)
+
+| # | Column | Type | Description |
+|---|---|---|---|
+| 1 | `id` | string | Unique ID, prefixed by source (`cedict-…`, `edict-…`, `canto-…`) |
+| 2 | `head` | string | Primary display form in L2's main script |
+| 3 | `alternate` | string | Alternate script form (or empty) |
+| 4 | `pronunciation` | string | Latin-script phonetic guide |
+| 5 | `definitions` | string | Pipe-separated (`\|`) English definitions |
+| 6 | `part_of_speech` | string | Language-specific POS (or empty) |
+| 7 | `level` | string | Encoded as `scale:value` (e.g., `hsk_2026:1`, `jlpt:N5`) or empty |
+| 8 | `frequency` | float | Normalized 0–1 frequency rank (or empty) |
+
+### Per-Language Column Mapping
+
+| # | Column | zh (HSK CEDICT) | yue (CC-Canto) | ja (EDICT) |
+|---|---|---|---|---|
+| 1 | `id` | `hskId` | md5-derived | EDICT `id` |
+| 2 | `head` | `simplified` | `traditional` | kanji (or kana if no kanji) |
+| 3 | `alternate` | `traditional` | `simplified` | kana (or empty if kana-only) |
+| 4 | `pronunciation` | `pinyin` | `jyutping` | romaji |
+| 5 | `definitions` | `/`→`\|` split | `/`→`\|` split | already `\|`-separated |
+| 6 | `part_of_speech` | guessed from def | guessed from def | raw EDICT POS codes |
+| 7 | `level` | `hsk_2026:N` or `hsk_2010:N` | *(empty)* | *(empty)* |
+| 8 | `frequency` | from `weight` | *(empty)* | *(empty)* |
+
+### Language-Specific Extra Columns
+
+Appended after the 8 common columns:
+
+| Language | Extra Column | Description | Example |
+|---|---|---|---|
+| `ja` | `pitch_accent` | Comma-separated accent numbers | `0,2` |
+| `yue` | `mandarin_pinyin` | Mandarin pinyin cross-reference | `yi1 jian4…` |
+
+### Design Rationale
+
+- **`pronunciation` is always Latin-script** — pinyin, romaji, jyutping. Native-script phonetics (kana) go in `alternate` or `phonetic_detail` in the loader output.
+- **`definitions` always pipe-separated** — avoids ambiguity with commas in definitions.
+- **`level` is a single encoded string** — `scale:value` format supports any proficiency framework without adding columns.
+- **Extra columns are language-specific** — the loaders know their own CSV shape; extra columns carry data that doesn't fit the common model (pitch accent, cross-ref pinyin).
+
+---
+
 ## Implementation Plan
 
 ### Phase 4a: Backend Endpoint
