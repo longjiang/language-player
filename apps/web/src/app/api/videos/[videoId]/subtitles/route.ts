@@ -24,6 +24,30 @@ function getTableSuffix(l2: string): string {
   return TABLE_SUFFIX[l2] ?? '';
 }
 
+/** Parse Directus CSV subtitle data into SubtitleLine[]. Format: "starttime,line\\n..." */
+function parseCSVSubtitles(csv: string): SubtitleLine[] {
+  if (!csv || typeof csv !== 'string') return [];
+  const lines = csv.trim().split('\n');
+  // Skip header row "starttime,line"
+  const dataRows = lines.length > 1 ? lines.slice(1) : [];
+  return dataRows
+    .map(row => {
+      const commaIdx = row.indexOf(',');
+      if (commaIdx === -1) return null;
+      const starttime = parseFloat(row.slice(0, commaIdx));
+      const line = row.slice(commaIdx + 1)
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .trim();
+      if (isNaN(starttime) || !line) return null;
+      return { starttime, line };
+    })
+    .filter((x): x is SubtitleLine => x !== null);
+}
+
 interface SyncedLine {
   starttime: number;
   l1Line: string;
@@ -95,8 +119,9 @@ export async function GET(
     const json = await directusRes.json();
     const record = json?.data?.[0] ?? json?.data;
 
-    const l2Lines: SubtitleLine[] = record?.subs_l2 ?? [];
-    const l1Lines: SubtitleLine[] = record?.subs_l1 ?? [];
+    // subs_l2 and subs_l1 are CSV strings, not JSON arrays
+    const l2Lines = parseCSVSubtitles(record?.subs_l2 ?? '');
+    const l1Lines = parseCSVSubtitles(record?.subs_l1 ?? '');
 
     const lines = syncLines(l1Lines, l2Lines);
 
