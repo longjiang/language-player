@@ -91,7 +91,7 @@ export function getLanguageMeta(code: string): LanguageMeta | null {
 
 /** Top languages to show first in the language selector. */
 export const POPULAR_LANGUAGES = [
-  'en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
+  'en', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
   'ar', 'hi', 'tr', 'nl', 'pl', 'sv', 'th', 'vi', 'id',
 ] as const;
 
