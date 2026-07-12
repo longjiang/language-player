@@ -5,7 +5,7 @@
 - **Feature**: [Name]
 - **Status**: draft | in-progress | complete
 - **Created**: YYYY-MM-DD
-- **Phase**: [from ROADMAP.md]
+- **ROADMAP Phase**: [from ROADMAP.md — e.g., "Phase 3: Explore + Video Player"]
 
 ## Overview
 [One paragraph describing what this feature does and why it exists.]

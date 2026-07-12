@@ -1,5 +1,8 @@
 # ROADMAP.md — Project Plan
 
+> **Canonical phase numbering.** All specs and ADRs reference phases defined here.
+> See `specs/002-repo-migration.md` for when legacy repos get merged into this monorepo.
+
 ## Legend
 - ⬜ Not started
 - 🔄 In progress
@@ -17,6 +20,7 @@
 - ✅ Landing page, Explore page, Login/Register pages
 - ✅ Dark mode support (next-themes)
 - ✅ Build pipeline verified
+- ✅ Documentation (AGENTS.md, README, ROADMAP, specs/, docs/adr/)
 
 ## Phase 2: Auth + Core Navigation 🔄
 
@@ -64,32 +68,41 @@
 - ⬜ Saved words/phrases management
 - ⬜ Go Pro / Subscription management
 
-## Phase 7: Mobile Integration
+## Phase 7: Backend Consolidation
 
-- ⬜ Move `language-player-3` into `apps/mobile`
-- ⬜ Wire `apps/mobile` to use `@langplayer/*` packages
-- ⬜ Replace direct API calls with shared client
-- ⬜ Feature parity audit vs Classic
+> 🗄️ **Repo merge**: `zerotohero-python` → `apps/api/` (see specs/002)
 
-## Phase 8: Backend + Infrastructure
-
-- ⬜ Move `zerotohero-python` into `apps/api`
+- ⬜ Merge Python backend into monorepo with full Git history
+- ⬜ Wire `apps/api/` into Turborepo pipeline (`npx turbo dev` starts backend too)
 - ⬜ Directus 8 → Directus 11 migration plan
 - ⬜ CI/CD pipeline (GitHub Actions)
 - ⬜ Testing infrastructure (unit + E2E)
 - ⬜ Monitoring + error tracking
 
+## Phase 8: Mobile Integration
+
+> 🗄️ **Repo merge**: `language-player-3` → `apps/mobile/` (see specs/002)
+
+- ⬜ Merge React Native app into monorepo with full Git history
+- ⬜ Wire `apps/mobile` to use `@langplayer/*` packages
+- ⬜ Replace direct API calls with shared `@langplayer/api-client`
+- ⬜ Feature parity audit vs Classic
+
 ## Phase 9: Sunset Classic
 
-- ⬜ Full feature parity audit
-- ⬜ Redirect strategy from classic URLs
+> 🗄️ **Repo merge**: `zerotohero-nuxt` → `apps/classic/` for archival (see specs/002)
+
+- ⬜ Full feature parity audit (web + mobile vs Classic)
+- ⬜ Redirect strategy from classic URLs (`languageplayer.io/en/zh/...` → new URLs)
 - ⬜ Data migration verification
-- ⬜ Archive `zerotohero-nuxt`
+- ⬜ Merge Nuxt code into monorepo for historical reference
+- ⬜ Archive `zerotohero-nuxt` GitHub repo (read-only)
+- ⬜ Shut down Classic deployment
 
 ---
 
 ## Currently Working On
-- Auth + Core Navigation (Phase 2)
+- Phase 2: Auth + Core Navigation
 
 ## Up Next
-- Explore + Video Player (Phase 3)
+- Phase 3: Explore + Video Player

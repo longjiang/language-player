@@ -5,12 +5,20 @@
 - **Feature**: Gradual migration of legacy repos into monorepo
 - **Status**: accepted
 - **Created**: 2026-07-12
-- **Phase**: Cross-cutting (spans all phases)
+- **ROADMAP Phases**: 7, 8, 9 (see ROADMAP.md for canonical phase numbering)
 
 ## Overview
-We have three legacy repositories that must be consolidated into the monorepo without losing Git history. The migration is phased to minimize risk: each repo is merged only when the monorepo replacement is stable.
+We have three legacy repositories that must be consolidated into the monorepo without losing Git history. The migration is spread across the final three ROADMAP phases — each repo is merged only when its monorepo replacement is stable.
 
-## Current State
+## Mapping to ROADMAP Phases
+
+| Migration Step | Legacy Repo | Target Path | ROADMAP Phase | Trigger |
+|---------------|-------------|-------------|---------------|---------|
+| Step A | `zerotohero-python` | `apps/api/` | **Phase 7** — Backend Consolidation | Web app is feature-rich and we need atomic API+client changes |
+| Step B | `language-player-3` | `apps/mobile/` | **Phase 8** — Mobile Integration | Web app is near feature parity; ready to work on mobile again |
+| Step C | `zerotohero-nuxt` | `apps/classic/` | **Phase 9** — Sunset Classic | Web app fully replaces Classic; archival only |
+
+## Current State (ROADMAP Phase 1)
 
 ```
 language-player/                    ← monorepo git repo (new)
@@ -21,7 +29,7 @@ language-player/                    ← monorepo git repo (new)
 ├── zerotohero-python/              ← LEGACY — Flask (.gitignored)
 ```
 
-The three legacy directories each contain their own `.git/` folder — they are **independent Git repositories**. They are listed in `.gitignore` so the monorepo does not track them yet.
+The three legacy directories each contain their own `.git/` folder — they are **independent Git repositories**. They are listed in `.gitignore` so the monorepo does not track them yet. Agents read them for implementation reference but NEVER edit them.
 
 ## Why Not Just `git add` Them?
 
@@ -32,16 +40,9 @@ If we `git add zerotohero-nuxt/` while it contains its own `.git/`, Git does NOT
 3. **Not searchable** — `git log` in the monorepo won't show changes to migrated files
 4. **No atomic commits** — can't change `apps/api/` + `apps/web/` in one commit
 
-## Migration Phases
+## Step A: Merge Python Backend (ROADMAP Phase 7)
 
-### Phase 1: Reference Only (CURRENT)
-- Legacy repos live alongside the monorepo as sibling directories
-- **`.gitignored`** from the monorepo
-- Agents read them for implementation reference but NEVER edit them
-- No Git relationship between monorepo and legacy repos
-
-### Phase 2: Merge Python Backend
-**Trigger**: `apps/web` is stable and uses the Flask API heavily.
+**Trigger**: `apps/web` has Auth, Explore, Video Player, Dictionary, Content Features, and User Features built. We need atomic API changes alongside client changes.
 
 ```bash
 # From the monorepo root:
@@ -53,8 +54,16 @@ git commit -m "chore: merge zerotohero-python history into apps/api/"
 git remote remove python-backend
 ```
 
-### Phase 3: Merge React Native App
-**Trigger**: `apps/web` reaches feature parity with Classic AND we're ready to work on mobile again.
+**Post-merge actions**:
+1. Remove `zerotohero-python/` from `.gitignore`
+2. Add `apps/api/` to Turborepo pipeline (`turbo.json`)
+3. Update `apps/web/.env.local` to point to `apps/api/` if running locally
+4. Archive old `zerotohero-python` GitHub repo (read-only)
+5. Verify `git log --follow apps/api/app.py` shows original history
+
+## Step B: Merge React Native App (ROADMAP Phase 8)
+
+**Trigger**: `apps/web` is near feature parity with Classic. We're ready to invest in mobile again.
 
 ```bash
 git remote add mobile ../language-player-3
@@ -65,9 +74,15 @@ git commit -m "chore: merge language-player-3 history into apps/mobile/"
 git remote remove mobile
 ```
 
-Then wire `apps/mobile` to import from `@langplayer/*` packages.
+**Post-merge actions**:
+1. Remove `language-player-3/` from `.gitignore`
+2. Wire `apps/mobile` to import from `@langplayer/*` packages
+3. Replace direct Axios calls with `@langplayer/api-client`
+4. Archive old `language-player-3` GitHub repo (read-only)
+5. Verify `git log --follow apps/mobile/app.json` shows original history
 
-### Phase 4: Merge Classic (Nuxt)
+## Step C: Merge Classic — Archival (ROADMAP Phase 9)
+
 **Trigger**: `apps/web` fully replaces Classic. Classic is shut down.
 
 ```bash
@@ -79,23 +94,21 @@ git commit -m "chore: merge zerotohero-nuxt history into apps/classic/ (archival
 git remote remove classic
 ```
 
-This is purely archival — the code lives in the monorepo for historical reference.
+This is purely archival — the code lives in the monorepo for historical reference. The old deployment is shut down and URLs are redirected to the new Next.js app.
 
-## Post-Migration Actions Per Phase
-
-After each merge:
-1. Remove the legacy directory from `.gitignore`
-2. Archive the old GitHub repo (make read-only, add note pointing to monorepo)
-3. Update CI/CD to build from the new path
-4. Verify `git log --follow` works on migrated files
+**Post-merge actions**:
+1. Remove `zerotohero-nuxt/` from `.gitignore`
+2. Archive old `zerotohero-nuxt` GitHub repo (read-only)
+3. Set up redirects from `languageplayer.io/en/zh/...` → new URL structure
+4. Verify `git log --follow apps/classic/nuxt.config.js` shows original history
 
 ## Risk Mitigation
 
-- **Each phase is reversible** — the old repo still exists until archived
+- **Each step is reversible** — the old repo still exists until archived
 - **`read-tree --prefix=`** preserves every commit, author, date, and message
 - **`-s ours`** merge strategy prevents conflicts (we're adding history, not merging content)
-- **Phased timeline** means we never have two "live" copies of the same code
+- **Spread across final 3 ROADMAP phases** — never two "live" copies of the same code
 
 ## Open Questions
-- Should the Python backend stay as `apps/api/` or become a separate service deployed independently?
-- For zerotohero-nuxt: should we merge it at all, or just leave it as a read-only archive on GitHub?
+- Should `apps/api/` (Python) be deployed as part of the monorepo CI or remain an independently deployed service?
+- For Step C (Nuxt archival): should we merge at all, or just leave it as a read-only archive on GitHub?
