@@ -27,7 +27,7 @@ export function TranscriptQueuePanel({
   const ref = externalRef ?? internalRef;
 
   return (
-    <div className={cn('flex flex-col rounded-xl border border-border bg-card', className)}>
+    <div className={cn('flex min-h-0 flex-col rounded-xl border border-border bg-card', className)}>
       {/* Tab header */}
       <div className="flex shrink-0 border-b border-border">
         <button
