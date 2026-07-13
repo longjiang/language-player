@@ -31,6 +31,15 @@ export default function WatchPage() {
   const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
+  const videoWrapperRef = useRef<HTMLDivElement>(null);
+  const [isWide, setIsWide] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsWide(window.innerWidth >= 1024);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // Fetch video metadata on mount
   useEffect(() => {
@@ -164,12 +173,12 @@ export default function WatchPage() {
     );
   }
 
-  return (
-    <div className="mx-auto flex max-w-7xl flex-col px-4 py-6 lg:h-[calc(100vh-5rem)] lg:overflow-hidden">
-      <div className="grid flex-1 gap-6 lg:overflow-hidden lg:grid-cols-[1fr_320px]">
-        {/* Main: Player + Controls + Meta — scrolls internally, video stays visible */}
-        <div className="min-h-0 space-y-4 overflow-y-auto pb-4">
-          <div className="sticky top-0 z-10 -mx-4 -mt-6 bg-background px-4 pt-6 pb-2">
+  // ── Narrow layout: flex column, video sticky as direct flex child (Classic) ──
+  if (!isWide) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-6">
+        <div className="flex flex-col gap-6">
+          <div ref={videoWrapperRef} className="sticky top-[3.5rem] z-10 bg-background pb-2">
             <YouTubePlayer
               ref={playerRef}
               youtubeId={video.youtube_id}
@@ -179,37 +188,42 @@ export default function WatchPage() {
               onStateChange={handleStateChange}
             />
           </div>
-
-          <VideoControlBar
-            playerRef={playerRef}
-            currentTime={currentTime}
-            duration={duration}
-            paused={paused}
-            onPauseToggle={handlePauseToggle}
-            onPreviousLine={handlePreviousLine}
-            onNextLine={handleNextLine}
-            onRewind={handleRewind}
-            onSeekBarClick={handleSeekBarClick}
-            onPreviousVideo={hasPrevious ? playPrevious : undefined}
-            onNextVideo={hasNext ? playNext : undefined}
+          <div className="space-y-4">
+            <VideoControlBar playerRef={playerRef} currentTime={currentTime} duration={duration} paused={paused} onPauseToggle={handlePauseToggle} onPreviousLine={handlePreviousLine} onNextLine={handleNextLine} onRewind={handleRewind} onSeekBarClick={handleSeekBarClick} onPreviousVideo={hasPrevious ? playPrevious : undefined} onNextVideo={hasNext ? playNext : undefined} />
+            <VideoMeta video={video} />
+          </div>
+          <TranscriptQueuePanel
+            contentRef={transcriptScrollRef}
+            transcript={<SubtitleDisplay youtubeId={video.youtube_id} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} />}
+            queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}
           />
+        </div>
+      </div>
+    );
+  }
 
+  // ── Wide layout: two-column grid, independently scrollable ──
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-6 lg:h-[calc(100vh-5rem)] lg:overflow-hidden">
+      <div className="flex flex-col gap-6 lg:grid lg:h-full lg:overflow-hidden lg:grid-cols-[1fr_320px]">
+        <div className="flex-1 space-y-4 lg:overflow-y-auto">
+          <div ref={videoWrapperRef} className="sticky top-[3.5rem] z-10 bg-background pb-2 lg:static lg:top-auto lg:z-auto">
+            <YouTubePlayer
+              ref={playerRef}
+              youtubeId={video.youtube_id}
+              autoplay
+              onTimeUpdate={handleTimeUpdate}
+              onDuration={handleDuration}
+              onStateChange={handleStateChange}
+            />
+          </div>
+          <VideoControlBar playerRef={playerRef} currentTime={currentTime} duration={duration} paused={paused} onPauseToggle={handlePauseToggle} onPreviousLine={handlePreviousLine} onNextLine={handleNextLine} onRewind={handleRewind} onSeekBarClick={handleSeekBarClick} onPreviousVideo={hasPrevious ? playPrevious : undefined} onNextVideo={hasNext ? playNext : undefined} />
           <VideoMeta video={video} />
         </div>
-
-        {/* Sidebar: Transcript + Queue tabs — fills height, scrolls internally */}
         <aside className="min-h-0 overflow-hidden">
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
-            transcript={
-              <SubtitleDisplay
-                youtubeId={video.youtube_id}
-                currentTime={currentTime}
-                onLinesLoaded={setSubtitleStartTimes}
-                onSeekToLine={(t) => playerRef.current?.seekTo(t)}
-                scrollContainerRef={transcriptScrollRef}
-              />
-            }
+            transcript={<SubtitleDisplay youtubeId={video.youtube_id} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} />}
             queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}
           />
         </aside>
