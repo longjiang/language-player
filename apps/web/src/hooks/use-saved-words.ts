@@ -43,9 +43,10 @@ export function useSavedWords() {
 
     const mergeFromCloud = async () => {
       try {
-        const data = await getUserData();
-        if (data?.saved_words) {
-          const cloud = JSON.parse(data.saved_words) as SavedWords;
+        const response = await getUserData();
+        const savedWordsJson = response?.data?.saved_words;
+        if (savedWordsJson) {
+          const cloud = JSON.parse(savedWordsJson) as SavedWords;
           setSavedWords(prev => mergeSavedWords(prev, cloud));
         }
       } catch (err) {
