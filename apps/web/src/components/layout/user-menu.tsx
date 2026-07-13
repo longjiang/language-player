@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
+import { useLanguage } from '@/providers/language-provider';
 import { User, LogOut, Settings } from 'lucide-react';
 
 export function UserMenu() {
   const { data: session, status } = useSession();
+  const { l1, l2 } = useLanguage();
   const t = useT();
   const [open, setOpen] = useState(false);
 
@@ -44,7 +46,7 @@ export function UserMenu() {
               <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
             </div>
             <Link
-              href="/settings"
+              href={`/${l1.code}/${l2.code}/settings`}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
               onClick={() => setOpen(false)}
             >
