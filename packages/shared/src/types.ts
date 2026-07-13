@@ -72,20 +72,39 @@ export interface Tokenizer {
   languages: string[];
 }
 
-export interface DictionaryEntry {
-  id?: string;
-  word: string;
-  language: string;
-  definitions: Definition[];
-  pronunciation?: string;
-  pos?: string;
-  frequency?: number;
+/** Matches the Python backend's dictionary/lookup response format. */
+export interface DictionaryLookupResponse {
+  query: {
+    text: string;
+    l2: string;
+    l1: string;
+  };
+  results: DictionaryEntry[];
+  message?: string;
 }
 
-export interface Definition {
-  text: string;
-  language: string;
-  examples?: string[];
+/** A single entry from the dictionary lookup, matching the backend WordEntry schema. */
+export interface DictionaryEntry {
+  id: string;
+  head: string;
+  alternate?: string | null;
+  definitions: string[];
+  pronunciation: string;
+  part_of_speech?: string | null;
+  match_type: 'exact' | 'lemma' | 'fuzzy' | 'llm' | null;
+  level?: {
+    scale: string;
+    value: string;
+  } | null;
+  frequency?: number | null;
+  han_script?: {
+    traditional?: string;
+    simplified?: string;
+    kanji?: string | null;
+    han?: string;
+  } | null;
+  phonetic_detail?: Record<string, unknown> | null;
+  source?: string;
 }
 
 // ── User & Auth ───────────────────────────────

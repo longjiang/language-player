@@ -1,12 +1,14 @@
 import { apiClient } from './client';
-import type { DictionaryEntry, Token } from '@langplayer/shared';
+import type { DictionaryLookupResponse, DictionaryEntry, Token } from '@langplayer/shared';
 
 export function useDictionary() {
   return {
-    /** Look up a word in the dictionary. */
-    lookup: (word: string, lang: string) =>
-      apiClient.get<DictionaryEntry[]>('/dictionary/lookup', {
-        params: { word, lang },
+    /** Look up a word in the dictionary. POST /dictionary/lookup */
+    lookup: (text: string, l2: string, l1: string = 'en') =>
+      apiClient.post<DictionaryLookupResponse>('/dictionary/lookup', {
+        text,
+        l2,
+        l1,
       }),
 
     /** Tokenize + lemmatize a sentence. */
