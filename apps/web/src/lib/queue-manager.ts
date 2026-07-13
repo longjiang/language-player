@@ -59,7 +59,7 @@ export class QueueManager {
 
   get currentVideo(): YouTubeVideo | null {
     const idx = this.currentIndex;
-    return idx >= 0 ? this._queue[idx] : null;
+    return idx >= 0 ? (this._queue[idx] ?? null) : null;
   }
 
   get currentIndex(): number {
@@ -80,7 +80,7 @@ export class QueueManager {
   getSnapshot(youtubeId?: string): QueueState {
     const idx = youtubeId ? this.findIndex(youtubeId) : 0;
     return {
-      currentVideo: idx >= 0 ? this._queue[idx] : null,
+      currentVideo: idx >= 0 ? (this._queue[idx] ?? null) : null,
       queue: this._queue,
       queueType: this._queueType,
       currentIndex: idx,
@@ -93,7 +93,7 @@ export class QueueManager {
   getNext(youtubeId: string): YouTubeVideo | null {
     const idx = this.findIndex(youtubeId);
     if (idx >= 0 && idx < this._queue.length - 1) {
-      return this._queue[idx + 1];
+      return this._queue[idx + 1] ?? null;
     }
     return null;
   }
@@ -102,7 +102,7 @@ export class QueueManager {
   getPrevious(youtubeId: string): YouTubeVideo | null {
     const idx = this.findIndex(youtubeId);
     if (idx > 0) {
-      return this._queue[idx - 1];
+      return this._queue[idx - 1] ?? null;
     }
     return null;
   }

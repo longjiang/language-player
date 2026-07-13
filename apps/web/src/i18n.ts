@@ -26,7 +26,7 @@ function deepMerge(base: Messages, override: Messages): Messages {
   return result;
 }
 
-export default getRequestConfig(async () => {
+export default getRequestConfig(async (): Promise<any> => {
   // Read locale from our custom cookie (set by middleware from /[l1]/[l2] path)
   const cookieStore = cookies();
   const rawLocale = cookieStore.get('NEXT_LOCALE')?.value ?? 'en';

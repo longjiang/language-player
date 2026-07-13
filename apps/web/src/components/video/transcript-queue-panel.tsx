@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, type ReactNode } from 'react';
+import { useState, useRef, useCallback, type ReactNode } from 'react';
 import { useT } from '@/hooks/use-t';
 import { cn } from '@/lib/utils';
 import { FileText, ListVideo } from 'lucide-react';
@@ -25,6 +25,11 @@ export function TranscriptQueuePanel({
   const t = useT();
   const internalRef = useRef<HTMLDivElement>(null);
   const ref = externalRef ?? internalRef;
+
+  // Callback ref to satisfy TypeScript's strict ref typing
+  const setRef = useCallback((node: HTMLDivElement | null) => {
+    (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+  }, [ref]);
 
   return (
     <div className={cn('flex min-h-0 h-full flex-col rounded-xl border border-border bg-card', className)}>
@@ -57,7 +62,7 @@ export function TranscriptQueuePanel({
       </div>
 
       {/* Tab content */}
-      <div ref={ref} className="flex-1 overflow-y-auto p-4">
+      <div ref={setRef} className="flex-1 overflow-y-auto p-4">
         {tab === 'transcript' ? transcript : queue}
       </div>
     </div>

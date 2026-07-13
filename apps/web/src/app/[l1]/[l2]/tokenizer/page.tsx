@@ -26,7 +26,7 @@ const SAMPLE_TEXTS: Record<string, string> = {
 };
 
 function getSampleText(code: string): string {
-  return SAMPLE_TEXTS[code] ?? SAMPLE_TEXTS.en;
+  return SAMPLE_TEXTS[code] ?? SAMPLE_TEXTS.en ?? 'Seoul is the capital...';
 }
 
 export default function TokenizerPage() {
