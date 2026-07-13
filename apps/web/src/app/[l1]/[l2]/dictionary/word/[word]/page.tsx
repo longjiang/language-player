@@ -7,9 +7,10 @@ import { useT } from '@/hooks/use-t';
 import { languageName, baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { ArrowLeft, Loader2, AlertCircle, Volume2, BookOpen, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, BookOpen, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SaveButton } from '@/components/save-button';
+import { SpeakButton } from '@/components/speak-button';
 
 export default function WordDetailPage() {
   const params = useParams<{ l1: string; l2: string; word: string }>();
@@ -122,6 +123,7 @@ export default function WordDetailPage() {
             <WordDetailCard
               key={entry.id}
               entry={entry}
+              l2Code={l2.code}
               levelScaleLabel={levelScaleLabel}
               saveContext={saveContext}
             />
@@ -135,10 +137,12 @@ export default function WordDetailPage() {
 /** Full-word detail card matching GO's DictionaryEntryContent layout. */
 function WordDetailCard({
   entry,
+  l2Code,
   levelScaleLabel,
   saveContext,
 }: {
   entry: DictionaryEntry;
+  l2Code: string;
   levelScaleLabel: (scale: string) => string;
   saveContext: { form: string; text: string; textTitle: string };
 }) {
@@ -164,7 +168,7 @@ function WordDetailCard({
             <div className="mt-2 flex flex-wrap items-center gap-3">
               {entry.pronunciation && (
                 <span className="flex items-center gap-1 text-lg text-muted-foreground">
-                  <Volume2 className="h-4 w-4" />
+                  <SpeakButton text={entry.head} l2Code={l2Code} size="default" />
                   [{entry.pronunciation}]
                 </span>
               )}
