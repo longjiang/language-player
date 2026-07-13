@@ -93,6 +93,31 @@ Use these to log in during local development:
 | **Mary** | `tester.mary@zerotohero.ca` / `pc8qm8LBZeGuBno` |
 | **Bob** | `tester.bob@zerotohero.ca` / `LTgoXTe8qqGJhRd` |
 
+### Pricing Tiers
+
+**Free Account:**
+- Access 600,000+ videos across 207+ languages
+- See collocations, example sentences, verb inflections, and Chinese character decomposition in the dictionary
+- See only first 10 lines of interactive transcripts with English translation
+- See only 2 examples of words in videos
+- 14-day money-back guarantee
+
+**Pro Account:**
+- Access 600,000+ videos across 207+ languages
+- See collocations, example sentences, verb inflections, and Chinese character decomposition in the dictionary
+- See complete interactive transcripts with English translation
+- See hundreds of examples of words in videos, or in particular TV shows
+
+**Pricing Plans:**
+
+| Plan | Price |
+|---|---|
+| Monthly | US$10/mo |
+| Annual | US$90/yr (billed annually) |
+| Lifetime | US$169 (one-time payment, lifetime access) |
+
+Contact: [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)
+
 ### When You Make Changes
 
 - Update `specs/` if you implement a new feature or change behavior
