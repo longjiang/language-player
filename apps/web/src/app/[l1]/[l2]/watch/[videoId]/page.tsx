@@ -194,8 +194,8 @@ export default function WatchPage() {
           <VideoMeta video={video} />
         </div>
 
-        {/* Sidebar: Transcript + Queue tabs */}
-        <aside className="lg:col-span-1">
+        {/* Sidebar: Transcript + Queue tabs — sticky, full height */}
+        <aside className="lg:sticky lg:top-20 lg:self-start" style={{ maxHeight: 'calc(100vh - 5rem - 1.5rem)' }}>
           <TranscriptQueuePanel
             transcript={
               <SubtitleDisplay
