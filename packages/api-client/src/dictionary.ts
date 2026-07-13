@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { DictionaryLookupResponse, DictionaryEntry, Token } from '@langplayer/shared';
+import type { DictionaryLookupResponse, DictionaryEntry, Token, LemmatizeResponse } from '@langplayer/shared';
 
 export function useDictionary() {
   return {
@@ -11,9 +11,9 @@ export function useDictionary() {
         l1,
       }),
 
-    /** Tokenize + lemmatize a sentence. */
-    tokenize: (text: string, lang: string) =>
-      apiClient.post<Token[]>('/dictionary/tokenize', { text, lang }),
+    /** Tokenize + lemmatize a sentence. POST /lemmatize */
+    tokenize: (text: string, l2: string) =>
+      apiClient.post<LemmatizeResponse>('/lemmatize', { text, l2 }),
 
     /** Get saved words for the current user. */
     getSavedWords: (lang: string, page?: number) =>
