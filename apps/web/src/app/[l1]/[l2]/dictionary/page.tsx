@@ -26,6 +26,7 @@ export default function DictionaryPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchedText, setSearchedText] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const loadingRef = useRef(false); // ref-based guard avoids stale-closure race with Strict Mode double-invoke
 
   // Auto-search from ?q= param on first load
   useEffect(() => {
@@ -43,8 +44,8 @@ export default function DictionaryPage() {
   const doSearch = useCallback(
     async (term: string) => {
       const trimmed = term.trim();
-      if (!trimmed || loading) return;
-
+      if (!trimmed || loadingRef.current) return;
+      loadingRef.current = true;
       setLoading(true);
       setError(null);
       setResults(null);
@@ -59,11 +60,12 @@ export default function DictionaryPage() {
         setError(err?.message ?? t('error.something_went_wrong'));
         setResults(null);
       } finally {
+        loadingRef.current = false;
         setLoading(false);
         inputRef.current?.focus();
       }
     },
-    [loading, dict, l2.code, l1.code, t],
+    [dict, l2.code, l1.code, t],
   );
 
   const handleSearch = useCallback(
