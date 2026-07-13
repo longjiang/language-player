@@ -11,6 +11,7 @@ import { ArrowLeft, Loader2, AlertCircle, BookOpen, ExternalLink } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { SaveButton } from '@/components/save-button';
 import { SpeakButton } from '@/components/speak-button';
+import { SubsSearchResults } from '@/components/video/subs-search-results';
 
 export default function WordDetailPage() {
   const params = useParams<{ l1: string; l2: string; word: string }>();
@@ -129,6 +130,16 @@ export default function WordDetailPage() {
             />
           ))}
         </div>
+      )}
+
+      {/* Subs search: examples in videos (matching GO app's SubsSearch on word detail) */}
+      {!loading && !error && word && (
+        <section className="mt-10">
+          <h2 className="mb-4 text-lg font-semibold">
+            {t('title.examples_from_videos')}
+          </h2>
+          <SubsSearchResults term={word} />
+        </section>
       )}
     </div>
   );

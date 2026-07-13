@@ -246,6 +246,116 @@ _layout.tsx                          ← Root layout (providers)
 2. Popup shows translated context sentence above dictionary entries
 3. Fallback chain: cache → ChatGPT API → Azure Translator
 
+### SubsSearch — Subtitle Examples with Embedded Video Player
+
+This pattern powers the "Examples from Videos" section on the Word Detail page.
+It embeds a **self-contained mini video player** that shows the word in context.
+
+#### Architecture
+
+```
+SubsSearch (fetcher + context wrapper)
+  └─ VideoWithTranscriptProvider (scoped, independent player context)
+       └─ SubsSearchResults (UI orchestrator)
+            ├─ VideoWithTranscript  ← mini player, one subtitle line at a time
+            ├─ VideoControlBar      ← prev/next video, prev/next line, play/pause
+            └─ SubsSearchResultsList ← bottom sheet with all results
+```
+
+#### Component Responsibilities
+
+| Component | Role |
+|---|---|
+| **SubsSearch** | Fetches results via `subsSearch()` API. Wraps all matched videos in a scoped `VideoWithTranscriptProvider` with `initialVideo` = first match, `initialPlaylist` = all matches. |
+| **SubsSearchResults** | Seeks the mini player to the matched line's timestamp. Shows "Video X of Y" counter + "List All" button. |
+| **SubsSearchResultsList** | Bottom sheet with filterable/sortable scrollable list. Each row: thumbnail, title, context lines, highlighted term. Tap → `skipToVideo(index)` + `updateStartTime(timestamp)`. |
+| **VideoWithTranscript** (mini) | Same component as the full watch screen, but renders **one subtitle line at a time** (the matched line ± context). Not a full scrolling transcript. |
+
+#### Display: One Line at a Time
+
+The mini player inside subs search does **not** show a full scrollable transcript.
+Instead, it displays subtitle lines one-by-one, synced to playback:
+
+```
+┌──────────────────────────────────────┐
+│  Video 1 of 12           [List All ▼]│
+├──────────────────────────────────────┤
+│                                      │
+│       ┌──────────────────┐           │
+│       │   YouTube Player │           │  ← plays at matched timestamp
+│       └──────────────────┘           │
+│                                      │
+│  ───── Subtitle (single line) ─────  │
+│  "... context before ..."            │  ← L1 translation (if enabled)
+│  "... ██ matched word ██ ..."       │  ← L2 line with highlight
+│  "... context after ..."             │
+│                                      │
+├──────────────────────────────────────┤
+│  ⏮  ⬆  ⏪  ▶/⏸  ⏩  ⏭  🔄           │
+│ prev next prev  play  next next rewind│
+│ vid  line line       line  vid       │
+└──────────────────────────────────────┘
+```
+
+#### API Call
+
+```ts
+subsSearch(
+  [term],           // search terms
+  l2Code,           // target language
+  undefined,        // category filter
+  videoCount > 50000 ? 'nnull' : undefined,  // TV show filter for large langs
+  50,               // limit
+  5,                // context lines around match
+)
+// → GET /subs-search?terms=word&l2=zh&limit=50&context=5
+```
+
+Backend (Python `app_subs_search.py`):
+1. Checks cache (keyed by terms + filters)
+2. Queries `youtube_videos{suffix}` with MySQL `MATCH ... AGAINST IN BOOLEAN MODE` (FULLTEXT) or `LIKE %term%` fallback
+3. `reduce_video_subs_to_context()` trims each video's `subs_l2` CSV to ±5 lines around matches
+4. Returns JSON array of videos with trimmed subtitle CSV
+
+#### Free Tier Gating
+
+Free users are limited to **3 results**. When `currentVideoIndex >= 3`:
+- Reverts to previous index
+- Shows `ProFeatureModal` upgrade prompt
+
+#### Player Controls
+
+The mini player's `VideoControlBar` provides full navigation within the subs search playlist:
+
+| Icon | Action |
+|---|---|
+| `play-skip-back` | Previous video in results |
+| `arrow-back` | Previous subtitle line |
+| ▶ / ❚❚ | Play / Pause |
+| `arrow-forward` | Next subtitle line |
+| `play-skip-forward` | Next video in results |
+| `refresh-circle` | Rewind to previous line |
+
+#### Sort Options in List View
+
+| Sort | Description |
+|---|---|
+| Popularity | By views (descending) |
+| Likes | By likes (descending) |
+| Date | By upload date (newest first) |
+| Length | By matched line length |
+| Left Context | Grouped by character immediately before the term |
+| Right Context | Grouped by character immediately after the term |
+
+The Left/Right Context sorts reveal pronunciation and collocation patterns — e.g., for Chinese, grouping by the preceding character shows common compound words.
+
+#### Key Design Decisions
+
+- **Nested VideoWithTranscriptProvider**: Creates an independent player context scoped to subs search. Does not interfere with the global `VideoPlayerContext` or any other player instance.
+- **Term-centric, not entry-centric**: Search is by the word string, not dictionary entry ID. Works across all videos regardless of dictionary structure.
+- **CSV subs_l2 with context trimming**: Server trims subtitle CSV to ±context lines before sending, saving bandwidth.
+- **One-line-at-a-time display**: Unlike the full watch page's scrollable transcript, the subs search player shows a single line synced to playback — focused on the word in context.
+
 ---
 
 ## Navigation Patterns
@@ -264,10 +374,11 @@ Based on GO's architecture, the Next.js `apps/web/` should have:
 | GO Screen | Next.js Route | Status |
 |---|---|---|
 | Dictionary Search | `/[l1]/[l2]/dictionary` | ✅ Implemented |
-| Word Detail | `/[l1]/[l2]/dictionary/word/[id]` | ❌ **Not yet** |
+| Word Detail | `/[l1]/[l2]/dictionary/word/[word]` | ✅ Implemented |
 | Saved Words | `/[l1]/[l2]/saved-words` | ✅ Implemented |
-| Media Home | `/[l1]/[l2]/explore` | ❌ Future |
-| TV Shows | `/[l1]/[l2]/tv-shows` | ❌ Future |
+| SubsSearch Examples | `/[l1]/[l2]/dictionary/word/[word]` (inline) | ✅ Implemented (link-to-watch) |
+| Media Home | `/[l1]/[l2]/explore` | ✅ Implemented |
+| TV Shows | `/[l1]/[l2]/tv-shows` | ✅ Implemented |
 | Progress | `/[l1]/[l2]/progress` | ❌ Future |
 
 ### Word Detail Page — Implementation Notes
