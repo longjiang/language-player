@@ -165,7 +165,10 @@ export default function WatchPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 max-lg:min-h-0" style={{ height: 'calc(100vh - 5rem)' }}>
+    <div
+      className="mx-auto max-w-7xl px-4 py-6 lg:overflow-hidden"
+      style={{ height: 'calc(100vh - 5rem)' }}
+    >
       <div className="grid h-full gap-6 lg:overflow-hidden lg:grid-cols-[1fr_320px]">
         {/* Main: Player + Controls + Meta — scrolls internally, video stays visible */}
         <div className="min-h-0 space-y-4 overflow-y-auto pb-4">
