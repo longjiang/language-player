@@ -160,13 +160,15 @@ export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded, onSeekT
               ref={isActive ? (el) => {
                 if (!el) return;
                 const container = scrollContainerRef?.current ?? el.closest('.overflow-y-auto') as HTMLElement | null;
-                if (!container) {
-                  el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                  return;
-                }
-                const cr = container.getBoundingClientRect();
+                // Check visibility against scroll container
+                const cr = container?.getBoundingClientRect();
                 const er = el.getBoundingClientRect();
-                const isVisible = er.top >= cr.top && er.bottom <= cr.bottom;
+                const inContainer = cr
+                  ? er.top >= cr.top && er.bottom <= cr.bottom
+                  : false;
+                // Also check against the viewport (for narrow screens where container isn't constrained)
+                const inViewport = er.top >= 0 && er.bottom <= window.innerHeight;
+                const isVisible = inContainer || inViewport;
                 if (!isVisible) {
                   el.scrollIntoView({ block: 'center', behavior: 'smooth' });
                 }
