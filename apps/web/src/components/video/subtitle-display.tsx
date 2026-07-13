@@ -155,7 +155,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded, onSeekT
               className={`cursor-pointer rounded-lg px-3 py-2 transition-colors ${
                 isActive ? 'bg-primary/10 ring-1 ring-primary/20' : 'hover:bg-muted/50'
               }`}
-              ref={isActive ? (el) => el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }) : undefined}
+              ref={isActive ? (el) => el?.scrollIntoView({ block: 'center', behavior: 'smooth' }) : undefined}
             >
               <div className={`text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
                 <TokenizedText text={line.l2Line} l2Code={l2.code} textScale={0.875} />
