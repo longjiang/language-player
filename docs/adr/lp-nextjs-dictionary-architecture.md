@@ -127,38 +127,42 @@ interface WordEntry {
   id: string;                    // canonical ID for save/bookmark
   head: string;                  // primary display form in L2 script
   definitions: string[];         // definitions in the requested L1
-  pronunciation: string;         // phonetic guide
+  pronunciation: string;         // phonetic guide (Latin-script)
   match_type: "exact" | "lemma" | "fuzzy" | "llm";
 
   // ── Optional metadata ──
   part_of_speech?: string;
   level?: {
-    scale: "cefr" | "hsk" | "jlpt";
+    scale: "hsk_2010" | "hsk_2026" | "cefr" | "jlpt";
     value: number | string;
   };
   frequency?: number;            // 0-1 normalized rank
 
   // ── Language-specific scripts ──
-  alternate?: string;            // traditional, kanji, hanja, hantu
+  alternate?: string;            // alternate script: traditional, kana, hanja, hantu, hangul, han
   han_script?: {
     traditional?: string;
     simplified?: string;
-    kanji?: string;
-    hanja?: string;
+    kanji?: string | null;
+    hanja?: string | null;
+    hangul?: string;
+    han?: string;
     hantu?: string;
   };
   phonetic_detail?: {
-    kana?: string;
     pinyin?: string;
     pinyin_numeric?: string;
+    kana?: string;
     romaji?: string;
+    jyutping?: string;
+    romanization?: string;
     ipa?: string;
     pitch_accent?: number[];
-    stress_mark?: string;
+    stressed?: string;
   };
 
   // ── Source info ──
-  source: "cedict" | "edict" | "kengdic" | "wiktionary" | "open_russian" | "llm";
+  source: "hsk-cedict" | "cc-canto" | "edict" | "kengdic" | "klingonska" | "wiktionary" | "llm";
 }
 ```
 

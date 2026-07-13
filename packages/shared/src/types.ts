@@ -85,26 +85,46 @@ export interface DictionaryLookupResponse {
 
 /** A single entry from the dictionary lookup, matching the backend WordEntry schema. */
 export interface DictionaryEntry {
+  // ── Core (always present) ──
   id: string;
   head: string;
-  alternate?: string | null;
   definitions: string[];
   pronunciation: string;
-  part_of_speech?: string | null;
   match_type: 'exact' | 'lemma' | 'fuzzy' | 'llm' | null;
+
+  // ── Optional metadata ──
+  part_of_speech?: string | null;
   level?: {
-    scale: string;
-    value: string;
+    scale: 'hsk_2010' | 'hsk_2026' | 'cefr' | 'jlpt';
+    value: number | string;
   } | null;
   frequency?: number | null;
+
+  // ── Language-specific scripts ──
+  alternate?: string | null;
   han_script?: {
     traditional?: string;
     simplified?: string;
     kanji?: string | null;
+    hanja?: string | null;
+    hangul?: string;
     han?: string;
+    hantu?: string;
   } | null;
-  phonetic_detail?: Record<string, unknown> | null;
-  source?: string;
+  phonetic_detail?: {
+    pinyin?: string;
+    pinyin_numeric?: string;
+    kana?: string;
+    romaji?: string;
+    jyutping?: string;
+    romanization?: string;
+    ipa?: string;
+    pitch_accent?: number[];
+    stressed?: string;
+  } | null;
+
+  // ── Source info ──
+  source: 'hsk-cedict' | 'cc-canto' | 'edict' | 'kengdic' | 'klingonska' | 'wiktionary' | 'llm';
 }
 
 // ── User & Auth ───────────────────────────────
