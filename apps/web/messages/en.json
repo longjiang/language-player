@@ -683,6 +683,8 @@
         "tv_show": "TV Show",
         "tv_shows": "TV Shows",
         "episodes": "Episodes",
+        "transcript": "Transcript",
+        "queue": "Queue",
         "update_progress": "Update Progress",
         "verify_your_email": "Verify Your Email",
         "video_count": "Video {{index}} of {{total}}",
