@@ -10,6 +10,7 @@ import type { DictionaryEntry } from '@langplayer/shared';
 import { Search, Loader2, BookOpen, ExternalLink, AlertCircle, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SaveButton } from '@/components/save-button';
+import { SpeakButton } from '@/components/speak-button';
 import type { SavedWordContext } from '@langplayer/shared';
 
 export default function DictionaryPage() {
@@ -200,7 +201,7 @@ function DictionaryCard({
           </div>
           {entry.pronunciation && (
             <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-              <Volume2 className="h-3.5 w-3.5" />
+              <SpeakButton text={entry.head} l2Code={l2.code} size="sm" />
               {entry.pronunciation}
             </p>
           )}

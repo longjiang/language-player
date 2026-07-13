@@ -65,9 +65,9 @@
 
 - ✅ Tap-to-lookup (click a word → dictionary popup)
 - ✅ Dictionary search page
-- ⬜ Word saving / vocabulary list 🔄
+- ✅ Word saving / vocabulary list 🔄
 - ✅ Tokenization + lemmatization display
-- ⬜ Pronunciation (TTS)
+- ✅ Pronunciation (TTS) — Web Speech API with per-language voice auto-selection + VoicePicker settings
 
 ## Phase 5: Content Features
 
