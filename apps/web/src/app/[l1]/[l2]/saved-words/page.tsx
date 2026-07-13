@@ -111,7 +111,7 @@ export default function SavedWordsPage() {
               words={today}
               l1Code={l1.code}
               l2Code={l2.code}
-              onWordClick={(w) => router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(w.forms[0] ?? '')}`)}
+              onWordClick={(w) => router.push(`/${l1.code}/${l2.code}/dictionary/word/${encodeURIComponent(w.forms[0] ?? '')}`)}
             />
           )}
 
@@ -121,7 +121,7 @@ export default function SavedWordsPage() {
               words={earlier}
               l1Code={l1.code}
               l2Code={l2.code}
-              onWordClick={(w) => router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(w.forms[0] ?? '')}`)}
+              onWordClick={(w) => router.push(`/${l1.code}/${l2.code}/dictionary/word/${encodeURIComponent(w.forms[0] ?? '')}`)}
             />
           )}
         </div>

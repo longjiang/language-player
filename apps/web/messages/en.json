@@ -286,6 +286,7 @@
         "yue-HK": "Cantonese (Hong Kong)"
     },
     "action": {
+        "back": "Back",
         "cancel": "Cancel",
         "clear_words": "Clear Words",
         "clear": "Clear",

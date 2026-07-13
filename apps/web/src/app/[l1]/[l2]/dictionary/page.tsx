@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, type FormEvent } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { languageName, baseCode } from '@/lib/language-data';
 import { useT } from '@/hooks/use-t';
@@ -172,14 +172,22 @@ function DictionaryCard({
   levelScaleLabel: (scale: string) => string;
   searchedText: string;
 }) {
+  const router = useRouter();
   const context: SavedWordContext = {
     form: searchedText,
     text: searchedText,
     textTitle: 'Dictionary',
   };
 
+  const handleCardClick = () => {
+    router.push(`./word/${encodeURIComponent(entry.head)}`);
+  };
+
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-primary/30">
+    <div
+      className="rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-primary/30 cursor-pointer"
+      onClick={handleCardClick}
+    >
       {/* Head word & pronunciation */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -198,7 +206,7 @@ function DictionaryCard({
         </div>
 
         {/* Bookmark + match type badge */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           <SaveButton
             wordId={entry.id}
             head={entry.head}

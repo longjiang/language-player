@@ -114,7 +114,7 @@ export function DictionaryPopup({
   };
 
   const handleEntryClick = (entry: DictionaryEntry) => {
-    router.push(`/${l1Code}/${l2Code}/dictionary?q=${encodeURIComponent(entry.head)}`);
+    router.push(`/${l1Code}/${l2Code}/dictionary/word/${encodeURIComponent(entry.head)}`);
   };
 
   return (
