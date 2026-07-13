@@ -12,6 +12,7 @@ A monorepo consolidating three legacy codebases:
 2. `language-player-3/` (React Native/Expo 51) — **GO** mobile app. REFERENCE + eventual migration source.
    See `docs/lp-go-app-architecture.md` for a full analysis of its screens, components, and patterns.
 3. `zerotohero-python/` (Flask) — Backend. REFERENCE + eventual migration source.
+   See `docs/lp-python-backend-architecture.md` for a full analysis of its routes, utilities, and patterns.
 
 Note that the above three directories are **independent Git repositories**. They are listed in `.gitignore` so the monorepo does not track them yet. If need to commit changes to them, first `cd` into the directory and commit there.
 
