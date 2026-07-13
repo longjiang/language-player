@@ -7,6 +7,7 @@ import type { YouTubeVideo } from '@langplayer/shared';
 import { youtubeThumbnail } from '@/lib/video-service';
 import { useLanguage } from '@/providers/language-provider';
 import { useVideoPlayer } from '@/providers/video-player-provider';
+import { ChannelActionsMenu } from './channel-actions-menu';
 import type { QueueType } from '@/lib/queue-manager';
 
 interface VideoCardProps {
@@ -20,11 +21,24 @@ interface VideoCardProps {
   isActive?: boolean;
 }
 
-function formatDuration(seconds: number | undefined): string {
-  if (!seconds) return '';
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
+function formatDuration(seconds: number | string | undefined): string {
+  if (seconds == null || seconds === '') return '';
+  let num: number;
+  if (typeof seconds === 'string') {
+    // Try ISO 8601: PT1H23M45S → seconds
+    const m = seconds.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/);
+    if (m) {
+      num = (parseInt(m[1] ?? '0') * 3600) + (parseInt(m[2] ?? '0') * 60) + parseFloat(m[3] ?? '0');
+    } else {
+      num = parseFloat(seconds);
+    }
+    if (isNaN(num)) return '';
+  } else {
+    num = seconds;
+  }
+  const mins = Math.floor(num / 60);
+  const secs = Math.floor(num % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 function formatViews(views: number | undefined): string {
@@ -114,6 +128,7 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
           {views && <span>{views}</span>}
         </div>
       </div>
+      {video.channel_id && <ChannelActionsMenu channelId={video.channel_id} />}
     </div>
   ) : (
     <div className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/30 hover:shadow-lg">
@@ -145,9 +160,12 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
 
       {/* Info */}
       <div className="p-3">
-        <h3 className="line-clamp-2 text-sm font-medium leading-snug group-hover:text-primary">
-          {video.title ?? 'Untitled'}
-        </h3>
+        <div className="flex items-start justify-between gap-1">
+          <h3 className="line-clamp-2 text-sm font-medium leading-snug group-hover:text-primary">
+            {video.title ?? 'Untitled'}
+          </h3>
+          {video.channel_id && <ChannelActionsMenu channelId={video.channel_id} />}
+        </div>
         <div className="mt-1.5 flex items-center gap-3 text-xs text-muted-foreground">
           {views && (
             <span className="flex items-center gap-1">
