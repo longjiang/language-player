@@ -6,8 +6,9 @@ import { useLanguage } from '@/providers/language-provider';
 import { useVideoPlayer } from '@/providers/video-player-provider';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { ArrowLeft, Loader2, AlertCircle, Tv, Play, Eye, Clock } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, Tv, Eye, Clock } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
+import { youtubeThumbnail } from '@/lib/video-service';
 
 interface TvShow {
   id: number;
@@ -199,10 +200,15 @@ export default function TvShowEpisodesPage() {
                     {idx + 1}
                   </span>
 
-                  {/* Thumbnail placeholder + info */}
+                  {/* Thumbnail + info */}
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="flex-shrink-0 w-28 h-16 rounded bg-muted flex items-center justify-center overflow-hidden">
-                      <Play className="h-5 w-5 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+                      <img
+                        src={youtubeThumbnail(ep.youtube_id)}
+                        alt={ep.title}
+                        className="h-full w-full object-cover group-hover:opacity-90 transition-opacity"
+                        loading="lazy"
+                      />
                     </div>
 
                     <div className="min-w-0">

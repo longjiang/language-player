@@ -8,12 +8,14 @@ import { languageName, baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { TVShow } from '@langplayer/shared';
 import { Search, Loader2, AlertCircle, Tv, Filter, Globe } from 'lucide-react';
+import { youtubeThumbnail } from '@/lib/video-service';
 
 interface ShowWithMeta extends TVShow {
   year?: number;
   avg_views?: number;
   description?: string;
   poster?: string;
+  youtube_id?: string | null;
 }
 
 type SortKey = 'views' | 'title' | 'year';
@@ -172,18 +174,21 @@ export default function TVShowsPage() {
   );
 }
 
-/** Individual show card — poster + title + year + views. */
+/** Individual show card — poster (or YouTube thumbnail fallback) + title + year + views. */
 function ShowCard({ show, l1Code, l2Code }: { show: ShowWithMeta; l1Code: string; l2Code: string }) {
+  const coverUrl = show.poster
+    ?? (show.youtube_id ? youtubeThumbnail(show.youtube_id, 'hqdefault') : null);
+
   return (
     <Link
       href={`/${l1Code}/${l2Code}/tv-shows/${show.id}`}
       className="group overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-colors hover:border-primary/30"
     >
-      {/* Poster */}
-      <div className="relative aspect-[2/3] bg-muted">
-        {show.poster ? (
+      {/* Poster / YouTube thumbnail */}
+      <div className="relative aspect-video bg-muted">
+        {coverUrl ? (
           <img
-            src={show.poster}
+            src={coverUrl}
             alt={show.title}
             className="h-full w-full object-cover"
             loading="lazy"
