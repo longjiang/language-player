@@ -47,17 +47,20 @@ export const { handlers, signIn, signOut } = NextAuth({
   pages: { signIn: '/login' },
   session: { strategy: 'jwt' as const },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       // Persist the Directus token from authorize() into the JWT
       if (user && 'directusToken' in user) {
         token.directusToken = (user as any).directusToken as string;
       }
+      // NextAuth v5 auto-populates token.sub from user.id on first sign-in
       return token;
     },
     async session({ session, token }) {
-      // Expose the Directus token to the client via session
-      if (session.user && token.directusToken) {
-        (session.user as any).directusToken = token.directusToken as string;
+      // Expose the Directus token and user id to the client via session
+      if (session.user) {
+        (session.user as any).directusToken = (token.directusToken as string) ?? null;
+        // token.sub is the user ID (auto-populated by NextAuth from user.id)
+        (session.user as any).id = token.sub ?? null;
       }
       return session;
     },

@@ -15,6 +15,7 @@ import type { YouTubeVideo } from '@langplayer/shared';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
 import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
+import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
 
 interface SyncedLine {
   starttime: number;
@@ -44,6 +45,9 @@ export default function WatchPage() {
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
   const videoWrapperRef = useRef<HTMLDivElement>(null);
   const [isWide, setIsWide] = useState(false);
+
+  // Auto-save watch history every 15s during playback
+  useWatchHistoryRecorder(video?.id, currentTime);
 
   useEffect(() => {
     const check = () => setIsWide(window.innerWidth >= 1024);

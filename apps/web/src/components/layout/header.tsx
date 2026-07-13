@@ -35,6 +35,25 @@ function NavDropdown({ group, l1Code, l2Code }: { group: NavGroup; l1Code: strin
   const t = useT();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleClose = () => {
+    closeTimer.current = setTimeout(() => setOpen(false), 150);
+  };
+
+  const cancelClose = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    };
+  }, []);
 
   // Close on outside click
   useEffect(() => {
@@ -49,22 +68,22 @@ function NavDropdown({ group, l1Code, l2Code }: { group: NavGroup; l1Code: strin
   }, [open]);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div
+      ref={containerRef}
+      className="relative"
+      onMouseEnter={cancelClose}
+      onMouseLeave={scheduleClose}
+    >
       <button
         onClick={() => setOpen(!open)}
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
+        onMouseEnter={() => { cancelClose(); setOpen(true); }}
         className="flex items-center gap-0.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         {group.label}
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div
-          className="absolute left-0 top-full z-50 mt-1 min-w-[160px] rounded-lg border border-border bg-card p-1 shadow-lg"
-          onMouseEnter={() => setOpen(true)}
-          onMouseLeave={() => setOpen(false)}
-        >
+        <div className="absolute left-0 top-full z-50 min-w-[160px] rounded-lg border border-border bg-card p-1 shadow-lg">
           {group.links.map((link) => (
             <Link
               key={link.href}

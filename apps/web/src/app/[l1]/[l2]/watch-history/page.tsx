@@ -43,7 +43,7 @@ function formatProgress(seconds: number | undefined, duration: number | undefine
 }
 
 export default function WatchHistoryPage() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const { l1, l2 } = useLanguage();
   const { playVideo } = useVideoPlayer();
   const t = useT();
@@ -54,9 +54,15 @@ export default function WatchHistoryPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!userId || !l2.code) return;
-    let cancelled = false;
+    if (sessionStatus === 'loading') return;
+    if (!userId) {
+      setLoading(false);
+      setError('Not authenticated');
+      return;
+    }
+    if (!l2.code) return;
 
+    let cancelled = false;
     setLoading(true);
     setError(null);
 
@@ -66,12 +72,13 @@ export default function WatchHistoryPage() {
       body: JSON.stringify({ id: userId, l2: baseCode(l2.code) }),
     })
       .then((res) => {
+        // 404 = no history yet (not an error)
+        if (res.status === 404) return [];
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((data: WatchHistoryItem[]) => {
         if (cancelled) return;
-        // Deduplicate by youtube_id
         const seen = new Set<string>();
         const unique = (Array.isArray(data) ? data : []).filter((item) => {
           if (seen.has(item.youtube_id)) return false;
@@ -89,7 +96,7 @@ export default function WatchHistoryPage() {
       });
 
     return () => { cancelled = true; };
-  }, [userId, l2.code]);
+  }, [userId, l2.code, sessionStatus]);
 
   const handlePlay = (item: WatchHistoryItem, idx: number) => {
     const queue: YouTubeVideo[] = items.map((i) => ({
