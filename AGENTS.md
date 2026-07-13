@@ -86,8 +86,8 @@ Use these to log in during local development:
 
 | | |
 |---|---|
-| **Email** | `apple.tester.go@zerotohero.ca` |
-| **Password** | `Qg7gFqE9HF4cdvkcH8sv` |
+| **Mary** | `tester.mary@zerotohero.ca` / `pc8qm8LBZeGuBno` |
+| **Bob** | `tester.bob@zerotohero.ca` / `LTgoXTe8qqGJhRd` |
 
 ### When You Make Changes
 
