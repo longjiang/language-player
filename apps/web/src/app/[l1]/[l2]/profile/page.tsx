@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
@@ -16,9 +17,9 @@ import {
   BookOpen,
   Loader2,
   Play,
+  ArrowRight,
 } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
-import type { SavedWord } from '@langplayer/shared';
 
 interface WatchHistoryItem {
   id: number;
@@ -123,10 +124,20 @@ export default function ProfilePage() {
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Watch History */}
         <section>
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-            <Clock className="h-5 w-5 text-primary" />
-            {t('title.watch_history')}
-          </h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-lg font-semibold">
+              <Clock className="h-5 w-5 text-primary" />
+              {t('title.watch_history')}
+            </h2>
+            {history.length > 0 && (
+              <Link
+                href={`/${l1.code}/${l2.code}/watch-history`}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                See All <ArrowRight className="h-3 w-3" />
+              </Link>
+            )}
+          </div>
           {historyLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -172,10 +183,20 @@ export default function ProfilePage() {
 
         {/* Saved Words */}
         <section>
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-            <BookOpen className="h-5 w-5 text-primary" />
-            {t('title.saved_words')}
-          </h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-lg font-semibold">
+              <BookOpen className="h-5 w-5 text-primary" />
+              {t('title.saved_words')}
+            </h2>
+            {savedWords.length > 0 && (
+              <Link
+                href={`/${l1.code}/${l2.code}/saved-words`}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                See All <ArrowRight className="h-3 w-3" />
+              </Link>
+            )}
+          </div>
           {savedWords.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
               No words saved yet.
@@ -183,20 +204,35 @@ export default function ProfilePage() {
           ) : (
             <div className="space-y-1">
               {savedWords.map((word) => (
-                <div
+                <Link
                   key={word.id}
+                  href={`/${l1.code}/${l2.code}/dictionary/word/${encodeURIComponent(word.forms[0] ?? '')}`}
                   className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-muted/50"
                 >
-                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-semibold text-primary">
-                    {word.head?.charAt(0) ?? '?'}
-                  </div>
+                  {/* Word */}
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">{word.head}</p>
-                    {word.pronunciation && (
-                      <p className="text-xs text-muted-foreground">{word.pronunciation}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-semibold">{word.forms[0] ?? '?'}</span>
+                      {word.forms.length > 1 && (
+                        <span className="text-xs text-muted-foreground">
+                          {word.forms.slice(1).join(', ')}
+                        </span>
+                      )}
+                    </div>
+                    {/* Context */}
+                    {word.context.videoTitle && (
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        <Play className="mr-1 inline h-3 w-3" />
+                        {word.context.videoTitle}
+                      </p>
+                    )}
+                    {word.context.text && !word.context.videoTitle && (
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {word.context.text}
+                      </p>
                     )}
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
