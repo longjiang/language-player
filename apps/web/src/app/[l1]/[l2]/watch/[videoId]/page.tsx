@@ -30,6 +30,7 @@ export default function WatchPage() {
   const [paused, setPaused] = useState(false);
   const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
   const playerRef = useRef<YouTubePlayerHandle>(null);
+  const transcriptScrollRef = useRef<HTMLDivElement>(null);
 
   // Fetch video metadata on mount
   useEffect(() => {
@@ -197,12 +198,14 @@ export default function WatchPage() {
         {/* Sidebar: Transcript + Queue tabs — fills height, scrolls internally */}
         <aside className="min-h-0 overflow-hidden">
           <TranscriptQueuePanel
+            contentRef={transcriptScrollRef}
             transcript={
               <SubtitleDisplay
                 youtubeId={video.youtube_id}
                 currentTime={currentTime}
                 onLinesLoaded={setSubtitleStartTimes}
                 onSeekToLine={(t) => playerRef.current?.seekTo(t)}
+                scrollContainerRef={transcriptScrollRef}
               />
             }
             queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}

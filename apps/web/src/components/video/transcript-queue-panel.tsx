@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, type ReactNode } from 'react';
 import { useT } from '@/hooks/use-t';
 import { cn } from '@/lib/utils';
 import { FileText, ListVideo } from 'lucide-react';
 
 interface TranscriptQueuePanelProps {
-  transcript: React.ReactNode;
-  queue: React.ReactNode;
+  transcript: ReactNode;
+  queue: ReactNode;
   className?: string;
   defaultTab?: 'transcript' | 'queue';
+  /** Ref to the scrollable content container — pass to subtitle display for smart scrolling */
+  contentRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export function TranscriptQueuePanel({
@@ -17,9 +19,12 @@ export function TranscriptQueuePanel({
   queue,
   className,
   defaultTab = 'transcript',
+  contentRef: externalRef,
 }: TranscriptQueuePanelProps) {
   const [tab, setTab] = useState<'transcript' | 'queue'>(defaultTab);
   const t = useT();
+  const internalRef = useRef<HTMLDivElement>(null);
+  const ref = externalRef ?? internalRef;
 
   return (
     <div className={cn('flex flex-col rounded-xl border border-border bg-card', className)}>
@@ -52,7 +57,7 @@ export function TranscriptQueuePanel({
       </div>
 
       {/* Tab content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div ref={ref} className="flex-1 overflow-y-auto p-4">
         {tab === 'transcript' ? transcript : queue}
       </div>
     </div>
