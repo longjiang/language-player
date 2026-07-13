@@ -1,6 +1,7 @@
 export { VideoCard } from './video-card';
 export { VideoGrid } from './video-grid';
 export { VideoQueueList } from './video-queue-list';
+export { TranscriptQueuePanel } from './transcript-queue-panel';
 export { LevelFilter } from './level-filter';
 export { YouTubePlayer } from './youtube-player';
 export { VideoMeta } from './video-meta';

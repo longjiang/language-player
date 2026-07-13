@@ -692,6 +692,8 @@
         "explore_media": "Explore Media",
         "live_tv": "Live TV",
         "up_next": "Up Next",
+        "transcript": "Transcript",
+        "queue": "Queue",
         "learning_label": "Learning:"
     },
     "video": {

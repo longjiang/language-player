@@ -8,6 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { YouTubePlayer, type YouTubePlayerHandle, PLAYER_STATES } from '@/components/video/youtube-player';
 import { VideoMeta } from '@/components/video/video-meta';
 import { VideoControlBar } from '@/components/video/video-control-bar';
+import { TranscriptQueuePanel } from '@/components/video/transcript-queue-panel';
 import { VideoQueueList } from '@/components/video/video-queue-list';
 import { SubtitleDisplay } from '@/components/video/subtitle-display';
 import type { YouTubeVideo } from '@langplayer/shared';
@@ -191,20 +192,21 @@ export default function WatchPage() {
           />
 
           <VideoMeta video={video} />
-          <SubtitleDisplay
-            youtubeId={video.youtube_id}
-            currentTime={currentTime}
-            onLinesLoaded={setSubtitleStartTimes}
-            onSeekToLine={(t) => playerRef.current?.seekTo(t)}
-          />
         </div>
 
-        {/* Sidebar: Up Next */}
-        <aside className="hidden lg:block">
-          <div className="rounded-xl border border-border bg-card p-4">
-            <h3 className="mb-3 font-semibold">{t('title.up_next')}</h3>
-            <VideoQueueList currentYoutubeId={video.youtube_id} />
-          </div>
+        {/* Sidebar: Transcript + Queue tabs */}
+        <aside className="lg:col-span-1">
+          <TranscriptQueuePanel
+            transcript={
+              <SubtitleDisplay
+                youtubeId={video.youtube_id}
+                currentTime={currentTime}
+                onLinesLoaded={setSubtitleStartTimes}
+                onSeekToLine={(t) => playerRef.current?.seekTo(t)}
+              />
+            }
+            queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}
+          />
         </aside>
       </div>
     </div>
