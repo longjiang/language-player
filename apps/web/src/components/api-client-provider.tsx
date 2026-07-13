@@ -2,30 +2,36 @@
 
 import { useEffect, useRef } from 'react';
 import { createApiClient } from '@langplayer/api-client';
+import { useSession } from 'next-auth/react';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 /**
- * Initializes the shared API client on mount.
- * In a real app, getAccessToken would read from cookies / localStorage / NextAuth.
+ * Initializes the shared API client with the Directus token
+ * from the NextAuth session, so Flask /user-data endpoints can validate auth.
+ * Re-creates the client when auth state changes (login/logout).
  */
 export function ApiClientProvider({ children }: { children: React.ReactNode }) {
-  const initialized = useRef(false);
+  const { data: session, status } = useSession();
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
+    // Wait until NextAuth has determined the session state
+    if (status === 'loading') return;
+    hasInitialized.current = true;
 
     createApiClient({
-      baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5001',
+      baseURL: PYTHON_API_URL,
       timeout: 15000,
       async getAccessToken() {
-        // TODO: Integrate with NextAuth or your auth provider
-        return null;
+        // Return the Directus JWT from the NextAuth session (stored in jwt callback)
+        const token = (session?.user as any)?.directusToken as string | undefined;
+        return token ?? null;
       },
       onError(error) {
         console.error('[API]', error.code, error.message);
       },
     });
-  }, []);
+  }, [session, status]);
 
   return <>{children}</>;
 }

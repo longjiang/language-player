@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import type { SubtitleLine } from '@langplayer/shared';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
-const PYTHON_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://pythonvps.zerotohero.ca';
+const PYTHON_URL = PYTHON_API_URL;
 const CHUNK_SIZE = 5;
 
 /**

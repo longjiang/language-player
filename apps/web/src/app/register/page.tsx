@@ -7,9 +7,9 @@ import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'https://languageplayer.io';
-const PYTHON_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5001';
 
 type Step = 'form' | 'verify' | 'complete';
 

@@ -2,19 +2,21 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
+import type { LemmatizedToken, DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { Loader2, X, AlertCircle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
+import { SaveButton } from './save-button';
 import { useLanguage } from '@/providers/language-provider';
 import { baseCode } from '@/lib/language-data';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5001';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 interface DictionaryPopupProps {
   token: LemmatizedToken;
   l1Code: string;
   l2Code: string;
   position?: { x: number; y: number };
+  /** Context for word saving (subtitle line, video title, etc.) */
+  context?: SavedWordContext;
   onClose: () => void;
 }
 
@@ -23,6 +25,7 @@ export function DictionaryPopup({
   token,
   l1Code,
   l2Code,
+  context,
   onClose,
 }: DictionaryPopupProps) {
   const router = useRouter();
@@ -32,7 +35,7 @@ export function DictionaryPopup({
 
   const lookupWord = useCallback(async (text: string, signal: AbortSignal) => {
     try {
-      const res = await fetch(`${API_BASE}/dictionary/lookup`, {
+      const res = await fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, l2: baseCode(l2Code), l1: l1Code }),
@@ -175,12 +178,22 @@ export function DictionaryPopup({
           )}
 
           {entries.map((entry) => (
-            <DictionaryEntryCard
-              key={entry.id}
-              entry={entry}
-              levelLabel={levelLabel}
-              onClick={handleEntryClick}
-            />
+            <div key={entry.id} className="flex items-start gap-2">
+              <div className="flex-1 min-w-0">
+                <DictionaryEntryCard
+                  entry={entry}
+                  levelLabel={levelLabel}
+                  onClick={handleEntryClick}
+                />
+              </div>
+              {context && (
+                <SaveButton
+                  wordId={entry.id}
+                  head={entry.head}
+                  context={context}
+                />
+              )}
+            </div>
           ))}
         </div>
       </div>

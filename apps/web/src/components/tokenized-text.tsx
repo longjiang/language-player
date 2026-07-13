@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import type { LemmatizedToken, Lemma } from '@langplayer/shared';
+import type { LemmatizedToken, Lemma, SavedWordContext } from '@langplayer/shared';
 import { DictionaryPopup } from './dictionary-popup';
 import { useLanguage } from '@/providers/language-provider';
 import { baseCode } from '@/lib/language-data';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5001';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 // Simple in-memory cache to avoid re-lemmatizing the same text
 const lemmatizeCache = new Map<string, LemmatizedToken[]>();
@@ -16,16 +15,20 @@ export interface TokenizedTextProps {
   l2Code: string;
   /** Scale factor for text size (default: 1) */
   textScale?: number;
+  /** Contextual info for word saving (subtitle line, video title, etc.) */
+  context?: Partial<SavedWordContext>;
 }
 
 /**
  * Displays text with each word tokenized and lemmatized.
  * Tokens are clickable — clicking shows lemma info and enables dictionary lookup.
+ * Passes context through for word saving (video title, subtitle line, etc.).
  */
 export const TokenizedText: React.FC<TokenizedTextProps> = ({
   text,
   l2Code,
   textScale = 1,
+  context: externalContext,
 }) => {
   const { l1 } = useLanguage();
   const [tokens, setTokens] = useState<LemmatizedToken[]>([]);
@@ -61,7 +64,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           return;
         }
 
-        const response = await fetch(`${API_BASE}/lemmatize`, {
+        const response = await fetch(`${PYTHON_API_URL}/lemmatize`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text, l2: baseCode(l2Code) }),
@@ -131,6 +134,11 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           token={selectedToken}
           l1Code={l1.code}
           l2Code={l2Code}
+          context={{
+            form: selectedToken.text,
+            text,
+            ...externalContext,
+          }}
           onClose={() => setSelectedToken(null)}
         />
       )}

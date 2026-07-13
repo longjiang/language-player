@@ -4,8 +4,9 @@
  */
 
 import type { YouTubeVideo } from '@langplayer/shared';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
-const PYTHON_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5001';
+const PYTHON_URL = PYTHON_API_URL;
 
 export interface VideoListParams {
   l2: string;

@@ -12,6 +12,8 @@ A monorepo consolidating three legacy codebases:
 2. `language-player-3/` (React Native/Expo 51) — **GO** mobile app. REFERENCE + eventual migration source.
 3. `zerotohero-python/` (Flask) — Backend. REFERENCE + eventual migration source.
 
+Note that the above three directories are **independent Git repositories**. They are listed in `.gitignore` so the monorepo does not track them yet. If need to commit changes to them, first `cd` into the directory and commit there.
+
 The **active development** happens in:
 - `apps/web/` — Next.js 14 (replaces Classic)
 - `packages/shared/` — Shared types & constants
@@ -28,7 +30,7 @@ The **active development** happens in:
 
 4. **Language state flows L1 → L2.** Every language-specific page lives under `/[l1]/[l2]/...`. The middleware reads these params, looks up language objects, and provides them via React Context.
 
-5. **The backend is a Flask API at `localhost:5001`** (production: `languageplayer.io`). All data goes through it. Directus 8 is the headless CMS — but treat it as a black box accessed via the Flask API.
+5. **The backend is a Flask API** has a local dev URL and a production URL, which are noted in `apps/web/src/lib/api-url.ts`. All data goes through it. Directus 8 is the headless CMS — but treat it as a black box accessed via the Flask API. The reason is that we want to abstract the directus layer away from the web and mobile apps, so we can migrate to Directus 11 or another backend in the future without changing the clients.
 
 ### Before Implementing Any Feature
 
