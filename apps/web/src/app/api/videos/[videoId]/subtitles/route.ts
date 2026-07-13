@@ -24,18 +24,22 @@ function getTableSuffix(l2: string): string {
   return TABLE_SUFFIX[l2] ?? '';
 }
 
-/** Parse Directus CSV subtitle data into SubtitleLine[]. Format: "starttime,line\\n..." */
+/** Parse Directus CSV subtitle data into SubtitleLine[].
+ *  Uses the header row to find the "line" column index. */
 function parseCSVSubtitles(csv: string): SubtitleLine[] {
   if (!csv || typeof csv !== 'string') return [];
-  const lines = csv.trim().split('\n');
-  // Skip header row "starttime,line"
-  const dataRows = lines.length > 1 ? lines.slice(1) : [];
-  return dataRows
+  const rows = csv.trim().split('\n');
+  if (rows.length < 2) return [];
+  const header = rows[0]!.split(',');
+  const lineIdx = header.findIndex((h) => h.trim().toLowerCase() === 'line');
+  const timeIdx = header.findIndex((h) => h.trim().toLowerCase() === 'starttime');
+  if (lineIdx === -1 || timeIdx === -1) return [];
+  return rows.slice(1)
     .map(row => {
-      const commaIdx = row.indexOf(',');
-      if (commaIdx === -1) return null;
-      const starttime = parseFloat(row.slice(0, commaIdx));
-      const line = row.slice(commaIdx + 1)
+      const fields = parseCSVRow(row);
+      if (fields.length <= Math.max(timeIdx, lineIdx)) return null;
+      const starttime = parseFloat(fields[timeIdx]!);
+      const line = fields[lineIdx]!
         .replace(/&#39;/g, "'")
         .replace(/&amp;/g, '&')
         .replace(/&quot;/g, '"')
@@ -46,6 +50,31 @@ function parseCSVSubtitles(csv: string): SubtitleLine[] {
       return { starttime, line };
     })
     .filter((x): x is SubtitleLine => x !== null);
+}
+
+/** Split a CSV row into fields, handling quoted values. */
+function parseCSVRow(row: string): string[] {
+  const fields: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < row.length; i++) {
+    const ch = row[i]!;
+    if (ch === '"') {
+      if (inQuotes && i + 1 < row.length && row[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      fields.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  fields.push(current);
+  return fields;
 }
 
 interface SyncedLine {

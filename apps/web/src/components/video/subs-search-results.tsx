@@ -47,33 +47,69 @@ type SortKey = 'views' | 'likes' | 'date' | 'length' | 'leftContext' | 'rightCon
 
 // ── CSV parsing ───────────────────────────────
 
+/** Parse the CSV subs_l2 format returned by the Python /subs-search endpoint.
+ *  Uses the header row to find the "line" column index (follows Python
+ *  reduce_video_subs_to_context which does csv_header.index('line')). */
 function parseSubsL2(csv: string): SubsLine[] {
   if (!csv) return [];
   const lines: SubsLine[] = [];
   const rows = csv.split('\n');
-  let headerSkipped = false;
+  if (rows.length < 2) return [];
 
-  for (const row of rows) {
-    if (!headerSkipped && row.startsWith('starttime')) {
-      headerSkipped = true;
-      continue;
-    }
+  // Parse header to find the "line" column index
+  const header = rows[0]!.split(',');
+  const lineIdx = header.findIndex((h) => h.trim().toLowerCase() === 'line');
+  const timeIdx = header.findIndex((h) => h.trim().toLowerCase() === 'starttime');
+  if (lineIdx === -1 || timeIdx === -1) return [];
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i]!;
     if (!row.trim()) continue;
 
-    const commaIdx = row.indexOf(',');
-    if (commaIdx === -1) continue;
+    // Parse CSV row splitting by comma, handling quoted fields
+    const fields = parseCSVRow(row);
+    if (fields.length <= Math.max(timeIdx, lineIdx)) continue;
 
-    const starttime = parseFloat(row.substring(0, commaIdx));
+    const starttime = parseFloat(fields[timeIdx]!);
     if (isNaN(starttime)) continue;
 
-    let line = row.substring(commaIdx + 1);
-    if (line.startsWith('"') && line.endsWith('"')) {
-      line = line.slice(1, -1).replace(/""/g, '"');
-    }
+    const line = fields[lineIdx]!.trim();
+    if (!line) continue;
 
     lines.push({ starttime, line });
   }
   return lines;
+}
+
+/** Split a CSV row into fields, handling quoted values. */
+function parseCSVRow(row: string): string[] {
+  const fields: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < row.length; i++) {
+    const ch = row[i]!;
+    if (ch === '"') {
+      if (inQuotes && i + 1 < row.length && row[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      fields.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  fields.push(current);
+  return fields;
+}
+
+/** Strip a leading timestamp prefix like "0.067," or "1.234, " from a line. */
+function stripTimestampPrefix(text: string): string {
+  return text.replace(/^[\d.]+,\s*/, '');
 }
 
 function findMatchLine(lines: SubsLine[], term: string): number {
