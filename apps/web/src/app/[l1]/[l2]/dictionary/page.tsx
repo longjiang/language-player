@@ -173,6 +173,7 @@ function DictionaryCard({
   searchedText: string;
 }) {
   const router = useRouter();
+  const { l1, l2 } = useLanguage();
   const context: SavedWordContext = {
     form: searchedText,
     text: searchedText,
@@ -180,7 +181,7 @@ function DictionaryCard({
   };
 
   const handleCardClick = () => {
-    router.push(`./word/${encodeURIComponent(entry.head)}`);
+    router.push(`/${l1.code}/${l2.code}/dictionary/word/${encodeURIComponent(entry.head)}`);
   };
 
   return (
