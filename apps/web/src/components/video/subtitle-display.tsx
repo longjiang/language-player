@@ -6,6 +6,7 @@ import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { getShowTranslation, setShowTranslation } from '@/lib/settings';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { SubtitleLine } from '@langplayer/shared';
+import type { TokenCache } from '@/lib/token-cache';
 import { Settings2 } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
 
@@ -48,6 +49,8 @@ interface SubtitleDisplayProps {
   currentTime: number;
   /** Video title for word-saving context */
   videoTitle?: string;
+  /** Pre-computed token cache from /lemmatize-video-normalized */
+  tokenCache?: TokenCache;
   /** Called with the array of start times for prev/next line navigation */
   onLinesLoaded?: (startTimes: number[]) => void;
   /** Called when user clicks a subtitle line (outside a word) */
@@ -67,7 +70,7 @@ function stripDurationPrefix(text: string): string {
   return text.replace(/^[\d.]+,\s*/, '');
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [showTranslation, setShowTranslationState] = useState(true);
@@ -192,6 +195,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, onLinesLoa
                   text={line.l2Line}
                   l2Code={l2.code}
                   textScale={0.875}
+                  tokenCache={tokenCache}
                   context={{
                     text: line.l2Line,
                     starttime: line.starttime,

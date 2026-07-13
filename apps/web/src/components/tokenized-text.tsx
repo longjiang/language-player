@@ -6,6 +6,7 @@ import { DictionaryPopup } from './dictionary-popup';
 import { useLanguage } from '@/providers/language-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import type { TokenCache } from '@/lib/token-cache';
 
 // Simple in-memory cache to avoid re-lemmatizing the same text
 const lemmatizeCache = new Map<string, LemmatizedToken[]>();
@@ -17,6 +18,8 @@ export interface TokenizedTextProps {
   textScale?: number;
   /** Contextual info for word saving (subtitle line, video title, etc.) */
   context?: Partial<SavedWordContext>;
+  /** Pre-populated token cache from /lemmatize-video-normalized */
+  tokenCache?: TokenCache;
 }
 
 /**
@@ -29,6 +32,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   l2Code,
   textScale = 1,
   context: externalContext,
+  tokenCache,
 }) => {
   const { l1 } = useLanguage();
   const [tokens, setTokens] = useState<LemmatizedToken[]>([]);
@@ -56,7 +60,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
     const tokenize = async () => {
       try {
-        // Check cache first
+        // 1. In-memory lemmatize cache
         const cacheKey = `${l2Code}:${text}`;
         const cached = lemmatizeCache.get(cacheKey);
         if (cached) {
@@ -64,6 +68,17 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           return;
         }
 
+        // 2. Video token cache (from /lemmatize-video-normalized)
+        if (tokenCache) {
+          const videoCached = tokenCache.get(text);
+          if (videoCached) {
+            lemmatizeCache.set(cacheKey, videoCached);
+            if (!cancelled) { setTokens(videoCached); setLoading(false); }
+            return;
+          }
+        }
+
+        // 3. Fall back to per-line API call
         const response = await fetch(`${PYTHON_API_URL}/lemmatize`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

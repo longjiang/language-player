@@ -14,6 +14,7 @@ import { SubtitleDisplay } from '@/components/video/subtitle-display';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
+import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
 
 interface SyncedLine {
   starttime: number;
@@ -30,6 +31,9 @@ export default function WatchPage() {
 
   const [video, setVideo] = useState<YouTubeVideo | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Pre-load token cache for the video (skips per-line /lemmatize calls)
+  const { cache: tokenCache } = useVideoTokenCache(videoId, baseCode(l2.code));
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -205,7 +209,7 @@ export default function WatchPage() {
           </div>
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={video.youtube_id} videoTitle={video.title} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
+            transcript={<SubtitleDisplay youtubeId={video.youtube_id} videoTitle={video.title} tokenCache={tokenCache} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
             queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}
           />
         </div>
@@ -234,7 +238,7 @@ export default function WatchPage() {
         <aside className="min-h-0 overflow-hidden">
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={video.youtube_id} videoTitle={video.title} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
+            transcript={<SubtitleDisplay youtubeId={video.youtube_id} videoTitle={video.title} tokenCache={tokenCache} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
             queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}
           />
         </aside>

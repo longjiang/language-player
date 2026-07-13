@@ -1,5 +1,8 @@
 import { apiClient } from './client';
-import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
+import type { YouTubeVideo, SubtitleLine, LemmatizeResponse } from '@langplayer/shared';
+
+/** Hash table from /lemmatize-video-normalized: md5(line) → { tokens: [...] } */
+export type VideoTokenCache = Record<string, LemmatizeResponse>;
 
 export function useVideos() {
   return {
@@ -32,5 +35,11 @@ export function useVideos() {
     /** Report a video issue (wrong subtitles, etc.). */
     report: (videoId: string, reason: string) =>
       apiClient.post<void>(`/videos/${videoId}/report`, { reason }),
+
+    /** Get pre-computed, normalized token cache for all subtitle lines of a video. */
+    getVideoTokenCache: (videoId: string, lang: string) =>
+      apiClient.get<VideoTokenCache>('/lemmatize-video-normalized', {
+        params: { video_id: videoId, lang },
+      }),
   };
 }
