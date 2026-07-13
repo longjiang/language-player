@@ -50,7 +50,7 @@ export default function TokenizerPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
-      <h1 className="text-3xl font-bold">{t('msg.tokenizer_test', 'Tokenizer Test')}</h1>
+      <h1 className="text-3xl font-bold">Tokenizer Test</h1>
       <p className="mt-2 text-muted-foreground">
         Tokenization + lemmatization for {languageName(l2.code)}. Click any word to see its lemma.
       </p>

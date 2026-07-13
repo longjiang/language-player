@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import type { LemmatizedToken, Lemma } from '@langplayer/shared';
 import { useDictionary } from '@langplayer/api-client';
 
@@ -25,38 +25,55 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    // Cancel previous request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    if (!text.trim()) {
+      setTokens([]);
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setSelectedToken(null);
 
     const tokenize = async () => {
-      if (!text.trim()) {
-        setTokens([]);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-      setSelectedToken(null);
-
       try {
-        const response = await dict.tokenize(text, l2Code);
+        const response = await fetch('http://localhost:5001/lemmatize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, l2: l2Code }),
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
         if (!cancelled) {
-          setTokens(response.data.tokens);
+          setTokens(data.tokens);
+          setLoading(false);
         }
       } catch (err: any) {
+        if (err.name === 'AbortError') return;
         if (!cancelled) {
+          console.error('Tokenization error:', err);
           setError(err?.message ?? 'Tokenization failed');
-          // Fallback: show text as single token
           setTokens([{ text, lemmas: [] }]);
+          setLoading(false);
         }
-      } finally {
-        if (!cancelled) setLoading(false);
       }
     };
 
     tokenize();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [text, l2Code]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken) => {
