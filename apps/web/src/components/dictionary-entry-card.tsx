@@ -7,10 +7,12 @@ interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
   /** Language-specific level label formatter */
   levelLabel?: (scale: string, value: string | number) => string;
+  /** Called when the card is clicked */
+  onClick?: (entry: DictionaryEntry) => void;
 }
 
 /** Renders a single dictionary lookup result. */
-export function DictionaryEntryCard({ entry, levelLabel }: DictionaryEntryCardProps) {
+export function DictionaryEntryCard({ entry, levelLabel, onClick }: DictionaryEntryCardProps) {
   const level = entry.level;
   const levelText = level && levelLabel
     ? levelLabel(level.scale, level.value)
@@ -19,7 +21,10 @@ export function DictionaryEntryCard({ entry, levelLabel }: DictionaryEntryCardPr
       : null;
 
   return (
-    <div className="rounded-lg border bg-card p-3 text-sm shadow-sm transition-colors hover:bg-accent/50">
+    <div
+      className="rounded-lg border bg-card p-3 text-sm shadow-sm transition-colors hover:bg-accent/50 cursor-pointer"
+      onClick={() => onClick?.(entry)}
+    >
       {/* ── Header: head + pronunciation ── */}
       <div className="flex items-center gap-2">
         <span className="text-lg font-semibold" lang={entry.source}>

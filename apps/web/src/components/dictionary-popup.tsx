@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
 import { Loader2, X, AlertCircle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
@@ -23,6 +24,7 @@ export function DictionaryPopup({
   l2Code,
   onClose,
 }: DictionaryPopupProps) {
+  const router = useRouter();
   const [entries, setEntries] = useState<DictionaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +109,10 @@ export function DictionaryPopup({
     return `${prefix} ${value}`;
   };
 
+  const handleEntryClick = (entry: DictionaryEntry) => {
+    router.push(`/${l1Code}/${l2Code}/dictionary?q=${encodeURIComponent(entry.head)}`);
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -172,6 +178,7 @@ export function DictionaryPopup({
               key={entry.id}
               entry={entry}
               levelLabel={levelLabel}
+              onClick={handleEntryClick}
             />
           ))}
         </div>

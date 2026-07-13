@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useRef, type FormEvent } from 'react';
+import { useState, useCallback, useRef, useEffect, type FormEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { languageName } from '@/lib/language-data';
 import { useT } from '@/hooks/use-t';
@@ -13,6 +14,8 @@ export default function DictionaryPage() {
   const { l1, l2 } = useLanguage();
   const t = useT();
   const dict = useDictionary();
+  const searchParams = useSearchParams();
+  const [searched, setSearched] = useState(false);
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
@@ -22,10 +25,23 @@ export default function DictionaryPage() {
   const [searchedText, setSearchedText] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSearch = useCallback(
-    async (e?: FormEvent) => {
+  // Auto-search from ?q= param on first load
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q && !searched) {
+      setQuery(q);
+      setSearched(true);
+      // Trigger search after state settles
+      setTimeout(() => {
+        doSearch(q);
+      }, 100);
+    }
+  }, [searchParams, searched]);
+
+  const doSearch = useCallback(
+    async (term: string) => {
       e?.preventDefault();
-      const trimmed = query.trim();
+      const trimmed = term.trim();
       if (!trimmed || loading) return;
 
       setLoading(true);
@@ -46,7 +62,15 @@ export default function DictionaryPage() {
         inputRef.current?.focus();
       }
     },
-    [query, loading, dict, l2.code, l1.code, t],
+    [loading, dict, l2.code, l1.code, t],
+  );
+
+  const handleSearch = useCallback(
+    async (e?: FormEvent) => {
+      e?.preventDefault();
+      await doSearch(query.trim());
+    },
+    [query, doSearch],
   );
 
   // Determine proficiency scale for level display
