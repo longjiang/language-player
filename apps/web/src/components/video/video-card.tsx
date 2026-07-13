@@ -1,13 +1,19 @@
 'use client';
 
+import { useCallback } from 'react';
 import Link from 'next/link';
 import { Play, Eye, Clock } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { youtubeThumbnail } from '@/lib/video-service';
 import { useLanguage } from '@/providers/language-provider';
+import { useVideoPlayer } from '@/providers/video-player-provider';
+import type { QueueType } from '@/lib/queue-manager';
 
 interface VideoCardProps {
   video: YouTubeVideo;
+  /** When provided, clicking uses the player queue instead of plain navigation */
+  videos?: YouTubeVideo[];
+  queueType?: QueueType;
 }
 
 function formatDuration(seconds: number | undefined): string {
@@ -55,17 +61,27 @@ function getLevel(difficulty: number | undefined): number {
   return 7;
 }
 
-export function VideoCard({ video }: VideoCardProps) {
+export function VideoCard({ video, videos, queueType }: VideoCardProps) {
   const { l1, l2 } = useLanguage();
+  const { playVideo } = useVideoPlayer();
   const level = getLevel(video.difficulty);
   const duration = formatDuration(video.duration);
   const views = formatViews(video.views);
 
-  return (
-    <Link
-      href={`/${l1.code}/${l2.code}/watch/${video.youtube_id}`}
-      className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/30 hover:shadow-lg"
-    >
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (videos && videos.length > 0) {
+        e.preventDefault();
+        playVideo(video, videos, queueType ?? 'recommended');
+      }
+    },
+    [video, videos, queueType, playVideo],
+  );
+
+  const href = `/${l1.code}/${l2.code}/watch/${video.youtube_id}`;
+
+  const content = (
+    <div className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/30 hover:shadow-lg">
       {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden bg-muted">
         <img
@@ -112,6 +128,16 @@ export function VideoCard({ video }: VideoCardProps) {
           )}
         </div>
       </div>
-    </Link>
+    </div>
   );
+
+  if (videos && videos.length > 0) {
+    return (
+      <a href={href} onClick={handleClick}>
+        {content}
+      </a>
+    );
+  }
+
+  return <Link href={href}>{content}</Link>;
 }

@@ -74,7 +74,7 @@ export default function ExplorePage() {
       {/* Video grid */}
       {videos.length > 0 && (
         <>
-          <VideoGrid videos={videos} />
+          <VideoGrid videos={videos} queueType="recommended" />
 
           {/* Load more */}
           {hasMore && (

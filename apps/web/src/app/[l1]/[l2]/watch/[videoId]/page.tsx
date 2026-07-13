@@ -3,19 +3,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
+import { useVideoPlayer } from '@/providers/video-player-provider';
 import { useT } from '@/hooks/use-t';
 import { YouTubePlayer, type YouTubePlayerHandle, PLAYER_STATES } from '@/components/video/youtube-player';
 import { VideoMeta } from '@/components/video/video-meta';
 import { VideoControlBar } from '@/components/video/video-control-bar';
 import { SubtitleDisplay } from '@/components/video/subtitle-display';
 import type { YouTubeVideo } from '@langplayer/shared';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, SkipBack, SkipForward } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { baseCode } from '@/lib/language-data';
 
 export default function WatchPage() {
   const params = useParams<{ videoId: string }>();
   const { l1, l2 } = useLanguage();
   const t = useT();
+  const { playNext, playPrevious, hasNext, hasPrevious } = useVideoPlayer();
   const videoId = params.videoId;
 
   const [video, setVideo] = useState<YouTubeVideo | null>(null);
@@ -160,6 +163,8 @@ export default function WatchPage() {
             onPreviousLine={handlePreviousLine}
             onNextLine={handleNextLine}
             onRewind={handleRewind}
+            onPreviousVideo={hasPrevious ? playPrevious : undefined}
+            onNextVideo={hasNext ? playNext : undefined}
           />
 
           <VideoMeta video={video} />
@@ -170,9 +175,36 @@ export default function WatchPage() {
         <aside className="hidden lg:block">
           <div className="rounded-xl border border-border bg-card p-4">
             <h3 className="mb-3 font-semibold">{t('title.up_next')}</h3>
-            <p className="text-sm text-muted-foreground">
-              {t('msg.related_videos')}
-            </p>
+            {hasNext || hasPrevious ? (
+              <div className="space-y-2">
+                {hasPrevious && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={playPrevious}
+                  >
+                    <SkipBack className="mr-2 h-4 w-4" />
+                    {t('action.previous_video')}
+                  </Button>
+                )}
+                {hasNext && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={playNext}
+                  >
+                    <SkipForward className="mr-2 h-4 w-4" />
+                    {t('action.next_video')}
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {t('msg.related_videos')}
+              </p>
+            )}
           </div>
         </aside>
       </div>

@@ -12,6 +12,8 @@ import {
   Gauge,
   Info,
   Clock,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -30,6 +32,8 @@ interface VideoControlBarProps {
   onNextLine?: () => void;
   onRewind?: () => void;
   onOpenInfo?: () => void;
+  onPreviousVideo?: () => void;
+  onNextVideo?: () => void;
   hasPreviousLine?: boolean;
   hasNextLine?: boolean;
   className?: string;
@@ -45,6 +49,8 @@ export function VideoControlBar({
   onNextLine,
   onRewind,
   onOpenInfo,
+  onPreviousVideo,
+  onNextVideo,
   hasPreviousLine = true,
   hasNextLine = true,
   className,
@@ -95,6 +101,18 @@ export function VideoControlBar({
 
       {/* Controls row */}
       <div className="flex items-center justify-center gap-1">
+        {/* Previous video (queue) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 text-muted-foreground hover:text-foreground"
+          onClick={onPreviousVideo}
+          disabled={!onPreviousVideo}
+          title="Previous video (Shift + ←)"
+        >
+          <SkipBack className="h-4 w-4" />
+        </Button>
+
         {/* Info */}
         {onOpenInfo && (
           <Button
@@ -173,6 +191,18 @@ export function VideoControlBar({
         >
           <Gauge className="h-4 w-4" />
           {currentSpeed === 1 ? '1×' : `${currentSpeed}×`}
+        </Button>
+
+        {/* Next video (queue) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 text-muted-foreground hover:text-foreground"
+          onClick={onNextVideo}
+          disabled={!onNextVideo}
+          title="Next video (Shift + →)"
+        >
+          <SkipForward className="h-4 w-4" />
         </Button>
       </div>
     </div>
