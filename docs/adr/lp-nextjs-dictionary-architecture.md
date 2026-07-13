@@ -202,6 +202,11 @@ Appended after the 8 common columns:
 |---|---|---|---|
 | `ja` | `pitch_accent` | Comma-separated accent numbers | `0,2` |
 | `yue` | `mandarin_pinyin` | Mandarin pinyin cross-reference | `yi1 jian4…` |
+| `ru` | `stressed` | Accented Cyrillic form (stress marks) | `молоко'` |
+
+### ISO Code Convention
+
+Wiktionary CSV filenames use **ISO 639-1** (2-letter) codes wherever a mapping exists (e.g., `ru.csv`, `zh.csv`). For languages without an ISO 639-1 code, the ISO 639-3 (3-letter) code is used (e.g., `aaa.csv`). No two ISO 639-3 codes map to the same ISO 639-1 code, so there are no filename collisions.
 
 ### Design Rationale
 
