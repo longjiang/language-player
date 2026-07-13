@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'https://languageplayer.io';
-const PYTHON_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5001';
+const PYTHON_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5001';
 
 type Step = 'form' | 'verify' | 'complete';
 

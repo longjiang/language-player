@@ -15,7 +15,7 @@ export function ApiClientProvider({ children }: { children: React.ReactNode }) {
     initialized.current = true;
 
     createApiClient({
-      baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5001',
+      baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5001',
       timeout: 15000,
       async getAccessToken() {
         // TODO: Integrate with NextAuth or your auth provider

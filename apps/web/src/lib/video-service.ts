@@ -5,7 +5,7 @@
 
 import type { YouTubeVideo } from '@langplayer/shared';
 
-const PYTHON_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://pythonvps.zerotohero.ca';
+const PYTHON_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5001';
 
 export interface VideoListParams {
   l2: string;
