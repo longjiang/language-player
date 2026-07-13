@@ -1,0 +1,23 @@
+[build]
+  command = "nvm use 18 && npm install && npx turbo build --filter=@langplayer/web"
+  publish = "apps/web/.next"
+  base = "/"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+[[redirects]]
+  from = "/api/python/*"
+  to = "https://pythonvps.zerotohero.ca/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/directus/*"
+  to = "https://directusvps.zerotohero.ca/zerotohero/:splat"
+  status = 200
+  force = true
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

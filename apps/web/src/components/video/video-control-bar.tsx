@@ -64,7 +64,7 @@ export function VideoControlBar({
   const toggleSpeed = useCallback(() => {
     const next = (speedIndex + 1) % SPEEDS.length;
     setSpeedIndex(next);
-    playerRef.current?.setPlaybackRate(SPEEDS[next]);
+    playerRef.current?.setPlaybackRate(SPEEDS[next]!);
   }, [speedIndex, playerRef]);
 
   const handleRewind = useCallback(() => {
