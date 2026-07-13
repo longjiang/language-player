@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useLanguage } from '@/providers/language-provider';
+import { useVideoPlayer } from '@/providers/video-player-provider';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ArrowLeft, Loader2, AlertCircle, Tv, Play, Eye, Clock } from 'lucide-react';
+import type { YouTubeVideo } from '@langplayer/shared';
 
 interface TvShow {
   id: number;
@@ -32,6 +33,7 @@ export default function TvShowEpisodesPage() {
   const params = useParams<{ l1: string; l2: string; id: string }>();
   const router = useRouter();
   const { l1, l2 } = useLanguage();
+  const { playVideo } = useVideoPlayer();
   const t = useT();
   const showId = Number(params.id);
 
@@ -69,6 +71,30 @@ export default function TvShowEpisodesPage() {
     return () => { cancelled = true; };
   }, [showId]);
 
+  // Map episodes to YouTubeVideo format for the queue
+  const episodeVideos = useCallback((): YouTubeVideo[] => {
+    return episodes.map(ep => ({
+      youtube_id: ep.youtube_id,
+      title: ep.title,
+      id: String(ep.id),
+      views: ep.views ?? undefined,
+      duration: ep.duration ? parseDuration(ep.duration) : undefined,
+      locale: show?.locale ?? undefined,
+      tv_show: show?.title,
+    }));
+  }, [episodes, show]);
+
+  // Handle click on an episode row — set queue + navigate
+  const handlePlayEpisode = useCallback((ep: Episode, idx: number) => {
+    const queue = episodeVideos();
+    const video = queue[idx];
+    if (video) {
+      playVideo(video, queue, 'tvShow', {
+        tvShow: show ? { id: show.id, title: show.title } : undefined,
+      });
+    }
+  }, [episodeVideos, playVideo, show]);
+
   // Format duration from ISO 8601 or seconds
   const formatDuration = (dur?: string | null): string => {
     if (!dur) return '';
@@ -89,6 +115,19 @@ export default function TvShowEpisodesPage() {
       return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`;
     }
     return dur;
+  };
+
+  // Parse duration string to seconds
+  const parseDuration = (dur: string): number => {
+    const iso = dur.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (iso) {
+      const h = parseInt(iso[1] ?? '0', 10);
+      const m = parseInt(iso[2] ?? '0', 10);
+      const s = parseInt(iso[3] ?? '0', 10);
+      return h * 3600 + m * 60 + s;
+    }
+    const secs = parseInt(dur, 10);
+    return isNaN(secs) ? 0 : secs;
   };
 
   return (
@@ -150,10 +189,10 @@ export default function TvShowEpisodesPage() {
           ) : (
             <div className="space-y-1">
               {episodes.map((ep, idx) => (
-                <Link
+                <button
                   key={ep.id}
-                  href={`/${l1.code}/${l2.code}/watch/${ep.youtube_id}`}
-                  className="flex items-center gap-4 rounded-lg px-4 py-3 transition-colors hover:bg-muted/50 group"
+                  onClick={() => handlePlayEpisode(ep, idx)}
+                  className="flex items-center gap-4 rounded-lg px-4 py-3 transition-colors hover:bg-muted/50 group w-full text-left"
                 >
                   {/* Episode number */}
                   <span className="flex-shrink-0 w-8 text-center text-sm font-medium text-muted-foreground">
@@ -191,7 +230,7 @@ export default function TvShowEpisodesPage() {
                       </div>
                     </div>
                   </div>
-                </Link>
+                </button>
               ))}
             </div>
           )}

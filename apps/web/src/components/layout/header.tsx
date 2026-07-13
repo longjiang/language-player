@@ -10,6 +10,7 @@ import { Play, Menu, X } from 'lucide-react';
 
 const NAV_LINKS = [
   { key: 'title.explore', href: 'explore' },
+  { key: 'title.tv_shows', href: 'tv-shows' },
   { key: 'title.dictionary', href: 'dictionary' },
   { key: 'title.saved_words', href: 'saved-words' },
 ] as const;

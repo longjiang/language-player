@@ -30,10 +30,15 @@ export class QueueManager {
     this._queueType = queueType;
 
     if (queueType === 'tvShow') {
-      this._tvShow = metadata?.tvShow;
+      // Preserve existing if not provided
+      if (metadata?.tvShow !== undefined) {
+        this._tvShow = metadata.tvShow;
+      }
       this._searchTerm = undefined;
     } else if (queueType === 'search') {
-      this._searchTerm = metadata?.searchTerm;
+      if (metadata?.searchTerm !== undefined) {
+        this._searchTerm = metadata.searchTerm;
+      }
       this._tvShow = undefined;
     } else {
       this._tvShow = undefined;
