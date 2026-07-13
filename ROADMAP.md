@@ -82,7 +82,7 @@
 ## Phase 6: User Features
 
 - ⬜ User dashboard
-- ⬜ Watch history
+- ✅ Watch history
 - ⬜ Progress tracking
 - ⬜ Content preferences
 - ⬜ Saved words/phrases management
