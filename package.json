@@ -12,7 +12,8 @@
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo clean",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "typecheck:watch": "tsc --watch --noEmit --project apps/web/tsconfig.json"
   },
   "devDependencies": {
     "@types/spark-md5": "^3.0.5",
