@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-004
 - **Feature**: Video browse, search, YouTube playback, and subtitle display
-- **Status**: complete
+- **Status**: complete (updated 2026-07-12 with Phase 4 additions)
 - **Created**: 2026-07-12
 - **ROADMAP Phase**: Phase 3 — Explore + Video Player
 
@@ -193,10 +193,65 @@ starttime,line
 
 - ❌ VideoHero / featured video banner (lower priority than grid browse)
 - ❌ Continue Watching carousel (needs watch history — Phase 6)
-- ❌ Tap-to-dictionary (Phase 4)
-- ❌ Tokenization/lemmatization display (Phase 4)
 - ❌ TV Shows / Live TV pages (Phase 5)
 - ❌ Persisting translations to Directus (Classic doesn't either)
+- ✅ ~~Tap-to-dictionary~~ → built (Phase 4)
+- ✅ ~~Tokenization/lemmatization display~~ → built (Phase 4)
+
+---
+
+## Phase 4 Additions — Video Controls, Queue, Dictionary
+
+### Part E: Video Control Bar
+
+- **`VideoControlBar`** — Full control bar below the player, matching Classic/GO layout
+  - **Play/Pause** (Space) — toggle button with state-aware icon
+  - **Previous/Next Line** (←/→) — seeks to previous/next subtitle line boundary
+  - **Rewind** (R) — jumps back 2 seconds
+  - **Speed toggle** (M) — cycles: 1× → 0.75× → 0.5× → 1×, badge highlights when active
+  - **Prev/Next Video** (Shift+←/→) — skip through the player queue
+  - **Progress bar** — clickable seek bar with fill indicator
+  - **Time display** — MM:SS / MM:SS format
+- **`YouTubePlayer` refactor** — converted to `forwardRef`, exposes `YouTubePlayerHandle` (play, pause, seekTo, setPlaybackRate)
+
+### Part F: Player Queue
+
+- **`QueueManager`** (`lib/queue-manager.ts`) — singleton class matching GO architecture
+  - Three queue types: `recommended` (explore feed), `tvShow` (episodes), `search` (results)
+  - Tracks current video by `youtube_id`, provides `getNext()`/`getPrevious()`
+- **`VideoPlayerProvider`** (`providers/video-player-provider.tsx`) — React context wrapping language layout
+  - `playVideo(video, queue, queueType)` — set queue + navigate
+  - `playNext()` / `playPrevious()` — skip forward/back in queue
+  - `hasNext` / `hasPrevious` booleans for UI state
+- **`VideoQueueList`** — Up Next sidebar showing full queue as a scrollable list
+  - Current video highlighted with primary border
+  - Click any item to jump to that position
+- **`VideoCard` list variant** — `layout="list"` renders compact horizontal row (thumb + title + badges)
+
+### Part G: Subtitle Improvements
+
+- **Duration prefix stripping** — raw `"0.64,来"` → clean `"来"` via `stripDurationPrefix()`
+- **Clickable subtitle lines** — clicking a line (outside a word) seeks to that timestamp
+  - Word clicks still open dictionary popup (via `stopPropagation`)
+- **Prev/Next line by subtitle boundaries** — `onLinesLoaded(startTimes[])` callback enables precise line navigation
+
+### Part H: `lib/utils.ts`
+
+- **`cn()`** — Tailwind class merging utility (`clsx` + `tailwind-merge`) for conditional styling
+
+---
+
+## Python Backend — Dictionary LLM Fallback
+
+### Dictionary Lookup (`POST /dictionary/lookup`)
+
+- **CSV dictionaries** — CEDICT (zh), EDICT (ja), CC-Canto (yue), Kengdic (ko), Klingonska (tlh), Wiktionary (all others)
+- **LLM fallback** — when no CSV entry found, generates via DeepSeek (`_llm_lookup`)
+  - Cache: MD5-hashed JSON files in `cache/dictionary_llm/`
+  - Guards: skip empty/punctuation-only queries
+  - Response strips markdown fences, parses CEFR level, builds phonetic detail
+- **Fuzzy match fix** — `CedictLoader` now requires `len(key) > 1` for character substring matches (matching `CantoLoader`), preventing single-char matches from blocking LLM fallback
+- **Route-level safety net** — when all results are fuzzy and no head equals query, also tries LLM
 
 ---
 
@@ -204,10 +259,24 @@ starttime,line
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `components/video/video-card.tsx` | 103 | Thumbnail card with metadata badges |
-| `components/video/video-grid.tsx` | 19 | Responsive 4→2→1 column grid |
+| `components/video/video-card.tsx` | ~140 | Thumbnail card, supports `layout="card"|"list"` |
+| `components/video/video-grid.tsx` | ~25 | Responsive 4→2→1 column grid |
+| `components/video/video-queue-list.tsx` | ~25 | Up Next sidebar queue list |
+| `components/video/video-control-bar.tsx` | ~170 | Play/pause, seek, speed, prev/next, progress bar |
 | `components/video/level-filter.tsx` | 52 | CEFR pill selector |
-| `components/video/youtube-player.tsx` | 165 | YouTube IFrame API embed |
+| `components/video/youtube-player.tsx` | ~200 | YouTube IFrame API embed with ref handle |
+| `components/video/subtitle-display.tsx` | ~180 | L2 captions + L1 translations, line click seeking |
+| `components/tokenized-text.tsx` | ~170 | Lemmatized word tokens with dictionary popup |
+| `lib/queue-manager.ts` | ~130 | QueueManager singleton (recommended/tvShow/search) |
+| `lib/utils.ts` | 6 | `cn()` classname utility |
+| `providers/video-player-provider.tsx` | ~100 | React context for queue navigation |
+| `hooks/use-videos.ts` | ~75 | Client-side pagination hook |
+| `hooks/use-subtitle-translation.ts` | ~80 | Chunked LLM translation |
+| `app/[l1]/[l2]/watch/[videoId]/page.tsx` | ~200 | Watch page: player + controls + subs + sidebar |
+| `app/[l1]/[l2]/explore/page.tsx` | ~90 | Explore page with level filter + video grid |
+| `app/api/videos/recommend/route.ts` | 20 | Proxy: /api/videos/recommend |
+| `app/api/videos/[videoId]/route.ts` | 25 | Proxy: /api/videos/{id} |
+| `app/api/videos/[videoId]/subtitles/route.ts` | 95 | Subtitle CSV parser with HTML entity decode |
 | `components/video/video-meta.tsx` | 107 | Title, stats, level badge |
 | `components/video/subtitle-display.tsx` | 135 | L2 captions + L1 translation display |
 | `components/video/index.ts` | 6 | Barrel export |

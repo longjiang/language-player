@@ -37,14 +37,18 @@
 ## Phase 3: Explore + Video Player ✅
 
 - ✅ `/explore` page — fetch videos from API, lazy load, level filter
-- ✅ Video cards with thumbnails, difficulty badges, duration, views
+- ✅ Video cards with thumbnails, difficulty badges, duration, views (grid + list variants)
 - ✅ Video player page (`/[l1]/[l2]/watch/[videoId]`)
-- ✅ YouTube iframe integration with IFrame API (play/pause/seek)
+- ✅ YouTube iframe integration with IFrame API (play/pause/seek/speed)
+- ✅ Video control bar (play/pause, prev/next line, rewind, speed 1×/0.75×/0.5×, progress bar)
+- ✅ Player queue (recommended/tvShow/search types, prev/next video skip)
+- ✅ Up Next sidebar with scrollable queue list, current video highlighted
 - ✅ Subtitle display — L2 captions always shown, L1 translation below (DeepSeek LLM)
+- ✅ Subtitle improvements — duration prefix stripping, click-to-seek, subtitle-based line nav
 - ✅ Live translation via Python /translate_array (5 lines/chunk, progressive)
-- ✅ "Up next" sidebar (stub)
 - ✅ Loading skeletons, error states, empty states
 - ✅ Client settings (localStorage) for translation toggle
+- ✅ `lib/utils.ts` — `cn()` classname utility
 
 ## Phase 2.5: UI Internationalization ✅
 
@@ -59,10 +63,10 @@
 
 ## Phase 4: Dictionary
 
-- ⬜ Tap-to-lookup (click a word → dictionary popup)
-- ⬜ Dictionary search page
+- ✅ Tap-to-lookup (click a word → dictionary popup)
+- ✅ Dictionary search page
 - ⬜ Word saving / vocabulary list
-- ⬜ Tokenization + lemmatization display
+- ✅ Tokenization + lemmatization display
 - ⬜ Pronunciation (TTS)
 
 ## Phase 5: Content Features
