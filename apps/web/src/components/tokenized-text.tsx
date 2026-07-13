@@ -2,7 +2,10 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import type { LemmatizedToken, Lemma } from '@langplayer/shared';
-import { useDictionary } from '@langplayer/api-client';
+import { DictionaryPopup } from './dictionary-popup';
+import { useLanguage } from '@/providers/language-provider';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5001';
 
 export interface TokenizedTextProps {
   text: string;
@@ -20,7 +23,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   l2Code,
   textScale = 1,
 }) => {
-  const dict = useDictionary();
+  const { l1 } = useLanguage();
   const [tokens, setTokens] = useState<LemmatizedToken[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +49,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
     const tokenize = async () => {
       try {
-        const response = await fetch('http://localhost:5001/lemmatize', {
+        const response = await fetch(`${API_BASE}/lemmatize`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text, l2: l2Code }),
@@ -110,28 +113,14 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
         ))}
       </div>
 
-      {/* Token detail popup */}
-      {selectedToken && selectedToken.lemmas.length > 0 && (
-        <div className="mt-3 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-          <div className="mb-1 text-sm font-medium text-muted-foreground">
-            <span className="text-lg font-semibold text-foreground">{selectedToken.text}</span>
-            {selectedToken.pronunciation && (
-              <span className="ml-2 text-base">/{selectedToken.pronunciation}/</span>
-            )}
-          </div>
-          <div className="mt-2 space-y-1">
-            {selectedToken.lemmas.map((lemma, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm">
-                <span className="font-medium">{lemma.lemma}</span>
-                {lemma.part_of_speech && (
-                  <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                    {lemma.part_of_speech}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Dictionary popup */}
+      {selectedToken && (
+        <DictionaryPopup
+          token={selectedToken}
+          l1Code={l1.code}
+          l2Code={l2Code}
+          onClose={() => setSelectedToken(null)}
+        />
       )}
     </div>
   );
