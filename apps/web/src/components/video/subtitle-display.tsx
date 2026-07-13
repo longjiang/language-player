@@ -48,6 +48,8 @@ interface SubtitleDisplayProps {
   currentTime: number;
   /** Called with the array of start times for prev/next line navigation */
   onLinesLoaded?: (startTimes: number[]) => void;
+  /** Called when user clicks a subtitle line (outside a word) */
+  onSeekToLine?: (starttime: number) => void;
 }
 
 /**
@@ -59,7 +61,7 @@ function stripDurationPrefix(text: string): string {
   return text.replace(/^[\d.]+,\s*/, '');
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded, onSeekToLine }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [showTranslation, setShowTranslationState] = useState(true);
@@ -149,8 +151,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded }: Subti
           return (
             <div
               key={i}
-              className={`rounded-lg px-3 py-2 transition-colors ${
-                isActive ? 'bg-primary/10 ring-1 ring-primary/20' : ''
+              onClick={() => onSeekToLine?.(line.starttime)}
+              className={`cursor-pointer rounded-lg px-3 py-2 transition-colors ${
+                isActive ? 'bg-primary/10 ring-1 ring-primary/20' : 'hover:bg-muted/50'
               }`}
               ref={isActive ? (el) => el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }) : undefined}
             >

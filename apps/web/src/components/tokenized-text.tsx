@@ -155,7 +155,10 @@ const TokenSpan: React.FC<{
 
   return (
     <span
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation(); // prevent line-level click from seeking
+        onClick();
+      }}
       className={`
         cursor-pointer rounded transition-colors
         ${isSelected

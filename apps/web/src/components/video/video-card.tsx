@@ -14,6 +14,10 @@ interface VideoCardProps {
   /** When provided, clicking uses the player queue instead of plain navigation */
   videos?: YouTubeVideo[];
   queueType?: QueueType;
+  /** Layout variant: 'card' (default, full thumbnail card) or 'list' (compact row) */
+  layout?: 'card' | 'list';
+  /** Highlight as current/active video in list */
+  isActive?: boolean;
 }
 
 function formatDuration(seconds: number | undefined): string {
@@ -61,7 +65,7 @@ function getLevel(difficulty: number | undefined): number {
   return 7;
 }
 
-export function VideoCard({ video, videos, queueType }: VideoCardProps) {
+export function VideoCard({ video, videos, queueType, layout = 'card', isActive }: VideoCardProps) {
   const { l1, l2 } = useLanguage();
   const { playVideo } = useVideoPlayer();
   const level = getLevel(video.difficulty);
@@ -80,7 +84,38 @@ export function VideoCard({ video, videos, queueType }: VideoCardProps) {
 
   const href = `/${l1.code}/${l2.code}/watch/${video.youtube_id}`;
 
-  const content = (
+  const content = layout === 'list' ? (
+    <div
+      className={`flex items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${
+        isActive
+          ? 'border-primary/50 bg-primary/5'
+          : 'border-transparent hover:border-border hover:bg-muted/50'
+      }`}
+    >
+      <div className="relative h-12 w-20 shrink-0 overflow-hidden rounded bg-muted">
+        <img
+          src={youtubeThumbnail(video.youtube_id)}
+          alt=""
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+        <span
+          className={`absolute left-1 top-1 rounded px-1 py-0 text-[10px] font-bold text-white ${LEVEL_COLORS[level] ?? 'bg-gray-500'}`}
+        >
+          {LEVEL_LABELS[level]}
+        </span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className={`truncate text-xs font-medium ${isActive ? 'text-primary' : ''}`}>
+          {video.title ?? 'Untitled'}
+        </p>
+        <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+          {duration && <span>{duration}</span>}
+          {views && <span>{views}</span>}
+        </div>
+      </div>
+    </div>
+  ) : (
     <div className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/30 hover:shadow-lg">
       {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden bg-muted">
