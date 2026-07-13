@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useLanguage } from '@/providers/language-provider';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { getShowTranslation, setShowTranslation } from '@/lib/settings';
+import { TokenizedText } from '@/components/tokenized-text';
 import type { SubtitleLine } from '@langplayer/shared';
 import { Settings2 } from 'lucide-react';
 
@@ -136,9 +137,9 @@ export function SubtitleDisplay({ youtubeId, currentTime }: SubtitleDisplayProps
               }`}
               ref={isActive ? (el) => el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }) : undefined}
             >
-              <p className={`text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
-                {line.l2Line}
-              </p>
+              <div className={`text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
+                <TokenizedText text={line.l2Line} l2Code={l2.code} textScale={0.875} />
+              </div>
               {showTranslation && line.l1Line && (
                 <p className={`mt-0.5 text-xs ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
                   {line.l1Line}

@@ -7,6 +7,9 @@ import { useLanguage } from '@/providers/language-provider';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5001';
 
+// Simple in-memory cache to avoid re-lemmatizing the same text
+const lemmatizeCache = new Map<string, LemmatizedToken[]>();
+
 export interface TokenizedTextProps {
   text: string;
   l2Code: string;
@@ -49,6 +52,14 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
     const tokenize = async () => {
       try {
+        // Check cache first
+        const cacheKey = `${l2Code}:${text}`;
+        const cached = lemmatizeCache.get(cacheKey);
+        if (cached) {
+          if (!cancelled) { setTokens(cached); setLoading(false); }
+          return;
+        }
+
         const response = await fetch(`${API_BASE}/lemmatize`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -58,6 +69,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (!cancelled) {
+          lemmatizeCache.set(cacheKey, data.tokens);
           setTokens(data.tokens);
           setLoading(false);
         }
