@@ -80,6 +80,15 @@ npx turbo lint                # Lint all
 npx turbo typecheck           # Type-check all
 ```
 
+### Test Credentials
+
+Use these to log in during local development:
+
+| | |
+|---|---|
+| **Email** | `apple.tester.go@zerotohero.ca` |
+| **Password** | `Qg7gFqE9HF4cdvkcH8sv` |
+
 ### When You Make Changes
 
 - Update `specs/` if you implement a new feature or change behavior
