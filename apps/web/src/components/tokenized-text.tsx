@@ -114,17 +114,16 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   return (
     <div>
-      <div className="flex flex-wrap items-end gap-x-0.5 leading-relaxed">
+      <span className="leading-relaxed" style={{ fontSize: `${textScale}rem` }}>
         {tokens.map((token, i) => (
           <TokenSpan
             key={i}
             token={token}
-            textScale={textScale}
             isSelected={selectedToken === token}
             onClick={() => handleTokenClick(token)}
           />
         ))}
-      </div>
+      </span>
 
       {/* Dictionary popup */}
       {selectedToken && (
@@ -139,35 +138,31 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   );
 };
 
-/** Individual token span */
+/** Individual token span — rendered inline so whitespace tokens flow naturally. */
 const TokenSpan: React.FC<{
   token: LemmatizedToken;
-  textScale: number;
   isSelected: boolean;
   onClick: () => void;
-}> = ({ token, textScale, isSelected, onClick }) => {
+}> = ({ token, isSelected, onClick }) => {
   const isWord = token.lemmas.length > 0;
 
   if (!isWord) {
-    // Punctuation or spaces — render as-is
-    return (
-      <span style={{ fontSize: `${textScale}rem` }}>
-        {token.text}
-      </span>
-    );
+    // Punctuation, spaces, newlines — render as raw text (inline, no wrapper).
+    // Space tokens are already " " from the backend, so they act as natural
+    // word separators for English/Korean and are absent for Chinese/Japanese.
+    return <>{token.text}</>;
   }
 
   return (
     <span
       onClick={onClick}
       className={`
-        cursor-pointer rounded px-0.5 transition-colors
+        cursor-pointer rounded transition-colors
         ${isSelected
           ? 'bg-primary/20 text-primary'
           : 'hover:bg-muted/80'
         }
       `}
-      style={{ fontSize: `${textScale}rem` }}
       title={token.lemmas.map(l => l.lemma).join(', ')}
     >
       {token.text}
