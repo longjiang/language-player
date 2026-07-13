@@ -1,5 +1,5 @@
 [build]
-  command = "nvm use 18 && npm install && npx turbo build --filter=@langplayer/web"
+  command = "npm install && npx turbo build --filter=@langplayer/web"
   publish = "apps/web/.next"
   base = "/"
 
