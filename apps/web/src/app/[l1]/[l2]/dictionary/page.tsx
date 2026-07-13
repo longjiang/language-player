@@ -40,7 +40,6 @@ export default function DictionaryPage() {
 
   const doSearch = useCallback(
     async (term: string) => {
-      e?.preventDefault();
       const trimmed = term.trim();
       if (!trimmed || loading) return;
 
