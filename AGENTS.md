@@ -36,6 +36,7 @@ The **active development** happens in:
 ### Before Implementing Any Feature
 
 1. Read the relevant Nuxt Classic implementation in `zerotohero-nuxt/`
+   See `docs/lp-classic-app-architecture.md` for a full analysis of its pages, components, and patterns.
 2. Read `docs/lp-go-app-architecture.md` for the GO app's equivalent screens and components
 3. Check if `@langplayer/shared` already has the types you need
 4. Check if `@langplayer/api-client` already has the endpoint you need
