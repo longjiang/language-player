@@ -50,7 +50,7 @@ export default function DictionaryPage() {
       setSearchedText(trimmed);
 
       try {
-        const response = await dict.lookup(trimmed, baseCode(l2.code), l1.code);
+        const response: any = await dict.lookup(trimmed, baseCode(l2.code), l1.code);
         setResults(response.results);
         setMessage(response.message ?? null);
       } catch (err: any) {

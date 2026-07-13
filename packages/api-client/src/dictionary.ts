@@ -9,7 +9,7 @@ export function useDictionary() {
         text,
         l2,
         l1,
-      }).then(r => r.data as unknown as DictionaryLookupResponse),
+      }),
 
     /** Tokenize + lemmatize a sentence. POST /lemmatize */
     tokenize: (text: string, l2: string) =>
