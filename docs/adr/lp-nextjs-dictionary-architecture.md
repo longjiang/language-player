@@ -212,6 +212,53 @@ Appended after the 8 common columns:
 
 Wiktionary CSV filenames use **ISO 639-1** (2-letter) codes wherever a mapping exists (e.g., `ru.csv`, `zh.csv`). For languages without an ISO 639-1 code, the ISO 639-3 (3-letter) code is used (e.g., `aaa.csv`). No two ISO 639-3 codes map to the same ISO 639-1 code, so there are no filename collisions.
 
+### LLM Fallback Implementation
+
+When no CSV dictionary entry is found, the endpoint generates an entry via DeepSeek (`app_chatgpt.ask()`). The implementation lives in `_llm_lookup()` in `routes/dictionary.py`.
+
+**Guards** (prevent wasting API calls):
+- Text must be non-empty after stripping whitespace
+- Text must contain at least one word character (`\w` regex) — bare punctuation/symbols are skipped
+- Minimum query length: 1 Unicode letter (configurable via `_LLM_MIN_QUERY_LENGTH`)
+
+**Caching** (avoid repeated API calls for the same lookup):
+- Cache directory: `zerotohero-python-server/cache/dictionary_llm/`
+- Cache key: `MD5("dict:{l2}:{l1}:{text}")`
+- Format: JSON file `{cache_key}.json` containing a `list[dict]`
+- Cache is checked before calling DeepSeek; on cache miss, the LLM response is written to cache
+
+**Prompt Template** (as actually implemented):
+
+```text
+You are a multilingual dictionary for a language learning app.
+Generate a structured dictionary entry for the following word.
+
+Word: {text}
+Language: {l2_name} (ISO 639-1: {l2})
+Definition language: {target_lang}  (target_lang = l1_name if l1 != "en", else "English")
+Context: The user encountered this word while watching a video with subtitles.
+
+Return ONLY valid JSON — a single object with these fields:
+{
+  "head": "{text}",
+  "definitions": ["definition in {target_lang}"],
+  "pronunciation": "phonetic guide in Latin script or IPA",
+  "part_of_speech": "noun|verb|adjective|adverb|etc",
+  "level_guess": "A1|A2|B1|B2|C1|C2"
+}
+```
+
+**Response Parsing**:
+- Strips markdown code fences (` ```json ``` ` or ` ``` ``` `) from LLM output
+- Parses the JSON and maps to the unified `DictionaryEntry` schema
+- `id` format: `llm-{l2}-{MD5(text)[:12]}`
+- `source` is set to `"llm"`
+- `match_type` is set to `"llm"`
+- `level_guess` (e.g., `"A2"`) is parsed into `{ scale: "cefr", value: "A2" }`
+- `pronunciation` is placed in `phonetic_detail.romanization` (or `phonetic_detail.ipa` if wrapped in `/…/` or `[…]`)
+
+**Error Handling**: On any failure (JSON parse error, API timeout, etc.), returns `None` so the API responds with an empty results array and a descriptive message.
+
 ### Design Rationale
 
 - **`pronunciation` is always Latin-script** — pinyin, romaji, jyutping. Native-script phonetics (kana) go in `alternate` or `phonetic_detail` in the loader output.
