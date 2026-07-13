@@ -46,9 +46,20 @@ function syncLines(l1Lines: SubtitleLine[], l2Lines: SubtitleLine[]): SyncedLine
 interface SubtitleDisplayProps {
   youtubeId: string;
   currentTime: number;
+  /** Called with the array of start times for prev/next line navigation */
+  onLinesLoaded?: (startTimes: number[]) => void;
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime }: SubtitleDisplayProps) {
+/**
+ * Strip duration prefix from subtitle text.
+ * Raw format: "0.64,来" → "来"
+ * Duration is a float + comma prefix, e.g. "1.08," or "0.64,"
+ */
+function stripDurationPrefix(text: string): string {
+  return text.replace(/^[\d.]+,\s*/, '');
+}
+
+export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [showTranslation, setShowTranslationState] = useState(true);
@@ -59,7 +70,12 @@ export function SubtitleDisplay({ youtubeId, currentTime }: SubtitleDisplayProps
       const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${baseCode(l2.code)}`);
       if (!res.ok) return;
       const data = await res.json();
-      setL2Lines(data.lines?.map((l: any) => ({ line: l.l2Line, starttime: l.starttime })) ?? []);
+      const lines = data.lines?.map((l: any) => ({
+        line: stripDurationPrefix(l.l2Line ?? ''),
+        starttime: l.starttime,
+      })) ?? [];
+      setL2Lines(lines);
+      onLinesLoaded?.(lines.map((l: SubtitleLine) => l.starttime));
     };
     fetchSubtitles().catch(() => {});
   }, [youtubeId, l2.code]);

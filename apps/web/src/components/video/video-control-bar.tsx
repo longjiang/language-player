@@ -34,6 +34,7 @@ interface VideoControlBarProps {
   onOpenInfo?: () => void;
   onPreviousVideo?: () => void;
   onNextVideo?: () => void;
+  onSeekBarClick?: (fraction: number) => void;
   hasPreviousLine?: boolean;
   hasNextLine?: boolean;
   className?: string;
@@ -51,6 +52,7 @@ export function VideoControlBar({
   onOpenInfo,
   onPreviousVideo,
   onNextVideo,
+  onSeekBarClick,
   hasPreviousLine = true,
   hasNextLine = true,
   className,
@@ -84,12 +86,23 @@ export function VideoControlBar({
   return (
     <div className={cn('space-y-2', className)}>
       {/* Progress bar */}
-      <div className="relative h-1 w-full rounded-full bg-muted">
+      <button
+        className="relative h-2 w-full cursor-pointer rounded-full bg-muted hover:h-3 transition-all group"
+        onClick={(e) => {
+          if (onSeekBarClick && duration > 0) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const fraction = (e.clientX - rect.left) / rect.width;
+            onSeekBarClick(Math.max(0, Math.min(1, fraction)));
+          }
+        }}
+        title="Click to seek"
+        aria-label="Seek bar"
+      >
         <div
-          className="absolute inset-y-0 left-0 rounded-full bg-primary transition-all duration-300"
+          className="absolute inset-y-0 left-0 rounded-full bg-primary transition-all duration-100"
           style={{ width: `${Math.min(progress, 100)}%` }}
         />
-      </div>
+      </button>
 
       {/* Time display */}
       <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">

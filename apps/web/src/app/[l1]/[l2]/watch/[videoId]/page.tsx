@@ -27,6 +27,7 @@ export default function WatchPage() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
   const playerRef = useRef<YouTubePlayerHandle>(null);
 
   // Fetch video metadata on mount
@@ -75,14 +76,35 @@ export default function WatchPage() {
   }, [currentTime]);
 
   const handlePreviousLine = useCallback(() => {
-    // Seek back ~3 seconds as a simple previous-line approximation
+    // Find the subtitle line that ended just before currentTime
+    for (let i = subtitleStartTimes.length - 1; i >= 0; i--) {
+      if (subtitleStartTimes[i]! < currentTime - 0.5) {
+        playerRef.current?.seekTo(subtitleStartTimes[i]!);
+        return;
+      }
+    }
+    // Fallback: seek back 3 seconds
     playerRef.current?.seekTo(Math.max(0, currentTime - 3));
-  }, [currentTime]);
+  }, [currentTime, subtitleStartTimes]);
 
   const handleNextLine = useCallback(() => {
-    // Seek forward ~3 seconds as a simple next-line approximation
+    // Find the next subtitle line after currentTime
+    for (let i = 0; i < subtitleStartTimes.length; i++) {
+      if (subtitleStartTimes[i]! > currentTime + 0.5) {
+        playerRef.current?.seekTo(subtitleStartTimes[i]!);
+        return;
+      }
+    }
+    // Fallback: seek forward 3 seconds
     playerRef.current?.seekTo(Math.min(duration, currentTime + 3));
-  }, [currentTime, duration]);
+  }, [currentTime, duration, subtitleStartTimes]);
+
+  const handleSeekBarClick = useCallback(
+    (fraction: number) => {
+      playerRef.current?.seekTo(fraction * duration);
+    },
+    [duration],
+  );
 
   // Keyboard shortcuts (matching Classic: Space, R, ←, →, M)
   useEffect(() => {
@@ -163,12 +185,17 @@ export default function WatchPage() {
             onPreviousLine={handlePreviousLine}
             onNextLine={handleNextLine}
             onRewind={handleRewind}
+            onSeekBarClick={handleSeekBarClick}
             onPreviousVideo={hasPrevious ? playPrevious : undefined}
             onNextVideo={hasNext ? playNext : undefined}
           />
 
           <VideoMeta video={video} />
-          <SubtitleDisplay youtubeId={video.youtube_id} currentTime={currentTime} />
+          <SubtitleDisplay
+            youtubeId={video.youtube_id}
+            currentTime={currentTime}
+            onLinesLoaded={setSubtitleStartTimes}
+          />
         </div>
 
         {/* Sidebar: Up Next */}
