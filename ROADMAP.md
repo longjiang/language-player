@@ -65,7 +65,7 @@
 
 - ✅ Tap-to-lookup (click a word → dictionary popup)
 - ✅ Dictionary search page
-- ⬜ Word saving / vocabulary list
+- ⬜ Word saving / vocabulary list 🔄
 - ✅ Tokenization + lemmatization display
 - ⬜ Pronunciation (TTS)
 

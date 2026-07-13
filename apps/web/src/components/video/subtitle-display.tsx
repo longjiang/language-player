@@ -46,6 +46,8 @@ function syncLines(l1Lines: SubtitleLine[], l2Lines: SubtitleLine[]): SyncedLine
 interface SubtitleDisplayProps {
   youtubeId: string;
   currentTime: number;
+  /** Video title for word-saving context */
+  videoTitle?: string;
   /** Called with the array of start times for prev/next line navigation */
   onLinesLoaded?: (startTimes: number[]) => void;
   /** Called when user clicks a subtitle line (outside a word) */
@@ -65,7 +67,7 @@ function stripDurationPrefix(text: string): string {
   return text.replace(/^[\d.]+,\s*/, '');
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [showTranslation, setShowTranslationState] = useState(true);
@@ -186,7 +188,17 @@ export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded, onSeekT
               } : undefined}
             >
               <div className={`text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
-                <TokenizedText text={line.l2Line} l2Code={l2.code} textScale={0.875} />
+                <TokenizedText
+                  text={line.l2Line}
+                  l2Code={l2.code}
+                  textScale={0.875}
+                  context={{
+                    text: line.l2Line,
+                    starttime: line.starttime,
+                    youtube_id: youtubeId,
+                    videoTitle,
+                  }}
+                />
               </div>
               {showTranslation && line.l1Line && (
                 <p className={`mt-0.5 text-xs ${isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>

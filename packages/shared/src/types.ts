@@ -219,3 +219,45 @@ export const PLAYER_STATES = {
 } as const;
 
 export type PlayerState = (typeof PLAYER_STATES)[keyof typeof PLAYER_STATES];
+
+// ── Saved Words ───────────────────────────────
+
+/** Context describing where a word was saved from. Mirrors Classic's context shape. */
+export interface SavedWordContext {
+  /** The word form that was tapped/clicked */
+  form: string;
+  /** Full subtitle line or surrounding sentence text */
+  text: string;
+  /** Video timestamp in seconds (if saved from a video) */
+  starttime?: number;
+  /** YouTube video ID (if saved from a video) */
+  youtube_id?: string;
+  /** Video title for attribution in saved-words list */
+  videoTitle?: string;
+  /** Book/chapter title for attribution (future: reader) */
+  textTitle?: string;
+  /** L1 translation of the line (future use) */
+  translation?: string;
+}
+
+/** A single saved word record. Stored in localStorage and synced to Directus. */
+export interface SavedWord {
+  /** Dictionary entry ID (e.g., "cedict-0", "llm-zh-abc123") */
+  id: string;
+  /** All forms of the word (for now, just [head] — no inflected forms yet) */
+  forms: string[];
+  /** Unix-ms timestamp when the word was saved */
+  date: number;
+  /** Where and how the word was saved */
+  context: SavedWordContext;
+}
+
+/** Top-level storage shape. Keyed by L2 ISO 639-1 code. */
+export type SavedWords = Record<string, SavedWord[]>;
+
+/** Directus user_data record shape (partial — only the fields we sync). */
+export interface UserDataRecord {
+  id: string | number;
+  saved_words: string;  // JSON.stringify(SavedWords)
+  progress?: string;    // JSON (reserved for Phase 6)
+}

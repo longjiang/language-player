@@ -205,7 +205,7 @@ export default function WatchPage() {
           </div>
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={video.youtube_id} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
+            transcript={<SubtitleDisplay youtubeId={video.youtube_id} videoTitle={video.title} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
             queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}
           />
         </div>
@@ -234,7 +234,7 @@ export default function WatchPage() {
         <aside className="min-h-0 overflow-hidden">
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={video.youtube_id} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
+            transcript={<SubtitleDisplay youtubeId={video.youtube_id} videoTitle={video.title} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
             queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}
           />
         </aside>

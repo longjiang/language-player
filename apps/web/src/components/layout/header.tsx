@@ -34,6 +34,12 @@ export function Header() {
           >
             {t('title.dictionary')}
           </Link>
+          <Link
+            href={`/${l1.code}/${l2.code}/saved-words`}
+            className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            {t('title.saved_words')}
+          </Link>
         </nav>
 
         <div className="flex-1" />

@@ -36,6 +36,7 @@ export const { handlers, signIn, signOut } = NextAuth({
             id: String(user.id),
             email: String(user.email),
             name: String(`${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() || user.email),
+            directusToken: token,  // retained for API calls to Flask → Directus
           };
         } catch {
           return null;
@@ -45,4 +46,20 @@ export const { handlers, signIn, signOut } = NextAuth({
   ],
   pages: { signIn: '/login' },
   session: { strategy: 'jwt' as const },
+  callbacks: {
+    async jwt({ token, user }) {
+      // Persist the Directus token from authorize() into the JWT
+      if (user && 'directusToken' in user) {
+        token.directusToken = (user as any).directusToken as string;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Expose the Directus token to the client via session
+      if (session.user && token.directusToken) {
+        (session.user as any).directusToken = token.directusToken as string;
+      }
+      return session;
+    },
+  },
 });
