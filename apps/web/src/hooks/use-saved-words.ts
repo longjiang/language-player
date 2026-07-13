@@ -22,44 +22,70 @@ export function useSavedWords() {
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
+  const lastUserId = useRef<string | undefined>(undefined);
 
-  // ── Load from localStorage on mount ──
+  // ── On logout or user change, clear local data ──
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (typeof parsed === 'object' && parsed !== null) {
-          setSavedWords(parsed);
-        }
-      }
-    } catch { /* corrupted data — start fresh */ }
-    setLoaded(true);
-  }, []);
+    const currentId = session?.user?.id;
+    if (lastUserId.current && currentId && lastUserId.current !== currentId) {
+      // Different user logged in — clear previous user's localStorage
+      try { localStorage.removeItem(STORAGE_KEY); } catch {}
+      setSavedWords({});
+    }
+    if (!session && lastUserId.current) {
+      // Logged out — clear everything
+      try { localStorage.removeItem(STORAGE_KEY); } catch {}
+      setSavedWords({});
+      setLoaded(false); // force reload on next login
+    }
+    lastUserId.current = currentId ?? undefined;
+  }, [session]);
 
-  // ── On login, merge cloud data ──
+  // ── Load from localStorage on mount (only if same user) ──
+  useEffect(() => {
+    if (loaded) return;
+    if (!session) {
+      // Not logged in — load from localStorage (anonymous mode)
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (typeof parsed === 'object' && parsed !== null) {
+            setSavedWords(parsed);
+          }
+        }
+      } catch { /* corrupted data */ }
+      setLoaded(true);
+      return;
+    }
+    // Logged in — skip localStorage, load from cloud only
+    setLoaded(true);
+  }, [session, loaded]);
+
+  // ── On login, load from cloud and overwrite localStorage ──
   useEffect(() => {
     if (!session || !loaded) return;
 
-    const mergeFromCloud = async () => {
+    const loadFromCloud = async () => {
       try {
         const data = await getUserData();
-        if (data?.saved_words) {
-          const cloud = JSON.parse(data.saved_words) as SavedWords;
-          setSavedWords(prev => mergeSavedWords(prev, cloud));
-        }
+        const cloud = data?.saved_words
+          ? (JSON.parse(data.saved_words) as SavedWords)
+          : {};
+        setSavedWords(cloud);
+        // Persist cloud data to localStorage for offline fallback
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cloud)); } catch {}
       } catch (err) {
-        // Not authenticated or network error — that's fine, keep local
+        // Not authenticated or network error — keep whatever is in state
         console.warn('[savedWords] Could not load from cloud:', err);
       }
     };
-    mergeFromCloud();
+    loadFromCloud();
   }, [session, loaded]);
 
   // ── Debounced cloud sync after local changes ──
   const scheduleSync = useCallback((words: SavedWords) => {
     if (!session) return;
-
     if (syncTimer.current) clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(async () => {
       if (isSyncing.current) return;
