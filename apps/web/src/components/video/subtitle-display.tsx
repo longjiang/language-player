@@ -160,16 +160,19 @@ export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded, onSeekT
               ref={isActive ? (el) => {
                 if (!el) return;
                 const container = scrollContainerRef?.current ?? el.closest('.overflow-y-auto') as HTMLElement | null;
-                // Check visibility against scroll container
                 const cr = container?.getBoundingClientRect();
                 const er = el.getBoundingClientRect();
-                const inContainer = cr
-                  ? er.top >= cr.top && er.bottom <= cr.bottom
-                  : false;
-                // Also check against the viewport (for narrow screens where container isn't constrained)
-                const inViewport = er.top >= 0 && er.bottom <= window.innerHeight;
-                const isVisible = inContainer || inViewport;
-                if (!isVisible) {
+                const vh = window.innerHeight;
+
+                // Determine the visible region: use container if constrained, otherwise viewport
+                const top = cr && cr.height < vh * 0.8 ? cr.top : 0;
+                const bottom = cr && cr.height < vh * 0.8 ? cr.bottom : vh;
+                const margin = (bottom - top) * 0.25; // 25% margin from edges
+
+                // Scroll if line is outside the middle 50% of the visible region
+                const nearTop = er.top < top + margin;
+                const nearBottom = er.bottom > bottom - margin;
+                if (nearTop || nearBottom) {
                   el.scrollIntoView({ block: 'center', behavior: 'smooth' });
                 }
               } : undefined}

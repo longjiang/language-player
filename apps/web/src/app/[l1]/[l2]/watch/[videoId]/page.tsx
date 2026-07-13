@@ -169,14 +169,16 @@ export default function WatchPage() {
       <div className="grid flex-1 gap-6 lg:overflow-hidden lg:grid-cols-[1fr_320px]">
         {/* Main: Player + Controls + Meta — scrolls internally, video stays visible */}
         <div className="min-h-0 space-y-4 overflow-y-auto pb-4">
-          <YouTubePlayer
-            ref={playerRef}
-            youtubeId={video.youtube_id}
-            autoplay
-            onTimeUpdate={handleTimeUpdate}
-            onDuration={handleDuration}
-            onStateChange={handleStateChange}
-          />
+          <div className="sticky top-0 z-10 -mx-4 -mt-6 bg-background px-4 pt-6 pb-2">
+            <YouTubePlayer
+              ref={playerRef}
+              youtubeId={video.youtube_id}
+              autoplay
+              onTimeUpdate={handleTimeUpdate}
+              onDuration={handleDuration}
+              onStateChange={handleStateChange}
+            />
+          </div>
 
           <VideoControlBar
             playerRef={playerRef}
