@@ -9,6 +9,8 @@ import { useDictionary } from '@langplayer/api-client';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { Search, Loader2, BookOpen, ExternalLink, AlertCircle, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SaveButton } from '@/components/save-button';
+import type { SavedWordContext } from '@langplayer/shared';
 
 export default function DictionaryPage() {
   const { l1, l2 } = useLanguage();
@@ -135,7 +137,7 @@ export default function DictionaryPage() {
           </p>
           <div className="space-y-4">
             {results.map((entry, idx) => (
-              <DictionaryCard key={entry.id || idx} entry={entry} levelScaleLabel={levelScaleLabel} />
+              <DictionaryCard key={entry.id || idx} entry={entry} levelScaleLabel={levelScaleLabel} searchedText={searchedText} />
             ))}
           </div>
         </div>
@@ -162,10 +164,18 @@ export default function DictionaryPage() {
 function DictionaryCard({
   entry,
   levelScaleLabel,
+  searchedText,
 }: {
   entry: DictionaryEntry;
   levelScaleLabel: (scale: string) => string;
+  searchedText: string;
 }) {
+  const context: SavedWordContext = {
+    form: searchedText,
+    text: searchedText,
+    textTitle: 'Dictionary',
+  };
+
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-primary/30">
       {/* Head word & pronunciation */}
@@ -185,12 +195,19 @@ function DictionaryCard({
           )}
         </div>
 
-        {/* Match type badge */}
-        {entry.match_type && entry.match_type !== 'exact' && (
-          <span className="flex-shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-            {entry.match_type}
-          </span>
-        )}
+        {/* Bookmark + match type badge */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <SaveButton
+            wordId={entry.id}
+            head={entry.head}
+            context={context}
+          />
+          {entry.match_type && entry.match_type !== 'exact' && (
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+              {entry.match_type}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Part of speech + level */}

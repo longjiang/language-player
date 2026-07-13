@@ -6,7 +6,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
-import { BookOpen, Video, ExternalLink, Trash2, Download } from 'lucide-react';
+import { BookOpen, Video, Trash2, Download, BookmarkCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { SavedWord } from '@langplayer/shared';
 
@@ -179,9 +179,15 @@ function SavedWordRow({
   l2Code: string;
   onClick: () => void;
 }) {
+  const { removeSavedWord } = useSavedWordsContext();
   const ctx = word.context;
   const hasVideoContext = ctx.youtube_id && ctx.videoTitle;
   const dateStr = new Date(word.date).toLocaleDateString();
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    removeSavedWord(l2Code, word.id);
+  };
 
   return (
     <div
@@ -228,7 +234,14 @@ function SavedWordRow({
         </div>
       </div>
 
-      <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+      {/* Remove bookmark */}
+      <button
+        onClick={handleRemove}
+        className="shrink-0 rounded p-1 text-amber-500 transition-colors hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+        title="Remove from saved words"
+      >
+        <BookmarkCheck className="h-5 w-5 fill-current" />
+      </button>
     </div>
   );
 }
