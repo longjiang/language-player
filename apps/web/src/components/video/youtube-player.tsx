@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardRef } from 'react';
 
 interface YouTubePlayerProps {
   youtubeId: string;
@@ -8,6 +8,16 @@ interface YouTubePlayerProps {
   onTimeUpdate?: (time: number) => void;
   onDuration?: (duration: number) => void;
   onStateChange?: (state: number) => void;
+}
+
+export interface YouTubePlayerHandle {
+  play: () => void;
+  pause: () => void;
+  seekTo: (seconds: number) => void;
+  setPlaybackRate: (rate: number) => void;
+  getCurrentTime: () => number;
+  getDuration: () => number;
+  getPlayerState: () => number;
 }
 
 // YouTube IFrame API states
@@ -48,13 +58,11 @@ interface YouTubePlayerInstance {
   destroy: () => void;
 }
 
-export function YouTubePlayer({
-  youtubeId,
-  autoplay = false,
-  onTimeUpdate,
-  onDuration,
-  onStateChange,
-}: YouTubePlayerProps) {
+export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(
+  function YouTubePlayer(
+    { youtubeId, autoplay = false, onTimeUpdate, onDuration, onStateChange },
+    ref,
+  ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -154,6 +162,37 @@ export function YouTubePlayer({
     playerRef.current?.seekTo(seconds, true);
   }, []);
 
+  const play = useCallback(() => playerRef.current?.playVideo(), []);
+  const pause = useCallback(() => playerRef.current?.pauseVideo(), []);
+  const setPlaybackRate = useCallback(
+    (rate: number) => {
+      // YouTube IFrame API: setPlaybackRate via player.setPlaybackRate
+      try {
+        const iframe = document.querySelector(`#${playerIdRef.current} iframe`) as HTMLIFrameElement | null;
+        if (iframe?.contentWindow) {
+          iframe.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'setPlaybackRate', args: [rate] }),
+            '*',
+          );
+        }
+      } catch { /* ignore */ }
+    },
+    [],
+  );
+  const getCurrentTime = useCallback(() => playerRef.current?.getCurrentTime() ?? 0, []);
+  const getDuration = useCallback(() => playerRef.current?.getDuration() ?? 0, []);
+  const getPlayerState = useCallback(() => playerRef.current?.getPlayerState() ?? -1, []);
+
+  useImperativeHandle(ref, () => ({
+    play,
+    pause,
+    seekTo,
+    setPlaybackRate,
+    getCurrentTime,
+    getDuration,
+    getPlayerState,
+  }), [play, pause, seekTo, setPlaybackRate, getCurrentTime, getDuration, getPlayerState]);
+
   // Expose controls via ref or events — for now, YouTube's built-in controls handle this
   return (
     <div className="relative w-full overflow-hidden rounded-xl bg-black">
@@ -162,6 +201,6 @@ export function YouTubePlayer({
       </div>
     </div>
   );
-}
+});
 
 export { PLAYER_STATES };
