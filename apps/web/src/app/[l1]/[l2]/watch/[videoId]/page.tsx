@@ -167,7 +167,7 @@ export default function WatchPage() {
     <div className="mx-auto max-w-7xl px-4 py-6 lg:h-[calc(100vh-5rem)]">
       <div className="grid h-full gap-6 lg:overflow-hidden lg:grid-cols-[1fr_320px]">
         {/* Main: Player + Controls + Meta — scrolls internally, video stays visible */}
-        <div className="space-y-4 overflow-y-auto pb-4">
+        <div className="min-h-0 space-y-4 overflow-y-auto pb-4">
           <YouTubePlayer
             ref={playerRef}
             youtubeId={video.youtube_id}
@@ -195,7 +195,7 @@ export default function WatchPage() {
         </div>
 
         {/* Sidebar: Transcript + Queue tabs — fills height, scrolls internally */}
-        <aside className="overflow-hidden">
+        <aside className="min-h-0 overflow-hidden">
           <TranscriptQueuePanel
             transcript={
               <SubtitleDisplay
