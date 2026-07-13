@@ -55,11 +55,11 @@ export const apiClient = {
     return clientInstance;
   },
   get: <T>(url: string, config?: AxiosRequestConfig) =>
-    clientInstance!.get<ApiResponse<T>>(url, config).then((r) => r.data),
+    clientInstance!.get<T>(url, config).then((r) => r.data),
   post: <T>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
-    clientInstance!.post<ApiResponse<T>>(url, data, config).then((r) => r.data),
+    clientInstance!.post<T>(url, data, config).then((r) => r.data),
   put: <T>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
-    clientInstance!.put<ApiResponse<T>>(url, data, config).then((r) => r.data),
+    clientInstance!.put<T>(url, data, config).then((r) => r.data),
   delete: <T>(url: string, config?: AxiosRequestConfig) =>
-    clientInstance!.delete<ApiResponse<T>>(url, config).then((r) => r.data),
+    clientInstance!.delete<T>(url, config).then((r) => r.data),
 };

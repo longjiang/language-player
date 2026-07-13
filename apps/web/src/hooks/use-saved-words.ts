@@ -43,10 +43,9 @@ export function useSavedWords() {
 
     const mergeFromCloud = async () => {
       try {
-        const response = await getUserData();
-        const savedWordsJson = response?.data?.saved_words;
-        if (savedWordsJson) {
-          const cloud = JSON.parse(savedWordsJson) as SavedWords;
+        const data = await getUserData();
+        if (data?.saved_words) {
+          const cloud = JSON.parse(data.saved_words) as SavedWords;
           setSavedWords(prev => mergeSavedWords(prev, cloud));
         }
       } catch (err) {
@@ -136,8 +135,8 @@ export function useSavedWords() {
 
 // ── Helpers ──
 
-/** Merge cloud data into local: local ∪ cloud, preferring local on conflict (last writer wins by date). */
-function mergeSavedWords(local: SavedWords, cloud: SavedWords): SavedWords {
+/** Merge cloud data into local: local ∪ cloud, preferring local on conflict. */
+export function mergeSavedWords(local: SavedWords, cloud: SavedWords): SavedWords {
   const merged: SavedWords = { ...local };
 
   for (const [l2, cloudWords] of Object.entries(cloud)) {

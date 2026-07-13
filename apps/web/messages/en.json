@@ -488,7 +488,7 @@
         "no_active_subscription": "No active subscription found.",
         "no_more_videos": "No more videos",
         "no_saved_words": "No words saved yet",
-        "saved_words_desc": "{{count}} words saved in {{l2}}",
+        "saved_words_desc": "{count} words saved in {l2}",
         "confirm_clear_words": "Are you sure you want to remove all saved words?",
         "today": "Today",
         "earlier": "Earlier",
