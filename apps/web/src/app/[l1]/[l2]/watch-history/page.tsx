@@ -23,10 +23,23 @@ interface WatchHistoryItem {
   last_position?: number;
 }
 
-function formatDuration(seconds: number | undefined): string {
-  if (!seconds) return '';
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
+function parseDurationIso(iso: string): number | undefined {
+  const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/);
+  if (!m) return undefined;
+  return (parseInt(m[1] ?? '0') * 3600) + (parseInt(m[2] ?? '0') * 60) + parseFloat(m[3] ?? '0');
+}
+
+function formatDuration(dur: number | string | undefined): string {
+  if (dur == null || dur === '') return '';
+  let num: number;
+  if (typeof dur === 'string') {
+    num = parseDurationIso(dur) ?? parseFloat(dur);
+    if (isNaN(num)) return '';
+  } else {
+    num = dur;
+  }
+  const m = Math.floor(num / 60);
+  const s = Math.floor(num % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
@@ -36,9 +49,17 @@ function formatDate(dateStr?: string): string {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function formatProgress(seconds: number | undefined, duration: number | undefined): string {
-  if (!seconds || !duration) return '';
-  const pct = Math.round((seconds / duration) * 100);
+function formatProgress(lastPos: number | undefined, duration: number | string | undefined): string {
+  if (lastPos == null || lastPos <= 0 || duration == null) return '';
+  let durNum: number;
+  if (typeof duration === 'string') {
+    durNum = parseDurationIso(duration) ?? parseFloat(duration);
+    if (isNaN(durNum) || durNum <= 0) return '';
+  } else {
+    durNum = duration;
+    if (durNum <= 0) return '';
+  }
+  const pct = Math.round((lastPos / durNum) * 100);
   return `${pct}%`;
 }
 
