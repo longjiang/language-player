@@ -145,7 +145,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded, onSeekT
         </div>
       </div>
 
-      <div className="max-h-64 space-y-2 overflow-y-auto rounded-xl border border-border bg-card/50 p-4">
+      <div className="space-y-2">
         {syncedLines.map((line, i) => {
           const isActive = i === activeIndex;
           return (
