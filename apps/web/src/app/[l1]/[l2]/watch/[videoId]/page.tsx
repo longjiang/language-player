@@ -16,6 +16,7 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
 import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
 import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
+import { YouTubeChannelCard } from '@/components/video/youtube-channel-card';
 
 interface SyncedLine {
   starttime: number;
@@ -218,6 +219,7 @@ export default function WatchPage() {
           <div className="space-y-4">
             <VideoControlBar playerRef={playerRef} currentTime={currentTime} duration={duration} paused={paused} onPauseToggle={handlePauseToggle} onPreviousLine={handlePreviousLine} onNextLine={handleNextLine} onRewind={handleRewind} onSeekBarClick={handleSeekBarClick} onPreviousVideo={playPrevious} onNextVideo={playNext} hasPreviousVideo={hasPrevious} hasNextVideo={hasNext} />
             <VideoMeta video={video} />
+            {video.channel_id && <YouTubeChannelCard channelId={video.channel_id} />}
           </div>
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
@@ -246,6 +248,7 @@ export default function WatchPage() {
           </div>
           <VideoControlBar playerRef={playerRef} currentTime={currentTime} duration={duration} paused={paused} onPauseToggle={handlePauseToggle} onPreviousLine={handlePreviousLine} onNextLine={handleNextLine} onRewind={handleRewind} onSeekBarClick={handleSeekBarClick} onPreviousVideo={playPrevious} onNextVideo={playNext} hasPreviousVideo={hasPrevious} hasNextVideo={hasNext} />
           <VideoMeta video={video} />
+          {video.channel_id && <YouTubeChannelCard channelId={video.channel_id} />}
         </div>
         <aside className="min-h-0 overflow-hidden">
           <TranscriptQueuePanel
