@@ -10,6 +10,7 @@
 A monorepo consolidating three legacy codebases:
 1. `zerotohero-nuxt/` (Vue 2/Nuxt 2) — **Classic** full-featured web app. REFERENCE ONLY. Do not edit.
 2. `language-player-3/` (React Native/Expo 51) — **GO** mobile app. REFERENCE + eventual migration source.
+   See `docs/lp-go-app-architecture.md` for a full analysis of its screens, components, and patterns.
 3. `zerotohero-python/` (Flask) — Backend. REFERENCE + eventual migration source.
 
 Note that the above three directories are **independent Git repositories**. They are listed in `.gitignore` so the monorepo does not track them yet. If need to commit changes to them, first `cd` into the directory and commit there.
@@ -35,10 +36,11 @@ The **active development** happens in:
 ### Before Implementing Any Feature
 
 1. Read the relevant Nuxt Classic implementation in `zerotohero-nuxt/`
-2. Check if `@langplayer/shared` already has the types you need
-3. Check if `@langplayer/api-client` already has the endpoint you need
-4. Read `specs/` for existing feature specifications
-5. Read `docs/adr/` for relevant architecture decisions
+2. Read `docs/lp-go-app-architecture.md` for the GO app's equivalent screens and components
+3. Check if `@langplayer/shared` already has the types you need
+4. Check if `@langplayer/api-client` already has the endpoint you need
+5. Read `specs/` for existing feature specifications
+6. Read `docs/adr/` for relevant architecture decisions
 
 ### File Naming & Organization
 
