@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
-import { languageName } from '@/lib/language-data';
+import { languageName, baseCode } from '@/lib/language-data';
 import { useT } from '@/hooks/use-t';
 import { useDictionary } from '@langplayer/api-client';
 import type { DictionaryEntry } from '@langplayer/shared';
@@ -50,7 +50,7 @@ export default function DictionaryPage() {
       setSearchedText(trimmed);
 
       try {
-        const response = await dict.lookup(trimmed, l2.code, l1.code);
+        const response = await dict.lookup(trimmed, baseCode(l2.code), l1.code);
         setResults(response.results);
         setMessage(response.message ?? null);
       } catch (err: any) {

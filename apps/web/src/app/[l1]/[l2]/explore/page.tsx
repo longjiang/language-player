@@ -8,14 +8,14 @@ import { LevelFilter } from '@/components/video/level-filter';
 import { useVideos } from '@/hooks/use-videos';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { languageName } from '@/lib/language-data';
+import { languageName, baseCode } from '@/lib/language-data';
 
 export default function ExplorePage() {
   const { l2 } = useLanguage();
   const t = useT();
   const [level, setLevel] = useState<number | undefined>(undefined);
   const { videos, loading, error, hasMore, loadMore, retry } = useVideos({
-    l2: l2.code,
+    l2: baseCode(l2.code),
     level,
   });
 

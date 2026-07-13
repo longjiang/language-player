@@ -9,6 +9,7 @@ import { VideoMeta } from '@/components/video/video-meta';
 import { SubtitleDisplay } from '@/components/video/subtitle-display';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { baseCode } from '@/lib/language-data';
 
 export default function WatchPage() {
   const params = useParams<{ videoId: string }>();
@@ -25,7 +26,7 @@ export default function WatchPage() {
   useEffect(() => {
     const fetchVideo = async () => {
       try {
-        const res = await fetch(`/api/videos/${videoId}?l2=${l2.code}`);
+        const res = await fetch(`/api/videos/${videoId}?l2=${baseCode(l2.code)}`);
         if (!res.ok) throw new Error('Video not found');
         const data = await res.json();
         setVideo(data);

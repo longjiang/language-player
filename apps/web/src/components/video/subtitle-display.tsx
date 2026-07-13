@@ -7,6 +7,7 @@ import { getShowTranslation, setShowTranslation } from '@/lib/settings';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { SubtitleLine } from '@langplayer/shared';
 import { Settings2 } from 'lucide-react';
+import { baseCode } from '@/lib/language-data';
 
 interface SyncedLine {
   l1Line: string;
@@ -55,7 +56,7 @@ export function SubtitleDisplay({ youtubeId, currentTime }: SubtitleDisplayProps
 
   useEffect(() => {
     const fetchSubtitles = async () => {
-      const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${l2.code}`);
+      const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${baseCode(l2.code)}`);
       if (!res.ok) return;
       const data = await res.json();
       setL2Lines(data.lines?.map((l: any) => ({ line: l.l2Line, starttime: l.starttime })) ?? []);

@@ -6,6 +6,7 @@ import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
 import { Loader2, X, AlertCircle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { useLanguage } from '@/providers/language-provider';
+import { baseCode } from '@/lib/language-data';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:5001';
 
@@ -34,7 +35,7 @@ export function DictionaryPopup({
       const res = await fetch(`${API_BASE}/dictionary/lookup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, l2: l2Code, l1: l1Code }),
+        body: JSON.stringify({ text, l2: baseCode(l2Code), l1: l1Code }),
         signal,
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

@@ -55,15 +55,20 @@ export function languageName(code: string): string {
   return LANGUAGE_NAMES[code] ?? code.toUpperCase();
 }
 
+/** Strip BCP47 subtags (e.g., zh-Hans → zh) for backend compatibility.
+ * The backend uses ISO 639-1 primary language codes only. */
+export function baseCode(code: string): string {
+  return code.split('-')[0]!;
+}
+
 /** Check if a language code uses RTL direction. */
 export function isRTL(code: string): boolean {
-  const baseCode = code.split('-')[0]!;
-  return RTL_CODES.has(baseCode);
+  return RTL_CODES.has(baseCode(code));
 }
 
 /** Check if a language uses Han (Chinese) characters. */
 export function isHan(code: string): boolean {
-  return HAN_CODES.has(code);
+  return HAN_CODES.has(baseCode(code));
 }
 
 /** Get full language metadata for a given code. */
