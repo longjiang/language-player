@@ -145,11 +145,19 @@ export default function WatchPage() {
           break;
         case 'ArrowLeft':
           e.preventDefault();
-          handlePreviousLine();
+          if (e.shiftKey && hasPrevious) {
+            playPrevious();
+          } else {
+            handlePreviousLine();
+          }
           break;
         case 'ArrowRight':
           e.preventDefault();
-          handleNextLine();
+          if (e.shiftKey && hasNext) {
+            playNext();
+          } else {
+            handleNextLine();
+          }
           break;
         case 'r':
         case 'R':
@@ -166,7 +174,7 @@ export default function WatchPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handlePauseToggle, handlePreviousLine, handleNextLine, handleRewind]);
+  }, [handlePauseToggle, handlePreviousLine, handleNextLine, handleRewind, hasPrevious, hasNext, playPrevious, playNext]);
 
   if (loading) {
     return (
@@ -204,7 +212,7 @@ export default function WatchPage() {
             />
           </div>
           <div className="space-y-4">
-            <VideoControlBar playerRef={playerRef} currentTime={currentTime} duration={duration} paused={paused} onPauseToggle={handlePauseToggle} onPreviousLine={handlePreviousLine} onNextLine={handleNextLine} onRewind={handleRewind} onSeekBarClick={handleSeekBarClick} onPreviousVideo={hasPrevious ? playPrevious : undefined} onNextVideo={hasNext ? playNext : undefined} />
+            <VideoControlBar playerRef={playerRef} currentTime={currentTime} duration={duration} paused={paused} onPauseToggle={handlePauseToggle} onPreviousLine={handlePreviousLine} onNextLine={handleNextLine} onRewind={handleRewind} onSeekBarClick={handleSeekBarClick} onPreviousVideo={playPrevious} onNextVideo={playNext} hasPreviousVideo={hasPrevious} hasNextVideo={hasNext} />
             <VideoMeta video={video} />
           </div>
           <TranscriptQueuePanel
@@ -232,7 +240,7 @@ export default function WatchPage() {
               onStateChange={handleStateChange}
             />
           </div>
-          <VideoControlBar playerRef={playerRef} currentTime={currentTime} duration={duration} paused={paused} onPauseToggle={handlePauseToggle} onPreviousLine={handlePreviousLine} onNextLine={handleNextLine} onRewind={handleRewind} onSeekBarClick={handleSeekBarClick} onPreviousVideo={hasPrevious ? playPrevious : undefined} onNextVideo={hasNext ? playNext : undefined} />
+          <VideoControlBar playerRef={playerRef} currentTime={currentTime} duration={duration} paused={paused} onPauseToggle={handlePauseToggle} onPreviousLine={handlePreviousLine} onNextLine={handleNextLine} onRewind={handleRewind} onSeekBarClick={handleSeekBarClick} onPreviousVideo={playPrevious} onNextVideo={playNext} hasPreviousVideo={hasPrevious} hasNextVideo={hasNext} />
           <VideoMeta video={video} />
         </div>
         <aside className="min-h-0 overflow-hidden">

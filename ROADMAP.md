@@ -68,11 +68,12 @@
 - ✅ Word saving / vocabulary list 🔄
 - ✅ Tokenization + lemmatization display
 - ✅ Pronunciation (TTS) — Web Speech API with per-language voice auto-selection + VoicePicker settings
+- ✅ TV Shows page — browse shows with search, sort (views/title/year), locale filter, poster grid
 
 ## Phase 5: Content Features
 
+- ✅ TV Shows page
 - ⬜ Live TV page
-- ⬜ TV Shows page
 - ⬜ Reader / Books
 - ⬜ Phrasebooks
 - ⬜ Music page

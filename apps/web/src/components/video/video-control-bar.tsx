@@ -37,6 +37,8 @@ interface VideoControlBarProps {
   onSeekBarClick?: (fraction: number) => void;
   hasPreviousLine?: boolean;
   hasNextLine?: boolean;
+  hasPreviousVideo?: boolean;
+  hasNextVideo?: boolean;
   className?: string;
 }
 
@@ -55,6 +57,8 @@ export function VideoControlBar({
   onSeekBarClick,
   hasPreviousLine = true,
   hasNextLine = true,
+  hasPreviousVideo = false,
+  hasNextVideo = false,
   className,
 }: VideoControlBarProps) {
   const [speedIndex, setSpeedIndex] = useState(0);
@@ -118,9 +122,9 @@ export function VideoControlBar({
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 text-muted-foreground hover:text-foreground"
+          className="h-9 w-9 text-muted-foreground hover:text-foreground disabled:opacity-30"
           onClick={onPreviousVideo}
-          disabled={!onPreviousVideo}
+          disabled={!hasPreviousVideo || !onPreviousVideo}
           title="Previous video (Shift + ←)"
         >
           <SkipBack className="h-4 w-4" />
@@ -210,9 +214,9 @@ export function VideoControlBar({
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 text-muted-foreground hover:text-foreground"
+          className="h-9 w-9 text-muted-foreground hover:text-foreground disabled:opacity-30"
           onClick={onNextVideo}
-          disabled={!onNextVideo}
+          disabled={!hasNextVideo || !onNextVideo}
           title="Next video (Shift + →)"
         >
           <SkipForward className="h-4 w-4" />

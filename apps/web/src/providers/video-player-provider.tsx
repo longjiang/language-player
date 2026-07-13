@@ -25,6 +25,7 @@ interface VideoPlayerContextValue {
     video: YouTubeVideo,
     queue: YouTubeVideo[],
     queueType?: QueueType,
+    metadata?: { tvShow?: { id: number; title: string }; searchTerm?: string },
   ) => void;
   /** Navigate to next video in queue */
   playNext: () => void;
@@ -50,8 +51,9 @@ export function VideoPlayerProvider({ children }: { children: ReactNode }) {
       video: YouTubeVideo,
       queue: YouTubeVideo[],
       queueType: QueueType = 'recommended',
+      metadata?: { tvShow?: { id: number; title: string }; searchTerm?: string },
     ) => {
-      qm.setVideoAndQueue(video, queue, queueType);
+      qm.setVideoAndQueue(video, queue, queueType, metadata);
       setQueueState(qm.getSnapshot(video.youtube_id));
       router.push(
         `/${l1.code}/${l2.code}/watch/${video.youtube_id}?queueType=${queueType}`,
