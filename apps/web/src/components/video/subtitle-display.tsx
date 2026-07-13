@@ -52,6 +52,8 @@ interface SubtitleDisplayProps {
   onSeekToLine?: (starttime: number) => void;
   /** Ref to the scrollable container — when provided, scrolling only happens when line leaves view */
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
+  /** Pre-loaded subtitle lines — if provided, skips the subtitles API fetch */
+  initialLines?: { starttime: number; l1Line: string; l2Line: string }[];
 }
 
 /**
@@ -63,13 +65,19 @@ function stripDurationPrefix(text: string): string {
   return text.replace(/^[\d.]+,\s*/, '');
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded, onSeekToLine, scrollContainerRef }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [showTranslation, setShowTranslationState] = useState(true);
   const [activeIndex, setActiveIndex] = useState(-1);
 
   useEffect(() => {
+    if (initialLines) {
+      const l2Only = initialLines.map(l => ({ line: stripDurationPrefix(l.l2Line), starttime: l.starttime }));
+      setL2Lines(l2Only);
+      onLinesLoaded?.(l2Only.map(l => l.starttime));
+      return;
+    }
     const fetchSubtitles = async () => {
       const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${baseCode(l2.code)}`);
       if (!res.ok) return;
@@ -82,7 +90,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, onLinesLoaded, onSeekT
       onLinesLoaded?.(lines.map((l: SubtitleLine) => l.starttime));
     };
     fetchSubtitles().catch(() => {});
-  }, [youtubeId, l2.code]);
+  }, [youtubeId, l2.code, initialLines]);
 
   useEffect(() => {
     setShowTranslationState(getShowTranslation());

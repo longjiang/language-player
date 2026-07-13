@@ -15,6 +15,12 @@ import type { YouTubeVideo } from '@langplayer/shared';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
 
+interface SyncedLine {
+  starttime: number;
+  l1Line: string;
+  l2Line: string;
+}
+
 export default function WatchPage() {
   const params = useParams<{ videoId: string }>();
   const { l1, l2 } = useLanguage();
@@ -29,6 +35,7 @@ export default function WatchPage() {
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(false);
   const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
+  const [subtitleLines, setSubtitleLines] = useState<SyncedLine[]>([]);
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
   const videoWrapperRef = useRef<HTMLDivElement>(null);
@@ -41,14 +48,18 @@ export default function WatchPage() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Fetch video metadata on mount
+  // Fetch video metadata + subtitles in one call
   useEffect(() => {
     const fetchVideo = async () => {
       try {
         const res = await fetch(`/api/videos/${videoId}?l2=${baseCode(l2.code)}`);
         if (!res.ok) throw new Error('Video not found');
         const data = await res.json();
-        setVideo(data);
+        setVideo(data.video ?? data);
+        if (data.lines) {
+          setSubtitleLines(data.lines);
+          setSubtitleStartTimes(data.lines.map((l: any) => l.starttime));
+        }
       } catch (err: any) {
         setError(err.message ?? 'Failed to load video');
       } finally {
@@ -194,7 +205,7 @@ export default function WatchPage() {
           </div>
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={video.youtube_id} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} />}
+            transcript={<SubtitleDisplay youtubeId={video.youtube_id} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
             queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}
           />
         </div>
@@ -223,7 +234,7 @@ export default function WatchPage() {
         <aside className="min-h-0 overflow-hidden">
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={video.youtube_id} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} />}
+            transcript={<SubtitleDisplay youtubeId={video.youtube_id} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
             queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}
           />
         </aside>

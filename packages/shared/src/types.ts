@@ -24,6 +24,7 @@ export interface YouTubeVideo {
   talk?: string;
   type?: string;
   made_for_kids?: boolean;
+  channel_id?: string;
 }
 
 export interface SubtitleLine {
