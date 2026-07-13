@@ -41,10 +41,14 @@ export function UserMenu() {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-border bg-popover p-1 shadow-lg">
-            <div className="border-b border-border px-3 py-2">
+            <Link
+              href={`/${l1.code}/${l2.code}/profile`}
+              className="block border-b border-border px-3 py-2 hover:bg-muted transition-colors"
+              onClick={() => setOpen(false)}
+            >
               <p className="text-sm font-medium truncate">{session.user.name ?? session.user.email}</p>
               <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
-            </div>
+            </Link>
             <Link
               href={`/${l1.code}/${l2.code}/settings`}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
