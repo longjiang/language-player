@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSpeech } from '@/hooks/use-speech';
 import { useLanguage } from '@/providers/language-provider';
-import { ChevronDown, Volume2 } from 'lucide-react';
+import { ChevronDown, Volume2, Square } from 'lucide-react';
 
 interface VoicePickerProps {
   className?: string;
@@ -12,7 +12,7 @@ interface VoicePickerProps {
 /** Voice picker dropdown for TTS settings. Auto-selects best voice per language. */
 export function VoicePicker({ className = '' }: VoicePickerProps) {
   const { l2 } = useLanguage();
-  const { getAllVoices, voiceURI, setVoiceURI, rate, setRate, getVoicesForLang } = useSpeech();
+  const { getAllVoices, voiceURI, setVoiceURI, rate, setRate, speak, stop, isSpeaking } = useSpeech();
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [open, setOpen] = useState(false);
 
@@ -121,6 +121,29 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
           <span>Slow</span>
           <span>Fast</span>
         </div>
+      </div>
+
+      {/* Test button */}
+      <div className="space-y-1.5 pt-2 border-t border-border">
+        <label className="text-sm font-medium text-muted-foreground">Test Voice</label>
+        {isSpeaking ? (
+          <button
+            onClick={stop}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20"
+          >
+            <Square className="h-4 w-4" />
+            Stop
+          </button>
+        ) : (
+          <button
+            onClick={() => { if (l2) speak(l2.name ?? l2.code, l2.code, rate); }}
+            disabled={!l2}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+          >
+            <Volume2 className="h-4 w-4" />
+            Play {l2?.code?.toUpperCase() ?? ''} Pronunciation
+          </button>
+        )}
       </div>
     </div>
   );
