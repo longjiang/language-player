@@ -40,6 +40,12 @@ export function Header() {
           >
             {t('title.saved_words')}
           </Link>
+          <Link
+            href={`/${l1.code}/${l2.code}/settings`}
+            className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            {t('title.settings')}
+          </Link>
         </nav>
 
         <div className="flex-1" />
