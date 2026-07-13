@@ -14,7 +14,7 @@ export type SupportedL1 = (typeof SUPPORTED_L1S)[number];
 
 /** Languages that have at least 50+ videos with human-translated subtitles. */
 export const SUPPORTED_L2S = [
-  'en', 'zh', 'ko', 'it', 'fr', 'de', 'es', 'ja', 'pt',
+  'en', 'zh', 'zh-Hans', 'zh-Hant', 'ko', 'it', 'fr', 'de', 'es', 'ja', 'pt',
   'ru', 'tr', 'pl', 'nl', 'id', 'da', 'th', 'sv', 'uk',
   'no', 'fi', 'ca', 'vi', 'he', 'ar', 'cs', 'el', 'sk',
   'ro', 'hu', 'fa', 'sr', 'ms', 'bg', 'lt', 'lv', 'sl',
