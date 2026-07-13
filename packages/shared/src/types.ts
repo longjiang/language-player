@@ -49,8 +49,22 @@ export interface TVShow {
 
 export interface Lemma {
   lemma: string;
-  pos?: string;
-  morphologies?: string[];
+  part_of_speech?: string;
+  pronunciation?: string;
+}
+
+/** Unified token from POST /lemmatize */
+export interface LemmatizedToken {
+  /** Surface form as it appears in the text */
+  text: string;
+  /** Possible base/dictionary forms. Empty array = punctuation/spaces. */
+  lemmas: Lemma[];
+  /** Phonetic guide (rare — only Arabic tokenizer provides this today) */
+  pronunciation?: string;
+}
+
+export interface LemmatizeResponse {
+  tokens: LemmatizedToken[];
 }
 
 export interface Token {

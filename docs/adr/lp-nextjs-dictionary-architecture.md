@@ -221,6 +221,62 @@ Wiktionary CSV filenames use **ISO 639-1** (2-letter) codes wherever a mapping e
 
 ---
 
+## Lemmatizer Schema
+
+The unified `/lemmatize` endpoint accepts text and a language code, returning a language-agnostic token array.
+
+### Endpoint
+
+```
+POST /lemmatize  { "text": "я люблю молоко", "l2": "ru" }
+```
+
+### Response Schema
+
+```typescript
+interface LemmatizeResponse {
+  tokens: LemmatizedToken[];
+}
+
+interface LemmatizedToken {
+  text: string;              // surface form in the original text
+  lemmas: Lemma[];           // empty array = punctuation/spaces (no lookup)
+  pronunciation?: string;    // phonetic guide (rare — Arabic only)
+}
+
+interface Lemma {
+  lemma: string;             // base/dictionary form for lookup
+  part_of_speech?: string;   // language-specific POS tag
+  pronunciation?: string;    // lemma-level pronunciation (Arabic)
+}
+```
+
+### Design Decisions
+
+- **`lemmas` is always an array** — handles homographs like French `lit` → `lire` (to read) | `lit` (bed), English `saw` → `see` | `saw` (noun)
+- **`part_of_speech`** (not `pos`) — consistent with `DictionaryEntry`
+- **Flat list, no nesting** — one token = one word. No tree structures needed.
+- **Punctuation: `lemmas: []`** — frontend checks `lemmas.length > 0` to decide whether to look up in dictionary
+- **Fallback** — languages without a lemmatizer get a simple word/punctuation split
+
+### Language → Lemmatizer Mapping
+
+| Languages | Lemmatizer | Notes |
+|---|---|---|
+| `zh` | Jieba (pseg) | POS + pinyin pronunciation |
+| `ja` | MeCab | POS + kana pronunciation |
+| `ko` | OpenKoreanText | Stem-based lemmas |
+| `ru` | Pymorphy2 | Multi-lemma with morphology |
+| `ar` | Qalsadi | Multi-lemma alternatives + pronunciation |
+| `fa` | Hazm | POS-tagged |
+| `tr` | Zeyrek | POS-tagged |
+| `my` | Pyidaungsu | POS-tagged |
+| `es,fr,de,...` | spaCy | 20+ languages |
+| `cs,hu,sv,...` | Simplemma | 25+ languages |
+| `*` (other) | Fallback regex | Word/punctuation split only |
+
+---
+
 ## Implementation Plan
 
 ### Phase 4a: Backend Endpoint
