@@ -19,7 +19,8 @@ export function useVideoTokenCache(youtubeId: string, l2Code: string) {
     fetching.current = true;
 
     getVideoTokenCache(youtubeId, l2Code)
-      .then((data) => {
+      .then((response) => {
+        const data = response?.data;
         if (data && typeof data === 'object') {
           cache.current.load(data);
         }
