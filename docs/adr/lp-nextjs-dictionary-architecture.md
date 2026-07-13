@@ -119,10 +119,10 @@ interface LookupResponse {
     l2: string;            // ISO 639-1
     l1: string;            // ISO 639-1
   };
-  results: WordEntry[];
+  results: DictionaryEntry[];
 }
 
-interface WordEntry {
+interface DictionaryEntry {
   // ── Core (always present) ──
   id: string;                    // canonical ID for save/bookmark
   head: string;                  // primary display form in L2 script
