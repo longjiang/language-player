@@ -30,12 +30,14 @@ export async function getRecommendedVideos(
   level?: number,
   page = 1,
   pageSize = 24,
+  userId?: string,
 ): Promise<VideoListResult> {
   try {
     const params = new URLSearchParams();
     params.set('l2', l2);
     if (level) params.set('level', String(level));
     params.set('limit', String(pageSize));
+    if (userId) params.set('user_id', userId);
 
     const res = await fetch(`${PYTHON_URL}/recommend-videos?${params}`, {
       cache: 'no-store',
