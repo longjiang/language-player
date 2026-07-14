@@ -64,7 +64,10 @@
   aspect-ratio: 16 / 9;
 }
 
-/* ── Prose bold contrast — bump weight for more distinction ── */
+/* ── Prose styling — normal body weight, heavier bold for contrast ── */
+.prose {
+  font-weight: 400;
+}
 .prose :where(strong):not(:where([class~="not-prose"] *)) {
   font-weight: 700;
 }
