@@ -25,7 +25,7 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext }:
 
   return (
     <div
-      className="rounded-lg border bg-card p-3 text-sm shadow-sm transition-colors hover:bg-accent/50 cursor-pointer"
+      className="rounded-lg border bg-card p-3 text-sm shadow-sm transition-colors hover:bg-muted/30 cursor-pointer"
       onClick={() => onClick?.(entry)}
     >
       {/* ── Header: head + pronunciation ── */}
@@ -86,6 +86,7 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext }:
               wordId={entry.id}
               head={entry.head}
               context={saveContext}
+              size="sm"
             />
           </div>
         )}
