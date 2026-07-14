@@ -6,6 +6,7 @@ import type { LemmatizedToken, DictionaryEntry, SavedWordContext } from '@langpl
 import { Loader2, X, AlertCircle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { SaveButton } from './save-button';
+import { AiExplanation } from './ai-explanation';
 import { useLanguage } from '@/providers/language-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -195,6 +196,13 @@ export function DictionaryPopup({
               )}
             </div>
           ))}
+
+          {/* AI Explanation — matches Classic's "Let DeepSeek Explain" button */}
+          <AiExplanation
+            word={token.text}
+            contextText={context?.text}
+            entryFound={entries.length > 0}
+          />
         </div>
       </div>
     </>
