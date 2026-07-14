@@ -18,8 +18,27 @@ import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
 import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
 import { YouTubeChannelCard } from '@/components/video/youtube-channel-card';
 
-const SAVE_INTERVAL_MS = 5000;
-const RESUME_KEY = (videoId: string) => `lp-resume-${videoId}`;
+const WATCH_POS_PREFIX = 'lp-watch-pos-';
+const SAVE_POS_INTERVAL = 5000; // save position every 5s
+
+function getSavedPosition(videoId: string): number {
+  try {
+    const raw = localStorage.getItem(WATCH_POS_PREFIX + videoId);
+    if (raw) {
+      const pos = parseFloat(raw);
+      return Number.isFinite(pos) && pos > 1 ? pos : 0;
+    }
+  } catch { /* localStorage unavailable */ }
+  return 0;
+}
+
+function savePosition(videoId: string, time: number) {
+  try {
+    if (time > 1) {
+      localStorage.setItem(WATCH_POS_PREFIX + videoId, String(Math.round(time)));
+    }
+  } catch { /* quota exceeded — ignore */ }
+}
 
 interface SyncedLine {
   starttime: number;
@@ -36,6 +55,7 @@ export default function WatchPage() {
 
   const [video, setVideo] = useState<YouTubeVideo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [startTime] = useState(() => getSavedPosition(videoId));
 
   // Pre-load token cache for the video (skips per-line /lemmatize calls)
   const { cache: tokenCache } = useVideoTokenCache(videoId, baseCode(l2.code));
@@ -50,12 +70,37 @@ export default function WatchPage() {
   const videoWrapperRef = useRef<HTMLDivElement>(null);
   const [isWide, setIsWide] = useState(false);
 
-  // Resume playback from where the user left off
-  const lastSaveRef = useRef(0);
-  const hasResumedRef = useRef(false);
-
   // Auto-save watch history every 15s during playback
   useWatchHistoryRecorder(video?.id, currentTime);
+
+  // Keep a ref to currentTime so save effects don't need to re-register
+  const currentTimeRef = useRef(currentTime);
+  currentTimeRef.current = currentTime;
+
+  // Save position to localStorage periodically for resume
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (currentTimeRef.current > 1) {
+        savePosition(videoId, currentTimeRef.current);
+      }
+    }, SAVE_POS_INTERVAL);
+    return () => clearInterval(interval);
+  }, [videoId]);
+
+  // Save position on page unload / navigation away
+  useEffect(() => {
+    const handleBeforeUnload = () => savePosition(videoId, currentTimeRef.current);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') savePosition(videoId, currentTimeRef.current);
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      savePosition(videoId, currentTimeRef.current);
+    };
+  }, [videoId]);
 
   useEffect(() => {
     const check = () => setIsWide(window.innerWidth >= 1024);
@@ -87,12 +132,7 @@ export default function WatchPage() {
 
   const handleTimeUpdate = useCallback((time: number) => {
     setCurrentTime(time);
-    // Save resume position to localStorage every SAVE_INTERVAL_MS
-    if (time - lastSaveRef.current >= SAVE_INTERVAL_MS) {
-      lastSaveRef.current = time;
-      try { localStorage.setItem(RESUME_KEY(videoId), String(time)); } catch {}
-    }
-  }, [videoId]);
+  }, []);
 
   const handleDuration = useCallback((d: number) => {
     setDuration(d);
@@ -100,11 +140,7 @@ export default function WatchPage() {
 
   const handleStateChange = useCallback((state: number) => {
     setPaused(state === PLAYER_STATES.PAUSED || state === PLAYER_STATES.ENDED);
-    // Clear resume position when video ends
-    if (state === PLAYER_STATES.ENDED) {
-      try { localStorage.removeItem(RESUME_KEY(videoId)); } catch {}
-    }
-  }, [videoId]);
+  }, []);
 
   const handlePauseToggle = useCallback(() => {
     const player = playerRef.current;
@@ -152,26 +188,6 @@ export default function WatchPage() {
     },
     [duration],
   );
-
-  // Seek to saved resume position once player is ready (duration > 0)
-  useEffect(() => {
-    // Reset for new video
-    hasResumedRef.current = false;
-    lastSaveRef.current = 0;
-  }, [videoId]);
-
-  useEffect(() => {
-    if (hasResumedRef.current || duration <= 0) return;
-    const saved = localStorage.getItem(RESUME_KEY(videoId));
-    if (saved) {
-      const t = parseFloat(saved);
-      if (t > 0 && t < duration - 5) {
-        hasResumedRef.current = true;
-        // Small delay to ensure player is fully ready
-        setTimeout(() => playerRef.current?.seekTo(t), 300);
-      }
-    }
-  }, [duration, videoId]);
 
   // Keyboard shortcuts (matching Classic: Space, R, ←, →, M)
   useEffect(() => {
@@ -247,6 +263,7 @@ export default function WatchPage() {
               ref={playerRef}
               youtubeId={video.youtube_id}
               autoplay
+              startTime={startTime}
               onTimeUpdate={handleTimeUpdate}
               onDuration={handleDuration}
               onStateChange={handleStateChange}
@@ -277,6 +294,7 @@ export default function WatchPage() {
               ref={playerRef}
               youtubeId={video.youtube_id}
               autoplay
+              startTime={startTime}
               onTimeUpdate={handleTimeUpdate}
               onDuration={handleDuration}
               onStateChange={handleStateChange}
