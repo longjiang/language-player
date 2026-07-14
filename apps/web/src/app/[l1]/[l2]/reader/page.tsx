@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/providers/language-provider';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
@@ -232,23 +231,12 @@ export default function ReaderPage() {
             lang={l2.code}
             dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
           >
-            {/* Render markdown first, then tokenize for clicks */}
-            <div className="prose prose-base max-w-none dark:prose-invert">
-              <ReactMarkdown>{text}</ReactMarkdown>
-            </div>
-
-            {/* Interactive tokenized layer — click any word */}
-            <div className="mt-4 border-t border-border pt-4">
-              <p className="mb-2 text-xs text-muted-foreground">
-                👆 Tap any word below to look it up
-              </p>
-              <TokenizedText
-                text={stripMarkdown(text)}
-                l2Code={l2.code}
-                textScale={1.2}
-                context={readerContext}
-              />
-            </div>
+            <TokenizedText
+              text={stripMarkdown(text)}
+              l2Code={l2.code}
+              textScale={1.2}
+              context={readerContext}
+            />
           </div>
 
           {/* L1 translation */}
