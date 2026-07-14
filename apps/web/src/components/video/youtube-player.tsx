@@ -5,6 +5,8 @@ import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardR
 interface YouTubePlayerProps {
   youtubeId: string;
   autoplay?: boolean;
+  /** Resume playback from this time (seconds). Applied after player is ready. */
+  startTime?: number;
   onTimeUpdate?: (time: number) => void;
   onDuration?: (duration: number) => void;
   onStateChange?: (state: number) => void;
@@ -60,13 +62,14 @@ interface YouTubePlayerInstance {
 
 export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(
   function YouTubePlayer(
-    { youtubeId, autoplay = false, onTimeUpdate, onDuration, onStateChange },
+    { youtubeId, autoplay = false, startTime, onTimeUpdate, onDuration, onStateChange },
     ref,
   ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const playerIdRef = useRef(`yt-player-${Math.random().toString(36).slice(2, 9)}`);
+  const startAppliedRef = useRef(false);
   const [apiReady, setApiReady] = useState(false);
 
   // Load YouTube IFrame API
@@ -113,9 +116,20 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
         modestbranding: 1,
         rel: 0,
         fs: 1,
+        ...(startTime && startTime > 1 ? { start: Math.round(startTime) } : {}),
       },
       events: {
         onReady: () => {
+          // Resume from saved position (only once per mount)
+          if (startTime && startTime > 1 && !startAppliedRef.current) {
+            startAppliedRef.current = true;
+            const d = player.getDuration();
+            // Only resume if not near the end (> 30s remaining)
+            if (d <= 0 || startTime < d - 30) {
+              player.seekTo(startTime, true);
+            }
+          }
+
           if (autoplay) player.playVideo();
           const duration = player.getDuration();
           if (duration > 0) onDuration?.(duration);
