@@ -53,7 +53,7 @@ export function SaveButton({
     return (
       <button
         onClick={handleToggle}
-        className={`p-0.5 rounded transition-colors ${
+        className={`p-1 rounded transition-colors ${
           saved
             ? 'text-amber-500 hover:text-amber-600'
             : 'text-muted-foreground hover:text-amber-500'
@@ -61,9 +61,9 @@ export function SaveButton({
         title={saved ? 'Remove from saved words' : 'Save word'}
       >
         {saved ? (
-          <BookmarkCheck className="h-4 w-4 fill-current" />
+          <BookmarkCheck className="h-5 w-5 fill-current" />
         ) : (
-          <Bookmark className="h-4 w-4" />
+          <Bookmark className="h-5 w-5" />
         )}
       </button>
     );
