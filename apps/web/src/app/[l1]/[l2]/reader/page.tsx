@@ -13,6 +13,40 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// Lazy-load turndown for HTML→markdown conversion
+let _turndown: any = null;
+async function getTurndown() {
+  if (!_turndown) {
+    const Turndown = (await import('turndown')).default;
+    _turndown = new Turndown({ headingStyle: 'atx', codeBlockStyle: 'fenced' });
+  }
+  return _turndown;
+}
+
+/** Convert an HTML string to markdown using turndown. */
+async function htmlToMarkdown(html: string, baseUrl: string): Promise<string> {
+  // Parse and clean the HTML
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  // Remove non-content elements
+  doc.querySelectorAll('script, style, nav, header, footer, aside, .sidebar, .menu, .navigation, .mw-jump-link, .mw-editsection, .reference, .noprint, .thumb, .infobox, .navbox, .metadata').forEach(el => el.remove());
+
+  // Try to find main content (Wikipedia-specific)
+  const mainContent = doc.querySelector('#mw-content-text') || doc.querySelector('article') || doc.body;
+
+  // Make links absolute
+  mainContent.querySelectorAll('a').forEach(el => {
+    const href = el.getAttribute('href');
+    if (href) {
+      try { el.setAttribute('href', new URL(href, baseUrl).href); } catch {}
+    }
+  });
+
+  const cleanedHtml = mainContent.innerHTML;
+  const td = await getTurndown();
+  return td.turndown(cleanedHtml);
+}
+
 const READER_TEXT_KEY = 'lp_reader_text';
 const READER_TITLE_KEY = 'lp_reader_title';
 
@@ -122,11 +156,11 @@ export default function ReaderPage() {
       const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(url)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const raw = await res.text();
-      if (isMarkdown) setText(raw);
-      else {
-        const div = document.createElement('div'); div.innerHTML = raw;
-        div.querySelectorAll('script, style, nav, header, footer, aside, .sidebar, .menu').forEach(el => el.remove());
-        setText(div.textContent?.replace(/\n{3,}/g, '\n\n').trim() || raw);
+      if (isMarkdown) {
+        setText(raw);
+      } else {
+        const md = await htmlToMarkdown(raw, url);
+        setText(md);
       }
     } catch (err: any) { setError(err?.message || 'Failed to load URL'); }
     finally { setLoading(false); }
