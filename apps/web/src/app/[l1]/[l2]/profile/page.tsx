@@ -7,8 +7,10 @@ import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useVideoPlayer } from '@/providers/video-player-provider';
+import { useProgress } from '@/hooks/use-progress';
 import { useT } from '@/hooks/use-t';
-import { baseCode } from '@/lib/language-data';
+import { LanguageLevelSelect } from '@/components/language-level-select';
+import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { youtubeThumbnail } from '@/lib/video-service';
 import {
@@ -75,6 +77,7 @@ export default function ProfilePage() {
   const { l1, l2 } = useLanguage();
   const { getSavedWords } = useSavedWordsContext();
   const { playVideo } = useVideoPlayer();
+  const { level: userLevel, setLevel } = useProgress(baseCode(l2.code));
   const t = useT();
 
   // Redirect unauthenticated users
@@ -210,6 +213,26 @@ export default function ProfilePage() {
               <Mail className="h-3.5 w-3.5" />
               {userEmail}
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Language Level */}
+      <section className="mb-10">
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+          <BookOpen className="h-5 w-5" />
+          Proficiency Level
+        </h2>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <p className="mb-3 text-sm text-muted-foreground">
+            Set your current {languageName(l2.code)} level to get video recommendations matched to your ability.
+          </p>
+          <div className="max-w-xs">
+            <LanguageLevelSelect
+              l2Code={baseCode(l2.code)}
+              value={userLevel}
+              onChange={setLevel}
+            />
           </div>
         </div>
       </section>
