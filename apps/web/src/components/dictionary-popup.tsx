@@ -2,16 +2,15 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import type { LemmatizedToken, DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { Loader2, X, AlertCircle, AlertTriangle, History } from 'lucide-react';
+import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedWord } from '@langplayer/shared';
+import { Loader2, X, AlertCircle, AlertTriangle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { AiExplanation } from './ai-explanation';
 import { SaveButton } from './save-button';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
-import { useLanguage } from '@/providers/language-provider';
+import { resolveLegacyId } from '@/lib/legacy-word-resolver';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { partitionSavedWords } from '@/lib/legacy-word-resolver';
 
 interface DictionaryPopupProps {
   token: LemmatizedToken;
@@ -32,11 +31,11 @@ export function DictionaryPopup({
   onClose,
 }: DictionaryPopupProps) {
   const router = useRouter();
-  const { l2 } = useLanguage();
-  const { getSavedWords, removeSavedWord, saveWord } = useSavedWordsContext();
   const [entries, setEntries] = useState<DictionaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { savedWords, removeSavedWord } = useSavedWordsContext();
 
   const lookupWord = useCallback(async (text: string, signal: AbortSignal) => {
     try {
@@ -118,17 +117,35 @@ export function DictionaryPopup({
     return `${prefix} ${value}`;
   };
 
+  // Find saved words for this token whose IDs don't match any loaded entry
+  const unmatchedSavedWords = useMemo(() => {
+    if (loading || error) return [];
+    const langWords = savedWords[l2Code] ?? [];
+    const entryIds = new Set(entries.map((e) => e.id));
+    // Also include resolved legacy IDs in the match check
+    const resolvedIds = new Set<string>();
+    for (const e of entries) {
+      const resolved = resolveLegacyId(e.id);
+      if (resolved) resolvedIds.add(resolved);
+    }
+
+    return langWords.filter((sw) => {
+      // Check if this saved word's forms include the token text
+      const formMatch = sw.forms.some(
+        (f) => f.toLowerCase() === token.text.toLowerCase()
+      );
+      if (!formMatch) return false;
+      // Check if this saved word's ID matches any entry (direct or resolved)
+      if (entryIds.has(sw.id)) return false;
+      const resolved = resolveLegacyId(sw.id);
+      if (resolved && entryIds.has(resolved)) return false;
+      return true;
+    });
+  }, [savedWords, l2Code, entries, token.text, loading, error]);
+
   const handleEntryClick = (entry: DictionaryEntry) => {
     router.push(`/${l1Code}/${l2Code}/dictionary/word/${encodeURIComponent(entry.head)}`);
   };
-
-  // Detect legacy saved words that don't match any current entry
-  const legacySavedWords = useMemo(() => {
-    if (loading || entries.length === 0) return [];
-    const savedWords = getSavedWords(l2.code);
-    const { unmatched } = partitionSavedWords(token.text, savedWords, entries);
-    return unmatched;
-  }, [loading, entries, token.text, l2.code, getSavedWords]);
 
   return (
     <>
@@ -196,40 +213,38 @@ export function DictionaryPopup({
             entryFound={entries.length > 0}
           />
 
-          {/* Legacy saved words — unmatched to current dictionary */}
-          {legacySavedWords.map((sw) => (
+          {/* Unrecognized saved words (Tier 2 — legacy data) */}
+          {!loading && unmatchedSavedWords.length > 0 && unmatchedSavedWords.map((sw) => (
             <div
               key={sw.id}
-              className="rounded-lg border border-amber-200 bg-amber-50/50 p-3 dark:border-amber-800 dark:bg-amber-950/30"
+              className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <History className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                    <span className="text-sm font-semibold">{sw.forms[0] ?? token.text}</span>
-                  </div>
-                  {sw.forms.length > 1 && (
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      Also: {sw.forms.slice(1).join(', ')}
-                    </p>
-                  )}
-                  {sw.context?.text && (
-                    <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                      &ldquo;{sw.context.text}&rdquo;
-                    </p>
-                  )}
-                  <p className="mt-1 flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
-                    <AlertTriangle className="h-3 w-3" />
-                    Legacy saved word — ID not recognized in current dictionary.
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-amber-800 dark:text-amber-200">
+                    Unrecognized saved word
                   </p>
+                  <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">
+                    <strong>{sw.forms.join(', ')}</strong>
+                    {sw.context?.text && (
+                      <> — saved from: &ldquo;{sw.context.text.slice(0, 80)}{sw.context.text.length > 80 ? '…' : ''}&rdquo;</>
+                    )}
+                  </p>
+                  <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                    This word was saved in a previous version of Language Player and its ID
+                    (&ldquo;{sw.id}&rdquo;) doesn&apos;t match any current dictionary entry.
+                    Remove it below and re-save from the correct entry.
+                  </p>
+                  <div className="mt-2">
+                    <button
+                      onClick={() => removeSavedWord(l2Code, sw.id)}
+                      className="inline-flex items-center gap-1 rounded bg-amber-200 px-2 py-1 text-xs font-medium text-amber-800 hover:bg-amber-300 dark:bg-amber-800 dark:text-amber-200 dark:hover:bg-amber-700 transition-colors"
+                    >
+                      Remove &amp; re-save
+                    </button>
+                  </div>
                 </div>
-                <button
-                  onClick={() => removeSavedWord(l2.code, sw.id)}
-                  className="shrink-0 rounded p-1 text-amber-500 hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/50"
-                  title="Remove this legacy saved word"
-                >
-                  <X className="h-4 w-4" />
-                </button>
               </div>
             </div>
           ))}

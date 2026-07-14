@@ -1,111 +1,65 @@
 /**
- * Legacy saved-word ID resolution.
+ * Legacy word ID resolution — UI-level only.
  *
- * Classic generated its own IDs client-side (e.g., "0", "1", "cedict-0").
- * The Python backend uses different IDs (e.g., "cedict-0", "cedict-12345").
+ * Classic used different ID formats than our Python SQLite backend.
+ * This module tries to resolve those legacy IDs to current IDs
+ * WITHOUT mutating localStorage or syncing changes to the server.
  *
- * This module resolves legacy IDs to potential current IDs so that
- * saved words from Classic still show as "saved" in the UI without
- * mutating localStorage or user_data.
+ * Known legacy formats:
+ *   Classic cedict:  "0", "1", "42"        → "cedict-0", "cedict-1", "cedict-42"
+ *   Classic edict:   "e7a9b..." (hash)     → unknown (different hash algorithm)
+ *   Classic wiktionary: "w7a9b..." (hash)  → same algorithm — should match
+ *   Classic freedict:   "f7a9b..." (hash)  → unknown
+ *   Classic kengdic:    various            → unknown
+ *
+ * For IDs we can't resolve, we return null — those will be handled
+ * by the "unrecognized saved word" UI in the dictionary popup.
  */
-
-import type { SavedWord, DictionaryEntry } from '@langplayer/shared';
 
 /**
- * Try to resolve a legacy saved-word ID to possible current dictionary IDs.
+ * Attempt to resolve a legacy saved-word ID to a current dictionary ID.
+ * Returns the resolved ID, or null if unresolvable.
  *
- * Classic → Current mappings:
- *   "0"           → ["cedict-0"]        (numeric-only for cedict)
- *   "1"           → ["cedict-1"]
- *   "cedict-0"    → ["cedict-0"]        (already matches)
- *   "eabc123"     → ["edict-abc123"]    (prefix-only edict)
- *   "wabc123"     → ["wabc123"]         (wiktionary, same algorithm)
- *   "kabc123"     → ["kengdic-abc123"]  (prefix-only kengdic)
- *   "llm-zh-xxx"  → ["llm-zh-xxx"]      (LLM, already matches)
- *   unknown       → []                  (can't resolve)
+ * Only handles the cases where we can deterministically map.
+ * Does NOT modify any data — this is a pure lookup function.
  */
-export function resolveLegacyId(savedWordId: string): string[] {
-  if (!savedWordId) return [];
-
-  // Already a full, current-format ID — return as-is
-  if (
-    savedWordId.startsWith('cedict-') ||
-    savedWordId.startsWith('edict-') ||
-    savedWordId.startsWith('kengdic-') ||
-    savedWordId.startsWith('klingonska-') ||
-    savedWordId.startsWith('cccanto-') ||
-    savedWordId.startsWith('llm-') ||
-    (savedWordId.startsWith('w') && savedWordId.length > 20)
-  ) {
-    return [savedWordId];
+export function resolveLegacyId(wordId: string): string | null {
+  // Classic cedict: plain numeric IDs like "0", "1", "42"
+  // Our format: "cedict-0", "cedict-1", "cedict-42"
+  if (/^\d+$/.test(wordId)) {
+    return `cedict-${wordId}`;
   }
 
-  // Wiktionary IDs start with 'w' followed by a hash (long string)
-  if (savedWordId.startsWith('w') && savedWordId.length > 10) {
-    return [savedWordId];
+  // Classic wiktionary: "w" + hash — we use the same algorithm
+  // No resolution needed — the ID should match directly
+  if (wordId.startsWith('w')) {
+    return null; // no resolution needed; direct match should work
   }
 
-  // Pure numeric — Classic HSK-CEDICT ID (e.g., "0", "123")
-  if (/^\d+$/.test(savedWordId)) {
-    return [`cedict-${savedWordId}`];
-  }
-
-  // Single-letter prefix + hash — Classic single-letter source prefix
-  // e = edict, k = kengdic, d = dialect, f = freedict
-  const legacyPrefixMap: Record<string, string> = {
-    e: 'edict',
-    k: 'kengdic',
-    d: 'cc-canto',   // dialect → cccanto
-    f: 'freedict',
-  };
-
-  for (const [prefix, source] of Object.entries(legacyPrefixMap)) {
-    if (savedWordId.startsWith(prefix) && savedWordId.length > 5) {
-      return [`${source}-${savedWordId.slice(1)}`];
-    }
-  }
-
-  // Can't resolve — return empty
-  return [];
+  // Unknown format — can't resolve
+  return null;
 }
 
 /**
- * Check if a saved word matches any of the given dictionary entries,
- * either by direct ID match or by legacy ID resolution.
+ * Check if a word is saved, with legacy ID resolution.
+ *
+ * Tries:
+ *   1. Direct ID match (current format)
+ *   2. Legacy ID resolution (Classic → current format)
+ *
+ * Returns true if the word is saved under any matching ID.
  */
-export function savedWordMatchesEntry(
-  savedWord: SavedWord,
-  entries: DictionaryEntry[],
+export function isWordSaved(
+  hasSavedWord: (l2Code: string, wordId: string) => boolean,
+  l2Code: string,
+  wordId: string,
 ): boolean {
-  const possibleIds = resolveLegacyId(savedWord.id);
+  // Tier 1a: Direct match
+  if (hasSavedWord(l2Code, wordId)) return true;
 
-  return entries.some((entry) => possibleIds.includes(entry.id));
-}
+  // Tier 1b: Legacy resolution
+  const resolved = resolveLegacyId(wordId);
+  if (resolved && hasSavedWord(l2Code, resolved)) return true;
 
-/**
- * Find saved words for a token that match and don't match the current entries.
- */
-export function partitionSavedWords(
-  tokenText: string,
-  savedWords: SavedWord[],
-  entries: DictionaryEntry[],
-): { matched: SavedWord[]; unmatched: SavedWord[] } {
-  const tokenLower = tokenText.toLowerCase();
-  // Find saved words whose forms include this token
-  const relevant = savedWords.filter((sw) =>
-    sw.forms.some((f) => f.toLowerCase() === tokenLower),
-  );
-
-  const matched: SavedWord[] = [];
-  const unmatched: SavedWord[] = [];
-
-  for (const sw of relevant) {
-    if (savedWordMatchesEntry(sw, entries)) {
-      matched.push(sw);
-    } else {
-      unmatched.push(sw);
-    }
-  }
-
-  return { matched, unmatched };
+  return false;
 }
