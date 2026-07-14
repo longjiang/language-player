@@ -64,6 +64,11 @@
   aspect-ratio: 16 / 9;
 }
 
+/* ── Prose bold contrast — bump weight for more distinction ── */
+.prose :where(strong):not(:where([class~="not-prose"] *)) {
+  font-weight: 700;
+}
+
 /* ── Subtitle styles ── */
 .subtitle-l1 {
   @apply text-lg font-semibold leading-relaxed;
