@@ -45,7 +45,7 @@ export default function LanguageSelectPage() {
 
   function handleContinue() {
     if (!canContinue) return;
-    router.push(`/${selectedL1}/${selectedL2}`);
+    router.push(`/${selectedL1}/${selectedL2}/explore`);
   }
 
   return (
