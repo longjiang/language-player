@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
+import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName, baseCode } from '@/lib/language-data';
+import { resolveLegacyId } from '@/lib/legacy-word-resolver';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { ArrowLeft, Loader2, AlertCircle, BookOpen, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, BookOpen, ExternalLink, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SaveButton } from '@/components/save-button';
 import { SpeakButton } from '@/components/speak-button';
@@ -23,6 +25,8 @@ export default function WordDetailPage() {
   const [entries, setEntries] = useState<DictionaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { savedWords, removeSavedWord } = useSavedWordsContext();
 
   const lookupWord = useCallback(async (text: string) => {
     try {
@@ -80,6 +84,29 @@ export default function WordDetailPage() {
     textTitle: t('title.dictionary'),
   };
 
+  // Find saved words for this word whose IDs don't match any loaded entry (legacy data)
+  const unmatchedSavedWords = useMemo(() => {
+    if (loading || error || !word) return [];
+    const langWords = savedWords[l2.code] ?? [];
+    const entryIds = new Set(entries.map((e) => e.id));
+    const resolvedIds = new Set<string>();
+    for (const e of entries) {
+      const resolved = resolveLegacyId(e.id);
+      if (resolved) resolvedIds.add(resolved);
+    }
+
+    return langWords.filter((sw) => {
+      const formMatch = sw.forms.some(
+        (f) => f.toLowerCase() === word.toLowerCase()
+      );
+      if (!formMatch) return false;
+      if (entryIds.has(sw.id)) return false;
+      const resolved = resolveLegacyId(sw.id);
+      if (resolved && entryIds.has(resolved)) return false;
+      return true;
+    });
+  }, [savedWords, l2.code, entries, word, loading, error]);
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       {/* Back button */}
@@ -116,6 +143,42 @@ export default function WordDetailPage() {
           </p>
         </div>
       )}
+
+      {/* Unrecognized saved words (Tier 2 — legacy data) */}
+      {!loading && unmatchedSavedWords.length > 0 && unmatchedSavedWords.map((sw) => (
+        <div
+          key={sw.id}
+          className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-800 dark:bg-amber-950"
+        >
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-amber-800 dark:text-amber-200">
+                Unrecognized saved word
+              </p>
+              <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">
+                <strong>{sw.forms.join(', ')}</strong>
+                {sw.context?.text && sw.context.text !== word && (
+                  <> — saved from: &ldquo;{sw.context.text.slice(0, 80)}{sw.context.text.length > 80 ? '…' : ''}&rdquo;</>
+                )}
+              </p>
+              <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                This word was saved in a previous version of Language Player and its ID
+                (&ldquo;{sw.id}&rdquo;) doesn&apos;t match any current dictionary entry.
+                Remove it below and re-save from the correct entry.
+              </p>
+              <div className="mt-2">
+                <button
+                  onClick={() => removeSavedWord(l2.code, sw.id)}
+                  className="inline-flex items-center gap-1 rounded bg-amber-200 px-2 py-1 text-xs font-medium text-amber-800 hover:bg-amber-300 dark:bg-amber-800 dark:text-amber-200 dark:hover:bg-amber-700 transition-colors"
+                >
+                  Remove &amp; re-save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
 
       {/* Entries */}
       {!loading && !error && entries.length > 0 && (
