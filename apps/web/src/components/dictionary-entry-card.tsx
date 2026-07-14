@@ -1,7 +1,8 @@
 'use client';
 
-import type { DictionaryEntry } from '@langplayer/shared';
+import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { BookOpen, ChevronRight, Volume2 } from 'lucide-react';
+import { SaveButton } from './save-button';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
@@ -9,10 +10,12 @@ interface DictionaryEntryCardProps {
   levelLabel?: (scale: string, value: string | number) => string;
   /** Called when the card is clicked */
   onClick?: (entry: DictionaryEntry) => void;
+  /** Optional context for the save/bookmark button. Omit to hide. */
+  saveContext?: SavedWordContext;
 }
 
 /** Renders a single dictionary lookup result. */
-export function DictionaryEntryCard({ entry, levelLabel, onClick }: DictionaryEntryCardProps) {
+export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext }: DictionaryEntryCardProps) {
   const level = entry.level;
   const levelText = level && levelLabel
     ? levelLabel(level.scale, level.value)
@@ -76,6 +79,15 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick }: DictionaryEn
           <span className="rounded bg-amber-100 px-1 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
             {entry.match_type}
           </span>
+        )}
+        {saveContext && (
+          <div className="ml-auto" onClick={(e) => e.stopPropagation()}>
+            <SaveButton
+              wordId={entry.id}
+              head={entry.head}
+              context={saveContext}
+            />
+          </div>
         )}
       </div>
     </div>

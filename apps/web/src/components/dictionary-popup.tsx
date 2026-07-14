@@ -5,9 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { LemmatizedToken, DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { Loader2, X, AlertCircle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
-import { SaveButton } from './save-button';
 import { AiExplanation } from './ai-explanation';
-import { useLanguage } from '@/providers/language-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 
@@ -178,31 +176,22 @@ export function DictionaryPopup({
             </div>
           )}
 
-          {entries.map((entry) => (
-            <div key={entry.id} className="flex items-start gap-2">
-              <div className="flex-1 min-w-0">
-                <DictionaryEntryCard
-                  entry={entry}
-                  levelLabel={levelLabel}
-                  onClick={handleEntryClick}
-                />
-              </div>
-              {context && (
-                <SaveButton
-                  wordId={entry.id}
-                  head={entry.head}
-                  context={context}
-                />
-              )}
-            </div>
-          ))}
-
-          {/* AI Explanation — matches Classic's "Let DeepSeek Explain" button */}
+          {/* AI Explanation — placed above dictionary entries, matching Classic */}
           <AiExplanation
             word={token.text}
             contextText={context?.text}
             entryFound={entries.length > 0}
           />
+
+          {entries.map((entry) => (
+            <DictionaryEntryCard
+              key={entry.id}
+              entry={entry}
+              levelLabel={levelLabel}
+              onClick={handleEntryClick}
+              saveContext={context}
+            />
+          ))}
         </div>
       </div>
     </>

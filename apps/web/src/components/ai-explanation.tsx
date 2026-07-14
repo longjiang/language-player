@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -153,8 +154,8 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
         <Sparkles className="h-3 w-3" />
         DeepSeek says:
       </div>
-      <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed whitespace-pre-wrap">
-        {explanation}
+      <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
+        <ReactMarkdown>{explanation}</ReactMarkdown>
       </div>
       <div className="mt-3 flex gap-2">
         <Button variant="ghost" size="sm" onClick={fetchExplanation}>
