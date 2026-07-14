@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import type { SavedWord, SavedWords, SavedWordContext } from '@langplayer/shared';
+import type { SavedWord, SavedWords } from '@langplayer/shared';
 import { useUserData } from '@langplayer/api-client';
 
 const STORAGE_KEY = 'zthSavedWords'; // match Classic for migration compatibility
@@ -22,28 +22,13 @@ export function useSavedWords() {
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
-  const lastUserId = useRef<string | undefined>(undefined);
 
-  // ── On logout or user change, clear local data ──
-  useEffect(() => {
-    const currentId = session?.user?.id;
-    if (lastUserId.current && currentId && lastUserId.current !== currentId) {
-      // Different user logged in — clear previous user's localStorage
-      try { localStorage.removeItem(STORAGE_KEY); } catch {}
-      setSavedWords({});
-    }
-    if (!session && lastUserId.current) {
-      // Logged out — clear everything
-      try { localStorage.removeItem(STORAGE_KEY); } catch {}
-      setSavedWords({});
-      setLoaded(false); // force reload on next login
-    }
-    lastUserId.current = currentId ?? undefined;
-  }, [session]);
-
-  // ── Load from localStorage on mount (only if same user) ──
+  // ── On mount: load from localStorage if not logged in, else load from cloud ──
   useEffect(() => {
     if (loaded) return;
+    // Don't touch localStorage while session is still loading — we don't know
+    // which user (if any) is logged in yet.  Cloud load handles the logged-in path.
+    if (session === undefined) return;
     if (!session) {
       // Not logged in — load from localStorage (anonymous mode)
       try {
@@ -55,10 +40,8 @@ export function useSavedWords() {
           }
         }
       } catch { /* corrupted data */ }
-      setLoaded(true);
-      return;
     }
-    // Logged in — skip localStorage, load from cloud only
+    // Logged in — localStorage is skipped; cloud load (next effect) will hydrate
     setLoaded(true);
   }, [session, loaded]);
 

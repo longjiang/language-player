@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useVideoPlayer } from '@/providers/video-player-provider';
@@ -69,11 +70,18 @@ const PLANS = [
 ];
 
 export default function ProfilePage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const { l1, l2 } = useLanguage();
   const { getSavedWords } = useSavedWordsContext();
   const { playVideo } = useVideoPlayer();
   const t = useT();
+
+  // Redirect unauthenticated users
+  useEffect(() => {
+    if (status === 'unauthenticated') router.push('/login');
+  }, [status, router]);
+
   const userId = session?.user?.id;
   const userEmail = session?.user?.email;
   const userName = session?.user?.name;
@@ -83,7 +91,7 @@ export default function ProfilePage() {
   const [historyLoading, setHistoryLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) { setHistoryLoading(false); return; }
     let cancelled = false;
     setHistoryLoading(true);
 
@@ -119,7 +127,7 @@ export default function ProfilePage() {
   const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) { setSubLoading(false); return; }
     let cancelled = false;
     setSubLoading(true);
     fetch(`${PYTHON_API_URL}/user-subscription?user_id=${userId}`)
