@@ -86,7 +86,7 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext }:
               wordId={entry.id}
               head={entry.head}
               context={saveContext}
-              size="sm"
+              size="icon"
             />
           </div>
         )}
