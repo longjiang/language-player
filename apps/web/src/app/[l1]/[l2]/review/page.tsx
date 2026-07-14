@@ -6,16 +6,20 @@ import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useSrs } from '@/hooks/use-srs';
+import { useSpeech } from '@/hooks/use-speech';
 import { sm2, newCard, remainingNewCardsToday } from '@langplayer/utils';
 import type { SrsFields, DictionaryEntry, SavedWord } from '@langplayer/shared';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
+import { TokenizedText } from '@/components/tokenized-text';
 import {
   Loader2,
   ArrowLeft,
   CheckCircle2,
   BookOpen,
+  Volume2,
+  BookmarkCheck,
 } from 'lucide-react';
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
@@ -41,11 +45,43 @@ interface ReviewCard {
   entry: DictionaryEntry | null;
 }
 
+/**
+ * Build a rich pronunciation string from a dictionary entry.
+ * Returns e.g. "/ni hao/" or "/你好/ [ní hǎo]" for Chinese.
+ */
+function formatPronunciation(entry: DictionaryEntry | null, l2Code: string): string | null {
+  if (!entry) return null;
+
+  const parts: string[] = [];
+  
+  // Base pronunciation in slashes
+  if (entry.pronunciation && entry.pronunciation !== entry.head) {
+    parts.push(`/${entry.pronunciation}/`);
+  }
+
+  // Language-specific script
+  const pd = entry.phonetic_detail;
+  if (pd) {
+    if ((l2Code === 'zh' || l2Code === 'yue') && pd.pinyin) {
+      parts.push(`[${pd.pinyin}]`);
+    } else if (l2Code === 'ja' && pd.kana) {
+      parts.push(`[${pd.kana}]`);
+    } else if (l2Code === 'ko' && pd.romanization) {
+      parts.push(`[${pd.romanization}]`);
+    } else if (pd.romanization) {
+      parts.push(`[${pd.romanization}]`);
+    }
+  }
+
+  return parts.length > 0 ? parts.join(' ') : null;
+}
+
 export default function ReviewPage() {
   const { data: session, status } = useSession();
   const { l1, l2 } = useLanguage();
-  const { savedWords, loaded: wordsLoaded } = useSavedWordsContext();
-  const { store, loaded: srsLoaded, updateCard, dailyNewLimit: dailyLimit } = useSrs();
+  const { savedWords, loaded: wordsLoaded, removeSavedWord } = useSavedWordsContext();
+  const { store, loaded: srsLoaded, updateCard, removeCard, dailyNewLimit: dailyLimit } = useSrs();
+  const { speak } = useSpeech();
 
   const [cards, setCards] = useState<ReviewCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -183,6 +219,25 @@ export default function ReviewPage() {
   const handleReveal = useCallback(() => {
     setShowDefinition(true);
   }, []);
+
+  /** Remove this word from saved words and SRS, advance to next card. */
+  const handleRemove = useCallback(() => {
+    const card = cards[currentIndex];
+    if (!card) return;
+    removeSavedWord(l2Code, card.word.id);
+    removeCard(l2Code, card.word.id);
+    setShowDefinition(false);
+    setRated(false);
+    setCurrentIndex((prev) => prev + 1);
+  }, [cards, currentIndex, l2Code, removeSavedWord, removeCard]);
+
+  /** Speak the word form. */
+  const handleSpeak = useCallback(() => {
+    const card = cards[currentIndex];
+    if (!card) return;
+    const form = card.word.forms[0] || card.entry?.head || card.word.id;
+    speak(form, l2Code);
+  }, [cards, currentIndex, l2Code, speak]);
 
   // ── Keyboard shortcuts (after reveal: rate with 1-4) ──
   useEffect(() => {
@@ -368,6 +423,24 @@ export default function ReviewPage() {
 
       {/* Card */}
       <div className="bg-card border rounded-xl p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center">
+        {/* Action buttons row */}
+        <div className="w-full flex justify-end gap-1 mb-2 -mt-2">
+          <button
+            onClick={handleSpeak}
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title="Pronounce"
+          >
+            <Volume2 className="h-5 w-5" />
+          </button>
+          <button
+            onClick={handleRemove}
+            className="p-2 rounded-lg text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors"
+            title="Remove from review"
+          >
+            <BookmarkCheck className="h-5 w-5 fill-current" />
+          </button>
+        </div>
+
         {/* Word */}
         <h1 className="text-3xl font-bold mb-2" lang={l2.code}>
           {wordForm}
@@ -392,12 +465,18 @@ export default function ReviewPage() {
           </Button>
         ) : (
           <div className="mt-4 w-full text-center space-y-3">
-            {/* Reading / Pronunciation (hidden until reveal) */}
-            {entry?.pronunciation && entry.pronunciation !== wordForm && (
-              <p className="text-lg text-muted-foreground" lang={l2.code}>
-                {entry.pronunciation}
-              </p>
-            )}
+            {/* Pronunciation (hidden until reveal) */}
+            {(() => {
+              const pron = formatPronunciation(entry, l2Code);
+              if (pron) {
+                return (
+                  <p className="text-lg text-muted-foreground" lang={l2.code}>
+                    {pron}
+                  </p>
+                );
+              }
+              return null;
+            })()}
 
             {entry?.definitions && entry.definitions.length > 0 ? (
               <div className="space-y-1.5">
@@ -420,10 +499,20 @@ export default function ReviewPage() {
 
             {/* Context from where word was saved */}
             {currentCard.word.context.text && (
-              <div className="mt-4 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-                <p className="line-clamp-2">&ldquo;{currentCard.word.context.text}&rdquo;</p>
+              <div className="mt-4 p-3 bg-muted/50 rounded-lg text-left">
+                <p className="text-xs text-muted-foreground mb-1 font-medium">Context</p>
+                <TokenizedText
+                  text={currentCard.word.context.text}
+                  l2Code={l2Code}
+                  context={{
+                    form: wordForm,
+                    text: currentCard.word.context.text,
+                    youtube_id: currentCard.word.context.youtube_id,
+                    videoTitle: currentCard.word.context.videoTitle,
+                  }}
+                />
                 {currentCard.word.context.videoTitle && (
-                  <p className="text-xs mt-1 opacity-70">
+                  <p className="text-xs mt-2 opacity-70">
                     — {currentCard.word.context.videoTitle}
                   </p>
                 )}

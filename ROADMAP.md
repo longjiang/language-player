@@ -81,11 +81,7 @@
 
 ## Phase 6: User Features
 
-- ⬜ User dashboard
 - ✅ Watch history
-- ⬜ Progress tracking
-- ⬜ Content preferences
-- ⬜ Saved words/phrases management
 - ✅ Go Pro / Subscription management
 
 ## Phase 7: Backend Consolidation
