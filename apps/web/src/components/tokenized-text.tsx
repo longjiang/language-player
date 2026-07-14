@@ -20,6 +20,8 @@ export interface TokenizedTextProps {
   context?: Partial<SavedWordContext>;
   /** Pre-populated token cache from /lemmatize-video-normalized */
   tokenCache?: TokenCache;
+  /** Pre-loaded tokens — when set, skips the API call entirely. */
+  tokens?: LemmatizedToken[];
 }
 
 /**
@@ -33,15 +35,23 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   textScale = 1,
   context: externalContext,
   tokenCache,
+  tokens: preloadedTokens,
 }) => {
   const { l1 } = useLanguage();
-  const [tokens, setTokens] = useState<LemmatizedToken[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
+  const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    // Skip API call if tokens were pre-loaded
+    if (preloadedTokens) {
+      setTokens(preloadedTokens);
+      setLoading(false);
+      return;
+    }
+
     // Cancel previous request
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -108,7 +118,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       cancelled = true;
       controller.abort();
     };
-  }, [text, l2Code]);
+  }, [text, l2Code, preloadedTokens]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken) => {
     setSelectedToken(prev => prev === token ? null : token);
