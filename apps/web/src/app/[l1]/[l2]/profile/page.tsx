@@ -10,6 +10,8 @@ import { useVideoPlayer } from '@/providers/video-player-provider';
 import { useProgress } from '@/hooks/use-progress';
 import { useT } from '@/hooks/use-t';
 import { LanguageLevelSelect } from '@/components/language-level-select';
+import { useSrs } from '@/hooks/use-srs';
+import { DEFAULT_DAILY_NEW_LIMIT } from '@langplayer/utils';
 import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { youtubeThumbnail } from '@/lib/video-service';
@@ -78,6 +80,8 @@ export default function ProfilePage() {
   const { getSavedWords } = useSavedWordsContext();
   const { playVideo } = useVideoPlayer();
   const { level: userLevel, setLevel } = useProgress(baseCode(l2.code));
+  const { dailyNewLimit, updateSettings } = useSrs();
+  const [settingsTab, setSettingsTab] = useState<'pronunciation' | 'review'>('pronunciation');
   const t = useT();
 
   // Redirect unauthenticated users
@@ -217,24 +221,88 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* Language Level */}
+      {/* Settings Tabs: Pronunciation | Review */}
       <section className="mb-10">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
           <BookOpen className="h-5 w-5" />
-          Proficiency Level
+          Settings
         </h2>
-        <div className="rounded-xl border border-border bg-card p-6">
-          <p className="mb-3 text-sm text-muted-foreground">
-            Set your current {languageName(l2.code)} level to get video recommendations matched to your ability.
-          </p>
-          <div className="max-w-xs">
-            <LanguageLevelSelect
-              l2Code={baseCode(l2.code)}
-              value={userLevel}
-              onChange={setLevel}
-            />
-          </div>
+
+        {/* Tab bar */}
+        <div className="flex border-b border-border mb-6">
+          <button
+            onClick={() => setSettingsTab('pronunciation')}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              settingsTab === 'pronunciation'
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Pronunciation
+          </button>
+          <button
+            onClick={() => setSettingsTab('review')}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              settingsTab === 'review'
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Review
+          </button>
         </div>
+
+        {/* Pronunciation tab */}
+        {settingsTab === 'pronunciation' && (
+          <div className="rounded-xl border border-border bg-card p-6">
+            <p className="mb-3 text-sm text-muted-foreground">
+              Set your current {languageName(l2.code)} level to get video recommendations matched to your ability.
+            </p>
+            <div className="max-w-xs">
+              <LanguageLevelSelect
+                l2Code={baseCode(l2.code)}
+                value={userLevel}
+                onChange={setLevel}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Review tab */}
+        {settingsTab === 'review' && (
+          <div className="rounded-xl border border-border bg-card p-6 space-y-6">
+            {/* Daily new card limit */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                New cards per day
+              </label>
+              <p className="text-sm text-muted-foreground mb-3">
+                Maximum number of new words introduced into your review deck each day.
+              </p>
+              <div className="flex items-center gap-4 max-w-sm">
+                <input
+                  type="range"
+                  min={1}
+                  max={50}
+                  step={1}
+                  value={dailyNewLimit}
+                  onChange={(e) => updateSettings({ dailyNewLimit: Number(e.target.value) })}
+                  className="flex-1 h-2 rounded-full appearance-none bg-muted cursor-pointer
+                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
+                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer"
+                />
+                <span className="w-12 text-center text-lg font-semibold tabular-nums">
+                  {dailyNewLimit}
+                </span>
+              </div>
+              <div className="flex justify-between max-w-sm mt-1">
+                <span className="text-xs text-muted-foreground">1</span>
+                <span className="text-xs text-muted-foreground">{DEFAULT_DAILY_NEW_LIMIT} (default)</span>
+                <span className="text-xs text-muted-foreground">50</span>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Subscription */}
