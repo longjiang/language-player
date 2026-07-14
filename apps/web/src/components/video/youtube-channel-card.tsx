@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useLanguage } from '@/providers/language-provider';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ChannelActionsMenu } from './channel-actions-menu';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ExternalLink } from 'lucide-react';
 
 interface ChannelInfo {
   title: string;
@@ -15,6 +17,7 @@ interface ChannelCardProps {
 }
 
 export function YouTubeChannelCard({ channelId }: ChannelCardProps) {
+  const { l1, l2 } = useLanguage();
   const [channel, setChannel] = useState<ChannelInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -46,10 +49,8 @@ export function YouTubeChannelCard({ channelId }: ChannelCardProps) {
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
-      <a
-        href={`https://www.youtube.com/channel/${channelId}`}
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        href={`/${l1.code}/${l2.code}/channel/${encodeURIComponent(channelId)}`}
         className="flex-shrink-0"
       >
         <img
@@ -57,17 +58,24 @@ export function YouTubeChannelCard({ channelId }: ChannelCardProps) {
           alt=""
           className="h-10 w-10 rounded-full object-cover"
         />
-      </a>
+      </Link>
       <div className="min-w-0 flex-1">
-        <a
-          href={`https://www.youtube.com/channel/${channelId}`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href={`/${l1.code}/${l2.code}/channel/${encodeURIComponent(channelId)}`}
           className="text-sm font-medium hover:text-primary transition-colors line-clamp-1"
         >
           {channel.title}
-        </a>
+        </Link>
       </div>
+      <a
+        href={`https://www.youtube.com/channel/${channelId}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+        title="View on YouTube"
+      >
+        <ExternalLink className="h-4 w-4" />
+      </a>
       <ChannelActionsMenu channelId={channelId} />
     </div>
   );
