@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import type { SavedWordContext } from '@langplayer/shared';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useLanguage } from '@/providers/language-provider';
+import { resolveLegacyId } from '@/lib/legacy-word-resolver';
 import { Button } from '@/components/ui/button';
 
 interface SaveButtonProps {
@@ -23,6 +24,10 @@ interface SaveButtonProps {
 /**
  * Bookmark toggle button for saving/removing words from the vocabulary list.
  * Mirrors Classic's Star.vue + GO's BookmarkButton.
+ *
+ * Two-tier saved check:
+ *   1. Direct ID match (current dictionary)
+ *   2. Legacy ID resolution (Classic → current mapping)
  */
 export function SaveButton({
   wordId,
@@ -31,10 +36,20 @@ export function SaveButton({
   forms,
   size = 'icon',
 }: SaveButtonProps) {
-  const { hasSavedWord, saveWord, removeSavedWord } = useSavedWordsContext();
+  const { hasSavedWord, getSavedWords, saveWord, removeSavedWord } = useSavedWordsContext();
   const { l2 } = useLanguage();
   const l2Code = l2.code;
-  const saved = hasSavedWord(l2Code, wordId);
+
+  // Two-tier saved check: direct ID match + legacy ID resolution
+  const saved = useMemo(() => {
+    if (hasSavedWord(l2Code, wordId)) return true;
+    // Legacy: check if any saved word resolves to this entry's ID
+    const savedWords = getSavedWords(l2Code);
+    return savedWords.some((sw) => {
+      const possibleIds = resolveLegacyId(sw.id);
+      return possibleIds.includes(wordId);
+    });
+  }, [l2Code, wordId, hasSavedWord, getSavedWords]);
 
   const handleToggle = () => {
     if (saved) {
