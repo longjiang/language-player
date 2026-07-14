@@ -335,9 +335,39 @@ All stores persist to localStorage via `vuex-persist` plugin.
 
 ## Lib Utilities
 
-| Module | Purpose |
+### `lib/utils/` — Core Utility Modules
+
+The `lib/utils/` directory contains 20+ focused utility modules, re-exported through `lib/utils/index.js`:
+
+| File | Key Exports | Purpose |
+|---|---|---|
+| `index.js` | (barrel) | Re-exports all sub-modules. Also defines `unlessUndefined()`, `parseTime()`, `getYearTitle()`. |
+| `array.js` | `findRandomUniqueElementsFromArray`, `randomItemFromArray`, `uniqueByValue`, `uniqueByValues`, `uniqueSort`, `flatten`, `groupArrayBy`, `unique`, `mutuallyExclusive` | Array manipulation: dedup, group-by, flatten, random picks, mutual-exclusion filtering. |
+| `background.js` | `getDefaultBackground`, `backgroundKeyword`, `unsplashUrl`, `background` | Dynamic background images: daily rotating default, Unsplash integration by language/country. |
+| `countries.js` | `country` | Country lookup by ISO code from `lib/countries.js` data. |
+| `device.js` | `isMobile`, `iOS` | Device/browser detection (mobile, iOS). |
+| `error.js` | `logError` | Structured error logging with Axios response details. |
+| `exams.js` | `EXAMS` (default export) | Exam system definitions: HSK (zh), JLPT (ja), TOPIK (ko), IELTS (en), CEFR (all). Array of `{ lang, slug, name }`. |
+| `japanese.js` | `smallKanaSet`, `splitIntoMoras`, `addPitchAccent` | Japanese text processing: kana identification, mora splitting, pitch accent annotation. |
+| `language-levels.js` | `LEVELS`, `MAX_DIFFICULTY_BY_LEVEL` | 7-level proficiency scale mapping HSK/CEFR/JLPT/TOPIK/IELTS. Per-L2 max-difficulty thresholds for content filtering. |
+| `proxy.js` | `proxy`, `proxyParsed` | URL fetching via caching proxy server with HTML parsing. |
+| `random.js` | `randomInt`, `randomArrayItem`, `randBase64` | Random number/item/string generation. |
+| `regex.js` | `CJK`, `NON_CJK`, `characterClass`, `escapeRegExp` | Unicode regex constants: CJK/non-CJK character ranges, Unicode character class builders (Letter, Han, Hangul, Kana, Punctuation variants). |
+| `sample-text.js` | `SAMPLE_TEXT` (default export) | Per-language sample text strings for the reader/dictionary demos (zh, es, de, fr, ko, ja, en, it, eu, vi, ca, ru). |
+| `servers.js` | `SERVER`, `PYTHON_SERVER`, `DIRECTUS_URL`, `WEB_URL`, `PROXY_URL`, `SCRAPE_URL`, etc. | Server URL constants for all backend services (Directus, Python, proxy, image, YouTube endpoints). |
+| `special-languages.js` | `SPECIAL_LANGUAGES` (default export) | Special language mappings (e.g., Classical Chinese → zh, Middle Chinese → zh, Hakka → zh). |
+| `speech-singleton.js` | `SpeechSingleton` (class) | TTS singleton wrapping Web Speech API: voice selection, speak with rate control, pause/resume, onboundary events. |
+| `string.js` | `roundTo`, `normalizeStylizedNumber`, `unescape`, `splitByReg`, `highlight`, `highlightMultiple`, `STYLIZED_NUMBERS`, `transliterate`, `titleCase`, `parseBool`, `anyToBool`, `stringToColor`, `containsSpecialChars`, `deburr`, `sortByLength` | String manipulation: HTML unescaping, stylized number normalization (①→1), regex highlighting, transliteration, case conversion, sorting. |
+| `timeout.js` | `timeout` | Promise-based `setTimeout` wrapper: `await timeout(ms)`. |
+| `unique-id.js` | `uniqueId` | UUID v4 generator via the `uuid` package. |
+| `url.js` | `absoluteURL`, `queryString`, `baseUrl`, `HOST` | URL utilities: resolve relative/absolute URLs, build query strings, extract base URL/host. |
+| `variables.js` | `TEST`, `SALE`, `SALE_DISCOUNT`, `DEFAULT_PAGE`, `NON_PRO_MAX_LINES`, `NON_PRO_MAX_SUBS_SEARCH_HITS`, `LANGS_WITH_CONTENT`, `LANGS_YOUTUBE_SUPPORTS`, `LANGS_WITH_LIVE_TV` | Global app variables: sale/discount config, free-user content limits (max transcript lines, max subs search hits), language allow-lists for content/YouTube/live TV. |
+| `viewport.js` | `wide`, `tall`, `landscape`, `documentOffsetTop`, `scrollToTargetAdjusted` | Viewport/scroll helpers: breakpoint detection (wide > 991px, tall > 557px, landscape > 13:9), smooth scroll-to-element with header offset. |
+
+### Other Lib Modules
+
+| File | Purpose |
 |---|---|
-| `lib/utils.js` / `lib/utils/` | Core utility functions (language codes, phonetics, tokenization helpers, etc.) |
 | `lib/helper.js` | General helper functions (groupArrayBy, logError, etc.) |
 | `lib/languages.js` | Language definitions, names, codes, scripts |
 | `lib/language-mapper.js` | Language mapping/normalization |
