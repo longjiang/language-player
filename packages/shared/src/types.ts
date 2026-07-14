@@ -114,6 +114,8 @@ export interface DictionaryEntry {
     value: number | string;
   } | null;
   frequency?: number | null;
+  /** 1–7 integer derived from Zipf frequency thresholds. 1 = most common, 7 = rarest. */
+  frequencyLevel?: number | null;
 
   // ── Language-specific scripts ──
   alternate?: string | null;
