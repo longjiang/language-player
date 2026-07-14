@@ -231,7 +231,28 @@ export default function ReaderPage() {
       {/* Read mode */}
       {activeTab === 'read' && text && (
         <div className={`${showTranslation ? 'grid grid-cols-2 gap-6' : ''}`}>
-          <div className="rounded-lg border border-border bg-card p-6" lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}>
+          <div
+            className="rounded-lg border border-border bg-card p-6
+              [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4
+              [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-3
+              [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2
+              [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mt-3 [&_h4]:mb-1
+              [&_p]:mb-3 [&_p]:leading-relaxed
+              [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-3
+              [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-3
+              [&_li]:mb-1 [&_li]:leading-relaxed
+              [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:mb-3
+              [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4
+              [&_a]:text-primary [&_a]:underline [&_a]:hover:no-underline
+              [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4
+              [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-1 [&_th]:text-left
+              [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-1
+              [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono
+              [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-4
+              [&_hr]:border-border [&_hr]:my-6
+            "
+            lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
+          >
             {/* Phase 1: ReactMarkdown while tokenizing */}
             {(!blocks || tokenizing) && (
               <>
@@ -240,7 +261,7 @@ export default function ReaderPage() {
                     <Loader2 className="h-3 w-3 animate-spin" /> Making words interactive...
                   </div>
                 )}
-                <div className="prose prose-base max-w-none dark:prose-invert">
+                <div>
                   <ReactMarkdown>{text}</ReactMarkdown>
                 </div>
               </>
@@ -255,7 +276,7 @@ export default function ReaderPage() {
                 {blocks.map((block, i) => {
                   if (block.kind === 'markdown') {
                     return (
-                      <div key={i} className="prose prose-base max-w-none dark:prose-invert [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-1 [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-1">
+                      <div key={i}>
                         <ReactMarkdown>{block.raw}</ReactMarkdown>
                       </div>
                     );
@@ -265,7 +286,7 @@ export default function ReaderPage() {
                   const textBlockIndex = blocks.slice(0, i).filter((b): b is TextBlock => b.kind === 'text').length;
                   return (
                     <Tag key={i} className={blockClass(tb)}>
-                      <TokenizedText text={tb.text} l2Code={l2.code} textScale={1.15} context={ctx}
+                      <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
                         tokens={blockTokens[textBlockIndex]} />
                     </Tag>
                   );
