@@ -18,6 +18,9 @@ import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
 import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
 import { YouTubeChannelCard } from '@/components/video/youtube-channel-card';
 
+const SAVE_INTERVAL_MS = 5000;
+const RESUME_KEY = (videoId: string) => `lp-resume-${videoId}`;
+
 interface SyncedLine {
   starttime: number;
   l1Line: string;
@@ -46,6 +49,10 @@ export default function WatchPage() {
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
   const videoWrapperRef = useRef<HTMLDivElement>(null);
   const [isWide, setIsWide] = useState(false);
+
+  // Resume playback from where the user left off
+  const lastSaveRef = useRef(0);
+  const hasResumedRef = useRef(false);
 
   // Auto-save watch history every 15s during playback
   useWatchHistoryRecorder(video?.id, currentTime);
@@ -80,7 +87,12 @@ export default function WatchPage() {
 
   const handleTimeUpdate = useCallback((time: number) => {
     setCurrentTime(time);
-  }, []);
+    // Save resume position to localStorage every SAVE_INTERVAL_MS
+    if (time - lastSaveRef.current >= SAVE_INTERVAL_MS) {
+      lastSaveRef.current = time;
+      try { localStorage.setItem(RESUME_KEY(videoId), String(time)); } catch {}
+    }
+  }, [videoId]);
 
   const handleDuration = useCallback((d: number) => {
     setDuration(d);
@@ -88,7 +100,11 @@ export default function WatchPage() {
 
   const handleStateChange = useCallback((state: number) => {
     setPaused(state === PLAYER_STATES.PAUSED || state === PLAYER_STATES.ENDED);
-  }, []);
+    // Clear resume position when video ends
+    if (state === PLAYER_STATES.ENDED) {
+      try { localStorage.removeItem(RESUME_KEY(videoId)); } catch {}
+    }
+  }, [videoId]);
 
   const handlePauseToggle = useCallback(() => {
     const player = playerRef.current;
@@ -136,6 +152,26 @@ export default function WatchPage() {
     },
     [duration],
   );
+
+  // Seek to saved resume position once player is ready (duration > 0)
+  useEffect(() => {
+    // Reset for new video
+    hasResumedRef.current = false;
+    lastSaveRef.current = 0;
+  }, [videoId]);
+
+  useEffect(() => {
+    if (hasResumedRef.current || duration <= 0) return;
+    const saved = localStorage.getItem(RESUME_KEY(videoId));
+    if (saved) {
+      const t = parseFloat(saved);
+      if (t > 0 && t < duration - 5) {
+        hasResumedRef.current = true;
+        // Small delay to ensure player is fully ready
+        setTimeout(() => playerRef.current?.seekTo(t), 300);
+      }
+    }
+  }, [duration, videoId]);
 
   // Keyboard shortcuts (matching Classic: Space, R, ←, →, M)
   useEffect(() => {
