@@ -24,22 +24,34 @@ export function useWatchHistoryRecorder(
   const userId = session?.user?.id;
   const token = (session?.user as any)?.directusToken as string | undefined;
   const lastSavedRef = useRef<{ time: number; videoId: string } | null>(null);
+  const currentTimeRef = useRef(currentTime);
+
+  // Keep ref in sync without re-triggering the effect
+  currentTimeRef.current = currentTime;
 
   useEffect(() => {
-    if (!videoId || !userId || !token) return;
+    if (!videoId || !userId || !token) {
+      console.log('[watch-history] recorder inactive', { hasVideoId: !!videoId, hasUserId: !!userId, hasToken: !!token });
+      return;
+    }
+
+    console.log('[watch-history] recorder active — will save every 15s', { videoId, userId });
 
     const interval = setInterval(() => {
-      if (currentTime <= 0) return;
+      const time = currentTimeRef.current;
+      if (time <= 0) return;
 
       if (
         lastSavedRef.current &&
         lastSavedRef.current.videoId === videoId &&
-        Math.abs(lastSavedRef.current.time - currentTime) < 2
+        Math.abs(lastSavedRef.current.time - time) < 2
       ) {
         return;
       }
 
-      lastSavedRef.current = { time: currentTime, videoId };
+      lastSavedRef.current = { time, videoId };
+
+      console.log('[watch-history] sending save', { videoId, position: Math.round(time) });
 
       fetch(`${PYTHON_API_URL}/save-watch-history`, {
         method: 'POST',
@@ -48,7 +60,7 @@ export function useWatchHistoryRecorder(
           id: userId,
           l2: baseCode(l2.code),
           video_id: parseInt(videoId, 10),
-          last_position: Math.round(currentTime),
+          last_position: Math.round(time),
           token,
         }),
       }).catch(() => {
@@ -57,5 +69,5 @@ export function useWatchHistoryRecorder(
     }, SAVE_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [videoId, currentTime, userId, token, l2.code]);
+  }, [videoId, userId, token, l2.code]); // currentTime NOT in deps — uses ref instead
 }
