@@ -33,6 +33,7 @@ const NAV_GROUPS: NavGroup[] = [
     links: [
       { key: 'title.dictionary', href: 'dictionary' },
       { key: 'title.saved_words', href: 'saved-words' },
+      { key: 'title.review', href: 'review' },
     ],
   },
 ] as const;

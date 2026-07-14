@@ -15,6 +15,9 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
   const { getAllVoices, voiceURI, setVoiceURI, rate, setRate, speak, stop, isSpeaking } = useSpeech();
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     // Voices may load asynchronously
@@ -41,9 +44,11 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
             className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-sm hover:border-primary/50"
           >
             <span className="truncate">
-              {voiceURI
-                ? voices.find(v => v.voiceURI === voiceURI)?.name ?? 'Custom voice'
-                : `Auto (best for ${l2?.code?.toUpperCase() ?? 'L2'})`}
+              {!mounted
+                ? `Auto (best for ${l2?.code?.toUpperCase() ?? 'L2'})`
+                : voiceURI
+                  ? voices.find(v => v.voiceURI === voiceURI)?.name ?? 'Custom voice'
+                  : `Auto (best for ${l2?.code?.toUpperCase() ?? 'L2'})`}
             </span>
             <ChevronDown className="ml-2 h-4 w-4 flex-shrink-0 text-muted-foreground" />
           </button>

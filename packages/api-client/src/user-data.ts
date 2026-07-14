@@ -4,6 +4,7 @@ export interface UserDataResponse {
   id: string | number;
   saved_words: string;
   progress?: string;
+  srs_progress?: string;
 }
 
 export function useUserData() {
@@ -18,6 +19,12 @@ export function useUserData() {
     syncSavedWords: (savedWords: string) =>
       apiClient.post<{ success: boolean }>('/user-data/sync', {
         saved_words: savedWords,
+      }),
+
+    /** Sync srs_progress to the Python backend (auth via Authorization header). */
+    syncSrsProgress: (srsProgress: string) =>
+      apiClient.post<{ success: boolean }>('/user-data/sync', {
+        srs_progress: srsProgress,
       }),
   };
 }

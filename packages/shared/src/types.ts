@@ -262,4 +262,37 @@ export interface UserDataRecord {
   id: string | number;
   saved_words: string;  // JSON.stringify(SavedWords)
   progress?: string;    // JSON (reserved for Phase 6)
+  srs_progress?: string;  // JSON.stringify(SrsProgressStore)
+}
+
+/** SM-2 spaced repetition fields for a single card. */
+export interface SrsFields {
+  /** Ease factor. Starts at 2.5, adjusts ±0.15 per review. Min 1.3. */
+  ease: number;
+  /** Days until next review. 0 = new card. */
+  interval: number;
+  /** Number of consecutive correct recalls. */
+  repetitions: number;
+  /** Unix-ms timestamp when card is next due for review. */
+  nextReview: number;
+  /** Unix-ms timestamp of the last review. */
+  lastReview: number;
+  /** Unix-ms timestamp when the card was first created. Used to limit new cards/day. */
+  createdAt?: number;
+}
+
+/**
+ * Top-level SRS progress store shape.
+ * Stored in localStorage under 'zthSrsProgress' and synced to Directus srs_progress column.
+ *
+ * Cards are keyed by l2Code → wordId → SrsFields.
+ * Settings are embedded so they sync across devices with the cards.
+ */
+export interface SrsProgressStore {
+  settings: {
+    /** Max new cards introduced per day. Default 20. */
+    dailyNewLimit: number;
+  };
+  /** Cards keyed by ISO 639-1 l2 code, then by dictionary entry ID. */
+  cards: Record<string, Record<string, SrsFields>>;
 }
