@@ -115,7 +115,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
         {/* Logo */}
-        <Link href={`/${l1.code}/${l2.code}`} className="flex items-center gap-2 font-bold">
+        <Link href={`/${l1.code}/${l2.code}/explore`} className="flex items-center gap-2 font-bold">
           <Play className="h-5 w-5 text-primary" />
           <span className="hidden sm:inline">{t('title.app_name')}</span>
         </Link>
