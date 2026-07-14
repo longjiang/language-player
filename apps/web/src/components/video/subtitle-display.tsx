@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useLanguage } from '@/providers/language-provider';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { getShowTranslation, setShowTranslation } from '@/lib/settings';
@@ -125,6 +125,33 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     setActiveIndex(idx);
   }, [currentTime, syncedLines]);
 
+  // Auto-scroll to active line — only when activeIndex changes, not on every render
+  const prevActiveRef = useRef(activeIndex);
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (activeIndex === prevActiveRef.current) return;
+    prevActiveRef.current = activeIndex;
+    if (activeIndex < 0) return;
+
+    const el = listRef.current?.querySelector(`[data-subtitle-index="${activeIndex}"]`) as HTMLElement | null;
+    if (!el) return;
+
+    const container = scrollContainerRef?.current ?? el.closest('.overflow-y-auto') as HTMLElement | null;
+    const cr = container?.getBoundingClientRect();
+    const er = el.getBoundingClientRect();
+    const vh = window.innerHeight;
+
+    const top = cr && cr.height < vh * 0.8 ? cr.top : 0;
+    const bottom = cr && cr.height < vh * 0.8 ? cr.bottom : vh;
+    const margin = (bottom - top) * 0.25;
+
+    const nearTop = er.top < top + margin;
+    const nearBottom = er.bottom > bottom - margin;
+    if (nearTop || nearBottom) {
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [activeIndex, scrollContainerRef]);
+
   const toggleTranslation = () => {
     const next = !showTranslation;
     setShowTranslationState(next);
@@ -160,35 +187,17 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2" ref={listRef}>
         {syncedLines.map((line, i) => {
           const isActive = i === activeIndex;
           return (
             <div
               key={i}
+              data-subtitle-index={i}
               onClick={() => onSeekToLine?.(line.starttime)}
               className={`cursor-pointer rounded-lg px-3 py-2 transition-colors ${
                 isActive ? 'bg-primary/10 ring-1 ring-primary/20' : 'hover:bg-muted/50'
               }`}
-              ref={isActive ? (el) => {
-                if (!el) return;
-                const container = scrollContainerRef?.current ?? el.closest('.overflow-y-auto') as HTMLElement | null;
-                const cr = container?.getBoundingClientRect();
-                const er = el.getBoundingClientRect();
-                const vh = window.innerHeight;
-
-                // Determine the visible region: use container if constrained, otherwise viewport
-                const top = cr && cr.height < vh * 0.8 ? cr.top : 0;
-                const bottom = cr && cr.height < vh * 0.8 ? cr.bottom : vh;
-                const margin = (bottom - top) * 0.25; // 25% margin from edges
-
-                // Scroll if line is outside the middle 50% of the visible region
-                const nearTop = er.top < top + margin;
-                const nearBottom = er.bottom > bottom - margin;
-                if (nearTop || nearBottom) {
-                  el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                }
-              } : undefined}
             >
               <div className={`text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
                 <TokenizedText
