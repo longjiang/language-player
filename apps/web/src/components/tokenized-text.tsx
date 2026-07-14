@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import type { LemmatizedToken, Lemma, SavedWordContext } from '@langplayer/shared';
 import { DictionaryPopup } from './dictionary-popup';
 import { useLanguage } from '@/providers/language-provider';
+import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { TokenCache } from '@/lib/token-cache';
@@ -38,6 +39,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   tokens: preloadedTokens,
 }) => {
   const { l1 } = useLanguage();
+  const { savedWords } = useSavedWordsContext();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +126,18 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     setSelectedToken(prev => prev === token ? null : token);
   }, []);
 
+  // Build a set of saved word forms for quick lookup
+  const savedFormSet = useMemo(() => {
+    const words = savedWords[l2Code] ?? [];
+    const forms = new Set<string>();
+    for (const w of words) {
+      for (const f of w.forms) {
+        forms.add(f.toLowerCase());
+      }
+    }
+    return forms;
+  }, [savedWords, l2Code]);
+
   if (loading) {
     return (
       <div className="text-muted-foreground animate-pulse" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
@@ -148,6 +162,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
             key={i}
             token={token}
             isSelected={selectedToken === token}
+            isSaved={savedFormSet.has(token.text.toLowerCase())}
             onClick={() => handleTokenClick(token)}
           />
         ))}
@@ -175,8 +190,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 const TokenSpan: React.FC<{
   token: LemmatizedToken;
   isSelected: boolean;
+  isSaved: boolean;
   onClick: () => void;
-}> = ({ token, isSelected, onClick }) => {
+}> = ({ token, isSelected, isSaved, onClick }) => {
   const isWord = token.lemmas.length > 0;
 
   if (!isWord) {
@@ -196,7 +212,9 @@ const TokenSpan: React.FC<{
         cursor-pointer rounded transition-colors
         ${isSelected
           ? 'bg-primary/20 text-primary'
-          : 'hover:bg-muted/80'
+          : isSaved
+            ? 'bg-yellow-200/25 hover:bg-yellow-200/40'
+            : 'hover:bg-muted/80'
         }
       `}
       title={token.lemmas.map(l => l.lemma).join(', ')}
