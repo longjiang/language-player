@@ -395,6 +395,80 @@ The `lib/utils/` directory contains 20+ focused utility modules, re-exported thr
 
 ---
 
+## `static/js/` — Client-Side Dictionaries, Tokenizers & Inflectors (Web Workers)
+
+The `static/js/` directory runs in Web Workers for offline-capable, non-blocking dictionary lookup, tokenization, and inflection. These are loaded via `importScripts()` at runtime.
+
+### Dictionary Classes (extend `BaseDictionary`)
+
+| File | Class | Language(s) | Data Source | Purpose |
+|---|---|---|---|---|
+| `base-dictionary.js` | `BaseDictionary` | (base class) | — | Shared dictionary logic: IndexedDB/localforage persistence, Fuse.js fuzzy search, word-level/phrase-level indices, tokenizer+inflector wiring, frequency assignment. All dictionary classes extend this. |
+| `hsk-cedict-dictionary.js` | `HskCedictDictionary` | `zh` (Chinese) | CC-CEDICT + HSK level annotations + character data | Chinese dictionary with simplified/traditional indices, HSK level assignment, character decomposition. |
+| `edict-dictionary.js` | `EdictDictionary` | `ja` (Japanese) | JMdict/EDICT + Wiktionary CSV + accent data | Japanese dictionary with kanji/kana/romaji indices, pitch accent data, POS (part-of-speech) lookup table. |
+| `kdic-jc-dictionary.js` | `KdicJcDictionary` | `ja` → `zh` (J→C) | StarDict kdic-jc | Japanese→Chinese dictionary. Kana/romaji indices, wanakana romanization. |
+| `kengdic-dictionary.js` | `KengdicDictionary` | `ko` (Korean) | kengdic 2011 + Wiktionary CSV | Korean dictionary (L1=English) with hanja support. Merges kengdic + Wiktionary data. |
+| `open-russian-dictionary.js` | `OpenRussianDictionary` | `ru` (Russian) | OpenRussian.org + Wiktionary CSV | Russian dictionary with accent marks, merged with Wiktionary supplement. |
+| `russian-legacy.js` | `RussianLegacy` (IIFE) | `ru` (Russian) | Static CSV tables | Legacy Russian inflection tables: nouns, adjectives, verbs with all grammatical cases/forms. |
+| `chinese-dialect-dictionary.js` | `ChineseDialectDictionary` | `yue`, `hak`, `nan` (Cantonese, Hakka, Min Nan) | CC-Canto, dict-hakka, dict-twblg | Chinese dialect dictionaries with pinyin/jyutping romanization and traditional/simplified indices. |
+| `freedict-dictionary.js` | `FreedictDictionary` | ~30+ language pairs | FreeDict.org | Multi-language bilingual dictionaries (L2→L1). Dynamic file selection by ISO 639-3 codes. |
+| `wiktionary-csv-dictionary.js` | `WiktionaryCsvDictionary` | ~50+ languages | kaikki.org Wiktionary CSV dumps | The main dictionary for most non-CJK languages. L2 code mappings (e.g., Serbian→Serbo-Croatian), supplemental language fallbacks (e.g., Scots→English). |
+| `klingonska-dictionary.js` | `KlingonskaDictionary` | `tlh` (Klingon) | klingonska.org | Klingon dictionary with IPA pronunciation. |
+
+### Dictionary Utilities
+
+| File | Key Exports | Purpose |
+|---|---|---|
+| `dictionary-utils.js` | `proxy`, `isNumeric`, `isThai`, `isRoman`, `isChinese`, `isJapanese`, `isHangul`, `removeToneNumbers`, `removePunctuation`, `stripAccents`, `addSpacesBetweenCharacters`, `escapeRegExp` | Shared helpers used by all dictionary classes: language detection, text normalization, tone removal, proxy fetching. |
+| `frequency-assigner.js` | `FrequencyAssigner` (class) | Assigns Zipf frequency ranks and proficiency levels (1–7) to dictionary entries. Supports 50+ languages with per-language frequency data loaded via IndexedDB. |
+| `map-kana.js` | `isKanji`, `isHiragana`, `segmentKanjisAndNonKanjis`, `convertKatakanaToHiragana`, `createRegex` | Japanese kana/kanji segmentation and regex-based reading-to-kanji mapping (for furigana/ruby annotation). |
+
+### Tokenizers (`tokenizers/`)
+
+Each tokenizer extends `BaseTokenizer` and handles word segmentation + lemmatization for a language or family. Selected by `TokenizerFactory` based on L2 code.
+
+| File | Class | Language(s) | Method |
+|---|---|---|---|
+| `base-tokenizer.js` | `BaseTokenizer` | (base class) | Shared logic: MD5 caching, server-cache fallback via `loadFromServerCache()`. |
+| `tokenizer-factory.js` | `TokenizerFactory` | (factory) | Routes L2 → tokenizer class. Maintains preference order and `serverCacheTokenizers` mapping for server-side cache parsing. |
+| `jieba-tokenizer.js` | `JiebaTokenizer` | `zho` (Chinese) | Remote: POST `/lemmatize` — jieba segmentation |
+| `mecab-tokenizer.js` | `MeCabTokenizer` | `jpn` (Japanese) | Remote: POST `/lemmatize` — MeCab + UniDic |
+| `openkoreantext-tokenizer.js` | `OpenKoreanTextTokenizer` | `kor` (Korean) | Remote: POST `/lemmatize` — Open Korean Text |
+| `hazm-tokenizer.js` | `HazmTokenizer` | `fas` (Persian) | Remote: POST `/lemmatize` — Hazm |
+| `qalsadi-tokenizer.js` | `QalsadiTokenizer` | `ara` (Arabic) | Remote: POST `/lemmatize` — Qalsadi |
+| `zeyrek-tokenizer.js` | `ZeyrekTokenizer` | `tur` (Turkish) | Remote: POST `/lemmatize` — Zeyrek |
+| `pymorphy2-tokenizer.js` | `Pymorphy2Tokenizer` | `rus` (Russian) | Remote: POST `/lemmatize` — pymorphy2 |
+| `pyidaungsu-tokenizer.js` | `PyidaungsuTokenizer` | `mya` (Burmese) | Remote: POST `/lemmatize` — pyidaungsu |
+| `spacy-tokenizer.js` | `SpacyTokenizer` | `spa`, ~20 others | Remote: POST `/lemmatize` — spaCy (used for Spanish; avoided for most due to slowness) |
+| `simplemma-tokenizer.js` | `SimplemmaTokenizer` | `eng`, `fra`, `deu`, ~40 others | Remote: POST `/lemmatize` — Simplemma (lightweight, preferred over spaCy for most European languages) |
+| `lemmatizationlist-tokenizer.js` | `LemmatizationListTokenizer` | `fra`, `deu`, `ita`, ~20 others | Remote: POST `/lemmatize` — Lemmatization lists (fallback for languages where Simplemma lacks coverage) |
+| `javascriptlemmatizer-tokenizer.js` | `JavaScriptLemmatizerTokenizer` | `eng` (English, legacy) | Local: JavaScript Lemmatizer (archived in favour of Simplemma) |
+
+### Inflectors (`inflectors/`)
+
+Each inflector extends `BaseInflector` and generates inflected/conjugated forms for a word lemma. Selected by `InflectorFactory` based on L2 code.
+
+| File | Class | Language(s) | Method |
+|---|---|---|---|
+| `base-inflector.js` | `BaseInflector` | (base class) | Shared logic: inflection caching, server-cache loading. |
+| `inflector-factory.js` | `InflectorFactory` | (factory) | Routes L2 → inflector class. Languages without inflection (zh, vi, th, id) skip this entirely. |
+| `japanese-inflector.js` | `JapaneseInflector` | `jpn` | Japanese verb/adjective conjugation (te-form, potential, passive, causative, etc.) |
+| `korean-inflector.js` | `KoreanInflector` | `kor` | Korean verb conjugation (polite, formal, past, future, etc.) via korean_conjugation |
+| `russian-inflector.js` | `RussianInflector` | `rus` | Russian noun/adjective/verb inflection with all cases, genders, numbers |
+| `french-inflector.js` | `FrenchInflector` | `fra` | French verb conjugation (all tenses/moods, including subjunctive) |
+| `compromise-inflector.js` | `CompromiseInflector` | `eng`, `deu`, `ita`, `spa` | Local: compromise.js — fast, client-side conjugation for English/German/Italian/Spanish |
+| `pymorphy-inflector.js` | `PymorphyInflector` | `ukr` (Ukrainian) | Remote: pymorphy2-based inflection |
+| `pattern-inflector.js` | `PatternInflector` | `nld` (Dutch) | Remote: Pattern library |
+
+### Archive (`archive/`)
+
+| File | Purpose |
+|---|---|
+| `ecdict.js` | Legacy ECDICT (English-Chinese) dictionary — replaced by Wiktionary/HskCedict. |
+| `wiktionary-json.js` | Legacy Wiktionary JSON format parser — replaced by WiktionaryCsvDictionary. |
+
+---
+
 ## Key Patterns
 
 ### Word Saving Flow (Star component)
