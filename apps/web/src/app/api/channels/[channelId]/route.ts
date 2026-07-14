@@ -61,8 +61,13 @@ export async function GET(
     } catch { /* channel info is optional */ }
 
     // Fetch videos for this channel from Directus
-    const filterParam = encodeURIComponent(`[channel_id][eq]=${channelId}`);
-    const url = `${DIRECTUS_URL}/items/${table}?filter${filterParam}&fields=${FIELDS}&sort=-date&limit=${pageSize}&offset=${offset}`;
+    const params = new URLSearchParams();
+    params.set('filter[channel_id][eq]', channelId);
+    params.set('fields', FIELDS);
+    params.set('sort', '-date');
+    params.set('limit', String(pageSize));
+    params.set('offset', String(offset));
+    const url = `${DIRECTUS_URL}/items/${table}?${params.toString()}`;
 
     const res = await fetch(url);
     if (!res.ok) {
