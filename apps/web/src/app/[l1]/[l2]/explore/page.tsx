@@ -44,7 +44,7 @@ export default function ExplorePage() {
 
       {/* Level filter */}
       <div className="mb-6">
-        <LevelFilter selected={level} onChange={setLevel} />
+        <LevelFilter selected={level} onChange={setLevel} l2Code={baseCode(l2.code)} />
       </div>
 
       {/* Loading — first load */}
