@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { useSubscription } from '@/hooks/use-subscription';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Sparkles, Loader2, AlertCircle, RefreshCw, BookOpen } from 'lucide-react';
 
 interface AiExplanationProps {
   /** The word being looked up. */
@@ -28,6 +29,7 @@ interface AiExplanationProps {
  */
 export function AiExplanation({ word, contextText, entryFound }: AiExplanationProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const { l1, l2 } = useLanguage();
   const { isPro, loaded: subLoaded } = useSubscription();
 
@@ -35,6 +37,12 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
   const [explanation, setExplanation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const openInReader = () => {
+    localStorage.setItem('lp_reader_text', explanation ?? '');
+    localStorage.setItem('lp_reader_title', `DeepSeek: ${word}`);
+    router.push(`/${l1.code}/${l2.code}/reader`);
+  };
 
   // Build the prompt matching Classic's chatGPTPrompt logic
   const buildPrompt = (): string => {
@@ -199,6 +207,9 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
           <div className="mt-3 flex gap-2">
             <Button variant="ghost" size="sm" onClick={fetchExplanation}>
               <RefreshCw className="mr-1 h-3 w-3" /> Regenerate
+            </Button>
+            <Button variant="ghost" size="sm" onClick={openInReader}>
+              <BookOpen className="mr-1 h-3 w-3" /> Open in Reader
             </Button>
           </div>
         )}
