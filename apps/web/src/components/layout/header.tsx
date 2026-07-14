@@ -23,6 +23,12 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: 'Reading',
+    links: [
+      { key: 'title.reader', href: 'reader' },
+    ],
+  },
+  {
     label: 'Vocab',
     links: [
       { key: 'title.dictionary', href: 'dictionary' },
