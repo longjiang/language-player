@@ -7,6 +7,14 @@ import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/providers/language-provider';
 import { User, LogOut, Settings } from 'lucide-react';
 
+/** Nuke all user-specific localStorage keys on logout. */
+function clearUserData() {
+  const keys = ['zthSavedWords'];
+  for (const k of keys) {
+    try { localStorage.removeItem(k); } catch {}
+  }
+}
+
 export function UserMenu() {
   const { data: session, status } = useSession();
   const { l1, l2 } = useLanguage();
@@ -57,7 +65,7 @@ export function UserMenu() {
               <Settings className="h-4 w-4" /> {t('title.settings')}
             </Link>
             <button
-              onClick={() => signOut({ callbackUrl: '/' })}
+              onClick={() => { clearUserData(); signOut({ callbackUrl: '/' }); }}
               className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10"
             >
               <LogOut className="h-4 w-4" /> {t('action.log_out')}

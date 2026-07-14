@@ -52,6 +52,12 @@ export const { handlers, signIn, signOut } = NextAuth({
       if (user && 'directusToken' in user) {
         token.directusToken = (user as any).directusToken as string;
       }
+      // Explicitly persist name + email — NextAuth v5 beta may not auto-populate
+      if (user) {
+        token.name = user.name ?? undefined;
+        token.email = user.email ?? undefined;
+        token.picture = (user as any).image ?? undefined;
+      }
       // NextAuth v5 auto-populates token.sub from user.id on first sign-in
       return token;
     },
