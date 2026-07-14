@@ -14,7 +14,7 @@ const lemmatizeCache = new Map<string, LemmatizedToken[]>();
 export interface TokenizedTextProps {
   text: string;
   l2Code: string;
-  /** Scale factor for text size (default: 1) */
+  /** Scale factor for text size (default: 1). Pass 0 to inherit from parent. */
   textScale?: number;
   /** Contextual info for word saving (subtitle line, video title, etc.) */
   context?: Partial<SavedWordContext>;
@@ -126,7 +126,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (loading) {
     return (
-      <div className="text-muted-foreground animate-pulse" style={{ fontSize: `${textScale}rem` }}>
+      <div className="text-muted-foreground animate-pulse" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {text}
       </div>
     );
@@ -134,7 +134,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (error && tokens.length <= 1) {
     return (
-      <div className="text-muted-foreground" style={{ fontSize: `${textScale}rem` }}>
+      <div className="text-muted-foreground" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {text}
       </div>
     );
@@ -142,7 +142,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   return (
     <div>
-      <span className="leading-relaxed" style={{ fontSize: `${textScale}rem` }}>
+      <span className="leading-relaxed" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {tokens.map((token, i) => (
           <TokenSpan
             key={i}

@@ -46,21 +46,33 @@ export function parseMarkdown(md: string): ReaderBlock[] {
 
 function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
   switch (node.type) {
-    case 'heading':
+    case 'heading': {
+      // If heading contains an image, render as markdown block so image is preserved
+      if (hasImage(node)) return { kind: 'markdown', raw: reconstructNode(node) } as MarkdownBlock;
       return makeTextBlock(node, 'heading', (node as any).depth);
+    }
 
-    case 'paragraph':
+    case 'paragraph': {
+      // If paragraph contains an image, render as markdown block
+      if (hasImage(node)) return { kind: 'markdown', raw: reconstructNode(node) } as MarkdownBlock;
       return makeTextBlock(node, 'paragraph');
+    }
 
-    case 'blockquote':
+    case 'blockquote': {
+      if (hasImage(node)) return { kind: 'markdown', raw: reconstructNode(node) } as MarkdownBlock;
       return makeTextBlock(node, 'blockquote');
+    }
 
     case 'list': {
       const items: ReaderBlock[] = [];
       for (const item of node.children) {
         if (item.type === 'listItem') {
-          const b = makeTextBlock(item, 'list-item');
-          if (b) items.push(b);
+          if (hasImage(item)) {
+            items.push({ kind: 'markdown', raw: reconstructNode(item) } as MarkdownBlock);
+          } else {
+            const b = makeTextBlock(item, 'list-item');
+            if (b) items.push(b);
+          }
         }
       }
       return items;
@@ -75,6 +87,13 @@ function convertTopLevel(node: any): ReaderBlock | ReaderBlock[] | null {
     default:
       return null;
   }
+}
+
+/** Check if a node tree contains an image (recursive). */
+function hasImage(node: any): boolean {
+  if (node.type === 'image') return true;
+  if (!node.children) return false;
+  return node.children.some((c: any) => hasImage(c));
 }
 
 /** Extract plain text + formatting ranges from any node with children. */
@@ -178,6 +197,19 @@ function extractTextAndFormats(children: PhrasingContent[]): {
 /** Reconstruct a node's original markdown (approximate, for ReactMarkdown). */
 function reconstructNode(node: any): string {
   switch (node.type) {
+    case 'heading': {
+      const hashes = '#'.repeat((node as any).depth ?? 1);
+      return hashes + ' ' + reconstructChildren(node);
+    }
+    case 'paragraph':
+      return reconstructChildren(node);
+    case 'blockquote':
+      return '> ' + reconstructChildren(node).replace(/\n/g, '\n> ');
+    case 'listItem': {
+      const content = reconstructChildren(node);
+      // Detect ordered vs unordered from parent context — default to unordered
+      return '- ' + content;
+    }
     case 'code': {
       const lang = 'lang' in node ? (node as any).lang ?? '' : '';
       return '```' + lang + '\n' + (node as any).value + '\n```';
@@ -195,7 +227,54 @@ function reconstructNode(node: any): string {
       }
       return rows.join('\n');
     }
+    case 'image': {
+      const img = node as any;
+      const title = img.title ? ` "${img.title}"` : '';
+      return `![${img.alt ?? ''}](${img.url ?? ''}${title})`;
+    }
     default:
       return '';
   }
+}
+
+/** Reconstruct inline children as markdown. */
+function reconstructChildren(node: any): string {
+  if (!node.children) return '';
+  let out = '';
+  for (const child of node.children) {
+    switch (child.type) {
+      case 'text':
+        out += child.value;
+        break;
+      case 'strong':
+        out += '**' + reconstructChildren(child) + '**';
+        break;
+      case 'emphasis':
+        out += '*' + reconstructChildren(child) + '*';
+        break;
+      case 'inlineCode':
+        out += '`' + child.value + '`';
+        break;
+      case 'link':
+        out += '[' + reconstructChildren(child) + '](' + (child.url ?? '') + ')';
+        break;
+      case 'image': {
+        const title = child.title ? ` "${child.title}"` : '';
+        out += `![${child.alt ?? ''}](${child.url ?? ''}${title})`;
+        break;
+      }
+      case 'break':
+        out += '\n';
+        break;
+      case 'delete':
+        out += '~~' + reconstructChildren(child) + '~~';
+        break;
+      case 'html':
+        out += child.value ?? '';
+        break;
+      default:
+        break;
+    }
+  }
+  return out;
 }
