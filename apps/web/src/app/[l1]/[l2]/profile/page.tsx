@@ -248,9 +248,9 @@ export default function ProfilePage() {
               ))}
             </div>
             <div className="mt-4 text-center">
-              <a href="https://languageplayer.io/go-pro" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+              <Link href={`/${l1.code}/${l2.code}/go-pro`} className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
                 Upgrade to Pro <ArrowRight className="h-3 w-3" />
-              </a>
+              </Link>
               <p className="mt-2 text-xs text-muted-foreground">
                 14-day money-back guarantee. Questions? <a href="mailto:jon.long@zerotohero.ca" className="underline">Contact us</a>
               </p>
@@ -303,9 +303,9 @@ export default function ProfilePage() {
                   </Button>
                 )}
                 {!isLifetime && (
-                  <a href="https://languageplayer.io/go-pro" target="_blank" rel="noopener noreferrer">
+                  <Link href={`/${l1.code}/${l2.code}/go-pro`}>
                     <Button variant="outline" size="sm">{isExpired ? 'Renew' : 'Upgrade'}</Button>
-                  </a>
+                  </Link>
                 )}
               </div>
             </div>
