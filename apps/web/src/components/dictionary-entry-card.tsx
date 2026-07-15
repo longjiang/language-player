@@ -4,6 +4,7 @@ import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { BookOpen, ChevronRight, Volume2 } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { formatPronunciation } from '@langplayer/utils';
+import { useScriptPreference } from '@/hooks/use-script-preference';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
@@ -21,6 +22,9 @@ interface DictionaryEntryCardProps {
 
 /** Renders a single dictionary lookup result. */
 export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, pronunciation, l2Code }: DictionaryEntryCardProps) {
+  const { apply } = useScriptPreference(l2Code ?? '');
+  const { head, alternate } = apply(entry.head, entry.alternate);
+
   const level = entry.level;
   const levelText = level && levelLabel
     ? levelLabel(level.scale, level.value)
@@ -36,7 +40,7 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, p
       {/* ── Header: head + pronunciation ── */}
       <div className="flex items-center gap-2">
         <span className="text-lg font-semibold" lang={l2Code}>
-          {entry.head}
+          {head}
         </span>
         {pronunciation !== undefined
           ? (pronunciation && (
@@ -67,9 +71,9 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, p
       </div>
 
       {/* ── Alternate script ── */}
-      {entry.alternate && (
+      {alternate && (
         <div className="mt-0.5 text-xs text-muted-foreground" lang={l2Code}>
-          {entry.alternate}
+          {alternate}
         </div>
       )}
 

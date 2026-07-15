@@ -7,6 +7,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { getUseTraditional } from '@/lib/settings';
 import type { TokenCache } from '@/lib/token-cache';
 
 // Simple in-memory cache to avoid re-lemmatizing the same text
@@ -44,7 +45,35 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
+  const [convertedText, setConvertedText] = useState(text);
+  const [converting, setConverting] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Convert text to traditional if user prefers traditional and L2 is Chinese.
+  // OpenCC is lazy-loaded only when needed. Conversion is idempotent so
+  // already-traditional text (e.g. from the reader page) is a no-op.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function convert() {
+      const isChinese = baseCode(l2Code) === 'zh';
+      if (!isChinese || !getUseTraditional()) {
+        setConvertedText(text);
+        return;
+      }
+
+      setConverting(true);
+      const { toTraditional } = await import('@/lib/chinese-script');
+      const result = await toTraditional(text);
+      if (!cancelled) {
+        setConvertedText(result);
+        setConverting(false);
+      }
+    }
+
+    convert();
+    return () => { cancelled = true; };
+  }, [text, l2Code]);
 
   useEffect(() => {
     // Skip API call if tokens were pre-loaded
@@ -54,12 +83,17 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       return;
     }
 
+    // Wait for script conversion to finish
+    if (converting) return;
+
+    const effectiveText = convertedText;
+
     // Cancel previous request
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
-    if (!text.trim()) {
+    if (!effectiveText.trim()) {
       setTokens([]);
       setLoading(false);
       return;
@@ -73,7 +107,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     const tokenize = async () => {
       try {
         // 1. In-memory lemmatize cache
-        const cacheKey = `${l2Code}:${text}`;
+        const cacheKey = `${l2Code}:${effectiveText}`;
         const cached = lemmatizeCache.get(cacheKey);
         if (cached) {
           if (!cancelled) { setTokens(cached); setLoading(false); }
@@ -82,7 +116,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
         // 2. Video token cache (from /lemmatize-video-normalized)
         if (tokenCache) {
-          const videoCached = tokenCache.get(text);
+          const videoCached = tokenCache.get(effectiveText);
           if (videoCached) {
             lemmatizeCache.set(cacheKey, videoCached);
             if (!cancelled) { setTokens(videoCached); setLoading(false); }
@@ -94,7 +128,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
         const response = await fetch(`${PYTHON_API_URL}/lemmatize`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text, l2: baseCode(l2Code) }),
+          body: JSON.stringify({ text: effectiveText, l2: baseCode(l2Code) }),
           signal: controller.signal,
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -109,7 +143,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
         if (!cancelled) {
           console.error('Tokenization error:', err);
           setError(err?.message ?? 'Tokenization failed');
-          setTokens([{ text, lemmas: [] }]);
+          setTokens([{ text: effectiveText, lemmas: [] }]);
           setLoading(false);
         }
       }
@@ -120,7 +154,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       cancelled = true;
       controller.abort();
     };
-  }, [text, l2Code, preloadedTokens]);
+  }, [convertedText, converting, l2Code, preloadedTokens, tokenCache]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken) => {
     setSelectedToken(prev => prev === token ? null : token);
@@ -138,10 +172,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     return forms;
   }, [savedWords, l2Code]);
 
-  if (loading) {
+  if (loading || converting) {
     return (
       <div className="text-muted-foreground animate-pulse" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
-        {text}
+        {convertedText}
       </div>
     );
   }
@@ -149,7 +183,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   if (error && tokens.length <= 1) {
     return (
       <div className="text-muted-foreground" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
-        {text}
+        {convertedText}
       </div>
     );
   }
@@ -176,7 +210,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           l2Code={l2Code}
           context={{
             form: selectedToken.text,
-            text,
+            text: convertedText,
             ...externalContext,
           }}
           onClose={() => setSelectedToken(null)}
