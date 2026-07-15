@@ -80,6 +80,34 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, p
         </div>
       )}
 
+      {/* ── Classifiers ── */}
+      {entry.classifier && entry.classifier.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {entry.classifier.map((cl, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs"
+              title={cl.kind === 'measure_word'
+                ? `Measure word: ${cl.traditional} (${cl.reading})`
+                : cl.kind === 'gender'
+                  ? `Gender: ${cl.value}`
+                  : `Noun class: ${cl.value}`}
+            >
+              {cl.kind === 'measure_word' ? (
+                <>
+                  <span className="font-medium" lang="zh">{cl.simplified}</span>
+                  <span className="text-muted-foreground">{cl.reading}</span>
+                </>
+              ) : cl.kind === 'gender' ? (
+                <span className="text-muted-foreground">{cl.value}</span>
+              ) : (
+                <span className="text-muted-foreground">{cl.value}</span>
+              )}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* ── Footer: source + match type ── */}
       <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
         <BookOpen className="h-3 w-3" />
