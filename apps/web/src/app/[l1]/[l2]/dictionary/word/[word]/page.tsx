@@ -11,7 +11,6 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { ArrowLeft, Loader2, AlertCircle, BookOpen, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SubsSearchResults } from '@/components/video/subs-search-results';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { buildEntryRoute } from '@/lib/entry-route';
 
@@ -200,15 +199,6 @@ export default function WordDetailPage() {
         </div>
       )}
 
-      {/* Subs search: examples in videos (matching GO app's SubsSearch on word detail) */}
-      {!loading && !error && word && (
-        <section className="mt-10">
-          <h2 className="mb-4 text-lg font-semibold">
-            {t('title.examples_from_videos')}
-          </h2>
-          <SubsSearchResults term={word} />
-        </section>
-      )}
     </div>
   );
 }
