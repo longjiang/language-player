@@ -11,7 +11,11 @@ export async function GET(request: Request) {
   const { searchParams, hostname } = new URL(request.url);
   const emoji = searchParams.get('emoji');
   const title = searchParams.get('title');
+  const head = searchParams.get('head');
+  const def = searchParams.get('def');
+  const pron = searchParams.get('pron');
   const isEmojiMode = !!emoji;
+  const isEntryMode = !!head;
 
   // Load Nunito ExtraBold font
   const fontPath = join(process.cwd(), 'public', 'fonts', 'nunito-extrabold.woff');
@@ -20,7 +24,7 @@ export async function GET(request: Request) {
 
   // Load logo only for default (branding) mode
   let logoUrl = '';
-  if (!isEmojiMode) {
+  if (!isEmojiMode && !isEntryMode) {
     const logoPath = join(process.cwd(), 'public', 'img', 'logo.png');
     const logoBuf = readFileSync(logoPath);
     logoUrl = `data:image/png;base64,${logoBuf.toString('base64')}`;
@@ -40,8 +44,30 @@ export async function GET(request: Request) {
         {/* Accent bar */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: ACCENT }} />
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isEmojiMode ? 40 : 48, zIndex: 1, padding: '0 60px' }}>
-          {isEmojiMode ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isEmojiMode || isEntryMode ? 32 : 48, zIndex: 1, padding: '0 60px' }}>
+          {isEntryMode ? (
+            <>
+              {/* Head word — large, prominent */}
+              <div style={{ fontSize: 88, fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.2, textAlign: 'center', maxWidth: 1000, fontFamily: 'Nunito' }}>
+                {head}
+              </div>
+              {pron && (
+                <div style={{ fontSize: 40, fontWeight: 400, color: '#91a7ff', textAlign: 'center', maxWidth: 900 }}>
+                  {pron}
+                </div>
+              )}
+              {def && (
+                <div style={{ fontSize: 32, fontWeight: 400, color: '#bac8ff', textAlign: 'center', maxWidth: 950, lineHeight: 1.5 }}>
+                  {def}
+                </div>
+              )}
+              {/* Language Player badge */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #5c7cfa, #748ffc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'white', fontWeight: 700 }}>LP</div>
+                <div style={{ fontSize: 22, fontWeight: 600, color: '#748ffc' }}>Language Player</div>
+              </div>
+            </>
+          ) : isEmojiMode ? (
             <>
               <div style={{ fontSize: 180, lineHeight: 1, filter: 'drop-shadow(0 8px 24px rgba(92,124,250,0.15))' }}>
                 {emoji}
@@ -66,9 +92,9 @@ export async function GET(request: Request) {
           )}
         </div>
 
-        {isEmojiMode && (
+        {(isEmojiMode || isEntryMode) && (
           <div style={{ position: 'absolute', bottom: 28, fontSize: 24, color: '#748ffc', fontWeight: 500, letterSpacing: '0.05em' }}>
-            {title ? `${title} \u2014 ${hostname}` : hostname}
+            {isEntryMode ? hostname : title ? `${title} \u2014 ${hostname}` : hostname}
           </div>
         )}
       </div>
