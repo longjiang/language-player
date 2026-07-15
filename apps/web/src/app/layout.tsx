@@ -25,7 +25,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: `${SITE_NAME} — Learn languages through video`,
-    template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   keywords: ['language learning', 'subtitles', 'dictionary', 'video', 'immersion'],
