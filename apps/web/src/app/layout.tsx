@@ -17,7 +17,8 @@ const inter = Inter({
 const SITE_NAME = 'Language Player';
 const SITE_DESCRIPTION =
   'Watch videos with interactive dual subtitles, built-in dictionary, and smart difficulty tracking. Learn 60+ languages naturally.';
-const SITE_URL = 'https://languageplayer.io';
+const SITE_URL =
+  process.env.AUTH_URL || 'https://language-player.netlify.app';
 const OG_IMAGE = '/og'; // dynamic OG image route
 
 export const metadata: Metadata = {
