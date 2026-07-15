@@ -52,6 +52,7 @@ export function sm2(card: SrsFields, quality: 0 | 1 | 2 | 3 | 4 | 5): SrsFields 
       repetitions: 0,      // reset streak
       nextReview: now + 60_000, // show again in 1 minute (same session)
       lastReview: now,
+      createdAt: card.createdAt ?? now,
     };
   }
 
@@ -76,6 +77,7 @@ export function sm2(card: SrsFields, quality: 0 | 1 | 2 | 3 | 4 | 5): SrsFields 
     repetitions: card.repetitions + 1,
     nextReview: now + newInterval * 86_400_000, // days → ms
     lastReview: now,
+    createdAt: card.createdAt ?? now,
   };
 }
 

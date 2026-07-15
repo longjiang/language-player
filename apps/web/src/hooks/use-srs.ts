@@ -31,44 +31,53 @@ export function useSrs() {
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
 
-  // ── Load from localStorage or cloud ──
+  // ── Load from localStorage (always, for both logged-in and anonymous users) ──
+  // LocalStorage is always read first so that settings changes survive page
+  // reloads even when the cloud sync hasn't completed yet (3s debounce).
   useEffect(() => {
     if (loaded) return;
-    if (session === undefined) return; // still loading
+    if (session === undefined) return; // still loading auth state
 
-    if (!session) {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed === 'object') {
-            setStore({
-              settings: { ...createSrsStore().settings, ...(parsed.settings ?? {}) },
-              cards: parsed.cards ?? {},
-            });
-          }
+    // Always try localStorage first — offline-first principle
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          setStore({
+            settings: { ...createSrsStore().settings, ...(parsed.settings ?? {}) },
+            cards: parsed.cards ?? {},
+          });
         }
-      } catch { /* corrupted */ }
-    }
+      }
+    } catch { /* corrupted localStorage — use defaults */ }
+
     setLoaded(true);
   }, [session, loaded]);
 
-  // ── On login, load from cloud ──
+  // ── On login, load from cloud and merge (cloud overlays local) ──
   useEffect(() => {
     if (!session || !loaded) return;
 
     const loadFromCloud = async () => {
       try {
         const data = await getUserData();
-        const cloud: SrsProgressStore = data?.srs_progress
-          ? JSON.parse(data.srs_progress)
-          : createSrsStore();
-        // Merge with defaults for forward-compat
-        setStore({
-          settings: { ...createSrsStore().settings, ...cloud.settings },
-          cards: cloud.cards ?? {},
+        if (!data?.srs_progress) return; // nothing on cloud yet, keep local data
+
+        const cloud: SrsProgressStore = JSON.parse(data.srs_progress);
+
+        // Merge: local is the base, cloud overlays on top.
+        // This preserves any local changes that haven't been synced yet
+        // while picking up changes from other devices via the cloud.
+        setStore((prev) => {
+          const merged: SrsProgressStore = {
+            settings: { ...prev.settings, ...(cloud.settings ?? {}) },
+            cards: { ...prev.cards, ...(cloud.cards ?? {}) },
+          };
+          // Persist merged result so it's available on next load
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
+          return merged;
         });
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cloud)); } catch {}
       } catch (err) {
         console.warn('[srs] Could not load from cloud:', err);
       }
