@@ -3,6 +3,7 @@
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { BookOpen, ChevronRight, Volume2 } from 'lucide-react';
 import { SaveButton } from './save-button';
+import { formatPronunciation } from '@langplayer/utils';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
@@ -41,11 +42,17 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, p
           ? (pronunciation && (
               <span className="text-xs text-muted-foreground">{pronunciation}</span>
             ))
-          : (entry.pronunciation && (
-              <span className="text-xs text-muted-foreground">
-                /{entry.pronunciation}/
-              </span>
-            ))
+          : (() => {
+              const formatted = formatPronunciation(entry, l2Code ?? '');
+              if (formatted) {
+                return (
+                  <span className="text-xs text-muted-foreground" lang={l2Code}>
+                    {formatted}
+                  </span>
+                );
+              }
+              return null;
+            })()
         }
         {levelText && (
           <span className="ml-auto shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
@@ -82,7 +89,11 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, p
 
       {/* ── Classifiers ── */}
       {entry.classifier && entry.classifier.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
+        <div className="mt-2 flex flex-wrap items-center gap-1">
+          <span className="text-[10px] font-medium text-muted-foreground mr-0.5">
+            {entry.classifier[0]!.kind === 'measure_word' ? 'CL:' :
+             entry.classifier[0]!.kind === 'gender' ? 'Gender:' : 'Class:'}
+          </span>
           {entry.classifier.map((cl, i) => (
             <span
               key={i}
