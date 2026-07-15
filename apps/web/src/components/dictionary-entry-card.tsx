@@ -37,11 +37,16 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, p
       className="rounded-lg border bg-card p-3 text-sm shadow-sm transition-colors hover:bg-muted/30 cursor-pointer"
       onClick={() => onClick?.(entry)}
     >
-      {/* ── Header: head + pronunciation ── */}
+      {/* ── Header: head + alternate + pronunciation ── */}
       <div className="flex items-center gap-2">
         <span className="text-lg font-semibold" lang={l2Code}>
           {head}
         </span>
+        {alternate && (
+          <span className="text-xs text-muted-foreground" lang={l2Code}>
+            {alternate}
+          </span>
+        )}
         {pronunciation !== undefined
           ? (pronunciation && (
               <span className="text-xs text-muted-foreground">{pronunciation}</span>
@@ -69,13 +74,6 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, p
           </span>
         )}
       </div>
-
-      {/* ── Alternate script ── */}
-      {alternate && (
-        <div className="mt-0.5 text-xs text-muted-foreground" lang={l2Code}>
-          {alternate}
-        </div>
-      )}
 
       {/* ── Definitions ── */}
       {entry.definitions.length > 0 && (
