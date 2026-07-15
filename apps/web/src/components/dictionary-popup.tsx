@@ -145,7 +145,9 @@ export function DictionaryPopup({
   }, [savedWords, l2Code, entries, token.text, loading, error]);
 
   const handleEntryClick = (entry: DictionaryEntry) => {
-    router.push(`/${l1Code}/${l2Code}/dictionary/word/${encodeURIComponent(entry.head)}`);
+    // encodeURIComponent does NOT encode apostrophes — manual fix for Klingon/Welsh/etc.
+    const encoded = encodeURIComponent(entry.head).replace(/'/g, '%27');
+    router.push(`/${l1Code}/${l2Code}/dictionary/word/${encoded}`);
   };
 
   return (
