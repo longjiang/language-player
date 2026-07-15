@@ -83,13 +83,17 @@ export default function ReviewPage() {
   const { store, loaded: srsLoaded, updateCard, removeCard, dailyNewLimit: dailyLimit } = useSrs();
   const { speak } = useSpeech();
 
-  const [cards, setCards] = useState<ReviewCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
   const [fetchingEntries, setFetchingEntries] = useState(false);
   const [rated, setRated] = useState(false);
   const [initializing, setInitializing] = useState(false);
-  const initializedRef = useRef(false);
+  /** True when the user just finished reviewing the last due card. */
+  const [justCompleted, setJustCompleted] = useState(false);
+  /** Cache of fetched dictionary entries keyed by saved word ID. */
+  const [entriesCache, setEntriesCache] = useState<Record<string, DictionaryEntry | null>>({});
+  /** Track which fetch batch we're on so we can ignore stale results. */
+  const fetchGenerationRef = useRef(0);
 
   const l2Code = baseCode(l2.code);
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
@@ -97,13 +101,11 @@ export default function ReviewPage() {
   // ── Auto-initialize SRS cards for saved words that don't have them ──
   useEffect(() => {
     if (!srsLoaded || !wordsLoaded) return;
-    if (initializedRef.current) return;
 
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const unscheduled = l2SavedWords.filter((sw) => !langCards[sw.id]);
-    if (unscheduled.length > 0) {
-      initializedRef.current = true;
 
+    if (unscheduled.length > 0) {
       // Respect daily new card limit
       const remaining = remainingNewCardsToday(langCards, dailyLimit);
       const toAdd = unscheduled.slice(0, Math.max(0, remaining));
@@ -117,13 +119,11 @@ export default function ReviewPage() {
         }
         setTimeout(() => setInitializing(false), 100);
       }
-    } else {
-      initializedRef.current = true;
     }
   }, [srsLoaded, wordsLoaded, l2SavedWords, store, l2Code, dailyLimit, updateCard]);
 
-  // ── Compute due cards ──
-  const dueCards = useMemo((): ReviewCard[] => {
+  // ── Compute due cards (without entries — entries merged below) ──
+  const dueCards = useMemo((): Omit<ReviewCard, 'entry'>[] => {
     const now = Date.now();
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     return l2SavedWords
@@ -141,24 +141,44 @@ export default function ReviewPage() {
       .map((sw) => ({
         word: sw,
         srs: langCards[sw.id] || newCard(),
-        entry: null as DictionaryEntry | null,
       }));
   }, [l2SavedWords, store, l2Code]);
 
-  // ── Fetch dictionary entries for due cards ──
+  // ── Merge due cards with cached entries ──
+  const cards: ReviewCard[] = useMemo(
+    () => dueCards.map((dc) => ({
+      ...dc,
+      entry: entriesCache[dc.word.id] ?? null,
+    })),
+    [dueCards, entriesCache],
+  );
+
+  // ── Fetch dictionary entries for due cards not yet cached ──
   useEffect(() => {
     if (dueCards.length === 0 || fetchingEntries || initializing) return;
+
+    const uncachedIds = dueCards
+      .map((dc) => dc.word.id)
+      .filter((id) => !(id in entriesCache));
+
+    if (uncachedIds.length === 0) return;
+
+    const generation = ++fetchGenerationRef.current;
 
     const fetchEntries = async () => {
       setFetchingEntries(true);
       const controller = new AbortController();
       const batchSize = 8;
-      const enriched: ReviewCard[] = [];
+      const newEntries: Record<string, DictionaryEntry | null> = {};
 
-      for (let i = 0; i < dueCards.length; i += batchSize) {
-        const batch = dueCards.slice(i, i + batchSize);
+      for (let i = 0; i < uncachedIds.length; i += batchSize) {
+        const batchIds = uncachedIds.slice(i, i + batchSize);
+        const batchCards = batchIds
+          .map((id) => dueCards.find((dc) => dc.word.id === id))
+          .filter(Boolean) as Omit<ReviewCard, 'entry'>[];
+
         const results = await Promise.all(
-          batch.map(async (card) => {
+          batchCards.map(async (card) => {
             try {
               const res = await fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
                 method: 'POST',
@@ -170,57 +190,69 @@ export default function ReviewPage() {
                 }),
                 signal: controller.signal,
               });
-              if (!res.ok) return { ...card, entry: null };
+              if (!res.ok) return { id: card.word.id, entry: null };
               const data = await res.json();
               const entries: DictionaryEntry[] = data.results ?? [];
               const match =
                 entries.find((e) => e.id === card.word.id) ||
                 entries.find((e) => e.head === card.word.forms[0]) ||
                 entries[0];
-              return { ...card, entry: match || null };
+              return { id: card.word.id, entry: match || null };
             } catch {
-              return { ...card, entry: null };
+              return { id: card.word.id, entry: null };
             }
           })
         );
-        enriched.push(...results);
+
+        for (const r of results) {
+          newEntries[r.id] = r.entry;
+        }
       }
 
-      if (!controller.signal.aborted) {
-        setCards(enriched);
-        setCurrentIndex(0);
+      // Only apply if this is still the latest fetch generation
+      if (!controller.signal.aborted && generation === fetchGenerationRef.current) {
+        setEntriesCache((prev) => ({ ...prev, ...newEntries }));
         setFetchingEntries(false);
       }
     };
 
     fetchEntries();
-  }, [dueCards.length, initializing]);
+  }, [dueCards, fetchingEntries, initializing]);
 
   // ── Handlers ──
 
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
     setRated(true);
+    setShowDefinition(false); // hide answer immediately for next card
 
     const card = cards[currentIndex];
-    if (!card) return;
+    if (!card) {
+      setRated(false);
+      return;
+    }
+
+    // Detect if this is the last card in the session
+    const isLastCard = currentIndex >= cards.length - 1;
 
     const sm2Quality = RATING_MAP[quality];
     const updated = sm2(card.srs, sm2Quality);
     updateCard(l2Code, card.word.id, updated);
 
+    if (isLastCard) {
+      setJustCompleted(true);
+    }
+
     setTimeout(() => {
-      setShowDefinition(false);
       setRated(false);
-      setCurrentIndex((prev) => prev + 1);
     }, 400);
-  }, [cards, currentIndex, rated, updateCard]);
+  }, [cards, currentIndex, rated, updateCard, l2Code]);
 
   const handleReveal = useCallback(() => {
     setShowDefinition(true);
   }, []);
 
-  /** Remove this word from saved words and SRS, advance to next card. */
+  /** Remove this word from saved words and SRS. The card drops from the list naturally. */
   const handleRemove = useCallback(() => {
     const card = cards[currentIndex];
     if (!card) return;
@@ -228,7 +260,8 @@ export default function ReviewPage() {
     removeCard(l2Code, card.word.id);
     setShowDefinition(false);
     setRated(false);
-    setCurrentIndex((prev) => prev + 1);
+    // Don't increment currentIndex — the removed card drops from the array,
+    // so the next card shifts into the current slot.
   }, [cards, currentIndex, l2Code, removeSavedWord, removeCard]);
 
   /** Speak the word form. */
@@ -238,6 +271,29 @@ export default function ReviewPage() {
     const form = card.word.forms[0] || card.entry?.head || card.word.id;
     speak(form, l2Code);
   }, [cards, currentIndex, l2Code, speak]);
+
+  // ── Clamp currentIndex if it exceeds the cards array (cards shrunk after removal) ──
+  useEffect(() => {
+    if (cards.length > 0 && currentIndex >= cards.length) {
+      setCurrentIndex(cards.length - 1);
+    }
+  }, [cards.length, currentIndex]);
+
+  // ── Reset justCompleted when new cards become due ──
+  useEffect(() => {
+    if (cards.length > 0 && justCompleted) {
+      setJustCompleted(false);
+      // Also reset currentIndex to start from the beginning of the new batch
+      setCurrentIndex(0);
+    }
+  }, [cards.length, justCompleted]);
+
+  // ── Reset session state when language changes ──
+  useEffect(() => {
+    setJustCompleted(false);
+    setCurrentIndex(0);
+    setEntriesCache({});
+  }, [l2Code]);
 
   // ── Keyboard shortcuts (after reveal: rate with 1-4) ──
   useEffect(() => {
@@ -328,8 +384,8 @@ export default function ReviewPage() {
     );
   }
 
-  // All done — reviewed all due cards
-  if (cards.length > 0 && currentIndex >= cards.length) {
+  // All done — just finished reviewing all due cards
+  if (justCompleted) {
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
     const nextDue = Object.values(langCards)
       .filter((c) => c.nextReview > Date.now())
@@ -340,7 +396,7 @@ export default function ReviewPage() {
         <CheckCircle2 className="w-12 h-12 text-green-500" />
         <h2 className="text-xl font-semibold">All Done for Now!</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          You&apos;ve reviewed all {cards.length} due {cards.length === 1 ? 'card' : 'cards'} in {l2.name}.
+          You&apos;ve reviewed all due cards in {l2.name}.
           {nextDue && (
             <> Next review: {new Date(nextDue.nextReview).toLocaleDateString()}.</>
           )}
