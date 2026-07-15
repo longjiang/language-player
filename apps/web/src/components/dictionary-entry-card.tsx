@@ -90,7 +90,7 @@ export function DictionaryEntryCard({
   );
 
   // ── Shared: save button ──
-  const saveBtn = (size: 'icon' | 'default' = 'icon') => (
+  const saveBtn = (size: 'icon' | 'default' = 'icon') => saveContext ? (
     <div onClick={(e) => e.stopPropagation()}>
       <SaveButton
         wordId={entry.id}
@@ -99,7 +99,7 @@ export function DictionaryEntryCard({
         size={size}
       />
     </div>
-  );
+  ) : null;
 
   // ── COMPACT variant ──
   if (!isFull) {
@@ -179,7 +179,10 @@ export function DictionaryEntryCard({
   const HeadTag = headingLevel;
   return (
     <div
-      className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/20 cursor-pointer transition-all"
+      className={onClick
+        ? "rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/20 cursor-pointer transition-all"
+        : "rounded-xl border border-border bg-card p-6 shadow-sm"
+      }
       onClick={() => onClick?.(entry)}
     >
       {/* Header */}
@@ -277,7 +280,12 @@ export function DictionaryEntryCard({
       {entry.phonetic_detail && typeof entry.phonetic_detail === 'object' && (
         <div className="mb-6 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground/70">
           {Object.entries(entry.phonetic_detail).map(([key, value]) => {
-            if (typeof value === 'string' && value && key !== 'romaji' && key !== 'pinyin' && key !== 'jyutping') {
+            // Skip keys already shown prominently elsewhere
+            if (key === 'romaji' || key === 'pinyin' || key === 'jyutping') return null;
+            // Skip IPA if it's identical to the pronunciation already shown
+            if (key === 'ipa' && !isFull) return null;
+            if (key === 'ipa' && value === entry.pronunciation) return null;
+            if (typeof value === 'string' && value) {
               return <span key={key}>{key}: {value}</span>;
             }
             return null;
