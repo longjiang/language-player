@@ -68,9 +68,10 @@ export default function WordDetailPage() {
   }, [word, lookupWord]);
 
   const levelScaleLabel = (scale: string, value?: string | number): string => {
+    // HSK: show as "HSK 3 (2026)"
+    const hskMatch = scale.match(/^hsk_(\d{4})$/);
+    if (hskMatch) return `HSK ${value ?? ''} (${hskMatch[1]})`.trim();
     const map: Record<string, string> = {
-      hsk_2010: 'HSK',
-      hsk_2026: 'HSK',
       jlpt: 'JLPT',
       cefr: 'CEFR',
     };

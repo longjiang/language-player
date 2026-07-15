@@ -109,14 +109,14 @@ export function DictionaryPopup({
   }, [token, lookupWord]);
 
   const levelLabel = (scale: string, value: string | number): string => {
+    const hskMatch = scale.match(/^hsk_(\d{4})$/);
+    if (hskMatch) return `HSK ${value} (${hskMatch[1]})`;
     const map: Record<string, string> = {
-      hsk_2010: 'HSK',
-      hsk_2026: 'HSK',
       jlpt: 'JLPT',
       cefr: 'CEFR',
     };
-    const prefix = map[scale] ?? scale.toUpperCase();
-    return `${prefix} ${value}`;
+    const label = map[scale] ?? scale.toUpperCase();
+    return `${label} ${value}`;
   };
 
   // Find saved words for this token whose IDs don't match any loaded entry
