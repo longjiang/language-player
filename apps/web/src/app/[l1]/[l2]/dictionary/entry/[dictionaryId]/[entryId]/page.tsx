@@ -39,7 +39,13 @@ export default function DictionaryEntryPage() {
     setLoading(true);
     setError(null);
     try {
-      const url = `${PYTHON_API_URL}/dictionary/entry?l2=${baseCode(l2.code)}&dict=${encodeURIComponent(params.dictionaryId)}&id=${encodeURIComponent(params.entryId)}&l1=${l1.code}`;
+      // Use params directly for l1/l2 — these are always available from the URL.
+      // The useLanguage() hook may not be initialized during SSR.
+      const queryL2 = baseCode(params.l2);
+      const queryL1 = baseCode(params.l1);
+      // CEDICT IDs contain commas (Classic format), encoded as ~ in the URL path
+      const entryId = decodeURIComponent(params.entryId).replace(/~/g, ',');
+      const url = `${PYTHON_API_URL}/dictionary/entry?l2=${queryL2}&dict=${encodeURIComponent(params.dictionaryId)}&id=${encodeURIComponent(entryId)}&l1=${queryL1}`;
       const res = await fetch(url);
       if (!res.ok) {
         if (res.status === 404) {

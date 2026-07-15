@@ -6,8 +6,9 @@
  *   /en/zh/dictionary/entry/cedict/0
  *   /en/tlh/dictionary/entry/llm/a1b2c3d4e5f6
  *
- * Each entry has a scoped ID (the DB row ID, no prefix) and carries
- * a dictionary reference — no dash-parsing needed.
+ * CEDICT entry IDs contain commas (Classic format: {trad},{pinyin},{idx}).
+ * Commas break Next.js route matching, so we encode them as ~ in the URL path.
+ * The entry page reverses this before calling the API.
  */
 export function buildEntryRoute(
   l1Code: string,
@@ -15,5 +16,7 @@ export function buildEntryRoute(
   dictionaryId: string,
   entryId: string,
 ): string {
-  return `/${l1Code}/${l2Code}/dictionary/entry/${dictionaryId}/${encodeURIComponent(entryId)}`;
+  // Replace commas with ~ for Next.js route compatibility (commas break routing)
+  const safeId = entryId.replace(/,/g, '~');
+  return `/${l1Code}/${l2Code}/dictionary/entry/${dictionaryId}/${encodeURIComponent(safeId)}`;
 }
