@@ -159,11 +159,24 @@ interface DictionaryEntry extends LexicalEntry {
     stressed?: string;          // Stressed syllable marker
   } | null;
 
-  // ── Future fields ──
+  // ── Classifiers ──
 
-  /** Morphological classifier: grammatical gender (de: der/die/das),
-   *  measure word (zh: 个/本/张), noun class, etc. */
-  classifier?: string | null;
+  /**
+   * Morphological classifiers — measure words, counters, grammatical gender,
+   * noun classes. Language-dependent structure discriminated by kind.
+   *
+   * WHY A DISCRIMINATED UNION: Different languages encode classification
+   * differently. Chinese uses measure words (个/本/张) embedded in CC-CEDICT's
+   * CL: tags. German uses grammatical gender (der/die/das). Japanese uses
+   * counters (本/枚/匹). A single string can't represent all of these.
+   *
+   * Each classifier may optionally be tied to a specific sense via senseIndex
+   * (different definitions of the same word may take different classifiers).
+   * When senseIndex is undefined, the classifier applies to all senses.
+   */
+  classifier?: Classifier[] | null;
+
+  // ── Future fields ──
 
   /** Audio pronunciation URLs. Multiple dialects possible.
    *  Example: [{ url: '...', dialect: 'standard' }, { url: '...', dialect: 'kansai' }] */
@@ -183,7 +196,141 @@ interface DictionaryEntry extends LexicalEntry {
 
 ---
 
-### LLM-Generated Entry
+### Classifier Types
+
+```ts
+/**
+ * A morphological classifier — how the language categorizes this noun/word.
+ *
+ * Discriminated on `kind` because different language families encode
+ * classification in fundamentally different ways. The common field is
+ * `senseIndex` — which definition this classifier applies to (since
+ * different senses of the same word may take different classifiers).
+ */
+type Classifier =
+  | MeasureWord      // zh: 个/本/张, ja: 本/枚/匹, ko: 개/명/마리
+  | GrammaticalGender // de: der/die/das, fr: le/la, es: el/la
+  | NounClass;        // Swahili: ki-/vi-, Russian: animacy, etc.
+
+/** Which definition index this classifier applies to.
+ *  undefined = applies to the word in general (most common). */
+type SenseIndex = number | undefined;
+
+// ── Measure Word (Chinese, Japanese, Korean, Vietnamese, etc.) ──
+
+/**
+ * A numeral classifier / measure word.
+ *
+ * SOURCE: CC-CEDICT CL: tags, EDICT counter annotations, Kengdic counters.
+ *
+ * In CC-CEDICT, multiple CL: tags follow their respective senses inline:
+ *   /chess; chess-like game/CL:盤|盘[pán]/chess piece/CL:個|个[gè]/
+ *
+ * Each CL: entry becomes a MeasureWord with the sense it modifies.
+ *
+ * SIMPLIFIED CASE: Some CC-CEDICT entries list all CLs at the end of the
+ * entry rather than per-sense. These have senseIndex = undefined.
+ */
+interface MeasureWord {
+  kind: 'measure_word';
+
+  /** The classifier word in traditional Chinese (or the language's traditional script). */
+  traditional: string;
+  /** The classifier word in simplified Chinese (or the language's simplified script).
+   *  Same as traditional for Japanese counters. */
+  simplified: string;
+  /** Phonetic reading of the classifier (pinyin, romaji, etc.). */
+  reading: string;
+
+  /** Which definition this classifier applies to, if sense-specific. */
+  senseIndex?: SenseIndex;
+}
+
+// ── Grammatical Gender (German, French, Spanish, Russian, Arabic, etc.) ──
+
+/**
+ * Grammatical gender or animacy classification.
+ *
+ * SOURCE: Wiktionary data, dictionary metadata.
+ *
+ * German: der Tisch (masculine), die Lampe (feminine), das Buch (neuter)
+ * French: le livre (masculine), la table (feminine)
+ * Spanish: el libro (masculine), la mesa (feminine)
+ * Russian: стол (masculine inanimate), человек (masculine animate)
+ * Arabic: كتاب (masculine), مدرسة (feminine)
+ */
+interface GrammaticalGender {
+  kind: 'gender';
+
+  /** The gender/animacy value. Language-specific:
+   *  German: 'masculine' | 'feminine' | 'neuter'
+   *  French/Spanish/Italian: 'masculine' | 'feminine'
+   *  Dutch/Swedish: 'common' | 'neuter'
+   *  Russian: 'masculine' | 'feminine' | 'neuter' + animacy handled separately
+   *  Polish: 'masculine_personal' | 'masculine_animate' | 'masculine_inanimate'
+   *          | 'feminine' | 'neuter' */
+  value: string;
+
+  /** Which definition this gender applies to, if the word has multiple senses
+   *  with different genders (rare but possible, e.g. "le livre" (book, m.)
+   *  vs "la livre" (pound, f.) in French). */
+  senseIndex?: SenseIndex;
+}
+
+// ── Noun Class (Bantu languages, some Caucasian languages, etc.) ──
+
+/**
+ * Noun class — a more elaborate classification system than gender,
+ * found in Bantu languages (Swahili ki-/vi-, m-/wa-), some Caucasian
+ * languages, and Australian Aboriginal languages.
+ *
+ * SOURCE: Wiktionary data.
+ *
+ * Example (Swahili):
+ *   kitabu (book) → noun class 7/8 (ki-/vi-)
+ *   mtu (person) → noun class 1/2 (m-/wa-)
+ */
+interface NounClass {
+  kind: 'noun_class';
+
+  /** The noun class identifier. Format depends on the language:
+   *  Swahili: '7/8' (singular/plural class pair)
+   *  isiZulu: 'umu-/aba-' (prefix pair)
+   *  Dyirbal: 'bayi' (class I), 'balan' (class II), etc. */
+  value: string;
+
+  /** Which definition this class applies to, if sense-specific. */
+  senseIndex?: SenseIndex;
+}
+```
+
+---
+
+### Classifier Parsing
+
+Classifiers are extracted at dictionary import time, not at query time. Each dictionary format requires its own extraction logic:
+
+```
+CC-CEDICT (Chinese):
+  Input:  /book/CL:本[ben3],冊|册[ce4]/to write/
+  Parse:  Split on / → find CL: patterns → extract traditional|simplified[pinyin]
+  Output: [{ kind: 'measure_word', traditional: '本', simplified: '本', reading: 'ben3' },
+           { kind: 'measure_word', traditional: '冊', simplified: '册', reading: 'ce4' }]
+
+EDICT (Japanese):
+  Input:  definitions may include counter annotations like "counter for X"
+          or the entry itself IS a counter word (POS tag includes 'ctr')
+  Output: [{ kind: 'measure_word', traditional: '本', simplified: '本', reading: 'hon' }]
+          (Japanese counters use the same MeasureWord shape — traditional = simplified)
+
+Wiktionary (German/French/etc.):
+  Input:  POS field or definitions include gender markers like "{m}", "{f}", "{n}"
+  Output: [{ kind: 'gender', value: 'masculine' }]
+```
+
+The parsed classifiers are stored as a JSON array in a `classifiers TEXT` column in SQLite, keyed by the entry ID.
+
+### Future fields ──
 
 When no dictionary has the word, or the user's L1 has no dictionary, the Python backend generates a definition via DeepSeek LLM. Unlike a `DictionaryEntry`, this is **not canonical** — the same word queried in different contexts may produce different definitions.
 
