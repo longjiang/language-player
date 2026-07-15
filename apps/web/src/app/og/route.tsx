@@ -2,15 +2,20 @@ import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
 
-export async function GET() {
-  // Load Inter font (used by the app)
-  const interSemiBold = fetch(
-    new URL('https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYAZ9hiA.woff2'),
-  ).then((res) => res.arrayBuffer());
+export async function GET(request: Request) {
+  // Build absolute URL for the logo (works in both dev and production)
+  const { origin, hostname } = new URL(request.url);
+  const logoUrl = `${origin}/img/logo.png`;
 
-  const interRegular = fetch(
-    new URL('https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.woff2'),
-  ).then((res) => res.arrayBuffer());
+  // Load Inter font
+  const [interBold, interRegular] = await Promise.all([
+    fetch(
+      'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYAZ9hiA.woff2',
+    ).then((res) => res.arrayBuffer()),
+    fetch(
+      'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.woff2',
+    ).then((res) => res.arrayBuffer()),
+  ]);
 
   return new ImageResponse(
     (
@@ -73,67 +78,44 @@ export async function GET() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 24,
+            gap: 32,
             zIndex: 1,
             padding: '0 80px',
           }}
         >
-          {/* Icon row: globe + play button */}
+          {/* Logo + wordmark row */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 16,
-              marginBottom: 8,
+              gap: 24,
             }}
           >
-            {/* Globe icon (CSS-drawn) */}
+            {/* Circular logo */}
+            <img
+              src={logoUrl}
+              alt="Language Player"
+              width={96}
+              height={96}
+              style={{
+                width: 96,
+                height: 96,
+                borderRadius: '50%',
+                boxShadow: '0 8px 32px rgba(92,124,250,0.25)',
+              }}
+            />
+            {/* Wordmark */}
             <div
               style={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #5c7cfa, #748ffc)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 28,
-                color: 'white',
-                boxShadow: '0 8px 32px rgba(92,124,250,0.3)',
+                fontSize: 72,
+                fontWeight: 700,
+                letterSpacing: '-0.02em',
+                color: '#ffffff',
+                lineHeight: 1.1,
               }}
             >
-              🌐
+              Language Player
             </div>
-            {/* Play icon (CSS-drawn triangle) */}
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #ff922b, #ffa94d)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 24,
-                color: 'white',
-                boxShadow: '0 8px 32px rgba(255,146,43,0.3)',
-              }}
-            >
-              ▶
-            </div>
-          </div>
-
-          {/* Title */}
-          <div
-            style={{
-              fontSize: 72,
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              color: '#ffffff',
-              lineHeight: 1.1,
-            }}
-          >
-            Language Player
           </div>
 
           {/* Tagline */}
@@ -143,7 +125,7 @@ export async function GET() {
               fontWeight: 400,
               color: '#91a7ff',
               textAlign: 'center',
-              maxWidth: 700,
+              maxWidth: 750,
               lineHeight: 1.4,
             }}
           >
@@ -155,7 +137,6 @@ export async function GET() {
             style={{
               display: 'flex',
               gap: 12,
-              marginTop: 8,
             }}
           >
             {['🎬 600K+ Videos', '📖 Built-in Dictionary', '🌍 207 Languages'].map(
@@ -190,7 +171,7 @@ export async function GET() {
             letterSpacing: '0.05em',
           }}
         >
-          languageplayer.io
+          {hostname}
         </div>
       </div>
     ),
@@ -200,7 +181,7 @@ export async function GET() {
       fonts: [
         {
           name: 'Inter',
-          data: await interSemiBold,
+          data: await interBold,
           style: 'normal',
           weight: 700,
         },
