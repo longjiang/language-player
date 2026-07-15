@@ -5,6 +5,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { DEFAULT_DAILY_NEW_LIMIT } from '@langplayer/utils';
 import { languageName } from '@/lib/language-data';
+import { getUseTraditional, setUseTraditional } from '@/lib/settings';
 import { useT } from '@/hooks/use-t';
 import { VoicePicker } from '@/components/voice-picker';
 
@@ -12,7 +13,9 @@ export default function SettingsPage() {
   const { l1, l2 } = useLanguage();
   const { dailyNewLimit, updateSettings } = useSrs();
   const t = useT();
-  const [tab, setTab] = useState<'pronunciation' | 'review'>('pronunciation');
+  const [tab, setTab] = useState<'pronunciation' | 'review' | 'display'>('pronunciation');
+  const [useTraditional, setUseTraditionalState] = useState(getUseTraditional());
+  const isChinese = l2.code === 'zh';
 
   return (
     <div className="mx-auto max-w-lg px-4 py-12">
@@ -43,6 +46,18 @@ export default function SettingsPage() {
         >
           Review
         </button>
+        {isChinese && (
+          <button
+            onClick={() => setTab('display')}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              tab === 'display'
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Display
+          </button>
+        )}
       </div>
 
       {/* Pronunciation tab */}
@@ -82,6 +97,42 @@ export default function SettingsPage() {
               <span className="text-xs text-muted-foreground">1</span>
               <span className="text-xs text-muted-foreground">{DEFAULT_DAILY_NEW_LIMIT} (default)</span>
               <span className="text-xs text-muted-foreground">50</span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Display tab (Chinese only) */}
+      {tab === 'display' && (
+        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Character set
+            </label>
+            <p className="text-sm text-muted-foreground mb-4">
+              Choose between simplified and traditional Chinese characters.
+            </p>
+            <div className="inline-flex rounded-lg border border-border bg-muted p-1">
+              <button
+                onClick={() => { setUseTraditionalState(false); setUseTraditional(false); }}
+                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                  !useTraditional
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                简体 Simplified
+              </button>
+              <button
+                onClick={() => { setUseTraditionalState(true); setUseTraditional(true); }}
+                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                  useTraditional
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                繁體 Traditional
+              </button>
             </div>
           </div>
         </section>

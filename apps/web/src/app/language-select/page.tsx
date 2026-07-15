@@ -14,6 +14,7 @@ import {
   languageName,
   isRTL,
 } from '@/lib/language-data';
+import { setUseTraditional } from '@/lib/settings';
 
 export default function LanguageSelectPage() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function LanguageSelectPage() {
   const [l2Search, setL2Search] = useState('');
   const [selectedL1, setSelectedL1] = useState('en');
   const [selectedL2, setSelectedL2] = useState('');
+  const [useTraditional, setUseTraditionalState] = useState(false);
 
   const filteredL1 = useMemo(() => {
     const q = l1Search.toLowerCase();
@@ -59,6 +61,10 @@ export default function LanguageSelectPage() {
 
   function handleContinue() {
     if (!canContinue) return;
+    // Save traditional/simplified preference for Chinese
+    if (selectedL2 === 'zh') {
+      setUseTraditional(useTraditional);
+    }
     router.push(`/${selectedL1}/${selectedL2}/explore`);
   }
 
@@ -217,6 +223,34 @@ export default function LanguageSelectPage() {
             </div>
           </div>
         </div>
+
+        {/* Script choice for Chinese */}
+        {selectedL2 === 'zh' && (
+          <div className="mt-6 flex justify-center">
+            <div className="inline-flex rounded-lg border border-border bg-muted p-1">
+              <button
+                onClick={() => setUseTraditionalState(false)}
+                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                  !useTraditional
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                简体 Simp.
+              </button>
+              <button
+                onClick={() => setUseTraditionalState(true)}
+                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                  useTraditional
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                繁體 Trad.
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Selection summary + continue */}
         {canContinue && (
