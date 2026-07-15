@@ -1,4 +1,5 @@
 import { SUPPORTED_L1S, SUPPORTED_L2S, LANGS_YOUTUBE_SUPPORTS, LANGS_WITH_LIVE_TV } from '@langplayer/shared';
+import { LOCALIZED_LANGUAGE_NAMES } from './language-names-i18n';
 
 /**
  * Extended language metadata — name, direction, scripts, capabilities.
@@ -28,30 +29,87 @@ const RTL_CODES = new Set(['ar', 'he', 'fa', 'ur', 'ps', 'sd', 'yi', 'ku']);
 // Han (Chinese character) languages
 const HAN_CODES = new Set(['zh', 'yue', 'lzh', 'nan', 'hak', 'wuu', 'hsn', 'cjy', 'cpx', 'czh', 'cdo', 'cng', 'gan', 'mnp']);
 
-// Subset of language names for the most common languages
+// Language display names — native script for major languages, English for the rest.
+// TODO: migrate to i18n keys (lang.${code}) using translations-languages.csv for localized names.
 const LANGUAGE_NAMES: Record<string, string> = {
-  en: 'English', zh: '中文', 'zh-Hans': '中文（简体）', 'zh-Hant': '中文（繁體）',
-  ja: '日本語', ko: '한국어', es: 'Español', fr: 'Français', de: 'Deutsch',
-  it: 'Italiano', pt: 'Português', ru: 'Русский', ar: 'العربية', hi: 'हिन्दी',
-  tr: 'Türkçe', nl: 'Nederlands', pl: 'Polski', sv: 'Svenska', da: 'Dansk',
-  fi: 'Suomi', no: 'Norsk', cs: 'Čeština', ro: 'Română', hu: 'Magyar',
-  el: 'Ελληνικά', he: 'עברית', th: 'ไทย', vi: 'Tiếng Việt', id: 'Bahasa Indonesia',
-  ms: 'Bahasa Melayu', uk: 'Українська', ca: 'Català', eu: 'Euskara',
-  fa: 'فارسی', ur: 'اردو', bn: 'বাংলা', ta: 'தமிழ்', sw: 'Kiswahili',
-  af: 'Afrikaans', sq: 'Shqip', am: 'አማርኛ', hy: 'Հայերեն', my: 'မြန်မာ',
-  hr: 'Hrvatski', et: 'Eesti', ka: 'ქართული', is: 'Íslenska', ga: 'Gaeilge',
-  lv: 'Latviešu', lt: 'Lietuvių', mk: 'Македонски', mt: 'Malti',
-  sr: 'Српски', sk: 'Slovenčina', sl: 'Slovenščina', so: 'Soomaali',
-  tl: 'Tagalog', cy: 'Cymraeg', yo: 'Yorùbá', zu: 'isiZulu', la: 'Latina',
-  eo: 'Esperanto', bg: 'Български', ne: 'नेपाली', km: 'ខ្មែរ', lo: 'ລາວ',
-  mn: 'Монгол', ps: 'پښتو', si: 'සිංහල', uz: 'Oʻzbek', kk: 'Қазақша',
-  az: 'Azərbaycan', be: 'Беларуская', bs: 'Bosanski', gl: 'Galego',
-  ml: 'മലയാളം', kn: 'ಕನ್ನಡ', te: 'తెలుగు', mr: 'मराठी', gu: 'ગુજરાતી',
-  pa: 'ਪੰਜਾਬੀ',
+  ab: 'Abkhaz', acf: 'Saint Lucian Creole French', acu: 'Achuar',
+  af: 'Afrikaans', aib: 'Aynu', ain: 'Ainu', akk: 'Akkadian',
+  am: 'አማርኛ', ami: 'Amis', ang: 'Old English', ar: 'العربية',
+  arb: 'Standard Arabic', arc: 'Aramaic', as: 'Assamese',
+  ase: 'American Sign Language', ay: 'Aymara', az: 'Azərbaycan',
+  ba: 'Bashkir', be: 'Беларуская', bg: 'Български', bho: 'Bhojpuri',
+  bn: 'বাংলা', bo: 'Tibetan', br: 'Breton', bs: 'Bosanski',
+  bsk: 'Burushaski', ca: 'Català', ceb: 'Cebuano', cjy: 'Jin',
+  ckb: 'Central Kurdish', cmn: 'Mandarin', cnr: 'Montenegrin Standard',
+  cop: 'Coptic', cpx: 'Puxian', crh: 'Crimean Tatar', cs: 'Čeština',
+  csb: 'Kashubian', cy: 'Cymraeg', czo: 'Min Zhong', da: 'Dansk',
+  de: 'Deutsch', dsb: 'Lower Sorbian', dz: 'Dzongkha', el: 'Ελληνικά',
+  en: 'English', enm: 'Middle English', eo: 'Esperanto', es: 'Español',
+  eso: 'Estonian Sign Language', et: 'Eesti', eu: 'Euskara',
+  fa: 'فارسی', fi: 'Suomi', fo: 'Faroese', fr: 'Français',
+  fsl: 'French Sign Language', fur: 'Friulian', fy: 'West Frisian',
+  ga: 'Gaeilge', gan: 'Gan', gd: 'Scottish Gaelic',
+  gkp: 'Guinea Kpelle', gl: 'Galego', gn: 'Guaraní',
+  goh: 'Old High German', got: 'Gothic', grc: 'Ancient Greek',
+  gsw: 'Alemannic German', gu: 'ગુજરાતી', gv: 'Manx', ha: 'Hausa',
+  hak: 'Hakka', hbo: 'Ancient Hebrew', he: 'עברית', hi: 'हिन्दी',
+  hil: 'Hiligaynon', hne: 'Chhattisgarhi', hni: 'Hani', hr: 'Hrvatski',
+  hsh: 'Hungarian Sign Language', hsn: 'Xiang', hu: 'Magyar',
+  hy: 'Հայերեն', ia: 'Interlingua', id: 'Bahasa Indonesia', ig: 'Igbo',
+  ii: 'Sichuan Yi', ik: 'Inupiaq', ins: 'Indian Sign Language',
+  is: 'Íslenska', it: 'Italiano', ja: '日本語', jam: 'Jamaican Creole',
+  jv: 'Javanese', ka: 'ქართული', kab: 'Kabyle', kac: 'Jingpho',
+  kk: 'Қазақша', kl: 'Greenlandic', km: 'ខ្មែរ', kn: 'ಕನ್ನಡ',
+  ko: '한국어', kok: 'Konkani', krl: 'Karelian', ksw: "S'gaw Karen",
+  ku: 'Kurdish', kvk: 'Korean Sign Language', ky: 'Kyrgyz', la: 'Latina',
+  lad: 'Ladino', lb: 'Luxembourgish', ln: 'Lingala', lo: 'ລາວ',
+  lt: 'Lietuvių', ltc: 'Middle Chinese', lv: 'Latviešu',
+  lzh: 'Literary Chinese', mai: 'Maithili', mg: 'Malagasy',
+  mhx: 'Lhao Vo', mi: 'Maori', min: 'Minangkabau', mk: 'Македонски',
+  ml: 'മലയാളം', mn: 'Монгол', mni: 'Manipuri', mnp: 'Min Bei',
+  mr: 'मराठी', ms: 'Bahasa Melayu', mt: 'Malti',
+  mxv: 'Metlatónoc Mixtec', my: 'မြန်မာ', nan: 'Min Nan',
+  nb: 'Norwegian Bokmål', ne: 'नेपाली', nl: 'Nederlands',
+  nn: 'Norwegian Nynorsk', no: 'Norsk', non: 'Old Norse',
+  nsl: 'Norwegian Sign Language', nv: 'Navajo', oc: 'Occitan',
+  och: 'Old Chinese', ojp: 'Old Japanese', om: 'Oromo', or: 'Odia',
+  osc: 'Oscan', pa: 'ਪੰਜਾਬੀ', pes: 'Western Farsi', pis: 'Pijin',
+  pl: 'Polski', pms: 'Piedmontese', prs: 'Dari', ps: 'پښتو',
+  pt: 'Português', qu: 'Quechua', rm: 'Romansch', ro: 'Română',
+  ru: 'Русский', ryu: 'Okinawan', sa: 'Sanskrit', sah: 'Yakut',
+  sc: 'Sardinian', scn: 'Sicilian', sco: 'Scots', sd: 'Sindhi',
+  se: 'Northern Sami', sh: 'Serbo-Croatian', si: 'සිංහල',
+  sjn: 'Sindarin', sk: 'Slovenčina', sl: 'Slovenščina',
+  sli: 'Lower Silesian', sm: 'Samoan', so: 'Soomaali', sq: 'Shqip',
+  sr: 'Српски', srm: 'Saramaccan', ss: 'Swazi', su: 'Sundanese',
+  sux: 'Sumerian', sv: 'Svenska', svk: 'Slovakian Sign Language',
+  sw: 'Kiswahili', ta: 'தமிழ்', te: 'తెలుగు', tg: 'Tajik',
+  th: 'ไทย', ti: 'Tigrinya', tl: 'Tagalog', tlh: 'Klingon',
+  tr: 'Türkçe', tsd: 'Tsakonian', tt: 'Tatar', ug: 'Uyghur',
+  uk: 'Українська', ur: 'اردو', uz: 'Oʻzbek', vec: 'Venetian',
+  vi: 'Tiếng Việt', vo: 'Volapük', wo: 'Wolof', wuu: 'Wu',
+  xh: 'Xhosa', xpe: 'Liberia Kpelle', yi: 'Yiddish', yo: 'Yorùbá',
+  yue: 'Cantonese', za: 'Zhuang', zh: '中文',
+  'zh-Hans': '中文（简体）', 'zh-Hant': '中文（繁體）', zu: 'isiZulu',
 };
 
-/** Get display name for a language code. */
-export function languageName(code: string): string {
+/**
+ * Get display name for a language code.
+ * @param code - ISO 639-1 or 639-3 language code
+ * @param uiLocale - Optional UI locale for localized name (e.g., "ko" → "Korean" in en, "coreano" in es).
+ *                   When omitted, returns the name in its own native script (e.g., "한국어" for ko).
+ */
+export function languageName(code: string, uiLocale?: string): string {
+  if (uiLocale) {
+    // Normalize zh-Hans/zh-Hant → zh for both code and locale in i18n lookup
+    const lookupLocale = uiLocale.startsWith('zh-') ? 'zh' : uiLocale;
+    const lookupCode = code.startsWith('zh-') ? 'zh' : code;
+    const localeNames = LOCALIZED_LANGUAGE_NAMES[lookupLocale];
+    if (localeNames?.[lookupCode]) return localeNames[lookupCode];
+    // Fall back to English
+    const enNames = LOCALIZED_LANGUAGE_NAMES['en'];
+    if (enNames?.[lookupCode]) return enNames[lookupCode];
+  }
   return LANGUAGE_NAMES[code] ?? code.toUpperCase();
 }
 
@@ -96,7 +154,7 @@ export function getLanguageMeta(code: string): LanguageMeta | null {
 
 /** Top languages to show first in the language selector. */
 export const POPULAR_LANGUAGES = [
-  'en', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
+  'en', 'zh-Hans', 'zh-Hant', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
   'ar', 'hi', 'tr', 'nl', 'pl', 'sv', 'th', 'vi', 'id',
 ] as const;
 

@@ -94,7 +94,7 @@ export default function TVShowsPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold">{t('title.tv_shows')}</h1>
         <p className="mt-1 text-muted-foreground">
-          {t('msg.tv_shows_desc', { l2: languageName(l2.code) })}
+          {t('msg.tv_shows_desc', { l2: languageName(l2.code, l1.code) })}
         </p>
       </div>
 

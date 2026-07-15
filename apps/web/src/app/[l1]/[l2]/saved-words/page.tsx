@@ -77,7 +77,7 @@ export default function SavedWordsPage() {
           <p className="mt-1 text-muted-foreground">
             {t('msg.saved_words_desc', {
               count: words.length,
-              l2: languageName(l2.code),
+              l2: languageName(l2.code, l1.code),
             })}
           </p>
         </div>

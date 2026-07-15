@@ -18,7 +18,7 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-lg px-4 py-12">
       <h1 className="text-3xl font-bold">{t('title.settings')}</h1>
       <p className="mt-2 text-muted-foreground">
-        {t('msg.settings_desc', { l1: languageName(l1.code), l2: languageName(l2.code) })}
+        {t('msg.settings_desc', { l1: languageName(l1.code), l2: languageName(l2.code, l1.code) })}
       </p>
 
       {/* Tab bar */}

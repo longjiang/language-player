@@ -10,8 +10,6 @@ import { Sparkles } from 'lucide-react';
 
 const SAMPLE_TEXTS: Record<string, string> = {
   zh: '首尔是韩国的首都，也是其经济、文化和政治的中心。这座沿着汉江的城市拥有现代的摩天大楼和传统的韩屋。',
-  'zh-Hans': '首尔是韩国的首都，也是其经济、文化和政治的中心。这座沿着汉江的城市拥有现代的摩天大楼和传统的韩屋。',
-  'zh-Hant': '首爾是韓國的首都，也是其經濟、文化和政治的中心。這座沿著漢江的城市擁有現代的摩天大樓和傳統的韓屋。',
   ja: 'ソウルは韓国の首都であり、経済、文化、政治の中心地です。漢江に沿ったこの都市は、現代的な高層ビルと伝統的な韓屋が共存しています。',
   ko: '서울은 대한민국의 수도이자 경제, 문화, 정치의 중심지입니다. 한강을 따라 자리잡은 이 도시는 현대적인 고층 빌딩과 전통적인 한옥이 공존하는 곳입니다.',
   ru: 'Сеул является столицей Южной Кореи и центром ее экономики, культуры и политики. Этот город вдоль реки Хан характеризуется современными небоскребами и традиционными ханоками.',
@@ -54,7 +52,7 @@ export default function TokenizerPage() {
     <div className="mx-auto max-w-2xl px-4 py-12">
       <h1 className="text-3xl font-bold">Tokenizer Test</h1>
       <p className="mt-2 text-muted-foreground">
-        Tokenization + lemmatization for {languageName(l2.code)}. Click any word to see its lemma.
+        Tokenization + lemmatization for {languageName(l2.code, l1.code)}. Click any word to see its lemma.
       </p>
 
       {/* ── Input ── */}
@@ -62,7 +60,7 @@ export default function TokenizerPage() {
         <textarea
           value={customText}
           onChange={(e) => setCustomText(e.target.value)}
-          placeholder={`Enter text in ${languageName(l2.code)}...`}
+          placeholder={`Enter text in ${languageName(l2.code, l1.code)}...`}
           className="w-full min-h-[100px] rounded-lg border bg-background p-4 text-sm"
           rows={4}
         />

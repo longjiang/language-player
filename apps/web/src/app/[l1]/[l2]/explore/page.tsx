@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { languageName, baseCode } from '@/lib/language-data';
 
 export default function ExplorePage() {
-  const { l2 } = useLanguage();
+  const { l1, l2 } = useLanguage();
   const t = useT();
   const { level: savedLevel, loaded: progressLoaded } = useProgress(baseCode(l2.code));
   const [level, setLevel] = useState<number | undefined>(undefined);
@@ -33,7 +33,7 @@ export default function ExplorePage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold">
-          {t('msg.explore_media_for', { l2: languageName(l2.code) })}
+          {t('msg.explore_media_for', { l2: languageName(l2.code, l1.code) })}
         </h1>
         <p className="mt-1 text-muted-foreground">
           {t('msg.find_videos_matched')} •{' '}
