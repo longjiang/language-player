@@ -12,10 +12,12 @@ interface DictionaryEntryCardProps {
   onClick?: (entry: DictionaryEntry) => void;
   /** Optional context for the save/bookmark button. Omit to hide. */
   saveContext?: SavedWordContext;
+  /** Pre-formatted pronunciation string (e.g. "[ní hǎo]"). Uses centralized formatPronunciation. */
+  pronunciation?: string | null;
 }
 
 /** Renders a single dictionary lookup result. */
-export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext }: DictionaryEntryCardProps) {
+export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, pronunciation }: DictionaryEntryCardProps) {
   const level = entry.level;
   const levelText = level && levelLabel
     ? levelLabel(level.scale, level.value)
@@ -33,11 +35,16 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext }:
         <span className="text-lg font-semibold" lang={entry.source}>
           {entry.head}
         </span>
-        {entry.pronunciation && (
-          <span className="text-xs text-muted-foreground">
-            /{entry.pronunciation}/
-          </span>
-        )}
+        {pronunciation !== undefined
+          ? (pronunciation && (
+              <span className="text-xs text-muted-foreground">{pronunciation}</span>
+            ))
+          : (entry.pronunciation && (
+              <span className="text-xs text-muted-foreground">
+                /{entry.pronunciation}/
+              </span>
+            ))
+        }
         {levelText && (
           <span className="ml-auto shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
             {levelText}

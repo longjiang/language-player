@@ -10,6 +10,7 @@ import { SaveButton } from './save-button';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { resolveLegacyId } from '@/lib/legacy-word-resolver';
 import { baseCode } from '@/lib/language-data';
+import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 
 interface DictionaryPopupProps {
@@ -163,7 +164,7 @@ export function DictionaryPopup({
             <span className="text-xl font-bold">{token.text}</span>
             {token.pronunciation && (
               <span className="ml-2 text-sm text-muted-foreground">
-                /{token.pronunciation}/
+                [{token.pronunciation}]
               </span>
             )}
             {token.lemmas.length > 0 && token.lemmas[0]!.lemma !== token.text && (
@@ -256,6 +257,7 @@ export function DictionaryPopup({
               levelLabel={levelLabel}
               onClick={handleEntryClick}
               saveContext={context}
+              pronunciation={formatPronunciation(entry, l2Code)}
             />
           ))}
         </div>
