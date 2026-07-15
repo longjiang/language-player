@@ -9,6 +9,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { ArrowLeft, Loader2, AlertCircle, BookOpen } from 'lucide-react';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
+import { SubsSearchResults } from '@/components/video/subs-search-results';
 
 /**
  * Single dictionary or LLM entry page.
@@ -125,14 +126,23 @@ export default function DictionaryEntryPage() {
 
       {/* Entry card */}
       {!loading && !error && entry && (
-        <DictionaryEntryCard
-          variant="full"
-          entry={entry}
-          l2Code={l2.code}
-          l1Code={l1.code}
-          levelLabel={levelScaleLabel}
-          saveContext={saveContext}
-        />
+        <>
+          <DictionaryEntryCard
+            variant="full"
+            entry={entry}
+            l2Code={l2.code}
+            l1Code={l1.code}
+            levelLabel={levelScaleLabel}
+            saveContext={saveContext}
+          />
+          {/* Subs search: examples in videos */}
+          <section className="mt-10">
+            <h2 className="mb-4 text-lg font-semibold">
+              {t('title.examples_from_videos')}
+            </h2>
+            <SubsSearchResults term={entry.head} />
+          </section>
+        </>
       )}
     </div>
   );
