@@ -43,28 +43,44 @@ export function DictionaryEntryCard({
   const { head, alternate } = apply(entry.head, entry.alternate);
   const isFull = variant === 'full';
 
-  const level = entry.level;
-  const levelText = level && levelLabel
-    ? levelLabel(level.scale, level.value)
-    : level
-      ? `${level.scale.replace('_', ' ').toUpperCase()}: ${level.value}`
-      : null;
+  const levels = entry.levels ?? [];
+  const levelTexts = levels.map((l) => levelLabel
+    ? levelLabel(l.scale, l.value)
+    : `${l.scale.replace('_', ' ').toUpperCase()}: ${l.value}`
+  );
 
   const formattedPron = pronunciation !== undefined
     ? pronunciation
     : formatPronunciation(entry, l2Code ?? '');
 
+  const studyMaterials = entry.studyMaterials;
+
+  // ── Study material indicator (compact) ──
+  const studyMaterialLine = studyMaterials && studyMaterials.length > 0 ? (
+    <div className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground">
+      <BookOpen className="h-3 w-3" />
+      <span>
+        {studyMaterials.map((m, i) => (
+          <span key={i}>
+            {m.material} Bk.{m.location?.book} L{m.location?.lesson}
+            {i < studyMaterials.length - 1 ? ', ' : ''}
+          </span>
+        ))}
+      </span>
+    </div>
+  ) : null;
+
   // ── Shared: level + POS badges ──
   const badges = (
     <>
-      {levelText && (
-        <span className={isFull
+      {levelTexts.map((text, i) => (
+        <span key={i} className={isFull
           ? "rounded-md bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
           : "ml-auto shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
         }>
-          {levelText}
+          {text}
         </span>
-      )}
+      ))}
       {entry.part_of_speech && (
         <span className={isFull
           ? "rounded-md bg-muted px-2.5 py-1 text-sm font-medium text-muted-foreground"
@@ -263,6 +279,30 @@ export function DictionaryEntryCard({
               </span>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Study material coverage */}
+      {studyMaterials && studyMaterials.length > 0 && (
+        <div className="mb-6 rounded-lg bg-blue-50/50 p-4 dark:bg-blue-950/20">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Textbook Appearances
+          </h3>
+          {studyMaterials.map((m, i) => (
+            <div key={i} className="space-y-1.5">
+              <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
+                <BookOpen className="h-4 w-4" />
+                <span>{m.material} — Book {m.location?.book}, Lesson {m.location?.lesson}{m.location?.dialog ? `, Dialog ${m.location.dialog}` : ''}</span>
+              </div>
+              {m.example && (
+                <p className="text-sm" lang={l2Code}>{m.example}</p>
+              )}
+              {m.exampleTranslation && (
+                <p className="text-sm text-muted-foreground">{m.exampleTranslation}</p>
+              )}
+              {i < studyMaterials.length - 1 && <hr className="my-2" />}
+            </div>
+          ))}
         </div>
       )}
 
