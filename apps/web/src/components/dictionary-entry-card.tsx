@@ -138,7 +138,7 @@ export function DictionaryEntryCard({
         {entry.classifier && entry.classifier.length > 0 && (
           <div className="mt-2 flex flex-wrap items-center gap-1">
             <span className="text-[10px] font-medium text-muted-foreground mr-0.5">
-              {entry.classifier[0]!.kind === 'measure_word' ? 'CL:' :
+              {entry.classifier[0]!.kind === 'measure_word' ? 'Measure:' :
                entry.classifier[0]!.kind === 'gender' ? 'Gender:' : 'Class:'}
             </span>
             {entry.classifier.map((cl, i) => (
@@ -240,7 +240,9 @@ export function DictionaryEntryCard({
       {entry.classifier && entry.classifier.length > 0 && (
         <div className="mb-6">
           <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Classifiers
+            {entry.classifier[0]!.kind === 'gender' ? 'Gender' :
+             entry.classifier[0]!.kind === 'measure_word' ? 'Measure Words' :
+             'Classifiers'}
           </h3>
           <div className="flex flex-wrap gap-2">
             {entry.classifier.map((cl, i) => (
@@ -264,26 +266,27 @@ export function DictionaryEntryCard({
         </div>
       )}
 
-      {/* Han script detail */}
+      {/* Han script detail — only show whats not already in the header */}
       {entry.han_script && (entry.han_script.traditional || entry.han_script.simplified) && (
         <div className="mb-6 flex gap-4 text-sm text-muted-foreground">
-          {entry.han_script.simplified && entry.han_script.simplified !== entry.head && (
+          {entry.han_script.simplified && entry.han_script.simplified !== head && entry.han_script.simplified !== alternate && (
             <span>简: {entry.han_script.simplified}</span>
           )}
-          {entry.han_script.traditional && entry.han_script.traditional !== entry.head && (
+          {entry.han_script.traditional && entry.han_script.traditional !== head && entry.han_script.traditional !== alternate && (
             <span>繁: {entry.han_script.traditional}</span>
           )}
         </div>
       )}
 
-      {/* Phonetic detail */}
+      {/* Phonetic detail — skip keys already shown as the main pronunciation */}
       {entry.phonetic_detail && typeof entry.phonetic_detail === 'object' && (
         <div className="mb-6 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground/70">
           {Object.entries(entry.phonetic_detail).map(([key, value]) => {
-            // Skip keys already shown prominently elsewhere
+            // Skip keys shown prominently in the header
             if (key === 'romaji' || key === 'pinyin' || key === 'jyutping') return null;
-            // Skip IPA if it's identical to the pronunciation already shown
-            if (key === 'ipa' && !isFull) return null;
+            // Skip raw representations of the already-displayed pronunciation
+            if (key === 'pinyin_numeric') return null;
+            // Skip IPA if it matches the pronunciation already shown
             if (key === 'ipa' && value === entry.pronunciation) return null;
             if (typeof value === 'string' && value) {
               return <span key={key}>{key}: {value}</span>;
