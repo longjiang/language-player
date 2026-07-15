@@ -229,11 +229,11 @@ function WordDetailCard({
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex items-baseline gap-3">
-              <h1 className="text-4xl font-bold" lang={l2.code}>
+              <h1 className="text-4xl font-bold" lang={l2Code}>
                 {entry.head}
               </h1>
               {entry.alternate && entry.alternate !== entry.head && (
-                <span className="text-xl text-muted-foreground" lang={l2.code}>
+                <span className="text-xl text-muted-foreground" lang={l2Code}>
                   {entry.alternate}
                 </span>
               )}
