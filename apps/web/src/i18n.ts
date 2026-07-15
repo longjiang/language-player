@@ -1,5 +1,5 @@
 import { getRequestConfig } from 'next-intl/server';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { SUPPORTED_L1S } from '@langplayer/shared';
 
 type Messages = Record<string, unknown>;
@@ -26,23 +26,28 @@ function deepMerge(base: Messages, override: Messages): Messages {
   return result;
 }
 
-export default getRequestConfig(async (): Promise<any> => {
-  // Read locale from our custom cookie (set by middleware from /[l1]/[l2] path)
+async function resolveLocale(): Promise<string> {
+  // 1. If URL is /[l1]/[l2]/..., use l1 immediately (no cookie delay)
+  try {
+    const headersList = headers();
+    const pathname = headersList.get('x-invoke-path') ?? headersList.get('x-pathname') ?? '';
+    const segments = pathname.split('/').filter(Boolean);
+    const l1 = segments[0];
+    if (l1 && SUPPORTED_L1S.includes(l1 as any)) return l1;
+  } catch { /* headers() may throw during static generation */ }
+
+  // 2. Fall back to NEXT_LOCALE cookie (set by middleware from browser Accept-Language)
   const cookieStore = cookies();
   const rawLocale = cookieStore.get('NEXT_LOCALE')?.value ?? 'en';
-  const locale = SUPPORTED_L1S.includes(rawLocale as any) ? rawLocale : 'en';
+  return SUPPORTED_L1S.includes(rawLocale as any) ? rawLocale : 'en';
+}
 
-  // Always load English as fallback for missing translations
+export default getRequestConfig(async (): Promise<any> => {
+  const locale = await resolveLocale();
+
   const enMessages = (await import(`../messages/en.json`)).default as Messages;
-
-  if (locale === 'en') {
-    return { locale, messages: enMessages };
-  }
+  if (locale === 'en') return { locale, messages: enMessages };
 
   const localeMessages = (await import(`../messages/${locale}.json`)).default as Messages;
-
-  return {
-    locale,
-    messages: deepMerge(enMessages, localeMessages),
-  };
+  return { locale, messages: deepMerge(enMessages, localeMessages) };
 });

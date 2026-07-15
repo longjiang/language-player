@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { Search, ArrowRight, Globe, BookOpen } from 'lucide-react';
@@ -18,6 +19,7 @@ import { setUseTraditional } from '@/lib/settings';
 
 export default function LanguageSelectPage() {
   const router = useRouter();
+  const locale = useLocale();
   const t = useT();
   const [l1Search, setL1Search] = useState('');
   const [l2Search, setL2Search] = useState('');
@@ -36,10 +38,13 @@ export default function LanguageSelectPage() {
     }
     const results = SUPPORTED_L1S.filter(
       (c) =>
-        languageName(c).toLowerCase().includes(q) || c.toLowerCase().includes(q),
+        languageName(c).toLowerCase().includes(q) ||
+        languageName(c, locale).toLowerCase().includes(q) ||
+        languageName(c, 'en').toLowerCase().includes(q) ||
+        c.toLowerCase().includes(q),
     );
     return { popular: results, rest: [], searching: true };
-  }, [l1Search]);
+  }, [l1Search, locale]);
 
   const filteredL2 = useMemo(() => {
     const q = l2Search.toLowerCase();
@@ -52,10 +57,13 @@ export default function LanguageSelectPage() {
     }
     const results = SUPPORTED_L2S.filter(
       (c) =>
-        languageName(c).toLowerCase().includes(q) || c.toLowerCase().includes(q),
+        languageName(c).toLowerCase().includes(q) ||
+        languageName(c, locale).toLowerCase().includes(q) ||
+        languageName(c, 'en').toLowerCase().includes(q) ||
+        c.toLowerCase().includes(q),
     );
     return { popular: results, rest: [], searching: true };
-  }, [l2Search]);
+  }, [l2Search, locale]);
 
   const canContinue = selectedL1 && selectedL2;
 
@@ -100,7 +108,7 @@ export default function LanguageSelectPage() {
                 <>
                   {!filteredL1.searching && (
                     <div className="px-3 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Popular
+                      {t('msg.popular_languages')}
                     </div>
                   )}
                   {filteredL1.popular.map((code) => (
@@ -127,7 +135,7 @@ export default function LanguageSelectPage() {
                 <>
                   <div className="mx-3 my-1 border-t border-border" />
                   <div className="px-3 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    All Languages
+                    {t('msg.all_languages')}
                   </div>
                   {filteredL1.rest.map((code) => (
                     <button
@@ -173,7 +181,7 @@ export default function LanguageSelectPage() {
                 <>
                   {!filteredL2.searching && (
                     <div className="px-3 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Popular
+                      {t('msg.popular_languages')}
                     </div>
                   )}
                   {filteredL2.popular.map((code) => (
@@ -188,7 +196,7 @@ export default function LanguageSelectPage() {
                       dir={isRTL(code) ? 'rtl' : 'ltr'}
                     >
                       <span>
-                        {languageName(code)}
+                        {languageName(code, locale)}
                         <span className="ml-1 text-xs opacity-60">{code.toUpperCase()}</span>
                       </span>
                     </button>
@@ -199,7 +207,7 @@ export default function LanguageSelectPage() {
                 <>
                   <div className="mx-3 my-1 border-t border-border" />
                   <div className="px-3 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    All Languages
+                    {t('msg.all_languages')}
                   </div>
                   {filteredL2.rest.map((code) => (
                     <button
@@ -213,7 +221,7 @@ export default function LanguageSelectPage() {
                       dir={isRTL(code) ? 'rtl' : 'ltr'}
                     >
                       <span>
-                        {languageName(code)}
+                        {languageName(code, locale)}
                         <span className="ml-1 text-xs opacity-60">{code.toUpperCase()}</span>
                       </span>
                     </button>
@@ -236,7 +244,7 @@ export default function LanguageSelectPage() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                简体 Simp.
+                {t('setting.simplified')}
               </button>
               <button
                 onClick={() => setUseTraditionalState(true)}
@@ -246,7 +254,7 @@ export default function LanguageSelectPage() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                繁體 Trad.
+                {t('setting.traditional')}
               </button>
             </div>
           </div>
@@ -256,13 +264,13 @@ export default function LanguageSelectPage() {
         {canContinue && (
           <div className="mt-6 flex items-center justify-center gap-3">
             <div className="rounded-full border border-border bg-muted px-4 py-2 text-sm">
-              <span className="text-muted-foreground">UI:</span>{' '}
-              <strong>{languageName(selectedL1!)}</strong>
+              <span className="text-muted-foreground">{t('title.i_speak')}:</span>{' '}
+              <strong>{languageName(selectedL1!, locale)}</strong>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
             <div className="rounded-full border border-border bg-muted px-4 py-2 text-sm">
-              <span className="text-muted-foreground">Learning:</span>{' '}
-              <strong>{languageName(selectedL2!)}</strong>
+              <span className="text-muted-foreground">{t('title.learning_label')}</span>{' '}
+              <strong>{languageName(selectedL2!, locale)}</strong>
             </div>
             <Button onClick={handleContinue} className="ml-4">
               {t('action.continue')} <ArrowRight className="ml-1 h-4 w-4" />
