@@ -234,8 +234,8 @@ function DictionaryCard({
             {levelScaleLabel(entry.level.scale)} {entry.level.value}
           </span>
         )}
-        {entry.source && (
-          <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">{entry.source}</span>
+        {entry.dictionary?.name && (
+          <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">{entry.dictionary.name}</span>
         )}
       </div>
 

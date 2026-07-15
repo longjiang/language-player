@@ -229,11 +229,11 @@ function WordDetailCard({
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex items-baseline gap-3">
-              <h1 className="text-4xl font-bold" lang={entry.source}>
+              <h1 className="text-4xl font-bold" lang={l2.code}>
                 {entry.head}
               </h1>
               {entry.alternate && entry.alternate !== entry.head && (
-                <span className="text-xl text-muted-foreground" lang={entry.source}>
+                <span className="text-xl text-muted-foreground" lang={l2.code}>
                   {entry.alternate}
                 </span>
               )}
@@ -317,7 +317,7 @@ function WordDetailCard({
       {/* ── Source + match type ── */}
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <ExternalLink className="h-3 w-3" />
-        <span>{entry.source}</span>
+        <span>{entry.dictionary?.name ?? entry.source}</span>
         {entry.match_type && entry.match_type !== 'exact' && (
           <span className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
             {entry.match_type}
