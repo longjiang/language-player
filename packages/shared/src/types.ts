@@ -98,6 +98,24 @@ export interface DictionaryLookupResponse {
   message?: string;
 }
 
+/** Study material coverage for a dictionary entry (ADR 0006). */
+export interface StudyMaterialCoverage {
+  material: string;
+  author?: string;
+  year?: number;
+  targetLevel?: {
+    scale: string;
+    level: number | string;
+  } | null;
+  location?: {
+    book?: string | number;
+    lesson?: string | number;
+    dialog?: string | number;
+  };
+  example?: string;
+  exampleTranslation?: string;
+}
+
 /** A single entry from the dictionary lookup, matching the ADR 0006 schema. */
 export interface DictionaryEntry {
   /** Discriminant — 'dictionary' for curated entries, 'llm' for AI-generated. */
@@ -119,13 +137,21 @@ export interface DictionaryEntry {
 
   // ── Optional metadata ──
   part_of_speech?: string | null;
-  level?: {
+  /** Proficiency level(s) assigned to this entry. A word may have multiple levels
+   *  across different scales (e.g., both hsk_2010:3 and hsk_2025:2 for Chinese).
+   *  null or empty means unclassified. */
+  levels?: {
     scale: 'hsk_2010' | 'hsk_2025' | 'cefr' | 'jlpt';
     value: number | string;
-  } | null;
+  }[] | null;
   frequency?: number | null;
   /** 1–7 integer derived from Zipf frequency thresholds. 1 = most common, 7 = rarest. */
   frequencyLevel?: number | null;
+
+  // ── Study material coverage ──
+  /** Study materials (textbooks, courses) that cover this entry.
+   *  Each entry records where the word appears in the material. */
+  studyMaterials?: StudyMaterialCoverage[] | null;
 
   // ── Language-specific scripts ──
   alternate?: string | null;
@@ -198,7 +224,7 @@ export interface LlmGeneratedEntry {
   head: string;
   definitions: string[];
   pronunciation: string;
-  level?: { scale: string; value: number | string } | null;
+  levels?: { scale: string; value: number | string }[] | null;
   part_of_speech?: string | null;
 
   // ── Frequency (looked up from tables, not LLM-generated) ──

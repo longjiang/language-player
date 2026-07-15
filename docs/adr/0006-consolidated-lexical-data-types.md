@@ -45,10 +45,14 @@ interface LexicalEntry {
    *  Example: 'taberu' (romaji), 'nǐ hǎo' (pinyin). */
   pronunciation: string;
 
-  /** Proficiency level if known. Scale depends on the language:
-   *  Chinese → hsk_2010 or hsk_2026, Japanese → jlpt, others → cefr.
-   *  null means unclassified (not "beginner"). */
-  level?: { scale: string; value: number | string } | null;
+  /** Proficiency level(s) if known. Scale depends on the language:
+   *  Chinese → hsk_2010 and/or hsk_2025, Japanese → jlpt, others → cefr.
+   *  A word may have multiple levels across different scales (e.g., both
+   *  hsk_2010:3 and hsk_2025:2). The UI displays the most relevant one
+   *  based on user preference; when both are present, hsk_2025 is shown
+   *  by default for Chinese.
+   *  null or empty array means unclassified (not "beginner"). */
+  levels?: { scale: string; value: number | string }[] | null;
 
   /** Part of speech. Language-specific values:
    *  English/European: 'noun', 'verb', 'adjective', etc.
@@ -126,6 +130,27 @@ interface DictionaryEntry extends LexicalEntry {
    * Used for proficiency gating and sorting. */
   frequencyLevel?: number | null;
 
+  // ── Study material coverage ──
+
+  /**
+   * Study materials (textbooks, courses, graded readers) that cover this entry.
+   * Each entry records where in the material this word appears (book, lesson, dialog).
+   *
+   * Separate from the dictionary itself — study materials are independent of
+   * dictionary versions. The HSK Standard Course doesn't change when CC-CEDICT
+   * is updated, so coverage data lives in its own SQLite table and is joined
+   * at query time.
+   *
+   * null means no coverage data exists for this entry.
+   * undefined means coverage hasn't been loaded yet (lazy loading).
+   *
+   * Example: A word appearing in HSK Standard Course Book 3, Lesson 18, Dialog 2:
+   *   { material: 'HSK Standard Course', author: 'Jiang Liping', year: 2014,
+   *     targetLevel: { scale: 'hsk_2010', level: 3 },
+   *     location: { book: 3, lesson: 18, dialog: 2 } }
+   */
+  studyMaterials?: StudyMaterialCoverage[] | null;
+
   // ── Language-specific scripts ──
 
   /** Alternate script form. Language-dependent:
@@ -191,6 +216,63 @@ interface DictionaryEntry extends LexicalEntry {
     pronunciation?: string;
     tags: string[];
   }[] | null;
+}
+```
+
+---
+
+### Study Material Coverage
+
+```ts
+/**
+ * Records that a dictionary entry is covered by a specific study material
+ * (textbook, course, graded reader, etc.) at a particular location.
+ *
+ * Imported from CSV sources like hsk_standard_course.csv.
+ * Stored in a separate SQLite table (e.g., hsk_curriculum) and joined
+ * at query time, rather than baked into dictionary CSV tables.
+ *
+ * WHY SEPARATE TABLE: Study materials are independent of dictionary versions.
+ * The HSK Standard Course doesn't change when CC-CEDICT is updated. Keeping
+ * coverage data separate avoids re-importing it with every dictionary rebuild.
+ *
+ * Multiple StudyMaterialCoverage entries may reference the same
+ * dictionary entry (e.g., a word appears in both HSK Standard Course
+ * AND a separate graded reader series).
+ */
+interface StudyMaterialCoverage {
+  /** Human-readable name of the study material.
+   *  Example: 'HSK Standard Course' */
+  material: string;
+
+  /** Author or publisher.
+   *  Example: 'Jiang Liping' */
+  author?: string;
+
+  /** Publication year.
+   *  Example: 2014 */
+  year?: number;
+
+  /** Scale and level this material targets.
+   *  Example: { scale: 'hsk_2010', level: 3 } means HSK Level 3 */
+  targetLevel: {
+    scale: string;
+    level: number | string;
+  };
+
+  /** Location within the material — book/volume, lesson/chapter, dialog/exercise.
+   *  Each field is optional because different materials organize differently. */
+  location: {
+    book?: string | number;
+    lesson?: string | number;
+    dialog?: string | number;
+  };
+
+  /** The example sentence from this material, if any. */
+  example?: string;
+
+  /** L1 translation of the example sentence. */
+  exampleTranslation?: string;
 }
 ```
 
@@ -329,6 +411,31 @@ Wiktionary (German/French/etc.):
 ```
 
 The parsed classifiers are stored as a JSON array in a `classifiers TEXT` column in SQLite, keyed by the entry ID.
+
+---
+
+### Study Material Parsing
+
+Study material coverage is imported from CSV sources at dictionary build time. Each source maps headwords to locations within a specific textbook or course.
+
+```
+HSK Standard Course (hsk_standard_course.csv):
+  Input:  simplified,traditional,book,lesson,dialog,example,exampleTranslation
+          不但……而且……,不但……而且……,3,18,3,"他不但听到，而且也看到了。","He not only heard..."
+  Parse:  Match headword → map book/lesson/dialog → build StudyMaterialCoverage
+  Output: { material: 'HSK Standard Course', author: 'Jiang Liping', year: 2014,
+            targetLevel: { scale: 'hsk_2010', level: 3 },
+            location: { book: 3, lesson: 18, dialog: 3 },
+            example: '他不但听到，而且也看到了。',
+            exampleTranslation: 'He not only heard it, but he saw it, too.' }
+
+Future sources (JLPT prep books, Integrated Chinese, Genki, etc.):
+  Each source gets its own CSV with language-appropriate columns.
+  The StudyMaterialCoverage shape is source-agnostic — any textbook can
+  map its location scheme to { book, lesson, dialog }.
+```
+
+Coverage data is stored in a separate SQLite table (e.g., `hsk_curriculum`) keyed by the dictionary entry ID. At query time, coverage rows are joined to the dictionary entry and returned as `studyMaterials`.
 
 ### Future fields ──
 
@@ -745,7 +852,7 @@ function resolveDisplayData(item: LexicalItem): LexicalEntry {
         head: item.source.text,
         definitions: getTranslationForUserL1(item.translations),
         pronunciation: '',
-        level: null,
+        levels: null,
         part_of_speech: null,
         model: '',
         frequency: null,
@@ -839,7 +946,7 @@ LLM composite IDs like 'llm-zh-abc123' are discarded:
 
 2. **Context-aware LLM re-query** — When staleness is detected (model version changed), re-query the LLM with the original context sentence to regenerate the entry.
 
-3. **Level fields on phrasebook items** — Currently `level` is only on `DictionaryEntry` and `LlmGeneratedEntry`. Phrasebook items with hardcoded levels (e.g., "JLPT N5 phrases") need `LexicalItem.level` or should populate it in a synthetic entry.
+3. **Level fields on phrasebook items** — Currently `levels` is only on `DictionaryEntry` and `LlmGeneratedEntry`. Phrasebook items with hardcoded levels (e.g., "JLPT N5 phrases") need `LexicalItem.levels` or should populate it in a synthetic entry.
 
 4. **Frequency for surface forms** — Our frequency tables are lemma-only. Adding per-form frequency (e.g., how common "went" is vs. "go") would improve sorting and level estimation.
 
