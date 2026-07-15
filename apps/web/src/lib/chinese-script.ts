@@ -3,24 +3,24 @@
  * Uses OpenCC (lazy-loaded, ~250KB gzipped) — only loaded when needed.
  */
 
-import type { Converter } from 'opencc-js';
+type ChineseConverter = (text: string) => string;
 
-let cn2tPromise: Promise<Converter> | null = null;
-let t2cnPromise: Promise<Converter> | null = null;
+let cn2tPromise: Promise<ChineseConverter> | null = null;
+let t2cnPromise: Promise<ChineseConverter> | null = null;
 
-async function loadCn2t(): Promise<Converter> {
+async function loadCn2t(): Promise<ChineseConverter> {
   if (!cn2tPromise) {
     cn2tPromise = import('opencc-js').then(({ Converter }) =>
-      Converter({ from: 'cn', to: 'twp' }),
+      (Converter as any)({ from: 'cn', to: 'twp' }),
     );
   }
   return cn2tPromise;
 }
 
-async function loadT2cn(): Promise<Converter> {
+async function loadT2cn(): Promise<ChineseConverter> {
   if (!t2cnPromise) {
     t2cnPromise = import('opencc-js').then(({ Converter }) =>
-      Converter({ from: 'twp', to: 'cn' }),
+      (Converter as any)({ from: 'twp', to: 'cn' }),
     );
   }
   return t2cnPromise;
