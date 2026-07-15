@@ -56,16 +56,10 @@ export async function GET(request: Request) {
             <>
               {/* Logo + wordmark row */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, width: '100%' }}>
-                <img src={logoUrl} alt="Language Player" width={140} height={140}
-                  style={{ width: 140, height: 140, borderRadius: '50%', boxShadow: '0 12px 48px rgba(92,124,250,0.25)' }} />
+                <img src={logoUrl} alt="Language Player" width={186} height={186}
+                  style={{ width: 186, height: 186, borderRadius: '50%', boxShadow: '0 12px 48px rgba(92,124,250,0.25)' }} />
                 <div style={{ fontSize: 96, fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.1, fontFamily: 'Nunito' }}>
                   Language Player
-                </div>
-              </div>
-              {/* Tagline row — forced below */}
-              <div style={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
-                <div style={{ fontSize: 40, fontWeight: 400, color: '#91a7ff', textAlign: 'center', maxWidth: 900, lineHeight: 1.4 }}>
-                  Learn 60+ languages through authentic videos with interactive dual subtitles
                 </div>
               </div>
             </>
