@@ -27,40 +27,40 @@ export async function GET(request: Request) {
         fontFamily: 'system-ui, sans-serif', position: 'relative', overflow: 'hidden',
       }}>
         {/* Gradient orbs */}
-        <div style={{ position: 'absolute', top: -120, right: -80, width: 500, height: 500, borderRadius: '50%', background: 'rgba(92,124,250,0.08)', filter: 'blur(60px)' }} />
-        <div style={{ position: 'absolute', bottom: -160, left: -100, width: 600, height: 600, borderRadius: '50%', background: 'rgba(255,146,43,0.06)', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', top: -180, right: -120, width: 700, height: 700, borderRadius: '50%', background: 'rgba(92,124,250,0.08)', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', bottom: -220, left: -140, width: 800, height: 800, borderRadius: '50%', background: 'rgba(255,146,43,0.06)', filter: 'blur(100px)' }} />
         {/* Accent bar */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg, #5c7cfa, #ff922b)' }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: 'linear-gradient(90deg, #5c7cfa, #ff922b)' }} />
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32, zIndex: 1, padding: '0 80px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 48, zIndex: 1, padding: '0 60px' }}>
           {/* Logo + wordmark */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
             <img
               src={logoUrl}
               alt="Language Player"
-              width={96}
-              height={96}
-              style={{ width: 96, height: 96, borderRadius: '50%', boxShadow: '0 8px 32px rgba(92,124,250,0.25)' }}
+              width={140}
+              height={140}
+              style={{ width: 140, height: 140, borderRadius: '50%', boxShadow: '0 12px 48px rgba(92,124,250,0.25)' }}
             />
-            <div style={{ fontSize: 72, fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.1, fontFamily: 'Nunito' }}>
+            <div style={{ fontSize: 96, fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.1, fontFamily: 'Nunito' }}>
               Language Player
             </div>
           </div>
 
-          <div style={{ fontSize: 28, fontWeight: 400, color: '#91a7ff', textAlign: 'center', maxWidth: 750, lineHeight: 1.4 }}>
+          <div style={{ fontSize: 36, fontWeight: 400, color: '#91a7ff', textAlign: 'center', maxWidth: 900, lineHeight: 1.4 }}>
             Learn 60+ languages through authentic videos with interactive dual subtitles
           </div>
 
-          <div style={{ display: 'flex', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 16 }}>
             {['🎬 600K+ Videos', '📖 Built-in Dictionary', '🌍 207 Languages'].map(f => (
-              <div key={f} style={{ fontSize: 18, fontWeight: 500, color: '#dbe4ff', background: 'rgba(92,124,250,0.12)', borderRadius: 20, padding: '8px 20px', border: '1px solid rgba(92,124,250,0.2)' }}>
+              <div key={f} style={{ fontSize: 22, fontWeight: 600, color: '#dbe4ff', background: 'rgba(92,124,250,0.12)', borderRadius: 24, padding: '12px 28px', border: '1px solid rgba(92,124,250,0.2)' }}>
                 {f}
               </div>
             ))}
           </div>
         </div>
 
-        <div style={{ position: 'absolute', bottom: 32, fontSize: 20, color: '#748ffc', fontWeight: 400, letterSpacing: '0.05em' }}>
+        <div style={{ position: 'absolute', bottom: 28, fontSize: 24, color: '#748ffc', fontWeight: 500, letterSpacing: '0.05em' }}>
           {hostname}
         </div>
       </div>
