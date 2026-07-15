@@ -120,7 +120,7 @@ export interface DictionaryEntry {
   // ── Optional metadata ──
   part_of_speech?: string | null;
   level?: {
-    scale: 'hsk_2010' | 'hsk_2026' | 'cefr' | 'jlpt';
+    scale: 'hsk_2010' | 'hsk_2025' | 'cefr' | 'jlpt';
     value: number | string;
   } | null;
   frequency?: number | null;
