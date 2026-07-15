@@ -78,9 +78,10 @@ export default function DictionaryPage() {
   );
 
   // Determine proficiency scale for level display
-  const levelScaleLabel = (scale: string): string => {
-    const map: Record<string, string> = { hsk: 'HSK', hsk_2010: 'HSK 2010', hsk_2026: 'HSK 2026', jlpt: 'JLPT', cefr: 'CEFR' };
-    return map[scale] ?? scale.toUpperCase();
+  const levelScaleLabel = (scale: string, value?: string | number): string => {
+    const map: Record<string, string> = { hsk: 'HSK', hsk_2010: 'HSK', hsk_2026: 'HSK', jlpt: 'JLPT', cefr: 'CEFR' };
+    const label = map[scale] ?? scale.toUpperCase();
+    return value !== undefined ? `${label} ${value}` : label;
   };
 
   return (

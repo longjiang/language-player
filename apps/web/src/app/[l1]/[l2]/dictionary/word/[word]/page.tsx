@@ -67,14 +67,15 @@ export default function WordDetailPage() {
     return () => { cancelled = true; };
   }, [word, lookupWord]);
 
-  const levelScaleLabel = (scale: string): string => {
+  const levelScaleLabel = (scale: string, value?: string | number): string => {
     const map: Record<string, string> = {
       hsk_2010: 'HSK',
       hsk_2026: 'HSK',
       jlpt: 'JLPT',
       cefr: 'CEFR',
     };
-    return map[scale] ?? scale.toUpperCase();
+    const label = map[scale] ?? scale.toUpperCase();
+    return value !== undefined ? `${label} ${value}` : label;
   };
 
   // Build context for SaveButton
