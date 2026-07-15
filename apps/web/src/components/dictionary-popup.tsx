@@ -12,6 +12,7 @@ import { resolveLegacyId } from '@/lib/legacy-word-resolver';
 import { baseCode } from '@/lib/language-data';
 import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { buildEntryRoute } from '@/lib/entry-route';
 
 interface DictionaryPopupProps {
   token: LemmatizedToken;
@@ -145,9 +146,7 @@ export function DictionaryPopup({
   }, [savedWords, l2Code, entries, token.text, loading, error]);
 
   const handleEntryClick = (entry: DictionaryEntry) => {
-    // encodeURIComponent does NOT encode apostrophes — manual fix for Klingon/Welsh/etc.
-    const encoded = encodeURIComponent(entry.head).replace(/'/g, '%27');
-    router.push(`/${l1Code}/${l2Code}/dictionary/word/${encoded}`);
+    router.push(buildEntryRoute(l1Code, l2Code, entry.dictionary?.id ?? 'llm', entry.id));
   };
 
   return (

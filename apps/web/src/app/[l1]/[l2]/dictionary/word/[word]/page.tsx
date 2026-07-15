@@ -15,6 +15,7 @@ import { SaveButton } from '@/components/save-button';
 import { SpeakButton } from '@/components/speak-button';
 import { formatPronunciation } from '@langplayer/utils';
 import { SubsSearchResults } from '@/components/video/subs-search-results';
+import { buildEntryRoute } from '@/lib/entry-route';
 
 export default function WordDetailPage() {
   const params = useParams<{ l1: string; l2: string; word: string }>();
@@ -84,14 +85,6 @@ export default function WordDetailPage() {
     text: word,
     textTitle: t('title.dictionary'),
   };
-
-  // Navigate to a different headword's detail page (for fuzzy/lemma match cards)
-  const handleEntryClick = useCallback((entry: DictionaryEntry) => {
-    // Encode the head manually — encodeURIComponent does NOT encode apostrophes,
-    // which can cause issues in URL paths for Klingon/Welsh/etc.
-    const encoded = encodeURIComponent(entry.head).replace(/'/g, '%27');
-    router.push(`/${l1.code}/${l2.code}/dictionary/word/${encoded}`);
-  }, [l1.code, l2.code, router]);
 
   // Find saved words for this word whose IDs don't match any loaded entry (legacy data)
   const unmatchedSavedWords = useMemo(() => {
@@ -198,9 +191,7 @@ export default function WordDetailPage() {
               entry={entry}
               l2Code={l2.code}
               levelScaleLabel={levelScaleLabel}
-              saveContext={saveContext}
-              onClick={handleEntryClick}
-            />
+              saveContext={saveContext}              l1Code={l1.code}            />
           ))}
         </div>
       )}
@@ -224,20 +215,26 @@ function WordDetailCard({
   l2Code,
   levelScaleLabel,
   saveContext,
-  onClick,
+  l1Code,
 }: {
   entry: DictionaryEntry;
   l2Code: string;
   levelScaleLabel: (scale: string) => string;
   saveContext: { form: string; text: string; textTitle: string };
-  onClick?: (entry: DictionaryEntry) => void;
+  l1Code: string;
 }) {
+  const router = useRouter();
   const level = entry.level;
+
+  // Navigate to this specific entry's detail page — each lexical item has its own route.
+  const handleClick = () => {
+    router.push(buildEntryRoute(l1Code, l2Code, entry.dictionary?.id ?? 'llm', entry.id));
+  };
 
   return (
     <div
-      className="rounded-xl border border-border bg-card p-6 shadow-sm transition-colors hover:bg-muted/30 cursor-pointer"
-      onClick={() => onClick?.(entry)}
+      className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/20 cursor-pointer transition-all"
+      onClick={handleClick}
     >
       {/* ── Header: head + alt + pronunciation + level ── */}
       <div className="mb-6">
@@ -280,13 +277,15 @@ function WordDetailCard({
             </div>
           </div>
 
-          {/* Bookmark */}
-          <SaveButton
-            wordId={entry.id}
-            head={entry.head}
-            context={saveContext}
-            size="default"
-          />
+          {/* Bookmark — stop propagation so clicking save doesn't navigate */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <SaveButton
+              wordId={entry.id}
+              head={entry.head}
+              context={saveContext}
+              size="default"
+            />
+          </div>
         </div>
       </div>
 
