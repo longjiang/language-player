@@ -153,6 +153,35 @@ export interface DictionaryEntry {
   // ── Source info ──
   /** @deprecated Use dictionary.id instead. Kept for backward compatibility. */
   source: 'hsk-cedict' | 'cc-canto' | 'edict' | 'kengdic' | 'klingonska' | 'wiktionary' | 'llm';
+
+  /** Measure words, counters, or grammatical gender classifiers.
+   *  Parsed from CC-CEDICT CL: tags, EDICT counters, Wiktionary gender, etc. */
+  classifier?: Classifier[] | null;
+}
+
+// ── Classifier Types (ADR 0006) ─────────────────────────────────
+
+/** A morphological classifier — measure word, counter, gender, noun class. */
+export type Classifier = MeasureWord | GrammaticalGender | NounClass;
+
+export interface MeasureWord {
+  kind: 'measure_word';
+  traditional: string;
+  simplified: string;
+  reading: string;
+  senseIndex?: number;
+}
+
+export interface GrammaticalGender {
+  kind: 'gender';
+  value: string;
+  senseIndex?: number;
+}
+
+export interface NounClass {
+  kind: 'noun_class';
+  value: string;
+  senseIndex?: number;
 }
 
 /** An LLM-generated dictionary entry (ADR 0006). Non-canonical; context-dependent. */
