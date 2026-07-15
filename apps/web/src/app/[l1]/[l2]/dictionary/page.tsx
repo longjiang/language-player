@@ -87,7 +87,7 @@ export default function DictionaryPage() {
     <div className="mx-auto max-w-2xl px-4 py-12">
       <h1 className="text-3xl font-bold">{t('title.dictionary')}</h1>
       <p className="mt-2 text-muted-foreground">
-        {t('msg.lookup_words_desc', { l1: languageName(l1.code), l2: languageName(l2.code) })}
+        {t('msg.lookup_words_desc', { l1: languageName(l1.code), l2: languageName(l2.code, l1.code) })}
       </p>
 
       {/* ── Search Form ── */}
@@ -104,7 +104,7 @@ export default function DictionaryPage() {
                 ? '输入中文词语...'
                 : l2.code === 'ja'
                   ? '単語を入力...'
-                  : `Enter a word in ${languageName(l2.code)}...`
+                  : `Enter a word in ${languageName(l2.code, l1.code)}...`
             }
             className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             autoFocus

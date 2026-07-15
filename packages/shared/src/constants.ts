@@ -12,17 +12,26 @@ export const SUPPORTED_L1S = [
 
 export type SupportedL1 = (typeof SUPPORTED_L1S)[number];
 
-/** Languages that have at least 50+ videos with human-translated subtitles. */
+/** All languages available on the platform (matching Classic LANGS_WITH_CONTENT). */
 export const SUPPORTED_L2S = [
-  'en', 'zh', 'zh-Hans', 'zh-Hant', 'ko', 'it', 'fr', 'de', 'es', 'ja', 'pt',
-  'ru', 'tr', 'pl', 'nl', 'id', 'da', 'th', 'sv', 'uk',
-  'no', 'fi', 'ca', 'vi', 'he', 'ar', 'cs', 'el', 'sk',
-  'ro', 'hu', 'fa', 'sr', 'ms', 'bg', 'lt', 'lv', 'sl',
-  'tl', 'ur', 'ta', 'et', 'hr', 'eo', 'gl', 'cy', 'ka',
-  'is', 'hy', 'bn', 'la', 'be', 'te', 'km', 'mk', 'ga',
-  'pa', 'my', 'sq', 'eu', 'ku', 'kn', 'ml', 'bs', 'mt',
-  'sw', 'af', 'lo', 'am', 'so', 'yo', 'fy', 'yi', 'ne',
-  'zu', 'ha', 'ps', 'sm', 'mi', 'gd', 'lb',
+  'ab', 'acf', 'acu', 'af', 'aib', 'ain', 'akk', 'am', 'ami', 'ang', 'ar',
+  'arb', 'arc', 'as', 'ase', 'ay', 'az', 'ba', 'be', 'bg', 'bho', 'bn', 'bo',
+  'br', 'bs', 'bsk', 'ca', 'ceb', 'cjy', 'ckb', 'cnr', 'cop', 'cpx',
+  'crh', 'cs', 'csb', 'cy', 'czo', 'da', 'de', 'dsb', 'dz', 'el', 'en', 'enm',
+  'eo', 'es', 'eso', 'et', 'eu', 'fa', 'fi', 'fo', 'fr', 'fsl', 'fur', 'fy',
+  'ga', 'gan', 'gd', 'gkp', 'gl', 'gn', 'goh', 'got', 'grc', 'gsw', 'gu', 'gv',
+  'ha', 'hak', 'hbo', 'he', 'hi', 'hil', 'hne', 'hni', 'hr', 'hsh', 'hsn', 'hu',
+  'hy', 'ia', 'id', 'ig', 'ii', 'ik', 'ins', 'is', 'it', 'ja', 'jam', 'jv',
+  'ka', 'kab', 'kac', 'kk', 'kl', 'km', 'kn', 'ko', 'kok', 'krl', 'ksw', 'ku',
+  'kvk', 'ky', 'la', 'lad', 'lb', 'ln', 'lo', 'lt', 'ltc', 'lv', 'lzh', 'mai',
+  'mg', 'mhx', 'mi', 'min', 'mk', 'ml', 'mn', 'mni', 'mnp', 'mr', 'ms', 'mt',
+  'mxv', 'my', 'nan', 'nb', 'ne', 'nl', 'nn', 'no', 'non', 'nsl', 'nv', 'oc',
+  'och', 'ojp', 'om', 'or', 'osc', 'pa', 'pes', 'pis', 'pl', 'pms', 'prs', 'ps',
+  'pt', 'qu', 'rm', 'ro', 'ru', 'ryu', 'sa', 'sah', 'sc', 'scn', 'sco', 'sd',
+  'se', 'sh', 'si', 'sjn', 'sk', 'sl', 'sli', 'sm', 'so', 'sq', 'sr', 'srm',
+  'ss', 'su', 'sux', 'sv', 'svk', 'sw', 'ta', 'te', 'tg', 'th', 'ti', 'tl',
+  'tlh', 'tr', 'tsd', 'tt', 'ug', 'uk', 'ur', 'uz', 'vec', 'vi', 'vo', 'wo',
+  'wuu', 'xh', 'xpe', 'yi', 'yo', 'yue', 'za', 'zh', 'zu',
 ] as const;
 
 export type SupportedL2 = (typeof SUPPORTED_L2S)[number];

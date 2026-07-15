@@ -25,20 +25,34 @@ export default function LanguageSelectPage() {
 
   const filteredL1 = useMemo(() => {
     const q = l1Search.toLowerCase();
-    if (!q) return POPULAR_LANGUAGES.filter((c) => SUPPORTED_L1S.includes(c as any));
-    return SUPPORTED_L1S.filter(
+    if (!q) {
+      // Popular first, then remaining L1s
+      const popularSet = new Set(POPULAR_LANGUAGES);
+      const popular = POPULAR_LANGUAGES.filter((c) => SUPPORTED_L1S.includes(c as any));
+      const rest = SUPPORTED_L1S.filter((c) => !popularSet.has(c as any));
+      return { popular, rest, searching: false };
+    }
+    const results = SUPPORTED_L1S.filter(
       (c) =>
         languageName(c).toLowerCase().includes(q) || c.toLowerCase().includes(q),
     );
+    return { popular: results, rest: [], searching: true };
   }, [l1Search]);
 
   const filteredL2 = useMemo(() => {
     const q = l2Search.toLowerCase();
-    if (!q) return POPULAR_LANGUAGES.filter((c) => SUPPORTED_L2S.includes(c as any));
-    return SUPPORTED_L2S.filter(
+    if (!q) {
+      // Popular first, then remaining L2s
+      const popularSet = new Set(POPULAR_LANGUAGES);
+      const popular = POPULAR_LANGUAGES.filter((c) => SUPPORTED_L2S.includes(c as any));
+      const rest = SUPPORTED_L2S.filter((c) => !popularSet.has(c as any));
+      return { popular, rest, searching: false };
+    }
+    const results = SUPPORTED_L2S.filter(
       (c) =>
         languageName(c).toLowerCase().includes(q) || c.toLowerCase().includes(q),
     );
+    return { popular: results, rest: [], searching: true };
   }, [l2Search]);
 
   const canContinue = selectedL1 && selectedL2;
@@ -76,24 +90,59 @@ export default function LanguageSelectPage() {
               />
             </div>
             <div className="max-h-64 space-y-1 overflow-y-auto">
-              {filteredL1.map((code) => (
-                <button
-                  key={code}
-                  onClick={() => setSelectedL1(code)}
-                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    selectedL1 === code
-                      ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-muted'
-                  }`}
-                  dir={isRTL(code) ? 'rtl' : 'ltr'}
-                >
-                  <span className="text-base">{isRTL(code) ? '↺' : ''}</span>
-                  <span>
-                    {languageName(code)}
-                    <span className="ml-1 text-xs opacity-60">{code.toUpperCase()}</span>
-                  </span>
-                </button>
-              ))}
+              {filteredL1.popular.length > 0 && (
+                <>
+                  {!filteredL1.searching && (
+                    <div className="px-3 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Popular
+                    </div>
+                  )}
+                  {filteredL1.popular.map((code) => (
+                    <button
+                      key={code}
+                      onClick={() => setSelectedL1(code)}
+                      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                        selectedL1 === code
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-muted'
+                      }`}
+                      dir={isRTL(code) ? 'rtl' : 'ltr'}
+                    >
+                      <span className="text-base">{isRTL(code) ? '↺' : ''}</span>
+                      <span>
+                        {languageName(code)}
+                        <span className="ml-1 text-xs opacity-60">{code.toUpperCase()}</span>
+                      </span>
+                    </button>
+                  ))}
+                </>
+              )}
+              {filteredL1.rest.length > 0 && (
+                <>
+                  <div className="mx-3 my-1 border-t border-border" />
+                  <div className="px-3 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    All Languages
+                  </div>
+                  {filteredL1.rest.map((code) => (
+                    <button
+                      key={code}
+                      onClick={() => setSelectedL1(code)}
+                      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                        selectedL1 === code
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-muted'
+                      }`}
+                      dir={isRTL(code) ? 'rtl' : 'ltr'}
+                    >
+                      <span className="text-base">{isRTL(code) ? '↺' : ''}</span>
+                      <span>
+                        {languageName(code)}
+                        <span className="ml-1 text-xs opacity-60">{code.toUpperCase()}</span>
+                      </span>
+                    </button>
+                  ))}
+                </>
+              )}
             </div>
           </div>
 
@@ -114,23 +163,57 @@ export default function LanguageSelectPage() {
               />
             </div>
             <div className="max-h-64 space-y-1 overflow-y-auto">
-              {filteredL2.map((code) => (
-                <button
-                  key={code}
-                  onClick={() => setSelectedL2(code)}
-                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    selectedL2 === code
-                      ? 'bg-warm-500 text-white'
-                      : 'hover:bg-muted'
-                  }`}
-                  dir={isRTL(code) ? 'rtl' : 'ltr'}
-                >
-                  <span>
-                    {languageName(code)}
-                    <span className="ml-1 text-xs opacity-60">{code.toUpperCase()}</span>
-                  </span>
-                </button>
-              ))}
+              {filteredL2.popular.length > 0 && (
+                <>
+                  {!filteredL2.searching && (
+                    <div className="px-3 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Popular
+                    </div>
+                  )}
+                  {filteredL2.popular.map((code) => (
+                    <button
+                      key={code}
+                      onClick={() => setSelectedL2(code)}
+                      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                        selectedL2 === code
+                          ? 'bg-warm-500 text-white'
+                          : 'hover:bg-muted'
+                      }`}
+                      dir={isRTL(code) ? 'rtl' : 'ltr'}
+                    >
+                      <span>
+                        {languageName(code)}
+                        <span className="ml-1 text-xs opacity-60">{code.toUpperCase()}</span>
+                      </span>
+                    </button>
+                  ))}
+                </>
+              )}
+              {filteredL2.rest.length > 0 && (
+                <>
+                  <div className="mx-3 my-1 border-t border-border" />
+                  <div className="px-3 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    All Languages
+                  </div>
+                  {filteredL2.rest.map((code) => (
+                    <button
+                      key={code}
+                      onClick={() => setSelectedL2(code)}
+                      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                        selectedL2 === code
+                          ? 'bg-warm-500 text-white'
+                          : 'hover:bg-muted'
+                      }`}
+                      dir={isRTL(code) ? 'rtl' : 'ltr'}
+                    >
+                      <span>
+                        {languageName(code)}
+                        <span className="ml-1 text-xs opacity-60">{code.toUpperCase()}</span>
+                      </span>
+                    </button>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         </div>

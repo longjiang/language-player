@@ -256,7 +256,7 @@ export default function ProfilePage() {
         {settingsTab === 'pronunciation' && (
           <div className="rounded-xl border border-border bg-card p-6">
             <p className="mb-3 text-sm text-muted-foreground">
-              Set your current {languageName(l2.code)} level to get video recommendations matched to your ability.
+              Set your current {languageName(l2.code, l1.code)} level to get video recommendations matched to your ability.
             </p>
             <div className="max-w-xs">
               <LanguageLevelSelect
