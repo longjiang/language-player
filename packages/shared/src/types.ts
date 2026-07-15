@@ -98,8 +98,18 @@ export interface DictionaryLookupResponse {
   message?: string;
 }
 
-/** A single entry from the dictionary lookup, matching the backend WordEntry schema. */
+/** A single entry from the dictionary lookup, matching the ADR 0006 schema. */
 export interface DictionaryEntry {
+  /** Discriminant — 'dictionary' for curated entries, 'llm' for AI-generated. */
+  kind: 'dictionary';
+
+  /** The dictionary that owns this entry. Replaces the flat 'source' string. */
+  dictionary: {
+    id: string;      // 'edict', 'cedict', 'cc-canto', 'kengdic', 'klingonska', 'wiktionary'
+    name: string;    // 'EDICT', 'HSK CEDICT', etc.
+    version: string; // '2019', '2026', etc.
+  };
+
   // ── Core (always present) ──
   id: string;
   head: string;
@@ -141,7 +151,30 @@ export interface DictionaryEntry {
   } | null;
 
   // ── Source info ──
+  /** @deprecated Use dictionary.id instead. Kept for backward compatibility. */
   source: 'hsk-cedict' | 'cc-canto' | 'edict' | 'kengdic' | 'klingonska' | 'wiktionary' | 'llm';
+}
+
+/** An LLM-generated dictionary entry (ADR 0006). Non-canonical; context-dependent. */
+export interface LlmGeneratedEntry {
+  kind: 'llm';
+
+  /** The model that generated this entry. */
+  model: string;
+
+  /** The sentence provided as context in the LLM prompt. */
+  contextSentence?: string;
+
+  // ── LexicalEntry fields ──
+  head: string;
+  definitions: string[];
+  pronunciation: string;
+  level?: { scale: string; value: number | string } | null;
+  part_of_speech?: string | null;
+
+  // ── Frequency (looked up from tables, not LLM-generated) ──
+  frequency?: number | null;
+  frequencyLevel?: number | null;
 }
 
 // ── User & Auth ───────────────────────────────

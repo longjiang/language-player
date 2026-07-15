@@ -258,6 +258,7 @@ export function DictionaryPopup({
               onClick={handleEntryClick}
               saveContext={context}
               pronunciation={formatPronunciation(entry, l2Code)}
+              l2Code={l2Code}
             />
           ))}
         </div>

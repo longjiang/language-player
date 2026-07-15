@@ -14,10 +14,12 @@ interface DictionaryEntryCardProps {
   saveContext?: SavedWordContext;
   /** Pre-formatted pronunciation string (e.g. "[ní hǎo]"). Uses centralized formatPronunciation. */
   pronunciation?: string | null;
+  /** ISO 639-1 code of the target language (for correct font rendering). */
+  l2Code?: string;
 }
 
 /** Renders a single dictionary lookup result. */
-export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, pronunciation }: DictionaryEntryCardProps) {
+export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, pronunciation, l2Code }: DictionaryEntryCardProps) {
   const level = entry.level;
   const levelText = level && levelLabel
     ? levelLabel(level.scale, level.value)
@@ -32,7 +34,7 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, p
     >
       {/* ── Header: head + pronunciation ── */}
       <div className="flex items-center gap-2">
-        <span className="text-lg font-semibold" lang={entry.source}>
+        <span className="text-lg font-semibold" lang={l2Code}>
           {entry.head}
         </span>
         {pronunciation !== undefined
@@ -59,7 +61,7 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, p
 
       {/* ── Alternate script ── */}
       {entry.alternate && (
-        <div className="mt-0.5 text-xs text-muted-foreground" lang={entry.source}>
+        <div className="mt-0.5 text-xs text-muted-foreground" lang={l2Code}>
           {entry.alternate}
         </div>
       )}
@@ -81,7 +83,7 @@ export function DictionaryEntryCard({ entry, levelLabel, onClick, saveContext, p
       {/* ── Footer: source + match type ── */}
       <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
         <BookOpen className="h-3 w-3" />
-        <span>{entry.source}</span>
+        <span>{entry.dictionary?.name ?? entry.source}</span>
         {entry.match_type && entry.match_type !== 'exact' && (
           <span className="rounded bg-amber-100 px-1 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
             {entry.match_type}
