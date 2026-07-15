@@ -415,6 +415,25 @@ export default function ReviewPage() {
     );
   }
 
+  // ── Anki-style card counts (new / again / review) ──
+  const cardCounts = useMemo(() => {
+    let newCount = 0;
+    let againCount = 0;
+    let reviewCount = 0;
+    for (const c of cards) {
+      if (c.srs.repetitions >= 1) {
+        reviewCount++;
+      } else if (c.srs.lastReview > (c.srs.createdAt ?? 0)) {
+        // Was previously reviewed but failed → relearning
+        againCount++;
+      } else {
+        // Never reviewed → truly new
+        newCount++;
+      }
+    }
+    return { newCount, againCount, reviewCount };
+  }, [cards]);
+
   const currentCard = cards[currentIndex];
   if (!currentCard) return null;
 
@@ -433,8 +452,28 @@ export default function ReviewPage() {
           <ArrowLeft className="w-4 h-4" />
           Back
         </Link>
-        <span className="text-sm text-muted-foreground">
-          {currentIndex + 1} / {cards.length}
+        <span className="text-sm text-muted-foreground flex items-center gap-3">
+          <span className="tabular-nums">{currentIndex + 1}/{cards.length}</span>
+          <span className="flex items-center gap-2 text-xs">
+            {cardCounts.newCount > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
+                <span className="text-blue-600 dark:text-blue-400 tabular-nums">{cardCounts.newCount}</span>
+              </span>
+            )}
+            {cardCounts.againCount > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
+                <span className="text-red-600 dark:text-red-400 tabular-nums">{cardCounts.againCount}</span>
+              </span>
+            )}
+            {cardCounts.reviewCount > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
+                <span className="text-green-600 dark:text-green-400 tabular-nums">{cardCounts.reviewCount}</span>
+              </span>
+            )}
+          </span>
         </span>
       </div>
 
