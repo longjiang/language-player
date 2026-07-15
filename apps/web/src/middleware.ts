@@ -7,12 +7,13 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Allow static assets, auth API, and public API routes
+  // Allow static assets, auth API, public API routes, and OG image
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/videos') ||
     pathname.startsWith('/api/channels') ||
+    pathname.startsWith('/og') ||
     pathname.startsWith('/favicon') ||
     /\.(ico|png|jpg|jpeg|svg|css|js)$/.test(pathname)
   ) {
