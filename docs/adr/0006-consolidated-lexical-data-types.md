@@ -245,7 +245,8 @@ The core user-data type. A `LexicalItem` represents a distinct vocabulary item (
  * from source via the lexicalItemKey() utility function:
  *
  *   dict:{dictionaryId}:{entryId}  for dictionary entries
- *   text:{normalizedText}          for freeform text items
+ *   text:{normalizedText}          for phrasebook text items
+ *   llm:{l2}:{hash}               for LLM-generated entries
  *
  * This is because "lemma ID" is a human concept, not a machine one.
  * When dictionaries are updated and entries are renumbered, the user
@@ -532,19 +533,26 @@ interface Phrasebook {
  *   Stable across dictionary version changes (version is not in the key).
  *   Migration from edict_2019:2047 → edict_2024:3192 changes the key.
  *
- * Text items:  'text:{normalizedText}'
+ * Text items (phrasebook):  'text:{normalizedText}'
  *   Example: 'text:おはようございます'
+ * LLM items:  'llm:{l2}:{hash}'
+ *   Example: 'llm:zh:a1b2c3d4e5f6'
  *   Normalization is critical: fullwidth/halfwidth variants, case folding,
  *   and Unicode normalization must be applied or duplicates will occur.
  *
  * Both forms use ':' as the delimiter because it cannot appear in
  * dictionary IDs, entry IDs, or NFC-normalized text.
  */
-function lexicalItemKey(source: LexicalItemSource): string {
+function lexicalItemKey(source: LexicalItemSource, l2?: string): string {
   switch (source.kind) {
     case 'dictionary':
       return `dict:${source.dictionaryId}:${source.entryId}`;
     case 'text':
+      if (source.llm) {
+        // LLM-generated entries use a content hash keyed by language
+        const hash = md5(`${l2}:${normalizeText(source.text)}`);
+        return `llm:${l2}:${hash}`;
+      }
       return `text:${normalizeText(source.text)}`;
   }
 }
