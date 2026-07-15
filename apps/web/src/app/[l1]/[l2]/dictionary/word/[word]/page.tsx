@@ -9,12 +9,10 @@ import { languageName, baseCode } from '@/lib/language-data';
 import { resolveLegacyId } from '@/lib/legacy-word-resolver';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { ArrowLeft, Loader2, AlertCircle, BookOpen, ExternalLink, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, BookOpen, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SaveButton } from '@/components/save-button';
-import { SpeakButton } from '@/components/speak-button';
-import { formatPronunciation } from '@langplayer/utils';
 import { SubsSearchResults } from '@/components/video/subs-search-results';
+import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { buildEntryRoute } from '@/lib/entry-route';
 
 export default function WordDetailPage() {
@@ -186,12 +184,16 @@ export default function WordDetailPage() {
       {!loading && !error && entries.length > 0 && (
         <div className="space-y-8">
           {entries.map((entry) => (
-            <WordDetailCard
+            <DictionaryEntryCard
               key={entry.id}
+              variant="full"
               entry={entry}
               l2Code={l2.code}
-              levelScaleLabel={levelScaleLabel}
-              saveContext={saveContext}              l1Code={l1.code}            />
+              l1Code={l1.code}
+              levelLabel={levelScaleLabel}
+              saveContext={saveContext}
+              onClick={(e) => router.push(buildEntryRoute(l1.code, l2.code, e.dictionary?.id ?? 'llm', e.id))}
+            />
           ))}
         </div>
       )}
@@ -209,141 +211,3 @@ export default function WordDetailPage() {
   );
 }
 
-/** Full-word detail card matching GO's DictionaryEntryContent layout. */
-function WordDetailCard({
-  entry,
-  l2Code,
-  levelScaleLabel,
-  saveContext,
-  l1Code,
-}: {
-  entry: DictionaryEntry;
-  l2Code: string;
-  levelScaleLabel: (scale: string) => string;
-  saveContext: { form: string; text: string; textTitle: string };
-  l1Code: string;
-}) {
-  const router = useRouter();
-  const level = entry.level;
-
-  // Navigate to this specific entry's detail page — each lexical item has its own route.
-  const handleClick = () => {
-    router.push(buildEntryRoute(l1Code, l2Code, entry.dictionary?.id ?? 'llm', entry.id));
-  };
-
-  return (
-    <div
-      className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/20 cursor-pointer transition-all"
-      onClick={handleClick}
-    >
-      {/* ── Header: head + alt + pronunciation + level ── */}
-      <div className="mb-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex items-baseline gap-3">
-              <h1 className="text-4xl font-bold" lang={l2Code}>
-                {entry.head}
-              </h1>
-              {entry.alternate && entry.alternate !== entry.head && (
-                <span className="text-xl text-muted-foreground" lang={l2Code}>
-                  {entry.alternate}
-                </span>
-              )}
-            </div>
-
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              {(() => {
-                const pron = formatPronunciation(entry, l2Code);
-                if (pron) {
-                  return (
-                    <span className="flex items-center gap-1 text-lg text-muted-foreground" lang={l2Code}>
-                      <SpeakButton text={entry.head} l2Code={l2Code} size="default" />
-                      {pron}
-                    </span>
-                  );
-                }
-                return null;
-              })()}
-              {level && (
-                <span className="rounded-md bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                  {levelScaleLabel(level.scale)} {level.value}
-                </span>
-              )}
-              {entry.part_of_speech && (
-                <span className="rounded-md bg-muted px-2.5 py-1 text-sm font-medium text-muted-foreground">
-                  {entry.part_of_speech}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Bookmark — stop propagation so clicking save doesn't navigate */}
-          <div onClick={(e) => e.stopPropagation()}>
-            <SaveButton
-              wordId={entry.id}
-              head={entry.head}
-              context={saveContext}
-              size="default"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* ── Definitions ── */}
-      {entry.definitions.length > 0 && (
-        <div className="mb-6 rounded-lg bg-muted/40 p-4">
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Definitions
-          </h3>
-          <ul className="space-y-2">
-            {entry.definitions.map((def, i) => (
-              <li key={i} className="flex items-start gap-2 text-base leading-relaxed">
-                {entry.definitions.length > 1 && (
-                  <span className="mt-0.5 flex-shrink-0 text-sm text-muted-foreground">
-                    {i + 1}.
-                  </span>
-                )}
-                <span>{def}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* ── Han script detail ── */}
-      {entry.han_script && (entry.han_script.traditional || entry.han_script.simplified) && (
-        <div className="mb-6 flex gap-4 text-sm text-muted-foreground">
-          {entry.han_script.simplified && entry.han_script.simplified !== entry.head && (
-            <span>简: {entry.han_script.simplified}</span>
-          )}
-          {entry.han_script.traditional && entry.han_script.traditional !== entry.head && (
-            <span>繁: {entry.han_script.traditional}</span>
-          )}
-        </div>
-      )}
-
-      {/* ── Phonetic detail ── */}
-      {entry.phonetic_detail && typeof entry.phonetic_detail === 'object' && (
-        <div className="mb-6 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground/70">
-          {Object.entries(entry.phonetic_detail).map(([key, value]) => {
-            if (typeof value === 'string' && value && key !== 'romaji' && key !== 'pinyin' && key !== 'jyutping') {
-              return <span key={key}>{key}: {value}</span>;
-            }
-            return null;
-          })}
-        </div>
-      )}
-
-      {/* ── Source + match type ── */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <ExternalLink className="h-3 w-3" />
-        <span>{entry.dictionary?.name ?? entry.source}</span>
-        {entry.match_type && entry.match_type !== 'exact' && (
-          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-            {entry.match_type}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
