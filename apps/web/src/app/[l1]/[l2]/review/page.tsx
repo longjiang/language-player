@@ -471,6 +471,28 @@ export default function ReviewPage() {
           {wordForm}
         </h1>
 
+        {/* Context sentence — always visible, tokenized/interactive */}
+        {currentCard.word.context.text && (
+          <div className="mb-4 p-3 bg-muted/50 rounded-lg text-left w-full">
+            <p className="text-xs text-muted-foreground mb-1 font-medium">Context</p>
+            <TokenizedText
+              text={currentCard.word.context.text}
+              l2Code={l2Code}
+              context={{
+                form: wordForm,
+                text: currentCard.word.context.text,
+                youtube_id: currentCard.word.context.youtube_id,
+                videoTitle: currentCard.word.context.videoTitle,
+              }}
+            />
+            {currentCard.word.context.videoTitle && (
+              <p className="text-xs mt-2 opacity-70">
+                — {currentCard.word.context.videoTitle}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* SRS info (compact) */}
         <p className="text-xs text-muted-foreground mb-4">
           {srs.interval > 0 ? `${srs.interval}d` : 'new'}
@@ -520,28 +542,6 @@ export default function ReviewPage() {
               <p className="text-muted-foreground italic text-sm">
                 No definition available. Look up this word while watching videos.
               </p>
-            )}
-
-            {/* Context from where word was saved */}
-            {currentCard.word.context.text && (
-              <div className="mt-4 p-3 bg-muted/50 rounded-lg text-left">
-                <p className="text-xs text-muted-foreground mb-1 font-medium">Context</p>
-                <TokenizedText
-                  text={currentCard.word.context.text}
-                  l2Code={l2Code}
-                  context={{
-                    form: wordForm,
-                    text: currentCard.word.context.text,
-                    youtube_id: currentCard.word.context.youtube_id,
-                    videoTitle: currentCard.word.context.videoTitle,
-                  }}
-                />
-                {currentCard.word.context.videoTitle && (
-                  <p className="text-xs mt-2 opacity-70">
-                    — {currentCard.word.context.videoTitle}
-                  </p>
-                )}
-              </div>
             )}
           </div>
         )}
