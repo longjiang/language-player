@@ -14,8 +14,11 @@ export async function GET(request: Request) {
   const head = searchParams.get('head');
   const def = searchParams.get('def');
   const pron = searchParams.get('pron');
+  const videos = searchParams.get('videos');
+  const lang = searchParams.get('lang');
   const isEmojiMode = !!emoji;
   const isEntryMode = !!head;
+  const isVideosMode = !!videos;
 
   // Load Nunito ExtraBold font
   const fontPath = join(process.cwd(), 'public', 'fonts', 'nunito-extrabold.woff');
@@ -24,7 +27,7 @@ export async function GET(request: Request) {
 
   // Load logo only for default (branding) mode
   let logoUrl = '';
-  if (!isEmojiMode && !isEntryMode) {
+  if (!isEmojiMode && !isEntryMode && !isVideosMode) {
     const logoPath = join(process.cwd(), 'public', 'img', 'logo.png');
     const logoBuf = readFileSync(logoPath);
     logoUrl = `data:image/png;base64,${logoBuf.toString('base64')}`;
@@ -69,14 +72,37 @@ export async function GET(request: Request) {
             </>
           ) : isEmojiMode ? (
             <>
-              <div style={{ fontSize: 180, lineHeight: 1, filter: 'drop-shadow(0 8px 24px rgba(92,124,250,0.15))' }}>
+              <div style={{ fontSize: 360, lineHeight: 1, filter: 'drop-shadow(0 12px 40px rgba(92,124,250,0.2))' }}>
                 {emoji}
               </div>
-              {title && (
-                <div style={{ fontSize: 64, fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.2, textAlign: 'center', maxWidth: 900, fontFamily: 'Nunito' }}>
-                  {title}
-                </div>
-              )}
+            </>
+          ) : isVideosMode ? (
+            <>
+              {/* Title */}
+              <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff', textAlign: 'center', maxWidth: 1000, fontFamily: 'Nunito', lineHeight: 1.3 }}>
+                Watch these awesome videos{lang ? ` and learn ${lang}` : ''}!
+              </div>
+              {/* 2x2 video thumbnail grid */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[0, 1].map(row => (
+                  <div key={row} style={{ display: 'flex', gap: 8 }}>
+                    {videos!.split(',').slice(row * 2, row * 2 + 2).map((vid, i) => (
+                      <img
+                        key={`${vid}-${i}`}
+                        src={`https://img.youtube.com/vi/${vid}/mqdefault.jpg`}
+                        alt=""
+                        width={280}
+                        height={158}
+                        style={{
+                          width: 280, height: 158, borderRadius: 12,
+                          border: '2px solid rgba(92,124,250,0.25)',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </>
           ) : (
             <>
@@ -92,7 +118,7 @@ export async function GET(request: Request) {
           )}
         </div>
 
-        {(isEmojiMode || isEntryMode) && (
+        {(isEmojiMode || isEntryMode || isVideosMode) && (
           <div style={{ position: 'absolute', bottom: 28, fontSize: 24, color: '#748ffc', fontWeight: 500, letterSpacing: '0.05em' }}>
             {isEntryMode ? hostname : title ? `${title} \u2014 ${hostname}` : hostname}
           </div>
