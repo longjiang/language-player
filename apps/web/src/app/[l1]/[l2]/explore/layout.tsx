@@ -26,8 +26,8 @@ export async function generateMetadata({
   const lang = languageName(l2, 'en') || l2.toUpperCase();
   const videoIds = await getRecommendedIds(l2);
 
-  const title = `Explore ${lang} Videos — Language Player`;
-  const description = `Watch awesome videos and learn ${lang} with interactive dual subtitles, built-in dictionary, and smart difficulty tracking.`;
+  const title = `Watch these awesome videos to learn ${lang}!`;
+  const description = `Learn ${lang} naturally with authentic videos, interactive dual subtitles, built-in dictionary, and smart difficulty tracking on Language Player.`;
 
   let ogImage = `/og?emoji=%F0%9F%8E%AC`;
   if (videoIds.length > 0) {
