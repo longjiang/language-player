@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
-import { Play, Search, BookOpen, Languages, Tv, Sparkles } from 'lucide-react';
+import { Play, BookOpen, Languages, Tv, Sparkles } from 'lucide-react';
 
 export default function HomePage() {
   const t = useT();
@@ -32,12 +32,6 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-8 py-3 font-semibold text-white shadow-lg shadow-brand-500/25 transition-all hover:bg-brand-700 hover:shadow-xl"
             >
               <Play className="h-5 w-5" /> {t('action.start_watching')}
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-8 py-3 font-semibold transition-all hover:bg-surface-secondary"
-            >
-              <Search className="h-5 w-5" /> {t('title.explore_media')}
             </Link>
           </div>
         </div>
