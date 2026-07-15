@@ -1,9 +1,22 @@
 import { ImageResponse } from 'next/og';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
   const { hostname } = new URL(request.url);
+
+  // Read logo from filesystem at request time (Node.js runtime, no self-fetch deadlock)
+  const logoPath = join(process.cwd(), 'public', 'img', 'logo.png');
+  const logoBuf = readFileSync(logoPath);
+  const logoBase64 = logoBuf.toString('base64');
+  const logoUrl = `data:image/png;base64,${logoBase64}`;
+
+  // Load Nunito ExtraBold font from local filesystem (WOFF, not WOFF2 — Satori compatible)
+  const fontPath = join(process.cwd(), 'public', 'fonts', 'nunito-extrabold.woff');
+  const fontBuf = readFileSync(fontPath);
+  const nunitoFont = fontBuf.buffer.slice(fontBuf.byteOffset, fontBuf.byteOffset + fontBuf.byteLength);
 
   return new ImageResponse(
     (
@@ -22,14 +35,14 @@ export async function GET(request: Request) {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32, zIndex: 1, padding: '0 80px' }}>
           {/* Logo + wordmark */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-            <div style={{
-              width: 96, height: 96, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #5c7cfa, #748ffc)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 36, fontWeight: 700, color: 'white',
-              boxShadow: '0 8px 32px rgba(92,124,250,0.3)',
-            }}>LP</div>
-            <div style={{ fontSize: 72, fontWeight: 700, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.1 }}>
+            <img
+              src={logoUrl}
+              alt="Language Player"
+              width={96}
+              height={96}
+              style={{ width: 96, height: 96, borderRadius: '50%', boxShadow: '0 8px 32px rgba(92,124,250,0.25)' }}
+            />
+            <div style={{ fontSize: 72, fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.1, fontFamily: 'Nunito' }}>
               Language Player
             </div>
           </div>
@@ -52,6 +65,6 @@ export async function GET(request: Request) {
         </div>
       </div>
     ),
-    { width: 1200, height: 630 },
+    { width: 1200, height: 630, fonts: [{ name: 'Nunito', data: nunitoFont, style: 'normal', weight: 800 }] },
   );
 }
