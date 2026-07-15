@@ -7,7 +7,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
-import { sm2, newCard, remainingNewCardsToday } from '@langplayer/utils';
+import { sm2, newCard, remainingNewCardsToday, formatPronunciation } from '@langplayer/utils';
 import type { SrsFields, DictionaryEntry, SavedWord } from '@langplayer/shared';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -43,37 +43,6 @@ interface ReviewCard {
   word: SavedWord;
   srs: SrsFields;
   entry: DictionaryEntry | null;
-}
-
-/**
- * Build a rich pronunciation string from a dictionary entry.
- * Returns e.g. "/ni hao/" or "/你好/ [ní hǎo]" for Chinese.
- */
-function formatPronunciation(entry: DictionaryEntry | null, l2Code: string): string | null {
-  if (!entry) return null;
-
-  const parts: string[] = [];
-  
-  // Base pronunciation in slashes
-  if (entry.pronunciation && entry.pronunciation !== entry.head) {
-    parts.push(`/${entry.pronunciation}/`);
-  }
-
-  // Language-specific script
-  const pd = entry.phonetic_detail;
-  if (pd) {
-    if ((l2Code === 'zh' || l2Code === 'yue') && pd.pinyin) {
-      parts.push(`[${pd.pinyin}]`);
-    } else if (l2Code === 'ja' && pd.kana) {
-      parts.push(`[${pd.kana}]`);
-    } else if (l2Code === 'ko' && pd.romanization) {
-      parts.push(`[${pd.romanization}]`);
-    } else if (pd.romanization) {
-      parts.push(`[${pd.romanization}]`);
-    }
-  }
-
-  return parts.length > 0 ? parts.join(' ') : null;
 }
 
 export default function ReviewPage() {
