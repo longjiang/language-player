@@ -34,6 +34,15 @@ export function setShowTranslation(value: boolean): void {
   set('show_translation', value);
 }
 
+/** Whether to use traditional Chinese characters (zh L2 only). Default: false (simplified). */
+export function getUseTraditional(): boolean {
+  return get<boolean>('use_traditional', false);
+}
+
+export function setUseTraditional(value: boolean): void {
+  set('use_traditional', value);
+}
+
 /** Subscribe to changes to a setting. Returns unsubscribe function. */
 export function onSettingChange(key: string, callback: (value: unknown) => void): () => void {
   if (typeof window === 'undefined') return () => {};
