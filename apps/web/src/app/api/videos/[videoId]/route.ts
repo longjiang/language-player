@@ -130,7 +130,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const l2 = searchParams.get('l2') ?? 'en';
     const suffix = getTableSuffix(l2);
-    if (!suffix) {
+    if (suffix === undefined) {
       return NextResponse.json({ error: `Unsupported L2: ${l2}` }, { status: 400 });
     }
 
