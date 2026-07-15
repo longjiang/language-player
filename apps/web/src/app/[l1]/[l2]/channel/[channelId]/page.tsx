@@ -46,7 +46,7 @@ export default function ChannelPage() {
         params.set('page_size', '24');
 
         const res = await fetch(`/api/channels/${encodeURIComponent(channelId)}?${params}`);
-        if (!res.ok) throw new Error(`Failed to load (${res.status})`);
+        if (!res.ok) throw new Error(t('error.failed_to_load', { status: res.status }));
 
         const data: ChannelResponse = await res.json();
         if (!append && data.channel) setChannel(data.channel);
@@ -124,7 +124,7 @@ export default function ChannelPage() {
         <div className="flex flex-col items-center gap-4 rounded-2xl border-2 border-dashed border-destructive/30 p-12 text-center">
           <AlertCircle className="h-10 w-10 text-destructive" />
           <p className="text-muted-foreground">{error}</p>
-          <Button variant="outline" onClick={() => fetchVideos(1)}>Try Again</Button>
+          <Button variant="outline" onClick={() => fetchVideos(1)}>{t('action.try_again')}</Button>
         </div>
       )}
 

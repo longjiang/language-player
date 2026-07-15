@@ -86,7 +86,7 @@ function NavDropdown({ group, l1Code, l2Code }: { group: NavGroup; l1Code: strin
         onMouseEnter={() => { cancelClose(); setOpen(true); }}
         className="flex items-center gap-0.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
-        {group.label}
+        {t(`nav.${group.label.toLowerCase()}` as any)}
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
@@ -145,7 +145,7 @@ export function Header() {
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           className="flex items-center justify-center rounded-lg p-1.5 text-muted-foreground hover:bg-muted md:hidden"
-          aria-label="Menu"
+          aria-label={t('a11y.menu')}
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -160,7 +160,7 @@ export function Header() {
               {NAV_GROUPS.map((group) => (
                 <div key={group.label}>
                   <p className="mb-1 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {group.label}
+                    {t(`nav.${group.label.toLowerCase()}` as any)}
                   </p>
                   <div className="flex flex-col gap-0.5">
                     {group.links.map((link) => (

@@ -50,9 +50,9 @@ export default function TokenizerPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
-      <h1 className="text-3xl font-bold">Tokenizer Test</h1>
+      <h1 className="text-3xl font-bold">{t('title.tokenizer_test')}</h1>
       <p className="mt-2 text-muted-foreground">
-        Tokenization + lemmatization for {languageName(l2.code, l1.code)}. Click any word to see its lemma.
+        {t('msg.tokenizer_desc', { l2: languageName(l2.code, l1.code) })}
       </p>
 
       {/* ── Input ── */}
@@ -60,17 +60,17 @@ export default function TokenizerPage() {
         <textarea
           value={customText}
           onChange={(e) => setCustomText(e.target.value)}
-          placeholder={`Enter text in ${languageName(l2.code, l1.code)}...`}
+          placeholder={t('placeholder.enter_text', { l2: languageName(l2.code, l1.code) })}
           className="w-full min-h-[100px] rounded-lg border bg-background p-4 text-sm"
           rows={4}
         />
         <div className="flex gap-2">
           <Button onClick={handleTokenize} disabled={!customText.trim() && !sampleText}>
             <Sparkles className="mr-2 h-4 w-4" />
-            Tokenize
+            {t('action.tokenize')}
           </Button>
           <Button variant="outline" onClick={handleUseSample}>
-            Use Sample Text
+            {t('action.use_sample_text')}
           </Button>
         </div>
       </div>

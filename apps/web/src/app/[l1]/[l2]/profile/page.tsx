@@ -212,7 +212,7 @@ export default function ProfilePage() {
             <User className="h-8 w-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{userName ?? 'User'}</h1>
+            <h1 className="text-2xl font-bold">{userName ?? t('label.unknown_user')}</h1>
             <p className="flex items-center gap-1 text-sm text-muted-foreground">
               <Mail className="h-3.5 w-3.5" />
               {userEmail}
@@ -225,7 +225,7 @@ export default function ProfilePage() {
       <section className="mb-10">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
           <BookOpen className="h-5 w-5" />
-          Settings
+          {t('title.settings')}
         </h2>
 
         {/* Tab bar */}
@@ -238,7 +238,7 @@ export default function ProfilePage() {
                 : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
-            Pronunciation
+            {t('setting.pronunciation')}
           </button>
           <button
             onClick={() => setSettingsTab('review')}
@@ -248,7 +248,7 @@ export default function ProfilePage() {
                 : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
-            Review
+            {t('setting.review')}
           </button>
         </div>
 
@@ -256,7 +256,7 @@ export default function ProfilePage() {
         {settingsTab === 'pronunciation' && (
           <div className="rounded-xl border border-border bg-card p-6">
             <p className="mb-3 text-sm text-muted-foreground">
-              Set your current {languageName(l2.code, l1.code)} level to get video recommendations matched to your ability.
+              {t('msg.set_level_for_recommendations', { l2: languageName(l2.code, l1.code) })}
             </p>
             <div className="max-w-xs">
               <LanguageLevelSelect
@@ -274,10 +274,10 @@ export default function ProfilePage() {
             {/* Daily new card limit */}
             <div>
               <label className="block text-sm font-medium mb-1">
-                New cards per day
+                {t('label.new_cards_per_day')}
               </label>
               <p className="text-sm text-muted-foreground mb-3">
-                Maximum number of new words introduced into your review deck each day.
+                {t('msg.new_cards_per_day_desc')}
               </p>
               <div className="flex items-center gap-4 max-w-sm">
                 <input
@@ -297,7 +297,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex justify-between max-w-sm mt-1">
                 <span className="text-xs text-muted-foreground">1</span>
-                <span className="text-xs text-muted-foreground">{DEFAULT_DAILY_NEW_LIMIT} (default)</span>
+                <span className="text-xs text-muted-foreground">{t('msg.default_value', { n: DEFAULT_DAILY_NEW_LIMIT })}</span>
                 <span className="text-xs text-muted-foreground">50</span>
               </div>
             </div>
@@ -309,7 +309,7 @@ export default function ProfilePage() {
       <section className="mb-10">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
           <Crown className="h-5 w-5 text-amber-500" />
-          Subscription
+          {t('title.subscription')}
         </h2>
         {subLoading ? (
           <div className="flex justify-center py-8">
@@ -319,10 +319,10 @@ export default function ProfilePage() {
           /* Free user — show upgrade options */
           <div className="rounded-xl border border-border bg-card p-6">
             <div className="mb-4 flex items-center gap-2">
-              <span className="rounded-full bg-muted px-3 py-1 text-sm font-medium">Free Account</span>
+              <span className="rounded-full bg-muted px-3 py-1 text-sm font-medium">{t('label.free_account')}</span>
             </div>
             <p className="mb-4 text-sm text-muted-foreground">
-              Upgrade to Pro for complete transcripts, unlimited word examples, and more.
+              {t('msg.upgrade_to_pro_banner')}
             </p>
             <div className="grid gap-3 sm:grid-cols-3">
               {PLANS.map((plan) => (
@@ -340,10 +340,10 @@ export default function ProfilePage() {
             </div>
             <div className="mt-4 text-center">
               <Link href={`/${l1.code}/${l2.code}/go-pro`} className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
-                Upgrade to Pro <ArrowRight className="h-3 w-3" />
+                {t('action.upgrade_to_pro')} <ArrowRight className="h-3 w-3" />
               </Link>
               <p className="mt-2 text-xs text-muted-foreground">
-                14-day money-back guarantee. Questions? <a href="mailto:jon.long@zerotohero.ca" className="underline">Contact us</a>
+                {t('msg.money_back_guarantee')} <a href="mailto:jon.long@zerotohero.ca" className="underline">{t('action.contact_us')}</a>
               </p>
             </div>
           </div>
@@ -358,31 +358,31 @@ export default function ProfilePage() {
                     isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                     'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                   }`}>
-                    {planType.charAt(0).toUpperCase() + planType.slice(1)}
+                    {planType === 'monthly' ? t('subscription.monthly_cap') : planType === 'annual' ? t('subscription.annual_cap') : t('subscription.lifetime_cap')}
                     {isLifetime && ' 🎉'}
-                    {isExpired && ' (Expired)'}
+                    {isExpired && ` ${t('msg.expired_label')}`}
                   </span>
                   {willAutoRenew && (
                     <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                      Auto-renews
+                      {t('label.auto_renews')}
                     </span>
                   )}
                 </div>
                 {daysLeft !== null && isActive && !isLifetime && (
                   <p className="mt-2 text-sm text-muted-foreground">
-                    {daysLeft} day{daysLeft === 1 ? '' : 's'} remaining
-                    {willAutoRenew ? ` — will auto-renew` : ` — expires ${expiresOn!.toLocaleDateString()}`}
+                    {t('msg.days_remaining', { n: daysLeft })}
+                    {willAutoRenew ? ` — ${t('msg.will_auto_renew')}` : ` — ${t('msg.expires_on', { date: expiresOn!.toLocaleDateString() })}`}
                   </p>
                 )}
                 {isExpired && (
-                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">Your subscription has expired.</p>
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{t('msg.subscription_expired')}</p>
                 )}
                 {isLifetime && (
-                  <p className="mt-2 text-sm text-muted-foreground">Lifetime access — enjoy!</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{t('msg.lifetime_access')}</p>
                 )}
                 {sub?.payment_processor && (
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Paid via {sub.payment_processor === 'app-store' ? 'Apple App Store' : sub.payment_processor}
+                    {t('msg.paid_via', { processor: sub.payment_processor === 'app-store' ? t('payment.apple_app_store') : sub.payment_processor === 'stripe' ? t('payment.stripe') : sub.payment_processor === 'paypal' ? t('payment.paypal') : t('payment.other') })}
                   </p>
                 )}
               </div>
@@ -390,12 +390,12 @@ export default function ProfilePage() {
               <div className="flex gap-2">
                 {willAutoRenew && (
                   <Button variant="outline" size="sm" onClick={handleCancel} disabled={cancelling}>
-                    {cancelling ? 'Cancelling...' : 'Cancel Auto-Renewal'}
+                    {cancelling ? t('msg.cancelling') : t('action.cancel_auto_renewal')}
                   </Button>
                 )}
                 {!isLifetime && (
                   <Link href={`/${l1.code}/${l2.code}/go-pro`}>
-                    <Button variant="outline" size="sm">{isExpired ? 'Renew' : 'Upgrade'}</Button>
+                    <Button variant="outline" size="sm">{isExpired ? t('action.renew') : t('action.upgrade')}</Button>
                   </Link>
                 )}
               </div>
@@ -403,17 +403,17 @@ export default function ProfilePage() {
 
             {!isLifetime && (
               <div className="mt-6 border-t border-border pt-4">
-                <p className="mb-3 text-sm font-medium">Want lifetime access?</p>
+                <p className="mb-3 text-sm font-medium">{t('msg.want_lifetime_access')}</p>
                 <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
                   <div className="flex items-center gap-2">
                     <Star className="h-5 w-5 text-amber-500" />
                     <div>
-                      <p className="font-semibold">Lifetime — $169 one-time</p>
-                      <p className="text-sm text-muted-foreground">Pay once, access forever.</p>
+                      <p className="font-semibold">{t('label.lifetime_one_time')}</p>
+                      <p className="text-sm text-muted-foreground">{t('msg.pay_once_forever')}</p>
                     </div>
                   </div>
                   <a href="https://languageplayer.io/go-pro" target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-sm font-medium text-primary hover:underline">
-                    Upgrade to Lifetime <ArrowRight className="inline h-3 w-3" />
+                    {t('action.upgrade_to_lifetime')} <ArrowRight className="inline h-3 w-3" />
                   </a>
                 </div>
               </div>
@@ -435,7 +435,7 @@ export default function ProfilePage() {
                 href={`/${l1.code}/${l2.code}/watch-history`}
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                See All <ArrowRight className="h-3 w-3" />
+                {t('action.see_all')} <ArrowRight className="h-3 w-3" />
               </Link>
             )}
           </div>
@@ -445,7 +445,7 @@ export default function ProfilePage() {
             </div>
           ) : history.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No videos watched yet.
+              {t('msg.no_videos_watched')}
             </p>
           ) : (
             <div className="space-y-1">
@@ -468,7 +468,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-medium group-hover:text-primary transition-colors">
-                      {item.title ?? 'Untitled'}
+                      {item.title ?? t('label.untitled_video')}
                     </p>
                     {item.duration && (
                       <p className="text-xs text-muted-foreground">
@@ -494,13 +494,13 @@ export default function ProfilePage() {
                 href={`/${l1.code}/${l2.code}/saved-words`}
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                See All <ArrowRight className="h-3 w-3" />
+                {t('action.see_all')} <ArrowRight className="h-3 w-3" />
               </Link>
             )}
           </div>
           {savedWords.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No words saved yet.
+              {t('msg.no_words_saved')}
             </p>
           ) : (
             <div className="space-y-1">

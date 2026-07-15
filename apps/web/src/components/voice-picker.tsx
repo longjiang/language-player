@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSpeech } from '@/hooks/use-speech';
 import { useLanguage } from '@/providers/language-provider';
+import { useT } from '@/hooks/use-t';
+import { languageName } from '@/lib/language-data';
 import { ChevronDown, Volume2, Square } from 'lucide-react';
 
 interface VoicePickerProps {
@@ -11,7 +13,8 @@ interface VoicePickerProps {
 
 /** Voice picker dropdown for TTS settings. Auto-selects best voice per language. */
 export function VoicePicker({ className = '' }: VoicePickerProps) {
-  const { l2 } = useLanguage();
+  const { l1, l2 } = useLanguage();
+  const t = useT();
   const { getAllVoices, voiceURI, setVoiceURI, rate, setRate, speak, stop, isSpeaking } = useSpeech();
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [open, setOpen] = useState(false);
@@ -37,7 +40,7 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
     <div className={`space-y-3 ${className}`}>
       {/* Voice selector */}
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-muted-foreground">Pronunciation Voice</label>
+        <label className="text-sm font-medium text-muted-foreground">{t('label.pronunciation_voice')}</label>
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}
@@ -45,10 +48,10 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
           >
             <span className="truncate">
               {!mounted
-                ? `Auto (best for ${l2?.code?.toUpperCase() ?? 'L2'})`
+                ? t('label.auto_best_for', { l2: l2?.code?.toUpperCase() ?? 'L2' })
                 : voiceURI
-                  ? voices.find(v => v.voiceURI === voiceURI)?.name ?? 'Custom voice'
-                  : `Auto (best for ${l2?.code?.toUpperCase() ?? 'L2'})`}
+                  ? voices.find(v => v.voiceURI === voiceURI)?.name ?? t('label.custom_voice')
+                  : t('label.auto_best_for', { l2: l2?.code?.toUpperCase() ?? 'L2' })}
             </span>
             <ChevronDown className="ml-2 h-4 w-4 flex-shrink-0 text-muted-foreground" />
           </button>
@@ -61,14 +64,14 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
                 className={`flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted ${!voiceURI ? 'bg-primary/10 text-primary font-medium' : ''}`}
               >
                 <Volume2 className="h-4 w-4" />
-                Auto (best available)
+                {t('label.auto_best_available')}
               </button>
 
               {/* L2 voices */}
               {l2Voices.length > 0 && (
                 <>
                   <div className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase border-t">
-                    {l2?.code?.toUpperCase()} Voices
+                    {t('label.l2_voices', { l2: l2?.code?.toUpperCase() })}
                   </div>
                   {l2Voices.map(v => (
                     <button
@@ -88,7 +91,7 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
               {allLangVoices.length > 0 && (
                 <>
                   <div className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase border-t">
-                    All Voices
+                    {t('label.all_voices')}
                   </div>
                   {allLangVoices.map(v => (
                     <button
@@ -111,7 +114,7 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
       {/* Rate slider */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-muted-foreground">
-          Speech Rate: {rate.toFixed(2)}×
+          {t('label.speech_rate', { rate: rate.toFixed(2) })}
         </label>
         <input
           type="range"
@@ -123,21 +126,21 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
           className="w-full accent-primary"
         />
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Slow</span>
-          <span>Fast</span>
+          <span>{t('setting.slow')}</span>
+          <span>{t('setting.fast')}</span>
         </div>
       </div>
 
       {/* Test button */}
       <div className="space-y-1.5 pt-2 border-t border-border">
-        <label className="text-sm font-medium text-muted-foreground">Test Voice</label>
+        <label className="text-sm font-medium text-muted-foreground">{t('label.test_voice')}</label>
         {isSpeaking ? (
           <button
             onClick={stop}
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20"
           >
             <Square className="h-4 w-4" />
-            Stop
+            {t('action.stop')}
           </button>
         ) : (
           <button
@@ -146,7 +149,7 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <Volume2 className="h-4 w-4" />
-            Play {l2?.code?.toUpperCase() ?? ''} Pronunciation
+            {t('label.play_pronunciation_for', { language: l2 ? languageName(l2.code, l1.code) : '' })}
           </button>
         )}
       </div>

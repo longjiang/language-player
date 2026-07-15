@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useT } from '@/hooks/use-t';
 import type { YouTubePlayerHandle } from './youtube-player';
 
 // Speed options matching Classic: 1x → 0.75x → 0.5x → 1x
@@ -61,6 +62,7 @@ export function VideoControlBar({
   hasNextVideo = false,
   className,
 }: VideoControlBarProps) {
+  const t = useT();
   const [speedIndex, setSpeedIndex] = useState(0);
 
   const currentSpeed = SPEEDS[speedIndex];
@@ -99,8 +101,8 @@ export function VideoControlBar({
             onSeekBarClick(Math.max(0, Math.min(1, fraction)));
           }
         }}
-        title="Click to seek"
-        aria-label="Seek bar"
+        title={t('a11y.click_to_seek')}
+        aria-label={t('a11y.seek_bar')}
       >
         <div
           className="absolute inset-y-0 left-0 rounded-full bg-primary transition-all duration-100"
@@ -125,7 +127,7 @@ export function VideoControlBar({
           className="h-9 w-9 text-muted-foreground hover:text-foreground disabled:opacity-30"
           onClick={onPreviousVideo}
           disabled={!hasPreviousVideo || !onPreviousVideo}
-          title="Previous video (Shift + ←)"
+          title={t('a11y.previous_video')}
         >
           <SkipBack className="h-4 w-4" />
         </Button>
@@ -137,7 +139,7 @@ export function VideoControlBar({
             size="icon"
             className="h-9 w-9 text-muted-foreground hover:text-foreground"
             onClick={onOpenInfo}
-            title="Video info"
+            title={t('a11y.video_info')}
           >
             <Info className="h-4 w-4" />
           </Button>
@@ -150,7 +152,7 @@ export function VideoControlBar({
           className="h-9 w-9 text-muted-foreground hover:text-foreground"
           onClick={onPreviousLine}
           disabled={!hasPreviousLine}
-          title="Previous line (←)"
+          title={t('a11y.previous_line')}
         >
           <ChevronUp className="h-5 w-5" />
         </Button>
@@ -161,7 +163,7 @@ export function VideoControlBar({
           size="icon"
           className="h-9 w-9 text-muted-foreground hover:text-foreground"
           onClick={handleRewind}
-          title="Rewind 2s (R)"
+          title={t('a11y.rewind_2s')}
         >
           <RotateCcw className="h-4 w-4" />
         </Button>
@@ -172,7 +174,7 @@ export function VideoControlBar({
           size="icon"
           className="h-10 w-10"
           onClick={onPauseToggle}
-          title={paused ? 'Play (Space)' : 'Pause (Space)'}
+          title={paused ? t('a11y.play') : t('a11y.pause')}
         >
           {paused ? (
             <Play className="h-5 w-5" />
@@ -188,7 +190,7 @@ export function VideoControlBar({
           className="h-9 w-9 text-muted-foreground hover:text-foreground"
           onClick={onNextLine}
           disabled={!hasNextLine}
-          title="Next line (→)"
+          title={t('a11y.next_line')}
         >
           <ChevronDown className="h-5 w-5" />
         </Button>
@@ -204,7 +206,7 @@ export function VideoControlBar({
               : 'text-muted-foreground hover:text-foreground',
           )}
           onClick={toggleSpeed}
-          title="Speed (M)"
+          title={t('a11y.speed')}
         >
           <Gauge className="h-4 w-4" />
           {currentSpeed === 1 ? '1×' : `${currentSpeed}×`}
@@ -217,7 +219,7 @@ export function VideoControlBar({
           className="h-9 w-9 text-muted-foreground hover:text-foreground disabled:opacity-30"
           onClick={onNextVideo}
           disabled={!hasNextVideo || !onNextVideo}
-          title="Next video (Shift + →)"
+          title={t('a11y.next_video')}
         >
           <SkipForward className="h-4 w-4" />
         </Button>

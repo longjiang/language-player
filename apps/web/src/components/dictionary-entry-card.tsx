@@ -5,6 +5,7 @@ import { BookOpen, ExternalLink, Volume2 } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
 import { formatPronunciation } from '@langplayer/utils';
+import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
 
 interface DictionaryEntryCardProps {
@@ -39,6 +40,7 @@ export function DictionaryEntryCard({
   l1Code,
   headingLevel = 'h1',
 }: DictionaryEntryCardProps) {
+  const t = useT();
   const { apply } = useScriptPreference(l2Code ?? '');
   const { head, alternate } = apply(entry.head, entry.alternate);
   const isFull = variant === 'full';
@@ -62,7 +64,7 @@ export function DictionaryEntryCard({
       <span>
         {studyMaterials.map((m, i) => (
           <span key={i}>
-            {m.material} Bk.{m.location?.book} L{m.location?.lesson}
+            {t('label.study_material_format', { material: m.material, book: m.location?.book, lesson: m.location?.lesson })}
             {i < studyMaterials.length - 1 ? ', ' : ''}
           </span>
         ))}
@@ -93,10 +95,12 @@ export function DictionaryEntryCard({
   );
 
   // ── Shared: source line ──
+  const sourceName = entry.dictionary?.name ?? entry.source;
+  const displaySource = sourceName === 'AI-Generated' || sourceName === 'LLM' ? t('label.ai_generated') : sourceName;
   const sourceLine = (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       {isFull ? <ExternalLink className="h-3 w-3" /> : <BookOpen className="h-3 w-3" />}
-      <span>{entry.dictionary?.name ?? entry.source}</span>
+      <span>{displaySource}</span>
       {entry.match_type && entry.match_type !== 'exact' && (
         <span className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
           {entry.match_type}
@@ -154,8 +158,8 @@ export function DictionaryEntryCard({
         {entry.classifier && entry.classifier.length > 0 && (
           <div className="mt-2 flex flex-wrap items-center gap-1">
             <span className="text-[10px] font-medium text-muted-foreground mr-0.5">
-              {entry.classifier[0]!.kind === 'measure_word' ? 'Measure:' :
-               entry.classifier[0]!.kind === 'gender' ? 'Gender:' : 'Class:'}
+              {entry.classifier[0]!.kind === 'measure_word' ? t('label.measure_word') :
+               entry.classifier[0]!.kind === 'gender' ? t('label.gender_label') : t('label.noun_class')}
             </span>
             {entry.classifier.map((cl, i) => (
               <span
@@ -235,7 +239,7 @@ export function DictionaryEntryCard({
       {entry.definitions.length > 0 && (
         <div className="mb-6 rounded-lg bg-muted/40 p-4">
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Definitions
+            {t('title.definitions')}
           </h3>
           <ul className="space-y-2">
             {entry.definitions.map((def, i) => (
@@ -256,9 +260,9 @@ export function DictionaryEntryCard({
       {entry.classifier && entry.classifier.length > 0 && (
         <div className="mb-6">
           <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {entry.classifier[0]!.kind === 'gender' ? 'Gender' :
-             entry.classifier[0]!.kind === 'measure_word' ? 'Measure Words' :
-             'Classifiers'}
+            {entry.classifier[0]!.kind === 'gender' ? t('title.gender') :
+             entry.classifier[0]!.kind === 'measure_word' ? t('title.measure_words') :
+             t('title.classifiers')}
           </h3>
           <div className="flex flex-wrap gap-2">
             {entry.classifier.map((cl, i) => (
@@ -286,13 +290,13 @@ export function DictionaryEntryCard({
       {studyMaterials && studyMaterials.length > 0 && (
         <div className="mb-6 rounded-lg bg-blue-50/50 p-4 dark:bg-blue-950/20">
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Textbook Appearances
+            {t('title.textbook_appearances')}
           </h3>
           {studyMaterials.map((m, i) => (
             <div key={i} className="space-y-1.5">
               <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
                 <BookOpen className="h-4 w-4" />
-                <span>{m.material} — Book {m.location?.book}, Lesson {m.location?.lesson}{m.location?.dialog ? `, Dialog ${m.location.dialog}` : ''}</span>
+                <span>{t('label.textbook_format', { material: m.material, book: m.location?.book, lesson: m.location?.lesson })}{m.location?.dialog ? `, Dialog ${m.location.dialog}` : ''}</span>
               </div>
               {m.example && (
                 <p className="text-sm" lang={l2Code}>{m.example}</p>

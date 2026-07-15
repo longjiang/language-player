@@ -162,9 +162,9 @@ export default function GoProPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold">Upgrade to Pro</h1>
+        <h1 className="text-3xl font-bold">{t('title.upgrade_to_pro')}</h1>
         <p className="mt-2 text-muted-foreground">
-          Unlock complete transcripts, unlimited word examples, and more.
+          {t('msg.upgrade_to_pro_desc')}
         </p>
       </div>
 
@@ -206,7 +206,7 @@ export default function GoProPage() {
         <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
             <CreditCard className="h-5 w-5" />
-            Choose payment method
+            {t('title.choose_payment_method')}
           </h2>
 
           <div className="space-y-3">
@@ -220,7 +220,7 @@ export default function GoProPage() {
               >
                 <span className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4" />
-                  Credit Card
+                  {t('payment.credit_card')}
                 </span>
                 {checkingOut ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -241,7 +241,7 @@ export default function GoProPage() {
               >
                 <span className="flex items-center gap-2 font-medium">
                   <span className="text-lg">💬</span>
-                  WeChat Pay
+                  {t('payment.wechat_pay')}
                 </span>
                 <span className="text-sm opacity-80">
                   ¥{cnyPrice?.amount} <ArrowRight className="inline h-3 w-3" />
@@ -257,7 +257,7 @@ export default function GoProPage() {
               >
                 <span className="flex items-center gap-2 font-medium">
                   <span className="text-lg">🔵</span>
-                  Alipay
+                  {t('payment.alipay')}
                 </span>
                 <span className="text-sm opacity-80">
                   ¥{cnyPrice?.amount} <ArrowRight className="inline h-3 w-3" />
@@ -269,14 +269,14 @@ export default function GoProPage() {
             {selectedPlan === 'lifetime' && (
               <div className="rounded-lg border border-border bg-muted/30 p-4 text-center">
                 <p className="text-sm text-muted-foreground">
-                  PayPal is also available for lifetime purchases.{' '}
+                  {t('msg.paypal_available')}{' '}
                   <a
                     href="https://languageplayer.io/go-pro"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-medium text-primary underline"
                   >
-                    Use PayPal on our classic site
+                    {t('msg.use_paypal_classic')}
                   </a>
                 </p>
               </div>

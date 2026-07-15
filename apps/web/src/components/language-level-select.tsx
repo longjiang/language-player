@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { LEVELS } from '@/lib/level-mapping';
+import { useT } from '@/hooks/use-t';
 import { ChevronDown } from 'lucide-react';
 
 interface LanguageLevelSelectProps {
@@ -22,15 +23,15 @@ function examKey(l2Code: string): 'hsk' | 'jlpt' | 'topik' | 'ielts' | 'cefr' {
   return 'cefr';
 }
 
-function examName(l2Code: string): string {
+function examName(l2Code: string, t: (key: string) => string): string {
   const map: Record<string, string> = {
-    hsk: 'HSK',
-    jlpt: 'JLPT',
-    topik: 'TOPIK',
-    ielts: 'IELTS',
-    cefr: 'CEFR',
+    hsk: 'level.exam_hsk',
+    jlpt: 'level.exam_jlpt',
+    topik: 'level.exam_topik',
+    ielts: 'level.exam_ielts',
+    cefr: 'level.exam_cefr',
   };
-  return map[examKey(l2Code)] ?? 'CEFR';
+  return t(map[examKey(l2Code)] ?? 'level.exam_cefr');
 }
 
 /**
@@ -43,6 +44,7 @@ function examName(l2Code: string): string {
  *   Others → "CEFR A2 — Beginner III"
  */
 export function LanguageLevelSelect({ l2Code, value, onChange }: LanguageLevelSelectProps) {
+  const t = useT();
   const key = examKey(l2Code);
 
   const options = useMemo(() => {
@@ -50,11 +52,11 @@ export function LanguageLevelSelect({ l2Code, value, onChange }: LanguageLevelSe
       const numeric = Number(numericStr);
       const examValue = info[key as keyof typeof info];
       const label = examValue
-        ? `${examName(l2Code)} ${examValue} — ${info.category}`
+        ? `${examName(l2Code, t)} ${examValue} — ${info.category}`
         : `${info.category}`;
       return { value: numeric, label };
     });
-  }, [key, l2Code]);
+  }, [key, l2Code, t]);
 
   return (
     <div className="relative">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useLanguage } from '@/providers/language-provider';
+import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { getShowTranslation, setShowTranslation } from '@/lib/settings';
 import { TokenizedText } from '@/components/tokenized-text';
@@ -72,6 +73,7 @@ function stripDurationPrefix(text: string): string {
 
 export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
+  const t = useT();
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [showTranslation, setShowTranslationState] = useState(true);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -161,7 +163,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   if (l2Lines.length === 0) {
     return (
       <div className="rounded-xl border border-border p-8 text-center text-sm text-muted-foreground">
-        Subtitles are not available for this video yet.
+        {t('subtitle.subtitles_unavailable')}
       </div>
     );
   }
@@ -177,11 +179,11 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
             }`}
           >
             <Settings2 className="h-3 w-3" />
-            {showTranslation ? 'Translation on' : 'Translation off'}
+            {showTranslation ? t('subtitle.translation_on') : t('subtitle.translation_off')}
           </button>
           {translating && (
             <span className="tabular-nums">
-              Translating… {progress}/{l2Lines.length}
+              {t('subtitle.translating')} {progress}/{l2Lines.length}
             </span>
           )}
         </div>

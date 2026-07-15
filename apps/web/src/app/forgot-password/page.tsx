@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
           <CheckCircle className="mx-auto h-12 w-12 text-success" />
           <h1 className="mt-4 text-2xl font-bold">{t('title.check_email')}</h1>
           <p className="mt-2 text-muted-foreground">
-            If an account exists for <strong>{email}</strong>, you&apos;ll receive a password reset link shortly.
+            {t('msg.password_reset_sent', { email: email })}
           </p>
           <Link href="/login" className="mt-6 inline-block">
             <Button variant="outline">{t('action.back_to_login')}</Button>
@@ -71,19 +71,19 @@ export default function ForgotPasswordPage() {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium">Email</label>
+            <label htmlFor="email" className="block text-sm font-medium">{t('placeholder.email')}</label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1.5 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/20"
-              placeholder="you@example.com"
+              placeholder={t('placeholder.email_example')}
               required
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Sending...' : t('action.send_reset_link')}
+            {loading ? t('msg.sending') : t('action.send_reset_link')}
           </Button>
         </form>
 

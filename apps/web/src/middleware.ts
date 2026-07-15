@@ -5,6 +5,27 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
 const GUEST_NAV_LIMIT = 3;
 const AUTH_REQUIRED_SEGMENTS = ['saved-words', 'review', 'settings', 'go-pro', 'watch-history', 'tokenizer'];
 
+/** Parse Accept-Language header and return the best matching supported L1 code, or null. */
+function detectLocale(request: NextRequest): string | null {
+  const header = request.headers.get('accept-language');
+  if (!header) return null;
+  // Parse "zh-CN,zh;q=0.9,en;q=0.8" → [{ code: 'zh-CN', q: 1 }, { code: 'zh', q: 0.9 }, ...]
+  const locales = header.split(',').map(part => {
+    const trimmed = part.trim();
+    const [rawCode = '', qVal] = trimmed.split(';q=');
+    return { code: (rawCode ?? '').trim(), q: qVal ? parseFloat(qVal) : 1 };
+  }).filter(l => l.code.length > 0).sort((a, b) => b.q - a.q);
+
+  for (const { code } of locales) {
+    // Try exact match first (e.g., zh-Hans)
+    if (SUPPORTED_L1S.includes(code as any)) return code;
+    // Try primary language (e.g., zh from zh-CN)
+    const primary = code.split('-')[0]!;
+    if (SUPPORTED_L1S.includes(primary as any)) return primary;
+  }
+  return null;
+}
+
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -42,12 +63,18 @@ export default function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/language-select', req.url));
   }
 
-  // 2. On public/auth pages, set NEXT_LOCALE from existing l1 cookie
-  if (isPublic) {
+  // 2. On public/auth pages, set NEXT_LOCALE from existing l1 cookie, or detect from browser
+  if (isPublic || pathname === '/') {
     const l1Cookie = req.cookies.get('l1');
     const response = NextResponse.next();
     if (l1Cookie?.value && SUPPORTED_L1S.includes(l1Cookie.value as any)) {
       response.cookies.set('NEXT_LOCALE', l1Cookie.value, { path: '/', maxAge: 365 * 24 * 60 * 60 });
+    } else {
+      // No L1 cookie yet — detect from browser Accept-Language
+      const detected = detectLocale(req);
+      if (detected) {
+        response.cookies.set('NEXT_LOCALE', detected, { path: '/', maxAge: 365 * 24 * 60 * 60 });
+      }
     }
     return response;
   }

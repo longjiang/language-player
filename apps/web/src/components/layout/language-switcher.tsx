@@ -11,6 +11,7 @@ import {
   POPULAR_LANGUAGES,
   languageName,
 } from '@/lib/language-data';
+import { useT } from '@/hooks/use-t';
 import { ChevronDown, ArrowRightLeft, Search } from 'lucide-react';
 
 function useLanguageList(
@@ -37,6 +38,7 @@ function useLanguageList(
 
 export function LanguageSwitcher() {
   const { l1, l2, setLanguagePair } = useLanguage();
+  const t = useT();
   const [open, setOpen] = useState<'l1' | 'l2' | null>(null);
   const [search, setSearch] = useState('');
 
@@ -88,7 +90,7 @@ export function LanguageSwitcher() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search…"
+            placeholder={t('placeholder.search_dots')}
             autoFocus
             className="w-full rounded-md border border-input bg-background py-1.5 pl-7 pr-2 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring/20"
           />
@@ -100,7 +102,7 @@ export function LanguageSwitcher() {
             <div>
               {!search && (
                 <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Popular
+                  {t('msg.popular_languages')}
                 </div>
               )}
               {list.popular.map((code) => (
@@ -123,7 +125,7 @@ export function LanguageSwitcher() {
               <div className="mx-1 my-1 border-t border-border" />
               <div>
                 <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  All Languages
+                  {t('msg.all_languages')}
                 </div>
                 {list.rest.map((code) => (
                   <button
@@ -162,7 +164,7 @@ export function LanguageSwitcher() {
       <button
         onClick={swap}
         className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        title="Swap languages"
+        title={t('msg.swap_languages')}
       >
         <ArrowRightLeft className="h-3.5 w-3.5" />
       </button>

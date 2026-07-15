@@ -13,6 +13,7 @@ import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
+import { useT } from '@/hooks/use-t';
 import {
   Loader2,
   ArrowLeft,
@@ -32,12 +33,15 @@ const RATING_MAP: Record<Rating, 0 | 2 | 4 | 5> = {
   easy: 5,
 };
 
-const RATING_LABELS = [
-  { key: 'again', label: 'Again', hint: 'Forgot entirely', color: 'bg-red-600 hover:bg-red-700', keyShortcut: '1' },
-  { key: 'hard', label: 'Hard', hint: 'Recalled with difficulty', color: 'bg-orange-500 hover:bg-orange-600', keyShortcut: '2' },
-  { key: 'good', label: 'Good', hint: 'Recalled correctly', color: 'bg-green-600 hover:bg-green-700', keyShortcut: '3' },
-  { key: 'easy', label: 'Easy', hint: 'Instant recall', color: 'bg-blue-600 hover:bg-blue-700', keyShortcut: '4' },
-] as const;
+function useRatingLabels() {
+  const t = useT();
+  return [
+    { key: 'again' as const, label: t('review.again'), hint: t('review.again_hint'), color: 'bg-red-600 hover:bg-red-700', keyShortcut: '1' },
+    { key: 'hard' as const, label: t('review.hard'), hint: t('review.hard_hint'), color: 'bg-orange-500 hover:bg-orange-600', keyShortcut: '2' },
+    { key: 'good' as const, label: t('review.good'), hint: t('review.good_hint'), color: 'bg-green-600 hover:bg-green-700', keyShortcut: '3' },
+    { key: 'easy' as const, label: t('review.easy'), hint: t('review.easy_hint'), color: 'bg-blue-600 hover:bg-blue-700', keyShortcut: '4' },
+  ];
+}
 
 interface ReviewCard {
   word: SavedWord;
@@ -51,6 +55,8 @@ export default function ReviewPage() {
   const { savedWords, loaded: wordsLoaded, removeSavedWord } = useSavedWordsContext();
   const { store, loaded: srsLoaded, updateCard, removeCard, dailyNewLimit: dailyLimit } = useSrs();
   const { speak } = useSpeech();
+  const t = useT();
+  const RATING_LABELS = useRatingLabels();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDefinition, setShowDefinition] = useState(false);
@@ -328,7 +334,7 @@ export default function ReviewPage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         <p className="text-sm text-muted-foreground">
-          {initializing ? 'Preparing review cards...' : 'Loading...'}
+          {initializing ? t('msg.preparing_review_cards') : t('msg.loading')}
         </p>
       </div>
     );
@@ -338,9 +344,9 @@ export default function ReviewPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <BookOpen className="w-12 h-12 text-muted-foreground" />
-        <p className="text-muted-foreground">Sign in to review words.</p>
+        <p className="text-muted-foreground">{t('msg.sign_in_to_review')}</p>
         <Link href="/login">
-          <Button>Sign In</Button>
+          <Button>{t('action.sign_in')}</Button>
         </Link>
       </div>
     );
@@ -351,13 +357,12 @@ export default function ReviewPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <BookOpen className="w-12 h-12 text-muted-foreground" />
-        <h2 className="text-xl font-semibold">No Words to Review</h2>
+        <h2 className="text-xl font-semibold">{t('msg.no_words_to_review')}</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          Save words while watching videos to build your review deck.
-          Tap any word in the subtitles to look it up and save it.
+          {t('msg.save_words_to_build_deck')}
         </p>
         <Link href={`/${l1.code}/${l2.code}/explore`}>
-          <Button>Explore Videos</Button>
+          <Button>{t('action.explore_videos')}</Button>
         </Link>
       </div>
     );
@@ -368,7 +373,7 @@ export default function ReviewPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Loading review cards...</p>
+        <p className="text-sm text-muted-foreground">{t('msg.loading_review_cards')}</p>
       </div>
     );
   }
@@ -383,16 +388,16 @@ export default function ReviewPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <CheckCircle2 className="w-12 h-12 text-green-500" />
-        <h2 className="text-xl font-semibold">All Done for Now!</h2>
+        <h2 className="text-xl font-semibold">{t('msg.all_done_for_now')}</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          You&apos;ve reviewed all due cards in {l2.name}.
+          {t('msg.all_done_desc')}
           {nextDue && (
-            <> Next review: {new Date(nextDue.nextReview).toLocaleDateString()}.</>
+            <> {t('msg.next_review')}: {new Date(nextDue.nextReview).toLocaleDateString()}.</>
           )}
         </p>
         <div className="flex gap-3">
           <Link href={`/${l1.code}/${l2.code}/explore`}>
-            <Button variant="outline">Explore Videos</Button>
+            <Button variant="outline">{t('action.explore_videos')}</Button>
           </Link>
         </div>
       </div>
@@ -413,23 +418,23 @@ export default function ReviewPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <BookOpen className="w-12 h-12 text-muted-foreground" />
-        <h2 className="text-xl font-semibold">No Cards Due</h2>
+        <h2 className="text-xl font-semibold">{t('msg.no_cards_due')}</h2>
         <p className="text-muted-foreground text-center max-w-md">
-          You have {Object.keys(langCards).length} {Object.keys(langCards).length === 1 ? 'card' : 'cards'} in your {l2.name} deck.
+          {t('msg.no_cards_due_desc', { total: Object.keys(langCards).length, deck: l2.name })}
           {nextDue ? (
-            <> Your next review is on {new Date(nextDue.nextReview).toLocaleDateString()}.</>
+            <> {t('msg.next_review_date', { date: new Date(nextDue.nextReview).toLocaleDateString() })}</>
           ) : (
-            <> Save more words to continue learning.</>
+            <> {t('msg.save_more_words')}</>
           )}
           {queued && (
-            <> {unscheduledCount} more {unscheduledCount === 1 ? 'word is' : 'words are'} queued for tomorrow&apos;s batch.</>
+            <> {unscheduledCount} {t('msg.more_queued', { count: unscheduledCount })}</>
           )}
           {unscheduledCount > 0 && remaining > 0 && (
-            <> {remaining} new {remaining === 1 ? 'card' : 'cards'} available today (of {dailyLimit}/day).</>
+            <> {remaining} {t('msg.new_cards_available', { count: remaining, limit: dailyLimit })}</>
           )}
         </p>
         <Link href={`/${l1.code}/${l2.code}/explore`}>
-          <Button variant="outline">Explore Videos</Button>
+          <Button variant="outline">{t('action.explore_videos')}</Button>
         </Link>
       </div>
     );
@@ -450,7 +455,7 @@ export default function ReviewPage() {
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back
+          {t('action.back')}
         </Link>
         <span className="text-sm text-muted-foreground flex items-center gap-3">
           <span className="tabular-nums">{currentIndex + 1}/{cards.length}</span>
@@ -492,14 +497,14 @@ export default function ReviewPage() {
           <button
             onClick={handleSpeak}
             className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            title="Pronounce"
+            title={t('a11y.pronounce')}
           >
             <Volume2 className="h-5 w-5" />
           </button>
           <button
             onClick={handleRemove}
             className="p-2 rounded-lg text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors"
-            title="Remove from review"
+            title={t('a11y.remove_from_review')}
           >
             <BookmarkCheck className="h-5 w-5 fill-current" />
           </button>
@@ -513,7 +518,7 @@ export default function ReviewPage() {
         {/* Context sentence — always visible, tokenized/interactive */}
         {currentCard.word.context.text && (
           <div className="mb-4 p-3 bg-muted/50 rounded-lg text-left w-full">
-            <p className="text-xs text-muted-foreground mb-1 font-medium">Context</p>
+            <p className="text-xs text-muted-foreground mb-1 font-medium">{t('review.context_label')}</p>
             <TokenizedText
               text={currentCard.word.context.text}
               l2Code={l2Code}
@@ -534,9 +539,9 @@ export default function ReviewPage() {
 
         {/* SRS info (compact) */}
         <p className="text-xs text-muted-foreground mb-4">
-          {srs.interval > 0 ? `${srs.interval}d` : 'new'}
+          {srs.interval > 0 ? `${srs.interval}d` : t('review.srs_new')}
           {' · '}{srs.ease.toFixed(1)}x
-          {' · '}{srs.repetitions} review{srs.repetitions !== 1 ? 's' : ''}
+          {' · '}{srs.repetitions} {t('review.srs_review')}{srs.repetitions !== 1 ? 's' : ''}
         </p>
 
         {/* Definition (hidden until revealed) */}
@@ -547,7 +552,7 @@ export default function ReviewPage() {
             size="lg"
             className="mt-4 gap-2"
           >
-            Show Definition
+            {t('review.show_definition')}
           </Button>
         ) : (
           <div className="mt-4 w-full text-center space-y-3">
@@ -579,7 +584,7 @@ export default function ReviewPage() {
               </div>
             ) : (
               <p className="text-muted-foreground italic text-sm">
-                No definition available. Look up this word while watching videos.
+                {t('review.no_definition_available')}
               </p>
             )}
           </div>
@@ -612,9 +617,12 @@ export default function ReviewPage() {
 
           {/* Keyboard shortcuts hint */}
           <p className="text-center text-xs text-muted-foreground mt-4">
-            Press <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">1</kbd>–<kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">4</kbd>
-            to rate · <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">Space</kbd>
-            or <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">Enter</kbd> to reveal
+            {t.rich('review.shortcut_hint', {
+              k1: () => <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">1</kbd>,
+              k2: () => <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">4</kbd>,
+              space: () => <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">Space</kbd>,
+              enter: () => <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">Enter</kbd>,
+            })}
           </p>
         </>
       )}

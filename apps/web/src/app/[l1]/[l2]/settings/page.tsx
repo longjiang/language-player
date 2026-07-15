@@ -34,7 +34,7 @@ export default function SettingsPage() {
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          Pronunciation
+          {t('setting.pronunciation')}
         </button>
         <button
           onClick={() => setTab('review')}
@@ -44,7 +44,7 @@ export default function SettingsPage() {
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          Review
+          {t('setting.review')}
         </button>
         {isChinese && (
           <button
@@ -55,7 +55,7 @@ export default function SettingsPage() {
                 : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
-            Display
+            {t('setting.display')}
           </button>
         )}
       </div>
@@ -72,10 +72,10 @@ export default function SettingsPage() {
         <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
           <div>
             <label className="block text-sm font-medium mb-1">
-              New cards per day
+              {t('label.new_cards_per_day')}
             </label>
             <p className="text-sm text-muted-foreground mb-3">
-              Maximum number of new words introduced into your review deck each day.
+              {t('msg.new_cards_per_day_desc')}
             </p>
             <div className="flex items-center gap-4">
               <input
@@ -95,7 +95,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex justify-between mt-1">
               <span className="text-xs text-muted-foreground">1</span>
-              <span className="text-xs text-muted-foreground">{DEFAULT_DAILY_NEW_LIMIT} (default)</span>
+              <span className="text-xs text-muted-foreground">{t('msg.default_value', { n: DEFAULT_DAILY_NEW_LIMIT })}</span>
               <span className="text-xs text-muted-foreground">50</span>
             </div>
           </div>
@@ -107,10 +107,10 @@ export default function SettingsPage() {
         <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
           <div>
             <label className="block text-sm font-medium mb-1">
-              Character set
+              {t('label.character_set')}
             </label>
             <p className="text-sm text-muted-foreground mb-4">
-              Choose between simplified and traditional Chinese characters.
+              {t('msg.character_set_desc')}
             </p>
             <div className="inline-flex rounded-lg border border-border bg-muted p-1">
               <button
@@ -121,7 +121,7 @@ export default function SettingsPage() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                简体 Simplified
+                {t('setting.simplified')}
               </button>
               <button
                 onClick={() => { setUseTraditionalState(true); setUseTraditional(true); }}
@@ -131,7 +131,7 @@ export default function SettingsPage() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                繁體 Traditional
+                {t('setting.traditional')}
               </button>
             </div>
           </div>

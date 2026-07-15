@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { MoreVertical, Bell, BellOff, EyeOff, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useT } from '@/hooks/use-t';
 import { useChannelPreference } from '@/hooks/use-channel-preference';
 
 interface ChannelActionsMenuProps {
@@ -13,6 +14,7 @@ interface ChannelActionsMenuProps {
 /** Reusable "..." menu for channel subscribe/not-interested actions.
  *  Uses a portal to avoid clipping from parent overflow:hidden containers. */
 export function ChannelActionsMenu({ channelId }: ChannelActionsMenuProps) {
+  const t = useT();
   const { pref, savePref } = useChannelPreference(channelId);
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, right: 0 });
@@ -33,7 +35,7 @@ export function ChannelActionsMenu({ channelId }: ChannelActionsMenuProps) {
         size="icon"
         className="h-7 w-7"
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(!open); }}
-        title="Channel preferences"
+        title={t('a11y.channel_preferences')}
       >
         <MoreVertical className="h-3.5 w-3.5" />
       </Button>
@@ -54,14 +56,14 @@ export function ChannelActionsMenu({ channelId }: ChannelActionsMenuProps) {
                     onClick={() => { savePref('subscribed'); setOpen(false); }}
                     className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
-                    <Bell className="h-3.5 w-3.5" /> Subscribe
+                    <Bell className="h-3.5 w-3.5" /> {t('action.subscribe')}
                   </button>
                 ) : (
                   <button
                     onClick={() => { savePref('neutral'); setOpen(false); }}
                     className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
-                    <BellOff className="h-3.5 w-3.5" /> Unsubscribe
+                    <BellOff className="h-3.5 w-3.5" /> {t('action.unsubscribe')}
                   </button>
                 )}
                 {pref !== 'not_interested' ? (
@@ -69,14 +71,14 @@ export function ChannelActionsMenu({ channelId }: ChannelActionsMenuProps) {
                     onClick={() => { savePref('not_interested'); setOpen(false); }}
                     className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
-                    <EyeOff className="h-3.5 w-3.5" /> Not Interested
+                    <EyeOff className="h-3.5 w-3.5" /> {t('action.not_interested')}
                   </button>
                 ) : (
                   <button
                     onClick={() => { savePref('neutral'); setOpen(false); }}
                     className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
-                    <Eye className="h-3.5 w-3.5" /> Remove &quot;Not Interested&quot;
+                    <Eye className="h-3.5 w-3.5" /> {t('action.remove_not_interested')}
                   </button>
                 )}
               </div>

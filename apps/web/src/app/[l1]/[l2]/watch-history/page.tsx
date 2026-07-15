@@ -78,7 +78,7 @@ export default function WatchHistoryPage() {
     if (sessionStatus === 'loading') return;
     if (!userId) {
       setLoading(false);
-      setError('Not authenticated');
+      setError(t('msg.not_authenticated'));
       return;
     }
     if (!l2.code) return;
@@ -111,7 +111,7 @@ export default function WatchHistoryPage() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err?.message ?? 'Failed to load watch history');
+          setError(err?.message ?? t('msg.failed_to_load_watch_history'));
           setLoading(false);
         }
       });
@@ -155,7 +155,7 @@ export default function WatchHistoryPage() {
       {!loading && !error && items.length === 0 && (
         <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center">
           <Clock className="mx-auto h-12 w-12 text-muted-foreground/50" />
-          <p className="mt-4 text-muted-foreground">No watch history yet.</p>
+          <p className="mt-4 text-muted-foreground">{t('msg.no_watch_history')}</p>
         </div>
       )}
 
@@ -196,7 +196,7 @@ export default function WatchHistoryPage() {
                 {/* Info */}
                 <div className="min-w-0 flex-1">
                   <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                    {item.title ?? 'Untitled'}
+                    {item.title ?? t('label.untitled_video')}
                   </h3>
                   <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                     {item.duration && (
@@ -209,7 +209,7 @@ export default function WatchHistoryPage() {
                       <span>{formatDate(item.date)}</span>
                     )}
                     {progressPct && (
-                      <span className="text-primary font-medium">{progressPct} watched</span>
+                      <span className="text-primary font-medium">{t('msg.watched_progress', { pct: progressPct })}</span>
                     )}
                   </div>
                 </div>
