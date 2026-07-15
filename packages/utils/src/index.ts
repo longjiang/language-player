@@ -17,3 +17,12 @@ export {
   getLanguageCards,
 } from './sm2';
 export type { SrsFields, SrsProgressStore } from './sm2';
+export {
+  splitIntoMoras,
+  applyPitchAccent,
+  addPitchAccent,
+  applyDownstepOnly,
+  formatJapanesePron,
+  applyRomajiAccent,
+  circledPattern,
+} from './pitch-accent';

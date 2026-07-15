@@ -13,6 +13,7 @@ import { ArrowLeft, Loader2, AlertCircle, BookOpen, ExternalLink, AlertTriangle 
 import { Button } from '@/components/ui/button';
 import { SaveButton } from '@/components/save-button';
 import { SpeakButton } from '@/components/speak-button';
+import { formatPronunciation } from '@langplayer/utils';
 import { SubsSearchResults } from '@/components/video/subs-search-results';
 
 export default function WordDetailPage() {
@@ -240,12 +241,18 @@ function WordDetailCard({
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-3">
-              {entry.pronunciation && (
-                <span className="flex items-center gap-1 text-lg text-muted-foreground">
-                  <SpeakButton text={entry.head} l2Code={l2Code} size="default" />
-                  [{entry.pronunciation}]
-                </span>
-              )}
+              {(() => {
+                const pron = formatPronunciation(entry, l2Code);
+                if (pron) {
+                  return (
+                    <span className="flex items-center gap-1 text-lg text-muted-foreground" lang={l2Code}>
+                      <SpeakButton text={entry.head} l2Code={l2Code} size="default" />
+                      {pron}
+                    </span>
+                  );
+                }
+                return null;
+              })()}
               {level && (
                 <span className="rounded-md bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                   {levelScaleLabel(level.scale)} {level.value}
