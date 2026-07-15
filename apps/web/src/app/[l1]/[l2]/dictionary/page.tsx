@@ -79,7 +79,7 @@ export default function DictionaryPage() {
 
   // Determine proficiency scale for level display
   const levelScaleLabel = (scale: string, value?: string | number): string => {
-    // HSK: show as "HSK 3 (2026)"
+    // HSK: show as "HSK 3 (2025)"
     const hskMatch = scale.match(/^hsk_(\d{4})$/);
     if (hskMatch) return `HSK ${value ?? ''} (${hskMatch[1]})`.trim();
     const map: Record<string, string> = { hsk: 'HSK', jlpt: 'JLPT', cefr: 'CEFR' };
