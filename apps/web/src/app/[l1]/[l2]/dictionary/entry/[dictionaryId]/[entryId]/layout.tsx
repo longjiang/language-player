@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { languageName } from '@/lib/language-data';
 
 interface EntryData {
   entry?: {
@@ -7,6 +8,10 @@ interface EntryData {
     pronunciation?: string;
     definitions?: string[];
   };
+}
+
+interface SubsSearchResult {
+  youtube_id: string;
 }
 
 async function getEntry(l2: string, dict: string, id: string, l1: string): Promise<EntryData | null> {
@@ -20,6 +25,19 @@ async function getEntry(l2: string, dict: string, id: string, l1: string): Promi
   }
 }
 
+async function getFirstSubsVideo(term: string, l2: string): Promise<string | null> {
+  try {
+    const url = `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${l2}&limit=1&context=0`;
+    const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const videos: SubsSearchResult[] = Array.isArray(data) ? data : data?.results ?? [];
+    return videos[0]?.youtube_id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -27,28 +45,28 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { l1, l2, dictionaryId, entryId } = params;
   const id = decodeURIComponent(entryId).replace(/~/g, ',');
-  const data = await getEntry(l2, dictionaryId, id, l1);
-  const entry = data?.entry;
+  const [entryData, videoId] = await Promise.all([
+    getEntry(l2, dictionaryId, id, l1),
+    getFirstSubsVideo(id.includes(',') ? id.split(',')[0]! : id, l2),
+  ]);
+  const entry = entryData?.entry;
 
   const head = entry?.head?.trim() || 'Dictionary Entry';
-  const def = entry?.definitions?.[0]?.trim() || '';
   const pron = entry?.pronunciation?.trim() || '';
-  const title = pron ? `${head} (${pron})` : head;
+  const headDisplay = pron ? `${head} (${pron})` : head;
+  const l2Name = languageName(l2, l1) || l2.toUpperCase();
+  const title = `See how ${headDisplay} is used in ${l2Name} videos!`;
 
-  // Build OG image URL with entry info
-  const ogParams = new URLSearchParams();
-  ogParams.set('head', head);
-  if (def) ogParams.set('def', def.length > 200 ? def.slice(0, 197) + '...' : def);
-  if (pron) ogParams.set('pron', pron);
-  const ogImage = `/og?${ogParams.toString()}`;
+  // Use first subs search video thumbnail, fall back to entry card OG
+  const ogImage = videoId
+    ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+    : `/og?head=${encodeURIComponent(head)}&pron=${encodeURIComponent(pron)}`;
 
   return {
-    title: `${title} — Dictionary`,
-    description: def
-      ? `${head}: ${def.slice(0, 160)}`
-      : `Look up "${head}" in the Language Player dictionary.`,
+    title,
+    description: `Watch real ${l2Name} videos featuring the word "${headDisplay}" with interactive dual subtitles on Language Player.`,
     openGraph: {
-      images: [{ url: ogImage, width: 1200, height: 630 }],
+      images: [{ url: ogImage, width: videoId ? 480 : 1200, height: videoId ? 360 : 630 }],
     },
     twitter: {
       card: 'summary_large_image',
