@@ -63,7 +63,7 @@ export default function SavedWordsPage() {
   if (!loaded) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center text-muted-foreground">
-        Loading...
+        {t('msg.loading')}
       </div>
     );
   }
@@ -84,11 +84,11 @@ export default function SavedWordsPage() {
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleExport} disabled={words.length === 0}>
             <Download className="mr-1 h-4 w-4" />
-            Export
+            {t('action.export')}
           </Button>
           <Button variant="outline" size="sm" onClick={handleClearAll} disabled={words.length === 0}>
             <Trash2 className="mr-1 h-4 w-4" />
-            Clear All
+            {t('action.clear_all')}
           </Button>
         </div>
       </div>

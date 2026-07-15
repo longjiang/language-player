@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { useSubscription } from '@/hooks/use-subscription';
+import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, AlertCircle, RefreshCw, BookOpen } from 'lucide-react';
 
@@ -31,6 +32,7 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
   const { data: session } = useSession();
   const router = useRouter();
   const { l1, l2 } = useLanguage();
+  const t = useT();
   const { isPro, loaded: subLoaded } = useSubscription();
 
   const [showAi, setShowAi] = useState(false);
@@ -135,7 +137,7 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
       <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-center dark:border-amber-800 dark:bg-amber-950">
         <p className="text-sm text-amber-700 dark:text-amber-300">
           <Sparkles className="mr-1 inline h-3.5 w-3.5" />
-          <strong>Pro feature:</strong> Get AI explanations of words in context.
+          {t('msg.ai_pro_feature')}
         </p>
       </div>
     );
@@ -152,7 +154,7 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
           onClick={() => setShowAi(true)}
         >
           <Sparkles className="h-4 w-4" />
-          Let DeepSeek Explain
+          {t('action.let_ai_explain')}
         </Button>
       </div>
     );
@@ -164,7 +166,7 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
       <div className="mt-4 rounded-lg border bg-muted/30 p-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Getting response from DeepSeek...
+          {t('msg.getting_ai_response')}
         </div>
       </div>
     );
@@ -179,7 +181,7 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
           {error}
         </div>
         <Button variant="ghost" size="sm" onClick={fetchExplanation}>
-          <RefreshCw className="mr-1 h-3 w-3" /> Retry
+          <RefreshCw className="mr-1 h-3 w-3" /> {t('action.retry')}
         </Button>
       </div>
     );
@@ -191,7 +193,7 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
       <div className="mt-4 rounded-lg border bg-muted/30 p-4">
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
           <Sparkles className="h-3 w-3" />
-          DeepSeek says:
+          {t('label.ai_says')}
           {loading && <Loader2 className="ml-2 h-3 w-3 animate-spin" />}
         </div>
         <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
@@ -206,10 +208,10 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
         {!loading && (
           <div className="mt-3 flex gap-2">
             <Button variant="ghost" size="sm" onClick={fetchExplanation}>
-              <RefreshCw className="mr-1 h-3 w-3" /> Regenerate
+              <RefreshCw className="mr-1 h-3 w-3" /> {t('action.regenerate')}
             </Button>
             <Button variant="ghost" size="sm" onClick={openInReader}>
-              <BookOpen className="mr-1 h-3 w-3" /> Open in Reader
+              <BookOpen className="mr-1 h-3 w-3" /> {t('action.open_in_reader')}
             </Button>
           </div>
         )}

@@ -188,7 +188,7 @@ export function SubsSearchResults({ term }: SubsSearchResultsProps) {
             const lines = parseSubsL2(v.subs_l2 ?? '');
             return {
               id: v.id,
-              title: v.title ?? 'Untitled',
+              title: v.title ?? t('label.untitled_video'),
               youtube_id: v.youtube_id,
               subs_l2: lines,
               views: v.views,
@@ -204,7 +204,7 @@ export function SubsSearchResults({ term }: SubsSearchResultsProps) {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err?.message ?? 'Subs search failed');
+          setError(err?.message ?? t('error.subs_search_failed'));
           setLoading(false);
         }
       });
@@ -409,7 +409,7 @@ export function SubsSearchResults({ term }: SubsSearchResultsProps) {
       {/* ── Nav bar ── */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <span className="text-xs text-muted-foreground">
-          Video {currentIndex + 1} of {videos.length}
+          {t('msg.video_n_of_total', { n: currentIndex + 1, total: videos.length })}
         </span>
         <Button
           variant="ghost"
@@ -541,7 +541,7 @@ export function SubsSearchResults({ term }: SubsSearchResultsProps) {
                   type="text"
                   value={listSearch}
                   onChange={(e) => setListSearch(e.target.value)}
-                  placeholder="Filter..."
+                  placeholder={t('placeholder.filter')}
                   className="h-8 w-full rounded-md border border-border bg-muted/50 pl-7 pr-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
@@ -550,12 +550,12 @@ export function SubsSearchResults({ term }: SubsSearchResultsProps) {
                 onChange={(e) => setListSort(e.target.value as SortKey)}
                 className="h-8 rounded-md border border-border bg-muted/50 px-2 text-xs focus:outline-none"
               >
-                <option value="views">Most Viewed</option>
-                <option value="likes">Likes</option>
-                <option value="date">Date</option>
-                <option value="length">Length</option>
-                <option value="leftContext">Left Context</option>
-                <option value="rightContext">Right Context</option>
+                <option value="views">{t('sort.most_viewed')}</option>
+                <option value="likes">{t('title.likes')}</option>
+                <option value="date">{t('title.date')}</option>
+                <option value="length">{t('title.length')}</option>
+                <option value="leftContext">{t('title.leftContext')}</option>
+                <option value="rightContext">{t('title.rightContext')}</option>
               </select>
             </div>
 

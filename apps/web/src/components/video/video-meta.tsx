@@ -1,21 +1,21 @@
 import { Eye, ThumbsUp, MessageCircle, Calendar } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
+import { useLanguage } from '@/providers/language-provider';
+import { useT } from '@/hooks/use-t';
 
 interface VideoMetaProps {
   video: YouTubeVideo;
 }
 
-function formatNumber(n: number | undefined): string {
+function formatNumber(n: number | undefined, locale: string): string {
   if (!n) return '';
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return String(n);
+  return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
 }
 
-function formatDate(date: Date | string | undefined): string {
+function formatDate(date: Date | string | undefined, locale: string): string {
   if (!date) return '';
   const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  return d.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 const LEVEL_COLORS: Record<number, string> = {
@@ -28,14 +28,14 @@ const LEVEL_COLORS: Record<number, string> = {
   7: 'bg-rose-500/10 text-rose-400',
 };
 
-const LEVEL_LABELS: Record<number, string> = {
-  1: 'CEFR A1',
-  2: 'CEFR A2',
-  3: 'CEFR B1',
-  4: 'CEFR B2',
-  5: 'CEFR C1',
-  6: 'CEFR C2',
-  7: 'Native',
+const CEFR_LABEL_KEYS: Record<number, string> = {
+  1: 'filter.cefr_a1',
+  2: 'filter.cefr_a2',
+  3: 'filter.cefr_b1',
+  4: 'filter.cefr_b2',
+  5: 'filter.cefr_c1',
+  6: 'filter.cefr_c2',
+  7: 'label.native_level',
 };
 
 function getLevel(difficulty: number | undefined): number {
@@ -50,44 +50,46 @@ function getLevel(difficulty: number | undefined): number {
 }
 
 export function VideoMeta({ video }: VideoMetaProps) {
+  const { l1 } = useLanguage();
+  const t = useT();
   const level = getLevel(video.difficulty);
 
   return (
     <div>
       <h1 className="text-xl font-bold leading-tight sm:text-2xl">
-        {video.title ?? 'Untitled Video'}
+        {video.title ?? t('label.untitled_video_full')}
       </h1>
 
       <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
         {video.views != null && (
           <span className="flex items-center gap-1">
             <Eye className="h-4 w-4" />
-            {formatNumber(video.views)} views
+            {t('label.views_count', { count: formatNumber(video.views, l1.code) })}
           </span>
         )}
         {video.likes != null && (
           <span className="flex items-center gap-1">
             <ThumbsUp className="h-4 w-4" />
-            {formatNumber(video.likes)}
+            {formatNumber(video.likes, l1.code)}
           </span>
         )}
         {video.comments != null && (
           <span className="flex items-center gap-1">
             <MessageCircle className="h-4 w-4" />
-            {formatNumber(video.comments)}
+            {formatNumber(video.comments, l1.code)}
           </span>
         )}
         {video.date && (
           <span className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
-            {formatDate(video.date)}
+            {formatDate(video.date, l1.code)}
           </span>
         )}
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${LEVEL_COLORS[level] ?? ''}`}>
-          {LEVEL_LABELS[level] ?? 'Unknown'}
+          {t(CEFR_LABEL_KEYS[level] ?? 'label.unknown')}
         </span>
         {video.locale && (
           <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">

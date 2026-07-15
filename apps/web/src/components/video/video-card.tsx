@@ -7,6 +7,7 @@ import type { YouTubeVideo } from '@langplayer/shared';
 import { youtubeThumbnail } from '@/lib/video-service';
 import { useLanguage } from '@/providers/language-provider';
 import { useVideoPlayer } from '@/providers/video-player-provider';
+import { useT } from '@/hooks/use-t';
 import { ChannelActionsMenu } from './channel-actions-menu';
 import type { QueueType } from '@/lib/queue-manager';
 
@@ -41,11 +42,9 @@ function formatDuration(seconds: number | string | undefined): string {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-function formatViews(views: number | undefined): string {
+function formatViews(views: number | undefined, locale: string): string {
   if (!views) return '';
-  if (views >= 1_000_000) return `${(views / 1_000_000).toFixed(1)}M`;
-  if (views >= 1_000) return `${(views / 1_000).toFixed(1)}K`;
-  return String(views);
+  return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(views);
 }
 
 const LEVEL_COLORS: Record<number, string> = {
@@ -82,9 +81,10 @@ function getLevel(difficulty: number | undefined): number {
 export function VideoCard({ video, videos, queueType, layout = 'card', isActive }: VideoCardProps) {
   const { l1, l2 } = useLanguage();
   const { playVideo } = useVideoPlayer();
+  const t = useT();
   const level = getLevel(video.difficulty);
   const duration = formatDuration(video.duration);
-  const views = formatViews(video.views);
+  const views = formatViews(video.views, l1.code);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -121,7 +121,7 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
       </div>
       <div className="min-w-0 flex-1">
         <p className={`truncate text-xs font-medium ${isActive ? 'text-primary' : ''}`}>
-          {video.title ?? 'Untitled'}
+          {video.title ?? t('label.untitled_video')}
         </p>
         <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
           {duration && <span>{duration}</span>}
@@ -136,7 +136,7 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
       <div className="relative aspect-video overflow-hidden bg-muted">
         <img
           src={youtubeThumbnail(video.youtube_id)}
-          alt={video.title ?? 'Video thumbnail'}
+          alt={video.title ?? t('a11y.video_thumbnail')}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
@@ -162,7 +162,7 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
       <div className="p-3">
         <div className="flex items-start justify-between gap-1">
           <h3 className="line-clamp-2 text-sm font-medium leading-snug group-hover:text-primary">
-            {video.title ?? 'Untitled'}
+            {video.title ?? t('label.untitled_video')}
           </h3>
           {video.channel_id && <ChannelActionsMenu channelId={video.channel_id} />}
         </div>

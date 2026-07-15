@@ -6,6 +6,7 @@ import { Play, Search, BookOpen, Languages, Tv, Sparkles } from 'lucide-react';
 
 export default function HomePage() {
   const t = useT();
+  const features = useLandingFeatures();
   return (
     <main className="flex min-h-screen flex-col">
       {/* ── Hero ── */}
@@ -45,7 +46,7 @@ export default function HomePage() {
       {/* ── Features ── */}
       <section className="border-t border-border px-4 py-20">
         <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-3xl font-bold">Everything you need to learn</h2>
+          <h2 className="mb-12 text-center text-3xl font-bold">{t('msg.everything_you_need')}</h2>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((feature) => (
               <div
@@ -66,10 +67,9 @@ export default function HomePage() {
       {/* ── CTA ── */}
       <section className="border-t border-border px-4 py-20">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold">Ready to start learning?</h2>
+          <h2 className="text-3xl font-bold">{t('msg.ready_to_start')}</h2>
           <p className="mt-4 text-muted-foreground">
-            Join thousands of learners who are mastering new languages through authentic video
-            content.
+            {t('msg.landing_cta_desc')}
           </p>
           <Link
             href="/register"
@@ -83,25 +83,28 @@ export default function HomePage() {
   );
 }
 
-const features = [
-  {
-    title: 'Dual Subtitles',
-    description: 'Watch with subtitles in your native language AND your target language side by side.',
-    icon: Languages,
-  },
-  {
-    title: 'Tap-to-Dictionary',
-    description: 'Tap any word in the subtitles to see definitions, examples, and pronunciation instantly.',
-    icon: BookOpen,
-  },
-  {
-    title: 'Smart Difficulty',
-    description: 'Videos are automatically ranked by difficulty so you always watch at the right level.',
-    icon: Sparkles,
-  },
-  {
-    title: 'Live TV',
-    description: 'Watch live TV channels in your target language with real-time captions.',
-    icon: Tv,
-  },
-];
+function useLandingFeatures() {
+  const t = useT();
+  return [
+    {
+      title: t('feature.dual_subtitles'),
+      description: t('feature.dual_subtitles_desc'),
+      icon: Languages,
+    },
+    {
+      title: t('feature.tap_to_dictionary'),
+      description: t('feature.tap_to_dictionary_desc'),
+      icon: BookOpen,
+    },
+    {
+      title: t('feature.smart_difficulty'),
+      description: t('feature.smart_difficulty_desc'),
+      icon: Sparkles,
+    },
+    {
+      title: t('feature.live_tv'),
+      description: t('feature.live_tv_desc'),
+      icon: Tv,
+    },
+  ];
+}

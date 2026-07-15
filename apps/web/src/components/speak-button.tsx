@@ -3,6 +3,7 @@
 import React from 'react';
 import { Volume2, Loader2 } from 'lucide-react';
 import { useSpeech } from '@/hooks/use-speech';
+import { useT } from '@/hooks/use-t';
 
 interface SpeakButtonProps {
   /** Text to speak */
@@ -25,6 +26,7 @@ export function SpeakButton({
   size = 'default',
   className = '',
 }: SpeakButtonProps) {
+  const t = useT();
   const { speak, playAudio, isSpeaking, wiktionaryAudioUrl } = useSpeech();
 
   const sizeClass = {
@@ -46,8 +48,8 @@ export function SpeakButton({
     <button
       onClick={handleClick}
       className={`p-0.5 rounded transition-colors text-muted-foreground hover:text-foreground disabled:opacity-50 ${className}`}
-      title={audioFilename ? 'Play pronunciation' : 'Speak'}
-      aria-label="Speak"
+      title={audioFilename ? t('a11y.play_pronunciation') : t('a11y.speak')}
+      aria-label={t('a11y.speak')}
     >
       {isSpeaking ? (
         <Loader2 className={`${sizeClass} animate-spin`} />

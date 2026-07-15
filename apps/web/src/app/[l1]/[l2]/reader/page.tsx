@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/providers/language-provider';
+import { useT } from '@/hooks/use-t';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -284,6 +285,7 @@ function blockClass(tb: TextBlock): string {
 export default function ReaderPage() {
   const searchParams = useSearchParams();
   const { l1, l2 } = useLanguage();
+  const t = useT();
   const method = searchParams.get('method');
   const arg = searchParams.get('arg');
 
@@ -379,7 +381,7 @@ export default function ReaderPage() {
         const md = await htmlToMarkdown(raw, url);
         setText(md);
       }
-    } catch (err: any) { setError(err?.message || 'Failed to load URL'); }
+    } catch (err: any) { setError(err?.message || t('msg.failed_to_load_url')); }
     finally { setLoading(false); }
   };
 
@@ -389,7 +391,7 @@ export default function ReaderPage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <span className="ml-3 text-muted-foreground">Loading text...</span>
+        <span className="ml-3 text-muted-foreground">{t('msg.loading_text')}</span>
       </div>
     );
   }
@@ -400,21 +402,21 @@ export default function ReaderPage() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <BookOpen className="h-6 w-6 text-primary" />
-          <div><h1 className="text-xl font-bold">{title || 'Reader'}</h1>
+            <div><h1 className="text-xl font-bold">{title || t('title.reader')}</h1>
             <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p></div>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex rounded-lg border border-border bg-muted/50 p-0.5">
             <button onClick={() => setActiveTab('edit')}
               className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${activeTab === 'edit' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-              <FileText className="mr-1 inline h-3 w-3" />Edit</button>
+              <FileText className="mr-1 inline h-3 w-3" />{t('action.edit')}</button>
             <button onClick={() => setActiveTab('read')}
               className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${activeTab === 'read' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-              <BookOpen className="mr-1 inline h-3 w-3" />Read</button>
+              <BookOpen className="mr-1 inline h-3 w-3" />{t('action.read')}</button>
           </div>
           {activeTab === 'read' && (
             <Button variant={showTranslation ? 'default' : 'outline'} size="sm" onClick={() => setShowTranslation(!showTranslation)}>
-              <Columns2 className="mr-1 h-3.5 w-3.5" />Translation</Button>
+              <Columns2 className="mr-1 h-3.5 w-3.5" />{t('action.translation')}</Button>
           )}
         </div>
       </div>
@@ -424,10 +426,10 @@ export default function ReaderPage() {
         <div className="relative flex-1">
           <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input type="url" value={urlInput} onChange={(e) => setUrlInput(e.target.value)}
-            placeholder="Paste a URL to read a web page..."
+            placeholder={t('placeholder.paste_url', { l2: l2.name })}
             className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
-        <Button type="submit" size="sm" disabled={!urlInput.trim() || loading}>Load</Button>
+        <Button type="submit" size="sm" disabled={!urlInput.trim() || loading}>{t('action.load')}</Button>
       </form>
 
       {/* Edit mode */}
@@ -435,7 +437,7 @@ export default function ReaderPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">
-              Paste {l2.name} text here... (Markdown supported)
+              {t('placeholder.paste_l2_text', { l2: l2.name })}
             </span>
             {getSampleText(l2.code) && (
               <Button
@@ -447,17 +449,17 @@ export default function ReaderPage() {
                 }}
               >
                 <Sparkles className="mr-1 h-3.5 w-3.5" />
-                Fill with sample
+                {t('action.fill_with_sample')}
               </Button>
             )}
           </div>
           <textarea value={text} onChange={(e) => setText(e.target.value)}
-            placeholder={`Paste ${l2.name} text here... (Markdown supported)`}
+            placeholder={t('placeholder.paste_l2_text', { l2: l2.name })}
             className="min-h-[40vh] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'} lang={l2.code} />
           {showTranslation && (
             <textarea value={translation} onChange={(e) => setTranslation(e.target.value)}
-              placeholder={`Paste ${l1.name} translation here...`}
+              placeholder={t('placeholder.paste_l1_translation', { l1: l1.name })}
               className="min-h-[20vh] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
           )}
         </div>
@@ -493,7 +495,7 @@ export default function ReaderPage() {
               <>
                 {tokenizing && (
                   <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-                    <Loader2 className="h-3 w-3 animate-spin" /> Making words interactive...
+                    <Loader2 className="h-3 w-3 animate-spin" /> {t('msg.making_words_interactive')}
                   </div>
                 )}
                 <div>
@@ -506,7 +508,7 @@ export default function ReaderPage() {
             {blocks && blockTokens && !tokenizing && (
               <>
                 <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-                  <Sparkles className="h-3 w-3" /> Tap any word to look it up
+                  <Sparkles className="h-3 w-3" /> {t('msg.tap_any_word_to_lookup')}
                 </div>
                 {blocks.map((block, i) => {
                   if (block.kind === 'markdown') {
@@ -543,8 +545,8 @@ export default function ReaderPage() {
               ) : (
                 <div className="flex min-h-[20vh] flex-col items-center justify-center text-center text-sm text-muted-foreground">
                   <ArrowLeftRight className="mb-2 h-8 w-8 opacity-30" />
-                  <p>No translation yet.</p>
-                  <p className="mt-1 text-xs">Switch to <strong>Edit</strong> tab to paste a translation.</p>
+                  <p>{t('msg.no_translation_yet')}</p>
+                  <p className="mt-1 text-xs">{t.rich('msg.switch_to_edit_tab', { strong: (chunks) => <strong>{chunks}</strong> })}</p>
                 </div>
               )}
             </div>

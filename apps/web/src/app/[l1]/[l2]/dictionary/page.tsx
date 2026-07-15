@@ -140,7 +140,7 @@ export default function DictionaryPage() {
       {results && results.length > 0 && (
         <div className="mt-8">
           <p className="mb-4 text-sm text-muted-foreground">
-            {results.length} {results.length === 1 ? 'result' : 'results'} for <strong>"{searchedText}"</strong>
+            {t('msg.result_count', { count: results.length })} {t('msg.for_term', { term: searchedText })}
           </p>
           <div className="space-y-4">
             {results.map((entry) => (
@@ -151,7 +151,7 @@ export default function DictionaryPage() {
                 l2Code={l2.code}
                 l1Code={l1.code}
                 levelLabel={levelScaleLabel}
-                saveContext={{ form: searchedText, text: searchedText, textTitle: 'Dictionary' }}
+                saveContext={{ form: searchedText, text: searchedText, textTitle: t('title.dictionary') }}
                 onClick={(e) => router.push(buildEntryRoute(l1.code, l2.code, e.dictionary?.id ?? 'llm', e.id))}
               />
             ))}
@@ -164,11 +164,7 @@ export default function DictionaryPage() {
         <div className="mt-8 rounded-2xl border-2 border-dashed border-border p-12 text-center">
           <Search className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <p className="mt-4 text-muted-foreground">
-            {l2.code === 'zh'
-              ? '搜索中文词语，查看释义和拼音'
-              : l2.code === 'ja'
-                ? '単語を検索して、読み方や意味を調べましょう'
-                : `Search for a word in ${languageName(l2.code)} to see definitions, pronunciation, and more.`}
+            {t('msg.dictionary_empty_state', { l2: languageName(l2.code) })}
           </p>
         </div>
       )}

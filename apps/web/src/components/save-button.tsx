@@ -5,6 +5,7 @@ import { Bookmark, BookmarkCheck } from 'lucide-react';
 import type { SavedWordContext } from '@langplayer/shared';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useLanguage } from '@/providers/language-provider';
+import { useT } from '@/hooks/use-t';
 import { isWordSaved } from '@/lib/legacy-word-resolver';
 import { Button } from '@/components/ui/button';
 
@@ -34,6 +35,7 @@ export function SaveButton({
 }: SaveButtonProps) {
   const { hasSavedWord, saveWord, removeSavedWord } = useSavedWordsContext();
   const { l2 } = useLanguage();
+  const t = useT();
   const l2Code = l2.code;
   const saved = isWordSaved(hasSavedWord, l2Code, wordId);
 
@@ -59,7 +61,7 @@ export function SaveButton({
             ? 'text-amber-500 hover:text-amber-600'
             : 'text-muted-foreground hover:text-amber-500'
         }`}
-        title={saved ? 'Remove from saved words' : 'Save word'}
+        title={saved ? t('action.remove_from_saved') : t('action.save_word')}
       >
         {saved ? (
           <BookmarkCheck className="h-5 w-5 fill-current" />
@@ -80,12 +82,12 @@ export function SaveButton({
       {saved ? (
         <>
           <BookmarkCheck className="h-4 w-4" />
-          Saved
+          {t('label.saved')}
         </>
       ) : (
         <>
           <Bookmark className="h-4 w-4" />
-          Save Word
+          {t('action.save_word')}
         </>
       )}
     </Button>

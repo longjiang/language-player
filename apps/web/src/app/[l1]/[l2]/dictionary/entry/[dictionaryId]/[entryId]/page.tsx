@@ -50,7 +50,7 @@ export default function DictionaryEntryPage() {
       const res = await fetch(url);
       if (!res.ok) {
         if (res.status === 404) {
-          setError('Entry not found');
+          setError(t('error.entry_not_found'));
         } else {
           setError(`HTTP ${res.status}`);
         }

@@ -7,6 +7,7 @@ import { Loader2, X, AlertCircle, AlertTriangle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { AiExplanation } from './ai-explanation';
 import { SaveButton } from './save-button';
+import { useT } from '@/hooks/use-t';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { resolveLegacyId } from '@/lib/legacy-word-resolver';
 import { baseCode } from '@/lib/language-data';
@@ -33,6 +34,7 @@ export function DictionaryPopup({
   onClose,
 }: DictionaryPopupProps) {
   const router = useRouter();
+  const t = useT();
   const [entries, setEntries] = useState<DictionaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -199,10 +201,10 @@ export function DictionaryPopup({
 
           {!loading && !error && entries.length === 0 && (
             <div className="py-8 text-center text-sm text-muted-foreground">
-              <p>No dictionary entry found for "{token.text}"</p>
+              <p>{t('msg.no_dictionary_entry', { word: token.text })}</p>
               {token.lemmas.length > 0 && (
                 <p className="mt-1 text-xs">
-                  Tried lemmas: {token.lemmas.map((l) => l.lemma).join(', ')}
+                  {t('msg.tried_lemmas')}: {token.lemmas.map((l) => l.lemma).join(', ')}
                 </p>
               )}
             </div>
