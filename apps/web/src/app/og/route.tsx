@@ -8,7 +8,7 @@ const BG = 'linear-gradient(135deg, #0B0D18 0%, #1a1d2e 40%, #252840 100%)';
 const ACCENT = 'linear-gradient(90deg, #5c7cfa, #ff922b)';
 
 export async function GET(request: Request) {
-  const { searchParams, hostname } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const emoji = searchParams.get('emoji');
   const title = searchParams.get('title');
   const head = searchParams.get('head');
@@ -117,12 +117,6 @@ export async function GET(request: Request) {
             </>
           )}
         </div>
-
-        {(isEmojiMode || isEntryMode || isVideosMode) && (
-          <div style={{ position: 'absolute', bottom: 28, fontSize: 24, color: '#748ffc', fontWeight: 500, letterSpacing: '0.05em' }}>
-            {isEntryMode ? hostname : title ? `${title} \u2014 ${hostname}` : hostname}
-          </div>
-        )}
       </div>
     ),
     { width: 1200, height: 630, fonts: [{ name: 'Nunito', data: nunitoFont, style: 'normal', weight: 800 }] },
