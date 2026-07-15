@@ -70,7 +70,16 @@ function saveSettings(settings: SpeechSettings): void {
 
 export function useSpeech() {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [settings, setSettingsState] = useState<SpeechSettings>(loadSettings);
+  // Initialize with defaults only — no localStorage read during render.
+  // Loading from localStorage in a useState initializer causes hydration
+  // mismatches (server has no localStorage → default 0.75, client has stored 0.95).
+  const [settings, setSettingsState] = useState<SpeechSettings>({});
+
+  // Load persisted settings on mount (client-side only)
+  useEffect(() => {
+    setSettingsState(loadSettings());
+  }, []);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Ensure voices are loaded
