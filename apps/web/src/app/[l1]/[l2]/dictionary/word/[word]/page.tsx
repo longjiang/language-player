@@ -85,6 +85,14 @@ export default function WordDetailPage() {
     textTitle: t('title.dictionary'),
   };
 
+  // Navigate to a different headword's detail page (for fuzzy/lemma match cards)
+  const handleEntryClick = useCallback((entry: DictionaryEntry) => {
+    // Encode the head manually — encodeURIComponent does NOT encode apostrophes,
+    // which can cause issues in URL paths for Klingon/Welsh/etc.
+    const encoded = encodeURIComponent(entry.head).replace(/'/g, '%27');
+    router.push(`/${l1.code}/${l2.code}/dictionary/word/${encoded}`);
+  }, [l1.code, l2.code, router]);
+
   // Find saved words for this word whose IDs don't match any loaded entry (legacy data)
   const unmatchedSavedWords = useMemo(() => {
     if (loading || error || !word) return [];
@@ -191,6 +199,7 @@ export default function WordDetailPage() {
               l2Code={l2.code}
               levelScaleLabel={levelScaleLabel}
               saveContext={saveContext}
+              onClick={handleEntryClick}
             />
           ))}
         </div>
@@ -215,16 +224,21 @@ function WordDetailCard({
   l2Code,
   levelScaleLabel,
   saveContext,
+  onClick,
 }: {
   entry: DictionaryEntry;
   l2Code: string;
   levelScaleLabel: (scale: string) => string;
   saveContext: { form: string; text: string; textTitle: string };
+  onClick?: (entry: DictionaryEntry) => void;
 }) {
   const level = entry.level;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+    <div
+      className="rounded-xl border border-border bg-card p-6 shadow-sm transition-colors hover:bg-muted/30 cursor-pointer"
+      onClick={() => onClick?.(entry)}
+    >
       {/* ── Header: head + alt + pronunciation + level ── */}
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4">
