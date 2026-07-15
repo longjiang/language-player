@@ -299,6 +299,26 @@ export default function ReviewPage() {
     return () => window.removeEventListener('keydown', handler);
   }, [showDefinition, rated, handleReveal]);
 
+  // ── Anki-style card counts (new / again / review) ──
+  // Must be BEFORE any conditional returns (React hooks rule).
+  const cardCounts = useMemo(() => {
+    let newCount = 0;
+    let againCount = 0;
+    let reviewCount = 0;
+    for (const c of cards) {
+      if (c.srs.repetitions >= 1) {
+        reviewCount++;
+      } else if (c.srs.lastReview > (c.srs.createdAt ?? 0)) {
+        againCount++;
+      } else {
+        newCount++;
+      }
+    }
+    return { newCount, againCount, reviewCount };
+  }, [cards]);
+
+  const currentCard = cards[currentIndex];
+
   // ── Render states ──
 
   const isLoading = status === 'loading' || !wordsLoaded || !srsLoaded || initializing;
@@ -415,26 +435,6 @@ export default function ReviewPage() {
     );
   }
 
-  // ── Anki-style card counts (new / again / review) ──
-  const cardCounts = useMemo(() => {
-    let newCount = 0;
-    let againCount = 0;
-    let reviewCount = 0;
-    for (const c of cards) {
-      if (c.srs.repetitions >= 1) {
-        reviewCount++;
-      } else if (c.srs.lastReview > (c.srs.createdAt ?? 0)) {
-        // Was previously reviewed but failed → relearning
-        againCount++;
-      } else {
-        // Never reviewed → truly new
-        newCount++;
-      }
-    }
-    return { newCount, againCount, reviewCount };
-  }, [cards]);
-
-  const currentCard = cards[currentIndex];
   if (!currentCard) return null;
 
   const entry = currentCard.entry;
