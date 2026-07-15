@@ -49,27 +49,9 @@ export async function GET(request: Request) {
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: isEmojiMode || isEntryMode ? 32 : 48, zIndex: 1, padding: '0 60px' }}>
           {isEntryMode ? (
-            <>
-              {/* Head word — large, prominent */}
-              <div style={{ fontSize: 88, fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.2, textAlign: 'center', maxWidth: 1000, fontFamily: 'Nunito' }}>
-                {head}
-              </div>
-              {pron && (
-                <div style={{ fontSize: 40, fontWeight: 400, color: '#91a7ff', textAlign: 'center', maxWidth: 900 }}>
-                  {pron}
-                </div>
-              )}
-              {def && (
-                <div style={{ fontSize: 32, fontWeight: 400, color: '#bac8ff', textAlign: 'center', maxWidth: 950, lineHeight: 1.5 }}>
-                  {def}
-                </div>
-              )}
-              {/* Language Player badge */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #5c7cfa, #748ffc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'white', fontWeight: 700 }}>LP</div>
-                <div style={{ fontSize: 22, fontWeight: 600, color: '#748ffc' }}>Language Player</div>
-              </div>
-            </>
+            <div style={{ fontSize: 150, fontWeight: 800, letterSpacing: '-0.02em', color: '#ffffff', lineHeight: 1.2, textAlign: 'center', maxWidth: 1000, fontFamily: 'Nunito' }}>
+              {head}
+            </div>
           ) : isEmojiMode ? (
             <>
               <div style={{ fontSize: 360, lineHeight: 1, filter: 'drop-shadow(0 12px 40px rgba(92,124,250,0.2))' }}>
