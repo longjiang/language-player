@@ -121,6 +121,8 @@ async function main() {
       const val = rows[i][col]?.replace(/"/g, '')?.trim();
       const enVal = rows[i][enIdx]?.replace(/"/g, '')?.trim();
       if (!val && enVal) {
+        // Skip ICU plural strings — LLM can't handle them (breaks syntax)
+        if (/, plural, /.test(enVal)) continue;
         tasks.push({ key: rows[i][0], en: enVal, rowIdx: i });
       }
     }
