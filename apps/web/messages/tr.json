@@ -667,7 +667,7 @@
         "verification_code_sent": "{email} adresine bir doğrulama kodu gönderdik. Aşağıya girin.",
         "verifying": "Doğrulanıyor...",
         "verifying_pro_subscription": "Pro aboneliğiniz doğrulanıyor...",
-        "video_n_of_total": "Video {n} of {total}",
+        "video_n_of_total": "Video {n} ait {total}",
         "video_unavailable": "Bu video yüklenemedi. Kaldırılmış veya gizli yapılmış olabilir.",
         "videos_matching": "\"{{searchTerm}}\" ile eşleşen videolar",
         "want_lifetime_access": "Ömür boyu erişim ister misiniz?",
