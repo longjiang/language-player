@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Odtwórz wymowę {language}",
         "pronunciation_voice": "Głos wymowy",
         "saved": "Zapisano",
+        "show_phonetics": "Pokaż fonetykę",
         "speech_rate": "Szybkość mowy: {rate}×",
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "test_voice": "Głos testowy",

@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Spela {language} uttal",
         "pronunciation_voice": "Uttalets röst",
         "saved": "Sparad",
+        "show_phonetics": "Visa fonetik",
         "speech_rate": "Talhastighet: {rate}×",
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "test_voice": "Testa röst",

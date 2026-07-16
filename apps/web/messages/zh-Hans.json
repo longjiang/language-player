@@ -180,6 +180,7 @@
         "play_pronunciation_for": "播放 {language} 发音",
         "pronunciation_voice": "发音声音",
         "saved": "已收藏",
+        "show_phonetics": "显示注音",
         "speech_rate": "语速：{rate}×",
         "study_material_format": "{material} 第{book}册第{lesson}课",
         "test_voice": "测试声音",

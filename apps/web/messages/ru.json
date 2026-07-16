@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Воспроизвести произношение {language}",
         "pronunciation_voice": "Голос произношения",
         "saved": "Сохранено",
+        "show_phonetics": "Показать фонетику",
         "speech_rate": "Скорость речи: {rate}×",
         "study_material_format": "{material} Ур.{book} Урок {lesson}",
         "test_voice": "Тестовый голос",

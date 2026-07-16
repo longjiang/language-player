@@ -58,6 +58,16 @@
   }
 }
 
+/* ── Ruby text (phonetic guides: pinyin, furigana) ── */
+ruby {
+  ruby-align: center;
+}
+rt {
+  font-size: 0.55em;
+  opacity: 0.7;
+  user-select: none;
+}
+
 /* ── Video player aspect ratio ── */
 .video-container {
   @apply relative w-full overflow-hidden rounded-lg bg-black;

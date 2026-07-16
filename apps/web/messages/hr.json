@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Reproduciraj izgovor {language}",
         "pronunciation_voice": "Glas za izgovor",
         "saved": "Spremljeno",
+        "show_phonetics": "Prikaži fonetiku",
         "speech_rate": "Brzina govora: {rate}×",
         "study_material_format": "{material} Knj.{book} L{lesson}",
         "test_voice": "Testiraj glas",

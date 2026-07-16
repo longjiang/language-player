@@ -177,6 +177,7 @@
         "play_pronunciation_for": "{language} 발음 재생",
         "pronunciation_voice": "발음 음성",
         "saved": "저장됨",
+        "show_phonetics": "발음 표시",
         "speech_rate": "읽기 속도: {rate}배",
         "study_material_format": "{material} 권{book} 레슨 {lesson}",
         "test_voice": "음성 테스트",

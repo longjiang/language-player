@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Phát âm {language}",
         "pronunciation_voice": "Giọng đọc",
         "saved": "Đã lưu",
+        "show_phonetics": "Hiện phiên âm",
         "speech_rate": "Tốc độ đọc: {rate}×",
         "study_material_format": "{material} Quyển {book} Bài {lesson}",
         "test_voice": "Giọng thử",

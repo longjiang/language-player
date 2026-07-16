@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Αναπαραγωγή {language} Προφορά",
         "pronunciation_voice": "Φωνή Προφοράς",
         "saved": "Αποθηκεύτηκε",
+        "show_phonetics": "Εμφάνιση φωνητικής",
         "speech_rate": "Ταχύτητα Ομιλίας: {rate}×",
         "study_material_format": "{material} Βιβ.{book} Μ{lesson}",
         "test_voice": "Δοκιμή Φωνής",

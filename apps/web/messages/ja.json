@@ -177,6 +177,7 @@
         "play_pronunciation_for": "{language} の発音を再生",
         "pronunciation_voice": "発音音声",
         "saved": "保存済み",
+        "show_phonetics": "ふりがなを表示",
         "speech_rate": "音声速度: {rate}倍",
         "study_material_format": "{material} 第{book}課 L{lesson}",
         "test_voice": "音声をテスト",

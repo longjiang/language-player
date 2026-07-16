@@ -177,6 +177,7 @@
         "play_pronunciation_for": "{language} kiejtés lejátszása",
         "pronunciation_voice": "Kiejtés Hang",
         "saved": "Mentve",
+        "show_phonetics": "Fonetika megjelenítése",
         "speech_rate": "Beszédtempó: {rate}×",
         "study_material_format": "{material} Könyv {book} L{lesson}",
         "test_voice": "Hang tesztelése",

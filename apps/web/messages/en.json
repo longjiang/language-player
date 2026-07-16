@@ -184,6 +184,7 @@
         "play_pronunciation_for": "Play {language} Pronunciation",
         "pronunciation_voice": "Pronunciation Voice",
         "saved": "Saved",
+        "show_phonetics": "Show Phonetics",
         "speech_rate": "Speech Rate: {rate}×",
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "test_voice": "Test Voice",

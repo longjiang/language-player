@@ -177,6 +177,7 @@
         "play_pronunciation_for": "{language} Telaffuzu oynat",
         "pronunciation_voice": "Telaffuz Sesi",
         "saved": "Kaydedildi",
+        "show_phonetics": "Fonetiği göster",
         "speech_rate": "Konuşma Hızı: {rate}×",
         "study_material_format": "{material} Bk.{book} D{lesson}",
         "test_voice": "Sesi Test Et",

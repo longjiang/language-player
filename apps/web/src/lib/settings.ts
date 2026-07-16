@@ -43,6 +43,15 @@ export function setUseTraditional(value: boolean): void {
   set('use_traditional', value);
 }
 
+/** Whether to show phonetic guides (pinyin, furigana, etc.) above word blocks. Default: true. */
+export function getShowPhonetics(): boolean {
+  return get<boolean>('show_phonetics', true);
+}
+
+export function setShowPhonetics(value: boolean): void {
+  set('show_phonetics', value);
+}
+
 /** Subscribe to changes to a setting. Returns unsubscribe function. */
 export function onSettingChange(key: string, callback: (value: unknown) => void): () => void {
   if (typeof window === 'undefined') return () => {};

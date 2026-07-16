@@ -177,6 +177,7 @@
         "play_pronunciation_for": "{language} उच्चारण चलाएँ",
         "pronunciation_voice": "उच्चारण आवाज़",
         "saved": "सहेजा गया",
+        "show_phonetics": "ध्वन्यात्मकता दिखाएं",
         "speech_rate": "भाषण दर: {rate}×",
         "study_material_format": "{material} बुक {book} पाठ {lesson}",
         "test_voice": "आवाज़ का परीक्षण करें",

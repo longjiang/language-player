@@ -7,7 +7,8 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { getUseTraditional } from '@/lib/settings';
+import { getUseTraditional, getShowPhonetics } from '@/lib/settings';
+import { matchHiragana } from '@langplayer/utils';
 import type { TokenCache } from '@/lib/token-cache';
 
 // Simple in-memory cache to avoid re-lemmatizing the same text
@@ -191,15 +192,20 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   return (
     <div>
       <span className="leading-relaxed" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
-        {tokens.map((token, i) => (
-          <TokenSpan
-            key={i}
-            token={token}
-            isSelected={selectedToken === token}
-            isSaved={savedFormSet.has(token.text.toLowerCase())}
-            onClick={() => handleTokenClick(token)}
-          />
-        ))}
+        {tokens.map((token, i) => {
+          const showPhonetics = getShowPhonetics();
+          return (
+            <TokenSpan
+              key={i}
+              token={token}
+              l2Code={l2Code}
+              showPhonetics={showPhonetics}
+              isSelected={selectedToken === token}
+              isSaved={savedFormSet.has(token.text.toLowerCase())}
+              onClick={() => handleTokenClick(token)}
+            />
+          );
+        })}
       </span>
 
       {/* Dictionary popup */}
@@ -223,10 +229,12 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 /** Individual token span — rendered inline so whitespace tokens flow naturally. */
 const TokenSpan: React.FC<{
   token: LemmatizedToken;
+  l2Code: string;
+  showPhonetics: boolean;
   isSelected: boolean;
   isSaved: boolean;
   onClick: () => void;
-}> = ({ token, isSelected, isSaved, onClick }) => {
+}> = ({ token, l2Code, showPhonetics, isSelected, isSaved, onClick }) => {
   const isWord = token.lemmas.length > 0;
 
   if (!isWord) {
@@ -235,6 +243,11 @@ const TokenSpan: React.FC<{
     // word separators for English/Korean and are absent for Chinese/Japanese.
     return <>{token.text}</>;
   }
+
+  // ── Ruby text (phonetic guide) ──
+  const hasPhonetics = showPhonetics && token.pronunciation && token.pronunciation !== token.text;
+
+  const rubyContent = hasPhonetics ? renderRuby(token.text, token.pronunciation!, l2Code) : null;
 
   return (
     <span
@@ -253,10 +266,65 @@ const TokenSpan: React.FC<{
       `}
       title={token.lemmas.map(l => l.lemma).join(', ')}
     >
-      {token.text}
+      {rubyContent ?? token.text}
     </span>
   );
 };
+
+/**
+ * Render ruby text (phonetic guides) for a token.
+ *
+ * Japanese:  segments kanji↔furigana via matchHiragana.
+ *            Only shows furigana above kanji (kana segments render as-is).
+ * Chinese:   word-level pinyin above the entire word.
+ * Other:     word-level pronunciation above the entire word.
+ *
+ * Returns a React fragment with <ruby> elements, or null if nothing to show.
+ */
+function renderRuby(text: string, pronunciation: string, l2Code: string): React.ReactNode {
+  const base = baseCode(l2Code);
+
+  // ── Japanese: segment kanji from kana, show furigana only above kanji ──
+  if (base === 'ja') {
+    // Skip ruby entirely for words with no kanji (pure kana: を→オ, は→ワ, コンピューター, etc.)
+    if (!/[\u4e00-\u9faf]/.test(text)) {
+      return null;
+    }
+    const segments = matchHiragana({ text, reading: pronunciation });
+    return (
+      <>
+        {segments.map((seg, i) =>
+          seg.type === 'kanji' && seg.pronunciation !== seg.text ? (
+            <ruby key={i}>
+              {seg.text}
+              <rt>{seg.pronunciation}</rt>
+            </ruby>
+          ) : (
+            <React.Fragment key={i}>{seg.text}</React.Fragment>
+          ),
+        )}
+      </>
+    );
+  }
+
+  // ── Chinese / Cantonese: word-level pinyin/jyutping ──
+  if (base === 'zh' || base === 'yue') {
+    return (
+      <ruby>
+        {text}
+        <rt>{pronunciation}</rt>
+      </ruby>
+    );
+  }
+
+  // ── Other languages with pronunciation (e.g. Arabic) ──
+  return (
+    <ruby>
+      {text}
+      <rt>{pronunciation}</rt>
+    </ruby>
+  );
+}
 
 TokenizedText.displayName = 'TokenizedText';
 

@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
-import { getShowTranslation, setShowTranslation } from '@/lib/settings';
+import { getShowTranslation, setShowTranslation, getShowPhonetics, setShowPhonetics } from '@/lib/settings';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@/lib/token-cache';
@@ -76,6 +76,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   const t = useT();
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [showTranslation, setShowTranslationState] = useState(true);
+  const [showPhonetics, setShowPhoneticsState] = useState(true);
   const [activeIndex, setActiveIndex] = useState(-1);
 
   useEffect(() => {
@@ -101,6 +102,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
 
   useEffect(() => {
     setShowTranslationState(getShowTranslation());
+    setShowPhoneticsState(getShowPhonetics());
   }, []);
 
   const { translatedLines, loading: translating, progress } = useSubtitleTranslation(
@@ -160,6 +162,12 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     setShowTranslation(next);
   };
 
+  const togglePhonetics = () => {
+    const next = !showPhonetics;
+    setShowPhoneticsState(next);
+    setShowPhonetics(next);
+  };
+
   if (l2Lines.length === 0) {
     return (
       <div className="rounded-xl border border-border p-8 text-center text-sm text-muted-foreground">
@@ -180,6 +188,15 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
           >
             <Settings2 className="h-3 w-3" />
             {showTranslation ? t('subtitle.translation_on') : t('subtitle.translation_off')}
+          </button>
+          <button
+            onClick={togglePhonetics}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium transition-colors ${
+              showPhonetics ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+            }`}
+          >
+            {showPhonetics ? 'あ' : 'a'}
+            {t('label.show_phonetics')}
           </button>
           {translating && (
             <span className="tabular-nums">
