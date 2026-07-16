@@ -5,11 +5,17 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useVideos } from '@langplayer/api-client';
+import { apiClient } from '@langplayer/api-client';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { languageName, baseCode } from '@/lib/language-data';
 import { VideoGrid } from '@/components/video/video-grid';
-import { Search, Loader2, AlertCircle, Film } from 'lucide-react';
+import { Search, Loader2, AlertCircle, Film, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+interface VideoTag {
+  tag: string;
+  video_count: number;
+}
 
 const YOUTUBE_URL_RE = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
 
@@ -25,8 +31,28 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
+  const [tags, setTags] = useState<VideoTag[]>([]);
+  const [tagsLoading, setTagsLoading] = useState(true);
+  const [tagsExpanded, setTagsExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const loadingRef = useRef(false);
+
+  const INITIAL_TAG_COUNT = 15;
+  const visibleTags = tagsExpanded ? tags : tags.slice(0, INITIAL_TAG_COUNT);
+
+  // Fetch popular tags on mount
+  useEffect(() => {
+    let cancelled = false;
+    setTagsLoading(true);
+    apiClient.get<VideoTag[]>('/video-tags', {
+      params: { l2: baseCode(l2.code), limit: 50, min_count: 2 },
+    }).then((data) => {
+      if (!cancelled) { setTags(data); setTagsLoading(false); }
+    }).catch(() => {
+      if (!cancelled) setTagsLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [l2.code]);
 
   // Auto-search from ?q= param on first load
   useEffect(() => {
@@ -93,6 +119,11 @@ export default function SearchPage() {
     }
   }, [extractYouTubeID, router, l1.code, l2.code]);
 
+  const handleTagClick = useCallback((tag: string) => {
+    setQuery(tag);
+    doSearch(tag);
+  }, [doSearch]);
+
   const hasResults = results && results.length > 0;
   const hasSearched = results !== null || error !== null;
 
@@ -133,6 +164,43 @@ export default function SearchPage() {
         <p className="mt-4 text-sm text-muted-foreground">{t('msg.paste_youtube_url')}</p>
       )}
 
+      {/* Tag cloud */}
+      {!hasResults && !hasSearched && (
+        <div className="mt-6">
+          {tagsLoading ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : tags.length > 0 ? (
+            <>
+              <div className="flex items-center gap-1.5 mb-3">
+                <Tag className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">{t('title.tags')}</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {visibleTags.map((item) => (
+                  <button
+                    key={item.tag}
+                    onClick={() => handleTagClick(item.tag)}
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-foreground"
+                  >
+                    #{item.tag}
+                  </button>
+                ))}
+              </div>
+              {tags.length > INITIAL_TAG_COUNT && (
+                <button
+                  onClick={() => setTagsExpanded(!tagsExpanded)}
+                  className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {tagsExpanded ? t('action.show_less') : t('action.show_more')}
+                </button>
+              )}
+            </>
+          ) : null}
+        </div>
+      )}
+
       {/* Loading */}
       {loading && (
         <div className="flex justify-center py-16">
@@ -163,16 +231,6 @@ export default function SearchPage() {
             {t('msg.result_count', { count: results!.length })} {t('msg.for_term', { term: query })}
           </p>
           <VideoGrid videos={results!} />
-        </div>
-      )}
-
-      {/* Initial empty state */}
-      {!hasSearched && !loading && (
-        <div className="mt-12 rounded-2xl border-2 border-dashed border-border p-12 text-center">
-          <Search className="mx-auto h-12 w-12 text-muted-foreground/50" />
-          <p className="mt-4 text-muted-foreground">
-            {t('msg.search_videos_empty', { l2: languageName(l2.code, l1.code) })}
-          </p>
         </div>
       )}
     </div>
