@@ -44,7 +44,7 @@ export default function LiveTVPage() {
     setError(null);
 
     const l2Code = l2.code; // ISO 639-1, e.g. 'ja', 'zh'
-    const url = `${PYTHON_API_URL}/live-tv/channels?l2=${l2Code}&alive=1&sort=latency&limit=200`;
+    const url = `${PYTHON_API_URL}/live-tv/channels?l2=${l2Code}&sort=latency&limit=200`;
 
     fetch(url)
       .then(res => {
@@ -161,11 +161,25 @@ export default function LiveTVPage() {
   };
 
   // Signal indicator
-  const SignalIcon = ({ latency }: { latency: number | null }) => {
-    if (latency === null) return <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />;
+  const SignalIcon = ({ alive, latency }: { alive: number | null; latency: number | null }) => {
+    if (alive === 0) return <WifiOff className="h-3.5 w-3.5 text-red-400" />;
+    if (alive === null) return <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />;
+    if (latency === null) return <Wifi className="h-3.5 w-3.5 text-muted-foreground" />;
     if (latency < 300) return <Wifi className="h-3.5 w-3.5 text-green-500" />;
     if (latency < 1000) return <Wifi className="h-3.5 w-3.5 text-yellow-500" />;
     return <Wifi className="h-3.5 w-3.5 text-orange-500" />;
+  };
+
+  // Latency display
+  const LatencyText = ({ alive, latency }: { alive: number | null; latency: number | null }) => {
+    if (alive === 0) return <span className="text-[10px] text-red-400">dead</span>;
+    if (alive === null) return <span className="text-[10px] text-muted-foreground">—</span>;
+    if (latency === null) return null;
+    return (
+      <span className="text-[10px] tabular-nums text-muted-foreground w-8 text-right">
+        {latency < 1000 ? `${latency}ms` : `${(latency / 1000).toFixed(1)}s`}
+      </span>
+    );
   };
 
   if (loading) {
@@ -204,11 +218,9 @@ export default function LiveTVPage() {
           </div>
           {currentChannel && (
             <div className="mt-2 flex items-center gap-2">
-              <SignalIcon latency={currentChannel.latency_ms} />
+              <SignalIcon alive={currentChannel.alive} latency={currentChannel.latency_ms} />
               <p className="text-sm font-medium truncate">{currentChannel.name}</p>
-              {currentChannel.latency_ms != null && (
-                <span className="text-xs text-muted-foreground">{currentChannel.latency_ms}ms</span>
-              )}
+              <LatencyText alive={currentChannel.alive} latency={currentChannel.latency_ms} />
             </div>
           )}
         </div>
@@ -273,14 +285,8 @@ export default function LiveTVPage() {
 
                 {/* Signal */}
                 <div className="shrink-0 flex items-center gap-1">
-                  <SignalIcon latency={ch.latency_ms} />
-                  {ch.latency_ms != null && (
-                    <span className="text-[10px] tabular-nums text-muted-foreground w-8 text-right">
-                      {ch.latency_ms < 1000
-                        ? `${ch.latency_ms}ms`
-                        : `${(ch.latency_ms / 1000).toFixed(1)}s`}
-                    </span>
-                  )}
+                  <SignalIcon alive={ch.alive} latency={ch.latency_ms} />
+                  <LatencyText alive={ch.alive} latency={ch.latency_ms} />
                 </div>
               </button>
             ))}
