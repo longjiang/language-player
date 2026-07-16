@@ -133,7 +133,7 @@ const t = useT();
 
 To add a new translatable key:
 
-1. Create a JSON payload file with the key + English text + all 31 locale translations. All locales **must** be present (all-or-nothing — the script rejects partial data):
+1. Create a JSON payload file with the key + English text + all 31 locale translations. All locales **must** be present (all-or-nothing — the script rejects partial data). **Use your own multilingual knowledge to supply the translations — do NOT call external translation APIs for this step.**
 
 ```json
 {
