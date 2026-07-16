@@ -609,7 +609,7 @@
         "next_review_date": "下次复习日期：{date}。",
         "no_active_subscription": "未找到活跃订阅。",
         "no_cards_due": "没有到期卡片",
-        "no_cards_due_desc": "您的{deck}卡组中有 {total} 张卡片，但没有需要复习的。每天会有新卡片可供学习。",
+        "no_cards_due_desc": "您的 {deck} 卡组中有 {total} 张卡片，但没有需要复习的。每天会有新卡片可供学习。",
         "no_dictionary_entry": "未找到「{word}」的词典条目",
         "no_episodes": "未找到此节目的剧集。",
         "no_more_videos": "没有更多视频",
