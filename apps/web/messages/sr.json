@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Nalog",
+        "all_categories": "Све категорије",
+        "all_countries": "Све земље",
         "annual": "Godišnje",
         "app_name": "Language Player",
         "app_settings": "Podešavanja aplikacije",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Primeri iz videa",
         "explore": "Истражи",
         "explore_media": "Истражи медије",
+        "featured": "Истакнуто",
         "filter_by_locale": "ФИЛТРИРАЈ ПО ЛОКАЦИЈИ",
         "gender": "Rod",
         "go_pro": "Pređi na Pro",

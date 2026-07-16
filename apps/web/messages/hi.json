@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "खाता",
+        "all_categories": "सभी श्रेणियां",
+        "all_countries": "सभी देश",
         "annual": "वार्षिक",
         "app_name": "भाषा खिलाड़ी",
         "app_settings": "ऐप सेटिंग्स",
@@ -836,6 +838,7 @@
         "examples_from_videos": "वीडियो से उदाहरण",
         "explore": "अन्वेषण करें",
         "explore_media": "मीडिया अन्वेषण करें",
+        "featured": "विशेष",
         "filter_by_locale": "स्थान के अनुसार फ़िल्टर करें",
         "gender": "लिंग",
         "go_pro": "प्रो पर जाएं",

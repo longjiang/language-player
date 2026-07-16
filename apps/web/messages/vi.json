@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Tài khoản",
+        "all_categories": "Tất cả danh mục",
+        "all_countries": "Tất cả quốc gia",
         "annual": "Hàng năm",
         "app_name": "Trình phát ngôn ngữ",
         "app_settings": "Cài đặt ứng dụng",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Ví dụ từ video",
         "explore": "Khám phá",
         "explore_media": "Khám phá phương tiện",
+        "featured": "Nổi bật",
         "filter_by_locale": "LỌC THEO KHU VỰC",
         "gender": "Giới tính",
         "go_pro": "Chuyển sang Pro",

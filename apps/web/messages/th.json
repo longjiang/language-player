@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "บัญชี",
+        "all_categories": "ทุกหมวดหมู่",
+        "all_countries": "ทุกประเทศ",
         "annual": "รายปี",
         "app_name": "Language Player",
         "app_settings": "การตั้งค่าแอป",
@@ -836,6 +838,7 @@
         "examples_from_videos": "ตัวอย่างจากวิดีโอ",
         "explore": "สำรวจ",
         "explore_media": "สำรวจสื่อ",
+        "featured": "แนะนำ",
         "filter_by_locale": "กรองตามภาษา",
         "gender": "เพศ",
         "go_pro": "เปลี่ยนเป็น Pro",

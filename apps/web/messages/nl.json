@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Account",
+        "all_categories": "Alle categorieën",
+        "all_countries": "Alle landen",
         "annual": "Jaarlijks",
         "app_name": "Taal Speler",
         "app_settings": "App-instellingen",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Voorbeelden uit video's",
         "explore": "Verkennen",
         "explore_media": "Media verkennen",
+        "featured": "Uitgelicht",
         "filter_by_locale": "FILTEREN OP TAAL",
         "gender": "Geslacht",
         "go_pro": "Ga Pro",

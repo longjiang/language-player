@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Konto",
+        "all_categories": "Wszystkie kategorie",
+        "all_countries": "Wszystkie kraje",
         "annual": "Rocznie",
         "app_name": "Odtwarzacz językowy",
         "app_settings": "Ustawienia aplikacji",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Przykłady z filmów",
         "explore": "Odkrywaj",
         "explore_media": "Odkrywaj media",
+        "featured": "Polecane",
         "filter_by_locale": "FILTRUJ WEDŁUG LOKALIZACJI",
         "gender": "Rodzaj gramatyczny",
         "go_pro": "Przejdź na Pro",

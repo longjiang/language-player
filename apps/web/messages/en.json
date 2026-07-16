@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Account",
+        "all_categories": "All Categories",
+        "all_countries": "All Countries",
         "annual": "Annual",
         "app_name": "Language Player",
         "app_settings": "App Settings",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Examples from Videos",
         "explore": "Explore",
         "explore_media": "Explore Media",
+        "featured": "Featured",
         "filter_by_locale": "FILTER BY LOCALE",
         "gender": "Gender",
         "go_pro": "Go Pro",

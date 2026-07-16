@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "アカウント",
+        "all_categories": "すべてのカテゴリ",
+        "all_countries": "すべての国",
         "annual": "年次",
         "app_name": "言語プレイヤー",
         "app_settings": "アプリ設定",
@@ -836,6 +838,7 @@
         "examples_from_videos": "ビデオからの例",
         "explore": "探索",
         "explore_media": "メディアを探索",
+        "featured": "おすすめ",
         "filter_by_locale": "地域でフィルター",
         "gender": "性別",
         "go_pro": "Proにアップグレード",

@@ -776,6 +776,8 @@
     },
     "title": {
         "account": "帳號",
+        "all_categories": "所有類別",
+        "all_countries": "所有國家",
         "annual": "年繳",
         "app_name": "Language Player",
         "app_settings": "APP設定",
@@ -803,6 +805,7 @@
         "examples_from_videos": "影片中的例子",
         "explore": "探索",
         "explore_media": "探索媒體",
+        "featured": "精選",
         "filter_by_locale": "按地區篩選",
         "go_pro": "升級專業版",
         "how_did_you_hear": "你是怎麼認識我們的？",

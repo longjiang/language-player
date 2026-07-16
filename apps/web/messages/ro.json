@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Cont",
+        "all_categories": "Toate categoriile",
+        "all_countries": "Toate țările",
         "annual": "Anual",
         "app_name": "Player de limbi străine",
         "app_settings": "Setări aplicație",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Exemple din videoclipuri",
         "explore": "Explorează",
         "explore_media": "Explorează media",
+        "featured": "Recomandat",
         "filter_by_locale": "FILTRARE DUPĂ LOCAȚIE",
         "gender": "Gen",
         "go_pro": "Treci la Pro",

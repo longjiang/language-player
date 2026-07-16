@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Rekening",
+        "all_categories": "Alle Kategorieë",
+        "all_countries": "Alle Lande",
         "annual": "Jaarliks",
         "app_name": "Language Player",
         "app_settings": "Toepassinginstellings",
@@ -839,6 +841,7 @@
         "examples_from_videos": "Voorbeelde uit video's",
         "explore": "Verken",
         "explore_media": "Verken media",
+        "featured": "Uitgelig",
         "filter_by_locale": "FILTER VOLGENS LIGGING",
         "gender": "Geslag",
         "go_pro": "Gaan Pro",

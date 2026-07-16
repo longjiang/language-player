@@ -1,15 +1,163 @@
 'use client';
 
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Hls from 'hls.js';
 import { useLanguage } from '@/providers/language-provider';
 import { languageName } from '@/lib/language-data';
+import { iso639_3 } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
-import { Tv } from 'lucide-react';
+import { Loader2, Monitor } from 'lucide-react';
+
+interface LiveTVChannel {
+  name: string;
+  logo: string;
+  url: string;
+  category: string;
+  countries: string;
+  tvgID: string;
+  tvgName: string;
+  featured?: string;
+}
+
+const SERVER = 'https://server.chinesezerotohero.com';
 
 export default function LiveTVPage() {
   const { l1, l2 } = useLanguage();
   const t = useT();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
 
-  if (!l2.has.liveTV) {
+  const [channels, setChannels] = useState<LiveTVChannel[]>([]);
+  const [currentChannel, setCurrentChannel] = useState<LiveTVChannel | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [country, setCountry] = useState<string | null>(null);
+  const [category, setCategory] = useState<string | null>(null);
+  const [logoErrors, setLogoErrors] = useState<Set<string>>(new Set());
+
+  // Load channels
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    const code = iso639_3(l2.code);
+    fetch(`${SERVER}/data/live-tv-channels/${code}.csv.txt`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load');
+        return res.text();
+      })
+      .then(csv => {
+        if (cancelled) return;
+        const lines = csv.trim().split('\n');
+        const headers = lines[0]!.split(',');
+        const data: LiveTVChannel[] = lines.slice(1).map(line => {
+          const vals = parseCSVLine(line);
+          const obj: Record<string, string> = {};
+          headers.forEach((h, i) => { obj[h.trim()] = vals[i]?.trim() ?? ''; });
+          return obj as unknown as LiveTVChannel;
+        }).filter(c => c.url?.startsWith('https://') && c.category !== 'XXX');
+
+        setChannels(data);
+        setLoading(false);
+
+        const tvgID = searchParams.get('tvgID');
+        if (tvgID) {
+          const found = data.find(c => c.tvgID === tvgID);
+          if (found) setCurrentChannel(found);
+        }
+        if (!tvgID || !data.find(c => c.tvgID === tvgID)) {
+          const featured = data.find(c => c.featured && c.featured !== '0');
+          setCurrentChannel(featured || data[0] || null);
+        }
+      })
+      .catch(err => {
+        if (!cancelled) { setError(err.message); setLoading(false); }
+      });
+    return () => { cancelled = true; };
+  }, [l2.code]);
+
+  // Play HLS stream
+  useEffect(() => {
+    if (!currentChannel?.url || !videoRef.current) return;
+
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
+    const video = videoRef.current;
+
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(currentChannel.url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => {});
+      });
+      hlsRef.current = hls;
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = currentChannel.url;
+      video.play().catch(() => {});
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tvgID', currentChannel.tvgID);
+    router.replace(`/${l1.code}/${l2.code}/live-tv?${params.toString()}`, { scroll: false });
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [currentChannel]);
+
+  const setChannel = useCallback((ch: LiveTVChannel) => {
+    setCurrentChannel(ch);
+  }, []);
+
+  const categories = useMemo(() => {
+    const cats = [...new Set(channels.map(c => c.category || 'Misc'))].filter(Boolean);
+    return cats.sort();
+  }, [channels]);
+
+  const countries = useMemo(() => {
+    const all = channels.flatMap(c => (c.countries || '').split('|').filter(Boolean));
+    return [...new Set(all)].sort();
+  }, [channels]);
+
+  const hasFeatured = channels.some(c => c.featured && c.featured !== '0');
+
+  const filteredChannels = useMemo(() => {
+    return channels.filter(c => {
+      if (country && !(c.countries || '').split('|').includes(country)) return false;
+      if (category && (c.category || 'Misc') !== category) return false;
+      return true;
+    });
+  }, [channels, country, category]);
+
+  const handleLogoError = useCallback((tvgID: string) => {
+    setLogoErrors(prev => new Set(prev).add(tvgID));
+  }, []);
+
+  const countryName = (code: string) => {
+    try {
+      const regionNames = new Intl.DisplayNames([l1.code], { type: 'region' });
+      return regionNames.of(code.toUpperCase()) || code;
+    } catch { return code; }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error || channels.length === 0) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-12 text-center">
         <h1 className="text-3xl font-bold">{t('title.live_tv')}</h1>
@@ -21,14 +169,106 @@ export default function LiveTVPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <h1 className="text-3xl font-bold">{t('msg.live_tv_title', { l2: languageName(l2.code, l1.code) })}</h1>
-      <div className="mt-8 rounded-2xl border-2 border-dashed border-border p-12 text-center">
-        <Tv className="mx-auto h-10 w-10 text-muted-foreground" />
-        <p className="mt-4 text-muted-foreground">
-          {t('msg.live_tv_placeholder')}
-        </p>
+    <div className="mx-auto max-w-7xl px-4 py-6">
+      <h1 className="mb-4 text-2xl font-bold">{t('title.live_tv')} — {languageName(l2.code, l1.code)}</h1>
+
+      <div className="lg:flex lg:gap-6">
+        {/* Player */}
+        <div className="min-w-0 flex-1">
+          <div className="relative overflow-hidden rounded-lg bg-black shadow-lg">
+            <video
+              ref={videoRef}
+              className="w-full aspect-video"
+              controls
+              playsInline
+            />
+          </div>
+          {currentChannel && (
+            <p className="mt-2 text-sm font-medium truncate">{currentChannel.name}</p>
+          )}
+        </div>
+
+        {/* Channel list */}
+        <aside className="mt-6 shrink-0 lg:mt-0 lg:w-80 xl:w-96">
+          <div className="mb-3 flex gap-2">
+            <select
+              value={country ?? ''}
+              onChange={e => { setCountry(e.target.value || null); setCategory(null); }}
+              className="h-9 flex-1 rounded-lg border border-border bg-background px-2 text-xs"
+            >
+              <option value="">{t('title.all_countries')}</option>
+              {countries.map(c => (
+                <option key={c} value={c}>{countryName(c)}</option>
+              ))}
+            </select>
+            <select
+              value={category ?? ''}
+              onChange={e => {
+                const val = e.target.value;
+                if (val === 'featured') { setCategory(null); setCountry(null); }
+                else setCategory(val || null);
+              }}
+              className="h-9 flex-1 rounded-lg border border-border bg-background px-2 text-xs"
+            >
+              <option value="">{t('title.all_categories')}</option>
+              {hasFeatured && <option value="featured">{t('title.featured')}</option>}
+              {categories.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1 max-h-[calc(100vh-280px)] overflow-y-auto">
+            {filteredChannels.map(ch => (
+              <button
+                key={ch.tvgID || ch.url}
+                onClick={() => setChannel(ch)}
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                  currentChannel?.tvgID === ch.tvgID
+                    ? 'bg-primary/10 text-primary font-medium'
+                    : 'hover:bg-muted/50 text-foreground'
+                }`}
+              >
+                {ch.logo && !logoErrors.has(ch.tvgID) ? (
+                  <img
+                    src={ch.logo}
+                    alt=""
+                    className="h-7 w-9 shrink-0 rounded object-contain"
+                    onError={() => handleLogoError(ch.tvgID)}
+                  />
+                ) : (
+                  <div className="flex h-7 w-9 shrink-0 items-center justify-center rounded bg-muted">
+                    <Monitor className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                )}
+                <span className="truncate">{ch.name}</span>
+              </button>
+            ))}
+            {filteredChannels.length === 0 && (
+              <p className="py-8 text-center text-sm text-muted-foreground">{t('msg.no_results')}</p>
+            )}
+          </div>
+        </aside>
       </div>
     </div>
   );
+}
+
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]!;
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current);
+  return result;
 }

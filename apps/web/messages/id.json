@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Akun",
+        "all_categories": "Semua Kategori",
+        "all_countries": "Semua Negara",
         "annual": "Tahunan",
         "app_name": "Pemutar Bahasa",
         "app_settings": "Pengaturan Aplikasi",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Contoh dari Video",
         "explore": "Jelajahi",
         "explore_media": "Jelajahi Media",
+        "featured": "Unggulan",
         "filter_by_locale": "FILTER BERDASARKAN LOKAL",
         "gender": "Gender",
         "go_pro": "Tingkatkan ke Pro",
