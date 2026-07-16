@@ -384,3 +384,16 @@ export interface SrsProgressStore {
   /** Cards keyed by ISO 639-1 l2 code, then by dictionary entry ID. */
   cards: Record<string, Record<string, SrsFields>>;
 }
+
+// ── Inflection ───────────────────────────────
+
+/** A single inflected/conjugated form of a word. Matches the Python backend's
+ *  inflect_*.py output shape and Classic's inflector output. */
+export interface InflectedForm {
+  /** Grouping category (e.g., "head", "conjugation", "declensions", "verb"). */
+  table: string;
+  /** Human-readable label for this form (e.g., "polite affirmative", "past tense"). */
+  field: string;
+  /** The actual inflected/conjugated word form. */
+  form: string;
+}
