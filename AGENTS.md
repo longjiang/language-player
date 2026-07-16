@@ -118,6 +118,85 @@ Use these to log in during local development:
 
 Contact: [jon.long@zerotohero.ca](mailto:jon.long@zerotohero.ca)
 
+### Internationalization (i18n)
+
+**Never hardcode English strings in the UI.** Always use the `t()` function from `useT()`:
+
+```tsx
+import { useT } from '@/hooks/use-t';
+const t = useT();
+// ...
+<p>{t('msg.loading')}</p>
+```
+
+**Translation workflow** — `translations.csv` is the **source of truth**. Never edit locale JSONs directly.
+
+To add a new translatable key:
+
+1. Create a JSON payload file with the key + English text + all 31 locale translations. All locales **must** be present (all-or-nothing — the script rejects partial data):
+
+```json
+{
+  "key": "msg.my_new_key",
+  "en": "English text here",
+  "zh-Hans": "...",
+  "zh-Hant": "...",
+  "af": "...",
+  "ar": "...",
+  "ca": "...",
+  "de": "...",
+  "el": "...",
+  "es": "...",
+  "fi": "...",
+  "fr": "...",
+  "ga": "...",
+  "hi": "...",
+  "hr": "...",
+  "hu": "...",
+  "id": "...",
+  "it": "...",
+  "ja": "...",
+  "ko": "...",
+  "nl": "...",
+  "no": "...",
+  "pl": "...",
+  "pt": "...",
+  "ro": "...",
+  "ru": "...",
+  "sr": "...",
+  "sv": "...",
+  "sw": "...",
+  "th": "...",
+  "tr": "...",
+  "vi": "..."
+}
+```
+
+2. Add the key to the CSV (the locale order above matches the CSV columns):
+
+```bash
+node scripts/add-translation-key.mjs path/to/payload.json
+# or via stdin:
+echo '{"key":"msg.foo","en":"...",...}' | node scripts/add-translation-key.mjs --stdin
+```
+
+3. **Regenerate locale JSONs from the CSV:**
+
+```bash
+node scripts/sync-translations.mjs csv-to-json
+```
+
+4. For bulk translation of empty cells, use `batch-translate.mjs` (skips ICU plural strings to avoid syntax corruption):
+
+```bash
+node scripts/batch-translate.mjs --locale=fr
+```
+
+**ICU MessageFormat** — Strings with `{n, plural, one {...} other {...}}` must preserve ICU keywords (`one`, `other`, `plural`, `#`) exactly. Do NOT translate these keywords. Use `scripts/translate-icu.mjs` as a reference for manual ICU translations.
+
+**Full locale list** (31 locales, CSV column order):
+`en`, `zh-Hans`, `zh-Hant`, `af`, `ar`, `ca`, `de`, `el`, `es`, `fi`, `fr`, `ga`, `hi`, `hr`, `hu`, `id`, `it`, `ja`, `ko`, `nl`, `no`, `pl`, `pt`, `ro`, `ru`, `sr`, `sv`, `sw`, `th`, `tr`, `vi`
+
 ### When You Make Changes
 
 - Update `specs/` if you implement a new feature or change behavior
