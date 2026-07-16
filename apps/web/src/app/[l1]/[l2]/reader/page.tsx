@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { TokenizedText } from '@/components/tokenized-text';
@@ -15,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { getUseTraditional } from '@/lib/settings';
+import { TextActionMenu } from '@/components/text-action-menu';
 import { toTraditional } from '@/lib/chinese-script';
 // Lazy-load turndown for HTML→markdown conversion
 let _turndown: any = null;
@@ -409,7 +411,7 @@ export default function ReaderPage() {
       </div>
 
       {/* Main card with tab bar */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="rounded-xl border border-border bg-card">
         {/* Tab header — TranscriptQueuePanel style */}
         <div className="flex border-b border-border">
           <button
@@ -524,7 +526,7 @@ export default function ReaderPage() {
                   </div>
                 )}
                 <div>
-                  <ReactMarkdown>{text}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
                 </div>
               </>
             )}
@@ -539,7 +541,7 @@ export default function ReaderPage() {
                   if (block.kind === 'markdown') {
                     return (
                       <div key={i}>
-                        <ReactMarkdown>{block.raw}</ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown>
                       </div>
                     );
                   }
@@ -547,10 +549,12 @@ export default function ReaderPage() {
                   const Tag = blockTag(tb);
                   const textBlockIndex = blocks.slice(0, i).filter((b): b is TextBlock => b.kind === 'text').length;
                   return (
-                    <Tag key={i} className={blockClass(tb)}>
-                      <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
-                        tokens={blockTokens[textBlockIndex]} />
-                    </Tag>
+                    <TextActionMenu key={i} text={tb.text} l2Code={l2.code} l1Code={l1.code}>
+                      <Tag className={blockClass(tb)}>
+                        <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
+                          tokens={blockTokens[textBlockIndex]} />
+                      </Tag>
+                    </TextActionMenu>
                   );
                 })}
               </>
@@ -558,7 +562,9 @@ export default function ReaderPage() {
 
             {/* Fallback: block parser unavailable — plain TokenizedText */}
             {!blocks && (
-              <TokenizedText text={stripMarkdown(text)} l2Code={l2.code} textScale={1.15} context={ctx} />
+              <TextActionMenu text={stripMarkdown(text)} l2Code={l2.code} l1Code={l1.code}>
+                <TokenizedText text={stripMarkdown(text)} l2Code={l2.code} textScale={1.15} context={ctx} />
+              </TextActionMenu>
             )}
           </div>
 

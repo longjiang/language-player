@@ -168,6 +168,7 @@
         "custom_voice": "Głos niestandardowy",
         "free_account": "Darmowe konto",
         "gender_label": "Płeć:",
+        "key_vocabulary": "Kluczowe słownictwo",
         "l2_voices": "{l2} głosów",
         "lifetime_one_time": "Dożywotni — 169 $ jednorazowo",
         "measure_word": "Miara:",
@@ -751,6 +752,16 @@
         "annual": "${price}/rok",
         "lifetime": "${price}/dożywotnio",
         "monthly": "${price}/mies"
+    },
+    "prompt": {
+        "explain_block_header": "Przedstaw jasną analizę następującego tekstu w języku {l2Code}. Uwzględnij:",
+        "explain_block_item1": "Jego ogólne znaczenie w języku {l1Name}",
+        "explain_block_item2": "Analizę fraza po frazie wyjaśniającą, jak tekst jest zbudowany",
+        "explain_context_label": "Kontekst",
+        "explain_morphology": "Podaj wymowę i morfologię (lub etymologię, jeśli to stosowne). Jeśli odmienione, podaj lemat i odmianę; w przeciwnym razie nie wspominaj o odmianie ani lemacie.",
+        "explain_text_label": "Tekst",
+        "explain_word": "Wyjaśnij zwięźle w języku {l1Name}, co oznacza słowo {l2Name} ({code}) {word}.",
+        "explain_word_context": "Wyjaśnij zwięźle w języku {l1Name}, co oznacza słowo {l2Name} ({code}) {word} w wyrażeniu: {context}."
     },
     "review": {
         "again": "Ponownie",

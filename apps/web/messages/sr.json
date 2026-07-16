@@ -168,6 +168,7 @@
         "custom_voice": "Прилагођени глас",
         "free_account": "Бесплатан налог",
         "gender_label": "Пол:",
+        "key_vocabulary": "Кључни вокабулар",
         "l2_voices": "{l2} гласови",
         "lifetime_one_time": "Доживотно — 169$ једнократно",
         "measure_word": "Мера:",
@@ -751,6 +752,16 @@
         "annual": "${price}/год",
         "lifetime": "${price}/доживотно",
         "monthly": "${price}/мес"
+    },
+    "prompt": {
+        "explain_block_header": "Pruži jasnu analizu sledećeg teksta na {l2Code}. Uključi:",
+        "explain_block_item1": "Njegovo ukupno značenje na {l1Name}",
+        "explain_block_item2": "Analizu frazu po frazu koja objašnjava kako je tekst sastavljen",
+        "explain_context_label": "Kontekst",
+        "explain_morphology": "Navedi izgovor i morfologiju (ili etimologiju ako je prikladno). Ako je flektirano, navedi lemu i fleksiju; inače ne pominji fleksiju ni lemu.",
+        "explain_text_label": "Tekst",
+        "explain_word": "Ukratko objasni na {l1Name} šta znači {l2Name} ({code}) reč {word}.",
+        "explain_word_context": "Ukratko objasni na {l1Name} šta znači {l2Name} ({code}) reč {word} u izrazu: {context}."
     },
     "review": {
         "again": "Ponovo",

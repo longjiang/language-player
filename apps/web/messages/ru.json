@@ -168,6 +168,7 @@
         "custom_voice": "Пользовательский голос",
         "free_account": "Бесплатный аккаунт",
         "gender_label": "Пол:",
+        "key_vocabulary": "Ключевая лексика",
         "l2_voices": "{l2} голосов",
         "lifetime_one_time": "Навсегда — 169 $ единоразово",
         "measure_word": "Мера:",
@@ -751,6 +752,16 @@
         "annual": "${price}/год",
         "lifetime": "${price}/пожизненно",
         "monthly": "${price}/мес"
+    },
+    "prompt": {
+        "explain_block_header": "Предоставь чёткий разбор следующего текста на {l2Code}. Включи:",
+        "explain_block_item1": "Его общее значение на {l1Name}",
+        "explain_block_item2": "Пофразовый разбор, объясняющий, как построен текст",
+        "explain_context_label": "Контекст",
+        "explain_morphology": "Укажи произношение и морфологию (или этимологию, если уместно). Если слово изменяется, укажи лемму и форму словоизменения; иначе не упоминай словоизменение или лемму.",
+        "explain_text_label": "Текст",
+        "explain_word": "Кратко объясни на {l1Name}, что означает слово {l2Name} ({code}) {word}.",
+        "explain_word_context": "Кратко объясни на {l1Name}, что означает слово {l2Name} ({code}) {word} во фразе: {context}."
     },
     "review": {
         "again": "Снова",

@@ -167,6 +167,7 @@
         "custom_voice": "自訂語音",
         "free_account": "免費帳戶",
         "gender_label": "性別：",
+        "key_vocabulary": "關鍵詞彙",
         "l2_voices": "{l2} 語音",
         "lifetime_one_time": "終身 — US$169 一次性付款",
         "measure_word": "量詞：",
@@ -738,6 +739,16 @@
         "annual": "${price}/年",
         "lifetime": "${price}/終身",
         "monthly": "${price}/月"
+    },
+    "prompt": {
+        "explain_block_header": "請對以下{l2Code}文本進行清晰的分析。包括：",
+        "explain_block_item1": "其在{l1Name}中的整體含義",
+        "explain_block_item2": "逐句分析文本的構成方式",
+        "explain_context_label": "上下文",
+        "explain_morphology": "給出其發音和形態（或適當的詞源）。如果是屈折形式，給出其詞元（原形）和屈折變化；否則不要提及屈折或詞元。",
+        "explain_text_label": "文本",
+        "explain_word": "用{l1Name}簡潔地解釋{l2Name}（{code}）單詞{word}的含義。",
+        "explain_word_context": "用{l1Name}簡潔地解釋{l2Name}（{code}）單詞{word}在短語中的含義：{context}。"
     },
     "review": {
         "again": "重來",

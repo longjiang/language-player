@@ -168,6 +168,7 @@
         "custom_voice": "Anpassad röst",
         "free_account": "Gratis konto",
         "gender_label": "Kön:",
+        "key_vocabulary": "Nyckelordförråd",
         "l2_voices": "{l2} röster",
         "lifetime_one_time": "Livstid – 169 $ en gång",
         "measure_word": "Mått:",
@@ -751,6 +752,16 @@
         "annual": "${price}/år",
         "lifetime": "${price}/livstid",
         "monthly": "${price}/mån"
+    },
+    "prompt": {
+        "explain_block_header": "Ge en tydlig genomgång av följande {l2Code} text. Inkludera:",
+        "explain_block_item1": "Dess övergripande betydelse på {l1Name}",
+        "explain_block_item2": "En fras-för-fras-genomgång som förklarar hur texten är uppbyggd",
+        "explain_context_label": "Kontext",
+        "explain_morphology": "Ange dess uttal och morfologi (eller etymologi om lämpligt). Om böjt, ange dess lemma och böjning; annars, nämn inte böjning eller lemma.",
+        "explain_text_label": "Text",
+        "explain_word": "Förklara kortfattat på {l1Name} vad {l2Name} ({code}) ordet {word} betyder.",
+        "explain_word_context": "Förklara kortfattat på {l1Name} vad {l2Name} ({code}) ordet {word} betyder i frasen: {context}."
     },
     "review": {
         "again": "Igen",

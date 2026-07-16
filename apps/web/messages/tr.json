@@ -168,6 +168,7 @@
         "custom_voice": "Özel ses",
         "free_account": "Ücretsiz Hesap",
         "gender_label": "Cinsiyet:",
+        "key_vocabulary": "Anahtar kelime bilgisi",
         "l2_voices": "{l2} Sesler",
         "lifetime_one_time": "Ömür Boyu — 169$ tek seferlik",
         "measure_word": "Ölçü:",
@@ -751,6 +752,16 @@
         "annual": "${price}/yıl",
         "lifetime": "${price}/ömür boyu",
         "monthly": "${price}/ay"
+    },
+    "prompt": {
+        "explain_block_header": "Aşağıdaki {l2Code} metninin net bir dökümünü sağla. İçerik:",
+        "explain_block_item1": "{l1Name} dilinde genel anlamı",
+        "explain_block_item2": "Metnin nasıl oluşturulduğunu açıklayan ifade ifade döküm",
+        "explain_context_label": "Bağlam",
+        "explain_morphology": "Telaffuzunu ve morfolojisini (veya uygunsa etimolojisini) ver. Çekimliyse, lemmasını ve çekimini ver; değilse çekim veya lemmadan bahsetme.",
+        "explain_text_label": "Metin",
+        "explain_word": "{l1Name} kullanarak, {l2Name} ({code}) {word} kelimesinin ne anlama geldiğini kısaca açıkla.",
+        "explain_word_context": "{l1Name} kullanarak, {l2Name} ({code}) {word} kelimesinin şu ifadede ne anlama geldiğini kısaca açıkla: {context}."
     },
     "review": {
         "again": "Tekrar",

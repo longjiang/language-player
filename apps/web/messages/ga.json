@@ -168,6 +168,7 @@
         "custom_voice": "Guth saincheaptha",
         "free_account": "Cuntas Saor in Aisce",
         "gender_label": "Inscne:",
+        "key_vocabulary": "Príomhstór focal",
         "l2_voices": "{l2} Guthanna",
         "lifetime_one_time": "Saolré — $169 aon-uaire",
         "measure_word": "Tomhas:",
@@ -751,6 +752,16 @@
         "annual": "${price}/bliain",
         "lifetime": "${price}/ar feadh an tsaoil",
         "monthly": "${price}/mí"
+    },
+    "prompt": {
+        "explain_block_header": "Tabhair miondealú soiléir ar an téacs {l2Code} seo a leanas. San áireamh:",
+        "explain_block_item1": "A bhrí iomlán i {l1Name}",
+        "explain_block_item2": "Miondealú frása ar fhrása a mhíníonn conas atá an téacs tógtha",
+        "explain_context_label": "Comhthéacs",
+        "explain_morphology": "Tabhair a fhuaimniú agus a mhoirfeolaíocht (nó a fhréamhfhocal más cuí). Má tá sé infhillte, tabhair an lemma agus an t-infhilleadh; seachas sin, ná luaigh infhilleadh ná lemma.",
+        "explain_text_label": "Téacs",
+        "explain_word": "Mínigh go gonta i {l1Name} cad a chiallaíonn an focal {l2Name} ({code}) {word}.",
+        "explain_word_context": "Mínigh go gonta i {l1Name} cad a chiallaíonn an focal {l2Name} ({code}) {word} san fhrása: {context}."
     },
     "review": {
         "again": "Arís",

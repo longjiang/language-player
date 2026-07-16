@@ -168,6 +168,7 @@
         "custom_voice": "Aangepaste stem",
         "free_account": "Gratis account",
         "gender_label": "Geslacht:",
+        "key_vocabulary": "Sleutelwoordenschat",
         "l2_voices": "{l2} stemmen",
         "lifetime_one_time": "Levenslang — €169 eenmalig",
         "measure_word": "Maatstaf:",
@@ -751,6 +752,16 @@
         "annual": "${price}/jaar",
         "lifetime": "${price}/levenslang",
         "monthly": "${price}/mnd"
+    },
+    "prompt": {
+        "explain_block_header": "Geef een duidelijke uitsplitsing van de volgende {l2Code} tekst. Inclusief:",
+        "explain_block_item1": "De algemene betekenis in het {l1Name}",
+        "explain_block_item2": "Een frase-voor-frase uitsplitsing die uitlegt hoe de tekst is opgebouwd",
+        "explain_context_label": "Context",
+        "explain_morphology": "Geef de uitspraak en morfologie (of etymologie indien van toepassing). Als verbogen, geef het lemma en de verbuiging; anders, vermeld geen verbuiging of lemma.",
+        "explain_text_label": "Tekst",
+        "explain_word": "Leg beknopt uit in het {l1Name} wat het {l2Name} ({code}) woord {word} betekent.",
+        "explain_word_context": "Leg beknopt uit in het {l1Name} wat het {l2Name} ({code}) woord {word} betekent in de zin: {context}."
     },
     "review": {
         "again": "Opnieuw",

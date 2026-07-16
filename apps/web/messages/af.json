@@ -168,6 +168,7 @@
         "custom_voice": "Pasgemaakte stem",
         "free_account": "Gratis rekening",
         "gender_label": "Geslag:",
+        "key_vocabulary": "Sleutelwoordeskat",
         "l2_voices": "{l2} stemme",
         "lifetime_one_time": "Lewenslank — $169 eenmalig",
         "measure_word": "Maateenheid:",
@@ -751,6 +752,16 @@
         "annual": "${price}/jr",
         "lifetime": "${price}/leeftyd",
         "monthly": "${price}/md"
+    },
+    "prompt": {
+        "explain_block_header": "Verskaf 'n duidelike uiteensetting van die volgende {l2Code} teks. Sluit in:",
+        "explain_block_item1": "Die algehele betekenis daarvan in {l1Name}",
+        "explain_block_item2": "'n Frase-vir-frase uiteensetting wat verduidelik hoe die teks saamgestel is",
+        "explain_context_label": "Kon teks",
+        "explain_morphology": "Gee die uitspraak en morfologie (of etimologie indien toepaslik). As verbuig, gee die lemma en verbuiging; andersins, moenie verbuiging of lemma noem nie.",
+        "explain_text_label": "Teks",
+        "explain_word": "Verduidelik bondig met {l1Name} wat die {l2Name} ({code}) woord {word} beteken.",
+        "explain_word_context": "Verduidelik bondig met {l1Name} wat die {l2Name} ({code}) woord {word} in die frase beteken: {context}."
     },
     "review": {
         "again": "Weer",

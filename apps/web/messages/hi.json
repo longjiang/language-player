@@ -168,6 +168,7 @@
         "custom_voice": "कस्टम आवाज़",
         "free_account": "मुफ़्त खाता",
         "gender_label": "लिंग:",
+        "key_vocabulary": "मुख्य शब्दावली",
         "l2_voices": "{l2} आवाज़ें",
         "lifetime_one_time": "लाइफ़टाइम — $169 एकमुश्त",
         "measure_word": "माप:",
@@ -751,6 +752,16 @@
         "annual": "${price}/वर्ष",
         "lifetime": "${price}/आजीवन",
         "monthly": "${price}/माह"
+    },
+    "prompt": {
+        "explain_block_header": "निम्नलिखित {l2Code} पाठ का स्पष्ट विश्लेषण प्रदान करें। शामिल करें:",
+        "explain_block_item1": "{l1Name} में इसका समग्र अर्थ",
+        "explain_block_item2": "वाक्यांश-दर-वाक्यांश विश्लेषण जो बताए कि पाठ कैसे बना है",
+        "explain_context_label": "संदर्भ",
+        "explain_morphology": "इसका उच्चारण और रूपविज्ञान (या उपयुक्त हो तो व्युत्पत्ति) बताएं। यदि विकृत है, तो इसका लेमा (मूल रूप) और विकृति बताएं; अन्यथा विकृति या लेमा का उल्लेख न करें।",
+        "explain_text_label": "पाठ",
+        "explain_word": "{l1Name} में संक्षेप में बताएं कि {l2Name} ({code}) शब्द {word} का क्या अर्थ है।",
+        "explain_word_context": "{l1Name} में संक्षेप में बताएं कि {l2Name} ({code}) शब्द {word} का वाक्यांश में क्या अर्थ है: {context}।"
     },
     "review": {
         "again": "फिर से",

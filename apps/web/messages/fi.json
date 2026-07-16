@@ -168,6 +168,7 @@
         "custom_voice": "Mukautettu ääni",
         "free_account": "Ilmainen tili",
         "gender_label": "Sukupuoli:",
+        "key_vocabulary": "Keskeinen sanasto",
         "l2_voices": "{l2} äänet",
         "lifetime_one_time": "Elinikäinen — 169 $ kertamaksu",
         "measure_word": "Mitta:",
@@ -751,6 +752,16 @@
         "annual": "${price}/vuosi",
         "lifetime": "${price}/elinikäinen",
         "monthly": "${price}/kk"
+    },
+    "prompt": {
+        "explain_block_header": "Anna selkeä erittely seuraavasta {l2Code}-tekstistä. Sisältää:",
+        "explain_block_item1": "Sen yleinen merkitys kielellä {l1Name}",
+        "explain_block_item2": "Lausekohtainen erittely, joka selittää tekstin rakenteen",
+        "explain_context_label": "Kon teksti",
+        "explain_morphology": "Anna sen ääntämys ja morfologia (tai etymologia tarvittaessa). Jos taivutettu, anna lemma ja taivutus; muuten älä mainitse taivutusta tai lemmaa.",
+        "explain_text_label": "Teksti",
+        "explain_word": "Selitä ytimekkäästi kielellä {l1Name}, mitä {l2Name} ({code}) sana {word} tarkoittaa.",
+        "explain_word_context": "Selitä ytimekkäästi kielellä {l1Name}, mitä {l2Name} ({code}) sana {word} tarkoittaa lauseessa: {context}."
     },
     "review": {
         "again": "Uudelleen",

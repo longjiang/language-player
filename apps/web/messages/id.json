@@ -168,6 +168,7 @@
         "custom_voice": "Suara kustom",
         "free_account": "Akun Gratis",
         "gender_label": "Jenis kelamin:",
+        "key_vocabulary": "Kosakata kunci",
         "l2_voices": "{l2} Suara",
         "lifetime_one_time": "Seumur hidup — $169 sekali bayar",
         "measure_word": "Ukuran:",
@@ -751,6 +752,16 @@
         "annual": "${price}/tahun",
         "lifetime": "${price}/seumur hidup",
         "monthly": "${price}/bulan"
+    },
+    "prompt": {
+        "explain_block_header": "Berikan uraian yang jelas tentang teks {l2Code} berikut. Sertakan:",
+        "explain_block_item1": "Makna keseluruhannya dalam {l1Name}",
+        "explain_block_item2": "Uraian frasa demi frasa yang menjelaskan bagaimana teks disusun",
+        "explain_context_label": "Konteks",
+        "explain_morphology": "Berikan pengucapan dan morfologinya (atau etimologi jika sesuai). Jika berinfleksi, berikan lemma dan infleksinya; jika tidak, jangan sebutkan infleksi atau lemma.",
+        "explain_text_label": "Teks",
+        "explain_word": "Jelaskan secara singkat dalam {l1Name} apa arti kata {l2Name} ({code}) {word}.",
+        "explain_word_context": "Jelaskan secara singkat dalam {l1Name} apa arti kata {l2Name} ({code}) {word} dalam frasa: {context}."
     },
     "review": {
         "again": "Lagi",

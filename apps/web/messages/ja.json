@@ -168,6 +168,7 @@
         "custom_voice": "カスタム音声",
         "free_account": "無料アカウント",
         "gender_label": "性別：",
+        "key_vocabulary": "重要語彙",
         "l2_voices": "{l2} の音声",
         "lifetime_one_time": "ライフタイム — 一括 $169",
         "measure_word": "測定：",
@@ -751,6 +752,16 @@
         "annual": "${price}/年",
         "lifetime": "${price}/生涯",
         "monthly": "${price}/月"
+    },
+    "prompt": {
+        "explain_block_header": "次の{l2Code}テキストについて明確な分析を提供してください。含める内容：",
+        "explain_block_item1": "{l1Name}での全体的な意味",
+        "explain_block_item2": "テキストがどのように構成されているかを説明するフレーズごとの分析",
+        "explain_context_label": "文脈",
+        "explain_morphology": "発音と形態（または適切であれば語源）を示してください。活用形の場合は、見出し語（レンマ）と活用形を示し、そうでない場合は活用や見出し語に言及しないでください。",
+        "explain_text_label": "テキスト",
+        "explain_word": "{l1Name}で、{l2Name}（{code}）の単語{word}の意味を簡潔に説明してください。",
+        "explain_word_context": "{l1Name}で、{l2Name}（{code}）の単語{word}がフレーズ中で何を意味するか簡潔に説明してください：{context}。"
     },
     "review": {
         "again": "もう一度",
