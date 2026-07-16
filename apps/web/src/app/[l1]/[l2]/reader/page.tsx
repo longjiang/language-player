@@ -10,9 +10,11 @@ import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import {
-  BookOpen, Loader2, Globe, FileText, Columns2, ArrowLeftRight, Sparkles,
+  BookOpen, Loader2, Globe, FileText, ArrowLeftRight, Sparkles,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';import { getUseTraditional } from '@/lib/settings';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { getUseTraditional } from '@/lib/settings';
 import { toTraditional } from '@/lib/chinese-script';
 // Lazy-load turndown for HTML→markdown conversion
 let _turndown: any = null;
@@ -398,27 +400,46 @@ export default function ReaderPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
       {/* Header */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <BookOpen className="h-6 w-6 text-primary" />
-            <div><h1 className="text-xl font-bold">{title || t('title.reader')}</h1>
-            <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p></div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border border-border bg-muted/50 p-0.5">
-            <button onClick={() => setActiveTab('edit')}
-              className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${activeTab === 'edit' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-              <FileText className="mr-1 inline h-3 w-3" />{t('action.edit')}</button>
-            <button onClick={() => setActiveTab('read')}
-              className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${activeTab === 'read' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-              <BookOpen className="mr-1 inline h-3 w-3" />{t('action.read')}</button>
-          </div>
-          {activeTab === 'read' && (
-            <Button variant={showTranslation ? 'default' : 'outline'} size="sm" onClick={() => setShowTranslation(!showTranslation)}>
-              <Columns2 className="mr-1 h-3.5 w-3.5" />{t('action.translation')}</Button>
-          )}
+      <div className="mb-6 flex items-center gap-3">
+        <BookOpen className="h-6 w-6 text-primary" />
+        <div>
+          <h1 className="text-xl font-bold">{title || t('title.reader')}</h1>
+          <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p>
         </div>
       </div>
+
+      {/* Main card with tab bar */}
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        {/* Tab header — TranscriptQueuePanel style */}
+        <div className="flex border-b border-border">
+          <button
+            onClick={() => setActiveTab('edit')}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors',
+              activeTab === 'edit'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <FileText className="h-4 w-4" />
+            {t('action.edit')}
+          </button>
+          <button
+            onClick={() => setActiveTab('read')}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors',
+              activeTab === 'read'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <BookOpen className="h-4 w-4" />
+            {t('action.read')}
+          </button>
+        </div>
+
+        {/* Content area */}
+        <div className="p-4">
 
       {/* URL input */}
       <form onSubmit={(e) => { e.preventDefault(); if (urlInput.trim()) loadUrl(urlInput.trim(), false); }} className="mb-4 flex gap-2">
@@ -434,14 +455,16 @@ export default function ReaderPage() {
       {/* Edit mode */}
       {activeTab === 'edit' && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              {t('placeholder.paste_l2_text', { l2: l2.name })}
-            </span>
+          <textarea value={text} onChange={(e) => setText(e.target.value)}
+            placeholder={t('placeholder.paste_l2_text', { l2: l2.name })}
+            className="min-h-[40vh] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'} lang={l2.code} />
+          <div className="flex gap-2">
             {getSampleText(l2.code) && (
               <Button
                 variant="outline"
                 size="sm"
+                className="flex-1"
                 onClick={() => {
                   const sample = getSampleText(l2.code);
                   if (sample) { setText(sample.text); setTitle(sample.title); }
@@ -451,11 +474,15 @@ export default function ReaderPage() {
                 {t('action.fill_with_sample')}
               </Button>
             )}
+            <Button
+              size="sm"
+              className="flex-1"
+              onClick={() => setActiveTab('read')}
+            >
+              <Sparkles className="mr-1 h-3.5 w-3.5" />
+              {t('action.tokenize')}
+            </Button>
           </div>
-          <textarea value={text} onChange={(e) => setText(e.target.value)}
-            placeholder={t('placeholder.paste_l2_text', { l2: l2.name })}
-            className="min-h-[40vh] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'} lang={l2.code} />
           {showTranslation && (
             <textarea value={translation} onChange={(e) => setTranslation(e.target.value)}
               placeholder={t('placeholder.paste_l1_translation', { l1: l1.name })}
@@ -468,8 +495,7 @@ export default function ReaderPage() {
       {activeTab === 'read' && text && (
         <div className={`${showTranslation ? 'grid grid-cols-2 gap-6' : ''}`}>
           <div
-            className="rounded-lg border border-border bg-card p-6
-              [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4
+            className="[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4
               [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-3
               [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2
               [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mt-3 [&_h4]:mb-1
@@ -555,7 +581,7 @@ export default function ReaderPage() {
 
       {/* Empty state */}
       {activeTab === 'read' && !text && !loading && (
-        <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-lg border border-dashed border-border text-center">
+        <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
           <BookOpen className="mb-3 h-12 w-12 text-muted-foreground/40" />
           <h2 className="text-lg font-semibold text-muted-foreground">Reader</h2>
           <p className="mt-1 max-w-md text-sm text-muted-foreground">
@@ -565,6 +591,9 @@ export default function ReaderPage() {
             <FileText className="mr-1 h-4 w-4" />Start Writing</Button>
         </div>
       )}
+
+        </div>
+      </div>
 
       {error && (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950">{error}</div>
