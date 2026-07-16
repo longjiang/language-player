@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "Natrag na prijavu",
         "cancel": "Odustani",
-        "clear": "Očisti",
         "clear_words": "Očisti Riječi",
         "confirm_cancellation": "Potvrdi otkazivanje",
         "confirm_deletion": "Potvrdi brisanje",
@@ -21,23 +20,13 @@
         "login": "Prijava",
         "logout": "Odjava",
         "next": "Sljedeće",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "Registracija",
-        "remove_and_resave": "Remove & re-save",
         "resend": "Pošalji ponovno",
         "resend_code": "Ponovno pošalji kod",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "Pošalji poveznicu za resetiranje",
         "share": "Podijeli",
         "sign_up": "Registriraj se",
         "speak": "Izgovori",
-        "speed": "Speed (M)",
         "start_learning": "Započni učenje",
         "start_watching": "Počni gledati",
         "try_again": "Pokušaj ponovno",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Nadogradi na Pro",
         "verify": "Potvrdi",
         "verify_email": "Potvrdi e-poštu",
-        "video_info": "Video info",
         "watch": "Gledaj"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "Zadrži Trenutno Vrijeme",
         "processing": "Obrada...",
         "purchase": "Kupi",
-        "reset_time_to_zero": "Resetiraj Vrijeme na Nulu",
-        "switch_to_lifetime": "Prebaci na doživotni plan"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Ukratko objasni na {{l1Name}} što znači {{l2Name}} ({{l2Code}}) riječ '{{word}}' u frazi '{{text}}'.",
-            "inflection": "Navedi njezin osnovni oblik, promjenu i morfologiju."
-        }
+        "reset_time_to_zero": "Resetiraj Vrijeme na Nulu"
     },
     "duration": {
         "annual": "Naplata godišnje.",
@@ -85,7 +66,6 @@
         "general": "Došlo je do pogreške",
         "generic": "Pogreška",
         "invalid_credentials": "Nevažeća e-pošta ili lozinka. Pokušajte ponovno.",
-        "invalid_user_credentials": "Nevažeća e-pošta ili lozinka",
         "invalid_verification_code": "Nevažeći verifikacijski kod. Pokušajte ponovno.",
         "language_not_selected": "Jezik nije odabran",
         "loading_failed": "Učitavanje nije uspjelo",
@@ -95,8 +75,6 @@
         "payment_problem": "Došlo je do problema s vašim plaćanjem.",
         "registration_failed": "Registracija nije uspjela",
         "something_went_wrong": "Nešto je pošlo po zlu. Pokušajte ponovno.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "Pogreška pri ažuriranju napretka:",
         "user_info_not_found": "Informacije o korisniku nisu pronađene",
         "verification_failed": "Provjera nije uspjela."
@@ -113,7 +91,6 @@
         "currency": "2. Sve valute su u američkim dolarima (USD).",
         "lifetime_assumption": "1. Pod pretpostavkom da ćeš živjeti dulje od 2,4 godine."
     },
-    "key": "hr",
     "lang": {
         "ab": "Abhazijski",
         "acf": "Kreolski sveti Lucija Francuski",
@@ -468,18 +445,14 @@
     },
     "msg": {
         "already_have_account": "Već imaš račun?",
-        "auto_renews": "Automatski se obnavlja za {{time}}.",
         "auto_renews_in": "Automatski se obnavlja za {{days}} dana",
         "choose_action": "Odaberite radnju",
         "choose_languages": "Odaberite svoje jezike za početak",
-        "coming_soon": "Dolazi uskoro",
         "confirm_cancel_subscription": "Jesi li siguran/na da želiš otkazati pretplatu?",
         "contact_support": "Ako ste naišli na probleme, molimo kontaktirajte podršku.",
         "content_tailored": "Sadržaj prilagođen vama",
         "copy_success": "Tekst kopiran u međuspremnik",
         "creating_account": "Stvaranje računa...",
-        "customize_experience": "Prilagodite svoje iskustvo",
-        "dashboard_for": "Vaša nadzorna ploča za {l1} → {l2}",
         "delete_confirmation": "Jesi li siguran/na da želiš trajno izbrisati svoj račun? Izgubit ćeš sve spremljene riječi i napredak. Ova radnja se ne može poništiti.",
         "didnt_receive_code": "Niste primili kod?",
         "discover_the_power_of_comprehensible_input": "Otkrij moć razumljivog unosa kroz stotine tisuća videozapisa na više od 100 jezika.",
@@ -492,9 +465,7 @@
         "existing_subscription_warning": "Trenutno imate aktivan {{planType}} plan koji će se automatski obnoviti. Da biste izbjegli dvostruke naplate, morate otkazati postojeću pretplatu prije kupnje nove. Želite li otkazati postojeću {{planType}} pretplatu?",
         "expired": "Isteklo",
         "expires_in": "Ističe za {{days}} dana",
-        "expiring": "Ističe za {{time}}.",
         "explore_media_for": "Istraži {l2} medije",
-        "find_videos": "Pronađite videozapise na svojoj razini",
         "find_videos_matched": "Pronađite videozapise prilagođene vašoj razini",
         "forgot_password": "Zaboravljena lozinka?",
         "hsk_explanation": "\"HSK\" je službeni test znanja kineskog jezika, s Razinom 1 kao najnižom i Razinom 9 kao najvišom.",
@@ -504,43 +475,32 @@
         "landing_hero_desc": "Gledajte YouTube videozapise, filmove i TV emisije s interaktivnim dvostrukim titlovima. Dodirnite bilo koju riječ za trenutno pretraživanje rječnika.",
         "landing_hero_title_1": "Učite jezike kroz",
         "landing_hero_title_2": "videozapise",
-        "learning_from": "Učenje {l2} iz {l1}",
-        "lifetime_only": "Samo je doživotni plan dostupan kao opcija kupnje unutar aplikacije Apple.",
         "live_tv_available": "TV uživo dostupan",
         "loading": "Učitavanje...",
         "log_in_to_continue": "Prijavite se za nastavak učenja.",
         "logging_in": "Prijava u tijeku...",
-        "lookup_words": "Potražite riječi i spremite vokabular",
         "no_active_subscription": "Nije pronađena aktivna pretplata.",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "Nema više videa",
         "no_saved_words": "Još nema spremljenih riječi",
         "no_videos_found": "Nisu pronađeni videozapisi. Pokušajte drugu razinu ili provjerite kasnije.",
         "options": "Opcije",
-        "or_login_with": "Ili se prijavi putem:",
-        "or_register_with": "Ili se registriraj putem:",
         "paste_youtube_url": "Možete zalijepiti i YouTube URL za uvoz.",
         "pro_feature_chatgpt": "Samo Pro korisnici mogu koristiti AI značajke u Language Player Go. Za korištenje ove značajke, nadogradi na Pro.",
         "pro_transcript": "Nadogradi na Pro za pregled cijelog transkripta!",
         "pro_transcript_limit_reached": "Dostignut je limit transkripata. Nadogradi na Pro za pristup većem broju transkripata.",
-        "related_videos": "Povezani videozapisi će se pojaviti ovdje.",
         "renewal_failed_contact_support": "Obnova nije uspjela. Molimo kontaktirajte korisničku podršku.",
         "renews_today": "Obnavlja se danas",
         "sort_by": "Sortiraj po: {{sortBy}}",
         "start_learning": "Počnite učiti jezike kroz autentični video sadržaj.",
         "subscription_cancel_error": "Greška prilikom otkazivanja pretplate",
         "subscription_cancel_success": "Pretplata uspješno otkazana",
-        "subtitles_not_available": "Titlovi još nisu dostupni za ovaj videozapis.",
         "time_spent_learning": "Vrijeme provedeno učeći {{language}} u Language Playeru",
         "translated_subtitles": "Prevedeni titlovi dostupni",
         "upgrade_text": "Nadogradi na Pro za pristup većem broju videozapisa!",
         "verification_code_sent": "Poslali smo verifikacijski kod na {email}. Unesite ga u nastavku.",
         "verifying": "Provjera...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "Ovaj se videozapis nije mogao učitati. Možda je uklonjen ili postavljen kao privatan.",
         "videos_matching": "Videozapisi koji odgovaraju \"{{searchTerm}}\"",
-        "watch_live": "Gledajte kanale uživo",
-        "what_your_first_language": "Koji je tvoj materinski jezik?",
         "with_pro_you_can": "S Pro verzijom možeš:",
         "youtube_captions": "YouTube titlovi dostupni"
     },
@@ -581,23 +541,11 @@
         "monthly": "${{price}}/mj"
     },
     "setting": {
-        "auto_pronounce": "Automatski izgovor",
-        "dark_mode": "Tamni način rada",
-        "saved_words_blanks": "Spremljene riječi kao praznine",
-        "show_gloss_saved": "Prikaži glosu za spremljene",
-        "show_phonetics": "Prikaži fonetiku",
-        "show_translation": "Prikaži prijevod",
-        "use_traditional": "Koristi tradicionalno"
+        "dark_mode": "Tamni način rada"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "Najgledanije",
-        "right_context": "Right Context",
         "title": "Naslov",
-        "views": "Most Viewed",
         "year": "Godina"
     },
     "subscription": {
@@ -616,16 +564,11 @@
     "tab": {
         "dictionary": "Rječnik",
         "me": "Ja",
-        "media": "Mediji",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "Mediji"
     },
     "time": {
-        "days": "{{count, plural, one {# dan} few {# dana} other {# dana}}}",
         "hours": "sati",
         "min": "min",
-        "months": "{{count, plural, one {# mjesec} few {# mjeseca} other {# mjeseci}}}",
-        "months_and_days": "{{months}} i {{days}}",
         "sec": "sek"
     },
     "title": {

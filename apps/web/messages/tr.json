@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "Girişe geri dön",
         "cancel": "İptal",
-        "clear": "Temizle",
         "clear_words": "Kelimeleri Temizle",
         "confirm_cancellation": "İptali Onayla",
         "confirm_deletion": "Silme İşlemini Onayla",
@@ -21,23 +20,13 @@
         "login": "Giriş Yap",
         "logout": "Çıkış Yap",
         "next": "Sonraki",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "Kayıt Ol",
-        "remove_and_resave": "Remove & re-save",
         "resend": "Tekrar gönder",
         "resend_code": "Kodu Yeniden Gönder",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "Sıfırlama Bağlantısı Gönder",
         "share": "Paylaş",
         "sign_up": "Kaydol",
         "speak": "Konuş",
-        "speed": "Speed (M)",
         "start_learning": "Öğrenmeye Başla",
         "start_watching": "İzlemeye Başla",
         "try_again": "Tekrar Dene",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Pro'ya Yükselt",
         "verify": "Doğrula",
         "verify_email": "E-postayı Doğrula",
-        "video_info": "Video info",
         "watch": "İzle"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "Mevcut Zamanı Koru",
         "processing": "İşleniyor...",
         "purchase": "Satın Al",
-        "reset_time_to_zero": "Zamanı Sıfırla",
-        "switch_to_lifetime": "Ömür Boyu Plana Geç"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "{{l1Name}} kullanarak kısaca açıklayın, {{l2Name}} ({{l2Code}}) kelimesi '{{word}}' ifadesinde ne anlama geliyor?",
-            "inflection": "Lemmasını, çekimini ve morfolojisini verin."
-        }
+        "reset_time_to_zero": "Zamanı Sıfırla"
     },
     "duration": {
         "annual": "Yıllık faturalandırılır.",
@@ -85,7 +66,6 @@
         "general": "Bir hata oluştu",
         "generic": "Hata",
         "invalid_credentials": "Geçersiz e-posta veya şifre. Lütfen tekrar deneyin.",
-        "invalid_user_credentials": "Geçersiz e-posta veya şifre",
         "invalid_verification_code": "Geçersiz doğrulama kodu. Lütfen tekrar deneyin.",
         "language_not_selected": "Dil seçilmedi",
         "loading_failed": "Yükleme başarısız oldu",
@@ -95,8 +75,6 @@
         "payment_problem": "Ödemenizle ilgili bir sorun oluştu.",
         "registration_failed": "Kayıt başarısız",
         "something_went_wrong": "Bir şeyler yanlış gitti. Lütfen tekrar deneyin.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "İlerleme güncellenirken hata:",
         "user_info_not_found": "Kullanıcı bilgisi bulunamadı",
         "verification_failed": "Doğrulama başarısız oldu."
@@ -113,7 +91,6 @@
         "currency": "2. Tüm para birimleri ABD doları (USD) cinsindendir.",
         "lifetime_assumption": "1. 2,4 yıldan fazla yaşayacağınızı varsayarak."
     },
-    "key": "tr",
     "lang": {
         "ab": "Abhaz",
         "acf": "St. Lucia Creole Fransızca",
@@ -467,18 +444,14 @@
     },
     "msg": {
         "already_have_account": "Zaten hesabınız var mı?",
-        "auto_renews": "{{time}} içinde otomatik olarak yenilenir.",
         "auto_renews_in": "{{days}} gün içinde otomatik yenilenir",
         "choose_action": "Bir eylem seçin",
         "choose_languages": "Başlamak için dillerinizi seçin",
-        "coming_soon": "Çok yakında",
         "confirm_cancel_subscription": "Aboneliğinizi iptal etmek istediğinizden emin misiniz?",
         "contact_support": "Sorunlarla karşılaştıysanız, lütfen destekle iletişime geçin.",
         "content_tailored": "Size Özel İçerik",
         "copy_success": "Metin panoya kopyalandı",
         "creating_account": "Hesap oluşturuluyor...",
-        "customize_experience": "Deneyiminizi özelleştirin",
-        "dashboard_for": "Gösterge paneliniz: {l1} → {l2}",
         "delete_confirmation": "Hesabınızı kalıcı olarak silmek istediğinizden emin misiniz? Tüm kaydedilmiş kelimelerinizi ve ilerlemenizi kaybedeceksiniz. Bu işlem geri alınamaz.",
         "didnt_receive_code": "Kod almadınız mı?",
         "discover_the_power_of_comprehensible_input": "100'den fazla dilde yüz binlerce video aracılığıyla Anlaşılabilir Girdinin gücünü keşfedin.",
@@ -491,9 +464,7 @@
         "existing_subscription_warning": "Şu anda otomatik olarak yenilenecek aktif bir {{planType}} planınız var. Çift ücretlendirmeden kaçınmak için, yeni bir plan satın almadan önce mevcut aboneliğinizi iptal etmeniz gerekir. Mevcut {{planType}} aboneliğinizi iptal etmek ister misiniz?",
         "expired": "Süresi doldu",
         "expires_in": "{{days}} gün içinde sona eriyor",
-        "expiring": "{{time}} içinde sona eriyor.",
         "explore_media_for": "{l2} Medyasını Keşfet",
-        "find_videos": "Seviyenize uygun videolar bulun",
         "find_videos_matched": "Seviyenize uygun videolar bulun",
         "forgot_password": "Şifrenizi mi unuttunuz?",
         "hsk_explanation": "\"HSK\", seviye 1 en düşük ve seviye 9 en yüksek olmak üzere resmi Çince yeterlilik testidir.",
@@ -503,43 +474,32 @@
         "landing_hero_desc": "Etkileşimli çift altyazılı YouTube videoları, filmler ve TV şovları izleyin. Anında sözlük araması için herhangi bir kelimeye dokunun.",
         "landing_hero_title_1": "Dilleri öğrenin",
         "landing_hero_title_2": "video ile",
-        "learning_from": "{l1}dan {l2} öğren",
-        "lifetime_only": "Apple uygulama içi satın alma seçeneği olarak yalnızca Ömür Boyu plan mevcuttur.",
         "live_tv_available": "Canlı TV mevcut",
         "loading": "Yükleniyor...",
         "log_in_to_continue": "Öğrenmeye devam etmek için giriş yapın.",
         "logging_in": "Giriş yapılıyor...",
-        "lookup_words": "Kelimelere bakın ve kelime dağarcığınızı kaydedin",
         "no_active_subscription": "Aktif abonelik bulunamadı.",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "Başka video yok",
         "no_saved_words": "Henüz kaydedilmiş kelime yok",
         "no_videos_found": "Video bulunamadı. Farklı bir seviye deneyin veya daha sonra tekrar kontrol edin.",
         "options": "Seçenekler",
-        "or_login_with": "Ya da şununla giriş yapın:",
-        "or_register_with": "Ya da şununla kayıt olun:",
         "paste_youtube_url": "İçe aktarmak için YouTube URL'sini de yapıştırabilirsiniz.",
         "pro_feature_chatgpt": "Sadece Pro kullanıcıları Language Player Go'da AI özelliklerini kullanabilir. Bu özelliği kullanmak için Pro'ya yükseltin.",
         "pro_transcript": "Tam transkripti görmek için Pro'ya yükseltin!",
         "pro_transcript_limit_reached": "Transkript sınırına ulaşıldı. Daha fazla transkripte erişmek için lütfen Pro'ya yükseltin.",
-        "related_videos": "İlgili videolar burada görünecek.",
         "renewal_failed_contact_support": "Yenileme başarısız oldu. Lütfen müşteri desteğiyle iletişime geçin.",
         "renews_today": "Bugün yenileniyor",
         "sort_by": "Şuna göre sırala: {{sortBy}}",
         "start_learning": "Otantik video içerikleriyle dil öğrenmeye başlayın.",
         "subscription_cancel_error": "Abonelik iptal edilirken hata oluştu",
         "subscription_cancel_success": "Abonelik başarıyla iptal edildi",
-        "subtitles_not_available": "Bu video için altyazılar henüz mevcut değil.",
         "time_spent_learning": "Language Player'da {{language}} öğrenmeye harcanan süre",
         "translated_subtitles": "Çevrilmiş altyazılar mevcut",
         "upgrade_text": "Daha fazla videoya erişmek için Pro'ya yükseltin!",
         "verification_code_sent": "{email} adresine bir doğrulama kodu gönderdik. Aşağıya girin.",
         "verifying": "Doğrulanıyor...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "Bu video yüklenemedi. Kaldırılmış veya gizli yapılmış olabilir.",
         "videos_matching": "\"{{searchTerm}}\" ile eşleşen videolar",
-        "watch_live": "Canlı kanalları izle",
-        "what_your_first_language": "Anadiliniz nedir?",
         "with_pro_you_can": "Pro ile şunları yapabilirsiniz:",
         "youtube_captions": "YouTube altyazıları mevcut"
     },
@@ -580,23 +540,11 @@
         "monthly": "${{price}}/ay"
     },
     "setting": {
-        "auto_pronounce": "Otomatik Telaffuz",
-        "dark_mode": "Karanlık Mod",
-        "saved_words_blanks": "Boşluklar olarak Kaydedilen Kelimeler",
-        "show_gloss_saved": "Kaydedilenler için Açıklama Göster",
-        "show_phonetics": "Fonetikleri Göster",
-        "show_translation": "Çeviriyi Göster",
-        "use_traditional": "Geleneksel Kullan"
+        "dark_mode": "Karanlık Mod"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "En Çok İzlenen",
-        "right_context": "Right Context",
         "title": "Başlık",
-        "views": "Most Viewed",
         "year": "Yıl"
     },
     "subscription": {
@@ -615,16 +563,11 @@
     "tab": {
         "dictionary": "Sözlük",
         "me": "Ben",
-        "media": "Medya",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "Medya"
     },
     "time": {
-        "days": "{{count}} gün",
         "hours": "saat",
         "min": "dakika",
-        "months": "{{count}} ay",
-        "months_and_days": "{{months}} ve {{days}}",
         "sec": "saniye"
     },
     "title": {

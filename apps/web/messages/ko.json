@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "로그인으로 돌아가기",
         "cancel": "취소",
-        "clear": "지우기",
         "clear_words": "단어 지우기",
         "confirm_cancellation": "취소 확인",
         "confirm_deletion": "삭제 확인",
@@ -21,23 +20,13 @@
         "login": "로그인",
         "logout": "로그아웃",
         "next": "다음",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "회원가입",
-        "remove_and_resave": "Remove & re-save",
         "resend": "재전송",
         "resend_code": "코드 재전송",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "재설정 링크 보내기",
         "share": "공유",
         "sign_up": "가입하기",
         "speak": "말하기",
-        "speed": "Speed (M)",
         "start_learning": "학습 시작",
         "start_watching": "시청 시작",
         "try_again": "다시 시도",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "프로로 업그레이드",
         "verify": "확인",
         "verify_email": "이메일 인증",
-        "video_info": "Video info",
         "watch": "보기"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "현재 시간 유지",
         "processing": "처리 중...",
         "purchase": "구매",
-        "reset_time_to_zero": "시간을 0으로 재설정",
-        "switch_to_lifetime": "평생 플랜으로 전환"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "{{l1Name}}로 {{l2Name}} ({{l2Code}}) 단어 '{{word}}'가 '{{text}}' 문구에서 무슨 뜻인지 간단히 설명해주세요.",
-            "inflection": "그 단어의 기본형, 어형 변화, 형태를 제시해주세요."
-        }
+        "reset_time_to_zero": "시간을 0으로 재설정"
     },
     "duration": {
         "annual": "연간 요금 청구.",
@@ -85,7 +66,6 @@
         "general": "오류가 발생했습니다",
         "generic": "오류",
         "invalid_credentials": "잘못된 이메일 또는 비밀번호입니다. 다시 시도해 주세요.",
-        "invalid_user_credentials": "잘못된 이메일 또는 비밀번호",
         "invalid_verification_code": "잘못된 인증 코드입니다. 다시 시도해 주세요.",
         "language_not_selected": "언어가 선택되지 않았습니다",
         "loading_failed": "로딩 실패",
@@ -95,8 +75,6 @@
         "payment_problem": "결제에 문제가 있었습니다.",
         "registration_failed": "등록에 실패했습니다",
         "something_went_wrong": "문제가 발생했습니다. 다시 시도해 주세요.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "진행 상황 업데이트 오류:",
         "user_info_not_found": "사용자 정보를 찾을 수 없습니다",
         "verification_failed": "인증에 실패했습니다."
@@ -113,7 +91,6 @@
         "currency": "2. 모든 통화는 미국 달러(USD)로 표시됩니다.",
         "lifetime_assumption": "1. 2.4년 이상 살 것이라고 가정합니다."
     },
-    "key": "ko",
     "lang": {
         "ab": "압하지야어",
         "acf": "세인트루시아 크리올 프랑스어",
@@ -468,18 +445,14 @@
     },
     "msg": {
         "already_have_account": "이미 계정이 있으신가요?",
-        "auto_renews": "{{time}} 후 자동 갱신됩니다.",
         "auto_renews_in": "{{days}}일 후 자동 갱신",
         "choose_action": "작업 선택",
         "choose_languages": "시작할 언어를 선택하세요",
-        "coming_soon": "곧 출시됩니다",
         "confirm_cancel_subscription": "구독을 취소하시겠습니까?",
         "contact_support": "문제가 발생한 경우 지원팀에 문의하세요.",
         "content_tailored": "맞춤형 콘텐츠",
         "copy_success": "텍스트가 클립보드에 복사되었습니다",
         "creating_account": "계정 생성 중...",
-        "customize_experience": "경험 맞춤 설정",
-        "dashboard_for": "{l1} → {l2} 대시보드",
         "delete_confirmation": "계정을 영구적으로 삭제하시겠습니까? 저장된 모든 단어와 진행 상황이 손실됩니다. 이 작업은 취소할 수 없습니다.",
         "didnt_receive_code": "코드를 받지 못하셨나요?",
         "discover_the_power_of_comprehensible_input": "100개 이상의 언어로 된 수십만 개의 동영상을 통해 이해 가능한 입력의 힘을 발견하세요.",
@@ -492,9 +465,7 @@
         "existing_subscription_warning": "현재 자동 갱신되는 활성 {{planType}} 플랜이 있습니다. 중복 요금을 피하려면 새로운 플랜을 구매하기 전에 기존 구독을 취소해야 합니다. 기존 {{planType}} 구독을 취소하시겠습니까?",
         "expired": "만료됨",
         "expires_in": "{{days}}일 후 만료",
-        "expiring": "{{time}} 후 만료됩니다.",
         "explore_media_for": "{l2} 미디어 탐색",
-        "find_videos": "내 레벨에 맞는 비디오 찾기",
         "find_videos_matched": "내 레벨에 맞는 비디오 찾기",
         "forgot_password": "비밀번호를 잊으셨나요?",
         "hsk_explanation": "\"HSK\"는 공식 중국어 능력 시험으로, 1급이 가장 낮고 9급이 가장 높습니다.",
@@ -504,43 +475,32 @@
         "landing_hero_desc": "양방향 이중 자막으로 YouTube 동영상, 영화, TV 프로그램을 시청하세요. 단어를 탭하면 즉시 사전 검색이 가능합니다.",
         "landing_hero_title_1": "영상으로 배우는",
         "landing_hero_title_2": "언어 학습",
-        "learning_from": "{l1}로 {l2} 배우기",
-        "lifetime_only": "Apple 인앱 구매 옵션으로는 평생 플랜만 이용 가능합니다.",
         "live_tv_available": "실시간 TV 가능",
         "loading": "로딩 중...",
         "log_in_to_continue": "로그인하여 학습을 계속하세요.",
         "logging_in": "로그인 중...",
-        "lookup_words": "단어 검색 및 어휘 저장",
         "no_active_subscription": "활성 구독을 찾을 수 없습니다.",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "더 이상 동영상이 없습니다",
         "no_saved_words": "저장된 단어가 아직 없습니다",
         "no_videos_found": "비디오를 찾을 수 없습니다. 다른 레벨을 시도하거나 나중에 다시 확인하세요.",
         "options": "옵션",
-        "or_login_with": "또는 다음으로 로그인:",
-        "or_register_with": "또는 다음으로 가입:",
         "paste_youtube_url": "YouTube URL을 붙여넣어 가져올 수도 있습니다.",
         "pro_feature_chatgpt": "프로 사용자만 Language Player Go에서 AI 기능을 사용할 수 있습니다. 이 기능을 사용하려면 프로로 업그레이드하세요.",
         "pro_transcript": "전체 대본을 보려면 프로로 업그레이드하세요!",
         "pro_transcript_limit_reached": "대본 한도에 도달했습니다. 더 많은 대본에 접근하려면 프로로 업그레이드하세요.",
-        "related_videos": "관련 비디오가 여기에 표시됩니다.",
         "renewal_failed_contact_support": "갱신에 실패했습니다. 고객 지원에 문의하세요.",
         "renews_today": "오늘 갱신",
         "sort_by": "정렬 기준: {{sortBy}}",
         "start_learning": "실제 비디오 콘텐츠로 언어 학습을 시작하세요.",
         "subscription_cancel_error": "구독 취소 중 오류 발생",
         "subscription_cancel_success": "구독이 성공적으로 취소되었습니다",
-        "subtitles_not_available": "이 비디오의 자막은 아직 사용할 수 없습니다.",
         "time_spent_learning": "Language Player에서 {{language}} 학습에 소요된 시간",
         "translated_subtitles": "번역 자막 가능",
         "upgrade_text": "더 많은 동영상에 접근하려면 프로로 업그레이드하세요!",
         "verification_code_sent": "{email}로 인증 코드를 보냈습니다. 아래에 입력하세요.",
         "verifying": "확인 중...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "이 비디오를 로드할 수 없습니다. 삭제되었거나 비공개로 설정되었을 수 있습니다.",
         "videos_matching": "\"{{searchTerm}}\"와(과) 일치하는 동영상",
-        "watch_live": "실시간 채널 시청",
-        "what_your_first_language": "모국어가 무엇인가요?",
         "with_pro_you_can": "프로 버전으로 다음을 할 수 있습니다:",
         "youtube_captions": "YouTube 자막 가능"
     },
@@ -581,23 +541,11 @@
         "monthly": "${{price}}/월"
     },
     "setting": {
-        "auto_pronounce": "자동 발음",
-        "dark_mode": "다크 모드",
-        "saved_words_blanks": "저장된 단어를 빈칸으로 표시",
-        "show_gloss_saved": "저장된 단어에 대한 주석 표시",
-        "show_phonetics": "발음 기호 표시",
-        "show_translation": "번역 표시",
-        "use_traditional": "번체 사용"
+        "dark_mode": "다크 모드"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "가장 많이 본",
-        "right_context": "Right Context",
         "title": "제목",
-        "views": "Most Viewed",
         "year": "연도"
     },
     "subscription": {
@@ -616,16 +564,11 @@
     "tab": {
         "dictionary": "사전",
         "me": "나",
-        "media": "미디어",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "미디어"
     },
     "time": {
-        "days": "{{count}}일",
         "hours": "시간",
         "min": "분",
-        "months": "{{count}}개월",
-        "months_and_days": "{{months}}와 {{days}}",
         "sec": "초"
     },
     "title": {

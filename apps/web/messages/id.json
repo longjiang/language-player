@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "Kembali ke login",
         "cancel": "Batal",
-        "clear": "Bersihkan",
         "clear_words": "Hapus Kata-kata",
         "confirm_cancellation": "Konfirmasi Pembatalan",
         "confirm_deletion": "Konfirmasi Penghapusan",
@@ -21,23 +20,13 @@
         "login": "Masuk",
         "logout": "Keluar",
         "next": "Berikutnya",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "Daftar",
-        "remove_and_resave": "Remove & re-save",
         "resend": "Kirim ulang",
         "resend_code": "Kirim Ulang Kode",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "Kirim Tautan Reset",
         "share": "Bagikan",
         "sign_up": "Daftar",
         "speak": "Bicara",
-        "speed": "Speed (M)",
         "start_learning": "Mulai Belajar",
         "start_watching": "Mulai Menonton",
         "try_again": "Coba Lagi",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Tingkatkan ke Pro",
         "verify": "Verifikasi",
         "verify_email": "Verifikasi Email",
-        "video_info": "Video info",
         "watch": "Tonton"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "Pertahankan Waktu Saat Ini",
         "processing": "Memproses...",
         "purchase": "Beli",
-        "reset_time_to_zero": "Setel Ulang Waktu ke Nol",
-        "switch_to_lifetime": "Beralih ke Paket Seumur Hidup"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Jelaskan secara singkat menggunakan {{l1Name}}, apa arti kata {{l2Name}} ({{l2Code}}) '{{word}}' dalam frasa '{{text}}'.",
-            "inflection": "Berikan lema, infleksi, dan morfologinya."
-        }
+        "reset_time_to_zero": "Setel Ulang Waktu ke Nol"
     },
     "duration": {
         "annual": "Ditagih setiap tahun.",
@@ -85,7 +66,6 @@
         "general": "Terjadi kesalahan",
         "generic": "Kesalahan",
         "invalid_credentials": "Email atau kata sandi tidak valid. Silakan coba lagi.",
-        "invalid_user_credentials": "Email atau kata sandi tidak valid",
         "invalid_verification_code": "Kode verifikasi tidak valid. Silakan coba lagi.",
         "language_not_selected": "Bahasa belum dipilih",
         "loading_failed": "Gagal memuat",
@@ -95,8 +75,6 @@
         "payment_problem": "Ada masalah dengan pembayaran Anda.",
         "registration_failed": "Pendaftaran gagal",
         "something_went_wrong": "Terjadi kesalahan. Silakan coba lagi.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "Kesalahan memperbarui kemajuan:",
         "user_info_not_found": "Info pengguna tidak ditemukan",
         "verification_failed": "Verifikasi gagal."
@@ -113,7 +91,6 @@
         "currency": "2. Semua mata uang dalam dolar AS (USD).",
         "lifetime_assumption": "1. Menganggap Anda akan hidup lebih dari 2,4 tahun."
     },
-    "key": "id",
     "lang": {
         "ab": "Abkhazia",
         "acf": "St. Lucia Creole Perancis",
@@ -468,18 +445,14 @@
     },
     "msg": {
         "already_have_account": "Sudah memiliki akun?",
-        "auto_renews": "Otomatis diperbarui dalam {{time}}.",
         "auto_renews_in": "Perpanjangan otomatis dalam {{days}} hari",
         "choose_action": "Pilih tindakan",
         "choose_languages": "Pilih bahasa Anda untuk memulai",
-        "coming_soon": "Segera hadir",
         "confirm_cancel_subscription": "Apakah Anda yakin ingin membatalkan langganan Anda?",
         "contact_support": "Jika Anda mengalami masalah, silakan hubungi dukungan.",
         "content_tailored": "Konten yang Disesuaikan untuk Anda",
         "copy_success": "Teks disalin ke clipboard",
         "creating_account": "Membuat akun...",
-        "customize_experience": "Sesuaikan pengalaman Anda",
-        "dashboard_for": "Dasbor Anda untuk {l1} → {l2}",
         "delete_confirmation": "Apakah Anda yakin ingin menghapus akun Anda secara permanen? Anda akan kehilangan semua kata dan kemajuan yang disimpan. Tindakan ini tidak dapat diurungkan.",
         "didnt_receive_code": "Tidak menerima kode?",
         "discover_the_power_of_comprehensible_input": "Temukan kekuatan Input yang Dapat Dipahami melalui ratusan ribu video dalam lebih dari 100 bahasa.",
@@ -492,9 +465,7 @@
         "existing_subscription_warning": "Saat ini Anda memiliki rencana {{planType}} aktif yang akan diperpanjang secara otomatis. Untuk menghindari biaya ganda, Anda harus membatalkan langganan yang ada sebelum membeli yang baru. Apakah Anda ingin membatalkan langganan {{planType}} yang ada?",
         "expired": "Kedaluwarsa",
         "expires_in": "Berakhir dalam {{days}} hari",
-        "expiring": "Berakhir dalam {{time}}.",
         "explore_media_for": "Jelajahi Media {l2}",
-        "find_videos": "Temukan video sesuai level Anda",
         "find_videos_matched": "Temukan video yang cocok dengan level Anda",
         "forgot_password": "Lupa kata sandi?",
         "hsk_explanation": "\"HSK\" adalah tes kemahiran bahasa Mandarin resmi, dengan Level 1 sebagai yang terendah dan Level 9 sebagai yang tertinggi.",
@@ -504,43 +475,32 @@
         "landing_hero_desc": "Tonton video YouTube, film, dan acara TV dengan subtitle ganda interaktif. Ketuk kata apa pun untuk pencarian kamus instan.",
         "landing_hero_title_1": "Belajar bahasa melalui",
         "landing_hero_title_2": "video",
-        "learning_from": "Belajar {l2} dari {l1}",
-        "lifetime_only": "Hanya paket seumur hidup yang tersedia sebagai opsi pembelian dalam aplikasi Apple.",
         "live_tv_available": "TV Langsung tersedia",
         "loading": "Memuat...",
         "log_in_to_continue": "Masuk untuk melanjutkan belajar.",
         "logging_in": "Sedang masuk...",
-        "lookup_words": "Cari kata & simpan kosakata",
         "no_active_subscription": "Tidak ditemukan langganan aktif.",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "Tidak ada video lagi",
         "no_saved_words": "Belum ada kata yang disimpan",
         "no_videos_found": "Tidak ada video ditemukan. Coba level lain atau periksa kembali nanti.",
         "options": "Pilihan",
-        "or_login_with": "Atau masuk dengan:",
-        "or_register_with": "Atau daftar dengan:",
         "paste_youtube_url": "Anda juga dapat menempelkan URL YouTube untuk mengimpor.",
         "pro_feature_chatgpt": "Hanya pengguna Pro yang dapat menggunakan fitur AI di Language Player Go. Untuk menggunakan fitur ini, tingkatkan ke Pro.",
         "pro_transcript": "Tingkatkan ke Pro untuk melihat transkrip lengkap!",
         "pro_transcript_limit_reached": "Batas transkrip tercapai. Harap tingkatkan ke Pro untuk mengakses lebih banyak transkrip.",
-        "related_videos": "Video terkait akan muncul di sini.",
         "renewal_failed_contact_support": "Pembaruan gagal. Silakan hubungi dukungan pelanggan.",
         "renews_today": "Diperpanjang hari ini",
         "sort_by": "Urutkan berdasarkan: {{sortBy}}",
         "start_learning": "Mulai belajar bahasa melalui konten video otentik.",
         "subscription_cancel_error": "Kesalahan membatalkan langganan",
         "subscription_cancel_success": "Langganan berhasil dibatalkan",
-        "subtitles_not_available": "Subtitle belum tersedia untuk video ini.",
         "time_spent_learning": "Waktu yang dihabiskan belajar {{language}} di Language Player",
         "translated_subtitles": "Subtitle terjemahan tersedia",
         "upgrade_text": "Tingkatkan ke Pro untuk mengakses lebih banyak video!",
         "verification_code_sent": "Kami telah mengirim kode verifikasi ke {email}. Masukkan di bawah ini.",
         "verifying": "Memverifikasi...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "Video ini tidak dapat dimuat. Mungkin telah dihapus atau dibuat pribadi.",
         "videos_matching": "Video yang cocok dengan \"{{searchTerm}}\"",
-        "watch_live": "Tonton saluran langsung",
-        "what_your_first_language": "Apa bahasa ibu Anda?",
         "with_pro_you_can": "Dengan Pro, Anda dapat:",
         "youtube_captions": "Teks YouTube tersedia"
     },
@@ -581,23 +541,11 @@
         "monthly": "${{price}}/bulan"
     },
     "setting": {
-        "auto_pronounce": "Pengucapan Otomatis",
-        "dark_mode": "Mode Gelap",
-        "saved_words_blanks": "Kata yang Disimpan sebagai Kosong",
-        "show_gloss_saved": "Tampilkan Glos untuk yang Disimpan",
-        "show_phonetics": "Tampilkan Fonetik",
-        "show_translation": "Tampilkan Terjemahan",
-        "use_traditional": "Gunakan Tradisional"
+        "dark_mode": "Mode Gelap"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "Paling Banyak Dilihat",
-        "right_context": "Right Context",
         "title": "Judul",
-        "views": "Most Viewed",
         "year": "Tahun"
     },
     "subscription": {
@@ -616,16 +564,11 @@
     "tab": {
         "dictionary": "Kamus",
         "me": "Saya",
-        "media": "Media",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "Media"
     },
     "time": {
-        "days": "{{count, plural, one {# hari} other {# hari}}}",
         "hours": "jam",
         "min": "menit",
-        "months": "{{count, plural, one {# bulan} other {# bulan}}}",
-        "months_and_days": "{{months}} dan {{days}}",
         "sec": "detik"
     },
     "title": {

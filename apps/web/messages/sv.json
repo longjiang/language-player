@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "Tillbaka till inloggning",
         "cancel": "Avbryt",
-        "clear": "Rensa",
         "clear_words": "Rensa Ord",
         "confirm_cancellation": "Bekräfta avbokning",
         "confirm_deletion": "Bekräfta radering",
@@ -21,23 +20,13 @@
         "login": "Logga in",
         "logout": "Logga ut",
         "next": "Nästa",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "Registrera",
-        "remove_and_resave": "Remove & re-save",
         "resend": "Skicka igen",
         "resend_code": "Skicka kod igen",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "Skicka återställningslänk",
         "share": "Dela",
         "sign_up": "Registrera dig",
         "speak": "Tala",
-        "speed": "Speed (M)",
         "start_learning": "Börja lära dig",
         "start_watching": "Börja titta",
         "try_again": "Försök igen",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Uppgradera till Pro",
         "verify": "Verifiera",
         "verify_email": "Verifiera e-post",
-        "video_info": "Video info",
         "watch": "Titta"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "Behåll Nuvarande Tid",
         "processing": "Bearbetar...",
         "purchase": "Köp",
-        "reset_time_to_zero": "Återställ Tid till Noll",
-        "switch_to_lifetime": "Byt till livstidsplan"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Förklara kortfattat med {{l1Name}} vad {{l2Name}} ({{l2Code}}) ordet '{{word}}' betyder i frasen '{{text}}'.",
-            "inflection": "Ange dess lemma, böjning och morfologi."
-        }
+        "reset_time_to_zero": "Återställ Tid till Noll"
     },
     "duration": {
         "annual": "Faktureras årligen.",
@@ -85,7 +66,6 @@
         "general": "Ett fel uppstod",
         "generic": "Fel",
         "invalid_credentials": "Ogiltig e-post eller lösenord. Försök igen.",
-        "invalid_user_credentials": "Ogiltig e-post eller lösenord",
         "invalid_verification_code": "Ogiltig verifieringskod. Försök igen.",
         "language_not_selected": "Språk ej valt",
         "loading_failed": "Laddningen misslyckades",
@@ -95,8 +75,6 @@
         "payment_problem": "Det uppstod ett problem med din betalning.",
         "registration_failed": "Registrering misslyckades",
         "something_went_wrong": "Något gick fel. Försök igen.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "Fel vid uppdatering av framsteg:",
         "user_info_not_found": "Användarinformation hittades inte",
         "verification_failed": "Verifieringen misslyckades."
@@ -113,7 +91,6 @@
         "currency": "2. Alla valutor är i amerikanska dollar (USD).",
         "lifetime_assumption": "1. Förutsatt att du lever längre än 2,4 år."
     },
-    "key": "sv",
     "lang": {
         "ab": "Abchaziska",
         "acf": "St. Lucia kreolska franska",
@@ -468,18 +445,14 @@
     },
     "msg": {
         "already_have_account": "Har du redan ett konto?",
-        "auto_renews": "Förnyas automatiskt om {{time}}.",
         "auto_renews_in": "Förnyas automatiskt om {{days}} dagar",
         "choose_action": "Välj en åtgärd",
         "choose_languages": "Välj dina språk för att komma igång",
-        "coming_soon": "Kommer snart",
         "confirm_cancel_subscription": "Är du säker på att du vill avbryta prenumerationen?",
         "contact_support": "Om du har stött på problem, vänligen kontakta support.",
         "content_tailored": "Innehåll skräddarsytt för dig",
         "copy_success": "Text kopierad till urklipp",
         "creating_account": "Skapar konto...",
-        "customize_experience": "Anpassa din upplevelse",
-        "dashboard_for": "Din instrumentpanel för {l1} → {l2}",
         "delete_confirmation": "Är du säker på att du vill ta bort ditt konto permanent? Du kommer att förlora alla sparade ord och framsteg. Denna åtgärd kan inte ångras.",
         "didnt_receive_code": "Har du inte fått någon kod?",
         "discover_the_power_of_comprehensible_input": "Upptäck kraften i begriplig input genom hundratusentals videor på över 100 språk.",
@@ -492,9 +465,7 @@
         "existing_subscription_warning": "Du har för närvarande en aktiv {{planType}}-plan som kommer att förnyas automatiskt. För att undvika dubbla avgifter måste du avbryta din befintliga prenumeration innan du köper en ny. Vill du avbryta din befintliga {{planType}}-prenumeration?",
         "expired": "Utgången",
         "expires_in": "Löper ut om {{days}} dagar",
-        "expiring": "Upphör om {{time}}.",
         "explore_media_for": "Utforska {l2} media",
-        "find_videos": "Hitta videor på din nivå",
         "find_videos_matched": "Hitta videor som matchar din nivå",
         "forgot_password": "Glömt lösenord?",
         "hsk_explanation": "\"HSK\" är det officiella kinesiska färdighetsprovet, med nivå 1 som det lägsta och nivå 9 som det högsta.",
@@ -504,43 +475,32 @@
         "landing_hero_desc": "Titta på YouTube-videor, filmer och TV-program med interaktiva dubbla undertexter. Tryck på valfritt ord för omedelbar ordboksslagning.",
         "landing_hero_title_1": "Lär dig språk genom",
         "landing_hero_title_2": "video",
-        "learning_from": "Lär dig {l2} från {l1}",
-        "lifetime_only": "Endast livstidsplanen är tillgänglig som köpalternativ i Apple-appen.",
         "live_tv_available": "Live-TV tillgänglig",
         "loading": "Laddar...",
         "log_in_to_continue": "Logga in för att fortsätta lära dig.",
         "logging_in": "Loggar in...",
-        "lookup_words": "Slå upp ord och spara ordförråd",
         "no_active_subscription": "Ingen aktiv prenumeration hittades.",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "Inga fler videor",
         "no_saved_words": "Inga ord sparade än",
         "no_videos_found": "Inga videor hittades. Testa en annan nivå eller kom tillbaka senare.",
         "options": "Alternativ",
-        "or_login_with": "Eller logga in med:",
-        "or_register_with": "Eller registrera med:",
         "paste_youtube_url": "Du kan också klistra in YouTube-URL för att importera.",
         "pro_feature_chatgpt": "Endast Pro-användare kan använda AI-funktioner i Language Player Go. För att använda denna funktion, uppgradera till Pro.",
         "pro_transcript": "Uppgradera till Pro för att se hela transkriptet!",
         "pro_transcript_limit_reached": "Transkriptionsgräns nådd. Vänligen uppgradera till Pro för att få åtkomst till fler transkriptioner.",
-        "related_videos": "Relaterade videor visas här.",
         "renewal_failed_contact_support": "Förnyelsen misslyckades. Vänligen kontakta kundsupport.",
         "renews_today": "Förnyas idag",
         "sort_by": "Sortera efter: {{sortBy}}",
         "start_learning": "Börja lära dig språk genom autentiskt videoinnehåll.",
         "subscription_cancel_error": "Fel vid avbrytning av prenumeration",
         "subscription_cancel_success": "Prenumeration avbruten framgångsrikt",
-        "subtitles_not_available": "Undertexter är inte tillgängliga för denna video än.",
         "time_spent_learning": "Tid spenderad på att lära sig {{language}} i Language Player",
         "translated_subtitles": "Översatt textning tillgänglig",
         "upgrade_text": "Uppgradera till Pro för att få åtkomst till fler videor!",
         "verification_code_sent": "Vi har skickat en verifieringskod till {email}. Ange den nedan.",
         "verifying": "Verifierar...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "Denna video kunde inte laddas. Den kan ha tagits bort eller gjorts privat.",
         "videos_matching": "Videor som matchar \"{{searchTerm}}\"",
-        "watch_live": "Titta på livekanaler",
-        "what_your_first_language": "Vad är ditt modersmål?",
         "with_pro_you_can": "Med Pro kan du:",
         "youtube_captions": "YouTube-textning tillgänglig"
     },
@@ -581,23 +541,11 @@
         "monthly": "${{price}}/mån"
     },
     "setting": {
-        "auto_pronounce": "Automatiskt uttal",
-        "dark_mode": "Mörkt läge",
-        "saved_words_blanks": "Sparade ord som tomma",
-        "show_gloss_saved": "Visa glossa för sparade",
-        "show_phonetics": "Visa fonetik",
-        "show_translation": "Visa översättning",
-        "use_traditional": "Använd traditionell"
+        "dark_mode": "Mörkt läge"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "Mest sedda",
-        "right_context": "Right Context",
         "title": "Titel",
-        "views": "Most Viewed",
         "year": "År"
     },
     "subscription": {
@@ -616,16 +564,11 @@
     "tab": {
         "dictionary": "Ordbok",
         "me": "Jag",
-        "media": "Media",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "Media"
     },
     "time": {
-        "days": "{{count}} dagar",
         "hours": "timmar",
         "min": "min",
-        "months": "{{count}} månader",
-        "months_and_days": "{{months}} och {{days}}",
         "sec": "sek"
     },
     "title": {

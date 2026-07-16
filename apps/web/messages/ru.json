@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "Вернуться ко входу",
         "cancel": "Отмена",
-        "clear": "Очистить",
         "clear_words": "Очистить Слова",
         "confirm_cancellation": "Подтвердить отмену",
         "confirm_deletion": "Подтвердить удаление",
@@ -21,23 +20,13 @@
         "login": "Войти",
         "logout": "Выйти",
         "next": "Далее",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "Регистрация",
-        "remove_and_resave": "Remove & re-save",
         "resend": "Отправить снова",
         "resend_code": "Отправить код повторно",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "Отправить ссылку для сброса",
         "share": "Поделиться",
         "sign_up": "Регистрация",
         "speak": "Говорить",
-        "speed": "Speed (M)",
         "start_learning": "Начать обучение",
         "start_watching": "Начать просмотр",
         "try_again": "Попробовать снова",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Обновить до Pro",
         "verify": "Подтвердить",
         "verify_email": "Подтвердить email",
-        "video_info": "Video info",
         "watch": "Смотреть"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "Сохранить Текущее Время",
         "processing": "Обработка...",
         "purchase": "Купить",
-        "reset_time_to_zero": "Сбросить Время на Ноль",
-        "switch_to_lifetime": "Перейти на пожизненный план"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Кратко объясните на {{l1Name}}, что означает слово {{l2Name}} ({{l2Code}}) '{{word}}' в фразе '{{text}}'.",
-            "inflection": "Укажите его лемму, склонение и морфологию."
-        }
+        "reset_time_to_zero": "Сбросить Время на Ноль"
     },
     "duration": {
         "annual": "Счет ежегодно.",
@@ -85,7 +66,6 @@
         "general": "Произошла ошибка",
         "generic": "Ошибка",
         "invalid_credentials": "Неверный email или пароль. Пожалуйста, попробуйте снова.",
-        "invalid_user_credentials": "Неверный email или пароль",
         "invalid_verification_code": "Неверный код подтверждения. Пожалуйста, попробуйте снова.",
         "language_not_selected": "Язык не выбран",
         "loading_failed": "Ошибка загрузки",
@@ -95,8 +75,6 @@
         "payment_problem": "Возникла проблема с вашим платежом.",
         "registration_failed": "Регистрация не удалась",
         "something_went_wrong": "Что-то пошло не так. Пожалуйста, попробуйте снова.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "Ошибка обновления прогресса:",
         "user_info_not_found": "Информация о пользователе не найдена",
         "verification_failed": "Проверка не удалась."
@@ -113,7 +91,6 @@
         "currency": "2. Все валюты указаны в долларах США (USD).",
         "lifetime_assumption": "1. Предполагается, что вы проживете более 2,4 лет."
     },
-    "key": "ru",
     "lang": {
         "ab": "Абхазский",
         "acf": "Сент-Люсия Креольский Французский",
@@ -468,18 +445,14 @@
     },
     "msg": {
         "already_have_account": "Уже есть аккаунт?",
-        "auto_renews": "Автоматическое продление через {{time}}.",
         "auto_renews_in": "Автоматическое продление через {{days}} дней",
         "choose_action": "Выберите действие",
         "choose_languages": "Выберите языки, чтобы начать",
-        "coming_soon": "Скоро",
         "confirm_cancel_subscription": "Вы уверены, что хотите отменить подписку?",
         "contact_support": "Если вы столкнулись с проблемами, пожалуйста, свяжитесь со службой поддержки.",
         "content_tailored": "Контент, подобранный для вас",
         "copy_success": "Текст скопирован в буфер обмена",
         "creating_account": "Создание аккаунта...",
-        "customize_experience": "Настройте свой опыт",
-        "dashboard_for": "Ваша панель для {l1} → {l2}",
         "delete_confirmation": "Вы уверены, что хотите навсегда удалить свой аккаунт? Вы потеряете все сохраненные слова и прогресс. Это действие нельзя отменить.",
         "didnt_receive_code": "Не получили код?",
         "discover_the_power_of_comprehensible_input": "Откройте для себя силу понятного ввода через сотни тысяч видео на более чем 100 языках.",
@@ -492,9 +465,7 @@
         "existing_subscription_warning": "В настоящее время у вас есть активный план {{planType}}, который будет автоматически продлеваться. Чтобы избежать двойного списания средств, вы должны отменить существующую подписку перед покупкой новой. Хотите ли вы отменить существующую подписку {{planType}}?",
         "expired": "Истек срок действия",
         "expires_in": "Истекает через {{days}} дней",
-        "expiring": "Истекает через {{time}}.",
         "explore_media_for": "Обзор медиа {l2}",
-        "find_videos": "Найдите видео своего уровня",
         "find_videos_matched": "Найдите видео, подходящие вашему уровню",
         "forgot_password": "Забыли пароль?",
         "hsk_explanation": "\"HSK\" — это официальный тест на знание китайского языка, где уровень 1 является самым низким, а уровень 9 — самым высоким.",
@@ -504,43 +475,32 @@
         "landing_hero_desc": "Смотрите видео YouTube, фильмы и телешоу с интерактивными двойными субтитрами. Нажмите на любое слово для мгновенного поиска в словаре.",
         "landing_hero_title_1": "Изучайте языки через",
         "landing_hero_title_2": "видео",
-        "learning_from": "Изучение {l2} с {l1}",
-        "lifetime_only": "Только пожизненный план доступен в качестве встроенной покупки Apple.",
         "live_tv_available": "Прямой эфир доступен",
         "loading": "Загрузка...",
         "log_in_to_continue": "Войдите, чтобы продолжить обучение.",
         "logging_in": "Вход в систему...",
-        "lookup_words": "Ищите слова и сохраняйте словарь",
         "no_active_subscription": "Активная подписка не найдена.",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "Больше нет видео",
         "no_saved_words": "Слова еще не сохранены",
         "no_videos_found": "Видео не найдены. Попробуйте другой уровень или зайдите позже.",
         "options": "Опции",
-        "or_login_with": "Или войдите через:",
-        "or_register_with": "Или зарегистрируйтесь через:",
         "paste_youtube_url": "Вы также можете вставить URL YouTube для импорта.",
         "pro_feature_chatgpt": "Только пользователи Pro могут использовать функции ИИ в Language Player Go. Чтобы использовать эту функцию, обновитесь до Pro.",
         "pro_transcript": "Обновитесь до Pro, чтобы увидеть полную расшифровку!",
         "pro_transcript_limit_reached": "Достигнут лимит транскрипций. Пожалуйста, обновитесь до Pro для доступа к большему количеству транскрипций.",
-        "related_videos": "Похожие видео появятся здесь.",
         "renewal_failed_contact_support": "Не удалось продлить подписку. Пожалуйста, свяжитесь со службой поддержки.",
         "renews_today": "Продлевается сегодня",
         "sort_by": "Сортировать по: {{sortBy}}",
         "start_learning": "Начните изучать языки с помощью аутентичного видеоконтента.",
         "subscription_cancel_error": "Ошибка при отмене подписки",
         "subscription_cancel_success": "Подписка успешно отменена",
-        "subtitles_not_available": "Субтитры для этого видео пока недоступны.",
         "time_spent_learning": "Время, проведенное на изучении {{language}} в Language Player",
         "translated_subtitles": "Переведённые субтитры доступны",
         "upgrade_text": "Обновитесь до Pro для доступа к большему количеству видео!",
         "verification_code_sent": "Мы отправили код подтверждения на {email}. Введите его ниже.",
         "verifying": "Проверка...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "Это видео не может быть загружено. Возможно, оно было удалено или сделано приватным.",
         "videos_matching": "Видео, соответствующие \"{{searchTerm}}\"",
-        "watch_live": "Смотреть прямые эфиры",
-        "what_your_first_language": "Какой ваш родной язык?",
         "with_pro_you_can": "С Pro вы можете:",
         "youtube_captions": "Субтитры YouTube доступны"
     },
@@ -581,23 +541,11 @@
         "monthly": "${{price}}/мес"
     },
     "setting": {
-        "auto_pronounce": "Автоматическое произношение",
-        "dark_mode": "Темный режим",
-        "saved_words_blanks": "Сохраненные слова как пробелы",
-        "show_gloss_saved": "Показывать глоссарий для сохраненных",
-        "show_phonetics": "Показывать фонетику",
-        "show_translation": "Показывать перевод",
-        "use_traditional": "Использовать традиционный"
+        "dark_mode": "Темный режим"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "Самые просматриваемые",
-        "right_context": "Right Context",
         "title": "Название",
-        "views": "Most Viewed",
         "year": "Год"
     },
     "subscription": {
@@ -616,16 +564,11 @@
     "tab": {
         "dictionary": "Словарь",
         "me": "Я",
-        "media": "Медиа",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "Медиа"
     },
     "time": {
-        "days": "{{count}} дней",
         "hours": "часы",
         "min": "мин",
-        "months": "{{count}} месяцев",
-        "months_and_days": "{{months}} и {{days}}",
         "sec": "сек"
     },
     "title": {

@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "लॉगिन पर वापस जाएं",
         "cancel": "रद्द करें",
-        "clear": "साफ करें",
         "clear_words": "शब्द हटाएँ",
         "confirm_cancellation": "रद्द करने की पुष्टि करें",
         "confirm_deletion": "हटाने की पुष्टि करें",
@@ -21,23 +20,13 @@
         "login": "लॉग इन करें",
         "logout": "लॉग आउट करें",
         "next": "अगला",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "रजिस्टर करें",
-        "remove_and_resave": "Remove & re-save",
         "resend": "पुनः भेजें",
         "resend_code": "कोड पुनः भेजें",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "रीसेट लिंक भेजें",
         "share": "साझा करें",
         "sign_up": "साइन अप करें",
         "speak": "बोलें",
-        "speed": "Speed (M)",
         "start_learning": "सीखना प्रारंभ करें",
         "start_watching": "देखना शुरू करें",
         "try_again": "पुनः प्रयास करें",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "प्रो में अपग्रेड करें",
         "verify": "सत्यापित करें",
         "verify_email": "ईमेल सत्यापित करें",
-        "video_info": "Video info",
         "watch": "देखें"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "वर्तमान समय रखें",
         "processing": "प्रसंस्करण हो रहा है...",
         "purchase": "खरीदें",
-        "reset_time_to_zero": "समय को शून्य पर रीसेट करें",
-        "switch_to_lifetime": "आजीवन योजना पर स्विच करें"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "संक्षेप में समझाएँ कि {{l1Name}} का उपयोग करके {{l2Name}} ({{l2Code}}) शब्द '{{word}}' वाक्यांश '{{text}}' में क्या अर्थ रखता है।",
-            "inflection": "इसके मूल रूप, परिवर्तन और रूप विज्ञान दें।"
-        }
+        "reset_time_to_zero": "समय को शून्य पर रीसेट करें"
     },
     "duration": {
         "annual": "वार्षिक बिल किया गया।",
@@ -85,7 +66,6 @@
         "general": "एक त्रुटि उत्पन्न हुई",
         "generic": "त्रुटि",
         "invalid_credentials": "अमान्य ईमेल या पासवर्ड। कृपया पुनः प्रयास करें।",
-        "invalid_user_credentials": "अमान्य ईमेल या पासवर्ड",
         "invalid_verification_code": "अमान्य सत्यापन कोड। कृपया पुनः प्रयास करें।",
         "language_not_selected": "भाषा का चयन नहीं किया गया",
         "loading_failed": "लोड करने में विफल",
@@ -95,8 +75,6 @@
         "payment_problem": "आपके भुगतान में कोई समस्या थी।",
         "registration_failed": "पंजीकरण विफल",
         "something_went_wrong": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "प्रगति अपडेट करने में त्रुटि:",
         "user_info_not_found": "उपयोगकर्ता जानकारी नहीं मिली",
         "verification_failed": "सत्यापन विफल।"
@@ -113,7 +91,6 @@
         "currency": "2. सभी मुद्राएँ अमेरिकी डॉलर (USD) में।",
         "lifetime_assumption": "1. मान लें कि आप 2.4 वर्षों से अधिक जीवित रहेंगे।"
     },
-    "key": "hi",
     "lang": {
         "ab": "अब्खाज़ियन",
         "acf": "सेंट लूसिया क्रियोल फ्रेंच",
@@ -468,18 +445,14 @@
     },
     "msg": {
         "already_have_account": "क्या आपके पास पहले से एक खाता है?",
-        "auto_renews": "{{time}} में स्वत: नवीनीकरण।",
         "auto_renews_in": "{{days}} दिनों में स्वतः नवीनीकरण",
         "choose_action": "एक कार्रवाई चुनें",
         "choose_languages": "शुरू करने के लिए अपनी भाषाएँ चुनें",
-        "coming_soon": "जल्द आ रहा है",
         "confirm_cancel_subscription": "क्या आप वाकई अपनी सदस्यता रद्द करना चाहते हैं?",
         "contact_support": "यदि आपको समस्याओं का सामना करना पड़ा है, तो कृपया सहायता से संपर्क करें।",
         "content_tailored": "आपके लिए अनुकूलित सामग्री",
         "copy_success": "पाठ क्लिपबोर्ड पर कॉपी किया गया",
         "creating_account": "खाता बनाया जा रहा है...",
-        "customize_experience": "अपने अनुभव को अनुकूलित करें",
-        "dashboard_for": "आपका डैशबोर्ड {l1} → {l2} के लिए",
         "delete_confirmation": "क्या आप वाकई अपना खाता स्थायी रूप से हटाना चाहते हैं? आप अपने सभी सहेजे गए शब्दों और प्रगति को खो देंगे। इस क्रिया को पूर्ववत नहीं किया जा सकता।",
         "didnt_receive_code": "कोड प्राप्त नहीं हुआ?",
         "discover_the_power_of_comprehensible_input": "100 से अधिक भाषाओं में सैकड़ों हजारों वीडियो के माध्यम से समझने योग्य इनपुट की शक्ति की खोज करें।",
@@ -492,9 +465,7 @@
         "existing_subscription_warning": "वर्तमान में आपके पास एक सक्रिय {{planType}} योजना है जो स्वचालित रूप से नवीनीकृत हो जाएगी। दोहरे शुल्क से बचने के लिए, आपको नया खरीदने से पहले अपनी मौजूदा सदस्यता रद्द करनी होगी। क्या आप अपनी मौजूदा {{planType}} सदस्यता रद्द करना चाहते हैं?",
         "expired": "समाप्त हो गया",
         "expires_in": "{{days}} दिनों में समाप्त हो रहा है",
-        "expiring": "{{time}} में समाप्त हो रहा है।",
         "explore_media_for": "{l2} मीडिया अन्वेषण करें",
-        "find_videos": "अपने स्तर के वीडियो खोजें",
         "find_videos_matched": "अपने स्तर के अनुसार वीडियो खोजें",
         "forgot_password": "पासवर्ड भूल गए?",
         "hsk_explanation": "\"HSK\" चीनी प्रवीणता परीक्षा है, जिसमें स्तर 1 सबसे कम और स्तर 9 सबसे अधिक है।",
@@ -504,43 +475,32 @@
         "landing_hero_desc": "इंटरैक्टिव दोहरे उपशीर्षकों के साथ YouTube वीडियो, फिल्में और टीवी शो देखें। तुरंत शब्दकोश खोज के लिए किसी भी शब्द पर टैप करें।",
         "landing_hero_title_1": "भाषाएँ सीखें",
         "landing_hero_title_2": "वीडियो",
-        "learning_from": "{l1} से {l2} सीखें",
-        "lifetime_only": "Apple इन-ऐप खरीदारी के लिए केवल आजीवन योजना उपलब्ध है।",
         "live_tv_available": "लाइव टीवी उपलब्ध",
         "loading": "लोड हो रहा है...",
         "log_in_to_continue": "सीखना जारी रखने के लिए लॉग इन करें।",
         "logging_in": "लॉग इन हो रहा है...",
-        "lookup_words": "शब्द खोजें और शब्दावली सहेजें",
         "no_active_subscription": "कोई सक्रिय सदस्यता नहीं मिली।",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "और वीडियो नहीं हैं",
         "no_saved_words": "अभी तक कोई शब्द सहेजा नहीं गया",
         "no_videos_found": "कोई वीडियो नहीं मिला। कोई अन्य स्तर आज़माएं या बाद में पुनः जांचें।",
         "options": "विकल्प",
-        "or_login_with": "या इसके साथ लॉगिन करें:",
-        "or_register_with": "या इसके साथ रजिस्टर करें:",
         "paste_youtube_url": "आप इम्पोर्ट करने के लिए YouTube URL भी पेस्ट कर सकते हैं।",
         "pro_feature_chatgpt": "केवल प्रो उपयोगकर्ता ही Language Player Go में AI सुविधाओं का उपयोग कर सकते हैं। इस सुविधा का उपयोग करने के लिए, प्रो में अपग्रेड करें।",
         "pro_transcript": "पूर्ण प्रतिलेख देखने के लिए प्रो में अपग्रेड करें!",
         "pro_transcript_limit_reached": "प्रतिलेख सीमा तक पहुँच गया। अधिक प्रतिलेखों तक पहुँचने के लिए कृपया प्रो में अपग्रेड करें।",
-        "related_videos": "संबंधित वीडियो यहां दिखाई देंगे।",
         "renewal_failed_contact_support": "नवीनीकरण विफल रहा। कृपया ग्राहक सहायता से संपर्क करें।",
         "renews_today": "आज नवीनीकरण होता है",
         "sort_by": "इस प्रकार से छाँटें: {{sortBy}}",
         "start_learning": "प्रामाणिक वीडियो सामग्री के माध्यम से भाषाएँ सीखना शुरू करें।",
         "subscription_cancel_error": "सदस्यता रद्द करने में त्रुटि",
         "subscription_cancel_success": "सदस्यता सफलतापूर्वक रद्द की गई",
-        "subtitles_not_available": "इस वीडियो के लिए उपशीर्षक अभी उपलब्ध नहीं हैं।",
         "time_spent_learning": "Language Player में {{language}} सीखने में व्यतीत समय",
         "translated_subtitles": "अनुवादित उपशीर्षक उपलब्ध",
         "upgrade_text": "अधिक वीडियो तक पहुँचने के लिए प्रो में अपग्रेड करें!",
         "verification_code_sent": "हमने {email} पर एक सत्यापन कोड भेजा है। इसे नीचे दर्ज करें।",
         "verifying": "सत्यापित हो रहा है...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "यह वीडियो लोड नहीं किया जा सका। हो सकता है इसे हटा दिया गया हो या निजी बना दिया गया हो।",
         "videos_matching": "\"{{searchTerm}}\" से मेल खाते वीडियो",
-        "watch_live": "लाइव चैनल देखें",
-        "what_your_first_language": "आपकी पहली भाषा क्या है?",
         "with_pro_you_can": "प्रो के साथ, आप कर सकते हैं:",
         "youtube_captions": "YouTube कैप्शन उपलब्ध"
     },
@@ -581,23 +541,11 @@
         "monthly": "${{price}}/माह"
     },
     "setting": {
-        "auto_pronounce": "स्वचालित उच्चारण",
-        "dark_mode": "डार्क मोड",
-        "saved_words_blanks": "सहेजे गए शब्द रिक्त के रूप में",
-        "show_gloss_saved": "सहेजे गए के लिए व्याख्या दिखाएँ",
-        "show_phonetics": "ध्वन्यात्मकता दिखाएँ",
-        "show_translation": "अनुवाद दिखाएँ",
-        "use_traditional": "पारंपरिक का उपयोग करें"
+        "dark_mode": "डार्क मोड"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "सबसे अधिक देखा गया",
-        "right_context": "Right Context",
         "title": "शीर्षक",
-        "views": "Most Viewed",
         "year": "वर्ष"
     },
     "subscription": {
@@ -616,16 +564,11 @@
     "tab": {
         "dictionary": "शब्दकोश",
         "me": "मैं",
-        "media": "मीडिया",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "मीडिया"
     },
     "time": {
-        "days": "{{count, plural, one {# दिन} other {# दिन}}}",
         "hours": "घंटे",
         "min": "मिनट",
-        "months": "{{count, plural, one {# महीना} other {# महीने}}}",
-        "months_and_days": "{{months}} और {{days}}",
         "sec": "सेकंड"
     },
     "title": {

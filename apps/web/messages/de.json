@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "Zurück zur Anmeldung",
         "cancel": "Abbrechen",
-        "clear": "Löschen",
         "clear_words": "Wörter Löschen",
         "confirm_cancellation": "Stornierung bestätigen",
         "confirm_deletion": "Löschung bestätigen",
@@ -21,23 +20,13 @@
         "login": "Anmelden",
         "logout": "Abmelden",
         "next": "Weiter",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "Registrieren",
-        "remove_and_resave": "Remove & re-save",
         "resend": "Erneut senden",
         "resend_code": "Code erneut senden",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "Reset-Link senden",
         "share": "Teilen",
         "sign_up": "Registrieren",
         "speak": "Sprechen",
-        "speed": "Speed (M)",
         "start_learning": "Lernen beginnen",
         "start_watching": "Anschauen starten",
         "try_again": "Erneut versuchen",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Auf Pro upgraden",
         "verify": "Verifizieren",
         "verify_email": "E-Mail bestätigen",
-        "video_info": "Video info",
         "watch": "Ansehen"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "Aktuelle Zeit Behalten",
         "processing": "Wird verarbeitet...",
         "purchase": "Kaufen",
-        "reset_time_to_zero": "Zeit auf Null Zurücksetzen",
-        "switch_to_lifetime": "Zum Lifetime-Plan wechseln"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Erkläre kurz auf {{l1Name}}, was das {{l2Name}} ({{l2Code}}) Wort '{{word}}' in der Phrase '{{text}}' bedeutet.",
-            "inflection": "Gib dessen Grundform, Flexion und Morphologie an."
-        }
+        "reset_time_to_zero": "Zeit auf Null Zurücksetzen"
     },
     "duration": {
         "annual": "Jährliche Abrechnung.",
@@ -85,7 +66,6 @@
         "general": "Ein Fehler ist aufgetreten",
         "generic": "Fehler",
         "invalid_credentials": "Ungültige E-Mail oder Passwort. Bitte versuche es erneut.",
-        "invalid_user_credentials": "Ungültige E-Mail oder Passwort",
         "invalid_verification_code": "Ungültiger Bestätigungscode. Bitte versuche es erneut.",
         "language_not_selected": "Sprache nicht ausgewählt",
         "loading_failed": "Laden fehlgeschlagen",
@@ -95,8 +75,6 @@
         "payment_problem": "Es gab ein Problem mit Ihrer Zahlung.",
         "registration_failed": "Registrierung fehlgeschlagen",
         "something_went_wrong": "Etwas ist schief gelaufen. Bitte versuche es erneut.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "Fehler beim Aktualisieren des Fortschritts:",
         "user_info_not_found": "Benutzerinformationen nicht gefunden",
         "verification_failed": "Überprüfung fehlgeschlagen."
@@ -113,7 +91,6 @@
         "currency": "2. Alle Währungen in US-Dollar (USD).",
         "lifetime_assumption": "1. Angenommen, Sie leben länger als 2,4 Jahre."
     },
-    "key": "de",
     "lang": {
         "ab": "Abchasisch",
         "acf": "St. Lucia Kreolisch Französisch",
@@ -468,18 +445,14 @@
     },
     "msg": {
         "already_have_account": "Haben Sie bereits ein Konto?",
-        "auto_renews": "Verlängert sich automatisch in {{time}}.",
         "auto_renews_in": "Automatische Erneuerung in {{days}} Tagen",
         "choose_action": "Wähle eine Aktion",
         "choose_languages": "Wählen Sie Ihre Sprachen zum Starten",
-        "coming_soon": "Demnächst verfügbar",
         "confirm_cancel_subscription": "Sind Sie sicher, dass Sie Ihr Abonnement kündigen möchten?",
         "contact_support": "Wenn Sie auf Probleme gestoßen sind, wenden Sie sich bitte an den Support.",
         "content_tailored": "Auf Sie zugeschnittene Inhalte",
         "copy_success": "Text in die Zwischenablage kopiert",
         "creating_account": "Konto wird erstellt...",
-        "customize_experience": "Passen Sie Ihr Erlebnis an",
-        "dashboard_for": "Dein Dashboard für {l1} → {l2}",
         "delete_confirmation": "Sind Sie sicher, dass Sie Ihr Konto dauerhaft löschen möchten? Sie verlieren alle Ihre gespeicherten Wörter und Fortschritte. Diese Aktion kann nicht rückgängig gemacht werden.",
         "didnt_receive_code": "Keinen Code erhalten?",
         "discover_the_power_of_comprehensible_input": "Entdecken Sie die Kraft des verständlichen Inputs durch Hunderttausende von Videos in über 100 Sprachen.",
@@ -492,9 +465,7 @@
         "existing_subscription_warning": "Sie haben derzeit einen aktiven {{planType}}-Plan, der sich automatisch verlängert. Um doppelte Gebühren zu vermeiden, müssen Sie Ihr bestehendes Abonnement kündigen, bevor Sie ein neues erwerben. Möchten Sie Ihr bestehendes {{planType}}-Abonnement kündigen?",
         "expired": "Abgelaufen",
         "expires_in": "Läuft in {{days}} Tagen ab",
-        "expiring": "Läuft in {{time}} ab.",
         "explore_media_for": "{l2} Medien entdecken",
-        "find_videos": "Finden Sie Videos auf Ihrem Niveau",
         "find_videos_matched": "Finde Videos, die deinem Niveau entsprechen",
         "forgot_password": "Passwort vergessen?",
         "hsk_explanation": "\"HSK\" ist der offizielle chinesische Sprachtest, wobei Stufe 1 die niedrigste und Stufe 9 die höchste ist.",
@@ -504,27 +475,20 @@
         "landing_hero_desc": "Sieh dir YouTube-Videos, Filme und TV-Sendungen mit interaktiven Doppeluntertiteln an. Tippe auf ein beliebiges Wort für eine sofortige Wörterbuchsuche.",
         "landing_hero_title_1": "Lerne Sprachen durch",
         "landing_hero_title_2": "Videos",
-        "learning_from": "Lerne {l2} aus {l1}",
-        "lifetime_only": "Nur der Lifetime-Plan ist als In-App-Kauf bei Apple verfügbar.",
         "live_tv_available": "Live-TV verfügbar",
         "loading": "Wird geladen...",
         "log_in_to_continue": "Melden Sie sich an, um weiter zu lernen.",
         "logging_in": "Anmeldung läuft...",
-        "lookup_words": "Wörter nachschlagen & Vokabeln speichern",
         "no_active_subscription": "Kein aktives Abonnement gefunden.",
         "no_cards_due_desc": "Jy het {total} kaarte in jou {deck}-stel, maar geen is tans verskuldig vir hersiening nie. Nuwe kaarte word daagliks beskikbaar.",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "Keine weiteren Videos",
         "no_saved_words": "Noch keine Wörter gespeichert",
         "no_videos_found": "Keine Videos gefunden. Versuchen Sie ein anderes Niveau oder schauen Sie später wieder vorbei.",
         "options": "Optionen",
-        "or_login_with": "Oder melden Sie sich an mit:",
-        "or_register_with": "Oder registrieren Sie sich mit:",
         "paste_youtube_url": "Sie können auch eine YouTube-URL zum Importieren einfügen.",
         "pro_feature_chatgpt": "Nur Pro-Benutzer können KI-Funktionen in Language Player Go verwenden. Um diese Funktion zu nutzen, upgraden Sie auf Pro.",
         "pro_transcript": "Upgraden Sie auf Pro, um das vollständige Transkript anzuzeigen!",
         "pro_transcript_limit_reached": "Transkriptionslimit erreicht. Bitte upgraden Sie auf Pro, um Zugang zu mehr Transkriptionen zu erhalten.",
-        "related_videos": "Ähnliche Videos erscheinen hier.",
         "renewal_failed_contact_support": "Erneuerung fehlgeschlagen. Bitte kontaktieren Sie den Kundensupport.",
         "renews_today": "Erneuert sich heute",
         "result_count": "{count} 筆結果",
@@ -532,17 +496,13 @@
         "start_learning": "Lernen Sie Sprachen mit authentischen Videoinhalten.",
         "subscription_cancel_error": "Fehler beim Kündigen des Abonnements",
         "subscription_cancel_success": "Abonnement erfolgreich gekündigt",
-        "subtitles_not_available": "Untertitel sind für dieses Video noch nicht verfügbar.",
         "time_spent_learning": "Zeit, die mit dem Lernen von {{language}} in Language Player verbracht wurde",
         "translated_subtitles": "Übersetzte Untertitel verfügbar",
         "upgrade_text": "Upgraden Sie auf Pro, um Zugang zu mehr Videos zu erhalten!",
         "verification_code_sent": "Wir haben einen Bestätigungscode an {email} gesendet. Geben Sie ihn unten ein.",
         "verifying": "Wird überprüft...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "Dieses Video konnte nicht geladen werden. Es wurde möglicherweise entfernt oder auf privat gesetzt.",
         "videos_matching": "Videos passend zu \"{{searchTerm}}\"",
-        "watch_live": "Live-Kanäle ansehen",
-        "what_your_first_language": "Was ist Ihre Muttersprache?",
         "with_pro_you_can": "Mit Pro können Sie:",
         "youtube_captions": "YouTube-Untertitel verfügbar"
     },
@@ -583,23 +543,11 @@
         "monthly": "${{price}}/Monat"
     },
     "setting": {
-        "auto_pronounce": "Automatische Aussprache",
-        "dark_mode": "Dunkelmodus",
-        "saved_words_blanks": "Gespeicherte Wörter als Lücken",
-        "show_gloss_saved": "Glossar für Gespeicherte anzeigen",
-        "show_phonetics": "Lautschrift anzeigen",
-        "show_translation": "Übersetzung anzeigen",
-        "use_traditional": "Traditionell verwenden"
+        "dark_mode": "Dunkelmodus"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "Meistgesehen",
-        "right_context": "Right Context",
         "title": "Titel",
-        "views": "Most Viewed",
         "year": "Jahr"
     },
     "subscription": {
@@ -618,16 +566,11 @@
     "tab": {
         "dictionary": "Wörterbuch",
         "me": "Ich",
-        "media": "Medien",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "Medien"
     },
     "time": {
-        "days": "{{count, plural, one {# Tag} other {# Tage}}}",
         "hours": "Stunden",
         "min": "Min",
-        "months": "{{count, plural, one {# Monat} other {# Monate}}}",
-        "months_and_days": "{{months}} und {{days}}",
         "sec": "Sek"
     },
     "title": {

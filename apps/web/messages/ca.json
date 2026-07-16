@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "Tornar a l'inici de sessió",
         "cancel": "Cancel·lar",
-        "clear": "Esborrar",
         "clear_words": "Esborrar Paraules",
         "confirm_cancellation": "Confirmar cancel·lació",
         "confirm_deletion": "Confirmar eliminació",
@@ -21,23 +20,13 @@
         "login": "Iniciar sessió",
         "logout": "Tancar sessió",
         "next": "Següent",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "Registrar-se",
-        "remove_and_resave": "Remove & re-save",
         "resend": "Reenviar",
         "resend_code": "Reenviar codi",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "Enviar enllaç de restabliment",
         "share": "Compartir",
         "sign_up": "Registrar-se",
         "speak": "Parlar",
-        "speed": "Speed (M)",
         "start_learning": "Començar a aprendre",
         "start_watching": "Començar a veure",
         "try_again": "Tornar a provar",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Actualitzar a Pro",
         "verify": "Verificar",
         "verify_email": "Verificar correu",
-        "video_info": "Video info",
         "watch": "Mirar"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "Mantenir Temps Actual",
         "processing": "Processant...",
         "purchase": "Comprar",
-        "reset_time_to_zero": "Restablir Temps a Zero",
-        "switch_to_lifetime": "Canviar al pla vitalici"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Explica breument en {{l1Name}} què significa la paraula {{l2Name}} ({{l2Code}}) '{{word}}' a la frase '{{text}}'.",
-            "inflection": "Dóna el seu lema, inflexió i morfologia."
-        }
+        "reset_time_to_zero": "Restablir Temps a Zero"
     },
     "duration": {
         "annual": "Facturació anual.",
@@ -85,7 +66,6 @@
         "general": "S'ha produït un error",
         "generic": "Error",
         "invalid_credentials": "Correu electrònic o contrasenya no vàlids. Torna-ho a provar.",
-        "invalid_user_credentials": "Correu electrònic o contrasenya no vàlids",
         "invalid_verification_code": "Codi de verificació no vàlid. Torna-ho a provar.",
         "language_not_selected": "Idioma no seleccionat",
         "loading_failed": "Ha fallat la càrrega",
@@ -95,8 +75,6 @@
         "payment_problem": "Hi ha hagut un problema amb el seu pagament.",
         "registration_failed": "Error en el registre",
         "something_went_wrong": "Alguna cosa ha anat malament. Torna-ho a provar.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "Error en actualitzar el progrés:",
         "user_info_not_found": "Informació d'usuari no trobada",
         "verification_failed": "La verificació ha fallat."
@@ -113,7 +91,6 @@
         "currency": "2. Totes les monedes en dòlars americans (USD).",
         "lifetime_assumption": "1. Suposant que viuràs més de 2,4 anys."
     },
-    "key": "ca",
     "lang": {
         "ab": "Abkhàzia",
         "acf": "Santa Llúcia Crioll francès",
@@ -468,22 +445,17 @@
     },
     "msg": {
         "already_have_account": "Ja tens un compte?",
-        "auto_renews": "Es renova automàticament en {{time}}.",
         "auto_renews_in": "Es renova automàticament en {{days}} dies",
         "choose_action": "Tria una acció",
         "choose_languages": "Tria els teus idiomes per començar",
-        "coming_soon": "Properament",
         "confirm_cancel_subscription": "Estàs segur que vols cancel·lar la teva subscripció?",
         "contact_support": "Si ha trobat problemes, si us plau, contacti amb suport.",
         "content_tailored": "Contingut adaptat per a tu",
         "copy_success": "Text copiat al portapapers",
         "creating_account": "Creant compte...",
-        "customize_experience": "Personalitza la teva experiència",
-        "dashboard_for": "El teu tauler per a {l1} → {l2}",
         "days_remaining": "{n} dae oor",
         "delete_confirmation": "Estàs segur que vols eliminar permanentment el teu compte? Perdràs totes les teves paraules guardades i el progrés. Aquesta acció no es pot desfer.",
         "dictionary_empty_state": "Soek 'n woord in {l2} om definisies, uitspraak en meer te sien.",
-        "dictionary_placeholder": "Woordeboeksoek, tokenisasie en woordstoor sal van die Classic Nuxt-toep oorgedra word.",
         "didnt_receive_code": "No has rebut un codi?",
         "discover_the_power_of_comprehensible_input": "Descobreix el poder de l'Input Comprensible a través de centenars de milers de vídeos en més de 100 idiomes.",
         "dont_have_account": "No tens un compte?",
@@ -495,9 +467,7 @@
         "existing_subscription_warning": "Actualment tens un pla {{planType}} actiu que es renovarà automàticament. Per evitar càrrecs duplicats, has de cancel·lar la teva subscripció existent abans de comprar-ne una de nova. Vols cancel·lar la teva subscripció {{planType}} existent?",
         "expired": "Caducat",
         "expires_in": "Caduca en {{days}} dies",
-        "expiring": "Caducant en {{time}}.",
         "explore_media_for": "Explorar contingut de {l2}",
-        "find_videos": "Troba vídeos del teu nivell",
         "find_videos_matched": "Troba vídeos adequats al teu nivell",
         "forgot_password": "Has oblidat la contrasenya?",
         "hsk_explanation": "\"HSK\" és la prova oficial de competència en xinès, amb el Nivell 1 com el més baix i el Nivell 9 com el més alt.",
@@ -507,29 +477,22 @@
         "landing_hero_desc": "Mira vídeos de YouTube, pel·lícules i programes de TV amb subtítols duals interactius. Toca qualsevol paraula per a una cerca instantània al diccionari.",
         "landing_hero_title_1": "Aprèn idiomes a través de",
         "landing_hero_title_2": "vídeo",
-        "learning_from": "Aprenent {l2} de {l1}",
-        "lifetime_only": "Només el pla vitalici està disponible com a opció de compra dins de l'app d'Apple.",
         "live_tv_available": "TV en directe disponible",
         "loading": "S'està carregant...",
         "log_in_to_continue": "Inicia sessió per continuar aprenent.",
         "logging_in": "Iniciant sessió...",
-        "lookup_words": "Cerca paraules i desa vocabulari",
         "more_queued": "Nog {count} woorde is vir môre se bondel ingedien.",
         "new_cards_available": "{count} nuwe kaarte vandag beskikbaar (van {limit}/dag).",
         "no_active_subscription": "No s'ha trobat cap subscripció activa.",
         "no_cards_due_desc": "您的{deck}牌組中有 {total} 張卡片，但目前沒有需要複習的。新卡片每天都會解鎖。",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "No hi ha més vídeos",
         "no_saved_words": "Encara no s'han desat paraules",
         "no_videos_found": "No s'han trobat vídeos. Prova un altre nivell o torna més tard.",
         "options": "Opcions",
-        "or_login_with": "O inicia sessió amb:",
-        "or_register_with": "O registra't amb:",
         "paste_youtube_url": "També pots enganxar l'URL de YouTube per importar.",
         "pro_feature_chatgpt": "Només els usuaris Pro poden utilitzar funcions d'IA a Language Player Go. Per utilitzar aquesta funció, actualitza a Pro.",
         "pro_transcript": "Actualitza a Pro per veure la transcripció completa!",
         "pro_transcript_limit_reached": "S'ha arribat al límit de transcripció. Si us plau, actualitza a Pro per accedir a més transcripcions.",
-        "related_videos": "Els vídeos relacionats apareixeran aquí.",
         "renewal_failed_contact_support": "Ha fallat la renovació. Contacteu amb el suport al client.",
         "renews_today": "Es renova avui",
         "result_count": "other {# 个结果}}",
@@ -537,7 +500,6 @@
         "start_learning": "Comença a aprendre idiomes amb contingut de vídeo autèntic.",
         "subscription_cancel_error": "Error en cancel·lar la subscripció",
         "subscription_cancel_success": "Subscripció cancel·lada amb èxit",
-        "subtitles_not_available": "Els subtítols encara no estan disponibles per a aquest vídeo.",
         "time_spent_learning": "Temps dedicat a aprendre {{language}} a Language Player",
         "translated_subtitles": "Subtítols traduïts disponibles",
         "upgrade_text": "Actualitza a Pro per accedir a més vídeos!",
@@ -545,11 +507,8 @@
         "upgrade_to_pro_desc": "Ontsluit volledige transkripsies, onbeperkte woordvoorbeelde, en meer.",
         "verification_code_sent": "Hem enviat un codi de verificació a {email}. Introdueix-lo a continuació.",
         "verifying": "Verificant...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "Aquest vídeo no s'ha pogut carregar. Pot haver estat eliminat o fet privat.",
         "videos_matching": "Vídeos que coincideixen amb \"{{searchTerm}}\"",
-        "watch_live": "Veure canals en directe",
-        "what_your_first_language": "Quina és la teva llengua materna?",
         "with_pro_you_can": "Amb Pro, pots:",
         "youtube_captions": "Subtítols de YouTube disponibles"
     },
@@ -590,23 +549,11 @@
         "monthly": "${{price}}/mes"
     },
     "setting": {
-        "auto_pronounce": "Pronunciació automàtica",
-        "dark_mode": "Mode fosc",
-        "saved_words_blanks": "Paraules guardades com a espais en blanc",
-        "show_gloss_saved": "Mostrar glossa per a guardats",
-        "show_phonetics": "Mostrar fonètica",
-        "show_translation": "Mostrar traducció",
-        "use_traditional": "Usar tradicional"
+        "dark_mode": "Mode fosc"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "Més vistos",
-        "right_context": "Right Context",
         "title": "Títol",
-        "views": "Most Viewed",
         "year": "Any"
     },
     "subscription": {
@@ -625,16 +572,11 @@
     "tab": {
         "dictionary": "Diccionari",
         "me": "Jo",
-        "media": "Mitjans",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "Mitjans"
     },
     "time": {
-        "days": "{{count, plural, one {# dia} other {# dies}}}",
         "hours": "hores",
         "min": "min",
-        "months": "{{count, plural, one {# mes} other {# mesos}}}",
-        "months_and_days": "{{months}} i {{days}}",
         "sec": "seg"
     },
     "title": {
