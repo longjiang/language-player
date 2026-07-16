@@ -406,3 +406,31 @@ export interface InflectedForm {
   /** The actual inflected/conjugated word form. */
   form: string;
 }
+
+// ── Notes / User Texts ───────────────────────
+
+/**
+ * A user-created note (formerly "saved text" in Classic).
+ * Stored in Directus `text` table.
+ * Fields: id, title, text, translation, l2, owner
+ */
+export interface Note {
+  id: number;
+  title: string;
+  text: string;
+  translation?: string | null;
+  /** Directus internal language ID (obtained via lang_id_by_code). */
+  l2: number;
+  owner: number;
+  /** ISO-formatted date string (from Directus). */
+  date_created?: string;
+  /** ISO-formatted date string (from Directus). */
+  date_updated?: string;
+}
+
+/** Lightweight summary for the notes sidebar list. */
+export interface NoteListItem {
+  id: number;
+  title: string;
+  date_updated?: string;
+}
