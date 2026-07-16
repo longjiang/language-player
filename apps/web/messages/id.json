@@ -661,6 +661,7 @@
         "sending": "Mengirim...",
         "set_level_for_recommendations": "Tetapkan level {l2} Anda saat ini untuk rekomendasi video yang dipersonalisasi.",
         "settings_desc": "Konfigurasikan pengalaman belajar {l1} → {l2} Anda.",
+        "show_phonetics_desc": "Tampilkan pinyin, furigana, atau pelafalan di atas kata dalam subtitle dan teks.",
         "sign_in_to_review": "Masuk untuk meninjau kata-kata.",
         "sort_by": "Urutkan berdasarkan: {sortBy}",
         "start_learning": "Mulai belajar bahasa melalui konten video otentik.",

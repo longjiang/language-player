@@ -661,6 +661,7 @@
         "sending": "Senden...",
         "set_level_for_recommendations": "Legen Sie Ihr aktuelles {l2}-Niveau für personalisierte Videoempfehlungen fest.",
         "settings_desc": "Konfigurieren Sie Ihre Lernerfahrung von {l1} → {l2}.",
+        "show_phonetics_desc": "Zeigt Pinyin, Furigana oder Aussprache über Wörtern in Untertiteln und Texten an.",
         "sign_in_to_review": "Melden Sie sich an, um Wörter zu wiederholen.",
         "sort_by": "Sortieren nach: {sortBy}",
         "start_learning": "Lernen Sie Sprachen mit authentischen Videoinhalten.",

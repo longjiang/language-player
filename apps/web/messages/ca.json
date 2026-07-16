@@ -661,6 +661,7 @@
         "sending": "Enviant...",
         "set_level_for_recommendations": "Estableix el teu nivell actual de {l2} per a recomanacions de vídeo personalitzades.",
         "settings_desc": "Configura la teva experiència d'aprenentatge de {l1} → {l2}.",
+        "show_phonetics_desc": "Mostra pinyin, furigana o pronunciació a sobre de les paraules als subtítols i textos.",
         "sign_in_to_review": "Inicia sessió per revisar paraules.",
         "sort_by": "Ordenar per: {sortBy}",
         "start_learning": "Comença a aprendre idiomes amb contingut de vídeo autèntic.",

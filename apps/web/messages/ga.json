@@ -661,6 +661,7 @@
         "sending": "Ag seoladh...",
         "set_level_for_recommendations": "Socraigh do leibhéal reatha {l2} le haghaidh moltaí físeán pearsantaithe.",
         "settings_desc": "Cumraigh d'eispéireas foghlama {l1} → {l2}.",
+        "show_phonetics_desc": "Taispeáin pinyin, furigana nó fuaimniú os cionn focail i bhfotheidil agus i dtéacsanna.",
         "sign_in_to_review": "Sínigh isteach le hathbhreithniú a dhéanamh ar fhocail.",
         "sort_by": "Sórtáil de réir: {sortBy}",
         "start_learning": "Tosaigh ag foghlaim teangacha trí ábhar físe barántúil.",

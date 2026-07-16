@@ -661,6 +661,7 @@
         "sending": "Invio in corso...",
         "set_level_for_recommendations": "Imposta il tuo livello attuale di {l2} per ricevere consigli personalizzati sui video.",
         "settings_desc": "Configura la tua esperienza di apprendimento {l1} → {l2}.",
+        "show_phonetics_desc": "Mostra pinyin, furigana o pronuncia sopra le parole nei sottotitoli e nei testi.",
         "sign_in_to_review": "Accedi per rivedere le parole.",
         "sort_by": "Ordina per: {sortBy}",
         "start_learning": "Inizia a imparare le lingue con contenuti video autentici.",
