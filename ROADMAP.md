@@ -69,7 +69,7 @@
 - ✅ Tokenization + lemmatization display
 - ✅ Pronunciation (TTS) — Web Speech API with per-language voice auto-selection + VoicePicker settings
 - ✅ TV Shows page — browse shows with search, sort (views/title/year), locale filter, poster grid
-- ⬜ Dictionary database rebuild, add classifier for cedict, gender and audio for wiktionary, and add pytohn code to supply inflections via inflectors
+- ✅ Dictionary database rebuild, add classifier for cedict, gender and audio for wiktionary, and add pytohn code to supply inflections via inflectors
 
 ## Phase 5: Content Features
 

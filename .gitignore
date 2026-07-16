@@ -62,3 +62,4 @@ coverage/
 
 # Misc
 *.tsbuildinfo
+scripts/payloads/*.json
