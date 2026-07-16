@@ -661,6 +661,7 @@
         "sending": "Lähetetään...",
         "set_level_for_recommendations": "Aseta nykyinen {l2}-tasosi henkilökohtaisia videosuosituksia varten.",
         "settings_desc": "Määritä {l1} → {l2}-oppimiskokemuksesi.",
+        "show_phonetics_desc": "Näytä pinyin, furigana tai ääntämys sanojen yllä tekstityksissä ja teksteissä.",
         "sign_in_to_review": "Kirjaudu sisään tarkistaaksesi sanoja.",
         "sort_by": "Lajittele: {sortBy}",
         "start_learning": "Aloita kielten oppiminen autenttisen videosisällön avulla.",

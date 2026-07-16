@@ -661,6 +661,7 @@
         "sending": "Slanje...",
         "set_level_for_recommendations": "Postavite svoj trenutni {l2} nivo za personalizovane preporuke video snimaka.",
         "settings_desc": "Konfigurišite svoje {l1} → {l2} iskustvo učenja.",
+        "show_phonetics_desc": "Прикажи пинјин, фуригану или изговор изнад речи у титловима и текстовима.",
         "sign_in_to_review": "Пријавите се да бисте прегледали речи.",
         "sort_by": "Sortiraj po: {sortBy}",
         "start_learning": "Започните учење језика кроз аутентични видео садржај.",

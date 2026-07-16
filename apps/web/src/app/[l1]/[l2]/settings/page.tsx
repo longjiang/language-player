@@ -5,7 +5,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { DEFAULT_DAILY_NEW_LIMIT } from '@langplayer/utils';
 import { languageName } from '@/lib/language-data';
-import { getUseTraditional, setUseTraditional } from '@/lib/settings';
+import { getUseTraditional, setUseTraditional, getShowPhonetics, setShowPhonetics } from '@/lib/settings';
 import { useT } from '@/hooks/use-t';
 import { VoicePicker } from '@/components/voice-picker';
 
@@ -15,6 +15,7 @@ export default function SettingsPage() {
   const t = useT();
   const [tab, setTab] = useState<'pronunciation' | 'review' | 'display'>('pronunciation');
   const [useTraditional, setUseTraditionalState] = useState(getUseTraditional());
+  const [showPhonetics, setShowPhoneticsState] = useState(getShowPhonetics());
   const isChinese = l2.code === 'zh';
 
   return (
@@ -46,18 +47,16 @@ export default function SettingsPage() {
         >
           {t('setting.review')}
         </button>
-        {isChinese && (
-          <button
-            onClick={() => setTab('display')}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              tab === 'display'
-                ? 'border-primary text-foreground'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {t('setting.display')}
-          </button>
-        )}
+        <button
+          onClick={() => setTab('display')}
+          className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            tab === 'display'
+              ? 'border-primary text-foreground'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {t('setting.display')}
+        </button>
       </div>
 
       {/* Pronunciation tab */}
@@ -102,39 +101,64 @@ export default function SettingsPage() {
         </section>
       )}
 
-      {/* Display tab (Chinese only) */}
+      {/* Display tab */}
       {tab === 'display' && (
         <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
+          {/* Show Phonetics */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              {t('label.character_set')}
+              {t('label.show_phonetics')}
             </label>
             <p className="text-sm text-muted-foreground mb-4">
-              {t('msg.character_set_desc')}
+              {t('msg.show_phonetics_desc')}
             </p>
-            <div className="inline-flex rounded-lg border border-border bg-muted p-1">
-              <button
-                onClick={() => { setUseTraditionalState(false); setUseTraditional(false); }}
-                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                  !useTraditional
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {t('setting.simplified')}
-              </button>
-              <button
-                onClick={() => { setUseTraditionalState(true); setUseTraditional(true); }}
-                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                  useTraditional
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {t('setting.traditional')}
-              </button>
-            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showPhonetics}
+                onChange={(e) => {
+                  setShowPhoneticsState(e.target.checked);
+                  setShowPhonetics(e.target.checked);
+                }}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-primary/20 after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-background after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+            </label>
           </div>
+
+          {/* Character set (Chinese only) */}
+          {isChinese && (
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('label.character_set')}
+              </label>
+              <p className="text-sm text-muted-foreground mb-4">
+                {t('msg.character_set_desc')}
+              </p>
+              <div className="inline-flex rounded-lg border border-border bg-muted p-1">
+                <button
+                  onClick={() => { setUseTraditionalState(false); setUseTraditional(false); }}
+                  className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                    !useTraditional
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {t('setting.simplified')}
+                </button>
+                <button
+                  onClick={() => { setUseTraditionalState(true); setUseTraditional(true); }}
+                  className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                    useTraditional
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {t('setting.traditional')}
+                </button>
+              </div>
+            </div>
+          )}
         </section>
       )}
     </div>

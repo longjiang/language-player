@@ -663,6 +663,7 @@
         "sending": "正在发送...",
         "set_level_for_recommendations": "设置您当前的{l2}水平，以获取匹配的视频推荐。",
         "settings_desc": "配置您的 {l1} → {l2} 学习体验。",
+        "show_phonetics_desc": "在字幕和文本中的字词上方显示拼音、注音或发音。",
         "sign_in_to_review": "请登录以复习单词。",
         "sort_by": "排序方式：{sortBy}",
         "start_learning": "通过真实视频内容开始学习语言。",

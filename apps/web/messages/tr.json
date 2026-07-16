@@ -661,6 +661,7 @@
         "sending": "Gönderiliyor...",
         "set_level_for_recommendations": "Kişiselleştirilmiş video önerileri için mevcut {l2} seviyenizi ayarlayın.",
         "settings_desc": "{l1} → {l2} öğrenme deneyiminizi yapılandırın.",
+        "show_phonetics_desc": "Altyazılarda ve metinlerde kelimelerin üzerinde pinyin, furigana veya telaffuz göster.",
         "sign_in_to_review": "Sözcükleri gözden geçirmek için oturum açın.",
         "sort_by": "Şuna göre sırala: {sortBy}",
         "start_learning": "Otantik video içerikleriyle dil öğrenmeye başlayın.",

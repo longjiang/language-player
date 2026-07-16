@@ -661,6 +661,7 @@
         "sending": "전송 중...",
         "set_level_for_recommendations": "맞춤형 동영상 추천을 위해 현재 {l2} 수준을 설정하세요.",
         "settings_desc": "{l1} → {l2} 학습 환경을 구성하세요.",
+        "show_phonetics_desc": "자막과 텍스트의 단어 위에 병음, 후리가나 또는 발음을 표시합니다.",
         "sign_in_to_review": "단어를 검토하려면 로그인하세요.",
         "sort_by": "정렬 기준: {sortBy}",
         "start_learning": "실제 비디오 콘텐츠로 언어 학습을 시작하세요.",

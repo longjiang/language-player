@@ -661,6 +661,7 @@
         "sending": "Inatuma...",
         "set_level_for_recommendations": "Weka kiwango chako cha sasa cha {l2} kwa mapendekezo ya video yaliyobinafsishwa.",
         "settings_desc": "Sanidi uzoefu wako wa kujifunza {l1} → {l2}.",
+        "show_phonetics_desc": "Onyesha pinyin, furigana au matamshi juu ya maneno katika manukuu na maandishi.",
         "sign_in_to_review": "Ingia ili kukagua maneno.",
         "sort_by": "Panga kwa: {sortBy}",
         "start_learning": "Anza kujifunza lugha kupitia maudhui halisi ya video.",
