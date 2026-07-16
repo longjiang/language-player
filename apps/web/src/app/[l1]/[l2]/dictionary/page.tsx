@@ -7,7 +7,7 @@ import { languageName, baseCode } from '@/lib/language-data';
 import { useT } from '@/hooks/use-t';
 import { useDictionary } from '@langplayer/api-client';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { Search, Loader2, BookOpen, AlertCircle } from 'lucide-react';
+import { Search, Loader2, BookOpen, AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { buildEntryRoute } from '@/lib/entry-route';
@@ -27,7 +27,7 @@ export default function DictionaryPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchedText, setSearchedText] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const loadingRef = useRef(false); // ref-based guard avoids stale-closure race with Strict Mode double-invoke
+  const loadingRef = useRef(false);
 
   // Auto-search from ?q= param on first load
   useEffect(() => {
@@ -35,10 +35,7 @@ export default function DictionaryPage() {
     if (q && !searched) {
       setQuery(q);
       setSearched(true);
-      // Trigger search after state settles
-      setTimeout(() => {
-        doSearch(q);
-      }, 100);
+      setTimeout(() => { doSearch(q); }, 100);
     }
   }, [searchParams, searched]);
 
@@ -53,9 +50,23 @@ export default function DictionaryPage() {
       setMessage(null);
       setSearchedText(trimmed);
 
+      // Update URL to reflect the current search
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('q', trimmed);
+      router.replace(`/${l1.code}/${l2.code}/dictionary?${params.toString()}`, { scroll: false });
+
       try {
         const response: any = await dict.lookup(trimmed, baseCode(l2.code), l1.code);
-        setResults(response.results);
+        const results: DictionaryEntry[] = response.results ?? [];
+
+        // If only one result, navigate directly to the entry detail page
+        if (results.length === 1) {
+          const entry = results[0]!;
+          router.replace(buildEntryRoute(l1.code, l2.code, entry.dictionary?.id ?? 'llm', entry.id));
+          return;
+        }
+
+        setResults(results);
         setMessage(response.message ?? null);
       } catch (err: any) {
         setError(err?.message ?? t('error.something_went_wrong'));
@@ -63,10 +74,9 @@ export default function DictionaryPage() {
       } finally {
         loadingRef.current = false;
         setLoading(false);
-        inputRef.current?.focus();
       }
     },
-    [dict, l2.code, l1.code, t],
+    [dict, l2.code, l1.code, t, searchParams, router, l1.code],
   );
 
   const handleSearch = useCallback(
@@ -77,9 +87,20 @@ export default function DictionaryPage() {
     [query, doSearch],
   );
 
-  // Determine proficiency scale for level display
+  const clearSearch = useCallback(() => {
+    setQuery('');
+    setResults(null);
+    setMessage(null);
+    setError(null);
+    setSearchedText('');
+    setSearched(false);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('q');
+    router.replace(`/${l1.code}/${l2.code}/dictionary?${params.toString()}`, { scroll: false });
+    inputRef.current?.focus();
+  }, [router, l1.code, l2.code, searchParams]);
+
   const levelScaleLabel = (scale: string, value?: string | number): string => {
-    // HSK: show as "HSK 3 (2025)"
     const hskMatch = scale.match(/^hsk_(\d{4})$/);
     if (hskMatch) return `HSK ${value ?? ''} (${hskMatch[1]})`.trim();
     const map: Record<string, string> = { hsk: 'HSK', jlpt: 'JLPT', cefr: 'CEFR' };
@@ -87,14 +108,23 @@ export default function DictionaryPage() {
     return value !== undefined ? `${label} ${value}` : label;
   };
 
+  const saveContext = {
+    form: searchedText,
+    text: searchedText,
+    textTitle: t('title.dictionary'),
+  };
+
+  const hasResults = results && results.length > 0;
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
+      {/* ── Header ── */}
       <h1 className="text-3xl font-bold">{t('title.dictionary')}</h1>
       <p className="mt-2 text-muted-foreground">
         {t('msg.lookup_words_desc', { l1: languageName(l1.code), l2: languageName(l2.code, l1.code) })}
       </p>
 
-      {/* ── Search Form ── */}
+      {/* ── Search bar ── */}
       <form onSubmit={handleSearch} className="mt-8 flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -120,6 +150,13 @@ export default function DictionaryPage() {
         </Button>
       </form>
 
+      {/* ── Loading ── */}
+      {loading && (
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
       {/* ── Error ── */}
       {error && (
         <div className="mt-6 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
@@ -128,8 +165,8 @@ export default function DictionaryPage() {
         </div>
       )}
 
-      {/* ── Message (no results) ── */}
-      {message && !results?.length && !loading && (
+      {/* ── No results message ── */}
+      {message && !hasResults && !loading && (
         <div className="mt-8 rounded-2xl border-2 border-dashed border-border p-12 text-center">
           <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <p className="mt-4 text-muted-foreground">{message}</p>
@@ -137,13 +174,13 @@ export default function DictionaryPage() {
       )}
 
       {/* ── Results ── */}
-      {results && results.length > 0 && (
-        <div className="mt-8">
-          <p className="mb-4 text-sm text-muted-foreground">
-            {t('msg.result_count', { count: results.length })} {t('msg.for_term', { term: searchedText })}
+      {hasResults && (
+        <div>
+          <p className="mb-4 mt-6 text-sm text-muted-foreground">
+            {t('msg.result_count', { count: results!.length })} {t('msg.for_term', { term: searchedText })}
           </p>
-          <div className="space-y-4">
-            {results.map((entry) => (
+          <div className="space-y-6">
+            {results!.map((entry) => (
               <DictionaryEntryCard
                 key={entry.id}
                 variant="compact"
@@ -151,7 +188,7 @@ export default function DictionaryPage() {
                 l2Code={l2.code}
                 l1Code={l1.code}
                 levelLabel={levelScaleLabel}
-                saveContext={{ form: searchedText, text: searchedText, textTitle: t('title.dictionary') }}
+                saveContext={saveContext}
                 onClick={(e) => router.push(buildEntryRoute(l1.code, l2.code, e.dictionary?.id ?? 'llm', e.id))}
               />
             ))}

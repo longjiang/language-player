@@ -331,11 +331,8 @@ export default function ReviewPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">
-          {initializing ? t('msg.preparing_review_cards') : t('msg.loading')}
-        </p>
       </div>
     );
   }
@@ -371,9 +368,8 @@ export default function ReviewPage() {
   // Fetching dictionary entries
   if (fetchingEntries && cards.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">{t('msg.loading_review_cards')}</p>
       </div>
     );
   }

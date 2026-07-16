@@ -104,21 +104,20 @@ export function InflectionTable({ head, l2Code, verbType }: InflectionTableProps
   // ── Loading ──
   if (loading) {
     return (
-      <section className="mt-8 rounded-lg border border-border bg-card p-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          {t('msg.loading_conjugations')}
+      <div className="rounded-lg border border-border bg-card p-4">
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         </div>
-      </section>
+      </div>
     );
   }
 
   // ── Error ──
   if (error) {
     return (
-      <section className="mt-8 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
         {error}
-      </section>
+      </div>
     );
   }
 
@@ -151,8 +150,8 @@ export function InflectionTable({ head, l2Code, verbType }: InflectionTableProps
 
   // ── Render ──
   return (
-    <section className="mt-8 space-y-6">
-      <h2 className="text-lg font-semibold">{t('title.conjugations')}</h2>
+    <section className="space-y-4 rounded-lg border border-border bg-card p-4">
+      <h2 className="text-base font-semibold">{t('title.conjugations')}</h2>
 
       {tableNames.map((table) => {
         const group = groups[table];

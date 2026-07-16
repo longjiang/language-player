@@ -391,7 +391,6 @@ export default function ReaderPage() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <span className="ml-3 text-muted-foreground">{t('msg.loading_text')}</span>
       </div>
     );
   }
