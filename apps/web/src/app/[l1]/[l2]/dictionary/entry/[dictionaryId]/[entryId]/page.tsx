@@ -9,6 +9,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { ArrowLeft, Loader2, AlertCircle, BookOpen } from 'lucide-react';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
+import { InflectionTable } from '@/components/inflection-table';
 import { SubsSearchResults } from '@/components/video/subs-search-results';
 
 /**
@@ -135,6 +136,13 @@ export default function DictionaryEntryPage() {
             levelLabel={levelScaleLabel}
             saveContext={saveContext}
           />
+
+          {/* Inflection / conjugation table (ja, ko, en, de, it, es, fr, nl, ru, uk) */}
+          <InflectionTable
+            head={entry.head}
+            l2Code={l2.code}
+          />
+
           {/* Subs search: examples in videos */}
           <section className="mt-10">
             <h2 className="mb-4 text-lg font-semibold">

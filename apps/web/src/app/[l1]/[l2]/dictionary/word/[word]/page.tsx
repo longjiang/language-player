@@ -12,6 +12,7 @@ import type { DictionaryEntry } from '@langplayer/shared';
 import { ArrowLeft, Loader2, AlertCircle, BookOpen, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
+import { InflectionTable } from '@/components/inflection-table';
 import { buildEntryRoute } from '@/lib/entry-route';
 
 export default function WordDetailPage() {
@@ -194,6 +195,12 @@ export default function WordDetailPage() {
               onClick={(e) => router.push(buildEntryRoute(l1.code, l2.code, e.dictionary?.id ?? 'llm', e.id))}
             />
           ))}
+
+          {/* Inflection / conjugation table for the queried word */}
+          <InflectionTable
+            head={entries[0]?.head ?? word}
+            l2Code={l2.code}
+          />
         </div>
       )}
 
