@@ -583,12 +583,12 @@ export default function ReaderPage() {
       {activeTab === 'read' && !text && !loading && (
         <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
           <BookOpen className="mb-3 h-12 w-12 text-muted-foreground/40" />
-          <h2 className="text-lg font-semibold text-muted-foreground">Reader</h2>
+          <h2 className="text-lg font-semibold text-muted-foreground">{t('title.reader')}</h2>
           <p className="mt-1 max-w-md text-sm text-muted-foreground">
-            Paste {l2.name} text, load a URL, or open from an AI explanation. Tap any word to see its dictionary entry.
+            {t('msg.reader_empty_state', { l2: l2.name })}
           </p>
           <Button variant="outline" size="sm" className="mt-4" onClick={() => setActiveTab('edit')}>
-            <FileText className="mr-1 h-4 w-4" />Start Writing</Button>
+            <FileText className="mr-1 h-4 w-4" />{t('action.start_writing')}</Button>
         </div>
       )}
 
