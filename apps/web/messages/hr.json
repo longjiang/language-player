@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Račun",
+        "all_categories": "Sve kategorije",
+        "all_countries": "Sve zemlje",
         "annual": "Godišnje",
         "app_name": "Jezični player",
         "app_settings": "Postavke aplikacije",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Primjeri iz videozapisa",
         "explore": "Istraži",
         "explore_media": "Istraži medije",
+        "featured": "Istaknuto",
         "filter_by_locale": "FILTRIRAJ PO LOKACIJI",
         "gender": "Rod",
         "go_pro": "Prijeđi na Pro",

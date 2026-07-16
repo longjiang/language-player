@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Cuntas",
+        "all_categories": "Gach catagóir",
+        "all_countries": "Gach tír",
         "annual": "Bliantúil",
         "app_name": "Imreoir Teanga",
         "app_settings": "Socruithe aipe",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Samplaí ó fhíseáin",
         "explore": "Fiosraigh",
         "explore_media": "Fiosraigh na meáin",
+        "featured": "Réadmharc",
         "filter_by_locale": "SCAG DE RÉIR LOGCHAIGHDEÁIN",
         "gender": "Inscne",
         "go_pro": "Téigh Pro",

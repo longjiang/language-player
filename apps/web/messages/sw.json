@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Akaunti",
+        "all_categories": "Kategoria zote",
+        "all_countries": "Nchi zote",
         "annual": "Mwaka",
         "app_name": "Kicheza Lugha",
         "app_settings": "Mipangilio ya Programu",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Mifano kutoka kwa Video",
         "explore": "Chunguza",
         "explore_media": "Chunguza midia",
+        "featured": "Iliyopendekezwa",
         "filter_by_locale": "CHUJA KWA ENEO",
         "gender": "Jinsia",
         "go_pro": "Boresha hadi Pro",

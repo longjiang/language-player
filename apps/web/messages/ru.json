@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Аккаунт",
+        "all_categories": "Все категории",
+        "all_countries": "Все страны",
         "annual": "Годовой",
         "app_name": "Языковой плеер",
         "app_settings": "Настройки приложения",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Примеры из видео",
         "explore": "Обзор",
         "explore_media": "Обзор медиа",
+        "featured": "Рекомендуемое",
         "filter_by_locale": "ФИЛЬТР ПО РЕГИОНУ",
         "gender": "Род",
         "go_pro": "Обновить до Pro",

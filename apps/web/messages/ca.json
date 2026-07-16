@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Compte",
+        "all_categories": "Totes les categories",
+        "all_countries": "Tots els països",
         "annual": "Anual",
         "app_name": "Reproductor d'idiomes",
         "app_settings": "Configuració de l'aplicació",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Exemples de vídeos",
         "explore": "Explorar",
         "explore_media": "Explorar contingut",
+        "featured": "Destacat",
         "filter_by_locale": "FILTRA PER UBICACIÓ",
         "gender": "Gènere",
         "go_pro": "Passa a Pro",

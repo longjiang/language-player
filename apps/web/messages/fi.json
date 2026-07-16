@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Tili",
+        "all_categories": "Kaikki kategoriat",
+        "all_countries": "Kaikki maat",
         "annual": "Vuosittain",
         "app_name": "Kielisoitin",
         "app_settings": "Sovelluksen asetukset",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Esimerkkejä videoista",
         "explore": "Tutki",
         "explore_media": "Tutki mediaa",
+        "featured": "Suositellut",
         "filter_by_locale": "SUODATA KIELIALUEEN MUKAAN",
         "gender": "Sukupuoli",
         "go_pro": "Siirry Pro-versioon",

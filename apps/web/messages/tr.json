@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Hesap",
+        "all_categories": "Tüm Kategoriler",
+        "all_countries": "Tüm Ülkeler",
         "annual": "Yıllık",
         "app_name": "Dil Oynatıcısı",
         "app_settings": "Uygulama Ayarları",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Videolardan Örnekler",
         "explore": "Keşfet",
         "explore_media": "Medyayı Keşfet",
+        "featured": "Öne Çıkan",
         "filter_by_locale": "KONUMA GÖRE FİLTRELE",
         "gender": "Cinsiyet",
         "go_pro": "Pro'ya Yükselt",

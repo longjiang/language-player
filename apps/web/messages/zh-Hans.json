@@ -805,6 +805,8 @@
     },
     "title": {
         "account": "账户",
+        "all_categories": "所有类别",
+        "all_countries": "所有国家",
         "annual": "年度",
         "app_name": "Language Player",
         "app_settings": "应用设置",
@@ -832,6 +834,7 @@
         "examples_from_videos": "视频示例",
         "explore": "探索",
         "explore_media": "探索媒体",
+        "featured": "精选",
         "filter_by_locale": "按地区筛选",
         "gender": "性别",
         "go_pro": "升级到专业版",

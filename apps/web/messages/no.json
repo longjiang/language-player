@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Konto",
+        "all_categories": "Alle kategorier",
+        "all_countries": "Alle land",
         "annual": "Årlig",
         "app_name": "Språkspiller",
         "app_settings": "App-innstillinger",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Eksempler fra videoer",
         "explore": "Utforsk",
         "explore_media": "Utforsk medier",
+        "featured": "Fremhevet",
         "filter_by_locale": "FILTRER ETTER LOKASJON",
         "gender": "Kjønn",
         "go_pro": "Oppgrader til Pro",

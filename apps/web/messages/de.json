@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Konto",
+        "all_categories": "Alle Kategorien",
+        "all_countries": "Alle Länder",
         "annual": "Jährlich",
         "app_name": "Sprachspieler",
         "app_settings": "App-Einstellungen",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Beispiele aus Videos",
         "explore": "Entdecken",
         "explore_media": "Medien entdecken",
+        "featured": "Empfohlen",
         "filter_by_locale": "NACH SPRACHE FILTERN",
         "gender": "Geschlecht",
         "go_pro": "Auf Pro upgraden",

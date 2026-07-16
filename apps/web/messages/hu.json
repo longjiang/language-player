@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Fiók",
+        "all_categories": "Minden kategória",
+        "all_countries": "Minden ország",
         "annual": "Éves",
         "app_name": "Nyelvi Lejátszó",
         "app_settings": "Alkalmazás beállításai",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Példák videókból",
         "explore": "Felfedezés",
         "explore_media": "Média felfedezése",
+        "featured": "Kiemelt",
         "filter_by_locale": "SZŰRÉS TERÜLET SZERINT",
         "gender": "Nem",
         "go_pro": "Pro-ra frissítés",

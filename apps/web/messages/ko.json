@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "계정",
+        "all_categories": "모든 카테고리",
+        "all_countries": "모든 국가",
         "annual": "연간",
         "app_name": "언어 플레이어",
         "app_settings": "앱 설정",
@@ -836,6 +838,7 @@
         "examples_from_videos": "동영상 예시",
         "explore": "탐색",
         "explore_media": "미디어 탐색",
+        "featured": "추천",
         "filter_by_locale": "위치별 필터",
         "gender": "성별",
         "go_pro": "프로로 전환",

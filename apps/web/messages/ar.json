@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "الحساب",
+        "all_categories": "جميع الفئات",
+        "all_countries": "جميع الدول",
         "annual": "سنوي",
         "app_name": "Language Player",
         "app_settings": "إعدادات التطبيق",
@@ -839,6 +841,7 @@
         "examples_from_videos": "أمثلة من مقاطع الفيديو",
         "explore": "استكشاف",
         "explore_media": "استكشاف الوسائط",
+        "featured": "مميز",
         "filter_by_locale": "تصفية حسب الموقع",
         "gender": "الجنس",
         "go_pro": "الترقية إلى النسخة المتقدمة",

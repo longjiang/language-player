@@ -809,6 +809,8 @@
     },
     "title": {
         "account": "Conta",
+        "all_categories": "Todas as categorias",
+        "all_countries": "Todos os países",
         "annual": "Anual",
         "app_name": "Language Player",
         "app_settings": "Configurações do Aplicativo",
@@ -836,6 +838,7 @@
         "examples_from_videos": "Exemplos de Vídeos",
         "explore": "Explorar",
         "explore_media": "Explorar mídia",
+        "featured": "Destaque",
         "filter_by_locale": "FILTRAR POR LOCALIDADE",
         "gender": "Gênero",
         "go_pro": "Atualizar para Pro",
