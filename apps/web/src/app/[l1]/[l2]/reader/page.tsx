@@ -1,17 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { TokenizedText } from '@/components/tokenized-text';
-import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
+import type { LemmatizedToken, SavedWordContext, NoteListItem, Note } from '@langplayer/shared';
+import { useNotes } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import {
   BookOpen, Loader2, Globe, FileText, ArrowLeftRight, Sparkles,
+  PanelLeftClose, PanelLeft, Plus, StickyNote, PenLine,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -313,6 +316,62 @@ export default function ReaderPage() {
   const [convertedText, setConvertedText] = useState(text);
   const [converting, setConverting] = useState(false);
 
+  // ── Notes sidebar ──
+  const { data: session } = useSession();
+  const { listNotes, getNote } = useNotes();
+  const [notes, setNotes] = useState<NoteListItem[]>([]);
+  const [notesLoading, setNotesLoading] = useState(false);
+  const [notesError, setNotesError] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [currentNoteId, setCurrentNoteId] = useState<number | null>(null);
+
+  // Load notes list when authenticated
+  const loadNotes = useCallback(async () => {
+    if (!session) return;
+    setNotesLoading(true);
+    setNotesError(null);
+    try {
+      const result = await listNotes(l2.code);
+      setNotes(result);
+    } catch (err: any) {
+      setNotesError(err?.message || 'Failed to load notes');
+    } finally {
+      setNotesLoading(false);
+    }
+  }, [session, l2.code, listNotes]);
+
+  useEffect(() => {
+    loadNotes();
+  }, [loadNotes]);
+
+  // Load a single note by ID and switch to Read tab
+  const handleSelectNote = useCallback(async (noteId: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const note: Note = await getNote(noteId);
+      setText(note.text || '');
+      setTranslation(note.translation || '');
+      setTitle(note.title || '');
+      setCurrentNoteId(noteId);
+      setActiveTab('read');
+    } catch (err: any) {
+      setError(err?.message || t('msg.failed_to_load_note'));
+    } finally {
+      setLoading(false);
+    }
+  }, [getNote, t]);
+
+  // Create a new blank note
+  const handleNewNote = useCallback(async () => {
+    // For now, just clear and go to edit tab
+    setText('');
+    setTranslation('');
+    setTitle(t('msg.untitled_note'));
+    setCurrentNoteId(null);
+    setActiveTab('edit');
+  }, [t]);
+
   // Script conversion effect (Chinese only)
   useEffect(() => {
     if (!isChinese || !text.trim() || !useTraditional) {
@@ -400,24 +459,100 @@ export default function ReaderPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6">
-      {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <BookOpen className="h-6 w-6 text-primary" />
-        <div>
-          <h1 className="text-xl font-bold">{title || t('title.reader')}</h1>
-          <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p>
+    <div className="mx-auto flex max-w-7xl gap-0 px-4 py-6">
+      {/* ── Notes Sidebar ── */}
+      <aside className={cn(
+        'flex-shrink-0 transition-all duration-200',
+        sidebarOpen ? 'w-56' : 'w-0 overflow-hidden',
+      )}>
+        <div className="sticky top-4 rounded-xl border border-border bg-card">
+          {/* Sidebar header */}
+          <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
+            <h3 className="text-sm font-semibold">{t('title.notes')}</h3>
+          </div>
+          {/* New note button */}
+          <div className="px-3 py-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start gap-1.5"
+              onClick={handleNewNote}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              {t('action.new_note')}
+            </Button>
+          </div>
+          {/* Notes list */}
+          <div className="max-h-[calc(100vh-16rem)] overflow-y-auto px-1">
+            {notesLoading && (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {notesError && (
+              <p className="px-3 py-4 text-xs text-red-500">{notesError}</p>
+            )}
+            {!notesLoading && !notesError && notes.length === 0 && session && (
+              <p className="px-3 py-4 text-xs text-muted-foreground">{t('msg.no_notes_yet')}</p>
+            )}
+            {!notesLoading && !session && (
+              <p className="px-3 py-4 text-xs text-muted-foreground">{t('msg.login_to_save_notes')}</p>
+            )}
+            {notes.map((note) => (
+              <button
+                key={note.id}
+                onClick={() => handleSelectNote(note.id)}
+                className={cn(
+                  'flex w-full items-start gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors',
+                  'hover:bg-muted',
+                  currentNoteId === note.id && 'bg-primary/10 text-primary font-medium',
+                )}
+              >
+                <StickyNote className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate">{note.title || t('msg.untitled_note')}</div>
+                  {note.date_updated && (
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(note.date_updated).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      </aside>
 
-      {/* Main card with tab bar */}
-      <div className="rounded-xl border border-border bg-card">
-        {/* Tab header — TranscriptQueuePanel style */}
-        <div className="flex border-b border-border">
-          <button
-            onClick={() => setActiveTab('edit')}
-            className={cn(
-              'flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors',
+      {/* Sidebar toggle */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="mt-2 h-8 w-8 flex-shrink-0"
+        onClick={() => setSidebarOpen(o => !o)}
+        title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
+      >
+        {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
+      </Button>
+
+      {/* ── Main content ── */}
+      <div className="min-w-0 flex-1">
+        {/* Header */}
+        <div className="mb-6 flex items-center gap-3">
+          <BookOpen className="h-6 w-6 text-primary" />
+          <div>
+            <h1 className="text-xl font-bold">{title || t('title.reader')}</h1>
+            <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p>
+          </div>
+        </div>
+
+        {/* Main card with tab bar */}
+        <div className="rounded-xl border border-border bg-card">
+          {/* Tab header */}
+          <div className="flex border-b border-border">
+            <button
+              onClick={() => setActiveTab('edit')}
+              className={cn(
+                'flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors',
               activeTab === 'edit'
                 ? 'border-b-2 border-primary text-primary'
                 : 'text-muted-foreground hover:text-foreground',
@@ -604,6 +739,7 @@ export default function ReaderPage() {
       {error && (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950">{error}</div>
       )}
+      </div>
     </div>
   );
 }
