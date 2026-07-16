@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "ログインに戻る",
         "cancel": "キャンセル",
-        "clear": "クリア",
         "clear_words": "単語を消去",
         "confirm_cancellation": "キャンセルの確認",
         "confirm_deletion": "削除の確認",
@@ -21,23 +20,13 @@
         "login": "ログイン",
         "logout": "ログアウト",
         "next": "次へ",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "登録",
-        "remove_and_resave": "Remove & re-save",
         "resend": "再送信",
         "resend_code": "コードを再送する",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "リセットリンクを送信",
         "share": "共有",
         "sign_up": "登録",
         "speak": "読み上げ",
-        "speed": "Speed (M)",
         "start_learning": "学習を開始する",
         "start_watching": "視聴を開始",
         "try_again": "もう一度試す",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Proにアップグレードする",
         "verify": "確認する",
         "verify_email": "メールを確認",
-        "video_info": "Video info",
         "watch": "見る"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "現在の時間を保持",
         "processing": "処理中...",
         "purchase": "購入",
-        "reset_time_to_zero": "時間をゼロにリセット",
-        "switch_to_lifetime": "ライフタイムプランに切り替え"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "{{l1Name}}を使用して、{{l2Name}} ({{l2Code}}) の単語 '{{word}}' が句 '{{text}}' で何を意味するかを簡潔に説明してください。",
-            "inflection": "その見出し語、屈折、形態論を与える。"
-        }
+        "reset_time_to_zero": "時間をゼロにリセット"
     },
     "duration": {
         "annual": "毎年請求されます。",
@@ -85,7 +66,6 @@
         "general": "エラーが発生しました",
         "generic": "エラー",
         "invalid_credentials": "メールアドレスまたはパスワードが無効です。もう一度お試しください。",
-        "invalid_user_credentials": "メールアドレスまたはパスワードが無効です",
         "invalid_verification_code": "確認コードが無効です。もう一度お試しください。",
         "language_not_selected": "言語が選択されていません",
         "loading_failed": "読み込みに失敗しました",
@@ -95,8 +75,6 @@
         "payment_problem": "お支払いに問題がありました。",
         "registration_failed": "登録に失敗しました",
         "something_went_wrong": "問題が発生しました。もう一度お試しください。",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "進行状況の更新中にエラーが発生しました:",
         "user_info_not_found": "ユーザー情報が見つかりません",
         "verification_failed": "確認に失敗しました。"
@@ -113,7 +91,6 @@
         "currency": "2. すべての通貨は米ドル (USD) です。",
         "lifetime_assumption": "1. あなたが2.4年以上生きることを前提としています。"
     },
-    "key": "ja",
     "lang": {
         "ab": "アブハジア語",
         "acf": "セントルシアクレオールフランス語",
@@ -468,18 +445,14 @@
     },
     "msg": {
         "already_have_account": "すでにアカウントをお持ちですか？",
-        "auto_renews": "{{time}}後に自動更新されます。",
         "auto_renews_in": "{{days}}日後に自動更新",
         "choose_action": "アクションを選択",
         "choose_languages": "学習する言語を選択してください",
-        "coming_soon": "近日公開",
         "confirm_cancel_subscription": "サブスクリプションをキャンセルしてもよろしいですか？",
         "contact_support": "問題が発生した場合は、サポートにお問い合わせください。",
         "content_tailored": "あなたに合わせたコンテンツ",
         "copy_success": "テキストがクリップボードにコピーされました",
         "creating_account": "アカウントを作成中...",
-        "customize_experience": "体験をカスタマイズ",
-        "dashboard_for": "{l1} → {l2} のダッシュボード",
         "delete_confirmation": "アカウントを完全に削除してもよろしいですか？ 保存した単語と進行状況がすべて失われます。 この操作は元に戻せません。",
         "didnt_receive_code": "コードが届かない場合",
         "discover_the_power_of_comprehensible_input": "100を超える言語の数十万のビデオを通じて、理解可能な入力の力を発見してください。",
@@ -492,9 +465,7 @@
         "existing_subscription_warning": "現在、自動更新される有効な{{planType}}プランがあります。重複請求を避けるため、新しいプランを購入する前に既存のサブスクリプションをキャンセルする必要があります。既存の{{planType}}サブスクリプションをキャンセルしますか？",
         "expired": "期限切れ",
         "expires_in": "{{days}}日後に期限切れ",
-        "expiring": "{{time}}後に期限切れ。",
         "explore_media_for": "{l2}メディアを探索",
-        "find_videos": "自分のレベルに合った動画を見つける",
         "find_videos_matched": "自分のレベルに合った動画を見つける",
         "forgot_password": "パスワードをお忘れですか？",
         "hsk_explanation": "「HSK」は公式の中国語能力試験で、レベル1が最も低く、レベル9が最も高いです。",
@@ -504,43 +475,32 @@
         "landing_hero_desc": "インタラクティブな二重字幕付きでYouTube動画、映画、テレビ番組を視聴。単語をタップするだけで辞書検索ができます。",
         "landing_hero_title_1": "動画で学ぶ",
         "landing_hero_title_2": "言語学習",
-        "learning_from": "{l1}から{l2}を学習中",
-        "lifetime_only": "Appleのアプリ内購入では、ライフタイムプランのみが利用可能です。",
         "live_tv_available": "ライブTVあり",
         "loading": "読み込み中...",
         "log_in_to_continue": "ログインして学習を続けましょう。",
         "logging_in": "ログイン中...",
-        "lookup_words": "単語を調べて語彙を保存",
         "no_active_subscription": "有効なサブスクリプションが見つかりません。",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "これ以上動画はありません",
         "no_saved_words": "まだ保存された単語はありません",
         "no_videos_found": "動画が見つかりません。別のレベルを試すか、後でもう一度確認してください。",
         "options": "オプション",
-        "or_login_with": "または次でログイン:",
-        "or_register_with": "または次で登録:",
         "paste_youtube_url": "YouTubeのURLを貼り付けてインポートすることもできます。",
         "pro_feature_chatgpt": "ProユーザーのみがLanguage Player GoでAI機能を使用できます。 この機能を使用するには、Proにアップグレードしてください。",
         "pro_transcript": "完全なトランスクリプトを表示するには、Proにアップグレードしてください！",
         "pro_transcript_limit_reached": "トランスクリプトの制限に達しました。 より多くのトランスクリプトにアクセスするには、Proにアップグレードしてください。",
-        "related_videos": "関連動画がここに表示されます。",
         "renewal_failed_contact_support": "更新に失敗しました。カスタマーサポートにお問い合わせください。",
         "renews_today": "本日更新",
         "sort_by": "並べ替え: {{sortBy}}",
         "start_learning": "本格的な動画コンテンツで言語を学び始めましょう。",
         "subscription_cancel_error": "サブスクリプションのキャンセル中にエラーが発生しました",
         "subscription_cancel_success": "サブスクリプションが正常にキャンセルされました",
-        "subtitles_not_available": "この動画の字幕はまだ利用できません。",
         "time_spent_learning": "Language Playerで{{language}}の学習に費やした時間",
         "translated_subtitles": "翻訳字幕あり",
         "upgrade_text": "より多くのビデオにアクセスするには、Proにアップグレードしてください！",
         "verification_code_sent": "{email} に確認コードを送信しました。以下に入力してください。",
         "verifying": "確認中...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "この動画を読み込めませんでした。削除されたか非公開になった可能性があります。",
         "videos_matching": "\"{{searchTerm}}\"に一致する動画",
-        "watch_live": "ライブチャンネルを視聴",
-        "what_your_first_language": "あなたの第一言語は何ですか？",
         "with_pro_you_can": "Proでは、次のことができます:",
         "youtube_captions": "YouTube字幕あり"
     },
@@ -581,23 +541,11 @@
         "monthly": "${{price}}/月"
     },
     "setting": {
-        "auto_pronounce": "自動発音",
-        "dark_mode": "ダークモード",
-        "saved_words_blanks": "空白として保存された単語",
-        "show_gloss_saved": "保存済みの注釈を表示",
-        "show_phonetics": "発音記号を表示",
-        "show_translation": "翻訳を表示",
-        "use_traditional": "繁体字を使用"
+        "dark_mode": "ダークモード"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "最も視聴された",
-        "right_context": "Right Context",
         "title": "タイトル",
-        "views": "Most Viewed",
         "year": "年"
     },
     "subscription": {
@@ -616,16 +564,11 @@
     "tab": {
         "dictionary": "辞書",
         "me": "私",
-        "media": "メディア",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "メディア"
     },
     "time": {
-        "days": "{{count}}日",
         "hours": "時間",
         "min": "分",
-        "months": "{{count}}か月",
-        "months_and_days": "{{months}}と{{days}}",
         "sec": "秒"
     },
     "title": {

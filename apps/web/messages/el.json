@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "Επιστροφή στη σύνδεση",
         "cancel": "Ακύρωση",
-        "clear": "Εκκαθάριση",
         "clear_words": "Διαγραφή Λέξεων",
         "confirm_cancellation": "Επιβεβαίωση ακύρωσης",
         "confirm_deletion": "Επιβεβαίωση διαγραφής",
@@ -21,23 +20,13 @@
         "login": "Σύνδεση",
         "logout": "Αποσύνδεση",
         "next": "Επόμενο",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "Εγγραφή",
-        "remove_and_resave": "Remove & re-save",
         "resend": "Επανάληψη αποστολής",
         "resend_code": "Επαναποστολή κωδικού",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "Αποστολή συνδέσμου επαναφοράς",
         "share": "Κοινοποίηση",
         "sign_up": "Εγγραφή",
         "speak": "Μίλα",
-        "speed": "Speed (M)",
         "start_learning": "Ξεκινήστε την εκμάθηση",
         "start_watching": "Έναρξη παρακολούθησης",
         "try_again": "Δοκιμάστε ξανά",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Αναβάθμιση σε επαγγελματική έκδοση",
         "verify": "Επαλήθευση",
         "verify_email": "Επαλήθευση email",
-        "video_info": "Video info",
         "watch": "Παρακολούθηση"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "Διατήρηση Τρέχοντος Χρόνου",
         "processing": "Επεξεργασία...",
         "purchase": "Αγορά",
-        "reset_time_to_zero": "Μηδενισμός Χρόνου",
-        "switch_to_lifetime": "Μετάβαση σε ισόβιο πρόγραμμα"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Συνοπτική εξήγηση χρησιμοποιώντας {{l1Name}}, τι σημαίνει η λέξη {{l2Name}} ({{l2Code}}) '{{word}}' στη φράση '{{text}}'.",
-            "inflection": "Δώστε το λεξικό, την κλίση και τη μορφολογία του."
-        }
+        "reset_time_to_zero": "Μηδενισμός Χρόνου"
     },
     "duration": {
         "annual": "Χρεώνεται ετησίως.",
@@ -85,7 +66,6 @@
         "general": "Παρουσιάστηκε σφάλμα",
         "generic": "Σφάλμα",
         "invalid_credentials": "Μη έγκυρο email ή κωδικός πρόσβασης. Παρακαλώ δοκιμάστε ξανά.",
-        "invalid_user_credentials": "Μη έγκυρο email ή κωδικός πρόσβασης",
         "invalid_verification_code": "Μη έγκυρος κωδικός επαλήθευσης. Παρακαλώ δοκιμάστε ξανά.",
         "language_not_selected": "Η γλώσσα δεν έχει επιλεγεί",
         "loading_failed": "Η φόρτωση απέτυχε",
@@ -95,8 +75,6 @@
         "payment_problem": "Υπήρξε ένα πρόβλημα με την πληρωμή σας.",
         "registration_failed": "Η εγγραφή απέτυχε",
         "something_went_wrong": "Κάτι πήγε στραβά. Παρακαλώ δοκιμάστε ξανά.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "Σφάλμα κατά την ενημέρωση της προόδου:",
         "user_info_not_found": "Οι πληροφορίες χρήστη δεν βρέθηκαν",
         "verification_failed": "Η επαλήθευση απέτυχε."
@@ -113,7 +91,6 @@
         "currency": "2. Όλα τα νομίσματα σε δολάρια ΗΠΑ (USD).",
         "lifetime_assumption": "1. Υποθέτοντας ότι θα ζήσετε περισσότερο από 2,4 χρόνια."
     },
-    "key": "el",
     "lang": {
         "ab": "Αμπχαζικά",
         "acf": "St. Lucia Creole Γαλλικά",
@@ -468,18 +445,14 @@
     },
     "msg": {
         "already_have_account": "Έχετε ήδη λογαριασμό;",
-        "auto_renews": "Αυτόματη ανανέωση σε {{time}}.",
         "auto_renews_in": "Αυτόματη ανανέωση σε {{days}} ημέρες",
         "choose_action": "Επιλέξτε μια ενέργεια",
         "choose_languages": "Επιλέξτε τις γλώσσες σας για να ξεκινήσετε",
-        "coming_soon": "Έρχεται σύντομα",
         "confirm_cancel_subscription": "Είστε σίγουροι ότι θέλετε να ακυρώσετε τη συνδρομή σας;",
         "contact_support": "Εάν αντιμετωπίσατε προβλήματα, επικοινωνήστε με την υποστήριξη.",
         "content_tailored": "Περιεχόμενο προσαρμοσμένο για εσάς",
         "copy_success": "Το κείμενο αντιγράφηκε στο πρόχειρο",
         "creating_account": "Δημιουργία λογαριασμού...",
-        "customize_experience": "Προσαρμόστε την εμπειρία σας",
-        "dashboard_for": "Ο πίνακας ελέγχου σας για {l1} → {l2}",
         "delete_confirmation": "Είστε βέβαιοι ότι θέλετε να διαγράψετε οριστικά τον λογαριασμό σας; Θα χάσετε όλες τις αποθηκευμένες λέξεις και την πρόοδό σας. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.",
         "didnt_receive_code": "Δεν λάβατε κωδικό;",
         "discover_the_power_of_comprehensible_input": "Ανακαλύψτε τη δύναμη της Κατανοητής Εισαγωγής μέσα από εκατοντάδες χιλιάδες βίντεο σε περισσότερες από 100 γλώσσες.",
@@ -492,9 +465,7 @@
         "existing_subscription_warning": "Αυτή τη στιγμή έχετε ένα ενεργό πρόγραμμα {{planType}} που θα ανανεωθεί αυτόματα. Για να αποφύγετε διπλές χρεώσεις, πρέπει να ακυρώσετε την υπάρχουσα συνδρομή σας πριν αγοράσετε μια νέα. Θέλετε να ακυρώσετε την υπάρχουσα συνδρομή {{planType}};",
         "expired": "Έληξε",
         "expires_in": "Λήγει σε {{days}} ημέρες",
-        "expiring": "Λήγει σε {{time}}.",
         "explore_media_for": "Εξερεύνηση πολυμέσων {l2}",
-        "find_videos": "Βρείτε βίντεο στο επίπεδό σας",
         "find_videos_matched": "Βρείτε βίντεο που ταιριάζουν στο επίπεδό σας",
         "forgot_password": "Ξεχάσατε τον κωδικό πρόσβασης;",
         "hsk_explanation": "\"HSK\" είναι η επίσημη δοκιμή επάρκειας στα Κινέζικα, με το Επίπεδο 1 να είναι το χαμηλότερο και το Επίπεδο 9 το υψηλότερο.",
@@ -504,26 +475,19 @@
         "landing_hero_desc": "Παρακολουθήστε βίντεο YouTube, ταινίες και τηλεοπτικές εκπομπές με διαδραστικούς διπλούς υπότιτλους. Πατήστε οποιαδήποτε λέξη για άμεση αναζήτηση λεξικού.",
         "landing_hero_title_1": "Μάθετε γλώσσες μέσα από",
         "landing_hero_title_2": "βίντεο",
-        "learning_from": "Μαθαίνοντας {l2} από {l1}",
-        "lifetime_only": "Μόνο το ισόβιο πρόγραμμα είναι διαθέσιμο ως επιλογή αγοράς εντός εφαρμογής της Apple.",
         "live_tv_available": "Ζωντανή TV διαθέσιμη",
         "loading": "Φόρτωση...",
         "log_in_to_continue": "Συνδεθείτε για να συνεχίσετε τη μάθηση.",
         "logging_in": "Σύνδεση...",
-        "lookup_words": "Αναζητήστε λέξεις και αποθηκεύστε λεξιλόγιο",
         "no_active_subscription": "Δεν βρέθηκε ενεργή συνδρομή.",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "Δεν υπάρχουν άλλα βίντεο",
         "no_saved_words": "Δεν έχουν αποθηκευτεί λέξεις ακόμα",
         "no_videos_found": "Δεν βρέθηκαν βίντεο. Δοκιμάστε άλλο επίπεδο ή ελέγξτε αργότερα.",
         "options": "Επιλογές",
-        "or_login_with": "Ή συνδεθείτε με:",
-        "or_register_with": "Ή εγγραφείτε με:",
         "paste_youtube_url": "Μπορείτε επίσης να επικολλήσετε τη διεύθυνση URL του YouTube για εισαγωγή.",
         "pro_feature_chatgpt": "Μόνο οι επαγγελματίες χρήστες μπορούν να χρησιμοποιούν τις λειτουργίες AI στο Language Player Go. Για να χρησιμοποιήσετε αυτήν τη δυνατότητα, αναβαθμίστε σε επαγγελματική έκδοση.",
         "pro_transcript": "Αναβάθμιση σε επαγγελματική έκδοση για να δείτε την πλήρη απομαγνητοφώνηση!",
         "pro_transcript_limit_reached": "Έχετε φτάσει το όριο απομαγνητοφωνήσεων. Αναβαθμίστε σε επαγγελματική έκδοση για πρόσβαση σε περισσότερες απομαγνητοφωνήσεις.",
-        "related_videos": "Σχετικά βίντεο θα εμφανιστούν εδώ.",
         "renewal_failed_contact_support": "Η ανανέωση απέτυχε. Παρακαλούμε επικοινωνήστε με την υποστήριξη πελατών.",
         "renews_today": "Ανανεώνεται σήμερα",
         "result_count": "{count, plural, one {# resultaat} other {# resultate}}",
@@ -531,17 +495,13 @@
         "start_learning": "Ξεκινήστε να μαθαίνετε γλώσσες μέσω αυθεντικού περιεχομένου βίντεο.",
         "subscription_cancel_error": "Σφάλμα κατά την ακύρωση της συνδρομής",
         "subscription_cancel_success": "Η συνδρομή ακυρώθηκε επιτυχώς",
-        "subtitles_not_available": "Οι υπότιτλοι δεν είναι ακόμη διαθέσιμοι για αυτό το βίντεο.",
         "time_spent_learning": "Ξοδεύτηκε χρόνος εκμάθησης {{language}} στο Language Player",
         "translated_subtitles": "Μεταφρασμένοι υπότιτλοι διαθέσιμοι",
         "upgrade_text": "Αναβάθμιση σε επαγγελματική έκδοση για πρόσβαση σε περισσότερα βίντεο!",
         "verification_code_sent": "Στείλαμε έναν κωδικό επαλήθευσης στο {email}. Εισάγετέ τον παρακάτω.",
         "verifying": "Επαλήθευση...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "Αυτό το βίντεο δεν μπόρεσε να φορτωθεί. Μπορεί να έχει αφαιρεθεί ή να έχει γίνει ιδιωτικό.",
         "videos_matching": "Βίντεο που ταιριάζουν με \"{{searchTerm}}\"",
-        "watch_live": "Παρακολουθήστε ζωντανά κανάλια",
-        "what_your_first_language": "Ποια είναι η μητρική σας γλώσσα;",
         "with_pro_you_can": "Με την επαγγελματική έκδοση, μπορείτε να:",
         "youtube_captions": "Υπότιτλοι YouTube διαθέσιμοι"
     },
@@ -582,23 +542,11 @@
         "monthly": "${{price}}/μήνα"
     },
     "setting": {
-        "auto_pronounce": "Αυτόματη προφορά",
-        "dark_mode": "Σκοτεινή λειτουργία",
-        "saved_words_blanks": "Αποθηκευμένες λέξεις ως κενά",
-        "show_gloss_saved": "Εμφάνιση σχολίων για αποθηκευμένα",
-        "show_phonetics": "Εμφάνιση φωνητικής",
-        "show_translation": "Εμφάνιση μετάφρασης",
-        "use_traditional": "Χρήση παραδοσιακών"
+        "dark_mode": "Σκοτεινή λειτουργία"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "Με τις περισσότερες προβολές",
-        "right_context": "Right Context",
         "title": "Τίτλος",
-        "views": "Most Viewed",
         "year": "Έτος"
     },
     "subscription": {
@@ -617,16 +565,11 @@
     "tab": {
         "dictionary": "Λεξικό",
         "me": "Εγώ",
-        "media": "Μέσα",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "Μέσα"
     },
     "time": {
-        "days": "{{count, plural, one {# ημέρα} other {# ημέρες}}}",
         "hours": "ώρες",
         "min": "λεπτό",
-        "months": "{{count, plural, one {# μήνας} other {# μήνες}}}",
-        "months_and_days": "{{months}} και {{days}}",
         "sec": "δεύτερο"
     },
     "title": {

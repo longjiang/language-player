@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "Rudi kwenye kuingia",
         "cancel": "Ghairi",
-        "clear": "Futa",
         "clear_words": "Futa Maneno",
         "confirm_cancellation": "Thibitisha Kufutwa",
         "confirm_deletion": "Thibitisha Ufutaji",
@@ -21,23 +20,13 @@
         "login": "Ingia",
         "logout": "Toka",
         "next": "Ifuatayo",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "Jisajili",
-        "remove_and_resave": "Remove & re-save",
         "resend": "Tuma tena",
         "resend_code": "Tuma Msimbo Tena",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "Tuma kiungo cha kuweka upya",
         "share": "Shiriki",
         "sign_up": "Jiandikishe",
         "speak": "Sema",
-        "speed": "Speed (M)",
         "start_learning": "Anza Kujifunza",
         "start_watching": "Anza kutazama",
         "try_again": "Jaribu tena",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Boresha hadi Pro",
         "verify": "Thibitisha",
         "verify_email": "Thibitisha barua pepe",
-        "video_info": "Video info",
         "watch": "Tazama"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "Weka Muda wa Sasa",
         "processing": "Inashughulikia...",
         "purchase": "Nunua",
-        "reset_time_to_zero": "Weka Upya Muda Kuwa Sifuri",
-        "switch_to_lifetime": "Badilisha hadi mpango wa maisha"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Eleza kwa ufupi kwa kutumia {{l1Name}}, nini neno la {{l2Name}} ({{l2Code}}) '{{word}}' linamaanisha kwenye kifungu '{{text}}'.",
-            "inflection": "Toa lemma, mnyambuliko, na mofolojia."
-        }
+        "reset_time_to_zero": "Weka Upya Muda Kuwa Sifuri"
     },
     "duration": {
         "annual": "Inatozwa kila mwaka.",
@@ -85,7 +66,6 @@
         "general": "Hitilafu imetokea",
         "generic": "Hitilafu",
         "invalid_credentials": "Barua pepe au nenosiri batili. Tafadhali jaribu tena.",
-        "invalid_user_credentials": "Barua pepe au nywila batili",
         "invalid_verification_code": "Nambari batili ya uthibitishaji. Tafadhali jaribu tena.",
         "language_not_selected": "Lugha haijachaguliwa",
         "loading_failed": "Imeshindwa kupakia",
@@ -95,8 +75,6 @@
         "payment_problem": "Kulikuwa na tatizo na malipo yako.",
         "registration_failed": "Usajili umeshindikana",
         "something_went_wrong": "Hitilafu imetokea. Tafadhali jaribu tena.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "Hitilafu katika kusasisha maendeleo:",
         "user_info_not_found": "Maelezo ya mtumiaji hayajapatikana",
         "verification_failed": "Uthibitishaji umeshindwa."
@@ -113,7 +91,6 @@
         "currency": "2. Fedha zote ziko katika dola za Marekani (USD).",
         "lifetime_assumption": "1. Ukidhani utaishi zaidi ya miaka 2.4."
     },
-    "key": "sw",
     "lang": {
         "ab": "Abkhazian",
         "acf": "Mtakatifu Lucia Creole Kifaransa",
@@ -468,18 +445,14 @@
     },
     "msg": {
         "already_have_account": "Tayari una akaunti?",
-        "auto_renews": "Inasasishwa moja kwa moja baada ya {{time}}.",
         "auto_renews_in": "Huisha kiotomatiki baada ya siku {{days}}",
         "choose_action": "Chagua kitendo",
         "choose_languages": "Chagua lugha zako ili kuanza",
-        "coming_soon": "Inakuja hivi karibuni",
         "confirm_cancel_subscription": "Una uhakika unataka kughairi usajili wako?",
         "contact_support": "Ikiwa umekumbana na matatizo, tafadhali wasiliana na usaidizi.",
         "content_tailored": "Maudhui Yaliyoundwa kwa Ajili Yako",
         "copy_success": "Maandishi yamenakiliwa kwenye ubao wa kunakili",
         "creating_account": "Inaunda akaunti...",
-        "customize_experience": "Geuza uzoefu wako kukufaa",
-        "dashboard_for": "Dashibodi yako ya {l1} → {l2}",
         "delete_confirmation": "Una uhakika unataka kufuta akaunti yako kabisa? Utapoteza maneno yote uliyookoa na maendeleo. Hatua hii haiwezi kubatilishwa.",
         "didnt_receive_code": "Hukupokea nambari?",
         "discover_the_power_of_comprehensible_input": "Gundua nguvu ya Ingizo Linaloeleweka kupitia mamia ya maelfu ya video katika lugha zaidi ya 100.",
@@ -492,9 +465,7 @@
         "existing_subscription_warning": "Kwa sasa una mpango hai wa {{planType}} ambao utajididisha kiotomatiki. Ili kuepuka malipo ya ziada, lazima ughairi usajili wako uliopo kabla ya kununua mpya. Je, ungependa kughairi usajili wako wa {{planType}} uliopo?",
         "expired": "Imeisha muda",
         "expires_in": "Inaisha baada ya siku {{days}}",
-        "expiring": "Inakwisha baada ya {{time}}.",
         "explore_media_for": "Chunguza Midia ya {l2}",
-        "find_videos": "Tafuta video katika kiwango chako",
         "find_videos_matched": "Tafuta video zinazolingana na kiwango chako",
         "forgot_password": "Umesahau nenosiri?",
         "hsk_explanation": "\"HSK\" ni mtihani rasmi wa ustadi wa Kichina, na Kiwango cha 1 ni cha chini kabisa na Kiwango cha 9 ni cha juu zaidi.",
@@ -504,43 +475,32 @@
         "landing_hero_desc": "Tazama video za YouTube, filamu na vipindi vya TV kwa manukuu mawili shirikishi. Gusa neno lolote kwa utafutaji wa kamusi wa papo hapo.",
         "landing_hero_title_1": "Jifunze lugha kupitia",
         "landing_hero_title_2": "video",
-        "learning_from": "Kujifunza {l2} kutoka {l1}",
-        "lifetime_only": "Mpango wa maisha pekee ndio unaopatikana kama chaguo la ununuzi wa ndani ya programu ya Apple.",
         "live_tv_available": "Runinga ya Moja kwa Moja inapatikana",
         "loading": "Inapakia...",
         "log_in_to_continue": "Ingia ili kuendelea kujifunza.",
         "logging_in": "Inaingia...",
-        "lookup_words": "Angalia maneno na uhifadhi msamiati",
         "no_active_subscription": "Hakuna usajili unaopatikana.",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "Hakuna video zaidi",
         "no_saved_words": "Hakuna maneno yaliyohifadhiwa bado",
         "no_videos_found": "Hakuna video zilizopatikana. Jaribu kiwango kingine au angalia tena baadaye.",
         "options": "Chaguo",
-        "or_login_with": "Au ingia kwa:",
-        "or_register_with": "Au jisajili kwa:",
         "paste_youtube_url": "Unaweza pia kubandika URL ya YouTube kuingiza.",
         "pro_feature_chatgpt": "Watumiaji wa Pro pekee wanaweza kutumia vipengele vya AI katika Language Player Go. Ili kutumia kipengele hiki, boresha hadi Pro.",
         "pro_transcript": "Boresha hadi Pro ili kuona nakala kamili!",
         "pro_transcript_limit_reached": "Kikomo cha nakala kimefikiwa. Tafadhali boresha hadi Pro ili kupata nakala zaidi.",
-        "related_videos": "Video zinazohusiana zitaonekana hapa.",
         "renewal_failed_contact_support": "Upyaji umeshindwa. Tafadhali wasiliana na huduma ya wateja.",
         "renews_today": "Huisha leo",
         "sort_by": "Panga kwa: {{sortBy}}",
         "start_learning": "Anza kujifunza lugha kupitia maudhui halisi ya video.",
         "subscription_cancel_error": "Hitilafu katika kughairi usajili",
         "subscription_cancel_success": "Usajili umefanikiwa kughairiwa",
-        "subtitles_not_available": "Manukuu bado hayapatikani kwa video hii.",
         "time_spent_learning": "Muda uliotumika kujifunza {{language}} katika Language Player",
         "translated_subtitles": "Manukuu yaliyotafsiriwa yanapatikana",
         "upgrade_text": "Boresha hadi Pro ili kupata video zaidi!",
         "verification_code_sent": "Tumetuma nambari ya uthibitishaji kwa {email}. Iweke hapa chini.",
         "verifying": "Inathibitisha...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "Video hii haikuweza kupakiwa. Huenda imeondolewa au imefanywa kuwa ya faragha.",
         "videos_matching": "Video zinazofanana na \"{{searchTerm}}\"",
-        "watch_live": "Tazama vituo vya moja kwa moja",
-        "what_your_first_language": "Lugha yako ya kwanza ni ipi?",
         "with_pro_you_can": "Ukiwa na Pro, unaweza:",
         "youtube_captions": "Manukuu ya YouTube yanapatikana"
     },
@@ -581,23 +541,11 @@
         "monthly": "${{price}}/mwezi"
     },
     "setting": {
-        "auto_pronounce": "Matamshi ya Moja kwa Moja",
-        "dark_mode": "Hali Nyeusi",
-        "saved_words_blanks": "Maneno Yaliyohifadhiwa kama Nafasi",
-        "show_gloss_saved": "Onyesha Glosari kwa Yaliyohifadhiwa",
-        "show_phonetics": "Onyesha Fonetiki",
-        "show_translation": "Onyesha Tafsiri",
-        "use_traditional": "Tumia ya Kawaida"
+        "dark_mode": "Hali Nyeusi"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "Yaliyoangaliwa zaidi",
-        "right_context": "Right Context",
         "title": "Kichwa",
-        "views": "Most Viewed",
         "year": "Mwaka"
     },
     "subscription": {
@@ -616,16 +564,11 @@
     "tab": {
         "dictionary": "Kamusi",
         "me": "Mimi",
-        "media": "Vyombo vya habari",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "Vyombo vya habari"
     },
     "time": {
-        "days": "{{count}} siku",
         "hours": "saa",
         "min": "dakika",
-        "months": "{{count}} miezi",
-        "months_and_days": "{{months}} na {{days}}",
         "sec": "sekunde"
     },
     "title": {

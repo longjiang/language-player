@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "Înapoi la autentificare",
         "cancel": "Anulează",
-        "clear": "Șterge",
         "clear_words": "Șterge Cuvinte",
         "confirm_cancellation": "Confirmă anularea",
         "confirm_deletion": "Confirmă ștergerea",
@@ -21,23 +20,13 @@
         "login": "Conectare",
         "logout": "Deconectare",
         "next": "Următorul",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "Înregistrare",
-        "remove_and_resave": "Remove & re-save",
         "resend": "Retrimite",
         "resend_code": "Retrimite codul",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "Trimite linkul de resetare",
         "share": "Distribuie",
         "sign_up": "Înregistrare",
         "speak": "Vorbiți",
-        "speed": "Speed (M)",
         "start_learning": "Începe să înveți",
         "start_watching": "Începe vizionarea",
         "try_again": "Încearcă din nou",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Upgrade la Pro",
         "verify": "Verifică",
         "verify_email": "Verifică emailul",
-        "video_info": "Video info",
         "watch": "Vizionează"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "Păstrează Timpul Curent",
         "processing": "Se procesează...",
         "purchase": "Cumpără",
-        "reset_time_to_zero": "Resetează Timpul la Zero",
-        "switch_to_lifetime": "Treci la planul pe viață"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Explică pe scurt în {{l1Name}} ce înseamnă cuvântul {{l2Name}} ({{l2Code}}) '{{word}}' în fraza '{{text}}'.",
-            "inflection": "Oferă forma de bază, flexiunea și morfologia sa."
-        }
+        "reset_time_to_zero": "Resetează Timpul la Zero"
     },
     "duration": {
         "annual": "Facturat anual.",
@@ -85,7 +66,6 @@
         "general": "A apărut o eroare",
         "generic": "Eroare",
         "invalid_credentials": "Email sau parolă invalidă. Vă rugăm să încercați din nou.",
-        "invalid_user_credentials": "E-mail sau parolă invalidă",
         "invalid_verification_code": "Cod de verificare invalid. Vă rugăm să încercați din nou.",
         "language_not_selected": "Limba nu a fost selectată",
         "loading_failed": "Eroare la încărcare",
@@ -95,8 +75,6 @@
         "payment_problem": "A apărut o problemă cu plata dvs.",
         "registration_failed": "Înregistrarea a eșuat",
         "something_went_wrong": "Ceva nu a funcționat. Vă rugăm să încercați din nou.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "Eroare la actualizarea progresului:",
         "user_info_not_found": "Informațiile utilizatorului nu au fost găsite",
         "verification_failed": "Verificarea a eșuat."
@@ -113,7 +91,6 @@
         "currency": "2. Toate valutele sunt în dolari americani (USD).",
         "lifetime_assumption": "1. Presupunând că vei trăi mai mult de 2,4 ani."
     },
-    "key": "ro",
     "lang": {
         "ab": "Abhazie",
         "acf": "St. Lucia creolă franceză",
@@ -468,18 +445,14 @@
     },
     "msg": {
         "already_have_account": "Ai deja un cont?",
-        "auto_renews": "Se reînnoiește automat în {{time}}.",
         "auto_renews_in": "Se reînnoiește automat în {{days}} zile",
         "choose_action": "Alegeți o acțiune",
         "choose_languages": "Alegeți limbile dvs. pentru a începe",
-        "coming_soon": "În curând",
         "confirm_cancel_subscription": "Ești sigur că vrei să anulezi abonamentul?",
         "contact_support": "Dacă ați întâmpinat probleme, vă rugăm să contactați asistența.",
         "content_tailored": "Conținut personalizat pentru tine",
         "copy_success": "Textul a fost copiat în clipboard",
         "creating_account": "Se creează contul...",
-        "customize_experience": "Personalizați-vă experiența",
-        "dashboard_for": "Panoul tău pentru {l1} → {l2}",
         "delete_confirmation": "Ești sigur că vrei să ștergi definitiv contul tău? Vei pierde toate cuvintele salvate și progresul. Această acțiune nu poate fi anulată.",
         "didnt_receive_code": "Nu ați primit un cod?",
         "discover_the_power_of_comprehensible_input": "Descoperă puterea Input-ului Comprehensibil prin sute de mii de videoclipuri în peste 100 de limbi.",
@@ -492,9 +465,7 @@
         "existing_subscription_warning": "Aveți în prezent un plan {{planType}} activ care se va reînnoi automat. Pentru a evita taxele duble, trebuie să anulați abonamentul existent înainte de a achiziționa unul nou. Doriți să anulați abonamentul {{planType}} existent?",
         "expired": "Expirat",
         "expires_in": "Expiră în {{days}} zile",
-        "expiring": "Expiră în {{time}}.",
         "explore_media_for": "Explorează media {l2}",
-        "find_videos": "Găsiți videoclipuri la nivelul dvs.",
         "find_videos_matched": "Găsiți videoclipuri potrivite nivelului dvs.",
         "forgot_password": "Ai uitat parola?",
         "hsk_explanation": "\"HSK\" este testul oficial de competență în limba chineză, cu Nivelul 1 fiind cel mai scăzut și Nivelul 9 cel mai înalt.",
@@ -504,43 +475,32 @@
         "landing_hero_desc": "Urmăriți videoclipuri YouTube, filme și emisiuni TV cu subtitrări duble interactive. Atingeți orice cuvânt pentru o căutare instantanee în dicționar.",
         "landing_hero_title_1": "Învață limbi prin",
         "landing_hero_title_2": "videoclipuri",
-        "learning_from": "Învăț {l2} din {l1}",
-        "lifetime_only": "Doar planul pe viață este disponibil ca opțiune de achiziție în aplicație Apple.",
         "live_tv_available": "TV live disponibil",
         "loading": "Se încarcă...",
         "log_in_to_continue": "Autentificați-vă pentru a continua învățarea.",
         "logging_in": "Se autentifică...",
-        "lookup_words": "Căutați cuvinte și salvați vocabularul",
         "no_active_subscription": "Nu s-a găsit niciun abonament activ.",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "Nu mai sunt videoclipuri",
         "no_saved_words": "Nu sunt cuvinte salvate încă",
         "no_videos_found": "Nu s-au găsit videoclipuri. Încercați un alt nivel sau reveniți mai târziu.",
         "options": "Opțiuni",
-        "or_login_with": "Sau conectează-te cu:",
-        "or_register_with": "Sau înregistrează-te cu:",
         "paste_youtube_url": "De asemenea, puteți lipi URL-ul YouTube pentru a importa.",
         "pro_feature_chatgpt": "Doar utilizatorii Pro pot folosi funcțiile AI în Language Player Go. Pentru a utiliza această funcție, fă upgrade la Pro.",
         "pro_transcript": "Fă upgrade la Pro pentru a vedea transcrierea completă!",
         "pro_transcript_limit_reached": "S-a atins limita de transcrieri. Te rugăm să faci upgrade la Pro pentru a accesa mai multe transcrieri.",
-        "related_videos": "Videoclipurile asociate vor apărea aici.",
         "renewal_failed_contact_support": "Reînnoirea a eșuat. Vă rugăm să contactați asistența pentru clienți.",
         "renews_today": "Se reînnoiește astăzi",
         "sort_by": "Sortează după: {{sortBy}}",
         "start_learning": "Începeți să învățați limbi prin conținut video autentic.",
         "subscription_cancel_error": "Eroare la anularea abonamentului",
         "subscription_cancel_success": "Abonament anulat cu succes",
-        "subtitles_not_available": "Subtitrările nu sunt încă disponibile pentru acest videoclip.",
         "time_spent_learning": "Timp petrecut învățând {{language}} în Language Player",
         "translated_subtitles": "Subtitrări traduse disponibile",
         "upgrade_text": "Fă upgrade la Pro pentru a accesa mai multe videoclipuri!",
         "verification_code_sent": "Am trimis un cod de verificare la {email}. Introduceți-l mai jos.",
         "verifying": "Se verifică...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "Acest videoclip nu a putut fi încărcat. Este posibil să fi fost eliminat sau făcut privat.",
         "videos_matching": "Videoclipuri care se potrivesc cu \"{{searchTerm}}\"",
-        "watch_live": "Urmăriți canale live",
-        "what_your_first_language": "Care este limba ta maternă?",
         "with_pro_you_can": "Cu Pro, poți:",
         "youtube_captions": "Subtitrări YouTube disponibile"
     },
@@ -581,23 +541,11 @@
         "monthly": "${{price}}/lună"
     },
     "setting": {
-        "auto_pronounce": "Pronunție automată",
-        "dark_mode": "Mod întunecat",
-        "saved_words_blanks": "Cuvinte salvate ca spații goale",
-        "show_gloss_saved": "Arată glosă pentru salvate",
-        "show_phonetics": "Arată fonetică",
-        "show_translation": "Arată traducerea",
-        "use_traditional": "Folosește tradițional"
+        "dark_mode": "Mod întunecat"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "Cele mai vizionate",
-        "right_context": "Right Context",
         "title": "Titlu",
-        "views": "Most Viewed",
         "year": "An"
     },
     "subscription": {
@@ -616,16 +564,11 @@
     "tab": {
         "dictionary": "Dicționar",
         "me": "Eu",
-        "media": "Media",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "Media"
     },
     "time": {
-        "days": "{{count, plural, one {# zi} few {# zile} other {# de zile}}}",
         "hours": "ore",
         "min": "min",
-        "months": "{{count, plural, one {# lună} few {# luni} other {# de luni}}}",
-        "months_and_days": "{{months}} și {{days}}",
         "sec": "sec"
     },
     "title": {

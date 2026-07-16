@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "Quay lại đăng nhập",
         "cancel": "Hủy",
-        "clear": "Xóa",
         "clear_words": "Xóa Từ",
         "confirm_cancellation": "Xác nhận hủy",
         "confirm_deletion": "Xác nhận xóa",
@@ -21,23 +20,13 @@
         "login": "Đăng nhập",
         "logout": "Đăng xuất",
         "next": "Tiếp theo",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "Đăng ký",
-        "remove_and_resave": "Remove & re-save",
         "resend": "Gửi lại",
         "resend_code": "Gửi lại mã",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "Gửi liên kết đặt lại",
         "share": "Chia sẻ",
         "sign_up": "Đăng ký",
         "speak": "Nói",
-        "speed": "Speed (M)",
         "start_learning": "Bắt đầu học",
         "start_watching": "Bắt đầu xem",
         "try_again": "Thử lại",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "Nâng cấp lên Pro",
         "verify": "Xác minh",
         "verify_email": "Xác minh email",
-        "video_info": "Video info",
         "watch": "Xem"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "Giữ Thời Gian Hiện Tại",
         "processing": "Đang xử lý...",
         "purchase": "Mua",
-        "reset_time_to_zero": "Đặt Lại Thời Gian Về Không",
-        "switch_to_lifetime": "Chuyển sang gói trọn đời"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "Giải thích ngắn gọn bằng {{l1Name}} ý nghĩa của từ {{l2Name}} ({{l2Code}}) '{{word}}' trong cụm từ '{{text}}'.",
-            "inflection": "Cho biết dạng nguyên mẫu, biến thể và hình thái của nó."
-        }
+        "reset_time_to_zero": "Đặt Lại Thời Gian Về Không"
     },
     "duration": {
         "annual": "Thanh toán hàng năm.",
@@ -85,7 +66,6 @@
         "general": "Đã xảy ra lỗi",
         "generic": "Lỗi",
         "invalid_credentials": "Email hoặc mật khẩu không hợp lệ. Vui lòng thử lại.",
-        "invalid_user_credentials": "Email hoặc mật khẩu không hợp lệ",
         "invalid_verification_code": "Mã xác minh không hợp lệ. Vui lòng thử lại.",
         "language_not_selected": "Chưa chọn ngôn ngữ",
         "loading_failed": "Tải không thành công",
@@ -95,8 +75,6 @@
         "payment_problem": "Đã xảy ra sự cố với khoản thanh toán của bạn.",
         "registration_failed": "Đăng ký thất bại",
         "something_went_wrong": "Đã xảy ra lỗi. Vui lòng thử lại.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "Lỗi khi cập nhật tiến trình:",
         "user_info_not_found": "Không tìm thấy thông tin người dùng",
         "verification_failed": "Xác minh thất bại."
@@ -113,7 +91,6 @@
         "currency": "2. Tất cả tiền tệ tính bằng đô la Mỹ (USD).",
         "lifetime_assumption": "1. Giả định rằng bạn sẽ sống lâu hơn 2,4 năm."
     },
-    "key": "vi",
     "lang": {
         "ab": "Tiếng Abkhazia",
         "acf": "St. Lucia Creole Tiếng Pháp",
@@ -467,18 +444,14 @@
     },
     "msg": {
         "already_have_account": "Bạn đã có tài khoản?",
-        "auto_renews": "Tự động gia hạn sau {{time}}.",
         "auto_renews_in": "Tự động gia hạn sau {{days}} ngày",
         "choose_action": "Chọn một hành động",
         "choose_languages": "Chọn ngôn ngữ của bạn để bắt đầu",
-        "coming_soon": "Sắp ra mắt",
         "confirm_cancel_subscription": "Bạn có chắc chắn muốn hủy đăng ký không?",
         "contact_support": "Nếu bạn gặp sự cố, vui lòng liên hệ bộ phận hỗ trợ.",
         "content_tailored": "Nội dung được điều chỉnh cho bạn",
         "copy_success": "Đã sao chép văn bản vào bộ nhớ tạm",
         "creating_account": "Đang tạo tài khoản...",
-        "customize_experience": "Tùy chỉnh trải nghiệm của bạn",
-        "dashboard_for": "Bảng điều khiển của bạn cho {l1} → {l2}",
         "delete_confirmation": "Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản của mình không? Bạn sẽ mất tất cả các từ đã lưu và tiến trình. Hành động này không thể hoàn tác.",
         "didnt_receive_code": "Không nhận được mã?",
         "discover_the_power_of_comprehensible_input": "Khám phá sức mạnh của đầu vào có thể hiểu được thông qua hàng trăm nghìn video bằng hơn 100 ngôn ngữ.",
@@ -491,9 +464,7 @@
         "existing_subscription_warning": "Hiện tại bạn có một gói {{planType}} đang hoạt động sẽ tự động gia hạn. Để tránh bị tính phí trùng lặp, bạn phải hủy đăng ký hiện tại trước khi mua gói mới. Bạn có muốn hủy đăng ký {{planType}} hiện tại không?",
         "expired": "Đã hết hạn",
         "expires_in": "Hết hạn sau {{days}} ngày",
-        "expiring": "Sắp hết hạn sau {{time}}.",
         "explore_media_for": "Khám phá phương tiện {l2}",
-        "find_videos": "Tìm video phù hợp trình độ của bạn",
         "find_videos_matched": "Tìm video phù hợp với trình độ của bạn",
         "forgot_password": "Quên mật khẩu?",
         "hsk_explanation": "\"HSK\" là bài kiểm tra năng lực tiếng Trung chính thức, với Cấp 1 là thấp nhất và Cấp 9 là cao nhất.",
@@ -503,43 +474,32 @@
         "landing_hero_desc": "Xem video YouTube, phim và chương trình TV với phụ đề kép tương tác. Chạm vào bất kỳ từ nào để tra từ điển ngay lập tức.",
         "landing_hero_title_1": "Học ngôn ngữ qua",
         "landing_hero_title_2": "video",
-        "learning_from": "Học {l2} từ {l1}",
-        "lifetime_only": "Chỉ có gói trọn đời khả dụng dưới dạng mua trong ứng dụng Apple.",
         "live_tv_available": "Có TV trực tiếp",
         "loading": "Đang tải...",
         "log_in_to_continue": "Đăng nhập để tiếp tục học.",
         "logging_in": "Đang đăng nhập...",
-        "lookup_words": "Tra từ và lưu từ vựng",
         "no_active_subscription": "Không tìm thấy đăng ký đang hoạt động.",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "Không còn video nào",
         "no_saved_words": "Chưa có từ nào được lưu",
         "no_videos_found": "Không tìm thấy video. Hãy thử cấp độ khác hoặc kiểm tra lại sau.",
         "options": "Tùy chọn",
-        "or_login_with": "Hoặc đăng nhập bằng:",
-        "or_register_with": "Hoặc đăng ký bằng:",
         "paste_youtube_url": "Bạn cũng có thể dán URL YouTube để nhập.",
         "pro_feature_chatgpt": "Chỉ người dùng Pro mới có thể sử dụng các tính năng AI trong Language Player Go. Để sử dụng tính năng này, hãy nâng cấp lên Pro.",
         "pro_transcript": "Nâng cấp lên Pro để xem toàn bộ bản ghi!",
         "pro_transcript_limit_reached": "Đã đạt giới hạn bản ghi. Vui lòng nâng cấp lên Pro để truy cập thêm bản ghi.",
-        "related_videos": "Video liên quan sẽ xuất hiện ở đây.",
         "renewal_failed_contact_support": "Gia hạn thất bại. Vui lòng liên hệ bộ phận hỗ trợ khách hàng.",
         "renews_today": "Gia hạn hôm nay",
         "sort_by": "Sắp xếp theo: {{sortBy}}",
         "start_learning": "Bắt đầu học ngôn ngữ qua nội dung video thực tế.",
         "subscription_cancel_error": "Lỗi khi hủy đăng ký",
         "subscription_cancel_success": "Đã hủy đăng ký thành công",
-        "subtitles_not_available": "Phụ đề chưa có sẵn cho video này.",
         "time_spent_learning": "Thời gian dành để học {{language}} trong Language Player",
         "translated_subtitles": "Có phụ đề dịch",
         "upgrade_text": "Nâng cấp lên Pro để truy cập thêm video!",
         "verification_code_sent": "Chúng tôi đã gửi mã xác minh đến {email}. Nhập mã bên dưới.",
         "verifying": "Đang xác minh...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "Không thể tải video này. Có thể video đã bị xóa hoặc đặt ở chế độ riêng tư.",
         "videos_matching": "Video phù hợp với \"{{searchTerm}}\"",
-        "watch_live": "Xem kênh trực tiếp",
-        "what_your_first_language": "Tiếng mẹ đẻ của bạn là gì?",
         "with_pro_you_can": "Với Pro, bạn có thể:",
         "youtube_captions": "Có phụ đề YouTube"
     },
@@ -580,23 +540,11 @@
         "monthly": "${{price}}/tháng"
     },
     "setting": {
-        "auto_pronounce": "Phát âm tự động",
-        "dark_mode": "Chế độ tối",
-        "saved_words_blanks": "Từ đã lưu dưới dạng khoảng trống",
-        "show_gloss_saved": "Hiển thị chú giải cho từ đã lưu",
-        "show_phonetics": "Hiển thị phiên âm",
-        "show_translation": "Hiển thị bản dịch",
-        "use_traditional": "Sử dụng phiên bản truyền thống"
+        "dark_mode": "Chế độ tối"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "Xem nhiều nhất",
-        "right_context": "Right Context",
         "title": "Tiêu đề",
-        "views": "Most Viewed",
         "year": "Năm"
     },
     "subscription": {
@@ -615,16 +563,11 @@
     "tab": {
         "dictionary": "Từ điển",
         "me": "Tôi",
-        "media": "Phương tiện truyền thông",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "Phương tiện truyền thông"
     },
     "time": {
-        "days": "{{count}} ngày",
         "hours": "giờ",
         "min": "phút",
-        "months": "{{count}} tháng",
-        "months_and_days": "{{months}} và {{days}}",
         "sec": "giây"
     },
     "title": {

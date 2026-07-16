@@ -2,7 +2,6 @@
     "action": {
         "back_to_login": "العودة إلى تسجيل الدخول",
         "cancel": "إلغاء",
-        "clear": "مسح",
         "clear_words": "مسح الكلمات",
         "confirm_cancellation": "تأكيد الإلغاء",
         "confirm_deletion": "تأكيد الحذف",
@@ -21,23 +20,13 @@
         "login": "تسجيل الدخول",
         "logout": "تسجيل الخروج",
         "next": "التالي",
-        "next_line": "Next line (→)",
-        "next_video": "Next video (Shift + →)",
-        "pause": "Pause (Space)",
-        "play": "Play (Space)",
-        "previous_line": "Previous line (←)",
-        "previous_video": "Previous video (Shift + ←)",
         "register": "التسجيل",
-        "remove_and_resave": "Remove & re-save",
         "resend": "إعادة الإرسال",
         "resend_code": "إعادة إرسال الرمز",
-        "rewind": "Rewind 2s (R)",
-        "saved": "Saved",
         "send_reset_link": "إرسال رابط إعادة التعيين",
         "share": "مشاركة",
         "sign_up": "التسجيل",
         "speak": "تحدث",
-        "speed": "Speed (M)",
         "start_learning": "ابدأ التعلم",
         "start_watching": "بدء المشاهدة",
         "try_again": "حاول مرة أخرى",
@@ -46,7 +35,6 @@
         "upgrade_to_pro": "الترقية إلى النسخة المتقدمة",
         "verify": "التحقق",
         "verify_email": "تأكيد البريد الإلكتروني",
-        "video_info": "Video info",
         "watch": "مشاهدة"
     },
     "button": {
@@ -54,14 +42,7 @@
         "keep_current_time": "الاحتفاظ بالوقت الحالي",
         "processing": "جارٍ المعالجة...",
         "purchase": "شراء",
-        "reset_time_to_zero": "إعادة تعيين الوقت إلى الصفر",
-        "switch_to_lifetime": "التبديل إلى الخطة مدى الحياة"
-    },
-    "chatgpt": {
-        "prompt": {
-            "base": "اشرح باختصار باستخدام {{l1Name}} ماذا تعني كلمة {{l2Name}} ({{l2Code}}) '{{word}}' في العبارة '{{text}}'.",
-            "inflection": "أعط جذرها وتصريفها وبنيتها الصرفية."
-        }
+        "reset_time_to_zero": "إعادة تعيين الوقت إلى الصفر"
     },
     "duration": {
         "annual": "يتم الدفع سنويًا.",
@@ -85,7 +66,6 @@
         "general": "حدث خطأ",
         "generic": "خطأ",
         "invalid_credentials": "بريد إلكتروني أو كلمة مرور غير صالحة. يرجى المحاولة مرة أخرى.",
-        "invalid_user_credentials": "البريد الإلكتروني أو كلمة المرور غير صالحة",
         "invalid_verification_code": "رمز التحقق غير صالح. يرجى المحاولة مرة أخرى.",
         "language_not_selected": "لم يتم اختيار اللغة",
         "loading_failed": "فشل التحميل",
@@ -95,8 +75,6 @@
         "payment_problem": "كانت هناك مشكلة في الدفع الخاص بك.",
         "registration_failed": "فشل التسجيل",
         "something_went_wrong": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
-        "unrecognized_saved_word": "Unrecognized saved word",
-        "unrecognized_saved_word_desc": "This word was saved in a previous version of Language Player and its ID (\"{id}\") doesn't match any current dictionary entry. Remove it below and re-save from the correct entry.",
         "updating_progress": "خطأ في تحديث التقدم:",
         "user_info_not_found": "لم يتم العثور على معلومات المستخدم",
         "verification_failed": "فشل التحقق."
@@ -113,7 +91,6 @@
         "currency": "2. جميع العملات بالدولار الأمريكي (USD).",
         "lifetime_assumption": "1. بافتراض أنك ستعيش أكثر من 2.4 سنة."
     },
-    "key": "ar",
     "label": {
         "textbook_format": "{material} — Boek {book}, Les {lesson}"
     },
@@ -472,23 +449,18 @@
     "msg": {
         "all_done_desc": "Jy het alle verskuldigde kaarte hersien. Kom later terug vir meer, of verken video's om nuwe woorde te stoor.",
         "already_have_account": "هل لديك حساب بالفعل؟",
-        "auto_renews": "يتجدد تلقائيًا خلال {{time}}.",
         "auto_renews_in": "يتجدد تلقائيًا خلال {{days}} أيام",
         "choose_action": "اختر إجراء",
         "choose_languages": "اختر لغاتك للبدء",
-        "coming_soon": "قريبًا",
         "confirm_cancel_subscription": "هل أنت متأكد أنك تريد إلغاء اشتراكك؟",
         "contact_support": "إذا واجهت مشاكل، يرجى الاتصال بالدعم.",
         "contact_support_if_delayed": "As jou intekening nie binne 'n paar minute verskyn nie, kontak asseblief ondersteuning.",
         "content_tailored": "محتوى مخصص لك",
         "copy_success": "تم نسخ النص إلى الحافظة",
         "creating_account": "جارٍ إنشاء الحساب...",
-        "customize_experience": "خصص تجربتك",
-        "dashboard_for": "لوحة التحكم لـ {l1} → {l2}",
         "days_remaining": "剩餘 {n} 天",
         "delete_confirmation": "هل أنت متأكد أنك تريد حذف حسابك بشكل دائم؟ ستفقد جميع كلماتك المحفوظة وتقدمك. لا يمكن التراجع عن هذا الإجراء.",
         "dictionary_empty_state": "搜尋 {l2} 單字以查看定義、發音等資訊。",
-        "dictionary_placeholder": "字典搜尋、分詞和單字儲存功能將從 Classic Nuxt 應用程式移植過來。",
         "didnt_receive_code": "لم تستلم رمزًا؟",
         "discover_the_power_of_comprehensible_input": "اكتشف قوة المدخلات المفهومة من خلال مئات الآلاف من مقاطع الفيديو بأكثر من 100 لغة.",
         "dont_have_account": "ليس لديك حساب؟",
@@ -500,9 +472,7 @@
         "existing_subscription_warning": "لديك حاليًا خطة {{planType}} نشطة ستتجدد تلقائيًا. لتجنب الرسوم المزدوجة، يجب عليك إلغاء اشتراكك الحالي قبل شراء اشتراك جديد. هل ترغب في إلغاء اشتراك {{planType}} الحالي الخاص بك؟",
         "expired": "منتهية الصلاحية",
         "expires_in": "تنتهي الصلاحية خلال {{days}} أيام",
-        "expiring": "تنتهي الصلاحية خلال {{time}}.",
         "explore_media_for": "استكشاف وسائط {l2}",
-        "find_videos": "ابحث عن فيديوهات بمستواك",
         "find_videos_matched": "ابحث عن فيديوهات مناسبة لمستواك",
         "forgot_password": "نسيت كلمة المرور؟",
         "hsk_explanation": "\"HSK\" هو اختبار الكفاءة الرسمي في اللغة الصينية، حيث يكون المستوى 1 هو الأدنى والمستوى 9 هو الأعلى.",
@@ -512,31 +482,24 @@
         "landing_hero_desc": "شاهد فيديوهات YouTube والأفلام والبرامج التلفزيونية مع ترجمات ثنائية تفاعلية. انقر على أي كلمة للبحث الفوري في القاموس.",
         "landing_hero_title_1": "تعلم اللغات من خلال",
         "landing_hero_title_2": "الفيديو",
-        "learning_from": "تعلم {l2} من {l1}",
-        "lifetime_only": "فقط الخطة مدى الحياة متاحة كخيار للشراء داخل التطبيق من Apple.",
         "live_tv_available": "تلفزيون مباشر متاح",
         "loading": "جارٍ التحميل...",
         "log_in_to_continue": "سجل الدخول لمواصلة التعلم.",
         "logging_in": "جارٍ تسجيل الدخول...",
-        "lookup_words": "ابحث عن الكلمات واحفظ المفردات",
         "more_queued": "還有 {count} 個單字排入明天的批次。",
         "new_cards_available": "今天有 {count} 張新卡片可用（每日上限 {limit} 張）。",
         "no_active_subscription": "لم يتم العثور على اشتراك نشط.",
         "no_cards_due_desc": "您的{deck}卡组中有 {total} 张卡片，但没有需要复习的。每天会有新卡片可供学习。",
-        "no_matching_subtitle": "No matching subtitle line found",
         "no_more_videos": "لا مزيد من مقاطع الفيديو",
         "no_saved_words": "لم يتم حفظ أي كلمات بعد",
         "no_videos_found": "لم يتم العثور على فيديوهات. جرب مستوى آخر أو عد لاحقًا.",
         "options": "خيارات",
-        "or_login_with": "أو تسجيل الدخول باستخدام:",
-        "or_register_with": "أو التسجيل باستخدام:",
         "password_reset_sent": "As 'n rekening vir {email} bestaan, het ons 'n wagwoordterugstelskokie gestuur.",
         "paste_youtube_url": "يمكنك أيضًا لصق عنوان URL من YouTube للاستيراد.",
         "pay_once_forever": "Betaal een keer, toegang vir altyd.",
         "pro_feature_chatgpt": "يمكن فقط للمستخدمين المتقدمين استخدام ميزات الذكاء الاصطناعي في Language Player Go. لاستخدام هذه الميزة، قم بالترقية إلى النسخة المتقدمة.",
         "pro_transcript": "قم بالترقية إلى النسخة المتقدمة لعرض النص الكامل!",
         "pro_transcript_limit_reached": "تم الوصول إلى حد النصوص. يرجى الترقية إلى النسخة المتقدمة للوصول إلى المزيد من النصوص.",
-        "related_videos": "ستظهر الفيديوهات ذات الصلة هنا.",
         "renewal_failed_contact_support": "فشل التجديد. يرجى الاتصال بدعم العملاء.",
         "renews_today": "يتجدد اليوم",
         "result_count": "plural",
@@ -544,7 +507,6 @@
         "start_learning": "ابدأ في تعلم اللغات من خلال محتوى فيديو أصلي.",
         "subscription_cancel_error": "خطأ في إلغاء الاشتراك",
         "subscription_cancel_success": "تم إلغاء الاشتراك بنجاح",
-        "subtitles_not_available": "الترجمات غير متاحة لهذا الفيديو بعد.",
         "time_spent_learning": "الوقت المستغرق في تعلم {{language}} في Language Player",
         "translated_subtitles": "ترجمات مترجمة متاحة",
         "try_again_or_contact": "Probeer asseblief weer, of kontak ons vir hulp.",
@@ -553,11 +515,8 @@
         "upgrade_to_pro_desc": "解鎖完整逐字稿、不限數量的單字範例等更多功能。",
         "verification_code_sent": "أرسلنا رمز التحقق إلى {email}. أدخله أدناه.",
         "verifying": "جارٍ التحقق...",
-        "video_counter": "Video {current} of {total}",
         "video_unavailable": "تعذر تحميل هذا الفيديو. ربما تم حذفه أو جعله خاصًا.",
         "videos_matching": "مقاطع الفيديو المطابقة لـ \"{{searchTerm}}\"",
-        "watch_live": "مشاهدة القنوات المباشرة",
-        "what_your_first_language": "ما هي لغتك الأم؟",
         "with_pro_you_can": "مع النسخة المتقدمة، يمكنك:",
         "youtube_captions": "ترجمات YouTube متاحة"
     },
@@ -598,23 +557,11 @@
         "monthly": "${{price}}/شهر"
     },
     "setting": {
-        "auto_pronounce": "النطق التلقائي",
-        "dark_mode": "الوضع الداكن",
-        "saved_words_blanks": "عرض الكلمات المحفوظة كفراغات",
-        "show_gloss_saved": "إظهار الشرح للكلمات المحفوظة",
-        "show_phonetics": "عرض النطق الصوتي",
-        "show_translation": "عرض الترجمة",
-        "use_traditional": "استخدام التقليدي"
+        "dark_mode": "الوضع الداكن"
     },
     "sort": {
-        "date": "Date",
-        "left_context": "Left Context",
-        "length": "Length",
-        "likes": "Likes",
         "most_viewed": "الأكثر مشاهدة",
-        "right_context": "Right Context",
         "title": "العنوان",
-        "views": "Most Viewed",
         "year": "السنة"
     },
     "subscription": {
@@ -633,16 +580,11 @@
     "tab": {
         "dictionary": "قاموس",
         "me": "أنا",
-        "media": "وسائط",
-        "reading": "Reading",
-        "vocab": "Vocab"
+        "media": "وسائط"
     },
     "time": {
-        "days": "{{count, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}}",
         "hours": "ساعات",
         "min": "دقيقة",
-        "months": "{{count, plural, zero {# شهر} one {شهر واحد} two {شهران} few {# أشهر} many {# شهرًا} other {# شهر}}}",
-        "months_and_days": "{{months}} و {{days}}",
         "sec": "ثانية"
     },
     "title": {
