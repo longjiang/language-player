@@ -725,7 +725,7 @@
         "password_min": "الحد الأدنى 8 أحرف",
         "paste_l1_translation": "الصق ترجمة {l1} هنا...",
         "paste_l2_text": "الصق نص {l2} هنا... (Markdown مدعوم)",
-        "paste_url": "الصق رابطًا لقراءة صفحة ويب",
+        "paste_url": "ألصق رابطًا لقراءة صفحة ويب أو مقالة أو قصة في {l2}.",
         "please_specify": "يرجى التحديد",
         "search": "بحث...",
         "search_all_content": "البحث في كل محتوى {{language}}",

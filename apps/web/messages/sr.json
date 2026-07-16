@@ -591,7 +591,7 @@
         "lifetime_access": "Doživotni pristup — uživajte!",
         "live_tv_available": "ТВ уживо доступан",
         "live_tv_placeholder": "Live TV kanali će biti preneti iz klasične Nuxt aplikacije.",
-        "live_tv_title": "Live TV — {l2}",
+        "live_tv_title": "Uživo TV — {l2}",
         "live_tv_unavailable": "Live TV još uvek nije dostupan za {l2}.",
         "loading": "Учитавање...",
         "loading_review_cards": "Učitavanje kartica za pregled...",
