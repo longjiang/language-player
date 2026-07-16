@@ -133,13 +133,7 @@ export default function DictionaryPage() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={
-              l2.code === 'zh'
-                ? '输入中文词语...'
-                : l2.code === 'ja'
-                  ? '単語を入力...'
-                  : `Enter a word in ${languageName(l2.code, l1.code)}...`
-            }
+            placeholder={t('placeholder.dictionary_search', { language: languageName(l2.code, l1.code) })}
             className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             autoFocus
           />
