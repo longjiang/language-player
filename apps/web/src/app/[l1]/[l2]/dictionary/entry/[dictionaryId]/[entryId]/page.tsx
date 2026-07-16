@@ -89,7 +89,7 @@ export default function DictionaryEntryPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       {/* Back button */}
       <button
         onClick={() => router.back()}
@@ -101,9 +101,8 @@ export default function DictionaryEntryPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="flex items-center gap-2 py-16 text-center text-muted-foreground">
-          <Loader2 className="mx-auto h-6 w-6 animate-spin" />
-          <span className="text-sm">{t('msg.loading')}</span>
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       )}
 
@@ -125,32 +124,39 @@ export default function DictionaryEntryPage() {
         </div>
       )}
 
-      {/* Entry card */}
+      {/* Entry + sidebar layout */}
       {!loading && !error && entry && (
-        <>
-          <DictionaryEntryCard
-            variant="full"
-            entry={entry}
-            l2Code={l2.code}
-            l1Code={l1.code}
-            levelLabel={levelScaleLabel}
-            saveContext={saveContext}
-          />
+        <div className="lg:flex lg:gap-8">
+          {/* Main column: entry card + subs search */}
+          <div className="min-w-0 flex-1">
+            <DictionaryEntryCard
+              variant="full"
+              entry={entry}
+              l2Code={l2.code}
+              l1Code={l1.code}
+              levelLabel={levelScaleLabel}
+              saveContext={saveContext}
+            />
 
-          {/* Inflection / conjugation table (ja, ko, en, de, it, es, fr, nl, ru, uk) */}
-          <InflectionTable
-            head={entry.head}
-            l2Code={l2.code}
-          />
+            {/* Subs search: examples in videos */}
+            <section className="mt-10">
+              <h2 className="mb-4 text-lg font-semibold">
+                {t('title.examples_from_videos')}
+              </h2>
+              <SubsSearchResults term={entry.head} />
+            </section>
+          </div>
 
-          {/* Subs search: examples in videos */}
-          <section className="mt-10">
-            <h2 className="mb-4 text-lg font-semibold">
-              {t('title.examples_from_videos')}
-            </h2>
-            <SubsSearchResults term={entry.head} />
-          </section>
-        </>
+          {/* Sidebar: inflection table */}
+          <aside className="mt-8 shrink-0 lg:mt-0 lg:w-80 xl:w-96">
+            <div className="lg:sticky lg:top-24">
+              <InflectionTable
+                head={entry.head}
+                l2Code={l2.code}
+              />
+            </div>
+          </aside>
+        </div>
       )}
     </div>
   );

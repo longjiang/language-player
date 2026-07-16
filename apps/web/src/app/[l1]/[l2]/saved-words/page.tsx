@@ -6,7 +6,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
-import { BookOpen, Video, Trash2, Download, BookmarkCheck } from 'lucide-react';
+import { BookOpen, Video, Trash2, Download, BookmarkCheck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { SavedWord } from '@langplayer/shared';
 
@@ -63,7 +63,7 @@ export default function SavedWordsPage() {
   if (!loaded) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center text-muted-foreground">
-        {t('msg.loading')}
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -111,7 +111,7 @@ export default function SavedWordsPage() {
               words={today}
               l1Code={l1.code}
               l2Code={l2.code}
-              onWordClick={(w) => router.push(`/${l1.code}/${l2.code}/dictionary/word/${encodeURIComponent(w.forms[0] ?? '')}`)}
+              onWordClick={(w) => router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(w.forms[0] ?? '')}`)}
             />
           )}
 
@@ -121,7 +121,7 @@ export default function SavedWordsPage() {
               words={earlier}
               l1Code={l1.code}
               l2Code={l2.code}
-              onWordClick={(w) => router.push(`/${l1.code}/${l2.code}/dictionary/word/${encodeURIComponent(w.forms[0] ?? '')}`)}
+              onWordClick={(w) => router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(w.forms[0] ?? '')}`)}
             />
           )}
         </div>

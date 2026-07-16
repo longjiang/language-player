@@ -507,7 +507,7 @@ export default function ProfilePage() {
               {savedWords.map((word) => (
                 <Link
                   key={word.id}
-                  href={`/${l1.code}/${l2.code}/dictionary/word/${encodeURIComponent(word.forms[0] ?? '')}`}
+                  href={`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(word.forms[0] ?? '')}`}
                   className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-muted/50"
                 >
                   {/* Word */}
