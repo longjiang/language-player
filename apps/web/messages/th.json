@@ -168,6 +168,7 @@
         "custom_voice": "เสียงที่กำหนดเอง",
         "free_account": "บัญชีฟรี",
         "gender_label": "เพศ:",
+        "key_vocabulary": "คำศัพท์สำคัญ",
         "l2_voices": "เสียง {l2}",
         "lifetime_one_time": "ตลอดชีพ — 169 ดอลลาร์สหรัฐ จ่ายครั้งเดียว",
         "measure_word": "วัด:",
@@ -751,6 +752,16 @@
         "annual": "${price}/ปี",
         "lifetime": "${price}/ตลอดชีพ",
         "monthly": "${price}/เดือน"
+    },
+    "prompt": {
+        "explain_block_header": "ให้การวิเคราะห์ที่ชัดเจนของข้อความ{l2Code}ต่อไปนี้ รวมถึง:",
+        "explain_block_item1": "ความหมายโดยรวมใน{l1Name}",
+        "explain_block_item2": "การวิเคราะห์ทีละวลีที่อธิบายว่าข้อความถูกสร้างขึ้นอย่างไร",
+        "explain_context_label": "บริบท",
+        "explain_morphology": "ระบุการออกเสียงและวิทยาหน่วยคำ (หรือศัพทมูลวิทยาหากเหมาะสม) หากผันรูป ให้ระบุคำตั้ง (lemma) และการผันรูป มิฉะนั้นอย่ากล่าวถึงการผันรูปหรือคำตั้ง",
+        "explain_text_label": "ข้อความ",
+        "explain_word": "อธิบายสั้นๆ โดยใช้{l1Name} ว่าคำ{l2Name} ({code}) {word} หมายถึงอะไร",
+        "explain_word_context": "อธิบายสั้นๆ โดยใช้{l1Name} ว่าคำ{l2Name} ({code}) {word} ในวลีหมายถึงอะไร: {context}"
     },
     "review": {
         "again": "อีกครั้ง",

@@ -1,8 +1,8 @@
 # Legacy repos — reference only, not yet merged (see specs/002-repo-migration.md)
-# zerotohero-nuxt/
-# language-player-3/
-# zerotohero-python/
-# zerotohero-python-server/
+zerotohero-nuxt/
+language-player-3/
+zerotohero-python/
+zerotohero-python-server/
 
 # Dependencies
 node_modules/

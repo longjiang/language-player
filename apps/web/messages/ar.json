@@ -168,6 +168,7 @@
         "custom_voice": "صوت مخصص",
         "free_account": "حساب مجاني",
         "gender_label": "الجنس:",
+        "key_vocabulary": "المفردات الأساسية",
         "l2_voices": "أصوات {l2}",
         "lifetime_one_time": "مدى الحياة — ١٦٩$ دفعة واحدة",
         "measure_word": "كلمة قياس:",
@@ -751,6 +752,16 @@
         "annual": "${price}/سنة",
         "lifetime": "${price}/مدى الحياة",
         "monthly": "${price}/شهر"
+    },
+    "prompt": {
+        "explain_block_header": "قدم تحليلاً واضحاً للنص التالي باللغة {l2Code}. يشمل:",
+        "explain_block_item1": "معناه العام في {l1Name}",
+        "explain_block_item2": "تحليل عبارة بعبارة يشرح كيفية تركيب النص",
+        "explain_context_label": "السياق",
+        "explain_morphology": "اذكر نطقها وصرفها (أو أصلها اللغوي إن أمكن). إذا كانت مصرفة، فاذكر الليما والتصريف؛ وإلا فلا تذكر التصريف أو الليما.",
+        "explain_text_label": "النص",
+        "explain_word": "اشرح بإيجاز باستخدام {l1Name}، ما معنى كلمة {l2Name} ({code}) {word}.",
+        "explain_word_context": "اشرح بإيجاز باستخدام {l1Name}، ما معنى كلمة {l2Name} ({code}) {word} في العبارة: {context}."
     },
     "review": {
         "again": "مجددًا",

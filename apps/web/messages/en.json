@@ -1,4 +1,11 @@
 {
+    "2": {
+        " Analizę fraza po frazie wyjaśniającą": "jak tekst jest zbudowany",
+        " Eine phraseweise Aufschlüsselung": "die erklärt",
+        " Kifejezésenkénti bontás": "amely elmagyarázza a szöveg felépítését",
+        " Lausekohtainen erittely": "joka selittää tekstin rakenteen",
+        " Пофразовый разбор": "объясняющий"
+    },
     "a11y": {
         "channel_preferences": "Channel preferences",
         "click_to_seek": "Click to seek",
@@ -168,6 +175,7 @@
         "custom_voice": "Custom voice",
         "free_account": "Free Account",
         "gender_label": "Gender:",
+        "key_vocabulary": "Key Vocabulary",
         "l2_voices": "{l2} Voices",
         "lifetime_one_time": "Lifetime — $169 one-time",
         "measure_word": "Measure:",
@@ -751,6 +759,18 @@
         "annual": "${price}/yr",
         "lifetime": "${price}/lifetime",
         "monthly": "${price}/mo"
+    },
+    "prompt": {
+        "explain_block": "Provide a clear breakdown of the following {l2Code} text. Include:",
+        "explain_block_context": "Provide a clear breakdown of the following {l2Code} text. Include:",
+        "explain_block_header": "Provide a clear breakdown of the following {l2Code} text. Include:",
+        "explain_block_item1": "Its overall meaning in {l1Name}",
+        "explain_block_item2": "A phrase-by-phrase breakdown explaining how the text is constructed",
+        "explain_context_label": "Context",
+        "explain_morphology": "Give its pronunciation and morphology (or etymology if appropriate). If inflected, give its lemma and inflection; otherwise do not mention inflection or lemma.",
+        "explain_text_label": "Text",
+        "explain_word": "Succinctly explain using {l1Name}, what the {l2Name} ({code}) word {word} means.",
+        "explain_word_context": "Succinctly explain using {l1Name}, what the {l2Name} ({code}) word {word} means in the phrase: {context}."
     },
     "review": {
         "again": "Again",

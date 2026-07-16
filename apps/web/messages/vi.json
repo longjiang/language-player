@@ -168,6 +168,7 @@
         "custom_voice": "Giọng nói tùy chỉnh",
         "free_account": "Tài khoản miễn phí",
         "gender_label": "Giới tính:",
+        "key_vocabulary": "Từ vựng chính",
         "l2_voices": "{l2} Giọng nói",
         "lifetime_one_time": "Trọn đời — 169 đô la một lần",
         "measure_word": "Đo lường:",
@@ -751,6 +752,16 @@
         "annual": "${price}/năm",
         "lifetime": "${price}/trọn đời",
         "monthly": "${price}/tháng"
+    },
+    "prompt": {
+        "explain_block_header": "Cung cấp phân tích rõ ràng về văn bản {l2Code} sau đây. Bao gồm:",
+        "explain_block_item1": "Ý nghĩa tổng thể của nó trong {l1Name}",
+        "explain_block_item2": "Phân tích từng cụm từ giải thích cách văn bản được xây dựng",
+        "explain_context_label": "Ngữ cảnh",
+        "explain_morphology": "Cho biết cách phát âm và hình thái (hoặc từ nguyên nếu phù hợp). Nếu là dạng biến tố, cho biết lemma và dạng biến tố; nếu không, đừng đề cập đến biến tố hoặc lemma.",
+        "explain_text_label": "Văn bản",
+        "explain_word": "Giải thích ngắn gọn bằng {l1Name} nghĩa của từ {l2Name} ({code}) {word}.",
+        "explain_word_context": "Giải thích ngắn gọn bằng {l1Name} nghĩa của từ {l2Name} ({code}) {word} trong cụm từ: {context}."
     },
     "review": {
         "again": "Lại nữa",

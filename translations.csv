@@ -148,6 +148,7 @@ label.conjugation,Conjugation,变位,變位,Vervoeging,تصريف,Conjugació,Ko
 label.custom_voice,Custom voice,自定义声音,自訂語音,Pasgemaakte stem,صوت مخصص,Veu personalitzada,Benutzerdefinierte Stimme,Προσαρμοσμένη φωνή,Voz personalizada,Mukautettu ääni,Voix personnalisée,Guth saincheaptha,कस्टम आवाज़,Prilagođeni glas,Egyedi hang,Suara kustom,Voce personalizzata,カスタム音声,사용자 정의 음성,Aangepaste stem,Egendefinert stemme,Głos niestandardowy,Voz personalizada,Voce personalizată,Пользовательский голос,Прилагођени глас,Anpassad röst,Sauti maalum,เสียงที่กำหนดเอง,Özel ses,Giọng nói tùy chỉnh
 label.free_account,Free Account,免费账户,免費帳戶,Gratis rekening,حساب مجاني,Compte Gratuït,Kostenloses Konto,Δωρεάν Λογαριασμός,Cuenta gratuita,Ilmainen tili,Compte gratuit,Cuntas Saor in Aisce,मुफ़्त खाता,Besplatni račun,Ingyenes fiók,Akun Gratis,Account gratuito,無料アカウント,무료 계정,Gratis account,Gratis konto,Darmowe konto,Conta Gratuita,Cont gratuit,Бесплатный аккаунт,Бесплатан налог,Gratis konto,Akaunti Bure,บัญชีฟรี,Ücretsiz Hesap,Tài khoản miễn phí
 label.gender_label,Gender:,性别：,性別：,Geslag:,الجنس:,Gènere:,Geschlecht:,Φύλο:,Género:,Sukupuoli:,Genre :,Inscne:,लिंग:,Spol:,Nem:,Jenis kelamin:,Genere:,性別：,성별:,Geslacht:,Kjønn:,Płeć:,Gênero:,Gen:,Пол:,Пол:,Kön:,Jinsia:,เพศ:,Cinsiyet:,Giới tính:
+label.key_vocabulary,Key Vocabulary,关键词汇,關鍵詞彙,Sleutelwoordeskat,المفردات الأساسية,Vocabulari clau,Schlüsselvokabular,Βασικό λεξιλόγιο,Vocabulario clave,Keskeinen sanasto,Vocabulaire clé,Príomhstór focal,मुख्य शब्दावली,Ključni vokabular,Kulcsszókincs,Kosakata kunci,Vocabolario chiave,重要語彙,주요 어휘,Sleutelwoordenschat,Nøkkelvokabular,Kluczowe słownictwo,Vocabulário principal,Vocabular cheie,Ключевая лексика,Кључни вокабулар,Nyckelordförråd,Msamiati muhimu,คำศัพท์สำคัญ,Anahtar kelime bilgisi,Từ vựng chính
 label.l2_voices,{l2} Voices,{l2} 声音,{l2} 語音,{l2} stemme,أصوات {l2},{l2} Veus,{l2} Stimmen,{l2} Φωνές,{l2} Voces,{l2} äänet,Voix {l2},{l2} Guthanna,{l2} आवाज़ें,{l2} glasova,{l2} hangok,{l2} Suara,{l2} voci,{l2} の音声,{l2} 음성,{l2} stemmen,{l2} stemmer,{l2} głosów,Vozes de {l2},{l2} voci,{l2} голосов,{l2} гласови,{l2} röster,{l2} Sauti,เสียง {l2},{l2} Sesler,{l2} Giọng nói
 label.lifetime_one_time,Lifetime — $169 one-time,终身 — 一次性支付 $169,終身 — US$169 一次性付款,Lewenslank — $169 eenmalig,مدى الحياة — ١٦٩$ دفعة واحدة,Vitalici — 169 $ únic pagament,Lebenslang — 169 $ einmalig,Διάρκεια ζωής — 169 $ εφάπαξ,Vitalicio — $169 pago único,Elinikäinen — 169 $ kertamaksu,À vie — 169 $ une fois,Saolré — $169 aon-uaire,लाइफ़टाइम — $169 एकमुश्त,Doživotno — 169 USD jednokratno,Élethosszig — 169 $ egyszeri,Seumur hidup — $169 sekali bayar,A vita — 169 $ una tantum,ライフタイム — 一括 $169,평생 — $169 일회 결제,Levenslang — €169 eenmalig,Livstid – $169 engangsbetaling,Dożywotni — 169 $ jednorazowo,Vitalício — $169 pagamento único,Pe viață — 169 $ o singură dată,Навсегда — 169 $ единоразово,Доживотно — 169$ једнократно,Livstid – 169 $ en gång,Maisha yote — $169 mara moja,ตลอดชีพ — 169 ดอลลาร์สหรัฐ จ่ายครั้งเดียว,Ömür Boyu — 169$ tek seferlik,Trọn đời — 169 đô la một lần
 label.measure_word,Measure:,量词：,量詞：,Maateenheid:,كلمة قياس:,Mesura:,Maß:,Μέτρο:,Medida:,Mitta:,Mesure :,Tomhas:,माप:,Mjera:,Mérték:,Ukuran:,Misura:,測定：,측정:,Maatstaf:,Mål:,Miara:,Medida:,Măsură:,Мера:,Мера:,Mått:,Kipimo:,วัด:,Ölçü:,Đo lường:
@@ -686,6 +687,326 @@ placeholder.verification_code,Verification code,验证码,驗證碼,Verifikasiek
 price.annual,${price}/yr,${price}/年,${price}/年,${price}/jr,${price}/سنة,${price}/any,${price}/Jahr,${price}/έτος,${price}/año,${price}/vuosi,${price}/an,${price}/bliain,${price}/वर्ष,${price}/god,${price}/év,${price}/tahun,${price}/anno,${price}/年,${price}/년,${price}/jaar,${price}/år,${price}/rok,${price}/ano,${price}/an,${price}/год,${price}/год,${price}/år,${price}/mwaka,${price}/ปี,${price}/yıl,${price}/năm
 price.lifetime,${price}/lifetime,${price}/终身,${price}/終身,${price}/leeftyd,${price}/مدى الحياة,${price}/per vida,${price}/lebenslang,${price}/εφ' όρου ζωής,${price}/de por vida,${price}/elinikäinen,${price}/à vie,${price}/ar feadh an tsaoil,${price}/आजीवन,${price}/doživotno,${price}/életre szóló,${price}/seumur hidup,${price}/a vita,${price}/生涯,${price}/평생,${price}/levenslang,${price}/livstid,${price}/dożywotnio,${price}/vitalício,${price}/pe viață,${price}/пожизненно,${price}/доживотно,${price}/livstid,${price}/maisha,${price}/ตลอดชีพ,${price}/ömür boyu,${price}/trọn đời
 price.monthly,${price}/mo,${price}/月,${price}/月,${price}/md,${price}/شهر,${price}/mes,${price}/Monat,${price}/μήνα,${price}/mes,${price}/kk,${price}/mois,${price}/mí,${price}/माह,${price}/mj,${price}/hó,${price}/bulan,${price}/mese,${price}/月,${price}/월,${price}/mnd,${price}/mnd,${price}/mies,${price}/mês,${price}/lună,${price}/мес,${price}/мес,${price}/mån,${price}/mwezi,${price}/เดือน,${price}/ay,${price}/tháng
+prompt.explain_block,Provide a clear breakdown of the following {l2Code} text. Include:
+1. Its overall meaning in {l1Name}
+2. A phrase-by-phrase breakdown explaining how the text is constructed
+
+"Text: {text},请对以下{l2Code}文本进行清晰的分析。包括："
+1. 其在{l1Name}中的整体含义
+2. 逐句分析文本的构成方式
+
+prompt.explain_block_context,Provide a clear breakdown of the following {l2Code} text. Include:
+1. Its overall meaning in {l1Name}
+2. A phrase-by-phrase breakdown explaining how the text is constructed
+
+Context: {context}
+
+"Text: {text},请对以下{l2Code}文本进行清晰的分析。包括："
+1. 其在{l1Name}中的整体含义
+2. 逐句分析文本的构成方式
+
+prompt.explain_block_header,Provide a clear breakdown of the following {l2Code} text. Include:,请对以下{l2Code}文本进行清晰的分析。包括：,請對以下{l2Code}文本進行清晰的分析。包括：,Verskaf 'n duidelike uiteensetting van die volgende {l2Code} teks. Sluit in:,قدم تحليلاً واضحاً للنص التالي باللغة {l2Code}. يشمل:,Proporciona un desglossament clar del següent text en {l2Code}. Inclou:,Gib eine klare Aufschlüsselung des folgenden {l2Code}-Textes. Enthalten:,Δώσε μια σαφή ανάλυση του παρακάτω κειμένου στα {l2Code}. Περιλαμβάνει:,Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:,Anna selkeä erittely seuraavasta {l2Code}-tekstistä. Sisältää:,Fournis une analyse claire du texte suivant en {l2Code}. Inclut :,Tabhair miondealú soiléir ar an téacs {l2Code} seo a leanas. San áireamh:,निम्नलिखित {l2Code} पाठ का स्पष्ट विश्लेषण प्रदान करें। शामिल करें:,Pruži jasnu raščlambu sljedećeg teksta na {l2Code}. Uključi:,Adj világos elemzést a következő {l2Code} szövegről. Tartalmazza:,Berikan uraian yang jelas tentang teks {l2Code} berikut. Sertakan:,Fornisci una chiara analisi del seguente testo in {l2Code}. Includi:,次の{l2Code}テキストについて明確な分析を提供してください。含める内容：,다음 {l2Code} 텍스트에 대한 명확한 분석을 제공하세요. 포함할 내용:,Geef een duidelijke uitsplitsing van de volgende {l2Code} tekst. Inclusief:,Gi en tydelig oversikt over følgende {l2Code} tekst. Inkluder:,Przedstaw jasną analizę następującego tekstu w języku {l2Code}. Uwzględnij:,Fornece uma análise clara do seguinte texto em {l2Code}. Inclui:,Oferă o analiză clară a următorului text în {l2Code}. Include:,Предоставь чёткий разбор следующего текста на {l2Code}. Включи:,Pruži jasnu analizu sledećeg teksta na {l2Code}. Uključi:,Ge en tydlig genomgång av följande {l2Code} text. Inkludera:,Toa uchambuzi wazi wa maandishi yafuatayo ya {l2Code}. Jumuisha:,ให้การวิเคราะห์ที่ชัดเจนของข้อความ{l2Code}ต่อไปนี้ รวมถึง:,Aşağıdaki {l2Code} metninin net bir dökümünü sağla. İçerik:,Cung cấp phân tích rõ ràng về văn bản {l2Code} sau đây. Bao gồm:
+prompt.explain_block_item1,Its overall meaning in {l1Name},其在{l1Name}中的整体含义,其在{l1Name}中的整體含義,Die algehele betekenis daarvan in {l1Name},معناه العام في {l1Name},El seu significat general en {l1Name},Seine Gesamtbedeutung auf {l1Name},Τη συνολική του σημασία στα {l1Name},Su significado general en {l1Name},Sen yleinen merkitys kielellä {l1Name},Sa signification globale en {l1Name},A bhrí iomlán i {l1Name},{l1Name} में इसका समग्र अर्थ,Njegovo ukupno značenje na {l1Name},Átfogó jelentése {l1Name} nyelven,Makna keseluruhannya dalam {l1Name},Il suo significato complessivo in {l1Name},{l1Name}での全体的な意味,{l1Name}에서의 전체적인 의미,De algemene betekenis in het {l1Name},Den overordnede betydningen på {l1Name},Jego ogólne znaczenie w języku {l1Name},O seu significado geral em {l1Name},Sensul său general în {l1Name},Его общее значение на {l1Name},Njegovo ukupno značenje na {l1Name},Dess övergripande betydelse på {l1Name},Maana yake kwa jumla katika {l1Name},ความหมายโดยรวมใน{l1Name},{l1Name} dilinde genel anlamı,Ý nghĩa tổng thể của nó trong {l1Name}
+prompt.explain_block_item2,A phrase-by-phrase breakdown explaining how the text is constructed,逐句分析文本的构成方式,逐句分析文本的構成方式,'n Frase-vir-frase uiteensetting wat verduidelik hoe die teks saamgestel is,تحليل عبارة بعبارة يشرح كيفية تركيب النص,Un desglossament frase per frase que explica com està construït el text,"Eine phraseweise Aufschlüsselung, die erklärt, wie der Text aufgebaut ist",Μια ανάλυση φράση προς φράση που εξηγεί πώς είναι δομημένο το κείμενο,Un desglose frase por frase que explica cómo está construido el texto,"Lausekohtainen erittely, joka selittää tekstin rakenteen",Une analyse phrase par phrase expliquant comment le texte est construit,Miondealú frása ar fhrása a mhíníonn conas atá an téacs tógtha,वाक्यांश-दर-वाक्यांश विश्लेषण जो बताए कि पाठ कैसे बना है,Raščlambu frazu po frazu koja objašnjava kako je tekst sastavljen,"Kifejezésenkénti bontás, amely elmagyarázza a szöveg felépítését",Uraian frasa demi frasa yang menjelaskan bagaimana teks disusun,Un'analisi frase per frase che spiega come è costruito il testo,テキストがどのように構成されているかを説明するフレーズごとの分析,텍스트가 어떻게 구성되었는지 설명하는 구문별 분석,Een frase-voor-frase uitsplitsing die uitlegt hoe de tekst is opgebouwd,En frase-for-frase oversikt som forklarer hvordan teksten er bygget opp,"Analizę fraza po frazie wyjaśniającą, jak tekst jest zbudowany",Uma análise frase por frase explicando como o texto é construído,O analiză frază cu frază care explică modul în care este construit textul,"Пофразовый разбор, объясняющий, как построен текст",Analizu frazu po frazu koja objašnjava kako je tekst sastavljen,En fras-för-fras-genomgång som förklarar hur texten är uppbyggd,Uchambuzi wa kifungu kwa kifungu unaoelezea jinsi maandishi yalivyojengwa,การวิเคราะห์ทีละวลีที่อธิบายว่าข้อความถูกสร้างขึ้นอย่างไร,Metnin nasıl oluşturulduğunu açıklayan ifade ifade döküm,Phân tích từng cụm từ giải thích cách văn bản được xây dựng
+prompt.explain_context_label,Context,上下文,上下文,Kon teks,السياق,Context,Kon text,Συμφραζόμενα,Contexto,Kon teksti,Con texte,Comhthéacs,संदर्भ,Kontekst,Kontextus,Konteks,Contesto,文脈,문맥,Context,Kontekst,Kontekst,Contexto,Context,Контекст,Kontekst,Kontext,Muktadha,บริบท,Bağlam,Ngữ cảnh
+prompt.explain_morphology," Give its pronunciation and morphology (or etymology if appropriate). If inflected, give its lemma and inflection; otherwise do not mention inflection or lemma.", 给出其发音和形态（或适当的词源）。如果是屈折形式，给出其词元（原形）和屈折变化；否则不要提及屈折或词元。, 給出其發音和形態（或適當的詞源）。如果是屈折形式，給出其詞元（原形）和屈折變化；否則不要提及屈折或詞元。," Gee die uitspraak en morfologie (of etimologie indien toepaslik). As verbuig, gee die lemma en verbuiging; andersins, moenie verbuiging of lemma noem nie.", اذكر نطقها وصرفها (أو أصلها اللغوي إن أمكن). إذا كانت مصرفة، فاذكر الليما والتصريف؛ وإلا فلا تذكر التصريف أو الليما.," Dona la pronunciació i la morfologia (o etimologia si escau). Si està flexionada, dona el lema i la flexió; altrament, no esmentis la flexió ni el lema."," Gib die Aussprache und Morphologie (oder Etymologie, falls zutreffend) an. Wenn flektiert, gib das Lemma und die Flexion an; andernfalls erwähne Flexion oder Lemma nicht."," Δώσε την προφορά και τη μορφολογία (ή ετυμολογία αν είναι κατάλληλο). Αν είναι κλιτό, δώσε το λήμμα και την κλίση· διαφορετικά, μην αναφέρεις κλίση ή λήμμα."," Da su pronunciación y morfología (o etimología si corresponde). Si está flexionada, da su lema y flexión; de lo contrario, no menciones flexión ni lema."," Anna sen ääntämys ja morfologia (tai etymologia tarvittaessa). Jos taivutettu, anna lemma ja taivutus; muuten älä mainitse taivutusta tai lemmaa."," Donne sa prononciation et sa morphologie (ou son étymologie si approprié). S'il est fléchi, donne son lemme et sa flexion ; sinon, ne mentionne ni flexion ni lemme."," Tabhair a fhuaimniú agus a mhoirfeolaíocht (nó a fhréamhfhocal más cuí). Má tá sé infhillte, tabhair an lemma agus an t-infhilleadh; seachas sin, ná luaigh infhilleadh ná lemma."," इसका उच्चारण और रूपविज्ञान (या उपयुक्त हो तो व्युत्पत्ति) बताएं। यदि विकृत है, तो इसका लेमा (मूल रूप) और विकृति बताएं; अन्यथा विकृति या लेमा का उल्लेख न करें।"," Navedi izgovor i morfologiju (ili etimologiju ako je prikladno). Ako je flektirano, navedi lemu i fleksiju; inače ne spominji fleksiju ni lemu."," Add meg a kiejtését és morfológiáját (vagy etimológiáját, ha van). Ha ragozott, add meg a lemmát és a ragozást; egyébként ne említs ragozást vagy lemmát."," Berikan pengucapan dan morfologinya (atau etimologi jika sesuai). Jika berinfleksi, berikan lemma dan infleksinya; jika tidak, jangan sebutkan infleksi atau lemma."," Fornisci la pronuncia e la morfologia (o l'etimologia se appropriato). Se flessa, fornisci il lemma e la flessione; altrimenti non menzionare flessione o lemma.", 発音と形態（または適切であれば語源）を示してください。活用形の場合は、見出し語（レンマ）と活用形を示し、そうでない場合は活用や見出し語に言及しないでください。," 발음과 형태(또는 적절한 경우 어원)를 제시하세요. 굴절된 형태라면 기본형(레마)과 굴절형을 제시하고, 그렇지 않으면 굴절이나 기본형을 언급하지 마세요."," Geef de uitspraak en morfologie (of etymologie indien van toepassing). Als verbogen, geef het lemma en de verbuiging; anders, vermeld geen verbuiging of lemma."," Oppgi uttalen og morfologien (eller etymologien hvis passende). Hvis bøyd, oppgi lemmaet og bøyningen; ellers, ikke nevn bøyning eller lemma."," Podaj wymowę i morfologię (lub etymologię, jeśli to stosowne). Jeśli odmienione, podaj lemat i odmianę; w przeciwnym razie nie wspominaj o odmianie ani lemacie."," Dá a pronúncia e a morfologia (ou etimologia, se apropriado). Se flexionada, dá o lema e a flexão; caso contrário, não menciones flexão nem lema."," Oferă pronunția și morfologia (sau etimologia dacă este cazul). Dacă este flexionat, oferă lema și flexiunea; altfel, nu menționa flexiunea sau lema."," Укажи произношение и морфологию (или этимологию, если уместно). Если слово изменяется, укажи лемму и форму словоизменения; иначе не упоминай словоизменение или лемму."," Navedi izgovor i morfologiju (ili etimologiju ako je prikladno). Ako je flektirano, navedi lemu i fleksiju; inače ne pominji fleksiju ni lemu."," Ange dess uttal och morfologi (eller etymologi om lämpligt). Om böjt, ange dess lemma och böjning; annars, nämn inte böjning eller lemma."," Toa matamshi yake na mofolojia (au etimolojia ikiwa inafaa). Ikiwa imenyambulika, toa lemma na unyambulishaji wake; vinginevyo, usitaje unyambulishaji wala lemma.", ระบุการออกเสียงและวิทยาหน่วยคำ (หรือศัพทมูลวิทยาหากเหมาะสม) หากผันรูป ให้ระบุคำตั้ง (lemma) และการผันรูป มิฉะนั้นอย่ากล่าวถึงการผันรูปหรือคำตั้ง," Telaffuzunu ve morfolojisini (veya uygunsa etimolojisini) ver. Çekimliyse, lemmasını ve çekimini ver; değilse çekim veya lemmadan bahsetme."," Cho biết cách phát âm và hình thái (hoặc từ nguyên nếu phù hợp). Nếu là dạng biến tố, cho biết lemma và dạng biến tố; nếu không, đừng đề cập đến biến tố hoặc lemma."
+prompt.explain_text_label,Text,文本,文本,Teks,النص,Text,Text,Κείμενο,Texto,Teksti,Texte,Téacs,पाठ,Tekst,Szöveg,Teks,Testo,テキスト,텍스트,Tekst,Tekst,Tekst,Texto,Text,Текст,Tekst,Text,Maandishi,ข้อความ,Metin,Văn bản
+prompt.explain_word,"Succinctly explain using {l1Name}, what the {l2Name} ({code}) word {word} means.",用{l1Name}简洁地解释{l2Name}（{code}）单词{word}的含义。,用{l1Name}簡潔地解釋{l2Name}（{code}）單詞{word}的含義。,Verduidelik bondig met {l1Name} wat die {l2Name} ({code}) woord {word} beteken.,اشرح بإيجاز باستخدام {l1Name}، ما معنى كلمة {l2Name} ({code}) {word}.,Explica breument en {l1Name} què significa la paraula {l2Name} ({code}) {word}.,"Erkläre kurz auf {l1Name}, was das {l2Name} ({code}) Wort {word} bedeutet.",Εξήγησε συνοπτικά στα {l1Name} τι σημαίνει η λέξη {l2Name} ({code}) {word}.,Explica brevemente en {l1Name} qué significa la palabra {l2Name} ({code}) {word}.,"Selitä ytimekkäästi kielellä {l1Name}, mitä {l2Name} ({code}) sana {word} tarkoittaa.",Explique succinctement en {l1Name} ce que signifie le mot {l2Name} ({code}) {word}.,Mínigh go gonta i {l1Name} cad a chiallaíonn an focal {l2Name} ({code}) {word}.,{l1Name} में संक्षेप में बताएं कि {l2Name} ({code}) शब्द {word} का क्या अर्थ है।,Ukratko objasni na {l1Name} što znači {l2Name} ({code}) riječ {word}.,"Magyarázd el tömören {l1Name} nyelven, hogy mit jelent a(z) {l2Name} ({code}) {word} szó.",Jelaskan secara singkat dalam {l1Name} apa arti kata {l2Name} ({code}) {word}.,Spiega brevemente in {l1Name} cosa significa la parola {l2Name} ({code}) {word}.,{l1Name}で、{l2Name}（{code}）の単語{word}の意味を簡潔に説明してください。,{l1Name}로 {l2Name}({code}) 단어 {word}의 의미를 간결하게 설명하세요.,Leg beknopt uit in het {l1Name} wat het {l2Name} ({code}) woord {word} betekent.,Forklar kort på {l1Name} hva {l2Name} ({code}) ordet {word} betyr.,"Wyjaśnij zwięźle w języku {l1Name}, co oznacza słowo {l2Name} ({code}) {word}.",Explica sucintamente em {l1Name} o que significa a palavra {l2Name} ({code}) {word}.,Explică succint în {l1Name} ce înseamnă cuvântul {l2Name} ({code}) {word}.,"Кратко объясни на {l1Name}, что означает слово {l2Name} ({code}) {word}.",Ukratko objasni na {l1Name} šta znači {l2Name} ({code}) reč {word}.,Förklara kortfattat på {l1Name} vad {l2Name} ({code}) ordet {word} betyder.,"Eleza kwa ufupi kwa kutumia {l1Name}, nini maana ya neno la {l2Name} ({code}) {word}.",อธิบายสั้นๆ โดยใช้{l1Name} ว่าคำ{l2Name} ({code}) {word} หมายถึงอะไร,"{l1Name} kullanarak, {l2Name} ({code}) {word} kelimesinin ne anlama geldiğini kısaca açıkla.",Giải thích ngắn gọn bằng {l1Name} nghĩa của từ {l2Name} ({code}) {word}.
+prompt.explain_word_context,"Succinctly explain using {l1Name}, what the {l2Name} ({code}) word {word} means in the phrase: {context}.",用{l1Name}简洁地解释{l2Name}（{code}）单词{word}在短语中的含义：{context}。,用{l1Name}簡潔地解釋{l2Name}（{code}）單詞{word}在短語中的含義：{context}。,Verduidelik bondig met {l1Name} wat die {l2Name} ({code}) woord {word} in die frase beteken: {context}.,اشرح بإيجاز باستخدام {l1Name}، ما معنى كلمة {l2Name} ({code}) {word} في العبارة: {context}.,Explica breument en {l1Name} què significa la paraula {l2Name} ({code}) {word} en la frase: {context}.,"Erkläre kurz auf {l1Name}, was das {l2Name} ({code}) Wort {word} im Satz bedeutet: {context}.",Εξήγησε συνοπτικά στα {l1Name} τι σημαίνει η λέξη {l2Name} ({code}) {word} στη φράση: {context}.,Explica brevemente en {l1Name} qué significa la palabra {l2Name} ({code}) {word} en la frase: {context}.,"Selitä ytimekkäästi kielellä {l1Name}, mitä {l2Name} ({code}) sana {word} tarkoittaa lauseessa: {context}.",Explique succinctement en {l1Name} ce que signifie le mot {l2Name} ({code}) {word} dans la phrase : {context}.,Mínigh go gonta i {l1Name} cad a chiallaíonn an focal {l2Name} ({code}) {word} san fhrása: {context}.,{l1Name} में संक्षेप में बताएं कि {l2Name} ({code}) शब्द {word} का वाक्यांश में क्या अर्थ है: {context}।,Ukratko objasni na {l1Name} što znači {l2Name} ({code}) riječ {word} u izrazu: {context}.,"Magyarázd el tömören {l1Name} nyelven, hogy mit jelent a(z) {l2Name} ({code}) {word} szó a kifejezésben: {context}.",Jelaskan secara singkat dalam {l1Name} apa arti kata {l2Name} ({code}) {word} dalam frasa: {context}.,Spiega brevemente in {l1Name} cosa significa la parola {l2Name} ({code}) {word} nella frase: {context}.,{l1Name}で、{l2Name}（{code}）の単語{word}がフレーズ中で何を意味するか簡潔に説明してください：{context}。,{l1Name}로 {l2Name}({code}) 단어 {word}가 구문에서 무엇을 의미하는지 간결하게 설명하세요: {context}.,Leg beknopt uit in het {l1Name} wat het {l2Name} ({code}) woord {word} betekent in de zin: {context}.,Forklar kort på {l1Name} hva {l2Name} ({code}) ordet {word} betyr i setningen: {context}.,"Wyjaśnij zwięźle w języku {l1Name}, co oznacza słowo {l2Name} ({code}) {word} w wyrażeniu: {context}.",Explica sucintamente em {l1Name} o que significa a palavra {l2Name} ({code}) {word} na frase: {context}.,Explică succint în {l1Name} ce înseamnă cuvântul {l2Name} ({code}) {word} în expresia: {context}.,"Кратко объясни на {l1Name}, что означает слово {l2Name} ({code}) {word} во фразе: {context}.",Ukratko objasni na {l1Name} šta znači {l2Name} ({code}) reč {word} u izrazu: {context}.,Förklara kortfattat på {l1Name} vad {l2Name} ({code}) ordet {word} betyder i frasen: {context}.,"Eleza kwa ufupi kwa kutumia {l1Name}, nini maana ya neno la {l2Name} ({code}) {word} katika kifungu: {context}.",อธิบายสั้นๆ โดยใช้{l1Name} ว่าคำ{l2Name} ({code}) {word} ในวลีหมายถึงอะไร: {context},"{l1Name} kullanarak, {l2Name} ({code}) {word} kelimesinin şu ifadede ne anlama geldiğini kısaca açıkla: {context}.",Giải thích ngắn gọn bằng {l1Name} nghĩa của từ {l2Name} ({code}) {word} trong cụm từ: {context}.
+上下文：{context}
+
+"文本：{text},請對以下{l2Code}文本進行清晰的分析。包括："
+1. 其在{l1Name}中的整體含義
+2. 逐句分析文本的構成方式
+
+上下文：{context}
+
+"文本：{text},Verskaf 'n duidelike uiteensetting van die volgende {l2Code} teks. Sluit in:"
+1. Die algehele betekenis daarvan in {l1Name}
+2. 'n Frase-vir-frase uiteensetting wat verduidelik hoe die teks saamgestel is
+
+Kon teks: {context}
+
+"Teks: {text},قدم تحليلاً واضحاً للنص التالي باللغة {l2Code}. يشمل:"
+1. معناه العام في {l1Name}
+2. تحليل عبارة بعبارة يشرح كيفية تركيب النص
+
+السياق: {context}
+
+"النص: {text},Proporciona un desglossament clar del següent text en {l2Code}. Inclou:"
+1. El seu significat general en {l1Name}
+2. Un desglossament frase per frase que explica com està construït el text
+
+Context: {context}
+
+"Text: {text},Gib eine klare Aufschlüsselung des folgenden {l2Code}-Textes. Enthalten:"
+1. Seine Gesamtbedeutung auf {l1Name}
+2. Eine phraseweise Aufschlüsselung, die erklärt, wie der Text aufgebaut ist
+
+Kon text: {context}
+
+"Text: {text},Δώσε μια σαφή ανάλυση του παρακάτω κειμένου στα {l2Code}. Περιλαμβάνει:"
+1. Τη συνολική του σημασία στα {l1Name}
+2. Μια ανάλυση φράση προς φράση που εξηγεί πώς είναι δομημένο το κείμενο
+
+Συμφραζόμενα: {context}
+
+"Κείμενο: {text},Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:"
+1. Su significado general en {l1Name}
+2. Un desglose frase por frase que explica cómo está construido el texto
+
+Contexto: {context}
+
+"Texto: {text},Anna selkeä erittely seuraavasta {l2Code}-tekstistä. Sisältää:"
+1. Sen yleinen merkitys kielellä {l1Name}
+2. Lausekohtainen erittely, joka selittää tekstin rakenteen
+
+Kon teksti: {context}
+
+"Teksti: {text},Fournis une analyse claire du texte suivant en {l2Code}. Inclut :"
+1. Sa signification globale en {l1Name}
+2. Une analyse phrase par phrase expliquant comment le texte est construit
+
+Con texte : {context}
+
+"Texte : {text},Tabhair miondealú soiléir ar an téacs {l2Code} seo a leanas. San áireamh:"
+1. A bhrí iomlán i {l1Name}
+2. Miondealú frása ar fhrása a mhíníonn conas atá an téacs tógtha
+
+Comhthéacs: {context}
+
+"Téacs: {text},निम्नलिखित {l2Code} पाठ का स्पष्ट विश्लेषण प्रदान करें। शामिल करें:"
+1. {l1Name} में इसका समग्र अर्थ
+2. वाक्यांश-दर-वाक्यांश विश्लेषण जो बताए कि पाठ कैसे बना है
+
+संदर्भ: {context}
+
+"पाठ: {text},Pruži jasnu raščlambu sljedećeg teksta na {l2Code}. Uključi:"
+1. Njegovo ukupno značenje na {l1Name}
+2. Raščlambu frazu po frazu koja objašnjava kako je tekst sastavljen
+
+Kontekst: {context}
+
+"Tekst: {text},Adj világos elemzést a következő {l2Code} szövegről. Tartalmazza:"
+1. Átfogó jelentése {l1Name} nyelven
+2. Kifejezésenkénti bontás, amely elmagyarázza a szöveg felépítését
+
+Kontextus: {context}
+
+"Szöveg: {text},Berikan uraian yang jelas tentang teks {l2Code} berikut. Sertakan:"
+1. Makna keseluruhannya dalam {l1Name}
+2. Uraian frasa demi frasa yang menjelaskan bagaimana teks disusun
+
+Konteks: {context}
+
+"Teks: {text},Fornisci una chiara analisi del seguente testo in {l2Code}. Includi:"
+1. Il suo significato complessivo in {l1Name}
+2. Un'analisi frase per frase che spiega come è costruito il testo
+
+Contesto: {context}
+
+"Testo: {text},次の{l2Code}テキストについて明確な分析を提供してください。含める内容："
+1. {l1Name}での全体的な意味
+2. テキストがどのように構成されているかを説明するフレーズごとの分析
+
+文脈：{context}
+
+"テキスト：{text},다음 {l2Code} 텍스트에 대한 명확한 분석을 제공하세요. 포함할 내용:"
+1. {l1Name}에서의 전체적인 의미
+2. 텍스트가 어떻게 구성되었는지 설명하는 구문별 분석
+
+문맥: {context}
+
+"텍스트: {text},Geef een duidelijke uitsplitsing van de volgende {l2Code} tekst. Inclusief:"
+1. De algemene betekenis in het {l1Name}
+2. Een frase-voor-frase uitsplitsing die uitlegt hoe de tekst is opgebouwd
+
+Context: {context}
+
+"Tekst: {text},Gi en tydelig oversikt over følgende {l2Code} tekst. Inkluder:"
+1. Den overordnede betydningen på {l1Name}
+2. En frase-for-frase oversikt som forklarer hvordan teksten er bygget opp
+
+Kontekst: {context}
+
+"Tekst: {text},Przedstaw jasną analizę następującego tekstu w języku {l2Code}. Uwzględnij:"
+1. Jego ogólne znaczenie w języku {l1Name}
+2. Analizę fraza po frazie wyjaśniającą, jak tekst jest zbudowany
+
+Kontekst: {context}
+
+"Tekst: {text},Fornece uma análise clara do seguinte texto em {l2Code}. Inclui:"
+1. O seu significado geral em {l1Name}
+2. Uma análise frase por frase explicando como o texto é construído
+
+Contexto: {context}
+
+"Texto: {text},Oferă o analiză clară a următorului text în {l2Code}. Include:"
+1. Sensul său general în {l1Name}
+2. O analiză frază cu frază care explică modul în care este construit textul
+
+Context: {context}
+
+"Text: {text},Предоставь чёткий разбор следующего текста на {l2Code}. Включи:"
+1. Его общее значение на {l1Name}
+2. Пофразовый разбор, объясняющий, как построен текст
+
+Контекст: {context}
+
+"Текст: {text},Pruži jasnu analizu sledećeg teksta na {l2Code}. Uključi:"
+1. Njegovo ukupno značenje na {l1Name}
+2. Analizu frazu po frazu koja objašnjava kako je tekst sastavljen
+
+Kontekst: {context}
+
+"Tekst: {text},Ge en tydlig genomgång av följande {l2Code} text. Inkludera:"
+1. Dess övergripande betydelse på {l1Name}
+2. En fras-för-fras-genomgång som förklarar hur texten är uppbyggd
+
+Kontext: {context}
+
+"Text: {text},Toa uchambuzi wazi wa maandishi yafuatayo ya {l2Code}. Jumuisha:"
+1. Maana yake kwa jumla katika {l1Name}
+2. Uchambuzi wa kifungu kwa kifungu unaoelezea jinsi maandishi yalivyojengwa
+
+Muktadha: {context}
+
+"Maandishi: {text},ให้การวิเคราะห์ที่ชัดเจนของข้อความ{l2Code}ต่อไปนี้ รวมถึง:"
+1. ความหมายโดยรวมใน{l1Name}
+2. การวิเคราะห์ทีละวลีที่อธิบายว่าข้อความถูกสร้างขึ้นอย่างไร
+
+บริบท: {context}
+
+"ข้อความ: {text},Aşağıdaki {l2Code} metninin net bir dökümünü sağla. İçerik:"
+1. {l1Name} dilinde genel anlamı
+2. Metnin nasıl oluşturulduğunu açıklayan ifade ifade döküm
+
+Bağlam: {context}
+
+"Metin: {text},Cung cấp phân tích rõ ràng về văn bản {l2Code} sau đây. Bao gồm:"
+1. Ý nghĩa tổng thể của nó trong {l1Name}
+2. Phân tích từng cụm từ giải thích cách văn bản được xây dựng
+
+Ngữ cảnh: {context}
+
+Văn bản: {text}
+"文本：{text},請對以下{l2Code}文本進行清晰的分析。包括："
+1. 其在{l1Name}中的整體含義
+2. 逐句分析文本的構成方式
+
+"文本：{text},Verskaf 'n duidelike uiteensetting van die volgende {l2Code} teks. Sluit in:"
+1. Die algehele betekenis daarvan in {l1Name}
+2. 'n Frase-vir-frase uiteensetting wat verduidelik hoe die teks saamgestel is
+
+"Teks: {text},قدم تحليلاً واضحاً للنص التالي باللغة {l2Code}. يشمل:"
+1. معناه العام في {l1Name}
+2. تحليل عبارة بعبارة يشرح كيفية تركيب النص
+
+"النص: {text},Proporciona un desglossament clar del següent text en {l2Code}. Inclou:"
+1. El seu significat general en {l1Name}
+2. Un desglossament frase per frase que explica com està construït el text
+
+"Text: {text},Gib eine klare Aufschlüsselung des folgenden {l2Code}-Textes. Enthalten:"
+1. Seine Gesamtbedeutung auf {l1Name}
+2. Eine phraseweise Aufschlüsselung, die erklärt, wie der Text aufgebaut ist
+
+"Text: {text},Δώσε μια σαφή ανάλυση του παρακάτω κειμένου στα {l2Code}. Περιλαμβάνει:"
+1. Τη συνολική του σημασία στα {l1Name}
+2. Μια ανάλυση φράση προς φράση που εξηγεί πώς είναι δομημένο το κείμενο
+
+"Κείμενο: {text},Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:"
+1. Su significado general en {l1Name}
+2. Un desglose frase por frase que explica cómo está construido el texto
+
+"Texto: {text},Anna selkeä erittely seuraavasta {l2Code}-tekstistä. Sisältää:"
+1. Sen yleinen merkitys kielellä {l1Name}
+2. Lausekohtainen erittely, joka selittää tekstin rakenteen
+
+"Teksti: {text},Fournis une analyse claire du texte suivant en {l2Code}. Inclut :"
+1. Sa signification globale en {l1Name}
+2. Une analyse phrase par phrase expliquant comment le texte est construit
+
+"Texte : {text},Tabhair miondealú soiléir ar an téacs {l2Code} seo a leanas. San áireamh:"
+1. A bhrí iomlán i {l1Name}
+2. Miondealú frása ar fhrása a mhíníonn conas atá an téacs tógtha
+
+"Téacs: {text},निम्नलिखित {l2Code} पाठ का स्पष्ट विश्लेषण प्रदान करें। शामिल करें:"
+1. {l1Name} में इसका समग्र अर्थ
+2. वाक्यांश-दर-वाक्यांश विश्लेषण जो बताए कि पाठ कैसे बना है
+
+"पाठ: {text},Pruži jasnu raščlambu sljedećeg teksta na {l2Code}. Uključi:"
+1. Njegovo ukupno značenje na {l1Name}
+2. Raščlambu frazu po frazu koja objašnjava kako je tekst sastavljen
+
+"Tekst: {text},Adj világos elemzést a következő {l2Code} szövegről. Tartalmazza:"
+1. Átfogó jelentése {l1Name} nyelven
+2. Kifejezésenkénti bontás, amely elmagyarázza a szöveg felépítését
+
+"Szöveg: {text},Berikan uraian yang jelas tentang teks {l2Code} berikut. Sertakan:"
+1. Makna keseluruhannya dalam {l1Name}
+2. Uraian frasa demi frasa yang menjelaskan bagaimana teks disusun
+
+"Teks: {text},Fornisci una chiara analisi del seguente testo in {l2Code}. Includi:"
+1. Il suo significato complessivo in {l1Name}
+2. Un'analisi frase per frase che spiega come è costruito il testo
+
+"Testo: {text},次の{l2Code}テキストについて明確な分析を提供してください。含める内容："
+1. {l1Name}での全体的な意味
+2. テキストがどのように構成されているかを説明するフレーズごとの分析
+
+"テキスト：{text},다음 {l2Code} 텍스트에 대한 명확한 분석을 제공하세요. 포함할 내용:"
+1. {l1Name}에서의 전체적인 의미
+2. 텍스트가 어떻게 구성되었는지 설명하는 구문별 분석
+
+"텍스트: {text},Geef een duidelijke uitsplitsing van de volgende {l2Code} tekst. Inclusief:"
+1. De algemene betekenis in het {l1Name}
+2. Een frase-voor-frase uitsplitsing die uitlegt hoe de tekst is opgebouwd
+
+"Tekst: {text},Gi en tydelig oversikt over følgende {l2Code} tekst. Inkluder:"
+1. Den overordnede betydningen på {l1Name}
+2. En frase-for-frase oversikt som forklarer hvordan teksten er bygget opp
+
+"Tekst: {text},Przedstaw jasną analizę następującego tekstu w języku {l2Code}. Uwzględnij:"
+1. Jego ogólne znaczenie w języku {l1Name}
+2. Analizę fraza po frazie wyjaśniającą, jak tekst jest zbudowany
+
+"Tekst: {text},Fornece uma análise clara do seguinte texto em {l2Code}. Inclui:"
+1. O seu significado geral em {l1Name}
+2. Uma análise frase por frase explicando como o texto é construído
+
+"Texto: {text},Oferă o analiză clară a următorului text în {l2Code}. Include:"
+1. Sensul său general în {l1Name}
+2. O analiză frază cu frază care explică modul în care este construit textul
+
+"Text: {text},Предоставь чёткий разбор следующего текста на {l2Code}. Включи:"
+1. Его общее значение на {l1Name}
+2. Пофразовый разбор, объясняющий, как построен текст
+
+"Текст: {text},Pruži jasnu analizu sledećeg teksta na {l2Code}. Uključi:"
+1. Njegovo ukupno značenje na {l1Name}
+2. Analizu frazu po frazu koja objašnjava kako je tekst sastavljen
+
+"Tekst: {text},Ge en tydlig genomgång av följande {l2Code} text. Inkludera:"
+1. Dess övergripande betydelse på {l1Name}
+2. En fras-för-fras-genomgång som förklarar hur texten är uppbyggd
+
+"Text: {text},Toa uchambuzi wazi wa maandishi yafuatayo ya {l2Code}. Jumuisha:"
+1. Maana yake kwa jumla katika {l1Name}
+2. Uchambuzi wa kifungu kwa kifungu unaoelezea jinsi maandishi yalivyojengwa
+
+"Maandishi: {text},ให้การวิเคราะห์ที่ชัดเจนของข้อความ{l2Code}ต่อไปนี้ รวมถึง:"
+1. ความหมายโดยรวมใน{l1Name}
+2. การวิเคราะห์ทีละวลีที่อธิบายว่าข้อความถูกสร้างขึ้นอย่างไร
+
+"ข้อความ: {text},Aşağıdaki {l2Code} metninin net bir dökümünü sağla. İçerik:"
+1. {l1Name} dilinde genel anlamı
+2. Metnin nasıl oluşturulduğunu açıklayan ifade ifade döküm
+
+"Metin: {text},Cung cấp phân tích rõ ràng về văn bản {l2Code} sau đây. Bao gồm:"
+1. Ý nghĩa tổng thể của nó trong {l1Name}
+2. Phân tích từng cụm từ giải thích cách văn bản được xây dựng
+
+Văn bản: {text}
 review.again,Again,重来,重來,Weer,مجددًا,De nou,Erneut,Ξανά,Otra vez,Uudelleen,Encore,Arís,फिर से,Ponovno,Újra,Lagi,Di nuovo,もう一度,다시,Opnieuw,Igjen,Ponownie,Novamente,Din nou,Снова,Ponovo,Igen,Tena,อีกครั้ง,Tekrar,Lại nữa
 review.again_hint,Forgot entirely,完全忘记,,Heeltemal vergeet,نسيت تمامًا,Oblidat completament,Völlig vergessen,Το ξέχασα εντελώς,Olvidé por completo,Unohtanut kokonaan,Complètement oublié,Dearmad iomlán,पूरी तरह भूल गए,Potpuno zaboravljeno,Teljesen elfelejtettem,Sepenuhnya lupa,Dimenticato del tutto,完全に忘れた,완전히 잊어버림,Volledig vergeten,Helt glemt,Całkowicie zapomniałem,Esqueceu completamente,Uitat complet,Полностью забыл,Potpuno zaboravljeno,Helt bortglömt,Nimesahau kabisa,ลืมไปหมดแล้ว,Tamamen unuttum,Quên hoàn toàn
 review.context_label,Context,上下文,,Kontekst,السياق,Context,Kontext,Συμφραζόμενα,Contexto,Konteksti,Contexte,Comhthéacs,संदर्भ,Kontekst,Kontextus,Konteks,Contesto,文脈,문맥,Context,Kontekst,Kontekst,Contexto,Context,Контекст,Kontekst,Sammanhang,Muktadha,บริบท,Bağlam,Ngữ cảnh

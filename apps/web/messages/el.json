@@ -168,6 +168,7 @@
         "custom_voice": "Προσαρμοσμένη φωνή",
         "free_account": "Δωρεάν Λογαριασμός",
         "gender_label": "Φύλο:",
+        "key_vocabulary": "Βασικό λεξιλόγιο",
         "l2_voices": "{l2} Φωνές",
         "lifetime_one_time": "Διάρκεια ζωής — 169 $ εφάπαξ",
         "measure_word": "Μέτρο:",
@@ -751,6 +752,16 @@
         "annual": "${price}/έτος",
         "lifetime": "${price}/εφ' όρου ζωής",
         "monthly": "${price}/μήνα"
+    },
+    "prompt": {
+        "explain_block_header": "Δώσε μια σαφή ανάλυση του παρακάτω κειμένου στα {l2Code}. Περιλαμβάνει:",
+        "explain_block_item1": "Τη συνολική του σημασία στα {l1Name}",
+        "explain_block_item2": "Μια ανάλυση φράση προς φράση που εξηγεί πώς είναι δομημένο το κείμενο",
+        "explain_context_label": "Συμφραζόμενα",
+        "explain_morphology": "Δώσε την προφορά και τη μορφολογία (ή ετυμολογία αν είναι κατάλληλο). Αν είναι κλιτό, δώσε το λήμμα και την κλίση· διαφορετικά, μην αναφέρεις κλίση ή λήμμα.",
+        "explain_text_label": "Κείμενο",
+        "explain_word": "Εξήγησε συνοπτικά στα {l1Name} τι σημαίνει η λέξη {l2Name} ({code}) {word}.",
+        "explain_word_context": "Εξήγησε συνοπτικά στα {l1Name} τι σημαίνει η λέξη {l2Name} ({code}) {word} στη φράση: {context}."
     },
     "review": {
         "again": "Ξανά",

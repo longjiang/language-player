@@ -168,6 +168,7 @@
         "custom_voice": "Voce personalizată",
         "free_account": "Cont gratuit",
         "gender_label": "Gen:",
+        "key_vocabulary": "Vocabular cheie",
         "l2_voices": "{l2} voci",
         "lifetime_one_time": "Pe viață — 169 $ o singură dată",
         "measure_word": "Măsură:",
@@ -751,6 +752,16 @@
         "annual": "${price}/an",
         "lifetime": "${price}/pe viață",
         "monthly": "${price}/lună"
+    },
+    "prompt": {
+        "explain_block_header": "Oferă o analiză clară a următorului text în {l2Code}. Include:",
+        "explain_block_item1": "Sensul său general în {l1Name}",
+        "explain_block_item2": "O analiză frază cu frază care explică modul în care este construit textul",
+        "explain_context_label": "Context",
+        "explain_morphology": "Oferă pronunția și morfologia (sau etimologia dacă este cazul). Dacă este flexionat, oferă lema și flexiunea; altfel, nu menționa flexiunea sau lema.",
+        "explain_text_label": "Text",
+        "explain_word": "Explică succint în {l1Name} ce înseamnă cuvântul {l2Name} ({code}) {word}.",
+        "explain_word_context": "Explică succint în {l1Name} ce înseamnă cuvântul {l2Name} ({code}) {word} în expresia: {context}."
     },
     "review": {
         "again": "Din nou",

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
-import { PYTHON_API_URL } from '@/lib/api-url';
 import { useSubscription } from '@/hooks/use-subscription';
+import { useStreamingExplanation } from '@/hooks/use-streaming-explanation';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, AlertCircle, RefreshCw, BookOpen } from 'lucide-react';
@@ -36,9 +37,7 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
   const { isPro, loaded: subLoaded } = useSubscription();
 
   const [showAi, setShowAi] = useState(false);
-  const [explanation, setExplanation] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
 
   const openInReader = () => {
     localStorage.setItem('lp_reader_text', explanation ?? '');
@@ -54,79 +53,30 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
 
     let prompt: string;
     if (contextText) {
-      prompt = `Succinctly explain using ${l1Name}, what the ${l2Name} (${code}) word ‘${word}’ means in the phrase ‘${contextText}’.`;
+      prompt = t('prompt.explain_word_context', { l1Name, l2Name, code, word, context: contextText });
     } else {
-      prompt = `Succinctly explain using ${l1Name}, what the ${l2Name} (${code}) word ‘${word}’ means.`;
+      prompt = t('prompt.explain_word', { l1Name, l2Name, code, word });
     }
 
     // Languages that don't inflect don't need the morphology prompt
     const nonInflecting = ['zh', 'vi', 'th', 'lo', 'km'];
     if (!nonInflecting.includes(code)) {
-      prompt += ' Give its pronunciation and morphology (or etymology if appropriate). If inflected, give its lemma and inflection; otherwise do not mention inflection or lemma.';
+      prompt += ' ' + t('prompt.explain_morphology');
     }
 
     return prompt;
   };
 
-  const fetchExplanation = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    setExplanation('');
+  const fetchExplanation = useCallback(() => {
+    stream(buildPrompt());
+  }, [stream, buildPrompt]);
 
-    const controller = new AbortController();
-
-    try {
-      const res = await fetch(`${PYTHON_API_URL}/chatgpt/stream`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: buildPrompt() }),
-        signal: controller.signal,
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const reader = res.body!.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        // Parse SSE lines
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? ''; // keep incomplete last line
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const payload = line.slice(6);
-            if (payload === '[DONE]') continue;
-            try {
-              const parsed = JSON.parse(payload);
-              if (parsed.t) {
-                setExplanation((prev) => (prev ?? '') + parsed.t);
-              } else if (parsed.e) {
-                setError(parsed.e);
-              }
-            } catch { /* malformed line, skip */ }
-          }
-        }
-      }
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        setError(err?.message ?? 'Failed to get AI explanation.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [buildPrompt]);
-
-  // Fetch when "show AI" is toggled on
+  // Fetch when "show AI" is toggled on (only once)
   useEffect(() => {
-    if (showAi && explanation === null && !loading) {
-      fetchExplanation();
+    if (showAi && !explanation && !loading) {
+      stream(buildPrompt());
     }
-  }, [showAi, explanation, loading, fetchExplanation]);
+  }, [showAi, explanation, loading, stream, buildPrompt]);
 
   // Pro gate — still loading
   if (!subLoaded) return null;
@@ -188,7 +138,7 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
   }
 
   // Streaming or complete — always show the explanation card
-  if (explanation !== null) {
+  if (explanation || loading || error) {
     return (
       <div className="mt-4 rounded-lg border bg-muted/30 p-4">
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
@@ -197,7 +147,7 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
           {loading && <Loader2 className="ml-2 h-3 w-3 animate-spin" />}
         </div>
         <div className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed">
-          <ReactMarkdown>{explanation}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{explanation}</ReactMarkdown>
         </div>
         {error && (
           <div className="mt-2 flex items-center gap-2 text-xs text-red-600 dark:text-red-400">

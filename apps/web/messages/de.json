@@ -168,6 +168,7 @@
         "custom_voice": "Benutzerdefinierte Stimme",
         "free_account": "Kostenloses Konto",
         "gender_label": "Geschlecht:",
+        "key_vocabulary": "Schlüsselvokabular",
         "l2_voices": "{l2} Stimmen",
         "lifetime_one_time": "Lebenslang — 169 $ einmalig",
         "measure_word": "Maß:",
@@ -751,6 +752,16 @@
         "annual": "${price}/Jahr",
         "lifetime": "${price}/lebenslang",
         "monthly": "${price}/Monat"
+    },
+    "prompt": {
+        "explain_block_header": "Gib eine klare Aufschlüsselung des folgenden {l2Code}-Textes. Enthalten:",
+        "explain_block_item1": "Seine Gesamtbedeutung auf {l1Name}",
+        "explain_block_item2": "Eine phraseweise Aufschlüsselung, die erklärt, wie der Text aufgebaut ist",
+        "explain_context_label": "Kon text",
+        "explain_morphology": "Gib die Aussprache und Morphologie (oder Etymologie, falls zutreffend) an. Wenn flektiert, gib das Lemma und die Flexion an; andernfalls erwähne Flexion oder Lemma nicht.",
+        "explain_text_label": "Text",
+        "explain_word": "Erkläre kurz auf {l1Name}, was das {l2Name} ({code}) Wort {word} bedeutet.",
+        "explain_word_context": "Erkläre kurz auf {l1Name}, was das {l2Name} ({code}) Wort {word} im Satz bedeutet: {context}."
     },
     "review": {
         "again": "Erneut",

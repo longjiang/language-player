@@ -168,6 +168,7 @@
         "custom_voice": "Voz personalizada",
         "free_account": "Conta Gratuita",
         "gender_label": "Gênero:",
+        "key_vocabulary": "Vocabulário principal",
         "l2_voices": "Vozes de {l2}",
         "lifetime_one_time": "Vitalício — $169 pagamento único",
         "measure_word": "Medida:",
@@ -751,6 +752,16 @@
         "annual": "${price}/ano",
         "lifetime": "${price}/vitalício",
         "monthly": "${price}/mês"
+    },
+    "prompt": {
+        "explain_block_header": "Fornece uma análise clara do seguinte texto em {l2Code}. Inclui:",
+        "explain_block_item1": "O seu significado geral em {l1Name}",
+        "explain_block_item2": "Uma análise frase por frase explicando como o texto é construído",
+        "explain_context_label": "Contexto",
+        "explain_morphology": "Dá a pronúncia e a morfologia (ou etimologia, se apropriado). Se flexionada, dá o lema e a flexão; caso contrário, não menciones flexão nem lema.",
+        "explain_text_label": "Texto",
+        "explain_word": "Explica sucintamente em {l1Name} o que significa a palavra {l2Name} ({code}) {word}.",
+        "explain_word_context": "Explica sucintamente em {l1Name} o que significa a palavra {l2Name} ({code}) {word} na frase: {context}."
     },
     "review": {
         "again": "Novamente",

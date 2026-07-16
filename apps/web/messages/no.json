@@ -168,6 +168,7 @@
         "custom_voice": "Egendefinert stemme",
         "free_account": "Gratis konto",
         "gender_label": "Kjønn:",
+        "key_vocabulary": "Nøkkelvokabular",
         "l2_voices": "{l2} stemmer",
         "lifetime_one_time": "Livstid – $169 engangsbetaling",
         "measure_word": "Mål:",
@@ -751,6 +752,16 @@
         "annual": "${price}/år",
         "lifetime": "${price}/livstid",
         "monthly": "${price}/mnd"
+    },
+    "prompt": {
+        "explain_block_header": "Gi en tydelig oversikt over følgende {l2Code} tekst. Inkluder:",
+        "explain_block_item1": "Den overordnede betydningen på {l1Name}",
+        "explain_block_item2": "En frase-for-frase oversikt som forklarer hvordan teksten er bygget opp",
+        "explain_context_label": "Kontekst",
+        "explain_morphology": "Oppgi uttalen og morfologien (eller etymologien hvis passende). Hvis bøyd, oppgi lemmaet og bøyningen; ellers, ikke nevn bøyning eller lemma.",
+        "explain_text_label": "Tekst",
+        "explain_word": "Forklar kort på {l1Name} hva {l2Name} ({code}) ordet {word} betyr.",
+        "explain_word_context": "Forklar kort på {l1Name} hva {l2Name} ({code}) ordet {word} betyr i setningen: {context}."
     },
     "review": {
         "again": "Igjen",

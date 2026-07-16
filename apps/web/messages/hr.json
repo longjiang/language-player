@@ -168,6 +168,7 @@
         "custom_voice": "Prilagođeni glas",
         "free_account": "Besplatni račun",
         "gender_label": "Spol:",
+        "key_vocabulary": "Ključni vokabular",
         "l2_voices": "{l2} glasova",
         "lifetime_one_time": "Doživotno — 169 USD jednokratno",
         "measure_word": "Mjera:",
@@ -751,6 +752,16 @@
         "annual": "${price}/god",
         "lifetime": "${price}/doživotno",
         "monthly": "${price}/mj"
+    },
+    "prompt": {
+        "explain_block_header": "Pruži jasnu raščlambu sljedećeg teksta na {l2Code}. Uključi:",
+        "explain_block_item1": "Njegovo ukupno značenje na {l1Name}",
+        "explain_block_item2": "Raščlambu frazu po frazu koja objašnjava kako je tekst sastavljen",
+        "explain_context_label": "Kontekst",
+        "explain_morphology": "Navedi izgovor i morfologiju (ili etimologiju ako je prikladno). Ako je flektirano, navedi lemu i fleksiju; inače ne spominji fleksiju ni lemu.",
+        "explain_text_label": "Tekst",
+        "explain_word": "Ukratko objasni na {l1Name} što znači {l2Name} ({code}) riječ {word}.",
+        "explain_word_context": "Ukratko objasni na {l1Name} što znači {l2Name} ({code}) riječ {word} u izrazu: {context}."
     },
     "review": {
         "again": "Ponovno",

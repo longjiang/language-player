@@ -168,6 +168,7 @@
         "custom_voice": "Voix personnalisée",
         "free_account": "Compte gratuit",
         "gender_label": "Genre :",
+        "key_vocabulary": "Vocabulaire clé",
         "l2_voices": "Voix {l2}",
         "lifetime_one_time": "À vie — 169 $ une fois",
         "measure_word": "Mesure :",
@@ -751,6 +752,16 @@
         "annual": "${price}/an",
         "lifetime": "${price}/à vie",
         "monthly": "${price}/mois"
+    },
+    "prompt": {
+        "explain_block_header": "Fournis une analyse claire du texte suivant en {l2Code}. Inclut :",
+        "explain_block_item1": "Sa signification globale en {l1Name}",
+        "explain_block_item2": "Une analyse phrase par phrase expliquant comment le texte est construit",
+        "explain_context_label": "Con texte",
+        "explain_morphology": "Donne sa prononciation et sa morphologie (ou son étymologie si approprié). S'il est fléchi, donne son lemme et sa flexion ; sinon, ne mentionne ni flexion ni lemme.",
+        "explain_text_label": "Texte",
+        "explain_word": "Explique succinctement en {l1Name} ce que signifie le mot {l2Name} ({code}) {word}.",
+        "explain_word_context": "Explique succinctement en {l1Name} ce que signifie le mot {l2Name} ({code}) {word} dans la phrase : {context}."
     },
     "review": {
         "again": "Encore",

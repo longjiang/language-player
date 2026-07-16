@@ -168,6 +168,7 @@
         "custom_voice": "Sauti maalum",
         "free_account": "Akaunti Bure",
         "gender_label": "Jinsia:",
+        "key_vocabulary": "Msamiati muhimu",
         "l2_voices": "{l2} Sauti",
         "lifetime_one_time": "Maisha yote — $169 mara moja",
         "measure_word": "Kipimo:",
@@ -751,6 +752,16 @@
         "annual": "${price}/mwaka",
         "lifetime": "${price}/maisha",
         "monthly": "${price}/mwezi"
+    },
+    "prompt": {
+        "explain_block_header": "Toa uchambuzi wazi wa maandishi yafuatayo ya {l2Code}. Jumuisha:",
+        "explain_block_item1": "Maana yake kwa jumla katika {l1Name}",
+        "explain_block_item2": "Uchambuzi wa kifungu kwa kifungu unaoelezea jinsi maandishi yalivyojengwa",
+        "explain_context_label": "Muktadha",
+        "explain_morphology": "Toa matamshi yake na mofolojia (au etimolojia ikiwa inafaa). Ikiwa imenyambulika, toa lemma na unyambulishaji wake; vinginevyo, usitaje unyambulishaji wala lemma.",
+        "explain_text_label": "Maandishi",
+        "explain_word": "Eleza kwa ufupi kwa kutumia {l1Name}, nini maana ya neno la {l2Name} ({code}) {word}.",
+        "explain_word_context": "Eleza kwa ufupi kwa kutumia {l1Name}, nini maana ya neno la {l2Name} ({code}) {word} katika kifungu: {context}."
     },
     "review": {
         "again": "Tena",

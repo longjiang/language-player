@@ -168,6 +168,7 @@
         "custom_voice": "Voce personalizzata",
         "free_account": "Account gratuito",
         "gender_label": "Genere:",
+        "key_vocabulary": "Vocabolario chiave",
         "l2_voices": "{l2} voci",
         "lifetime_one_time": "A vita — 169 $ una tantum",
         "measure_word": "Misura:",
@@ -751,6 +752,16 @@
         "annual": "${price}/anno",
         "lifetime": "${price}/a vita",
         "monthly": "${price}/mese"
+    },
+    "prompt": {
+        "explain_block_header": "Fornisci una chiara analisi del seguente testo in {l2Code}. Includi:",
+        "explain_block_item1": "Il suo significato complessivo in {l1Name}",
+        "explain_block_item2": "Un'analisi frase per frase che spiega come è costruito il testo",
+        "explain_context_label": "Contesto",
+        "explain_morphology": "Fornisci la pronuncia e la morfologia (o l'etimologia se appropriato). Se flessa, fornisci il lemma e la flessione; altrimenti non menzionare flessione o lemma.",
+        "explain_text_label": "Testo",
+        "explain_word": "Spiega brevemente in {l1Name} cosa significa la parola {l2Name} ({code}) {word}.",
+        "explain_word_context": "Spiega brevemente in {l1Name} cosa significa la parola {l2Name} ({code}) {word} nella frase: {context}."
     },
     "review": {
         "again": "Di nuovo",
