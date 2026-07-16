@@ -494,6 +494,7 @@
         "start_learning": "Počnite učiti jezike kroz autentični video sadržaj.",
         "subscription_cancel_error": "Greška prilikom otkazivanja pretplate",
         "subscription_cancel_success": "Pretplata uspješno otkazana",
+        "subscription_explanation": "las suscripciones mensuales y anuales no son compatibles como compra en la aplicación porque nuestro servidor solo puede procesar pagos únicos de Apple. Para continuar con la compra",
         "time_spent_learning": "Vrijeme provedeno učeći {{language}} u Language Playeru",
         "translated_subtitles": "Prevedeni titlovi dostupni",
         "upgrade_text": "Nadogradi na Pro za pristup većem broju videozapisa!",
