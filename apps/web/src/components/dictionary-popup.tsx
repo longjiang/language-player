@@ -227,25 +227,23 @@ export function DictionaryPopup({
                 <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-amber-800 dark:text-amber-200">
-                    Unrecognized saved word
+                    {t('msg.unrecognized_saved_word')}
                   </p>
                   <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">
                     <strong>{sw.forms.join(', ')}</strong>
                     {sw.context?.text && (
-                      <> — saved from: &ldquo;{sw.context.text.slice(0, 80)}{sw.context.text.length > 80 ? '…' : ''}&rdquo;</>
+                      <> — {t('msg.saved_from_context')} &ldquo;{sw.context.text.slice(0, 80)}{sw.context.text.length > 80 ? '…' : ''}&rdquo;</>
                     )}
                   </p>
                   <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                    This word was saved in a previous version of Language Player and its ID
-                    (&ldquo;{sw.id}&rdquo;) doesn&apos;t match any current dictionary entry.
-                    Remove it below and re-save from the correct entry.
+                    {t('msg.unrecognized_saved_word_desc', { id: sw.id })}
                   </p>
                   <div className="mt-2">
                     <button
                       onClick={() => removeSavedWord(l2Code, sw.id)}
                       className="inline-flex items-center gap-1 rounded bg-amber-200 px-2 py-1 text-xs font-medium text-amber-800 hover:bg-amber-300 dark:bg-amber-800 dark:text-amber-200 dark:hover:bg-amber-700 transition-colors"
                     >
-                      Remove &amp; re-save
+                      {t('action.remove_and_resave')}
                     </button>
                   </div>
                 </div>
