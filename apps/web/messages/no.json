@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Spill {language} uttale",
         "pronunciation_voice": "Uttalestemme",
         "saved": "Lagret",
+        "show_phonetics": "Vis fonetikk",
         "speech_rate": "Talehastighet: {rate}×",
         "study_material_format": "{material} Kap.{book} L{lesson}",
         "test_voice": "Teststemme",

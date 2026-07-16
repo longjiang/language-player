@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Speel {language} uitspraak",
         "pronunciation_voice": "Uitspraakstem",
         "saved": "Gestoord",
+        "show_phonetics": "Wys fonetiek",
         "speech_rate": "Spraaktempo: {rate}×",
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "test_voice": "Toets stem",

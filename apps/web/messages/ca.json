@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Reproduir la pronunciació de {language}",
         "pronunciation_voice": "Veu de pronunciació",
         "saved": "Desat",
+        "show_phonetics": "Mostra fonètica",
         "speech_rate": "Velocitat de parla: {rate}×",
         "study_material_format": "{material} Llib.{book} L{lesson}",
         "test_voice": "Prova de veu",

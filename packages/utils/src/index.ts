@@ -3,6 +3,8 @@ export { languageNameFromCode, isRTL, getLanguageDirection } from './language';
 export { clampDifficulty, levelFromHours, hoursFromLevel } from './difficulty';
 export { cn } from './cn';
 export { formatPronunciation } from './pronunciation';
+export { katakanaToHiragana, matchHiragana } from './furigana';
+export type { FuriganaSegment } from './furigana';
 export {
   sm2,
   newCard,

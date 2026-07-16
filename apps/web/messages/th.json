@@ -177,6 +177,7 @@
         "play_pronunciation_for": "เล่นการออกเสียง {language}",
         "pronunciation_voice": "เสียงออกเสียง",
         "saved": "บันทึกแล้ว",
+        "show_phonetics": "แสดงสัทอักษร",
         "speech_rate": "อัตราการพูด: {rate}×",
         "study_material_format": "{material} เล่ม {book} บทที่ {lesson}",
         "test_voice": "ทดสอบเสียง",

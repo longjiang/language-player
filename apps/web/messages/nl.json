@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Speel {language} uitspraak af",
         "pronunciation_voice": "Uitspraakstem",
         "saved": "Opgeslagen",
+        "show_phonetics": "Toon fonetiek",
         "speech_rate": "Spreeksnelheid: {rate}×",
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "test_voice": "Teststem",

@@ -177,6 +177,7 @@
         "play_pronunciation_for": "تشغيل نطق {language}",
         "pronunciation_voice": "صوت النطق",
         "saved": "محفوظ",
+        "show_phonetics": "إظهار الصوتيات",
         "speech_rate": "سرعة النطق: {rate}×",
         "study_material_format": "{material} ك{book} د{lesson}",
         "test_voice": "اختبار الصوت",

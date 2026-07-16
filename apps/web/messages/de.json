@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Abspielen {language} Aussprache",
         "pronunciation_voice": "Aussprachestimme",
         "saved": "Gespeichert",
+        "show_phonetics": "Phonetik anzeigen",
         "speech_rate": "Sprechgeschwindigkeit: {rate}×",
         "study_material_format": "{material} Buch {book}, Lektion {lesson}",
         "test_voice": "Teststimme",

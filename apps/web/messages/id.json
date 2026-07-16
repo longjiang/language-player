@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Putar {language} Pelafalan",
         "pronunciation_voice": "Suara Pelafalan",
         "saved": "Tersimpan",
+        "show_phonetics": "Tampilkan fonetik",
         "speech_rate": "Kecepatan Bicara: {rate}×",
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "test_voice": "Uji Suara",

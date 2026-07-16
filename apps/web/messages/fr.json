@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Lire la prononciation {language}",
         "pronunciation_voice": "Voix de prononciation",
         "saved": "Enregistré",
+        "show_phonetics": "Afficher la phonétique",
         "speech_rate": "Débit vocal : {rate}×",
         "study_material_format": "{material} Liv.{book} Leçon {lesson}",
         "test_voice": "Tester la voix",

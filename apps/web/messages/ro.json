@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Redă pronunția {language}",
         "pronunciation_voice": "Vocea de pronunție",
         "saved": "Salvat",
+        "show_phonetics": "Arată fonetică",
         "speech_rate": "Viteza de vorbire: {rate}×",
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "test_voice": "Testează vocea",

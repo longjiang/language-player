@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Cheza {language} Matamshi",
         "pronunciation_voice": "Sauti ya Matamshi",
         "saved": "Imehifadhiwa",
+        "show_phonetics": "Onyesha fonetiki",
         "speech_rate": "Kiwango cha Usemi: {rate}×",
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "test_voice": "Jaribu Sauti",

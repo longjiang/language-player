@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Пусти {language} изговор",
         "pronunciation_voice": "Glas za izgovor",
         "saved": "Sačuvano",
+        "show_phonetics": "Прикажи фонетику",
         "speech_rate": "Brzina govora: {rate}×",
         "study_material_format": "{material} Knj.{book} L{lesson}",
         "test_voice": "Probni glas",

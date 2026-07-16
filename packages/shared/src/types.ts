@@ -60,7 +60,16 @@ export interface LemmatizedToken {
   text: string;
   /** Possible base/dictionary forms. Empty array = punctuation/spaces. */
   lemmas: Lemma[];
-  /** Phonetic guide (rare — only Arabic tokenizer provides this today) */
+  /**
+   * Phonetic guide, populated by these lemmatizers only:
+   *   ja — katakana reading from MeCab (e.g. アサゴハン)
+   *   zh / yue — tone-marked pinyin/jyutping from Jieba (e.g. nǐ hǎo)
+   *   ar — Buckwalter transliteration from Qalsadi (e.g. a:lssilaa:mu)
+   *   fa — Latin transliteration via PersianG2p (e.g. salām, xubi)
+   *
+   * Absent (null/undefined) for all other languages:
+   *   ko, ru, tr, my, and all spaCy/Simplemma languages (en, fr, de, es, fi, sw, etc.)
+   */
   pronunciation?: string;
 }
 

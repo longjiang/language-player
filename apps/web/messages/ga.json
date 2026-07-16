@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Seinn {language} Fuaimniú",
         "pronunciation_voice": "Guth Fhuaimniúcháin",
         "saved": "Sábháilte",
+        "show_phonetics": "Taispeáin foghraíocht",
         "speech_rate": "Ráta Cainte: {rate}×",
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "test_voice": "Guth Tástála",

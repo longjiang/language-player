@@ -177,6 +177,7 @@
         "play_pronunciation_for": "Toista {language} ääntämys",
         "pronunciation_voice": "Ääntämisääni",
         "saved": "Tallennettu",
+        "show_phonetics": "Näytä fonetiikka",
         "speech_rate": "Puhenopeus: {rate}×",
         "study_material_format": "{material} Bk.{book} L{lesson}",
         "test_voice": "Testiääni",
