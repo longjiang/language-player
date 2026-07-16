@@ -6,14 +6,13 @@ export type VideoTokenCache = Record<string, LemmatizeResponse>;
 
 export function useVideos() {
   return {
-    /** Search videos by query, language, and difficulty. */
-    search: (params: {
-      q?: string;
-      lang?: string;
-      level?: number;
+    /** Search videos by title query. */
+    searchByTitle: (params: {
+      q: string;
+      l2: string;
+      limit?: number;
       page?: number;
-      pageSize?: number;
-    }) => apiClient.get<YouTubeVideo[]>('/videos/search', { params }),
+    }) => apiClient.get<YouTubeVideo[]>('/search-videos', { params }),
 
     /** Get a single video with its subtitles. */
     getById: (id: string) => apiClient.get<YouTubeVideo>(`/videos/${id}`),
