@@ -490,6 +490,7 @@
         "pro_transcript_limit_reached": "Transkriptioraja saavutettu. Päivitä Pro-versioon saadaksesi lisää transkriptioita.",
         "renewal_failed_contact_support": "Uusiminen epäonnistui. Ota yhteyttä asiakastukeen.",
         "renews_today": "Uusitaan tänään",
+        "result_count": "one {# resultaat} other {# resultate}}",
         "sort_by": "Lajittele: {{sortBy}}",
         "start_learning": "Aloita kielten oppiminen autenttisen videosisällön avulla.",
         "subscription_cancel_error": "Virhe tilauksen peruuttamisessa",

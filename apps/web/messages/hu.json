@@ -494,6 +494,7 @@
         "start_learning": "Kezdjen el nyelveket tanulni autentikus videótartalmakon keresztül.",
         "subscription_cancel_error": "Hiba történt az előfizetés lemondásakor",
         "subscription_cancel_success": "Az előfizetés sikeresen lemondva",
+        "subscription_explanation": "elige el Plan Vitalicio.",
         "time_spent_learning": "Nyelvtanulásra fordított idő a Language Player-ben {{language}}",
         "translated_subtitles": "Fordított feliratok elérhetők",
         "upgrade_text": "Frissítsen Pro-ra a további videók eléréséhez!",
