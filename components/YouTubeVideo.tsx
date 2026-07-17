@@ -55,7 +55,7 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
     // Not wrapped in a VideoWithTranscriptProvider — operate standalone
   }
 
-  // ── Handle seek (context-driven) via native YouTube IFrame API ─────────
+  // ── Handle seek (context-driven) ───────────────────────────────────────
   const prevSeekRef = useRef(seekTime);
   useEffect(() => {
     if (
@@ -63,26 +63,33 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
       seekTime !== undefined &&
       seekTime !== prevSeekRef.current
     ) {
-      const internalPlayer = playerRef.current?.getInternalPlayer();
-      if (internalPlayer && typeof internalPlayer.seekTo === "function") {
-        internalPlayer.seekTo(currentTime, true);
-      }
+      playerRef.current?.seekTo(currentTime, true);
       resetSeekTime();
     }
     prevSeekRef.current = seekTime;
   }, [seekTime, currentTime, inVideoWithTranscriptProvider, resetSeekTime]);
 
   // ── Player callbacks ───────────────────────────────────────────────────
+  // The library sends STRING states ('playing', 'paused', etc.) but the app
+  // uses NUMERIC states matching the YouTube IFrame API (1, 2, etc.).
   const onStateChange = useCallback(
     (state: string) => {
-      if (inVideoWithTranscriptProvider) {
-        const newState = state as unknown as PLAYER_STATES;
-        updatePlaybackState(newState);
-        if (newState === PLAYER_STATES.PLAYING) {
-          updatePlayVideo(true);
-        } else if (newState === PLAYER_STATES.PAUSED) {
-          updatePlayVideo(false);
-        }
+      if (!inVideoWithTranscriptProvider) return;
+      // Map library string state → numeric PLAYER_STATES
+      const stateMap: Record<string, PLAYER_STATES> = {
+        playing: PLAYER_STATES.PLAYING,
+        paused: PLAYER_STATES.PAUSED,
+        ended: PLAYER_STATES.ENDED,
+        unstarted: PLAYER_STATES.UNSTARTED,
+        buffering: PLAYER_STATES.BUFFERING,
+        'video cued': PLAYER_STATES.VIDEO_CUED,
+      };
+      const mappedState = stateMap[state] ?? PLAYER_STATES.UNSTARTED;
+      updatePlaybackState(mappedState);
+      if (mappedState === PLAYER_STATES.PLAYING) {
+        updatePlayVideo(true);
+      } else if (mappedState === PLAYER_STATES.PAUSED || mappedState === PLAYER_STATES.ENDED) {
+        updatePlayVideo(false);
       }
     },
     [inVideoWithTranscriptProvider, updatePlaybackState, updatePlayVideo],
