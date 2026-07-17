@@ -382,7 +382,7 @@ const { toggleGlobalDisplay, toggleL2Display } = useSettings();
 │    1. Update React state (immediate UI response)            │
 │    2. Write to localStorage (immediate, survives reload)    │
 │    3. Schedule cloud sync (debounced 3s)                    │
-│       → POST /user-data/sync { settings: JSON.stringify() } │
+│       → POST /user-data/sync { settings_v2: JSON.stringify() } │
 │                                                             │
 │  On cross-tab change (StorageEvent):                        │
 │    1. Listen for 'lp_settings' key change                   │
@@ -419,12 +419,38 @@ However, this adds complexity. **Start simple with a single `ts`.** If merge con
 | What | Where | Key / Field |
 |---|---|---|
 | **Settings (v2)** | `localStorage` | `lp_settings` |
-| **Settings (v2)** | Directus `user_data` | `settings` (JSON text) |
+| **Settings (v2)** | Directus `user_data` | `settings_v2` (JSON text — **new column**) |
+| **Settings (Classic)** | Directus `user_data` | `settings` (JSON text — **unchanged, Classic-only**) |
 | **SRS Cards** | `localStorage` | `zthSrsProgress` (unchanged) |
 | **SRS Cards** | Directus `user_data` | `srs_progress` (unchanged) |
 | **Saved Words** | `localStorage` | `zthSavedWords` (unchanged) |
 | **Saved Words** | Directus `user_data` | `saved_words` (unchanged) |
 | **Old keys (deprecated)** | `localStorage` | `lp_show_translation`, `lp_use_traditional`, `lp_show_phonetics`, `zthSpeechSettings` |
+
+### Backward Compatibility with Classic (Production)
+
+**Classic is still live in production** and reads/writes `user_data.settings` with a flat format (`{ skin, mode, l2Settings: { zh: {...} } }`). V2 writes a nested-by-category format (`{ v: 2, ts, global: {...}, l2: {...} }`). These are **not compatible** — writing V2 to the Classic column would corrupt Classic's data on next sync.
+
+**Solution: separate Directus column — `settings_v2`.**
+
+```
+Directus user_data
+├── settings      ← Classic only (flat blob)
+├── settings_v2   ← GO + Next.js Web (V2 nested blob)
+├── srs_progress  ← Shared (all apps)
+└── saved_words   ← Shared (all apps)
+```
+
+When Classic is eventually retired, the `settings` column is dropped and `settings_v2` becomes the single canonical store. The `v` version field in the blob ensures future migrations are safe without another column rename.
+
+**Flask API changes needed:**
+
+| Step | What |
+|---|---|
+| 1 | Add nullable `settings_v2` column to `user_data` table |
+| 2 | `GET /user-data` — return `settings_v2` alongside existing fields |
+| 3 | `POST /user-data/sync` — accept `settings_v2` in the sync payload |
+| 4 | No changes to Classic's `settings` field — it continues to work as before |
 
 ### File Layout
 
