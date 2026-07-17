@@ -7,7 +7,7 @@ import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
 import { Header } from "@/components/Header";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from 'expo-router';
 import { useRouteChange } from '@/hooks/useRouteChange';
 import { useLanguage } from "@/contexts/LanguageContext";
 

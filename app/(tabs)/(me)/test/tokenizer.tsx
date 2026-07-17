@@ -5,7 +5,7 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { router } from "expo-router";
-import { Link } from "@react-navigation/native";
+import { Link } from "expo-router";
 import { ThemedButton } from "@/components/ThemedButton";
 
 // Sample texts for different languages

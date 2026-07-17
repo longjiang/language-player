@@ -11,8 +11,7 @@ import { popupDictionaryContentStyles as styles } from "@/src/styles";
 import { languageLevelsByL2Code } from "@/src/language-levels";
 import BookmarkButton from "@/components/BookmarkButton";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useNavigation } from "@react-navigation/native";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { DefinitionList } from "./DefinitionList";
 import { getTokenizer } from "@/src/tokenizer";
 

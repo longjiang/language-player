@@ -1,9 +1,13 @@
 // useRouteChange.ts
 import { useEffect, useRef } from 'react';
-import { NavigationContainerRef } from '@react-navigation/native';
+
+interface NavigationLike {
+  addListener: (event: string, callback: () => void) => () => void;
+  getState: () => { routes: Array<{ name?: string }>; index: number } | undefined;
+}
 
 export const useRouteChange = (
-  navigation: NavigationContainerRef<ReactNavigation.RootParamList>,
+  navigation: NavigationLike,
   callback: (routeName: string | undefined, previousRouteName: string | undefined) => void
 ) => {
   const routeNameRef = useRef<string | undefined>();

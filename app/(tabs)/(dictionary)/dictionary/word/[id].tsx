@@ -4,11 +4,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { View, ActivityIndicator } from "react-native";
 import { ThemedButton, ThemedInput, ThemedText } from "@/components";
-import { router } from "expo-router";
-import { useRoute } from "@react-navigation/native";
+import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { DictionaryEntry } from "@/src/dictionary-types";
-import { RouteProp } from '@react-navigation/native';
 import { debounce } from 'lodash';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -18,14 +15,8 @@ import { dictionaryEntryStyles as styles } from "@/src/styles";
 import DictionaryEntryContent from "@/components/DictionaryEntryContent";
 import { DictionaryComponent, getDictionaryPlaceholder } from "@/components/DictionaryComponent";
 
-type DictionaryEntryScreenRouteParams = {
-  id: string;
-};
-
 const DictionaryEntryScreen = () => {
-  const route = useRoute<RouteProp<{
-    DictionaryEntryScreen: DictionaryEntryScreenRouteParams;
-  }, 'DictionaryEntryScreen'>>();
+  const { id: encodedId } = useLocalSearchParams<{ id: string }>();
   const { dictionary } = useDictionary();
   const { l2Lang, t } = useLanguage();
   const { settings } = useSettings();
@@ -37,8 +28,8 @@ const DictionaryEntryScreen = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  if (!route.params || !l2Lang || !dictionary) return null;
-  const id = decodeURIComponent(route.params.id);
+  if (!encodedId || !l2Lang || !dictionary) return null;
+  const id = decodeURIComponent(encodedId);
 
   const headKey = l2Lang.code === 'zh' && settings.useTraditional ? 'alternate' : 'head';
   const alternateKey = l2Lang.code === 'zh' && settings.useTraditional ? 'head' : 'alternate';
