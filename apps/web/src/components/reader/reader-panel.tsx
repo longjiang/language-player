@@ -9,24 +9,10 @@ import { TextActionMenu } from '@/components/text-action-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
+import { getSampleText } from '@/lib/sample-texts';
 import {
   BookOpen, Loader2, Globe, FileText, ArrowLeftRight, Sparkles, PenLine,
 } from 'lucide-react';
-
-// ── Sample texts (re-exported from page) ──
-const SAMPLE_TEXTS: Record<string, { title: string; text: string }> = {
-  zh: { title: '首尔', text: `# 首尔\n\n首尔是**韩国**的首都...` },
-  ja: { title: 'ソウル', text: `# ソウル\n\nソウルは**韓国**の首都...` },
-  ko: { title: '서울', text: `# 서울\n\n서울은 **대한민국**의 수도...` },
-  es: { title: 'Seúl', text: `# Seúl\n\nSeúl es la capital...` },
-  fr: { title: 'Séoul', text: `# Séoul\n\nSéoul est la capitale...` },
-  de: { title: 'Seoul', text: `# Seoul\n\nSeoul ist die Hauptstadt...` },
-  en: { title: 'Seoul', text: `# Seoul\n\nSeoul is the capital...` },
-};
-
-function getSampleText(code: string): { title: string; text: string } | null {
-  return SAMPLE_TEXTS[code] ?? SAMPLE_TEXTS[code.split('-')[0]!] ?? null;
-}
 
 function stripMarkdown(md: string): string {
   return md
