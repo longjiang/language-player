@@ -432,3 +432,197 @@ export interface NoteListItem {
   title: string;
   created_on?: string;
 }
+
+// ── Settings V2 ──────────────────────────────
+
+/**
+ * Preferences that apply regardless of which language is being studied.
+ * Grouped by functional category matching the Settings page tabs.
+ */
+export interface GlobalSettings {
+  /** `"light"` | `"dark"` | `"system"` — follows OS preference when `"system"`. */
+  theme: 'light' | 'dark' | 'system';
+
+  /** Video player & transcript behaviour. */
+  playback: {
+    /** Playback speed multiplier: 0.5 | 0.75 | 1.0. */
+    speed: number;
+    /** Pause video after each subtitle line finishes. */
+    autoPause: boolean;
+    /** Highlight the current subtitle word-by-word (karaoke effect). */
+    karaokeMode: boolean;
+    /** Smooth-scroll the transcript to the active line. */
+    smoothScroll: boolean;
+    /** Collapse the video player to a mini player when scrolling the transcript. */
+    collapsedVideo: boolean;
+    /**
+     * Subtitle display mode.
+     * `"subtitles"` — show the full scrollable transcript alongside the video.
+     * `"transcript"` — show one line at a time, synced to playback.
+     */
+    transcriptMode: 'subtitles' | 'transcript';
+  };
+
+  /** Display preferences (apply across all languages). Maps to Settings → Display tab. */
+  display: {
+    /** Show L1 translation below each subtitle or paragraph line. */
+    translation: boolean;
+    /** Show a quick gloss definition for words the user has saved/bookmarked. */
+    quickGloss: boolean;
+    /** Show the first dictionary definition inline next to word blocks. */
+    definition: boolean;
+    /** Text size multiplier: 0 (smallest) to 7 (largest). */
+    zoom: number;
+    /** Use a serif font for L2 text (helpful for Arabic, etc.). */
+    serifFont: boolean;
+  };
+
+  /** Interaction / learning behaviour. */
+  interaction: {
+    /** Blank out saved words in text — self-testing / fill-in-the-blank mode. */
+    quizMode: boolean;
+    /** Auto-pronounce a word (TTS) when its dictionary popup opens. */
+    autoPronounce: boolean;
+    /** Disable the tap-to-lookup popup dictionary entirely. */
+    disableAnnotation: boolean;
+  };
+
+  /** SRS review parameters. Maps to Settings → Review tab. */
+  review: {
+    /** Maximum number of new SRS cards introduced per day across all languages. */
+    dailyNewLimit: number;
+  };
+}
+
+/**
+ * Preferences scoped to a specific target language (L2).
+ * Keyed by ISO 639-1 language code (e.g. "zh", "ja", "es").
+ * If a key is missing, L2_DEFAULTS are used.
+ * Grouped by functional category matching the Settings page tabs.
+ */
+export interface L2Settings {
+  /** Per-language display preferences. Maps to Settings → Display tab. */
+  display: {
+    /** Show phonetic guides above word blocks (pinyin, furigana, ruby, IPA). */
+    phonetics: boolean;
+    /**
+     * Script variant preference.
+     * - zh: `true` = traditional (繁體), `false` = simplified (简体)
+     * - ko: `true` = show hanja alongside hangul
+     * - vi: `true` = show hán tự alongside quốc ngữ
+     * - All other languages: ignored
+     */
+    traditional: boolean;
+    /** Show ONLY phonetics, hide the original L2 script entirely. */
+    phoneticsOnly: boolean;
+    /**
+     * Only show phonetics for words above the user's current proficiency level.
+     * Requires `phonetics: true`. If `false`, phonetics appear on all words.
+     */
+    phoneticsForHardWordsOnly: boolean;
+  };
+
+  /** Speech / TTS settings. Maps to Settings → Pronunciation tab. */
+  speech: {
+    /** User's preferred TTS voice URI for this language. `null` = auto-detect. */
+    voiceURI: string | null;
+    /** TTS speech rate. 0.5 (slowest) to 2.0 (fastest). */
+    rate: number;
+  };
+
+  /** Content filters scoped to this language. */
+  content: {
+    /** Only show videos from this TV show slug. `null` = all shows. */
+    tvShowFilter: string | null;
+    /** Only show videos in this category. `null` = all categories. */
+    categoryFilter: string | null;
+  };
+}
+
+/**
+ * Top-level settings store persisted to localStorage and cloud.
+ *
+ * localStorage key:  `lp_settings`
+ * Cloud field:       `user_data.settings` (JSON text blob)
+ *
+ * Schema is versioned so migrations can run on load.
+ * Timestamp field enables last-write-wins conflict resolution.
+ */
+export interface SettingsV2 {
+  /** Schema version. Bump on breaking shape changes; run migration on load. */
+  v: 2;
+  /** ISO 8601 timestamp of last modification. Used for conflict resolution. */
+  ts: string;
+  /** Preferences that apply regardless of which language is being studied. */
+  global: GlobalSettings;
+  /** Preferences scoped to a specific L2, keyed by ISO 639-1 code. */
+  l2: Record<string, L2Settings>;
+}
+
+export const GLOBAL_DEFAULTS: GlobalSettings = {
+  theme: 'dark',
+  playback: {
+    speed: 1.0,
+    autoPause: false,
+    karaokeMode: true,
+    smoothScroll: false,
+    collapsedVideo: false,
+    transcriptMode: 'subtitles',
+  },
+  display: {
+    translation: true,
+    quickGloss: true,
+    definition: false,
+    zoom: 0,
+    serifFont: false,
+  },
+  interaction: {
+    quizMode: false,
+    autoPronounce: true,
+    disableAnnotation: false,
+  },
+  review: {
+    dailyNewLimit: 20,
+  },
+};
+
+export const L2_DEFAULTS: L2Settings = {
+  display: {
+    phonetics: true,
+    traditional: false,
+    phoneticsOnly: false,
+    phoneticsForHardWordsOnly: false,
+  },
+  speech: {
+    voiceURI: null,
+    rate: 1.0,
+  },
+  content: {
+    tvShowFilter: null,
+    categoryFilter: null,
+  },
+};
+
+/** Factory: create a fresh settings object with all defaults. */
+export function createSettingsV2(l2Code?: string): SettingsV2 {
+  const l2: Record<string, L2Settings> = {};
+  if (l2Code) {
+    l2[l2Code] = {
+      display: { ...L2_DEFAULTS.display },
+      speech: { ...L2_DEFAULTS.speech },
+      content: { ...L2_DEFAULTS.content },
+    };
+  }
+  return {
+    v: 2,
+    ts: new Date().toISOString(),
+    global: {
+      theme: GLOBAL_DEFAULTS.theme,
+      playback: { ...GLOBAL_DEFAULTS.playback },
+      display: { ...GLOBAL_DEFAULTS.display },
+      interaction: { ...GLOBAL_DEFAULTS.interaction },
+      review: { ...GLOBAL_DEFAULTS.review },
+    },
+    l2,
+  };
+}

@@ -358,6 +358,180 @@ The Left/Right Context sorts reveal pronunciation and collocation patterns — e
 
 ---
 
+## Settings Architecture
+
+> **REFERENCE.** This documents how GO app settings work. The Next.js migration target design is in `specs/007-settings-architecture.md`.
+
+### Settings Shape
+
+**File:** `contexts/SettingsContext.tsx` — Flat structure (not per-L2):
+
+```typescript
+interface SettingsState {
+  showPinyin: boolean;        // default: true
+  showDefinition: boolean;    // default: false
+  useTraditional: boolean;    // default: false
+  showTranslation: boolean;   // default: true
+  showQuickGloss: boolean;    // default: true
+  autoPronounce: boolean;     // default: true
+  darkMode: boolean;          // default: true
+  quizMode: boolean;          // default: false
+  l1LangCode: string;         // default: ''  (cached from LanguageContext)
+  l2LangCode: string;         // default: ''  (cached from LanguageContext)
+}
+```
+
+**Key difference from Classic:** Settings are **global, not per-language**. Changing `showPinyin` for Chinese also changes it for Japanese — there is no `l2Settings[l2Code]` nesting.
+
+**Key difference from Classic:** `darkMode` is a boolean (`true`/`false`), not a string (`"dark"`/`"light"`).
+
+### Storage
+
+| Property | Value |
+|---|---|
+| **Primary store** | React `useReducer` in `SettingsContext` |
+| **Storage key** | `userSettings` |
+| **Storage backend** | `expo-secure-store` (native iOS/Android) / `localStorage` (web fallback) via `src/storage.ts` |
+| **Format** | Single flat JSON object |
+| **Persistence trigger** | `useEffect` — auto-saves whenever `settings` state changes, but only after `l1LangCode` and `l2LangCode` are both set |
+| **Load trigger** | `useEffect` on mount — reads from secure store, dispatches `SET_SETTINGS` |
+| **Server storage** | ❌ Not synced — settings are device-local only |
+| **Conflict resolution** | N/A — local only |
+
+**Saved shape on disk:**
+```json
+{
+  "showPinyin": true,
+  "showDefinition": false,
+  "useTraditional": false,
+  "showTranslation": true,
+  "showQuickGloss": true,
+  "autoPronounce": true,
+  "darkMode": true,
+  "quizMode": false,
+  "l1LangCode": "en",
+  "l2LangCode": "zh"
+}
+```
+
+**All storage keys in the GO app:**
+
+| Key | Storage | Purpose |
+|---|---|---|
+| `userSettings` | `expo-secure-store` | Settings JSON blob |
+| `authToken` | `expo-secure-store` | JWT auth token |
+| `userInfo` | `expo-secure-store` | User profile JSON |
+| `tempPassword` | `expo-secure-store` | Temporary password |
+| `userProgressTime` | `expo-secure-store` | Accumulated watch time (ms) |
+
+`StorageManager` (`src/StorageManager.tsx`) holds in-memory cache for `authToken`, `userInfo`, `userData`, `tempPassword`. `userData` is memory-only (not persisted to disk).
+
+### Change Flow
+
+```
+Component calls dispatch({ type, payload })
+  │
+  │  Three action types:
+  │    SET_SETTINGS    — bulk merge (Partial<SettingsState>)
+  │    TOGGLE_SETTING  — flip a boolean by key name
+  │    SET_L1_LANG_CODE / SET_L2_LANG_CODE
+  │
+  ▼
+useReducer(settingsReducer, initialState)
+  │  State updated
+  │
+  ▼
+useEffect (auto-save)
+  → if (l1LangCode && l2LangCode)
+  → secureStorage.setItemAsync('userSettings', JSON.stringify(settings))
+
+❌ No server sync
+```
+
+**Settings screen** (`app/settings.tsx`): Renders each setting as a `ThemedSwitch`. The screen toggles settings via:
+```typescript
+const { settings, dispatch } = useSettings();
+const toggleSetting = (key: keyof SettingsState) => {
+  dispatch({ type: 'TOGGLE_SETTING', payload: key });
+};
+```
+
+Rendered toggles: `showPinyin`, `useTraditional` (zh only), `showTranslation`, `showQuickGloss`, `quizMode`, `autoPronounce`, `darkMode`.
+
+**Language code sync:** When the user selects L1/L2 on onboarding screens, `LanguageContext.setL1Lang()` / `setL2Lang()` update the language context. `SettingsContext` has `useEffect` watchers that sync the codes from `LanguageContext` into settings state automatically.
+
+### Sync
+
+**Settings are NOT synced to the backend.** Only `UserData` (saved_words + progress) is synced.
+
+`UserDataContext` (`contexts/UserDataContext.tsx`) syncs `saved_words` and `progress` to Directus every 60 seconds (`SYNC_INTERVAL = 60000`). The API calls are in `src/api/directus/user-data.ts`:
+
+```typescript
+// Fetch
+getUserData(authToken?) → GET items/user_data
+// Update
+patchUserData(id, updatedData, authToken?) → PATCH items/user_data/{id}
+// Create
+initializeUserData(authToken?) → POST items/user_data
+```
+
+The `UserData` shape stored in Directus:
+```typescript
+interface UserData {
+  id: string;
+  saved_words: SavedWords;   // { [langCode]: SavedWordMeta[] }
+  progress: Progress;        // { [langCode]: { level?, time } }
+}
+```
+
+Settings (`showPinyin`, `darkMode`, etc.) are **purely device-local**. They do not roam across devices.
+
+### Context Dependencies
+
+The provider nesting order determines how settings flow to other contexts:
+
+```
+LanguageProvider
+  └─ AuthProvider
+      └─ SubscriptionProvider
+          └─ UserDataProvider
+              └─ SettingsProvider        ← depends on LanguageProvider
+                  └─ DictionaryProvider  ← depends on SettingsProvider (useTraditional → OpenCC)
+                      └─ ThemeProvider   ← depends on SettingsProvider (darkMode → theme)
+                          └─ TVShowsProvider
+                              └─ VideoPlayerProvider
+```
+
+- **DictionaryContext** reads `settings.useTraditional` to choose OpenCC converter direction (simplified ↔ traditional)
+- **ThemeContext** reads `settings.darkMode` to set React Navigation theme (DarkTheme / DefaultTheme)
+- **Token** component reads `showPinyin`, `showQuickGloss`, `quizMode`
+- **PopupDictionaryHeader** reads `autoPronounce` to trigger TTS on popup open
+
+### Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     Device                               │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │  expo-secure-store / localStorage (web fallback) │   │
+│  │  userSettings = "{ showPinyin, darkMode, ... }"  │   │
+│  └──────────────┬───────────────────────────────────┘   │
+│                 │ load/save via secureStorage             │
+│  ┌──────────────▼───────────────────────────────────┐   │
+│  │           SettingsContext (useReducer)             │   │
+│  │  state: { showPinyin, darkMode, useTraditional }  │   │
+│  │  dispatch: SET_SETTINGS | TOGGLE_SETTING |        │   │
+│  │            SET_L1_LANG_CODE | SET_L2_LANG_CODE    │   │
+│  └──────────────────────────────────────────────────┘   │
+│                                                          │
+│  ❌ No server sync for settings                          │
+│  ✅ UserDataContext syncs saved_words + progress only     │
+│     (every 60s to Directus user_data)                    │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Navigation Patterns
 
 - **Tab navigation**: 3 tabs (Media, Dictionary, Me) via Expo Router Tabs
