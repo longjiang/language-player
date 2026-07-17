@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { getSampleText } from '@/lib/sample-texts';
 import {
-  BookOpen, Loader2, Globe, FileText, ArrowLeftRight, Sparkles, PenLine,
+  BookOpen, Loader2, Globe, FileText, ArrowLeftRight, Sparkles,
 } from 'lucide-react';
 
 function stripMarkdown(md: string): string {
@@ -53,74 +53,37 @@ export interface ReaderPanelProps {
   l1: { code: string; name: string };
   text: string;
   translation: string;
-  title: string;
   loading: boolean;
   activeTab: 'edit' | 'read';
   showTranslation: boolean;
   urlInput: string;
-  isEditingTitle: boolean;
   blocks: ReaderBlock[] | null;
   blockTokens: LemmatizedToken[][] | null;
   tokenizing: boolean;
   ctx: Partial<SavedWordContext>;
   onTextChange: (text: string) => void;
-  onTitleChange: (title: string) => void;
   onTranslationChange: (translation: string) => void;
   onTabChange: (tab: 'edit' | 'read') => void;
   onUrlInputChange: (url: string) => void;
   onUrlSubmit: (url: string) => void;
   onTokenize: () => void;
   onFillSample: (text: string, title: string) => void;
-  onStartEditingTitle: () => void;
-  onStopEditingTitle: () => void;
 }
 
 export function ReaderPanel({
   l2, l1,
-  text, translation, title, loading,
+  text, translation, loading,
   activeTab, showTranslation, urlInput,
-  isEditingTitle,
   blocks, blockTokens, tokenizing,
   ctx,
-  onTextChange, onTitleChange, onTranslationChange,
+  onTextChange, onTranslationChange,
   onTabChange, onUrlInputChange, onUrlSubmit,
   onTokenize, onFillSample,
-  onStartEditingTitle, onStopEditingTitle,
 }: ReaderPanelProps) {
   const t = useT();
 
   return (
     <div className="min-w-0 flex-1">
-      {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <BookOpen className="h-6 w-6 text-primary" />
-        <div className="min-w-0 flex-1">
-          {isEditingTitle ? (
-            <input
-              autoFocus
-              value={title}
-              onChange={(e) => onTitleChange(e.target.value)}
-              onBlur={onStopEditingTitle}
-              onKeyDown={(e) => { if (e.key === 'Enter') onStopEditingTitle(); }}
-              className="w-full rounded-md border border-primary bg-background px-2 py-1 text-xl font-bold outline-none"
-              maxLength={200}
-            />
-          ) : (
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-xl font-bold truncate">{title || t('title.reader')}</h1>
-              <button
-                onClick={onStartEditingTitle}
-                className="flex-shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                title={t('action.edit')}
-              >
-                <PenLine className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-          <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p>
-        </div>
-      </div>
-
       {/* Main card with tab bar */}
       <div className="rounded-xl border border-border bg-card">
         <div className="flex border-b border-border">

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
   Loader2, Plus, StickyNote, PenLine, Trash2,
-  MoreHorizontal, PanelRightClose, PanelRight,
+  MoreHorizontal,
 } from 'lucide-react';
 
 export interface NotesSidebarProps {
@@ -22,7 +22,6 @@ export interface NotesSidebarProps {
   onNewNote: () => void;
   onRenameNote: (noteId: number, newTitle: string) => Promise<void>;
   onDeleteNote: (noteId: number) => Promise<void>;
-  onToggleSidebar: () => void;
 }
 
 export function NotesSidebar({
@@ -36,7 +35,6 @@ export function NotesSidebar({
   onNewNote,
   onRenameNote,
   onDeleteNote,
-  onToggleSidebar,
 }: NotesSidebarProps) {
   const t = useT();
   const [menuOpen, setMenuOpen] = useState<number | null>(null);
@@ -58,18 +56,6 @@ export function NotesSidebar({
 
   return (
     <>
-      {/* Toggle button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="mt-2 h-8 w-8 flex-shrink-0"
-        onClick={onToggleSidebar}
-        title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
-      >
-        {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
-      </Button>
-
-      {/* Sidebar */}
       <aside className={cn(
         'flex-shrink-0 transition-all duration-200',
         sidebarOpen ? 'w-56' : 'w-0 overflow-hidden',
