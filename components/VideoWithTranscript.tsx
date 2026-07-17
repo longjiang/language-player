@@ -79,7 +79,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
 
   return (
     <View style={isMini ? styles.miniPlayerContainer : styles.fullPlayerContainer}>
-      <View style={isMini ? styles.miniPlayerVideoContainer : styles.fullPlayerVideoContainer}>
+      <View style={isMini ? styles.miniPlayerVideoContainer : null}>
         <YouTubeVideo
           youtubeId={video.youtube_id}
           height={videoHeight}
@@ -128,7 +128,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
       ) : (
         <>
           <VideoControlBar />
-          <View style={{ paddingHorizontal: 26, flex: 1 }}>
+          <View style={{ paddingHorizontal: 26 }}>
             <SyncedTranscript transcriptLimitReached={isProCheckEnabled && !subscriptionIsActive(subscription) && currentLineIndex >= MAX_FREE_LINES} />
           </View>
         </>
