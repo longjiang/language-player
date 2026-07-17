@@ -1,12 +1,11 @@
 // @/components/YouTubeVideo.tsx
 
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import YoutubePlayer, { YoutubeIframeRef } from "react-native-youtube-iframe";
 import { useVideoWithTranscriptContext, VideoWithTranscriptContextType } from "@/contexts/VideoWithTranscriptContext";
 import { View } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { PLAYER_STATES } from "react-native-youtube-iframe";
-import { PLAYER_STATES as APP_STATES } from "@/constants/PlayerStates";
 
 export const YouTubeVideo: React.FC<{
   youtubeId: string;
@@ -53,32 +52,20 @@ export const YouTubeVideo: React.FC<{
     // not in the VideoWithTranscriptProvider
   }
 
-  // Map library string states → context numeric states
-  const LIB_PLAYING = 'playing' as unknown as PLAYER_STATES;
-  const LIB_PAUSED = 'paused' as unknown as PLAYER_STATES;
-
   const onChangeState = useCallback((newState: PLAYER_STATES) => {
     if (!inVideoWithTranscriptProvider) return;
-    // Cast through unknown to pass string states to numeric context
-    updatePlaybackState(newState as unknown as number);
-    if (newState === LIB_PLAYING) {
-      updatePlayVideo(true);
-    } else if (newState === LIB_PAUSED) {
-      updatePlayVideo(false);
+    if (newState !== playbackState) {
+      updatePlaybackState(newState);
+      // Update play state when video starts playing or pauses
+      if (newState === PLAYER_STATES.PLAYING) {
+        updatePlayVideo(true);
+      } else if (newState === PLAYER_STATES.PAUSED) {
+        updatePlayVideo(false);
+      }
     }
-  }, [inVideoWithTranscriptProvider, updatePlaybackState, updatePlayVideo]);
+  }, [inVideoWithTranscriptProvider, playbackState, updatePlaybackState, updatePlayVideo]);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Force remount when play state changes (SDK 54 WebView play prop workaround)
-  const [remountKey, setRemountKey] = useState(0);
-  const prevPlayForRemount = useRef(playVideo);
-  useEffect(() => {
-    if (prevPlayForRemount.current !== playVideo) {
-      prevPlayForRemount.current = playVideo;
-      setRemountKey(k => k + 1);
-    }
-  }, [playVideo]);
 
   if (inVideoWithTranscriptProvider) {
     useEffect(() => {
@@ -90,7 +77,7 @@ export const YouTubeVideo: React.FC<{
         if (!playerRef.current) return;
         if (!inVideoWithTranscriptProvider) return;
         const newTime = await playerRef.current.getCurrentTime();
-        if (playbackState === (APP_STATES.PLAYING as any) && newTime !== currentTime) {
+        if (playbackState === PLAYER_STATES.PLAYING && newTime !== currentTime) {
           updateCurrentTime(newTime);
         }
       }, 200);
@@ -128,9 +115,6 @@ export const YouTubeVideo: React.FC<{
       webViewProps={{
         allowsFullscreenVideo: true,
         allowsInlineMediaPlayback: true,
-        javaScriptEnabled: true,
-        domStorageEnabled: true,
-        mediaPlaybackRequiresUserAction: false,
       }}
       webViewStyle={{
         opacity: 0.99,
@@ -142,11 +126,8 @@ export const YouTubeVideo: React.FC<{
         controls,
         rel: false,
         modestbranding: true,
-        playsinline: 1,
       }}
-        modestbranding: true,
-      }}
-      key={`${youtubeId}-${startTime}-${remountKey}`}
+      key={`${youtubeId}-${startTime}`}
     />
   );
 };
