@@ -1,6 +1,6 @@
 // @/components/YouTubeVideo.tsx
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import YoutubePlayer, { YoutubeIframeRef } from "react-native-youtube-iframe";
 import { useVideoWithTranscriptContext, VideoWithTranscriptContextType } from "@/contexts/VideoWithTranscriptContext";
 import { View } from "react-native";
@@ -70,6 +70,16 @@ export const YouTubeVideo: React.FC<{
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Force remount when play state changes (SDK 54 WebView play prop workaround)
+  const [remountKey, setRemountKey] = useState(0);
+  const prevPlayForRemount = useRef(playVideo);
+  useEffect(() => {
+    if (prevPlayForRemount.current !== playVideo) {
+      prevPlayForRemount.current = playVideo;
+      setRemountKey(k => k + 1);
+    }
+  }, [playVideo]);
+
   if (inVideoWithTranscriptProvider) {
     useEffect(() => {
       if (intervalRef.current) {
@@ -118,6 +128,9 @@ export const YouTubeVideo: React.FC<{
       webViewProps={{
         allowsFullscreenVideo: true,
         allowsInlineMediaPlayback: true,
+        javaScriptEnabled: true,
+        domStorageEnabled: true,
+        mediaPlaybackRequiresUserAction: false,
       }}
       webViewStyle={{
         opacity: 0.99,
@@ -129,8 +142,11 @@ export const YouTubeVideo: React.FC<{
         controls,
         rel: false,
         modestbranding: true,
+        playsinline: 1,
       }}
-      key={`${youtubeId}-${startTime}`}
+        modestbranding: true,
+      }}
+      key={`${youtubeId}-${startTime}-${remountKey}`}
     />
   );
 };
