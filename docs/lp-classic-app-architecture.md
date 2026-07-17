@@ -525,6 +525,222 @@ All user data is stored in localStorage:
 
 On login, data syncs to Directus `user_data` collection.
 
+### Settings Architecture
+
+> **⚠️ LEGACY — DO NOT EDIT.** This documents how Classic settings work. The Next.js migration target design is in `specs/007-settings-architecture.md`.
+
+#### Settings Shape
+
+**File:** `store/settings.js` — Three categories of settings:
+
+**General settings** (`defaultGeneralSettings`) — persisted to localStorage:
+
+```js
+{
+  adminMode: false,
+  skin: "dark",              // "light" | "dark"
+  mode: "subtitles",         // "subtitles" | "transcript"
+  autoPause: false,
+  speed: 1,                  // 0.5 | 0.75 | 1.0
+  karaokeAnimation: true,
+  useSmoothScroll: false,
+  collapsed: false,
+  muteAutoplay: false,
+  subsSearchLimit: true,
+  preferredCategories: [],
+  l2Settings: {},            // ← nested per-language settings (see below)
+}
+```
+
+**Per-L2 settings** (`defaultL2Settings`) — keyed by L2 code inside `l2Settings`:
+
+```js
+{
+  l1: "en",
+  showPinyin: true,
+  showTranslation: true,
+  showDefinition: false,
+  showQuickGloss: true,
+  useTraditional: false,
+  showByeonggi: true,
+  showPinyinForHigherLevelWordsOnly: false,
+  phoneticsOnly: false,
+  zoomLevel: 0,              // 0–7 text size scale
+  useSerif: false,
+  showQuiz: true,
+  autoPronounce: true,
+  quizMode: false,
+  disableAnnotation: false,
+  tvShowFilter: null,
+  categoryFilter: null,
+  corpname: null,
+  voice: null,               // preferred TTS voice name
+}
+```
+
+**Transient settings** (`defaultTransientSettings`) — NOT persisted:
+
+```js
+{
+  l1: undefined,             // L1 language object (runtime)
+  l2: undefined,             // L2 language object (runtime)
+  dictionary: undefined,
+  dictionaryName: undefined,
+  useMachineTranslatedDictionary: false,
+  fullscreen: false,
+  settingsLoaded: false,
+}
+```
+
+The Vuex state merges general + transient: `state = { ...defaultGeneralSettings, ...defaultTransientSettings }`.
+
+#### Storage
+
+| Property | Value |
+|---|---|
+| **Primary store** | Vuex `store/settings.js` |
+| **localStorage key** | `zthSettings` |
+| **Format** | Single JSON blob — general settings with nested `l2Settings[l2Code]` |
+| **Persistence trigger** | Manual — `saveSettingsToStorage()` called inside every mutation |
+| **Load trigger** | `LOAD_JSON_FROM_LOCAL` mutation, called from `layouts/default.vue` on language change |
+| **Server storage** | Directus `user_data.settings` — same JSON blob, stringified |
+| **Conflict resolution** | **Server wins** — `importFromJSON` overwrites localStorage on login |
+| **Validation** | Mutations only accept keys present in `defaultGeneralSettings` / `defaultL2Settings` |
+
+**Saved shape on disk:**
+```json
+{
+  "skin": "dark",
+  "mode": "subtitles",
+  "autoPause": false,
+  "speed": 1,
+  "karaokeAnimation": true,
+  "l2Settings": {
+    "zh": { "l1": "en", "showPinyin": true, "showTranslation": true, "zoomLevel": 0 },
+    "ja": { "l1": "en", "showPinyin": true }
+  }
+}
+```
+
+**Filtering:** `saveSettingsToStorage()` only persists keys present in `defaultGeneralSettings`. Transient keys (`l1`, `l2`, `dictionary`, etc.) are filtered out. But `l2Settings` IS a key in `defaultGeneralSettings`, so the entire nested per-language object is saved.
+
+Other localStorage keys used elsewhere in the app:
+
+| Key | Store Module |
+|---|---|
+| `zthSettings` | `store/settings.js` |
+| `zthSavedWords` | `store/savedWords.js` |
+| `zthProgress` | `store/progress.js` |
+| `zthHistory` | `store/history.js` |
+| `zthBookshelf` | `store/bookshelf.js` |
+| `zthFullHistory` | `store/fullHistory.js` |
+| `zthSavedPhrases` | `store/savedPhrases.js` |
+| `zthSavedHits` | `store/savedHits.js` |
+
+#### Change Flow
+
+Components use the `settingsMixin` (`lib/mixins/settings-mixin.js`) to read/write settings:
+
+```
+Component (v-model="localL2Settings.showPinyin")
+  │  @change → updateL2Settings()
+  │
+  ▼
+settingsMixin.updateL2Settings()
+  │  $store.dispatch("settings/setL2Settings", localL2Settings)
+  │
+  ▼
+Vuex Action: setL2Settings
+  ├─ Commit SET_L2_SETTINGS mutation
+  │    ├─ Validate: only keys in defaultL2Settings are accepted
+  │    ├─ Vue.set(state.l2Settings, l2Code, l2Settings)
+  │    └─ saveSettingsToStorage(state) → localStorage "zthSettings"
+  │
+  └─ dispatch("syncSettingsToServer")
+       └─ PATCH items/user_data/{dataId}
+          { settings: JSON.stringify(state) }
+          └─ Toast: "Settings saved."
+```
+
+Key characteristics:
+- **Deep clone** — mixin clones Vuex state into `localSettings` / `localL2Settings` to avoid mutation warnings
+- **Dual persistence** — every change writes to both localStorage AND Directus
+- **Instant sync** — no debouncing; syncs on every change
+- **Validation** — unknown keys are silently dropped by the mutation
+
+#### Sync Flow
+
+**On login (server → local):**
+```
+1. Plugin directus.js → fetchOrCreateUserData()
+2. GET items/user_data?fields=...,settings,...
+3. store.dispatch("settings/importFromJSON", settings)
+4. SAVE_JSON_FROM_SERVER_TO_LOCAL mutation
+   → Overwrites Vuex state AND localStorage with server blob
+   → Server wins over any local data
+```
+
+**On change (local → server):**
+```
+1. User changes a setting → mutation → saveSettingsToStorage()
+2. Action dispatches syncSettingsToServer()
+3. PATCH items/user_data/{dataId} { settings: JSON.stringify(state) }
+4. Toast: "Settings saved."
+```
+
+**Per-L2 keying:** `state.l2Settings[l2Code]` means a user can have `showPinyin=true` for Chinese but `showPinyin=false` for Japanese. The current L2 code is determined by `$l2.code` from the route.
+
+**CSS integration:** The layout (`layouts/default.vue`) reads settings and adds CSS classes to `<body>`:
+```js
+"show-translation": this.$l2Settings.showTranslation,
+"show-pinyin": this.$l2Settings.showPinyin,
+"show-traditional": this.$l2Settings.useTraditional,
+```
+These classes cascade to show/hide `.translation-line`, `.translated-line`, ruby annotations, etc. — see `QuickSettings/styles.scss`.
+
+#### Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     Browser                              │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │              localStorage                         │   │
+│  │  zthSettings = "{ skin, mode, l2Settings: {...} }"│   │
+│  └──────────────┬───────────────────────────────────┘   │
+│                 │ read/write                              │
+│  ┌──────────────▼───────────────────────────────────┐   │
+│  │           Vuex Store (settings)                   │   │
+│  │  state: { skin, mode, l2Settings: { zh: {...} } } │   │
+│  │  mutations: SET_GENERAL_SETTINGS,                 │   │
+│  │             SET_L2_SETTINGS,                      │   │
+│  │             LOAD_JSON_FROM_LOCAL,                 │   │
+│  │             SAVE_JSON_FROM_SERVER_TO_LOCAL        │   │
+│  │  actions: setGeneralSettings → commit + sync      │   │
+│  │           setL2Settings → commit + sync            │   │
+│  │           syncSettingsToServer → PATCH Directus    │   │
+│  └──────────────┬───────────────────────────────────┘   │
+│                 │                                         │
+│  ┌──────────────▼───────────────────────────────────┐   │
+│  │             settingsMixin                         │   │
+│  │  localSettings ← deepClone(store.settings)        │   │
+│  │  localL2Settings ← deepClone(store.l2Settings)    │   │
+│  │  updateSettings() → dispatch                       │   │
+│  │  updateL2Settings() → dispatch                     │   │
+│  └──────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+                         │
+                         │ HTTP PATCH
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│                    Directus 8                             │
+│  user_data                                               │
+│    id: 123                                               │
+│    settings: '{"skin":"dark","l2Settings":{...}}'        │
+│    saved_words: '[...]'                                  │
+│    progress: '[...]'                                     │
+└─────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## What the Next.js App Should Implement
