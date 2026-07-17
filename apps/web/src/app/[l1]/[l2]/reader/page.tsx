@@ -722,9 +722,9 @@ export default function ReaderPage() {
                 <StickyNote className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
                   <div className="truncate">{note.title || t('msg.untitled_note')}</div>
-                  {note.date_updated && (
+                  {note.created_on && (
                     <div className="text-xs text-muted-foreground">
-                      {new Date(note.date_updated).toLocaleDateString()}
+                      {new Date(note.created_on).toLocaleDateString()}
                     </div>
                   )}
                 </div>
