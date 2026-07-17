@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useSession } from 'next-auth/react';
@@ -291,10 +291,12 @@ function blockClass(tb: TextBlock): string {
 
 export default function ReaderPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { l1, l2 } = useLanguage();
   const t = useT();
   const method = searchParams.get('method');
   const arg = searchParams.get('arg');
+  const noteIdParam = searchParams.get('noteId');
 
   const [text, setText] = useState('');
   const [translation, setTranslation] = useState('');
@@ -322,7 +324,12 @@ export default function ReaderPage() {
   const [notesLoading, setNotesLoading] = useState(false);
   const [notesError, setNotesError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [currentNoteId, setCurrentNoteId] = useState<number | null>(null);
+  const [currentNoteId, setCurrentNoteId] = useState<number | null>(
+    noteIdParam ? Number(noteIdParam) : null,
+  );
+  const [dirty, setDirty] = useState(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const noteLoadedFromUrl = useRef(false);
 
   // Load notes list when authenticated (stable deps — no object refs)
   useEffect(() => {
@@ -337,7 +344,26 @@ export default function ReaderPage() {
     return () => { cancelled = true; };
   }, [session, l2.code]);
 
-  // Load a single note by ID and switch to Read tab
+  // Load note from URL on first mount
+  useEffect(() => {
+    if (noteIdParam && session && !noteLoadedFromUrl.current) {
+      noteLoadedFromUrl.current = true;
+      const id = Number(noteIdParam);
+      setLoading(true);
+      apiClient.get<Note>(`/user-notes/${id}`)
+        .then((note) => {
+          setText(note.text || '');
+          setTranslation(note.translation || '');
+          setTitle(note.title || '');
+          setCurrentNoteId(id);
+          setActiveTab('read');
+        })
+        .catch((err: any) => setError(err?.message || t('msg.failed_to_load_note')))
+        .finally(() => setLoading(false));
+    }
+  }, [noteIdParam, session, t]);
+
+  // Load a single note by ID, switch to Read tab, update URL
   const handleSelectNote = useCallback(async (noteId: number) => {
     setLoading(true);
     setError(null);
@@ -347,23 +373,76 @@ export default function ReaderPage() {
       setTranslation(note.translation || '');
       setTitle(note.title || '');
       setCurrentNoteId(noteId);
+      setDirty(false);
       setActiveTab('read');
+      router.replace(`/${l1.code}/${l2.code}/reader?noteId=${noteId}`, { scroll: false });
     } catch (err: any) {
       setError(err?.message || t('msg.failed_to_load_note'));
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, l1.code, l2.code, router]);
 
-  // Create a new blank note
+  // Create a new blank note via POST, redirect to its URL
   const handleNewNote = useCallback(async () => {
-    // For now, just clear and go to edit tab
-    setText('');
-    setTranslation('');
-    setTitle(t('msg.untitled_note'));
-    setCurrentNoteId(null);
-    setActiveTab('edit');
-  }, [t]);
+    if (!session) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const created = await apiClient.post<Note>('/user-notes', {
+        title: t('msg.untitled_note'),
+        text: '',
+        translation: '',
+        l2: l2.code,
+      });
+      setNotes(prev => [{ id: created.id, title: created.title, created_on: created.created_on }, ...prev]);
+      setText('');
+      setTranslation('');
+      setTitle(t('msg.untitled_note'));
+      setCurrentNoteId(created.id);
+      setDirty(false);
+      setActiveTab('edit');
+      router.replace(`/${l1.code}/${l2.code}/reader?noteId=${created.id}`, { scroll: false });
+    } catch (err: any) {
+      setError(err?.message || 'Failed to create note');
+    } finally {
+      setLoading(false);
+    }
+  }, [session, t, l1.code, l2.code, router]);
+
+  // Mark dirty on text/title/translation changes when editing a persisted note
+  const handleTextChange = useCallback((newText: string) => {
+    setText(newText);
+    if (currentNoteId) setDirty(true);
+  }, [currentNoteId]);
+  const handleTitleChange = useCallback((newTitle: string) => {
+    setTitle(newTitle);
+    if (currentNoteId) setDirty(true);
+  }, [currentNoteId]);
+  const handleTranslationChange = useCallback((newTranslation: string) => {
+    setTranslation(newTranslation);
+    if (currentNoteId) setDirty(true);
+  }, [currentNoteId]);
+
+  // ── Auto-save: debounced PATCH when content changes ──
+  useEffect(() => {
+    if (!currentNoteId || !dirty || !session) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      try {
+        await apiClient.patch(`/user-notes/${currentNoteId}`, {
+          title: title || t('msg.untitled_note'),
+          text,
+          translation,
+        });
+        setDirty(false);
+        setNotes(prev => prev.map(n =>
+          n.id === currentNoteId ? { ...n, title: title || t('msg.untitled_note') } : n,
+        ));
+      } catch { /* silently ignore save errors */ }
+    }, 300);
+    return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
+  }, [text, title, translation, currentNoteId, dirty, session, t]);
 
   // Script conversion effect (Chinese only)
   useEffect(() => {
