@@ -27,6 +27,8 @@ interface TextActionMenuProps {
   alwaysShow?: boolean;
   /** Pre-fetched translation to show inline to the right of children. */
   translation?: string;
+  /** Tailwind classes for the translation element (e.g. match heading size). */
+  translationClass?: string;
   children: ReactNode;
 }
 
@@ -39,6 +41,7 @@ export function TextActionMenu({
   context,
   alwaysShow = false,
   translation,
+  translationClass = '',
   children,
 }: TextActionMenuProps) {
   const { l1 } = useLanguage();
@@ -149,7 +152,7 @@ export function TextActionMenu({
           {children}
         </div>
         {translation && (
-          <div className="flex-1 min-w-0 text-sm text-muted-foreground leading-relaxed pt-1 xl:pt-0">
+          <div className={`flex-1 min-w-0 text-muted-foreground leading-relaxed pt-1 xl:pt-0 ${translationClass}`}>
             {translation}
           </div>
         )}

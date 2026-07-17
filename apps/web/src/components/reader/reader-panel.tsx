@@ -50,6 +50,19 @@ function blockClass(tb: TextBlock): string {
   }
 }
 
+/** Same as blockClass but muted — for translation text */
+function translationClass(tb: TextBlock): string {
+  const b = 'leading-relaxed';
+  switch (tb.type) {
+    case 'heading': {
+      const s: Record<number, string> = { 1: 'text-lg font-semibold', 2: 'text-base font-semibold', 3: 'text-sm font-semibold' };
+      return `${b} ${s[tb.depth ?? 1] ?? 'text-sm font-medium'}`;
+    }
+    case 'blockquote': return `${b} border-l-4 border-muted/40 pl-4 italic`;
+    default: return `${b} text-sm`;
+  }
+}
+
 export interface ReaderPanelProps {
   l2: { code: string; name: string; direction?: string };
   l1: { code: string; name: string };
@@ -301,7 +314,7 @@ export function ReaderPanel({
                         const textBlockIndex = blocks!.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
                         return (
                           <TextActionMenu key={i} text={tb.text} l2Code={l2.code} l1Code={l1.code}
-                            translation={blockTranslations[i]}>
+                            translation={blockTranslations[i]} translationClass={translationClass(tb)}>
                             <Tag className={blockClass(tb)}>
                               <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
                                 tokens={blockTokens[textBlockIndex]} />
