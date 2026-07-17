@@ -1,7 +1,7 @@
 // @/components/PopupDictionaryModal
 
 import React, { useContext, useRef, useImperativeHandle, forwardRef } from 'react';
-import { ScrollView, Dimensions } from 'react-native';
+import { View, ScrollView, Dimensions } from 'react-native';
 import { ThemedRBSheet } from '@/components/ThemedRBSheet';
 import { PopupDictionaryContent } from '@/components/PopupDictionaryContent';
 import { PopupDictionaryHeader } from '@/components/PopupDictionaryHeader';

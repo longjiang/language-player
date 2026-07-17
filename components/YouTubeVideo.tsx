@@ -1,27 +1,21 @@
 // @/components/YouTubeVideo.tsx
-// YouTube player using react-native-youtube-iframe.
 
 import { useRef, useEffect, useCallback } from "react";
 import YoutubePlayer, { YoutubeIframeRef } from "react-native-youtube-iframe";
-import {
-  useVideoWithTranscriptContext,
-} from "@/contexts/VideoWithTranscriptContext";
-import { PLAYER_STATES } from "@/constants/PlayerStates";
+import { useVideoWithTranscriptContext, VideoWithTranscriptContextType } from "@/contexts/VideoWithTranscriptContext";
+import { View } from "react-native";
+import { ThemedText } from "./ThemedText";
+import { PLAYER_STATES } from "react-native-youtube-iframe";
+import { PLAYER_STATES as APP_STATES } from "@/constants/PlayerStates";
 
-// ── Types ──────────────────────────────────────────────────────────────────
-
-interface YouTubeVideoProps {
+export const YouTubeVideo: React.FC<{
   youtubeId: string;
   autoplay?: boolean;
   mute?: boolean;
   startTime?: number;
   height?: number;
   controls?: boolean;
-}
-
-// ── Component ──────────────────────────────────────────────────────────────
-
-export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
+}> = ({
   youtubeId,
   autoplay = false,
   mute = false,
@@ -29,104 +23,114 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
   height = 300,
   controls = true,
 }) => {
-  const playerRef = useRef<YoutubeIframeRef>(null);
-
-  // ── Context ────────────────────────────────────────────────────────────
-  let currentTime = 0;
+  const playerRef = useRef<YoutubeIframeRef>(null); // Correctly type the ref with YoutubeIframeRef
+  let playbackState: PLAYER_STATES = PLAYER_STATES.UNSTARTED;
+  let currentTime: number;
   let inVideoWithTranscriptProvider = false;
   let playVideo = autoplay;
   let seekTime: number | undefined;
-  let resetSeekTime: () => void = () => {};
-  let updatePlaybackState: (state: PLAYER_STATES) => void = () => {};
-  let updateDuration: (duration: number) => void = () => {};
-  let updatePlayVideo: (isPlaying: boolean) => void = () => {};
+  let resetSeekTime: () => void;
+  let updatePlaybackState: (state: PLAYER_STATES) => void;
+  let updateCurrentTime: (time: number, isSeeking?: boolean) => void;
+  let updateDuration: (duration: number) => void;
+  let updatePlayVideo: (isPlaying: boolean) => void;
 
+  // Determine if I'm in the VideoWithTranscriptProvider with try/catch
+  // If in the provider, get the playbackState currentTime values, and the updatePlaybackState, and updateCurrentTime functions
   try {
     const context = useVideoWithTranscriptContext();
+    playbackState = context.playbackState;
     currentTime = context.currentTime;
     resetSeekTime = context.resetSeekTime;
     updatePlaybackState = context.updatePlaybackState;
+    updateCurrentTime = context.updateCurrentTime;
     updateDuration = context.updateDuration;
     playVideo = context.playVideo;
     updatePlayVideo = context.updatePlayVideo;
     inVideoWithTranscriptProvider = true;
     seekTime = context.seekTime;
-  } catch (_error) {
-    // Not wrapped in a VideoWithTranscriptProvider — operate standalone
+  } catch (error) {
+    // not in the VideoWithTranscriptProvider
   }
 
-  // ── Handle seek (context-driven) ───────────────────────────────────────
-  const prevSeekRef = useRef(seekTime);
-  useEffect(() => {
-    if (
-      inVideoWithTranscriptProvider &&
-      seekTime !== undefined &&
-      seekTime !== prevSeekRef.current
-    ) {
-      playerRef.current?.seekTo(currentTime, true);
-      resetSeekTime();
+  // Map library string states → context numeric states
+  const LIB_PLAYING = 'playing' as unknown as PLAYER_STATES;
+  const LIB_PAUSED = 'paused' as unknown as PLAYER_STATES;
+
+  const onChangeState = useCallback((newState: PLAYER_STATES) => {
+    if (!inVideoWithTranscriptProvider) return;
+    // Cast through unknown to pass string states to numeric context
+    updatePlaybackState(newState as unknown as number);
+    if (newState === LIB_PLAYING) {
+      updatePlayVideo(true);
+    } else if (newState === LIB_PAUSED) {
+      updatePlayVideo(false);
     }
-    prevSeekRef.current = seekTime;
-  }, [seekTime, currentTime, inVideoWithTranscriptProvider, resetSeekTime]);
+  }, [inVideoWithTranscriptProvider, updatePlaybackState, updatePlayVideo]);
 
-  // ── Player callbacks ───────────────────────────────────────────────────
-  // The library sends STRING states ('playing', 'paused', etc.) but the app
-  // uses NUMERIC states matching the YouTube IFrame API (1, 2, etc.).
-  const onStateChange = useCallback(
-    (state: string) => {
-      if (!inVideoWithTranscriptProvider) return;
-      // Map library string state → numeric PLAYER_STATES
-      const stateMap: Record<string, PLAYER_STATES> = {
-        playing: PLAYER_STATES.PLAYING,
-        paused: PLAYER_STATES.PAUSED,
-        ended: PLAYER_STATES.ENDED,
-        unstarted: PLAYER_STATES.UNSTARTED,
-        buffering: PLAYER_STATES.BUFFERING,
-        'video cued': PLAYER_STATES.VIDEO_CUED,
-      };
-      const mappedState = stateMap[state] ?? PLAYER_STATES.UNSTARTED;
-      updatePlaybackState(mappedState);
-      if (mappedState === PLAYER_STATES.PLAYING) {
-        updatePlayVideo(true);
-      } else if (mappedState === PLAYER_STATES.PAUSED || mappedState === PLAYER_STATES.ENDED) {
-        updatePlayVideo(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  if (inVideoWithTranscriptProvider) {
+    useEffect(() => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
       }
-    },
-    [inVideoWithTranscriptProvider, updatePlaybackState, updatePlayVideo],
-  );
 
-  const onReady = useCallback(() => {
-    // Player is ready
-  }, []);
+      intervalRef.current = setInterval(async () => {
+        if (!playerRef.current) return;
+        if (!inVideoWithTranscriptProvider) return;
+        const newTime = await playerRef.current.getCurrentTime();
+        if (playbackState === (APP_STATES.PLAYING as any) && newTime !== currentTime) {
+          updateCurrentTime(newTime);
+        }
+      }, 200);
+      
+      if (seekTime && playerRef.current?.seekTo) {
+        playerRef.current.seekTo(currentTime, true);
+        resetSeekTime();
+      }
 
-  const onError = useCallback((error: string) => {
-    console.warn("[YouTubeVideo] Player error:", error);
-  }, []);
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      };
+    }, [playbackState, seekTime, inVideoWithTranscriptProvider, currentTime, updateCurrentTime]);
+  }
 
-  // ── Render ─────────────────────────────────────────────────────────────
-  // react-native-youtube-iframe uses prop-based playback control.
-  // The `play` prop responds to context-controlled playVideo state.
+  const onReady = async () => {
+    if (!inVideoWithTranscriptProvider) return;
+    if (!playerRef.current) return;
+    const duration = await playerRef.current.getDuration();
+    updateDuration(duration);
+  };
+
   return (
     <YoutubePlayer
-      ref={playerRef}
-      key={`${youtubeId}-${startTime}`}
-      height={height}
-      width="100%"
       videoId={youtubeId}
       play={playVideo}
       mute={mute}
-      initialPlayerParams={{
-        controls,
-        start: startTime,
-        modestbranding: true,
-        rel: false,
-        cc_load_policy: true,
-        cc_lang_pref: "us",
-      }}
-      onChangeState={onStateChange}
+      height={height}
+      ref={playerRef}
       onReady={onReady}
-      onError={onError as any}
-      webViewStyle={{ opacity: 0.99 }}
+      onChangeState={onChangeState}
+      webViewProps={{
+        allowsFullscreenVideo: true,
+        allowsInlineMediaPlayback: true,
+      }}
+      webViewStyle={{
+        opacity: 0.99,
+      }}
+      initialPlayerParams={{
+        start: Math.floor(startTime),
+        cc_lang_pref: "us",
+        showClosedCaptions: true,
+        controls,
+        rel: false,
+        modestbranding: true,
+      }}
+      key={`${youtubeId}-${startTime}`}
     />
   );
 };
