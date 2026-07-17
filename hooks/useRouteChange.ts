@@ -11,7 +11,9 @@ export const useRouteChange = (
   useEffect(() => {
     const unsubscribe = navigation.addListener('state', () => {
       const previousRouteName = routeNameRef.current;
-      const currentRouteName = navigation.getCurrentRoute()?.name;
+      // React Navigation v7: use getState() instead of getCurrentRoute()
+      const state = navigation.getState();
+      const currentRouteName = state?.routes[state.index ?? 0]?.name;
 
       if (previousRouteName !== currentRouteName) {
         callback(previousRouteName, currentRouteName);
