@@ -685,6 +685,7 @@
         "today": "Avui",
         "tokenizer_desc": "Tokenització i lematització per {l2}. Mira com es desglossa el text en paraules individuals i les seves formes base.",
         "translated_subtitles": "Subtítols traduïts disponibles",
+        "translating": "Traduint…",
         "tried_lemmas": "Lemes provats",
         "try_again_or_contact": "Torna-ho a provar o posa't en contacte amb nosaltres per obtenir ajuda.",
         "tv_shows_desc": "Explora programes de televisió en {l2} amb subtítols.",

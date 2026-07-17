@@ -68,9 +68,9 @@ export default function ReaderPage() {
   const [translation, setTranslation] = useState('');
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
+  const [translating, setTranslating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('read');
-  const [showTranslation, setShowTranslation] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
@@ -311,18 +311,34 @@ export default function ReaderPage() {
       <div className="flex gap-4">
         <ReaderPanel
           l2={l2} l1={l1}
-          text={text} translation={translation}
-          loading={loading} activeTab={activeTab} showTranslation={showTranslation}
-          urlInput={urlInput}
+          text={text}
+          loading={loading} activeTab={activeTab}
+          urlInput={urlInput} translating={translating}
           blocks={blocks} blockTokens={blockTokens} tokenizing={tokenizing}
           ctx={ctx}
           onTextChange={handleTextChange}
-          onTranslationChange={handleTranslationChange}
           onTabChange={setActiveTab}
           onUrlInputChange={setUrlInput}
           onUrlSubmit={(url) => loadUrl(url, false)}
           onTokenize={handleTokenize}
           onFillSample={(sampleText, sampleTitle) => { setText(sampleText); setTitle(sampleTitle); }}
+          onPageTranslate={async (texts) => {
+            setTranslating(true);
+            try {
+              const res = await fetch(`${PYTHON_API_URL}/translate_array`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ texts, l1: l1.code, l2: l2.code }),
+              });
+              const data = await res.json();
+              return data?.translated_texts ?? [];
+            } catch (e: any) {
+              setError(e?.message || 'Translation failed');
+              return [];
+            } finally {
+              setTranslating(false);
+            }
+          }}
         />
 
         <NotesSidebar

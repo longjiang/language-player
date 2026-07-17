@@ -685,6 +685,7 @@
         "today": "Tänään",
         "tokenizer_desc": "Tokenisaatio + lemmatisointi {l2}-kielelle. Katso, miten teksti jakautuu yksittäisiin sanoihin ja niiden perusmuotoihin.",
         "translated_subtitles": "Käännetty tekstitys saatavilla",
+        "translating": "Käännetään…",
         "tried_lemmas": "Kokeillut lemmaa",
         "try_again_or_contact": "Yritä uudelleen tai ota meihin yhteyttä saadaksesi apua.",
         "tv_shows_desc": "Selaa TV-ohjelmia {l2}-kielellä tekstityksellä.",

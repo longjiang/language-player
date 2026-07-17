@@ -685,6 +685,7 @@
         "today": "Hoje",
         "tokenizer_desc": "Tokenização + lematização para {l2}. Veja como o texto se divide em palavras individuais e suas formas básicas.",
         "translated_subtitles": "Legendas traduzidas disponíveis",
+        "translating": "Traduzindo…",
         "tried_lemmas": "Lemas testados",
         "try_again_or_contact": "Tente novamente ou entre em contato conosco para obter ajuda.",
         "tv_shows_desc": "Navegue por programas de TV em {l2} com legendas.",

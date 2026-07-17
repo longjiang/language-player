@@ -685,6 +685,7 @@
         "today": "Hari ini",
         "tokenizer_desc": "Tokenisasi + lematisasi untuk {l2}. Lihat bagaimana teks dipecah menjadi kata-kata individual dan bentuk dasarnya.",
         "translated_subtitles": "Subtitle terjemahan tersedia",
+        "translating": "Menerjemahkan…",
         "tried_lemmas": "Lemma yang sudah dicoba",
         "try_again_or_contact": "Silakan coba lagi, atau hubungi kami untuk bantuan.",
         "tv_shows_desc": "Jelajahi acara TV di {l2} dengan teks terjemahan.",

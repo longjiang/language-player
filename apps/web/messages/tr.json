@@ -685,6 +685,7 @@
         "today": "Bugün",
         "tokenizer_desc": "{l2} için tokenleştirme + lemmatizasyon. Metnin tek tek sözcüklere ve temel biçimlerine nasıl ayrıldığını görün.",
         "translated_subtitles": "Çevrilmiş altyazılar mevcut",
+        "translating": "Çevriliyor…",
         "tried_lemmas": "Denenmiş lemma",
         "try_again_or_contact": "Lütfen tekrar deneyin veya yardım için bizimle iletişime geçin.",
         "tv_shows_desc": "{l2} dilindeki TV şovlarını altyazılarla keşfedin.",

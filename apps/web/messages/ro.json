@@ -685,6 +685,7 @@
         "today": "Astăzi",
         "tokenizer_desc": "Tokenizare + lematizare pentru {l2}. Vezi cum textul se descompune în cuvinte individuale și formele lor de bază.",
         "translated_subtitles": "Subtitrări traduse disponibile",
+        "translating": "Se traduce…",
         "tried_lemmas": "Leme încercate",
         "try_again_or_contact": "Încearcă din nou sau contactează-ne pentru asistență.",
         "tv_shows_desc": "Navighează prin emisiunile TV în {l2} cu subtitrări.",

@@ -692,6 +692,7 @@
         "today": "Today",
         "tokenizer_desc": "Tokenization + lemmatization for {l2}. See how text breaks down into individual words and their base forms.",
         "translated_subtitles": "Translated subtitles available",
+        "translating": "Translating…",
         "tried_lemmas": "Tried lemmas",
         "try_again_or_contact": "Please try again, or contact us for assistance.",
         "tv_shows_desc": "Browse TV shows in {l2} with subtitles.",

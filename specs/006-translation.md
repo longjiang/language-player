@@ -97,7 +97,7 @@ useReaderTranslation(blocks, l1, l2, enabled)
 
 **Display** (Reader page):
 - When translation toggle is active, each text block renders its L1 translation below the L2 tokenized text
-- Translation appears in a muted, smaller font below the original block
+- Translation appears in a muted, smaller font. For narrower screens they are shown below the original block, and on wider screens they are shown on the right side (or left side if language is RTL).
 - The `TextActionMenu` on each block is independent — the auto-translation covers all blocks; the action menu is for per-block deep-dive (AI explain, re-translate, copy)
 
 **State machine**:

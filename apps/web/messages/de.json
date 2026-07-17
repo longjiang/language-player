@@ -685,6 +685,7 @@
         "today": "Heute",
         "tokenizer_desc": "Tokenisierung + Lemmatisierung für {l2}. Sehen Sie, wie Text in einzelne Wörter und deren Grundformen zerlegt wird.",
         "translated_subtitles": "Übersetzte Untertitel verfügbar",
+        "translating": "Übersetzen…",
         "tried_lemmas": "Ausprobiert: Lemmata",
         "try_again_or_contact": "Bitte versuchen Sie es erneut oder kontaktieren Sie uns für Hilfe.",
         "tv_shows_desc": "Durchsuchen Sie TV-Sendungen in {l2} mit Untertiteln.",

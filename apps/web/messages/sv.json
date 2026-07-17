@@ -685,6 +685,7 @@
         "today": "Idag",
         "tokenizer_desc": "Tokenisering + lemmatisering för {l2}. Se hur text bryts ner i enskilda ord och deras grundformer.",
         "translated_subtitles": "Översatt textning tillgänglig",
+        "translating": "Översätter…",
         "tried_lemmas": "Testade lemman",
         "try_again_or_contact": "Försök igen, eller kontakta oss för hjälp.",
         "tv_shows_desc": "Bläddra bland TV-program på {l2} med undertexter.",

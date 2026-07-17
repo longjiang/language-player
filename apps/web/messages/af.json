@@ -685,6 +685,7 @@
         "today": "Vandag",
         "tokenizer_desc": "Tokenisasie + lemmatisering vir {l2}. Sien hoe teks in individuele woorde en hul basisvorme opbreek.",
         "translated_subtitles": "Vertaalde onderskrifte beskikbaar",
+        "translating": "Vertaal…",
         "tried_lemmas": "Die volgende lemmas is probeer:",
         "try_again_or_contact": "請再試一次，或聯絡我們尋求協助。",
         "tv_shows_desc": "Blaai deur TV-programme in {l2} met onderskrifte.",
