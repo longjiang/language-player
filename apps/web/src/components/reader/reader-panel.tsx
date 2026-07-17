@@ -12,8 +12,8 @@ import { cn } from '@/lib/utils';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { getSampleText } from '@/lib/sample-texts';
 import {
-  BookOpen, Loader2, Globe, FileText, ArrowLeftRight, Sparkles,
-  ChevronLeft, ChevronRight,
+  BookOpen, Loader2, Globe, FileText, Sparkles,
+  ChevronLeft, ChevronRight, Languages,
 } from 'lucide-react';
 
 function stripMarkdown(md: string): string {
@@ -54,33 +54,33 @@ export interface ReaderPanelProps {
   l2: { code: string; name: string; direction?: string };
   l1: { code: string; name: string };
   text: string;
-  translation: string;
   loading: boolean;
   activeTab: 'edit' | 'read';
-  showTranslation: boolean;
   urlInput: string;
+  translating: boolean;
   blocks: ReaderBlock[] | null;
   blockTokens: LemmatizedToken[][] | null;
   tokenizing: boolean;
   ctx: Partial<SavedWordContext>;
   onTextChange: (text: string) => void;
-  onTranslationChange: (translation: string) => void;
   onTabChange: (tab: 'edit' | 'read') => void;
   onUrlInputChange: (url: string) => void;
   onUrlSubmit: (url: string) => void;
   onTokenize: () => void;
   onFillSample: (text: string, title: string) => void;
+  onPageTranslate: (texts: string[]) => Promise<string[]>;
 }
 
 export function ReaderPanel({
   l2, l1,
-  text, translation, loading,
-  activeTab, showTranslation, urlInput,
+  text, loading,
+  activeTab, urlInput,
+  translating,
   blocks, blockTokens, tokenizing,
   ctx,
-  onTextChange, onTranslationChange,
+  onTextChange,
   onTabChange, onUrlInputChange, onUrlSubmit,
-  onTokenize, onFillSample,
+  onTokenize, onFillSample, onPageTranslate,
 }: ReaderPanelProps) {
   const t = useT();
   const measureRef = useRef<HTMLDivElement>(null);
@@ -88,6 +88,7 @@ export function ReaderPanel({
   const [page, setPage] = useState(0);
   const [pageBreaks, setPageBreaks] = useState<number[]>([]);
   const totalPages = Math.max(1, pageBreaks.length + 1);
+  const [blockTranslations, setBlockTranslations] = useState<Record<number, string>>({});
 
   // ── Measure: render all blocks hidden, find page breaks ──
   useEffect(() => {
@@ -124,7 +125,7 @@ export function ReaderPanel({
         setPage(0);
       });
     });
-  }, [text, blocks, blockTokens, showTranslation, activeTab]);
+  }, [text, blocks, blockTokens, activeTab]);
 
   // Get blocks for the current page
   const visibleBlocks = (() => {
@@ -206,11 +207,6 @@ export function ReaderPanel({
                   <Sparkles className="mr-1 h-3.5 w-3.5" />{t('action.tokenize')}
                 </Button>
               </div>
-              {showTranslation && (
-                <textarea value={translation} onChange={(e) => onTranslationChange(e.target.value)}
-                  placeholder={t('placeholder.paste_l1_translation', { l1: l1.name })}
-                  className="min-h-[20vh] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
-              )}
             </div>
           )}
 
@@ -218,9 +214,8 @@ export function ReaderPanel({
           {activeTab === 'read' && text && (
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="min-h-0 flex-1 overflow-auto">
-                <div className={showTranslation ? 'grid grid-cols-2 gap-6' : ''}>
-              <div
-                className="[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4
+                <div
+                  className="[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4
                   [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-3
                   [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2
                   [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mt-3 [&_h4]:mb-1
@@ -237,82 +232,95 @@ export function ReaderPanel({
                   [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:font-mono
                   [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:mb-4
                   [&_hr]:border-border [&_hr]:my-6"
-                lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
-              >
-                {(!visibleBlocks || tokenizing) && (
-                  <>
-                    {tokenizing && (
-                      <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-                        <Loader2 className="h-3 w-3 animate-spin" /> {t('msg.making_words_interactive')}
+                  lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
+                >
+                  {(!visibleBlocks || tokenizing) && (
+                    <>
+                      {tokenizing && (
+                        <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
+                          <Loader2 className="h-3 w-3 animate-spin" /> {t('msg.making_words_interactive')}
+                        </div>
+                      )}
+                      <div>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
                       </div>
-                    )}
-                    <div>
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-                    </div>
-                  </>
-                )}
-                {visibleBlocks && blockTokens && !tokenizing && (
-                  <>
-                    <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-                      <Sparkles className="h-3 w-3" /> {t('msg.tap_any_word_to_lookup')}
-                    </div>
-                    {visibleBlocks.map((block, i) => {
-                      if (block.kind === 'markdown') {
-                        return <div key={i}><ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown></div>;
-                      }
-                      const tb = block as TextBlock;
-                      const Tag = blockTag(tb);
-                      // Find the original index of this block in the full blocks array
-                      const globalIndex = blocks!.indexOf(block);
-                      const textBlockIndex = blocks!.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
-                      return (
-                        <TextActionMenu key={i} text={tb.text} l2Code={l2.code} l1Code={l1.code}>
-                          <Tag className={blockClass(tb)}>
-                            <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
-                              tokens={blockTokens[textBlockIndex]} />
-                          </Tag>
-                        </TextActionMenu>
-                      );
-                    })}
-                  </>
-                )}
-                {!visibleBlocks && (
-                  <TextActionMenu text={stripMarkdown(text)} l2Code={l2.code} l1Code={l1.code}>
-                    <TokenizedText text={stripMarkdown(text)} l2Code={l2.code} textScale={1.15} context={ctx} />
-                  </TextActionMenu>
-                )}
-              </div>
-              {showTranslation && (
-                <div className="rounded-lg border border-border bg-muted/30 p-6 overflow-y-auto">
-                  {translation ? (
-                    <div className="text-sm text-muted-foreground whitespace-pre-wrap">{translation}</div>
-                  ) : (
-                    <div className="flex min-h-[20vh] flex-col items-center justify-center text-center text-sm text-muted-foreground">
-                      <ArrowLeftRight className="mb-2 h-8 w-8 opacity-30" />
-                      <p>{t('msg.no_translation_yet')}</p>
-                      <p className="mt-1 text-xs">
-                        {t.rich('msg.switch_to_edit_tab', { strong: (chunks) => <strong>{chunks}</strong> })}
-                      </p>
-                    </div>
+                    </>
+                  )}
+                  {visibleBlocks && blockTokens && !tokenizing && (
+                    <>
+                      <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
+                        <Sparkles className="h-3 w-3" /> {t('msg.tap_any_word_to_lookup')}
+                      </div>
+                      {visibleBlocks.map((block, i) => {
+                        if (block.kind === 'markdown') {
+                          return <div key={i}><ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown></div>;
+                        }
+                        const tb = block as TextBlock;
+                        const Tag = blockTag(tb);
+                        // Find the original index of this block in the full blocks array
+                        const globalIndex = blocks!.indexOf(block);
+                        const textBlockIndex = blocks!.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
+                        return (
+                          <TextActionMenu key={i} text={tb.text} l2Code={l2.code} l1Code={l1.code}
+                            translation={blockTranslations[i]}>
+                            <Tag className={blockClass(tb)}>
+                              <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
+                                tokens={blockTokens[textBlockIndex]} />
+                            </Tag>
+                          </TextActionMenu>
+                        );
+                      })}
+                    </>
+                  )}
+                  {!visibleBlocks && (
+                    <TextActionMenu text={stripMarkdown(text)} l2Code={l2.code} l1Code={l1.code}>
+                      <TokenizedText text={stripMarkdown(text)} l2Code={l2.code} textScale={1.15} context={ctx} />
+                    </TextActionMenu>
                   )}
                 </div>
-              )}
-            </div>
               </div>
-              {/* Page navigation */}
-              {totalPages > 1 && (
-                <div className="flex-shrink-0 flex items-center justify-center gap-3 border-t border-border py-2 text-xs text-muted-foreground">
-                  <button onClick={prevPage} disabled={page === 0}
-                    className="rounded p-1 hover:bg-muted disabled:opacity-30">
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <span>{page + 1} / {totalPages}</span>
-                  <button onClick={nextPage} disabled={page >= totalPages - 1}
-                    className="rounded p-1 hover:bg-muted disabled:opacity-30">
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
+              {/* Page navigation + translate */}
+              <div className="flex-shrink-0 flex items-center justify-center gap-3 border-t border-border py-2 text-xs text-muted-foreground">
+                <button onClick={prevPage} disabled={page === 0}
+                  className="rounded p-1 hover:bg-muted disabled:opacity-30">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <span>{page + 1} / {totalPages}</span>
+                <button onClick={nextPage} disabled={page >= totalPages - 1}
+                  className="rounded p-1 hover:bg-muted disabled:opacity-30">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                <span className="mx-2 text-muted-foreground/30">|</span>
+                <button
+                  onClick={async () => {
+                    const texts = visibleBlocks
+                      ?.filter((b): b is TextBlock => b.kind === 'text')
+                      .map(b => b.text) ?? [];
+                    if (texts.length === 0) return;
+                    // Clear stale translations for blocks not on this page
+                    setBlockTranslations({});
+                    const translated = await onPageTranslate(texts);
+                    if (translated.length > 0) {
+                      const map: Record<number, string> = {};
+                      const textBlocks = visibleBlocks?.filter((b): b is TextBlock => b.kind === 'text') ?? [];
+                      textBlocks.forEach((_, i) => {
+                        if (i < translated.length) map[i] = translated[i]!;
+                      });
+                      setBlockTranslations(map);
+                    }
+                  }}
+                  disabled={translating || !visibleBlocks}
+                  className="flex items-center gap-1 rounded p-1 hover:bg-muted disabled:opacity-30 transition-colors"
+                  title={t('action.translation')}
+                >
+                  {translating ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Languages className="h-3.5 w-3.5" />
+                  )}
+                  <span>{translating ? t('msg.translating') : t('action.translation')}</span>
+                </button>
+              </div>
             </div>
           )}
 

@@ -685,6 +685,7 @@
         "today": "Inniu",
         "tokenizer_desc": "Tocsainiú + léamú don {l2}. Féach conas a bhriseann téacs síos ina fhocail aonair agus ina bhfoirmeacha bunúsacha.",
         "translated_subtitles": "Fotheidil aistrithe ar fáil",
+        "translating": "Ag aistriú…",
         "tried_lemmas": "Léamanna triailte",
         "try_again_or_contact": "Bain triail eile as, nó déan teagmháil linn le haghaidh cabhrach.",
         "tv_shows_desc": "Brabhsáil cláir theilifíse in {l2} le fotheidil.",

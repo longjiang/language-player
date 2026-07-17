@@ -685,6 +685,7 @@
         "today": "Oggi",
         "tokenizer_desc": "Tokenizzazione + lemmatizzazione per {l2}. Scopri come il testo si scompone in singole parole e le loro forme base.",
         "translated_subtitles": "Sottotitoli tradotti disponibili",
+        "translating": "Traduzione…",
         "tried_lemmas": "Lemmi provati",
         "try_again_or_contact": "Per favore riprova o contattaci per assistenza.",
         "tv_shows_desc": "Sfoglia programmi TV in {l2} con sottotitoli.",

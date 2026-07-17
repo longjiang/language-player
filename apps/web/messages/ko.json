@@ -685,6 +685,7 @@
         "today": "오늘",
         "tokenizer_desc": "{l2}에 대한 토큰화 및 표제어 추출. 텍스트가 개별 단어와 기본 형태로 어떻게 분해되는지 확인하세요.",
         "translated_subtitles": "번역 자막 가능",
+        "translating": "번역 중…",
         "tried_lemmas": "시도한 표제어",
         "try_again_or_contact": "다시 시도하거나 지원을 위해 문의해 주세요.",
         "tv_shows_desc": "자막과 함께 {l2}의 TV 프로그램을 탐색하세요.",

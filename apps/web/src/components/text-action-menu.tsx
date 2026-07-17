@@ -25,6 +25,8 @@ interface TextActionMenuProps {
   context?: string;
   /** Always show the trigger (default: only on hover via group). */
   alwaysShow?: boolean;
+  /** Pre-fetched translation to show inline to the right of children. */
+  translation?: string;
   children: ReactNode;
 }
 
@@ -36,6 +38,7 @@ export function TextActionMenu({
   l1Code,
   context,
   alwaysShow = false,
+  translation,
   children,
 }: TextActionMenuProps) {
   const { l1 } = useLanguage();
@@ -139,9 +142,18 @@ export function TextActionMenu({
   ];
 
   return (
-    <div ref={menuRef} className="group relative">
-      {/* Content */}
-      {children}
+    <div ref={menuRef} className="group relative flex items-start gap-3">
+      {/* Content + inline translation */}
+      <div className="flex-1 min-w-0 flex flex-col xl:flex-row xl:gap-4">
+        <div className="flex-1 min-w-0">
+          {children}
+        </div>
+        {translation && (
+          <div className="flex-1 min-w-0 rounded-lg border border-border bg-muted/20 p-3 text-sm text-muted-foreground leading-relaxed">
+            {translation}
+          </div>
+        )}
+      </div>
 
       {/* Trigger button */}
       <button
@@ -149,8 +161,8 @@ export function TextActionMenu({
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         aria-haspopup="true"
         aria-expanded={open}
-        className={`absolute -right-1 top-0 z-10 flex h-6 w-6 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground ${
-          alwaysShow || open ? 'opacity-100' : 'opacity-30 hover:opacity-100'
+        className={`z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground ${
+          alwaysShow || open ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
         }`}
       >
         <MoreHorizontal className="h-4 w-4" />

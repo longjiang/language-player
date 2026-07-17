@@ -685,6 +685,7 @@
         "today": "Leo",
         "tokenizer_desc": "Uteuzi wa tokeni + uchambuzi wa sarufi kwa {l2}. Tazama jinsi maandishi yanavyogawanyika katika maneno binafsi na maumbo yao ya msingi.",
         "translated_subtitles": "Manukuu yaliyotafsiriwa yanapatikana",
+        "translating": "Inatafsiri…",
         "tried_lemmas": "Majaribio ya lema",
         "try_again_or_contact": "Tafadhali jaribu tena, au wasiliana nasi kwa usaidizi.",
         "tv_shows_desc": "Vinjari vipindi vya TV katika {l2} vilivyo na manukuu.",

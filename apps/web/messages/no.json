@@ -685,6 +685,7 @@
         "today": "I dag",
         "tokenizer_desc": "Tokenisering + lemmatisering for {l2}. Se hvordan tekst brytes ned i enkeltord og deres grunnformer.",
         "translated_subtitles": "Oversatt teksting tilgjengelig",
+        "translating": "Oversetter…",
         "tried_lemmas": "Prøvde lemmaer",
         "try_again_or_contact": "Vennligst prøv igjen, eller kontakt oss for hjelp.",
         "tv_shows_desc": "Bla gjennom TV-serier på {l2} med undertekster.",

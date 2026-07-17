@@ -685,6 +685,7 @@
         "today": "今日",
         "tokenizer_desc": "{l2}のトークン化とレンマ化。テキストがどのように個々の単語とその基本形に分解されるかを確認してください。",
         "translated_subtitles": "翻訳字幕あり",
+        "translating": "翻訳中…",
         "tried_lemmas": "試したレンマ",
         "try_again_or_contact": "もう一度お試しいただくか、サポートにお問い合わせください。",
         "tv_shows_desc": "{l2}のテレビ番組を字幕付きで閲覧する。",

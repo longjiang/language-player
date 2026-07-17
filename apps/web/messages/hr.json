@@ -685,6 +685,7 @@
         "today": "Danas",
         "tokenizer_desc": "Tokenizacija + lematizacija za {l2}. Pogledajte kako se tekst raščlanjuje na pojedinačne riječi i njihove osnovne oblike.",
         "translated_subtitles": "Prevedeni titlovi dostupni",
+        "translating": "Prevođenje…",
         "tried_lemmas": "Isprobane leme",
         "try_again_or_contact": "Pokušajte ponovno ili nas kontaktirajte za pomoć.",
         "tv_shows_desc": "Pregledavajte TV emisije na {l2} s titlovima.",

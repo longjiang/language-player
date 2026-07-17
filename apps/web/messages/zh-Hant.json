@@ -682,6 +682,7 @@
         "today": "今天",
         "tokenizer_desc": "{l2} 的分詞與詞形還原。查看文字如何分解為個別單字及其基本形式。",
         "translated_subtitles": "提供翻譯字幕",
+        "translating": "翻譯中…",
         "tried_lemmas": "已嘗試以下詞條：",
         "try_again_or_contact": "請再試一次，或聯絡我們尋求協助。",
         "tv_shows_desc": "瀏覽 {l2} 的電視節目，附帶字幕。",

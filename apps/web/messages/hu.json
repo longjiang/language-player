@@ -685,6 +685,7 @@
         "today": "Ma",
         "tokenizer_desc": "Tokenizáció és lemmatizáció a következőhöz: {l2}. Lásd, hogyan bomlik le a szöveg egyes szavakra és azok alapformáira.",
         "translated_subtitles": "Fordított feliratok elérhetők",
+        "translating": "Fordítás…",
         "tried_lemmas": "Kipróbált lemmák",
         "try_again_or_contact": "Kérjük, próbáld újra, vagy vedd fel velünk a kapcsolatot segítségért.",
         "tv_shows_desc": "Böngéssz TV-műsorokat a következőben: {l2} felirattal.",
