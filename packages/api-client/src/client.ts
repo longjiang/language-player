@@ -60,6 +60,8 @@ export const apiClient = {
     clientInstance!.post<T>(url, data, config).then((r) => r.data),
   put: <T>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
     clientInstance!.put<T>(url, data, config).then((r) => r.data),
+  patch: <T>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
+    clientInstance!.patch<T>(url, data, config).then((r) => r.data),
   delete: <T>(url: string, config?: AxiosRequestConfig) =>
     clientInstance!.delete<T>(url, config).then((r) => r.data),
 };
