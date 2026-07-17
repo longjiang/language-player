@@ -14,7 +14,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import {
   BookOpen, Loader2, Globe, FileText, ArrowLeftRight, Sparkles,
-  PanelLeftClose, PanelLeft, Plus, StickyNote, PenLine,
+  PanelRightClose, PanelRight, Plus, StickyNote, PenLine,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -460,80 +460,6 @@ export default function ReaderPage() {
 
   return (
     <div className="mx-auto flex max-w-7xl gap-0 px-4 py-6">
-      {/* ── Notes Sidebar ── */}
-      <aside className={cn(
-        'flex-shrink-0 transition-all duration-200',
-        sidebarOpen ? 'w-56' : 'w-0 overflow-hidden',
-      )}>
-        <div className="sticky top-4 rounded-xl border border-border bg-card">
-          {/* Sidebar header */}
-          <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
-            <h3 className="text-sm font-semibold">{t('title.notes')}</h3>
-          </div>
-          {/* New note button */}
-          <div className="px-3 py-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start gap-1.5"
-              onClick={handleNewNote}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              {t('action.new_note')}
-            </Button>
-          </div>
-          {/* Notes list */}
-          <div className="max-h-[calc(100vh-16rem)] overflow-y-auto px-1">
-            {notesLoading && (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              </div>
-            )}
-            {notesError && (
-              <p className="px-3 py-4 text-xs text-red-500">{notesError}</p>
-            )}
-            {!notesLoading && !notesError && notes.length === 0 && session && (
-              <p className="px-3 py-4 text-xs text-muted-foreground">{t('msg.no_notes_yet')}</p>
-            )}
-            {!notesLoading && !session && (
-              <p className="px-3 py-4 text-xs text-muted-foreground">{t('msg.login_to_save_notes')}</p>
-            )}
-            {notes.map((note) => (
-              <button
-                key={note.id}
-                onClick={() => handleSelectNote(note.id)}
-                className={cn(
-                  'flex w-full items-start gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors',
-                  'hover:bg-muted',
-                  currentNoteId === note.id && 'bg-primary/10 text-primary font-medium',
-                )}
-              >
-                <StickyNote className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate">{note.title || t('msg.untitled_note')}</div>
-                  {note.date_updated && (
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(note.date_updated).toLocaleDateString()}
-                    </div>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </aside>
-
-      {/* Sidebar toggle */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="mt-2 h-8 w-8 flex-shrink-0"
-        onClick={() => setSidebarOpen(o => !o)}
-        title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
-      >
-        {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
-      </Button>
-
       {/* ── Main content ── */}
       <div className="min-w-0 flex-1">
         {/* Header */}
@@ -740,6 +666,80 @@ export default function ReaderPage() {
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950">{error}</div>
       )}
       </div>
+
+      {/* Sidebar toggle */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="mt-2 h-8 w-8 flex-shrink-0"
+        onClick={() => setSidebarOpen(o => !o)}
+        title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
+      >
+        {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
+      </Button>
+
+      {/* ── Notes Sidebar ── */}
+      <aside className={cn(
+        'flex-shrink-0 transition-all duration-200',
+        sidebarOpen ? 'w-56' : 'w-0 overflow-hidden',
+      )}>
+        <div className="sticky top-4 rounded-xl border border-border bg-card">
+          {/* Sidebar header */}
+          <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
+            <h3 className="text-sm font-semibold">{t('title.notes')}</h3>
+          </div>
+          {/* New note button */}
+          <div className="px-3 py-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start gap-1.5"
+              onClick={handleNewNote}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              {t('action.new_note')}
+            </Button>
+          </div>
+          {/* Notes list */}
+          <div className="max-h-[calc(100vh-16rem)] overflow-y-auto px-1">
+            {notesLoading && (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {notesError && (
+              <p className="px-3 py-4 text-xs text-red-500">{notesError}</p>
+            )}
+            {!notesLoading && !notesError && notes.length === 0 && session && (
+              <p className="px-3 py-4 text-xs text-muted-foreground">{t('msg.no_notes_yet')}</p>
+            )}
+            {!notesLoading && !session && (
+              <p className="px-3 py-4 text-xs text-muted-foreground">{t('msg.login_to_save_notes')}</p>
+            )}
+            {notes.map((note) => (
+              <button
+                key={note.id}
+                onClick={() => handleSelectNote(note.id)}
+                className={cn(
+                  'flex w-full items-start gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors',
+                  'hover:bg-muted',
+                  currentNoteId === note.id && 'bg-primary/10 text-primary font-medium',
+                )}
+              >
+                <StickyNote className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate">{note.title || t('msg.untitled_note')}</div>
+                  {note.date_updated && (
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(note.date_updated).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
