@@ -9,7 +9,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { LemmatizedToken, SavedWordContext, NoteListItem, Note } from '@langplayer/shared';
-import { useNotes } from '@langplayer/api-client';
+import { apiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import {
@@ -318,38 +318,31 @@ export default function ReaderPage() {
 
   // ── Notes sidebar ──
   const { data: session } = useSession();
-  const { listNotes, getNote } = useNotes();
   const [notes, setNotes] = useState<NoteListItem[]>([]);
   const [notesLoading, setNotesLoading] = useState(false);
   const [notesError, setNotesError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentNoteId, setCurrentNoteId] = useState<number | null>(null);
 
-  // Load notes list when authenticated
-  const loadNotes = useCallback(async () => {
+  // Load notes list when authenticated (stable deps — no object refs)
+  useEffect(() => {
     if (!session) return;
+    let cancelled = false;
     setNotesLoading(true);
     setNotesError(null);
-    try {
-      const result = await listNotes(l2.code);
-      setNotes(result);
-    } catch (err: any) {
-      setNotesError(err?.message || 'Failed to load notes');
-    } finally {
-      setNotesLoading(false);
-    }
-  }, [session, l2.code, listNotes]);
-
-  useEffect(() => {
-    loadNotes();
-  }, [loadNotes]);
+    apiClient.get<NoteListItem[]>('/user-notes', { params: { l2: l2.code } })
+      .then((result) => { if (!cancelled) setNotes(result); })
+      .catch((err: any) => { if (!cancelled) setNotesError(err?.message || 'Failed to load notes'); })
+      .finally(() => { if (!cancelled) setNotesLoading(false); });
+    return () => { cancelled = true; };
+  }, [session, l2.code]);
 
   // Load a single note by ID and switch to Read tab
   const handleSelectNote = useCallback(async (noteId: number) => {
     setLoading(true);
     setError(null);
     try {
-      const note: Note = await getNote(noteId);
+      const note = await apiClient.get<Note>(`/user-notes/${noteId}`);
       setText(note.text || '');
       setTranslation(note.translation || '');
       setTitle(note.title || '');
@@ -360,7 +353,7 @@ export default function ReaderPage() {
     } finally {
       setLoading(false);
     }
-  }, [getNote, t]);
+  }, [t]);
 
   // Create a new blank note
   const handleNewNote = useCallback(async () => {
