@@ -83,32 +83,54 @@ export function ReaderPanel({
   onTokenize, onFillSample,
 }: ReaderPanelProps) {
   const t = useT();
-  const readContentRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
+  const [pageBreaks, setPageBreaks] = useState<number[]>([]);
+  const totalPages = Math.max(1, pageBreaks.length + 1);
 
-  // Recalculate total pages when content changes
+  // ── Measure: render all blocks hidden, find page breaks ──
   useEffect(() => {
-    if (activeTab !== 'read' || !readContentRef.current) { setPage(0); return; }
-    const el = readContentRef.current;
-    // Reset scroll to measure total height
-    el.scrollTop = 0;
+    if (activeTab !== 'read' || !measureRef.current || !text) return;
+    const container = measureRef.current;
+    container.style.width = containerRef.current?.clientWidth + 'px' || '100%';
+
     requestAnimationFrame(() => {
-      const pages = Math.max(1, Math.ceil(el.scrollHeight / el.clientHeight));
-      setTotalPages(pages);
-      setPage(0);
+      requestAnimationFrame(() => {
+        const children = Array.from(container.children) as HTMLElement[];
+        if (children.length === 0) { setPageBreaks([]); setPage(0); return; }
+
+        const maxHeight = container.clientHeight || window.innerHeight - 160;
+        const breaks: number[] = [];
+        let accumulated = 0;
+
+        for (let i = 0; i < children.length; i++) {
+          const el = children[i]!;
+          const h = el.offsetHeight + parseFloat(getComputedStyle(el).marginTop) + parseFloat(getComputedStyle(el).marginBottom);
+          if (accumulated + h > maxHeight && accumulated > 0) {
+            breaks.push(i);
+            accumulated = h;
+          } else {
+            accumulated += h;
+          }
+        }
+
+        setPageBreaks(breaks);
+        setPage(0);
+      });
     });
   }, [text, blocks, blockTokens, showTranslation, activeTab]);
 
-  const goToPage = useCallback((newPage: number) => {
-    if (!readContentRef.current) return;
-    const el = readContentRef.current;
-    el.scrollTo({ top: newPage * el.clientHeight, behavior: 'smooth' });
-    setPage(newPage);
-  }, []);
+  // Get blocks for the current page
+  const visibleBlocks = (() => {
+    if (!blocks || pageBreaks.length === 0) return blocks;
+    const start = page === 0 ? 0 : pageBreaks[page - 1]!;
+    const end = page < pageBreaks.length ? pageBreaks[page]! : blocks.length;
+    return blocks.slice(start, end);
+  })();
 
-  const prevPage = useCallback(() => { if (page > 0) goToPage(page - 1); }, [page, goToPage]);
-  const nextPage = useCallback(() => { if (page < totalPages - 1) goToPage(page + 1); }, [page, totalPages, goToPage]);
+  const prevPage = useCallback(() => { if (page > 0) setPage(p => p - 1); }, [page]);
+  const nextPage = useCallback(() => { if (page < totalPages - 1) setPage(p => p + 1); }, [page, totalPages]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -146,7 +168,7 @@ export function ReaderPanel({
           </button>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col p-4">
+        <div ref={containerRef} className="flex min-h-0 flex-1 flex-col p-4">
           {/* URL input */}
           <form onSubmit={(e) => { e.preventDefault(); if (urlInput.trim()) onUrlSubmit(urlInput.trim()); }} className="mb-4 flex gap-2">
             <div className="relative flex-1">
@@ -190,10 +212,7 @@ export function ReaderPanel({
           {/* Read mode — paginated */}
           {activeTab === 'read' && text && (
             <div className="flex min-h-0 flex-1 flex-col">
-              <div
-                ref={readContentRef}
-                className="min-h-0 flex-1 overflow-hidden"
-              >
+              <div className="min-h-0 flex-1 overflow-auto">
                 <div className={showTranslation ? 'grid grid-cols-2 gap-6' : ''}>
               <div
                 className="[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4
@@ -215,7 +234,7 @@ export function ReaderPanel({
                   [&_hr]:border-border [&_hr]:my-6"
                 lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
               >
-                {(!blocks || tokenizing) && (
+                {(!visibleBlocks || tokenizing) && (
                   <>
                     {tokenizing && (
                       <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
@@ -227,18 +246,20 @@ export function ReaderPanel({
                     </div>
                   </>
                 )}
-                {blocks && blockTokens && !tokenizing && (
+                {visibleBlocks && blockTokens && !tokenizing && (
                   <>
                     <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
                       <Sparkles className="h-3 w-3" /> {t('msg.tap_any_word_to_lookup')}
                     </div>
-                    {blocks.map((block, i) => {
+                    {visibleBlocks.map((block, i) => {
                       if (block.kind === 'markdown') {
                         return <div key={i}><ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown></div>;
                       }
                       const tb = block as TextBlock;
                       const Tag = blockTag(tb);
-                      const textBlockIndex = blocks.slice(0, i).filter((b): b is TextBlock => b.kind === 'text').length;
+                      // Find the original index of this block in the full blocks array
+                      const globalIndex = blocks!.indexOf(block);
+                      const textBlockIndex = blocks!.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
                       return (
                         <TextActionMenu key={i} text={tb.text} l2Code={l2.code} l1Code={l1.code}>
                           <Tag className={blockClass(tb)}>
@@ -250,7 +271,7 @@ export function ReaderPanel({
                     })}
                   </>
                 )}
-                {!blocks && (
+                {!visibleBlocks && (
                   <TextActionMenu text={stripMarkdown(text)} l2Code={l2.code} l1Code={l1.code}>
                     <TokenizedText text={stripMarkdown(text)} l2Code={l2.code} textScale={1.15} context={ctx} />
                   </TextActionMenu>
@@ -289,6 +310,29 @@ export function ReaderPanel({
               )}
             </div>
           )}
+
+          {/* Hidden measuring div — renders ALL blocks to calculate page breaks */}
+          <div
+            ref={measureRef}
+            aria-hidden="true"
+            className="absolute left-0 top-0 -z-10 opacity-0 pointer-events-none"
+            style={{ width: '100%' }}
+          >
+            {activeTab === 'read' && blocks && blockTokens && !tokenizing && blocks.map((block, i) => {
+              if (block.kind === 'markdown') {
+                return <div key={i}><ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown></div>;
+              }
+              const tb = block as TextBlock;
+              const Tag = blockTag(tb);
+              // Calculate textBlockIndex from the FULL blocks array
+              const textBlockIndex = blocks.slice(0, i).filter((b): b is TextBlock => b.kind === 'text').length;
+              return (
+                <Tag key={i} className={blockClass(tb)}>
+                  {tb.text}
+                </Tag>
+              );
+            })}
+          </div>
 
           {/* Empty state */}
           {activeTab === 'read' && !text && !loading && (
