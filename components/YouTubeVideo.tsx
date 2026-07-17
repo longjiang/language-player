@@ -1,7 +1,7 @@
 // @/components/YouTubeVideo.tsx
 // YouTube player using react-native-youtube-iframe.
 
-import { useRef, useEffect, useCallback, useMemo } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import YoutubePlayer, { YoutubeIframeRef } from "react-native-youtube-iframe";
 import {
   useVideoWithTranscriptContext,
@@ -32,24 +32,20 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
   const playerRef = useRef<YoutubeIframeRef>(null);
 
   // ── Context ────────────────────────────────────────────────────────────
-  let playbackState: PLAYER_STATES = PLAYER_STATES.UNSTARTED;
   let currentTime = 0;
   let inVideoWithTranscriptProvider = false;
   let playVideo = autoplay;
   let seekTime: number | undefined;
   let resetSeekTime: () => void = () => {};
   let updatePlaybackState: (state: PLAYER_STATES) => void = () => {};
-  let updateCurrentTime: (time: number, isSeeking?: boolean) => void = () => {};
   let updateDuration: (duration: number) => void = () => {};
   let updatePlayVideo: (isPlaying: boolean) => void = () => {};
 
   try {
     const context = useVideoWithTranscriptContext();
-    playbackState = context.playbackState;
     currentTime = context.currentTime;
     resetSeekTime = context.resetSeekTime;
     updatePlaybackState = context.updatePlaybackState;
-    updateCurrentTime = context.updateCurrentTime;
     updateDuration = context.updateDuration;
     playVideo = context.playVideo;
     updatePlayVideo = context.updatePlayVideo;
@@ -59,20 +55,7 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
     // Not wrapped in a VideoWithTranscriptProvider — operate standalone
   }
 
-  // ── Sync play / pause ──────────────────────────────────────────────────
-  const prevPlayRef = useRef(playVideo);
-  useEffect(() => {
-    if (prevPlayRef.current !== playVideo) {
-      if (playVideo) {
-        playerRef.current?.play();
-      } else {
-        playerRef.current?.pause();
-      }
-    }
-    prevPlayRef.current = playVideo;
-  }, [playVideo]);
-
-  // ── Handle seek (context-driven) ───────────────────────────────────────
+  // ── Handle seek (context-driven) via native YouTube IFrame API ─────────
   const prevSeekRef = useRef(seekTime);
   useEffect(() => {
     if (
@@ -80,7 +63,10 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
       seekTime !== undefined &&
       seekTime !== prevSeekRef.current
     ) {
-      playerRef.current?.seekTo(currentTime, true);
+      const internalPlayer = playerRef.current?.getInternalPlayer();
+      if (internalPlayer && typeof internalPlayer.seekTo === "function") {
+        internalPlayer.seekTo(currentTime, true);
+      }
       resetSeekTime();
     }
     prevSeekRef.current = seekTime;
@@ -103,23 +89,16 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
   );
 
   const onReady = useCallback(() => {
-    // Player is ready — no action needed, autoplay is set via initialPlay prop
+    // Player is ready
   }, []);
 
   const onError = useCallback((error: string) => {
     console.warn("[YouTubeVideo] Player error:", error);
   }, []);
 
-  // ── Shared style ───────────────────────────────────────────────────────
-  const playerStyle = useMemo(
-    () => ({
-      height,
-      width: "100%" as const,
-    }),
-    [height],
-  );
-
   // ── Render ─────────────────────────────────────────────────────────────
+  // react-native-youtube-iframe uses prop-based playback control.
+  // The `play` prop responds to context-controlled playVideo state.
   return (
     <YoutubePlayer
       ref={playerRef}
@@ -127,7 +106,8 @@ export const YouTubeVideo: React.FC<YouTubeVideoProps> = ({
       height={height}
       width="100%"
       videoId={youtubeId}
-      play={autoplay}
+      play={playVideo}
+      mute={mute}
       initialPlayerParams={{
         controls,
         start: startTime,
