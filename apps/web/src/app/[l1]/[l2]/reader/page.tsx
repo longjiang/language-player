@@ -297,6 +297,7 @@ export default function ReaderPage() {
   const method = searchParams.get('method');
   const arg = searchParams.get('arg');
   const noteIdParam = searchParams.get('noteId');
+  const urlParam = searchParams.get('url');
 
   const [text, setText] = useState('');
   const [translation, setTranslation] = useState('');
@@ -488,7 +489,7 @@ export default function ReaderPage() {
     return () => { cancelled = true; };
   }, [blocks, l2.code]);
 
-  // Load text from localStorage or query params
+  // Load text from localStorage, query params, or url param
   useEffect(() => {
     const storedText = localStorage.getItem(READER_TEXT_KEY);
     const storedTitle = localStorage.getItem(READER_TITLE_KEY);
@@ -497,6 +498,9 @@ export default function ReaderPage() {
       localStorage.removeItem(READER_TEXT_KEY); localStorage.removeItem(READER_TITLE_KEY);
       setActiveTab('read'); return;
     }
+    // New simplified URL: ?url=...
+    if (urlParam) { loadUrl(decodeURIComponent(urlParam), false); return; }
+    // Legacy: ?method=...&arg=...
     if (method && arg) {
       if (['md', 'html', 'txt'].includes(method)) { setText(decodeURIComponent(arg)); setActiveTab('read'); }
       else if (method === 'md-url') loadUrl(arg, true);
@@ -506,6 +510,8 @@ export default function ReaderPage() {
 
   const loadUrl = async (url: string, isMarkdown: boolean) => {
     setLoading(true); setError(null);
+    // Persist URL in browser address bar
+    router.replace(`/${l1.code}/${l2.code}/reader?url=${encodeURIComponent(url)}`, { scroll: false });
     try {
       const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(url)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
