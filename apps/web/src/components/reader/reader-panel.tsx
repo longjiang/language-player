@@ -93,8 +93,12 @@ export function ReaderPanel({
   useEffect(() => {
     if (activeTab !== 'read' || !measureRef.current || !text) return;
     const container = measureRef.current;
-    container.style.width = containerRef.current?.clientWidth + 'px' || '100%';
+    const contentWidth = containerRef.current?.clientWidth;
+    container.style.width = contentWidth ? contentWidth + 'px' : '100%';
+    // Ensure measuring div has the same height as the viewport
+    container.style.height = (containerRef.current?.clientHeight || window.innerHeight - 160) + 'px';
 
+    // Double rAF to ensure layout is complete
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const children = Array.from(container.children) as HTMLElement[];
@@ -106,7 +110,8 @@ export function ReaderPanel({
 
         for (let i = 0; i < children.length; i++) {
           const el = children[i]!;
-          const h = el.offsetHeight + parseFloat(getComputedStyle(el).marginTop) + parseFloat(getComputedStyle(el).marginBottom);
+          const style = getComputedStyle(el);
+          const h = el.offsetHeight + parseFloat(style.marginTop || '0') + parseFloat(style.marginBottom || '0');
           if (accumulated + h > maxHeight && accumulated > 0) {
             breaks.push(i);
             accumulated = h;
@@ -168,7 +173,7 @@ export function ReaderPanel({
           </button>
         </div>
 
-        <div ref={containerRef} className="flex min-h-0 flex-1 flex-col p-4">
+        <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col p-4">
           {/* URL input */}
           <form onSubmit={(e) => { e.preventDefault(); if (urlInput.trim()) onUrlSubmit(urlInput.trim()); }} className="mb-4 flex gap-2">
             <div className="relative flex-1">
@@ -315,8 +320,8 @@ export function ReaderPanel({
           <div
             ref={measureRef}
             aria-hidden="true"
-            className="absolute left-0 top-0 -z-10 opacity-0 pointer-events-none"
-            style={{ width: '100%' }}
+            className="absolute inset-x-0 top-0 -z-10 overflow-hidden opacity-0 pointer-events-none"
+            style={{ height: '100%' }}
           >
             {activeTab === 'read' && blocks && blockTokens && !tokenizing && blocks.map((block, i) => {
               if (block.kind === 'markdown') {
