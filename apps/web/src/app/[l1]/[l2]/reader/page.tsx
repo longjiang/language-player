@@ -445,6 +445,29 @@ export default function ReaderPage() {
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
   }, [text, title, translation, currentNoteId, dirty, session, t]);
 
+  // Flush pending auto-save immediately (used before switching to Read tab)
+  const saveNow = useCallback(async () => {
+    if (!currentNoteId || !dirty || !session) return;
+    if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
+    try {
+      await apiClient.patch(`/user-notes/${currentNoteId}`, {
+        title: title || t('msg.untitled_note'),
+        text,
+        translation,
+      });
+      setDirty(false);
+      setNotes(prev => prev.map(n =>
+        n.id === currentNoteId ? { ...n, title: title || t('msg.untitled_note') } : n,
+      ));
+    } catch { /* silently ignore save errors */ }
+  }, [currentNoteId, dirty, session, text, title, translation, t]);
+
+  // Save (if needed) then switch to Read tab for tokenization
+  const handleTokenize = useCallback(async () => {
+    await saveNow();
+    setActiveTab('read');
+  }, [saveNow]);
+
   // Script conversion effect (Chinese only)
   useEffect(() => {
     if (!isChinese || !text.trim() || !useTraditional) {
@@ -566,7 +589,7 @@ export default function ReaderPage() {
             {t('action.edit')}
           </button>
           <button
-            onClick={() => setActiveTab('read')}
+            onClick={handleTokenize}
             className={cn(
               'flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors',
               activeTab === 'read'
@@ -596,7 +619,7 @@ export default function ReaderPage() {
       {/* Edit mode */}
       {activeTab === 'edit' && (
         <div className="space-y-3">
-          <textarea value={text} onChange={(e) => setText(e.target.value)}
+          <textarea value={text} onChange={(e) => handleTextChange(e.target.value)}
             placeholder={t('placeholder.paste_l2_text', { l2: l2.name })}
             className="min-h-[40vh] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'} lang={l2.code} />
@@ -618,14 +641,14 @@ export default function ReaderPage() {
             <Button
               size="sm"
               className="flex-1"
-              onClick={() => setActiveTab('read')}
+              onClick={handleTokenize}
             >
               <Sparkles className="mr-1 h-3.5 w-3.5" />
               {t('action.tokenize')}
             </Button>
           </div>
           {showTranslation && (
-            <textarea value={translation} onChange={(e) => setTranslation(e.target.value)}
+            <textarea value={translation} onChange={(e) => handleTranslationChange(e.target.value)}
               placeholder={t('placeholder.paste_l1_translation', { l1: l1.name })}
               className="min-h-[20vh] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
           )}
