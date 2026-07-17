@@ -340,7 +340,7 @@ export default function ReaderPage() {
     setNotesLoading(true);
     setNotesError(null);
     apiClient.get<NoteListItem[]>('/user-notes', { params: { l2: l2.code } })
-      .then((result) => { if (!cancelled) setNotes(result); })
+      .then((result) => { if (!cancelled) setNotes(result.sort((a, b) => (b.created_on || '').localeCompare(a.created_on || ''))); })
       .catch((err: any) => { if (!cancelled) setNotesError(err?.message || 'Failed to load notes'); })
       .finally(() => { if (!cancelled) setNotesLoading(false); });
     return () => { cancelled = true; };
