@@ -232,6 +232,12 @@ export const youtubeVideoCardStyles = StyleSheet.create({
 export const videoWithTranscriptStyles = StyleSheet.create({
   headerButton: { padding: 8 },
   header: { flexDirection: "row", justifyContent: "space-between", paddingTop: 40, paddingBottom: 8 },
+  fullPlayerContainer: {
+    flex: 1,
+  },
+  fullPlayerVideoContainer: {
+    overflow: "hidden",
+  },
   miniPlayerVideoInfo: {
     overflow: "hidden", // Ensures overflow is hidden
   },
