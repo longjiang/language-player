@@ -149,7 +149,7 @@ export function TextActionMenu({
           {children}
         </div>
         {translation && (
-          <div className="flex-1 min-w-0 rounded-lg border border-border bg-muted/20 p-3 text-sm text-muted-foreground leading-relaxed">
+          <div className="flex-1 min-w-0 text-sm text-muted-foreground leading-relaxed pt-1 xl:pt-0">
             {translation}
           </div>
         )}
