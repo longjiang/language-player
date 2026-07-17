@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams, useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -15,6 +16,7 @@ import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-mar
 import {
   BookOpen, Loader2, Globe, FileText, ArrowLeftRight, Sparkles,
   PanelRightClose, PanelRight, Plus, StickyNote, PenLine,
+  MoreHorizontal, Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -425,6 +427,37 @@ export default function ReaderPage() {
     setTranslation(newTranslation);
     if (currentNoteId) setDirty(true);
   }, [currentNoteId]);
+
+  // ── Note action menu state ──
+  const [menuOpen, setMenuOpen] = useState<number | null>(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
+  const menuBtnRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
+
+  // Rename a note via prompt
+  const handleRenameNote = useCallback(async (noteId: number, currentTitle: string) => {
+    setMenuOpen(null);
+    const newTitle = prompt(t('action.rename'), currentTitle);
+    if (!newTitle || newTitle.trim() === '' || newTitle.trim() === currentTitle) return;
+    try {
+      await apiClient.patch(`/user-notes/${noteId}`, { title: newTitle.trim() });
+      setNotes(prev => prev.map(n => n.id === noteId ? { ...n, title: newTitle.trim() } : n));
+      if (currentNoteId === noteId) setTitle(newTitle.trim());
+    } catch { /* ignore */ }
+  }, [t, currentNoteId]);
+
+  // Delete a note with confirmation
+  const handleDeleteNote = useCallback(async (noteId: number) => {
+    setMenuOpen(null);
+    if (!confirm(t('msg.confirm_delete_note'))) return;
+    try {
+      await apiClient.delete(`/user-notes/${noteId}`);
+      setNotes(prev => prev.filter(n => n.id !== noteId));
+      if (currentNoteId === noteId) {
+        setText(''); setTranslation(''); setTitle(''); setCurrentNoteId(null);
+        router.replace(`/${l1.code}/${l2.code}/reader`, { scroll: false });
+      }
+    } catch { /* ignore */ }
+  }, [t, currentNoteId, l1.code, l2.code, router]);
 
   // ── Auto-save: debounced PATCH when content changes ──
   useEffect(() => {
@@ -840,14 +873,14 @@ export default function ReaderPage() {
               <p className="px-3 py-4 text-xs text-muted-foreground">{t('msg.login_to_save_notes')}</p>
             )}
             {notes.map((note) => (
-              <button
+              <div
                 key={note.id}
-                onClick={() => handleSelectNote(note.id)}
                 className={cn(
-                  'flex w-full items-start gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors',
+                  'group flex w-full items-start gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors cursor-pointer',
                   'hover:bg-muted',
                   currentNoteId === note.id && 'bg-primary/10 text-primary font-medium',
                 )}
+                onClick={() => handleSelectNote(note.id)}
               >
                 <StickyNote className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
@@ -858,8 +891,45 @@ export default function ReaderPage() {
                     </div>
                   )}
                 </div>
-              </button>
+                <button
+                  ref={(el) => { if (el) menuBtnRefs.current.set(note.id, el); else menuBtnRefs.current.delete(note.id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                    setMenuOpen(menuOpen === note.id ? null : note.id);
+                  }}
+                  className="flex-shrink-0 rounded p-0.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-muted transition-all"
+                  title={t('action.more')}
+                >
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                </button>
+              </div>
             ))}
+            {/* Portal action menu */}
+            {menuOpen !== null && typeof document !== 'undefined' && createPortal(
+              <div className="fixed inset-0 z-50" onClick={() => setMenuOpen(null)}>
+                <div
+                  className="absolute rounded-lg border border-border bg-card p-1 shadow-lg"
+                  style={{ top: menuPos.top, right: menuPos.right, minWidth: 140 }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => handleRenameNote(menuOpen, notes.find(n => n.id === menuOpen)?.title || '')}
+                    className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  >
+                    <PenLine className="h-3.5 w-3.5" /> {t('action.rename')}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteNote(menuOpen)}
+                    className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> {t('action.delete')}
+                  </button>
+                </div>
+              </div>,
+              document.body,
+            )}
           </div>
         </div>
       </aside>
