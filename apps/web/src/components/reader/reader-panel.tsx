@@ -90,6 +90,15 @@ export function ReaderPanel({
   const totalPages = Math.max(1, pageBreaks.length + 1);
   const [blockTranslations, setBlockTranslations] = useState<Record<number, string>>({});
 
+  // Clear translations when blocks change (new note / re-tokenize / page turn)
+  const prevBlocksRef = useRef(blocks);
+  useEffect(() => {
+    if (prevBlocksRef.current !== blocks) {
+      setBlockTranslations({});
+      prevBlocksRef.current = blocks;
+    }
+  }, [blocks]);
+
   // ── Measure: render all blocks hidden, find page breaks ──
   useEffect(() => {
     if (activeTab !== 'read' || !measureRef.current || !text) return;
@@ -135,8 +144,8 @@ export function ReaderPanel({
     return blocks.slice(start, end);
   })();
 
-  const prevPage = useCallback(() => { if (page > 0) setPage(p => p - 1); }, [page]);
-  const nextPage = useCallback(() => { if (page < totalPages - 1) setPage(p => p + 1); }, [page, totalPages]);
+  const prevPage = useCallback(() => { if (page > 0) { setPage(p => p - 1); setBlockTranslations({}); } }, [page]);
+  const nextPage = useCallback(() => { if (page < totalPages - 1) { setPage(p => p + 1); setBlockTranslations({}); } }, [page, totalPages]);
 
   // Keyboard navigation
   useEffect(() => {
