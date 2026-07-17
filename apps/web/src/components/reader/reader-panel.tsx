@@ -144,8 +144,38 @@ export function ReaderPanel({
     return blocks.slice(start, end);
   })();
 
-  const prevPage = useCallback(() => { if (page > 0) { setPage(p => p - 1); setBlockTranslations({}); } }, [page]);
-  const nextPage = useCallback(() => { if (page < totalPages - 1) { setPage(p => p + 1); setBlockTranslations({}); } }, [page, totalPages]);
+  const prevPage = useCallback(() => {
+    if (page <= 0) return;
+    setPage(p => p - 1);
+    setBlockTranslations({});
+  }, [page]);
+  const nextPage = useCallback(() => {
+    if (page >= totalPages - 1) return;
+    setPage(p => p + 1);
+    setBlockTranslations({});
+  }, [page, totalPages]);
+
+  // Auto-translate on page advance
+  useEffect(() => {
+    if (!visibleBlocks || !blockTokens || tokenizing || translating) return;
+    const textBlocks = visibleBlocks.filter((b): b is TextBlock => b.kind === 'text');
+    if (textBlocks.length === 0) return;
+    // Only auto-translate if no cached translations exist for this page
+    const hasAny = Object.keys(blockTranslations).length > 0;
+    if (hasAny) return;
+    const texts = textBlocks.map(b => b.text);
+    onPageTranslate(texts).then(translated => {
+      if (translated.length > 0) {
+        const map: Record<number, string> = {};
+        textBlocks.forEach((_, i) => {
+          if (i < translated.length) map[i] = translated[i]!;
+        });
+        setBlockTranslations(map);
+      }
+    });
+    // Only run once per visibleBlocks identity — no deps on blockTranslations
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleBlocks, blockTokens, tokenizing, translating]);
 
   // Keyboard navigation
   useEffect(() => {
