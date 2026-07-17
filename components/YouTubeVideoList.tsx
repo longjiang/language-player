@@ -67,6 +67,7 @@ export const YouTubeVideoList: React.FC<YouTubeVideoListProps> = ({
       onEndReachedThreshold={onEndReachedThreshold}
       ListFooterComponent={ListFooterComponent}
       scrollEnabled={variant === 'vertical'}
+      nestedScrollEnabled
     />
   );
 };
