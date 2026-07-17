@@ -147,12 +147,12 @@ export function TextActionMenu({
   return (
     <div ref={menuRef} className="group relative flex items-start gap-3">
       {/* Content + inline translation */}
-      <div className="flex-1 min-w-0 flex flex-col xl:flex-row xl:gap-4 xl:items-center">
-        <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-col xl:flex-row xl:gap-4 xl:items-start">
+        <div className="flex-[3] min-w-0">
           {children}
         </div>
         {translation && (
-          <div className={`flex-1 min-w-0 text-muted-foreground leading-relaxed pt-1 xl:pt-0 ${translationClass}`}>
+          <div className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed pt-1 xl:pt-0 ${translationClass}`}>
             {translation}
           </div>
         )}
