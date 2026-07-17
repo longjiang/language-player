@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
@@ -12,6 +13,7 @@ import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-mar
 import { getSampleText } from '@/lib/sample-texts';
 import {
   BookOpen, Loader2, Globe, FileText, ArrowLeftRight, Sparkles,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 function stripMarkdown(md: string): string {
@@ -81,12 +83,49 @@ export function ReaderPanel({
   onTokenize, onFillSample,
 }: ReaderPanelProps) {
   const t = useT();
+  const readContentRef = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Recalculate total pages when content changes
+  useEffect(() => {
+    if (activeTab !== 'read' || !readContentRef.current) { setPage(0); return; }
+    const el = readContentRef.current;
+    // Reset scroll to measure total height
+    el.scrollTop = 0;
+    requestAnimationFrame(() => {
+      const pages = Math.max(1, Math.ceil(el.scrollHeight / el.clientHeight));
+      setTotalPages(pages);
+      setPage(0);
+    });
+  }, [text, blocks, blockTokens, showTranslation, activeTab]);
+
+  const goToPage = useCallback((newPage: number) => {
+    if (!readContentRef.current) return;
+    const el = readContentRef.current;
+    el.scrollTo({ top: newPage * el.clientHeight, behavior: 'smooth' });
+    setPage(newPage);
+  }, []);
+
+  const prevPage = useCallback(() => { if (page > 0) goToPage(page - 1); }, [page, goToPage]);
+  const nextPage = useCallback(() => { if (page < totalPages - 1) goToPage(page + 1); }, [page, totalPages, goToPage]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (activeTab !== 'read') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevPage();
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextPage(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeTab, prevPage, nextPage]);
 
   return (
     <div className="min-w-0 flex-1">
-      {/* Main card with tab bar */}
-      <div className="rounded-xl border border-border bg-card">
-        <div className="flex border-b border-border">
+      {/* Main card with tab bar — fills remaining viewport height */}
+      <div className="flex h-[calc(100vh-7.5rem)] flex-col rounded-xl border border-border bg-card">
+        <div className="flex-shrink-0 flex border-b border-border">
           <button
             onClick={() => onTabChange('edit')}
             className={cn(
@@ -107,7 +146,7 @@ export function ReaderPanel({
           </button>
         </div>
 
-        <div className="p-4">
+        <div className="flex min-h-0 flex-1 flex-col p-4">
           {/* URL input */}
           <form onSubmit={(e) => { e.preventDefault(); if (urlInput.trim()) onUrlSubmit(urlInput.trim()); }} className="mb-4 flex gap-2">
             <div className="relative flex-1">
@@ -148,9 +187,14 @@ export function ReaderPanel({
             </div>
           )}
 
-          {/* Read mode */}
+          {/* Read mode — paginated */}
           {activeTab === 'read' && text && (
-            <div className={showTranslation ? 'grid grid-cols-2 gap-6' : ''}>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div
+                ref={readContentRef}
+                className="min-h-0 flex-1 overflow-hidden"
+              >
+                <div className={showTranslation ? 'grid grid-cols-2 gap-6' : ''}>
               <div
                 className="[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4
                   [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-3
@@ -213,7 +257,7 @@ export function ReaderPanel({
                 )}
               </div>
               {showTranslation && (
-                <div className="rounded-lg border border-border bg-muted/30 p-6">
+                <div className="rounded-lg border border-border bg-muted/30 p-6 overflow-y-auto">
                   {translation ? (
                     <div className="text-sm text-muted-foreground whitespace-pre-wrap">{translation}</div>
                   ) : (
@@ -225,6 +269,22 @@ export function ReaderPanel({
                       </p>
                     </div>
                   )}
+                </div>
+              )}
+            </div>
+              </div>
+              {/* Page navigation */}
+              {totalPages > 1 && (
+                <div className="flex-shrink-0 flex items-center justify-center gap-3 border-t border-border py-2 text-xs text-muted-foreground">
+                  <button onClick={prevPage} disabled={page === 0}
+                    className="rounded p-1 hover:bg-muted disabled:opacity-30">
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <span>{page + 1} / {totalPages}</span>
+                  <button onClick={nextPage} disabled={page >= totalPages - 1}
+                    className="rounded p-1 hover:bg-muted disabled:opacity-30">
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
                 </div>
               )}
             </div>
