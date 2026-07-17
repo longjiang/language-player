@@ -308,7 +308,7 @@ export default function ReaderPage() {
       </div>
 
       {/* ── Content row: reader panel + sidebar ── */}
-      <div className="flex gap-0">
+      <div className="flex gap-4">
         <ReaderPanel
           l2={l2} l1={l1}
           text={text} translation={translation}
