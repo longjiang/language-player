@@ -24,7 +24,8 @@ const SelectL1Screen = () => {
         setDefaultLanguage(l1Lang.code);
       } else {
         // Otherwise, try to use the system's language
-        const systemLanguage = Localization.locale.split('-')[0]; // Get the base language code
+        const locales = Localization.getLocales();
+        const systemLanguage = locales[0]?.languageCode ?? 'en';
         const language = languages?.getLangByCode(systemLanguage);
         if (language) {
           setL1Lang(language);

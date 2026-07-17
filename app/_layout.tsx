@@ -3,7 +3,6 @@ import { useFonts, Nunito_400Regular, Nunito_800ExtraBold } from '@expo-google-f
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { VideoPlayerProvider } from "@/contexts/VideoPlayerContext";
 import { DictionaryProvider } from "@/contexts/DictionaryContext";

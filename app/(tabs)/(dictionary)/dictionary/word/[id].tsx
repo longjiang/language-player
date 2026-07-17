@@ -5,7 +5,6 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { View, ActivityIndicator } from "react-native";
 import { ThemedButton, ThemedInput, ThemedText } from "@/components";
 import { router } from "expo-router";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useRoute } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DictionaryEntry } from "@/src/dictionary-types";
@@ -89,7 +88,7 @@ const DictionaryEntryScreen = () => {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: secondaryBackgroundColor }}>
+    <View style={{ flex: 1, backgroundColor: secondaryBackgroundColor }}>
       <SafeAreaView style={{ marginTop: 16 }}>
         <View style={styles.header}>
         <DictionaryComponent showBackIcon={true} showSettingsIcon={true} inputBackgroundColor="primaryBackground" />
@@ -98,7 +97,7 @@ const DictionaryEntryScreen = () => {
           <DictionaryEntryContent entry={entry} headKey={headKey} alternateKey={alternateKey} />
         )}
       </SafeAreaView>
-    </GestureHandlerRootView>
+    </View>
   );
 };
 

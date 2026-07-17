@@ -1,10 +1,9 @@
 // @/src/components/SubsSearchResultsList.tsx
 
 import React, { useState, useEffect } from "react";
-import { StyleSheet, TouchableOpacity, View, ActionSheetIOS, Platform } from "react-native";
+import { StyleSheet, TouchableOpacity, View, FlatList, ActionSheetIOS, Platform } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedInput } from "./ThemedInput";
-import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 import { Image } from "react-native";
 import { subsSearchResultsListStyles as styles } from "@/src/styles";
 import { Ionicons } from "@expo/vector-icons";
@@ -176,7 +175,7 @@ export const SubsSearchResultsList = ({
   };
 
   return (
-    <GestureHandlerRootView style={styles.fullContainer}>
+    <View style={styles.fullContainer}>
       <View style={styles.fullContainer}>
         <ThemedButton
           title={t('msg.sort_by', { sortBy: t(`title.${sortBy}`) })}
@@ -216,6 +215,6 @@ export const SubsSearchResultsList = ({
           keyExtractor={(item, index) => index.toString()}
         />
       </View>
-    </GestureHandlerRootView>
+    </View>
   );
 };

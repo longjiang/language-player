@@ -6,7 +6,6 @@ import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
 import { VideoWithTranscript } from "@/components/VideoWithTranscript";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { VideoWithTranscriptProvider } from "@/contexts/VideoWithTranscriptContext";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Header } from "@/components/Header";
 import { useNavigation } from '@react-navigation/native';
 import { useRouteChange } from '@/hooks/useRouteChange';
@@ -39,7 +38,7 @@ export const MiniPlayer = () => {
   }
 
   return (
-    <GestureHandlerRootView 
+    <View 
       style={{
         ...(videoPlayerState.isMini ? styles.safeAreaMini : styles.safeAreaFull), 
         backgroundColor: videoPlayerState.isMini ? primaryBrandColor : primaryBackgroundColor 
@@ -61,7 +60,7 @@ export const MiniPlayer = () => {
           />
         </VideoWithTranscriptProvider>
       </View>
-    </GestureHandlerRootView>
+    </View>
   );
 };
 

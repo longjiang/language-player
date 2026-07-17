@@ -5,7 +5,7 @@ import { View, Text, StyleSheet, ViewStyle, TextStyle } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Typography } from "@/constants/Typography";
 import { useSettings } from "@/contexts/SettingsContext";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native";
 import { PopupDictionaryModal } from "./PopupDictionaryModal";
 import { Token as TokenType } from "@/src/tokenizer";
 import { useLanguage } from "@/contexts/LanguageContext";

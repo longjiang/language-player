@@ -2,7 +2,6 @@
 
 import React, { useContext, useRef, useImperativeHandle, forwardRef } from 'react';
 import { ScrollView, Dimensions } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemedRBSheet } from '@/components/ThemedRBSheet';
 import { PopupDictionaryContent } from '@/components/PopupDictionaryContent';
 import { PopupDictionaryHeader } from '@/components/PopupDictionaryHeader';
@@ -45,12 +44,12 @@ export const PopupDictionaryModal = forwardRef<typeof ThemedRBSheet, PopupDictio
             closeOnPressMask={true}
         >
             {state.token && (
-                <GestureHandlerRootView>
+                <View>
                     <ScrollView>
                         <PopupDictionaryHeader token={state.token} context={state.context} translatedContext={state.translatedContext} />
                         <PopupDictionaryContent token={state.token} context={state.context} />
                     </ScrollView>
-                </GestureHandlerRootView>
+                </View>
             )}
         </ThemedRBSheet>
     );

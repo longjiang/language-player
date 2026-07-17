@@ -4,7 +4,6 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { router } from "expo-router";
 import { YouTubeVideoList } from "@/components/YouTubeVideoList";
@@ -24,7 +23,7 @@ function Test() {
   const { currentVideo } = useVideoPlayer();
 
   return (
-    <GestureHandlerRootView>
+    <View>
       <ThemedScreen
         title="Test Playlist"
         showFlag={true}
@@ -36,7 +35,7 @@ function Test() {
           <YouTubeVideoList videos={mockVideos} variant="horizontal" currentVideoId={ currentVideo ? currentVideo.youtube_id : undefined }/>
         </View>
       </ThemedScreen>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 

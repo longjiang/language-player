@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedScreen } from "@/components/ThemedScreen";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useDictionary } from "@/contexts/DictionaryContext";
@@ -18,7 +17,7 @@ const DictionaryScreen = () => {
 
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <ThemedScreen
           title={t('title.dictionary')}
           showFlag={true}
@@ -32,7 +31,7 @@ const DictionaryScreen = () => {
             </View>
           )}
         </ThemedScreen>
-    </GestureHandlerRootView>
+    </View>
   );
 };
 

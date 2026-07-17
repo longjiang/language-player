@@ -3,7 +3,6 @@ import { View, StyleSheet } from "react-native";
 import { TokenizedText } from "@/components/TokenizedText";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { router } from "expo-router";
 import { Link } from "@react-navigation/native";
@@ -39,7 +38,7 @@ function Test() {
   const text = getSampleText(l2Lang.code);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <ThemedScreen
         title="Test"
         showFlag={true}
@@ -55,7 +54,7 @@ function Test() {
           type="neutral" 
         />
       </ThemedScreen>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 

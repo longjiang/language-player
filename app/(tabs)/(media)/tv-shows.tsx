@@ -7,8 +7,7 @@ import { ThemedScreen } from "@/components/ThemedScreen";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import { ThemedInput } from "@/components/ThemedInput";
-import { FlatList } from "react-native-gesture-handler";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { FlatList } from "react-native";
 import { ActivityIndicator } from 'react-native';
 import { ShowCard, Show } from "@/components/ShowCard";
 import { tvShowsStyles as styles } from "@/src/styles";
@@ -92,7 +91,7 @@ const TVShowsScreen = () => {
   );
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <ThemedScreen
         title={t('title.tv_shows')}
         onBackPress={() => router.back()}
@@ -166,7 +165,7 @@ const TVShowsScreen = () => {
           </TouchableOpacity>
         ))}
       </ThemedRBSheet>
-    </GestureHandlerRootView>
+    </View>
   );
 };
 

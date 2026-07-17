@@ -16,7 +16,7 @@ import { SyncedLine } from "@/types";
 import { Swatches } from "@/constants/Swatches";
 import { formatDuration } from "@/src/utils";
 import { videoWithTranscriptStyles as styles } from "@/src/styles";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native";
 import { ThemedRBSheet } from "./ThemedRBSheet";
 import { YouTubeVideoList } from "./YouTubeVideoList";
 import { useTVShows } from "@/contexts/TVShowsContext";

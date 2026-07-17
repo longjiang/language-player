@@ -5,7 +5,6 @@ import { StyleSheet, View } from "react-native";
 import { ThemedButton, ThemedScreen, ThemedInput, ThemedText } from "@/components";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator } from 'react-native';
 import { useThemeColor } from "@/hooks";
@@ -88,7 +87,7 @@ const SearchScreen = () => {
   }, []);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       {items.length === 0 && (
         <ThemedScreen
           title={t('title.search')}
@@ -131,7 +130,7 @@ const SearchScreen = () => {
           )}
         </View>
       )}
-    </GestureHandlerRootView>
+    </View>
   );
 };
 

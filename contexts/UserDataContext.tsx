@@ -54,7 +54,19 @@ interface UserDataContextProps {
   lastSignificantChange: number;
 }
 
-const UserDataContext = createContext<UserDataContextProps | undefined>(undefined);
+const UserDataContext = createContext<UserDataContextProps>({
+  userData: null,
+  savedWords: {},
+  progress: {},
+  hasSavedWord: () => false,
+  getSavedWordByForm: () => undefined,
+  saveWord: async () => {},
+  removeSavedWord: async () => {},
+  getProgress: () => undefined,
+  updateProgress: async () => {},
+  getTimeFromStorage: async () => 0,
+  lastSignificantChange: Date.now(),
+});
 
 export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -269,9 +281,5 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
 };
 
 export const useUserData = (): UserDataContextProps => {
-  const context = useContext(UserDataContext);
-  if (!context) {
-    throw new Error('useUserData must be used within a UserDataProvider');
-  }
-  return context;
+  return useContext(UserDataContext);
 };

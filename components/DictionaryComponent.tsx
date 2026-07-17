@@ -4,7 +4,7 @@ import { View, ScrollView } from "react-native";
 import { ThemedInput } from "./ThemedInput";
 import { ThemedText } from "./ThemedText";
 import { useDictionary } from "@/contexts/DictionaryContext";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { DictionaryEntry } from "@/src/dictionary-types";
 import { debounce } from "lodash";

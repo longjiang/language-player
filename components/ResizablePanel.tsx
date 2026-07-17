@@ -1,77 +1,28 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, Dimensions } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  interpolate,
-  interpolateColor,
-  runOnJS,
-  useAnimatedGestureHandler,
-} from 'react-native-reanimated';
-import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
 
 export const ResizablePanel = ({
   children,
-  minHeight = 70,
-  maxHeight = Dimensions.get('window').height,
-  minBottom = 100,
-  colorFrom = 'purple',
-  colorTo = 'green',
   visible = false,
-  isMinimized,
-  setIsMinimized,
+}: {
+  children: React.ReactNode;
+  minHeight?: number;
+  maxHeight?: number;
+  minBottom?: number;
+  colorFrom?: string;
+  colorTo?: string;
+  visible?: boolean;
+  isMinimized?: boolean;
+  setIsMinimized?: (v: boolean) => void;
 }) => {
-  const progress = useSharedValue(isMinimized ? 1 : 0);
-
-  useEffect(() => {
-    progress.value = withTiming(isMinimized ? 1 : 0);
-  }, [isMinimized, progress]);
-
-  const handleGesture = useAnimatedGestureHandler({
-    onStart: (_, context) => {
-      context.startY = progress.value;
-    },
-    onActive: (event, context) => {
-      const newProgress = context.startY + event.translationY / (maxHeight - minHeight);
-      progress.value = Math.max(0, Math.min(1, newProgress));
-    },
-    onEnd: (event) => {
-      if (Math.abs(event.velocityY) > 500) {
-        progress.value = withTiming(event.velocityY > 0 ? 1 : 0);
-        runOnJS(setIsMinimized)(event.velocityY > 0);
-      } else {
-        progress.value = withTiming(progress.value > 0.5 ? 1 : 0);
-        runOnJS(setIsMinimized)(progress.value > 0.5);
-      }
-    },
-  });
-
-  const animatedContainerStyle = useAnimatedStyle(() => {
-    const height = interpolate(progress.value, [0, 1], [maxHeight, minHeight]);
-    const bottom = interpolate(progress.value, [0, 1], [0, minBottom]);
-    const backgroundColor = interpolateColor(progress.value, [0, 1], [colorFrom, colorTo]);
-    return {
-      height,
-      bottom,
-      backgroundColor,
-    };
-  });
-
   if (!visible) {
     return null;
   }
 
   return (
-    <GestureHandlerRootView style={styles.rootContainer}>
-      <PanGestureHandler onGestureEvent={handleGesture}>
-        <Animated.View style={[styles.container, animatedContainerStyle]}>
-          <Animated.View style={[styles.overlay]}>
-            {children}
-          </Animated.View>
-        </Animated.View>
-      </PanGestureHandler>
-    </GestureHandlerRootView>
+    <View style={styles.container}>
+      {children}
+    </View>
   );
 };
 
