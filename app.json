@@ -33,7 +33,12 @@
       "expo-font",
       "expo-localization",
       "expo-secure-store",
-      "react-native-iap"
+      "react-native-iap",
+      "expo-sharing",
+      "expo-splash-screen",
+      "expo-sqlite",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
