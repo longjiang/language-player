@@ -11,7 +11,10 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { getUseTraditional } from '@/lib/settings';
 import { toTraditional } from '@/lib/chinese-script';
-import { Loader2 } from 'lucide-react';
+import {
+  Loader2, BookOpen, PenLine,
+  PanelRightClose, PanelRight,
+} from 'lucide-react';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { NotesSidebar } from '@/components/reader/notes-sidebar';
 
@@ -265,35 +268,72 @@ export default function ReaderPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-7xl gap-0 px-4 py-6">
-      <ReaderPanel
-        l2={l2} l1={l1}
-        text={text} translation={translation} title={title}
-        loading={loading} activeTab={activeTab} showTranslation={showTranslation}
-        urlInput={urlInput} isEditingTitle={isEditingTitle}
-        blocks={blocks} blockTokens={blockTokens} tokenizing={tokenizing}
-        ctx={ctx}
-        onTextChange={handleTextChange}
-        onTitleChange={handleTitleChange}
-        onTranslationChange={handleTranslationChange}
-        onTabChange={setActiveTab}
-        onUrlInputChange={setUrlInput}
-        onUrlSubmit={(url) => loadUrl(url, false)}
-        onTokenize={handleTokenize}
-        onFillSample={(sampleText, sampleTitle) => { setText(sampleText); setTitle(sampleTitle); }}
-        onStartEditingTitle={() => setIsEditingTitle(true)}
-        onStopEditingTitle={() => setIsEditingTitle(false)}
-      />
+    <div className="mx-auto max-w-7xl px-4 py-6">
+      {/* ── Full-width title bar ── */}
+      <div className="mb-4 flex items-center gap-3">
+        <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
+        <div className="min-w-0 flex-1">
+          {isEditingTitle ? (
+            <input
+              autoFocus
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              onBlur={() => setIsEditingTitle(false)}
+              onKeyDown={(e) => { if (e.key === 'Enter') setIsEditingTitle(false); }}
+              className="w-full rounded-md border border-primary bg-background px-2 py-1 text-xl font-bold outline-none"
+              maxLength={200}
+            />
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-xl font-bold truncate">{title || t('title.reader')}</h1>
+              <button
+                onClick={() => setIsEditingTitle(true)}
+                className="flex-shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                title={t('action.edit')}
+              >
+                <PenLine className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p>
+        </div>
+        {/* Collapse toggle — top right */}
+        <button
+          onClick={() => setSidebarOpen(o => !o)}
+          className="flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
+        >
+          {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
+        </button>
+      </div>
 
-      <NotesSidebar
-        notes={notes} notesLoading={notesLoading} notesError={notesError}
-        currentNoteId={currentNoteId} sidebarOpen={sidebarOpen} session={session}
-        onSelectNote={handleSelectNote}
-        onNewNote={handleNewNote}
-        onRenameNote={handleRenameNote}
-        onDeleteNote={handleDeleteNote}
-        onToggleSidebar={() => setSidebarOpen(o => !o)}
-      />
+      {/* ── Content row: reader panel + sidebar ── */}
+      <div className="flex gap-0">
+        <ReaderPanel
+          l2={l2} l1={l1}
+          text={text} translation={translation}
+          loading={loading} activeTab={activeTab} showTranslation={showTranslation}
+          urlInput={urlInput}
+          blocks={blocks} blockTokens={blockTokens} tokenizing={tokenizing}
+          ctx={ctx}
+          onTextChange={handleTextChange}
+          onTranslationChange={handleTranslationChange}
+          onTabChange={setActiveTab}
+          onUrlInputChange={setUrlInput}
+          onUrlSubmit={(url) => loadUrl(url, false)}
+          onTokenize={handleTokenize}
+          onFillSample={(sampleText, sampleTitle) => { setText(sampleText); setTitle(sampleTitle); }}
+        />
+
+        <NotesSidebar
+          notes={notes} notesLoading={notesLoading} notesError={notesError}
+          currentNoteId={currentNoteId} sidebarOpen={sidebarOpen} session={session}
+          onSelectNote={handleSelectNote}
+          onNewNote={handleNewNote}
+          onRenameNote={handleRenameNote}
+          onDeleteNote={handleDeleteNote}
+        />
+      </div>
 
       {error && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 shadow-lg">{error}</div>
