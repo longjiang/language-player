@@ -307,6 +307,7 @@ export default function ReaderPage() {
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('read');
   const [showTranslation, setShowTranslation] = useState(false);
   const [urlInput, setUrlInput] = useState('');
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   // Block-based interactive rendering
   const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
@@ -566,8 +567,29 @@ export default function ReaderPage() {
         {/* Header */}
         <div className="mb-6 flex items-center gap-3">
           <BookOpen className="h-6 w-6 text-primary" />
-          <div>
-            <h1 className="text-xl font-bold">{title || t('title.reader')}</h1>
+          <div className="min-w-0 flex-1">
+            {isEditingTitle ? (
+              <input
+                autoFocus
+                value={title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                onBlur={() => setIsEditingTitle(false)}
+                onKeyDown={(e) => { if (e.key === 'Enter') setIsEditingTitle(false); }}
+                className="w-full rounded-md border border-primary bg-background px-2 py-1 text-xl font-bold outline-none"
+                maxLength={200}
+              />
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-xl font-bold truncate">{title || t('title.reader')}</h1>
+                <button
+                  onClick={() => setIsEditingTitle(true)}
+                  className="flex-shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  title={t('action.edit')}
+                >
+                  <PenLine className="h-4 w-4" />
+                </button>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p>
           </div>
         </div>
