@@ -8,6 +8,7 @@ import { languageName } from '@/lib/language-data';
 import { getSampleSentence } from '@/lib/sample-sentences';
 import { TokenizedText } from '@/components/tokenized-text';
 import { VoicePicker } from '@/components/voice-picker';
+import { TabbedPanel } from '@/components/tabbed-panel';
 
 export default function SettingsPage() {
   const { l1, l2 } = useLanguage();
@@ -110,20 +111,19 @@ export default function SettingsPage() {
         {t('msg.settings_desc', { l1: languageName(l1.code), l2: languageName(l2.code, l1.code) })}
       </p>
 
-      <div className="mt-8 flex border-b border-border">
-        {(['display', 'playback', 'speech', 'review'] as const).map(tabKey => (
-          <button key={tabKey} onClick={() => setTab(tabKey)}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              tab === tabKey ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}>
-            {t(`setting.${tabKey}`)}
-          </button>
-        ))}
-      </div>
-
-      {/* ═══ DISPLAY ═══ */}
-      {tab === 'display' && (
-        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
+      <TabbedPanel
+        tabs={(['display', 'playback', 'speech', 'review'] as const).map(tabKey => ({
+          key: tabKey,
+          label: t(`setting.${tabKey}`),
+        }))}
+        activeTab={tab}
+        onTabChange={setTab}
+        className="mt-8"
+        contentClassName="p-5"
+      >
+        {/* ═══ DISPLAY ═══ */}
+        {tab === 'display' && (
+          <div className="space-y-6">
 
           <Section title={t('setting.theme')}>
             <Segmented label={t('label.theme')} value={display.theme}
@@ -224,12 +224,12 @@ export default function SettingsPage() {
                 onChange={v => updateTokenizedText({ mode: v ? 'quiz' : 'normal' })} />
             </Section>
           </>)}
-        </section>
+        </div>
       )}
 
       {/* ═══ PLAYBACK ═══ */}
       {tab === 'playback' && (
-        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
+        <div className="space-y-6">
 
           <Section title={t('setting.captions')}>
             <Toggle label={t('label.transcript_mode')} desc={t('msg.transcript_mode_desc')}
@@ -245,25 +245,24 @@ export default function SettingsPage() {
             onChange={v => updatePlayback({ autoPause: v })} />
           <Toggle label={t('label.collapse_video')} checked={playback.collapsedVideo}
             onChange={v => updatePlayback({ collapsedVideo: v })} />
-        </section>
+        </div>
       )}
 
       {/* ═══ SPEECH ═══ */}
       {tab === 'speech' && (
-        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm">
-          <VoicePicker />
-        </section>
+        <VoicePicker />
       )}
 
       {/* ═══ REVIEW ═══ */}
       {tab === 'review' && (
-        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
+        <div className="space-y-6">
           <Slider label={t('label.new_cards_per_day')} desc={t('msg.new_cards_per_day_desc')}
             min={1} max={50} step={1} value={review.dailyNewLimit}
             onChange={v => updateReview({ dailyNewLimit: v })}
             leftLabel="1" centerLabel={t('msg.default_value', { n: 20 })} rightLabel="50" />
-        </section>
+        </div>
       )}
+      </TabbedPanel>
     </div>
   );
 }

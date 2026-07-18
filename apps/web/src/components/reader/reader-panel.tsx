@@ -8,9 +8,9 @@ import { useT } from '@/hooks/use-t';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { getSampleText } from '@/lib/sample-texts';
+import { TabbedPanel } from '@/components/tabbed-panel';
 import {
   BookOpen, Loader2, Globe, FileText, Sparkles,
   ChevronLeft, ChevronRight, Languages,
@@ -201,32 +201,22 @@ export function ReaderPanel({
     return () => window.removeEventListener('keydown', onKey);
   }, [activeTab, prevPage, nextPage]);
 
+  const readerTabs = [
+    { key: 'edit', label: t('action.edit'), icon: <FileText className="h-4 w-4" /> },
+    { key: 'read', label: t('action.read'), icon: <BookOpen className="h-4 w-4" /> },
+  ];
+
   return (
     <div className="min-w-0 flex-1">
-      {/* Main card with tab bar — fills remaining viewport height */}
-      <div className="flex h-[calc(100vh-7.5rem)] flex-col rounded-xl border border-border bg-card">
-        <div className="flex-shrink-0 flex border-b border-border">
-          <button
-            onClick={() => onTabChange('edit')}
-            className={cn(
-              'flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors',
-              activeTab === 'edit' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            <FileText className="h-4 w-4" />{t('action.edit')}
-          </button>
-          <button
-            onClick={onTokenize}
-            className={cn(
-              'flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors',
-              activeTab === 'read' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            <BookOpen className="h-4 w-4" />{t('action.read')}
-          </button>
-        </div>
-
-        <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col p-4">
+      <TabbedPanel
+        tabs={readerTabs}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        onTabClick={(key) => key === 'read' ? onTokenize() : onTabChange(key)}
+        className="h-[calc(100vh-7.5rem)]"
+        contentClassName="p-4"
+      >
+        <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col h-full">
           {/* URL input */}
           <form onSubmit={(e) => { e.preventDefault(); if (urlInput.trim()) onUrlSubmit(urlInput.trim()); }} className="mb-4 flex gap-2">
             <div className="relative flex-1">
@@ -413,7 +403,7 @@ export function ReaderPanel({
             </div>
           )}
         </div>
-      </div>
+      </TabbedPanel>
     </div>
   );
 }
