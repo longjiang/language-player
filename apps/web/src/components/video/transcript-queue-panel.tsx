@@ -39,7 +39,7 @@ export function TranscriptQueuePanel({
 
   return (
     <TabbedPanel
-      tabs={TABS.map(t => ({ ...t, label: t(`title.${t.key}`) }))}
+      tabs={TABS.map(tab => ({ ...tab, label: t(`title.${tab.key}`) }))}
       activeTab={tab}
       onTabChange={setTab}
       className={cn('min-h-0 h-full', className)}
