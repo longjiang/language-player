@@ -172,6 +172,8 @@ To add a new translatable key:
 }
 ```
 
+Do not create more than one payload one at a time.
+
 2. Add the key to the CSV (the locale order above matches the CSV columns):
 
 ```bash
@@ -179,6 +181,8 @@ node scripts/add-translation-key.mjs path/to/payload.json
 # or via stdin:
 echo '{"key":"msg.foo","en":"...",...}' | node scripts/add-translation-key.mjs --stdin
 ```
+
+Repeat steps 1 and 2 for each new key you want to add.
 
 3. **Regenerate locale JSONs from the CSV:**
 
@@ -196,6 +200,8 @@ node scripts/batch-translate.mjs --locale=fr
 
 **Full locale list** (31 locales, CSV column order):
 `en`, `zh-Hans`, `zh-Hant`, `af`, `ar`, `ca`, `de`, `el`, `es`, `fi`, `fr`, `ga`, `hi`, `hr`, `hu`, `id`, `it`, `ja`, `ko`, `nl`, `no`, `pl`, `pt`, `ro`, `ru`, `sr`, `sv`, `sw`, `th`, `tr`, `vi`
+
+Before translating, always check if `translations.csv` already has the same or very similar key that can do the same job. If so, modify your key new key to reuse it instead of creating a new key.
 
 ### When You Make Changes
 
