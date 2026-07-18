@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, type ReactNode } from 'react';
 import { useT } from '@/hooks/use-t';
 import { cn } from '@/lib/utils';
 import { FileText, ListVideo } from 'lucide-react';
+import { TabbedPanel } from '@/components/tabbed-panel';
 
 interface TranscriptQueuePanelProps {
   transcript: ReactNode;
@@ -13,6 +14,11 @@ interface TranscriptQueuePanelProps {
   /** Ref to the scrollable content container — pass to subtitle display for smart scrolling */
   contentRef?: React.RefObject<HTMLDivElement | null>;
 }
+
+const TABS = [
+  { key: 'transcript', icon: <FileText className="h-4 w-4" /> },
+  { key: 'queue', icon: <ListVideo className="h-4 w-4" /> },
+] as const;
 
 export function TranscriptQueuePanel({
   transcript,
@@ -32,39 +38,16 @@ export function TranscriptQueuePanel({
   }, [ref]);
 
   return (
-    <div className={cn('flex min-h-0 h-full flex-col rounded-xl border border-border bg-card', className)}>
-      {/* Tab header */}
-      <div className="flex shrink-0 border-b border-border">
-        <button
-          onClick={() => setTab('transcript')}
-          className={cn(
-            'flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors',
-            tab === 'transcript'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground hover:text-foreground',
-          )}
-        >
-          <FileText className="h-4 w-4" />
-          {t('title.transcript')}
-        </button>
-        <button
-          onClick={() => setTab('queue')}
-          className={cn(
-            'flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors',
-            tab === 'queue'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground hover:text-foreground',
-          )}
-        >
-          <ListVideo className="h-4 w-4" />
-          {t('title.queue')}
-        </button>
-      </div>
-
-      {/* Tab content */}
-      <div ref={setRef} className="flex-1 overflow-y-auto p-4">
+    <TabbedPanel
+      tabs={TABS.map(t => ({ ...t, label: t(`title.${t.key}`) }))}
+      activeTab={tab}
+      onTabChange={setTab}
+      className={cn('min-h-0 h-full', className)}
+      contentClassName="overflow-y-auto p-4"
+    >
+      <div ref={setRef} className="h-full">
         {tab === 'transcript' ? transcript : queue}
       </div>
-    </div>
+    </TabbedPanel>
   );
 }
