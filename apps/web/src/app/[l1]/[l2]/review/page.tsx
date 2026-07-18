@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
+import { SavedWordSource } from '@/components/saved-word-source';
 import { useT } from '@/hooks/use-t';
 import { toast } from 'sonner';
 import {
@@ -604,11 +605,9 @@ export default function ReviewPage() {
                 }}
               />
             </TextActionMenu>
-            {currentCard.word.context.videoTitle && (
-              <p className="text-xs mt-2 opacity-70">
-                — {currentCard.word.context.videoTitle}
-              </p>
-            )}
+            <div className="text-xs text-muted-foreground/70 mt-1">
+              <SavedWordSource context={currentCard.word.context} date={currentCard.word.date} />
+            </div>
             {showDefinition && getShowTranslation() && (currentCard.word.context.translation || contextTranslation) && (
               <p className="text-sm mt-2 italic text-muted-foreground border-t border-border pt-2">
                 {currentCard.word.context.translation || contextTranslation}
