@@ -813,6 +813,7 @@
         "hard": "Greu",
         "hard_hint": "Reamintit cu dificultate",
         "no_definition_available": "Nicio definiție disponibilă. Caută acest cuvânt în timp ce vizionezi videoclipuri.",
+        "shortcut_hint": "Apasă {space} pentru a întoarce, {k1}–{k2} pentru a evalua, {enter} pentru a continua",
         "show_definition": "Arată definiția",
         "srs_new": "nou",
         "srs_review": "recenzie"

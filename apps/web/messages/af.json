@@ -813,6 +813,7 @@
         "hard": "Moeilik",
         "hard_hint": "Met moeite herroep",
         "no_definition_available": "Geen definisie beskikbaar nie. Soek hierdie woord terwyl jy video's kyk.",
+        "shortcut_hint": "Druk {space} om te draai, {k1}–{k2} om te gradeer, {enter} om voort te gaan",
         "show_definition": "Wys Definisie",
         "srs_new": "nuut",
         "srs_review": "hersien"

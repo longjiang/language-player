@@ -813,6 +813,7 @@
         "hard": "Ngumu",
         "hard_hint": "Nimekumbuka kwa shida",
         "no_definition_available": "Hakuna ufafanuzi unaopatikana. Tafuta neno hili ukiangalia video.",
+        "shortcut_hint": "Bonyeza {space} kupindua, {k1}–{k2} kutathmini, {enter} kuendelea",
         "show_definition": "Onyesha Ufafanuzi",
         "srs_new": "mpya",
         "srs_review": "hakiki"

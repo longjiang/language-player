@@ -813,6 +813,7 @@
         "hard": "困难",
         "hard_hint": "回忆困难",
         "no_definition_available": "暂无释义。请在观看视频时查询此单词。",
+        "shortcut_hint": "按{space}翻转，{k1}–{k2}评分，{enter}继续",
         "show_definition": "显示释义",
         "srs_new": "新",
         "srs_review": "复习"

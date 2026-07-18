@@ -813,6 +813,7 @@
         "hard": "Difícil",
         "hard_hint": "Recordat amb dificultat",
         "no_definition_available": "No hi ha definició disponible. Cerca aquesta paraula mentre mires vídeos.",
+        "shortcut_hint": "Prem {space} per girar, {k1}–{k2} per valorar, {enter} per continuar",
         "show_definition": "Mostrar definició",
         "srs_new": "nou",
         "srs_review": "revisió"

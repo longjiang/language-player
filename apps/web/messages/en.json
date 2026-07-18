@@ -822,6 +822,7 @@
         "hard": "Hard",
         "hard_hint": "Recalled with difficulty",
         "no_definition_available": "No definition available. Look up this word while watching videos.",
+        "shortcut_hint": "Press {space} to flip, {k1}–{k2} to rate, {enter} to continue",
         "show_definition": "Show Definition",
         "srs_new": "new",
         "srs_review": "review"

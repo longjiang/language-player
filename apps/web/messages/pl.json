@@ -813,6 +813,7 @@
         "hard": "Trudne",
         "hard_hint": "Przypomniane z trudem",
         "no_definition_available": "Brak dostępnej definicji. Wyszukaj to słowo podczas oglądania filmów.",
+        "shortcut_hint": "Naciśnij {space} aby odwrócić, {k1}–{k2} aby ocenić, {enter} aby kontynuować",
         "show_definition": "Pokaż definicję",
         "srs_new": "nowy",
         "srs_review": "przegląd"

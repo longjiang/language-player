@@ -813,6 +813,7 @@
         "hard": "Schwer",
         "hard_hint": "Mit Mühe erinnert",
         "no_definition_available": "Keine Definition verfügbar. Schlagen Sie dieses Wort nach, während Sie Videos ansehen.",
+        "shortcut_hint": "Drücke {space} zum Umdrehen, {k1}–{k2} zum Bewerten, {enter} zum Fortfahren",
         "show_definition": "Definition anzeigen",
         "srs_new": "neu",
         "srs_review": "Wiederholung"

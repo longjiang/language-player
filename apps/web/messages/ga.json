@@ -813,6 +813,7 @@
         "hard": "Deacair",
         "hard_hint": "Athghlao le deacracht",
         "no_definition_available": "Níl aon sainmhíniú ar fáil. Cuardaigh an focal seo agus tú ag féachaint ar fhíseáin.",
+        "shortcut_hint": "Brúigh {space} chun smeach, {k1}–{k2} chun rátáil, {enter} chun leanúint",
         "show_definition": "Taispeáin Sainmhíniú",
         "srs_new": "nua",
         "srs_review": "athbhreithniú"
