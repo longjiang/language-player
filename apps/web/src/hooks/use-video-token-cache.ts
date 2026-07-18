@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useVideos } from '@langplayer/api-client';
 import { TokenCache } from '@/lib/token-cache';
 
@@ -11,7 +11,7 @@ import { TokenCache } from '@/lib/token-cache';
 export function useVideoTokenCache(youtubeId: string, l2Code: string) {
   const { getVideoTokenCache } = useVideos();
   const cache = useRef(new TokenCache());
-  const loaded = useRef(false);
+  const [loaded, setLoaded] = useState(false);
   const fetching = useRef(false);
 
   useEffect(() => {
@@ -23,16 +23,16 @@ export function useVideoTokenCache(youtubeId: string, l2Code: string) {
         if (data && typeof data === 'object') {
           cache.current.load(data);
         }
-        loaded.current = true;
+        setLoaded(true);
       })
       .catch((err) => {
         console.warn('[VideoTokenCache] Failed to load:', err);
-        loaded.current = true;
+        setLoaded(true);
       });
   }, [youtubeId, l2Code]);
 
   return useMemo(() => ({
     cache: cache.current,
-    loaded: loaded.current,
-  }), [loaded.current]);
+    loaded,
+  }), [loaded]);
 }
