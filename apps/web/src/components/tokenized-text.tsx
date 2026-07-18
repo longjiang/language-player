@@ -25,6 +25,8 @@ export interface TokenizedTextProps {
   tokenCache?: TokenCache;
   /** Pre-loaded tokens — when set, skips the API call entirely. */
   tokens?: LemmatizedToken[];
+  /** A specific word form to highlight (e.g. the inflected form that was saved in this context). */
+  highlightForm?: string;
 }
 
 /**
@@ -39,6 +41,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   context: externalContext,
   tokenCache,
   tokens: preloadedTokens,
+  highlightForm,
 }) => {
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
@@ -217,6 +220,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               showPhonetics={showPhonetics}
               isSelected={selectedToken === token}
               isSaved={savedFormSet.has(token.text.toLowerCase())}
+              isHighlighted={!!highlightForm && token.text === highlightForm}
               onClick={() => handleTokenClick(token)}
             />
           );
@@ -248,8 +252,9 @@ const TokenSpan: React.FC<{
   showPhonetics: boolean;
   isSelected: boolean;
   isSaved: boolean;
+  isHighlighted: boolean;
   onClick: () => void;
-}> = ({ token, l2Code, showPhonetics, isSelected, isSaved, onClick }) => {
+}> = ({ token, l2Code, showPhonetics, isSelected, isSaved, isHighlighted, onClick }) => {
   const isWord = token.lemmas.length > 0;
 
   if (!isWord) {
@@ -274,9 +279,11 @@ const TokenSpan: React.FC<{
         cursor-pointer rounded transition-colors
         ${isSelected
           ? 'bg-primary/20 text-primary'
-          : isSaved
-            ? 'bg-yellow-200/25 hover:bg-yellow-200/40'
-            : 'hover:bg-muted/80'
+          : isHighlighted
+            ? 'bg-primary/15 text-primary font-semibold ring-1 ring-primary/30'
+            : isSaved
+              ? 'bg-yellow-200/25 hover:bg-yellow-200/40'
+              : 'hover:bg-muted/80'
         }
       `}
       title={token.lemmas.map(l => l.lemma).join(', ')}
