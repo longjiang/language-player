@@ -357,6 +357,7 @@ export function DictionaryEntryCard({
   );
 
   return (
+    <div onClick={(e) => e.stopPropagation()}>
     <TabbedPanel
       tabs={[
         { key: 'word', label: t('title.dictionary'), icon: <BookOpen className="h-4 w-4" /> },
@@ -374,5 +375,6 @@ export function DictionaryEntryCard({
         <InflectionTable head={head} l2Code={l2Code ?? ''} embedded />
       )}
     </TabbedPanel>
+    </div>
   );
 }
