@@ -135,6 +135,7 @@ const TVShowsScreen = () => {
 
         <View>
           <FlatList
+            nestedScrollEnabled={true}
             data={filteredAndSortedShows}
             renderItem={({ item }) => (
               <ShowCard show={item} style={{ marginBottom: 26 }} />
