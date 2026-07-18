@@ -43,6 +43,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   const { l1, l2 } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
+  const l2Code = baseCode(l2.code);
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [showPhonetics, setShowPhoneticsState] = useState(true);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -56,7 +57,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       return;
     }
     const fetchSubtitles = async () => {
-      const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${baseCode(l2.code)}`);
+      const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${l2Code}`);
       if (!res.ok) return;
       const data = await res.json();
       const lines = data.lines?.map((l: any) => ({
@@ -67,7 +68,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       onLinesLoaded?.(lines.map((l: SubtitleLine) => l.starttime));
     };
     fetchSubtitles().catch(() => {});
-  }, [youtubeId, l2.code, initialLines]);
+  }, [youtubeId, l2Code, initialLines]);
 
   useEffect(() => {
     setShowPhoneticsState(getShowPhonetics());
@@ -76,7 +77,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   const { translatedLines, loading: translating, progress } = useSubtitleTranslation(
     l2Lines,
     l1.code,
-    l2.code,
+    l2Code,
     showTranslation,
   );
 
@@ -187,7 +188,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
               <div className={`text-sm ${isActive ? 'font-semibold text-foreground' : 'text-foreground/80'}`}>
                 <TokenizedText
                   text={line.l2Line}
-                  l2Code={l2.code}
+                  l2Code={l2Code}
                   textScale={0.875}
                   tokenCache={tokenCache}
                   context={{
