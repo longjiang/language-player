@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
+import type { YouTubeVideo } from '@langplayer/shared';
+import { parseCSVSubtitles, syncLines } from '@/lib/subtitle-csv';
 
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'https://directusvps.zerotohero.ca/zerotohero';
 
@@ -22,95 +23,6 @@ const TABLE_SUFFIX: Record<string, string> = {
 
 function getTableSuffix(l2: string): string {
   return TABLE_SUFFIX[l2] ?? '';
-}
-
-/** Parse Directus CSV subtitle data into SubtitleLine[].
- *  Uses the header row to find the "line" column index. */
-function parseCSVSubtitles(csv: string): SubtitleLine[] {
-  if (!csv || typeof csv !== 'string') return [];
-  const rows = csv.trim().split('\n');
-  if (rows.length < 2) return [];
-
-  const header = rows[0]!.split(',');
-  const lineIdx = header.findIndex((h) => h.trim().toLowerCase() === 'line');
-  const timeIdx = header.findIndex((h) => h.trim().toLowerCase() === 'starttime');
-  if (lineIdx === -1 || timeIdx === -1) return [];
-
-  const dataRows = rows.slice(1);
-  return dataRows
-    .map(row => {
-      const fields = parseCSVRow(row);
-      if (fields.length <= Math.max(timeIdx, lineIdx)) return null;
-      const line = fields[lineIdx]!
-        .replace(/&#39;/g, "'")
-        .replace(/&amp;/g, '&')
-        .replace(/&quot;/g, '"')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .trim();
-      const starttime = parseFloat(fields[timeIdx]!);
-      if (isNaN(starttime) || !line) return null;
-      return { starttime, line };
-    })
-    .filter((x): x is SubtitleLine => x !== null);
-}
-
-/** Split a CSV row into fields, handling quoted values. */
-function parseCSVRow(row: string): string[] {
-  const fields: string[] = [];
-  let current = '';
-  let inQuotes = false;
-  for (let i = 0; i < row.length; i++) {
-    const ch = row[i]!;
-    if (ch === '"') {
-      if (inQuotes && i + 1 < row.length && row[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (ch === ',' && !inQuotes) {
-      fields.push(current);
-      current = '';
-    } else {
-      current += ch;
-    }
-  }
-  fields.push(current);
-  return fields;
-}
-
-interface SyncedLine {
-  starttime: number;
-  l1Line: string;
-  l2Line: string;
-}
-
-function syncLines(l1Lines: SubtitleLine[], l2Lines: SubtitleLine[]): SyncedLine[] {
-  l1Lines = [...l1Lines].sort((a, b) => a.starttime - b.starttime);
-  l2Lines = [...l2Lines].sort((a, b) => a.starttime - b.starttime);
-  const synced: SyncedLine[] = [];
-  const used = new Set<number>();
-  for (const l1 of l1Lines) {
-    let bestIdx = -1;
-    let bestDiff = Infinity;
-    for (let i = 0; i < l2Lines.length; i++) {
-      if (!used.has(i)) {
-        const diff = Math.abs(l1.starttime - l2Lines[i]!.starttime);
-        if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
-      }
-    }
-    if (bestIdx !== -1) {
-      used.add(bestIdx);
-      synced.push({ starttime: l1.starttime, l1Line: l1.line, l2Line: l2Lines[bestIdx]!.line });
-    }
-  }
-  for (let i = 0; i < l2Lines.length; i++) {
-    if (!used.has(i)) {
-      synced.push({ starttime: l2Lines[i]!.starttime, l1Line: '', l2Line: l2Lines[i]!.line });
-    }
-  }
-  return synced.sort((a, b) => a.starttime - b.starttime);
 }
 
 /** Parse ISO 8601 duration string (PT1H23M45S) into seconds. */

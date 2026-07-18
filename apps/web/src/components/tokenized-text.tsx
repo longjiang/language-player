@@ -255,10 +255,15 @@ const TokenSpan: React.FC<{
   isHighlighted: boolean;
   onClick: () => void;
 }> = ({ token, l2Code, showPhonetics, isSelected, isSaved, isHighlighted, onClick }) => {
+  // ── Structural tokens: newlines → <br />, spaces/punctuation → raw text ──
+  if (token.text === '\n' || token.text === '\r') {
+    return <br />;
+  }
+
   const isWord = token.lemmas.length > 0;
 
   if (!isWord) {
-    // Punctuation, spaces, newlines — render as raw text (inline, no wrapper).
+    // Punctuation, spaces — render as raw text (inline, no wrapper).
     // Space tokens are already " " from the backend, so they act as natural
     // word separators for English/Korean and are absent for Chinese/Japanese.
     return <>{token.text}</>;
