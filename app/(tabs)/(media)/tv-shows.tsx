@@ -93,6 +93,7 @@ const TVShowsScreen = () => {
   return (
     <View style={{ flex: 1 }}>
       <ThemedScreen
+        scroll={false}
         title={t('title.tv_shows')}
         onBackPress={() => router.back()}
         showFlag={false}
@@ -133,16 +134,13 @@ const TVShowsScreen = () => {
           </View>
         )}
 
-        <View>
-          <FlatList
-            nestedScrollEnabled={true}
-            data={filteredAndSortedShows}
+        <FlatList
+          data={filteredAndSortedShows}
             renderItem={({ item }) => (
               <ShowCard show={item} style={{ marginBottom: 26 }} />
             )}
             keyExtractor={(item) => item.id.toString()}
-          />
-        </View>
+        />
       </ThemedScreen>
 
       <ThemedRBSheet ref={rbSheetRef} height={700}>
