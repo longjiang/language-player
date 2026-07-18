@@ -7,11 +7,8 @@ import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { ArrowLeft, Loader2, AlertCircle, BookOpen, Film, Binary } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, BookOpen } from 'lucide-react';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
-import { InflectionTable } from '@/components/inflection-table';
-import { SubsSearchResults } from '@/components/video/subs-search-results';
-import { TabbedPanel } from '@/components/tabbed-panel';
 
 /**
  * Single dictionary or LLM entry page.
@@ -37,7 +34,6 @@ export default function DictionaryEntryPage() {
   const [entry, setEntry] = useState<DictionaryEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<string>('word');
 
   const fetchEntry = useCallback(async () => {
     setLoading(true);
@@ -126,43 +122,16 @@ export default function DictionaryEntryPage() {
         </div>
       )}
 
-      {/* Entry with tabs */}
+      {/* Entry */}
       {!loading && !error && entry && (
-        <TabbedPanel
-          tabs={[
-            { key: 'word', label: t('title.dictionary'), icon: <BookOpen className="h-4 w-4" /> },
-            { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
-            { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> },
-          ]}
-          activeTab={tab}
-          onTabChange={setTab}
-          contentClassName="p-5"
-        >
-          {/* Word tab */}
-          {tab === 'word' && (
-            <DictionaryEntryCard
-              variant="full"
-              entry={entry}
-              l2Code={l2.code}
-              l1Code={l1.code}
-              levelLabel={levelScaleLabel}
-              saveContext={saveContext}
-            />
-          )}
-
-          {/* Video Examples tab */}
-          {tab === 'examples' && (
-            <SubsSearchResults term={entry.head} />
-          )}
-
-          {/* Inflections tab */}
-          {tab === 'inflections' && (
-            <InflectionTable
-              head={entry.head}
-              l2Code={l2.code}
-            />
-          )}
-        </TabbedPanel>
+        <DictionaryEntryCard
+          variant="full"
+          entry={entry}
+          l2Code={l2.code}
+          l1Code={l1.code}
+          levelLabel={levelScaleLabel}
+          saveContext={saveContext}
+        />
       )}
     </div>
   );
