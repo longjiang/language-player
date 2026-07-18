@@ -14,6 +14,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
 import { useT } from '@/hooks/use-t';
+import { toast } from 'sonner';
 import {
   Loader2,
   ArrowLeft,
@@ -205,6 +206,17 @@ export default function ReviewPage() {
     if (!card) {
       setRated(false);
       return;
+    }
+
+    // Visual feedback via toast
+    const label = RATING_LABELS.find((r) => r.key === quality);
+    if (label) {
+      const isPositive = quality === 'good' || quality === 'easy';
+      toast(label.label, {
+        description: label.hint,
+        duration: 600,
+        className: isPositive ? undefined : '!bg-red-50 dark:!bg-red-950 !border-red-200 dark:!border-red-800',
+      });
     }
 
     // Detect if this is the last card in the session
