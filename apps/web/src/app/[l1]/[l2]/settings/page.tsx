@@ -5,6 +5,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
+import { VoicePicker } from '@/components/voice-picker';
 
 export default function SettingsPage() {
   const { l1, l2 } = useLanguage();
@@ -34,13 +35,15 @@ export default function SettingsPage() {
   const Toggle = ({ label, desc, checked, onChange }: { label: string; desc?: string; checked: boolean; onChange: (v: boolean) => void }) => (
     <div>
       <label className="flex items-center justify-between cursor-pointer">
-        <span className="text-sm font-medium">{label}</span>
-        <span className="relative inline-flex items-center cursor-pointer">
+        <div>
+          <span className="text-sm font-medium">{label}</span>
+          {desc && <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>}
+        </div>
+        <span className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
           <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="sr-only peer" />
           <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-primary/20 after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-background after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
         </span>
       </label>
-      {desc && <p className="text-xs text-muted-foreground mt-1">{desc}</p>}
     </div>
   );
 
@@ -92,31 +95,15 @@ export default function SettingsPage() {
     </div>
   );
 
-  // ── Phonetics labels ──
-  const phoneticsLabels = (() => {
-    if (l2.code === 'zh') return { ruby: '拼 Pīn', word: 'Pinyin Only', off: 'Off' };
-    if (l2.code === 'ja') return { ruby: '仮 か', word: 'Kana Only', off: 'Off' };
-    if (l2.code === 'ko') return { ruby: '한 hɑn', word: 'Romanization', off: 'Off' };
-    return { ruby: 'Ruby', word: 'Phonetics Only', off: 'Off' };
+  // ── Phonetics labels (using translation keys + language-aware samples) ──
+  const phoneticsRubyLabel = (() => {
+    if (l2.code === 'zh') return t('label.phonetics_ruby_zh');
+    if (l2.code === 'ja') return t('label.phonetics_ruby_ja');
+    if (l2.code === 'ko') return t('label.phonetics_ruby_ko');
+    return t('label.phonetics_ruby');
   })();
-
-  // ── Voice picker ──
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  useEffect(() => {
-    const load = () => setVoices(speechSynthesis.getVoices());
-    load();
-    speechSynthesis.onvoiceschanged = load;
-    return () => { speechSynthesis.onvoiceschanged = null; };
-  }, []);
-  const langVoices = voices.filter(v => v.lang.startsWith(l2.code));
-
-  const testSpeech = () => {
-    const utterance = new SpeechSynthesisUtterance(l2.vernacularName || 'Example');
-    const v = voices.find(vo => vo.voiceURI === l2Settings.speech.voiceURI);
-    if (v) utterance.voice = v;
-    utterance.rate = l2Settings.speech.rate;
-    speechSynthesis.speak(utterance);
-  };
+  const phoneticsWordLabel = t('label.phonetics_word');
+  const phoneticsOffLabel = t('setting.off');
 
   const previewText = l2.vernacularName || 'Example';
 
@@ -156,22 +143,24 @@ export default function SettingsPage() {
               ]} />
           </Section>
 
-          <Section title={t('label.tokenized_text_preview')}>
-            <div className="rounded-lg border border-border bg-muted/50 p-4 text-center">
-              <div className={`text-lg ${tokenizedText.typeFace === 'serif' ? 'font-serif' : tokenizedText.typeFace === 'sans-serif' ? 'font-sans' : ''}`}
-                   style={{ fontSize: `${1 + tokenizedText.zoom * 0.15}rem` }}>
-                {previewText}
-              </div>
-              {tokenizedText.quickGloss && (
-                <div className="text-xs text-muted-foreground mt-1 italic">{t('msg.gloss_preview')}</div>
-              )}
-            </div>
-          </Section>
-
           <Section title="">
             <Toggle label={t('label.enable_popup_dictionary')} desc={t('msg.enable_popup_dictionary_desc')}
               checked={tokenizedText.enabled} onChange={v => updateTokenizedText({ enabled: v })} />
           </Section>
+
+          {popupEnabled && (
+            <Section title={t('label.tokenized_text_preview')}>
+              <div className="rounded-lg border border-border bg-muted/50 p-4 text-center">
+                <div className={`text-lg ${tokenizedText.typeFace === 'serif' ? 'font-serif' : tokenizedText.typeFace === 'sans-serif' ? 'font-sans' : ''}`}
+                     style={{ fontSize: `${1 + tokenizedText.zoom * 0.15}rem` }}>
+                  {previewText}
+                </div>
+                {tokenizedText.quickGloss && (
+                  <div className="text-xs text-muted-foreground mt-1 italic">{t('msg.gloss_preview')}</div>
+                )}
+              </div>
+            </Section>
+          )}
 
           {popupEnabled && (<>
             <Section title={t('setting.text_appearance')}>
@@ -194,9 +183,9 @@ export default function SettingsPage() {
                   updateL2(l2.code, { tokenSpan: { ...ts, phonetics: { ...ts.phonetics, show: v === 'off' ? false : v as 'ruby' | 'word' } } });
                 }}
                 options={[
-                  { value: 'ruby', label: phoneticsLabels.ruby },
-                  { value: 'word', label: phoneticsLabels.word },
-                  { value: 'off', label: phoneticsLabels.off },
+                  { value: 'ruby', label: phoneticsRubyLabel },
+                  { value: 'word', label: phoneticsWordLabel },
+                  { value: 'off', label: phoneticsOffLabel },
                 ]} />
               {phoneticsEnabled && (
                 <Segmented label={t('label.phonetics_conditions')} value={l2Settings.tokenSpan.phonetics.conditions}
@@ -242,12 +231,9 @@ export default function SettingsPage() {
             </Section>
 
             <Section title={t('setting.interaction')}>
-              <Segmented label={t('label.reading_mode')} value={tokenizedText.mode}
-                onChange={(v: string) => updateTokenizedText({ mode: v as 'normal' | 'quiz' })}
-                options={[
-                  { value: 'normal', label: t('setting.normal') },
-                  { value: 'quiz', label: t('setting.quiz_blanks') },
-                ]} />
+              <Toggle label={t('label.quiz_mode')} desc={t('msg.quiz_mode_desc')}
+                checked={tokenizedText.mode === 'quiz'}
+                onChange={v => updateTokenizedText({ mode: v ? 'quiz' : 'normal' })} />
             </Section>
           </>)}
         </section>
@@ -256,15 +242,19 @@ export default function SettingsPage() {
       {/* ═══ PLAYBACK ═══ */}
       {tab === 'playback' && (
         <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
-          <Toggle label={t('label.transcript_mode')} desc={t('msg.transcript_mode_desc')}
-            checked={playback.transcriptMode === 'transcript'}
-            onChange={v => updatePlayback({ transcriptMode: v ? 'transcript' : 'subtitles' })} />
+
+          <Section title={t('setting.captions')}>
+            <Toggle label={t('label.transcript_mode')} desc={t('msg.transcript_mode_desc')}
+              checked={playback.transcriptMode === 'transcript'}
+              onChange={v => updatePlayback({ transcriptMode: v ? 'transcript' : 'subtitles' })} />
+            <Toggle label={t('label.smooth_scroll')} checked={playback.smoothScroll}
+              onChange={v => updatePlayback({ smoothScroll: v })} />
+            <Toggle label={t('label.karaoke')} checked={playback.karaokeMode}
+              onChange={v => updatePlayback({ karaokeMode: v })} />
+          </Section>
+
           <Toggle label={t('label.auto_pause')} checked={playback.autoPause}
             onChange={v => updatePlayback({ autoPause: v })} />
-          <Toggle label={t('label.karaoke')} checked={playback.karaokeMode}
-            onChange={v => updatePlayback({ karaokeMode: v })} />
-          <Toggle label={t('label.smooth_scroll')} checked={playback.smoothScroll}
-            onChange={v => updatePlayback({ smoothScroll: v })} />
           <Toggle label={t('label.collapse_video')} checked={playback.collapsedVideo}
             onChange={v => updatePlayback({ collapsedVideo: v })} />
         </section>
@@ -272,26 +262,8 @@ export default function SettingsPage() {
 
       {/* ═══ SPEECH ═══ */}
       {tab === 'speech' && (
-        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">{t('label.voice')}</label>
-            <select value={l2Settings.speech.voiceURI ?? ''}
-              onChange={e => updateL2(l2.code, { speech: { ...l2Settings.speech, voiceURI: e.target.value || null } })}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm">
-              <option value="">{t('setting.auto_detect')}</option>
-              {langVoices.map(v => (
-                <option key={v.voiceURI} value={v.voiceURI}>{v.name} {!v.localService ? `(${t('setting.remote')})` : ''}</option>
-              ))}
-            </select>
-          </div>
-          <Slider label={t('label.speech_rate')} min={0.5} max={2.0} step={0.1}
-            value={l2Settings.speech.rate}
-            onChange={v => updateL2(l2.code, { speech: { ...l2Settings.speech, rate: v } })}
-            leftLabel="0.5×" rightLabel="2.0×" centerLabel="1.0×" />
-          <button onClick={testSpeech}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-            ▶ {t('label.test_pronunciation')}
-          </button>
+        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm">
+          <VoicePicker />
         </section>
       )}
 
