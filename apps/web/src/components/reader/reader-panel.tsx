@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
+import { useSettingsContext } from '@/providers/settings-provider';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
 import { Button } from '@/components/ui/button';
@@ -96,6 +97,8 @@ export function ReaderPanel({
   onTokenize, onFillSample, onPageTranslate,
 }: ReaderPanelProps) {
   const t = useT();
+  const { display } = useSettingsContext();
+  const showTranslation = display.translation;
   const measureRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(0);
@@ -168,9 +171,9 @@ export function ReaderPanel({
     setBlockTranslations({});
   }, [page, totalPages]);
 
-  // Auto-translate on page advance
+  // Auto-translate on page advance (only when translation is enabled)
   useEffect(() => {
-    if (!visibleBlocks || !blockTokens || tokenizing || translating) return;
+    if (!showTranslation || !visibleBlocks || !blockTokens || tokenizing || translating) return;
     const textBlocks = visibleBlocks.filter((b): b is TextBlock => b.kind === 'text');
     if (textBlocks.length === 0) return;
     // Only auto-translate if no cached translations exist for this page
@@ -188,7 +191,7 @@ export function ReaderPanel({
     });
     // Only run once per visibleBlocks identity — no deps on blockTranslations
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleBlocks, blockTokens, tokenizing, translating]);
+  }, [visibleBlocks, blockTokens, tokenizing, translating, showTranslation]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -304,7 +307,7 @@ export function ReaderPanel({
                         const textBlockIndex = blocks!.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
                         return (
                           <TextActionMenu key={i} text={tb.text} l2Code={l2.code} l1Code={l1.code}
-                            translation={blockTranslations[i]} translationClass={translationClass(tb)}>
+                            translation={showTranslation ? blockTranslations[i] : undefined} translationClass={translationClass(tb)}>
                             <Tag className={blockClass(tb)}>
                               <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
                                 tokens={blockTokens[textBlockIndex]} />
