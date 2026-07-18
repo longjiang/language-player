@@ -527,7 +527,6 @@ export default function ReviewPage() {
               </span>
             )}
           </span>
-        </span>
       </div>
 
       {/* Card */}
