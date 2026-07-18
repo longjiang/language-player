@@ -264,8 +264,8 @@ const TokenSpan: React.FC<{
     return <>{token.text}</>;
   }
 
-  // ── Ruby text (phonetic guide) ──
-  const hasPhonetics = showPhonetics && token.pronunciation && token.pronunciation !== token.text;
+  // ── Ruby text (phonetic guide) — hidden on highlighted forms for cleaner display ──
+  const hasPhonetics = !isHighlighted && showPhonetics && token.pronunciation && token.pronunciation !== token.text;
 
   const rubyContent = hasPhonetics ? renderRuby(token.text, token.pronunciation!, l2Code) : null;
 
