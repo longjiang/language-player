@@ -13,6 +13,7 @@ import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
+import { TextActionMenu } from '@/components/text-action-menu';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { useT } from '@/hooks/use-t';
 import { toast } from 'sonner';
@@ -553,16 +554,22 @@ export default function ReviewPage() {
         {currentCard.word.context.text && (
           <div className="mb-4 p-3 bg-muted/50 rounded-lg text-left w-full">
             <p className="text-xs text-muted-foreground mb-1 font-medium">{t('review.context_label')}</p>
-            <TokenizedText
+            <TextActionMenu
               text={currentCard.word.context.text}
               l2Code={l2Code}
-              context={{
-                form: wordForm,
-                text: currentCard.word.context.text,
-                youtube_id: currentCard.word.context.youtube_id,
-                videoTitle: currentCard.word.context.videoTitle,
-              }}
-            />
+              l1Code={baseCode(l1.code)}
+            >
+              <TokenizedText
+                text={currentCard.word.context.text}
+                l2Code={l2Code}
+                context={{
+                  form: wordForm,
+                  text: currentCard.word.context.text,
+                  youtube_id: currentCard.word.context.youtube_id,
+                  videoTitle: currentCard.word.context.videoTitle,
+                }}
+              />
+            </TextActionMenu>
             {currentCard.word.context.videoTitle && (
               <p className="text-xs mt-2 opacity-70">
                 — {currentCard.word.context.videoTitle}
