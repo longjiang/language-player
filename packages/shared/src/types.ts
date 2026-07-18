@@ -486,6 +486,8 @@ export interface TokenizedTextSettings {
 export interface DisplaySettings {
   /** `light` | `dark` | `system` — follows OS preference when `system`. */
   theme: 'light' | 'dark' | 'system';
+  /** Show L1 translation lines alongside L2 text. */
+  translation: boolean;
 }
 
 export interface PlaybackSettings {
@@ -577,6 +579,7 @@ export const TOKENIZED_TEXT_DEFAULTS: TokenizedTextSettings = {
 
 export const DISPLAY_DEFAULTS: DisplaySettings = {
   theme: 'dark',
+  translation: true,
 };
 
 export const PLAYBACK_DEFAULTS: PlaybackSettings = {
