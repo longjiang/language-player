@@ -113,3 +113,9 @@ rt {
 .rating-toast[data-sonner-toast] {
   animation: rating-float-up 0.85s ease-out forwards !important;
 }
+
+/* Ensure top-center toasts are horizontally centered */
+[data-sonner-toaster][data-position="top-center"] {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
