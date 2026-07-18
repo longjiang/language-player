@@ -9,15 +9,11 @@ import { DictionaryProvider } from "@/contexts/DictionaryContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from '@/contexts/AuthContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
-import { Audio } from "expo-av";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { UserDataProvider } from '@/contexts/UserDataContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
-import { useSoundEffect } from "@/hooks/useSoundEffect";
 import { TVShowsProvider } from "@/contexts/TVShowsContext";
 import { StatusBar } from 'expo-status-bar';
-
-const soundObject = new Audio.Sound();
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -27,8 +23,6 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     Nunito_400Regular, Nunito_800ExtraBold
   });
-
-  useSoundEffect();
 
   useEffect(() => {
     if (loaded) {
