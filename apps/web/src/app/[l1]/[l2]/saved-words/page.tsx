@@ -6,8 +6,9 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
-import { BookOpen, Video, Trash2, Download, BookmarkCheck, Loader2 } from 'lucide-react';
+import { BookOpen, Trash2, Download, BookmarkCheck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SavedWordSource } from '@/components/saved-word-source';
 import type { SavedWord } from '@langplayer/shared';
 
 const STORAGE_KEY = 'zthSavedWords';
@@ -181,8 +182,6 @@ function SavedWordRow({
 }) {
   const { removeSavedWord } = useSavedWordsContext();
   const ctx = word.context;
-  const hasVideoContext = ctx.youtube_id && ctx.videoTitle;
-  const dateStr = new Date(word.date).toLocaleDateString();
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -218,19 +217,8 @@ function SavedWordRow({
         )}
 
         {/* Source attribution */}
-        <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground/70">
-          {hasVideoContext ? (
-            <>
-              <Video className="h-3 w-3" />
-              <span className="truncate">{ctx.videoTitle}</span>
-            </>
-          ) : ctx.textTitle ? (
-            <>
-              <BookOpen className="h-3 w-3" />
-              <span className="truncate">{ctx.textTitle}</span>
-            </>
-          ) : null}
-          <span>· {dateStr}</span>
+        <div className="mt-1 text-xs text-muted-foreground/70">
+          <SavedWordSource context={ctx} date={word.date} />
         </div>
       </div>
 
