@@ -30,6 +30,9 @@ interface DictionaryEntryCardProps {
   l1Code?: string;
   /** WAI-ARIA heading level for the headword (full mode defaults to h1). */
   headingLevel?: 'h1' | 'h2' | 'h3';
+  /** When true, renders without card chrome (no shadow, border, or outer padding).
+   *  Use when embedding inside another card (e.g. review page). */
+  embedded?: boolean;
 }
 
 /** Renders a single dictionary lookup result — compact in popups, full on detail pages. */
@@ -43,6 +46,7 @@ export function DictionaryEntryCard({
   l2Code,
   l1Code,
   headingLevel = 'h1',
+  embedded = false,
 }: DictionaryEntryCardProps) {
   const t = useT();
   const { apply } = useScriptPreference(l2Code ?? '');
@@ -366,8 +370,8 @@ export function DictionaryEntryCard({
       ]}
       activeTab={tab}
       onTabChange={setTab}
-      className="shadow-sm"
-      contentClassName="p-6"
+      className={embedded ? 'rounded-none border-0 bg-transparent' : 'shadow-sm'}
+      contentClassName={embedded ? 'px-0 pt-8' : 'p-6'}
     >
       {tab === 'word' && wordContent}
       {tab === 'examples' && <SubsSearchResults term={head} embedded />}
