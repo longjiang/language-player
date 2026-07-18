@@ -36,7 +36,7 @@ const SelectLevelScreen = () => {
   const handleConfirm = async (resetTime: boolean) => {
     if (selectedLevelRef.current !== null) {
       try {
-        const currentProgress = userData?.progress[l2Lang.code];
+        const currentProgress = userData?.progress?.[l2Lang.code];
         const newTime = resetTime ? 0 : currentProgress?.time || 0;
         await updateProgress(l2Lang.code, { level: String(selectedLevelRef.current), time: newTime });
         router.navigate("/(tabs)/(media)");
