@@ -192,6 +192,7 @@
         "show_gloss_saved": "Nopea selitys",
         "show_hanja": "Näytä Hanja",
         "show_hantu": "Näytä Hán Tự",
+        "show_interlinear_gloss": "Näytä rivienvälinen selitys",
         "show_phonetics": "Näytä fonetiikka",
         "smooth_scroll": "Pehmeä vieritys",
         "speech_rate": "Puhenopeus: {rate}×",

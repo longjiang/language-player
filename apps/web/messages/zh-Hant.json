@@ -191,6 +191,7 @@
         "show_gloss_saved": "顯示快速釋義",
         "show_hanja": "顯示漢字",
         "show_hantu": "顯示漢字",
+        "show_interlinear_gloss": "顯示行間釋義",
         "show_phonetics": "顯示注音",
         "smooth_scroll": "平滑捲動",
         "speech_rate": "語速：{rate}×",

@@ -192,7 +192,7 @@ export default function SettingsPage() {
             <Section title={t('setting.word_level_display')}>
               <Toggle label={t('label.show_gloss_saved')} desc={t('msg.show_gloss_saved_desc')}
                 checked={tokenizedText.quickGloss} onChange={v => updateTokenizedText({ quickGloss: v })} />
-              <Toggle label={t('review.show_definition')} desc={t('msg.show_definition_desc')}
+              <Toggle label={t('label.show_interlinear_gloss')} desc={t('msg.show_definition_desc')}
                 checked={l2Settings.tokenSpan.definition.show}
                 onChange={v => {
                   const ts = l2Settings.tokenSpan;

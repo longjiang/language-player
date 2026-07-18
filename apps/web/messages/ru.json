@@ -192,6 +192,7 @@
         "show_gloss_saved": "Быстрый перевод",
         "show_hanja": "Показать ханча",
         "show_hantu": "Показать ханты",
+        "show_interlinear_gloss": "Показать подстрочный перевод",
         "show_phonetics": "Показать фонетику",
         "smooth_scroll": "Плавная прокрутка",
         "speech_rate": "Скорость речи: {rate}×",

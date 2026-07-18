@@ -192,6 +192,7 @@
         "show_gloss_saved": "Γρήγορη επεξήγηση",
         "show_hanja": "Εμφάνιση Χάντζα",
         "show_hantu": "Εμφάνιση Hán Tự",
+        "show_interlinear_gloss": "Εμφάνιση διαγραμμικής επεξήγησης",
         "show_phonetics": "Εμφάνιση φωνητικής",
         "smooth_scroll": "Ομαλή κύλιση",
         "speech_rate": "Ταχύτητα Ομιλίας: {rate}×",
