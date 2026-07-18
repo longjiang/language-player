@@ -353,9 +353,6 @@ export function DictionaryEntryCard({
       {/* Footer */}
       <div className="flex items-center gap-2">
         {sourceLine}
-        {saveContext && !entry.classifier && (
-          <div className="ml-auto">{saveBtn()}</div>
-        )}
       </div>
     </div>
   );
