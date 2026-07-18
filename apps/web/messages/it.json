@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Tutti",
-        "all_locales": "Tutte le località"
+        "all_locales": "Tutte le località",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Tutte le valute sono in dollari USA (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} voci",
         "lifetime_one_time": "A vita — 169 $ una tantum",
         "measure_word": "Misura:",
+        "native_level": "Madrelingua",
         "new_cards_per_day": "Nuove carte al giorno",
         "noun_class": "Classe:",
         "phonetics_conditions": "Mostra per",

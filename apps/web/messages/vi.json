@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Tất cả",
-        "all_locales": "Tất cả khu vực"
+        "all_locales": "Tất cả khu vực",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Tất cả tiền tệ tính bằng đô la Mỹ (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} Giọng nói",
         "lifetime_one_time": "Trọn đời — 169 đô la một lần",
         "measure_word": "Đo lường:",
+        "native_level": "Bản ngữ",
         "new_cards_per_day": "Số thẻ mới mỗi ngày",
         "noun_class": "Lớp:",
         "phonetics_conditions": "Hiển thị cho",

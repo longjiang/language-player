@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Todo",
-        "all_locales": "Todas las ubicaciones"
+        "all_locales": "Todas las ubicaciones",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Todas las monedas en dólares estadounidenses (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} Voces",
         "lifetime_one_time": "Vitalicio — $169 pago único",
         "measure_word": "Medida:",
+        "native_level": "Nativo",
         "new_cards_per_day": "Tarjetas nuevas por día",
         "noun_class": "Clase:",
         "phonetics_conditions": "Mostrar para",

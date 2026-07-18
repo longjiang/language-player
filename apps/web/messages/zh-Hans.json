@@ -160,7 +160,13 @@
     },
     "filter": {
         "all": "全部",
-        "all_locales": "所有地区"
+        "all_locales": "所有地区",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. 所有货币均以美元（USD）计。",
@@ -188,6 +194,7 @@
         "l2_voices": "{l2} 声音",
         "lifetime_one_time": "终身 — 一次性支付 $169",
         "measure_word": "量词：",
+        "native_level": "母语",
         "new_cards_per_day": "每日新卡片",
         "noun_class": "词类：",
         "phonetics_conditions": "显示范围",

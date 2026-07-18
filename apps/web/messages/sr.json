@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Sve",
-        "all_locales": "Све локације"
+        "all_locales": "Све локације",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Sve valute su u američkim dolarima (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} гласови",
         "lifetime_one_time": "Доживотно — 169$ једнократно",
         "measure_word": "Мера:",
+        "native_level": "Maternji",
         "new_cards_per_day": "Нове картице дневно",
         "noun_class": "Разред:",
         "phonetics_conditions": "Прикажи за",

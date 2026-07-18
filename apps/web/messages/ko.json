@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "전체",
-        "all_locales": "모든 위치"
+        "all_locales": "모든 위치",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. 모든 통화는 미국 달러(USD)로 표시됩니다.",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} 음성",
         "lifetime_one_time": "평생 — $169 일회 결제",
         "measure_word": "측정:",
+        "native_level": "원어민",
         "new_cards_per_day": "하루 새 카드 수",
         "noun_class": "등급:",
         "phonetics_conditions": "표시 대상",

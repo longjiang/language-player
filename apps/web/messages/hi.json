@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "सभी",
-        "all_locales": "सभी स्थान"
+        "all_locales": "सभी स्थान",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. सभी मुद्राएँ अमेरिकी डॉलर (USD) में।",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} आवाज़ें",
         "lifetime_one_time": "लाइफ़टाइम — $169 एकमुश्त",
         "measure_word": "माप:",
+        "native_level": "मातृभाषा",
         "new_cards_per_day": "प्रतिदिन नए कार्ड",
         "noun_class": "वर्ग:",
         "phonetics_conditions": "के लिए दिखाएं",

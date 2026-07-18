@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Alle",
-        "all_locales": "Alle Sprachen"
+        "all_locales": "Alle Sprachen",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Alle Währungen in US-Dollar (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} Stimmen",
         "lifetime_one_time": "Lebenslang — 169 $ einmalig",
         "measure_word": "Maß:",
+        "native_level": "Muttersprache",
         "new_cards_per_day": "Neue Karten pro Tag",
         "noun_class": "Klasse:",
         "phonetics_conditions": "Anzeigen für",

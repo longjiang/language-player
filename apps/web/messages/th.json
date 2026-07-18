@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "ทั้งหมด",
-        "all_locales": "ทุกภาษา"
+        "all_locales": "ทุกภาษา",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. สกุลเงินทั้งหมดเป็นดอลลาร์สหรัฐ (USD)",
@@ -185,6 +191,7 @@
         "l2_voices": "เสียง {l2}",
         "lifetime_one_time": "ตลอดชีพ — 169 ดอลลาร์สหรัฐ จ่ายครั้งเดียว",
         "measure_word": "วัด:",
+        "native_level": "เจ้าของภาษา",
         "new_cards_per_day": "จำนวนไพ่ใหม่ต่อวัน",
         "noun_class": "คลาส:",
         "phonetics_conditions": "แสดงสำหรับ",
