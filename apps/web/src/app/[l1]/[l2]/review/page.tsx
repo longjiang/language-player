@@ -74,6 +74,8 @@ export default function ReviewPage() {
   const [contextTranslation, setContextTranslation] = useState<string | null>(null);
   /** Track which fetch batch we're on so we can ignore stale results. */
   const fetchGenerationRef = useRef(0);
+  /** Track the current card's word ID to detect unsave-triggered card changes. */
+  const lastCardIdRef = useRef<string | null>(null);
 
   const l2Code = baseCode(l2.code);
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
@@ -276,6 +278,18 @@ export default function ReviewPage() {
       setCurrentIndex(cards.length - 1);
     }
   }, [cards.length, currentIndex]);
+
+  // ── When card changes without a rating (e.g. unsave), reset to front ──
+  useEffect(() => {
+    const card = cards[currentIndex];
+    const currentId = card?.word.id ?? null;
+    if (currentId && currentId !== lastCardIdRef.current) {
+      lastCardIdRef.current = currentId;
+      if (showDefinition && !rated) {
+        setShowDefinition(false);
+      }
+    }
+  }, [cards, currentIndex, showDefinition, rated]);
 
   // ── Reset justCompleted when new cards become due ──
   useEffect(() => {
