@@ -688,7 +688,7 @@
         "sending": "Küldés...",
         "set_level_for_recommendations": "Állítsd be a jelenlegi {l2} szintedet a személyre szabott videóajánlásokhoz.",
         "settings_desc": "Konfiguráld a {l1} → {l2} tanulási élményt.",
-        "show_definition_desc": "A szó megérintésekor jelenítse meg a teljes szótári definíciót.",
+        "show_definition_desc": "Minden szó alatt mutassa a szó első szótári definícióját.",
         "show_gloss_saved_desc": "Gyors fordítást jelenít meg a szókincslistájához mentett szavak felett.",
         "show_phonetics_desc": "Pinjin, furigana vagy kiejtés megjelenítése a szavak felett a feliratokban és szövegekben.",
         "sign_in_to_review": "Jelentkezz be a szavak áttekintéséhez.",

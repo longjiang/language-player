@@ -688,7 +688,7 @@
         "sending": "Invio in corso...",
         "set_level_for_recommendations": "Imposta il tuo livello attuale di {l2} per ricevere consigli personalizzati sui video.",
         "settings_desc": "Configura la tua esperienza di apprendimento {l1} → {l2}.",
-        "show_definition_desc": "Mostra la definizione completa del dizionario quando tocchi una parola.",
+        "show_definition_desc": "Mostra la prima definizione del dizionario di ogni parola sotto la parola.",
         "show_gloss_saved_desc": "Mostra una traduzione rapida sopra le parole che hai salvato nel tuo elenco di vocaboli.",
         "show_phonetics_desc": "Mostra pinyin, furigana o pronuncia sopra le parole nei sottotitoli e nei testi.",
         "sign_in_to_review": "Accedi per rivedere le parole.",
