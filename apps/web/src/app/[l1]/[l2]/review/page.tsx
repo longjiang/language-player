@@ -577,6 +577,7 @@ export default function ReviewPage() {
               <TokenizedText
                 text={currentCard.word.context.text}
                 l2Code={l2Code}
+                highlightForm={currentCard.word.context.form}
                 context={{
                   form: wordForm,
                   text: currentCard.word.context.text,
