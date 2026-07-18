@@ -71,6 +71,8 @@ export default function ReviewPage() {
   const [justCompleted, setJustCompleted] = useState(false);
   /** Cache of fetched dictionary entries keyed by saved word ID. */
   const [entriesCache, setEntriesCache] = useState<Record<string, DictionaryEntry | null>>({});
+  /** Auto-translated context text (fetched on-demand when no saved translation exists). */
+  const [contextTranslation, setContextTranslation] = useState<string | null>(null);
   /** Track which fetch batch we're on so we can ignore stale results. */
   const fetchGenerationRef = useRef(0);
 
@@ -347,6 +349,37 @@ export default function ReviewPage() {
 
   const currentCard = cards[currentIndex];
 
+  // ── Auto-translate context text when back is revealed (if no saved translation) ──
+  useEffect(() => {
+    if (!showDefinition || !getShowTranslation()) return;
+
+    const ctxText = currentCard?.word.context.text;
+    const savedTranslation = currentCard?.word.context.translation;
+    if (!ctxText || savedTranslation) {
+      setContextTranslation(null);
+      return;
+    }
+
+    let cancelled = false;
+    const fetchTranslation = async () => {
+      try {
+        const res = await fetch(`${PYTHON_API_URL}/translate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: ctxText, l1: baseCode(l1.code), l2: l2Code }),
+        });
+        if (cancelled) return;
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) {
+          setContextTranslation(data?.translated_text ?? data?.translation ?? data?.text ?? null);
+        }
+      } catch { /* network error — silently ignore */ }
+    };
+    fetchTranslation();
+    return () => { cancelled = true; };
+  }, [showDefinition, currentCard?.word.context.text, l2Code, l1.code]);
+
   // ── Render states ──
 
   const isLoading = status === 'loading' || !wordsLoaded || !srsLoaded || initializing;
@@ -576,9 +609,9 @@ export default function ReviewPage() {
                 — {currentCard.word.context.videoTitle}
               </p>
             )}
-            {showDefinition && getShowTranslation() && currentCard.word.context.translation && (
+            {showDefinition && getShowTranslation() && (currentCard.word.context.translation || contextTranslation) && (
               <p className="text-sm mt-2 italic text-muted-foreground border-t border-border pt-2">
-                {currentCard.word.context.translation}
+                {currentCard.word.context.translation || contextTranslation}
               </p>
             )}
           </div>
