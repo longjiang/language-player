@@ -629,6 +629,7 @@ export default function ReviewPage() {
                   videoTitle: currentCard.word.context.videoTitle,
                 }}
                 contextText={currentCard.word.context.text}
+                contextForm={currentCard.word.context.form}
               />
             ) : (
               <p className="text-muted-foreground italic text-sm text-center">
