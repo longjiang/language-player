@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { BookOpen, Film, Binary, Sparkles } from 'lucide-react';
+import { BookOpen, ExternalLink, Film, Binary, Sparkles } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
 import { formatPronunciation } from '@langplayer/utils';
@@ -116,10 +116,21 @@ export function DictionaryEntryCard({
   // ── Shared: source line ──
   const sourceName = entry.dictionary?.name ?? entry.source;
   const displaySource = sourceName === 'AI-Generated' || sourceName === 'LLM' ? t('label.ai_generated') : sourceName;
+  const googleImagesUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(entry.head)}`;
   const sourceLine = (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <BookOpen className="h-3 w-3" />
       <span>{displaySource}</span>
+      <a
+        href={googleImagesUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center hover:text-foreground transition-colors"
+        title={t('action.search_images')}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <ExternalLink className="h-3 w-3" />
+      </a>
       {entry.match_type && entry.match_type !== 'exact' && (
         <span className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
           {entry.match_type}
