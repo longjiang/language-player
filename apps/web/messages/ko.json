@@ -688,7 +688,7 @@
         "sending": "전송 중...",
         "set_level_for_recommendations": "맞춤형 동영상 추천을 위해 현재 {l2} 수준을 설정하세요.",
         "settings_desc": "{l1} → {l2} 학습 환경을 구성하세요.",
-        "show_definition_desc": "단어를 탭할 때 전체 사전 정의를 표시합니다.",
+        "show_definition_desc": "각 단어 아래에 사전의 첫 번째 정의를 표시합니다.",
         "show_gloss_saved_desc": "단어장에 저장한 단어 위에 빠른 번역을 표시합니다.",
         "show_phonetics_desc": "자막과 텍스트의 단어 위에 병음, 후리가나 또는 발음을 표시합니다.",
         "sign_in_to_review": "단어를 검토하려면 로그인하세요.",

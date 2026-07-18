@@ -688,7 +688,7 @@
         "sending": "Se trimite...",
         "set_level_for_recommendations": "Setați nivelul dumneavoastră actual {l2} pentru recomandări personalizate de videoclipuri.",
         "settings_desc": "Configurați experiența dumneavoastră de învățare {l1} → {l2}.",
-        "show_definition_desc": "Afișează definiția completă din dicționar când atingeți un cuvânt.",
+        "show_definition_desc": "Afișează prima definiție din dicționar a fiecărui cuvânt sub cuvânt.",
         "show_gloss_saved_desc": "Afișează o traducere rapidă deasupra cuvintelor pe care le-ați salvat în lista de vocabular.",
         "show_phonetics_desc": "Arată pinyin, furigana sau pronunția deasupra cuvintelor în subtitrări și texte.",
         "sign_in_to_review": "Conectează-te pentru a analiza cuvintele.",

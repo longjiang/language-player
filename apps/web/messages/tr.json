@@ -688,7 +688,7 @@
         "sending": "Gönderiliyor...",
         "set_level_for_recommendations": "Kişiselleştirilmiş video önerileri için mevcut {l2} seviyenizi ayarlayın.",
         "settings_desc": "{l1} → {l2} öğrenme deneyiminizi yapılandırın.",
-        "show_definition_desc": "Bir kelimeye dokunduğunuzda tam sözlük tanımını gösterir.",
+        "show_definition_desc": "Her kelimenin ilk sözlük tanımını kelimenin altında göster.",
         "show_gloss_saved_desc": "Kelime listenize kaydettiğiniz kelimelerin üzerinde hızlı bir çeviri gösterir.",
         "show_phonetics_desc": "Altyazılarda ve metinlerde kelimelerin üzerinde pinyin, furigana veya telaffuz göster.",
         "sign_in_to_review": "Sözcükleri gözden geçirmek için oturum açın.",
