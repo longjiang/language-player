@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useLanguage } from '@/providers/language-provider';
+import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
-import { getShowTranslation, setShowTranslation, getShowPhonetics, setShowPhonetics } from '@/lib/settings';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@/lib/token-cache';
@@ -73,11 +73,12 @@ function stripDurationPrefix(text: string): string {
 
 export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
+  const { display, updateDisplay } = useSettingsContext();
   const t = useT();
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
-  const [showTranslation, setShowTranslationState] = useState(true);
   const [showPhonetics, setShowPhoneticsState] = useState(true);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const showTranslation = display.translation;
 
   useEffect(() => {
     if (initialLines) {
@@ -101,7 +102,6 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   }, [youtubeId, l2.code, initialLines]);
 
   useEffect(() => {
-    setShowTranslationState(getShowTranslation());
     setShowPhoneticsState(getShowPhonetics());
   }, []);
 
@@ -157,9 +157,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   }, [activeIndex, scrollContainerRef]);
 
   const toggleTranslation = () => {
-    const next = !showTranslation;
-    setShowTranslationState(next);
-    setShowTranslation(next);
+    updateDisplay({ translation: !showTranslation });
   };
 
   const togglePhonetics = () => {
