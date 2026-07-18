@@ -197,6 +197,14 @@ export default function ReviewPage() {
 
   // ── Handlers ──
 
+  /** Toast background/border colors matching the rating buttons. */
+  const RATING_TOAST_COLORS: Record<Rating, string> = {
+    again: '!bg-red-600 !border-red-700',
+    hard:  '!bg-orange-500 !border-orange-600',
+    good:  '!bg-green-600 !border-green-700',
+    easy:  '!bg-blue-600 !border-blue-700',
+  };
+
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
     setRated(true);
@@ -208,27 +216,13 @@ export default function ReviewPage() {
       return;
     }
 
-    // Visual feedback — centered pill toast with float-up animation
+    // Visual feedback via toast — matches button color
     const label = RATING_LABELS.find((r) => r.key === quality);
     if (label) {
-      const isAgain = quality === 'again';
       toast(label.label, {
         description: label.hint,
-        duration: 800,
-        closeButton: false,
-        className: [
-          'rating-toast text-sm font-medium text-center',
-          isAgain
-            ? '!bg-red-100 dark:!bg-red-900/60 !text-red-700 dark:!text-red-300 !border-red-200 dark:!border-red-800'
-            : '!bg-green-100 dark:!bg-green-900/60 !text-green-700 dark:!text-green-300 !border-green-200 dark:!border-green-800',
-        ].join(' '),
-        style: {
-          width: 'auto',
-          minWidth: '140px',
-          padding: '8px 24px',
-          borderRadius: '999px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-        },
+        duration: 600,
+        className: `${RATING_TOAST_COLORS[quality]} !text-white !border`,
       });
     }
 
