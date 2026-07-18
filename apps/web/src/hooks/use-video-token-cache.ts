@@ -6,7 +6,7 @@ import { TokenCache } from '@/lib/token-cache';
 
 /**
  * Fetches the pre-computed token cache for a video and makes it available
- * to subtitle components to avoid per-line /lemmatize API calls.
+ * to subtitle components to avoid per-line /lemmatize-normalized API calls.
  */
 export function useVideoTokenCache(youtubeId: string, l2Code: string) {
   const { getVideoTokenCache } = useVideos();

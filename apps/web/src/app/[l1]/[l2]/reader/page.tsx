@@ -218,7 +218,7 @@ export default function ReaderPage() {
     if (textBlocks.length === 0) { setBlockTokens([]); return; }
     setTokenizing(true);
     let cancelled = false;
-    fetch(`${PYTHON_API_URL}/lemmatize/batch`, {
+    fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts: textBlocks.map(b => b.text), l2: l2.code }),
     })

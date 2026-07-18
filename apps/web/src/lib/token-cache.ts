@@ -1,7 +1,7 @@
 /**
  * Client-side token cache for video subtitles.
  * Populated from GET /lemmatize-video-normalized and used to skip
- * per-line /lemmatize API calls during playback.
+ * per-line /lemmatize-normalized API calls during playback.
  */
 
 import type { LemmatizedToken } from '@langplayer/shared';
