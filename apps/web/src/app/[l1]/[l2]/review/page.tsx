@@ -216,7 +216,6 @@ export default function ReviewPage() {
         description: label.hint,
         duration: 800,
         closeButton: false,
-        position: 'top-center',
         className: [
           'rating-toast text-sm font-medium text-center',
           isAgain
