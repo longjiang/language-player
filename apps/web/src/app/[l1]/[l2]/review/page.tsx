@@ -507,9 +507,7 @@ export default function ReviewPage() {
           <ArrowLeft className="w-4 h-4" />
           {t('action.back')}
         </Link>
-        <span className="text-sm text-muted-foreground flex items-center gap-3">
-          <span className="tabular-nums">{currentIndex + 1}/{cards.length}</span>
-          <span className="flex items-center gap-2 text-xs">
+        <span className="text-sm text-muted-foreground flex items-center gap-2 text-xs">
             {cardCounts.newCount > 0 && (
               <span className="inline-flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
@@ -530,14 +528,6 @@ export default function ReviewPage() {
             )}
           </span>
         </span>
-      </div>
-
-      {/* Progress bar */}
-      <div className="w-full h-1 bg-muted rounded-full mb-8">
-        <div
-          className="h-full bg-primary rounded-full transition-all duration-500"
-          style={{ width: `${((currentIndex + (rated ? 1 : 0)) / cards.length) * 100}%` }}
-        />
       </div>
 
       {/* Card */}
