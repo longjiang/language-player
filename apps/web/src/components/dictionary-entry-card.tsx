@@ -1,12 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { BookOpen, ExternalLink, Volume2 } from 'lucide-react';
+import { BookOpen, ExternalLink, Film, Binary } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
+import { TabbedPanel } from '@/components/tabbed-panel';
+import { SubsSearchResults } from '@/components/video/subs-search-results';
+import { InflectionTable } from '@/components/inflection-table';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
@@ -44,6 +48,7 @@ export function DictionaryEntryCard({
   const { apply } = useScriptPreference(l2Code ?? '');
   const { head, alternate } = apply(entry.head, entry.alternate);
   const isFull = variant === 'full';
+  const [tab, setTab] = useState<string>('word');
 
   const levels = entry.levels ?? [];
   const levelTexts = levels.map((l) => levelLabel
@@ -197,11 +202,12 @@ export function DictionaryEntryCard({
 
   // ── FULL variant ──
   const HeadTag = headingLevel;
-  return (
+
+  const wordContent = (
     <div
       className={onClick
-        ? "rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/20 cursor-pointer transition-all"
-        : "rounded-xl border border-border bg-card p-6 shadow-sm"
+        ? "cursor-pointer transition-all hover:shadow-md hover:border-primary/20"
+        : ""
       }
       onClick={() => onClick?.(entry)}
     >
@@ -348,5 +354,25 @@ export function DictionaryEntryCard({
         )}
       </div>
     </div>
+  );
+
+  return (
+    <TabbedPanel
+      tabs={[
+        { key: 'word', label: t('title.dictionary'), icon: <BookOpen className="h-4 w-4" /> },
+        { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
+        { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> },
+      ]}
+      activeTab={tab}
+      onTabChange={setTab}
+      className="shadow-sm"
+      contentClassName="p-6"
+    >
+      {tab === 'word' && wordContent}
+      {tab === 'examples' && <SubsSearchResults term={head} />}
+      {tab === 'inflections' && (
+        <InflectionTable head={head} l2Code={l2Code ?? ''} />
+      )}
+    </TabbedPanel>
   );
 }
