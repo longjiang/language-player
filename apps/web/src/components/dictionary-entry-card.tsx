@@ -375,7 +375,7 @@ export function DictionaryEntryCard({
       {tab === 'word' && wordContent}
       {tab === 'examples' && <SubsSearchResults term={head} embedded />}
       {tab === 'deepseek' && (
-        <AiExplanation word={head} entryFound={true} />
+        <AiExplanation word={head} entryFound={true} autoLoad />
       )}
       {tab === 'inflections' && (
         <InflectionTable head={head} l2Code={l2Code ?? ''} embedded />
