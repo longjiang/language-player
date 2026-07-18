@@ -575,6 +575,11 @@ export default function ReviewPage() {
                 — {currentCard.word.context.videoTitle}
               </p>
             )}
+            {showDefinition && currentCard.word.context.translation && (
+              <p className="text-sm mt-2 italic text-muted-foreground border-t border-border pt-2">
+                {currentCard.word.context.translation}
+              </p>
+            )}
           </div>
         )}
 
