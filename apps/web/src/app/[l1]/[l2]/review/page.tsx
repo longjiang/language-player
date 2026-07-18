@@ -7,12 +7,13 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
-import { sm2, newCard, remainingNewCardsToday, formatPronunciation } from '@langplayer/utils';
+import { sm2, newCard, remainingNewCardsToday } from '@langplayer/utils';
 import type { SrsFields, DictionaryEntry, SavedWord } from '@langplayer/shared';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
+import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { useT } from '@/hooks/use-t';
 import { toast } from 'sonner';
 import {
@@ -588,35 +589,23 @@ export default function ReviewPage() {
             {t('review.show_definition')}
           </Button>
         ) : (
-          <div className="mt-4 w-full text-center space-y-3">
-            {/* Pronunciation (hidden until reveal) */}
-            {(() => {
-              const pron = formatPronunciation(entry, l2Code);
-              if (pron) {
-                return (
-                  <p className="text-lg text-muted-foreground" lang={l2.code}>
-                    {pron}
-                  </p>
-                );
-              }
-              return null;
-            })()}
-
-            {entry?.definitions && entry.definitions.length > 0 ? (
-              <div className="space-y-1.5">
-                {entry.definitions.slice(0, 5).map((def, i) => (
-                  <div key={i} className="text-base">
-                    {entry.part_of_speech && i === 0 ? (
-                      <span className="text-muted-foreground text-sm mr-1">
-                        {entry.part_of_speech}
-                      </span>
-                    ) : null}
-                    <span>{def}</span>
-                  </div>
-                ))}
-              </div>
+          <div className="mt-4 w-full text-left space-y-3">
+            {/* Full dictionary entry card (hidden until reveal) */}
+            {entry ? (
+              <DictionaryEntryCard
+                entry={entry}
+                variant="full"
+                l2Code={l2Code}
+                l1Code={baseCode(l1.code)}
+                saveContext={{
+                  form: wordForm,
+                  text: currentCard.word.context.text,
+                  youtube_id: currentCard.word.context.youtube_id,
+                  videoTitle: currentCard.word.context.videoTitle,
+                }}
+              />
             ) : (
-              <p className="text-muted-foreground italic text-sm">
+              <p className="text-muted-foreground italic text-sm text-center">
                 {t('review.no_definition_available')}
               </p>
             )}
