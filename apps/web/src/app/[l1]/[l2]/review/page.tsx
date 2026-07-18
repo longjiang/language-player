@@ -650,6 +650,7 @@ export default function ReviewPage() {
                   youtube_id: currentCard.word.context.youtube_id,
                   videoTitle: currentCard.word.context.videoTitle,
                 }}
+                contextText={currentCard.word.context.text}
               />
             ) : (
               <p className="text-muted-foreground italic text-sm text-center">
