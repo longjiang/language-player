@@ -595,6 +595,7 @@ export default function ReviewPage() {
               <DictionaryEntryCard
                 entry={entry}
                 variant="full"
+                embedded
                 l2Code={l2Code}
                 l1Code={baseCode(l1.code)}
                 saveContext={{
