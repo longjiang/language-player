@@ -560,11 +560,6 @@ export default function ReviewPage() {
           }
         }}
       >
-        {/* Word */}
-        <h1 className="text-3xl font-bold mb-2" lang={l2.code}>
-          {wordForm}
-        </h1>
-
         {/* Context sentence — always visible, tokenized/interactive */}
         {currentCard.word.context.text && (
           <div className="mb-4 p-3 bg-muted/50 rounded-lg text-left w-full">
