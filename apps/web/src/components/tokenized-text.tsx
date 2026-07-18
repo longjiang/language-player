@@ -51,11 +51,34 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
   const [convertedText, setConvertedText] = useState(text);
   const [converting, setConverting] = useState(false);
+  const [hasBeenVisible, setHasBeenVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false); // prevent concurrent fetches
   const lastTextRef = useRef(text); // avoid redundant convert+tokenize
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
   tokenCacheRef.current = tokenCache;
+
+  // ── Lazy tokenization: only tokenize when visible, then stay tokenized ──
+  useEffect(() => {
+    if (hasBeenVisible) return; // already visible, no need to observe
+
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setHasBeenVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }, // start tokenizing 200px before it enters viewport
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasBeenVisible]);
 
   // Convert text to traditional if user prefers traditional and L2 is Chinese.
   // OpenCC is lazy-loaded only when needed. Conversion is idempotent so
@@ -97,6 +120,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
     // Wait for script conversion to finish
     if (converting) return;
+
+    // Lazy tokenization: don't fetch until visible
+    if (!hasBeenVisible) return;
 
     const effectiveText = convertedText;
 
@@ -176,7 +202,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       controller.abort();
       loadingRef.current = false;
     };
-  }, [convertedText, converting, l2Code, preloadedTokens]);
+  }, [convertedText, converting, l2Code, preloadedTokens, hasBeenVisible]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken) => {
     setSelectedToken(prev => prev === token ? null : token);
@@ -194,9 +220,18 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     return forms;
   }, [savedWords, l2Code]);
 
+  // ── Pre-visible: plain text, no tokenization yet ──
+  if (!hasBeenVisible && !preloadedTokens) {
+    return (
+      <div ref={containerRef} className="text-muted-foreground/80" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+        {convertedText}
+      </div>
+    );
+  }
+
   if (loading || converting) {
     return (
-      <div className="text-muted-foreground animate-pulse" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <div ref={containerRef} className="text-muted-foreground animate-pulse" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {convertedText}
       </div>
     );
@@ -204,14 +239,14 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (error && tokens.length <= 1) {
     return (
-      <div className="text-muted-foreground" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <div ref={containerRef} className="text-muted-foreground" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {convertedText}
       </div>
     );
   }
 
   return (
-    <div>
+    <div ref={containerRef}>
       <span className="leading-relaxed" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {tokens.map((token, i) => {
           const showPhonetics = getShowPhonetics();
