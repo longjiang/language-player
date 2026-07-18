@@ -10,6 +10,7 @@ import { useSpeech } from '@/hooks/use-speech';
 import { sm2, newCard, remainingNewCardsToday } from '@langplayer/utils';
 import type { SrsFields, DictionaryEntry, SavedWord } from '@langplayer/shared';
 import { baseCode } from '@/lib/language-data';
+import { getShowTranslation } from '@/lib/settings';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
@@ -575,7 +576,7 @@ export default function ReviewPage() {
                 — {currentCard.word.context.videoTitle}
               </p>
             )}
-            {showDefinition && currentCard.word.context.translation && (
+            {showDefinition && getShowTranslation() && currentCard.word.context.translation && (
               <p className="text-sm mt-2 italic text-muted-foreground border-t border-border pt-2">
                 {currentCard.word.context.translation}
               </p>
