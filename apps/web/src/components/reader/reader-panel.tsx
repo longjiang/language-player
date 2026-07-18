@@ -14,7 +14,7 @@ import { getSampleText } from '@/lib/sample-texts';
 import { TabbedPanel } from '@/components/tabbed-panel';
 import {
   BookOpen, Loader2, Globe, FileText, Sparkles,
-  ChevronLeft, ChevronRight, Languages,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 function stripMarkdown(md: string): string {
@@ -97,7 +97,7 @@ export function ReaderPanel({
   onTokenize, onFillSample, onPageTranslate,
 }: ReaderPanelProps) {
   const t = useT();
-  const { display } = useSettingsContext();
+  const { display, updateDisplay } = useSettingsContext();
   const showTranslation = display.translation;
   const measureRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -336,35 +336,15 @@ export function ReaderPanel({
                   <ChevronRight className="h-4 w-4" />
                 </button>
                 <span className="mx-2 text-muted-foreground/30">|</span>
-                <button
-                  onClick={async () => {
-                    const texts = visibleBlocks
-                      ?.filter((b): b is TextBlock => b.kind === 'text')
-                      .map(b => b.text) ?? [];
-                    if (texts.length === 0) return;
-                    // Clear stale translations for blocks not on this page
-                    setBlockTranslations({});
-                    const translated = await onPageTranslate(texts);
-                    if (translated.length > 0) {
-                      const map: Record<number, string> = {};
-                      const textBlocks = visibleBlocks?.filter((b): b is TextBlock => b.kind === 'text') ?? [];
-                      textBlocks.forEach((_, i) => {
-                        if (i < translated.length) map[i] = translated[i]!;
-                      });
-                      setBlockTranslations(map);
-                    }
-                  }}
-                  disabled={translating || !visibleBlocks}
-                  className="flex items-center gap-1 rounded p-1 hover:bg-muted disabled:opacity-30 transition-colors"
-                  title={t('action.translation')}
-                >
-                  {translating ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Languages className="h-3.5 w-3.5" />
-                  )}
-                  <span>{translating ? t('msg.translating') : t('action.translation')}</span>
-                </button>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <span className="text-xs">{t('action.translation')}</span>
+                  <span className="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input type="checkbox" checked={showTranslation}
+                      onChange={e => updateDisplay({ translation: e.target.checked })}
+                      className="sr-only peer" />
+                    <div className="w-9 h-5 bg-muted rounded-full peer peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-primary/20 after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-background after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full" />
+                  </span>
+                </label>
               </div>
             </div>
           )}
