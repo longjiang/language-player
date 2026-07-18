@@ -102,7 +102,7 @@ export default function SettingsPage() {
     if (l2.code === 'zh') return t('label.phonetics_ruby_zh');
     if (l2.code === 'ja') return t('label.phonetics_ruby_ja');
     if (l2.code === 'ko') return t('label.phonetics_ruby_ko');
-    return t('label.phonetics_ruby');
+    return t('setting.ruby');
   })();
   const phoneticsWordLabel = t('label.phonetics_word');
   const phoneticsOffLabel = t('setting.off');
@@ -172,7 +172,7 @@ export default function SettingsPage() {
             </Section>
 
             <Section title={t('setting.phonetics')}>
-              <Segmented label={t('label.phonetics_show')}
+              <Segmented label={t('label.show_phonetics')}
                 value={l2Settings.tokenSpan.phonetics.show === false ? 'off' : l2Settings.tokenSpan.phonetics.show}
                 onChange={(v: string) => {
                   const ts = l2Settings.tokenSpan;
@@ -200,7 +200,7 @@ export default function SettingsPage() {
             <Section title={t('setting.word_level_display')}>
               <Toggle label={t('label.show_gloss_saved')} desc={t('msg.show_gloss_saved_desc')}
                 checked={tokenizedText.quickGloss} onChange={v => updateTokenizedText({ quickGloss: v })} />
-              <Toggle label={t('label.show_definition')} desc={t('msg.show_definition_desc')}
+              <Toggle label={t('review.show_definition')} desc={t('msg.show_definition_desc')}
                 checked={l2Settings.tokenSpan.definition.show}
                 onChange={v => {
                   const ts = l2Settings.tokenSpan;
@@ -227,7 +227,7 @@ export default function SettingsPage() {
             </Section>
 
             <Section title={t('setting.interaction')}>
-              <Toggle label={t('label.quiz_mode')} desc={t('msg.quiz_mode_desc')}
+              <Toggle label={t('setting.quiz_mode')} desc={t('msg.quiz_mode_desc')}
                 checked={tokenizedText.mode === 'quiz'}
                 onChange={v => updateTokenizedText({ mode: v ? 'quiz' : 'normal' })} />
             </Section>
