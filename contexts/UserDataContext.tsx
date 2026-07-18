@@ -138,9 +138,9 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
     const serverSyncInterval = setInterval(async () => {
       try {
-        if (!userData) return;
+        if (!isAuthenticated || !userData) return;
         const authToken = storageManager.getAuthToken();
-        if (!authToken) throw new Error('No auth token found');
+        if (!authToken) return; // silently skip — not logged in
 
         await patchUserData(Number(userData.id), {
           saved_words: JSON.stringify(userData.saved_words),
@@ -158,7 +158,7 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
       clearInterval(progressUpdateInterval);
       clearInterval(serverSyncInterval);
     };
-  }, [userData, l2Lang]);
+  }, [userData, l2Lang, isAuthenticated]);
 
   const hasSavedWord = (langCode: string, wordId: string): boolean => {
     return userData?.saved_words[langCode]?.some(word => word.id === wordId) || false;
