@@ -97,7 +97,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </SavedWordsProvider>
               </ApiClientProvider>
             </SessionProvider>
-            <Toaster richColors closeButton position="top-center" />
+            <Toaster richColors closeButton={false} position="top-center" />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
