@@ -536,7 +536,7 @@ export interface TokenSpanSettings {
      * `always`    — on every word
      * `hardWords` — only on words above the user's proficiency level
      */
-    conditions: 'always' | 'hardWords';
+    conditions: 'always' | 'hardWords'; // If phonetics.show is 'word', then 'always' is manditory.
   };
   definition: {
     /** Show first dictionary definition inline on ALL word blocks. */
