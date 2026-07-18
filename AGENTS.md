@@ -210,3 +210,23 @@ Before translating, always check if `translations.csv` already has the same or v
 - Add ADRs in `docs/adr/` for significant architectural decisions
 - Never edit files in `zerotohero-nuxt/` or `language-player-3/` — they are reference-only
 - Always do a type check and build check before committing. Never push.
+
+### Terminal & Server Start Conventions
+
+**One server instance only.** Before starting `npx expo start` (or similar commands to start Next.js, Nuxt, or Python servers), check if an instance of the server is already running: `lsof -ti:8081` (and other similar ports, and potential alternate ports, e.g. 8082 for Metro). If the user says "it's running," trust them — don't open another.
+
+**Always check you are in the right directory.** For the Classic Nuxt app, `cd` into zerotohero-nuxt/ before running `npm run dev`. For the GO app, `cd` into language-player-3/ before running `npx expo start`. For the Python backend, `cd` into zerotohero-python-server/ before running `python3.10 app.py`.
+
+**Never use `--clear` unless proven necessary.** It wipes the bundle cache, forcing a full rebuild of 2000+ modules. Use `r` in the Metro terminal to reload instead.
+
+**Escalation for Metro issues:**
+1. Verify the file on disk is correct → press `r` in Metro (~1s), or similar commands for other servers
+2. Restart Metro without `--clear`: `npx expo start --ios` (~10s), or similar restarts for other servers
+3. `--clear` only as last resort (~minutes)
+4. If unclear, check with the user
+
+**For Metro, `npx expo run:ios`** does a full native build (needs CocoaPods). Prefer `npx expo start --ios` for development, which uses Expo Go. If you must use `run:ios`, the RVM Ruby has an x86_64 nkf gem on ARM Macs — work around it with:
+```bash
+EXPO_NO_POD_INSTALL=1 npx expo prebuild --platform ios && \
+/usr/bin/ruby -S pod install --project-directory=ios && \
+npx expo run:ios --no-install
