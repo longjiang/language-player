@@ -270,7 +270,7 @@ export default function ReviewPage() {
     setEntriesCache({});
   }, [l2Code]);
 
-  // ── Keyboard shortcuts (after reveal: rate with 1-4) ──
+  // ── Keyboard shortcuts (after reveal: rate with 1-4, Space/Enter = Good) ──
   useEffect(() => {
     if (!showDefinition || rated) return;
 
@@ -281,7 +281,7 @@ export default function ReviewPage() {
       const key = e.key;
       if (key === '1') handleRate('again');
       else if (key === '2') handleRate('hard');
-      else if (key === '3') handleRate('good');
+      else if (key === '3' || key === ' ' || key === 'Enter') handleRate('good');
       else if (key === '4') handleRate('easy');
     };
 
@@ -488,9 +488,23 @@ export default function ReviewPage() {
 
       {/* Card */}
       <div
-        className={`bg-card border rounded-xl p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center
-          ${!showDefinition && !rated ? 'cursor-pointer hover:border-primary/50 transition-colors' : ''}`}
-        onClick={!showDefinition && !rated ? handleReveal : undefined}
+        className={`bg-card border rounded-xl p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center select-none
+          ${!showDefinition && !rated ? 'cursor-pointer hover:border-primary/50 transition-colors' : ''}
+          ${showDefinition && !rated ? 'cursor-pointer' : ''}`}
+        onClick={(e) => {
+          if (!showDefinition && !rated) {
+            handleReveal();
+          } else if (showDefinition && !rated) {
+            // Left half → Again, right half → Good
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            if (x < rect.width / 2) {
+              handleRate('again');
+            } else {
+              handleRate('good');
+            }
+          }
+        }}
       >
         {/* Action buttons row */}
         <div className="w-full flex justify-end gap-1 mb-2 -mt-2">
