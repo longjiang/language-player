@@ -34,6 +34,8 @@ interface DictionaryEntryCardProps {
   /** When true, renders without card chrome (no shadow, border, or outer padding).
    *  Use when embedding inside another card (e.g. review page). */
   embedded?: boolean;
+  /** Optional surrounding text context for DeepSeek explanation. */
+  contextText?: string;
 }
 
 /** Renders a single dictionary lookup result — compact in popups, full on detail pages. */
@@ -48,6 +50,7 @@ export function DictionaryEntryCard({
   l1Code,
   headingLevel = 'h1',
   embedded = false,
+  contextText,
 }: DictionaryEntryCardProps) {
   const t = useT();
   const { apply } = useScriptPreference(l2Code ?? '');
@@ -375,7 +378,7 @@ export function DictionaryEntryCard({
       {tab === 'word' && wordContent}
       {tab === 'examples' && <SubsSearchResults term={head} embedded />}
       {tab === 'deepseek' && (
-        <AiExplanation word={head} entryFound={true} autoLoad />
+        <AiExplanation word={head} contextText={contextText} entryFound={true} autoLoad />
       )}
       {tab === 'inflections' && (
         <InflectionTable head={head} l2Code={l2Code ?? ''} embedded />
