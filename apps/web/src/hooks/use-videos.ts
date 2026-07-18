@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import type { YouTubeVideo } from '@langplayer/shared';
 import type { VideoListResult } from '@/lib/video-service';
 
@@ -8,6 +8,11 @@ interface UseVideosOptions {
   l2: string;
   level?: number;
   pageSize?: number;
+  /** Optional cache provider — preserves results across page navigations. */
+  cache?: {
+    get: (key: string) => { videos: YouTubeVideo[]; hasMore: boolean; error: string | null } | null;
+    set: (key: string, entry: { videos: YouTubeVideo[]; hasMore: boolean; error: string | null }) => void;
+  };
 }
 
 interface UseVideosResult {
@@ -19,12 +24,39 @@ interface UseVideosResult {
   retry: () => void;
 }
 
-export function useVideos({ l2, level, pageSize = 24 }: UseVideosOptions): UseVideosResult {
-  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
+function cacheKey(l2: string, level: number | undefined): string {
+  return `${l2}:${level ?? 'all'}`;
+}
+
+export function useVideos({ l2, level, pageSize = 24, cache }: UseVideosOptions): UseVideosResult {
+  const key = cacheKey(l2, level);
+
+  // Restore from cache on mount / level change if available
+  const [videos, setVideos] = useState<YouTubeVideo[]>(() => {
+    if (cache) {
+      const entry = cache.get(key);
+      if (entry) return entry.videos;
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(() => {
+    // If we restored from cache, we're not loading
+    if (cache && cache.get(key)) return false;
+    return true;
+  });
+  const [error, setError] = useState<string | null>(() => {
+    if (cache) return cache.get(key)?.error ?? null;
+    return null;
+  });
+  const [hasMore, setHasMore] = useState(() => {
+    if (cache) return cache.get(key)?.hasMore ?? true;
+    return true;
+  });
   const [page, setPage] = useState(1);
+
+  // Track whether we've done the initial fetch so cache restoration
+  // doesn't prevent a refresh when the user explicitly changes level
+  const fetchedKeyRef = useRef<string | null>(null);
 
   const fetchVideos = useCallback(
     async (pageNum: number, append = false) => {
@@ -44,7 +76,14 @@ export function useVideos({ l2, level, pageSize = 24 }: UseVideosOptions): UseVi
         const data: VideoListResult = await res.json();
         const newVideos = data.videos ?? [];
 
-        setVideos((prev) => (append ? [...prev, ...newVideos] : newVideos));
+        setVideos((prev) => {
+          const updated = append ? [...prev, ...newVideos] : newVideos;
+          // Update cache so navigating back restores instantly
+          if (cache) {
+            cache.set(key, { videos: updated, hasMore: data.hasMore, error: null });
+          }
+          return updated;
+        });
         setHasMore(data.hasMore);
       } catch (err: any) {
         setError(err.message ?? 'Failed to load videos');
@@ -52,17 +91,27 @@ export function useVideos({ l2, level, pageSize = 24 }: UseVideosOptions): UseVi
         setLoading(false);
       }
     },
-    [l2, level, pageSize],
+    [l2, level, pageSize, cache, key],
   );
 
-  // Fetch on mount and when filter changes
+  // Need to track the current key for the fetchEffect
+  const fetchVideosRef = useRef(fetchVideos);
+  fetchVideosRef.current = fetchVideos;
+
+  // Fetch on mount and when filter changes — but skip if cache has data
+  // and we haven't explicitly requested this key yet.
   useEffect(() => {
+    // If cache has data for this key and we haven't fetched it in this mount,
+    // skip the fetch — the cache restoration above already set the state.
+    if (cache && cache.get(key) && fetchedKeyRef.current !== key) {
+      fetchedKeyRef.current = key;
+      setLoading(false);
+      return;
+    }
+    fetchedKeyRef.current = key;
     setPage(1);
-    // Don't clear videos — preserves existing cards to avoid unmount/remount
-    // churn that would cause child hooks (e.g. useChannelPreference) to re-fire.
-    // Loading state + empty-result guard in the page handles the UX.
-    fetchVideos(1, false);
-  }, [fetchVideos]);
+    fetchVideosRef.current(1, false);
+  }, [key, cache]);
 
   const loadMore = useCallback(() => {
     if (loading || !hasMore) return;
