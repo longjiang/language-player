@@ -153,12 +153,17 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
     return map[name] ?? name;
   };
 
+  // Count visible tables (exclude "head")
+  const visibleTables = tableNames.filter((t) => t !== 'head' && groups[t] && groups[t]!.length > 0);
+  const multiColumn = visibleTables.length >= 2;
+
   // ── Render ──
   return (
     <section className={embedded ? 'space-y-4' : 'space-y-4 rounded-lg border border-border bg-card p-4'}>
       {!embedded && <h2 className="text-base font-semibold">{t('title.conjugations')}</h2>}
 
-      {tableNames.map((table) => {
+      <div className={multiColumn ? 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3' : ''}>
+        {tableNames.map((table) => {
         const group = groups[table];
         if (!group || group.length === 0) return null;
 
@@ -174,11 +179,11 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
                 {tableLabel(table)}
               </h3>
             </div>
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-border sm:columns-2">
               {group.map((f, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between px-4 py-2 text-sm hover:bg-muted/20 transition-colors"
+                  className="flex items-center justify-between px-4 py-2 text-sm hover:bg-muted/20 transition-colors break-inside-avoid-column"
                 >
                   <span className="text-muted-foreground">{f.field}</span>
                   <span className="font-medium" lang={l2Code}>
@@ -190,6 +195,7 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
           </div>
         );
       })}
+      </div>
     </section>
   );
 }
