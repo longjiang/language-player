@@ -797,7 +797,8 @@
         "explain_morphology": "Dá a pronúncia e a morfologia (ou etimologia, se apropriado). Se flexionada, dá o lema e a flexão; caso contrário, não menciones flexão nem lema.",
         "explain_text_label": "Texto",
         "explain_word": "Explica sucintamente em {l1Name} o que significa a palavra {l2Name} ({code}) {word}.",
-        "explain_word_context": "Explica sucintamente em {l1Name} o que significa a palavra {l2Name} ({code}) {word} na frase: {context}."
+        "explain_word_context": "Explica sucintamente em {l1Name} o que significa a palavra {l2Name} ({code}) {word} na frase: {context}.",
+        "explain_word_context_form": "Explica sucintamente em {l1Name} o que significa a palavra {l2Name} ({code}) {word} (forma flexionada: {contextForm}) na frase: {context}."
     },
     "review": {
         "again": "Novamente",

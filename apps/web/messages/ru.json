@@ -797,7 +797,8 @@
         "explain_morphology": "Укажи произношение и морфологию (или этимологию, если уместно). Если слово изменяется, укажи лемму и форму словоизменения; иначе не упоминай словоизменение или лемму.",
         "explain_text_label": "Текст",
         "explain_word": "Кратко объясни на {l1Name}, что означает слово {l2Name} ({code}) {word}.",
-        "explain_word_context": "Кратко объясни на {l1Name}, что означает слово {l2Name} ({code}) {word} во фразе: {context}."
+        "explain_word_context": "Кратко объясни на {l1Name}, что означает слово {l2Name} ({code}) {word} во фразе: {context}.",
+        "explain_word_context_form": "Кратко объясни на {l1Name}, что означает слово {l2Name} ({code}) {word} (словоформа: {contextForm}) во фразе: {context}."
     },
     "review": {
         "again": "Снова",

@@ -36,6 +36,8 @@ interface DictionaryEntryCardProps {
   embedded?: boolean;
   /** Optional surrounding text context for DeepSeek explanation. */
   contextText?: string;
+  /** Optional inflected form of the word as it appears in contextText. */
+  contextForm?: string;
 }
 
 /** Renders a single dictionary lookup result — compact in popups, full on detail pages. */
@@ -51,6 +53,7 @@ export function DictionaryEntryCard({
   headingLevel = 'h1',
   embedded = false,
   contextText,
+  contextForm,
 }: DictionaryEntryCardProps) {
   const t = useT();
   const { apply } = useScriptPreference(l2Code ?? '');
@@ -378,7 +381,7 @@ export function DictionaryEntryCard({
       {tab === 'word' && wordContent}
       {tab === 'examples' && <SubsSearchResults term={head} embedded />}
       {tab === 'deepseek' && (
-        <AiExplanation word={head} contextText={contextText} entryFound={true} autoLoad />
+        <AiExplanation word={head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
       )}
       {tab === 'inflections' && (
         <InflectionTable head={head} l2Code={l2Code ?? ''} embedded />

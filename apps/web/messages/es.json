@@ -797,7 +797,8 @@
         "explain_morphology": "Da su pronunciación y morfología (o etimología si corresponde). Si está flexionada, da su lema y flexión; de lo contrario, no menciones flexión ni lema.",
         "explain_text_label": "Texto",
         "explain_word": "Explica brevemente en {l1Name} qué significa la palabra {l2Name} ({code}) {word}.",
-        "explain_word_context": "Explica brevemente en {l1Name} qué significa la palabra {l2Name} ({code}) {word} en la frase: {context}."
+        "explain_word_context": "Explica brevemente en {l1Name} qué significa la palabra {l2Name} ({code}) {word} en la frase: {context}.",
+        "explain_word_context_form": "Explica brevemente en {l1Name} qué significa la palabra {l2Name} ({code}) {word} (forma flexionada: {contextForm}) en la frase: {context}."
     },
     "review": {
         "again": "Otra vez",

@@ -797,7 +797,8 @@
         "explain_morphology": "Anna sen ääntämys ja morfologia (tai etymologia tarvittaessa). Jos taivutettu, anna lemma ja taivutus; muuten älä mainitse taivutusta tai lemmaa.",
         "explain_text_label": "Teksti",
         "explain_word": "Selitä ytimekkäästi kielellä {l1Name}, mitä {l2Name} ({code}) sana {word} tarkoittaa.",
-        "explain_word_context": "Selitä ytimekkäästi kielellä {l1Name}, mitä {l2Name} ({code}) sana {word} tarkoittaa lauseessa: {context}."
+        "explain_word_context": "Selitä ytimekkäästi kielellä {l1Name}, mitä {l2Name} ({code}) sana {word} tarkoittaa lauseessa: {context}.",
+        "explain_word_context_form": "Selitä ytimekkäästi kielellä {l1Name}, mitä {l2Name} ({code}) sana {word} (taivutusmuoto: {contextForm}) tarkoittaa lauseessa: {context}."
     },
     "review": {
         "again": "Uudelleen",

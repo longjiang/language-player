@@ -797,7 +797,8 @@
         "explain_morphology": "Tabhair a fhuaimniú agus a mhoirfeolaíocht (nó a fhréamhfhocal más cuí). Má tá sé infhillte, tabhair an lemma agus an t-infhilleadh; seachas sin, ná luaigh infhilleadh ná lemma.",
         "explain_text_label": "Téacs",
         "explain_word": "Mínigh go gonta i {l1Name} cad a chiallaíonn an focal {l2Name} ({code}) {word}.",
-        "explain_word_context": "Mínigh go gonta i {l1Name} cad a chiallaíonn an focal {l2Name} ({code}) {word} san fhrása: {context}."
+        "explain_word_context": "Mínigh go gonta i {l1Name} cad a chiallaíonn an focal {l2Name} ({code}) {word} san fhrása: {context}.",
+        "explain_word_context_form": "Mínigh go gonta i {l1Name} cad a chiallaíonn an focal {l2Name} ({code}) {word} (foirm infhillte: {contextForm}) san fhrása: {context}."
     },
     "review": {
         "again": "Arís",

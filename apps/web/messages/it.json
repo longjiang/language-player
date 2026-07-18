@@ -797,7 +797,8 @@
         "explain_morphology": "Fornisci la pronuncia e la morfologia (o l'etimologia se appropriato). Se flessa, fornisci il lemma e la flessione; altrimenti non menzionare flessione o lemma.",
         "explain_text_label": "Testo",
         "explain_word": "Spiega brevemente in {l1Name} cosa significa la parola {l2Name} ({code}) {word}.",
-        "explain_word_context": "Spiega brevemente in {l1Name} cosa significa la parola {l2Name} ({code}) {word} nella frase: {context}."
+        "explain_word_context": "Spiega brevemente in {l1Name} cosa significa la parola {l2Name} ({code}) {word} nella frase: {context}.",
+        "explain_word_context_form": "Spiega brevemente in {l1Name} cosa significa la parola {l2Name} ({code}) {word} (forma flessa: {contextForm}) nella frase: {context}."
     },
     "review": {
         "again": "Di nuovo",

@@ -797,7 +797,8 @@
         "explain_morphology": "Gee die uitspraak en morfologie (of etimologie indien toepaslik). As verbuig, gee die lemma en verbuiging; andersins, moenie verbuiging of lemma noem nie.",
         "explain_text_label": "Teks",
         "explain_word": "Verduidelik bondig met {l1Name} wat die {l2Name} ({code}) woord {word} beteken.",
-        "explain_word_context": "Verduidelik bondig met {l1Name} wat die {l2Name} ({code}) woord {word} in die frase beteken: {context}."
+        "explain_word_context": "Verduidelik bondig met {l1Name} wat die {l2Name} ({code}) woord {word} in die frase beteken: {context}.",
+        "explain_word_context_form": "Verduidelik bondig met {l1Name} wat die {l2Name} ({code}) woord {word} (verbuigde vorm: {contextForm}) in die frase beteken: {context}."
     },
     "review": {
         "again": "Weer",

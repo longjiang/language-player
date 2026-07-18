@@ -797,7 +797,8 @@
         "explain_morphology": "発音と形態（または適切であれば語源）を示してください。活用形の場合は、見出し語（レンマ）と活用形を示し、そうでない場合は活用や見出し語に言及しないでください。",
         "explain_text_label": "テキスト",
         "explain_word": "{l1Name}で、{l2Name}（{code}）の単語{word}の意味を簡潔に説明してください。",
-        "explain_word_context": "{l1Name}で、{l2Name}（{code}）の単語{word}がフレーズ中で何を意味するか簡潔に説明してください：{context}。"
+        "explain_word_context": "{l1Name}で、{l2Name}（{code}）の単語{word}がフレーズ中で何を意味するか簡潔に説明してください：{context}。",
+        "explain_word_context_form": "{l1Name}で、{l2Name}（{code}）の単語{word}（屈折形: {contextForm}）がフレーズ中で何を意味するか簡潔に説明してください：{context}。"
     },
     "review": {
         "again": "もう一度",
