@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useProgress } from '@/hooks/use-progress';
+import { useExploreCache } from '@/providers/explore-cache-provider';
 import { VideoGrid } from '@/components/video/video-grid';
 import { LevelFilter } from '@/components/video/level-filter';
 import { useVideos } from '@/hooks/use-videos';
@@ -16,6 +17,7 @@ export default function ExplorePage() {
   const t = useT();
   const { level: savedLevel, loaded: progressLoaded } = useProgress(baseCode(l2.code));
   const [level, setLevel] = useState<number | undefined>(undefined);
+  const exploreCache = useExploreCache();
 
   // Default to the user's saved proficiency level once loaded
   useEffect(() => {
@@ -26,6 +28,7 @@ export default function ExplorePage() {
   const { videos, loading, error, hasMore, loadMore, retry } = useVideos({
     l2: baseCode(l2.code),
     level,
+    cache: exploreCache,
   });
 
   return (

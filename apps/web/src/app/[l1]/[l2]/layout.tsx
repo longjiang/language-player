@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { LanguageProvider } from '@/providers/language-provider';
 import { VideoPlayerProvider } from '@/providers/video-player-provider';
 import { SettingsProvider } from '@/providers/settings-provider';
+import { ExploreCacheProvider } from '@/providers/explore-cache-provider';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
 import { Header } from '@/components/layout/header';
 
@@ -23,12 +24,14 @@ export default function LanguageLayout({
   return (
     <LanguageProvider l1={params.l1} l2={params.l2}>
       <SettingsProvider>
-        <VideoPlayerProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-          </div>
-        </VideoPlayerProvider>
+        <ExploreCacheProvider>
+          <VideoPlayerProvider>
+            <div className="flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-1">{children}</main>
+            </div>
+          </VideoPlayerProvider>
+        </ExploreCacheProvider>
       </SettingsProvider>
     </LanguageProvider>
   );
