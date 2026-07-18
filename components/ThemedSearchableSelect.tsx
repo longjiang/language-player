@@ -1,7 +1,7 @@
 // @/components/ThemedSearchableSelect
 
 import React, { useState, useEffect, ReactElement, useCallback } from 'react';
-import { View, StyleSheet, TouchableOpacity, FlatList, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
@@ -126,13 +126,16 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
           <Icon name={isOpen ? "chevron-up" : "chevron-down"} size={24} color={placeholderTextColor} />
         </TouchableOpacity>
         {isOpen && (
-          <FlatList
-            data={filteredOptions}
-            renderItem={renderItemWrapper}
-            keyExtractor={item => item.value}
-            ListHeaderComponent={renderHeader}
-            style={[styles.dropdown, { borderColor, backgroundColor, height: 300 }]}
-          />
+          <ScrollView
+            nestedScrollEnabled={true}
+            style={[styles.dropdown, { borderColor, backgroundColor, height: 300 }]}>
+            {renderHeader()}
+            {filteredOptions.map((item, index) => (
+              <View key={item.value || index}>
+                {renderItemWrapper({ item })}
+              </View>
+            ))}
+          </ScrollView>
         )}
       </View>
     </TouchableWithoutFeedback>
