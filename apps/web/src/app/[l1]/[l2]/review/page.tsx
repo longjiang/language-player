@@ -208,14 +208,27 @@ export default function ReviewPage() {
       return;
     }
 
-    // Visual feedback via toast
+    // Visual feedback — minimal pill toast near the card
     const label = RATING_LABELS.find((r) => r.key === quality);
     if (label) {
-      const isPositive = quality === 'good' || quality === 'easy';
+      const isAgain = quality === 'again';
       toast(label.label, {
         description: label.hint,
-        duration: 600,
-        className: isPositive ? undefined : '!bg-red-50 dark:!bg-red-950 !border-red-200 dark:!border-red-800',
+        duration: 500,
+        position: 'top-center',
+        className: [
+          'text-sm font-medium text-center',
+          isAgain
+            ? '!bg-red-100 dark:!bg-red-900/60 !text-red-700 dark:!text-red-300 !border-red-200 dark:!border-red-800'
+            : '!bg-green-100 dark:!bg-green-900/60 !text-green-700 dark:!text-green-300 !border-green-200 dark:!border-green-800',
+        ].join(' '),
+        style: {
+          width: 'auto',
+          minWidth: '120px',
+          padding: '8px 20px',
+          borderRadius: '999px',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+        },
       });
     }
 
