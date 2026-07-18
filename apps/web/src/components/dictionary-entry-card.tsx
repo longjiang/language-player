@@ -125,11 +125,12 @@ export function DictionaryEntryCard({
         href={googleImagesUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center hover:text-foreground transition-colors"
+        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
         title={t('action.search_images')}
         onClick={(e) => e.stopPropagation()}
       >
         <ExternalLink className="h-3 w-3" />
+        <span>{t('label.images')}</span>
       </a>
       {entry.match_type && entry.match_type !== 'exact' && (
         <span className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
