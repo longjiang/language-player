@@ -23,7 +23,7 @@ const SelectLevelScreen = () => {
 
   const onSelect = async (level: number) => {
     selectedLevelRef.current = level;
-    const currentProgress = userData?.progress[l2Lang.code];
+    const currentProgress = userData?.progress?.[l2Lang.code];
     const hasProgress = currentProgress?.time && currentProgress.time > 0;
     
     if (hasProgress) {

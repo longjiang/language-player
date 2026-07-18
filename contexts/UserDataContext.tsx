@@ -112,7 +112,8 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
         const time = await storageManager.getTime();
         if (l2Lang && userData) {
           const langCode = l2Lang.code;
-          let currentProgress = userData.progress[langCode];
+          const progress = userData.progress || {};
+          let currentProgress = progress[langCode];
 
           if (!currentProgress) {
             currentProgress = { level: undefined, time: 0 };
@@ -123,7 +124,7 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
           setUserData(prevData => ({
             ...prevData!,
             progress: {
-              ...prevData!.progress,
+              ...(prevData!.progress || {}),
               [langCode]: currentProgress
             }
           }));
@@ -219,14 +220,14 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
   };
 
   const getProgress = (langCode: string) => {
-    return userData?.progress[langCode];
+    return userData?.progress?.[langCode];
   };
 
   const updateProgress = async (langCode: string, newProgress: { level: string; time: number }): Promise<void> => {
     if (!userData) throw new Error('Cannot update progress when user data is not initialized');
 
     const updatedProgress = {
-      ...userData.progress,
+      ...(userData.progress || {}),
       [langCode]: newProgress,
     };
 
