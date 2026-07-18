@@ -49,11 +49,17 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [convertedText, setConvertedText] = useState(text);
   const [converting, setConverting] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const loadingRef = useRef(false); // prevent concurrent fetches
+  const lastTextRef = useRef(text); // avoid redundant convert+tokenize
 
   // Convert text to traditional if user prefers traditional and L2 is Chinese.
   // OpenCC is lazy-loaded only when needed. Conversion is idempotent so
   // already-traditional text (e.g. from the reader page) is a no-op.
   useEffect(() => {
+    // Skip if text hasn't changed (prevents re-triggering on parent re-renders)
+    if (text === lastTextRef.current) return;
+    lastTextRef.current = text;
+
     let cancelled = false;
 
     async function convert() {
@@ -89,6 +95,19 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
     const effectiveText = convertedText;
 
+    // Skip if we already have tokens for this text in cache AND state
+    const cacheKey = `${l2Code}:${effectiveText}`;
+    const cached = lemmatizeCache.get(cacheKey);
+    if (cached && cached.length > 0) {
+      setTokens(cached);
+      setLoading(false);
+      return;
+    }
+
+    // Prevent concurrent fetches for the same text
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+
     // Cancel previous request
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -97,6 +116,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     if (!effectiveText.trim()) {
       setTokens([]);
       setLoading(false);
+      loadingRef.current = false;
       return;
     }
 
@@ -107,20 +127,12 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
     const tokenize = async () => {
       try {
-        // 1. In-memory lemmatize cache
-        const cacheKey = `${l2Code}:${effectiveText}`;
-        const cached = lemmatizeCache.get(cacheKey);
-        if (cached) {
-          if (!cancelled) { setTokens(cached); setLoading(false); }
-          return;
-        }
-
         // 2. Video token cache (from /lemmatize-video-normalized)
         if (tokenCache) {
           const videoCached = tokenCache.get(effectiveText);
           if (videoCached) {
             lemmatizeCache.set(cacheKey, videoCached);
-            if (!cancelled) { setTokens(videoCached); setLoading(false); }
+            if (!cancelled) { setTokens(videoCached); setLoading(false); loadingRef.current = false; }
             return;
           }
         }
@@ -138,14 +150,16 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           lemmatizeCache.set(cacheKey, data.tokens);
           setTokens(data.tokens);
           setLoading(false);
+          loadingRef.current = false;
         }
       } catch (err: any) {
-        if (err.name === 'AbortError') return;
+        if (err.name === 'AbortError') { loadingRef.current = false; return; }
         if (!cancelled) {
           console.error('Tokenization error:', err);
           setError(err?.message ?? 'Tokenization failed');
           setTokens([{ text: effectiveText, lemmas: [] }]);
           setLoading(false);
+          loadingRef.current = false;
         }
       }
     };
