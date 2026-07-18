@@ -164,7 +164,13 @@
     },
     "filter": {
         "all": "All",
-        "all_locales": "All Locales"
+        "all_locales": "All Locales",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. All currencies in US dollars (USD).",
@@ -192,6 +198,7 @@
         "l2_voices": "{l2} Voices",
         "lifetime_one_time": "Lifetime — $169 one-time",
         "measure_word": "Measure:",
+        "native_level": "Native",
         "new_cards_per_day": "New cards per day",
         "noun_class": "Class:",
         "phonetics_conditions": "Show for",

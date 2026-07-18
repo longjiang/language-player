@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Wszystko",
-        "all_locales": "Wszystkie lokalizacje"
+        "all_locales": "Wszystkie lokalizacje",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Wszystkie waluty w dolarach amerykańskich (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} głosów",
         "lifetime_one_time": "Dożywotni — 169 $ jednorazowo",
         "measure_word": "Miara:",
+        "native_level": "Ojczysty",
         "new_cards_per_day": "Nowe karty dziennie",
         "noun_class": "Klasa:",
         "phonetics_conditions": "Pokaż dla",

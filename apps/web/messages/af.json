@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Alles",
-        "all_locales": "Alle liggings"
+        "all_locales": "Alle liggings",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Alle geldeenhede in Amerikaanse dollar (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} stemme",
         "lifetime_one_time": "Lewenslank — $169 eenmalig",
         "measure_word": "Maateenheid:",
+        "native_level": "Moedertaal",
         "new_cards_per_day": "Nuwe kaarte per dag",
         "noun_class": "Klas:",
         "phonetics_conditions": "Wys vir",

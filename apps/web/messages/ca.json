@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Tot",
-        "all_locales": "Totes les ubicacions"
+        "all_locales": "Totes les ubicacions",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Totes les monedes en dòlars americans (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} Veus",
         "lifetime_one_time": "Vitalici — 169 $ únic pagament",
         "measure_word": "Mesura:",
+        "native_level": "Natiu",
         "new_cards_per_day": "Targetes noves per dia",
         "noun_class": "Classe:",
         "phonetics_conditions": "Mostra per a",

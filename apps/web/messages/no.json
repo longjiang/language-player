@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Alle",
-        "all_locales": "Alle lokasjoner"
+        "all_locales": "Alle lokasjoner",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Alle valutaer i amerikanske dollar (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} stemmer",
         "lifetime_one_time": "Livstid – $169 engangsbetaling",
         "measure_word": "Mål:",
+        "native_level": "Morsmål",
         "new_cards_per_day": "Nye kort per dag",
         "noun_class": "Klasse:",
         "phonetics_conditions": "Vis for",

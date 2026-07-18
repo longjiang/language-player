@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Zote",
-        "all_locales": "Maeneo Yote"
+        "all_locales": "Maeneo Yote",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Fedha zote ziko katika dola za Marekani (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} Sauti",
         "lifetime_one_time": "Maisha yote — $169 mara moja",
         "measure_word": "Kipimo:",
+        "native_level": "Lugha ya asili",
         "new_cards_per_day": "Kadi mpya kwa siku",
         "noun_class": "Darasa:",
         "phonetics_conditions": "Onyesha kwa",

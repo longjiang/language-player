@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Alla",
-        "all_locales": "Alla platser"
+        "all_locales": "Alla platser",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Alla valutor är i amerikanska dollar (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} röster",
         "lifetime_one_time": "Livstid – 169 $ en gång",
         "measure_word": "Mått:",
+        "native_level": "Modersmål",
         "new_cards_per_day": "Nya kort per dag",
         "noun_class": "Klass:",
         "phonetics_conditions": "Visa för",

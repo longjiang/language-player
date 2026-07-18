@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Semua",
-        "all_locales": "Semua Lokal"
+        "all_locales": "Semua Lokal",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Semua mata uang dalam dolar AS (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} Suara",
         "lifetime_one_time": "Seumur hidup — $169 sekali bayar",
         "measure_word": "Ukuran:",
+        "native_level": "Penutur asli",
         "new_cards_per_day": "Kartu baru per hari",
         "noun_class": "Kelas:",
         "phonetics_conditions": "Tampilkan untuk",

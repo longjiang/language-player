@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "すべて",
-        "all_locales": "すべての地域"
+        "all_locales": "すべての地域",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. すべての通貨は米ドル (USD) です。",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} の音声",
         "lifetime_one_time": "ライフタイム — 一括 $169",
         "measure_word": "測定：",
+        "native_level": "ネイティブ",
         "new_cards_per_day": "1日あたりの新しいカード数",
         "noun_class": "クラス：",
         "phonetics_conditions": "表示対象",

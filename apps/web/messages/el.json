@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Όλα",
-        "all_locales": "Όλες οι τοποθεσίες"
+        "all_locales": "Όλες οι τοποθεσίες",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Όλα τα νομίσματα σε δολάρια ΗΠΑ (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} Φωνές",
         "lifetime_one_time": "Διάρκεια ζωής — 169 $ εφάπαξ",
         "measure_word": "Μέτρο:",
+        "native_level": "Μητρική",
         "new_cards_per_day": "Νέες κάρτες ανά ημέρα",
         "noun_class": "Τάξη:",
         "phonetics_conditions": "Εμφάνιση για",

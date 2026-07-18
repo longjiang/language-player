@@ -157,7 +157,13 @@
     },
     "filter": {
         "all": "Toate",
-        "all_locales": "Toate locațiile"
+        "all_locales": "Toate locațiile",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. Toate valutele sunt în dolari americani (USD).",
@@ -185,6 +191,7 @@
         "l2_voices": "{l2} voci",
         "lifetime_one_time": "Pe viață — 169 $ o singură dată",
         "measure_word": "Măsură:",
+        "native_level": "Nativ",
         "new_cards_per_day": "Cărți noi pe zi",
         "noun_class": "Clasă:",
         "phonetics_conditions": "Arată pentru",

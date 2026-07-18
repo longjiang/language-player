@@ -156,7 +156,13 @@
     },
     "filter": {
         "all": "全部",
-        "all_locales": "所有地區"
+        "all_locales": "所有地區",
+        "cefr_a1": "A1",
+        "cefr_a2": "A2",
+        "cefr_b1": "B1",
+        "cefr_b2": "B2",
+        "cefr_c1": "C1",
+        "cefr_c2": "C2"
     },
     "footnote": {
         "currency": "2. 所有價格都是美金喔。",
@@ -184,6 +190,7 @@
         "l2_voices": "{l2} 語音",
         "lifetime_one_time": "終身 — US$169 一次性付款",
         "measure_word": "量詞：",
+        "native_level": "母語",
         "new_cards_per_day": "每日新卡片數",
         "noun_class": "類別：",
         "phonetics_conditions": "顯示範圍",
