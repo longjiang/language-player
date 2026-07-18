@@ -3,18 +3,18 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-export interface TabDef {
-  key: string;
+export interface TabDef<T extends string = string> {
+  key: T;
   label: string;
   icon?: ReactNode;
 }
 
-interface TabbedPanelProps {
-  tabs: TabDef[];
-  activeTab: string;
-  onTabChange: (key: string) => void;
+interface TabbedPanelProps<T extends string = string> {
+  tabs: readonly TabDef<T>[];
+  activeTab: T;
+  onTabChange: (key: T) => void;
   /** Optional per-tab click override. When provided, called instead of onTabChange. */
-  onTabClick?: (key: string) => void;
+  onTabClick?: (key: T) => void;
   children: ReactNode;
   className?: string;
   contentClassName?: string;
@@ -37,7 +37,7 @@ interface TabbedPanelProps {
  * </TabbedPanel>
  * ```
  */
-export function TabbedPanel({
+export function TabbedPanel<T extends string = string>({
   tabs,
   activeTab,
   onTabChange,
@@ -45,7 +45,7 @@ export function TabbedPanel({
   children,
   className,
   contentClassName,
-}: TabbedPanelProps) {
+}: TabbedPanelProps<T>) {
   return (
     <div className={cn('flex flex-col rounded-xl border border-border bg-card', className)}>
       {/* Tab bar */}

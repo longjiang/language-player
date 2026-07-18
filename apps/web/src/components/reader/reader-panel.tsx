@@ -207,7 +207,7 @@ export function ReaderPanel({
   const readerTabs = [
     { key: 'edit', label: t('action.edit'), icon: <FileText className="h-4 w-4" /> },
     { key: 'read', label: t('action.read'), icon: <BookOpen className="h-4 w-4" /> },
-  ];
+  ] as const;
 
   return (
     <div className="min-w-0 flex-1">
