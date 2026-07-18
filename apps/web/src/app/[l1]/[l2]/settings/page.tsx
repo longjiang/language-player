@@ -97,16 +97,6 @@ export default function SettingsPage() {
     </div>
   );
 
-  // ── Phonetics labels (using translation keys + language-aware samples) ──
-  const phoneticsRubyLabel = (() => {
-    if (l2.code === 'zh') return t('label.phonetics_ruby_zh');
-    if (l2.code === 'ja') return t('label.phonetics_ruby_ja');
-    if (l2.code === 'ko') return t('label.phonetics_ruby_ko');
-    return t('setting.ruby');
-  })();
-  const phoneticsWordLabel = t('label.phonetics_word');
-  const phoneticsOffLabel = t('setting.off');
-
   const previewText = getSampleSentence(l2.code);
 
   if (!loaded) {
@@ -176,23 +166,25 @@ export default function SettingsPage() {
                 value={l2Settings.tokenSpan.phonetics.show === false ? 'off' : l2Settings.tokenSpan.phonetics.show}
                 onChange={(v: string) => {
                   const ts = l2Settings.tokenSpan;
-                  updateL2(l2.code, { tokenSpan: { ...ts, phonetics: { ...ts.phonetics, show: v === 'off' ? false : v as 'ruby' | 'word' } } });
+                  const show = v === 'off' ? false : v as 'ruby' | 'word';
+                  // When replacing words, conditions must be 'always'
+                  const conditions = show === 'word' ? 'always' : ts.phonetics.conditions;
+                  updateL2(l2.code, { tokenSpan: { ...ts, phonetics: { ...ts.phonetics, show, conditions } } });
                 }}
                 options={[
-                  { value: 'ruby', label: phoneticsRubyLabel },
-                  { value: 'word', label: phoneticsWordLabel },
-                  { value: 'off', label: phoneticsOffLabel },
+                  { value: 'ruby', label: t('setting.phonetics_on_top') },
+                  { value: 'word', label: t('setting.phonetics_replace') },
+                  { value: 'off', label: t('setting.off') },
                 ]} />
-              {phoneticsEnabled && (
+              {l2Settings.tokenSpan.phonetics.show === 'ruby' && (
                 <Segmented label={t('label.phonetics_conditions')} value={l2Settings.tokenSpan.phonetics.conditions}
                   onChange={(v: string) => {
                     const ts = l2Settings.tokenSpan;
-                    updateL2(l2.code, { tokenSpan: { ...ts, phonetics: { ...ts.phonetics, conditions: v as 'always' | 'hardWords' | 'never' } } });
+                    updateL2(l2.code, { tokenSpan: { ...ts, phonetics: { ...ts.phonetics, conditions: v as 'always' | 'hardWords' } } });
                   }}
                   options={[
                     { value: 'always', label: t('setting.all_words') },
                     { value: 'hardWords', label: t('setting.hard_words_only') },
-                    { value: 'never', label: t('setting.never') },
                   ]} />
               )}
             </Section>
