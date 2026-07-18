@@ -192,6 +192,7 @@
         "show_gloss_saved": "Hızlı Anlam",
         "show_hanja": "Hanja'yı Göster",
         "show_hantu": "Hán Tự'yu Göster",
+        "show_interlinear_gloss": "Satır Arası Anlamı Göster",
         "show_phonetics": "Fonetiği göster",
         "smooth_scroll": "Yumuşak Kaydırma",
         "speech_rate": "Konuşma Hızı: {rate}×",

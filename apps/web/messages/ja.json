@@ -192,6 +192,7 @@
         "show_gloss_saved": "クイック訳",
         "show_hanja": "漢字を表示",
         "show_hantu": "漢字を表示",
+        "show_interlinear_gloss": "行間グロスを表示",
         "show_phonetics": "ふりがなを表示",
         "smooth_scroll": "スムーズスクロール",
         "speech_rate": "音声速度: {rate}倍",

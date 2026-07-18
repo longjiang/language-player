@@ -192,6 +192,7 @@
         "show_gloss_saved": "คำแปลด่วน",
         "show_hanja": "แสดงฮันจา",
         "show_hantu": "แสดงหั่นตือ",
+        "show_interlinear_gloss": "แสดงคำแปลระหว่างบรรทัด",
         "show_phonetics": "แสดงสัทอักษร",
         "smooth_scroll": "เลื่อนอย่างนุ่มนวล",
         "speech_rate": "อัตราการพูด: {rate}×",

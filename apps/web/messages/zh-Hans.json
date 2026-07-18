@@ -195,6 +195,7 @@
         "show_gloss_saved": "显示快速释义",
         "show_hanja": "显示汉字",
         "show_hantu": "显示汉字",
+        "show_interlinear_gloss": "显示行间释义",
         "show_phonetics": "显示注音",
         "smooth_scroll": "平滑滚动",
         "speech_rate": "语速：{rate}×",

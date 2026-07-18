@@ -192,6 +192,7 @@
         "show_gloss_saved": "빠른 뜻",
         "show_hanja": "한자 표시",
         "show_hantu": "한뜨 표시",
+        "show_interlinear_gloss": "낱말뜻 줄 사이 표시",
         "show_phonetics": "발음 표시",
         "smooth_scroll": "부드러운 스크롤",
         "speech_rate": "읽기 속도: {rate}배",
