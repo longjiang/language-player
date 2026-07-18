@@ -793,7 +793,8 @@
         "again": "重來",
         "easy": "簡單",
         "good": "良好",
-        "hard": "困難"
+        "hard": "困難",
+        "shortcut_hint": "按{space}翻轉，{k1}–{k2}評分，{enter}繼續"
     },
     "setting": {
         "all_words": "所有單字",

@@ -813,6 +813,7 @@
         "hard": "Zor",
         "hard_hint": "Zorlukla hatırlandı",
         "no_definition_available": "Tanım mevcut değil. Videoları izlerken bu kelimeye bakın.",
+        "shortcut_hint": "Çevirmek için {space}, puanlamak için {k1}–{k2}, devam etmek için {enter} tuşuna bas",
         "show_definition": "Tanımı Göster",
         "srs_new": "yeni",
         "srs_review": "gözden geçir"

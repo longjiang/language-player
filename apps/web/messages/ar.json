@@ -813,6 +813,7 @@
         "hard": "صعب",
         "hard_hint": "تذكرت بصعوبة",
         "no_definition_available": "لا يوجد تعريف متاح. ابحث عن هذه الكلمة أثناء مشاهدة الفيديوهات.",
+        "shortcut_hint": "اضغط {space} للقلب، {k1}–{k2} للتقييم، {enter} للمتابعة",
         "show_definition": "إظهار التعريف",
         "srs_new": "جديد",
         "srs_review": "مراجعة"

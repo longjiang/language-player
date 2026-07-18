@@ -813,6 +813,7 @@
         "hard": "Difícil",
         "hard_hint": "Recordado con dificultad",
         "no_definition_available": "No hay definición disponible. Busca esta palabra mientras ves videos.",
+        "shortcut_hint": "Pulsa {space} para voltear, {k1}–{k2} para valorar, {enter} para continuar",
         "show_definition": "Mostrar definición",
         "srs_new": "nuevo",
         "srs_review": "revisar"

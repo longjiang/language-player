@@ -813,6 +813,7 @@
         "hard": "Vanskelig",
         "hard_hint": "Gjenkalt med vanskelighet",
         "no_definition_available": "Ingen definisjon tilgjengelig. Slå opp dette ordet mens du ser på videoer.",
+        "shortcut_hint": "Trykk {space} for å snu, {k1}–{k2} for å vurdere, {enter} for å fortsette",
         "show_definition": "Vis definisjon",
         "srs_new": "ny",
         "srs_review": "gjennomgang"

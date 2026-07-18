@@ -813,6 +813,7 @@
         "hard": "Khó",
         "hard_hint": "Nhớ lại một cách khó khăn",
         "no_definition_available": "Không có định nghĩa. Tra từ này khi xem video.",
+        "shortcut_hint": "Nhấn {space} để lật, {k1}–{k2} để đánh giá, {enter} để tiếp tục",
         "show_definition": "Hiển thị định nghĩa",
         "srs_new": "mới",
         "srs_review": "ôn tập"

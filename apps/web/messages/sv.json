@@ -813,6 +813,7 @@
         "hard": "Svårt",
         "hard_hint": "Återkallad med svårighet",
         "no_definition_available": "Ingen definition tillgänglig. Slå upp detta ord medan du tittar på videor.",
+        "shortcut_hint": "Tryck {space} för att vända, {k1}–{k2} för att betygsätta, {enter} för att fortsätta",
         "show_definition": "Visa definition",
         "srs_new": "ny",
         "srs_review": "granska"

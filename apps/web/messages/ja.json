@@ -813,6 +813,7 @@
         "hard": "難しい",
         "hard_hint": "苦労して思い出した",
         "no_definition_available": "定義がありません。動画を見ながらこの単語を調べてください。",
+        "shortcut_hint": "{space}で裏返す、{k1}–{k2}で評価、{enter}で続行",
         "show_definition": "定義を表示",
         "srs_new": "新しい",
         "srs_review": "復習"

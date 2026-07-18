@@ -813,6 +813,7 @@
         "hard": "Teško",
         "hard_hint": "Prisjetio/la se s poteškoćom",
         "no_definition_available": "Definicija nije dostupna. Potražite ovu riječ dok gledate videozapise.",
+        "shortcut_hint": "Pritisni {space} za okretanje, {k1}–{k2} za ocjenu, {enter} za nastavak",
         "show_definition": "Prikaži definiciju",
         "srs_new": "novo",
         "srs_review": "pregled"

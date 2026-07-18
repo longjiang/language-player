@@ -813,6 +813,7 @@
         "hard": "어려움",
         "hard_hint": "어렵게 기억함",
         "no_definition_available": "정의를 사용할 수 없습니다. 동영상을 보면서 이 단어를 찾아보세요.",
+        "shortcut_hint": "{space} 눌러 뒤집기, {k1}–{k2} 평가, {enter} 계속",
         "show_definition": "정의 보기",
         "srs_new": "새로 배우기",
         "srs_review": "복습"

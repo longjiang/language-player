@@ -813,6 +813,7 @@
         "hard": "Sulit",
         "hard_hint": "Diingat dengan susah payah",
         "no_definition_available": "Tidak ada definisi yang tersedia. Cari kata ini sambil menonton video.",
+        "shortcut_hint": "Tekan {space} untuk membalik, {k1}–{k2} untuk menilai, {enter} untuk lanjut",
         "show_definition": "Tampilkan Definisi",
         "srs_new": "baru",
         "srs_review": "ulasan"
