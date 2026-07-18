@@ -1,22 +1,128 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/providers/language-provider';
-import { useSrs } from '@/hooks/use-srs';
-import { DEFAULT_DAILY_NEW_LIMIT } from '@langplayer/utils';
-import { languageName } from '@/lib/language-data';
-import { getUseTraditional, setUseTraditional, getShowPhonetics, setShowPhonetics } from '@/lib/settings';
+import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
-import { VoicePicker } from '@/components/voice-picker';
+import { languageName } from '@/lib/language-data';
 
 export default function SettingsPage() {
   const { l1, l2 } = useLanguage();
-  const { dailyNewLimit, updateSettings } = useSrs();
+  const {
+    tokenizedText, updateTokenizedText,
+    display, updateDisplay,
+    playback, updatePlayback,
+    review, updateReview,
+    getL2, updateL2, ensureL2,
+    loaded,
+  } = useSettingsContext();
   const t = useT();
-  const [tab, setTab] = useState<'pronunciation' | 'review' | 'display'>('pronunciation');
-  const [useTraditional, setUseTraditionalState] = useState(getUseTraditional());
-  const [showPhonetics, setShowPhoneticsState] = useState(getShowPhonetics());
+
+  const [tab, setTab] = useState<'display' | 'playback' | 'speech' | 'review'>('display');
   const isChinese = l2.code === 'zh';
+  const isKorean = l2.code === 'ko';
+  const isVietnamese = l2.code === 'vi';
+
+  useEffect(() => { if (loaded) ensureL2(l2.code); }, [l2.code, loaded, ensureL2]);
+
+  const l2Settings = getL2(l2.code);
+  const phoneticsEnabled = l2Settings.tokenSpan.phonetics.show !== false;
+  const popupEnabled = tokenizedText.enabled;
+
+  // ── Reusable components ──
+
+  const Toggle = ({ label, desc, checked, onChange }: { label: string; desc?: string; checked: boolean; onChange: (v: boolean) => void }) => (
+    <div>
+      <label className="flex items-center justify-between cursor-pointer">
+        <span className="text-sm font-medium">{label}</span>
+        <span className="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="sr-only peer" />
+          <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-primary/20 after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-background after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+        </span>
+      </label>
+      {desc && <p className="text-xs text-muted-foreground mt-1">{desc}</p>}
+    </div>
+  );
+
+  const Segmented = <T extends string | boolean>({ label, options, value, onChange }: {
+    label: string; options: { value: T; label: string }[]; value: T; onChange: (v: T) => void;
+  }) => (
+    <div>
+      <label className="block text-sm font-medium mb-2">{label}</label>
+      <div className="inline-flex rounded-lg border border-border bg-muted p-1">
+        {options.map(opt => (
+          <button key={String(opt.value)} onClick={() => onChange(opt.value)}
+            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+              value === opt.value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}>
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const Slider = ({ label, desc, min, max, step, value, onChange, leftLabel, rightLabel, centerLabel }: {
+    label: string; desc?: string; min: number; max: number; step: number; value: number;
+    onChange: (v: number) => void; leftLabel?: string; rightLabel?: string; centerLabel?: string;
+  }) => (
+    <div>
+      <label className="block text-sm font-medium mb-1">{label}</label>
+      {desc && <p className="text-xs text-muted-foreground mb-3">{desc}</p>}
+      <div className="flex items-center gap-4">
+        <input type="range" min={min} max={max} step={step} value={value}
+          onChange={e => onChange(Number(e.target.value))}
+          className="flex-1 h-2 rounded-full appearance-none bg-muted cursor-pointer
+            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
+            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer" />
+        <span className="w-10 text-center text-lg font-semibold tabular-nums">{value}</span>
+      </div>
+      <div className="flex justify-between mt-1">
+        <span className="text-xs text-muted-foreground">{leftLabel ?? min}</span>
+        {centerLabel && <span className="text-xs text-muted-foreground">{centerLabel}</span>}
+        <span className="text-xs text-muted-foreground">{rightLabel ?? max}</span>
+      </div>
+    </div>
+  );
+
+  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <div className="space-y-4">
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border pb-2">{title}</h3>
+      {children}
+    </div>
+  );
+
+  // ── Phonetics labels ──
+  const phoneticsLabels = (() => {
+    if (l2.code === 'zh') return { ruby: '拼 Pīn', word: 'Pinyin Only', off: 'Off' };
+    if (l2.code === 'ja') return { ruby: '仮 か', word: 'Kana Only', off: 'Off' };
+    if (l2.code === 'ko') return { ruby: '한 hɑn', word: 'Romanization', off: 'Off' };
+    return { ruby: 'Ruby', word: 'Phonetics Only', off: 'Off' };
+  })();
+
+  // ── Voice picker ──
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  useEffect(() => {
+    const load = () => setVoices(speechSynthesis.getVoices());
+    load();
+    speechSynthesis.onvoiceschanged = load;
+    return () => { speechSynthesis.onvoiceschanged = null; };
+  }, []);
+  const langVoices = voices.filter(v => v.lang.startsWith(l2.code));
+
+  const testSpeech = () => {
+    const utterance = new SpeechSynthesisUtterance(l2.vernacularName || 'Example');
+    const v = voices.find(vo => vo.voiceURI === l2Settings.speech.voiceURI);
+    if (v) utterance.voice = v;
+    utterance.rate = l2Settings.speech.rate;
+    speechSynthesis.speak(utterance);
+  };
+
+  const previewText = l2.vernacularName || 'Example';
+
+  if (!loaded) {
+    return <div className="mx-auto max-w-lg px-4 py-12 text-center text-muted-foreground">{t('msg.loading')}</div>;
+  }
 
   return (
     <div className="mx-auto max-w-lg px-4 py-12">
@@ -25,140 +131,177 @@ export default function SettingsPage() {
         {t('msg.settings_desc', { l1: languageName(l1.code), l2: languageName(l2.code, l1.code) })}
       </p>
 
-      {/* Tab bar */}
       <div className="mt-8 flex border-b border-border">
-        <button
-          onClick={() => setTab('pronunciation')}
-          className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-            tab === 'pronunciation'
-              ? 'border-primary text-foreground'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          {t('setting.pronunciation')}
-        </button>
-        <button
-          onClick={() => setTab('review')}
-          className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-            tab === 'review'
-              ? 'border-primary text-foreground'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          {t('setting.review')}
-        </button>
-        <button
-          onClick={() => setTab('display')}
-          className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-            tab === 'display'
-              ? 'border-primary text-foreground'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          {t('setting.display')}
-        </button>
+        {(['display', 'playback', 'speech', 'review'] as const).map(tabKey => (
+          <button key={tabKey} onClick={() => setTab(tabKey)}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              tab === tabKey ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}>
+            {t(`setting.${tabKey}`)}
+          </button>
+        ))}
       </div>
 
-      {/* Pronunciation tab */}
-      {tab === 'pronunciation' && (
-        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm">
-          <VoicePicker />
-        </section>
-      )}
-
-      {/* Review tab */}
-      {tab === 'review' && (
-        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              {t('label.new_cards_per_day')}
-            </label>
-            <p className="text-sm text-muted-foreground mb-3">
-              {t('msg.new_cards_per_day_desc')}
-            </p>
-            <div className="flex items-center gap-4">
-              <input
-                type="range"
-                min={1}
-                max={50}
-                step={1}
-                value={dailyNewLimit}
-                onChange={(e) => updateSettings({ dailyNewLimit: Number(e.target.value) })}
-                className="flex-1 h-2 rounded-full appearance-none bg-muted cursor-pointer
-                  [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-                  [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer"
-              />
-              <span className="w-12 text-center text-lg font-semibold tabular-nums">
-                {dailyNewLimit}
-              </span>
-            </div>
-            <div className="flex justify-between mt-1">
-              <span className="text-xs text-muted-foreground">1</span>
-              <span className="text-xs text-muted-foreground">{t('msg.default_value', { n: DEFAULT_DAILY_NEW_LIMIT })}</span>
-              <span className="text-xs text-muted-foreground">50</span>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Display tab */}
+      {/* ═══ DISPLAY ═══ */}
       {tab === 'display' && (
         <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
-          {/* Show Phonetics */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              {t('label.show_phonetics')}
-            </label>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t('msg.show_phonetics_desc')}
-            </p>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showPhonetics}
-                onChange={(e) => {
-                  setShowPhoneticsState(e.target.checked);
-                  setShowPhonetics(e.target.checked);
-                }}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-primary/20 after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-background after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
-            </label>
-          </div>
 
-          {/* Character set (Chinese only) */}
-          {isChinese && (
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                {t('label.character_set')}
-              </label>
-              <p className="text-sm text-muted-foreground mb-4">
-                {t('msg.character_set_desc')}
-              </p>
-              <div className="inline-flex rounded-lg border border-border bg-muted p-1">
-                <button
-                  onClick={() => { setUseTraditionalState(false); setUseTraditional(false); }}
-                  className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                    !useTraditional
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {t('setting.simplified')}
-                </button>
-                <button
-                  onClick={() => { setUseTraditionalState(true); setUseTraditional(true); }}
-                  className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                    useTraditional
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {t('setting.traditional')}
-                </button>
+          <Section title={t('setting.theme')}>
+            <Segmented label={t('label.theme')} value={display.theme}
+              onChange={(v: string) => updateDisplay({ theme: v as 'light' | 'dark' | 'system' })}
+              options={[
+                { value: 'light', label: '☀️ ' + t('setting.light') },
+                { value: 'dark', label: '🌙 ' + t('setting.dark') },
+                { value: 'system', label: '💻 ' + t('setting.system') },
+              ]} />
+          </Section>
+
+          <Section title={t('label.tokenized_text_preview')}>
+            <div className="rounded-lg border border-border bg-muted/50 p-4 text-center">
+              <div className={`text-lg ${tokenizedText.typeFace === 'serif' ? 'font-serif' : tokenizedText.typeFace === 'sans-serif' ? 'font-sans' : ''}`}
+                   style={{ fontSize: `${1 + tokenizedText.zoom * 0.15}rem` }}>
+                {previewText}
               </div>
+              {tokenizedText.quickGloss && (
+                <div className="text-xs text-muted-foreground mt-1 italic">{t('msg.gloss_preview')}</div>
+              )}
             </div>
-          )}
+          </Section>
+
+          <Section title="">
+            <Toggle label={t('label.enable_popup_dictionary')} desc={t('msg.enable_popup_dictionary_desc')}
+              checked={tokenizedText.enabled} onChange={v => updateTokenizedText({ enabled: v })} />
+          </Section>
+
+          {popupEnabled && (<>
+            <Section title={t('setting.text_appearance')}>
+              <Segmented label={t('label.font')} value={tokenizedText.typeFace}
+                onChange={(v: string) => updateTokenizedText({ typeFace: v as 'default' | 'serif' | 'sans-serif' })}
+                options={[
+                  { value: 'default', label: t('setting.font_default') },
+                  { value: 'serif', label: t('setting.font_serif') },
+                  { value: 'sans-serif', label: t('setting.font_sans_serif') },
+                ]} />
+              <Slider label={t('label.text_size')} min={0} max={7} step={1} value={tokenizedText.zoom}
+                onChange={v => updateTokenizedText({ zoom: v })} leftLabel={t('setting.smaller')} rightLabel={t('setting.bigger')} />
+            </Section>
+
+            <Section title={t('setting.phonetics')}>
+              <Segmented label={t('label.phonetics_show')}
+                value={l2Settings.tokenSpan.phonetics.show === false ? 'off' : l2Settings.tokenSpan.phonetics.show}
+                onChange={(v: string) => {
+                  const ts = l2Settings.tokenSpan;
+                  updateL2(l2.code, { tokenSpan: { ...ts, phonetics: { ...ts.phonetics, show: v === 'off' ? false : v as 'ruby' | 'word' } } });
+                }}
+                options={[
+                  { value: 'ruby', label: phoneticsLabels.ruby },
+                  { value: 'word', label: phoneticsLabels.word },
+                  { value: 'off', label: phoneticsLabels.off },
+                ]} />
+              {phoneticsEnabled && (
+                <Segmented label={t('label.phonetics_conditions')} value={l2Settings.tokenSpan.phonetics.conditions}
+                  onChange={(v: string) => {
+                    const ts = l2Settings.tokenSpan;
+                    updateL2(l2.code, { tokenSpan: { ...ts, phonetics: { ...ts.phonetics, conditions: v as 'always' | 'hardWords' | 'never' } } });
+                  }}
+                  options={[
+                    { value: 'always', label: t('setting.all_words') },
+                    { value: 'hardWords', label: t('setting.hard_words_only') },
+                    { value: 'never', label: t('setting.never') },
+                  ]} />
+              )}
+            </Section>
+
+            <Section title={t('setting.word_level_display')}>
+              <Toggle label={t('label.show_gloss_saved')} desc={t('msg.show_gloss_saved_desc')}
+                checked={tokenizedText.quickGloss} onChange={v => updateTokenizedText({ quickGloss: v })} />
+              <Toggle label={t('label.show_definition')} desc={t('msg.show_definition_desc')}
+                checked={l2Settings.tokenSpan.definition.show}
+                onChange={v => {
+                  const ts = l2Settings.tokenSpan;
+                  updateL2(l2.code, { tokenSpan: { ...ts, definition: { show: v } } });
+                }} />
+              {isChinese && (
+                <Segmented label={t('label.character_set')} value={l2Settings.display.traditional}
+                  onChange={(v: boolean) => updateL2(l2.code, { display: { ...l2Settings.display, traditional: v } })}
+                  options={[
+                    { value: false, label: '简 ' + t('setting.simplified') },
+                    { value: true, label: '繁 ' + t('setting.traditional') },
+                  ]} />
+              )}
+              {isKorean && (
+                <Toggle label={t('label.show_hanja')}
+                  checked={l2Settings.display.byeonggi}
+                  onChange={v => updateL2(l2.code, { display: { ...l2Settings.display, byeonggi: v } })} />
+              )}
+              {isVietnamese && (
+                <Toggle label={t('label.show_hantu')}
+                  checked={l2Settings.display.byeonggi}
+                  onChange={v => updateL2(l2.code, { display: { ...l2Settings.display, byeonggi: v } })} />
+              )}
+            </Section>
+
+            <Section title={t('setting.interaction')}>
+              <Segmented label={t('label.reading_mode')} value={tokenizedText.mode}
+                onChange={(v: string) => updateTokenizedText({ mode: v as 'normal' | 'quiz' })}
+                options={[
+                  { value: 'normal', label: t('setting.normal') },
+                  { value: 'quiz', label: t('setting.quiz_blanks') },
+                ]} />
+            </Section>
+          </>)}
+        </section>
+      )}
+
+      {/* ═══ PLAYBACK ═══ */}
+      {tab === 'playback' && (
+        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
+          <Toggle label={t('label.transcript_mode')} desc={t('msg.transcript_mode_desc')}
+            checked={playback.transcriptMode === 'transcript'}
+            onChange={v => updatePlayback({ transcriptMode: v ? 'transcript' : 'subtitles' })} />
+          <Toggle label={t('label.auto_pause')} checked={playback.autoPause}
+            onChange={v => updatePlayback({ autoPause: v })} />
+          <Toggle label={t('label.karaoke')} checked={playback.karaokeMode}
+            onChange={v => updatePlayback({ karaokeMode: v })} />
+          <Toggle label={t('label.smooth_scroll')} checked={playback.smoothScroll}
+            onChange={v => updatePlayback({ smoothScroll: v })} />
+          <Toggle label={t('label.collapse_video')} checked={playback.collapsedVideo}
+            onChange={v => updatePlayback({ collapsedVideo: v })} />
+        </section>
+      )}
+
+      {/* ═══ SPEECH ═══ */}
+      {tab === 'speech' && (
+        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">{t('label.voice')}</label>
+            <select value={l2Settings.speech.voiceURI ?? ''}
+              onChange={e => updateL2(l2.code, { speech: { ...l2Settings.speech, voiceURI: e.target.value || null } })}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm">
+              <option value="">{t('setting.auto_detect')}</option>
+              {langVoices.map(v => (
+                <option key={v.voiceURI} value={v.voiceURI}>{v.name} {!v.localService ? `(${t('setting.remote')})` : ''}</option>
+              ))}
+            </select>
+          </div>
+          <Slider label={t('label.speech_rate')} min={0.5} max={2.0} step={0.1}
+            value={l2Settings.speech.rate}
+            onChange={v => updateL2(l2.code, { speech: { ...l2Settings.speech, rate: v } })}
+            leftLabel="0.5×" rightLabel="2.0×" centerLabel="1.0×" />
+          <button onClick={testSpeech}
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+            ▶ {t('label.test_pronunciation')}
+          </button>
+        </section>
+      )}
+
+      {/* ═══ REVIEW ═══ */}
+      {tab === 'review' && (
+        <section className="rounded-b-xl rounded-tr-xl border border-t-0 border-border bg-card p-5 shadow-sm space-y-6">
+          <Slider label={t('label.new_cards_per_day')} desc={t('msg.new_cards_per_day_desc')}
+            min={1} max={50} step={1} value={review.dailyNewLimit}
+            onChange={v => updateReview({ dailyNewLimit: v })}
+            leftLabel="1" centerLabel={t('msg.default_value', { n: 20 })} rightLabel="50" />
         </section>
       )}
     </div>
