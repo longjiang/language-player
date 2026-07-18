@@ -153,16 +153,12 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
     return map[name] ?? name;
   };
 
-  // Count visible tables (exclude "head")
-  const visibleTables = tableNames.filter((t) => t !== 'head' && groups[t] && groups[t]!.length > 0);
-  const multiColumn = visibleTables.length >= 2;
-
   // ── Render ──
   return (
     <section className={embedded ? 'space-y-4' : 'space-y-4 rounded-lg border border-border bg-card p-4'}>
       {!embedded && <h2 className="text-base font-semibold">{t('title.conjugations')}</h2>}
 
-      <div className={multiColumn ? 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3' : ''}>
+      <div className="space-y-4">
         {tableNames.map((table) => {
         const group = groups[table];
         if (!group || group.length === 0) return null;
