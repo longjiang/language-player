@@ -1,6 +1,6 @@
 // @/contexts/UserDataContext.tsx
 
-import React, { createContext, useContext, useEffect, useState, ReactNode, FC } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, FC, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData, initializeUserData, patchUserData } from '@/src/api/directus/user-data';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -249,9 +249,9 @@ export const UserDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
   };
 
-  const getTimeFromStorage = async (): Promise<number> => {
+  const getTimeFromStorage = useCallback(async (): Promise<number> => {
     return await storageManager.getTime();
-  };
+  }, []);
 
   // Add an effect to update lastSignificantChange when l2Lang changes
   useEffect(() => {
