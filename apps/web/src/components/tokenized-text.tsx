@@ -54,6 +54,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false); // prevent concurrent fetches
   const lastTextRef = useRef(text); // avoid redundant convert+tokenize
+  const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
+  tokenCacheRef.current = tokenCache;
 
   // Convert text to traditional if user prefers traditional and L2 is Chinese.
   // OpenCC is lazy-loaded only when needed. Conversion is idempotent so
@@ -131,8 +133,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     const tokenize = async () => {
       try {
         // 2. Video token cache (from /lemmatize-video-normalized)
-        if (tokenCache) {
-          const videoCached = tokenCache.get(effectiveText);
+        const tc = tokenCacheRef.current;
+        if (tc) {
+          const videoCached = tc.get(effectiveText);
           if (videoCached) {
             lemmatizeCache.set(cacheKey, videoCached);
             if (!cancelled) { setTokens(videoCached); setLoading(false); loadingRef.current = false; }
@@ -173,7 +176,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       controller.abort();
       loadingRef.current = false;
     };
-  }, [convertedText, converting, l2Code, preloadedTokens, tokenCache]);
+  }, [convertedText, converting, l2Code, preloadedTokens]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken) => {
     setSelectedToken(prev => prev === token ? null : token);
