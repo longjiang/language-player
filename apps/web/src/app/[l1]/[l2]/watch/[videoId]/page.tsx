@@ -57,7 +57,7 @@ export default function WatchPage() {
   const [loading, setLoading] = useState(true);
   const [startTime] = useState(() => getSavedPosition(videoId));
 
-  // Pre-load token cache for the video (skips per-line /lemmatize calls)
+  // Pre-load token cache for the video (skips per-line /lemmatize-normalized calls)
   const { cache: tokenCache } = useVideoTokenCache(videoId, baseCode(l2.code));
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);

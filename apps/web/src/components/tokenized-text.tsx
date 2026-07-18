@@ -141,7 +141,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
         }
 
         // 3. Fall back to per-line API call
-        const response = await fetch(`${PYTHON_API_URL}/lemmatize`, {
+        const response = await fetch(`${PYTHON_API_URL}/lemmatize-normalized`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: effectiveText, l2: baseCode(l2Code) }),
