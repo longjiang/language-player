@@ -535,9 +535,8 @@ export interface TokenSpanSettings {
     /**
      * `always`    — on every word
      * `hardWords` — only on words above the user's proficiency level
-     * `never`     — off
      */
-    conditions: 'always' | 'hardWords' | 'never';
+    conditions: 'always' | 'hardWords';
   };
   definition: {
     /** Show first dictionary definition inline on ALL word blocks. */
