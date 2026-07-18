@@ -11,40 +11,7 @@ import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@/lib/token-cache';
 import { Settings2 } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
-
-interface SyncedLine {
-  l1Line: string;
-  l2Line: string;
-  starttime: number;
-}
-
-function syncLines(l1Lines: SubtitleLine[], l2Lines: SubtitleLine[]): SyncedLine[] {
-  l1Lines = [...l1Lines].sort((a, b) => a.starttime - b.starttime);
-  l2Lines = [...l2Lines].sort((a, b) => a.starttime - b.starttime);
-  const synced: SyncedLine[] = [];
-  const used = new Set<number>();
-
-  for (const l1 of l1Lines) {
-    let bestIdx = -1;
-    let bestDiff = Infinity;
-    for (let i = 0; i < l2Lines.length; i++) {
-      if (!used.has(i)) {
-        const diff = Math.abs(l1.starttime - l2Lines[i]!.starttime);
-        if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
-      }
-    }
-    if (bestIdx !== -1) {
-      used.add(bestIdx);
-      synced.push({ starttime: l1.starttime, l1Line: l1.line, l2Line: l2Lines[bestIdx]!.line });
-    }
-  }
-  for (let i = 0; i < l2Lines.length; i++) {
-    if (!used.has(i)) {
-      synced.push({ starttime: l2Lines[i]!.starttime, l1Line: '', l2Line: l2Lines[i]!.line });
-    }
-  }
-  return synced.sort((a, b) => a.starttime - b.starttime);
-}
+import { syncLines, type SyncedLine } from '@/lib/subtitle-csv';
 
 interface SubtitleDisplayProps {
   youtubeId: string;

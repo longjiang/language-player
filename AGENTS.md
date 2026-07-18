@@ -11,10 +11,10 @@ A monorepo consolidating three legacy codebases:
 1. `zerotohero-nuxt/` (Vue 2/Nuxt 2) — **Classic** full-featured web app. REFERENCE ONLY. Do not edit.
 2. `language-player-3/` (React Native/Expo 51) — **GO** mobile app. REFERENCE + eventual migration source.
    See `docs/lp-go-app-architecture.md` for a full analysis of its screens, components, and patterns.
-3. `zerotohero-python/` (Flask) — Backend. REFERENCE + eventual migration source.
+3. `zerotohero-python-server/` or `zerotohero-python/` (Flask) — Backend. REFERENCE + eventual migration source.
    See `docs/lp-python-backend-architecture.md` for a full analysis of its routes, utilities, and patterns.
 
-Note that the above three directories are **independent Git repositories**. They are listed in `.gitignore` so the monorepo does not track them yet. If need to commit changes to them, first `cd` into the directory and commit there.
+Note that the above three directories are **independent Git repositories**. They are listed in `.gitignore` so the monorepo does not track them yet. If need to commit changes to them, first `cd` into the directory and commit there. Never commit the monorepo unless the these are ignored in `.gitignore`, and never register them as submodules, or Netlify deploy will fail.
 
 The **active development** happens in:
 - `apps/web/` — Next.js 14 (replaces Classic)
@@ -209,3 +209,4 @@ Before translating, always check if `translations.csv` already has the same or v
 - Update `ROADMAP.md` if you complete a planned task
 - Add ADRs in `docs/adr/` for significant architectural decisions
 - Never edit files in `zerotohero-nuxt/` or `language-player-3/` — they are reference-only
+- Always do a type check and build check before committing. Never push.
