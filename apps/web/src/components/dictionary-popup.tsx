@@ -152,7 +152,7 @@ export function DictionaryPopup({
   };
 
   return (
-    <>
+    <div onClick={(e) => e.stopPropagation()}>
       {/* Backdrop */}
       <div
         className="fixed inset-0 z-40 bg-black/20"
@@ -264,6 +264,6 @@ export function DictionaryPopup({
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 }
