@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { BookOpen, ExternalLink, Film, Binary } from 'lucide-react';
+import { BookOpen, ExternalLink, Film, Binary, Sparkles } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
 import { formatPronunciation } from '@langplayer/utils';
@@ -11,6 +11,7 @@ import { useScriptPreference } from '@/hooks/use-script-preference';
 import { TabbedPanel } from '@/components/tabbed-panel';
 import { SubsSearchResults } from '@/components/video/subs-search-results';
 import { InflectionTable } from '@/components/inflection-table';
+import { AiExplanation } from '@/components/ai-explanation';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
@@ -363,6 +364,7 @@ export function DictionaryEntryCard({
       tabs={[
         { key: 'word', label: t('title.dictionary'), icon: <BookOpen className="h-4 w-4" /> },
         { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
+        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
         { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> },
       ]}
       activeTab={tab}
@@ -372,6 +374,9 @@ export function DictionaryEntryCard({
     >
       {tab === 'word' && wordContent}
       {tab === 'examples' && <SubsSearchResults term={head} embedded />}
+      {tab === 'deepseek' && (
+        <AiExplanation word={head} entryFound={true} />
+      )}
       {tab === 'inflections' && (
         <InflectionTable head={head} l2Code={l2Code ?? ''} embedded />
       )}
