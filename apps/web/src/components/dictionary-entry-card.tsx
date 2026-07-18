@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { BookOpen, ExternalLink, Film, Binary, Sparkles } from 'lucide-react';
+import { BookOpen, Film, Binary, Sparkles } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
 import { formatPronunciation } from '@langplayer/utils';
@@ -71,6 +71,9 @@ export function DictionaryEntryCard({
     ? pronunciation
     : formatPronunciation(entry, l2Code ?? '');
 
+  // Hide alternate when it duplicates the head or pronunciation
+  const showAlternate = alternate && alternate !== head && alternate !== formattedPron;
+
   const studyMaterials = entry.studyMaterials;
 
   // ── Study material indicator (compact) ──
@@ -115,7 +118,7 @@ export function DictionaryEntryCard({
   const displaySource = sourceName === 'AI-Generated' || sourceName === 'LLM' ? t('label.ai_generated') : sourceName;
   const sourceLine = (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      {isFull ? <ExternalLink className="h-3 w-3" /> : <BookOpen className="h-3 w-3" />}
+      <BookOpen className="h-3 w-3" />
       <span>{displaySource}</span>
       {entry.match_type && entry.match_type !== 'exact' && (
         <span className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
@@ -147,7 +150,7 @@ export function DictionaryEntryCard({
         {/* Header */}
         <div className="flex items-center gap-2">
           <span className="text-lg font-semibold" lang={l2Code}>{head}</span>
-          {alternate && (
+          {showAlternate && (
             <span className="text-xs text-muted-foreground" lang={l2Code}>{alternate}</span>
           )}
           {formattedPron && (
@@ -230,7 +233,7 @@ export function DictionaryEntryCard({
               <HeadTag className="text-4xl font-bold" lang={l2Code}>
                 {head}
               </HeadTag>
-              {alternate && (
+              {showAlternate && (
                 <span className="text-xl text-muted-foreground" lang={l2Code}>
                   {alternate}
                 </span>
