@@ -41,6 +41,8 @@ interface SubsSearchVideo {
 
 interface SubsSearchResultsProps {
   term: string;
+  /** When true, removes outer card styling so the component fills its parent container. */
+  embedded?: boolean;
 }
 
 type SortKey = 'views' | 'likes' | 'date' | 'length' | 'leftContext' | 'rightContext';
@@ -144,7 +146,7 @@ function HighlightLine({ line, term }: { line: string; term: string }) {
 
 // ── Main Component ─────────────────────────────
 
-export function SubsSearchResults({ term }: SubsSearchResultsProps) {
+export function SubsSearchResults({ term, embedded = false }: SubsSearchResultsProps) {
   const { l1, l2 } = useLanguage();
   const t = useT();
   const playerRef = useRef<YouTubePlayerHandle>(null);
@@ -392,7 +394,7 @@ export function SubsSearchResults({ term }: SubsSearchResultsProps) {
   // ── Render ───────────────────────────────────
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+    <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
       {/* ── Mini player ── */}
       <div className="aspect-video w-full bg-black">
         {currentVideo && (
