@@ -36,6 +36,8 @@ interface InflectionTableProps {
   l2Code: string;
   /** Verb type hint for Japanese ichidan verbs ("v1"). Ignored for other languages. */
   verbType?: 'v1';
+  /** When true, removes outer border/shadow and hides the title (for use inside a TabbedPanel). */
+  embedded?: boolean;
 }
 
 /**
@@ -49,7 +51,7 @@ interface InflectionTableProps {
  * Renders nothing if the language has no inflection support
  * (e.g., Chinese, Vietnamese, Thai).
  */
-export function InflectionTable({ head, l2Code, verbType }: InflectionTableProps) {
+export function InflectionTable({ head, l2Code, verbType, embedded = false }: InflectionTableProps) {
   const inflection = useInflection();
   const t = useT();
   const [forms, setForms] = useState<InflectedForm[] | null>(null);
@@ -104,7 +106,7 @@ export function InflectionTable({ head, l2Code, verbType }: InflectionTableProps
   // ── Loading ──
   if (loading) {
     return (
-      <div className="rounded-lg border border-border bg-card p-4">
+      <div className={embedded ? 'flex justify-center py-4' : 'rounded-lg border border-border bg-card p-4'}>
         <div className="flex justify-center py-4">
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         </div>
@@ -115,7 +117,10 @@ export function InflectionTable({ head, l2Code, verbType }: InflectionTableProps
   // ── Error ──
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+      <div className={embedded
+        ? 'text-sm text-red-700 dark:text-red-300'
+        : 'rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300'
+      }>
         {error}
       </div>
     );
@@ -150,8 +155,8 @@ export function InflectionTable({ head, l2Code, verbType }: InflectionTableProps
 
   // ── Render ──
   return (
-    <section className="space-y-4 rounded-lg border border-border bg-card p-4">
-      <h2 className="text-base font-semibold">{t('title.conjugations')}</h2>
+    <section className={embedded ? 'space-y-4' : 'space-y-4 rounded-lg border border-border bg-card p-4'}>
+      {!embedded && <h2 className="text-base font-semibold">{t('title.conjugations')}</h2>}
 
       {tableNames.map((table) => {
         const group = groups[table];

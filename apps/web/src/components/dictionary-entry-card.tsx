@@ -369,9 +369,9 @@ export function DictionaryEntryCard({
       contentClassName="p-6"
     >
       {tab === 'word' && wordContent}
-      {tab === 'examples' && <SubsSearchResults term={head} />}
+      {tab === 'examples' && <SubsSearchResults term={head} embedded />}
       {tab === 'inflections' && (
-        <InflectionTable head={head} l2Code={l2Code ?? ''} />
+        <InflectionTable head={head} l2Code={l2Code ?? ''} embedded />
       )}
     </TabbedPanel>
   );
