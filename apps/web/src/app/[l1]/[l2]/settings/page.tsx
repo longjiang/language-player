@@ -6,6 +6,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
 import { getSampleSentence } from '@/lib/sample-sentences';
+import { TokenizedText } from '@/components/tokenized-text';
 import { VoicePicker } from '@/components/voice-picker';
 
 export default function SettingsPage() {
@@ -151,14 +152,8 @@ export default function SettingsPage() {
 
           {popupEnabled && (
             <Section title={t('label.tokenized_text_preview')}>
-              <div className="rounded-lg border border-border bg-muted/50 p-4 text-center">
-                <div className={`text-lg ${tokenizedText.typeFace === 'serif' ? 'font-serif' : tokenizedText.typeFace === 'sans-serif' ? 'font-sans' : ''}`}
-                     style={{ fontSize: `${1 + tokenizedText.zoom * 0.15}rem` }}>
-                  {previewText}
-                </div>
-                {tokenizedText.quickGloss && (
-                  <div className="text-xs text-muted-foreground mt-1 italic">{t('msg.gloss_preview')}</div>
-                )}
+              <div className="rounded-lg border border-border bg-muted/50 p-4">
+                <TokenizedText text={previewText} l2Code={l2.code} textScale={tokenizedText.zoom} />
               </div>
             </Section>
           )}
