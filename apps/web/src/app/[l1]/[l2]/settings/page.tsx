@@ -5,6 +5,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
+import { getSampleSentence } from '@/lib/sample-sentences';
 import { VoicePicker } from '@/components/voice-picker';
 
 export default function SettingsPage() {
@@ -105,7 +106,7 @@ export default function SettingsPage() {
   const phoneticsWordLabel = t('label.phonetics_word');
   const phoneticsOffLabel = t('setting.off');
 
-  const previewText = l2.vernacularName || 'Example';
+  const previewText = getSampleSentence(l2.code);
 
   if (!loaded) {
     return <div className="mx-auto max-w-lg px-4 py-12 text-center text-muted-foreground">{t('msg.loading')}</div>;
