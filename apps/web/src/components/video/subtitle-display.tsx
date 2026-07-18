@@ -20,6 +20,9 @@ interface SubtitleDisplayProps {
   videoTitle?: string;
   /** Pre-computed token cache from /lemmatize-video-normalized */
   tokenCache?: TokenCache;
+  /** Whether the token cache has finished loading. When false, TokenizedText
+   *  shows plain text and waits — no per-line API calls. */
+  tokenCacheLoaded?: boolean;
   /** Called with the array of start times for prev/next line navigation */
   onLinesLoaded?: (startTimes: number[]) => void;
   /** Called when user clicks a subtitle line (outside a word) */
@@ -39,7 +42,7 @@ function stripDurationPrefix(text: string): string {
   return text.replace(/^[\d.]+,\s*/, '');
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
@@ -191,6 +194,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                   l2Code={l2Code}
                   textScale={0.875}
                   tokenCache={tokenCache}
+                  tokenCacheLoaded={tokenCacheLoaded}
                   context={{
                     text: line.l2Line,
                     starttime: line.starttime,

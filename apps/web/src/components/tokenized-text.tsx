@@ -23,6 +23,9 @@ export interface TokenizedTextProps {
   context?: Partial<SavedWordContext>;
   /** Pre-populated token cache from /lemmatize-video-normalized */
   tokenCache?: TokenCache;
+  /** Whether the token cache has finished loading. When false and tokenCache
+   *  is provided, the component shows plain text without calling the API. */
+  tokenCacheLoaded?: boolean;
   /** Pre-loaded tokens — when set, skips the API call entirely. */
   tokens?: LemmatizedToken[];
   /** A specific word form to highlight (e.g. the inflected form that was saved in this context). */
@@ -40,6 +43,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   textScale = 1,
   context: externalContext,
   tokenCache,
+  tokenCacheLoaded,
   tokens: preloadedTokens,
   highlightForm,
 }) => {
@@ -126,6 +130,16 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
     const effectiveText = convertedText;
 
+    // If a video-level token cache is provided but hasn't finished loading yet,
+    // show plain text and wait — don't fall back to per-line API calls.
+    // When tokenCacheLoaded flips to true, this effect re-fires and tries the
+    // now-populated cache.
+    if (tokenCache && tokenCacheLoaded === false) {
+      setTokens([{ text: effectiveText, lemmas: [] }]);
+      setLoading(false);
+      return;
+    }
+
     // Skip if we already have tokens for this text in cache AND state
     const cacheKey = `${l2Code}:${effectiveText}`;
     const cached = lemmatizeCache.get(cacheKey);
@@ -202,7 +216,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       controller.abort();
       loadingRef.current = false;
     };
-  }, [convertedText, converting, l2Code, preloadedTokens, hasBeenVisible]);
+  }, [convertedText, converting, l2Code, preloadedTokens, tokenCacheLoaded, hasBeenVisible]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken) => {
     setSelectedToken(prev => prev === token ? null : token);
