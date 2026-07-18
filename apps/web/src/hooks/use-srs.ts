@@ -24,7 +24,7 @@ const SYNC_DEBOUNCE_MS = 3000;
  * - Settings are embedded in the same store so they sync across devices
  */
 export function useSrs() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { getUserData, syncSrsProgress } = useUserData();
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
@@ -36,7 +36,7 @@ export function useSrs() {
   // reloads even when the cloud sync hasn't completed yet (3s debounce).
   useEffect(() => {
     if (loaded) return;
-    if (session === undefined) return; // still loading auth state
+    if (status === 'loading') return; // still loading auth state
 
     // Always try localStorage first — offline-first principle
     try {
@@ -53,11 +53,11 @@ export function useSrs() {
     } catch { /* corrupted localStorage — use defaults */ }
 
     setLoaded(true);
-  }, [session, loaded]);
+  }, [status, loaded]);
 
   // ── On login, load from cloud and merge (cloud overlays local) ──
   useEffect(() => {
-    if (!session || !loaded) return;
+    if (status !== 'authenticated' || !loaded) return;
 
     const loadFromCloud = async () => {
       try {
@@ -83,7 +83,7 @@ export function useSrs() {
       }
     };
     loadFromCloud();
-  }, [session, loaded]);
+  }, [status, loaded, getUserData]);
 
   // ── Debounced cloud sync ──
   const scheduleSync = useCallback((s: SrsProgressStore) => {

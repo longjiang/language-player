@@ -58,7 +58,9 @@ export function useVideos({ l2, level, pageSize = 24 }: UseVideosOptions): UseVi
   // Fetch on mount and when filter changes
   useEffect(() => {
     setPage(1);
-    setVideos([]);
+    // Don't clear videos — preserves existing cards to avoid unmount/remount
+    // churn that would cause child hooks (e.g. useChannelPreference) to re-fire.
+    // Loading state + empty-result guard in the page handles the UX.
     fetchVideos(1, false);
   }, [fetchVideos]);
 

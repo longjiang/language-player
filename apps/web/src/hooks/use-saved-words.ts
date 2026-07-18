@@ -16,7 +16,7 @@ const SYNC_DEBOUNCE_MS = 2000;
  * - On login, load from cloud and merge with local (cloud ∪ local, by id per L2)
  */
 export function useSavedWords() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { getUserData, syncSavedWords } = useUserData();
   const [savedWords, setSavedWords] = useState<SavedWords>({});
   const [loaded, setLoaded] = useState(false);
@@ -28,8 +28,8 @@ export function useSavedWords() {
     if (loaded) return;
     // Don't touch localStorage while session is still loading — we don't know
     // which user (if any) is logged in yet.  Cloud load handles the logged-in path.
-    if (session === undefined) return;
-    if (!session) {
+    if (status === 'loading') return;
+    if (status !== 'authenticated') {
       // Not logged in — load from localStorage (anonymous mode)
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -43,11 +43,11 @@ export function useSavedWords() {
     }
     // Logged in — localStorage is skipped; cloud load (next effect) will hydrate
     setLoaded(true);
-  }, [session, loaded]);
+  }, [status, loaded]);
 
   // ── On login, load from cloud and overwrite localStorage ──
   useEffect(() => {
-    if (!session || !loaded) return;
+    if (status !== 'authenticated' || !loaded) return;
 
     const loadFromCloud = async () => {
       try {
@@ -64,7 +64,7 @@ export function useSavedWords() {
       }
     };
     loadFromCloud();
-  }, [session, loaded]);
+  }, [status, loaded, getUserData]);
 
   // ── Debounced cloud sync after local changes ──
   const scheduleSync = useCallback((words: SavedWords) => {

@@ -8,24 +8,30 @@ export interface UserDataResponse {
   settings_v2?: string;
 }
 
+// Module-level stable references — these functions have no dependencies
+// on React state, so they can be created once and reused across all renders.
+// This prevents infinite re-fetch loops caused by new function references
+// being created on every render when used in useEffect dependency arrays.
+
+const _getUserData = () =>
+  apiClient.get<UserDataResponse>('/user-data');
+
+const _syncSavedWords = (savedWords: string) =>
+  apiClient.post<{ success: boolean }>('/user-data/sync', {
+    saved_words: savedWords,
+  });
+
+const _syncSrsProgress = (srsProgress: string) =>
+  apiClient.post<{ success: boolean }>('/user-data/sync', {
+    srs_progress: srsProgress,
+  });
+
+const _stableReturn = {
+  getUserData: _getUserData,
+  syncSavedWords: _syncSavedWords,
+  syncSrsProgress: _syncSrsProgress,
+} as const;
+
 export function useUserData() {
-  return {
-    /** Fetch user_data from the Python backend (auth via Authorization header).
-     *  The user is identified server-side from the bearer token. */
-    getUserData: () =>
-      apiClient.get<UserDataResponse>('/user-data'),
-
-    /** Sync saved_words to the Python backend (auth via Authorization header).
-     *  The user is identified server-side from the bearer token. */
-    syncSavedWords: (savedWords: string) =>
-      apiClient.post<{ success: boolean }>('/user-data/sync', {
-        saved_words: savedWords,
-      }),
-
-    /** Sync srs_progress to the Python backend (auth via Authorization header). */
-    syncSrsProgress: (srsProgress: string) =>
-      apiClient.post<{ success: boolean }>('/user-data/sync', {
-        srs_progress: srsProgress,
-      }),
-  };
+  return _stableReturn;
 }

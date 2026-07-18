@@ -35,7 +35,7 @@ const SYNC_DEBOUNCE_MS = 3000;
  * on first load if lp_settings (v2) is not present.
  */
 export function useSettings() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { getUserData } = useUserData();
   const [settings, setSettings] = useState<SettingsV2>(() => createSettingsV2());
   const [loaded, setLoaded] = useState(false);
@@ -124,7 +124,7 @@ export function useSettings() {
   // ── Load from localStorage on mount ──
   useEffect(() => {
     if (loaded) return;
-    if (session === undefined) return; // still loading auth
+    if (status === 'loading') return; // still loading auth
 
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -148,11 +148,11 @@ export function useSettings() {
     }
 
     setLoaded(true);
-  }, [session, loaded, migrateFromLegacy, persist]);
+  }, [status, loaded, migrateFromLegacy, persist]);
 
   // ── On login, load from cloud and merge ──
   useEffect(() => {
-    if (!session || !loaded) return;
+    if (status !== 'authenticated' || !loaded) return;
 
     const loadFromCloud = async () => {
       try {
@@ -179,7 +179,7 @@ export function useSettings() {
       }
     };
     loadFromCloud();
-  }, [session, loaded, getUserData]);
+  }, [status, loaded, getUserData]);
 
   // ── Global setters ──
 
