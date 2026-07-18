@@ -487,18 +487,22 @@ export default function ReviewPage() {
       </div>
 
       {/* Card */}
-      <div className="bg-card border rounded-xl p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center">
+      <div
+        className={`bg-card border rounded-xl p-8 mb-6 min-h-[220px] flex flex-col items-center justify-center
+          ${!showDefinition && !rated ? 'cursor-pointer hover:border-primary/50 transition-colors' : ''}`}
+        onClick={!showDefinition && !rated ? handleReveal : undefined}
+      >
         {/* Action buttons row */}
         <div className="w-full flex justify-end gap-1 mb-2 -mt-2">
           <button
-            onClick={handleSpeak}
+            onClick={(e) => { e.stopPropagation(); handleSpeak(); }}
             className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             title={t('a11y.pronounce')}
           >
             <Volume2 className="h-5 w-5" />
           </button>
           <button
-            onClick={handleRemove}
+            onClick={(e) => { e.stopPropagation(); handleRemove(); }}
             className="p-2 rounded-lg text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors"
             title={t('a11y.remove_from_review')}
           >
