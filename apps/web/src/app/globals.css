@@ -89,3 +89,27 @@ rt {
 .subtitle-l2 {
   @apply text-base leading-relaxed text-muted-foreground;
 }
+
+/* ── Rating toast float-up animation ── */
+@keyframes rating-float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.95);
+  }
+}
+
+.rating-toast[data-sonner-toast] {
+  animation: rating-float-up 0.85s ease-out forwards !important;
+}

@@ -208,24 +208,25 @@ export default function ReviewPage() {
       return;
     }
 
-    // Visual feedback — minimal pill toast near the card
+    // Visual feedback — centered pill toast with float-up animation
     const label = RATING_LABELS.find((r) => r.key === quality);
     if (label) {
       const isAgain = quality === 'again';
       toast(label.label, {
         description: label.hint,
-        duration: 500,
+        duration: 800,
+        closeButton: false,
         position: 'top-center',
         className: [
-          'text-sm font-medium text-center',
+          'rating-toast text-sm font-medium text-center',
           isAgain
             ? '!bg-red-100 dark:!bg-red-900/60 !text-red-700 dark:!text-red-300 !border-red-200 dark:!border-red-800'
             : '!bg-green-100 dark:!bg-green-900/60 !text-green-700 dark:!text-green-300 !border-green-200 dark:!border-green-800',
         ].join(' '),
         style: {
           width: 'auto',
-          minWidth: '120px',
-          padding: '8px 20px',
+          minWidth: '140px',
+          padding: '8px 24px',
           borderRadius: '999px',
           boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
         },
