@@ -797,7 +797,8 @@
         "explain_morphology": "Cho biết cách phát âm và hình thái (hoặc từ nguyên nếu phù hợp). Nếu là dạng biến tố, cho biết lemma và dạng biến tố; nếu không, đừng đề cập đến biến tố hoặc lemma.",
         "explain_text_label": "Văn bản",
         "explain_word": "Giải thích ngắn gọn bằng {l1Name} nghĩa của từ {l2Name} ({code}) {word}.",
-        "explain_word_context": "Giải thích ngắn gọn bằng {l1Name} nghĩa của từ {l2Name} ({code}) {word} trong cụm từ: {context}."
+        "explain_word_context": "Giải thích ngắn gọn bằng {l1Name} nghĩa của từ {l2Name} ({code}) {word} trong cụm từ: {context}.",
+        "explain_word_context_form": "Giải thích ngắn gọn bằng {l1Name}, từ {l2Name} ({code}) {word} (dạng biến cách: {contextForm}) có nghĩa gì trong cụm từ: {context}."
     },
     "review": {
         "again": "Lại nữa",

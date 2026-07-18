@@ -797,7 +797,8 @@
         "explain_morphology": "Oppgi uttalen og morfologien (eller etymologien hvis passende). Hvis bøyd, oppgi lemmaet og bøyningen; ellers, ikke nevn bøyning eller lemma.",
         "explain_text_label": "Tekst",
         "explain_word": "Forklar kort på {l1Name} hva {l2Name} ({code}) ordet {word} betyr.",
-        "explain_word_context": "Forklar kort på {l1Name} hva {l2Name} ({code}) ordet {word} betyr i setningen: {context}."
+        "explain_word_context": "Forklar kort på {l1Name} hva {l2Name} ({code}) ordet {word} betyr i setningen: {context}.",
+        "explain_word_context_form": "Forklar kort på {l1Name} hva {l2Name} ({code}) ordet {word} (bøyd form: {contextForm}) betyr i setningen: {context}."
     },
     "review": {
         "again": "Igjen",

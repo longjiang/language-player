@@ -797,7 +797,8 @@
         "explain_morphology": "给出其发音和形态（或适当的词源）。如果是屈折形式，给出其词元（原形）和屈折变化；否则不要提及屈折或词元。",
         "explain_text_label": "文本",
         "explain_word": "用{l1Name}简洁地解释{l2Name}（{code}）单词{word}的含义。",
-        "explain_word_context": "用{l1Name}简洁地解释{l2Name}（{code}）单词{word}在短语中的含义：{context}。"
+        "explain_word_context": "用{l1Name}简洁地解释{l2Name}（{code}）单词{word}在短语中的含义：{context}。",
+        "explain_word_context_form": "用{l1Name}简洁地解释{l2Name}（{code}）单词{word}（屈折形式：{contextForm}）在短语中的含义：{context}。"
     },
     "review": {
         "again": "重来",

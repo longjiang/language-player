@@ -797,7 +797,8 @@
         "explain_morphology": "Ange dess uttal och morfologi (eller etymologi om lämpligt). Om böjt, ange dess lemma och böjning; annars, nämn inte böjning eller lemma.",
         "explain_text_label": "Text",
         "explain_word": "Förklara kortfattat på {l1Name} vad {l2Name} ({code}) ordet {word} betyder.",
-        "explain_word_context": "Förklara kortfattat på {l1Name} vad {l2Name} ({code}) ordet {word} betyder i frasen: {context}."
+        "explain_word_context": "Förklara kortfattat på {l1Name} vad {l2Name} ({code}) ordet {word} betyder i frasen: {context}.",
+        "explain_word_context_form": "Förklara kortfattat på {l1Name} vad {l2Name} ({code}) ordet {word} (böjd form: {contextForm}) betyder i frasen: {context}."
     },
     "review": {
         "again": "Igen",

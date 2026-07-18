@@ -797,7 +797,8 @@
         "explain_morphology": "Add meg a kiejtését és morfológiáját (vagy etimológiáját, ha van). Ha ragozott, add meg a lemmát és a ragozást; egyébként ne említs ragozást vagy lemmát.",
         "explain_text_label": "Szöveg",
         "explain_word": "Magyarázd el tömören {l1Name} nyelven, hogy mit jelent a(z) {l2Name} ({code}) {word} szó.",
-        "explain_word_context": "Magyarázd el tömören {l1Name} nyelven, hogy mit jelent a(z) {l2Name} ({code}) {word} szó a kifejezésben: {context}."
+        "explain_word_context": "Magyarázd el tömören {l1Name} nyelven, hogy mit jelent a(z) {l2Name} ({code}) {word} szó a kifejezésben: {context}.",
+        "explain_word_context_form": "Magyarázd el tömören {l1Name} nyelven, hogy mit jelent a(z) {l2Name} ({code}) {word} szó (ragozott alak: {contextForm}) a kifejezésben: {context}."
     },
     "review": {
         "again": "Újra",

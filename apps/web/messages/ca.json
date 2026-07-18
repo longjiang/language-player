@@ -797,7 +797,8 @@
         "explain_morphology": "Dona la pronunciació i la morfologia (o etimologia si escau). Si està flexionada, dona el lema i la flexió; altrament, no esmentis la flexió ni el lema.",
         "explain_text_label": "Text",
         "explain_word": "Explica breument en {l1Name} què significa la paraula {l2Name} ({code}) {word}.",
-        "explain_word_context": "Explica breument en {l1Name} què significa la paraula {l2Name} ({code}) {word} en la frase: {context}."
+        "explain_word_context": "Explica breument en {l1Name} què significa la paraula {l2Name} ({code}) {word} en la frase: {context}.",
+        "explain_word_context_form": "Explica breument en {l1Name} què significa la paraula {l2Name} ({code}) {word} (forma flexionada: {contextForm}) en la frase: {context}."
     },
     "review": {
         "again": "De nou",

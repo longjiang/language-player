@@ -797,7 +797,8 @@
         "explain_morphology": "اذكر نطقها وصرفها (أو أصلها اللغوي إن أمكن). إذا كانت مصرفة، فاذكر الليما والتصريف؛ وإلا فلا تذكر التصريف أو الليما.",
         "explain_text_label": "النص",
         "explain_word": "اشرح بإيجاز باستخدام {l1Name}، ما معنى كلمة {l2Name} ({code}) {word}.",
-        "explain_word_context": "اشرح بإيجاز باستخدام {l1Name}، ما معنى كلمة {l2Name} ({code}) {word} في العبارة: {context}."
+        "explain_word_context": "اشرح بإيجاز باستخدام {l1Name}، ما معنى كلمة {l2Name} ({code}) {word} في العبارة: {context}.",
+        "explain_word_context_form": "اشرح بإيجاز باستخدام {l1Name}، ما معنى كلمة {l2Name} ({code}) {word} (الصيغة المصرفة: {contextForm}) في العبارة: {context}."
     },
     "review": {
         "again": "مجددًا",

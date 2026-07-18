@@ -797,7 +797,8 @@
         "explain_morphology": "Oferă pronunția și morfologia (sau etimologia dacă este cazul). Dacă este flexionat, oferă lema și flexiunea; altfel, nu menționa flexiunea sau lema.",
         "explain_text_label": "Text",
         "explain_word": "Explică succint în {l1Name} ce înseamnă cuvântul {l2Name} ({code}) {word}.",
-        "explain_word_context": "Explică succint în {l1Name} ce înseamnă cuvântul {l2Name} ({code}) {word} în expresia: {context}."
+        "explain_word_context": "Explică succint în {l1Name} ce înseamnă cuvântul {l2Name} ({code}) {word} în expresia: {context}.",
+        "explain_word_context_form": "Explică succint în {l1Name} ce înseamnă cuvântul {l2Name} ({code}) {word} (forma flexionată: {contextForm}) în expresia: {context}."
     },
     "review": {
         "again": "Din nou",

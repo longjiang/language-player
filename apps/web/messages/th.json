@@ -797,7 +797,8 @@
         "explain_morphology": "ระบุการออกเสียงและวิทยาหน่วยคำ (หรือศัพทมูลวิทยาหากเหมาะสม) หากผันรูป ให้ระบุคำตั้ง (lemma) และการผันรูป มิฉะนั้นอย่ากล่าวถึงการผันรูปหรือคำตั้ง",
         "explain_text_label": "ข้อความ",
         "explain_word": "อธิบายสั้นๆ โดยใช้{l1Name} ว่าคำ{l2Name} ({code}) {word} หมายถึงอะไร",
-        "explain_word_context": "อธิบายสั้นๆ โดยใช้{l1Name} ว่าคำ{l2Name} ({code}) {word} ในวลีหมายถึงอะไร: {context}"
+        "explain_word_context": "อธิบายสั้นๆ โดยใช้{l1Name} ว่าคำ{l2Name} ({code}) {word} ในวลีหมายถึงอะไร: {context}",
+        "explain_word_context_form": "อธิบายสั้นๆ โดยใช้{l1Name} ว่าคำว่า{word}ในภาษา{l2Name} ({code}) (รูปผัน: {contextForm}) หมายถึงอะไรในวลี: {context}"
     },
     "review": {
         "again": "อีกครั้ง",

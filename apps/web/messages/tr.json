@@ -797,7 +797,8 @@
         "explain_morphology": "Telaffuzunu ve morfolojisini (veya uygunsa etimolojisini) ver. Çekimliyse, lemmasını ve çekimini ver; değilse çekim veya lemmadan bahsetme.",
         "explain_text_label": "Metin",
         "explain_word": "{l1Name} kullanarak, {l2Name} ({code}) {word} kelimesinin ne anlama geldiğini kısaca açıkla.",
-        "explain_word_context": "{l1Name} kullanarak, {l2Name} ({code}) {word} kelimesinin şu ifadede ne anlama geldiğini kısaca açıkla: {context}."
+        "explain_word_context": "{l1Name} kullanarak, {l2Name} ({code}) {word} kelimesinin şu ifadede ne anlama geldiğini kısaca açıkla: {context}.",
+        "explain_word_context_form": "{l1Name} kullanarak, {l2Name} ({code}) {word} kelimesinin (çekimli hâli: {contextForm}) ifadede ne anlama geldiğini kısaca açıkla: {context}."
     },
     "review": {
         "again": "Tekrar",

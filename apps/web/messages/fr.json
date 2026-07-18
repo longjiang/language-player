@@ -797,7 +797,8 @@
         "explain_morphology": "Donne sa prononciation et sa morphologie (ou son étymologie si approprié). S'il est fléchi, donne son lemme et sa flexion ; sinon, ne mentionne ni flexion ni lemme.",
         "explain_text_label": "Texte",
         "explain_word": "Explique succinctement en {l1Name} ce que signifie le mot {l2Name} ({code}) {word}.",
-        "explain_word_context": "Explique succinctement en {l1Name} ce que signifie le mot {l2Name} ({code}) {word} dans la phrase : {context}."
+        "explain_word_context": "Explique succinctement en {l1Name} ce que signifie le mot {l2Name} ({code}) {word} dans la phrase : {context}.",
+        "explain_word_context_form": "Explique succinctement en {l1Name} ce que signifie le mot {l2Name} ({code}) {word} (forme fléchie : {contextForm}) dans la phrase : {context}."
     },
     "review": {
         "again": "Encore",

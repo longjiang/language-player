@@ -797,7 +797,8 @@
         "explain_morphology": "Δώσε την προφορά και τη μορφολογία (ή ετυμολογία αν είναι κατάλληλο). Αν είναι κλιτό, δώσε το λήμμα και την κλίση· διαφορετικά, μην αναφέρεις κλίση ή λήμμα.",
         "explain_text_label": "Κείμενο",
         "explain_word": "Εξήγησε συνοπτικά στα {l1Name} τι σημαίνει η λέξη {l2Name} ({code}) {word}.",
-        "explain_word_context": "Εξήγησε συνοπτικά στα {l1Name} τι σημαίνει η λέξη {l2Name} ({code}) {word} στη φράση: {context}."
+        "explain_word_context": "Εξήγησε συνοπτικά στα {l1Name} τι σημαίνει η λέξη {l2Name} ({code}) {word} στη φράση: {context}.",
+        "explain_word_context_form": "Εξήγησε συνοπτικά στα {l1Name} τι σημαίνει η λέξη {l2Name} ({code}) {word} (κλιτός τύπος: {contextForm}) στη φράση: {context}."
     },
     "review": {
         "again": "Ξανά",

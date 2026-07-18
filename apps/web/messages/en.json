@@ -806,7 +806,8 @@
         "explain_morphology": "Give its pronunciation and morphology (or etymology if appropriate). If inflected, give its lemma and inflection; otherwise do not mention inflection or lemma.",
         "explain_text_label": "Text",
         "explain_word": "Succinctly explain using {l1Name}, what the {l2Name} ({code}) word {word} means.",
-        "explain_word_context": "Succinctly explain using {l1Name}, what the {l2Name} ({code}) word {word} means in the phrase: {context}."
+        "explain_word_context": "Succinctly explain using {l1Name}, what the {l2Name} ({code}) word {word} means in the phrase: {context}.",
+        "explain_word_context_form": "Succinctly explain using {l1Name}, what the {l2Name} ({code}) word {word} (inflected form: {contextForm}) means in the phrase: {context}."
     },
     "review": {
         "again": "Again",

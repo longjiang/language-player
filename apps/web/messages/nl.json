@@ -797,7 +797,8 @@
         "explain_morphology": "Geef de uitspraak en morfologie (of etymologie indien van toepassing). Als verbogen, geef het lemma en de verbuiging; anders, vermeld geen verbuiging of lemma.",
         "explain_text_label": "Tekst",
         "explain_word": "Leg beknopt uit in het {l1Name} wat het {l2Name} ({code}) woord {word} betekent.",
-        "explain_word_context": "Leg beknopt uit in het {l1Name} wat het {l2Name} ({code}) woord {word} betekent in de zin: {context}."
+        "explain_word_context": "Leg beknopt uit in het {l1Name} wat het {l2Name} ({code}) woord {word} betekent in de zin: {context}.",
+        "explain_word_context_form": "Leg beknopt uit in het {l1Name} wat het {l2Name} ({code}) woord {word} (vervoegde vorm: {contextForm}) betekent in de zin: {context}."
     },
     "review": {
         "again": "Opnieuw",

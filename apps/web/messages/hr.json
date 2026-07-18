@@ -797,7 +797,8 @@
         "explain_morphology": "Navedi izgovor i morfologiju (ili etimologiju ako je prikladno). Ako je flektirano, navedi lemu i fleksiju; inače ne spominji fleksiju ni lemu.",
         "explain_text_label": "Tekst",
         "explain_word": "Ukratko objasni na {l1Name} što znači {l2Name} ({code}) riječ {word}.",
-        "explain_word_context": "Ukratko objasni na {l1Name} što znači {l2Name} ({code}) riječ {word} u izrazu: {context}."
+        "explain_word_context": "Ukratko objasni na {l1Name} što znači {l2Name} ({code}) riječ {word} u izrazu: {context}.",
+        "explain_word_context_form": "Ukratko objasni na {l1Name} što znači {l2Name} ({code}) riječ {word} (flektirani oblik: {contextForm}) u izrazu: {context}."
     },
     "review": {
         "again": "Ponovno",

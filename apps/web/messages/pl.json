@@ -797,7 +797,8 @@
         "explain_morphology": "Podaj wymowę i morfologię (lub etymologię, jeśli to stosowne). Jeśli odmienione, podaj lemat i odmianę; w przeciwnym razie nie wspominaj o odmianie ani lemacie.",
         "explain_text_label": "Tekst",
         "explain_word": "Wyjaśnij zwięźle w języku {l1Name}, co oznacza słowo {l2Name} ({code}) {word}.",
-        "explain_word_context": "Wyjaśnij zwięźle w języku {l1Name}, co oznacza słowo {l2Name} ({code}) {word} w wyrażeniu: {context}."
+        "explain_word_context": "Wyjaśnij zwięźle w języku {l1Name}, co oznacza słowo {l2Name} ({code}) {word} w wyrażeniu: {context}.",
+        "explain_word_context_form": "Wyjaśnij zwięźle w języku {l1Name}, co oznacza słowo {l2Name} ({code}) {word} (forma odmieniona: {contextForm}) w wyrażeniu: {context}."
     },
     "review": {
         "again": "Ponownie",

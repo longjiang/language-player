@@ -797,7 +797,8 @@
         "explain_morphology": "Toa matamshi yake na mofolojia (au etimolojia ikiwa inafaa). Ikiwa imenyambulika, toa lemma na unyambulishaji wake; vinginevyo, usitaje unyambulishaji wala lemma.",
         "explain_text_label": "Maandishi",
         "explain_word": "Eleza kwa ufupi kwa kutumia {l1Name}, nini maana ya neno la {l2Name} ({code}) {word}.",
-        "explain_word_context": "Eleza kwa ufupi kwa kutumia {l1Name}, nini maana ya neno la {l2Name} ({code}) {word} katika kifungu: {context}."
+        "explain_word_context": "Eleza kwa ufupi kwa kutumia {l1Name}, nini maana ya neno la {l2Name} ({code}) {word} katika kifungu: {context}.",
+        "explain_word_context_form": "Eleza kwa ufupi kwa kutumia {l1Name}, neno {l2Name} ({code}) {word} (umbo lililonyambulika: {contextForm}) linamaanisha nini katika kirai: {context}."
     },
     "review": {
         "again": "Tena",

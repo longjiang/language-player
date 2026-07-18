@@ -797,7 +797,8 @@
         "explain_morphology": "Berikan pengucapan dan morfologinya (atau etimologi jika sesuai). Jika berinfleksi, berikan lemma dan infleksinya; jika tidak, jangan sebutkan infleksi atau lemma.",
         "explain_text_label": "Teks",
         "explain_word": "Jelaskan secara singkat dalam {l1Name} apa arti kata {l2Name} ({code}) {word}.",
-        "explain_word_context": "Jelaskan secara singkat dalam {l1Name} apa arti kata {l2Name} ({code}) {word} dalam frasa: {context}."
+        "explain_word_context": "Jelaskan secara singkat dalam {l1Name} apa arti kata {l2Name} ({code}) {word} dalam frasa: {context}.",
+        "explain_word_context_form": "Jelaskan secara singkat dalam {l1Name} apa arti kata {l2Name} ({code}) {word} (bentuk infleksi: {contextForm}) dalam frasa: {context}."
     },
     "review": {
         "again": "Lagi",

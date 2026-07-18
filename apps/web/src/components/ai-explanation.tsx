@@ -13,10 +13,12 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, AlertCircle, RefreshCw, BookOpen } from 'lucide-react';
 
 interface AiExplanationProps {
-  /** The word being looked up. */
+  /** The word being looked up (lemma/dictionary form). */
   word: string;
   /** The surrounding context sentence (the subtitle line). */
   contextText?: string;
+  /** The inflected form of the word as it appears in the context text. */
+  contextForm?: string;
   /** Whether the entry was found in the dictionary (affects prompt wording). */
   entryFound: boolean;
   /** When true, streams the explanation immediately without showing a button. */
@@ -31,7 +33,7 @@ interface AiExplanationProps {
  * - Pro users get an AI explanation of the word in context
  * - The prompt follows the Classic format: succinctly explain the word in L1
  */
-export function AiExplanation({ word, contextText, entryFound, autoLoad = false }: AiExplanationProps) {
+export function AiExplanation({ word, contextText, contextForm, entryFound, autoLoad = false }: AiExplanationProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const { l1, l2 } = useLanguage();
@@ -54,7 +56,9 @@ export function AiExplanation({ word, contextText, entryFound, autoLoad = false 
     const code = l2.code;
 
     let prompt: string;
-    if (contextText) {
+    if (contextText && contextForm && contextForm !== word) {
+      prompt = t('prompt.explain_word_context_form', { l1Name, l2Name, code, word, contextForm, context: contextText });
+    } else if (contextText) {
       prompt = t('prompt.explain_word_context', { l1Name, l2Name, code, word, context: contextText });
     } else {
       prompt = t('prompt.explain_word', { l1Name, l2Name, code, word });
