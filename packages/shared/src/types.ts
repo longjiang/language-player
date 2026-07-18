@@ -54,11 +54,24 @@ export interface Lemma {
   pronunciation?: string;
 }
 
-/** Unified token from POST /lemmatize */
+/** Unified token from POST /lemmatize
+
+ *  Non-word tokens use `lemmas: []` to mark them as non-interactive:
+ *    — Spaces: `{"text": " ", "lemmas": []}` (recovered by _recover_spaces from original text)
+ *    — Newlines / carriage returns: `{"text": "\n", "lemmas": []}` or with lemmas from the raw
+ *      lemmatizer depending on whether _recover_spaces or the normalizer produced them
+ *    — Punctuation: `{"text": ".", "lemmas": []}` (some lemmatizers may attach POS, but empty is canonical)
+ *
+ *  Word tokens have `lemmas.length > 0` and are clickable in TokenSpan.
+ *
+ *  Note: /lemmatize-video-normalized (video token cache) does NOT include spaces — the raw
+ *  lemmatizers strip them and normalize_by_lang() has no access to the original text.
+ *  The frontend falls back to per-line /lemmatize when the cache misses.
+ */
 export interface LemmatizedToken {
   /** Surface form as it appears in the text */
   text: string;
-  /** Possible base/dictionary forms. Empty array = punctuation/spaces. */
+  /** Possible base/dictionary forms. Empty array = non-word token (space, punctuation, line break). */
   lemmas: Lemma[];
   /**
    * Phonetic guide, populated by these lemmatizers only:
