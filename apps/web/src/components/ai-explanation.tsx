@@ -19,6 +19,8 @@ interface AiExplanationProps {
   contextText?: string;
   /** Whether the entry was found in the dictionary (affects prompt wording). */
   entryFound: boolean;
+  /** When true, streams the explanation immediately without showing a button. */
+  autoLoad?: boolean;
 }
 
 /**
@@ -29,7 +31,7 @@ interface AiExplanationProps {
  * - Pro users get an AI explanation of the word in context
  * - The prompt follows the Classic format: succinctly explain the word in L1
  */
-export function AiExplanation({ word, contextText, entryFound }: AiExplanationProps) {
+export function AiExplanation({ word, contextText, entryFound, autoLoad = false }: AiExplanationProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const { l1, l2 } = useLanguage();
@@ -71,12 +73,12 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
     stream(buildPrompt());
   }, [stream, buildPrompt]);
 
-  // Fetch when "show AI" is toggled on (only once)
+  // Fetch when "show AI" is toggled on, or when autoLoad + Pro status resolve
   useEffect(() => {
-    if (showAi && !explanation && !loading) {
+    if ((showAi || autoLoad) && isPro && subLoaded && !explanation && !loading) {
       stream(buildPrompt());
     }
-  }, [showAi, explanation, loading, stream, buildPrompt]);
+  }, [showAi, autoLoad, isPro, subLoaded, explanation, loading, stream, buildPrompt]);
 
   // Pro gate — still loading
   if (!subLoaded) return null;
@@ -93,8 +95,8 @@ export function AiExplanation({ word, contextText, entryFound }: AiExplanationPr
     );
   }
 
-  // Not yet toggled — show the button
-  if (!showAi) {
+  // Not yet toggled — show the button (skip when autoLoad)
+  if (!showAi && !autoLoad) {
     return (
       <div className="mt-4">
         <Button
