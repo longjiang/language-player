@@ -50,14 +50,12 @@ export function TabbedPanel({
     <div className={cn('flex flex-col rounded-xl border border-border bg-card', className)}>
       {/* Tab bar */}
       <div className="flex shrink-0 justify-between border-b border-border">
-        {tabs.map((tab, i) => (
+        {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => onTabClick ? onTabClick(tab.key) : onTabChange(tab.key)}
             className={cn(
               'flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors',
-              i === 0 && 'pl-0',
-              i === tabs.length - 1 && 'pr-0',
               activeTab === tab.key
                 ? 'border-b-2 border-primary -mb-px text-primary'
                 : 'text-muted-foreground hover:text-foreground',
