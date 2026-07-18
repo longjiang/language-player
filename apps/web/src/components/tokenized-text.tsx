@@ -168,6 +168,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     return () => {
       cancelled = true;
       controller.abort();
+      loadingRef.current = false;
     };
   }, [convertedText, converting, l2Code, preloadedTokens, tokenCache]);
 
