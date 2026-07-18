@@ -5,6 +5,7 @@ export interface UserDataResponse {
   saved_words: string;
   progress?: string;
   srs_progress?: string;
+  settings_v2?: string;
 }
 
 export function useUserData() {
