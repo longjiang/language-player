@@ -24,8 +24,6 @@ import {
   ArrowLeft,
   CheckCircle2,
   BookOpen,
-  Volume2,
-  BookmarkCheck,
 } from 'lucide-react';
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
@@ -562,24 +560,6 @@ export default function ReviewPage() {
           }
         }}
       >
-        {/* Action buttons row */}
-        <div className="w-full flex justify-end gap-1 mb-2 -mt-2">
-          <button
-            onClick={(e) => { e.stopPropagation(); handleSpeak(); }}
-            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            title={t('a11y.pronounce')}
-          >
-            <Volume2 className="h-5 w-5" />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); handleRemove(); }}
-            className="p-2 rounded-lg text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors"
-            title={t('a11y.remove_from_review')}
-          >
-            <BookmarkCheck className="h-5 w-5 fill-current" />
-          </button>
-        </div>
-
         {/* Word */}
         <h1 className="text-3xl font-bold mb-2" lang={l2.code}>
           {wordForm}
