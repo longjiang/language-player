@@ -478,6 +478,9 @@ export interface TokenizedTextSettings {
 
   /** `normal` = show all words; `quiz` = blank out saved words for self-testing. */
   mode: 'normal' | 'quiz';
+
+  /** Show first definition inline for saved/bookmarked words. */
+  quickGloss: boolean;
 }
 
 export interface DisplaySettings {
@@ -536,10 +539,6 @@ export interface TokenSpanSettings {
      */
     conditions: 'always' | 'hardWords' | 'never';
   };
-  quickGloss: {
-    /** Show first definition inline for saved/bookmarked words. */
-    show: boolean;
-  };
   definition: {
     /** Show first dictionary definition inline on ALL word blocks. */
     show: boolean;
@@ -547,8 +546,10 @@ export interface TokenSpanSettings {
 }
 
 export interface L2DisplaySettings {
-  /** zh: traditional/simplified. ko: show hanja. vi: show hán tự. Ignored otherwise. */
+  /** zh only: `true` = traditional (繁體), `false` = simplified (简体). Ignored for other languages. */
   traditional: boolean;
+  /** ko: show hanja alongside hangul. vi: show hán tự alongside quốc ngữ. Ignored otherwise. */
+  byeonggi: boolean;
 }
 
 export interface SpeechSettings {
@@ -572,6 +573,7 @@ export const TOKENIZED_TEXT_DEFAULTS: TokenizedTextSettings = {
   zoom: 0,
   typeFace: 'default',
   mode: 'normal',
+  quickGloss: true,
 };
 
 export const DISPLAY_DEFAULTS: DisplaySettings = {
@@ -593,12 +595,12 @@ export const REVIEW_DEFAULTS: ReviewSettings = {
 
 export const TOKEN_SPAN_DEFAULTS: TokenSpanSettings = {
   phonetics: { show: 'ruby', conditions: 'always' },
-  quickGloss: { show: true },
   definition: { show: false },
 };
 
 export const L2_DISPLAY_DEFAULTS: L2DisplaySettings = {
   traditional: false,
+  byeonggi: true,
 };
 
 export const SPEECH_DEFAULTS: SpeechSettings = {
@@ -625,7 +627,6 @@ export function createSettingsV2(l2Code?: string): SettingsV2 {
     l2[l2Code] = {
       tokenSpan: {
         phonetics: { ...TOKEN_SPAN_DEFAULTS.phonetics },
-        quickGloss: { ...TOKEN_SPAN_DEFAULTS.quickGloss },
         definition: { ...TOKEN_SPAN_DEFAULTS.definition },
       },
       display: { ...L2_DISPLAY_DEFAULTS },
