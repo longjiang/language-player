@@ -170,7 +170,15 @@ export default function DictionaryPage() {
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              // When input is cleared, immediately restore recent searches
+              if (e.target.value === '' && hasResults) {
+                setResults(null);
+                setMessage(null);
+                setSearchedText('');
+              }
+            }}
             placeholder={t('placeholder.dictionary_search', { language: languageName(l2.code, l1.code) })}
             className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             autoFocus
