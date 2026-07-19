@@ -112,7 +112,7 @@ export function DictionaryPopup({
     };
   }, [token, lookupWord]);
 
-  const levelLabel = (level: ProficiencyLevel) => formatLevel(level).long;
+  const levelLabel = (scale: string, value: string | number) => formatLevel({ scale, value } as ProficiencyLevel).long;
 
   // Find saved words for this token whose IDs don't match any loaded entry
   const unmatchedSavedWords = useMemo(() => {
