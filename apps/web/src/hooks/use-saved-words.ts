@@ -18,7 +18,7 @@ const SYNC_DEBOUNCE_MS = 2000;
  */
 export function useSavedWords() {
   const { data: session, status } = useSession();
-  const { syncSavedWords } = useUserData();
+  const { getUserData, syncSavedWords } = useUserData();
   const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
   const [savedWords, setSavedWords] = useState<SavedWords>({});
   const [loaded, setLoaded] = useState(false);
@@ -47,7 +47,7 @@ export function useSavedWords() {
     setLoaded(true);
   }, [status, loaded]);
 
-  // ── On cloud load, populate from cloud data ──
+  // ── On cloud load, merge cloud data (newer date wins per word) ──
   useEffect(() => {
     if (status !== 'authenticated' || !loaded || !cloudLoaded) return;
     if (!cloudData) return;
@@ -56,15 +56,17 @@ export function useSavedWords() {
       const cloud = cloudData.saved_words
         ? (JSON.parse(cloudData.saved_words) as SavedWords)
         : {};
-      setSavedWords(cloud);
-      // Persist cloud data to localStorage for offline fallback
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cloud)); } catch {}
+      setSavedWords((prev) => {
+        const merged = mergeSavedWords(prev, cloud);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
+        return merged;
+      });
     } catch (err) {
       console.warn('[savedWords] Could not parse cloud data:', err);
     }
   }, [status, loaded, cloudLoaded, cloudData]);
 
-  // ── Debounced cloud sync after local changes ──
+  // ── Debounced cloud sync (read-merge-write) ──
   const scheduleSync = useCallback((words: SavedWords) => {
     if (!session) return;
     if (syncTimer.current) clearTimeout(syncTimer.current);
@@ -72,6 +74,12 @@ export function useSavedWords() {
       if (isSyncing.current) return;
       isSyncing.current = true;
       try {
+        // Read-merge-write: avoid overwriting changes from other devices
+        const cloudResp = await getUserData();
+        if (cloudResp?.saved_words) {
+          const cloud = JSON.parse(cloudResp.saved_words) as SavedWords;
+          words = mergeSavedWords(words, cloud);
+        }
         await syncSavedWords(JSON.stringify(words));
       } catch (err) {
         console.warn('[savedWords] Sync failed:', err);
@@ -79,7 +87,7 @@ export function useSavedWords() {
         isSyncing.current = false;
       }
     }, SYNC_DEBOUNCE_MS);
-  }, [session]);
+  }, [session, getUserData]);
 
   // ── Persist to localStorage + schedule sync ──
   const persist = useCallback((words: SavedWords) => {
@@ -142,18 +150,25 @@ export function useSavedWords() {
 
 // ── Helpers ──
 
-/** Merge cloud data into local: local ∪ cloud, preferring local on conflict. */
+/** Merge cloud data into local. Newer date wins per word, cloud-only words are added. */
 export function mergeSavedWords(local: SavedWords, cloud: SavedWords): SavedWords {
   const merged: SavedWords = { ...local };
 
   for (const [l2, cloudWords] of Object.entries(cloud)) {
-    const localWords = merged[l2] ?? [];
-    const localIds = new Set(localWords.map(w => w.id));
+    const localWords = [...(merged[l2] ?? [])];
+    const localById = new Map(localWords.map(w => [w.id, w]));
 
     for (const cw of cloudWords) {
-      if (!localIds.has(cw.id)) {
+      const lw = localById.get(cw.id);
+      if (!lw) {
+        // Word only on cloud — add it
         localWords.push(cw);
+      } else if (cw.date > lw.date) {
+        // Both have it, cloud is newer — replace
+        const idx = localWords.indexOf(lw);
+        localWords[idx] = cw;
       }
+      // else: local is newer or same — keep local
     }
     merged[l2] = localWords;
   }

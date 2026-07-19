@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import { useUserData, type UserDataResponse } from '@langplayer/api-client';
 import { useCloudUserData } from '@/providers/user-data-provider';
 import {
   createSettingsV2,
@@ -36,26 +37,14 @@ const SYNC_DEBOUNCE_MS = 3000;
  */
 export function useSettings() {
   const { data: session, status } = useSession();
+  const { getUserData } = useUserData();
   const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
   const [settings, setSettings] = useState<SettingsV2>(() => createSettingsV2());
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
 
-  // ── Helper: sync settings_v2 to cloud ──
-  const syncToCloud = useCallback(async (s: SettingsV2) => {
-    // Import fetch dynamically since we're in a browser context
-    try {
-      const { apiClient } = await import('@langplayer/api-client');
-      await apiClient.post('/user-data/sync', {
-        settings_v2: JSON.stringify(s),
-      });
-    } catch (err) {
-      console.warn('[settings] Cloud sync failed:', err);
-    }
-  }, []);
-
-  // ── Helper: persist to localStorage + schedule cloud sync ──
+  // ── Helper: persist to localStorage + schedule cloud sync (read-merge-write) ──
   const persist = useCallback((s: SettingsV2) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
@@ -67,12 +56,27 @@ export function useSettings() {
       if (isSyncing.current) return;
       isSyncing.current = true;
       try {
-        await syncToCloud(s);
+        // Read-merge-write: avoid overwriting settings from other devices
+        const { apiClient } = await import('@langplayer/api-client');
+        const cloudResp = await getUserData();
+        if (cloudResp?.settings_v2) {
+          const cloud = JSON.parse(cloudResp.settings_v2) as SettingsV2;
+          if (cloud.v === 2 && cloud.ts > s.ts) {
+            // Cloud has newer changes — use cloud as base, apply our local on top
+            s = { ...cloud, ...s, v: 2, ts: new Date().toISOString() };
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {}
+          }
+        }
+        await apiClient.post('/user-data/sync', {
+          settings_v2: JSON.stringify(s),
+        });
+      } catch (err) {
+        console.warn('[settings] Cloud sync failed:', err);
       } finally {
         isSyncing.current = false;
       }
     }, SYNC_DEBOUNCE_MS);
-  }, [session, syncToCloud]);
+  }, [session, getUserData]);
 
   // ── Migrate from legacy keys ──
   const migrateFromLegacy = useCallback((): SettingsV2 | null => {
