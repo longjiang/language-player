@@ -92,6 +92,11 @@ export function SaveButton({
       forms: allForms,
       date: Date.now(),
       context,
+      instances: [{
+        timestamp: Date.now(),
+        form: head,
+        context,
+      }],
     });
     setSaving(false);
   };

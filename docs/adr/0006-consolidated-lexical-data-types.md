@@ -714,6 +714,54 @@ interface SavedLexicalItem {
 
 ---
 
+### Backward-Compatible Instance Model
+
+The `SavedLexicalItemRecord` (DB sync shape) supports multiple instances per word
+while maintaining backward compatibility with single-context legacy records.
+
+```ts
+/** A single occurrence — one surface form in one context. */
+interface SavedLexicalItemInstance {
+  timestamp: number;  // Unix-ms when this instance was saved
+  form: string;       // Which surface form appeared in this context
+  context: SavedWordContext;
+}
+
+interface SavedLexicalItemRecord {
+  id: string;
+  forms: string[];                        // Global — for word highlighting
+  date: number;                           // First-save timestamp
+  /** @deprecated Legacy single context. Maintained as instances[last].context. */
+  context: SavedWordContext;
+  /** Source of truth for occurrences. Absent → normalize from `context`. */
+  instances?: SavedLexicalItemInstance[];
+}
+```
+
+**Normalization** — `normalizeInstances(record)` converts any record shape to a uniform `instances[]`:
+
+| Record state | Behavior |
+|---|---|
+| `instances` present + non-empty | Return as-is |
+| Legacy (`context` only) | Wrap as single-element `[{ timestamp: date, form: context.form, context }]` |
+| Neither | Return `[]` |
+
+**Save flow** — `saveWord()`:
+- New word → `instances` populated from the save call; `context` written as `instances[0].context` for old clients
+- Same word saved again → new instance appended; `forms` merged; `context` updated to latest instance
+
+**Merge flow** — `mergeSavedWords()`:
+- Instances from both sides merged and deduped by `(timestamp, form, context.text)` tuple
+- `forms` union across both sides
+- `context` set to latest instance
+
+**Backward compatibility**:
+- Old clients reading `context` get the latest instance — still functional
+- Old data (no `instances`) normalizes to single-element array on read
+- No migration needed — existing `saved_words` blobs work as-is
+
+---
+
 ### Phrasebook
 
 ```ts

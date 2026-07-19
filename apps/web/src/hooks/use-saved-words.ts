@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import type { SavedLexicalItemRecord, SavedLexicalItemStore } from '@langplayer/shared';
+import type { SavedLexicalItemRecord, SavedLexicalItemStore, SavedLexicalItemInstance } from '@langplayer/shared';
 import { useUserData } from '@langplayer/api-client';
 import { useCloudUserData } from '@/providers/user-data-provider';
 
@@ -102,9 +102,31 @@ export function useSavedWords() {
   const saveWord = useCallback((l2Code: string, word: SavedLexicalItemRecord) => {
     setSavedWords(prev => {
       const langWords = [...(prev[l2Code] ?? [])];
-      // Avoid duplicates by id
-      if (langWords.some(w => w.id === word.id)) return prev;
-      langWords.push(word);
+      const existing = langWords.find(w => w.id === word.id);
+      if (existing) {
+        // Word already saved — append new instances, merge forms
+        const existingInsts = normalizeInstances(existing);
+        const newInsts = normalizeInstances(word);
+        const seen = new Set(existingInsts.map(i => `${i.timestamp}|${i.form}|${i.context.text}`));
+        for (const ni of newInsts) {
+          const key = `${ni.timestamp}|${ni.form}|${ni.context.text}`;
+          if (!seen.has(key)) {
+            existingInsts.push(ni);
+            seen.add(key);
+          }
+        }
+        existing.instances = existingInsts;
+        existing.forms = [...new Set([...existing.forms, ...word.forms])];
+        existing.date = Math.max(existing.date, word.date);
+        // Keep legacy context in sync (= latest instance)
+        existing.context = existingInsts[existingInsts.length - 1]!.context;
+      } else {
+        // New word — ensure instances array is populated
+        if (!word.instances || word.instances.length === 0) {
+          word.instances = normalizeInstances(word);
+        }
+        langWords.push(word);
+      }
       const next = { ...prev, [l2Code]: langWords };
       persist(next);
       return next;
@@ -148,9 +170,45 @@ export function useSavedWords() {
   };
 }
 
-// ── Helpers ──
+// ── Instance Helpers ──────────────────────────
 
-/** Merge cloud data into local. Newer date wins per word, cloud-only words are added. */
+/** Normalize a record to its instances array, handling legacy single-context records.
+ *  Ensures every record can be treated uniformly as having `instances[]`. */
+export function normalizeInstances(record: SavedLexicalItemRecord): SavedLexicalItemInstance[] {
+  if (record.instances && record.instances.length > 0) {
+    return record.instances;
+  }
+  // Legacy record with only the flat `context` field
+  if (record.context) {
+    return [{
+      timestamp: record.date,
+      form: record.context.form,
+      context: record.context,
+    }];
+  }
+  return [];
+}
+
+/** Merge two instance arrays, deduping by timestamp+form+text. */
+export function mergeInstances(
+  a: SavedLexicalItemInstance[],
+  b: SavedLexicalItemInstance[],
+): SavedLexicalItemInstance[] {
+  const seen = new Set<string>();
+  const result: SavedLexicalItemInstance[] = [];
+  for (const inst of [...a, ...b]) {
+    const key = `${inst.timestamp}|${inst.form}|${inst.context.text}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(inst);
+    }
+  }
+  return result.sort((x, y) => x.timestamp - y.timestamp);
+}
+
+// ── Merge Helpers ──
+
+/** Merge cloud data into local. Merges instances per word, newer date wins per word, cloud-only words are added. */
 export function mergeSavedWords(local: SavedLexicalItemStore, cloud: SavedLexicalItemStore): SavedLexicalItemStore {
   const merged: SavedLexicalItemStore = { ...local };
 
@@ -161,14 +219,14 @@ export function mergeSavedWords(local: SavedLexicalItemStore, cloud: SavedLexica
     for (const cw of cloudWords) {
       const lw = localById.get(cw.id);
       if (!lw) {
-        // Word only on cloud — add it
         localWords.push(cw);
-      } else if (cw.date > lw.date) {
-        // Both have it, cloud is newer — replace
-        const idx = localWords.indexOf(lw);
-        localWords[idx] = cw;
+      } else {
+        // Merge instances from both, dedup
+        lw.instances = mergeInstances(normalizeInstances(lw), normalizeInstances(cw));
+        lw.forms = [...new Set([...lw.forms, ...cw.forms])];
+        lw.date = Math.max(lw.date, cw.date);
+        lw.context = lw.instances[lw.instances.length - 1]!.context;
       }
-      // else: local is newer or same — keep local
     }
     merged[l2] = localWords;
   }
