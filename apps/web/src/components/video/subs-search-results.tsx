@@ -45,6 +45,12 @@ interface SubsSearchResultsProps {
   term: string;
   /** When true, removes outer card styling so the component fills its parent container. */
   embedded?: boolean;
+  /** When true, search only the exact head form. Default: false (fuzzy, all forms). */
+  exactMatch?: boolean;
+  /** Called when the exact-match toggle is clicked. */
+  onExactToggle?: (exact: boolean) => void;
+  /** Number of distinct forms being searched. 0 or undefined hides the indicator. */
+  formCount?: number;
 }
 
 type SortKey = 'views' | 'likes' | 'date' | 'length' | 'leftContext' | 'rightContext';
@@ -148,7 +154,7 @@ function HighlightLine({ line, term }: { line: string; term: string }) {
 
 // ── Main Component ─────────────────────────────
 
-export function SubsSearchResults({ term, embedded = false }: SubsSearchResultsProps) {
+export function SubsSearchResults({ term, embedded = false, exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
   const { l1, l2 } = useLanguage();
   const t = useT();
   const playerRef = useRef<YouTubePlayerHandle>(null);
@@ -414,6 +420,24 @@ export function SubsSearchResults({ term, embedded = false }: SubsSearchResultsP
           {t('msg.video_n_of_total', { n: currentIndex + 1, total: videos.length })}
         </span>
         <div className="flex items-center gap-1">
+          {/* Exact-match toggle — only visible when formCount > 1 */}
+          {formCount > 1 && (
+            <button
+              onClick={() => onExactToggle?.(!exactMatch)}
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                exactMatch
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-muted text-muted-foreground hover:text-foreground'
+              }`}
+              title={
+                exactMatch
+                  ? `Searching only "${term}" — click to search ${formCount} forms`
+                  : `Searching ${formCount} forms — click for exact match only`
+              }
+            >
+              {exactMatch ? term : `${formCount} forms`}
+            </button>
+          )}
           {currentVideo && (
             <Link
               href={`/${l1.code}/${l2.code}/watch/${currentVideo.youtube_id}`}
