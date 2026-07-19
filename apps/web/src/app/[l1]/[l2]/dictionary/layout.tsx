@@ -54,7 +54,7 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100vh - var(--header-height, 64px))' }}>
+    <div className="mx-auto max-w-7xl px-4 flex flex-col" style={{ height: 'calc(100vh - var(--header-height, 64px))' }}>
       {/* Persistent search bar */}
       <PersistentSearchBar />
 
