@@ -80,7 +80,7 @@ export default function DictionaryPage() {
   // ── Error ──
   if (error) {
     return (
-      <div className="p-6">
+      <div className="px-4 py-2">
         <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           {error}
@@ -92,7 +92,7 @@ export default function DictionaryPage() {
   // ── No results message ──
   if (message && !hasResults) {
     return (
-      <div className="p-6">
+      <div className="px-4 py-2">
         <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center">
           <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <p className="mt-4 text-muted-foreground">{message}</p>
@@ -104,7 +104,7 @@ export default function DictionaryPage() {
   // ── Results (multiple results only; single result redirects to detail) ──
   if (hasResults) {
     return (
-      <div className="p-6">
+      <div className="px-4 py-2">
         <p className="mb-4 text-sm text-muted-foreground">
           {t('msg.result_count', { count: results!.length })} {t('msg.for_term', { term: searchedText })}
         </p>
@@ -128,7 +128,7 @@ export default function DictionaryPage() {
 
   // ── Empty state (recent searches) ──
   return (
-    <div className="p-6">
+    <div className="px-4 py-2">
       {recentSearches.length > 0 ? (
         <div>
           <div className="mb-3 flex items-center justify-between">
