@@ -125,6 +125,21 @@ export interface DictionaryLookupResponse {
   message?: string;
 }
 
+/** Common base for all lexical lookup results — both curated dictionary entries
+ *  and AI-generated ones. (ADR 0006) */
+export interface LexicalEntry {
+  /** Canonical/dictionary form of the word or phrase. */
+  head: string;
+  /** One or more definitions in the user's L1 (or English fallback). */
+  definitions: string[];
+  /** Phonetic guide in Latin script or IPA. */
+  pronunciation: string;
+  /** Proficiency level(s) if known. null or empty = unclassified. */
+  levels?: ProficiencyLevel[] | null;
+  /** Part of speech. Language-specific values. */
+  part_of_speech?: string | null;
+}
+
 /** A proficiency level on a given grading scale.
  *  e.g. `{ scale: 'hsk_2010', value: 3 }`, `{ scale: 'cefr', value: 'B1' }`.
  *
@@ -151,7 +166,7 @@ export interface StudyMaterialCoverage {
 }
 
 /** A single entry from the dictionary lookup, matching the ADR 0006 schema. */
-export interface DictionaryEntry {
+export interface DictionaryEntry extends LexicalEntry {
   /** Discriminant — 'dictionary' for curated entries, 'llm' for AI-generated. */
   kind: 'dictionary';
 
@@ -164,16 +179,11 @@ export interface DictionaryEntry {
 
   // ── Core (always present) ──
   id: string;
-  head: string;
-  definitions: string[];
-  pronunciation: string;
-  match_type: 'exact' | 'lemma' | 'fuzzy' | 'llm' | null;
+  /** How this entry was matched to the query. NOTE: 'llm' is not valid here — LLM entries use LlmGeneratedEntry. */
+  match_type: 'exact' | 'lemma' | 'fuzzy' | null;
 
-  // ── Optional metadata ──
-  part_of_speech?: string | null;
-  /** Proficiency level(s) assigned to this entry. A word may have multiple levels
-   *  across different scales (e.g., both hsk_2010:3 and hsk_2025:2 for Chinese).
-   *  null or empty means unclassified. */
+  // ── Optional metadata (levels, part_of_speech inherited from LexicalEntry) ──
+  /** Narrowed scale union for curated dictionary entries. */
   levels?: ProficiencyLevel<ScaleId>[] | null;
   frequency?: number | null;
   /** 1–7 integer derived from Zipf frequency thresholds. 1 = most common, 7 = rarest. */
@@ -242,7 +252,7 @@ export interface NounClass {
 }
 
 /** An LLM-generated dictionary entry (ADR 0006). Non-canonical; context-dependent. */
-export interface LlmGeneratedEntry {
+export interface LlmGeneratedEntry extends LexicalEntry {
   kind: 'llm';
 
   /** The model that generated this entry. */
@@ -251,16 +261,78 @@ export interface LlmGeneratedEntry {
   /** The sentence provided as context in the LLM prompt. */
   contextSentence?: string;
 
-  // ── LexicalEntry fields ──
-  head: string;
-  definitions: string[];
-  pronunciation: string;
-  levels?: ProficiencyLevel[] | null;
-  part_of_speech?: string | null;
-
   // ── Frequency (looked up from tables, not LLM-generated) ──
   frequency?: number | null;
   frequencyLevel?: number | null;
+}
+
+// ── Lexical Item (ADR 0006) ───────────────────
+
+/** Identity source for a LexicalItem — determines how display data is resolved. */
+export type LexicalItemSource =
+  | { kind: 'dictionary'; dictionaryId: string; entryId: string }
+  | { kind: 'text'; text: string; llm: boolean };
+
+/** Core user-data type. Represents a distinct vocabulary item (word, phrase, or
+ *  expression) a user has encountered and optionally saved. Identity is derived
+ *  from source, not a traditional DB ID. (ADR 0006) */
+export interface LexicalItem {
+  source: LexicalItemSource;
+  /** ISO 639-1 code of the language this item belongs to. */
+  l2: string;
+  /** Cached dictionary entry (when source.kind === 'dictionary'). */
+  canonicalEntry?: DictionaryEntry;
+  /** Cached LLM-generated entry (when source.kind === 'text' && source.llm). */
+  llmEntry?: LlmGeneratedEntry;
+  /** Multi-language translations (when source.kind === 'text' && !source.llm). */
+  translations?: Record<string, string[]>;
+  /** Individual occurrences of this item in context. */
+  instances?: Instance[];
+}
+
+/** A single occurrence of a LexicalItem in text. Captures surface form + context. */
+export interface Instance {
+  form: {
+    /** The surface form as it appeared (may be inflected). */
+    text: string;
+    pronunciation?: string;
+  };
+  /** The surrounding sentence and where it came from. */
+  context?: InstanceContext;
+}
+
+/** Describes where and how the user encountered a lexical item. */
+export interface InstanceContext {
+  sentence: {
+    original: string;
+    translation?: string;
+  };
+  origin?:
+    | { kind: 'phrasebook'; phrasebookId: number }
+    | { kind: 'note'; noteId: string; noteTitle: string }
+    | { kind: 'video'; youtubeId: string; title: string; startTime: number };
+}
+
+/** A user's saved/bookmarked LexicalItem with save timestamp. */
+export interface SavedItem {
+  savedAt: number;
+  item: LexicalItem;
+}
+
+// ── Phrasebook ────────────────────────────────
+
+/** A curated collection of lexical items (ADR 0006).
+ *  The special id 'saved' is used for the synthetic phrasebook built
+ *  from a user's SavedItems. */
+export interface Phrasebook {
+  id: number | 'saved';
+  title: string;
+  description?: string;
+  items: LexicalItem[];
+  meta: {
+    tvShow?: string;
+    exactMatch?: boolean;
+  };
 }
 
 // ── User & Auth ───────────────────────────────
@@ -295,20 +367,6 @@ export interface Subscription {
   plan: 'free' | 'pro' | 'lifetime';
   expiresAt?: Date;
   autoRenew: boolean;
-}
-
-// ── Language & Level ──────────────────────────
-
-export interface LevelInfo {
-  hsk: string;
-  cefr: string;
-  jlpt: string;
-  topik: string;
-  ielts: string;
-  category: 'beginner' | 'intermediate' | 'advanced' | 'mastery';
-  name: string;
-  hoursMultiplier: number;
-  [key: string]: string | number;
 }
 
 // ── API ───────────────────────────────────────
