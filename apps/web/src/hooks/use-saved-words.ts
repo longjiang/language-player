@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import type { SavedWord, SavedWords } from '@langplayer/shared';
 import { useUserData } from '@langplayer/api-client';
+import { useCloudUserData } from '@/providers/user-data-provider';
 
 const STORAGE_KEY = 'zthSavedWords'; // match Classic for migration compatibility
 const SYNC_DEBOUNCE_MS = 2000;
@@ -17,7 +18,8 @@ const SYNC_DEBOUNCE_MS = 2000;
  */
 export function useSavedWords() {
   const { data: session, status } = useSession();
-  const { getUserData, syncSavedWords } = useUserData();
+  const { syncSavedWords } = useUserData();
+  const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
   const [savedWords, setSavedWords] = useState<SavedWords>({});
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -45,26 +47,22 @@ export function useSavedWords() {
     setLoaded(true);
   }, [status, loaded]);
 
-  // ── On login, load from cloud and overwrite localStorage ──
+  // ── On cloud load, populate from cloud data ──
   useEffect(() => {
-    if (status !== 'authenticated' || !loaded) return;
+    if (status !== 'authenticated' || !loaded || !cloudLoaded) return;
+    if (!cloudData) return;
 
-    const loadFromCloud = async () => {
-      try {
-        const data = await getUserData();
-        const cloud = data?.saved_words
-          ? (JSON.parse(data.saved_words) as SavedWords)
-          : {};
-        setSavedWords(cloud);
-        // Persist cloud data to localStorage for offline fallback
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cloud)); } catch {}
-      } catch (err) {
-        // Not authenticated or network error — keep whatever is in state
-        console.warn('[savedWords] Could not load from cloud:', err);
-      }
-    };
-    loadFromCloud();
-  }, [status, loaded, getUserData]);
+    try {
+      const cloud = cloudData.saved_words
+        ? (JSON.parse(cloudData.saved_words) as SavedWords)
+        : {};
+      setSavedWords(cloud);
+      // Persist cloud data to localStorage for offline fallback
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cloud)); } catch {}
+    } catch (err) {
+      console.warn('[savedWords] Could not parse cloud data:', err);
+    }
+  }, [status, loaded, cloudLoaded, cloudData]);
 
   // ── Debounced cloud sync after local changes ──
   const scheduleSync = useCallback((words: SavedWords) => {

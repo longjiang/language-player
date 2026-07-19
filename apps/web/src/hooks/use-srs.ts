@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useUserData } from '@langplayer/api-client';
+import { useCloudUserData } from '@/providers/user-data-provider';
 import { createSrsStore, getLanguageCards } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 
@@ -25,7 +26,8 @@ const SYNC_DEBOUNCE_MS = 3000;
  */
 export function useSrs() {
   const { data: session, status } = useSession();
-  const { getUserData, syncSrsProgress } = useUserData();
+  const { syncSrsProgress } = useUserData();
+  const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -55,35 +57,26 @@ export function useSrs() {
     setLoaded(true);
   }, [status, loaded]);
 
-  // ── On login, load from cloud and merge (cloud overlays local) ──
+  // ── On cloud load, merge cloud data (cloud overlays local) ──
   useEffect(() => {
-    if (status !== 'authenticated' || !loaded) return;
+    if (status !== 'authenticated' || !loaded || !cloudLoaded) return;
+    if (!cloudData?.srs_progress) return;
 
-    const loadFromCloud = async () => {
-      try {
-        const data = await getUserData();
-        if (!data?.srs_progress) return; // nothing on cloud yet, keep local data
+    try {
+      const cloud: SrsProgressStore = JSON.parse(cloudData.srs_progress);
 
-        const cloud: SrsProgressStore = JSON.parse(data.srs_progress);
-
-        // Merge: local is the base, cloud overlays on top.
-        // This preserves any local changes that haven't been synced yet
-        // while picking up changes from other devices via the cloud.
-        setStore((prev) => {
-          const merged: SrsProgressStore = {
-            settings: { ...prev.settings, ...(cloud.settings ?? {}) },
-            cards: { ...prev.cards, ...(cloud.cards ?? {}) },
-          };
-          // Persist merged result so it's available on next load
-          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
-          return merged;
-        });
-      } catch (err) {
-        console.warn('[srs] Could not load from cloud:', err);
-      }
-    };
-    loadFromCloud();
-  }, [status, loaded, getUserData]);
+      setStore((prev) => {
+        const merged: SrsProgressStore = {
+          settings: { ...prev.settings, ...(cloud.settings ?? {}) },
+          cards: { ...prev.cards, ...(cloud.cards ?? {}) },
+        };
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
+        return merged;
+      });
+    } catch (err) {
+      console.warn('[srs] Could not parse cloud data:', err);
+    }
+  }, [status, loaded, cloudLoaded, cloudData]);
 
   // ── Debounced cloud sync ──
   const scheduleSync = useCallback((s: SrsProgressStore) => {

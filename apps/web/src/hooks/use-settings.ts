@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { useUserData } from '@langplayer/api-client';
+import { useCloudUserData } from '@/providers/user-data-provider';
 import {
   createSettingsV2,
   TOKENIZED_TEXT_DEFAULTS,
@@ -36,7 +36,7 @@ const SYNC_DEBOUNCE_MS = 3000;
  */
 export function useSettings() {
   const { data: session, status } = useSession();
-  const { getUserData } = useUserData();
+  const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
   const [settings, setSettings] = useState<SettingsV2>(() => createSettingsV2());
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -150,36 +150,31 @@ export function useSettings() {
     setLoaded(true);
   }, [status, loaded, migrateFromLegacy, persist]);
 
-  // ── On login, load from cloud and merge ──
+  // ── On cloud load, merge cloud data ──
   useEffect(() => {
-    if (status !== 'authenticated' || !loaded) return;
+    if (status !== 'authenticated' || !loaded || !cloudLoaded) return;
+    if (!cloudData?.settings_v2) return;
 
-    const loadFromCloud = async () => {
-      try {
-        const data = await getUserData();
-        if (!data?.settings_v2) return;
+    try {
+      const cloud: SettingsV2 = JSON.parse(cloudData.settings_v2);
+      if (cloud.v !== 2) return;
 
-        const cloud: SettingsV2 = JSON.parse(data.settings_v2);
-        if (cloud.v !== 2) return;
-
-        setSettings((prev) => {
-          // Merge: local is base, cloud overlays.
-          // Compare timestamps — newer wins.
-          const merged: SettingsV2 = {
-            ...prev,
-            ...(cloud.ts > prev.ts ? cloud : {}),
-            v: 2,
-            ts: new Date().toISOString(),
-          };
-          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
-          return merged;
-        });
-      } catch (err) {
-        console.warn('[settings] Could not load from cloud:', err);
-      }
-    };
-    loadFromCloud();
-  }, [status, loaded, getUserData]);
+      setSettings((prev) => {
+        // Merge: local is base, cloud overlays.
+        // Compare timestamps — newer wins.
+        const merged: SettingsV2 = {
+          ...prev,
+          ...(cloud.ts > prev.ts ? cloud : {}),
+          v: 2,
+          ts: new Date().toISOString(),
+        };
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
+        return merged;
+      });
+    } catch (err) {
+      console.warn('[settings] Could not parse cloud data:', err);
+    }
+  }, [status, loaded, cloudLoaded, cloudData]);
 
   // ── Global setters ──
 
