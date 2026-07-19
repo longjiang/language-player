@@ -11,6 +11,24 @@ const STORAGE_KEY = 'zthSrsProgress';
 const SYNC_DEBOUNCE_MS = 3000;
 
 /**
+ * Merge two SRS card records (per-language: wordId → SrsFields).
+ * Newer lastReview wins per card.
+ */
+function mergeSrsCards(
+  local: Record<string, SrsFields>,
+  cloud: Record<string, SrsFields>,
+): Record<string, SrsFields> {
+  const merged = { ...local };
+  for (const [id, cloudCard] of Object.entries(cloud)) {
+    const localCard = merged[id];
+    if (!localCard || cloudCard.lastReview > localCard.lastReview) {
+      merged[id] = cloudCard;
+    }
+  }
+  return merged;
+}
+
+/**
  * Hook for managing SRS (spaced repetition) progress.
  *
  * Store shape (nested by language):
@@ -26,7 +44,7 @@ const SYNC_DEBOUNCE_MS = 3000;
  */
 export function useSrs() {
   const { data: session, status } = useSession();
-  const { syncSrsProgress } = useUserData();
+  const { getUserData, syncSrsProgress } = useUserData();
   const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
   const [store, setStore] = useState<SrsProgressStore>(createSrsStore());
   const [loaded, setLoaded] = useState(false);
@@ -57,7 +75,7 @@ export function useSrs() {
     setLoaded(true);
   }, [status, loaded]);
 
-  // ── On cloud load, merge cloud data (cloud overlays local) ──
+  // ── On cloud load, merge cloud data (newer lastReview wins per card) ──
   useEffect(() => {
     if (status !== 'authenticated' || !loaded || !cloudLoaded) return;
     if (!cloudData?.srs_progress) return;
@@ -66,9 +84,13 @@ export function useSrs() {
       const cloud: SrsProgressStore = JSON.parse(cloudData.srs_progress);
 
       setStore((prev) => {
+        const mergedCards: Record<string, Record<string, SrsFields>> = { ...prev.cards };
+        for (const [l2, cloudLangCards] of Object.entries(cloud.cards ?? {})) {
+          mergedCards[l2] = mergeSrsCards(prev.cards[l2] ?? {}, cloudLangCards);
+        }
         const merged: SrsProgressStore = {
           settings: { ...prev.settings, ...(cloud.settings ?? {}) },
-          cards: { ...prev.cards, ...(cloud.cards ?? {}) },
+          cards: mergedCards,
         };
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
         return merged;
@@ -78,7 +100,7 @@ export function useSrs() {
     }
   }, [status, loaded, cloudLoaded, cloudData]);
 
-  // ── Debounced cloud sync ──
+  // ── Debounced cloud sync (read-merge-write) ──
   const scheduleSync = useCallback((s: SrsProgressStore) => {
     if (!session) return;
     if (syncTimer.current) clearTimeout(syncTimer.current);
@@ -86,6 +108,16 @@ export function useSrs() {
       if (isSyncing.current) return;
       isSyncing.current = true;
       try {
+        // Read-merge-write: avoid overwriting changes from other devices
+        const cloudResp = await getUserData();
+        if (cloudResp?.srs_progress) {
+          const cloud = JSON.parse(cloudResp.srs_progress) as SrsProgressStore;
+          const mergedCards: Record<string, Record<string, SrsFields>> = { ...s.cards };
+          for (const [l2, cloudLangCards] of Object.entries(cloud.cards ?? {})) {
+            mergedCards[l2] = mergeSrsCards(s.cards[l2] ?? {}, cloudLangCards);
+          }
+          s = { settings: s.settings, cards: mergedCards };
+        }
         await syncSrsProgress(JSON.stringify(s));
       } catch (err) {
         console.warn('[srs] Sync failed:', err);
@@ -93,7 +125,7 @@ export function useSrs() {
         isSyncing.current = false;
       }
     }, SYNC_DEBOUNCE_MS);
-  }, [session]);
+  }, [session, getUserData]);
 
   // ── Persist + schedule sync ──
   const persist = useCallback((s: SrsProgressStore) => {
