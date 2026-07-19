@@ -3,12 +3,13 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3000",
-    "build": "next build",
+    "dev": "rm -rf .next && next dev --port 3000",
+    "build": "rm -rf .next && next build",
+    "build:check": "rm -rf .next-check && BUILD_CHECK=1 next build && rm -rf .next-check",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .next && echo '.next cleared — restart dev server to rebuild'"
+    "clean": "rm -rf .next && echo '.next cleared'"
   },
   "dependencies": {
     "@langplayer/api-client": "*",
