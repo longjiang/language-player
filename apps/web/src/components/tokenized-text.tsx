@@ -230,6 +230,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       for (const f of w.forms) {
         forms.add(f.toLowerCase());
       }
+      // Also include the inflected surface form the user actually encountered
+      if (w.context?.form) {
+        forms.add(w.context.form.toLowerCase());
+      }
     }
     return forms;
   }, [savedWords, l2Code]);
