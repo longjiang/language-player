@@ -8,13 +8,12 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useT } from '@/hooks/use-t';
 import { useRouter } from 'next/navigation';
 import { PersistentSearchBar } from '@/components/dictionary/persistent-search-bar';
-import { WordListSidebar } from '@/components/dictionary/word-list-sidebar';
 import { SavedWordRow } from '@/components/dictionary/saved-word-row';
 import { buildEntryRoute } from '@/lib/entry-route';
 import type { WordListNavItem as Wlni } from '@/lib/word-list-navigation';
 import { BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { SavedLexicalItemRecord } from '@langplayer/shared';
+import type { SavedLexicalItemRecord, DictionaryEntry } from '@langplayer/shared';
 
 // ── Inner layout (needs context, so must be child of DictionaryProvider) ──
 
@@ -69,13 +68,13 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
         <aside
           className={cn(
             'flex-shrink-0 transition-all duration-200',
-            sidebarOpen ? 'lg:flex-1 lg:min-w-0 w-56' : 'w-0 overflow-hidden',
+            sidebarOpen ? 'lg:flex-1 lg:min-w-0 w-56 ml-3' : 'w-0 overflow-hidden',
           )}
         >
           <div className="rounded-xl border border-border bg-card h-full flex flex-col overflow-hidden">
             <div className="flex items-center border-b border-border px-3 py-2">
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                {t('title.saved_words')}
+                {sidebarSource.kind === 'results' ? `${sidebarSource.items.length} results` : t('title.saved_words')}
               </h3>
             </div>
             <div className="flex-1 overflow-y-auto px-1 py-1">
@@ -95,26 +94,42 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
                   })() : null}
                 />
               ) : sidebarSource.kind === 'results' && sidebarSource.items.length > 0 ? (
-                <WordListSidebar
-                  items={sidebarSource.items.map((e) => ({
-                    head: e.head,
-                    dictionaryId: e.dictionary?.id ?? 'llm',
-                    entryId: e.id,
-                    id: `${e.dictionary?.id ?? 'llm'}-${e.id}`,
-                    pronunciation: e.pronunciation || undefined,
-                    definition: e.definitions?.[0] || undefined,
-                  }))}
-                  currentEntryId={(() => {
-                    const parts = pathname.split('/');
-                    const dIdx = parts.indexOf('entry') + 1;
-                    const eIdx = dIdx + 1;
-                    const d = parts[dIdx] ?? '';
-                    const e = parts[eIdx] ? decodeURIComponent(parts[eIdx]).replace(/~/g, ',') : '';
-                    return `${d}-${e}`;
-                  })()}
-                  open={sidebarOpen}
-                  onItemClick={handleResultClick}
-                />
+                <div className="space-y-0.5">
+                  {sidebarSource.items.map((e) => (
+                    <div
+                      key={`${e.dictionary?.id ?? 'llm'}-${e.id}`}
+                      className={`group flex w-full items-start gap-2 rounded-md px-3 py-1.5 text-left text-sm transition-colors cursor-pointer hover:bg-muted ${
+                        isDetailPage && (() => {
+                          const parts = pathname.split('/');
+                          const dIdx = parts.indexOf('entry') + 1;
+                          const eIdx = dIdx + 1;
+                          const d = parts[dIdx] ?? '';
+                          const entry = parts[eIdx] ? decodeURIComponent(parts[eIdx]).replace(/~/g, ',') : '';
+                          return `${d}-${entry}` === `${e.dictionary?.id ?? 'llm'}-${e.id}` ? 'bg-primary/10 text-primary font-medium' : '';
+                        })()
+                      }`}
+                      onClick={() => handleResultClick({
+                        head: e.head,
+                        dictionaryId: e.dictionary?.id ?? 'llm',
+                        entryId: e.id,
+                        id: `${e.dictionary?.id ?? 'llm'}-${e.id}`,
+                      })}
+                      title={e.pronunciation ? `${e.head} · ${e.pronunciation}` : e.head}
+                    >
+                      <BookOpen className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate">{e.head}</div>
+                        {(e.pronunciation || e.definitions?.[0]) && (
+                          <div className="truncate text-xs text-muted-foreground">
+                            {e.pronunciation && <span>{e.pronunciation}</span>}
+                            {e.pronunciation && e.definitions?.[0] && <span> · </span>}
+                            {e.definitions?.[0] && <span>{e.definitions[0]}</span>}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : sidebarOpen ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center p-4">

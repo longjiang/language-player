@@ -35,9 +35,6 @@ export function WordListSidebar({
       open ? 'w-56' : 'w-0 overflow-hidden',
     )}>
       <div className="sticky top-4 rounded-xl border border-border bg-card">
-        <div className="flex items-center border-b border-border px-3 py-2.5">
-          <h3 className="text-sm font-semibold truncate">{items.length} words</h3>
-        </div>
         <div className="max-h-[calc(100vh-16rem)] overflow-y-auto px-1 py-1">
           {items.map((item) => (
             <div
