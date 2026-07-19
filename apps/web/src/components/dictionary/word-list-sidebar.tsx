@@ -4,17 +4,16 @@ import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { cn } from '@/lib/utils';
 import { BookOpen, PanelRightClose } from 'lucide-react';
-import {
-  type WordListNavItem,
-  updateCurrentEntryId,
-  buildEntryRouteWithList,
-} from '@/lib/word-list-navigation';
+import { type WordListNavItem } from '@/lib/word-list-navigation';
+import { buildEntryRoute } from '@/lib/entry-route';
 
 export interface WordListSidebarProps {
   items: WordListNavItem[];
   currentEntryId: string;
   open: boolean;
   onToggle: () => void;
+  /** When provided, called on item click instead of default sessionStorage navigation. */
+  onItemClick?: (item: WordListNavItem) => void;
 }
 
 /**
@@ -27,6 +26,7 @@ export function WordListSidebar({
   currentEntryId,
   open,
   onToggle,
+  onItemClick,
 }: WordListSidebarProps) {
   const { l1, l2 } = useLanguage();
   const router = useRouter();
@@ -57,9 +57,12 @@ export function WordListSidebar({
                 item.id === currentEntryId && 'bg-primary/10 text-primary font-medium',
               )}
               onClick={() => {
-                updateCurrentEntryId(item.id);
-                const route = buildEntryRouteWithList(l1.code, l2.code, item.dictionaryId, item.entryId, item.id);
-                router.push(route);
+                if (onItemClick) {
+                  onItemClick(item);
+                } else {
+                  const route = buildEntryRoute(l1.code, l2.code, item.dictionaryId, item.entryId);
+                  router.push(route);
+                }
               }}
               title={item.pronunciation ? `${item.head} · ${item.pronunciation}` : item.head}
             >
