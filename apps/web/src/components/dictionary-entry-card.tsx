@@ -10,6 +10,7 @@ import { SpeakButton } from './speak-button';
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
+import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
 import { TabbedPanel } from '@/components/tabbed-panel';
 import { SubsSearchResults } from '@/components/video/subs-search-results';
 import { InflectionTable } from '@/components/inflection-table';
@@ -62,6 +63,11 @@ export function DictionaryEntryCard({
   const { head, alternate } = apply(entry.head, entry.alternate);
   const isFull = variant === 'full';
   const [tab, setTab] = useState<string>('word');
+
+  // ── Inflected search terms ──
+  const { allTerms, headTerm, formCount } = useInflectedSearchTerms(entry, l2Code ?? '');
+  const [exactMatch, setExactMatch] = useState(false);
+  const searchTermString = exactMatch ? headTerm : allTerms.join(',');
 
   const levels = entry.levels ?? [];
   const formattedLevels = levels.map((l) => {
@@ -399,7 +405,15 @@ export function DictionaryEntryCard({
       contentClassName={embedded ? 'px-0 pt-8' : 'p-6'}
     >
       {tab === 'word' && wordContent}
-      {tab === 'examples' && <SubsSearchResults term={head} embedded />}
+      {tab === 'examples' && (
+        <SubsSearchResults
+          term={searchTermString}
+          exactMatch={exactMatch}
+          onExactToggle={setExactMatch}
+          formCount={formCount}
+          embedded
+        />
+      )}
       {tab === 'deepseek' && (
         <AiExplanation word={head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
       )}
