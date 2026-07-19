@@ -1,12 +1,17 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useSession } from 'next-auth/react';
+import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/providers/language-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 
 const SAVE_INTERVAL_MS = 15_000; // every 15 seconds
+
+interface SessionInfo {
+  userId: string | null;
+  token: string | null;
+  loaded: boolean;
+}
 
 /**
  * Periodically saves the user's current playback position to watch history
@@ -14,24 +19,48 @@ const SAVE_INTERVAL_MS = 15_000; // every 15 seconds
  *
  * Usage: call useWatchHistoryRecorder(videoId, currentTime) on the watch page.
  * Pass 0 or undefined for videoId to pause recording (e.g., when no video loaded).
+ *
+ * Session is fetched via /api/auth/session (NextAuth endpoint) rather than
+ * useSession() to avoid hydration/suspense issues with the YouTube iframe.
  */
 export function useWatchHistoryRecorder(
   videoId: string | undefined,
   currentTime: number,
 ) {
-  const { data: session } = useSession();
   const { l2 } = useLanguage();
-  const userId = session?.user?.id;
-  const token = (session?.user as any)?.directusToken as string | undefined;
+  const [session, setSession] = useState<SessionInfo>({ userId: null, token: null, loaded: false });
   const lastSavedRef = useRef<{ time: number; videoId: string } | null>(null);
   const currentTimeRef = useRef(currentTime);
 
   // Keep ref in sync without re-triggering the effect
   currentTimeRef.current = currentTime;
 
+  // Fetch session on mount — fetch() is more reliable than useSession() inside
+  // pages with heavy third-party embeds (YouTube iframe)
   useEffect(() => {
+    let cancelled = false;
+    fetch('/api/auth/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        const userId = data?.user?.id ?? null;
+        const token = data?.user?.directusToken ?? null;
+        setSession({ userId, token, loaded: true });
+        console.log('[watch-history] session loaded', { hasUserId: !!userId, hasToken: !!token });
+      })
+      .catch(() => {
+        if (!cancelled) setSession({ userId: null, token: null, loaded: true });
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    const { userId, token, loaded } = session;
     if (!videoId || !userId || !token) {
-      console.log('[watch-history] recorder inactive', { hasVideoId: !!videoId, hasUserId: !!userId, hasToken: !!token });
+      // Only log when session is loaded to avoid noise during initial fetch
+      if (loaded || videoId) {
+        console.log('[watch-history] recorder inactive', { hasVideoId: !!videoId, hasUserId: !!userId, hasToken: !!token });
+      }
       return;
     }
 
@@ -69,5 +98,5 @@ export function useWatchHistoryRecorder(
     }, SAVE_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [videoId, userId, token, l2.code]); // currentTime NOT in deps — uses ref instead
+  }, [videoId, session, l2.code]); // currentTime NOT in deps — uses ref instead
 }
