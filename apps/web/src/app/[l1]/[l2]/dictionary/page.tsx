@@ -80,7 +80,7 @@ export default function DictionaryPage() {
   // ── Error ──
   if (error) {
     return (
-      <div className="px-4 py-2">
+      <div className="p-4">
         <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           {error}
@@ -92,8 +92,8 @@ export default function DictionaryPage() {
   // ── No results message ──
   if (message && !hasResults) {
     return (
-      <div className="px-4 py-2">
-        <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center">
+      <div className="p-4">
+        <div className="rounded-xl border border-border bg-card p-12 text-center">
           <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <p className="mt-4 text-muted-foreground">{message}</p>
         </div>
@@ -104,7 +104,7 @@ export default function DictionaryPage() {
   // ── Results (multiple results only; single result redirects to detail) ──
   if (hasResults) {
     return (
-      <div className="px-4 py-2">
+      <div className="p-4">
         <p className="mb-4 text-sm text-muted-foreground">
           {t('msg.result_count', { count: results!.length })} {t('msg.for_term', { term: searchedText })}
         </p>
@@ -128,9 +128,9 @@ export default function DictionaryPage() {
 
   // ── Empty state (recent searches) ──
   return (
-    <div className="px-4 py-2">
+    <div className="p-4">
       {recentSearches.length > 0 ? (
-        <div>
+        <div className="rounded-xl border border-border bg-card p-5">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Clock className="h-4 w-4" />
@@ -143,7 +143,7 @@ export default function DictionaryPage() {
               {t('action.clear_recent_searches')}
             </button>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {recentSearches.map((term) => (
               <button
                 key={term}
@@ -157,7 +157,7 @@ export default function DictionaryPage() {
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border-2 border-dashed border-border p-12 text-center">
+        <div className="rounded-xl border border-border bg-card p-12 text-center">
           <Search className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <p className="mt-4 text-muted-foreground">
             {t('msg.dictionary_empty_state', { l2: languageName(l2.code) })}
