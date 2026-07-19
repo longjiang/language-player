@@ -101,12 +101,20 @@ export function useVideos({ l2, level, pageSize = 24, cache }: UseVideosOptions)
   // Fetch on mount and when filter changes — but skip if cache has data
   // and we haven't explicitly requested this key yet.
   useEffect(() => {
-    // If cache has data for this key and we haven't fetched it in this mount,
-    // skip the fetch — the cache restoration above already set the state.
-    if (cache && cache.get(key) && fetchedKeyRef.current !== key) {
-      fetchedKeyRef.current = key;
-      setLoading(false);
-      return;
+    // If cache has data for this key, restore it now. This handles the case
+    // where the key changed (e.g. level filter) and useState initializers
+    // already ran for the previous key — they don't re-run on key change.
+    if (cache) {
+      const entry = cache.get(key);
+      if (entry && fetchedKeyRef.current !== key) {
+        setVideos(entry.videos);
+        setHasMore(entry.hasMore);
+        setError(entry.error);
+        setLoading(false);
+        setPage(1);
+        fetchedKeyRef.current = key;
+        return;
+      }
     }
     fetchedKeyRef.current = key;
     setPage(1);
