@@ -424,7 +424,7 @@ HSK Standard Course (hsk_standard_course.csv):
           不但……而且……,不但……而且……,3,18,3,"他不但听到，而且也看到了。","He not only heard..."
   Parse:  Match headword → map book/lesson/dialog → build StudyMaterialCoverage
   Output: { material: 'HSK Standard Course', author: 'Jiang Liping', year: 2014,
-            targetLevel: { scale: 'hsk_2010', level: 3 },
+            targetLevel: { scale: 'hsk_2010', value: 3 },
             location: { book: 3, lesson: 18, dialog: 3 },
             example: '他不但听到，而且也看到了。',
             exampleTranslation: 'He not only heard it, but he saw it, too.' }
@@ -922,7 +922,10 @@ PATH 3: Phrasebook save
 
 ```
 SavedWord.id              → LexicalItem.source (parse composite → scoped)
-SavedWord.forms           → Dropped. Lemmatization handles form→lemma matching.
+SavedWord.forms           → Kept. Lemmatization is not always reliable for every
+                            instance — saving inflected forms ensures accurate
+                            highlighting in the original context. The forms list
+                            maps to Instance.form.text per occurrence.
 SavedWord.date            → SavedItem.savedAt
 SavedWord.context.form    → Instance.form.text
 SavedWord.context.text    → Instance.context.sentence.original
