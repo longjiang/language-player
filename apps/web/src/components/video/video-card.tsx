@@ -82,7 +82,7 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
   const { l1, l2 } = useLanguage();
   const { playVideo } = useVideoPlayer();
   const t = useT();
-  const level = getLevel(video.difficulty);
+  const level = (video as any).level ?? getLevel(video.difficulty);
   const duration = formatDuration(video.duration);
   const views = formatViews(video.views, l1.code);
 
