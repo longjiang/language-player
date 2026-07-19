@@ -31,13 +31,16 @@ export async function getRecommendedVideos(
   page = 1,
   pageSize = 24,
   userId?: string,
+  excludeIds?: string[],
 ): Promise<VideoListResult> {
   try {
     const params = new URLSearchParams();
     params.set('l2', l2);
     if (level) params.set('level', String(level));
     params.set('limit', String(pageSize));
+    params.set('page', String(page));
     if (userId) params.set('user_id', userId);
+    if (excludeIds && excludeIds.length > 0) params.set('exclude_ids', excludeIds.join(','));
 
     const res = await fetch(`${PYTHON_URL}/recommend-videos?${params}`, {
       cache: 'no-store',
