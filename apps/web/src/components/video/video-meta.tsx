@@ -40,22 +40,11 @@ const CEFR_LABEL_KEYS: Record<number, string> = {
   7: 'label.native_level',
 };
 
-function getLevel(difficulty: number | undefined): number {
-  if (!difficulty) return 1;
-  if (difficulty <= 0.003) return 1;
-  if (difficulty <= 0.006) return 2;
-  if (difficulty <= 0.01) return 3;
-  if (difficulty <= 0.02) return 4;
-  if (difficulty <= 0.04) return 5;
-  if (difficulty <= 0.1) return 6;
-  return 7;
-}
-
 export function VideoMeta({ video }: VideoMetaProps) {
   const { l1, l2 } = useLanguage();
   const t = useT();
   const profiles = useDifficultyProfile();
-  const level = getLevelFromDifficulty(video.difficulty, profiles?.[l2.code]) ?? getLevel(video.difficulty);
+  const level = getLevelFromDifficulty(video.difficulty, profiles?.[l2.code]);
 
   return (
     <div>
@@ -91,8 +80,8 @@ export function VideoMeta({ video }: VideoMetaProps) {
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${LEVEL_COLORS[level] ?? ''}`}>
-          {t(CEFR_LABEL_KEYS[level] ?? 'label.unknown')}
+        <span className={`rounded-full px-3 py-1 text-xs font-medium ${LEVEL_COLORS[level ?? 1] ?? ''}`}>
+          {t(CEFR_LABEL_KEYS[level ?? 1] ?? 'label.unknown')}
         </span>
         {video.locale && (
           <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">

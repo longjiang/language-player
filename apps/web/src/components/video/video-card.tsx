@@ -69,23 +69,12 @@ const LEVEL_LABELS: Record<number, string> = {
   7: 'N',
 };
 
-function getLevel(difficulty: number | undefined): number {
-  if (!difficulty) return 1;
-  if (difficulty <= 0.003) return 1;
-  if (difficulty <= 0.006) return 2;
-  if (difficulty <= 0.01) return 3;
-  if (difficulty <= 0.02) return 4;
-  if (difficulty <= 0.04) return 5;
-  if (difficulty <= 0.1) return 6;
-  return 7;
-}
-
 export function VideoCard({ video, videos, queueType, layout = 'card', isActive }: VideoCardProps) {
   const { l1, l2 } = useLanguage();
   const { playVideo } = useVideoPlayer();
   const t = useT();
   const profiles = useDifficultyProfile();
-  const level = getLevelFromDifficulty(video.difficulty, profiles?.[l2.code]) ?? getLevel(video.difficulty);
+  const level = getLevelFromDifficulty(video.difficulty, profiles?.[l2.code]);
   const duration = formatDuration(video.duration);
   const views = formatViews(video.views, l1.code);
 
@@ -117,9 +106,9 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
           loading="lazy"
         />
         <span
-          className={`absolute left-1 top-1 rounded px-1 py-0 text-[10px] font-bold text-white ${LEVEL_COLORS[level] ?? 'bg-gray-500'}`}
+          className={`absolute left-1 top-1 rounded px-1 py-0 text-[10px] font-bold text-white ${LEVEL_COLORS[level ?? 1] ?? 'bg-gray-500'}`}
         >
-          {LEVEL_LABELS[level]}
+          {LEVEL_LABELS[level ?? 1]}
         </span>
       </div>
       <div className="min-w-0 flex-1">
@@ -155,9 +144,9 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
         )}
         {/* Level badge */}
         <span
-          className={`absolute left-2 top-2 rounded px-1.5 py-0.5 text-xs font-bold text-white ${LEVEL_COLORS[level] ?? 'bg-gray-500'}`}
+          className={`absolute left-2 top-2 rounded px-1.5 py-0.5 text-xs font-bold text-white ${LEVEL_COLORS[level ?? 1] ?? 'bg-gray-500'}`}
         >
-          {LEVEL_LABELS[level] ?? '?'}
+          {LEVEL_LABELS[level ?? 1] ?? '?'}
         </span>
       </div>
 
