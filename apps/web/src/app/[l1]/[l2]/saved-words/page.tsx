@@ -8,13 +8,12 @@ import { useSrs } from '@/hooks/use-srs';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
 import {
-  BookOpen, Trash2, Download, BookmarkCheck,
+  BookOpen, Trash2, Download,
   Loader2, Search, ArrowUpDown, Clock, ArrowDownAZ, Circle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SavedWordSource } from '@/components/saved-word-source';
-import { InlineDefinition } from '@/components/dictionary/inline-definition';
-import { WordList, WordListItem } from '@/components/dictionary/word-list';
+import { WordList } from '@/components/dictionary/word-list';
+import { SavedWordRow } from '@/components/dictionary/saved-word-row';
 import { setWordListNav, savedWordToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
 import type { SavedLexicalItemRecord, SrsFields } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
@@ -299,12 +298,24 @@ function SavedWordGroup({
         const srsStatus = getSrsStatus(card);
         return (
           <SavedWordRow
-            key={`${word.id}-${word.date}`}
             word={word}
             l1Code={l1Code}
             l2Code={l2Code}
-            srsStatus={srsStatus}
             onClick={() => onWordClick(word)}
+            srsDot={
+              srsStatus ? (
+                <span
+                  title={
+                    srsStatus === 'overdue' ? 'Overdue for review' :
+                    srsStatus === 'due' ? 'Due for review' :
+                    srsStatus === 'new' ? 'New — not yet reviewed' :
+                    'Reviewed'
+                  }
+                >
+                  <Circle className={`h-2.5 w-2.5 flex-shrink-0 ${SRS_DOT_CLASSES[srsStatus]}`} />
+                </span>
+              ) : undefined
+            }
           />
         );
       })}
@@ -312,68 +323,4 @@ function SavedWordGroup({
   );
 }
 
-/** Single saved word row — composes WordListItem with saved-word-specific slots. */
-function SavedWordRow({
-  word,
-  l1Code,
-  l2Code,
-  srsStatus,
-  onClick,
-}: {
-  word: SavedLexicalItemRecord;
-  l1Code: string;
-  l2Code: string;
-  srsStatus: SrsStatus;
-  onClick: () => void;
-}) {
-  const { removeSavedWord } = useSavedWordsContext();
-  const insts = normalizeInstances(word);
-  // Use latest instance for primary display context
-  const latest = insts[insts.length - 1];
-  const ctx = latest?.context ?? word.context;
-  const instanceCount = insts.length;
-
-  const handleRemove = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    removeSavedWord(l2Code, word.id);
-  };
-
-  return (
-    <WordListItem
-      head={word.forms[0] ?? '?'}
-      altForms={word.forms.length > 1 ? word.forms.slice(1) : undefined}
-      contextForm={ctx.form !== word.forms[0] ? ctx.form : undefined}
-      definitionSlot={<InlineDefinition wordId={word.id} l1Code={l1Code} l2Code={l2Code} />}
-      contextSlot={
-        ctx.text && ctx.text !== word.forms[0] ? (
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">…{ctx.text}…</p>
-        ) : undefined
-      }
-      sourceSlot={<SavedWordSource context={ctx} date={word.date} />}
-      prefix={
-        srsStatus ? (
-          <span
-            title={
-              srsStatus === 'overdue' ? 'Overdue for review' :
-              srsStatus === 'due' ? 'Due for review' :
-              srsStatus === 'new' ? 'New — not yet reviewed' :
-              'Reviewed'
-            }
-          >
-            <Circle className={`h-2.5 w-2.5 flex-shrink-0 ${SRS_DOT_CLASSES[srsStatus]}`} />
-          </span>
-        ) : undefined
-      }
-      suffix={
-        <button
-          onClick={handleRemove}
-          className="shrink-0 rounded p-1 text-amber-500 transition-colors hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-          title="Remove from saved words"
-        >
-          <BookmarkCheck className="h-5 w-5 fill-current" />
-        </button>
-      }
-      onClick={onClick}
-    />
-  );
-}
+// ── Page ─────────────────────────────────────────
