@@ -365,7 +365,8 @@ export interface SavedWordContext {
 export interface SavedWord {
   /** Dictionary entry ID (e.g., "cedict-0", "llm-zh-abc123") */
   id: string;
-  /** All forms of the word (for now, just [head] — no inflected forms yet) */
+  /** All forms of the word — head form + all inflected/conjugated forms.
+   *  Populated at save time via the /inflect-* Python endpoints. */
   forms: string[];
   /** Unix-ms timestamp when the word was saved */
   date: number;
