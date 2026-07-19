@@ -4,7 +4,7 @@ import type { SavedWordContext } from '@langplayer/shared';
 import { Video, BookOpen } from 'lucide-react';
 
 interface SavedWordSourceProps {
-  /** Context object from a SavedWord. */
+  /** Context object from a SavedLexicalItemRecord. */
   context: SavedWordContext;
   /** Unix-ms timestamp when the word was saved. */
   date: number;

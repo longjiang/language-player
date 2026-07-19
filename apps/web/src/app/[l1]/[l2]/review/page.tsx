@@ -8,7 +8,7 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
 import { sm2, newCard, remainingNewCardsToday } from '@langplayer/utils';
-import type { SrsFields, DictionaryEntry, SavedWord } from '@langplayer/shared';
+import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
 import { baseCode } from '@/lib/language-data';
 import { getShowTranslation } from '@/lib/settings';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -47,7 +47,7 @@ function useRatingLabels() {
 }
 
 interface ReviewCard {
-  word: SavedWord;
+  word: SavedLexicalItemRecord;
   srs: SrsFields;
   entry: DictionaryEntry | null;
 }

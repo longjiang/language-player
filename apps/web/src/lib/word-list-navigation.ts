@@ -1,9 +1,9 @@
-import type { SavedWord, DictionaryEntry } from '@langplayer/shared';
+import type { SavedLexicalItemRecord, DictionaryEntry } from '@langplayer/shared';
 import { buildEntryRoute } from '@/lib/entry-route';
 
 /**
  * Lightweight word list item stored in sessionStorage for cross-page navigation.
- * Normalized from both SavedWord (saved-words page) and DictionaryEntry (popup/search).
+ * Normalized from both SavedLexicalItemRecord (saved-words page) and DictionaryEntry (popup/search).
  */
 export interface WordListNavItem {
   /** Display form in L2 script. */
@@ -85,9 +85,9 @@ export function buildEntryRouteWithList(
 }
 
 /**
- * Convert a SavedWord to a WordListNavItem.
+ * Convert a SavedLexicalItemRecord to a WordListNavItem.
  */
-export function savedWordToNavItem(w: SavedWord): WordListNavItem {
+export function savedWordToNavItem(w: SavedLexicalItemRecord): WordListNavItem {
   const dashIdx = w.id.indexOf('-');
   const dictionaryId = dashIdx > 0 ? w.id.slice(0, dashIdx) : 'unknown';
   const entryId = dashIdx > 0 ? w.id.slice(dashIdx + 1) : w.id;

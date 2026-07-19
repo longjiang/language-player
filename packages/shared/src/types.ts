@@ -313,8 +313,9 @@ export interface InstanceContext {
     | { kind: 'video'; youtubeId: string; title: string; startTime: number };
 }
 
-/** A user's saved/bookmarked LexicalItem with save timestamp. */
-export interface SavedItem {
+/** A user's saved/bookmarked LexicalItem with save timestamp.
+ *  This is the rich in-app model — not the DB serialization shape. */
+export interface SavedLexicalItem {
   savedAt: number;
   item: LexicalItem;
 }
@@ -323,7 +324,7 @@ export interface SavedItem {
 
 /** A curated collection of lexical items (ADR 0006).
  *  The special id 'saved' is used for the synthetic phrasebook built
- *  from a user's SavedItems. */
+ *  from a user's SavedLexicalItems. */
 export interface Phrasebook {
   id: number | 'saved';
   title: string;
@@ -419,8 +420,11 @@ export interface SavedWordContext {
   translation?: string;
 }
 
-/** A single saved word record. Stored in localStorage and synced to Directus. */
-export interface SavedWord {
+/** A single row in the `saved_words` JSON blob synced to Directus
+ *  `user_data.saved_words`. This is the minimal serialization shape —
+ *  only the fields needed for sync and offline storage. The rich
+ *  app model is `LexicalItem` (wrapped by `SavedLexicalItem`). */
+export interface SavedLexicalItemRecord {
   /** Dictionary entry ID (e.g., "cedict-0", "llm-zh-abc123") */
   id: string;
   /** All forms of the word — head form + all inflected/conjugated forms.
@@ -432,13 +436,14 @@ export interface SavedWord {
   context: SavedWordContext;
 }
 
-/** Top-level storage shape. Keyed by L2 ISO 639-1 code. */
-export type SavedWords = Record<string, SavedWord[]>;
+/** Top-level `saved_words` storage shape, keyed by L2 ISO 639-1 code.
+ *  This is what gets serialized to localStorage and the Directus column. */
+export type SavedLexicalItemStore = Record<string, SavedLexicalItemRecord[]>;
 
 /** Directus user_data record shape (partial — only the fields we sync). */
 export interface UserDataRecord {
   id: string | number;
-  saved_words: string;  // JSON.stringify(SavedWords)
+  saved_words: string;  // JSON.stringify(SavedLexicalItemStore)
   progress?: string;    // JSON (reserved for Phase 6)
   srs_progress?: string;  // JSON.stringify(SrsProgressStore)
 }

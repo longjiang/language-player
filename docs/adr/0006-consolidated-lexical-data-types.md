@@ -699,11 +699,11 @@ interface InstanceContext {
  *   - Instances have their own temporal ordering (by when encountered)
  *
  * Cloud sync: Grouped by LexicalItem.l2 for legacy compatibility with
- * Classic's SavedWords shape (Record<l2Code, SavedWord[]>). This also
+ * Classic's SavedLexicalItemStore shape (Record<l2Code, SavedLexicalItemRecord[]>). This also
  * enables efficient "show me my Japanese vocabulary" queries without
  * scanning all saved items.
  */
-interface SavedItem {
+interface SavedLexicalItem {
   /** Unix milliseconds timestamp of when the user saved/bookmarked this item. */
   savedAt: number;
 
@@ -926,7 +926,7 @@ SavedWord.forms           → Kept. Lemmatization is not always reliable for eve
                             instance — saving inflected forms ensures accurate
                             highlighting in the original context. The forms list
                             maps to Instance.form.text per occurrence.
-SavedWord.date            → SavedItem.savedAt
+SavedWord.date            → SavedLexicalItem.savedAt
 SavedWord.context.form    → Instance.form.text
 SavedWord.context.text    → Instance.context.sentence.original
 SavedWord.context.youtube_id  → Instance.context.origin.youtubeId
