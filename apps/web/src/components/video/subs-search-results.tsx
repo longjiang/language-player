@@ -405,9 +405,30 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 py-8 text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
+        {/* Nav bar skeleton */}
+        <div className="flex items-center justify-between border-b border-border px-4 py-2">
+          <div className="h-3.5 w-24 animate-pulse rounded bg-muted" />
+          <div className="flex items-center gap-1">
+            <div className="h-6 w-16 animate-pulse rounded-full bg-muted" />
+            <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
+          </div>
+        </div>
+        {/* Player skeleton */}
+        <div className="aspect-video w-full bg-black/80 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-white/40" />
+        </div>
+        {/* Subtitle skeleton */}
+        <div className="min-h-[5rem] px-6 py-4 flex flex-col items-center justify-center gap-2">
+          <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-1/2 animate-pulse rounded bg-muted/50" />
+        </div>
+        {/* Controls skeleton */}
+        <div className="flex items-center justify-center gap-1 border-t border-border px-2 py-2">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-8 w-8 animate-pulse rounded bg-muted" />
+          ))}
+        </div>
       </div>
     );
   }
