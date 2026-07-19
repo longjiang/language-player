@@ -98,13 +98,7 @@ export default function DictionaryPage() {
         const response: any = await dict.lookup(trimmed, baseCode(l2.code), l1.code);
         const results: DictionaryEntry[] = response.results ?? [];
 
-        // If only one result, navigate directly to the entry detail page
-        if (results.length === 1) {
-          const entry = results[0]!;
-          router.replace(buildEntryRoute(l1.code, l2.code, entry.dictionary?.id ?? 'llm', entry.id));
-          return;
-        }
-
+        // Always show results inline — single result renders as full card, never auto-redirect
         setResults(results);
         setMessage(response.message ?? null);
       } catch (err: any) {
@@ -211,8 +205,25 @@ export default function DictionaryPage() {
         </div>
       )}
 
-      {/* ── Results ── */}
-      {hasResults && (
+      {/* ── Single result (full card) ── */}
+      {hasResults && results.length === 1 && (
+        <div>
+          <p className="mb-4 mt-6 text-sm text-muted-foreground">
+            {t('msg.result_count', { count: 1 })} {t('msg.for_term', { term: searchedText })}
+          </p>
+          <DictionaryEntryCard
+            variant="full"
+            entry={results[0]!}
+            l2Code={l2.code}
+            l1Code={l1.code}
+            levelLabel={levelLabel}
+            saveContext={saveContext}
+          />
+        </div>
+      )}
+
+      {/* ── Multiple results (compact list) ── */}
+      {hasResults && results.length > 1 && (
         <div>
           <p className="mb-4 mt-6 text-sm text-muted-foreground">
             {t('msg.result_count', { count: results!.length })} {t('msg.for_term', { term: searchedText })}

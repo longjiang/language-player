@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, type FormEvent } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
-import { baseCode } from '@/lib/language-data';
+import { baseCode, languageName } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry, ProficiencyLevel } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
-import { ArrowLeft, Loader2, AlertCircle, BookOpen, PanelRightClose, PanelRight } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, BookOpen, PanelRightClose, PanelRight, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { WordListSidebar } from '@/components/dictionary/word-list-sidebar';
 import { getWordListNav, updateCurrentEntryId } from '@/lib/word-list-navigation';
@@ -39,6 +40,14 @@ export default function DictionaryEntryPage() {
   const [entry, setEntry] = useState<DictionaryEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+    router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(trimmed)}`);
+  };
 
   // ── Word list sidebar ──
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -110,19 +119,35 @@ export default function DictionaryEntryPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      {/* Header row: back button + sidebar toggle */}
-      <div className="mb-6 flex items-center justify-between">
+      {/* Header row: back button + inline search + sidebar toggle */}
+      <div className="mb-6 flex items-center gap-4">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
           <ArrowLeft className="h-4 w-4" />
           {t('action.back')}
         </button>
+        <form onSubmit={handleSearch} className="flex-1 flex gap-2 max-w-md">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('placeholder.dictionary_search', { language: languageName(l2.code, l1.code) })}
+              className="h-9 w-full rounded-lg border border-border bg-background pl-10 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+          <Button type="submit" size="sm" disabled={!searchQuery.trim()}>
+            <Search className="mr-1 h-4 w-4" />
+            {t('action.search')}
+          </Button>
+        </form>
         {navItems && navItems.length > 0 && (
           <button
             onClick={() => setSidebarOpen(o => !o)}
-            className="flex items-center gap-1 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="flex items-center gap-1 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
             title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
           >
             {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
