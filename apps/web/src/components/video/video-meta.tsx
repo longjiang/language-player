@@ -52,7 +52,7 @@ function getLevel(difficulty: number | undefined): number {
 export function VideoMeta({ video }: VideoMetaProps) {
   const { l1 } = useLanguage();
   const t = useT();
-  const level = (video as any).level ?? getLevel(video.difficulty);
+  const level = getLevel(video.difficulty);
 
   return (
     <div>
