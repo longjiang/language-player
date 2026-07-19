@@ -1,59 +1,26 @@
 'use client';
 
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { useT } from '@/hooks/use-t';
-import { languageName, baseCode } from '@/lib/language-data';
+import { languageName } from '@/lib/language-data';
 import { buildEntryRoute } from '@/lib/entry-route';
-import { PYTHON_API_URL } from '@/lib/api-url';
 import {
   BookOpen, Trash2, Download, BookmarkCheck,
   Loader2, Search, ArrowUpDown, Clock, ArrowDownAZ, Circle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SavedWordSource } from '@/components/saved-word-source';
+import { InlineDefinition } from '@/components/dictionary/inline-definition';
+import { WordList, WordListItem } from '@/components/dictionary/word-list';
 import type { SavedWord, SrsFields } from '@langplayer/shared';
 
 const STORAGE_KEY = 'zthSavedWords';
 
 type SortMode = 'newest' | 'alpha';
-
-// ── Definition cache (lives for the lifetime of the page) ──
-const definitionCache = new Map<string, { definition: string; pronunciation: string } | null>();
-
-async function fetchDefinition(
-  wordId: string,
-  l1Code: string,
-  l2Code: string,
-): Promise<{ definition: string; pronunciation: string } | null> {
-  if (definitionCache.has(wordId)) return definitionCache.get(wordId) ?? null;
-
-  const dashIdx = wordId.indexOf('-');
-  if (dashIdx <= 0) { definitionCache.set(wordId, null); return null; }
-
-  const dictId = wordId.slice(0, dashIdx);
-  const entryId = wordId.slice(dashIdx + 1);
-  const url = `${PYTHON_API_URL}/dictionary/entry?l2=${baseCode(l2Code)}&dict=${dictId}&id=${encodeURIComponent(entryId)}&l1=${baseCode(l1Code)}`;
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) { definitionCache.set(wordId, null); return null; }
-    const data = await res.json();
-    const entry = data.entry;
-    const result = {
-      definition: (entry?.definitions?.[0] as string) ?? '',
-      pronunciation: (entry?.pronunciation as string) ?? '',
-    };
-    definitionCache.set(wordId, result);
-    return result;
-  } catch {
-    definitionCache.set(wordId, null);
-    return null;
-  }
-}
 
 // ── Helpers ──────────────────────────────────────
 
@@ -275,7 +242,7 @@ export default function SavedWordsPage() {
           {/* Word groups */}
           <div className="space-y-8">
             {today.length > 0 && (
-              <WordGroup
+              <SavedWordGroup
                 label={t('msg.today')}
                 words={today}
                 l1Code={l1.code}
@@ -286,7 +253,7 @@ export default function SavedWordsPage() {
             )}
 
             {earlier.length > 0 && (
-              <WordGroup
+              <SavedWordGroup
                 label={t('msg.earlier')}
                 words={earlier}
                 l1Code={l1.code}
@@ -311,7 +278,7 @@ export default function SavedWordsPage() {
 // ── Sub-components ──────────────────────────────
 
 /** Renders a group of saved words under a date heading. */
-function WordGroup({
+function SavedWordGroup({
   label,
   words,
   l1Code,
@@ -327,34 +294,26 @@ function WordGroup({
   onWordClick: (word: SavedWord) => void;
 }) {
   return (
-    <div>
-      <div className="mb-3 flex items-center gap-2">
-        <h2 className="text-lg font-semibold text-muted-foreground">{label}</h2>
-        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-          {words.length}
-        </span>
-      </div>
-      <div className="space-y-1">
-        {words.map((word) => {
-          const card = getCard(l2Code, word.id);
-          const srsStatus = getSrsStatus(card);
-          return (
-            <SavedWordRow
-              key={`${word.id}-${word.date}`}
-              word={word}
-              l1Code={l1Code}
-              l2Code={l2Code}
-              srsStatus={srsStatus}
-              onClick={() => onWordClick(word)}
-            />
-          );
-        })}
-      </div>
-    </div>
+    <WordList label={label} count={words.length}>
+      {words.map((word) => {
+        const card = getCard(l2Code, word.id);
+        const srsStatus = getSrsStatus(card);
+        return (
+          <SavedWordRow
+            key={`${word.id}-${word.date}`}
+            word={word}
+            l1Code={l1Code}
+            l2Code={l2Code}
+            srsStatus={srsStatus}
+            onClick={() => onWordClick(word)}
+          />
+        );
+      })}
+    </WordList>
   );
 }
 
-/** Single saved word row with SRS indicator, inline definition, context info, and remove button. */
+/** Single saved word row — composes WordListItem with saved-word-specific slots. */
 function SavedWordRow({
   word,
   l1Code,
@@ -377,133 +336,41 @@ function SavedWordRow({
   };
 
   return (
-    <div
-      className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-muted/50"
-      onClick={onClick}
-    >
-      {/* SRS status dot */}
-      {srsStatus && (
-        <span
-          title={
-            srsStatus === 'overdue' ? 'Overdue for review' :
-            srsStatus === 'due' ? 'Due for review' :
-            srsStatus === 'new' ? 'New — not yet reviewed' :
-            'Reviewed'
-          }
+    <WordListItem
+      head={word.forms[0] ?? '?'}
+      altForms={word.forms.length > 1 ? word.forms.slice(1) : undefined}
+      contextForm={ctx.form !== word.forms[0] ? ctx.form : undefined}
+      definitionSlot={<InlineDefinition wordId={word.id} l1Code={l1Code} l2Code={l2Code} />}
+      contextSlot={
+        ctx.text && ctx.text !== word.forms[0] ? (
+          <p className="mt-0.5 truncate text-sm text-muted-foreground">…{ctx.text}…</p>
+        ) : undefined
+      }
+      sourceSlot={<SavedWordSource context={ctx} date={word.date} />}
+      prefix={
+        srsStatus ? (
+          <span
+            title={
+              srsStatus === 'overdue' ? 'Overdue for review' :
+              srsStatus === 'due' ? 'Due for review' :
+              srsStatus === 'new' ? 'New — not yet reviewed' :
+              'Reviewed'
+            }
+          >
+            <Circle className={`h-2.5 w-2.5 flex-shrink-0 ${SRS_DOT_CLASSES[srsStatus]}`} />
+          </span>
+        ) : undefined
+      }
+      suffix={
+        <button
+          onClick={handleRemove}
+          className="shrink-0 rounded p-1 text-amber-500 transition-colors hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+          title="Remove from saved words"
         >
-          <Circle className={`h-2.5 w-2.5 flex-shrink-0 ${SRS_DOT_CLASSES[srsStatus]}`} />
-        </span>
-      )}
-
-      {/* Word form */}
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold">{word.forms[0] ?? '?'}</span>
-          {ctx.form !== word.forms[0] && (
-            <span className="text-xs text-muted-foreground">
-              ({ctx.form})
-            </span>
-          )}
-          {word.forms.length > 1 && (
-            <span className="text-xs text-muted-foreground">
-              {word.forms.slice(1).join(', ')}
-            </span>
-          )}
-        </div>
-
-        {/* Inline definition — lazy-loaded when row enters viewport */}
-        <InlineDefinition wordId={word.id} l1Code={l1Code} l2Code={l2Code} />
-
-        {/* Context: subtitle line */}
-        {ctx.text && ctx.text !== word.forms[0] && (
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">
-            …{ctx.text}…
-          </p>
-        )}
-
-        {/* Source attribution */}
-        <div className="mt-1 text-xs text-muted-foreground/70">
-          <SavedWordSource context={ctx} date={word.date} />
-        </div>
-      </div>
-
-      {/* Remove bookmark */}
-      <button
-        onClick={handleRemove}
-        className="shrink-0 rounded p-1 text-amber-500 transition-colors hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-        title="Remove from saved words"
-      >
-        <BookmarkCheck className="h-5 w-5 fill-current" />
-      </button>
-    </div>
-  );
-}
-
-// ── Inline Definition (lazy-loaded on visibility) ──
-
-/**
- * Fetches the first definition + pronunciation from the Python backend
- * only when the row scrolls into the viewport. Results are cached in a
- * module-level Map so scrolling back doesn't re-fetch.
- */
-function InlineDefinition({
-  wordId,
-  l1Code,
-  l2Code,
-}: {
-  wordId: string;
-  l1Code: string;
-  l2Code: string;
-}) {
-  const [def, setDef] = useState<{ definition: string; pronunciation: string } | null | undefined>(
-    () => definitionCache.get(wordId),
-  );
-  const sentinelRef = useRef<HTMLSpanElement>(null);
-  const fetchedRef = useRef(def !== undefined);
-
-  useEffect(() => {
-    // Already cached (from constructor or a previous row)
-    if (definitionCache.has(wordId)) {
-      setDef(definitionCache.get(wordId) ?? null);
-      return;
-    }
-
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting && !fetchedRef.current) {
-          fetchedRef.current = true;
-          fetchDefinition(wordId, l1Code, l2Code).then((result) => {
-            setDef(result);
-          });
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '300px' },
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [wordId, l1Code, l2Code]);
-
-  // Not yet resolved (still outside viewport, not yet fetched)
-  if (def === undefined) {
-    return <span ref={sentinelRef} className="block h-4" />;
-  }
-
-  // Fetched but no data
-  if (!def || (!def.definition && !def.pronunciation)) {
-    return <span className="block h-0.5" />;
-  }
-
-  return (
-    <p className="mt-0.5 truncate text-xs text-muted-foreground/80">
-      {def.pronunciation && (
-        <span className="mr-1.5 text-muted-foreground/50">{def.pronunciation}</span>
-      )}
-      {def.definition && <span>{def.definition}</span>}
-    </p>
+          <BookmarkCheck className="h-5 w-5 fill-current" />
+        </button>
+      }
+      onClick={onClick}
+    />
   );
 }
