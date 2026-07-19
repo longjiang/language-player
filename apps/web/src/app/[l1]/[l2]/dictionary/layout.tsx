@@ -61,10 +61,8 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
       {/* Panel area */}
       <div className="flex flex-1 min-h-0">
         {/* Main panel */}
-        <div className="flex-[3] min-w-0 overflow-y-auto">
-          <div className="rounded-xl border border-border bg-card m-2 mr-1 h-full overflow-y-auto">
-            {children}
-          </div>
+        <div className="flex-[3] min-w-0 overflow-y-auto m-2 mr-1">
+          {children}
         </div>
 
         {/* Sidebar */}
