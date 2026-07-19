@@ -36,7 +36,7 @@ The design principles are:
 | No page-level scroll (`overflow-hidden`, `h-[calc(100vh-var(--header-h))]`) | Panels scroll internally; the hub feels like an SPA within the Next.js shell |
 | Search bar at layout level, never unmounts | Rendered once in the page component, always sticky |
 | Detail opens in-place (no full nav) | Client-side state change updates the main panel only |
-| URL reflects state via search params (`?q=`, `?entry=`, `?view=`) | Deep-linkable; refresh restores state |
+| Clean path-segment URLs (`/dictionary/entry/cedict/0`) | Uses Next.js layout persistence — layout stays mounted, page slot swaps without full refresh |
 | Sidebar always present, collapsible | Consistent layout; sidebar shows saved words (default) or a specific word list context |
 | Saved words page remains standalone | `/saved-words` is not part of the dictionary flow and keeps its own layout |
 
@@ -44,29 +44,51 @@ The design principles are:
 
 ## Layout Architecture
 
+### How Clean URLs Work Without Page Refresh
+
+Next.js App Router keeps **layouts** mounted when navigating between sibling pages within the same layout segment. This is the foundation of the hub design:
+
+```
+/app/[l1]/[l2]/dictionary/
+├── layout.tsx              ← SearchBar + Sidebar live HERE — never unmount
+├── page.tsx                ← empty state / search results
+└── entry/
+    └── [dict]/
+        └── [id]/
+            └── page.tsx    ← entry detail (same layout wraps it)
+```
+
+When `router.push('/en/zh/dictionary/entry/cedict/0')` fires:
+- `layout.tsx` stays mounted → **search bar survives, sidebar survives**
+- Only the `page.tsx` slot swaps → `entry/[dict]/[id]/page.tsx` mounts
+- Shared state (results list, query, scroll position) lives in a context provider in `layout.tsx`, so it survives page transitions within the dictionary section.
+
 ### Full-Page Structure
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Page container: h-[calc(100vh-var(--header-h))]        │
 │  flex flex-col overflow-hidden                           │
-│                                                         │
-│  ┌─────────────────────────────────────────────────────┐│
-│  │  SearchBar (flex-shrink-0, h-14, border-b)         ││
-│  │  ┌───────────────────────────────────────────────┐  ││
-│  │  │ 🔍 input ...                          [Go] [×]│  ││
-│  │  └───────────────────────────────────────────────┘  ││
-│  └─────────────────────────────────────────────────────┘│
-│  ┌──────────────────────┬──────────────────────────────┐│
-│  │  Main Panel          │  Sidebar Panel               ││
-│  │  flex-1 min-w-0      │  w-56 flex-shrink-0          ││
-│  │  overflow-y-auto     │  overflow-y-auto             ││
-│  │  rounded-xl border   │  rounded-xl border           ││
-│  │  border-border       │  border-border               ││
-│  │  bg-card             │  bg-card                     ││
-│  │                      │  (collapsible → w-0          ││
-│  │                      │   overflow-hidden)           ││
-│  └──────────────────────┴──────────────────────────────┘│
+│ ┌── layout.tsx ────────────────────────────────────────┐│
+│ │ ┌───────────────────────────────────────────────────┐││
+│ │ │  SearchBar (flex-shrink-0, h-14, border-b)       │││
+│ │ │  ┌─────────────────────────────────────────────┐  │││
+│ │ │  │ 🔍 input ...                        [Go] [×]│  │││
+│ │ │  └─────────────────────────────────────────────┘  │││
+│ │ └───────────────────────────────────────────────────┘││
+│ │ ┌──────────────────────┬────────────────────────────┐││
+│ │ │  Main Panel          │  Sidebar Panel             │││
+│ │ │  flex-1 min-w-0      │  w-56 flex-shrink-0        │││
+│ │ │  overflow-y-auto     │  overflow-y-auto           │││
+│ │ │  rounded-xl border   │  rounded-xl border         │││
+│ │ │  border-border       │  border-border             │││
+│ │ │  bg-card             │  bg-card                   │││
+│ │ │                      │  (collapsible → w-0        │││
+│ │ │                      │   overflow-hidden)         │││
+│ │ │  {children} ← page   │                            │││
+│ │ │  slot swaps here     │                            │││
+│ │ └──────────────────────┴────────────────────────────┘││
+│ └──────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -75,8 +97,10 @@ Both panels use the same visual treatment as the Reader page panels (`rounded-xl
 ### Component Tree
 
 ```
-DictionaryHub (page.tsx)                   ← single page, client component
-├── PersistentSearchBar                    ← always rendered, never unmounts
+DictionaryLayout (layout.tsx)               ← client component, persists
+├── <DictionaryProvider>                    ← context for shared state
+│   │
+├── PersistentSearchBar                    ← lives in layout, never unmounts
 │   ├── Input (always has [×] clear button)
 │   │   └── Shows head word when detail view is active
 │   │   └── Clearing the input returns to empty state (recent searches)
@@ -85,31 +109,33 @@ DictionaryHub (page.tsx)                   ← single page, client component
 │
 ├── PanelArea (flex-1, flex, overflow-hidden)
 │   ├── MainPanel (flex-1, min-w-0)
-│   │   ├── EmptyState                     ← view === 'empty'
-│   │   │   ├── RecentSearches
-│   │   │   └── DictionaryInfo
-│   │   │
-│   │   ├── ResultsList                    ← view === 'results'
-│   │   │   ├── ResultsHeader (count, term)
-│   │   │   └── ResultCard[] (compact variant)
-│   │   │
-│   │   └── DetailView                     ← view === 'detail'
-│   │       ├── DefinitionsPanel           ← left column (wide) or top (narrow)
-│   │       │   ├── Head, pronunciation, POS, levels
-│   │       │   ├── Definitions list
-│   │       │   ├── Source line
-│   │       │   └── Save / Speak buttons
+│   │   └── {children}                     ← page.tsx OR entry/.../page.tsx
 │   │       │
-│   │       └── TabsPanel                  ← right column (wide) or bottom (narrow)
-│   │           ├── Tab: Dictionary
-│   │           ├── Tab: Examples from Videos (SubsSearchResults)
-│   │           ├── Tab: Conjugations (InflectionTable)
-│   │           └── Tab: Let DeepSeek Explain (AiExplanation)
+│   │       ├── page.tsx (index route)
+│   │       │   ├── EmptyState             ← view === 'empty'
+│   │       │   │   ├── RecentSearches
+│   │       │   │   └── DictionaryInfo
+│   │       │   │
+│   │       │   └── ResultsList            ← view === 'results'
+│   │       │       ├── ResultsHeader (count, term)
+│   │       │       └── ResultCard[] (compact variant)
+│   │       │
+│   │       └── entry/[dict]/[id]/page.tsx
+│   │           ├── DefinitionsPanel       ← left column (wide) or top (narrow)
+│   │           │   ├── Head, pronunciation, POS, levels
+│   │           │   ├── Definitions list
+│   │           │   ├── Source line
+│   │           │   └── Save / Speak buttons
+│   │           │
+│   │           └── TabsPanel              ← right column (wide) or bottom (narrow)
+│   │               ├── Tab: Dictionary
+│   │               ├── Tab: Examples from Videos (SubsSearchResults)
+│   │               ├── Tab: Conjugations (InflectionTable)
+│   │               └── Tab: Let DeepSeek Explain (AiExplanation)
 │   │
-│   └── SidebarPanel (w-56, collapsible)
-│       └── WordListSidebar                ← saved words (default) or context list
-│           └── WordListItem[] (click → detail in-place)
-```
+│   └── SidebarPanel (w-56, collapsible)   ← lives in layout, never unmounts
+│       └── WordListSidebar
+│           └── WordListItem[] (click → detail via router.push)
 
 ---
 
@@ -155,17 +181,19 @@ type DictionaryView =
            previousView  ← returns to RESULTS or EMPTY
 ```
 
-### URL Synchronization
+### URL Scheme
 
-All views update the URL via `router.replace` (no history push for panel changes):
+Navigation uses Next.js `router.push` with clean path-segment URLs. The layout stays mounted, so only the page slot swaps — no full page refresh:
 
-| View | URL |
-|---|---|
-| Empty | `/[l1]/[l2]/dictionary` |
-| Results | `/[l1]/[l2]/dictionary?q=manger` |
-| Detail | `/[l1]/[l2]/dictionary?entry=cedict-123` |
+| View | URL | Page slot |
+|---|---|---|
+| Empty | `/en/zh/dictionary` | `page.tsx` (empty state) |
+| Results | `/en/zh/dictionary?q=manger` | `page.tsx` (results list) |
+| Detail | `/en/zh/dictionary/entry/cedict/0` | `entry/[dict]/[id]/page.tsx` |
 
-On page load, the URL params are read to restore the correct view. The legacy `/dictionary/entry/[dict]/[id]` route redirects to `?entry=`.
+- Results and empty state share `page.tsx` — they are client-side view states within the same page, toggled by the search bar interaction. The `?q=` param is read on mount to restore the results view.
+- Detail is a separate page route under `entry/` — Next.js swaps the page slot without unmounting the layout.
+- Shared state (query, results, search history) lives in a `<DictionaryProvider>` context at the layout level, so the detail page can read the results that led to it (for the sidebar) and the results page can restore its state when navigating back.
 
 ---
 
@@ -370,7 +398,7 @@ The `word` tab is essentially the definitions panel content repeated — this ta
 - **Saved Words page** (`/saved-words`) — remains a standalone page with its own layout. Not part of the dictionary hub.
 - **SRS dots in word lists** — deferred for future implementation.
 - **Popup dictionary** (`DictionaryPopup`) — unchanged; continues to work independently of the hub.
-- **Word list → search → detail flow** — The hub supports this conceptually (sidebar shows the word list, user types in search bar, results appear in main panel), but the initial implementation focuses on the empty → results → detail and sidebar-word → detail flows.
+
 
 ---
 
@@ -386,11 +414,12 @@ The `word` tab is essentially the definitions panel content repeated — this ta
 ### Negative
 - **Increased client-side complexity** — the hub page manages three view states plus sidebar logic in a single component. This should be mitigated by extracting view-specific logic into sub-components.
 - **Scroll restoration** — since the page itself doesn't scroll, each panel must manage its own scroll position. When switching views (e.g., results → detail → results), the results panel's scroll position should be restored. This requires a `useRef` or state-based scroll tracking.
-- **Entry detail route URLs change** — existing `/dictionary/entry/[dict]/[id]` routes become redirects to `?entry=`. Bookmarks and shared links must be handled via redirect logic in the legacy entry page.
+- **Entry detail page is refactored** — the existing `/dictionary/entry/[dict]/[id]/page.tsx` is rewritten to use the layout's shared context rather than fetching independently. The route path itself does not change.
 
 ### Migration Path
-1. Build the hub page in `apps/web/src/app/[l1]/[l2]/dictionary/page.tsx` (replacing current search page).
-2. Keep `/dictionary/entry/[dict]/[id]/page.tsx` as a redirect to `?entry=`.
-3. Keep `/dictionary/word/[word]/page.tsx` as-is (already redirects to `?q=`).
-4. Keep `/saved-words/page.tsx` unchanged.
-5. Remove the `word-list-navigation.ts` sessionStorage pattern — sidebar state is now managed by the hub's React state.
+1. Create `apps/web/src/app/[l1]/[l2]/dictionary/layout.tsx` with the persistent search bar, sidebar, and `<DictionaryProvider>` context.
+2. Refactor `page.tsx` (search/empty/results) to use the shared context from layout.
+3. Refactor `entry/[dict]/[id]/page.tsx` (detail) to use the shared context from layout (reads results for sidebar, reads query for search bar).
+4. Remove the `word-list-navigation.ts` sessionStorage pattern — sidebar state is now managed by the layout's React state.
+5. Keep `/dictionary/word/[word]/page.tsx` as-is (already redirects to `?q=`).
+6. Keep `/saved-words/page.tsx` unchanged.
