@@ -8,12 +8,32 @@ import { useT } from '@/hooks/use-t';
 import { useDictionary } from '@langplayer/api-client';
 import type { DictionaryEntry, ProficiencyLevel } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
-import { Search, Loader2, BookOpen, AlertCircle, X } from 'lucide-react';
+import { Search, Loader2, BookOpen, AlertCircle, X, Clock, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { WordList } from '@/components/dictionary/word-list';
 import { setWordListNav, entryToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
 import { buildEntryRoute } from '@/lib/entry-route';
+
+const RECENT_STORAGE_PREFIX = 'zthRecentSearches:';
+const MAX_RECENT = 10;
+
+function loadRecent(l2Code: string): string[] {
+  try {
+    const raw = localStorage.getItem(RECENT_STORAGE_PREFIX + l2Code);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch { return []; }
+}
+
+function saveRecent(l2Code: string, term: string) {
+  const prev = loadRecent(l2Code).filter((t) => t !== term);
+  prev.unshift(term);
+  localStorage.setItem(RECENT_STORAGE_PREFIX + l2Code, JSON.stringify(prev.slice(0, MAX_RECENT)));
+}
+
+function clearRecent(l2Code: string) {
+  localStorage.removeItem(RECENT_STORAGE_PREFIX + l2Code);
+}
 
 export default function DictionaryPage() {
   const { l1, l2 } = useLanguage();
@@ -31,6 +51,13 @@ export default function DictionaryPage() {
   const [searchedText, setSearchedText] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const loadingRef = useRef(false);
+
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => loadRecent(l2.code));
+
+  // Reload recent searches when l2 changes
+  useEffect(() => {
+    setRecentSearches(loadRecent(l2.code));
+  }, [l2.code]);
 
   // Auto-search from ?q= param on first load
   useEffect(() => {
@@ -61,6 +88,10 @@ export default function DictionaryPage() {
       try {
         const response: any = await dict.lookup(trimmed, baseCode(l2.code), l1.code);
         const results: DictionaryEntry[] = response.results ?? [];
+
+        // Save to recent searches (even if single result — user searched it)
+        saveRecent(l2.code, trimmed);
+        setRecentSearches(loadRecent(l2.code));
 
         // If only one result, navigate directly to the entry detail page
         if (results.length === 1) {
@@ -102,6 +133,17 @@ export default function DictionaryPage() {
     router.replace(`/${l1.code}/${l2.code}/dictionary?${params.toString()}`, { scroll: false });
     inputRef.current?.focus();
   }, [router, l1.code, l2.code, searchParams]);
+
+  const handleRecentClick = useCallback((term: string) => {
+    setQuery(term);
+    setSearched(true);
+    doSearch(term);
+  }, [doSearch]);
+
+  const handleClearRecent = useCallback(() => {
+    clearRecent(l2.code);
+    setRecentSearches([]);
+  }, [l2.code]);
 
   const levelLabel = (level: ProficiencyLevel) => formatLevel(level).long;
 
@@ -191,14 +233,45 @@ export default function DictionaryPage() {
         </div>
       )}
 
-      {/* ── Initial empty state ── */}
+      {/* ── Recent searches / empty state ── */}
       {!results && !message && !loading && !error && (
-        <div className="mt-8 rounded-2xl border-2 border-dashed border-border p-12 text-center">
-          <Search className="mx-auto h-12 w-12 text-muted-foreground/50" />
-          <p className="mt-4 text-muted-foreground">
-            {t('msg.dictionary_empty_state', { l2: languageName(l2.code) })}
-          </p>
-        </div>
+        <>
+          {recentSearches.length > 0 ? (
+            <div className="mt-8">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  {t('title.recent_searches')}
+                </h2>
+                <button
+                  onClick={handleClearRecent}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {t('action.clear_recent_searches')}
+                </button>
+              </div>
+              <div className="space-y-1">
+                {recentSearches.map((term) => (
+                  <button
+                    key={term}
+                    onClick={() => handleRecentClick(term)}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-muted/60"
+                  >
+                    <Clock className="h-3.5 w-3.5 text-muted-foreground/60 flex-shrink-0" />
+                    <span className="truncate">{term}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="mt-8 rounded-2xl border-2 border-dashed border-border p-12 text-center">
+              <Search className="mx-auto h-12 w-12 text-muted-foreground/50" />
+              <p className="mt-4 text-muted-foreground">
+                {t('msg.dictionary_empty_state', { l2: languageName(l2.code) })}
+              </p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
