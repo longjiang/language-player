@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
@@ -412,15 +413,26 @@ export function SubsSearchResults({ term, embedded = false }: SubsSearchResultsP
         <span className="text-xs text-muted-foreground">
           {t('msg.video_n_of_total', { n: currentIndex + 1, total: videos.length })}
         </span>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 gap-1 text-xs"
-          onClick={() => setListOpen(true)}
-        >
-          <List className="h-3.5 w-3.5" />
-          List All
-        </Button>
+        <div className="flex items-center gap-1">
+          {currentVideo && (
+            <Link
+              href={`/${l1.code}/${l2.code}/watch/${currentVideo.youtube_id}`}
+              className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <Play className="h-3.5 w-3.5" />
+              Watch
+            </Link>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1 text-xs"
+            onClick={() => setListOpen(true)}
+          >
+            <List className="h-3.5 w-3.5" />
+            List All
+          </Button>
+        </div>
       </div>
 
       {/* ── Mini player ── */}
