@@ -5,15 +5,14 @@ import { usePathname } from 'next/navigation';
 import { useDictionaryContext, DictionaryProvider } from '@/providers/dictionary-provider';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
-import { normalizeInstances } from '@/hooks/use-saved-words';
 import { useT } from '@/hooks/use-t';
 import { useRouter } from 'next/navigation';
 import { PersistentSearchBar } from '@/components/dictionary/persistent-search-bar';
 import { WordListSidebar } from '@/components/dictionary/word-list-sidebar';
-import { InlineDefinition } from '@/components/dictionary/inline-definition';
+import { SavedWordRow } from '@/components/dictionary/saved-word-row';
 import { buildEntryRoute } from '@/lib/entry-route';
 import type { WordListNavItem as Wlni } from '@/lib/word-list-navigation';
-import { BookOpen, BookmarkCheck } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SavedLexicalItemRecord } from '@langplayer/shared';
 
@@ -37,7 +36,7 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
     setSidebarSource,
   } = useDictionaryContext();
 
-  const { getSavedWords, loaded: savedLoaded, removeSavedWord } = useSavedWordsContext();
+  const { getSavedWords, loaded: savedLoaded } = useSavedWordsContext();
 
   const handleResultClick = (item: Wlni) => {
     setDetailHead(item.head);
@@ -87,7 +86,6 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
                   l2Code={l2.code}
                   l1Code={l1.code}
                   getSavedWords={getSavedWords}
-                  removeSavedWord={removeSavedWord}
                   onWordClick={handleSavedWordClick}
                   currentEntryId={isDetailPage ? (() => {
                     const parts = pathname.split('/');
@@ -143,14 +141,12 @@ function SavedWordsSidebarContent({
   l2Code,
   l1Code,
   getSavedWords,
-  removeSavedWord,
   onWordClick,
   currentEntryId,
 }: {
   l2Code: string;
   l1Code: string;
   getSavedWords: (l2: string) => SavedLexicalItemRecord[];
-  removeSavedWord: (l2: string, wordId: string) => void;
   onWordClick: (word: SavedLexicalItemRecord) => void;
   currentEntryId: string | null;
 }) {
@@ -166,37 +162,16 @@ function SavedWordsSidebarContent({
 
   return (
     <div className="space-y-0.5">
-      {words.map((word) => {
-        const insts = normalizeInstances(word);
-        const latest = insts[insts.length - 1];
-        const ctx = latest?.context ?? word.context;
-        const isActive = currentEntryId === word.id;
-
-        return (
-          <div
-            key={word.id}
-            className={`group flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors cursor-pointer hover:bg-muted ${isActive ? 'bg-primary/10 text-primary font-medium' : ''}`}
-            onClick={() => onWordClick(word)}
-            title={word.forms[0]}
-          >
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className={`text-sm font-semibold truncate ${isActive ? 'text-primary' : ''}`} lang={l2Code}>
-                  {word.forms[0] ?? '?'}
-                </span>
-                <button
-                  onClick={(e) => { e.stopPropagation(); removeSavedWord(l2Code, word.id); }}
-                  className="ml-auto shrink-0 rounded p-0.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all"
-                  title="Remove from saved words"
-                >
-                  <BookmarkCheck className="h-4 w-4" />
-                </button>
-              </div>
-              <InlineDefinition wordId={word.id} l1Code={l1Code} l2Code={l2Code} />
-            </div>
-          </div>
-        );
-      })}
+      {words.map((word) => (
+        <SavedWordRow
+          key={word.id}
+          word={word}
+          l1Code={l1Code}
+          l2Code={l2Code}
+          compact
+          onClick={() => onWordClick(word)}
+        />
+      ))}
     </div>
   );
 }
