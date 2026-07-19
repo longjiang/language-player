@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, type FormEvent } from 'react';
+import { flushSync } from 'react-dom';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { languageName, baseCode } from '@/lib/language-data';
@@ -74,13 +75,21 @@ export default function DictionaryPage() {
       const trimmed = term.trim();
       if (!trimmed || loadingRef.current) return;
       loadingRef.current = true;
-      setLoading(true);
-      setError(null);
-      setResults(null);
-      setMessage(null);
-      setSearchedText(trimmed);
 
-      // Update URL to reflect the current search
+      // Force-immediately commit loading state to DOM before any async work
+      flushSync(() => {
+        setLoading(true);
+        setError(null);
+        setResults(null);
+        setMessage(null);
+        setSearchedText(trimmed);
+      });
+
+      // Save recent search optimistically — instant feedback
+      saveRecent(l2.code, trimmed);
+      setRecentSearches(loadRecent(l2.code));
+
+      // Update URL (deferred — doesn't block rendering)
       const params = new URLSearchParams(searchParams.toString());
       params.set('q', trimmed);
       router.replace(`/${l1.code}/${l2.code}/dictionary?${params.toString()}`, { scroll: false });
@@ -88,10 +97,6 @@ export default function DictionaryPage() {
       try {
         const response: any = await dict.lookup(trimmed, baseCode(l2.code), l1.code);
         const results: DictionaryEntry[] = response.results ?? [];
-
-        // Save to recent searches (even if single result — user searched it)
-        saveRecent(l2.code, trimmed);
-        setRecentSearches(loadRecent(l2.code));
 
         // If only one result, navigate directly to the entry detail page
         if (results.length === 1) {
@@ -114,9 +119,9 @@ export default function DictionaryPage() {
   );
 
   const handleSearch = useCallback(
-    async (e?: FormEvent) => {
+    (e?: FormEvent) => {
       e?.preventDefault();
-      await doSearch(query.trim());
+      doSearch(query.trim());
     },
     [query, doSearch],
   );
@@ -145,7 +150,7 @@ export default function DictionaryPage() {
     setRecentSearches([]);
   }, [l2.code]);
 
-  const levelLabel = (level: ProficiencyLevel) => formatLevel(level).long;
+  const levelLabel = (scale: string, value: string | number) => formatLevel({ scale, value } as ProficiencyLevel).long;
 
   const saveContext = {
     form: searchedText,

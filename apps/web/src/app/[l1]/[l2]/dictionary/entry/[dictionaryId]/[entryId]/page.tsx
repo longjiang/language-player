@@ -100,7 +100,7 @@ export default function DictionaryEntryPage() {
     fetchEntry();
   }, [fetchEntry]);
 
-  const levelLabel = (level: ProficiencyLevel) => formatLevel(level).long;
+  const levelLabel = (scale: string, value: string | number) => formatLevel({ scale, value } as ProficiencyLevel).long;
 
   const saveContext = {
     form: entry?.head ?? '',
