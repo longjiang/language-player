@@ -56,15 +56,17 @@ export function SavedWordRow({
         ) : undefined
       }
       sourceSlot={<SavedWordSource context={ctx} date={word.date} />}
-      prefix={srsDot}
-      suffix={
-        <button
-          onClick={handleRemove}
-          className="shrink-0 rounded p-1 text-amber-500 transition-colors hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-          title="Remove from saved words"
-        >
-          <BookmarkCheck className="h-5 w-5 fill-current" />
-        </button>
+      prefix={
+        <>
+          <button
+            onClick={handleRemove}
+            className="shrink-0 rounded p-1 text-amber-500 transition-colors hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+            title="Remove from saved words"
+          >
+            <BookmarkCheck className="h-5 w-5 fill-current" />
+          </button>
+          {srsDot}
+        </>
       }
       onClick={onClick}
     />
