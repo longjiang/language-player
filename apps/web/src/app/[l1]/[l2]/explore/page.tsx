@@ -19,16 +19,23 @@ export default function ExplorePage() {
   const [level, setLevel] = useState<number | undefined>(undefined);
   const exploreCache = useExploreCache();
 
-  // Default to the user's saved proficiency level once loaded
+  // Apply saved level once progress loads, then use explicit user choice.
   useEffect(() => {
     if (progressLoaded && savedLevel !== undefined && level === undefined) {
       setLevel(savedLevel);
     }
   }, [progressLoaded, savedLevel, level]);
+
+  // Defer the video fetch until progress is loaded so we know the user's
+  // saved level and can fetch with the right filter from the start.
+  const deferFetch = !progressLoaded;
+  const effectiveLevel = progressLoaded ? (level ?? savedLevel) : undefined;
+
   const { videos, loading, error, hasMore, loadMore, retry } = useVideos({
     l2: baseCode(l2.code),
-    level,
+    level: effectiveLevel,
     cache: exploreCache,
+    defer: deferFetch,
   });
 
   return (

@@ -13,6 +13,8 @@ interface UseVideosOptions {
     get: (key: string) => { videos: YouTubeVideo[]; hasMore: boolean; error: string | null } | null;
     set: (key: string, entry: { videos: YouTubeVideo[]; hasMore: boolean; error: string | null }) => void;
   };
+  /** When true, skip the fetch — wait until this becomes false. */
+  defer?: boolean;
 }
 
 interface UseVideosResult {
@@ -28,7 +30,7 @@ function cacheKey(l2: string, level: number | undefined): string {
   return `${l2}:${level ?? 'all'}`;
 }
 
-export function useVideos({ l2, level, pageSize = 24, cache }: UseVideosOptions): UseVideosResult {
+export function useVideos({ l2, level, pageSize = 24, cache, defer }: UseVideosOptions): UseVideosResult {
   const key = cacheKey(l2, level);
 
   // Restore from cache on mount / level change if available
@@ -101,6 +103,9 @@ export function useVideos({ l2, level, pageSize = 24, cache }: UseVideosOptions)
   // Fetch on mount and when filter changes — but skip if cache has data
   // and we haven't explicitly requested this key yet.
   useEffect(() => {
+    // Deferred — don't fetch or restore until ready
+    if (defer) return;
+
     // If cache has data for this key, restore it now. This handles the case
     // where the key changed (e.g. level filter) and useState initializers
     // already ran for the previous key — they don't re-run on key change.
@@ -119,7 +124,7 @@ export function useVideos({ l2, level, pageSize = 24, cache }: UseVideosOptions)
     fetchedKeyRef.current = key;
     setPage(1);
     fetchVideosRef.current(1, false);
-  }, [key, cache]);
+  }, [key, cache, defer]);
 
   const loadMore = useCallback(() => {
     if (loading || !hasMore) return;
