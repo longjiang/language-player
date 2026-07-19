@@ -7,7 +7,6 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
-import { buildEntryRoute } from '@/lib/entry-route';
 import {
   BookOpen, Trash2, Download, BookmarkCheck,
   Loader2, Search, ArrowUpDown, Clock, ArrowDownAZ, Circle,
@@ -16,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { SavedWordSource } from '@/components/saved-word-source';
 import { InlineDefinition } from '@/components/dictionary/inline-definition';
 import { WordList, WordListItem } from '@/components/dictionary/word-list';
+import { setWordListNav, savedWordToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
 import type { SavedWord, SrsFields } from '@langplayer/shared';
 
 const STORAGE_KEY = 'zthSavedWords';
@@ -23,18 +23,6 @@ const STORAGE_KEY = 'zthSavedWords';
 type SortMode = 'newest' | 'alpha';
 
 // ── Helpers ──────────────────────────────────────
-
-/** Parse a SavedWord.id ("cedict-0", "llm-zh-abc123") into a direct entry route.
- *  Returns null for legacy plain-numeric Classic CEDICT IDs (e.g., "42"). */
-function resolveWordRoute(word: SavedWord, l1Code: string, l2Code: string): string | null {
-  const dashIdx = word.id.indexOf('-');
-  if (dashIdx > 0) {
-    const dictId = word.id.slice(0, dashIdx);
-    const entryId = word.id.slice(dashIdx + 1);
-    return buildEntryRoute(l1Code, l2Code, dictId, entryId);
-  }
-  return null;
-}
 
 /** SRS review status for a word. null = not added to SRS. */
 type SrsStatus = 'due' | 'overdue' | 'new' | 'ok' | null;
@@ -142,9 +130,14 @@ export default function SavedWordsPage() {
 
   /** Navigate to the entry detail page for a saved word, with legacy fallback. */
   const handleWordClick = (word: SavedWord) => {
-    const route = resolveWordRoute(word, l1.code, l2.code);
-    if (route) {
-      router.push(route);
+    // Store the full saved-words list so the entry page can show a sidebar
+    setWordListNav(words.map(savedWordToNavItem), word.id);
+
+    const dashIdx = word.id.indexOf('-');
+    if (dashIdx > 0) {
+      const dictId = word.id.slice(0, dashIdx);
+      const entryId = word.id.slice(dashIdx + 1);
+      router.push(buildEntryRouteWithList(l1.code, l2.code, dictId, entryId, word.id));
     } else {
       // Legacy fallback: search by first form
       router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(word.forms[0] ?? '')}`);
