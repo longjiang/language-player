@@ -123,8 +123,11 @@ function stripTimestampPrefix(text: string): string {
 }
 
 function findMatchLine(lines: SubsLine[], term: string): number {
-  const lower = term.toLowerCase();
-  return lines.findIndex((l) => l.line.toLowerCase().includes(lower));
+  // `term` may be comma-separated expanded forms (e.g. "食べる,食べます,食べた")
+  const terms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
+  return lines.findIndex((l) =>
+    terms.some((t) => l.line.toLowerCase().includes(t)),
+  );
 }
 
 // ── Helpers ────────────────────────────────────
