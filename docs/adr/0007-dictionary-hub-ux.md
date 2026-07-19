@@ -128,7 +128,6 @@ DictionaryLayout (layout.tsx)               ← client component, persists
 │   │           │   └── Save / Speak buttons
 │   │           │
 │   │           └── TabsPanel              ← right column (wide) or bottom (narrow)
-│   │               ├── Tab: Dictionary
 │   │               ├── Tab: Examples from Videos (SubsSearchResults)
 │   │               ├── Tab: Conjugations (InflectionTable)
 │   │               └── Tab: Let DeepSeek Explain (AiExplanation)
@@ -262,7 +261,7 @@ Definitions panel and Tabs panel side-by-side at the same visual level. NOT tabs
 ║ │ Definitions      │ Tabs              │  ┌─ 5 results ─────┐ │ ║
 ║ │ Panel            │ Panel             │  │                  │ │ ║
 ║ │ ┌──────────────┐ │ ┌───────────────┐ │  │ 📖 manger     ◀ │ │ ║
-║ │ │ manger       │ │ │ [Dict│Examples│ │  │    /mɑ̃.ʒe/       │ │ ║
+║ │ │ manger       │ │ │ [Examples│      │ │  │    /mɑ̃.ʒe/       │ │ ║
 ║ │ │ /mɑ̃.ʒe/      │ │ │  Conj│DeepSeek]│ │  │    to eat        │ │ ║
 ║ │ │ verb · A1    │ │ ├───────────────┤ │  │                  │ │ ║
 ║ │ │              │ │ │               │ │  │ 📖 mangeaille    │ │ ║
@@ -352,12 +351,11 @@ The tabs in the detail view use the existing `TabbedPanel` component. Tabs are a
 
 | Tab Key | Label Key | Component |
 |---|---|---|
-| `word` | `title.dictionary` | Definitions + metadata inline (no separate tab content — the definitions panel handles this) |
 | `examples` | `title.examples_from_videos` | `<SubsSearchResults>` (embedded YouTube player + subtitle display) |
 | `inflections` | `title.conjugations` | `<InflectionTable>` |
 | `deepseek` | `action.let_ai_explain` | `<AiExplanation>` |
 
-The `word` tab is essentially the definitions panel content repeated — this tab exists for consistency with the existing `DictionaryEntryCard` component's tab structure. When space allows (wide layout), the definitions panel is always visible alongside the tabs, and the active tab's content renders in the tabs panel. In narrow layout, the definitions panel is above, and the tab bar + active tab content appears below it.
+The definitions panel is always visible alongside the tabs — the 'Dictionary' tab is obsolete since the definitions ARE the left panel. When space allows (wide layout), the definitions panel is always visible alongside the tabs, and the active tab's content renders in the tabs panel. In narrow layout, the definitions panel is above, and the tab bar + active tab content appears below it.
 
 ---
 
