@@ -16,6 +16,8 @@ interface SavedWordRowProps {
   onClick: () => void;
   /** SRS dot status. Omit to hide the dot. */
   srsDot?: React.ReactNode;
+  /** When true, reduces padding and typography for sidebar use. */
+  compact?: boolean;
 }
 
 /**
@@ -29,6 +31,7 @@ export function SavedWordRow({
   l2Code,
   onClick,
   srsDot,
+  compact = false,
 }: SavedWordRowProps) {
   const { removeSavedWord } = useSavedWordsContext();
   const insts = normalizeInstances(word);
@@ -69,6 +72,7 @@ export function SavedWordRow({
         </>
       }
       onClick={onClick}
+      compact={compact}
     />
   );
 }
