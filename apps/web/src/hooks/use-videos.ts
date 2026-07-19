@@ -113,7 +113,8 @@ export function useVideos({ l2, level, pageSize = 24, cache, defer }: UseVideosO
         setHasMore(entry.hasMore);
         setError(entry.error);
         setLoading(false);
-        setPage(1);
+        // Restore page so "Load More" continues from the right position
+        setPage(Math.floor(entry.videos.length / pageSize) + 1);
         return;
       }
     }
