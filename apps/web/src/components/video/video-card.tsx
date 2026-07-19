@@ -4,10 +4,12 @@ import { useCallback } from 'react';
 import Link from 'next/link';
 import { Play, Eye, Clock } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
+import { getLevelFromDifficulty } from '@langplayer/shared';
 import { youtubeThumbnail } from '@/lib/video-service';
 import { useLanguage } from '@/providers/language-provider';
 import { useVideoPlayer } from '@/providers/video-player-provider';
 import { useT } from '@/hooks/use-t';
+import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
 import { ChannelActionsMenu } from './channel-actions-menu';
 import type { QueueType } from '@/lib/queue-manager';
 
@@ -82,7 +84,8 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
   const { l1, l2 } = useLanguage();
   const { playVideo } = useVideoPlayer();
   const t = useT();
-  const level = getLevel(video.difficulty);
+  const profiles = useDifficultyProfile();
+  const level = getLevelFromDifficulty(video.difficulty, profiles?.[l2.code]) ?? getLevel(video.difficulty);
   const duration = formatDuration(video.duration);
   const views = formatViews(video.views, l1.code);
 
