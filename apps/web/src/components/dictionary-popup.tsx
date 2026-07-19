@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedWord } from '@langplayer/shared';
+import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedWord, ProficiencyLevel } from '@langplayer/shared';
+import { formatLevel } from '@langplayer/shared';
 import { Loader2, X, AlertCircle, AlertTriangle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
 import { AiExplanation } from './ai-explanation';
@@ -110,16 +111,7 @@ export function DictionaryPopup({
     };
   }, [token, lookupWord]);
 
-  const levelLabel = (scale: string, value: string | number): string => {
-    const hskMatch = scale.match(/^hsk_(\d{4})$/);
-    if (hskMatch) return `HSK ${value} (${hskMatch[1]})`;
-    const map: Record<string, string> = {
-      jlpt: 'JLPT',
-      cefr: 'CEFR',
-    };
-    const label = map[scale] ?? scale.toUpperCase();
-    return `${label} ${value}`;
-  };
+  const levelLabel = (level: ProficiencyLevel) => formatLevel(level).long;
 
   // Find saved words for this token whose IDs don't match any loaded entry
   const unmatchedSavedWords = useMemo(() => {

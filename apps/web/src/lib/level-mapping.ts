@@ -6,7 +6,15 @@
  *
  * Level 1 = most common words / complete beginner
  * Level 7 = rarest words / near-native
+ *
+ * Functions are re-exported from @langplayer/shared (centralized in levels.ts).
+ * The LEVELS constant remains here for UI components that need cross-scale lookup
+ * (category, hoursMultiplier) in one table.
  */
+
+import { primaryScale, formatNumericLevel } from '@langplayer/shared';
+
+export { primaryScale, formatNumericLevel, LEVEL_HEX_COLORS, SCALES } from '@langplayer/shared';
 
 export const LEVELS: Record<number, {
   hsk: string;
@@ -26,20 +34,12 @@ export const LEVELS: Record<number, {
   7: { hsk: '7-9', cefr: 'C2', jlpt: null, topik: '6', ielts: '9', category: 'Advanced II', hoursMultiplier: 2 },
 };
 
-/** Return the primary exam framework for a language code. */
-export function examKey(l2Code: string): 'hsk' | 'jlpt' | 'topik' | 'ielts' | 'cefr' {
-  if (l2Code === 'zh') return 'hsk';
-  if (l2Code === 'ja') return 'jlpt';
-  if (l2Code === 'ko') return 'topik';
-  if (l2Code === 'en') return 'ielts';
-  return 'cefr';
+/** @deprecated Use `primaryScale(l2Code)` from @langplayer/shared instead. */
+export function examKey(l2Code: string): ReturnType<typeof primaryScale> {
+  return primaryScale(l2Code);
 }
 
-/** Return a human-readable level label like "HSK 3" or "CEFR A2". */
+/** @deprecated Use `formatNumericLevel(level, primaryScale(l2Code)).short` from @langplayer/shared instead. */
 export function levelLabel(l2Code: string, level: number): string {
-  const info = LEVELS[level];
-  if (!info) return `Level ${level}`;
-  const key = examKey(l2Code);
-  const value = info[key as keyof typeof info];
-  return value ? `${key.toUpperCase()} ${value}` : info.category;
+  return formatNumericLevel(level, primaryScale(l2Code)).short;
 }

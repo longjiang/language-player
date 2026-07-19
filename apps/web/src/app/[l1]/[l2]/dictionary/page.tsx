@@ -6,7 +6,8 @@ import { useLanguage } from '@/providers/language-provider';
 import { languageName, baseCode } from '@/lib/language-data';
 import { useT } from '@/hooks/use-t';
 import { useDictionary } from '@langplayer/api-client';
-import type { DictionaryEntry } from '@langplayer/shared';
+import type { DictionaryEntry, ProficiencyLevel } from '@langplayer/shared';
+import { formatLevel } from '@langplayer/shared';
 import { Search, Loader2, BookOpen, AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
@@ -100,13 +101,7 @@ export default function DictionaryPage() {
     inputRef.current?.focus();
   }, [router, l1.code, l2.code, searchParams]);
 
-  const levelScaleLabel = (scale: string, value?: string | number): string => {
-    const hskMatch = scale.match(/^hsk_(\d{4})$/);
-    if (hskMatch) return `HSK ${value ?? ''} (${hskMatch[1]})`.trim();
-    const map: Record<string, string> = { hsk: 'HSK', jlpt: 'JLPT', cefr: 'CEFR' };
-    const label = map[scale] ?? scale.toUpperCase();
-    return value !== undefined ? `${label} ${value}` : label;
-  };
+  const levelLabel = (level: ProficiencyLevel) => formatLevel(level).long;
 
   const saveContext = {
     form: searchedText,
@@ -181,7 +176,7 @@ export default function DictionaryPage() {
                 entry={entry}
                 l2Code={l2.code}
                 l1Code={l1.code}
-                levelLabel={levelScaleLabel}
+                levelLabel={levelLabel}
                 saveContext={saveContext}
                 onClick={(e) => router.push(buildEntryRoute(l1.code, l2.code, e.dictionary?.id ?? 'llm', e.id))}
               />

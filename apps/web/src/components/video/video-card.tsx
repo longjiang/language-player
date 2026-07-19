@@ -4,7 +4,8 @@ import { useCallback } from 'react';
 import Link from 'next/link';
 import { Play, Eye, Clock } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
-import { getLevelFromDifficulty } from '@langplayer/shared';
+import { getLevelFromDifficulty, formatNumericLevel, primaryScale } from '@langplayer/shared';
+import { levelBgClass } from '@/lib/level-colors';
 import { youtubeThumbnail } from '@/lib/video-service';
 import { useLanguage } from '@/providers/language-provider';
 import { useVideoPlayer } from '@/providers/video-player-provider';
@@ -49,26 +50,6 @@ function formatViews(views: number | undefined, locale: string): string {
   return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(views);
 }
 
-const LEVEL_COLORS: Record<number, string> = {
-  1: 'bg-emerald-500',
-  2: 'bg-teal-500',
-  3: 'bg-blue-500',
-  4: 'bg-violet-500',
-  5: 'bg-orange-500',
-  6: 'bg-red-500',
-  7: 'bg-rose-600',
-};
-
-const LEVEL_LABELS: Record<number, string> = {
-  1: 'A1',
-  2: 'A2',
-  3: 'B1',
-  4: 'B2',
-  5: 'C1',
-  6: 'C2',
-  7: 'N',
-};
-
 export function VideoCard({ video, videos, queueType, layout = 'card', isActive }: VideoCardProps) {
   const { l1, l2 } = useLanguage();
   const { playVideo } = useVideoPlayer();
@@ -106,9 +87,9 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
           loading="lazy"
         />
         <span
-          className={`absolute left-1 top-1 rounded px-1 py-0 text-[10px] font-bold text-white ${LEVEL_COLORS[level ?? 1] ?? 'bg-gray-500'}`}
+          className={`absolute left-1 top-1 rounded px-1 py-0 text-[10px] font-bold text-white ${levelBgClass(level ?? 1)}`}
         >
-          {LEVEL_LABELS[level ?? 1]}
+          {formatNumericLevel(level ?? 1, primaryScale(l2.code)).short}
         </span>
       </div>
       <div className="min-w-0 flex-1">
@@ -144,9 +125,9 @@ export function VideoCard({ video, videos, queueType, layout = 'card', isActive 
         )}
         {/* Level badge */}
         <span
-          className={`absolute left-2 top-2 rounded px-1.5 py-0.5 text-xs font-bold text-white ${LEVEL_COLORS[level ?? 1] ?? 'bg-gray-500'}`}
+          className={`absolute left-2 top-2 rounded px-1.5 py-0.5 text-xs font-bold text-white ${levelBgClass(level ?? 1)}`}
         >
-          {LEVEL_LABELS[level ?? 1] ?? '?'}
+          {formatNumericLevel(level ?? 1, primaryScale(l2.code)).short ?? '?'}
         </span>
       </div>
 
