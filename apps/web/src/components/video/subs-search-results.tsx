@@ -436,18 +436,8 @@ export function SubsSearchResults({ term, embedded = false }: SubsSearchResultsP
         )}
       </div>
 
-      {/* ── Single-line subtitle display (follows playback) ── */}
-      <SubtitleDisplay
-        mode="singleline"
-        youtubeId={currentVideo?.youtube_id}
-        currentTime={currentTime}
-        videoTitle={currentVideo?.title}
-        initialLines={subtitleInitialLines}
-        contextLines={1}
-      />
-
       {/* ── Controls ── */}
-      <div className="flex items-center justify-center gap-1 border-t border-border px-2 py-2">
+      <div className="flex items-center justify-center gap-1 border-b border-border px-2 py-2">
         <Button
           variant="ghost"
           size="icon"
@@ -499,6 +489,15 @@ export function SubsSearchResults({ term, embedded = false }: SubsSearchResultsP
           <SkipForward className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* ── Single-line subtitle display (follows playback) ── */}
+      <SubtitleDisplay
+        mode="singleline"
+        youtubeId={currentVideo?.youtube_id}
+        currentTime={currentTime}
+        videoTitle={currentVideo?.title}
+        initialLines={subtitleInitialLines}
+      />
 
       {/* ── Modal: result list ── */}
       {listOpen && (
