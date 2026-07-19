@@ -33,7 +33,7 @@ interface SubtitleDisplayProps {
   initialLines?: { starttime: number; l1Line: string; l2Line: string }[];
   /** Display mode: 'multiline' (default) shows all lines; 'singleline' shows only the active line ± contextLines. */
   mode?: 'multiline' | 'singleline';
-  /** In singleline mode, how many context lines to show before and after the active line. Default: 1. */
+  /** In singleline mode, how many context lines to show before and after the active line. Default: 0. */
   contextLines?: number;
 }
 
@@ -167,44 +167,28 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
 
   // ── Singleline mode ──
   if (isSingleline) {
-    const ctxStart = Math.max(0, activeIndex - contextLines);
-    const ctxEnd = Math.min(l2Lines.length - 1, activeIndex + contextLines);
+    const activeLine = activeIndex >= 0 ? l2Lines[activeIndex] : null;
 
     return (
-      <div className="min-h-[4.5rem] px-4 py-3">
-        {activeIndex >= 0 ? (
-          <div className="space-y-1">
-            {l2Lines.slice(ctxStart, ctxEnd + 1).map((line, i) => {
-              const lineIdx = ctxStart + i;
-              const isActive = lineIdx === activeIndex;
-              if (isActive) {
-                return (
-                  <div key={lineIdx} className="text-sm leading-relaxed">
-                    <TokenizedText
-                      text={line.line}
-                      l2Code={l2Code}
-                      textScale={0.875}
-                      tokenCache={tokenCache}
-                      tokenCacheLoaded={tokenCacheLoaded}
-                      context={{
-                        text: line.line,
-                        starttime: line.starttime,
-                        youtube_id: youtubeId,
-                        videoTitle,
-                      }}
-                    />
-                  </div>
-                );
-              }
-              return (
-                <p key={lineIdx} className="text-xs text-muted-foreground/50">
-                  {line.line}
-                </p>
-              );
-            })}
+      <div className="min-h-[5rem] px-6 py-4 text-center">
+        {activeLine ? (
+          <div className="text-xl font-medium leading-relaxed text-center">
+            <TokenizedText
+              text={activeLine.line}
+              l2Code={l2Code}
+              textScale={1.5}
+              tokenCache={tokenCache}
+              tokenCacheLoaded={tokenCacheLoaded}
+              context={{
+                text: activeLine.line,
+                starttime: activeLine.starttime,
+                youtube_id: youtubeId,
+                videoTitle,
+              }}
+            />
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground/50 italic">
+          <p className="text-sm text-muted-foreground/50 italic">
             {t('subtitle.subtitles_unavailable')}
           </p>
         )}
