@@ -205,7 +205,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
     setError(null);
 
     fetch(
-      `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2.code)}&limit=50&context=3`,
+      `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${baseCode(l2.code)}&limit=500&context=3`,
     )
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -213,8 +213,9 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
       })
       .then((data: any[]) => {
         if (cancelled) return;
-        const parsed: SubsSearchVideo[] = (Array.isArray(data) ? data : []).map(
-          (v: any) => {
+        const searchForms = term.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean);
+        const parsed: SubsSearchVideo[] = (Array.isArray(data) ? data : [])
+          .map((v: any) => {
             const lines = parseSubsL2(v.subs_l2 ?? '');
             return {
               id: v.id,
@@ -226,8 +227,14 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
               date: v.date,
               matchLineIndex: findMatchLine(lines, term),
             };
-          },
-        );
+          })
+          .filter((v) =>
+            // Only keep videos where at least one subtitle line actually
+            // contains one of the inflected/script-variant search forms
+            v.subs_l2.some((l) =>
+              searchForms.some((f) => l.line.toLowerCase().includes(f)),
+            ),
+          );
         setVideos(parsed);
         setCurrentIndex(0);
         setLoading(false);
