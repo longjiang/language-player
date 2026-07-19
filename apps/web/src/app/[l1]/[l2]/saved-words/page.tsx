@@ -1,29 +1,141 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
+import { useSrs } from '@/hooks/use-srs';
 import { useT } from '@/hooks/use-t';
-import { languageName } from '@/lib/language-data';
-import { BookOpen, Trash2, Download, BookmarkCheck, Loader2 } from 'lucide-react';
+import { languageName, baseCode } from '@/lib/language-data';
+import { buildEntryRoute } from '@/lib/entry-route';
+import { PYTHON_API_URL } from '@/lib/api-url';
+import {
+  BookOpen, Trash2, Download, BookmarkCheck,
+  Loader2, Search, ArrowUpDown, Clock, ArrowDownAZ, Circle,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SavedWordSource } from '@/components/saved-word-source';
-import type { SavedWord } from '@langplayer/shared';
+import type { SavedWord, SrsFields } from '@langplayer/shared';
 
 const STORAGE_KEY = 'zthSavedWords';
 
+type SortMode = 'newest' | 'alpha';
+
+// ── Definition cache (lives for the lifetime of the page) ──
+const definitionCache = new Map<string, { definition: string; pronunciation: string } | null>();
+
+async function fetchDefinition(
+  wordId: string,
+  l1Code: string,
+  l2Code: string,
+): Promise<{ definition: string; pronunciation: string } | null> {
+  if (definitionCache.has(wordId)) return definitionCache.get(wordId) ?? null;
+
+  const dashIdx = wordId.indexOf('-');
+  if (dashIdx <= 0) { definitionCache.set(wordId, null); return null; }
+
+  const dictId = wordId.slice(0, dashIdx);
+  const entryId = wordId.slice(dashIdx + 1);
+  const url = `${PYTHON_API_URL}/dictionary/entry?l2=${baseCode(l2Code)}&dict=${dictId}&id=${encodeURIComponent(entryId)}&l1=${baseCode(l1Code)}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) { definitionCache.set(wordId, null); return null; }
+    const data = await res.json();
+    const entry = data.entry;
+    const result = {
+      definition: (entry?.definitions?.[0] as string) ?? '',
+      pronunciation: (entry?.pronunciation as string) ?? '',
+    };
+    definitionCache.set(wordId, result);
+    return result;
+  } catch {
+    definitionCache.set(wordId, null);
+    return null;
+  }
+}
+
+// ── Helpers ──────────────────────────────────────
+
+/** Parse a SavedWord.id ("cedict-0", "llm-zh-abc123") into a direct entry route.
+ *  Returns null for legacy plain-numeric Classic CEDICT IDs (e.g., "42"). */
+function resolveWordRoute(word: SavedWord, l1Code: string, l2Code: string): string | null {
+  const dashIdx = word.id.indexOf('-');
+  if (dashIdx > 0) {
+    const dictId = word.id.slice(0, dashIdx);
+    const entryId = word.id.slice(dashIdx + 1);
+    return buildEntryRoute(l1Code, l2Code, dictId, entryId);
+  }
+  return null;
+}
+
+/** SRS review status for a word. null = not added to SRS. */
+type SrsStatus = 'due' | 'overdue' | 'new' | 'ok' | null;
+
+function getSrsStatus(
+  card: SrsFields | undefined,
+): SrsStatus {
+  if (!card) return null;
+  const now = Date.now();
+  // New card: never reviewed, interval is 0
+  if (card.nextReview === 0 && card.repetitions === 0) return 'new';
+  // Overdue: due more than a day ago
+  if (card.nextReview < now - 24 * 60 * 60 * 1000) return 'overdue';
+  // Due: nextReview is in the past (or now)
+  if (card.nextReview <= now) return 'due';
+  return 'ok';
+}
+
+const SRS_DOT_CLASSES: Record<Exclude<SrsStatus, null>, string> = {
+  overdue: 'text-red-500 fill-red-500',
+  due: 'text-amber-500 fill-amber-500',
+  new: 'text-blue-400 fill-blue-400',
+  ok: 'text-emerald-400 fill-emerald-400',
+};
+
+// ── Page ─────────────────────────────────────────
+
 /**
- * Saved Words page — vocabulary list for the current L2, grouped by date.
+ * Saved Words page — vocabulary list for the current L2.
  * Route: /[l1]/[l2]/saved-words
  */
 export default function SavedWordsPage() {
   const { l1, l2 } = useLanguage();
   const { getSavedWords, clearSavedWords, loaded } = useSavedWordsContext();
+  const { getCard } = useSrs();
   const router = useRouter();
   const t = useT();
 
-  const words = useMemo(() => getSavedWords(l2.code), [getSavedWords, l2.code]);
+  const [sortMode, setSortMode] = useState<SortMode>('newest');
+  const [filterText, setFilterText] = useState('');
+
+  const allWords = useMemo(() => getSavedWords(l2.code), [getSavedWords, l2.code]);
+
+  // Apply filter + sort
+  const words = useMemo(() => {
+    let result = [...allWords];
+
+    // Text filter: match against any form or context text
+    if (filterText.trim()) {
+      const q = filterText.trim().toLowerCase();
+      result = result.filter((w) =>
+        w.forms.some((f) => f.toLowerCase().includes(q)) ||
+        w.context.form.toLowerCase().includes(q) ||
+        w.context.text.toLowerCase().includes(q) ||
+        w.context.videoTitle?.toLowerCase().includes(q),
+      );
+    }
+
+    // Sort
+    if (sortMode === 'alpha') {
+      result.sort((a, b) => (a.forms[0] ?? '').localeCompare(b.forms[0] ?? ''));
+    } else {
+      // newest first (default)
+      result.sort((a, b) => b.date - a.date);
+    }
+
+    return result;
+  }, [allWords, filterText, sortMode]);
 
   // Group by date: today vs earlier
   const { today, earlier } = useMemo(() => {
@@ -61,10 +173,21 @@ export default function SavedWordsPage() {
     }
   };
 
+  /** Navigate to the entry detail page for a saved word, with legacy fallback. */
+  const handleWordClick = (word: SavedWord) => {
+    const route = resolveWordRoute(word, l1.code, l2.code);
+    if (route) {
+      router.push(route);
+    } else {
+      // Legacy fallback: search by first form
+      router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(word.forms[0] ?? '')}`);
+    }
+  };
+
   if (!loaded) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <Loader2 className="mx-auto h-5 w-5 animate-spin" />
       </div>
     );
   }
@@ -72,29 +195,29 @@ export default function SavedWordsPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('title.saved_words')}</h1>
           <p className="mt-1 text-muted-foreground">
             {t('msg.saved_words_desc', {
-              count: words.length,
+              count: allWords.length,
               l2: languageName(l2.code, l1.code),
             })}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleExport} disabled={words.length === 0}>
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={allWords.length === 0}>
             <Download className="mr-1 h-4 w-4" />
             {t('action.export')}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleClearAll} disabled={words.length === 0}>
+          <Button variant="outline" size="sm" onClick={handleClearAll} disabled={allWords.length === 0}>
             <Trash2 className="mr-1 h-4 w-4" />
             {t('action.clear_all')}
           </Button>
         </div>
       </div>
 
-      {words.length === 0 ? (
+      {allWords.length === 0 ? (
         <div className="rounded-xl border border-dashed p-12 text-center">
           <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <p className="mt-4 text-lg text-muted-foreground">
@@ -105,31 +228,87 @@ export default function SavedWordsPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-8">
-          {today.length > 0 && (
-            <WordGroup
-              label={t('msg.today')}
-              words={today}
-              l1Code={l1.code}
-              l2Code={l2.code}
-              onWordClick={(w) => router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(w.forms[0] ?? '')}`)}
-            />
-          )}
+        <>
+          {/* Sort & Filter toolbar */}
+          <div className="mb-6 flex items-center gap-3">
+            {/* Search/filter input */}
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                placeholder={t('placeholder.filter')}
+                className="h-8 w-full rounded-md border border-border bg-background pl-8 pr-3 text-xs placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
 
-          {earlier.length > 0 && (
-            <WordGroup
-              label={t('msg.earlier')}
-              words={earlier}
-              l1Code={l1.code}
-              l2Code={l2.code}
-              onWordClick={(w) => router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(w.forms[0] ?? '')}`)}
-            />
-          )}
-        </div>
+            {/* Sort toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1.5 text-xs text-muted-foreground"
+              onClick={() => setSortMode((m) => (m === 'newest' ? 'alpha' : 'newest'))}
+            >
+              <ArrowUpDown className="h-3.5 w-3.5" />
+              {sortMode === 'newest' ? (
+                <>
+                  <Clock className="h-3.5 w-3.5" />
+                  {t('sort.newest')}
+                </>
+              ) : (
+                <>
+                  <ArrowDownAZ className="h-3.5 w-3.5" />
+                  {t('sort.alphabetical')}
+                </>
+              )}
+            </Button>
+
+            {/* Result count when filtering */}
+            {filterText.trim() && (
+              <span className="text-xs text-muted-foreground">
+                {words.length} / {allWords.length}
+              </span>
+            )}
+          </div>
+
+          {/* Word groups */}
+          <div className="space-y-8">
+            {today.length > 0 && (
+              <WordGroup
+                label={t('msg.today')}
+                words={today}
+                l1Code={l1.code}
+                l2Code={l2.code}
+                getCard={getCard}
+                onWordClick={handleWordClick}
+              />
+            )}
+
+            {earlier.length > 0 && (
+              <WordGroup
+                label={t('msg.earlier')}
+                words={earlier}
+                l1Code={l1.code}
+                l2Code={l2.code}
+                getCard={getCard}
+                onWordClick={handleWordClick}
+              />
+            )}
+
+            {words.length === 0 && filterText.trim() && (
+              <div className="rounded-lg border border-dashed p-8 text-center">
+                <p className="text-sm text-muted-foreground">{t('msg.no_results')}</p>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
 }
+
+// ── Sub-components ──────────────────────────────
 
 /** Renders a group of saved words under a date heading. */
 function WordGroup({
@@ -137,12 +316,14 @@ function WordGroup({
   words,
   l1Code,
   l2Code,
+  getCard,
   onWordClick,
 }: {
   label: string;
   words: SavedWord[];
   l1Code: string;
   l2Code: string;
+  getCard: (l2Code: string, wordId: string) => SrsFields | undefined;
   onWordClick: (word: SavedWord) => void;
 }) {
   return (
@@ -154,30 +335,37 @@ function WordGroup({
         </span>
       </div>
       <div className="space-y-1">
-        {words.map((word) => (
-          <SavedWordRow
-            key={`${word.id}-${word.date}`}
-            word={word}
-            l1Code={l1Code}
-            l2Code={l2Code}
-            onClick={() => onWordClick(word)}
-          />
-        ))}
+        {words.map((word) => {
+          const card = getCard(l2Code, word.id);
+          const srsStatus = getSrsStatus(card);
+          return (
+            <SavedWordRow
+              key={`${word.id}-${word.date}`}
+              word={word}
+              l1Code={l1Code}
+              l2Code={l2Code}
+              srsStatus={srsStatus}
+              onClick={() => onWordClick(word)}
+            />
+          );
+        })}
       </div>
     </div>
   );
 }
 
-/** Single saved word row with context info. */
+/** Single saved word row with SRS indicator, inline definition, context info, and remove button. */
 function SavedWordRow({
   word,
   l1Code,
   l2Code,
+  srsStatus,
   onClick,
 }: {
   word: SavedWord;
   l1Code: string;
   l2Code: string;
+  srsStatus: SrsStatus;
   onClick: () => void;
 }) {
   const { removeSavedWord } = useSavedWordsContext();
@@ -193,6 +381,20 @@ function SavedWordRow({
       className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-muted/50"
       onClick={onClick}
     >
+      {/* SRS status dot */}
+      {srsStatus && (
+        <span
+          title={
+            srsStatus === 'overdue' ? 'Overdue for review' :
+            srsStatus === 'due' ? 'Due for review' :
+            srsStatus === 'new' ? 'New — not yet reviewed' :
+            'Reviewed'
+          }
+        >
+          <Circle className={`h-2.5 w-2.5 flex-shrink-0 ${SRS_DOT_CLASSES[srsStatus]}`} />
+        </span>
+      )}
+
       {/* Word form */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
@@ -208,6 +410,9 @@ function SavedWordRow({
             </span>
           )}
         </div>
+
+        {/* Inline definition — lazy-loaded when row enters viewport */}
+        <InlineDefinition wordId={word.id} l1Code={l1Code} l2Code={l2Code} />
 
         {/* Context: subtitle line */}
         {ctx.text && ctx.text !== word.forms[0] && (
@@ -231,5 +436,74 @@ function SavedWordRow({
         <BookmarkCheck className="h-5 w-5 fill-current" />
       </button>
     </div>
+  );
+}
+
+// ── Inline Definition (lazy-loaded on visibility) ──
+
+/**
+ * Fetches the first definition + pronunciation from the Python backend
+ * only when the row scrolls into the viewport. Results are cached in a
+ * module-level Map so scrolling back doesn't re-fetch.
+ */
+function InlineDefinition({
+  wordId,
+  l1Code,
+  l2Code,
+}: {
+  wordId: string;
+  l1Code: string;
+  l2Code: string;
+}) {
+  const [def, setDef] = useState<{ definition: string; pronunciation: string } | null | undefined>(
+    () => definitionCache.get(wordId),
+  );
+  const sentinelRef = useRef<HTMLSpanElement>(null);
+  const fetchedRef = useRef(def !== undefined);
+
+  useEffect(() => {
+    // Already cached (from constructor or a previous row)
+    if (definitionCache.has(wordId)) {
+      setDef(definitionCache.get(wordId) ?? null);
+      return;
+    }
+
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && !fetchedRef.current) {
+          fetchedRef.current = true;
+          fetchDefinition(wordId, l1Code, l2Code).then((result) => {
+            setDef(result);
+          });
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '300px' },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [wordId, l1Code, l2Code]);
+
+  // Not yet resolved (still outside viewport, not yet fetched)
+  if (def === undefined) {
+    return <span ref={sentinelRef} className="block h-4" />;
+  }
+
+  // Fetched but no data
+  if (!def || (!def.definition && !def.pronunciation)) {
+    return <span className="block h-0.5" />;
+  }
+
+  return (
+    <p className="mt-0.5 truncate text-xs text-muted-foreground/80">
+      {def.pronunciation && (
+        <span className="mr-1.5 text-muted-foreground/50">{def.pronunciation}</span>
+      )}
+      {def.definition && <span>{def.definition}</span>}
+    </p>
   );
 }

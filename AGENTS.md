@@ -84,6 +84,8 @@ npx turbo lint                # Lint all
 npx turbo typecheck           # Type-check all
 ```
 
+**⚠️ Always use `npx turbo` from the repo root** — it handles working directories automatically. If you must run a package script directly (e.g., `npx next build`, `npx tsc --noEmit`), `cd` into that package's directory first. Running `npx next build apps/web` from the root will fail with misleading CSS/webpack errors because Next.js interprets the path argument as the project root, not a subdirectory.
+
 ### Test Credentials
 
 Use these to log in during local development:
