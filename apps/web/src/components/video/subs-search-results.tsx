@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { youtubeThumbnail } from '@/lib/video-service';
 import { YouTubePlayer, type YouTubePlayerHandle, PLAYER_STATES } from './youtube-player';
+import { SubtitleDisplay } from './subtitle-display';
 import { Button } from '@/components/ui/button';
 import {
   Loader2,
@@ -167,6 +168,17 @@ export function SubsSearchResults({ term, embedded = false }: SubsSearchResultsP
 
   const currentVideo = videos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
+
+  // Memoize initialLines for SubtitleDisplay so it doesn't re-trigger on every render
+  const subtitleInitialLines = useMemo(
+    () =>
+      currentVideo?.subs_l2.map((l) => ({
+        starttime: l.starttime,
+        l1Line: '',
+        l2Line: l.line,
+      })) ?? [],
+    [currentVideo?.id, currentVideo?.subs_l2],
+  );
 
   // ── Fetch ────────────────────────────────────
 
@@ -395,20 +407,7 @@ export function SubsSearchResults({ term, embedded = false }: SubsSearchResultsP
 
   return (
     <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
-      {/* ── Mini player ── */}
-      <div className="aspect-video w-full bg-black">
-        {currentVideo && (
-          <YouTubePlayer
-            ref={playerRef}
-            youtubeId={currentVideo.youtube_id}
-            autoplay
-            onTimeUpdate={handleTimeUpdate}
-            onStateChange={handleStateChange}
-          />
-        )}
-      </div>
-
-      {/* ── Nav bar ── */}
+      {/* ── Nav bar (above video) ── */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <span className="text-xs text-muted-foreground">
           {t('msg.video_n_of_total', { n: currentIndex + 1, total: videos.length })}
@@ -424,34 +423,28 @@ export function SubsSearchResults({ term, embedded = false }: SubsSearchResultsP
         </Button>
       </div>
 
-      {/* ── Subtitle line (one at a time) ── */}
-      <div className="min-h-[4.5rem] px-4 py-3">
-        {currentVideo && matchLine ? (
-          <div className="space-y-1">
-            {/* Context before (1 line) */}
-            {currentVideo.matchLineIndex > 0 && (
-              <p className="text-xs text-muted-foreground/50">
-                {currentVideo.subs_l2[currentVideo.matchLineIndex - 1]?.line}
-              </p>
-            )}
-            {/* Matched line */}
-            <p className="text-sm leading-relaxed">
-              <HighlightLine line={matchLine.line} term={term} />
-            </p>
-            {/* Context after (1 line) */}
-            {currentVideo.matchLineIndex <
-              currentVideo.subs_l2.length - 1 && (
-              <p className="text-xs text-muted-foreground/50">
-                {currentVideo.subs_l2[currentVideo.matchLineIndex + 1]?.line}
-              </p>
-            )}
-          </div>
-        ) : (
-          <p className="text-xs text-muted-foreground/50 italic">
-            No matching subtitle line found
-          </p>
+      {/* ── Mini player ── */}
+      <div className="aspect-video w-full bg-black">
+        {currentVideo && (
+          <YouTubePlayer
+            ref={playerRef}
+            youtubeId={currentVideo.youtube_id}
+            autoplay
+            onTimeUpdate={handleTimeUpdate}
+            onStateChange={handleStateChange}
+          />
         )}
       </div>
+
+      {/* ── Single-line subtitle display (follows playback) ── */}
+      <SubtitleDisplay
+        mode="singleline"
+        youtubeId={currentVideo?.youtube_id}
+        currentTime={currentTime}
+        videoTitle={currentVideo?.title}
+        initialLines={subtitleInitialLines}
+        contextLines={1}
+      />
 
       {/* ── Controls ── */}
       <div className="flex items-center justify-center gap-1 border-t border-border px-2 py-2">

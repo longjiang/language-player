@@ -14,7 +14,7 @@ import { baseCode } from '@/lib/language-data';
 import { syncLines, type SyncedLine } from '@/lib/subtitle-csv';
 
 interface SubtitleDisplayProps {
-  youtubeId: string;
+  youtubeId?: string;
   currentTime: number;
   /** Video title for word-saving context */
   videoTitle?: string;
@@ -31,6 +31,10 @@ interface SubtitleDisplayProps {
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
   /** Pre-loaded subtitle lines — if provided, skips the subtitles API fetch */
   initialLines?: { starttime: number; l1Line: string; l2Line: string }[];
+  /** Display mode: 'multiline' (default) shows all lines; 'singleline' shows only the active line ± contextLines. */
+  mode?: 'multiline' | 'singleline';
+  /** In singleline mode, how many context lines to show before and after the active line. Default: 1. */
+  contextLines?: number;
 }
 
 /**
@@ -42,7 +46,7 @@ function stripDurationPrefix(text: string): string {
   return text.replace(/^[\d.]+,\s*/, '');
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, mode = 'multiline', contextLines = 1 }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
@@ -50,7 +54,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [showPhonetics, setShowPhoneticsState] = useState(true);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const showTranslation = display.translation;
+  const isSingleline = mode === 'singleline';
+  // In singleline mode, never show translation (lines come from subs-search, not full subtitle track)
+  const showTranslation = isSingleline ? false : display.translation;
 
   useEffect(() => {
     if (initialLines) {
@@ -59,6 +65,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       onLinesLoaded?.(l2Only.map(l => l.starttime));
       return;
     }
+    // In singleline mode, initialLines is required — don't fetch
+    if (isSingleline) return;
+    if (!youtubeId) return;
     const fetchSubtitles = async () => {
       const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${l2Code}`);
       if (!res.ok) return;
@@ -71,7 +80,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       onLinesLoaded?.(lines.map((l: SubtitleLine) => l.starttime));
     };
     fetchSubtitles().catch(() => {});
-  }, [youtubeId, l2Code, initialLines]);
+  }, [youtubeId, l2Code, initialLines, isSingleline]);
 
   useEffect(() => {
     setShowPhoneticsState(getShowPhonetics());
@@ -138,7 +147,17 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     setShowPhonetics(next);
   };
 
+  // ── Empty state ──
   if (l2Lines.length === 0) {
+    if (isSingleline) {
+      return (
+        <div className="min-h-[4.5rem] px-4 py-3">
+          <p className="text-xs text-muted-foreground/50 italic">
+            {t('subtitle.subtitles_unavailable')}
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="rounded-xl border border-border p-8 text-center text-sm text-muted-foreground">
         {t('subtitle.subtitles_unavailable')}
@@ -146,6 +165,54 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     );
   }
 
+  // ── Singleline mode ──
+  if (isSingleline) {
+    const ctxStart = Math.max(0, activeIndex - contextLines);
+    const ctxEnd = Math.min(l2Lines.length - 1, activeIndex + contextLines);
+
+    return (
+      <div className="min-h-[4.5rem] px-4 py-3">
+        {activeIndex >= 0 ? (
+          <div className="space-y-1">
+            {l2Lines.slice(ctxStart, ctxEnd + 1).map((line, i) => {
+              const lineIdx = ctxStart + i;
+              const isActive = lineIdx === activeIndex;
+              if (isActive) {
+                return (
+                  <div key={lineIdx} className="text-sm leading-relaxed">
+                    <TokenizedText
+                      text={line.line}
+                      l2Code={l2Code}
+                      textScale={0.875}
+                      tokenCache={tokenCache}
+                      tokenCacheLoaded={tokenCacheLoaded}
+                      context={{
+                        text: line.line,
+                        starttime: line.starttime,
+                        youtube_id: youtubeId,
+                        videoTitle,
+                      }}
+                    />
+                  </div>
+                );
+              }
+              return (
+                <p key={lineIdx} className="text-xs text-muted-foreground/50">
+                  {line.line}
+                </p>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground/50 italic">
+            {t('subtitle.subtitles_unavailable')}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // ── Multiline mode (default) ──
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
