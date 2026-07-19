@@ -35,6 +35,8 @@ interface SubtitleDisplayProps {
   mode?: 'multiline' | 'singleline';
   /** In singleline mode, how many context lines to show before and after the active line. Default: 0. */
   contextLines?: number;
+  /** Word forms to highlight in the displayed text (e.g. search terms from subs-search). */
+  highlightTerms?: string[];
 }
 
 /**
@@ -46,7 +48,7 @@ function stripDurationPrefix(text: string): string {
   return text.replace(/^[\d.]+,\s*/, '');
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, mode = 'multiline', contextLines = 1 }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, mode = 'multiline', contextLines = 1, highlightTerms }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
@@ -179,6 +181,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
               textScale={1.5}
               tokenCache={tokenCache}
               tokenCacheLoaded={tokenCacheLoaded}
+              highlightForms={highlightTerms}
               context={{
                 text: activeLine.line,
                 starttime: activeLine.starttime,

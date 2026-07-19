@@ -179,6 +179,12 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
   const currentVideo = videos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
 
+  // Split comma-separated search terms for highlighting
+  const highlightTerms = useMemo(
+    () => term.split(',').map((t) => t.trim()).filter(Boolean),
+    [term],
+  );
+
   // Memoize initialLines for SubtitleDisplay so it doesn't re-trigger on every render
   const subtitleInitialLines = useMemo(
     () =>
@@ -536,6 +542,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
         currentTime={currentTime}
         videoTitle={currentVideo?.title}
         initialLines={subtitleInitialLines}
+        highlightTerms={highlightTerms}
       />
 
       {/* ── Modal: result list ── */}
