@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import type { SavedWord, SavedWords } from '@langplayer/shared';
+import type { SavedLexicalItemRecord, SavedLexicalItemStore } from '@langplayer/shared';
 import { useUserData } from '@langplayer/api-client';
 import { useCloudUserData } from '@/providers/user-data-provider';
 
@@ -20,7 +20,7 @@ export function useSavedWords() {
   const { data: session, status } = useSession();
   const { getUserData, syncSavedWords } = useUserData();
   const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
-  const [savedWords, setSavedWords] = useState<SavedWords>({});
+  const [savedWords, setSavedWords] = useState<SavedLexicalItemStore>({});
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
@@ -54,7 +54,7 @@ export function useSavedWords() {
 
     try {
       const cloud = cloudData.saved_words
-        ? (JSON.parse(cloudData.saved_words) as SavedWords)
+        ? (JSON.parse(cloudData.saved_words) as SavedLexicalItemStore)
         : {};
       setSavedWords((prev) => {
         const merged = mergeSavedWords(prev, cloud);
@@ -67,7 +67,7 @@ export function useSavedWords() {
   }, [status, loaded, cloudLoaded, cloudData]);
 
   // ── Debounced cloud sync (read-merge-write) ──
-  const scheduleSync = useCallback((words: SavedWords) => {
+  const scheduleSync = useCallback((words: SavedLexicalItemStore) => {
     if (!session) return;
     if (syncTimer.current) clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(async () => {
@@ -77,7 +77,7 @@ export function useSavedWords() {
         // Read-merge-write: avoid overwriting changes from other devices
         const cloudResp = await getUserData();
         if (cloudResp?.saved_words) {
-          const cloud = JSON.parse(cloudResp.saved_words) as SavedWords;
+          const cloud = JSON.parse(cloudResp.saved_words) as SavedLexicalItemStore;
           words = mergeSavedWords(words, cloud);
         }
         await syncSavedWords(JSON.stringify(words));
@@ -90,7 +90,7 @@ export function useSavedWords() {
   }, [session, getUserData]);
 
   // ── Persist to localStorage + schedule sync ──
-  const persist = useCallback((words: SavedWords) => {
+  const persist = useCallback((words: SavedLexicalItemStore) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
     } catch { /* quota exceeded — ignore */ }
@@ -99,7 +99,7 @@ export function useSavedWords() {
 
   // ── Public API ──
 
-  const saveWord = useCallback((l2Code: string, word: SavedWord) => {
+  const saveWord = useCallback((l2Code: string, word: SavedLexicalItemRecord) => {
     setSavedWords(prev => {
       const langWords = [...(prev[l2Code] ?? [])];
       // Avoid duplicates by id
@@ -124,7 +124,7 @@ export function useSavedWords() {
     return (savedWords[l2Code] ?? []).some(w => w.id === wordId);
   }, [savedWords]);
 
-  const getSavedWords = useCallback((l2Code: string): SavedWord[] => {
+  const getSavedWords = useCallback((l2Code: string): SavedLexicalItemRecord[] => {
     // Return newest first
     return [...(savedWords[l2Code] ?? [])].sort((a, b) => b.date - a.date);
   }, [savedWords]);
@@ -151,8 +151,8 @@ export function useSavedWords() {
 // ── Helpers ──
 
 /** Merge cloud data into local. Newer date wins per word, cloud-only words are added. */
-export function mergeSavedWords(local: SavedWords, cloud: SavedWords): SavedWords {
-  const merged: SavedWords = { ...local };
+export function mergeSavedWords(local: SavedLexicalItemStore, cloud: SavedLexicalItemStore): SavedLexicalItemStore {
+  const merged: SavedLexicalItemStore = { ...local };
 
   for (const [l2, cloudWords] of Object.entries(cloud)) {
     const localWords = [...(merged[l2] ?? [])];

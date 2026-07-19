@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedWord, ProficiencyLevel } from '@langplayer/shared';
+import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, ProficiencyLevel } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
 import { Loader2, X, AlertCircle, AlertTriangle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';

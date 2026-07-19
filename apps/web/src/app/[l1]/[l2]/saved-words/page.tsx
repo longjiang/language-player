@@ -16,7 +16,7 @@ import { SavedWordSource } from '@/components/saved-word-source';
 import { InlineDefinition } from '@/components/dictionary/inline-definition';
 import { WordList, WordListItem } from '@/components/dictionary/word-list';
 import { setWordListNav, savedWordToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
-import type { SavedWord, SrsFields } from '@langplayer/shared';
+import type { SavedLexicalItemRecord, SrsFields } from '@langplayer/shared';
 
 const STORAGE_KEY = 'zthSavedWords';
 
@@ -96,8 +96,8 @@ export default function SavedWordsPage() {
   const { today, earlier } = useMemo(() => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const todayWords: SavedWord[] = [];
-    const earlierWords: SavedWord[] = [];
+    const todayWords: SavedLexicalItemRecord[] = [];
+    const earlierWords: SavedLexicalItemRecord[] = [];
 
     for (const w of words) {
       if (w.date >= startOfToday) {
@@ -129,7 +129,7 @@ export default function SavedWordsPage() {
   };
 
   /** Navigate to the entry detail page for a saved word, with legacy fallback. */
-  const handleWordClick = (word: SavedWord) => {
+  const handleWordClick = (word: SavedLexicalItemRecord) => {
     // Store the full saved-words list so the entry page can show a sidebar
     setWordListNav(words.map(savedWordToNavItem), word.id);
 
@@ -280,11 +280,11 @@ function SavedWordGroup({
   onWordClick,
 }: {
   label: string;
-  words: SavedWord[];
+  words: SavedLexicalItemRecord[];
   l1Code: string;
   l2Code: string;
   getCard: (l2Code: string, wordId: string) => SrsFields | undefined;
-  onWordClick: (word: SavedWord) => void;
+  onWordClick: (word: SavedLexicalItemRecord) => void;
 }) {
   return (
     <WordList label={label} count={words.length}>
@@ -314,7 +314,7 @@ function SavedWordRow({
   srsStatus,
   onClick,
 }: {
-  word: SavedWord;
+  word: SavedLexicalItemRecord;
   l1Code: string;
   l2Code: string;
   srsStatus: SrsStatus;

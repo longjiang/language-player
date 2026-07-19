@@ -1,16 +1,16 @@
 'use client';
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import type { SavedWord, SavedWords, SavedWordContext } from '@langplayer/shared';
+import type { SavedLexicalItemRecord, SavedLexicalItemStore, SavedWordContext } from '@langplayer/shared';
 import { useSavedWords } from '@/hooks/use-saved-words';
 
 interface SavedWordsContextValue {
-  savedWords: SavedWords;
+  savedWords: SavedLexicalItemStore;
   loaded: boolean;
-  saveWord: (l2Code: string, word: SavedWord) => void;
+  saveWord: (l2Code: string, word: SavedLexicalItemRecord) => void;
   removeSavedWord: (l2Code: string, wordId: string) => void;
   hasSavedWord: (l2Code: string, wordId: string) => boolean;
-  getSavedWords: (l2Code: string) => SavedWord[];
+  getSavedWords: (l2Code: string) => SavedLexicalItemRecord[];
   clearSavedWords: (l2Code: string) => void;
 }
 
