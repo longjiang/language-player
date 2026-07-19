@@ -5,6 +5,7 @@ import { getLocale, getMessages } from 'next-intl/server';
 import { ThemeProvider } from '@/components/theme-provider';
 import { SessionProvider } from '@/providers/session-provider';
 import { ApiClientProvider } from '@/components/api-client-provider';
+import { UserDataProvider } from '@/providers/user-data-provider';
 import { SavedWordsProvider } from '@/providers/saved-words-provider';
 import { Toaster } from '@/components/ui/sonner';
 import ogVideos from '@/data/og-videos.json';
@@ -90,9 +91,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <SessionProvider>
               <ApiClientProvider>
-                <SavedWordsProvider>
-                  {children}
-                </SavedWordsProvider>
+                <UserDataProvider>
+                  <SavedWordsProvider>
+                    {children}
+                  </SavedWordsProvider>
+                </UserDataProvider>
               </ApiClientProvider>
             </SessionProvider>
             <Toaster richColors closeButton={false} position="top-center" />
