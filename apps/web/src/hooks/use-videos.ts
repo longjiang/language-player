@@ -15,6 +15,8 @@ interface UseVideosOptions {
   };
   /** When true, skip the fetch — wait until this becomes false. */
   defer?: boolean;
+  /** API endpoint path (default: /api/videos/recommend). */
+  endpoint?: string;
 }
 
 interface UseVideosResult {
@@ -26,12 +28,13 @@ interface UseVideosResult {
   retry: () => void;
 }
 
-function cacheKey(l2: string, level: number | undefined): string {
-  return `${l2}:${level ?? 'all'}`;
+function cacheKey(l2: string, level: number | undefined, endpoint: string): string {
+  const base = `${l2}:${level ?? 'all'}`;
+  return endpoint === '/api/videos/recommend' ? base : `${endpoint}:${base}`;
 }
 
-export function useVideos({ l2, level, pageSize = 24, cache, defer }: UseVideosOptions): UseVideosResult {
-  const key = cacheKey(l2, level);
+export function useVideos({ l2, level, pageSize = 24, cache, defer, endpoint = '/api/videos/recommend' }: UseVideosOptions): UseVideosResult {
+  const key = cacheKey(l2, level, endpoint);
 
   // Restore from cache on mount / level change if available
   const [videos, setVideos] = useState<YouTubeVideo[]>(() => {
@@ -68,7 +71,7 @@ export function useVideos({ l2, level, pageSize = 24, cache, defer }: UseVideosO
         params.set('page', String(pageNum));
         params.set('page_size', String(pageSize));
 
-        const res = await fetch(`/api/videos/recommend?${params}`);
+        const res = await fetch(`${endpoint}?${params}`);
         if (!res.ok) throw new Error(`Failed to load videos (${res.status})`);
 
         const data: VideoListResult = await res.json();
@@ -89,7 +92,7 @@ export function useVideos({ l2, level, pageSize = 24, cache, defer }: UseVideosO
         setLoading(false);
       }
     },
-    [l2, level, pageSize, cache, key],
+    [l2, level, pageSize, cache, key, endpoint],
   );
 
   // Need to track the current key for the fetchEffect

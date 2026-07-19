@@ -19,6 +19,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Media',
     links: [
       { key: 'title.explore', href: 'explore' },
+      { key: 'title.music_and_entertainment', href: 'music' },
       { key: 'title.live_tv', href: 'live-tv' },
       { key: 'title.tv_shows', href: 'tv-shows' },
       { key: 'title.watch_history', href: 'watch-history' },

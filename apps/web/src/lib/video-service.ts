@@ -66,6 +66,40 @@ export async function getRecommendedVideos(
   }
 }
 
+/** Fetch recommended music + entertainment videos. */
+export async function getRecommendedMusicEntertainment(
+  l2: string,
+  level?: number,
+  page = 1,
+  pageSize = 24,
+  userId?: string,
+): Promise<VideoListResult> {
+  try {
+    const params = new URLSearchParams();
+    params.set('l2', l2);
+    if (level) params.set('level', String(level));
+    params.set('limit', String(pageSize));
+    params.set('page', String(page));
+    if (userId) params.set('user_id', userId);
+
+    const res = await fetch(`${PYTHON_URL}/recommend-music-entertainment?${params}`, {
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      console.error('Python backend error:', res.status, await res.text().catch(() => ''));
+      throw new Error(`Failed to fetch music videos: ${res.status}`);
+    }
+
+    const data = await res.json();
+    const videos: YouTubeVideo[] = Array.isArray(data) ? data : data?.data ?? [];
+    return { videos, total: videos.length, page, hasMore: videos.length >= pageSize };
+  } catch (error) {
+    console.error('getRecommendedMusicEntertainment error:', error);
+    return { videos: [], total: 0, page: 1, hasMore: false };
+  }
+}
+
 /** Get a single video by its YouTube ID (checks availability via Python). */
 export async function getVideoById(youtubeId: string): Promise<YouTubeVideo | null> {
   try {
