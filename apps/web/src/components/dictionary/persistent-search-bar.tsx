@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
@@ -29,36 +29,29 @@ export function PersistentSearchBar() {
   } = useDictionaryContext();
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const [userEdited, setUserEdited] = useState(false);
 
-  // When navigating to detail page, show the head word in the search bar.
-  // When navigating away from detail, restore the query if returning to results.
+  // When navigating to a new detail page, sync the search bar to the head word
   useEffect(() => {
     if (isDetailPage && detailHead) {
       setQuery(detailHead);
+      setUserEdited(false);
     }
   }, [isDetailPage, detailHead, setQuery]);
 
   // What to show in the input
-  const inputValue = isDetailPage && detailHead ? detailHead : query;
+  const inputValue = (isDetailPage && detailHead && !userEdited) ? detailHead : query;
   const placeholder = t('placeholder.dictionary_search', { language: languageName(l2.code, l1.code) });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
-
-    // If on detail page and user edits the search bar, they're starting a new search
-    if (isDetailPage && val !== detailHead) {
-      // User is typing something different — let them
-    }
+    setUserEdited(true);
   };
 
   const handleClear = () => {
-    if (isDetailPage) {
-      // On detail page, clearing returns to empty state
-      clearSearch();
-    } else {
-      clearSearch();
-    }
+    clearSearch();
+    setUserEdited(false);
     inputRef.current?.focus();
   };
 
