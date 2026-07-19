@@ -54,7 +54,7 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 flex flex-col" style={{ height: 'calc(100vh - var(--header-height, 64px))' }}>
+    <div className="mx-auto max-w-7xl px-4 pb-3 flex flex-col" style={{ height: 'calc(100vh - var(--header-height, 64px))' }}>
       {/* Persistent search bar */}
       <PersistentSearchBar />
 
@@ -69,7 +69,7 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
         <aside
           className={cn(
             'flex-shrink-0 transition-all duration-200',
-            sidebarOpen ? 'lg:flex-1 lg:min-w-0 w-56 ml-2' : 'w-0 overflow-hidden',
+            sidebarOpen ? 'lg:flex-1 lg:min-w-0 w-56 ml-4' : 'w-0 overflow-hidden',
           )}
         >
           <div className="rounded-xl border border-border bg-card h-full flex flex-col overflow-hidden">
