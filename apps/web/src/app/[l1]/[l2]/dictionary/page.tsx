@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useDictionaryContext } from '@/providers/dictionary-provider';
@@ -21,9 +21,10 @@ export default function DictionaryPage() {
   const {
     results, loading, error, message, searchedText,
     recentSearches, clearRecent, handleRecentClick,
-    doSearch, setCameFromSearch, setSidebarSource,
-    setDetailHead,
+    setCameFromSearch, setSidebarSource, setDetailHead,
   } = useDictionaryContext();
+
+  const redirectingRef = useRef(false);
 
   const levelLabel = (scale: string, value: string | number) =>
     formatLevel({ scale, value } as ProficiencyLevel).long;
@@ -39,17 +40,33 @@ export default function DictionaryPage() {
   const handleResultClick = useCallback(
     (entry: DictionaryEntry) => {
       const dictId = entry.dictionary?.id ?? 'llm';
-      const compositeId = `${dictId}-${entry.id}`;
-
-      // Store results in sidebar context so the detail page shows them
       setSidebarSource({ kind: 'results', items: results! });
       setCameFromSearch(true);
       setDetailHead(entry.head);
-
       router.push(buildEntryRoute(l1.code, l2.code, dictId, entry.id));
     },
     [results, router, l1.code, l2.code, setSidebarSource, setCameFromSearch, setDetailHead],
   );
+
+  // Single result → redirect directly to entry detail (no results page shown)
+  useEffect(() => {
+    if (hasResults && results!.length === 1 && !redirectingRef.current) {
+      redirectingRef.current = true;
+      const entry = results![0]!;
+      const dictId = entry.dictionary?.id ?? 'llm';
+      setSidebarSource({ kind: 'results', items: results! });
+      setCameFromSearch(true);
+      setDetailHead(entry.head);
+      router.replace(buildEntryRoute(l1.code, l2.code, dictId, entry.id));
+    }
+  }, [hasResults, results, router, l1.code, l2.code, setSidebarSource, setCameFromSearch, setDetailHead]);
+
+  // Reset redirect flag when results change
+  useEffect(() => {
+    if (!hasResults || results!.length !== 1) {
+      redirectingRef.current = false;
+    }
+  }, [hasResults, results]);
 
   // ── Loading ──
   if (loading) {
@@ -84,45 +101,27 @@ export default function DictionaryPage() {
     );
   }
 
-  // ── Results ──
+  // ── Results (multiple results only; single result redirects to detail) ──
   if (hasResults) {
     return (
       <div className="p-6">
-        {results.length === 1 ? (
-          <div>
-            <p className="mb-4 text-sm text-muted-foreground">
-              {t('msg.result_count', { count: 1 })} {t('msg.for_term', { term: searchedText })}
-            </p>
+        <p className="mb-4 text-sm text-muted-foreground">
+          {t('msg.result_count', { count: results!.length })} {t('msg.for_term', { term: searchedText })}
+        </p>
+        <WordList>
+          {results!.map((entry) => (
             <DictionaryEntryCard
-              variant="full"
-              entry={results[0]!}
+              key={entry.id}
+              variant="compact"
+              entry={entry}
               l2Code={l2.code}
               l1Code={l1.code}
               levelLabel={levelLabel}
               saveContext={saveContext}
+              onClick={() => handleResultClick(entry)}
             />
-          </div>
-        ) : (
-          <div>
-            <p className="mb-4 text-sm text-muted-foreground">
-              {t('msg.result_count', { count: results.length })} {t('msg.for_term', { term: searchedText })}
-            </p>
-            <WordList>
-              {results.map((entry) => (
-                <DictionaryEntryCard
-                  key={entry.id}
-                  variant="compact"
-                  entry={entry}
-                  l2Code={l2.code}
-                  l1Code={l1.code}
-                  levelLabel={levelLabel}
-                  saveContext={saveContext}
-                  onClick={() => handleResultClick(entry)}
-                />
-              ))}
-            </WordList>
-          </div>
-        )}
+          ))}
+        </WordList>
       </div>
     );
   }
