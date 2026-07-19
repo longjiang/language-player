@@ -14,24 +14,20 @@ interface SavedWordRowProps {
   l1Code: string;
   l2Code: string;
   onClick: () => void;
-  /** When true, renders a compact version suitable for narrow sidebars (no SRS dot, no context/source lines). */
-  compact?: boolean;
   /** SRS dot status. Omit to hide the dot. */
   srsDot?: React.ReactNode;
 }
 
 /**
  * A single saved word row used in both the saved-words page and the dictionary sidebar.
- *
- * - Full mode: head + alt forms + InlineDefinition + context line + source + bookmark suffix
- * - Compact mode (sidebar): head + InlineDefinition + bookmark on hover
+ * Uses WordListItem with: head + alt forms + contextForm + InlineDefinition +
+ * context line + source + SRS dot (optional) + bookmark suffix.
  */
 export function SavedWordRow({
   word,
   l1Code,
   l2Code,
   onClick,
-  compact = false,
   srsDot,
 }: SavedWordRowProps) {
   const { removeSavedWord } = useSavedWordsContext();
@@ -44,40 +40,18 @@ export function SavedWordRow({
     removeSavedWord(l2Code, word.id);
   };
 
-  if (compact) {
-    return (
-      <div
-        className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors cursor-pointer hover:bg-muted"
-        onClick={onClick}
-        title={word.forms[0]}
-      >
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm font-semibold truncate" lang={l2Code}>
-              {word.forms[0] ?? '?'}
-            </span>
-            <button
-              onClick={handleRemove}
-              className="ml-auto shrink-0 rounded p-0.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all"
-              title="Remove from saved words"
-            >
-              <BookmarkCheck className="h-4 w-4" />
-            </button>
-          </div>
-          <InlineDefinition wordId={word.id} l1Code={l1Code} l2Code={l2Code} />
-        </div>
-      </div>
-    );
-  }
+  const headForm = word.forms[0] ?? '?';
+  const altForms = word.forms.length > 1 ? word.forms.slice(1) : undefined;
+  const contextForm = ctx.form !== headForm ? ctx.form : undefined;
 
   return (
     <WordListItem
-      head={word.forms[0] ?? '?'}
-      altForms={word.forms.length > 1 ? word.forms.slice(1) : undefined}
-      contextForm={ctx.form !== word.forms[0] ? ctx.form : undefined}
+      head={headForm}
+      altForms={altForms}
+      contextForm={contextForm}
       definitionSlot={<InlineDefinition wordId={word.id} l1Code={l1Code} l2Code={l2Code} />}
       contextSlot={
-        ctx.text && ctx.text !== word.forms[0] ? (
+        ctx.text && ctx.text !== headForm ? (
           <p className="mt-0.5 truncate text-sm text-muted-foreground">…{ctx.text}…</p>
         ) : undefined
       }
