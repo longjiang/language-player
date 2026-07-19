@@ -42,6 +42,26 @@ export default function ExplorePage() {
     defer: deferFetch,
   });
 
+  // ── Infinite scroll ─────────────────────────────────────────────
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && !loading) {
+          loadMore();
+        }
+      },
+      { rootMargin: '200px' },  // trigger 200px before the sentinel is visible
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadMore]);
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       {/* Header */}
@@ -99,26 +119,17 @@ export default function ExplorePage() {
         <>
           <VideoGrid videos={videos} queueType="recommended" />
 
-          {/* Load more */}
-          {hasMore && (
-            <div className="mt-8 text-center">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={loadMore}
-                disabled={loading}
-              >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t('action.load_more')}
-              </Button>
-            </div>
-          )}
-
-          {!hasMore && videos.length > 0 && (
-            <p className="mt-8 text-center text-sm text-muted-foreground">
-              {t('msg.end_of_list')}
-            </p>
-          )}
+          {/* Infinite scroll sentinel + loading indicator */}
+          <div ref={sentinelRef} className="mt-8 flex justify-center pb-8">
+            {loading && hasMore && (
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            )}
+            {!hasMore && (
+              <p className="text-sm text-muted-foreground">
+                {t('msg.end_of_list')}
+              </p>
+            )}
+          </div>
         </>
       )}
     </div>

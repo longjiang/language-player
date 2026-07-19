@@ -68,6 +68,20 @@ export function useVideos({ l2, level, pageSize = 24, cache, defer }: UseVideosO
         params.set('page', String(pageNum));
         params.set('page_size', String(pageSize));
 
+        // On page > 1, exclude all IDs we've already shown to prevent
+        // duplicates from stale cache or pipeline re-runs.
+        if (pageNum > 1) {
+          const currentIds = await new Promise<string[]>((resolve) => {
+            setVideos((prev) => {
+              resolve(prev.map((v) => String(v.id)));
+              return prev;
+            });
+          });
+          if (currentIds.length > 0) {
+            params.set('exclude_ids', currentIds.join(','));
+          }
+        }
+
         const res = await fetch(`/api/videos/recommend?${params}`);
         if (!res.ok) throw new Error(`Failed to load videos (${res.status})`);
 
@@ -95,6 +109,21 @@ export function useVideos({ l2, level, pageSize = 24, cache, defer }: UseVideosO
   // Need to track the current key for the fetchEffect
   const fetchVideosRef = useRef(fetchVideos);
   fetchVideosRef.current = fetchVideos;
+
+  // When the cache key changes (e.g. user clicks a different level filter),
+  // immediately clear videos to show suspense skeletons. The main effect
+  // below will then restore from cache or fetch fresh data.
+  useEffect(() => {
+    if (defer) return;
+    // Only clear if we don't have a cache hit for the new key
+    if (!cache?.get(key)) {
+      setVideos([]);
+      setLoading(true);
+      setError(null);
+      setHasMore(true);
+      setPage(1);
+    }
+  }, [key, cache, defer]);
 
   // Fetch on mount and when filter changes — restore from cache if available,
   // otherwise fetch. Cache restoration is idempotent so StrictMode double-invoke
