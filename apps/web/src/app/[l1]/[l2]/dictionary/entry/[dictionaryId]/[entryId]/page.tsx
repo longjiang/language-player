@@ -6,7 +6,8 @@ import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import type { DictionaryEntry } from '@langplayer/shared';
+import type { DictionaryEntry, ProficiencyLevel } from '@langplayer/shared';
+import { formatLevel } from '@langplayer/shared';
 import { ArrowLeft, Loader2, AlertCircle, BookOpen } from 'lucide-react';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 
@@ -68,17 +69,7 @@ export default function DictionaryEntryPage() {
     fetchEntry();
   }, [fetchEntry]);
 
-  const levelScaleLabel = (scale: string, value?: string | number): string => {
-    // HSK: show as "HSK 3 (2025)"
-    const hskMatch = scale.match(/^hsk_(\d{4})$/);
-    if (hskMatch) return `HSK ${value ?? ''} (${hskMatch[1]})`.trim();
-    const map: Record<string, string> = {
-      jlpt: 'JLPT',
-      cefr: 'CEFR',
-    };
-    const label = map[scale] ?? scale.toUpperCase();
-    return value !== undefined ? `${label} ${value}` : label;
-  };
+  const levelLabel = (level: ProficiencyLevel) => formatLevel(level).long;
 
   const saveContext = {
     form: entry?.head ?? '',
@@ -129,7 +120,7 @@ export default function DictionaryEntryPage() {
           entry={entry}
           l2Code={l2.code}
           l1Code={l1.code}
-          levelLabel={levelScaleLabel}
+          levelLabel={levelLabel}
           saveContext={saveContext}
         />
       )}

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
+import type { DictionaryEntry, SavedWordContext, ProficiencyLevel } from '@langplayer/shared';
+import { formatLevel } from '@langplayer/shared';
+import { levelHexStyle, levelSubtleClass } from '@/lib/level-colors';
 import { BookOpen, ExternalLink, Film, Binary, Sparkles } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
@@ -17,8 +19,8 @@ interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
   /** 'compact' = popup/list view; 'full' = detail page view */
   variant?: 'compact' | 'full';
-  /** Language-specific level label formatter */
-  levelLabel?: (scale: string, value: string | number) => string;
+  /** Formats a proficiency level for display. Defaults to formatLevel().long if omitted. */
+  levelLabel?: (level: ProficiencyLevel) => string;
   /** Called when the card is clicked (navigates to entry detail page) */
   onClick?: (entry: DictionaryEntry) => void;
   /** Context for the save/bookmark button. Omit to hide (compact) or show (full). */
@@ -62,10 +64,11 @@ export function DictionaryEntryCard({
   const [tab, setTab] = useState<string>('word');
 
   const levels = entry.levels ?? [];
-  const levelTexts = levels.map((l) => levelLabel
-    ? levelLabel(l.scale, l.value)
-    : `${l.scale.replace('_', ' ').toUpperCase()}: ${l.value}`
-  );
+  const formattedLevels = levels.map((l) => {
+    const text = levelLabel ? levelLabel(l) : formatLevel(l).long;
+    const formatted = formatLevel(l);
+    return { text, hexColor: formatted.hexColor, numeric: formatted.numeric };
+  });
 
   const formattedPron = pronunciation !== undefined
     ? pronunciation
@@ -94,12 +97,14 @@ export function DictionaryEntryCard({
   // ── Shared: level + POS badges ──
   const badges = (
     <>
-      {levelTexts.map((text, i) => (
+      {formattedLevels.map((fl, i) => (
         <span key={i} className={isFull
-          ? "rounded-md bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-          : "ml-auto shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
-        }>
-          {text}
+          ? `rounded-md px-2.5 py-1 text-sm font-medium text-white ${fl.numeric ? levelSubtleClass(fl.numeric) : 'bg-gray-500/10 text-gray-400'}`
+          : "ml-auto shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium text-white"
+        }
+          style={isFull ? undefined : { backgroundColor: fl.hexColor }}
+        >
+          {fl.text}
         </span>
       ))}
       {entry.part_of_speech && (

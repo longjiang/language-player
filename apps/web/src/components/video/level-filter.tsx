@@ -2,8 +2,8 @@
 
 import { useMemo } from 'react';
 import { useT } from '@/hooks/use-t';
-import { LEVELS, examKey } from '@/lib/level-mapping';
-import { baseCode } from '@/lib/language-data';
+import { formatNumericLevel, primaryScale } from '@langplayer/shared';
+import { levelPillClass } from '@/lib/level-colors';
 
 interface LevelFilterProps {
   selected: number | undefined;
@@ -12,69 +12,28 @@ interface LevelFilterProps {
   l2Code?: string;
 }
 
-const PILL_COLORS: Record<number, string> = {
-  1: 'data-[state=on]:bg-emerald-500 data-[state=on]:text-white',
-  2: 'data-[state=on]:bg-teal-500 data-[state=on]:text-white',
-  3: 'data-[state=on]:bg-blue-500 data-[state=on]:text-white',
-  4: 'data-[state=on]:bg-violet-500 data-[state=on]:text-white',
-  5: 'data-[state=on]:bg-orange-500 data-[state=on]:text-white',
-  6: 'data-[state=on]:bg-red-500 data-[state=on]:text-white',
-  7: 'data-[state=on]:bg-rose-600 data-[state=on]:text-white',
-};
-
-const EXAM_NAMES: Record<string, string> = {
-  hsk: 'HSK',
-  jlpt: 'JLPT',
-  topik: 'TOPIK',
-  ielts: 'IELTS',
-  cefr: 'CEFR',
-};
-
-/**
- * Returns a human-readable level label for a given numeric level (1-7).
- *
- * Language-specific mapping:
- *   Chinese  → HSK 1, HSK 2, ..., HSK 7-9
- *   Japanese → JLPT Pre-N5, N5, N4, ..., N1
- *   Korean   → TOPIK Pre-1, 1, 2, ..., 6
- *   English  → IELTS 1, 2, 3.5, ..., 9
- *   Others   → CEFR Pre-A1, A1, A2, ..., C2
- */
-function getLevelLabel(l2Code: string | undefined, level: number): string {
-  const info = LEVELS[level];
-  if (!info) return `Level ${level}`;
-
-  const key = l2Code ? examKey(baseCode(l2Code)) : 'cefr';
-  const value = info[key as keyof typeof info];
-  if (value) {
-    const examName = EXAM_NAMES[key] ?? 'CEFR';
-    return `${examName} ${value}`;
-  }
-  return info.cefr;
-}
-
 export function LevelFilter({ selected, onChange, l2Code }: LevelFilterProps) {
   const t = useT();
+  const scale = l2Code ? primaryScale(l2Code) : 'cefr';
 
   const levels = useMemo(
     () => [
-      { value: undefined, label: t('filter.all') },
-      { value: 1, label: getLevelLabel(l2Code, 1) },
-      { value: 2, label: getLevelLabel(l2Code, 2) },
-      { value: 3, label: getLevelLabel(l2Code, 3) },
-      { value: 4, label: getLevelLabel(l2Code, 4) },
-      { value: 5, label: getLevelLabel(l2Code, 5) },
-      { value: 6, label: getLevelLabel(l2Code, 6) },
-      { value: 7, label: getLevelLabel(l2Code, 7) },
+      { value: undefined, label: t('filter.all'), colorClass: '' },
+      { value: 1, label: formatNumericLevel(1, scale).short, colorClass: levelPillClass(1) },
+      { value: 2, label: formatNumericLevel(2, scale).short, colorClass: levelPillClass(2) },
+      { value: 3, label: formatNumericLevel(3, scale).short, colorClass: levelPillClass(3) },
+      { value: 4, label: formatNumericLevel(4, scale).short, colorClass: levelPillClass(4) },
+      { value: 5, label: formatNumericLevel(5, scale).short, colorClass: levelPillClass(5) },
+      { value: 6, label: formatNumericLevel(6, scale).short, colorClass: levelPillClass(6) },
+      { value: 7, label: formatNumericLevel(7, scale).short, colorClass: levelPillClass(7) },
     ],
-    [l2Code, t],
+    [scale, t],
   );
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {levels.map(({ value, label }) => {
+      {levels.map(({ value, label, colorClass }) => {
         const isSelected = selected === value;
-        const colorClass = value ? PILL_COLORS[value] ?? '' : '';
 
         return (
           <button

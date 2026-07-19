@@ -1,6 +1,7 @@
 import { Eye, ThumbsUp, MessageCircle, Calendar } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
-import { getLevelFromDifficulty } from '@langplayer/shared';
+import { getLevelFromDifficulty, formatNumericLevel, primaryScale } from '@langplayer/shared';
+import { levelSubtleClass } from '@/lib/level-colors';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
@@ -19,26 +20,6 @@ function formatDate(date: Date | string | undefined, locale: string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   return d.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
 }
-
-const LEVEL_COLORS: Record<number, string> = {
-  1: 'bg-emerald-500/10 text-emerald-400',
-  2: 'bg-teal-500/10 text-teal-400',
-  3: 'bg-blue-500/10 text-blue-400',
-  4: 'bg-violet-500/10 text-violet-400',
-  5: 'bg-orange-500/10 text-orange-400',
-  6: 'bg-red-500/10 text-red-400',
-  7: 'bg-rose-500/10 text-rose-400',
-};
-
-const CEFR_LABEL_KEYS: Record<number, string> = {
-  1: 'filter.cefr_a1',
-  2: 'filter.cefr_a2',
-  3: 'filter.cefr_b1',
-  4: 'filter.cefr_b2',
-  5: 'filter.cefr_c1',
-  6: 'filter.cefr_c2',
-  7: 'label.native_level',
-};
 
 export function VideoMeta({ video }: VideoMetaProps) {
   const { l1, l2 } = useLanguage();
@@ -80,8 +61,8 @@ export function VideoMeta({ video }: VideoMetaProps) {
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${LEVEL_COLORS[level ?? 1] ?? ''}`}>
-          {t(CEFR_LABEL_KEYS[level ?? 1] ?? 'label.unknown')}
+        <span className={`rounded-full px-3 py-1 text-xs font-medium ${levelSubtleClass(level ?? 1)}`}>
+          {formatNumericLevel(level ?? 1, primaryScale(l2.code)).short}
         </span>
         {video.locale && (
           <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">

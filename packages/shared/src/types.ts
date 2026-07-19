@@ -2,6 +2,11 @@
 // Domain Types — shared across web, mobile, and API
 // ──────────────────────────────────────────────
 
+// ── Level Scale ──────────────────────────────
+
+/** Known proficiency scale identifiers. */
+export type ScaleId = 'hsk_2010' | 'hsk_2025' | 'cefr' | 'jlpt' | 'topik' | 'ielts';
+
 // ── Video & Media ─────────────────────────────
 
 export interface YouTubeVideo {
@@ -120,15 +125,22 @@ export interface DictionaryLookupResponse {
   message?: string;
 }
 
+/** A proficiency level on a given grading scale.
+ *  e.g. `{ scale: 'hsk_2010', value: 3 }`, `{ scale: 'cefr', value: 'B1' }`.
+ *
+ *  @typeParam Scale — narrow this to a literal union for known scales (e.g. `'hsk_2010' | 'cefr'`),
+ *                     or leave as the default `string` for open-ended data. */
+export interface ProficiencyLevel<Scale extends string = string> {
+  scale: Scale;
+  value: number | string;
+}
+
 /** Study material coverage for a dictionary entry (ADR 0006). */
 export interface StudyMaterialCoverage {
   material: string;
   author?: string;
   year?: number;
-  targetLevel?: {
-    scale: string;
-    level: number | string;
-  } | null;
+  targetLevel?: ProficiencyLevel | null;
   location?: {
     book?: string | number;
     lesson?: string | number;
@@ -162,10 +174,7 @@ export interface DictionaryEntry {
   /** Proficiency level(s) assigned to this entry. A word may have multiple levels
    *  across different scales (e.g., both hsk_2010:3 and hsk_2025:2 for Chinese).
    *  null or empty means unclassified. */
-  levels?: {
-    scale: 'hsk_2010' | 'hsk_2025' | 'cefr' | 'jlpt';
-    value: number | string;
-  }[] | null;
+  levels?: ProficiencyLevel<ScaleId>[] | null;
   frequency?: number | null;
   /** 1–7 integer derived from Zipf frequency thresholds. 1 = most common, 7 = rarest. */
   frequencyLevel?: number | null;
@@ -246,7 +255,7 @@ export interface LlmGeneratedEntry {
   head: string;
   definitions: string[];
   pronunciation: string;
-  levels?: { scale: string; value: number | string }[] | null;
+  levels?: ProficiencyLevel[] | null;
   part_of_speech?: string | null;
 
   // ── Frequency (looked up from tables, not LLM-generated) ──

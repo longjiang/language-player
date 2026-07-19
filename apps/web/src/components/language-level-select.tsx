@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { LEVELS } from '@/lib/level-mapping';
+import { primaryScale } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { ChevronDown } from 'lucide-react';
 
@@ -11,27 +12,17 @@ interface LanguageLevelSelectProps {
   onChange: (level: number) => void;
 }
 
-/**
- * Returns the primary exam framework for a language code.
- * Matches Classic's l2LevelKey() logic.
- */
-function examKey(l2Code: string): 'hsk' | 'jlpt' | 'topik' | 'ielts' | 'cefr' {
-  if (l2Code === 'zh') return 'hsk';
-  if (l2Code === 'ja') return 'jlpt';
-  if (l2Code === 'ko') return 'topik';
-  if (l2Code === 'en') return 'ielts';
-  return 'cefr';
-}
-
 function examName(l2Code: string, t: (key: string) => string): string {
+  const key = primaryScale(l2Code);
   const map: Record<string, string> = {
-    hsk: 'level.exam_hsk',
+    hsk_2010: 'level.exam_hsk',
+    hsk_2025: 'level.exam_hsk',
     jlpt: 'level.exam_jlpt',
     topik: 'level.exam_topik',
     ielts: 'level.exam_ielts',
     cefr: 'level.exam_cefr',
   };
-  return t(map[examKey(l2Code)] ?? 'level.exam_cefr');
+  return t(map[key] ?? 'level.exam_cefr');
 }
 
 /**
@@ -45,12 +36,14 @@ function examName(l2Code: string, t: (key: string) => string): string {
  */
 export function LanguageLevelSelect({ l2Code, value, onChange }: LanguageLevelSelectProps) {
   const t = useT();
-  const key = examKey(l2Code);
+  const key = primaryScale(l2Code);
 
   const options = useMemo(() => {
     return Object.entries(LEVELS).map(([numericStr, info]) => {
       const numeric = Number(numericStr);
-      const examValue = info[key as keyof typeof info];
+      // Map ScaleId back to the flat key used in LEVELS (hsk_2010 → hsk, etc.)
+      const flatKey = key.startsWith('hsk') ? 'hsk' : key;
+      const examValue = info[flatKey as keyof typeof info];
       const label = examValue
         ? `${examName(l2Code, t)} ${examValue} — ${info.category}`
         : `${info.category}`;
