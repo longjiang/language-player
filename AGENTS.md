@@ -211,7 +211,7 @@ Before translating, always check if `translations.csv` already has the same or v
 - Update `ROADMAP.md` if you complete a planned task
 - Add ADRs in `docs/adr/` for significant architectural decisions
 - Never edit files in `zerotohero-nuxt/` or `language-player-3/` — they are reference-only
-- Always do a type check and build check with `npx turbo build --filter=@langplayer/web` before committing. Never push.
+- Always do a type check with `npx turbo typecheck` and build check with `npm run build:check -w apps/web` before committing. Never push.
 
 ### Terminal & Server Start Conventions
 
