@@ -69,7 +69,7 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
         <aside
           className={cn(
             'flex-shrink-0 transition-all duration-200',
-            sidebarOpen ? 'lg:flex-1 lg:min-w-0 w-56 ml-4' : 'w-0 overflow-hidden',
+            sidebarOpen ? 'lg:flex-1 lg:min-w-0 w-56 ml-1' : 'w-0 overflow-hidden',
           )}
         >
           <div className="rounded-xl border border-border bg-card h-full flex flex-col overflow-hidden">
