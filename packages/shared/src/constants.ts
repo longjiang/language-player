@@ -146,3 +146,27 @@ export const ISO639_1_TO_3: Record<string, string> = {
 export function iso639_3(code: string): string {
   return ISO639_1_TO_3[code] ?? code;
 }
+
+// ── Difficulty → Level ────────────────────────
+
+/**
+ * Per-language difficulty thresholds.
+ * Fetched from GET /difficulty-profiles and cached client-side.
+ * Each entry is a 7-element array: thresholds for levels 1–7.
+ */
+export type DifficultyProfile = Record<string, number[]>;
+
+/**
+ * Map a video difficulty value to a 1–7 level using per-language thresholds.
+ * Returns undefined if the language has no profile or difficulty is null.
+ */
+export function getLevelFromDifficulty(
+  difficulty: number | null | undefined,
+  profile: number[] | undefined,
+): number | undefined {
+  if (difficulty == null || !profile || profile.length === 0) return undefined;
+  for (let i = 0; i < profile.length; i++) {
+    if (difficulty <= profile[i]!) return i + 1;
+  }
+  return profile.length;
+}

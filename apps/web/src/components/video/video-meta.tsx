@@ -1,7 +1,9 @@
 import { Eye, ThumbsUp, MessageCircle, Calendar } from 'lucide-react';
 import type { YouTubeVideo } from '@langplayer/shared';
+import { getLevelFromDifficulty } from '@langplayer/shared';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
+import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
 
 interface VideoMetaProps {
   video: YouTubeVideo;
@@ -50,9 +52,10 @@ function getLevel(difficulty: number | undefined): number {
 }
 
 export function VideoMeta({ video }: VideoMetaProps) {
-  const { l1 } = useLanguage();
+  const { l1, l2 } = useLanguage();
   const t = useT();
-  const level = getLevel(video.difficulty);
+  const profiles = useDifficultyProfile();
+  const level = getLevelFromDifficulty(video.difficulty, profiles?.[l2.code]) ?? getLevel(video.difficulty);
 
   return (
     <div>
