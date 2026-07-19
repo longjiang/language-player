@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
+import { normalizeInstances } from '@/hooks/use-saved-words';
 import { useVideoPlayer } from '@/providers/video-player-provider';
 import { useProgress } from '@/hooks/use-progress';
 import { useT } from '@/hooks/use-t';
@@ -453,18 +454,27 @@ export default function ProfilePage() {
                         </span>
                       )}
                     </div>
-                    {/* Context */}
-                    {word.context.videoTitle && (
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        <Play className="mr-1 inline h-3 w-3" />
-                        {word.context.videoTitle}
-                      </p>
-                    )}
-                    {word.context.text && !word.context.videoTitle && (
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {word.context.text}
-                      </p>
-                    )}
+                    {/* Context — use latest instance */}
+                    {(() => {
+                      const insts = normalizeInstances(word);
+                      const ctx = insts[insts.length - 1]?.context ?? word.context;
+                      if (ctx.videoTitle) {
+                        return (
+                          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                            <Play className="mr-1 inline h-3 w-3" />
+                            {ctx.videoTitle}
+                          </p>
+                        );
+                      }
+                      if (ctx.text && !ctx.videoTitle) {
+                        return (
+                          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                            {ctx.text}
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </Link>
               ))}

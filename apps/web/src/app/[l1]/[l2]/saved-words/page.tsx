@@ -17,6 +17,7 @@ import { InlineDefinition } from '@/components/dictionary/inline-definition';
 import { WordList, WordListItem } from '@/components/dictionary/word-list';
 import { setWordListNav, savedWordToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
 import type { SavedLexicalItemRecord, SrsFields } from '@langplayer/shared';
+import { normalizeInstances } from '@/hooks/use-saved-words';
 
 const STORAGE_KEY = 'zthSavedWords';
 
@@ -70,15 +71,20 @@ export default function SavedWordsPage() {
   const words = useMemo(() => {
     let result = [...allWords];
 
-    // Text filter: match against any form or context text
+    // Text filter: match against any form or instance context
     if (filterText.trim()) {
       const q = filterText.trim().toLowerCase();
-      result = result.filter((w) =>
-        w.forms.some((f) => f.toLowerCase().includes(q)) ||
-        w.context.form.toLowerCase().includes(q) ||
-        w.context.text.toLowerCase().includes(q) ||
-        w.context.videoTitle?.toLowerCase().includes(q),
-      );
+      result = result.filter((w) => {
+        // Check global forms
+        if (w.forms.some((f) => f.toLowerCase().includes(q))) return true;
+        // Check all instances
+        const insts = normalizeInstances(w);
+        return insts.some((i) =>
+          i.form.toLowerCase().includes(q) ||
+          i.context.text.toLowerCase().includes(q) ||
+          i.context.videoTitle?.toLowerCase().includes(q),
+        );
+      });
     }
 
     // Sort
@@ -321,7 +327,11 @@ function SavedWordRow({
   onClick: () => void;
 }) {
   const { removeSavedWord } = useSavedWordsContext();
-  const ctx = word.context;
+  const insts = normalizeInstances(word);
+  // Use latest instance for primary display context
+  const latest = insts[insts.length - 1];
+  const ctx = latest?.context ?? word.context;
+  const instanceCount = insts.length;
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();

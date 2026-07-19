@@ -420,20 +420,43 @@ export interface SavedWordContext {
   translation?: string;
 }
 
+/** A single occurrence of a saved lexical item — one surface form in one context.
+ *  Replaces the flat `context` field with a per-occurrence model so the same
+ *  word saved from multiple videos/phrases accumulates instances. */
+export interface SavedLexicalItemInstance {
+  /** Unix-ms timestamp when this specific instance was saved. */
+  timestamp: number;
+  /** Which surface form appeared in this context (may differ from the head form). */
+  form: string;
+  /** Where and how this occurrence was encountered. */
+  context: SavedWordContext;
+}
+
 /** A single row in the `saved_words` JSON blob synced to Directus
  *  `user_data.saved_words`. This is the minimal serialization shape —
  *  only the fields needed for sync and offline storage. The rich
- *  app model is `LexicalItem` (wrapped by `SavedLexicalItem`). */
+ *  app model is `LexicalItem` (wrapped by `SavedLexicalItem`).
+ *
+ *  Multi-instance support (ADR 0006 §Lexical Item):
+ *  - `instances[]` is the source of truth for occurrences (each with its own form + context).
+ *  - `context` is kept for backward compatibility — written as `instances[0].context`
+ *    so old clients can still read it. New code should use `normalizeInstances()`. */
 export interface SavedLexicalItemRecord {
   /** Dictionary entry ID (e.g., "cedict-0", "llm-zh-abc123") */
   id: string;
   /** All forms of the word — head form + all inflected/conjugated forms.
-   *  Populated at save time via the /inflect-* Python endpoints. */
+   *  Populated at save time via the /inflect-* Python endpoints.
+   *  Global across instances — used for word-highlighting lookup. */
   forms: string[];
-  /** Unix-ms timestamp when the word was saved */
+  /** Unix-ms timestamp of the FIRST save. */
   date: number;
-  /** Where and how the word was saved */
+  /** @deprecated Single context — legacy. Use `instances` instead.
+   *  Still written for backward compatibility (= instances[0].context). */
   context: SavedWordContext;
+  /** Multiple occurrences, each with its own surface form and context.
+   *  When present, this is the source of truth. When absent, `context`
+   *  is normalized into a single-element array by `normalizeInstances()`. */
+  instances?: SavedLexicalItemInstance[];
 }
 
 /** Top-level `saved_words` storage shape, keyed by L2 ISO 639-1 code.

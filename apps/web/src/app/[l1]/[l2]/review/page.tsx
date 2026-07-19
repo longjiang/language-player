@@ -9,6 +9,7 @@ import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
 import { sm2, newCard, remainingNewCardsToday } from '@langplayer/utils';
 import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
+import { normalizeInstances } from '@/hooks/use-saved-words';
 import { baseCode } from '@/lib/language-data';
 import { getShowTranslation } from '@/lib/settings';
 import { PYTHON_API_URL } from '@/lib/api-url';

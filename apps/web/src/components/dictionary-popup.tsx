@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, ProficiencyLevel } from '@langplayer/shared';
+import type { LemmatizedToken, DictionaryEntry, SavedWordContext, SavedLexicalItemRecord, SavedLexicalItemInstance, ProficiencyLevel } from '@langplayer/shared';
+import { normalizeInstances } from '@/hooks/use-saved-words';
 import { formatLevel } from '@langplayer/shared';
 import { Loader2, X, AlertCircle, AlertTriangle } from 'lucide-react';
 import { DictionaryEntryCard } from './dictionary-entry-card';
@@ -227,9 +228,13 @@ export function DictionaryPopup({
                   </p>
                   <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">
                     <strong>{sw.forms.join(', ')}</strong>
-                    {sw.context?.text && (
-                      <> — {t('msg.saved_from_context')} &ldquo;{sw.context.text.slice(0, 80)}{sw.context.text.length > 80 ? '…' : ''}&rdquo;</>
-                    )}
+                    {(() => {
+                      const insts = normalizeInstances(sw);
+                      const ctx = insts[insts.length - 1]?.context;
+                      return ctx?.text ? (
+                        <> — {t('msg.saved_from_context')} &ldquo;{ctx.text.slice(0, 80)}{ctx.text.length > 80 ? '…' : ''}&rdquo;</>
+                      ) : null;
+                    })()}
                   </p>
                   <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
                     {t('msg.unrecognized_saved_word_desc', { id: sw.id })}
