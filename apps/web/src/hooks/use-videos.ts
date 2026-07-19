@@ -56,10 +56,6 @@ export function useVideos({ l2, level, pageSize = 24, cache, defer }: UseVideosO
   });
   const [page, setPage] = useState(1);
 
-  // Track whether we've done the initial fetch so cache restoration
-  // doesn't prevent a refresh when the user explicitly changes level
-  const fetchedKeyRef = useRef<string | null>(null);
-
   const fetchVideos = useCallback(
     async (pageNum: number, append = false) => {
       setLoading(true);
@@ -100,8 +96,9 @@ export function useVideos({ l2, level, pageSize = 24, cache, defer }: UseVideosO
   const fetchVideosRef = useRef(fetchVideos);
   fetchVideosRef.current = fetchVideos;
 
-  // Fetch on mount and when filter changes — but skip if cache has data
-  // and we haven't explicitly requested this key yet.
+  // Fetch on mount and when filter changes — restore from cache if available,
+  // otherwise fetch. Cache restoration is idempotent so StrictMode double-invoke
+  // is harmless — both invocations hit the cache and skip the fetch.
   useEffect(() => {
     // Deferred — don't fetch or restore until ready
     if (defer) return;
@@ -111,17 +108,15 @@ export function useVideos({ l2, level, pageSize = 24, cache, defer }: UseVideosO
     // already ran for the previous key — they don't re-run on key change.
     if (cache) {
       const entry = cache.get(key);
-      if (entry && fetchedKeyRef.current !== key) {
+      if (entry) {
         setVideos(entry.videos);
         setHasMore(entry.hasMore);
         setError(entry.error);
         setLoading(false);
         setPage(1);
-        fetchedKeyRef.current = key;
         return;
       }
     }
-    fetchedKeyRef.current = key;
     setPage(1);
     fetchVideosRef.current(1, false);
   }, [key, cache, defer]);
