@@ -144,7 +144,7 @@ export default function DictionaryEntryPage() {
         </div>
 
         {/* Tabs panel */}
-        <div className="lg:flex-1 lg:min-w-0 flex flex-col min-h-0">
+        <div className="lg:flex-[2] lg:min-w-0 flex flex-col min-h-0">
           <TabbedPanel
             tabs={[
               { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
