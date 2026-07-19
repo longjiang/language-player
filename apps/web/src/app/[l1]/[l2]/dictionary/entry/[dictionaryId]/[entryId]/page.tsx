@@ -128,7 +128,7 @@ export default function DictionaryEntryPage() {
 
   // ── Entry detail: definitions panel + tabs panel (siblings) ──
   return (
-    <div className="p-4 h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto">
       {/* Two-column on lg+, stacked on smaller */}
       <div className="flex flex-col lg:flex-row lg:gap-4 gap-4 h-full">
         {/* Definitions panel */}
