@@ -11,7 +11,7 @@ import { PersistentSearchBar } from '@/components/dictionary/persistent-search-b
 import { WordListSidebar } from '@/components/dictionary/word-list-sidebar';
 import { buildEntryRoute } from '@/lib/entry-route';
 import type { WordListNavItem } from '@/lib/word-list-navigation';
-import { BookOpen, PanelRightClose, PanelRight } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   savedWordToNavItem,
@@ -122,7 +122,6 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
               items={sidebarItems.items}
               currentEntryId={sidebarItems.currentId ?? ''}
               open={sidebarOpen}
-              onToggle={() => setSidebarOpen(!sidebarOpen)}
               onItemClick={handleSidebarWordClick}
             />
           ) : sidebarOpen ? (
