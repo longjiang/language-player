@@ -51,7 +51,7 @@ export async function GET(
     const fields = `youtube_id,id,title,l2,difficulty,lex_div,word_freq,views,likes,comments,duration,locale,tv_show,talk,date,tags,category,made_for_kids,subs_l1,subs_l2,channel_id`;
 
     const url = `${DIRECTUS_URL}/items/youtube_videos${suffix}?${filterKey}=${params.videoId}&fields=${fields}&limit=1`;
-    const res = await fetch(url);
+    const res = await fetch(url, { next: { revalidate: 3600 } });
 
     if (!res.ok) {
       return NextResponse.json({ error: 'Failed to fetch video' }, { status: 502 });
@@ -93,10 +93,14 @@ export async function GET(
       subs_l2: l2Lines,
     };
 
-    return NextResponse.json({
-      video,
-      lines: syncedLines,
-    });
+    return NextResponse.json(
+      { video, lines: syncedLines },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        },
+      },
+    );
   } catch {
     return NextResponse.json({ error: 'Failed to fetch video' }, { status: 500 });
   }
