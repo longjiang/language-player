@@ -77,9 +77,11 @@ Both panels use the same visual treatment as the Reader page panels (`rounded-xl
 ```
 DictionaryHub (page.tsx)                   ← single page, client component
 ├── PersistentSearchBar                    ← always rendered, never unmounts
-│   ├── Input (with clear button when query present)
-│   ├── Submit button
-│   └── Back button (when detail view active)
+│   ├── Input (always has [×] clear button)
+│   │   └── Shows head word when detail view is active
+│   │   └── Clearing the input returns to empty state (recent searches)
+│   ├── Submit / Search button
+│   └── Back button (only when detail was reached via search results)
 │
 ├── PanelArea (flex-1, flex, overflow-hidden)
 │   ├── MainPanel (flex-1, min-w-0)
@@ -111,13 +113,25 @@ DictionaryHub (page.tsx)                   ← single page, client component
 
 ---
 
+## Search Bar Behavior
+
+The search bar always reflects what's on screen:
+
+| View | Search bar shows |
+|---|---|
+| Empty state (recent searches) | Placeholder text, empty input |
+| Search results | The queried term (e.g., "manger") |
+| Entry detail | The entry's head word (e.g., "manger") |
+
+The search bar **always** has a clear [×] button. Clicking it clears the input and resets the view to the empty state (recent searches), regardless of what was showing before.
+
 ## State Machine
 
 ```typescript
 type DictionaryView =
   | { kind: 'empty' }
   | { kind: 'results'; query: string }
-  | { kind: 'detail'; entryId: string; previousView: DictionaryView; sourceLabel: string }
+  | { kind: 'detail'; entryId: string; cameFromSearch: boolean; previousView: DictionaryView }
 ```
 
 ### View Transitions
@@ -207,41 +221,41 @@ Sidebar remains saved words (results are NOT duplicated in the sidebar). Main ar
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-### Screen 3A: Entry Detail — Wide Layout (≥ `lg` breakpoint)
+### Screen 3A: Entry Detail — Wide Layout (≥ `lg` breakpoint), reached from search
 
-Definitions panel and Tabs panel side-by-side at the same visual level. NOT tabs nested inside definitions. Back button shows destination label.
+Definitions panel and Tabs panel side-by-side at the same visual level. NOT tabs nested inside definitions. Back button says "← All Results" because the user came through search results. Search bar shows the head word "manger". Sidebar shows the search results that led here.
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║ ┌──────────────────────────────────────────────────────────┐ ║
-║ │ ← Dictionary   🔍 Search dictionary...              [Go] │ ║
+║ │ ← All Results   🔍 manger                           [×] │ ║
 ║ └──────────────────────────────────────────────────────────┘ ║
-║ ┌──────────────────┬───────────────────┬──────────────────┐ ║
-║ │ Definitions      │ Tabs              │  ┌─ Saved Words ┐│ ║
-║ │ Panel            │ Panel             │  │  📖 bonjour   ││ ║
-║ │ ┌──────────────┐ │ ┌───────────────┐ │  │  📖 être      ││ ║
-║ │ │ manger       │ │ │ [Dict│Examples│ │  │  ...          ││ ║
-║ │ │ /mɑ̃.ʒe/      │ │ │  Conj│DeepSeek]│ │  └──────────────┘│ ║
-║ │ │ verb · A1    │ │ ├───────────────┤ │                    │ ║
-║ │ │              │ │ │               │ │                    │ ║
-║ │ │ 1. to eat    │ │ │ YouTube Player│ │                    │ ║
-║ │ │ 2. to consume│ │ │ + Subs Display│ │                    │ ║
-║ │ │              │ │ │               │ │                    │ ║
-║ │ │ 📖 Le Robert │ │ │ (scrollable)  │ │                    │ ║
-║ │ │ ⭐ Save 🔊   │ │ │               │ │                    │ ║
-║ │ └──────────────┘ │ └───────────────┘ │                    │ ║
-║ └──────────────────┴───────────────────┴──────────────────┘ ║
+║ ┌──────────────────┬───────────────────┬──────────────────────┐ ║
+║ │ Definitions      │ Tabs              │  ┌─ 5 results ─────┐ │ ║
+║ │ Panel            │ Panel             │  │                  │ │ ║
+║ │ ┌──────────────┐ │ ┌───────────────┐ │  │ 📖 manger     ◀ │ │ ║
+║ │ │ manger       │ │ │ [Dict│Examples│ │  │    /mɑ̃.ʒe/       │ │ ║
+║ │ │ /mɑ̃.ʒe/      │ │ │  Conj│DeepSeek]│ │  │    to eat        │ │ ║
+║ │ │ verb · A1    │ │ ├───────────────┤ │  │                  │ │ ║
+║ │ │              │ │ │               │ │  │ 📖 mangeaille    │ │ ║
+║ │ │ 1. to eat    │ │ │ YouTube Player│ │  │    food           │ │ ║
+║ │ │ 2. to consume│ │ │ + Subs Display│ │  │                  │ │ ║
+║ │ │              │ │ │               │ │  │ 📖 mangeoire     │ │ ║
+║ │ │ 📖 Le Robert │ │ │ (scrollable)  │ │  │    trough         │ │ ║
+║ │ │ ⭐ Save 🔊   │ │ │               │ │  └──────────────────┘ │ ║
+║ │ └──────────────┘ │ └───────────────┘ │                      │ ║
+║ └──────────────────┴───────────────────┴──────────────────────┘ ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-### Screen 3B: Entry Detail — Narrow Layout (< `lg` breakpoint)
+### Screen 3B: Entry Detail — Narrow Layout (< `lg` breakpoint), reached from search
 
-Definitions panel on top, Tabs panel below (stacked vertically). Sidebar hidden or accessible via drawer. Both scroll within the main panel.
+Definitions panel on top, Tabs panel below (stacked vertically). Sidebar hidden or accessible via drawer. Both scroll within the main panel. Back button shown (came via search results), search bar shows head word.
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║ ┌──────────────────────────────────────────────────────────┐ ║
-║ │ ← Dictionary  🔍 Search...                          [Go] │ ║
+║ │ ← All Results   🔍 manger                           [×] │ ║
 ║ └──────────────────────────────────────────────────────────┘ ║
 ║ ┌──────────────────────────────────────────────────────────┐ ║
 ║ │  Definitions Panel                                       │ ║
@@ -269,25 +283,38 @@ The sidebar is always present (collapsible). Its content depends on context:
 
 | Context | Sidebar Content |
 |---|---|
-| Default / empty state / search results | **Saved words** (mini list, current L2) |
-| User came from a specific word list | That word list (stored via `setWordListNav`) |
-| Entry detail | Whatever the user was viewing before entering detail |
-
-**Search results are NEVER shown in the sidebar.** They appear only in the main panel. Showing them in both places is redundant.
+| Empty state | **Saved words** (mini list, current L2) |
+| Search results screen (Screen 2) | **Saved words** — results are already in the main panel; showing them in both places is redundant |
+| Entry detail, reached from search results | **Dictionary search results** — the results that led to this entry, so the user can click another result without going back |
+| Entry detail, reached from a specific word list | That word list (stored via `setWordListNav`) |
+| Entry detail, reached from saved words sidebar | **Saved words** |
 
 ---
 
 ## Back Button Logic
 
-The back button appears only in the detail view, at the left side of the search bar area. Its label reflects the destination:
+The back button appears **only** if the user reached the entry detail through dictionary search results at any point in their navigation path. For example:
 
-| Detail was reached from... | Back button label | Key used |
+```
+page 1 (recent searches) → page 2 (search results) → page 3 (entry detail)  ✅ back button shown
+page 1 (saved words) → page 2 (entry detail)                                  ❌ no back button
+page 1 (search results) → page 2 (entry A) → page 3 (entry B)                 ✅ back button shown
+```
+
+When shown, the back button:
+- Appears at the left side of the search bar area
+- Is labeled **"← All Results"**
+- Returns the main panel to the most recent search results view
+- The sidebar content is unchanged. No full page navigation occurs.
+
+When NOT shown, the browser's native back button handles navigation.
+
+| Detail was reached via... | Back button? | Label |
 |---|---|---|
-| Search results | `← Dictionary` | `title.dictionary` |
-| Saved words sidebar | `← Saved Words` | `title.saved_words` |
-| Named word list | `← {List Name}` | List's title |
-
-The back button restores the `previousView` — the main panel returns to whatever was shown before detail (results or empty state), and the sidebar content is unchanged. No full page navigation occurs.
+| Search results (anywhere in path) | ✅ Yes | `← All Results` |
+| Saved words sidebar only (no search) | ❌ No | — |
+| Named word list only (no search) | ❌ No | — |
+| Direct link / bookmark | ❌ No | — |
 
 ---
 
@@ -318,7 +345,7 @@ The `word` tab is essentially the definitions panel content repeated — this ta
 | Recent searches heading | `title.recent_searches` |
 | Clear recent | `action.clear_recent_searches` |
 | Saved words heading | `title.saved_words` |
-| Back button | `action.back` (combined with context label) |
+| Back button ("All Results") | `action.back_to_results` (new key needed) |
 | Result count | `msg.result_count` |
 | "for {term}" | `msg.for_term` |
 | Tab: Dictionary | `title.dictionary` |
