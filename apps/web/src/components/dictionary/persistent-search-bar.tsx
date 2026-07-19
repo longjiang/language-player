@@ -73,7 +73,7 @@ export function PersistentSearchBar() {
   const showBack = isDetailPage && cameFromSearch;
 
   return (
-    <div className="flex items-center gap-3 px-4 h-14 border-b border-border bg-background">
+    <div className="flex items-center gap-3 px-4 h-14 bg-background">
       {/* Back button */}
       {showBack && (
         <button
