@@ -6,7 +6,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
 import { useDictionaryContext } from '@/providers/dictionary-provider';
-import { Search, Loader2, X } from 'lucide-react';
+import { Search, Loader2, X, PanelRightClose, PanelRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -24,6 +24,7 @@ export function PersistentSearchBar() {
     query, setQuery,
     loading, detailHead,
     cameFromSearch,
+    sidebarOpen, setSidebarOpen,
     doSearch, handleSearch, clearSearch,
   } = useDictionaryContext();
 
@@ -126,6 +127,15 @@ export function PersistentSearchBar() {
         )}
         <span className="hidden sm:inline">{t('action.search')}</span>
       </Button>
+
+      {/* Sidebar toggle — always visible, even when collapsed */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="flex-shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+      >
+        {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
+      </button>
     </div>
   );
 }
