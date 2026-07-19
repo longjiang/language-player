@@ -12,6 +12,7 @@ import { Search, Loader2, BookOpen, AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
 import { WordList } from '@/components/dictionary/word-list';
+import { setWordListNav, entryToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
 import { buildEntryRoute } from '@/lib/entry-route';
 
 export default function DictionaryPage() {
@@ -179,7 +180,11 @@ export default function DictionaryPage() {
                 l1Code={l1.code}
                 levelLabel={levelLabel}
                 saveContext={saveContext}
-                onClick={(e) => router.push(buildEntryRoute(l1.code, l2.code, e.dictionary?.id ?? 'llm', e.id))}
+                onClick={(e) => {
+                  const compositeId = `${e.dictionary?.id ?? 'llm'}-${e.id}`;
+                  setWordListNav(results!.map(entryToNavItem), compositeId);
+                  router.push(buildEntryRouteWithList(l1.code, l2.code, e.dictionary?.id ?? 'llm', e.id, compositeId));
+                }}
               />
             ))}
           </WordList>
