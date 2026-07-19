@@ -68,20 +68,6 @@ export function useVideos({ l2, level, pageSize = 24, cache, defer }: UseVideosO
         params.set('page', String(pageNum));
         params.set('page_size', String(pageSize));
 
-        // On page > 1, exclude all IDs we've already shown to prevent
-        // duplicates from stale cache or pipeline re-runs.
-        if (pageNum > 1) {
-          const currentIds = await new Promise<string[]>((resolve) => {
-            setVideos((prev) => {
-              resolve(prev.map((v) => String(v.id)));
-              return prev;
-            });
-          });
-          if (currentIds.length > 0) {
-            params.set('exclude_ids', currentIds.join(','));
-          }
-        }
-
         const res = await fetch(`/api/videos/recommend?${params}`);
         if (!res.ok) throw new Error(`Failed to load videos (${res.status})`);
 
