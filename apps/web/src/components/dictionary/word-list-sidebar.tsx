@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { cn } from '@/lib/utils';
-import { BookOpen, PanelRightClose } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { type WordListNavItem } from '@/lib/word-list-navigation';
 import { buildEntryRoute } from '@/lib/entry-route';
 
@@ -11,8 +11,7 @@ export interface WordListSidebarProps {
   items: WordListNavItem[];
   currentEntryId: string;
   open: boolean;
-  onToggle: () => void;
-  /** When provided, called on item click instead of default sessionStorage navigation. */
+  /** When provided, called on item click instead of default router.push navigation. */
   onItemClick?: (item: WordListNavItem) => void;
 }
 
@@ -25,7 +24,6 @@ export function WordListSidebar({
   items,
   currentEntryId,
   open,
-  onToggle,
   onItemClick,
 }: WordListSidebarProps) {
   const { l1, l2 } = useLanguage();
@@ -37,15 +35,8 @@ export function WordListSidebar({
       open ? 'w-56' : 'w-0 overflow-hidden',
     )}>
       <div className="sticky top-4 rounded-xl border border-border bg-card">
-        <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
+        <div className="flex items-center border-b border-border px-3 py-2.5">
           <h3 className="text-sm font-semibold truncate">{items.length} words</h3>
-          <button
-            onClick={onToggle}
-            className="flex-shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            title={open ? 'Collapse sidebar' : 'Expand sidebar'}
-          >
-            <PanelRightClose className="h-4 w-4" />
-          </button>
         </div>
         <div className="max-h-[calc(100vh-16rem)] overflow-y-auto px-1 py-1">
           {items.map((item) => (
