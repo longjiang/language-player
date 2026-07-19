@@ -15,6 +15,7 @@ import { baseCode } from '@/lib/language-data';
 import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { buildEntryRoute } from '@/lib/entry-route';
+import { WordList } from '@/components/dictionary/word-list';
 
 interface DictionaryPopupProps {
   token: LemmatizedToken;
@@ -243,17 +244,19 @@ export function DictionaryPopup({
             </div>
           ))}
 
-          {entries.map((entry) => (
-            <DictionaryEntryCard
-              key={entry.id}
-              entry={entry}
-              levelLabel={levelLabel}
-              onClick={handleEntryClick}
-              saveContext={context}
-              pronunciation={formatPronunciation(entry, l2Code)}
-              l2Code={l2Code}
-            />
-          ))}
+          <WordList>
+            {entries.map((entry) => (
+              <DictionaryEntryCard
+                key={entry.id}
+                entry={entry}
+                levelLabel={levelLabel}
+                onClick={handleEntryClick}
+                saveContext={context}
+                pronunciation={formatPronunciation(entry, l2Code)}
+                l2Code={l2Code}
+              />
+            ))}
+          </WordList>
         </div>
       </div>
     </div>

@@ -11,6 +11,7 @@ import { formatLevel } from '@langplayer/shared';
 import { Search, Loader2, BookOpen, AlertCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
+import { WordList } from '@/components/dictionary/word-list';
 import { buildEntryRoute } from '@/lib/entry-route';
 
 export default function DictionaryPage() {
@@ -168,7 +169,7 @@ export default function DictionaryPage() {
           <p className="mb-4 mt-6 text-sm text-muted-foreground">
             {t('msg.result_count', { count: results!.length })} {t('msg.for_term', { term: searchedText })}
           </p>
-          <div className="space-y-6">
+          <WordList>
             {results!.map((entry) => (
               <DictionaryEntryCard
                 key={entry.id}
@@ -181,7 +182,7 @@ export default function DictionaryPage() {
                 onClick={(e) => router.push(buildEntryRoute(l1.code, l2.code, e.dictionary?.id ?? 'llm', e.id))}
               />
             ))}
-          </div>
+          </WordList>
         </div>
       )}
 
