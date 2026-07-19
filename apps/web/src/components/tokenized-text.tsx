@@ -30,6 +30,9 @@ export interface TokenizedTextProps {
   tokens?: LemmatizedToken[];
   /** A specific word form to highlight (e.g. the inflected form that was saved in this context). */
   highlightForm?: string;
+  /** Multiple word forms to highlight (e.g. search terms in subs-search). Any token
+   *  whose text matches one of these forms gets the highlight ring. */
+  highlightForms?: string[];
 }
 
 /**
@@ -46,6 +49,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   tokenCacheLoaded,
   tokens: preloadedTokens,
   highlightForm,
+  highlightForms,
 }) => {
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
@@ -276,7 +280,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               showPhonetics={showPhonetics}
               isSelected={selectedToken === token}
               isSaved={savedFormSet.has(token.text.toLowerCase())}
-              isHighlighted={!!highlightForm && token.text === highlightForm}
+              isHighlighted={
+                (!!highlightForm && token.text === highlightForm) ||
+                (!!highlightForms && highlightForms.some((f) => f === token.text))
+              }
               onClick={() => handleTokenClick(token)}
             />
           );
