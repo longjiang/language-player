@@ -168,6 +168,7 @@ function SavedWordsSidebarContent({
           word={word}
           l1Code={l1Code}
           l2Code={l2Code}
+          compact
           onClick={() => onWordClick(word)}
         />
       ))}

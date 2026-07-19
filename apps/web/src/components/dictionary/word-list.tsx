@@ -23,6 +23,8 @@ export interface WordListItemProps {
   suffix?: ReactNode;
   /** Click handler for the entire row. */
   onClick?: () => void;
+  /** When true, reduces padding and typography size for compact layouts (sidebars). */
+  compact?: boolean;
 }
 
 /**
@@ -39,10 +41,13 @@ export function WordListItem({
   prefix,
   suffix,
   onClick,
+  compact = false,
 }: WordListItemProps) {
   return (
     <div
-      className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-muted/50"
+      className={`flex cursor-pointer items-center gap-2 rounded-lg transition-colors hover:bg-muted/50 ${
+        compact ? 'px-2 py-1' : 'px-3 py-2 gap-3'
+      }`}
       onClick={onClick}
     >
       {/* Prefix (SRS dot, icon, etc.) */}
@@ -51,8 +56,8 @@ export function WordListItem({
       {/* Word info */}
       <div className="min-w-0 flex-1">
         {/* Head + alt forms */}
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold">{head}</span>
+        <div className={`flex items-center gap-1.5 ${compact ? '' : 'gap-2'}`}>
+          <span className={compact ? 'text-sm font-semibold' : 'text-lg font-semibold'}>{head}</span>
           {contextForm && contextForm !== head && (
             <span className="text-xs text-muted-foreground">({contextForm})</span>
           )}
@@ -64,7 +69,7 @@ export function WordListItem({
         {/* Inline definition */}
         {definitionSlot}
 
-        {/* Context line */}
+        {/* Context line — same size regardless of mode */}
         {contextSlot}
 
         {/* Source attribution */}
