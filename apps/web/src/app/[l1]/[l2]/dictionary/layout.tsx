@@ -5,18 +5,17 @@ import { usePathname } from 'next/navigation';
 import { useDictionaryContext, DictionaryProvider } from '@/providers/dictionary-provider';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
+import { normalizeInstances } from '@/hooks/use-saved-words';
 import { useT } from '@/hooks/use-t';
 import { useRouter } from 'next/navigation';
 import { PersistentSearchBar } from '@/components/dictionary/persistent-search-bar';
 import { WordListSidebar } from '@/components/dictionary/word-list-sidebar';
+import { InlineDefinition } from '@/components/dictionary/inline-definition';
 import { buildEntryRoute } from '@/lib/entry-route';
-import type { WordListNavItem } from '@/lib/word-list-navigation';
-import { BookOpen } from 'lucide-react';
+import type { WordListNavItem as Wlni } from '@/lib/word-list-navigation';
+import { BookOpen, BookmarkCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  savedWordToNavItem,
-  type WordListNavItem as Wlni,
-} from '@/lib/word-list-navigation';
+import type { SavedLexicalItemRecord } from '@langplayer/shared';
 
 // ── Inner layout (needs context, so must be child of DictionaryProvider) ──
 
@@ -38,61 +37,20 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
     setSidebarSource,
   } = useDictionaryContext();
 
-  const { getSavedWords, loaded: savedLoaded } = useSavedWordsContext();
+  const { getSavedWords, loaded: savedLoaded, removeSavedWord } = useSavedWordsContext();
 
-  // Resolve sidebar items based on sidebarSource
-  const sidebarItems = ((): { items: Wlni[]; currentId: string | null } | null => {
-    // On detail page reached from search: show search results in sidebar
-    if (isDetailPage && sidebarSource.kind === 'results') {
-      const items = sidebarSource.items.map((e) => ({
-        head: e.head,
-        dictionaryId: e.dictionary?.id ?? 'llm',
-        entryId: e.id,
-        id: `${e.dictionary?.id ?? 'llm'}-${e.id}`,
-        pronunciation: e.pronunciation || undefined,
-        definition: e.definitions?.[0] || undefined,
-      }));
-      // Find current entry ID from URL
-      const pathParts = pathname.split('/');
-      const dictIdIdx = pathParts.indexOf('entry') + 1;
-      const entryIdIdx = dictIdIdx + 1;
-      const dictId = pathParts[dictIdIdx] ?? '';
-      const entryId = pathParts[entryIdIdx] ? decodeURIComponent(pathParts[entryIdIdx]).replace(/~/g, ',') : '';
-      const currentId = `${dictId}-${entryId}`;
-      return { items, currentId };
-    }
-
-    // On detail page reached from saved words sidebar: show saved words
-    if (isDetailPage && sidebarSource.kind === 'saved' && savedLoaded) {
-      const words = getSavedWords(l2.code);
-      if (words.length > 0) {
-        const items = words.map(savedWordToNavItem);
-        const pathParts = pathname.split('/');
-        const dictIdIdx = pathParts.indexOf('entry') + 1;
-        const entryIdIdx = dictIdIdx + 1;
-        const dictId = pathParts[dictIdIdx] ?? '';
-        const entryId = pathParts[entryIdIdx] ? decodeURIComponent(pathParts[entryIdIdx]).replace(/~/g, ',') : '';
-        const currentId = `${dictId}-${entryId}`;
-        return { items, currentId };
-      }
-    }
-
-    // Default: show saved words in sidebar
-    if (sidebarSource.kind === 'saved' && savedLoaded) {
-      const words = getSavedWords(l2.code);
-      if (words.length > 0) {
-        return { items: words.map(savedWordToNavItem), currentId: null };
-      }
-    }
-
-    return null;
-  })();
-
-  const handleSidebarWordClick = (item: Wlni) => {
-    // If we came from search results, maintain the cameFromSearch flag
-    // so the back button is shown on the new detail page too
+  const handleResultClick = (item: Wlni) => {
     setDetailHead(item.head);
     const route = buildEntryRoute(l1.code, l2.code, item.dictionaryId, item.entryId);
+    router.push(route);
+  };
+
+  const handleSavedWordClick = (word: SavedLexicalItemRecord) => {
+    const dashIdx = word.id.indexOf('-');
+    const dictId = dashIdx > 0 ? word.id.slice(0, dashIdx) : 'llm';
+    const entryId = dashIdx > 0 ? word.id.slice(dashIdx + 1) : word.id;
+    setDetailHead(word.forms[0] ?? '');
+    const route = buildEntryRoute(l1.code, l2.code, dictId, entryId);
     router.push(route);
   };
 
@@ -117,27 +75,128 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
             sidebarOpen ? 'w-56' : 'w-0 overflow-hidden',
           )}
         >
-          {sidebarItems && sidebarItems.items.length > 0 ? (
-            <WordListSidebar
-              items={sidebarItems.items}
-              currentEntryId={sidebarItems.currentId ?? ''}
-              open={sidebarOpen}
-              onItemClick={handleSidebarWordClick}
-            />
-          ) : sidebarOpen ? (
-            <div className="rounded-xl border border-border bg-card h-full flex items-center justify-center">
-              <div className="text-center p-4">
-                <BookOpen className="mx-auto h-8 w-8 text-muted-foreground/50" />
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {savedLoaded
-                    ? t('msg.no_saved_words')
-                    : t('msg.loading')}
-                </p>
-              </div>
+          <div className="rounded-xl border border-border bg-card h-full flex flex-col overflow-hidden">
+            <div className="flex items-center border-b border-border px-3 py-2">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {t('title.saved_words')}
+              </h3>
             </div>
-          ) : null}
+            <div className="flex-1 overflow-y-auto px-1 py-1">
+              {sidebarSource.kind === 'saved' && savedLoaded ? (
+                <SavedWordsSidebarContent
+                  l2Code={l2.code}
+                  l1Code={l1.code}
+                  getSavedWords={getSavedWords}
+                  removeSavedWord={removeSavedWord}
+                  onWordClick={handleSavedWordClick}
+                  currentEntryId={isDetailPage ? (() => {
+                    const parts = pathname.split('/');
+                    const dIdx = parts.indexOf('entry') + 1;
+                    const eIdx = dIdx + 1;
+                    const d = parts[dIdx] ?? '';
+                    const e = parts[eIdx] ? decodeURIComponent(parts[eIdx]).replace(/~/g, ',') : '';
+                    return `${d}-${e}`;
+                  })() : null}
+                />
+              ) : sidebarSource.kind === 'results' && sidebarSource.items.length > 0 ? (
+                <WordListSidebar
+                  items={sidebarSource.items.map((e) => ({
+                    head: e.head,
+                    dictionaryId: e.dictionary?.id ?? 'llm',
+                    entryId: e.id,
+                    id: `${e.dictionary?.id ?? 'llm'}-${e.id}`,
+                    pronunciation: e.pronunciation || undefined,
+                    definition: e.definitions?.[0] || undefined,
+                  }))}
+                  currentEntryId={(() => {
+                    const parts = pathname.split('/');
+                    const dIdx = parts.indexOf('entry') + 1;
+                    const eIdx = dIdx + 1;
+                    const d = parts[dIdx] ?? '';
+                    const e = parts[eIdx] ? decodeURIComponent(parts[eIdx]).replace(/~/g, ',') : '';
+                    return `${d}-${e}`;
+                  })()}
+                  open={sidebarOpen}
+                  onItemClick={handleResultClick}
+                />
+              ) : sidebarOpen ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center p-4">
+                    <BookOpen className="mx-auto h-8 w-8 text-muted-foreground/50" />
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {savedLoaded ? t('msg.no_saved_words') : t('msg.loading')}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+// ── Saved Words sidebar content ──────────────
+
+function SavedWordsSidebarContent({
+  l2Code,
+  l1Code,
+  getSavedWords,
+  removeSavedWord,
+  onWordClick,
+  currentEntryId,
+}: {
+  l2Code: string;
+  l1Code: string;
+  getSavedWords: (l2: string) => SavedLexicalItemRecord[];
+  removeSavedWord: (l2: string, wordId: string) => void;
+  onWordClick: (word: SavedLexicalItemRecord) => void;
+  currentEntryId: string | null;
+}) {
+  const words = getSavedWords(l2Code);
+
+  if (words.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-xs text-muted-foreground px-3 py-4">No saved words yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-0.5">
+      {words.map((word) => {
+        const insts = normalizeInstances(word);
+        const latest = insts[insts.length - 1];
+        const ctx = latest?.context ?? word.context;
+        const isActive = currentEntryId === word.id;
+
+        return (
+          <div
+            key={word.id}
+            className={`group flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors cursor-pointer hover:bg-muted ${isActive ? 'bg-primary/10 text-primary font-medium' : ''}`}
+            onClick={() => onWordClick(word)}
+            title={word.forms[0]}
+          >
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className={`text-sm font-semibold truncate ${isActive ? 'text-primary' : ''}`} lang={l2Code}>
+                  {word.forms[0] ?? '?'}
+                </span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); removeSavedWord(l2Code, word.id); }}
+                  className="ml-auto shrink-0 rounded p-0.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all"
+                  title="Remove from saved words"
+                >
+                  <BookmarkCheck className="h-4 w-4" />
+                </button>
+              </div>
+              <InlineDefinition wordId={word.id} l1Code={l1Code} l2Code={l2Code} />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
