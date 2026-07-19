@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useProgress } from '@/hooks/use-progress';
@@ -19,21 +19,25 @@ export default function ExplorePage() {
   const [level, setLevel] = useState<number | undefined>(undefined);
   const exploreCache = useExploreCache();
 
-  // Apply saved level once progress loads, then use explicit user choice.
+  // Seed the filter from the user's saved level once on first load.
+  // A ref tracks whether we've seeded so clicking "All" (undefined) isn't
+  // overridden back to the saved level on re-render.
+  const seededRef = useRef(false);
+
   useEffect(() => {
-    if (progressLoaded && savedLevel !== undefined && level === undefined) {
+    if (!seededRef.current && progressLoaded && savedLevel !== undefined) {
+      seededRef.current = true;
       setLevel(savedLevel);
     }
-  }, [progressLoaded, savedLevel, level]);
+  }, [progressLoaded, savedLevel]);
 
   // Defer the video fetch until progress is loaded so we know the user's
   // saved level and can fetch with the right filter from the start.
   const deferFetch = !progressLoaded;
-  const effectiveLevel = progressLoaded ? (level ?? savedLevel) : undefined;
 
   const { videos, loading, error, hasMore, loadMore, retry } = useVideos({
     l2: baseCode(l2.code),
-    level: effectiveLevel,
+    level,
     cache: exploreCache,
     defer: deferFetch,
   });
