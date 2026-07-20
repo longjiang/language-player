@@ -746,6 +746,7 @@
         "videos_matching": "A(z) \"{searchTerm}\" kifejezésnek megfelelő videók",
         "want_lifetime_access": "Szeretnél élethosszig tartó hozzáférést?",
         "watched_progress": "{pct} megtekintve",
+        "web_reader_empty_state": "Illesszen be egy URL-t fent egy {l2} weboldal, cikk vagy történet olvasásához.",
         "will_auto_renew": "automatikusan megújul",
         "with_pro_you_can": "A Pro-val teheti:",
         "you_are_pro": "Mostantól Pro vagy!",
@@ -998,6 +999,7 @@
         "video_count": "{index}. videó a {total}-ból",
         "views": "{numViews} megtekintés",
         "watch_history": "Nézési előzmények",
+        "web_reader": "Webolvasó",
         "welcome": "Üdvözöljük a Language Playerben",
         "welcome_back": "Üdvözöljük újra",
         "your_current_plan": "Jelenlegi terv"

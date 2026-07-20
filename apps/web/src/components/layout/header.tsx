@@ -29,6 +29,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Reading',
     links: [
       { key: 'title.reader', href: 'reader' },
+      { key: 'title.web_reader', href: 'web-reader' },
       { key: 'title.epub_reader', href: 'reader' },
     ],
   },

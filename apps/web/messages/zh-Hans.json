@@ -746,6 +746,7 @@
         "videos_matching": "匹配\"{searchTerm}\"的视频",
         "want_lifetime_access": "想要终身访问？",
         "watched_progress": "已观看 {pct}",
+        "web_reader_empty_state": "在上方粘贴 URL 以阅读{l2}网页、文章或故事。",
         "will_auto_renew": "将自动续费",
         "with_pro_you_can": "使用专业版，您可以：",
         "you_are_pro": "您已是 Pro 用户！",
@@ -998,6 +999,7 @@
         "video_count": "视频 {index} 共 {total}",
         "views": "{numViews}次观看",
         "watch_history": "观看历史",
+        "web_reader": "网页阅读器",
         "welcome": "欢迎来到 Language Player",
         "welcome_back": "欢迎回来",
         "your_current_plan": "您当前的计划"

@@ -619,13 +619,11 @@ export default function ReaderPage() {
                   l2={l2} l1={l1}
                   text={text}
                   loading={loading} activeTab={activeTab}
-                  urlInput={urlInput} translating={translating}
+                  translating={translating}
                   blocks={blocks} blockTokens={blockTokens} tokenizing={tokenizing}
                   ctx={ctx}
                   onTextChange={handleTextChange}
                   onTabChange={setActiveTab}
-                  onUrlInputChange={setUrlInput}
-                  onUrlSubmit={(url) => loadUrl(url, false)}
                   onTokenize={handleTokenize}
                   onFillSample={(sampleText, sampleTitle) => { setText(sampleText); setTitle(sampleTitle); }}
                   onPageTranslate={async (texts) => {
@@ -681,13 +679,11 @@ export default function ReaderPage() {
             l2={l2} l1={l1}
             text={text}
             loading={loading} activeTab={activeTab}
-            urlInput={urlInput} translating={translating}
+            translating={translating}
             blocks={blocks} blockTokens={blockTokens} tokenizing={tokenizing}
             ctx={ctx}
             onTextChange={handleTextChange}
             onTabChange={setActiveTab}
-            onUrlInputChange={setUrlInput}
-            onUrlSubmit={(url) => loadUrl(url, false)}
             onTokenize={handleTokenize}
             onFillSample={(sampleText, sampleTitle) => { setText(sampleText); setTitle(sampleTitle); }}
             onPageTranslate={async (texts) => {

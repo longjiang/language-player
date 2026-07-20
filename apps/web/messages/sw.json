@@ -746,6 +746,7 @@
         "videos_matching": "Video zinazofanana na \"{searchTerm}\"",
         "want_lifetime_access": "Unataka ufikiaji wa maisha yote?",
         "watched_progress": "{pct} imetazamwa",
+        "web_reader_empty_state": "Bandika URL hapo juu kusoma ukurasa wa wavuti wa {l2}, makala au hadithi.",
         "will_auto_renew": "itasasisha kiotomatiki",
         "with_pro_you_can": "Ukiwa na Pro, unaweza:",
         "you_are_pro": "Sasa uko Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Video {index} kati ya {total}",
         "views": "{numViews} Maoni",
         "watch_history": "Historia ya Kutazama",
+        "web_reader": "Kisoma wavuti",
         "welcome": "Karibu kwenye Language Player",
         "welcome_back": "Karibu tena",
         "your_current_plan": "Mpango wako wa sasa"

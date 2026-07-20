@@ -746,6 +746,7 @@
         "videos_matching": "Filmy pasujące do \"{searchTerm}\"",
         "want_lifetime_access": "Chcesz dożywotni dostęp?",
         "watched_progress": "{pct} obejrzane",
+        "web_reader_empty_state": "Wklej URL powyżej, aby przeczytać stronę internetową, artykuł lub opowiadanie w języku {l2}.",
         "will_auto_renew": "będzie odnawiane automatycznie",
         "with_pro_you_can": "Z wersją Pro możesz:",
         "you_are_pro": "Jesteś teraz Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Wideo {index} z {total}",
         "views": "{numViews} wyświetleń",
         "watch_history": "Historia oglądania",
+        "web_reader": "Czytnik stron",
         "welcome": "Witaj w Language Player",
         "welcome_back": "Witaj z powrotem",
         "your_current_plan": "Twój aktualny plan"

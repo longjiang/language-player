@@ -746,6 +746,7 @@
         "videos_matching": "\"{searchTerm}\"와(과) 일치하는 동영상",
         "want_lifetime_access": "평생 이용권을 원하시나요?",
         "watched_progress": "{pct} 시청함",
+        "web_reader_empty_state": "위에 URL을 붙여넣어 {l2} 웹페이지, 기사 또는 이야기를 읽으세요.",
         "will_auto_renew": "자동 갱신됩니다",
         "with_pro_you_can": "프로 버전으로 다음을 할 수 있습니다:",
         "you_are_pro": "이제 프로 회원입니다!",
@@ -998,6 +999,7 @@
         "video_count": "동영상 {index} / {total}",
         "views": "조회수 {numViews}회",
         "watch_history": "시청 기록",
+        "web_reader": "웹 리더",
         "welcome": "Language Player에 오신 것을 환영합니다",
         "welcome_back": "다시 오신 것을 환영합니다",
         "your_current_plan": "현재 플랜"

@@ -746,6 +746,7 @@
         "videos_matching": "วิดีโอที่ตรงกับ \"{searchTerm}\"",
         "want_lifetime_access": "ต้องการเข้าถึงตลอดชีพหรือไม่?",
         "watched_progress": "{pct} ครั้งที่รับชม",
+        "web_reader_empty_state": "วาง URL ด้านบนเพื่ออ่านหน้าเว็บ บทความ หรือเรื่องราว {l2}",
         "will_auto_renew": "จะต่ออายุอัตโนมัติ",
         "with_pro_you_can": "ด้วย Pro คุณสามารถ:",
         "you_are_pro": "ตอนนี้คุณเป็น Pro แล้ว!",
@@ -998,6 +999,7 @@
         "video_count": "วิดีโอที่ {index} จาก {total}",
         "views": "{numViews} การรับชม",
         "watch_history": "ประวัติการรับชม",
+        "web_reader": "โปรแกรมอ่านเว็บ",
         "welcome": "ยินดีต้อนรับสู่ Language Player",
         "welcome_back": "ยินดีต้อนรับกลับ",
         "your_current_plan": "แผนปัจจุบันของคุณ"

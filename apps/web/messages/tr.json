@@ -746,6 +746,7 @@
         "videos_matching": "\"{searchTerm}\" ile eşleşen videolar",
         "want_lifetime_access": "Ömür boyu erişim ister misiniz?",
         "watched_progress": "{pct} izlendi",
+        "web_reader_empty_state": "Bir {l2} web sayfası, makale veya hikaye okumak için yukarıya bir URL yapıştırın.",
         "will_auto_renew": "otomatik olarak yenilenecek",
         "with_pro_you_can": "Pro ile şunları yapabilirsiniz:",
         "you_are_pro": "Artık Pro'sunuz!",
@@ -998,6 +999,7 @@
         "video_count": "Video {index} / {total}",
         "views": "{numViews} Görüntüleme",
         "watch_history": "İzleme Geçmişi",
+        "web_reader": "Web Okuyucu",
         "welcome": "Language Player'a hoş geldiniz",
         "welcome_back": "Tekrar hoş geldiniz",
         "your_current_plan": "Mevcut Planınız"

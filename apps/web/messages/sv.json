@@ -746,6 +746,7 @@
         "videos_matching": "Videor som matchar \"{searchTerm}\"",
         "want_lifetime_access": "Vill du ha livstidsåtkomst?",
         "watched_progress": "{pct} tittade",
+        "web_reader_empty_state": "Klistra in en URL ovan för att läsa en {l2}-webbsida, artikel eller berättelse.",
         "will_auto_renew": "förnyas automatiskt",
         "with_pro_you_can": "Med Pro kan du:",
         "you_are_pro": "Du är nu Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Video {index} av {total}",
         "views": "{numViews} visningar",
         "watch_history": "Tittarhistorik",
+        "web_reader": "Webbläsare",
         "welcome": "Välkommen till Language Player",
         "welcome_back": "Välkommen tillbaka",
         "your_current_plan": "Din nuvarande plan"

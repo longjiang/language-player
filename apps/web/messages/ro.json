@@ -746,6 +746,7 @@
         "videos_matching": "Videoclipuri care se potrivesc cu \"{searchTerm}\"",
         "want_lifetime_access": "Vrei acces pe viață?",
         "watched_progress": "{pct} vizionat",
+        "web_reader_empty_state": "Lipiți un URL mai sus pentru a citi o pagină web, articol sau poveste în {l2}.",
         "will_auto_renew": "se va reînnoi automat",
         "with_pro_you_can": "Cu Pro, poți:",
         "you_are_pro": "Ești acum Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Videoclipul {index} din {total}",
         "views": "{numViews} vizualizări",
         "watch_history": "Istoric vizionări",
+        "web_reader": "Cititor web",
         "welcome": "Bun venit la Language Player",
         "welcome_back": "Bine ai revenit",
         "your_current_plan": "Planul tău curent"

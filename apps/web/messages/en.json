@@ -753,6 +753,7 @@
         "videos_matching": "Videos matching \"{searchTerm}\"",
         "want_lifetime_access": "Want lifetime access?",
         "watched_progress": "{pct} watched",
+        "web_reader_empty_state": "Paste a URL above to read a {l2} webpage, article, or story.",
         "will_auto_renew": "will auto-renew",
         "with_pro_you_can": "With Pro, you can:",
         "you_are_pro": "You're now Pro!",
@@ -1007,6 +1008,7 @@
         "video_count": "Video {index} of {total}",
         "views": "{numViews} Views",
         "watch_history": "Watch History",
+        "web_reader": "Web Reader",
         "welcome": "Welcome to Language Player",
         "welcome_back": "Welcome back",
         "your_current_plan": "Your Current Plan"

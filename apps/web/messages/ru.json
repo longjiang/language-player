@@ -746,6 +746,7 @@
         "videos_matching": "Видео, соответствующие \"{searchTerm}\"",
         "want_lifetime_access": "Хотите пожизненный доступ?",
         "watched_progress": "{pct} просмотрено",
+        "web_reader_empty_state": "Вставьте URL выше, чтобы прочитать веб-страницу, статью или рассказ на {l2}.",
         "will_auto_renew": "будет продлеваться автоматически",
         "with_pro_you_can": "С Pro вы можете:",
         "you_are_pro": "Теперь вы Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Видео {index} из {total}",
         "views": "{numViews} просмотров",
         "watch_history": "История просмотров",
+        "web_reader": "Веб-читатель",
         "welcome": "Добро пожаловать в Language Player",
         "welcome_back": "С возвращением",
         "your_current_plan": "Ваш текущий план"

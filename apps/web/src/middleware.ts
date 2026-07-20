@@ -6,7 +6,7 @@ const GUEST_NAV_LIMIT = 3;
 const AUTH_REQUIRED_SEGMENTS = ['saved-words', 'review', 'settings', 'go-pro', 'watch-history', 'tokenizer'];
 
 /** Pages that don't count toward the guest navigation limit (content consumption). */
-const GUEST_NAV_FREE_SEGMENTS = ['watch', 'explore', 'search', 'dictionary', 'music', 'live-tv', 'tv-shows', 'reader', 'channel'];
+const GUEST_NAV_FREE_SEGMENTS = ['watch', 'explore', 'search', 'dictionary', 'music', 'live-tv', 'tv-shows', 'reader', 'web-reader', 'channel'];
 
 /** Parse Accept-Language header and return the best matching supported L1 code, or null. */
 function detectLocale(request: NextRequest): string | null {

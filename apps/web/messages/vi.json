@@ -746,6 +746,7 @@
         "videos_matching": "Video phù hợp với \"{searchTerm}\"",
         "want_lifetime_access": "Muốn truy cập trọn đời?",
         "watched_progress": "{pct} lượt xem",
+        "web_reader_empty_state": "Dán URL ở trên để đọc trang web, bài viết hoặc câu chuyện {l2}.",
         "will_auto_renew": "sẽ tự động gia hạn",
         "with_pro_you_can": "Với Pro, bạn có thể:",
         "you_are_pro": "Bạn đã là Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Video {index} trên {total}",
         "views": "{numViews} lượt xem",
         "watch_history": "Lịch sử xem",
+        "web_reader": "Trình đọc web",
         "welcome": "Chào mừng đến với Language Player",
         "welcome_back": "Chào mừng trở lại",
         "your_current_plan": "Gói hiện tại của bạn"
