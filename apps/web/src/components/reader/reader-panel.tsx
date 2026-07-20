@@ -108,6 +108,7 @@ export function ReaderPanel({
   const [pageBreaks, setPageBreaks] = useState<number[]>([]);
   const totalPages = Math.max(1, pageBreaks.length + 1);
   const [blockTranslations, setBlockTranslations] = useState<Record<number, string>>({});
+  const translateGenerationRef = useRef(0);
 
   // Clear translations when blocks change (new note / re-tokenize / page turn)
   const prevBlocksRef = useRef(blocks);
@@ -211,7 +212,10 @@ export function ReaderPanel({
     const hasAny = Object.keys(blockTranslations).length > 0;
     if (hasAny) return;
     const texts = textBlocks.map(b => b.text);
+    translateGenerationRef.current += 1;
+    const gen = translateGenerationRef.current;
     onPageTranslate(texts).then(translated => {
+      if (translateGenerationRef.current !== gen) return; // stale — user navigated away
       if (translated.length > 0) {
         const map: Record<number, string> = {};
         textBlocks.forEach((_, i) => {
