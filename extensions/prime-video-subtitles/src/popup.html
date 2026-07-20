@@ -7,7 +7,10 @@
 </head>
 <body>
   <div class="container">
-    <h1>🎬 Prime Video Subtitles</h1>
+    <h1>
+      <img src="language-player-logo-64.png" alt="" width="28" height="28" />
+      Language Player
+    </h1>
 
     <!-- Auth section -->
     <div id="auth-section">
@@ -24,16 +27,16 @@
       </div>
     </div>
 
-    <!-- Subtitle list -->
-    <div id="subtitles-container">
-      <div id="subtitles-list"></div>
-      <div id="no-subtitles" class="hidden">No subtitle files detected yet.<br>Start playing a video on Prime Video.</div>
+    <!-- Instructions -->
+    <div id="instructions">
+      <p>Start playing any video on <strong>Prime Video</strong>. The transcript panel opens automatically with interactive subtitles.</p>
+      <ul>
+        <li><strong>Click</strong> any word to look it up in the dictionary</li>
+        <li><strong>Save</strong> words to your Language Player account</li>
+        <li>Press <kbd>Alt</kbd> + <kbd>T</kbd> to toggle the panel</li>
+      </ul>
     </div>
 
-    <div class="footer">
-      <button id="download-all-btn" class="hidden">Download All</button>
-      <button id="clear-btn">Clear All</button>
-    </div>
   </div>
   <script src="popup.js"></script>
 </body>
