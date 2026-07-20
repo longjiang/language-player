@@ -488,6 +488,8 @@ body.lpv-panel-open .dv-player-fullscreen {
 }
 
 .lpv-explain-btn {
+  display: block;
+  width: 100%;
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 600;
@@ -732,6 +734,58 @@ body.lpv-panel-open .dv-player-fullscreen {
   color: #bbb;
   margin-top: 4px;
   line-height: 1.5;
+}
+
+/* ── Entry Row with per-entry Save button ──────────────────────────── */
+
+.lpv-dict-entry-row {
+  display: flex;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.lpv-dict-entry-row:last-child {
+  border-bottom: none;
+}
+
+.lpv-dict-entry-row .lpv-dict-entry {
+  flex: 1;
+  border-bottom: none;
+}
+
+.lpv-entry-save-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 6px 8px 0 4px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.lpv-entry-save-btn:hover {
+  color: #ffc107;
+  border-color: rgba(255, 193, 7, 0.3);
+  background: rgba(255, 193, 7, 0.08);
+}
+
+.lpv-entry-save-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.lpv-entry-save-btn-saved {
+  color: #ffc107;
+  border-color: rgba(255, 193, 7, 0.3);
+  background: rgba(255, 193, 7, 0.1);
 }
 
 .lpv-dict-levels {
