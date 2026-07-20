@@ -746,6 +746,7 @@
         "videos_matching": "\"{searchTerm}\"に一致する動画",
         "want_lifetime_access": "生涯アクセスをご希望ですか？",
         "watched_progress": "{pct} が視聴しました",
+        "web_reader_empty_state": "上記のURLを貼り付けて、{l2}のウェブページ、記事、またはストーリーを読んでください。",
         "will_auto_renew": "自動更新されます",
         "with_pro_you_can": "Proでは、次のことができます:",
         "you_are_pro": "あなたはプロになりました！",
@@ -998,6 +999,7 @@
         "video_count": "動画 {index} / {total}",
         "views": "{numViews}ビュー",
         "watch_history": "閲覧履歴",
+        "web_reader": "ウェブリーダー",
         "welcome": "Language Player へようこそ",
         "welcome_back": "おかえりなさい",
         "your_current_plan": "現在のプラン"

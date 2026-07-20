@@ -746,6 +746,7 @@
         "videos_matching": "Videot hakusanalla \"{searchTerm}\"",
         "want_lifetime_access": "Haluatko elinikäisen pääsyn?",
         "watched_progress": "{pct} katsottu",
+        "web_reader_empty_state": "Liitä URL-osoite yläpuolelle lukeaksesi {l2}-verkkosivun, artikkelin tai tarinan.",
         "will_auto_renew": "uusiutuu automaattisesti",
         "with_pro_you_can": "Pro-versiolla voit:",
         "you_are_pro": "Olet nyt Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Video {index} / {total}",
         "views": "{numViews} näyttökertaa",
         "watch_history": "Katseluhistoria",
+        "web_reader": "Verkkosivulukija",
         "welcome": "Tervetuloa Language Playeriin",
         "welcome_back": "Tervetuloa takaisin",
         "your_current_plan": "Nykyinen suunnitelmasi"

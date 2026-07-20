@@ -746,6 +746,7 @@
         "videos_matching": "\"{searchTerm}\" से मेल खाते वीडियो",
         "want_lifetime_access": "क्या आप आजीवन पहुँच चाहते हैं?",
         "watched_progress": "{pct} ने देखा",
+        "web_reader_empty_state": "ऊपर एक URL चिपकाएँ {l2} वेबपेज, लेख या कहानी पढ़ने के लिए।",
         "will_auto_renew": "स्वतः नवीनीकृत होगा",
         "with_pro_you_can": "प्रो के साथ, आप कर सकते हैं:",
         "you_are_pro": "अब आप प्रो हैं!",
@@ -998,6 +999,7 @@
         "video_count": "वीडियो {index} / {total}",
         "views": "{numViews} दृश्य",
         "watch_history": "देखने का इतिहास",
+        "web_reader": "वेब रीडर",
         "welcome": "Language Player में आपका स्वागत है",
         "welcome_back": "वापसी पर स्वागत है",
         "your_current_plan": "आपकी वर्तमान योजना"

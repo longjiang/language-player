@@ -746,6 +746,7 @@
         "videos_matching": "Videoer som samsvarer med \"{searchTerm}\"",
         "want_lifetime_access": "Ønsker du livstidstilgang?",
         "watched_progress": "{pct} sett",
+        "web_reader_empty_state": "Lim inn en URL ovenfor for å lese en {l2}-nettside, artikkel eller historie.",
         "will_auto_renew": "fornyes automatisk",
         "with_pro_you_can": "Med Pro kan du:",
         "you_are_pro": "Du er nå Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Video {index} av {total}",
         "views": "{numViews} visninger",
         "watch_history": "Seerhistorikk",
+        "web_reader": "Nettleser",
         "welcome": "Velkommen til Language Player",
         "welcome_back": "Velkommen tilbake",
         "your_current_plan": "Din nåværende plan"

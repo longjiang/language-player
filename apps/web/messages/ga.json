@@ -746,6 +746,7 @@
         "videos_matching": "Físeáin ag meaitseáil \"{searchTerm}\"",
         "want_lifetime_access": "An bhfuil rochtain ar feadh an tsaoil uait?",
         "watched_progress": "{pct} féachaint air",
+        "web_reader_empty_state": "Greamaigh URL thuas chun leathanach gréasáin, alt nó scéal {l2} a léamh.",
         "will_auto_renew": "athnuafaidh sé go huathoibríoch",
         "with_pro_you_can": "Le Pro, is féidir leat:",
         "you_are_pro": "Tá tú Pro anois!",
@@ -998,6 +999,7 @@
         "video_count": "Físeán {index} as {total}",
         "views": "{numViews} amharc",
         "watch_history": "Stair féachana",
+        "web_reader": "Léitheoir gréasáin",
         "welcome": "Fáilte go Language Player",
         "welcome_back": "Fáilte ar ais",
         "your_current_plan": "Do phlean reatha"

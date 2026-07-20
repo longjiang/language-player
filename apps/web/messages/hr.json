@@ -746,6 +746,7 @@
         "videos_matching": "Videozapisi koji odgovaraju \"{searchTerm}\"",
         "want_lifetime_access": "Želite doživotni pristup?",
         "watched_progress": "{pct} gledano",
+        "web_reader_empty_state": "Zalijepite URL iznad za čitanje {l2} web stranice, članka ili priče.",
         "will_auto_renew": "automatski će se obnoviti",
         "with_pro_you_can": "S Pro verzijom možeš:",
         "you_are_pro": "Sada ste Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Video {index} od {total}",
         "views": "{numViews} pregleda",
         "watch_history": "Povijest gledanja",
+        "web_reader": "Web čitač",
         "welcome": "Dobrodošli u Language Player",
         "welcome_back": "Dobrodošli natrag",
         "your_current_plan": "Tvoj trenutni plan"

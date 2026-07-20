@@ -746,6 +746,7 @@
         "videos_matching": "Vídeos que coincideixen amb \"{searchTerm}\"",
         "want_lifetime_access": "Vols accés vitalici?",
         "watched_progress": "{pct} visualitzat",
+        "web_reader_empty_state": "Enganxa una URL a dalt per llegir una pàgina web, article o història en {l2}.",
         "will_auto_renew": "es renovarà automàticament",
         "with_pro_you_can": "Amb Pro, pots:",
         "you_are_pro": "Ara ets Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Vídeo {index} de {total}",
         "views": "{numViews} visualitzacions",
         "watch_history": "Historial de visualització",
+        "web_reader": "Lector web",
         "welcome": "Benvingut a Language Player",
         "welcome_back": "Benvingut de nou",
         "your_current_plan": "El teu pla actual"

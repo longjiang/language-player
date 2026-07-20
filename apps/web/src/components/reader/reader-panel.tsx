@@ -13,7 +13,7 @@ import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-mar
 import { getSampleText } from '@/lib/sample-texts';
 import { TabbedPanel } from '@/components/tabbed-panel';
 import {
-  BookOpen, Loader2, Globe, FileText, Sparkles,
+  BookOpen, Loader2, FileText, Sparkles,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
@@ -70,7 +70,6 @@ export interface ReaderPanelProps {
   text: string;
   loading: boolean;
   activeTab: 'edit' | 'read';
-  urlInput: string;
   translating: boolean;
   blocks: ReaderBlock[] | null;
   blockTokens: LemmatizedToken[][] | null;
@@ -78,8 +77,6 @@ export interface ReaderPanelProps {
   ctx: Partial<SavedWordContext>;
   onTextChange: (text: string) => void;
   onTabChange: (tab: 'edit' | 'read') => void;
-  onUrlInputChange: (url: string) => void;
-  onUrlSubmit: (url: string) => void;
   onTokenize: () => void;
   onFillSample: (text: string, title: string) => void;
   onPageTranslate: (texts: string[]) => Promise<string[]>;
@@ -92,12 +89,12 @@ export interface ReaderPanelProps {
 export function ReaderPanel({
   l2, l1,
   text, loading,
-  activeTab, urlInput,
+  activeTab,
   translating,
   blocks, blockTokens, tokenizing,
   ctx,
   onTextChange,
-  onTabChange, onUrlInputChange, onUrlSubmit,
+  onTabChange,
   onTokenize, onFillSample, onPageTranslate,
   onAnchorChange,
   initialAnchor,
@@ -254,17 +251,6 @@ export function ReaderPanel({
         contentClassName="p-4"
       >
         <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col h-full">
-          {/* URL input */}
-          <form onSubmit={(e) => { e.preventDefault(); if (urlInput.trim()) onUrlSubmit(urlInput.trim()); }} className="mb-4 flex gap-2">
-            <div className="relative flex-1">
-              <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input type="url" value={urlInput} onChange={(e) => onUrlInputChange(e.target.value)}
-                placeholder={t('placeholder.paste_url', { l2: l2.name })}
-                className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
-            </div>
-            <Button type="submit" size="sm" disabled={!urlInput.trim() || loading}>{t('action.load')}</Button>
-          </form>
-
           {/* Edit mode */}
           {activeTab === 'edit' && (
             <div className="space-y-3">

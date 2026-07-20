@@ -746,6 +746,7 @@
         "videos_matching": "Video's die overeenkomen met \"{searchTerm}\"",
         "want_lifetime_access": "Levenslange toegang gewenst?",
         "watched_progress": "{pct} bekeken",
+        "web_reader_empty_state": "Plak een URL hierboven om een {l2} webpagina, artikel of verhaal te lezen.",
         "will_auto_renew": "wordt automatisch verlengd",
         "with_pro_you_can": "Met Pro kun je:",
         "you_are_pro": "Je bent nu Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Video {index} van {total}",
         "views": "{numViews} weergaven",
         "watch_history": "Kijkgeschiedenis",
+        "web_reader": "Weblezer",
         "welcome": "Welkom bij Language Player",
         "welcome_back": "Welkom terug",
         "your_current_plan": "Je huidige abonnement"

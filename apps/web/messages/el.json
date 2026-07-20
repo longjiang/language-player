@@ -746,6 +746,7 @@
         "videos_matching": "Βίντεο που ταιριάζουν με \"{searchTerm}\"",
         "want_lifetime_access": "Θέλετε ισόβια πρόσβαση;",
         "watched_progress": "{pct} παρακολουθήθηκε",
+        "web_reader_empty_state": "Επικολλήστε μια διεύθυνση URL παραπάνω για να διαβάσετε μια ιστοσελίδα, άρθρο ή ιστορία {l2}.",
         "will_auto_renew": "θα ανανεωθεί αυτόματα",
         "with_pro_you_can": "Με την επαγγελματική έκδοση, μπορείτε να:",
         "you_are_pro": "Είστε πλέον Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Βίντεο {index} από {total}",
         "views": "{numViews} Προβολές",
         "watch_history": "Ιστορικό προβολών",
+        "web_reader": "Αναγνώστης ιστού",
         "welcome": "Καλώς ήρθατε στο Language Player",
         "welcome_back": "Καλώς ήρθατε ξανά",
         "your_current_plan": "Το τρέχον πλάνο σας"

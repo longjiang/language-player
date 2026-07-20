@@ -746,6 +746,7 @@
         "videos_matching": "Video yang cocok dengan \"{searchTerm}\"",
         "want_lifetime_access": "Ingin akses seumur hidup?",
         "watched_progress": "{pct} ditonton",
+        "web_reader_empty_state": "Tempelkan URL di atas untuk membaca halaman web, artikel, atau cerita {l2}.",
         "will_auto_renew": "akan diperpanjang otomatis",
         "with_pro_you_can": "Dengan Pro, Anda dapat:",
         "you_are_pro": "Kamu sekarang Pro!",
@@ -998,6 +999,7 @@
         "video_count": "Video {index} dari {total}",
         "views": "{numViews} Penayangan",
         "watch_history": "Riwayat Tontonan",
+        "web_reader": "Pembaca web",
         "welcome": "Selamat datang di Language Player",
         "welcome_back": "Selamat datang kembali",
         "your_current_plan": "Rencana Anda Saat Ini"
