@@ -30,7 +30,8 @@ const subtitleExtensions = [
     '.xml'
 ];
 
-const BADGE_COLOR = "#00A8E1";
+const BADGE_COLOR = "#22c55e"; // green
+const BADGE_CHECK = "\u2713";  // ✓
 
 // Keep track of detected subtitle URLs in memory
 let detectedSubtitles = [];
@@ -163,11 +164,12 @@ function getExtensionFromUrl(url) {
     }
 }
 
-// Update badge with count of available subtitles
+// Update badge with checkmark when subtitles are available
 function updateBadge() {
-    const count = detectedSubtitles.length;
-    chrome.action.setBadgeText({text: count > 0 ? count.toString() : ""});
-    chrome.action.setBadgeBackgroundColor({color: BADGE_COLOR});
+  const found = detectedSubtitles.length > 0;
+  chrome.action.setBadgeText({ text: found ? BADGE_CHECK : '' });
+  chrome.action.setBadgeTextColor({ color: '#ffffff' });
+  chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR });
 }
 
 function clearDetectedSubtitlesByTab(tabId) {
