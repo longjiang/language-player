@@ -186,12 +186,14 @@
         "auto_best_for": "Kiotomatiki (bora kwa {l2})",
         "auto_pause": "Sitisha Kiotomatiki",
         "auto_renews": "Inajifanyia upya kiotomatiki",
+        "build_date": "Tarehe ya Kujenga",
         "character_set": "Seti ya herufi",
         "collapse_video": "Kunja Video",
         "conjugation": "Mnyambuliko",
         "custom_voice": "Sauti maalum",
         "dialog": "Mazungumzo",
         "enable_popup_dictionary": "Washa kamusi ibukizi",
+        "environment": "Mazingira",
         "font": "Fonti",
         "free_account": "Akaunti Bure",
         "gender_label": "Jinsia:",
@@ -226,6 +228,7 @@
         "unknown_user": "Mtumiaji",
         "untitled_video": "Bila Jina",
         "untitled_video_full": "Video Bila Jina",
+        "version": "Toleo",
         "views_count": "{count} macho"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "sekunde"
     },
     "title": {
+        "about": "Kuhusu",
         "account": "Akaunti",
         "all_categories": "Kategoria zote",
         "all_countries": "Nchi zote",

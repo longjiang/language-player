@@ -186,12 +186,14 @@
         "auto_best_for": "Auto (najlepsze dla {l2})",
         "auto_pause": "Automatyczna pauza",
         "auto_renews": "Automatyczne odnawianie",
+        "build_date": "Data kompilacji",
         "character_set": "Zestaw znaków",
         "collapse_video": "Zwiń wideo",
         "conjugation": "Odmiana",
         "custom_voice": "Głos niestandardowy",
         "dialog": "Dialog",
         "enable_popup_dictionary": "Włącz wyskakujący słownik",
+        "environment": "Środowisko",
         "font": "Czcionka",
         "free_account": "Darmowe konto",
         "gender_label": "Płeć:",
@@ -226,6 +228,7 @@
         "unknown_user": "Użytkownik",
         "untitled_video": "Bez tytułu",
         "untitled_video_full": "Wideo bez tytułu",
+        "version": "Wersja",
         "views_count": "{count} wyświetleń"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "sek"
     },
     "title": {
+        "about": "O aplikacji",
         "account": "Konto",
         "all_categories": "Wszystkie kategorie",
         "all_countries": "Wszystkie kraje",

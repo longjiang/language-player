@@ -186,12 +186,14 @@
         "auto_best_for": "Otomatis (terbaik untuk {l2})",
         "auto_pause": "Jeda otomatis",
         "auto_renews": "Perpanjangan otomatis",
+        "build_date": "Tanggal Build",
         "character_set": "Set karakter",
         "collapse_video": "Ciutkan video",
         "conjugation": "Konjugasi",
         "custom_voice": "Suara kustom",
         "dialog": "Dialog",
         "enable_popup_dictionary": "Aktifkan kamus pop-up",
+        "environment": "Lingkungan",
         "font": "Font",
         "free_account": "Akun Gratis",
         "gender_label": "Jenis kelamin:",
@@ -226,6 +228,7 @@
         "unknown_user": "Pengguna",
         "untitled_video": "Tanpa Judul",
         "untitled_video_full": "Video Tanpa Judul",
+        "version": "Versi",
         "views_count": "{count} tayangan"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "detik"
     },
     "title": {
+        "about": "Tentang",
         "account": "Akun",
         "all_categories": "Semua Kategori",
         "all_countries": "Semua Negara",

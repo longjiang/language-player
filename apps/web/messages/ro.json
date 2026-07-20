@@ -186,12 +186,14 @@
         "auto_best_for": "Auto (cel mai bun pentru {l2})",
         "auto_pause": "Pauză automată",
         "auto_renews": "Se reînnoiește automat",
+        "build_date": "Data construirii",
         "character_set": "Setul de caractere",
         "collapse_video": "Restrânge videoclipul",
         "conjugation": "Conjugare",
         "custom_voice": "Voce personalizată",
         "dialog": "Dialog",
         "enable_popup_dictionary": "Activează dicționarul pop-up",
+        "environment": "Mediu",
         "font": "Font",
         "free_account": "Cont gratuit",
         "gender_label": "Gen:",
@@ -226,6 +228,7 @@
         "unknown_user": "Utilizator",
         "untitled_video": "Fără titlu",
         "untitled_video_full": "Video fără titlu",
+        "version": "Versiune",
         "views_count": "{count} de vizualizări"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "sec"
     },
     "title": {
+        "about": "Despre",
         "account": "Cont",
         "all_categories": "Toate categoriile",
         "all_countries": "Toate țările",

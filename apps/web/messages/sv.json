@@ -186,12 +186,14 @@
         "auto_best_for": "Auto (bäst för {l2})",
         "auto_pause": "Automatisk paus",
         "auto_renews": "Automatisk förnyelse",
+        "build_date": "Build-datum",
         "character_set": "Teckenuppsättning",
         "collapse_video": "Dölj video",
         "conjugation": "Böjning",
         "custom_voice": "Anpassad röst",
         "dialog": "Dialog",
         "enable_popup_dictionary": "Aktivera popup-ordbok",
+        "environment": "Miljö",
         "font": "Typsnitt",
         "free_account": "Gratis konto",
         "gender_label": "Kön:",
@@ -226,6 +228,7 @@
         "unknown_user": "Användare",
         "untitled_video": "Namnlös",
         "untitled_video_full": "Namnlös video",
+        "version": "Version",
         "views_count": "{count} visningar"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "sek"
     },
     "title": {
+        "about": "Om",
         "account": "Konto",
         "all_categories": "Alla kategorier",
         "all_countries": "Alla länder",

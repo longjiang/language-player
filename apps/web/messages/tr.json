@@ -186,12 +186,14 @@
         "auto_best_for": "Otomatik ({l2} için en iyisi)",
         "auto_pause": "Otomatik Duraklatma",
         "auto_renews": "Otomatik yenilenir",
+        "build_date": "Derleme Tarihi",
         "character_set": "Karakter seti",
         "collapse_video": "Videoyu Daralt",
         "conjugation": "Çekim",
         "custom_voice": "Özel ses",
         "dialog": "Diyalog",
         "enable_popup_dictionary": "Açılır sözlüğü etkinleştir",
+        "environment": "Ortam",
         "font": "Yazı Tipi",
         "free_account": "Ücretsiz Hesap",
         "gender_label": "Cinsiyet:",
@@ -226,6 +228,7 @@
         "unknown_user": "Kullanıcı",
         "untitled_video": "Adsız",
         "untitled_video_full": "Adsız Video",
+        "version": "Sürüm",
         "views_count": "{count} görüntülenme"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "saniye"
     },
     "title": {
+        "about": "Hakkında",
         "account": "Hesap",
         "all_categories": "Tüm Kategoriler",
         "all_countries": "Tüm Ülkeler",

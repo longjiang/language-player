@@ -186,12 +186,14 @@
         "auto_best_for": "Auto (meilleur pour {l2})",
         "auto_pause": "Pause automatique",
         "auto_renews": "Renouvellement automatique",
+        "build_date": "Date de build",
         "character_set": "Jeu de caractères",
         "collapse_video": "Réduire la vidéo",
         "conjugation": "Conjugaison",
         "custom_voice": "Voix personnalisée",
         "dialog": "Dialogue",
         "enable_popup_dictionary": "Activer le dictionnaire contextuel",
+        "environment": "Environnement",
         "font": "Police",
         "free_account": "Compte gratuit",
         "gender_label": "Genre :",
@@ -226,6 +228,7 @@
         "unknown_user": "Utilisateur",
         "untitled_video": "Sans titre",
         "untitled_video_full": "Vidéo sans titre",
+        "version": "Version",
         "views_count": "{count} vues"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "sec"
     },
     "title": {
+        "about": "À propos",
         "account": "Compte",
         "all_categories": "Toutes les catégories",
         "all_countries": "Tous les pays",

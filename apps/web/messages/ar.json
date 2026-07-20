@@ -186,12 +186,14 @@
         "auto_best_for": "تلقائي (الأفضل لـ {l2})",
         "auto_pause": "إيقاف مؤقت تلقائي",
         "auto_renews": "تجديد تلقائي",
+        "build_date": "تاريخ البناء",
         "character_set": "مجموعة الأحرف",
         "collapse_video": "طي الفيديو",
         "conjugation": "تصريف",
         "custom_voice": "صوت مخصص",
         "dialog": "حوار",
         "enable_popup_dictionary": "تفعيل القاموس المنبثق",
+        "environment": "البيئة",
         "font": "الخط",
         "free_account": "حساب مجاني",
         "gender_label": "الجنس:",
@@ -226,6 +228,7 @@
         "unknown_user": "مستخدم",
         "untitled_video": "فيديو بدون عنوان",
         "untitled_video_full": "فيديو بدون عنوان",
+        "version": "الإصدار",
         "views_count": "{count} مشاهدة"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "ثانية"
     },
     "title": {
+        "about": "حول",
         "account": "الحساب",
         "all_categories": "جميع الفئات",
         "all_countries": "جميع الدول",

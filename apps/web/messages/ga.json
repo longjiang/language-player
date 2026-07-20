@@ -186,12 +186,14 @@
         "auto_best_for": "Uathoibríoch (is fearr do {l2})",
         "auto_pause": "Sos uathoibríoch",
         "auto_renews": "Athnuachan uathoibríoch",
+        "build_date": "Dáta Tógála",
         "character_set": "Tacar carachtar",
         "collapse_video": "Laghdaigh físeán",
         "conjugation": "Réimniú",
         "custom_voice": "Guth saincheaptha",
         "dialog": "Agallamh",
         "enable_popup_dictionary": "Cumasaigh foclóir aníos",
+        "environment": "Timpeallacht",
         "font": "Clófhoireann",
         "free_account": "Cuntas Saor in Aisce",
         "gender_label": "Inscne:",
@@ -226,6 +228,7 @@
         "unknown_user": "Úsáideoir",
         "untitled_video": "Gan Teideal",
         "untitled_video_full": "Físeán Gan Teideal",
+        "version": "Leagan",
         "views_count": "{count} radharc"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "soic"
     },
     "title": {
+        "about": "Eolas",
         "account": "Cuntas",
         "all_categories": "Gach catagóir",
         "all_countries": "Gach tír",

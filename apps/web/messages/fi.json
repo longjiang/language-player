@@ -186,12 +186,14 @@
         "auto_best_for": "Automaattinen (paras kohteelle {l2})",
         "auto_pause": "Automaattinen tauko",
         "auto_renews": "Uusiutuu automaattisesti",
+        "build_date": "Koontipäivä",
         "character_set": "Merkistö",
         "collapse_video": "Kutista video",
         "conjugation": "Taivutus",
         "custom_voice": "Mukautettu ääni",
         "dialog": "Dialogi",
         "enable_popup_dictionary": "Ota ponnahdussanakirja käyttöön",
+        "environment": "Ympäristö",
         "font": "Fontti",
         "free_account": "Ilmainen tili",
         "gender_label": "Sukupuoli:",
@@ -226,6 +228,7 @@
         "unknown_user": "Käyttäjä",
         "untitled_video": "Nimeämätön",
         "untitled_video_full": "Nimeämätön video",
+        "version": "Versio",
         "views_count": "{count} katselukertaa"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "sek"
     },
     "title": {
+        "about": "Tietoja",
         "account": "Tili",
         "all_categories": "Kaikki kategoriat",
         "all_countries": "Kaikki maat",
