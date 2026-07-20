@@ -24,6 +24,7 @@
         "video_thumbnail": "视频缩略图"
     },
     "action": {
+        "all_results": "所有结果",
         "back": "返回",
         "back_to_login": "返回登录",
         "cancel": "取消",
@@ -46,6 +47,7 @@
         "export": "导出",
         "fill_with_sample": "填入示例",
         "forgot_password": "忘记密码？",
+        "hide_sidebar": "隐藏侧栏",
         "keep_account": "保留账户",
         "keep_subscription": "保留订阅",
         "let_ai_explain": "让 DeepSeek 解释",
@@ -80,6 +82,7 @@
         "share": "分享",
         "show_less": "收起",
         "show_more": "显示更多",
+        "show_sidebar": "显示侧栏",
         "sign_in": "登录",
         "sign_up": "注册",
         "speak": "朗读",
@@ -185,6 +188,7 @@
         "collapse_video": "收起视频",
         "conjugation": "变位",
         "custom_voice": "自定义声音",
+        "dialog": "对话",
         "enable_popup_dictionary": "启用弹出词典",
         "font": "字体",
         "free_account": "免费账户",

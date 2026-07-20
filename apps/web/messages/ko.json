@@ -20,6 +20,7 @@
         "video_thumbnail": "영상 썸네일"
     },
     "action": {
+        "all_results": "모든 결과",
         "back": "뒤로",
         "back_to_login": "로그인으로 돌아가기",
         "cancel": "취소",
@@ -42,6 +43,7 @@
         "export": "내보내기",
         "fill_with_sample": "샘플로 채우기",
         "forgot_password": "비밀번호를 잊으셨나요?",
+        "hide_sidebar": "사이드바 숨기기",
         "keep_account": "계정 유지",
         "keep_subscription": "구독 유지",
         "let_ai_explain": "DeepSeek에게 설명 요청",
@@ -77,6 +79,7 @@
         "share": "공유",
         "show_less": "접기",
         "show_more": "더 보기",
+        "show_sidebar": "사이드바 보기",
         "sign_in": "로그인",
         "sign_up": "가입하기",
         "speak": "말하기",
@@ -182,6 +185,7 @@
         "collapse_video": "동영상 접기",
         "conjugation": "활용",
         "custom_voice": "사용자 정의 음성",
+        "dialog": "대화",
         "enable_popup_dictionary": "팝업 사전 활성화",
         "font": "글꼴",
         "free_account": "무료 계정",

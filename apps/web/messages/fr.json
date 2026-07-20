@@ -20,6 +20,7 @@
         "video_thumbnail": "Miniature vidéo"
     },
     "action": {
+        "all_results": "Tous les résultats",
         "back": "Retour",
         "back_to_login": "Retour à la connexion",
         "cancel": "Annuler",
@@ -42,6 +43,7 @@
         "export": "Exporter",
         "fill_with_sample": "Remplir avec un échantillon",
         "forgot_password": "Mot de passe oublié ?",
+        "hide_sidebar": "Masquer la barre latérale",
         "keep_account": "Conserver le compte",
         "keep_subscription": "Conserver l'abonnement",
         "let_ai_explain": "Laissez DeepSeek expliquer",
@@ -77,6 +79,7 @@
         "share": "Partager",
         "show_less": "Afficher moins",
         "show_more": "Afficher plus",
+        "show_sidebar": "Afficher la barre latérale",
         "sign_in": "Se connecter",
         "sign_up": "S'inscrire",
         "speak": "Parler",
@@ -182,6 +185,7 @@
         "collapse_video": "Réduire la vidéo",
         "conjugation": "Conjugaison",
         "custom_voice": "Voix personnalisée",
+        "dialog": "Dialogue",
         "enable_popup_dictionary": "Activer le dictionnaire contextuel",
         "font": "Police",
         "free_account": "Compte gratuit",

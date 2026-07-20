@@ -20,6 +20,7 @@
         "video_thumbnail": "Videon pikkukuva"
     },
     "action": {
+        "all_results": "Kaikki tulokset",
         "back": "Takaisin",
         "back_to_login": "Takaisin kirjautumiseen",
         "cancel": "Peruuta",
@@ -42,6 +43,7 @@
         "export": "Vie",
         "fill_with_sample": "Täytä esimerkillä",
         "forgot_password": "Unohditko salasanan?",
+        "hide_sidebar": "Piilota sivupalkki",
         "keep_account": "Säilytä tili",
         "keep_subscription": "Säilytä tilaus",
         "let_ai_explain": "Anna DeepSeekin selittää",
@@ -77,6 +79,7 @@
         "share": "Jaa",
         "show_less": "Näytä vähemmän",
         "show_more": "Näytä lisää",
+        "show_sidebar": "Näytä sivupalkki",
         "sign_in": "Kirjaudu sisään",
         "sign_up": "Rekisteröidy",
         "speak": "Puhu",
@@ -182,6 +185,7 @@
         "collapse_video": "Kutista video",
         "conjugation": "Taivutus",
         "custom_voice": "Mukautettu ääni",
+        "dialog": "Dialogi",
         "enable_popup_dictionary": "Ota ponnahdussanakirja käyttöön",
         "font": "Fontti",
         "free_account": "Ilmainen tili",

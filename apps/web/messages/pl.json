@@ -20,6 +20,7 @@
         "video_thumbnail": "Miniatura filmu"
     },
     "action": {
+        "all_results": "Wszystkie wyniki",
         "back": "Wstecz",
         "back_to_login": "Powrót do logowania",
         "cancel": "Anuluj",
@@ -42,6 +43,7 @@
         "export": "Eksportuj",
         "fill_with_sample": "Wypełnij próbką",
         "forgot_password": "Nie pamiętasz hasła?",
+        "hide_sidebar": "Ukryj pasek boczny",
         "keep_account": "Zachowaj konto",
         "keep_subscription": "Zachowaj subskrypcję",
         "let_ai_explain": "Pozwól DeepSeek wyjaśnić",
@@ -77,6 +79,7 @@
         "share": "Udostępnij",
         "show_less": "Pokaż mniej",
         "show_more": "Pokaż więcej",
+        "show_sidebar": "Pokaż pasek boczny",
         "sign_in": "Zaloguj się",
         "sign_up": "Zarejestruj się",
         "speak": "Mów",
@@ -182,6 +185,7 @@
         "collapse_video": "Zwiń wideo",
         "conjugation": "Odmiana",
         "custom_voice": "Głos niestandardowy",
+        "dialog": "Dialog",
         "enable_popup_dictionary": "Włącz wyskakujący słownik",
         "font": "Czcionka",
         "free_account": "Darmowe konto",

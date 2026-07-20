@@ -20,6 +20,7 @@
         "video_thumbnail": "ภาพขนาดย่อของวิดีโอ"
     },
     "action": {
+        "all_results": "ผลลัพธ์ทั้งหมด",
         "back": "กลับ",
         "back_to_login": "กลับไปเข้าสู่ระบบ",
         "cancel": "ยกเลิก",
@@ -42,6 +43,7 @@
         "export": "ส่งออก",
         "fill_with_sample": "เติมด้วยตัวอย่าง",
         "forgot_password": "ลืมรหัสผ่าน?",
+        "hide_sidebar": "ซ่อนแถบด้านข้าง",
         "keep_account": "เก็บบัญชี",
         "keep_subscription": "เก็บการสมัครสมาชิก",
         "let_ai_explain": "ให้ DeepSeek อธิบาย",
@@ -77,6 +79,7 @@
         "share": "แชร์",
         "show_less": "แสดงน้อยลง",
         "show_more": "แสดงเพิ่มเติม",
+        "show_sidebar": "แสดงแถบด้านข้าง",
         "sign_in": "ลงชื่อเข้าใช้",
         "sign_up": "สมัครสมาชิก",
         "speak": "พูด",
@@ -182,6 +185,7 @@
         "collapse_video": "ยุบวิดีโอ",
         "conjugation": "การผัน",
         "custom_voice": "เสียงที่กำหนดเอง",
+        "dialog": "บทสนทนา",
         "enable_popup_dictionary": "เปิดใช้งานพจนานุกรมป๊อปอัป",
         "font": "แบบอักษร",
         "free_account": "บัญชีฟรี",

@@ -20,6 +20,7 @@
         "video_thumbnail": "Μικρογραφία βίντεο"
     },
     "action": {
+        "all_results": "Όλα τα αποτελέσματα",
         "back": "Πίσω",
         "back_to_login": "Επιστροφή στη σύνδεση",
         "cancel": "Ακύρωση",
@@ -42,6 +43,7 @@
         "export": "Εξαγωγή",
         "fill_with_sample": "Συμπλήρωση με δείγμα",
         "forgot_password": "Ξεχάσατε τον κωδικό;",
+        "hide_sidebar": "Απόκρυψη πλαϊνής γραμμής",
         "keep_account": "Διατήρηση λογαριασμού",
         "keep_subscription": "Διατήρηση συνδρομής",
         "let_ai_explain": "Ας εξηγήσει το DeepSeek",
@@ -77,6 +79,7 @@
         "share": "Κοινοποίηση",
         "show_less": "Εμφάνιση λιγότερων",
         "show_more": "Εμφάνιση περισσότερων",
+        "show_sidebar": "Εμφάνιση πλαϊνής γραμμής",
         "sign_in": "Σύνδεση",
         "sign_up": "Εγγραφή",
         "speak": "Μίλα",
@@ -182,6 +185,7 @@
         "collapse_video": "Σύμπτυξη βίντεο",
         "conjugation": "Κλίση",
         "custom_voice": "Προσαρμοσμένη φωνή",
+        "dialog": "Διάλογος",
         "enable_popup_dictionary": "Ενεργοποίηση αναδυόμενου λεξικού",
         "font": "Γραμματοσειρά",
         "free_account": "Δωρεάν Λογαριασμός",

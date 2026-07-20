@@ -20,6 +20,7 @@
         "video_thumbnail": "صورة مصغرة للفيديو"
     },
     "action": {
+        "all_results": "جميع النتائج",
         "back": "رجوع",
         "back_to_login": "العودة إلى تسجيل الدخول",
         "cancel": "إلغاء",
@@ -42,6 +43,7 @@
         "export": "تصدير",
         "fill_with_sample": "املأ بمثال",
         "forgot_password": "نسيت كلمة المرور؟",
+        "hide_sidebar": "إخفاء الشريط الجانبي",
         "keep_account": "الاحتفاظ بالحساب",
         "keep_subscription": "الاحتفاظ بالاشتراك",
         "let_ai_explain": "دع DeepSeek يشرح",
@@ -77,6 +79,7 @@
         "share": "مشاركة",
         "show_less": "عرض أقل",
         "show_more": "عرض المزيد",
+        "show_sidebar": "إظهار الشريط الجانبي",
         "sign_in": "تسجيل الدخول",
         "sign_up": "التسجيل",
         "speak": "تحدث",
@@ -182,6 +185,7 @@
         "collapse_video": "طي الفيديو",
         "conjugation": "تصريف",
         "custom_voice": "صوت مخصص",
+        "dialog": "حوار",
         "enable_popup_dictionary": "تفعيل القاموس المنبثق",
         "font": "الخط",
         "free_account": "حساب مجاني",

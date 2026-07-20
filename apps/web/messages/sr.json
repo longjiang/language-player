@@ -20,6 +20,7 @@
         "video_thumbnail": "Minijatura videa"
     },
     "action": {
+        "all_results": "Сви резултати",
         "back": "Nazad",
         "back_to_login": "Назад на пријаву",
         "cancel": "Otkaži",
@@ -42,6 +43,7 @@
         "export": "Izvezi",
         "fill_with_sample": "Popuni uzorkom",
         "forgot_password": "Заборавили сте лозинку?",
+        "hide_sidebar": "Сакриј бочну траку",
         "keep_account": "Zadrži nalog",
         "keep_subscription": "Zadrži pretplatu",
         "let_ai_explain": "Neka DeepSeek objasni",
@@ -77,6 +79,7 @@
         "share": "Подели",
         "show_less": "Прикажи мање",
         "show_more": "Прикажи више",
+        "show_sidebar": "Прикажи бочну траку",
         "sign_in": "Prijavi se",
         "sign_up": "Региструј се",
         "speak": "Изговори",
@@ -182,6 +185,7 @@
         "collapse_video": "Скупи видео",
         "conjugation": "Коњугација",
         "custom_voice": "Прилагођени глас",
+        "dialog": "Дијалог",
         "enable_popup_dictionary": "Омогући искачући речник",
         "font": "Фонт",
         "free_account": "Бесплатан налог",

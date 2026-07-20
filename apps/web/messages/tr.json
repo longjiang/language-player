@@ -20,6 +20,7 @@
         "video_thumbnail": "Video küçük resmi"
     },
     "action": {
+        "all_results": "Tüm sonuçlar",
         "back": "Geri",
         "back_to_login": "Girişe geri dön",
         "cancel": "İptal",
@@ -42,6 +43,7 @@
         "export": "Dışa Aktar",
         "fill_with_sample": "Örnekle Doldur",
         "forgot_password": "Şifrenizi mi unuttunuz?",
+        "hide_sidebar": "Kenar çubuğunu gizle",
         "keep_account": "Hesabı Sakla",
         "keep_subscription": "Aboneliği Sakla",
         "let_ai_explain": "DeepSeek Açıklasın",
@@ -77,6 +79,7 @@
         "share": "Paylaş",
         "show_less": "Daha az göster",
         "show_more": "Daha fazla göster",
+        "show_sidebar": "Kenar çubuğunu göster",
         "sign_in": "Oturum Aç",
         "sign_up": "Kaydol",
         "speak": "Konuş",
@@ -182,6 +185,7 @@
         "collapse_video": "Videoyu Daralt",
         "conjugation": "Çekim",
         "custom_voice": "Özel ses",
+        "dialog": "Diyalog",
         "enable_popup_dictionary": "Açılır sözlüğü etkinleştir",
         "font": "Yazı Tipi",
         "free_account": "Ücretsiz Hesap",

@@ -20,6 +20,7 @@
         "video_thumbnail": "影片縮圖"
     },
     "action": {
+        "all_results": "所有結果",
         "back": "返回",
         "back_to_login": "返回登入",
         "cancel": "取消",
@@ -42,6 +43,7 @@
         "export": "匯出",
         "fill_with_sample": "填入範例",
         "forgot_password": "忘記密碼？",
+        "hide_sidebar": "隱藏側欄",
         "keep_account": "保留帳號",
         "keep_subscription": "保留訂閱",
         "let_ai_explain": "讓 DeepSeek 解釋",
@@ -76,6 +78,7 @@
         "share": "分享",
         "show_less": "收起",
         "show_more": "顯示更多",
+        "show_sidebar": "顯示側欄",
         "sign_in": "登入",
         "sign_up": "註冊",
         "speak": "朗讀",
@@ -181,6 +184,7 @@
         "collapse_video": "摺疊影片",
         "conjugation": "變位",
         "custom_voice": "自訂語音",
+        "dialog": "對話",
         "enable_popup_dictionary": "啟用彈出字典",
         "font": "字體",
         "free_account": "免費帳戶",

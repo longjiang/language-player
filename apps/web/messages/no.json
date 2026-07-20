@@ -20,6 +20,7 @@
         "video_thumbnail": "Videominiatyrbilde"
     },
     "action": {
+        "all_results": "Alle resultater",
         "back": "Tilbake",
         "back_to_login": "Tilbake til innlogging",
         "cancel": "Avbryt",
@@ -42,6 +43,7 @@
         "export": "Eksporter",
         "fill_with_sample": "Fyll med eksempel",
         "forgot_password": "Glemt passord?",
+        "hide_sidebar": "Skjul sidefelt",
         "keep_account": "Behold konto",
         "keep_subscription": "Behold abonnement",
         "let_ai_explain": "La DeepSeek forklare",
@@ -77,6 +79,7 @@
         "share": "Del",
         "show_less": "Vis mindre",
         "show_more": "Vis mer",
+        "show_sidebar": "Vis sidefelt",
         "sign_in": "Logg inn",
         "sign_up": "Registrer deg",
         "speak": "Snakk",
@@ -182,6 +185,7 @@
         "collapse_video": "Skjul video",
         "conjugation": "Bøyning",
         "custom_voice": "Egendefinert stemme",
+        "dialog": "Dialog",
         "enable_popup_dictionary": "Aktiver sprettoppordbok",
         "font": "Skrifttype",
         "free_account": "Gratis konto",

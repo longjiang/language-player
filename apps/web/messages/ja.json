@@ -20,6 +20,7 @@
         "video_thumbnail": "動画サムネイル"
     },
     "action": {
+        "all_results": "すべての結果",
         "back": "戻る",
         "back_to_login": "ログインに戻る",
         "cancel": "キャンセル",
@@ -42,6 +43,7 @@
         "export": "エクスポート",
         "fill_with_sample": "サンプルで埋める",
         "forgot_password": "パスワードをお忘れですか？",
+        "hide_sidebar": "サイドバーを隠す",
         "keep_account": "アカウントを保持する",
         "keep_subscription": "サブスクリプションを保持する",
         "let_ai_explain": "DeepSeekに説明させる",
@@ -77,6 +79,7 @@
         "share": "共有",
         "show_less": "折りたたむ",
         "show_more": "もっと見る",
+        "show_sidebar": "サイドバーを表示",
         "sign_in": "サインイン",
         "sign_up": "登録",
         "speak": "読み上げ",
@@ -182,6 +185,7 @@
         "collapse_video": "動画を折りたたむ",
         "conjugation": "活用",
         "custom_voice": "カスタム音声",
+        "dialog": "会話",
         "enable_popup_dictionary": "ポップアップ辞書を有効にする",
         "font": "フォント",
         "free_account": "無料アカウント",

@@ -20,6 +20,7 @@
         "video_thumbnail": "Sličica videa"
     },
     "action": {
+        "all_results": "Svi rezultati",
         "back": "Natrag",
         "back_to_login": "Natrag na prijavu",
         "cancel": "Odustani",
@@ -42,6 +43,7 @@
         "export": "Izvezi",
         "fill_with_sample": "Ispuni primjerom",
         "forgot_password": "Zaboravili ste lozinku?",
+        "hide_sidebar": "Sakrij bočnu traku",
         "keep_account": "Zadrži račun",
         "keep_subscription": "Zadrži pretplatu",
         "let_ai_explain": "Neka DeepSeek objasni",
@@ -77,6 +79,7 @@
         "share": "Podijeli",
         "show_less": "Prikaži manje",
         "show_more": "Prikaži više",
+        "show_sidebar": "Prikaži bočnu traku",
         "sign_in": "Prijava",
         "sign_up": "Registriraj se",
         "speak": "Izgovori",
@@ -182,6 +185,7 @@
         "collapse_video": "Skupi video",
         "conjugation": "Konjugacija",
         "custom_voice": "Prilagođeni glas",
+        "dialog": "Dijalog",
         "enable_popup_dictionary": "Omogući skočni rječnik",
         "font": "Font",
         "free_account": "Besplatni račun",

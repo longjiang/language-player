@@ -20,6 +20,7 @@
         "video_thumbnail": "Picha ndogo ya video"
     },
     "action": {
+        "all_results": "Matokeo yote",
         "back": "Nyuma",
         "back_to_login": "Rudi kwenye kuingia",
         "cancel": "Ghairi",
@@ -42,6 +43,7 @@
         "export": "Hamisha",
         "fill_with_sample": "Jaza kwa sampuli",
         "forgot_password": "Umesahau nenosiri?",
+        "hide_sidebar": "Ficha upau wa kando",
         "keep_account": "Hifadhi Akaunti",
         "keep_subscription": "Hifadhi Usajili",
         "let_ai_explain": "Acha DeepSeek Aelezee",
@@ -77,6 +79,7 @@
         "share": "Shiriki",
         "show_less": "Onyesha kidogo",
         "show_more": "Onyesha zaidi",
+        "show_sidebar": "Onyesha upau wa kando",
         "sign_in": "Ingia",
         "sign_up": "Jiandikishe",
         "speak": "Sema",
@@ -182,6 +185,7 @@
         "collapse_video": "Kunja Video",
         "conjugation": "Mnyambuliko",
         "custom_voice": "Sauti maalum",
+        "dialog": "Mazungumzo",
         "enable_popup_dictionary": "Washa kamusi ibukizi",
         "font": "Fonti",
         "free_account": "Akaunti Bure",

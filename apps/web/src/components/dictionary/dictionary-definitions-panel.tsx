@@ -40,7 +40,7 @@ export function DictionaryDefinitionsPanel({
   headingLevel = 'h2',
 }: DictionaryDefinitionsPanelProps) {
   const t = useT();
-  const { apply } = useScriptPreference(l2Code ?? '');
+  const { apply, getAlternateScript } = useScriptPreference(l2Code ?? '');
   const { head, alternate } = apply(entry.head, entry.alternate);
 
   const HeadTag = headingLevel;
@@ -55,7 +55,7 @@ export function DictionaryDefinitionsPanel({
     ? pronunciation
     : formatPronunciation(entry, l2Code ?? '');
 
-  const showAlternate = alternate && alternate !== head && alternate !== formattedPron;
+  const displayAlternate = getAlternateScript(entry);
 
   const sourceName = entry.dictionary?.name ?? entry.source;
   const displaySource = sourceName === 'AI-Generated' || sourceName === 'LLM'
@@ -74,9 +74,9 @@ export function DictionaryDefinitionsPanel({
               <HeadTag className="text-4xl font-bold" lang={l2Code}>
                 {head}
               </HeadTag>
-              {showAlternate && (
+              {displayAlternate && (
                 <span className="text-xl text-muted-foreground" lang={l2Code}>
-                  {alternate}
+                  {displayAlternate}
                 </span>
               )}
             </div>
@@ -100,17 +100,6 @@ export function DictionaryDefinitionsPanel({
               )}
             </div>
           </div>
-
-          {saveContext && (
-            <div>
-              <SaveButton
-                wordId={entry.id}
-                head={entry.head}
-                context={saveContext}
-                size="default"
-              />
-            </div>
-          )}
         </div>
       </div>
 
@@ -178,7 +167,7 @@ export function DictionaryDefinitionsPanel({
                     book: m.location?.book,
                     lesson: m.location?.lesson,
                   })}
-                  {m.location?.dialog ? `, Dialog ${m.location.dialog}` : ''}
+                  {m.location?.dialog ? `, ${t('label.dialog')} ${m.location.dialog}` : ''}
                 </span>
               </div>
               {m.example && (
@@ -221,23 +210,33 @@ export function DictionaryDefinitionsPanel({
       )}
 
       {/* Source */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <BookOpen className="h-3 w-3" />
-        <span>{displaySource}</span>
-        <a
-          href={googleImagesUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-          title={t('action.search_images')}
-        >
-          <ExternalLink className="h-3 w-3" />
-          <span>{t('action.search_images')}</span>
-        </a>
-        {entry.match_type && entry.match_type !== 'exact' && (
-          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-            {entry.match_type}
-          </span>
+      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <BookOpen className="h-3 w-3" />
+          <span>{displaySource}</span>
+          <a
+            href={googleImagesUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+            title={t('action.search_images')}
+          >
+            <ExternalLink className="h-3 w-3" />
+            <span>{t('action.search_images')}</span>
+          </a>
+          {entry.match_type && entry.match_type !== 'exact' && (
+            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              {entry.match_type}
+            </span>
+          )}
+        </div>
+        {saveContext && (
+          <SaveButton
+            wordId={entry.id}
+            head={entry.head}
+            context={saveContext}
+            size="default"
+          />
         )}
       </div>
     </div>

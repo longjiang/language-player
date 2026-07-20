@@ -20,6 +20,7 @@
         "video_thumbnail": "Videó miniatűr"
     },
     "action": {
+        "all_results": "Minden találat",
         "back": "Vissza",
         "back_to_login": "Vissza a bejelentkezéshez",
         "cancel": "Mégse",
@@ -42,6 +43,7 @@
         "export": "Exportálás",
         "fill_with_sample": "Kitöltés mintával",
         "forgot_password": "Elfelejtette jelszavát?",
+        "hide_sidebar": "Oldalsáv elrejtése",
         "keep_account": "Fiók megtartása",
         "keep_subscription": "Előfizetés megtartása",
         "let_ai_explain": "Hadd magyarázza el a DeepSeek",
@@ -77,6 +79,7 @@
         "share": "Megosztás",
         "show_less": "Kevesebb megjelenítése",
         "show_more": "Több megjelenítése",
+        "show_sidebar": "Oldalsáv megjelenítése",
         "sign_in": "Bejelentkezés",
         "sign_up": "Regisztráció",
         "speak": "Beszéd",
@@ -182,6 +185,7 @@
         "collapse_video": "Videó összecsukása",
         "conjugation": "Ragozás",
         "custom_voice": "Egyedi hang",
+        "dialog": "Párbeszéd",
         "enable_popup_dictionary": "Felugró szótár engedélyezése",
         "font": "Betűtípus",
         "free_account": "Ingyenes fiók",
