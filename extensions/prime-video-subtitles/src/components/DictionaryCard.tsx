@@ -2,16 +2,17 @@
  * DictionaryCard — Inline dictionary lookup card for the extension.
  *
  * Renders inside the transcript panel when a word token is clicked.
- * Fetches entries from POST /dictionary/lookup and shows previews
- * with a link to the full Language Player web app.
- *
- * Error handling: if the API call fails or returns unexpected data,
- * the card shows a graceful error message rather than crashing.
+ * Fetches entries from POST /dictionary/lookup and shows full details:
+ * pronunciation, part of speech, definitions, proficiency levels.
+ * Each entry links to the Language Player web app for full details.
+ * Includes a Save/Unsave button backed by Directus sync.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import type { LemmatizedToken, DictionaryEntry, ProficiencyLevel } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
+import { useSavedWords } from './SavedWordsProvider';
+import { fetchInflectedForms } from '../saved-words';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -19,7 +20,6 @@ interface DictionaryCardProps {
   token: LemmatizedToken;
   l1Code: string;
   l2Code: string;
-  /** The full subtitle line text (for context) */
   contextText?: string;
   onClose: () => void;
 }
@@ -27,6 +27,7 @@ interface DictionaryCardProps {
 // ── API ────────────────────────────────────────────────────────────────────
 
 const API_BASE = 'https://pythonvps.zerotohero.ca';
+const WEB_APP = 'https://language-player.netlify.app';
 
 async function fetchEntries(
   text: string,
@@ -58,10 +59,8 @@ interface EntryRowProps {
 }
 
 const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code }) => {
-  const webAppUrl = `https://zerotohero.ca/${l1Code}/${l2Code}/dictionary/entry/${entry.dictionary?.id ?? 'llm'}/${entry.id}`;
-
-  const firstDef = entry.definition ?? '';
-  const shortDef = firstDef.length > 120 ? firstDef.slice(0, 120) + '…' : firstDef;
+  const dictId = entry.dictionary?.id ?? 'llm';
+  const webAppUrl = `${WEB_APP}/dictionary/${dictId}/${entry.id}`;
 
   return (
     <a
@@ -72,6 +71,9 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code })
     >
       <div className="lpv-dict-entry-header">
         <span className="lpv-dict-head">{entry.head}</span>
+        {entry.pronunciation && (
+          <span className="lpv-dict-pron-small">[{entry.pronunciation}]</span>
+        )}
         {entry.part_of_speech && (
           <span className="lpv-dict-pos">{entry.part_of_speech}</span>
         )}
@@ -79,7 +81,9 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code })
           <span className="lpv-dict-source">{entry.dictionary.name}</span>
         )}
       </div>
-      {shortDef && <div className="lpv-dict-def">{shortDef}</div>}
+      {entry.definition && (
+        <div className="lpv-dict-def">{entry.definition}</div>
+      )}
       {entry.levels && entry.levels.length > 0 && (
         <div className="lpv-dict-levels">
           {entry.levels.map((lvl, i) => (
@@ -106,6 +110,15 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   const [entries, setEntries] = useState<DictionaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const { savedWords, saveWord, removeSavedWord, isLoggedIn } = useSavedWords();
+
+  // Check if any form of this token is already saved
+  const firstEntry = entries[0];
+  const isSaved = !!firstEntry && (savedWords[l2Code] || []).some(
+    w => w.id === firstEntry.id
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -116,7 +129,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     console.log('[LPV] Dictionary lookup for:', token.text, token.lemmas.map(l => l.lemma));
 
     const search = async () => {
-      // Try lemmas first, then the surface form
       const searchTerms = [
         ...token.lemmas.map((l) => l.lemma),
         token.text,
@@ -169,13 +181,44 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     };
   }, [token, l1Code, l2Code]);
 
-  const webAppUrl = `https://zerotohero.ca/${l1Code}/${l2Code}/dictionary/entry/llm/${encodeURIComponent(token.text)}`;
+  const handleSave = useCallback(async () => {
+    if (!firstEntry || !isLoggedIn) return;
+    setSaving(true);
+    try {
+      if (isSaved) {
+        removeSavedWord(l2Code, firstEntry.id);
+      } else {
+        const allForms = await fetchInflectedForms(firstEntry.head, l2Code);
+        saveWord(l2Code, {
+          id: firstEntry.id,
+          forms: allForms,
+          date: Date.now(),
+          context: {
+            form: token.text,
+            text: contextText || token.text,
+          },
+          instances: [{
+            timestamp: Date.now(),
+            form: token.text,
+            context: {
+              form: token.text,
+              text: contextText || token.text,
+            },
+          }],
+        });
+      }
+    } finally {
+      setSaving(false);
+    }
+  }, [firstEntry, isLoggedIn, isSaved, l2Code, token, contextText, saveWord, removeSavedWord]);
+
+  const webAppUrl = `${WEB_APP}/dictionary/llm/${encodeURIComponent(token.text)}`;
 
   return (
     <div className="lpv-dict-card" onClick={(e) => e.stopPropagation()}>
-      {/* Card header: word + pronunciation + close */}
+      {/* Card header: word + pronunciation + save button + close */}
       <div className="lpv-dict-card-header">
-        <div>
+        <div className="lpv-dict-card-header-left">
           <span className="lpv-dict-card-word">{token.text}</span>
           {token.pronunciation && (
             <span className="lpv-dict-card-pron">[{token.pronunciation}]</span>
@@ -186,9 +229,21 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
             </span>
           )}
         </div>
-        <button onClick={onClose} className="lpv-dict-card-close" title="Close">
-          ✕
-        </button>
+        <div className="lpv-dict-card-header-right">
+          {isLoggedIn && firstEntry && (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className={`lpv-save-btn ${isSaved ? 'lpv-save-btn-saved' : ''}`}
+              title={isSaved ? 'Unsave' : 'Save word'}
+            >
+              {saving ? '…' : isSaved ? '★ Saved' : '☆ Save'}
+            </button>
+          )}
+          <button onClick={onClose} className="lpv-dict-card-close" title="Close">
+            ✕
+          </button>
+        </div>
       </div>
 
       {/* Card body */}

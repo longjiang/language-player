@@ -12,6 +12,7 @@ import type { LemmatizedToken } from '@langplayer/shared';
 import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { DictionaryCard } from './components/DictionaryCard';
+import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -171,6 +172,8 @@ interface TokenSpanProps {
 
 const TokenSpan: React.FC<TokenSpanProps> = React.memo(
   ({ token, l2Code, isActive, onClickLine, onTokenClick }) => {
+    const { savedFormSet } = useSavedWords();
+
     // Structural tokens
     if (token.text === '\n' || token.text === '\r') {
       return <br />;
@@ -183,8 +186,10 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
       return <>{token.text}</>;
     }
 
+    const isSaved = savedFormSet.has(token.text.toLowerCase());
+
     // Build ruby segments
-    const hasPhonetics = !!token.pronunciation && token.pronunciation !== token.text;
+    const hasPhonetics = token.pronunciation && token.pronunciation !== token.text;
     const rubySegments: RubySegment[] | null = hasPhonetics
       ? buildRuby(token.text, token.pronunciation!, l2Code)
       : null;
@@ -193,7 +198,7 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
 
     return (
       <span
-        className={`lpv-token ${isActive ? 'lpv-token-active' : ''}`}
+        className={`lpv-token ${isActive ? 'lpv-token-active' : ''} ${isSaved ? 'lpv-token-saved' : ''}`}
         title={lemmaTitle}
         onClick={(e) => {
           e.stopPropagation();
@@ -271,7 +276,7 @@ const EmptyState: React.FC = () => (
 
 // ── Transcript App ────────────────────────────────────────────────────────
 
-const TranscriptApp: React.FC<TranscriptAppProps> = ({
+const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   cues,
   activeCueIdx,
   l2Code,
@@ -358,13 +363,15 @@ export function mountTranscript(
     root = createRoot(container);
   }
   root.render(
-    <TranscriptApp
-      cues={cues}
-      activeCueIdx={activeCueIdx}
-      l2Code={l2Code}
-      l1Code={l1Code}
-      onSeekTo={onSeekTo}
-    />,
+    <SavedWordsProvider>
+      <TranscriptAppInner
+        cues={cues}
+        activeCueIdx={activeCueIdx}
+        l2Code={l2Code}
+        l1Code={l1Code}
+        onSeekTo={onSeekTo}
+      />
+    </SavedWordsProvider>,
   );
 }
 
