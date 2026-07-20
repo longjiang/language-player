@@ -186,6 +186,21 @@ export default function DocPage({ params }: Props) {
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeSlug]}
+          components={{
+            a: ({ href, children, ...props }) => {
+              // Rewrite /docs/... links to include language prefix
+              let resolved = href;
+              if (resolved?.startsWith('/docs/')) {
+                resolved = `/${l1}/${l2}${resolved}`;
+              }
+              // External & mailto use native <a>, internal use <Link>
+              const external = resolved?.startsWith('http') || resolved?.startsWith('mailto:');
+              if (external) {
+                return <a href={resolved} target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
+              }
+              return <Link href={resolved ?? '#'} {...props}>{children}</Link>;
+            },
+          }}
         >
           {doc.content}
         </ReactMarkdown>
