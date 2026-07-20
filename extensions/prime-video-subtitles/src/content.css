@@ -7,49 +7,6 @@
  * Panel slides in from the right side of the viewport.
  */
 
-/* ── Toggle Button ─────────────────────────────────────────────────────── */
-
-#lpv-toggle-btn {
-  position: fixed;
-  top: 80px;
-  right: 8px;
-  z-index: 10000;
-  width: 44px;
-  height: 44px;
-  border: 2px solid rgba(0, 168, 225, 0.6);
-  border-radius: 10px;
-  background: rgba(14, 16, 27, 0.92);
-  color: #fff;
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 2px 12px rgba(0, 168, 225, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.5);
-  transition: transform 0.2s, opacity 0.2s, background 0.2s, box-shadow 0.2s, right 0.3s cubic-bezier(0.4, 0, 0, 1);
-  pointer-events: auto;
-}
-
-/* When panel is open, move toggle button next to the panel */
-body.lpv-panel-open #lpv-toggle-btn {
-  right: 390px; /* panel width + gap */
-}
-
-#lpv-toggle-btn:hover {
-  background: rgba(0, 168, 225, 0.9);
-  box-shadow: 0 4px 20px rgba(0, 168, 225, 0.5), 0 0 0 1px rgba(0, 168, 225, 0.8);
-  transform: scale(1.1);
-  border-color: rgba(0, 168, 225, 1);
-}
-
-#lpv-toggle-btn.lpv-hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(50px);
-}
-
 /* ── Side-by-side layout: shrink the Prime Video player ───────────────── */
 
 body.lpv-panel-open #dv-web-player-2,

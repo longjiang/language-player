@@ -78,4 +78,43 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   checkAuth();
+
+  // ── Transcript Toggle ─────────────────────────────────────────────────
+  const transcriptBtn = document.getElementById('transcript-btn');
+  const transcriptHint = document.getElementById('transcript-hint');
+
+  async function checkTranscriptStatus() {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.id) { showNoTranscript(); return; }
+
+      const res = await chrome.tabs.sendMessage(tab.id, { action: 'getTranscriptStatus' });
+      if (res?.cuesCount > 0) {
+        transcriptBtn.textContent = 'Show Transcript';
+        transcriptBtn.className = 'lpv-btn-available';
+        transcriptBtn.disabled = false;
+        transcriptBtn.onclick = () => {
+          chrome.tabs.sendMessage(tab.id, { action: 'showTranscript' });
+          window.close();
+        };
+        transcriptHint.classList.add('hidden');
+      } else {
+        showNoTranscript();
+      }
+    } catch {
+      // Content script not loaded on this page
+      showNoTranscript();
+    }
+  }
+
+  function showNoTranscript() {
+    transcriptBtn.textContent = 'No Transcript Found';
+    transcriptBtn.className = 'lpv-btn-unavailable';
+    transcriptBtn.disabled = true;
+    transcriptHint.classList.remove('hidden');
+  }
+
+  // Check immediately and poll
+  checkTranscriptStatus();
+  setInterval(checkTranscriptStatus, 1500);
 });

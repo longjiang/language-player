@@ -33,7 +33,6 @@ const STATE = {
 // ── DOM refs ─────────────────────────────────────────────────────────────
 let panelRoot = null;
 let panelContent = null;
-let toggleBtn = null;
 let statusEl = null;
 let l2SelectEl = null;
 
@@ -658,13 +657,6 @@ function setBadge(found) {
 function createPanelUI() {
   if (panelRoot) return;
 
-  toggleBtn = document.createElement('button');
-  toggleBtn.id = 'lpv-toggle-btn';
-  toggleBtn.innerHTML = '📝';
-  toggleBtn.title = 'Show transcript (Alt+T)';
-  toggleBtn.setAttribute('aria-label', 'Show transcript panel');
-  toggleBtn.addEventListener('click', togglePanel);
-
   panelRoot = document.createElement('div');
   panelRoot.id = 'lpv-transcript-panel';
   panelRoot.classList.add('lpv-collapsed');
@@ -721,7 +713,6 @@ function createPanelUI() {
   panelRoot.appendChild(panelContent);
 
   document.body.appendChild(panelRoot);
-  document.body.appendChild(toggleBtn);
 
   STATE.panelReady = true;
 
@@ -735,11 +726,9 @@ function setPanelVisible(visible) {
 
   if (visible) {
     panelRoot.classList.remove('lpv-collapsed');
-    toggleBtn.classList.add('lpv-hidden');
     document.body.classList.add('lpv-panel-open');
   } else {
     panelRoot.classList.add('lpv-collapsed');
-    toggleBtn.classList.remove('lpv-hidden');
     document.body.classList.remove('lpv-panel-open');
   }
 }
@@ -815,7 +804,7 @@ function waitForPlayer() {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'subtitleDetected') {
     const { url, fileName } = message;
-    console.log('[PrimeVideoSubs] Subtitle detected:', fileName, url);
+    console.log('[LanguagePlayer] Subtitle detected:', fileName, url);
     if (!STATE.subtitleUrl || STATE.subtitleUrl !== url) {
       fetchAndParseSubtitles(url);
     }
@@ -824,6 +813,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'loadSubtitles') {
     const { url } = message;
     fetchAndParseSubtitles(url);
+  }
+
+  if (message.action === 'getTranscriptStatus') {
+    sendResponse({
+      cuesCount: STATE.cues.length,
+      panelVisible: STATE.panelVisible,
+      detectedL2Code,
+    });
+    return true;
+  }
+
+  if (message.action === 'showTranscript') {
+    setPanelVisible(true);
+    sendResponse({ success: true });
   }
 
   sendResponse({ received: true });

@@ -194,6 +194,53 @@ h1 img {
   color: var(--accent);
 }
 
+/* ── Transcript Toggle Button ──────────────────────────────────────── */
+
+#transcript-btn {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+#transcript-btn:disabled {
+  cursor: default;
+}
+
+.lpv-btn-available {
+  color: #fff;
+  background: #22c55e;
+}
+
+.lpv-btn-available:hover {
+  background: #16a34a;
+}
+
+.lpv-btn-unavailable {
+  color: #888;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#transcript-hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+}
+
+#transcript-hint strong {
+  color: var(--text);
+}
+
 #instructions kbd {
   display: inline-block;
   padding: 1px 6px;

@@ -29,14 +29,19 @@
 
     <!-- Instructions -->
     <div id="instructions">
-      <p>Start playing any video on <strong>Prime Video</strong> or <strong>YouTube</strong>. The transcript panel opens automatically.</p>
+      <p>Start playing any video on <strong>Prime Video</strong> or <strong>YouTube</strong>. The transcript panel opens automatically when subtitles are found.</p>
       <ul>
         <li><strong>Click</strong> any word to look it up in the dictionary</li>
         <li><strong>Save</strong> words to your Language Player account</li>
         <li>Press <kbd>Alt</kbd> + <kbd>T</kbd> to toggle the panel</li>
       </ul>
-      <p class="instructions-note">💡 On YouTube, make sure <strong>captions are turned on</strong> in the language you're studying.</p>
     </div>
+
+    <!-- Transcript toggle -->
+    <button id="transcript-btn" disabled>Checking…</button>
+    <p id="transcript-hint" class="hidden">
+      💡 Make sure <strong>captions are turned on</strong> in the language you're studying.
+    </p>
 
   </div>
   <script src="popup.js"></script>
