@@ -1,13 +1,19 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/providers/language-provider';
 import { LanguageSwitcher } from './language-switcher';
 import { UserMenu } from './user-menu';
-import { Play, Menu, X, ChevronDown, Search } from 'lucide-react';
+import {
+  Menu, X, ChevronDown, Search,
+  Compass, Music, Tv, Clapperboard, History,
+  BookOpen, Globe, BookMarked,
+  Library, Bookmark, RotateCcw,
+} from 'lucide-react';
 
 interface NavGroup {
   label: string;
@@ -42,6 +48,20 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ] as const;
+
+const NAV_ICONS: Record<string, React.ReactNode> = {
+  explore: <Compass className="h-4 w-4" />,
+  music: <Music className="h-4 w-4" />,
+  'live-tv': <Tv className="h-4 w-4" />,
+  'tv-shows': <Clapperboard className="h-4 w-4" />,
+  'watch-history': <History className="h-4 w-4" />,
+  reader: <BookOpen className="h-4 w-4" />,
+  'web-reader': <Globe className="h-4 w-4" />,
+  epub: <BookMarked className="h-4 w-4" />,
+  dictionary: <Library className="h-4 w-4" />,
+  'saved-words': <Bookmark className="h-4 w-4" />,
+  review: <RotateCcw className="h-4 w-4" />,
+};
 
 function NavDropdown({ group, l1Code, l2Code }: { group: NavGroup; l1Code: string; l2Code: string }) {
   const t = useT();
@@ -101,8 +121,9 @@ function NavDropdown({ group, l1Code, l2Code }: { group: NavGroup; l1Code: strin
               key={link.href}
               href={`/${l1Code}/${l2Code}/${link.href}`}
               onClick={() => setOpen(false)}
-              className="block rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
+              <span className="flex-shrink-0 opacity-60">{NAV_ICONS[link.href]}</span>
               {t(link.key)}
             </Link>
           ))}
@@ -123,7 +144,14 @@ export function Header() {
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
         {/* Logo */}
         <Link href={`/${l1.code}/${l2.code}/explore`} className="flex items-center gap-2 font-bold">
-          <Play className="h-5 w-5 text-primary" />
+          <Image
+            src="/img/logo.png"
+            alt={t('title.app_name')}
+            width={28}
+            height={28}
+            className="h-7 w-7 flex-shrink-0"
+            priority
+          />
           <span className="hidden sm:inline">{t('title.app_name')}</span>
         </Link>
 
@@ -183,8 +211,9 @@ export function Header() {
                         key={link.href}
                         href={`/${l1.code}/${l2.code}/${link.href}`}
                         onClick={() => setMobileOpen(false)}
-                        className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                       >
+                        <span className="flex-shrink-0 opacity-60">{NAV_ICONS[link.href]}</span>
                         {t(link.key)}
                       </Link>
                     ))}
