@@ -220,18 +220,27 @@ When writing or editing markdown documentation in `apps/web/content/docs/`, foll
 - Use `## H2` for main sections and `### H3` for subsections (these appear in the "On this page" sidebar)
 - Keep paragraphs short (2-4 sentences max)
 - Use bullet lists for features and tips; tables for reference data
-- Every doc ends with a **Tips** section with practical advice
+- Every doc ends with a **Tips** section
 
 **Content Guidelines**
 - **Lead with "what" and "why"** — explain what the feature does and why it's useful before diving into how
 - **Show don't tell** — describe actual use cases, not abstract capabilities
 - **Assume zero prior knowledge** — explain terminology; don't assume the reader knows what "L1/L2" or "tokenization" means
 - **Be concise** — cut filler words; every sentence should add value
-- **Stay on topic** — document the software feature itself. Do not pad pages with generic language-learning advice (e.g., "tips for reading in a foreign language") that is not specific to how the software works. If a tip doesn't reference a specific button, setting, or workflow in the app, it doesn't belong in the docs.
 - **Cross-link** — reference other docs when mentioning related features (e.g., "See [Dictionary](/docs/vocab/dictionary) for details")
 
+**What to Cut**
+- **Filler clauses** — drop "— useful for X", "so you can Y", "making it easy to Z". If the feature's value isn't self-evident from what it does, you haven't described it well enough.
+- **Implementation details** — don't mention APIs, storage mechanisms, sync intervals, batch sizes, or other internals. Describe what the user sees and does, not how the code works under the hood.
+- **Meta advice** — don't justify features with generic learning theory ("builds listening comprehension", "for languages with fast speech"). If a tip doesn't reference a specific button, shortcut, or workflow in the app, it doesn't belong in the docs.
+- **"Automatically" + "in the background"** — pick one. If something happens without user action, "automatically" is enough.
+
+**Verify Before Writing**
+- **Read the code** — before describing how a feature works, read the actual implementation. Don't guess. Incorrect descriptions (e.g., "overlays subtitles on top" when they're in a separate panel) are worse than no description.
+- **Open the page** — verify the doc renders correctly and appears in the sidebar after creating it.
+
 **Example (good):**
-> Click any word in the subtitles to see its definition, hear its pronunciation, and save it to your vocabulary list.
+> Click any word in the subtitles to see its definition and save it to your vocabulary list.
 
 **Example (avoid):**
 > The interactive subtitle feature enables users to select lexical items, which triggers the display of dictionary entries including definitions and audio pronunciation, with the option to persist selections to a personalized vocabulary collection.

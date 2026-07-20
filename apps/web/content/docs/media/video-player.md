@@ -4,40 +4,55 @@ Watch videos with interactive dual subtitles — click any word to see its defin
 
 ## How It Works
 
-The video player opens when you click any video card on the [Explore](/docs/media/explore) page or from your [Watch History](/docs/media/watch-history). It uses YouTube as the video source and overlays our interactive subtitles on top.
+The video player opens when you click any video card on the [Explore](/docs/media/explore) page, from your [Watch History](/docs/media/watch-history), from the [TV Shows](/docs/media/tv-shows) page, or the [Search](/docs/media/search) page.
 
-Subtitles are shown in **two languages** side by side:
-- **L2** (your target language) — the main subtitle line you're reading
-- **L1** (your native language) — a translation below each line
+The page embeds the YouTube video and displays interactive subtitles in a separate transcript panel beside or below the video. The player synchronizes with the transcript — as the video plays, the current subtitle line is highlighted and the transcript scrolls automatically to follow along.
 
-The active subtitle line is highlighted as the video plays, and the transcript scrolls automatically to keep up.
+### Page Layout
 
-## Subtitles
+The layout adapts to your screen size:
+
+- **Wide screens** (≥1024px) — A two-column layout: the video, controls, and video info on the left; the transcript and queue in a panel on the right. Each side scrolls independently.
+- **Narrow screens** — A single column: the video sticks to the top as you scroll through the controls, video info, and transcript below.
+
+### Video Info
+
+Above the controls, the page shows the video's title, view count, likes, comments, and publish date. A color-coded difficulty badge shows the CEFR level (or language-specific equivalent like HSK, JLPT, or TOPIK). The video's locale, category, and YouTube channel are shown as well.
+
+## Transcript Panel
+
+The right sidebar (or the section below the video on narrow screens) has two tabs:
+
+- **Transcript** — The interactive subtitles with clickable words
+- **Queue** — Upcoming videos when watching from a list or TV show
 
 ### Interactive Words
 
-Every word in the L2 subtitle line is clickable. When you click a word, a popup appears with its dictionary entry — definitions, pronunciation, example sentences, and more. See [Dictionary](/docs/vocab/dictionary) for details on what each entry contains.
+Every word in the transcript is clickable. When you click a word, a dictionary popup appears with definitions, pronunciation, example sentences, conjugations, and more. See [Dictionary](/docs/vocab/dictionary) for details on what each entry contains.
 
-Words you've already saved to your vocabulary list appear with a subtle yellow highlight, so you can spot familiar words at a glance.
+Words you've already saved to your vocabulary list appear with a subtle yellow highlight.
+
+Click a subtitle line (outside of any word) to seek the video to that timestamp.
 
 ### Translation
 
-The translation toggle in the top-left of the subtitle panel switches between showing and hiding L1 translations. When off, you see only the L2 text — useful for immersion or testing your comprehension. When on, translations appear below each line.
+The translation toggle above the transcript switches between showing and hiding L1 translations below each L2 line. When off, you see only the L2 text.
 
-Translations are generated automatically in the background. A progress counter shows how many lines have been translated so far.
+Translations are generated automatically. A progress counter shows how many lines have been translated so far.
 
 ### Phonetics
 
 The phonetics toggle shows pronunciation guides above each word:
+
 - **Chinese** — pinyin above each word
 - **Japanese** — furigana above kanji characters (kana are left as-is)
 - **Other languages** — word-level pronunciation where available
 
-Toggle it off to practice reading without the pronunciation aids.
+Toggle it off to read without pronunciation aids.
 
 ## Player Controls
 
-The control bar sits below the video and gives you playback and navigation controls:
+The control bar sits below the video with these buttons:
 
 | Control | What it does |
 |---|---|
@@ -46,15 +61,15 @@ The control bar sits below the video and gives you playback and navigation contr
 | **Next line** | Jump to the next subtitle line |
 | **Rewind** | Go back 2 seconds |
 | **Speed** | Cycle through playback speeds: 1× → 0.75× → 0.5× |
-| **Seek bar** | Click or drag to jump to any point in the video |
+| **Seek bar** | Click anywhere on the bar to jump to that point in the video |
 | **Previous video** | Go to the previous video in your queue |
 | **Next video** | Go to the next video in your queue |
 
-The previous/next video buttons only appear when you have a queue — for example, when you clicked a video from Explore or are watching through [TV Shows](/docs/media/tv-shows).
+The previous/next video buttons only appear when you have a queue, such as from [Explore](/docs/media/explore) or [TV Shows](/docs/media/tv-shows).
 
 ## Keyboard Shortcuts
 
-You can control the player entirely from your keyboard:
+You can control the player from your keyboard:
 
 | Key | Action |
 |---|---|
@@ -65,22 +80,22 @@ You can control the player entirely from your keyboard:
 | **Shift + →** | Next video in queue |
 | **R** | Rewind 2 seconds |
 
-Shortcuts only work when you're not typing in a text field.
+Shortcuts only work when the page has focus — they won't work while typing in a text field or when the YouTube player has captured your keyboard input. Click outside the video to return focus to the page.
 
 ## Queue
 
-When you start watching from Explore, TV Shows, or another list, a queue is created automatically. The queue tab (next to the transcript) shows all upcoming videos. You can jump to any video in the queue, or let autoplay take you through them in order.
+When you start watching from Explore, TV Shows, or another list, a queue is created automatically. The **Queue** tab (next to the transcript) shows all upcoming videos as compact cards. Click any video to jump to it, or let autoplay take you through in order.
 
-The previous/next video buttons and Shift+Arrow shortcuts navigate through the queue.
+TV show episodes are numbered and grouped by series.
 
 ## Resume Playback
 
-Your playback position is saved automatically every few seconds. When you return to a video you were watching, it picks up right where you left off — even if you closed the tab or switched devices. Your watch history is private and stored locally in your browser.
+Your playback position is saved automatically in your browser and whenever you close the tab. When you return to a video, it picks up right where you left off. If you're logged in, your position syncs across devices.
 
 ## Tips
 
-- Watch with translations off once you're comfortable — it builds listening comprehension faster
-- Click words you don't know and save them to build a context-rich vocabulary list
-- Use ← and → to replay tricky lines as many times as you need
-- Slow down the playback speed to 0.75× or 0.5× for languages with fast speech
-- Use the queue to binge-watch through a TV show or a channel's videos in order
+- Click words you don't know and save them to your vocabulary list
+- Click a subtitle line to jump the video to that moment
+- Use ← and → to replay lines
+- Slow down playback with the speed toggle when needed
+- Use the queue to watch through a TV show or channel in order
