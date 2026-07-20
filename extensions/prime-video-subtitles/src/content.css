@@ -157,13 +157,26 @@ body.lpv-panel-open .dv-player-fullscreen {
   border-radius: 5px;
   outline: none;
   cursor: pointer;
-  max-width: 130px;
+  max-width: 140px;
   appearance: none;
   -webkit-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 6px center;
   padding-right: 20px;
+}
+
+#lpv-l2-select optgroup {
+  font-weight: 700;
+  font-style: normal;
+  color: #888;
+  background: rgb(22, 25, 38);
+}
+
+#lpv-l2-select option {
+  font-weight: 400;
+  color: #ddd;
+  background: rgb(22, 25, 38);
 }
 
 #lpv-l2-select:hover {

@@ -8,10 +8,17 @@
  */
 
 import { mountTranscript, unmountTranscript } from './transcript-app';
+import { SUPPORTED_L2S } from '@langplayer/shared';
 
 // ── Site detection ───────────────────────────────────────────────────────
 const isYouTube = /youtube\.com/.test(location.hostname);
 const isPrimeVideo = /primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)/.test(location.hostname);
+
+/** Popular languages shown first in the L2 dropdown */
+const POPULAR_L2S = [
+  'en', 'zh', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
+  'ar', 'hi', 'tr', 'nl', 'pl', 'sv', 'th', 'vi', 'id',
+];
 
 // ── State ────────────────────────────────────────────────────────────────
 const STATE = {
@@ -312,27 +319,23 @@ function tryDetectL2FromCues(cues) {
 
 // ── YouTube Subtitle Integration ─────────────────────────────────────────
 
-/** Get a readable language name from a BCP47 code */
+/** Get a readable language name for display in the dropdown */
 function languageName(code) {
-  // Handle special codes that Intl.DisplayNames doesn't know
-  const CUSTOM = {
-    'zh-Hans': '中文（简体）',
-    'zh-Hant': '中文（繁體）',
-    'yue': '粵語',
-    'wuu': '吳語',
-    'nan': '閩南語',
-    'hak': '客家話',
-    'cmn': '官話',
-    'hsn': '湘語',
-    'gan': '贛語',
-    'cjy': '晉語',
-  };
-  if (CUSTOM[code]) return CUSTOM[code];
   try {
     const name = new Intl.DisplayNames(['en'], { type: 'language' }).of(code);
     if (name && name !== code) return name;
   } catch {}
   return code.toUpperCase();
+}
+
+/** Build the sorted L2 list: popular first, then rest alphabetically by name */
+function getSortedL2List() {
+  const popularSet = new Set(POPULAR_L2S);
+  const popular = POPULAR_L2S.filter(c => SUPPORTED_L2S.includes(c));
+  const rest = SUPPORTED_L2S.filter(c => !popularSet.has(c));
+  // Sort rest by display name
+  rest.sort((a, b) => languageName(a).localeCompare(languageName(b)));
+  return { popular, rest };
 }
 
 /** Extract video ID from YouTube URL */
@@ -413,12 +416,10 @@ async function fetchYTTrack(track) {
 
     if (track.languageCode) {
       detectedL2Code = track.languageCode.split('-')[0];
+      // Update dropdown to reflect detected language
+      if (l2SelectEl) l2SelectEl.value = detectedL2Code;
     }
     tryDetectL2FromCues(cues);
-
-    if (l2SelectEl) {
-      l2SelectEl.value = track.baseUrl;
-    }
 
     if (cues.length > 0) {
       STATE.activeCueIdx = -1;
@@ -458,7 +459,7 @@ async function loadYouTubeSubtitles() {
   if (tracks.length === 0) return;
 
   // Rebuild L2 selector
-  rebuildL2Selector();
+  populateL2Selector();
 
   // Pick best track: prefer manual matching detected L2
   let best = null;
@@ -473,33 +474,68 @@ async function loadYouTubeSubtitles() {
   if (best) await fetchYTTrack(best);
 }
 
-/** Rebuild the L2 language dropdown from available tracks */
-function rebuildL2Selector() {
+/** Populate the L2 language dropdown with all supported languages */
+function populateL2Selector() {
   if (!l2SelectEl) return;
   l2SelectEl.innerHTML = '';
 
-  if (ytCaptionTracks.length === 0) {
-    // No tracks: show current detected language
+  const { popular, rest } = getSortedL2List();
+
+  // Popular group
+  const popularGroup = document.createElement('optgroup');
+  popularGroup.label = 'Popular';
+  for (const code of popular) {
     const opt = document.createElement('option');
-    opt.value = '';
-    opt.textContent = languageName(detectedL2Code);
-    l2SelectEl.appendChild(opt);
-    l2SelectEl.disabled = true;
-    return;
+    opt.value = code;
+    opt.textContent = languageName(code);
+    if (code === detectedL2Code) opt.selected = true;
+    popularGroup.appendChild(opt);
   }
+  l2SelectEl.appendChild(popularGroup);
+
+  // Rest group
+  const restGroup = document.createElement('optgroup');
+  restGroup.label = 'All Languages';
+  for (const code of rest) {
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = languageName(code);
+    if (code === detectedL2Code) opt.selected = true;
+    restGroup.appendChild(opt);
+  }
+  l2SelectEl.appendChild(restGroup);
 
   l2SelectEl.disabled = false;
-  for (const track of ytCaptionTracks) {
-    const opt = document.createElement('option');
-    opt.value = track.baseUrl;
-    const code = track.languageCode || '';
-    const kind = track.kind === 'asr' ? ' (auto)' : '';
-    opt.textContent = languageName(code) + kind;
-    if (code.split('-')[0] === detectedL2Code) {
-      opt.selected = true;
+}
+
+/** Handle L2 language change from the dropdown */
+async function onL2Change(newCode) {
+  if (newCode === detectedL2Code) return;
+  detectedL2Code = newCode;
+
+  // For YouTube: try to find a matching caption track
+  if (isYouTube && ytCaptionTracks.length > 0) {
+    const match = ytCaptionTracks.find(t =>
+      t.languageCode === newCode ||
+      t.languageCode?.split('-')[0] === newCode.split('-')[0]
+    );
+    if (match) {
+      await fetchYTTrack(match);
+      return;
     }
-    l2SelectEl.appendChild(opt);
+    // No matching track — try any track
+    const best = ytCaptionTracks.find(t => t.kind !== 'asr') || ytCaptionTracks[0];
+    if (best) {
+      await fetchYTTrack(best);
+      // Override detected code to user's choice (tokenization follows user choice)
+      detectedL2Code = newCode;
+      renderTranscript();
+      return;
+    }
   }
+
+  // Prime Video or no track change: just re-render with new tokenization
+  renderTranscript();
 }
 
 /** Listen for YouTube SPA navigation */
@@ -563,20 +599,13 @@ function createPanelUI() {
   title.appendChild(logoImg);
   title.appendChild(titleText);
 
-  // L2 language selector (populated later)
+  // L2 language selector
   l2SelectEl = document.createElement('select');
   l2SelectEl.id = 'lpv-l2-select';
-  l2SelectEl.title = 'Subtitle language';
+  l2SelectEl.title = 'Learning language';
   l2SelectEl.addEventListener('change', () => {
-    const selTrack = ytCaptionTracks.find(t => t.baseUrl === l2SelectEl.value);
-    if (selTrack) fetchYTTrack(selTrack);
+    onL2Change(l2SelectEl.value);
   });
-  // Initial option
-  const initialOpt = document.createElement('option');
-  initialOpt.value = '';
-  initialOpt.textContent = languageName(detectedL2Code);
-  l2SelectEl.appendChild(initialOpt);
-  if (!isYouTube) l2SelectEl.disabled = true;
 
   const headerRight = document.createElement('div');
   headerRight.id = 'lpv-header-right';
@@ -754,6 +783,7 @@ async function init() {
   console.log('[LanguagePlayer] Player found');
 
   createPanelUI();
+  populateL2Selector();
   setupKeyboard();
 
   if (isYouTube) {
