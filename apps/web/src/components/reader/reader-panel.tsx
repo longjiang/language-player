@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, Fragment } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
@@ -169,11 +169,13 @@ export function ReaderPanel({
     if (page <= 0) return;
     setPage(p => p - 1);
     setBlockTranslations({});
+    setIsAutoTranslating(false);
   }, [page]);
   const nextPage = useCallback(() => {
     if (page >= totalPages - 1) return;
     setPage(p => p + 1);
     setBlockTranslations({});
+    setIsAutoTranslating(false);
   }, [page, totalPages]);
 
   // Report anchor on page change
@@ -206,7 +208,7 @@ export function ReaderPanel({
 
   // Auto-translate on page advance (only when translation is enabled)
   useEffect(() => {
-    if (!showTranslation || !visibleBlocks || !blockTokens || tokenizing || translating) return;
+    if (!showTranslation || !visibleBlocks || !blockTokens || tokenizing || isAutoTranslating) return;
     const textBlocks = visibleBlocks.filter((b): b is TextBlock => b.kind === 'text');
     if (textBlocks.length === 0) return;
     // Only auto-translate if no cached translations exist for this page
@@ -228,9 +230,9 @@ export function ReaderPanel({
     }).finally(() => {
       setIsAutoTranslating(false);
     });
-    // Only run once per visibleBlocks identity — no deps on blockTranslations
+    // Only run once per visibleBlocks identity — no deps on blockTranslations or isAutoTranslating
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleBlocks, blockTokens, tokenizing, translating, showTranslation]);
+  }, [visibleBlocks, blockTokens, tokenizing, showTranslation]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -389,19 +391,18 @@ export function ReaderPanel({
             {activeTab === 'read' && blocks && blockTokens && !tokenizing && blocks.map((block, i) => {
               if (block.kind === 'markdown') {
                 return (
-                  <Fragment key={i}>
-                    <div><ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown></div>
+                  <div key={i} className="mb-4">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown>
                     {showTranslation && <div className="h-6" />}
-                  </Fragment>
+                  </div>
                 );
               }
               const tb = block as TextBlock;
               const Tag = blockTag(tb);
-              // Calculate textBlockIndex from the FULL blocks array
               const textBlockIndex = blocks.slice(0, i).filter((b): b is TextBlock => b.kind === 'text').length;
               const lines = Math.max(1, Math.ceil(tb.text.length / 50));
               return (
-                <Fragment key={i}>
+                <div key={i} className="mb-4">
                   <Tag className={blockClass(tb)}>
                     {tb.text}
                   </Tag>
@@ -412,7 +413,7 @@ export function ReaderPanel({
                       ))}
                     </div>
                   )}
-                </Fragment>
+                </div>
               );
             })}
           </div>
