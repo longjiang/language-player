@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import { useParams, usePathname } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 export function PersistentSearchBar() {
   const { l1, l2 } = useLanguage();
   const t = useT();
-  const params = useParams<{ dictionaryId?: string; entryId?: string }>();
+  const router = useRouter();
   const pathname = usePathname();
   const isDetailPage = pathname.includes('/entry/');
 
@@ -70,7 +70,7 @@ export function PersistentSearchBar() {
       {/* Back button */}
       {showBack && (
         <button
-          onClick={() => { clearSearch(); }}
+          onClick={() => { router.back(); }}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
