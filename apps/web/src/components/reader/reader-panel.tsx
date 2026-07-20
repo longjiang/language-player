@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, Fragment } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { LemmatizedToken, SavedWordContext } from '@langplayer/shared';
@@ -109,6 +109,7 @@ export function ReaderPanel({
   const totalPages = Math.max(1, pageBreaks.length + 1);
   const [blockTranslations, setBlockTranslations] = useState<Record<number, string>>({});
   const translateGenerationRef = useRef(0);
+  const [isAutoTranslating, setIsAutoTranslating] = useState(false);
 
   // Clear translations when blocks change (new note / re-tokenize / page turn)
   const prevBlocksRef = useRef(blocks);
@@ -154,7 +155,7 @@ export function ReaderPanel({
         setPage(0);
       });
     });
-  }, [text, blocks, blockTokens, activeTab]);
+  }, [text, blocks, blockTokens, activeTab, showTranslation]);
 
   // Get blocks for the current page
   const visibleBlocks = (() => {
@@ -214,6 +215,7 @@ export function ReaderPanel({
     const texts = textBlocks.map(b => b.text);
     translateGenerationRef.current += 1;
     const gen = translateGenerationRef.current;
+    setIsAutoTranslating(true);
     onPageTranslate(texts).then(translated => {
       if (translateGenerationRef.current !== gen) return; // stale — user navigated away
       if (translated.length > 0) {
@@ -223,6 +225,8 @@ export function ReaderPanel({
         });
         setBlockTranslations(map);
       }
+    }).finally(() => {
+      setIsAutoTranslating(false);
     });
     // Only run once per visibleBlocks identity — no deps on blockTranslations
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -331,7 +335,9 @@ export function ReaderPanel({
                         const textBlockIndex = blocks!.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
                         return (
                           <TextActionMenu key={i} text={tb.text} l2Code={l2.code} l1Code={l1.code}
-                            translation={showTranslation ? blockTranslations[i] : undefined} translationClass={translationClass(tb)}>
+                            translation={showTranslation ? blockTranslations[i] : undefined}
+                            translationClass={translationClass(tb)}
+                            loading={isAutoTranslating && !blockTranslations[i]}>
                             <Tag className={blockClass(tb)}>
                               <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
                                 tokens={blockTokens[textBlockIndex]} />
@@ -382,16 +388,31 @@ export function ReaderPanel({
           >
             {activeTab === 'read' && blocks && blockTokens && !tokenizing && blocks.map((block, i) => {
               if (block.kind === 'markdown') {
-                return <div key={i}><ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown></div>;
+                return (
+                  <Fragment key={i}>
+                    <div><ReactMarkdown remarkPlugins={[remarkGfm]}>{block.raw}</ReactMarkdown></div>
+                    {showTranslation && <div className="h-6" />}
+                  </Fragment>
+                );
               }
               const tb = block as TextBlock;
               const Tag = blockTag(tb);
               // Calculate textBlockIndex from the FULL blocks array
               const textBlockIndex = blocks.slice(0, i).filter((b): b is TextBlock => b.kind === 'text').length;
+              const lines = Math.max(1, Math.ceil(tb.text.length / 50));
               return (
-                <Tag key={i} className={blockClass(tb)}>
-                  {tb.text}
-                </Tag>
+                <Fragment key={i}>
+                  <Tag className={blockClass(tb)}>
+                    {tb.text}
+                  </Tag>
+                  {showTranslation && (
+                    <div className="flex flex-col gap-y-1.5 pt-1">
+                      {Array.from({ length: lines }).map((_, li) => (
+                        <div key={li} className="h-3.5" />
+                      ))}
+                    </div>
+                  )}
+                </Fragment>
               );
             })}
           </div>
