@@ -298,7 +298,6 @@ function SavedWordGroup({
         const srsStatus = getSrsStatus(card);
         return (
           <SavedWordRow
-            key={`${word.id}-${word.date}`}
             word={word}
             l1Code={l1Code}
             l2Code={l2Code}
