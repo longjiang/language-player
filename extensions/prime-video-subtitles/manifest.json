@@ -20,6 +20,12 @@
       "run_at": "document_idle"
     }
   ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/language-player-logo-64.png"],
+      "matches": ["https://*.primevideo.com/*", "https://*.amazon.com/*", "https://*.amazon.co.uk/*", "https://*.amazon.de/*", "https://*.amazon.co.jp/*"]
+    }
+  ],
   "action": {
     "default_popup": "src/popup.html",
     "default_icon": {
