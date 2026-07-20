@@ -144,8 +144,18 @@ export default function SavedWordsPage() {
       const entryId = word.id.slice(dashIdx + 1);
       router.push(buildEntryRouteWithList(l1.code, l2.code, dictId, entryId, word.id));
     } else {
-      // Legacy fallback: search by first form
-      router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(word.forms[0] ?? '')}`);
+      // Detect dictionary from ID pattern when no dash prefix
+      let dictId: string | null = null;
+      let entryId = word.id;
+      if (/^w\d+$/.test(word.id)) {
+        dictId = 'wiktionary';
+      }
+      if (dictId) {
+        router.push(buildEntryRouteWithList(l1.code, l2.code, dictId, entryId, word.id));
+      } else {
+        // Legacy fallback: search by first form
+        router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(word.forms[0] ?? '')}`);
+      }
     }
   };
 
