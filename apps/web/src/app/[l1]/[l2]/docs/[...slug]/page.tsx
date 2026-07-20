@@ -13,15 +13,32 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const doc = getDoc(params.slug);
+  const doc = getDoc(params.l1, params.slug);
   if (!doc) return { title: 'Not Found' };
   const match = doc.content.match(/^# (.+)$/m);
   const title = match?.[1] ?? 'Documentation';
   return { title };
 }
 
-function getDoc(slug: string[]): { content: string } | null {
+/** Read a doc from the i18n JSON cache, falling back to raw .md with on-the-fly key resolution. */
+function getDoc(l1: string, slug: string[]): { content: string } | null {
   const relativePath = slug.join('/');
+
+  // 1. Try locale JSON (in data/docs-i18n/)
+  const dataDirs = [
+    resolve(process.cwd(), 'apps/web/src/data/docs-i18n'),
+    resolve(process.cwd(), 'src/data/docs-i18n'),
+  ];
+  for (const dataDir of dataDirs) {
+    try {
+      const jsonPath = resolve(dataDir, `${l1}.json`);
+      const entries = JSON.parse(readFileSync(jsonPath, 'utf-8'));
+      const entry = entries.find((e: any) => e.slug === relativePath);
+      if (entry) return { content: entry.content };
+    } catch { /* try next */ }
+  }
+
+  // 2. Fall back to raw .md
   const possibleDirs = [
     resolve(process.cwd(), 'apps/web/content/docs'),
     resolve(process.cwd(), 'content/docs'),
@@ -162,7 +179,7 @@ function extractToc(markdown: string): TocItem[] {
 
 export default function DocPage({ params }: Props) {
   const { l1, l2, slug } = params;
-  const doc = getDoc(slug);
+  const doc = getDoc(l1, slug);
   const docs = getAllDocs();
   const searchIndex = getSearchIndex();
   const currentSlug = slug.join('/');
