@@ -29,6 +29,8 @@ interface TextActionMenuProps {
   translation?: string;
   /** Tailwind classes for the translation element (e.g. match heading size). */
   translationClass?: string;
+  /** When true and no translation, show skeleton placeholder lines. */
+  loading?: boolean;
   children: ReactNode;
 }
 
@@ -42,6 +44,7 @@ export function TextActionMenu({
   alwaysShow = false,
   translation,
   translationClass = '',
+  loading = false,
   children,
 }: TextActionMenuProps) {
   const { l1 } = useLanguage();
@@ -154,6 +157,14 @@ export function TextActionMenu({
         {translation && (
           <div className={`flex-[2] min-w-0 text-muted-foreground leading-relaxed xl:pt-0 ${translationClass}`}>
             {translation}
+          </div>
+        )}
+        {loading && !translation && (
+          <div className={`flex-[2] min-w-0 flex flex-col gap-y-1.5 pt-1 xl:pt-0 ${translationClass || 'text-sm'}`}>
+            {Array.from({ length: Math.max(1, Math.ceil(text.length / 50)) }).map((_, li) => (
+              <div key={li} className="h-3.5 bg-muted rounded animate-pulse"
+                style={{ width: `${['90%', '75%', '60%', '80%', '50%'][li % 5]}` }} />
+            ))}
           </div>
         )}
       </div>
