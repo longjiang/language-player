@@ -34,6 +34,10 @@ let statusEl = null;
 // ── L2 language detection ────────────────────────────────────────────────
 let detectedL2Code = 'en';
 
+/** The user's native / UI language. Defaults to 'en'.
+ *  In the future, this could be configurable in the popup. */
+const L1_CODE = 'en';
+
 /** Try to detect the subtitle language from page metadata */
 function detectL2Code() {
   // Check for lang attribute on html element
@@ -228,6 +232,7 @@ function renderTranscript() {
     STATE.cues,
     STATE.activeCueIdx,
     detectedL2Code,
+    L1_CODE,
     seekTo,
   );
 }
@@ -264,7 +269,7 @@ async function fetchAndParseSubtitles(url) {
 
     if (cues.length === 0) {
       updateStatus('No cues found in subtitle file');
-      mountTranscript(panelContent, [], -1, detectedL2Code, seekTo);
+      mountTranscript(panelContent, [], -1, detectedL2Code, L1_CODE, seekTo);
     } else {
       updateStatus(`${cues.length} subtitle entries loaded`);
       STATE.activeCueIdx = -1;
@@ -347,7 +352,7 @@ function createPanelUI() {
   STATE.panelReady = true;
 
   // Initial empty render
-  mountTranscript(panelContent, [], -1, detectedL2Code, seekTo);
+  mountTranscript(panelContent, [], -1, detectedL2Code, L1_CODE, seekTo);
 }
 
 function setPanelVisible(visible) {
