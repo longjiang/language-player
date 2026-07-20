@@ -16,12 +16,121 @@ export interface FuriganaSegment {
   type: 'kanji' | 'non-kanji';
 }
 
-/** Convert a katakana string to hiragana using Unicode code point shift. */
+/** Convert a katakana string to hiragana, handling chōonpu (long vowel marks).
+ *
+ * Basic katakana are shifted by the Unicode offset (U+30A1→U+3041).
+ * The prolonged sound mark `ー` (U+30FC) is resolved by inspecting the
+ * vowel of the preceding kana and mapping to the standard orthographic
+ * hiragana long vowel:
+ *
+ *   a-dan → あ    i-dan → い    u-dan → う
+ *   e-dan → い    o-dan → う
+ *
+ * e.g. ヘー → へい, コー → こう, カー → かあ
+ */
 export function katakanaToHiragana(str: string): string {
-  return str.replace(/[\u30A1-\u30F6]/g, (ch) =>
-    String.fromCharCode(ch.charCodeAt(0) - 0x60),
-  );
+  let result = '';
+  for (const ch of str) {
+    if (ch === 'ー') {
+      const vowel = getLastKanaVowel(result);
+      result += vowel ? LONG_VOWEL_HIRAGANA[vowel]! : 'ー';
+    } else if (ch >= '\u30A1' && ch <= '\u30F6') {
+      result += String.fromCharCode(ch.charCodeAt(0) - 0x60);
+    } else {
+      result += ch;
+    }
+  }
+  return result;
 }
+
+// ── Chōonpu → hiragana long vowel mapping ──
+
+/** Maps a kana vowel to its orthographic hiragana long vowel.
+ *  e-dan uses い (へい), o-dan uses う (こう) per standard modern orthography. */
+const LONG_VOWEL_HIRAGANA: Record<string, string> = {
+  a: 'あ',
+  i: 'い',
+  u: 'う',
+  e: 'い',
+  o: 'う',
+};
+
+/** Determine the vowel (a/i/u/e/o) of a kana character.
+ *  Returns null for non-kana characters. */
+function getKanaVowel(ch: string): string | null {
+  return KANA_VOWEL_MAP[ch] ?? null;
+}
+
+/** Scan backwards through a partially-converted string to find
+ *  the vowel of the most recent kana character. */
+function getLastKanaVowel(str: string): string | null {
+  for (let i = str.length - 1; i >= 0; i--) {
+    const vowel = getKanaVowel(str[i]!);
+    if (vowel !== null) return vowel;
+  }
+  return null;
+}
+
+// ── Kana → vowel lookup table ──
+// Covers hiragana + katakana (including dakuten/handakuten and small kana).
+
+const HIRAGANA_A = 'あかさたなはまやらわがざだばぱ';
+const HIRAGANA_I = 'いきしちにひみりぎじぢびぴ';
+const HIRAGANA_U = 'うくすつぬふむゆるぐずづぶぷゔ';
+const HIRAGANA_E = 'えけせてねへめれげぜでべぺ';
+const HIRAGANA_O = 'おこそとのほもよろをごぞどぼぽ';
+
+const KATAKANA_A = 'アカサタナハマヤラワガザダバパ';
+const KATAKANA_I = 'イキシチニヒミリギジヂビピ';
+const KATAKANA_U = 'ウクスツヌフムユルグズヅブプヴ';
+const KATAKANA_E = 'エケセテネヘメレゲゼデベペ';
+const KATAKANA_O = 'オコソトノホモヨロヲゴゾドボポ';
+
+// Small kana — inherit the vowel of their full-size counterpart
+const SMALL_HIRAGANA_A = 'ぁ';        // small a
+const SMALL_HIRAGANA_I = 'ぃ';        // small i
+const SMALL_HIRAGANA_U = 'ぅ';        // small u
+const SMALL_HIRAGANA_E = 'ぇ';        // small e
+const SMALL_HIRAGANA_O = 'ぉ';        // small o
+const SMALL_HIRAGANA_YA = 'ゃ';       // ya → a-dan
+const SMALL_HIRAGANA_YU = 'ゅ';       // yu → u-dan
+const SMALL_HIRAGANA_YO = 'ょ';       // yo → o-dan
+const SMALL_HIRAGANA_TSU = 'っ';      // sokuon (no vowel — skip, keep ー)
+const SMALL_KATAKANA_A = 'ァ';
+const SMALL_KATAKANA_I = 'ィ';
+const SMALL_KATAKANA_U = 'ゥ';
+const SMALL_KATAKANA_E = 'ェ';
+const SMALL_KATAKANA_O = 'ォ';
+const SMALL_KATAKANA_YA = 'ャ';
+const SMALL_KATAKANA_YU = 'ュ';
+const SMALL_KATAKANA_YO = 'ョ';
+const SMALL_KATAKANA_TSU = 'ッ';
+
+const KANA_VOWEL_MAP: Record<string, string> = {};
+
+function buildVowelMap(): void {
+  const add = (chars: string, vowel: string) => {
+    for (const ch of chars) KANA_VOWEL_MAP[ch] = vowel;
+  };
+  // Hiragana
+  add(HIRAGANA_A, 'a'); add(HIRAGANA_I, 'i'); add(HIRAGANA_U, 'u');
+  add(HIRAGANA_E, 'e'); add(HIRAGANA_O, 'o');
+  // Katakana
+  add(KATAKANA_A, 'a'); add(KATAKANA_I, 'i'); add(KATAKANA_U, 'u');
+  add(KATAKANA_E, 'e'); add(KATAKANA_O, 'o');
+  // Small kana (vowel inherited from full-size counterpart)
+  add(SMALL_HIRAGANA_A + SMALL_KATAKANA_A, 'a');
+  add(SMALL_HIRAGANA_I + SMALL_KATAKANA_I, 'i');
+  add(SMALL_HIRAGANA_U + SMALL_KATAKANA_U, 'u');
+  add(SMALL_HIRAGANA_E + SMALL_KATAKANA_E, 'e');
+  add(SMALL_HIRAGANA_O + SMALL_KATAKANA_O, 'o');
+  // Small ya/yu/yo
+  add(SMALL_HIRAGANA_YA + SMALL_KATAKANA_YA, 'a');
+  add(SMALL_HIRAGANA_YU + SMALL_KATAKANA_YU, 'u');
+  add(SMALL_HIRAGANA_YO + SMALL_KATAKANA_YO, 'o');
+  // Sokuon (っ/ッ) — no vowel, explicitly excluded so ー after ッ is not resolved
+}
+buildVowelMap();
 
 // ── Unicode range checks (no external dependencies) ──
 
