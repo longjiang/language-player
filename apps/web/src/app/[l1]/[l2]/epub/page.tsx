@@ -42,7 +42,10 @@ export default function EpubPage() {
   useEffect(() => {
     (async () => {
       const result = await epub.restoreFromStorage();
-      anchorRef.current = result?.anchor ?? null;
+      if (result?.markdown) {
+        setText(result.markdown);
+        anchorRef.current = result.anchor ?? null;
+      }
       setInitialized(true);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
