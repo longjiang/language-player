@@ -110,7 +110,7 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
                         key={compositeId}
                         head={e.head}
                         prefix={
-                          <div onClick={(ev) => ev.stopPropagation()} className="self-start mt-0.5">
+                          <div onClick={(ev) => ev.stopPropagation()} className="-m-1">
                             <SaveButton
                               wordId={e.id}
                               head={e.head}
