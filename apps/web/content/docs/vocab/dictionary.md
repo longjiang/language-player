@@ -1,4 +1,4 @@
-# Dictionary
+# {$title.dictionary}
 
 The dictionary is your instant word lookup tool. It works everywhere — in subtitles, in search, and on its own dedicated page.
 
@@ -23,7 +23,7 @@ Every entry gives you the essentials up front:
 
 Depending on the language and the word, you might also see:
 
-- **Alternate scripts** — for Chinese, see the word in both simplified and traditional. For Vietnamese, see the Chữ Hán form. For Korean, see the Hanja. You control which scripts appear in [Settings](/settings).
+- **Alternate scripts** — for Chinese, see the word in both simplified and traditional. For Vietnamese, see the Chữ Hán form. For Korean, see the Hanja. You control which scripts appear in [{$title.settings}](/settings).
 - **Classifiers** — for Chinese, see which measure words go with the noun (like 个, 本, 张). For French or German, see the grammatical gender.
 - **Textbook coverage** — if the word appears in a textbook like the HSK Standard Course, you'll see exactly which book, lesson, and dialog it's from.
 
@@ -54,7 +54,7 @@ If a word isn't in any dictionary — like a rare dialect word or a new slang te
 
 Click the bookmark icon on any dictionary entry to save the word to your personal vocabulary list. Your saved words appear in the sidebar while you're browsing the dictionary, so you can quickly jump between them.
 
-Saved words sync across devices if you're logged in. You can browse and manage them on the [Saved Words](/docs/vocab/saved-words) page. Use the [Review](/docs/vocab/review) feature to practice your saved words with spaced repetition — the app schedules reviews so you see each word just before you'd forget it.
+Saved words sync across devices if you're logged in. You can browse and manage them on the [{$title.saved_words}](/docs/vocab/saved-words) page. Use the [{$title.review}](/docs/vocab/review) feature to practice your saved words with spaced repetition — the app schedules reviews so you see each word just before you'd forget it.
 
 ## Tips
 
@@ -62,5 +62,5 @@ Saved words sync across devices if you're logged in. You can browse and manage t
 - **Use the sidebar toggle** (the panel icon in the search bar) to show or hide your saved words list while browsing entries.
 - **Search Google Images** from any entry page — the link is at the bottom of the definitions panel. Useful for concrete nouns when a picture is worth a thousand words.
 - **If a word's definition seems off**, check the AI Explanation tab. The AI sometimes catches nuances that dictionary definitions miss.
-- **Switch scripts** in [Settings](/settings) if you prefer traditional Chinese characters or want to see Hanja alongside Korean Hangul.
+- **Switch scripts** in [{$title.settings}](/settings) if you prefer traditional Chinese characters or want to see Hanja alongside Korean Hangul.
 
