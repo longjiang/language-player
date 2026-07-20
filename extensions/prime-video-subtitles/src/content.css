@@ -442,7 +442,7 @@ body.lpv-panel-open #lpv-toggle-btn {
   color: #fff;
 }
 
-/* ── Control Bar (translate toggle) ──────────────────────────────────── */
+/* ── Control Bar (translate toggle switch) ──────────────────────────── */
 
 .lpv-control-bar {
   display: flex;
@@ -454,27 +454,61 @@ body.lpv-panel-open #lpv-toggle-btn {
   flex-shrink: 0;
 }
 
-.lpv-control-btn {
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #888;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+.lpv-translate-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.lpv-control-btn:hover {
-  color: #ccc;
-  border-color: rgba(255, 255, 255, 0.25);
+.lpv-translate-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
-.lpv-control-btn-active {
+.lpv-switch-slider {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.lpv-switch-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.lpv-translate-switch input:checked + .lpv-switch-slider {
+  background: #00A8E1;
+}
+
+.lpv-translate-switch input:checked + .lpv-switch-slider::after {
+  transform: translateX(14px);
+}
+
+.lpv-switch-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #999;
+  transition: color 0.15s;
+}
+
+.lpv-translate-switch input:checked ~ .lpv-switch-label {
   color: #00A8E1;
-  border-color: rgba(0, 168, 225, 0.4);
-  background: rgba(0, 168, 225, 0.1);
 }
 
 .lpv-control-status {
