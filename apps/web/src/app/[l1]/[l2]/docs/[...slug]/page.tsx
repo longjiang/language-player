@@ -95,6 +95,40 @@ function getAllDocs(): DocMeta[] {
   return [];
 }
 
+interface DocEntry {
+  slug: string;
+  title: string;
+  content: string;
+}
+
+function getSearchIndex(): DocEntry[] {
+  const possibleDirs = [
+    resolve(process.cwd(), 'apps/web/content/docs'),
+    resolve(process.cwd(), 'content/docs'),
+  ];
+  for (const docsDir of possibleDirs) {
+    const entries: DocEntry[] = [];
+    try { walkDocs(docsDir, '', entries); } catch { continue; }
+    return entries;
+  }
+  return [];
+}
+
+function walkDocs(dir: string, basePath: string, out: DocEntry[]) {
+  for (const item of readdirSync(dir)) {
+    const fullPath = join(dir, item);
+    if (statSync(fullPath).isDirectory()) {
+      walkDocs(fullPath, basePath ? `${basePath}/${item}` : item, out);
+    } else if (item.endsWith('.md')) {
+      const content = readFileSync(fullPath, 'utf-8');
+      const match = content.match(/^# (.+)$/m);
+      const slug = basePath ? `${basePath}/${item.replace(/\.md$/, '')}` : item.replace(/\.md$/, '');
+      const title: string = match?.[1] ?? item.replace(/\.md$/, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      out.push({ slug, title, content });
+    }
+  }
+}
+
 /** Slugify a heading for use as an anchor ID (matches rehype-slug behaviour). */
 function slugify(text: string): string {
   return text
@@ -130,6 +164,7 @@ export default function DocPage({ params }: Props) {
   const { l1, l2, slug } = params;
   const doc = getDoc(slug);
   const docs = getAllDocs();
+  const searchIndex = getSearchIndex();
   const currentSlug = slug.join('/');
 
   if (!doc) {
@@ -165,7 +200,7 @@ export default function DocPage({ params }: Props) {
       </article>
 
       {/* Sidebar TOC */}
-      <DocSidebar toc={toc} docs={docs} l1={l1} l2={l2} currentSlug={currentSlug} />
+      <DocSidebar toc={toc} docs={docs} l1={l1} l2={l2} currentSlug={currentSlug} searchIndex={searchIndex} />
     </div>
   );
 }

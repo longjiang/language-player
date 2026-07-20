@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { resolve, join } from 'path';
 import { BookOpen, FileText, FolderOpen } from 'lucide-react';
+import { DocSearch } from './doc-search';
 
 export const metadata: Metadata = {
   title: 'Documentation',
@@ -97,6 +98,43 @@ function DocList({ docs, l1, l2 }: { docs: DocMeta[]; l1: string; l2: string }) 
   );
 }
 
+interface DocEntry {
+  slug: string;
+  title: string;
+  content: string;
+}
+
+/** Build a flat search index with full doc content for fuzzy search. */
+function getSearchIndex(): DocEntry[] {
+  const possibleDirs = [
+    resolve(process.cwd(), 'apps/web/content/docs'),
+    resolve(process.cwd(), 'content/docs'),
+  ];
+  for (const docsDir of possibleDirs) {
+    const entries: DocEntry[] = [];
+    try { walkDocs(docsDir, '', entries); } catch { continue; }
+    return entries;
+  }
+  return [];
+}
+
+function walkDocs(dir: string, basePath: string, out: DocEntry[]) {
+  const items = readdirSync(dir);
+  for (const item of items) {
+    const fullPath = join(dir, item);
+    const stat = statSync(fullPath);
+    if (stat.isDirectory()) {
+      walkDocs(fullPath, basePath ? `${basePath}/${item}` : item, out);
+    } else if (item.endsWith('.md')) {
+      const content = readFileSync(fullPath, 'utf-8');
+      const match = content.match(/^# (.+)$/m);
+      const slug = basePath ? `${basePath}/${item.replace(/\.md$/, '')}` : item.replace(/\.md$/, '');
+      const title: string = match?.[1] ?? item.replace(/\.md$/, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      out.push({ slug, title, content });
+    }
+  }
+}
+
 interface Props {
   params: { l1: string; l2: string };
 }
@@ -104,6 +142,7 @@ interface Props {
 export default function DocsPage({ params }: Props) {
   const { l1, l2 } = params;
   const docs = getDocs();
+  const searchIndex = getSearchIndex();
 
   return (
     <div className="flex flex-col items-center px-4 py-12">
@@ -118,10 +157,13 @@ export default function DocsPage({ params }: Props) {
           </p>
         </div>
 
+        {/* Search + Doc list */}
         {docs.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground">No documentation available yet.</p>
         ) : (
-          <DocList docs={docs} l1={l1} l2={l2} />
+          <DocSearch docs={searchIndex} l1={l1} l2={l2}>
+            <DocList docs={docs} l1={l1} l2={l2} />
+          </DocSearch>
         )}
       </div>
     </div>
