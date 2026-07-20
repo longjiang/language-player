@@ -32,7 +32,7 @@ function detectLocale(request: NextRequest): string | null {
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Allow static assets, auth API, public API routes, OG image, docs, and about
+  // Allow static assets, auth API, public API routes, OG image, and about
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/auth') ||
@@ -40,7 +40,6 @@ export default function middleware(req: NextRequest) {
     pathname.startsWith('/api/channels') ||
     pathname.startsWith('/og') ||
     pathname.startsWith('/about') ||
-    pathname.startsWith('/docs') ||
     pathname.startsWith('/favicon') ||
     /\.(ico|png|jpg|jpeg|svg|css|js)$/.test(pathname)
   ) {
