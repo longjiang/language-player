@@ -227,6 +227,7 @@ When writing or editing markdown documentation in `apps/web/content/docs/`, foll
 - **Show don't tell** — describe actual use cases, not abstract capabilities
 - **Assume zero prior knowledge** — explain terminology; don't assume the reader knows what "L1/L2" or "tokenization" means
 - **Be concise** — cut filler words; every sentence should add value
+- **Stay on topic** — document the software feature itself. Do not pad pages with generic language-learning advice (e.g., "tips for reading in a foreign language") that is not specific to how the software works. If a tip doesn't reference a specific button, setting, or workflow in the app, it doesn't belong in the docs.
 - **Cross-link** — reference other docs when mentioning related features (e.g., "See [Dictionary](/docs/vocab/dictionary) for details")
 
 **Example (good):**
