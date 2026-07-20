@@ -20,6 +20,7 @@
         "video_thumbnail": "Mionsamhail físeáin"
     },
     "action": {
+        "all_results": "Gach toradh",
         "back": "Ar ais",
         "back_to_login": "Ar ais go dtí logáil isteach",
         "cancel": "Cealaigh",
@@ -42,6 +43,7 @@
         "export": "Easpórtáil",
         "fill_with_sample": "Líon le sampla",
         "forgot_password": "An ndearna tú dearmad ar do phasfhocal?",
+        "hide_sidebar": "Folaigh an barra taoibh",
         "keep_account": "Coinnigh cuntas",
         "keep_subscription": "Coinnigh síntiús",
         "let_ai_explain": "Lig do DeepSeek Míniú",
@@ -77,6 +79,7 @@
         "share": "Comhroinn",
         "show_less": "Taispeáin níos lú",
         "show_more": "Taispeáin níos mó",
+        "show_sidebar": "Taispeáin an barra taoibh",
         "sign_in": "Sínigh Isteach",
         "sign_up": "Cláraigh",
         "speak": "Labhair",
@@ -182,6 +185,7 @@
         "collapse_video": "Laghdaigh físeán",
         "conjugation": "Réimniú",
         "custom_voice": "Guth saincheaptha",
+        "dialog": "Agallamh",
         "enable_popup_dictionary": "Cumasaigh foclóir aníos",
         "font": "Clófhoireann",
         "free_account": "Cuntas Saor in Aisce",

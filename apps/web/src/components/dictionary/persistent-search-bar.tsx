@@ -70,13 +70,13 @@ export function PersistentSearchBar() {
       {/* Back button */}
       {showBack && (
         <button
-          onClick={() => { router.back(); }}
+          onClick={() => { router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(query)}`); }}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M10 3 L5 8 L10 13" />
           </svg>
-          <span className="hidden sm:inline">All Results</span>
+          <span className="hidden sm:inline">{t('action.all_results')}</span>
         </button>
       )}
 
@@ -125,7 +125,7 @@ export function PersistentSearchBar() {
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="flex-shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-        title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+        title={sidebarOpen ? t('action.hide_sidebar') : t('action.show_sidebar')}
       >
         {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRight className="h-4 w-4" />}
       </button>

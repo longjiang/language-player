@@ -20,6 +20,7 @@
         "video_thumbnail": "Video-kleinkiekie"
     },
     "action": {
+        "all_results": "Alle resultate",
         "back": "Terug",
         "back_to_login": "Terug na aanmelding",
         "cancel": "Kanselleer",
@@ -42,6 +43,7 @@
         "export": "Voer uit",
         "fill_with_sample": "Vul met voorbeeld",
         "forgot_password": "Wagwoord vergeet?",
+        "hide_sidebar": "Versteek sybalk",
         "keep_account": "Behou rekening",
         "keep_subscription": "Behou inskrywing",
         "let_ai_explain": "Laat DeepSeek verduidelik",
@@ -77,6 +79,7 @@
         "share": "Deel",
         "show_less": "Wys minder",
         "show_more": "Wys meer",
+        "show_sidebar": "Wys sybalk",
         "sign_in": "Meld aan",
         "sign_up": "Teken aan",
         "speak": "Praat",
@@ -182,6 +185,7 @@
         "collapse_video": "Vou Video Toe",
         "conjugation": "Vervoeging",
         "custom_voice": "Pasgemaakte stem",
+        "dialog": "Dialoog",
         "enable_popup_dictionary": "Aktiveer opspringwoordeboek",
         "font": "Font",
         "free_account": "Gratis rekening",

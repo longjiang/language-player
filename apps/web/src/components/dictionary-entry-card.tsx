@@ -57,7 +57,7 @@ export function DictionaryEntryCard({
   contextForm,
 }: DictionaryEntryCardProps) {
   const t = useT();
-  const { apply } = useScriptPreference(l2Code ?? '');
+  const { apply, getAlternateScript } = useScriptPreference(l2Code ?? '');
   const { head, alternate } = apply(entry.head, entry.alternate);
   const isFull = variant === 'full';
   const [tab, setTab] = useState<string>('word');
@@ -77,8 +77,7 @@ export function DictionaryEntryCard({
     ? pronunciation
     : formatPronunciation(entry, l2Code ?? '');
 
-  // Hide alternate when it duplicates the head or pronunciation
-  const showAlternate = alternate && alternate !== head && alternate !== formattedPron;
+  const displayAlternate = getAlternateScript(entry);
 
   const studyMaterials = entry.studyMaterials;
 
@@ -168,8 +167,8 @@ export function DictionaryEntryCard({
         {/* Header */}
         <div className="flex items-center gap-2">
           <span className="text-lg font-semibold" lang={l2Code}>{head}</span>
-          {showAlternate && (
-            <span className="text-xs text-muted-foreground" lang={l2Code}>{alternate}</span>
+          {displayAlternate && (
+            <span className="text-xs text-muted-foreground" lang={l2Code}>{displayAlternate}</span>
           )}
           {formattedPron && (
             <span className="text-xs text-muted-foreground">{formattedPron}</span>
@@ -251,9 +250,9 @@ export function DictionaryEntryCard({
               <HeadTag className="text-4xl font-bold" lang={l2Code}>
                 {head}
               </HeadTag>
-              {showAlternate && (
+              {displayAlternate && (
                 <span className="text-xl text-muted-foreground" lang={l2Code}>
-                  {alternate}
+                  {displayAlternate}
                 </span>
               )}
             </div>
@@ -334,7 +333,7 @@ export function DictionaryEntryCard({
             <div key={i} className="space-y-1.5">
               <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
                 <BookOpen className="h-4 w-4" />
-                <span>{t('label.textbook_format', { material: m.material, book: m.location?.book, lesson: m.location?.lesson })}{m.location?.dialog ? `, Dialog ${m.location.dialog}` : ''}</span>
+                <span>{t('label.textbook_format', { material: m.material, book: m.location?.book, lesson: m.location?.lesson })}{m.location?.dialog ? `, ${t('label.dialog')} ${m.location.dialog}` : ''}</span>
               </div>
               {m.example && (
                 <p className="text-sm" lang={l2Code}>{m.example}</p>

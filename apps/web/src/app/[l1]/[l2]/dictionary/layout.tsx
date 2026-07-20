@@ -76,7 +76,7 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
           <div className="rounded-xl border border-border bg-card h-full flex flex-col overflow-hidden">
             <div className="flex items-center border-b border-border px-3 py-2">
               <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                {sidebarSource.kind === 'results' ? `${sidebarSource.items.length} results` : t('title.saved_words')}
+                {sidebarSource.kind === 'results' ? t('msg.result_count', { count: sidebarSource.items.length }) : t('title.saved_words')}
               </h3>
             </div>
             <div className="flex-1 overflow-y-auto px-1 py-1">
@@ -175,12 +175,13 @@ function SavedWordsSidebarContent({
   onWordClick: (word: SavedLexicalItemRecord) => void;
   currentEntryId: string | null;
 }) {
+  const t = useT();
   const words = getSavedWords(l2Code);
 
   if (words.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-xs text-muted-foreground px-3 py-4">No saved words yet</p>
+        <p className="text-xs text-muted-foreground px-3 py-4">{t('msg.no_saved_words')}</p>
       </div>
     );
   }

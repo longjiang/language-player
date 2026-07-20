@@ -20,6 +20,7 @@
         "video_thumbnail": "वीडियो थंबनेल"
     },
     "action": {
+        "all_results": "सभी परिणाम",
         "back": "वापस",
         "back_to_login": "लॉगिन पर वापस जाएं",
         "cancel": "रद्द करें",
@@ -42,6 +43,7 @@
         "export": "निर्यात करें",
         "fill_with_sample": "नमूने से भरें",
         "forgot_password": "पासवर्ड भूल गए?",
+        "hide_sidebar": "साइडबार छिपाएँ",
         "keep_account": "खाता बनाए रखें",
         "keep_subscription": "सदस्यता बनाए रखें",
         "let_ai_explain": "डीपसीक से समझाएं",
@@ -77,6 +79,7 @@
         "share": "साझा करें",
         "show_less": "कम दिखाएं",
         "show_more": "और दिखाएं",
+        "show_sidebar": "साइडबार दिखाएँ",
         "sign_in": "साइन इन करें",
         "sign_up": "साइन अप करें",
         "speak": "बोलें",
@@ -182,6 +185,7 @@
         "collapse_video": "वीडियो संकुचित करें",
         "conjugation": "रूप",
         "custom_voice": "कस्टम आवाज़",
+        "dialog": "संवाद",
         "enable_popup_dictionary": "पॉपअप शब्दकोश सक्षम करें",
         "font": "फ़ॉन्ट",
         "free_account": "मुफ़्त खाता",

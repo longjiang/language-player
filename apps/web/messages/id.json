@@ -20,6 +20,7 @@
         "video_thumbnail": "Thumbnail video"
     },
     "action": {
+        "all_results": "Semua hasil",
         "back": "Kembali",
         "back_to_login": "Kembali ke login",
         "cancel": "Batal",
@@ -42,6 +43,7 @@
         "export": "Ekspor",
         "fill_with_sample": "Isi dengan contoh",
         "forgot_password": "Lupa kata sandi?",
+        "hide_sidebar": "Sembunyikan bilah sisi",
         "keep_account": "Simpan Akun",
         "keep_subscription": "Simpan Langganan",
         "let_ai_explain": "Biarkan DeepSeek Menjelaskan",
@@ -77,6 +79,7 @@
         "share": "Bagikan",
         "show_less": "Tampilkan lebih sedikit",
         "show_more": "Tampilkan lebih banyak",
+        "show_sidebar": "Tampilkan bilah sisi",
         "sign_in": "Masuk",
         "sign_up": "Daftar",
         "speak": "Bicara",
@@ -182,6 +185,7 @@
         "collapse_video": "Ciutkan video",
         "conjugation": "Konjugasi",
         "custom_voice": "Suara kustom",
+        "dialog": "Dialog",
         "enable_popup_dictionary": "Aktifkan kamus pop-up",
         "font": "Font",
         "free_account": "Akun Gratis",

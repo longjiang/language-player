@@ -20,6 +20,7 @@
         "video_thumbnail": "Videominiatuur"
     },
     "action": {
+        "all_results": "Alle resultaten",
         "back": "Terug",
         "back_to_login": "Terug naar inloggen",
         "cancel": "Annuleren",
@@ -42,6 +43,7 @@
         "export": "Exporteren",
         "fill_with_sample": "Vullen met voorbeeld",
         "forgot_password": "Wachtwoord vergeten?",
+        "hide_sidebar": "Zijbalk verbergen",
         "keep_account": "Account behouden",
         "keep_subscription": "Abonnement behouden",
         "let_ai_explain": "Laat DeepSeek het uitleggen",
@@ -77,6 +79,7 @@
         "share": "Delen",
         "show_less": "Toon minder",
         "show_more": "Toon meer",
+        "show_sidebar": "Zijbalk weergeven",
         "sign_in": "Inloggen",
         "sign_up": "Registreren",
         "speak": "Spreken",
@@ -182,6 +185,7 @@
         "collapse_video": "Video inklappen",
         "conjugation": "Vervoeging",
         "custom_voice": "Aangepaste stem",
+        "dialog": "Dialoog",
         "enable_popup_dictionary": "Pop-upwoordenboek inschakelen",
         "font": "Lettertype",
         "free_account": "Gratis account",

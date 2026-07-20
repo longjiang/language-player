@@ -27,6 +27,7 @@
         "video_thumbnail": "Video thumbnail"
     },
     "action": {
+        "all_results": "All Results",
         "back": "Back",
         "back_to_login": "Back to login",
         "cancel": "Cancel",
@@ -49,6 +50,7 @@
         "export": "Export",
         "fill_with_sample": "Fill with sample",
         "forgot_password": "Forgot password?",
+        "hide_sidebar": "Hide sidebar",
         "keep_account": "Keep Account",
         "keep_subscription": "Keep Subscription",
         "let_ai_explain": "Let DeepSeek Explain",
@@ -84,6 +86,7 @@
         "share": "Share",
         "show_less": "Show less",
         "show_more": "Show more",
+        "show_sidebar": "Show sidebar",
         "sign_in": "Sign In",
         "sign_up": "Sign up",
         "speak": "Speak",
@@ -189,6 +192,7 @@
         "collapse_video": "Collapse Video",
         "conjugation": "Conjugation",
         "custom_voice": "Custom voice",
+        "dialog": "Dialog",
         "enable_popup_dictionary": "Enable Popup Dictionary",
         "font": "Font",
         "free_account": "Free Account",
@@ -876,9 +880,7 @@
         "word_level_display": "Word-Level Display"
     },
     "sort": {
-        "alphabetical": "A–Z",
         "most_viewed": "Most Viewed",
-        "newest": "Newest",
         "title": "Title",
         "year": "Year"
     },

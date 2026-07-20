@@ -20,6 +20,7 @@
         "video_thumbnail": "Miniatura del vídeo"
     },
     "action": {
+        "all_results": "Tots els resultats",
         "back": "Tornar",
         "back_to_login": "Tornar a l'inici de sessió",
         "cancel": "Cancel·lar",
@@ -42,6 +43,7 @@
         "export": "Exportar",
         "fill_with_sample": "Omplir amb mostra",
         "forgot_password": "Has oblidat la contrasenya?",
+        "hide_sidebar": "Amaga la barra lateral",
         "keep_account": "Mantenir compte",
         "keep_subscription": "Mantenir subscripció",
         "let_ai_explain": "Que DeepSeek ho expliqui",
@@ -77,6 +79,7 @@
         "share": "Compartir",
         "show_less": "Mostra'n menys",
         "show_more": "Mostra'n més",
+        "show_sidebar": "Mostra la barra lateral",
         "sign_in": "Iniciar sessió",
         "sign_up": "Registrar-se",
         "speak": "Parlar",
@@ -182,6 +185,7 @@
         "collapse_video": "Replegar vídeo",
         "conjugation": "Conjugació",
         "custom_voice": "Veu personalitzada",
+        "dialog": "Diàleg",
         "enable_popup_dictionary": "Activar diccionari emergent",
         "font": "Tipus de lletra",
         "free_account": "Compte Gratuït",

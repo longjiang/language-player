@@ -20,6 +20,7 @@
         "video_thumbnail": "Ảnh thu nhỏ video"
     },
     "action": {
+        "all_results": "Tất cả kết quả",
         "back": "Quay lại",
         "back_to_login": "Quay lại đăng nhập",
         "cancel": "Hủy",
@@ -42,6 +43,7 @@
         "export": "Xuất",
         "fill_with_sample": "Điền mẫu",
         "forgot_password": "Quên mật khẩu?",
+        "hide_sidebar": "Ẩn thanh bên",
         "keep_account": "Giữ tài khoản",
         "keep_subscription": "Giữ đăng ký",
         "let_ai_explain": "Để DeepSeek giải thích",
@@ -77,6 +79,7 @@
         "share": "Chia sẻ",
         "show_less": "Ẩn bớt",
         "show_more": "Xem thêm",
+        "show_sidebar": "Hiện thanh bên",
         "sign_in": "Đăng nhập",
         "sign_up": "Đăng ký",
         "speak": "Nói",
@@ -182,6 +185,7 @@
         "collapse_video": "Thu gọn video",
         "conjugation": "Cách chia",
         "custom_voice": "Giọng nói tùy chỉnh",
+        "dialog": "Hội thoại",
         "enable_popup_dictionary": "Bật từ điển bật lên",
         "font": "Phông chữ",
         "free_account": "Tài khoản miễn phí",

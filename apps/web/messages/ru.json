@@ -20,6 +20,7 @@
         "video_thumbnail": "Миниатюра видео"
     },
     "action": {
+        "all_results": "Все результаты",
         "back": "Назад",
         "back_to_login": "Вернуться ко входу",
         "cancel": "Отмена",
@@ -42,6 +43,7 @@
         "export": "Экспорт",
         "fill_with_sample": "Заполнить примером",
         "forgot_password": "Забыли пароль?",
+        "hide_sidebar": "Скрыть боковую панель",
         "keep_account": "Сохранить аккаунт",
         "keep_subscription": "Сохранить подписку",
         "let_ai_explain": "Пусть DeepSeek объяснит",
@@ -77,6 +79,7 @@
         "share": "Поделиться",
         "show_less": "Показать меньше",
         "show_more": "Показать больше",
+        "show_sidebar": "Показать боковую панель",
         "sign_in": "Войти",
         "sign_up": "Регистрация",
         "speak": "Говорить",
@@ -182,6 +185,7 @@
         "collapse_video": "Свернуть видео",
         "conjugation": "Спряжение",
         "custom_voice": "Пользовательский голос",
+        "dialog": "Диалог",
         "enable_popup_dictionary": "Включить всплывающий словарь",
         "font": "Шрифт",
         "free_account": "Бесплатный аккаунт",

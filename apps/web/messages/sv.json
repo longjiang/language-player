@@ -20,6 +20,7 @@
         "video_thumbnail": "Videominiatyr"
     },
     "action": {
+        "all_results": "Alla resultat",
         "back": "Tillbaka",
         "back_to_login": "Tillbaka till inloggning",
         "cancel": "Avbryt",
@@ -42,6 +43,7 @@
         "export": "Exportera",
         "fill_with_sample": "Fyll med exempel",
         "forgot_password": "Glömt lösenord?",
+        "hide_sidebar": "Dölj sidofält",
         "keep_account": "Behåll konto",
         "keep_subscription": "Behåll prenumeration",
         "let_ai_explain": "Låt DeepSeek förklara",
@@ -77,6 +79,7 @@
         "share": "Dela",
         "show_less": "Visa mindre",
         "show_more": "Visa mer",
+        "show_sidebar": "Visa sidofält",
         "sign_in": "Logga in",
         "sign_up": "Registrera dig",
         "speak": "Tala",
@@ -182,6 +185,7 @@
         "collapse_video": "Dölj video",
         "conjugation": "Böjning",
         "custom_voice": "Anpassad röst",
+        "dialog": "Dialog",
         "enable_popup_dictionary": "Aktivera popup-ordbok",
         "font": "Typsnitt",
         "free_account": "Gratis konto",
