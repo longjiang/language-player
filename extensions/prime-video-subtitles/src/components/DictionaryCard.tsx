@@ -4,9 +4,12 @@
  * Renders inside the transcript panel when a word token is clicked.
  * Fetches entries from POST /dictionary/lookup and shows previews
  * with a link to the full Language Player web app.
+ *
+ * Error handling: if the API call fails or returns unexpected data,
+ * the card shows a graceful error message rather than crashing.
  */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { LemmatizedToken, DictionaryEntry, ProficiencyLevel } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
 
@@ -103,13 +106,14 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   const [entries, setEntries] = useState<DictionaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
     setLoading(true);
     setError(null);
+
+    console.log('[LPV] Dictionary lookup for:', token.text, token.lemmas.map(l => l.lemma));
 
     const search = async () => {
       // Try lemmas first, then the surface form
@@ -125,7 +129,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         try {
           const results = await fetchEntries(term, l2Code, l1Code, controller.signal);
           if (!cancelled && results.length > 0) {
-            // Set match type
             for (const e of results) {
               if (!e.match_type) {
                 e.match_type = term === token.text ? 'exact' : 'lemma';
@@ -140,13 +143,13 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
       }
 
       if (!cancelled) {
-        // Deduplicate
         const seen = new Set<string>();
         const deduped = allEntries.filter((e) => {
           if (seen.has(e.id)) return false;
           seen.add(e.id);
           return true;
         });
+        console.log('[LPV] Dictionary results:', deduped.length, 'entries');
         setEntries(deduped);
         setLoading(false);
       }
@@ -154,31 +157,22 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
 
     search().catch((err) => {
       if (!cancelled && err.name !== 'AbortError') {
+        console.error('[LPV] Dictionary lookup error:', err);
         setError(err?.message ?? 'Lookup failed');
         setLoading(false);
       }
     });
 
-    // Close on click outside
-    const handleClickOutside = (e: MouseEvent) => {
-      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-    // Delay to avoid the click that opened the card from closing it
-    setTimeout(() => document.addEventListener('click', handleClickOutside), 0);
-
     return () => {
       cancelled = true;
       controller.abort();
-      document.removeEventListener('click', handleClickOutside);
     };
-  }, [token, l1Code, l2Code, onClose]);
+  }, [token, l1Code, l2Code]);
 
   const webAppUrl = `https://zerotohero.ca/${l1Code}/${l2Code}/dictionary/entry/llm/${encodeURIComponent(token.text)}`;
 
   return (
-    <div ref={cardRef} className="lpv-dict-card" onClick={(e) => e.stopPropagation()}>
+    <div className="lpv-dict-card" onClick={(e) => e.stopPropagation()}>
       {/* Card header: word + pronunciation + close */}
       <div className="lpv-dict-card-header">
         <div>
