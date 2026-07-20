@@ -274,7 +274,99 @@ body.lpv-panel-open .dv-player-fullscreen {
   color: #ddd;
 }
 
-/* Ruby text (furigana / pinyin) */
+/* ── Cue Translation (L1 text below L2 line) ─────────────────────────── */
+
+.lpv-cue-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.lpv-cue-translation {
+  font-size: 12px;
+  color: #777;
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+.lpv-cue.lpv-active .lpv-cue-translation {
+  color: #999;
+}
+
+/* ── Cue Action Buttons (copy, speak) ────────────────────────────────── */
+
+.lpv-cue-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.lpv-cue:hover .lpv-cue-actions,
+.lpv-cue.lpv-active .lpv-cue-actions {
+  opacity: 1;
+}
+
+.lpv-cue-action-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+}
+
+.lpv-cue-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Control Bar (translate toggle) ──────────────────────────────────── */
+
+.lpv-control-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  flex-shrink: 0;
+}
+
+.lpv-control-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.lpv-control-btn:hover {
+  color: #ccc;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.lpv-control-btn-active {
+  color: #00A8E1;
+  border-color: rgba(0, 168, 225, 0.4);
+  background: rgba(0, 168, 225, 0.1);
+}
+
+.lpv-control-status {
+  font-size: 11px;
+  color: #666;
+}/* Ruby text (furigana / pinyin) */
 .lpv-token ruby {
   ruby-align: center;
 }
