@@ -14,6 +14,7 @@ import type { RubySegment } from '@langplayer/utils';
 import { DictionaryCard } from './components/DictionaryCard';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
 import { useTranslateLines } from './use-translate-lines';
+import { useSubscription } from './use-subscription';
 import type { SubCue } from './use-translate-lines';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -238,10 +239,12 @@ interface CueLineProps {
   translation: string;
   /** Whether translation is enabled (shows toggle state) */
   showTranslation: boolean;
+  onExplainLine: (cue: SubtitleCue) => void;
+  explainLoading: boolean;
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, l2Code, onSeekTo, onTokenClick, translation, showTranslation }) => {
+  ({ cue, index, isActive, l2Code, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -309,6 +312,14 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             <div className="lpv-cue-menu-dropdown">
               <button onClick={handleCopy} className="lpv-cue-menu-item">📋 Copy</button>
               <button onClick={handleSpeak} className="lpv-cue-menu-item">🔊 Speak</button>
+              {!explainLoading && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onExplainLine(cue); }}
+                  className="lpv-cue-menu-item"
+                >
+                  🤖 Explain
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -341,6 +352,12 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   const prevActiveRef = useRef(activeCueIdx);
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
   const [showTranslation, setShowTranslation] = useState(false);
+  const [explainLoading, setExplainLoading] = useState(false);
+  const [explainText, setExplainText] = useState<string | null>(null);
+  const [explainError, setExplainError] = useState<string | null>(null);
+  const [explainCue, setExplainCue] = useState<SubtitleCue | null>(null);
+
+  const { isPro } = useSubscription();
 
   const { translated, loading: translating, progress } = useTranslateLines(
     cues,
@@ -357,6 +374,43 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   const handleTokenClick = useCallback((token: LemmatizedToken) => {
     console.log('[LPV] Token clicked:', token.text, token.lemmas.map(l => l.lemma));
     setSelectedToken(token);
+    setExplainCue(null);
+  }, []);
+
+  const handleExplainLine = useCallback(async (cue: SubtitleCue) => {
+    setSelectedToken(null);
+    setExplainCue(cue);
+    setExplainLoading(true);
+    setExplainText(null);
+    setExplainError(null);
+
+    try {
+      const l1Name = l1Code.toUpperCase();
+      const prompt = `Provide a clear breakdown of the following ${l2Code} text. Include:
+1. Its overall meaning in ${l1Name}
+2. A phrase-by-phrase breakdown explaining how the text is constructed
+
+Text: ${cue.text}`;
+
+      const res = await fetch('https://pythonvps.zerotohero.ca/chatgpt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setExplainText(data.response || data.text || data.result || JSON.stringify(data));
+    } catch (err: any) {
+      setExplainError(err?.message || 'Explain failed');
+    } finally {
+      setExplainLoading(false);
+    }
+  }, [l1Code, l2Code]);
+
+  const closeExplain = useCallback(() => {
+    setExplainCue(null);
+    setExplainText(null);
+    setExplainError(null);
   }, []);
 
   useEffect(() => {
@@ -405,6 +459,8 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
             onTokenClick={handleTokenClick}
             translation={translated.get(i) || ''}
             showTranslation={showTranslation}
+            onExplainLine={handleExplainLine}
+            explainLoading={explainLoading}
           />
         ))}
       </div>
@@ -417,6 +473,45 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
             l2Code={l2Code}
             onClose={() => setSelectedToken(null)}
           />
+        </div>
+      )}
+
+      {/* Line-level AI explain overlay */}
+      {explainCue && (
+        <div className="lpv-dict-overlay">
+          <div className="lpv-dict-card" onClick={(e) => e.stopPropagation()}>
+            <div className="lpv-dict-card-header">
+              <div className="lpv-dict-card-header-left">
+                <span className="lpv-dict-card-word">🤖 Explain</span>
+                {explainLoading && <span className="lpv-dict-card-pron">thinking…</span>}
+              </div>
+              <button onClick={closeExplain} className="lpv-dict-card-close" title="Close">✕</button>
+            </div>
+            <div className="lpv-dict-card-body">
+              <div className="lpv-explain-section" style={{ borderBottom: 'none' }}>
+                {explainLoading && (
+                  <div className="lpv-explain-loading">🤖 AI is thinking…</div>
+                )}
+                {explainError && (
+                  <div className="lpv-explain-error">{explainError}</div>
+                )}
+                {explainText && (
+                  <div
+                    className="lpv-markdown"
+                    dangerouslySetInnerHTML={{
+                      __html: explainText
+                        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                        .replace(/\n\n/g, '</p><p>')
+                        .replace(/\n/g, '<br/>')
+                        .replace(/^<p>/, '<p style="margin:0 0 8px;font-size:13px;color:#ccc;line-height:1.7">')
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </>
