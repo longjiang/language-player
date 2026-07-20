@@ -54,11 +54,36 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
   ({ text, l2Code, isActive, onClickLine, onTokenClick }) => {
     const [tokens, setTokens] = useState<LemmatizedToken[] | null>(null);
     const [error, setError] = useState(false);
+    const [hasBeenVisible, setHasBeenVisible] = useState(false);
     const aborterRef = useRef<AbortController | null>(null);
+    const containerRef = useRef<HTMLSpanElement>(null);
 
     const base = baseCode(l2Code);
 
+    // ── Lazy tokenization: only fetch when visible (IntersectionObserver) ──
     useEffect(() => {
+      if (hasBeenVisible) return;
+      const el = containerRef.current;
+      if (!el) return;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) {
+            setHasBeenVisible(true);
+            observer.disconnect();
+          }
+        },
+        { rootMargin: '200px' }, // start tokenizing 200px before visible
+      );
+
+      observer.observe(el);
+      return () => observer.disconnect();
+    }, [hasBeenVisible]);
+
+    // ── Fetch tokens (only when visible) ──
+    useEffect(() => {
+      if (!hasBeenVisible) return;
+
       let cancelled = false;
 
       // Check cache first
@@ -100,44 +125,29 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
         cancelled = true;
         controller.abort();
       };
-    }, [text, base]);
+    }, [text, base, hasBeenVisible]);
 
-    // While loading, show plain text
-    if (!tokens && !error) {
-      return (
-        <span
-          onClick={(e) => { e.stopPropagation(); onClickLine(); }}
-          className={`lpv-cue-text ${isActive ? 'lpv-active-text' : ''}`}
-        >
-          {text}
-        </span>
-      );
-    }
-
-    // On error, show plain text
-    if (error) {
-      return (
-        <span
-          onClick={(e) => { e.stopPropagation(); onClickLine(); }}
-          className={`lpv-cue-text ${isActive ? 'lpv-active-text' : ''}`}
-        >
-          {text}
-        </span>
-      );
-    }
-
+    // ── Plain text render (before tokenization) ──
     return (
-      <span className={`lpv-cue-text ${isActive ? 'lpv-active-text' : ''}`}>
-        {tokens!.map((token, i) => (
-          <TokenSpan
-            key={i}
-            token={token}
-            l2Code={l2Code}
-            isActive={isActive}
-            onClickLine={onClickLine}
-            onTokenClick={onTokenClick}
-          />
-        ))}
+      <span
+        ref={containerRef}
+        className={`lpv-cue-text ${isActive ? 'lpv-active-text' : ''}`}
+        onClick={(e) => { e.stopPropagation(); onClickLine(); }}
+      >
+        {tokens && !error ? (
+          tokens.map((token, i) => (
+            <TokenSpan
+              key={i}
+              token={token}
+              l2Code={l2Code}
+              isActive={isActive}
+              onClickLine={onClickLine}
+              onTokenClick={onTokenClick}
+            />
+          ))
+        ) : (
+          text
+        )}
       </span>
     );
   },
@@ -267,6 +277,17 @@ const TranscriptApp: React.FC<TranscriptAppProps> = ({
   const prevActiveRef = useRef(activeCueIdx);
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
 
+  // When seeking to a line (clicking a line or arrow keys), close the dictionary card
+  const handleSeekTo = useCallback((timeSec: number) => {
+    setSelectedToken(null);
+    onSeekTo(timeSec);
+  }, [onSeekTo]);
+
+  const handleTokenClick = useCallback((token: LemmatizedToken) => {
+    console.log('[LPV] Token clicked:', token.text, token.lemmas.map(l => l.lemma));
+    setSelectedToken(token);
+  }, []);
+
   // Auto-scroll to active cue
   useEffect(() => {
     if (activeCueIdx === prevActiveRef.current) return;
@@ -294,8 +315,8 @@ const TranscriptApp: React.FC<TranscriptAppProps> = ({
           index={i}
           isActive={i === activeCueIdx}
           l2Code={l2Code}
-          onSeekTo={onSeekTo}
-          onTokenClick={setSelectedToken}
+          onSeekTo={handleSeekTo}
+          onTokenClick={handleTokenClick}
         />
       ))}
 
