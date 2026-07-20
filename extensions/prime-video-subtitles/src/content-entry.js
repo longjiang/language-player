@@ -268,10 +268,8 @@ async function fetchAndParseSubtitles(url) {
     tryDetectL2FromCues(cues);
 
     if (cues.length === 0) {
-      updateStatus('No cues found in subtitle file');
       mountTranscript(panelContent, [], -1, detectedL2Code, L1_CODE, seekTo);
     } else {
-      updateStatus(`${cues.length} subtitle entries loaded`);
       STATE.activeCueIdx = -1;
       renderTranscript();
       if (!STATE.panelVisible) {
@@ -324,7 +322,7 @@ function createPanelUI() {
 
   const title = document.createElement('span');
   title.id = 'lpv-panel-title';
-  title.textContent = 'Transcript';
+  title.textContent = 'Language Player';
 
   const closeBtn = document.createElement('button');
   closeBtn.id = 'lpv-close-btn';
@@ -343,7 +341,6 @@ function createPanelUI() {
   panelContent.id = 'lpv-panel-content';
 
   panelRoot.appendChild(header);
-  panelRoot.appendChild(statusEl);
   panelRoot.appendChild(panelContent);
 
   document.body.appendChild(panelRoot);
