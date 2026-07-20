@@ -457,6 +457,27 @@ function parseYTTimedText(xmlText) {
   return cues;
 }
 
+/** Fetch a URL by injecting a script into the page context.
+ *  Bypasses YouTube's service worker which blocks extension-origin fetches. */
+function pageFetch(url) {
+  return new Promise((resolve) => {
+    const id = 'lpv' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    script.textContent = `(async()=>{try{const r=await fetch(${JSON.stringify(url)});const t=await r.text();window['${id}']=t}catch(e){window['${id}']=''}})();`;
+    (document.head || document.documentElement).appendChild(script);
+    script.remove();
+
+    const check = setInterval(() => {
+      if (window[id] !== undefined) {
+        clearInterval(check);
+        const result = window[id];
+        delete window[id];
+        resolve(typeof result === 'string' ? result : '');
+      }
+    }, 50);
+  });
+}
+
 /** Fetch YouTube subtitles from a track and render */
 async function fetchYTTrack(track) {
   try {
@@ -467,20 +488,16 @@ async function fetchYTTrack(track) {
     if (url.startsWith('//')) url = 'https:' + url;
     else if (url.startsWith('/')) url = 'https://www.youtube.com' + url;
 
-    // Proxy fetch through background worker (bypasses YouTube service worker blocking)
-    let text = await bgFetch(url);
+    // Fetch via page-injected script (bypasses YT service worker)
+    let text = await pageFetch(url);
     let cues;
 
     if (!text || text.length === 0) {
-      // Fall back to simple unsigned JSON3 URL
+      // Fall back to unsigned JSON3 URL
       const videoId = getYTVideoId();
       const lang = track.languageCode || 'en';
-      const fallbackUrl = `https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`;
-      text = await bgFetch(fallbackUrl);
-      if (!text || text.length === 0) {
-        console.log('[LanguagePlayer] Both URLs returned empty');
-        return;
-      }
+      text = await pageFetch(`https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`);
+      if (!text || text.length === 0) return;
       cues = parseYTJSON3(text);
     } else if (text.trim().startsWith('<')) {
       cues = parseYTTimedText(text);
@@ -502,11 +519,7 @@ async function fetchYTTrack(track) {
     if (cues.length > 0) {
       STATE.activeCueIdx = -1;
       renderTranscript();
-      if (!STATE.panelVisible) {
-        setPanelVisible(true);
-      }
-    } else {
-      console.log('[LanguagePlayer] No cues parsed');
+      if (!STATE.panelVisible) setPanelVisible(true);
     }
     setBadge(true);
     updateStatus(`${cues.length} subtitle entries loaded`);
@@ -514,15 +527,6 @@ async function fetchYTTrack(track) {
     console.error('[LanguagePlayer] Failed to fetch YouTube subtitles:', err);
     updateStatus('Failed to load subtitles');
   }
-}
-
-/** Fetch a URL through the background service worker (bypasses page SW) */
-function bgFetch(url) {
-  return new Promise((resolve) => {
-    chrome.runtime.sendMessage({ action: 'bgFetch', url }, (res) => {
-      resolve(res?.text || '');
-    });
-  });
 }
 
 /** Parse YouTube JSON3 timedtext format */
