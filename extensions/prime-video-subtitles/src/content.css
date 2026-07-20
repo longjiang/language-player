@@ -611,6 +611,39 @@ body.lpv-panel-open .dv-player-fullscreen {
   line-height: 1.5;
 }
 
+.lpv-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 12px;
+}
+
+.lpv-markdown td {
+  padding: 4px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ccc;
+  vertical-align: top;
+}
+
+.lpv-markdown td:first-child {
+  color: #eee;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lpv-markdown hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 10px 0;
+}
+
+.lpv-markdown h5 {
+  margin: 6px 0 3px;
+  font-size: 12px;
+  color: #ddd;
+  font-weight: 600;
+}
+
 .lpv-dict-card-word {
   font-size: 18px;
   font-weight: 700;
