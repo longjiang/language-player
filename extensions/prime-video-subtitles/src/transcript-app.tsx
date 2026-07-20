@@ -13,6 +13,8 @@ import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { DictionaryCard } from './components/DictionaryCard';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
+import { useTranslateLines } from './use-translate-lines';
+import type { SubCue } from './use-translate-lines';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -25,13 +27,13 @@ interface SubtitleCue {
 interface TranscriptAppProps {
   cues: SubtitleCue[];
   activeCueIdx: number;
-  /** ISO 639-1 language code for the subtitle language (e.g. "ja", "zh", "ko") */
   l2Code: string;
-  /** ISO 639-1 language code for the UI / native language (e.g. "en") */
   l1Code: string;
-  /** Called when the user clicks a subtitle line to seek the video */
   onSeekTo: (timeSec: number) => void;
 }
+
+// Re-export SubCue type for content-entry.js
+export type { SubCue };
 
 // ── In-memory token cache ──────────────────────────────────────────────────
 
@@ -232,13 +234,30 @@ interface CueLineProps {
   l2Code: string;
   onSeekTo: (timeSec: number) => void;
   onTokenClick: (token: LemmatizedToken) => void;
+  /** L1 translation text (empty string if not available/disabled) */
+  translation: string;
+  /** Whether translation is enabled (shows toggle state) */
+  showTranslation: boolean;
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, l2Code, onSeekTo, onTokenClick }) => {
+  ({ cue, index, isActive, l2Code, onSeekTo, onTokenClick, translation, showTranslation }) => {
     const handleClick = useCallback(() => {
       onSeekTo(cue.start);
     }, [cue.start, onSeekTo]);
+
+    const handleCopy = useCallback((e: React.MouseEvent) => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(cue.text).catch(() => {});
+    }, [cue.text]);
+
+    const handleSpeak = useCallback((e: React.MouseEvent) => {
+      e.stopPropagation();
+      const utterance = new SpeechSynthesisUtterance(cue.text);
+      utterance.lang = l2Code;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utterance);
+    }, [cue.text, l2Code]);
 
     const minutes = Math.floor(cue.start / 60);
     const seconds = Math.floor(cue.start % 60);
@@ -251,13 +270,22 @@ const CueLine: React.FC<CueLineProps> = React.memo(
         onClick={handleClick}
       >
         <span className="lpv-cue-time">{timeStr}</span>
-        <TokenizedLine
-          text={cue.text}
-          l2Code={l2Code}
-          isActive={isActive}
-          onClickLine={handleClick}
-          onTokenClick={onTokenClick}
-        />
+        <div className="lpv-cue-body">
+          <TokenizedLine
+            text={cue.text}
+            l2Code={l2Code}
+            isActive={isActive}
+            onClickLine={handleClick}
+            onTokenClick={onTokenClick}
+          />
+          {showTranslation && translation && (
+            <div className="lpv-cue-translation">{translation}</div>
+          )}
+        </div>
+        <div className="lpv-cue-actions">
+          <button onClick={handleCopy} title="Copy" className="lpv-cue-action-btn">📋</button>
+          <button onClick={handleSpeak} title="Speak" className="lpv-cue-action-btn">🔊</button>
+        </div>
       </div>
     );
   },
@@ -286,8 +314,15 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   const listRef = useRef<HTMLDivElement>(null);
   const prevActiveRef = useRef(activeCueIdx);
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
+  const [showTranslation, setShowTranslation] = useState(false);
 
-  // When seeking to a line (clicking a line or arrow keys), close the dictionary card
+  const { translated, loading: translating, progress } = useTranslateLines(
+    cues,
+    l1Code,
+    l2Code,
+    showTranslation,
+  );
+
   const handleSeekTo = useCallback((timeSec: number) => {
     setSelectedToken(null);
     onSeekTo(timeSec);
@@ -298,12 +333,10 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
     setSelectedToken(token);
   }, []);
 
-  // Auto-scroll to active cue
   useEffect(() => {
     if (activeCueIdx === prevActiveRef.current) return;
     prevActiveRef.current = activeCueIdx;
     if (activeCueIdx < 0) return;
-
     const el = listRef.current?.querySelector(
       `[data-index="${activeCueIdx}"]`,
     ) as HTMLElement | null;
@@ -318,6 +351,22 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
 
   return (
     <>
+      {/* Control bar */}
+      <div className="lpv-control-bar">
+        <button
+          onClick={() => setShowTranslation(!showTranslation)}
+          className={`lpv-control-btn ${showTranslation ? 'lpv-control-btn-active' : ''}`}
+          title="Toggle translation (L1)"
+        >
+          {showTranslation ? '🌐 Translation ON' : '🌐 Translate'}
+        </button>
+        {translating && (
+          <span className="lpv-control-status">
+            Translating… {progress}/{cues.length}
+          </span>
+        )}
+      </div>
+
       <div ref={listRef}>
         {cues.map((cue, i) => (
           <CueLine
@@ -328,11 +377,12 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
             l2Code={l2Code}
             onSeekTo={handleSeekTo}
             onTokenClick={handleTokenClick}
+            translation={translated.get(i) || ''}
+            showTranslation={showTranslation}
           />
         ))}
       </div>
 
-      {/* Dictionary card: fixed overlay at bottom of panel, always visible */}
       {selectedToken && (
         <div className="lpv-dict-overlay">
           <DictionaryCard
