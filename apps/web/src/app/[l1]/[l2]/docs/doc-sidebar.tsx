@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { List, ChevronDown } from 'lucide-react';
+import Fuse from 'fuse.js';
+import { List, ChevronDown, Search } from 'lucide-react';
 
 interface TocItem {
   level: number;
@@ -14,6 +15,12 @@ interface DocMeta {
   slug: string;
   title: string;
   children?: DocMeta[];
+}
+
+interface DocEntry {
+  slug: string;
+  title: string;
+  content: string;
 }
 
 /** Renders a doc link (leaf node) with optional active highlight. */
@@ -78,14 +85,24 @@ function DocCategory({ category, l1, l2, currentSlug, onClick }: {
   );
 }
 
-export function DocSidebar({ toc, docs, l1, l2, currentSlug }: {
+export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
   toc: TocItem[];
   docs: DocMeta[];
   l1: string;
   l2: string;
   currentSlug: string;
+  searchIndex: DocEntry[];
 }) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+
+  const fuse = useMemo(
+    () => new Fuse(searchIndex, { keys: ['title', 'content'], threshold: 0.4, includeScore: true }),
+    [searchIndex],
+  );
+
+  const results = query.trim() ? fuse.search(query).slice(0, 8) : [];
+  const isSearching = query.trim().length > 0;
 
   if (toc.length === 0 && docs.length === 0) return null;
 
@@ -95,7 +112,7 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug }: {
     <>
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg xl:hidden"
+        className="fixed top-[4.25rem] right-4 z-50 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground xl:hidden"
         aria-label="Table of contents"
       >
         <List className="h-5 w-5" />
@@ -117,51 +134,92 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug }: {
         `}
       >
         <nav className="space-y-4">
-          {/* All docs tree */}
-          <div>
-            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Table of contents
-            </h4>
-            <ul className="space-y-0.5">
-              {docs.map(doc => {
-                if (doc.children && doc.children.length > 0) {
-                  return (
-                    <li key={doc.slug}>
-                      <DocCategory category={doc} l1={l1} l2={l2} currentSlug={currentSlug} onClick={close} />
-                    </li>
-                  );
-                }
-                const href = `/${l1}/${l2}/docs/${doc.slug}`;
-                return (
-                  <li key={doc.slug}>
-                    <DocLink href={href} title={doc.title} active={doc.slug === currentSlug} onClick={close} />
-                  </li>
-                );
-              })}
-            </ul>
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search docs…"
+              className="w-full rounded-md border border-border bg-background py-1.5 pl-8 pr-3 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+            />
           </div>
 
-          {/* On this page headings */}
-          {toc.length > 0 && (
-            <div>
-              <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                On this page
-              </h4>
-              <ul className="space-y-0.5 border-l border-border/50 pl-2">
-                {toc.map((item) => (
-                  <li key={item.id}>
-                    <a
-                      href={`#${item.id}`}
-                      onClick={close}
-                      className="block rounded px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                      style={{ paddingLeft: `${(item.level - 2) * 0.75 + 0.25}rem` }}
-                    >
-                      {item.text}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {/* Search results */}
+          {isSearching && results.length > 0 && (
+            <ul className="space-y-1">
+              {results.map(({ item }) => (
+                <li key={item.slug}>
+                  <Link
+                    href={`/${l1}/${l2}/docs/${item.slug}`}
+                    onClick={close}
+                    className="block rounded px-2 py-1.5 text-sm transition-colors hover:bg-muted"
+                  >
+                    <span className="font-medium text-foreground">{item.title}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground line-clamp-1">
+                      {item.content.slice(0, 80)}…
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {isSearching && results.length === 0 && (
+            <p className="text-xs text-muted-foreground px-2">No results</p>
+          )}
+
+          {/* Regular sidebar content (hidden when searching) */}
+          {!isSearching && (
+            <>
+              {/* All docs tree */}
+              <div>
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Table of contents
+                </h4>
+                <ul className="space-y-0.5">
+                  {docs.map(doc => {
+                    if (doc.children && doc.children.length > 0) {
+                      return (
+                        <li key={doc.slug}>
+                          <DocCategory category={doc} l1={l1} l2={l2} currentSlug={currentSlug} onClick={close} />
+                        </li>
+                      );
+                    }
+                    const href = `/${l1}/${l2}/docs/${doc.slug}`;
+                    return (
+                      <li key={doc.slug}>
+                        <DocLink href={href} title={doc.title} active={doc.slug === currentSlug} onClick={close} />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+
+              {/* On this page headings */}
+              {toc.length > 0 && (
+                <div>
+                  <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    On this page
+                  </h4>
+                  <ul className="space-y-0.5 border-l border-border/50 pl-2">
+                    {toc.map((item) => (
+                      <li key={item.id}>
+                        <a
+                          href={`#${item.id}`}
+                          onClick={close}
+                          className="block rounded px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          style={{ paddingLeft: `${(item.level - 2) * 0.75 + 0.25}rem` }}
+                        >
+                          {item.text}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
           )}
         </nav>
       </aside>
