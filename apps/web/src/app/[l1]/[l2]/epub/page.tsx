@@ -58,9 +58,9 @@ export default function EpubPage() {
 
   // Handle file upload
   const handleFileLoaded = useCallback(async (data: ArrayBuffer, fileName: string) => {
-    await epub.loadFile(data, fileName);
-    if (epub.flatToc.length > 0) {
-      await handleLoadChapter(epub.flatToc[0]!.href);
+    const result = await epub.loadFile(data, fileName);
+    if (result?.firstChapterHref) {
+      await handleLoadChapter(result.firstChapterHref);
     }
   }, [epub, handleLoadChapter]);
 

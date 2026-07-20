@@ -51,7 +51,10 @@ export interface UseEpubReturn {
   /** Page progression direction. */
   pageProgressionDir: 'ltr' | 'rtl';
   /** Load a file from an ArrayBuffer. */
-  loadFile: (data: ArrayBuffer, fileName: string) => Promise<any>;
+  loadFile: (data: ArrayBuffer, fileName: string) => Promise<{
+    flatToc: TocItem[];
+    firstChapterHref: string | null;
+  } | null>;
   /** Load a chapter by href. Returns the markdown text. */
   loadChapter: (href: string) => Promise<string>;
   /** Go to the next chapter. */
@@ -94,7 +97,10 @@ export function useEpub(): UseEpubReturn {
   }
 
   /** Load a file. Returns the book instance for chaining. */
-  const loadFile = useCallback(async (data: ArrayBuffer, fName: string) => {
+  const loadFile = useCallback(async (data: ArrayBuffer, fName: string): Promise<{
+    flatToc: TocItem[];
+    firstChapterHref: string | null;
+  } | null> => {
     const ePubModule = await import('epubjs');
     const ePub = ePubModule.default;
     const b = ePub(data);
@@ -117,11 +123,15 @@ export function useEpub(): UseEpubReturn {
 
       await saveEpub(data, fName);
 
+      const flat = flatten(navToc);
+      const firstHref = flat.length > 0 ? flat[0]!.href : null;
+
       // Load first chapter
-      if (navToc.length > 0) {
+      if (firstHref) {
         await b.ready;
-        return b;
+        return { flatToc: flat, firstChapterHref: firstHref };
       }
+      return { flatToc: flat, firstChapterHref: null };
     } catch (err) {
       console.error('Error loading EPUB:', err);
       setError('Failed to parse EPUB file');
@@ -129,7 +139,7 @@ export function useEpub(): UseEpubReturn {
     return null;
   }, []);
 
-  /** Load a chapter, returns the markdown text. */
+  /** Load a chapter by href from the TOC. Concatenates all spine items belonging to this chapter. */
   const loadChapter = useCallback(async (href: string): Promise<string> => {
     const b = bookRef.current;
     if (!b) return '';
@@ -140,12 +150,30 @@ export function useEpub(): UseEpubReturn {
     try {
       const spine = await b.loaded.spine;
       const cleanHref = href.split('#')[0];
-      const item = spine.get(cleanHref);
-      if (!item) { setLoading(false); return ''; }
 
-      const contents = await item.load(b.load.bind(b));
-      const rawHtml = contents.innerHTML;
-      const doc = new DOMParser().parseFromString(rawHtml, 'text/html');
+      // Find which spine items belong to this TOC chapter.
+      // A TOC chapter may span multiple spine items (e.g. a novel).
+      // Classic approach: concatenate from this chapter's spine item
+      // up to (but not including) the next TOC chapter's spine item.
+      const tocHrefs = flatToc.map(t => t.href.split('#')[0]);
+      const startIdx = (spine.items as any[]).findIndex((s: any) => s.href === cleanHref);
+      let endIdx = (spine.items as any[]).findIndex(
+        (s: any, i: number) => i > startIdx && tocHrefs.includes(s.href),
+      );
+      if (endIdx === -1) endIdx = (spine.items as any[]).length;
+
+      // Concatenate HTML from all spine items in range
+      let combinedHtml = '';
+      for (let i = startIdx; i < endIdx; i++) {
+        const spineItem = (spine.items as any[])[i]!;
+        const item = spine.get(spineItem.href);
+        if (item) {
+          const contents = await item.load(b.load.bind(b));
+          combinedHtml += contents.innerHTML;
+        }
+      }
+
+      const doc = new DOMParser().parseFromString(combinedHtml, 'text/html');
       const urlCache = b.archive?.urlCache ?? {};
 
       // Resolve images
@@ -195,10 +223,10 @@ export function useEpub(): UseEpubReturn {
       );
       setChapterLinks(spineHrefs);
 
-      // Chapter nav
-      const idx = (spine.items as any[]).findIndex((s: any) => s.href === cleanHref);
-      setPrevHref(idx > 0 ? (spine.items as any[])[idx - 1]!.href : null);
-      setNextHref(idx < (spine.items as any[]).length - 1 ? (spine.items as any[])[idx + 1]!.href : null);
+      // Chapter nav — use TOC-based navigation (not raw spine index)
+      const tocIdx = flatToc.findIndex(t => t.href === href || t.href.split('#')[0] === cleanHref);
+      setPrevHref(tocIdx > 0 ? flatToc[tocIdx - 1]!.href : null);
+      setNextHref(tocIdx < flatToc.length - 1 ? flatToc[tocIdx + 1]!.href : null);
       setCoverTapped(true);
 
       // Save position
