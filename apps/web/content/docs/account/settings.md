@@ -37,7 +37,7 @@ Phonetics are pronunciation guides that appear with the text. For Chinese, this 
 - **Replacing word** — the pronunciation replaces the original script entirely
 - **Off** — no phonetics at all
 
-When "On top of word" is selected, a second control appears: **Show For**. Choose **All Words** to annotate everything, or **Hard Words Only** to only show phonetics on words above your proficiency level.
+When "On top of word" is selected, a second control appears: **Show For**. Choose **All Words** to annotate everything, or **Hard Words Only** to only show phonetics on words above your proficiency level. You can set your proficiency level on your [profile page](/profile).
 
 ### Word-Level Display
 
