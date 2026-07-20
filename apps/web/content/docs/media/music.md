@@ -1,20 +1,23 @@
 # Music & Entertainment
 
-Learn languages through music videos with synced lyrics.
+Music videos and entertainment content for your target language.
 
 ## How It Works
 
-Music mode shows music videos with interactive subtitles. Lyrics are synced to the audio, and each word is clickable for instant dictionary lookup.
+This page works exactly like [Explore](/docs/media/explore), but only shows music (YouTube category 10) and entertainment (category 24) videos. Everything else — level filters, infinite scroll, video cards, and channel subscriptions — works the same way.
 
-## Features
+Music and entertainment content is separated from the main Explore page so your learning feed stays focused on general content like vlogs, news, educational videos, and conversations.
 
-- **Synced Lyrics** — Karaoke-style highlighting follows the song
-- **Dictionary Lookup** — Click any word in the lyrics
-- **Repeat Mode** — Loop sections to practice pronunciation
-- **Speed Control** — Slow down songs to catch every word
+## Why Separate?
+
+Music videos and entertainment make up a large portion of YouTube content — about 30% of videos at any given difficulty level. Mixing them into Explore would dominate the feed and crowd out other content types. Keeping them separate gives you control over when you want music and when you want other types of videos.
+
+## Channel Subscriptions
+
+If you subscribe to a music or entertainment channel, those videos still appear here. The channel subscription system works across both pages — your preferences are shared.
 
 ## Tips
 
-- Start with slower songs to build vocabulary
-- Use repeat mode to practice difficult phrases
-- Switch between L1 and L2 subtitles to check understanding
+- Use the level filter to find music at your proficiency level
+- Subscribe to your favorite music channels to see their newest videos first
+- Switch between Explore and Music & Entertainment to vary your learning

@@ -1,20 +1,56 @@
 # Explore
 
-Browse and discover videos in your target language.
+Discover videos in your target language, matched to your level.
 
 ## How It Works
 
-The Explore page shows recommended videos based on your language pair. Videos are sourced from YouTube and curated for language learning.
+The Explore page shows recommended videos for your language pair. Each video is sourced from YouTube and selected for language learning — we exclude music and entertainment content (those have their own [Music & Entertainment](/docs/media/music) page).
 
-## Features
+Videos are sorted by popularity and filtered by difficulty when you select a level. The recommendation engine learns from your watch history, so videos you've already watched won't appear again.
 
-- **Recommendations** — Personalized video suggestions
-- **Categories** — Browse by topic, difficulty, or content type
-- **Search** — Find specific content with the search bar
-- **Preview** — See video thumbnails, titles, and descriptions before watching
+## Level Filter
+
+The pills at the top let you filter by proficiency level. The labels adapt to your target language:
+
+| L2 | Pills show |
+|---|---|
+| Chinese | HSK 1 → HSK 7-9 |
+| Japanese | JLPT Pre-N5 → N1 |
+| Korean | TOPIK Pre-1 → 6 |
+| English | IELTS 1 → 9 |
+| Others | CEFR Pre-A1 → C2 |
+
+Click a pill to filter videos at that level. Click **All** to see videos at every level. The filter remembers your choice as you browse, and resets to your saved proficiency level when you return.
+
+## Video Cards
+
+Each card shows a color-coded **level badge** in the top-left corner. See [How Difficulty Is Calculated](#how-difficulty-is-calculated) for how these levels are determined.
+
+Click any card to open the video player. When you return to Explore, your place in the list is preserved exactly where you left it.
+
+### Channel Actions
+
+Each video card has a **…** menu in the top-right corner with two options:
+
+- **Subscribe** — Videos from this channel will appear first in your recommendations. About 25% of each page is reserved for subscribed channels, so you'll always see their newest content near the top. This is useful for channels you want to follow regularly — news outlets, educational creators, or your favorite vloggers.
+
+- **Not interested** — Videos from this channel will be hidden from your recommendations entirely. This is useful for channels that consistently show up but aren't a good fit — maybe the content is too advanced, too easy, or just not relevant to your learning goals.
+
+Your channel preferences are saved per language, so subscribing to a Japanese news channel won't affect your Korean recommendations. You can manage all your subscriptions and hidden channels from your profile.
+
+## How Difficulty Is Calculated
+
+Every video is assigned a difficulty score based on the frequency of words in its subtitles. The system uses per-language Zipf frequency lists — large tables that rank how common each word is in real-world text. A word like "the" has a high frequency (common), while "sesquipedalian" has a low frequency (rare).
+
+The scores are bucketed into 7 levels using exponential thresholds: the top 1/127 most frequent words are level 1, the next 2/127 are level 2, the next 4/127 are level 3, and so on — doubling each step. Level 7 covers the rarest 64/127 of words.
+
+Because word frequency distributions differ between languages, the thresholds are **language-specific**. A difficulty score of 0.008 in Japanese maps to JLPT N1 (level 6), while the same score in Korean maps to TOPIK 3 (level 4). The frontend fetches these thresholds once from the backend and uses them to label every video card.
+
+Your channel preferences are saved per language, so subscribing to a Japanese news channel won't affect your Korean recommendations. You can manage all your subscriptions and hidden channels from your profile.
 
 ## Tips
 
-- Switch your L2 in the language picker to discover content in different languages
-- Use the category filters to narrow down content by your interests
-- Videos are cached for faster repeat visits
+- Set your proficiency level in [Profile](/docs/account/profile) so Explore starts with the right filter
+- Switch levels to find easier or harder content — switching back is instant
+- Use [Music & Entertainment](/docs/media/music) for music videos and entertainment content
+- Your watch history is private and only used to avoid showing the same video twice
