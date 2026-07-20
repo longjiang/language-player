@@ -322,7 +322,18 @@ function createPanelUI() {
 
   const title = document.createElement('span');
   title.id = 'lpv-panel-title';
-  title.textContent = 'Language Player';
+
+  const logoImg = document.createElement('img');
+  logoImg.id = 'lpv-panel-logo';
+  logoImg.src = chrome.runtime.getURL('src/language-player-logo-64.png');
+  logoImg.alt = '';
+  logoImg.width = 24;
+  logoImg.height = 24;
+
+  const titleText = document.createTextNode('Language Player');
+
+  title.appendChild(logoImg);
+  title.appendChild(titleText);
 
   const closeBtn = document.createElement('button');
   closeBtn.id = 'lpv-close-btn';

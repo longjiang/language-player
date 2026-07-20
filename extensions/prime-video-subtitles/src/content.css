@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&display=swap');
+
 /**
  * Prime Video Subtitle Viewer — Content Styles
  *
@@ -100,9 +102,19 @@ body.lpv-panel-open .dv-player-fullscreen {
 }
 
 #lpv-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Nunito', 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
   color: #fff;
+}
+
+#lpv-panel-logo {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 #lpv-close-btn {
