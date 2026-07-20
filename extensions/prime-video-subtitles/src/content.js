@@ -381,9 +381,11 @@
     if (visible) {
       panelRoot.classList.remove('lpv-collapsed');
       toggleBtn.classList.add('lpv-hidden');
+      document.body.classList.add('lpv-panel-open');
     } else {
       panelRoot.classList.add('lpv-collapsed');
       toggleBtn.classList.remove('lpv-hidden');
+      document.body.classList.remove('lpv-panel-open');
     }
   }
 
