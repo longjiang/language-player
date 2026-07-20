@@ -42,12 +42,12 @@ function blockClass(tb: TextBlock): string {
   switch (tb.type) {
     case 'heading': {
       const s: Record<number, string> = { 1: 'text-2xl font-bold', 2: 'text-xl font-semibold', 3: 'text-lg font-semibold' };
-      return `${b} ${s[tb.depth ?? 1] ?? 'text-base font-medium'} mb-3 mt-4`;
+      return `${b} ${s[tb.depth ?? 1] ?? 'text-base font-medium'} mt-4`;
     }
-    case 'paragraph': return `${b} mb-3`;
-    case 'list-item': return `${b} mb-1 ml-4 list-disc`;
-    case 'blockquote': return `${b} border-l-4 border-muted pl-4 italic text-muted-foreground mb-3`;
-    default: return `${b} mb-3`;
+    case 'paragraph': return `${b}`;
+    case 'list-item': return `${b} ml-4 list-disc`;
+    case 'blockquote': return `${b} border-l-4 border-muted pl-4 italic text-muted-foreground`;
+    default: return `${b}`;
   }
 }
 
