@@ -7,21 +7,15 @@ import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
 
 interface Props {
-  params: { slug: string };
+  params: { l1: string; l2: string; slug: string };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const slug = params.slug;
-  if (!slug) return { title: 'Not Found' };
-  const doc = getDoc(slug);
+  const doc = getDoc(params.slug);
   if (!doc) return { title: 'Not Found' };
-  const title = extractTitle(doc.content);
-  return { title: `${title} — Docs — Language Player` };
-}
-
-function extractTitle(content: string): string {
-  const match = content.match(/^# (.+)$/m);
-  return match?.[1] ?? 'Documentation';
+  const match = doc.content.match(/^# (.+)$/m);
+  const title = match?.[1] ?? 'Documentation';
+  return { title };
 }
 
 function getDoc(slug: string): { content: string } | null {
@@ -39,9 +33,7 @@ function getDoc(slug: string): { content: string } | null {
 }
 
 export default function DocPage({ params }: Props) {
-  const slug = params.slug;
-  if (!slug) notFound();
-  const doc = getDoc(slug);
+  const doc = getDoc(params.slug);
 
   if (!doc) {
     notFound();
@@ -62,7 +54,7 @@ export default function DocPage({ params }: Props) {
 
         <hr className="my-8" />
         <Link
-          href="/docs"
+          href=".."
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           ← Back to Documentation

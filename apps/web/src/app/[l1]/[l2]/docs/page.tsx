@@ -5,7 +5,7 @@ import { resolve } from 'path';
 import { BookOpen, FileText } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Documentation — Language Player',
+  title: 'Documentation',
   description: 'Guides, reference, and FAQs for Language Player.',
 };
 
@@ -41,9 +41,8 @@ export default function DocsPage() {
   const docs = getDocs();
 
   return (
-    <div className="flex min-h-screen flex-col items-center px-4 py-12">
+    <div className="flex flex-col items-center px-4 py-12">
       <div className="w-full max-w-2xl">
-        {/* Header */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
             <BookOpen className="h-7 w-7 text-primary" />
@@ -54,7 +53,6 @@ export default function DocsPage() {
           </p>
         </div>
 
-        {/* TOC */}
         {docs.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground">No documentation available yet.</p>
         ) : (
@@ -62,7 +60,7 @@ export default function DocsPage() {
             {docs.map(doc => (
               <Link
                 key={doc.slug}
-                href={`/docs/${doc.slug}`}
+                href={doc.slug}
                 className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
               >
                 <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
