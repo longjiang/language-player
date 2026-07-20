@@ -1,34 +1,37 @@
 # Subtitle Search
 
-Search for any word or phrase across millions of video subtitles. See how native speakers actually use it — in context, with timestamps, ready to watch.
+See how a word is actually used by native speakers — every result is a real subtitle line from a real video, with a timestamp ready to watch.
 
 ## How It Works
 
-Type a word or phrase in your target language, and Language Player searches every subtitle line in its video database. Results show you exactly where that word appears, in which video, and at what moment.
+Subtitle search is part of the dictionary. Open any word in the [Dictionary](/docs/vocab/dictionary) and go to the **Examples from Videos** tab. The search runs automatically for that word, no typing needed. You can also access it from the [popup dictionary](/docs/vocab/popup-dictionary) when you click a word in subtitles or text.
 
-You can access subtitle search in two ways:
+The search runs across millions of subtitle lines and returns every video where the word appears. An embedded mini-player shows the first result immediately, with the search term highlighted in yellow.
 
-- **From a dictionary entry** — open the **Examples from Videos** tab on any dictionary entry page. It searches for the headword across all subtitles automatically.
-- **From the explore page** — use the search bar on the Explore page to find words or phrases in video subtitles.
+## Navigating Results
 
-## Understanding the Results
+Use the arrows above the player to move between videos. Each video may contain multiple matches — use the prev/next line buttons to step through them.
 
-Each result shows:
+The video counter (e.g., "3 / 50") shows your position in the results. Click **Watch** to open any video in the full [Video Player](/docs/media/video-player).
 
-- **The subtitle line** containing your search term, with the matching word or phrase highlighted.
-- **The video title** — click it to open that video.
-- **A timestamp link** — click it to jump directly to the moment the line is spoken. The video starts playing from that exact subtitle line.
+### List All
 
-Results are grouped by video. If a word appears multiple times in the same video, each occurrence gets its own result line. This way you can compare different contexts for the same word in the same video.
+Click **List All** to see every matched video as a scrollable list. Each item shows:
 
-## Exact vs. Partial Matching
+- The video thumbnail and title
+- The subtitle line containing your word, plus the lines before and after it for context
+- A timestamp — click it to jump straight to that moment
 
-By default, the search matches inflected and conjugated forms of your word. For example, searching for "食べる" (to eat) also finds "食べた" (ate), "食べます" (eat, polite), and other forms.
+You can sort the list by views, likes, date, or line length. There's also a text filter to narrow results by typing part of a subtitle line.
 
-Toggle **Exact Match** to restrict results to the exact form you typed. This is useful when you want to see how a specific conjugation or tense is used, rather than all forms of the word.
+## Multiple Forms vs. Exact Match
+
+By default, the search looks for the word in all its forms — inflections, conjugations, and script variants. For example, searching the Japanese verb 食べる also finds 食べた, 食べます, 食べて, and other forms. For Chinese, it searches both simplified and traditional characters.
+
+Toggle **Exact Match** to restrict results to only the dictionary headword. This shows fewer, more targeted results.
 
 ## Tips
 
-- **Use it to verify usage** — before using a new word yourself, check how native speakers use it in real conversations.
-- **Jump between examples** — click different timestamps for the same word to hear it in different contexts, accents, and speaking speeds.
-- **Combine with saved words** — save a word from the dictionary, then use the Examples tab to find videos where you can hear it in action.
+- Click through different timestamps for the same word to hear varied accents and speaking speeds
+- Save a word first, then browse the Examples tab to find videos where you can hear it in action
+- Use the List All view to compare how a word is used across dozens of videos at a glance
