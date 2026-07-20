@@ -457,24 +457,46 @@ function parseYTTimedText(xmlText) {
   return cues;
 }
 
-/** Fetch a URL by injecting a script into the page context.
- *  Bypasses YouTube's service worker which blocks extension-origin fetches. */
-function pageFetch(url) {
+/** Cache tab ID from background (set once on init) */
+let _tabId = null;
+function getTabId() {
   return new Promise((resolve) => {
-    const id = 'lpv' + Math.random().toString(36).slice(2);
-    const script = document.createElement('script');
-    script.textContent = `(async()=>{try{const r=await fetch(${JSON.stringify(url)});const t=await r.text();window['${id}']=t}catch(e){window['${id}']=''}})();`;
-    (document.head || document.documentElement).appendChild(script);
-    script.remove();
+    if (_tabId) { resolve(_tabId); return; }
+    chrome.runtime.sendMessage({ action: 'getTabId' }, (id) => {
+      _tabId = id || null;
+      resolve(_tabId);
+    });
+  });
+}
 
-    const check = setInterval(() => {
-      if (window[id] !== undefined) {
-        clearInterval(check);
-        const result = window[id];
-        delete window[id];
-        resolve(typeof result === 'string' ? result : '');
-      }
-    }, 50);
+/** Fetch a URL by executing a script in the page's MAIN world.
+ *  This is the only reliable way to bypass YouTube's service worker. */
+function mainWorldFetch(url) {
+  return new Promise(async (resolve) => {
+    const tabId = await getTabId();
+    if (!tabId) { console.log('[LanguagePlayer] No tabId'); resolve(''); return; }
+    try {
+      const results = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: (u) => {
+          return new Promise((res) => {
+            const x = new XMLHttpRequest();
+            x.open('GET', u, true);
+            x.timeout = 10000;
+            x.onload = () => res(x.responseText || '');
+            x.onerror = () => res('');
+            x.ontimeout = () => res('');
+            x.send();
+          });
+        },
+        args: [url],
+        world: 'MAIN',
+      });
+      resolve(results?.[0]?.result || '');
+    } catch (e) {
+      console.error('[LanguagePlayer] executeScript failed:', e?.message);
+      resolve('');
+    }
   });
 }
 
@@ -488,16 +510,24 @@ async function fetchYTTrack(track) {
     if (url.startsWith('//')) url = 'https:' + url;
     else if (url.startsWith('/')) url = 'https://www.youtube.com' + url;
 
-    // Fetch via page-injected script (bypasses YT service worker)
-    let text = await pageFetch(url);
+    console.log('[LanguagePlayer] MAIN fetching:', url.substring(0, 100));
+
+    let text = await mainWorldFetch(url);
+    console.log('[LanguagePlayer] MAIN response:', text.length, 'chars');
+    if (text.length < 1000) console.log('[LanguagePlayer] Response preview:', text.substring(0, 500));
+
     let cues;
 
     if (!text || text.length === 0) {
       // Fall back to unsigned JSON3 URL
       const videoId = getYTVideoId();
       const lang = track.languageCode || 'en';
-      text = await pageFetch(`https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`);
-      if (!text || text.length === 0) return;
+      text = await mainWorldFetch(`https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`);
+      console.log('[LanguagePlayer] Fallback MAIN response:', text.length, 'chars');
+      if (!text || text.length === 0) {
+        console.log('[LanguagePlayer] MAIN also returned empty');
+        return;
+      }
       cues = parseYTJSON3(text);
     } else if (text.trim().startsWith('<')) {
       cues = parseYTTimedText(text);
