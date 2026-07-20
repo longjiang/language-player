@@ -192,21 +192,22 @@ export function useEpub(): UseEpubReturn {
         }
       });
 
-      // Handle ruby
+      // Handle ruby — remove furigana, keep only the base text
       doc.querySelectorAll('ruby').forEach(ruby => {
-        const parts: string[] = [];
+        const textParts: string[] = [];
         ruby.childNodes.forEach(node => {
-          if (node.nodeType === Node.TEXT_NODE) parts.push(node.textContent || '');
-          else if (node.nodeType === Node.ELEMENT_NODE) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            textParts.push(node.textContent || '');
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
             const el = node as Element;
-            if (el.tagName === 'RT' || el.tagName === 'RTC') {
-              const rt = el.textContent || '';
-              if (rt) parts.push(`(${rt})`);
-            } else parts.push(el.textContent || '');
+            // Skip RT (ruby text) and RTC elements, keep only base (RB) or other content
+            if (el.tagName !== 'RT' && el.tagName !== 'RTC') {
+              textParts.push(el.textContent || '');
+            }
           }
         });
         const span = doc.createElement('span');
-        span.textContent = parts.join('');
+        span.textContent = textParts.join('');
         ruby.replaceWith(span);
       });
 
