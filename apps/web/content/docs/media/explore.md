@@ -1,10 +1,10 @@
-# Explore
+# {$title.explore}
 
 Discover videos in your target language, matched to your level.
 
 ## How It Works
 
-The Explore page shows recommended videos for your language pair. Each video is sourced from YouTube and selected for language learning — we exclude music and entertainment content (those have their own [Music & Entertainment](/docs/media/music) page).
+The {$title.explore} page shows recommended videos for your language pair. Each video is sourced from YouTube and selected for language learning — we exclude music and entertainment content (those have their own [{$title.music_and_entertainment}](/docs/media/music) page).
 
 Videos are sorted by popularity and filtered by difficulty when you select a level. The recommendation engine learns from your watch history, so videos you've already watched won't appear again.
 
@@ -50,7 +50,7 @@ Your channel preferences are saved per language, so subscribing to a Japanese ne
 
 ## Tips
 
-- Set your proficiency level in [Profile](/docs/account/profile) so Explore starts with the right filter
+- Set your proficiency level on your [profile page](/docs/account/profile) so {$title.explore} starts with the right filter
 - Switch levels to find easier or harder content — switching back is instant
-- Use [Music & Entertainment](/docs/media/music) for music videos and entertainment content
+- Use [{$title.music_and_entertainment}](/docs/media/music) for music videos and entertainment content
 - Your watch history is private and only used to avoid showing the same video twice
