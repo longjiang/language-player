@@ -1,19 +1,17 @@
 /**
- * Prime Video Subtitle Viewer — Content Script (React edition)
+ * Language Player — Content Script (React edition)
  *
- * This is the esbuild entry point. It bundles React + @langplayer/*
- * into a single content script that Chrome loads directly.
- *
- * Injects a collapsible transcript panel alongside the Prime Video player.
- * Parses TTML/XML subtitle files detected by the background service worker,
- * displays time-synced transcript entries with tokenized, clickable text,
- * and supports click-to-seek.
- *
- * The panel shell + subtitle parsing is vanilla JS.
- * The transcript rendering inside the panel is React (TranscriptApp).
+ * Injects a collapsible transcript panel alongside the video player.
+ * Supports Prime Video (TTML/XML via webRequest) and YouTube (timedtext via page data).
+ * Parses subtitles, displays time-synced transcript entries with tokenized,
+ * clickable text, dictionary lookup, word saving, and AI explanations.
  */
 
 import { mountTranscript, unmountTranscript } from './transcript-app';
+
+// ── Site detection ───────────────────────────────────────────────────────
+const isYouTube = /youtube\.com/.test(location.hostname);
+const isPrimeVideo = /primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)/.test(location.hostname);
 
 // ── State ────────────────────────────────────────────────────────────────
 const STATE = {
@@ -30,13 +28,17 @@ let panelRoot = null;
 let panelContent = null;
 let toggleBtn = null;
 let statusEl = null;
+let l2SelectEl = null;
 
 // ── L2 language detection ────────────────────────────────────────────────
 let detectedL2Code = 'en';
 
-/** The user's native / UI language. Defaults to 'en'.
- *  In the future, this could be configurable in the popup. */
+/** The user's native / UI language. Defaults to 'en'. */
 const L1_CODE = 'en';
+
+/** YouTube caption tracks cache (for L2 switcher) */
+let ytCaptionTracks = [];
+let ytPlayerResponse = null;
 
 /** Try to detect the subtitle language from page metadata */
 function detectL2Code() {
@@ -192,17 +194,24 @@ function parseSRT(text) {
 // ── Video Integration ────────────────────────────────────────────────────
 
 function getVideoElement() {
-  const player2 = document.getElementById('dv-web-player-2');
-  if (player2) {
-    const video = player2.querySelector('video');
-    if (video && video.src) return video;
+  if (isYouTube) {
+    const yt = document.querySelector('#movie_player video.html5-main-video, #movie_player video, video.html5-main-video');
+    if (yt && yt.src) return yt;
   }
-  const player = document.getElementById('dv-web-player');
-  if (player) {
-    const video = player.querySelector('video');
-    if (video && video.src) return video;
+  if (isPrimeVideo) {
+    const player2 = document.getElementById('dv-web-player-2');
+    if (player2) {
+      const video = player2.querySelector('video');
+      if (video && video.src) return video;
+    }
+    const player = document.getElementById('dv-web-player');
+    if (player) {
+      const video = player.querySelector('video');
+      if (video && video.src) return video;
+    }
+    return document.querySelector('#dv-web-player-2 video, #dv-web-player video');
   }
-  return document.querySelector('#dv-web-player-2 video, #dv-web-player video, video');
+  return document.querySelector('video');
 }
 
 function findActiveCueIndex(timeSec) {
@@ -301,6 +310,225 @@ function tryDetectL2FromCues(cues) {
   // Default: keep the page-detected language
 }
 
+// ── YouTube Subtitle Integration ─────────────────────────────────────────
+
+/** Get a readable language name from a BCP47 code */
+function languageName(code) {
+  // Handle special codes that Intl.DisplayNames doesn't know
+  const CUSTOM = {
+    'zh-Hans': '中文（简体）',
+    'zh-Hant': '中文（繁體）',
+    'yue': '粵語',
+    'wuu': '吳語',
+    'nan': '閩南語',
+    'hak': '客家話',
+    'cmn': '官話',
+    'hsn': '湘語',
+    'gan': '贛語',
+    'cjy': '晉語',
+  };
+  if (CUSTOM[code]) return CUSTOM[code];
+  try {
+    const name = new Intl.DisplayNames(['en'], { type: 'language' }).of(code);
+    if (name && name !== code) return name;
+  } catch {}
+  return code.toUpperCase();
+}
+
+/** Extract video ID from YouTube URL */
+function getYTVideoId() {
+  const params = new URLSearchParams(location.search);
+  return params.get('v') || '';
+}
+
+/** Read ytInitialPlayerResponse from the page's script tags */
+function getYTPlayerResponse() {
+  const scripts = document.querySelectorAll('script');
+  for (const script of scripts) {
+    const text = script.textContent || '';
+    // Try ytInitialPlayerResponse first
+    const match = text.match(/var\s+ytInitialPlayerResponse\s*=\s*(\{.*?\});/s);
+    if (match) {
+      try { return JSON.parse(match[1]); } catch {}
+    }
+    // Fallback: ytplayer.config
+    const cfgMatch = text.match(/ytplayer\.config\s*=\s*(\{.*?\});/s);
+    if (cfgMatch) {
+      try {
+        const cfg = JSON.parse(cfgMatch[1]);
+        if (cfg?.args?.player_response) {
+          return JSON.parse(cfg.args.player_response);
+        }
+      } catch {}
+    }
+  }
+  return null;
+}
+
+/** Get caption tracks from player response */
+function getYTCaptionTracks(pr) {
+  try {
+    return pr?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
+  } catch {
+    return [];
+  }
+}
+
+/** Parse YouTube timedtext XML into cues */
+function parseYTTimedText(xmlText) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlText, 'text/xml');
+  const cues = [];
+
+  const textEls = doc.querySelectorAll('text');
+  for (const el of textEls) {
+    const start = parseFloat(el.getAttribute('start') || '0');
+    const dur = parseFloat(el.getAttribute('dur') || '0');
+    const text = stripTags(el.innerHTML || el.textContent || '');
+    if (text && dur > 0) {
+      cues.push({
+        start,
+        end: start + dur,
+        text: decodeEntities(text),
+      });
+    }
+  }
+
+  cues.sort((a, b) => a.start - b.start);
+  return cues;
+}
+
+/** Fetch YouTube subtitles from a track and render */
+async function fetchYTTrack(track) {
+  try {
+    updateStatus('Loading subtitles...');
+    const response = await fetch(track.baseUrl);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const xmlText = await response.text();
+    const cues = parseYTTimedText(xmlText);
+
+    STATE.cues = cues;
+    STATE.subtitleUrl = track.baseUrl;
+
+    if (track.languageCode) {
+      detectedL2Code = track.languageCode.split('-')[0];
+    }
+    tryDetectL2FromCues(cues);
+
+    if (l2SelectEl) {
+      l2SelectEl.value = track.baseUrl;
+    }
+
+    if (cues.length > 0) {
+      STATE.activeCueIdx = -1;
+      renderTranscript();
+      if (!STATE.panelVisible) {
+        setPanelVisible(true);
+      }
+    }
+    setBadge(true);
+    updateStatus(`${cues.length} subtitle entries loaded`);
+  } catch (err) {
+    console.error('[LanguagePlayer] Failed to fetch YouTube subtitles:', err);
+    updateStatus('Failed to load subtitles');
+  }
+}
+
+/** Load YouTube subtitles — discover tracks and pick the best one */
+async function loadYouTubeSubtitles() {
+  const videoId = getYTVideoId();
+  if (!videoId) return;
+
+  // Wait for ytInitialPlayerResponse
+  let pr = getYTPlayerResponse();
+  let attempts = 0;
+  while (!pr && attempts < 30) {
+    await new Promise(r => setTimeout(r, 500));
+    pr = getYTPlayerResponse();
+    attempts++;
+  }
+
+  if (!pr) return;
+  ytPlayerResponse = pr;
+
+  const tracks = getYTCaptionTracks(pr);
+  ytCaptionTracks = tracks;
+
+  if (tracks.length === 0) return;
+
+  // Rebuild L2 selector
+  rebuildL2Selector();
+
+  // Pick best track: prefer manual matching detected L2
+  let best = null;
+  const l2Matches = tracks.filter(t => t.languageCode === detectedL2Code || t.languageCode?.startsWith(detectedL2Code));
+  if (l2Matches.length > 0) {
+    best = l2Matches.find(t => t.kind !== 'asr') || l2Matches[0];
+  }
+  if (!best) {
+    best = tracks.find(t => t.kind !== 'asr') || tracks[0];
+  }
+
+  if (best) await fetchYTTrack(best);
+}
+
+/** Rebuild the L2 language dropdown from available tracks */
+function rebuildL2Selector() {
+  if (!l2SelectEl) return;
+  l2SelectEl.innerHTML = '';
+
+  if (ytCaptionTracks.length === 0) {
+    // No tracks: show current detected language
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = languageName(detectedL2Code);
+    l2SelectEl.appendChild(opt);
+    l2SelectEl.disabled = true;
+    return;
+  }
+
+  l2SelectEl.disabled = false;
+  for (const track of ytCaptionTracks) {
+    const opt = document.createElement('option');
+    opt.value = track.baseUrl;
+    const code = track.languageCode || '';
+    const kind = track.kind === 'asr' ? ' (auto)' : '';
+    opt.textContent = languageName(code) + kind;
+    if (code.split('-')[0] === detectedL2Code) {
+      opt.selected = true;
+    }
+    l2SelectEl.appendChild(opt);
+  }
+}
+
+/** Listen for YouTube SPA navigation */
+let ytNavObserver = null;
+function setupYouTubeNavigationObserver() {
+  if (!isYouTube) return;
+
+  let lastVideoId = getYTVideoId();
+
+  ytNavObserver = new MutationObserver(() => {
+    const currentId = getYTVideoId();
+    if (currentId && currentId !== lastVideoId) {
+      lastVideoId = currentId;
+      ytCaptionTracks = [];
+      ytPlayerResponse = null;
+      setTimeout(() => loadYouTubeSubtitles(), 1500);
+    }
+  });
+
+  ytNavObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+/** Notify background script to set/unset badge */
+function setBadge(found) {
+  try {
+    chrome.runtime.sendMessage({ action: 'setBadge', found });
+  } catch {}
+}
+
 // ── Panel UI ─────────────────────────────────────────────────────────────
 
 function createPanelUI() {
@@ -335,14 +563,35 @@ function createPanelUI() {
   title.appendChild(logoImg);
   title.appendChild(titleText);
 
+  // L2 language selector (populated later)
+  l2SelectEl = document.createElement('select');
+  l2SelectEl.id = 'lpv-l2-select';
+  l2SelectEl.title = 'Subtitle language';
+  l2SelectEl.addEventListener('change', () => {
+    const selTrack = ytCaptionTracks.find(t => t.baseUrl === l2SelectEl.value);
+    if (selTrack) fetchYTTrack(selTrack);
+  });
+  // Initial option
+  const initialOpt = document.createElement('option');
+  initialOpt.value = '';
+  initialOpt.textContent = languageName(detectedL2Code);
+  l2SelectEl.appendChild(initialOpt);
+  if (!isYouTube) l2SelectEl.disabled = true;
+
+  const headerRight = document.createElement('div');
+  headerRight.id = 'lpv-header-right';
+
   const closeBtn = document.createElement('button');
   closeBtn.id = 'lpv-close-btn';
   closeBtn.innerHTML = '✕';
   closeBtn.title = 'Close panel';
   closeBtn.addEventListener('click', () => setPanelVisible(false));
 
+  headerRight.appendChild(l2SelectEl);
+  headerRight.appendChild(closeBtn);
+
   header.appendChild(title);
-  header.appendChild(closeBtn);
+  header.appendChild(headerRight);
 
   statusEl = document.createElement('div');
   statusEl.id = 'lpv-status';
@@ -427,11 +676,17 @@ function attachTimeTracking() {
 function waitForPlayer() {
   return new Promise((resolve) => {
     const check = () => {
-      const player = document.getElementById('dv-web-player-2') || document.getElementById('dv-web-player');
-      if (player) {
-        resolve(player);
-        return;
+      if (isYouTube) {
+        const yt = document.getElementById('movie_player');
+        if (yt) { resolve(yt); return; }
       }
+      if (isPrimeVideo) {
+        const player = document.getElementById('dv-web-player-2') || document.getElementById('dv-web-player');
+        if (player) { resolve(player); return; }
+      }
+      // Generic: any large video on the page
+      const video = document.querySelector('video');
+      if (video && video.duration > 0) { resolve(video.parentElement); return; }
       requestAnimationFrame(check);
     };
     check();
@@ -491,28 +746,41 @@ function setupKeyboard() {
 // ── Init ─────────────────────────────────────────────────────────────────
 
 async function init() {
-  console.log('[PrimeVideoSubs] Content script loaded (React edition)');
+  console.log('[LanguagePlayer] Content script loaded');
 
   detectL2Code();
 
   const playerEl = await waitForPlayer();
-  console.log('[PrimeVideoSubs] Player found');
+  console.log('[LanguagePlayer] Player found');
 
   createPanelUI();
-  attachTimeTracking();
   setupKeyboard();
 
-  const playerObserver = new MutationObserver(() => {
-    const video = getVideoElement();
-    if (video && !video._lpvTimeTracking) {
-      video._lpvTimeTracking = true;
-      attachTimeTracking();
+  if (isYouTube) {
+    // YouTube: extract subs from page data, re-attach time tracking periodically
+    await loadYouTubeSubtitles();
+    setupYouTubeNavigationObserver();
+    setInterval(() => {
+      const video = getVideoElement();
+      if (video && !video._lpvTimeTracking) {
+        video._lpvTimeTracking = true;
+        attachTimeTracking();
+      }
+    }, 2000);
+  } else {
+    // Prime Video: subs come via webRequest → message listener
+    attachTimeTracking();
+    const playerObserver = new MutationObserver(() => {
+      const video = getVideoElement();
+      if (video && !video._lpvTimeTracking) {
+        video._lpvTimeTracking = true;
+        attachTimeTracking();
+      }
+    });
+    const playerContainer = document.getElementById('dv-web-player-2') || document.getElementById('dv-web-player');
+    if (playerContainer) {
+      playerObserver.observe(playerContainer, { childList: true, subtree: true });
     }
-  });
-
-  const playerContainer = document.getElementById('dv-web-player-2') || document.getElementById('dv-web-player');
-  if (playerContainer) {
-    playerObserver.observe(playerContainer, { childList: true, subtree: true });
   }
 
   chrome.runtime.sendMessage({ action: 'contentScriptReady' });

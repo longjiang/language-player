@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Prime Video Subtitle Downloader",
+  "name": "Language Player",
   "version": "1.0.0",
-  "description": "Detect and download subtitle files from Amazon Prime Video. Shows transcript alongside the video.",
+  "description": "Interactive dual subtitles for language learning on Prime Video and YouTube.",
   "permissions": [
     "webRequest",
     "downloads",
@@ -14,7 +14,7 @@
   ],
   "content_scripts": [
     {
-      "matches": ["https://*.primevideo.com/*", "https://*.amazon.com/*", "https://*.amazon.co.uk/*", "https://*.amazon.de/*", "https://*.amazon.co.jp/*"],
+      "matches": ["https://*.primevideo.com/*", "https://*.amazon.com/*", "https://*.amazon.co.uk/*", "https://*.amazon.de/*", "https://*.amazon.co.jp/*", "*://*.youtube.com/*"],
       "js": ["dist/content.js"],
       "css": ["dist/content.css"],
       "run_at": "document_idle"
@@ -23,7 +23,7 @@
   "web_accessible_resources": [
     {
       "resources": ["src/language-player-logo-64.png"],
-      "matches": ["https://*.primevideo.com/*", "https://*.amazon.com/*", "https://*.amazon.co.uk/*", "https://*.amazon.de/*", "https://*.amazon.co.jp/*"]
+      "matches": ["https://*.primevideo.com/*", "https://*.amazon.com/*", "https://*.amazon.co.uk/*", "https://*.amazon.de/*", "https://*.amazon.co.jp/*", "*://*.youtube.com/*"]
     }
   ],
   "action": {
