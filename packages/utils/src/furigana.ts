@@ -86,6 +86,18 @@ function buildCaptureRegex(segments: FuriganaSegment[]): RegExp {
   return new RegExp(pattern);
 }
 
+// ── Ruby segment interface ──
+
+/** A segment of ruby-annotated text. Framework-agnostic — renderers map these
+ *  to <ruby>/<rt> (HTML), NSAttributedString (iOS), or SpannableString (Android). */
+export interface RubySegment {
+  /** The base text to display. */
+  text: string;
+  /** Phonetic reading to display above the text.
+   *  When undefined, this segment renders as plain text (no ruby). */
+  reading?: string;
+}
+
 // ── Main algorithm ──
 
 /**
@@ -139,4 +151,54 @@ export function matchHiragana({
 
   // Fallback: unsegmented (regex didn't match — rare edge case)
   return [{ text, pronunciation: reading, type: 'kanji' }];
+}
+
+// ── Framework-agnostic ruby builder ──
+
+/**
+ * Build ruby segments from a token's text and pronunciation.
+ *
+ * Unlike renderRuby() in the React component, this returns pure data —
+ * no JSX, no React dependency. Every platform maps RubySegment[] to its
+ * own rendering primitives:
+ *
+ *   Web (React):    <ruby>seg.text<rt>seg.reading</rt></ruby>
+ *   Web (vanilla):  el.innerHTML = '<ruby>...<rt>...</rt></ruby>'
+ *   iOS:            NSAttributedString with ruby annotations
+ *   Android:        SpannableString with RubySpan
+ *
+ * @param text - Surface form (e.g. "食パン", "你好")
+ * @param pronunciation - Phonetic reading (e.g. "ショクパン", "nǐ hǎo")
+ * @param l2Code - ISO 639-1 language code (ja, zh, yue, etc.)
+ * @returns Segments with optional readings for ruby annotation.
+ */
+export function buildRuby(
+  text: string,
+  pronunciation: string,
+  l2Code: string,
+): RubySegment[] {
+  const base = l2Code.split('-')[0]!;
+
+  // ── Japanese: segment kanji from kana, show furigana only above kanji ──
+  if (base === 'ja') {
+    // Skip ruby entirely for words with no kanji (pure kana)
+    if (!/[一-龯]/.test(text)) {
+      return [{ text }];
+    }
+    const segments = matchHiragana({ text, reading: pronunciation });
+    return segments.map((seg) => ({
+      text: seg.text,
+      reading: seg.type === 'kanji' && seg.pronunciation !== seg.text
+        ? seg.pronunciation
+        : undefined,
+    }));
+  }
+
+  // ── Chinese / Cantonese: word-level pinyin/jyutping ──
+  if (base === 'zh' || base === 'yue') {
+    return [{ text, reading: pronunciation }];
+  }
+
+  // ── Other languages with pronunciation (Arabic, Persian, etc.) ──
+  return [{ text, reading: pronunciation }];
 }

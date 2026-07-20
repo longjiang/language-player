@@ -32,6 +32,12 @@ export function languageNameFromCode(code: string): string {
   return LANGUAGE_NAMES[code] ?? code.toUpperCase();
 }
 
+/** Strip BCP 47 subtags down to the ISO 639-1 primary language code.
+ *  e.g. "zh-Hans" → "zh", "en-US" → "en", "ja" → "ja" */
+export function baseCode(code: string): string {
+  return code.split('-')[0]!;
+}
+
 /** RTL languages. */
 const RTL_LANGUAGES = new Set([
   'ar', 'he', 'fa', 'ur', 'ps', 'sd', 'yi', 'ku',

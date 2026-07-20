@@ -2,16 +2,19 @@
  * Client-side token cache for video subtitles.
  * Populated from GET /lemmatize-video-normalized and used to skip
  * per-line /lemmatize-normalized API calls during playback.
+ *
+ * Implements the TokenCache interface from @langplayer/shared so the
+ * extension and web app share a common contract.
  */
 
-import type { LemmatizedToken } from '@langplayer/shared';
+import type { LemmatizedToken, TokenCache as ITokenCache } from '@langplayer/shared';
 import { md5 } from './md5';
 
 /**
  * Simple map-based token cache. Keyed by md5(text) → LemmatizedToken[].
  * Matches the server's md5(line) cache keys exactly.
  */
-export class TokenCache {
+export class TokenCache implements ITokenCache {
   private map = new Map<string, LemmatizedToken[]>();
 
   /** Populate from the server's normalized hash table response. */
@@ -27,6 +30,12 @@ export class TokenCache {
   get(text: string): LemmatizedToken[] | undefined {
     const hash = md5(text);
     return this.map.get(hash);
+  }
+
+  /** Check if a cached entry exists for the given text. */
+  has(text: string): boolean {
+    const hash = md5(text);
+    return this.map.has(hash);
   }
 
   /** Number of cached entries. */

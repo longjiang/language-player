@@ -8,7 +8,7 @@ import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { getShowPhonetics, setShowPhonetics } from '@/lib/settings';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { SubtitleLine } from '@langplayer/shared';
-import type { TokenCache } from '@/lib/token-cache';
+import type { TokenCache } from '@langplayer/shared';
 import { Settings2 } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
 import { syncLines, type SyncedLine } from '@/lib/subtitle-csv';
