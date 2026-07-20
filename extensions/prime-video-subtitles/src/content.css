@@ -513,6 +513,11 @@ body.lpv-panel-open .dv-player-fullscreen {
   background: rgba(167, 139, 250, 0.15);
 }
 
+.lpv-explain-bar {
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 /* ── AI Explanation Section ─────────────────────────────────────────── */
 
 .lpv-explain-section {
@@ -584,14 +589,14 @@ body.lpv-panel-open .dv-player-fullscreen {
 }
 
 .lpv-markdown h2, .lpv-markdown h3, .lpv-markdown h4 {
-  margin: 10px 0 4px;
+  margin: 8px 0 3px;
   color: #ddd;
   font-weight: 600;
 }
 
-.lpv-markdown h2 { font-size: 15px; }
-.lpv-markdown h3 { font-size: 14px; }
-.lpv-markdown h4 { font-size: 13px; }
+.lpv-markdown h2 { font-size: 13px; }
+.lpv-markdown h3 { font-size: 13px; }
+.lpv-markdown h4 { font-size: 12px; }
 
 .lpv-markdown ul {
   margin: 4px 0;
@@ -601,7 +606,7 @@ body.lpv-panel-open .dv-player-fullscreen {
 .lpv-markdown li {
   font-size: 13px;
   color: #ccc;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .lpv-dict-card-word {
