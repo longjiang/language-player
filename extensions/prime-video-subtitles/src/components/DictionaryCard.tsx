@@ -127,8 +127,8 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code })
           <span className="lpv-dict-source">{entry.dictionary.name}</span>
         )}
       </div>
-      {entry.definition && (
-        <div className="lpv-dict-def">{entry.definition}</div>
+      {entry.definitions && entry.definitions.length > 0 && (
+        <div className="lpv-dict-def">{entry.definitions.join('; ')}</div>
       )}
       {entry.levels && entry.levels.length > 0 && (
         <div className="lpv-dict-levels">
