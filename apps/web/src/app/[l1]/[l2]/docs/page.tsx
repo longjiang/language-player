@@ -60,7 +60,7 @@ export default function DocsPage() {
             {docs.map(doc => (
               <Link
                 key={doc.slug}
-                href={doc.slug}
+                href={`./${doc.slug}`}
                 className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
               >
                 <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
