@@ -110,7 +110,7 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
                         key={compositeId}
                         head={e.head}
                         prefix={
-                          <div onClick={(ev) => ev.stopPropagation()}>
+                          <div onClick={(ev) => ev.stopPropagation()} className="self-start mt-0.5">
                             <SaveButton
                               wordId={e.id}
                               head={e.head}
@@ -124,10 +124,10 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
                           </div>
                         }
                         definitionSlot={
-                          e.pronunciation || e.definitions?.[0] ? (
+                          (e.pronunciation || e.definitions?.length) ? (
                             <p className="mt-0.5 truncate text-xs text-muted-foreground/80">
                               {e.pronunciation && <span className="mr-1.5 text-muted-foreground/50">{e.pronunciation}</span>}
-                              {e.definitions?.[0] && <span>{e.definitions[0]}</span>}
+                              {e.definitions?.length ? <span>{e.definitions.join('; ')}</span> : null}
                             </p>
                           ) : undefined
                         }
