@@ -6,15 +6,10 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import Link from 'next/link';
+import { DocSidebar } from '../doc-sidebar';
 
 interface Props {
   params: { l1: string; l2: string; slug: string };
-}
-
-interface TocItem {
-  level: number;
-  text: string;
-  id: string;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -49,6 +44,12 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, '');
 }
 
+interface TocItem {
+  level: number;
+  text: string;
+  id: string;
+}
+
 /** Extract H2/H3 headings from markdown for the sidebar TOC. */
 function extractToc(markdown: string): TocItem[] {
   const headings: TocItem[] = [];
@@ -56,39 +57,12 @@ function extractToc(markdown: string): TocItem[] {
   for (const line of lines) {
     const match = line.match(/^(##|###)\s+(.+)$/);
     if (match) {
-      const level = match[1]!.length; // 2 or 3
+      const level = match[1]!.length;
       const text = match[2]!.trim();
       headings.push({ level, text, id: slugify(text) });
     }
   }
   return headings;
-}
-
-/** Right sidebar table of contents — sticky, hidden on small screens. */
-function DocSidebar({ toc }: { toc: TocItem[] }) {
-  if (toc.length === 0) return null;
-  return (
-    <aside className="hidden xl:block sticky top-20 w-56 shrink-0 self-start">
-      <nav className="rounded-lg border border-border p-4">
-        <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          On this page
-        </h4>
-        <ul className="space-y-1">
-          {toc.map((item) => (
-            <li key={item.id}>
-              <a
-                href={`#${item.id}`}
-                className="block rounded px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                style={{ paddingLeft: item.level === 3 ? '1.25rem' : '0.25rem' }}
-              >
-                {item.text}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </aside>
-  );
 }
 
 export default function DocPage({ params }: Props) {
