@@ -193,12 +193,14 @@
         "auto_best_for": "Auto (best for {l2})",
         "auto_pause": "Auto-Pause",
         "auto_renews": "Auto-renews",
+        "build_date": "Build Date",
         "character_set": "Character set",
         "collapse_video": "Collapse Video",
         "conjugation": "Conjugation",
         "custom_voice": "Custom voice",
         "dialog": "Dialog",
         "enable_popup_dictionary": "Enable Popup Dictionary",
+        "environment": "Environment",
         "font": "Font",
         "free_account": "Free Account",
         "gender_label": "Gender:",
@@ -233,6 +235,7 @@
         "unknown_user": "User",
         "untitled_video": "Untitled",
         "untitled_video_full": "Untitled Video",
+        "version": "Version",
         "views_count": "{count} views"
     },
     "lang": {
@@ -921,6 +924,7 @@
         "sec": "sec"
     },
     "title": {
+        "about": "About",
         "account": "Account",
         "all_categories": "All Categories",
         "all_countries": "All Countries",

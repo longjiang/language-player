@@ -186,12 +186,14 @@
         "auto_best_for": "Automatikus (legjobb {l2} számára)",
         "auto_pause": "Automatikus szünet",
         "auto_renews": "Automatikus megújítás",
+        "build_date": "Build dátuma",
         "character_set": "Karakterkészlet",
         "collapse_video": "Videó összecsukása",
         "conjugation": "Ragozás",
         "custom_voice": "Egyedi hang",
         "dialog": "Párbeszéd",
         "enable_popup_dictionary": "Felugró szótár engedélyezése",
+        "environment": "Környezet",
         "font": "Betűtípus",
         "free_account": "Ingyenes fiók",
         "gender_label": "Nem:",
@@ -226,6 +228,7 @@
         "unknown_user": "Felhasználó",
         "untitled_video": "Cím nélkül",
         "untitled_video_full": "Cím nélküli videó",
+        "version": "Verzió",
         "views_count": "{count} megtekintés"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "mp"
     },
     "title": {
+        "about": "Névjegy",
         "account": "Fiók",
         "all_categories": "Minden kategória",
         "all_countries": "Minden ország",

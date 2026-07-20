@@ -185,12 +185,14 @@
         "auto_best_for": "自動（最適合 {l2}）",
         "auto_pause": "自動暫停",
         "auto_renews": "自動續訂",
+        "build_date": "構建日期",
         "character_set": "字元集",
         "collapse_video": "摺疊影片",
         "conjugation": "變位",
         "custom_voice": "自訂語音",
         "dialog": "對話",
         "enable_popup_dictionary": "啟用彈出字典",
+        "environment": "環境",
         "font": "字體",
         "free_account": "免費帳戶",
         "gender_label": "性別：",
@@ -225,6 +227,7 @@
         "unknown_user": "使用者",
         "untitled_video": "未命名影片",
         "untitled_video_full": "未命名影片",
+        "version": "版本",
         "views_count": "{count} 次觀看"
     },
     "lang": {
@@ -879,6 +882,7 @@
         "sec": "秒"
     },
     "title": {
+        "about": "關於",
         "account": "帳號",
         "all_categories": "所有類別",
         "all_countries": "所有國家",

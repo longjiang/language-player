@@ -186,12 +186,14 @@
         "auto_best_for": "Automatisk (best for {l2})",
         "auto_pause": "Automatisk pause",
         "auto_renews": "Fornyes automatisk",
+        "build_date": "Byggedato",
         "character_set": "Tegnsett",
         "collapse_video": "Skjul video",
         "conjugation": "Bøyning",
         "custom_voice": "Egendefinert stemme",
         "dialog": "Dialog",
         "enable_popup_dictionary": "Aktiver sprettoppordbok",
+        "environment": "Miljø",
         "font": "Skrifttype",
         "free_account": "Gratis konto",
         "gender_label": "Kjønn:",
@@ -226,6 +228,7 @@
         "unknown_user": "Bruker",
         "untitled_video": "Uten tittel",
         "untitled_video_full": "Uten tittel video",
+        "version": "Versjon",
         "views_count": "{count} visninger"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "sek"
     },
     "title": {
+        "about": "Om",
         "account": "Konto",
         "all_categories": "Alle kategorier",
         "all_countries": "Alle land",

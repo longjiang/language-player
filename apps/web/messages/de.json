@@ -186,12 +186,14 @@
         "auto_best_for": "Automatisch (am besten für {l2})",
         "auto_pause": "Automatische Pause",
         "auto_renews": "Verlängert sich automatisch",
+        "build_date": "Build-Datum",
         "character_set": "Zeichensatz",
         "collapse_video": "Video einklappen",
         "conjugation": "Konjugation",
         "custom_voice": "Benutzerdefinierte Stimme",
         "dialog": "Dialog",
         "enable_popup_dictionary": "Pop-up-Wörterbuch aktivieren",
+        "environment": "Umgebung",
         "font": "Schriftart",
         "free_account": "Kostenloses Konto",
         "gender_label": "Geschlecht:",
@@ -226,6 +228,7 @@
         "unknown_user": "Benutzer",
         "untitled_video": "Ohne Titel",
         "untitled_video_full": "Unbenanntes Video",
+        "version": "Version",
         "views_count": "{count} Aufrufe"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "Sek"
     },
     "title": {
+        "about": "Über",
         "account": "Konto",
         "all_categories": "Alle Kategorien",
         "all_countries": "Alle Länder",

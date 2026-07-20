@@ -186,12 +186,14 @@
         "auto_best_for": "Аутоматски (најбоље за {l2})",
         "auto_pause": "Аутоматска пауза",
         "auto_renews": "Аутоматско обнављање",
+        "build_date": "Датум изградње",
         "character_set": "Скуп знакова",
         "collapse_video": "Скупи видео",
         "conjugation": "Коњугација",
         "custom_voice": "Прилагођени глас",
         "dialog": "Дијалог",
         "enable_popup_dictionary": "Омогући искачући речник",
+        "environment": "Окружење",
         "font": "Фонт",
         "free_account": "Бесплатан налог",
         "gender_label": "Пол:",
@@ -226,6 +228,7 @@
         "unknown_user": "Korisnik",
         "untitled_video": "Bez naslova",
         "untitled_video_full": "Video bez naslova",
+        "version": "Верзија",
         "views_count": "{count} pregleda"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "sek"
     },
     "title": {
+        "about": "O aplikaciji",
         "account": "Nalog",
         "all_categories": "Све категорије",
         "all_countries": "Све земље",

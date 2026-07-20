@@ -186,12 +186,14 @@
         "auto_best_for": "Αυτόματο (καλύτερο για {l2})",
         "auto_pause": "Αυτόματη παύση",
         "auto_renews": "Αυτόματη ανανέωση",
+        "build_date": "Ημερομηνία κατασκευής",
         "character_set": "Σετ χαρακτήρων",
         "collapse_video": "Σύμπτυξη βίντεο",
         "conjugation": "Κλίση",
         "custom_voice": "Προσαρμοσμένη φωνή",
         "dialog": "Διάλογος",
         "enable_popup_dictionary": "Ενεργοποίηση αναδυόμενου λεξικού",
+        "environment": "Περιβάλλον",
         "font": "Γραμματοσειρά",
         "free_account": "Δωρεάν Λογαριασμός",
         "gender_label": "Φύλο:",
@@ -226,6 +228,7 @@
         "unknown_user": "Χρήστης",
         "untitled_video": "Χωρίς τίτλο",
         "untitled_video_full": "Βίντεο χωρίς τίτλο",
+        "version": "Έκδοση",
         "views_count": "{count} προβολές"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "δεύτερο"
     },
     "title": {
+        "about": "Σχετικά",
         "account": "Λογαριασμός",
         "all_categories": "Όλες οι κατηγορίες",
         "all_countries": "Όλες οι χώρες",

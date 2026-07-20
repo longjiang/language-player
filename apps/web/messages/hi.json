@@ -186,12 +186,14 @@
         "auto_best_for": "ऑटो ({l2} के लिए सर्वोत्तम)",
         "auto_pause": "ऑटो-पॉज़",
         "auto_renews": "ऑटो-नवीनीकरण",
+        "build_date": "निर्माण तिथि",
         "character_set": "वर्ण सेट",
         "collapse_video": "वीडियो संकुचित करें",
         "conjugation": "रूप",
         "custom_voice": "कस्टम आवाज़",
         "dialog": "संवाद",
         "enable_popup_dictionary": "पॉपअप शब्दकोश सक्षम करें",
+        "environment": "वातावरण",
         "font": "फ़ॉन्ट",
         "free_account": "मुफ़्त खाता",
         "gender_label": "लिंग:",
@@ -226,6 +228,7 @@
         "unknown_user": "उपयोगकर्ता",
         "untitled_video": "शीर्षकहीन",
         "untitled_video_full": "शीर्षकहीन वीडियो",
+        "version": "संस्करण",
         "views_count": "{count} बार देखा गया"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "सेकंड"
     },
     "title": {
+        "about": "के बारे में",
         "account": "खाता",
         "all_categories": "सभी श्रेणियां",
         "all_countries": "सभी देश",

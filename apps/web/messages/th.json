@@ -186,12 +186,14 @@
         "auto_best_for": "อัตโนมัติ (ดีที่สุดสำหรับ {l2})",
         "auto_pause": "หยุดอัตโนมัติ",
         "auto_renews": "ต่ออายุอัตโนมัติ",
+        "build_date": "วันที่สร้าง",
         "character_set": "ชุดอักขระ",
         "collapse_video": "ยุบวิดีโอ",
         "conjugation": "การผัน",
         "custom_voice": "เสียงที่กำหนดเอง",
         "dialog": "บทสนทนา",
         "enable_popup_dictionary": "เปิดใช้งานพจนานุกรมป๊อปอัป",
+        "environment": "สภาพแวดล้อม",
         "font": "แบบอักษร",
         "free_account": "บัญชีฟรี",
         "gender_label": "เพศ:",
@@ -226,6 +228,7 @@
         "unknown_user": "ผู้ใช้",
         "untitled_video": "ไม่มีชื่อ",
         "untitled_video_full": "วิดีโอไม่มีชื่อ",
+        "version": "เวอร์ชัน",
         "views_count": "{count} ครั้งที่รับชม"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "วินาที"
     },
     "title": {
+        "about": "เกี่ยวกับ",
         "account": "บัญชี",
         "all_categories": "ทุกหมวดหมู่",
         "all_countries": "ทุกประเทศ",

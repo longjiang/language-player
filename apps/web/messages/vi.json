@@ -186,12 +186,14 @@
         "auto_best_for": "Tự động (tốt nhất cho {l2})",
         "auto_pause": "Tự động tạm dừng",
         "auto_renews": "Tự động gia hạn",
+        "build_date": "Ngày build",
         "character_set": "Bộ ký tự",
         "collapse_video": "Thu gọn video",
         "conjugation": "Cách chia",
         "custom_voice": "Giọng nói tùy chỉnh",
         "dialog": "Hội thoại",
         "enable_popup_dictionary": "Bật từ điển bật lên",
+        "environment": "Môi trường",
         "font": "Phông chữ",
         "free_account": "Tài khoản miễn phí",
         "gender_label": "Giới tính:",
@@ -226,6 +228,7 @@
         "unknown_user": "Người dùng",
         "untitled_video": "Chưa có tiêu đề",
         "untitled_video_full": "Video chưa có tiêu đề",
+        "version": "Phiên bản",
         "views_count": "{count} lượt xem"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "giây"
     },
     "title": {
+        "about": "Giới thiệu",
         "account": "Tài khoản",
         "all_categories": "Tất cả danh mục",
         "all_countries": "Tất cả quốc gia",

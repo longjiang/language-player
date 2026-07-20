@@ -186,12 +186,14 @@
         "auto_best_for": "Automatisch (best voor {l2})",
         "auto_pause": "Automatisch pauzeren",
         "auto_renews": "Automatisch verlengen",
+        "build_date": "Builddatum",
         "character_set": "Tekenset",
         "collapse_video": "Video inklappen",
         "conjugation": "Vervoeging",
         "custom_voice": "Aangepaste stem",
         "dialog": "Dialoog",
         "enable_popup_dictionary": "Pop-upwoordenboek inschakelen",
+        "environment": "Omgeving",
         "font": "Lettertype",
         "free_account": "Gratis account",
         "gender_label": "Geslacht:",
@@ -226,6 +228,7 @@
         "unknown_user": "Gebruiker",
         "untitled_video": "Naamloos",
         "untitled_video_full": "Naamloze video",
+        "version": "Versie",
         "views_count": "{count} weergaven"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "sec"
     },
     "title": {
+        "about": "Over",
         "account": "Account",
         "all_categories": "Alle categorieën",
         "all_countries": "Alle landen",

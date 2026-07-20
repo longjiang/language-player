@@ -186,12 +186,14 @@
         "auto_best_for": "Авто (наилучшее для {l2})",
         "auto_pause": "Автопауза",
         "auto_renews": "Автопродление",
+        "build_date": "Дата сборки",
         "character_set": "Набор символов",
         "collapse_video": "Свернуть видео",
         "conjugation": "Спряжение",
         "custom_voice": "Пользовательский голос",
         "dialog": "Диалог",
         "enable_popup_dictionary": "Включить всплывающий словарь",
+        "environment": "Окружение",
         "font": "Шрифт",
         "free_account": "Бесплатный аккаунт",
         "gender_label": "Пол:",
@@ -226,6 +228,7 @@
         "unknown_user": "Пользователь",
         "untitled_video": "Без названия",
         "untitled_video_full": "Видео без названия",
+        "version": "Версия",
         "views_count": "{count} просмотров"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "сек"
     },
     "title": {
+        "about": "О приложении",
         "account": "Аккаунт",
         "all_categories": "Все категории",
         "all_countries": "Все страны",

@@ -186,12 +186,14 @@
         "auto_best_for": "Automàtic (millor per a {l2})",
         "auto_pause": "Pausa automàtica",
         "auto_renews": "Renovació automàtica",
+        "build_date": "Data de compilació",
         "character_set": "Joc de caràcters",
         "collapse_video": "Replegar vídeo",
         "conjugation": "Conjugació",
         "custom_voice": "Veu personalitzada",
         "dialog": "Diàleg",
         "enable_popup_dictionary": "Activar diccionari emergent",
+        "environment": "Entorn",
         "font": "Tipus de lletra",
         "free_account": "Compte Gratuït",
         "gender_label": "Gènere:",
@@ -226,6 +228,7 @@
         "unknown_user": "Usuari",
         "untitled_video": "Sense títol",
         "untitled_video_full": "Vídeo sense títol",
+        "version": "Versió",
         "views_count": "{count} visualitzacions"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "seg"
     },
     "title": {
+        "about": "Quant a",
         "account": "Compte",
         "all_categories": "Totes les categories",
         "all_countries": "Tots els països",

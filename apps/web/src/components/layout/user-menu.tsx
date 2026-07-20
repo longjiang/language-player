@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/providers/language-provider';
-import { User, LogOut, Settings } from 'lucide-react';
+import { User, LogOut, Settings, Info } from 'lucide-react';
 
 /** Nuke all user-specific localStorage keys on logout. */
 function clearUserData() {
@@ -63,6 +63,13 @@ export function UserMenu() {
               onClick={() => setOpen(false)}
             >
               <Settings className="h-4 w-4" /> {t('title.settings')}
+            </Link>
+            <Link
+              href="/about"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
+              onClick={() => setOpen(false)}
+            >
+              <Info className="h-4 w-4" /> {t('title.about')}
             </Link>
             <button
               onClick={() => { clearUserData(); signOut({ callbackUrl: '/' }); }}

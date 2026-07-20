@@ -186,12 +186,14 @@
         "auto_best_for": "自動（{l2}に最適）",
         "auto_pause": "自動一時停止",
         "auto_renews": "自動更新",
+        "build_date": "ビルド日",
         "character_set": "文字セット",
         "collapse_video": "動画を折りたたむ",
         "conjugation": "活用",
         "custom_voice": "カスタム音声",
         "dialog": "会話",
         "enable_popup_dictionary": "ポップアップ辞書を有効にする",
+        "environment": "環境",
         "font": "フォント",
         "free_account": "無料アカウント",
         "gender_label": "性別：",
@@ -226,6 +228,7 @@
         "unknown_user": "ユーザー",
         "untitled_video": "無題",
         "untitled_video_full": "無題の動画",
+        "version": "バージョン",
         "views_count": "{count}回視聴"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "秒"
     },
     "title": {
+        "about": "このアプリについて",
         "account": "アカウント",
         "all_categories": "すべてのカテゴリ",
         "all_countries": "すべての国",

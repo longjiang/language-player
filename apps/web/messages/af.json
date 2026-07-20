@@ -186,12 +186,14 @@
         "auto_best_for": "Outo (beste vir {l2})",
         "auto_pause": "Outo-pouseer",
         "auto_renews": "Hernu outomaties",
+        "build_date": "Boudatum",
         "character_set": "Karakterstel",
         "collapse_video": "Vou Video Toe",
         "conjugation": "Vervoeging",
         "custom_voice": "Pasgemaakte stem",
         "dialog": "Dialoog",
         "enable_popup_dictionary": "Aktiveer opspringwoordeboek",
+        "environment": "Omgewing",
         "font": "Font",
         "free_account": "Gratis rekening",
         "gender_label": "Geslag:",
@@ -226,6 +228,7 @@
         "unknown_user": "Gebruiker",
         "untitled_video": "Ongenomde video",
         "untitled_video_full": "Ongenomde Video",
+        "version": "Weergawe",
         "views_count": "{count} kyke"
     },
     "lang": {
@@ -912,6 +915,7 @@
         "sec": "sek"
     },
     "title": {
+        "about": "Meer oor",
         "account": "Rekening",
         "all_categories": "Alle Kategorieë",
         "all_countries": "Alle Lande",
