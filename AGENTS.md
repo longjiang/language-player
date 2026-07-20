@@ -205,6 +205,36 @@ node scripts/batch-translate.mjs --locale=fr
 
 Before translating, always check if `translations.csv` already has the same or very similar key that can do the same job. If so, modify your key new key to reuse it instead of creating a new key.
 
+### Writing User-Facing Documentation
+
+When writing or editing markdown documentation in `apps/web/content/docs/`, follow these guidelines:
+
+**Tone & Voice**
+- **Informal and friendly** — write like you're explaining to a friend, not writing a textbook
+- **Second person ("you")** — address the reader directly; never use third person or passive voice
+- **Short sentences** — break up long sentences; aim for one idea per sentence
+- **Active voice** — "Click any word to see its definition" not "Words can be clicked to view definitions"
+
+**Structure**
+- Each doc starts with an `# H1` title (used as the page title and sidebar label)
+- Use `## H2` for main sections and `### H3` for subsections (these appear in the "On this page" sidebar)
+- Keep paragraphs short (2-4 sentences max)
+- Use bullet lists for features and tips; tables for reference data
+- Every doc ends with a **Tips** section with practical advice
+
+**Content Guidelines**
+- **Lead with "what" and "why"** — explain what the feature does and why it's useful before diving into how
+- **Show don't tell** — describe actual use cases, not abstract capabilities
+- **Assume zero prior knowledge** — explain terminology; don't assume the reader knows what "L1/L2" or "tokenization" means
+- **Be concise** — cut filler words; every sentence should add value
+- **Cross-link** — reference other docs when mentioning related features (e.g., "See [Dictionary](/docs/vocab/dictionary) for details")
+
+**Example (good):**
+> Click any word in the subtitles to see its definition, hear its pronunciation, and save it to your vocabulary list.
+
+**Example (avoid):**
+> The interactive subtitle feature enables users to select lexical items, which triggers the display of dictionary entries including definitions and audio pronunciation, with the option to persist selections to a personalized vocabulary collection.
+
 ### When You Make Changes
 
 - Update `specs/` if you implement a new feature or change behavior
