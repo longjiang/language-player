@@ -83,6 +83,10 @@ export interface ReaderPanelProps {
   onTokenize: () => void;
   onFillSample: (text: string, title: string) => void;
   onPageTranslate: (texts: string[]) => Promise<string[]>;
+  /** Called when the visible page changes — gives the first ~40 chars as anchor. */
+  onAnchorChange?: (anchor: string) => void;
+  /** If set, seek to the page containing this anchor text after blocks load. */
+  initialAnchor?: string | null;
 }
 
 export function ReaderPanel({
@@ -95,6 +99,8 @@ export function ReaderPanel({
   onTextChange,
   onTabChange, onUrlInputChange, onUrlSubmit,
   onTokenize, onFillSample, onPageTranslate,
+  onAnchorChange,
+  initialAnchor,
 }: ReaderPanelProps) {
   const t = useT();
   const { display, updateDisplay } = useSettingsContext();
@@ -170,6 +176,34 @@ export function ReaderPanel({
     setPage(p => p + 1);
     setBlockTranslations({});
   }, [page, totalPages]);
+
+  // Report anchor on page change
+  const prevPageRef = useRef(page);
+  useEffect(() => {
+    if (prevPageRef.current === page || !onAnchorChange) return;
+    prevPageRef.current = page;
+    const first = visibleBlocks?.find((b): b is TextBlock => b.kind === 'text');
+    if (first) onAnchorChange(first.text.slice(0, 40));
+  }, [page, visibleBlocks, onAnchorChange]);
+
+  // Seek to initialAnchor on first blocks load
+  const initialAnchorSeen = useRef(false);
+  useEffect(() => {
+    if (!initialAnchor || !blocks || !blockTokens || tokenizing) return;
+    if (initialAnchorSeen.current) return;
+    initialAnchorSeen.current = true;
+    // Find which page contains the anchor text
+    if (pageBreaks.length === 0) return;
+    for (let p = 0; p <= pageBreaks.length; p++) {
+      const start = p === 0 ? 0 : pageBreaks[p - 1]!;
+      const end = p < pageBreaks.length ? pageBreaks[p]! : blocks.length;
+      const pageBlocks = blocks.slice(start, end);
+      const hasAnchor = pageBlocks.some((b): b is TextBlock =>
+        b.kind === 'text' && b.text.includes(initialAnchor)
+      );
+      if (hasAnchor) { setPage(p); break; }
+    }
+  }, [initialAnchor, blocks, blockTokens, tokenizing, pageBreaks]);
 
   // Auto-translate on page advance (only when translation is enabled)
   useEffect(() => {
