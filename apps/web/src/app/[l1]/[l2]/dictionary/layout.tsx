@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { PersistentSearchBar } from '@/components/dictionary/persistent-search-bar';
 import { SavedWordRow } from '@/components/dictionary/saved-word-row';
 import { WordListItem } from '@/components/dictionary/word-list';
+import { SaveButton } from '@/components/save-button';
 import { buildEntryRoute } from '@/lib/entry-route';
 import type { WordListNavItem as Wlni } from '@/lib/word-list-navigation';
 import { BookOpen } from 'lucide-react';
@@ -108,6 +109,20 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
                       <WordListItem
                         key={compositeId}
                         head={e.head}
+                        prefix={
+                          <div onClick={(ev) => ev.stopPropagation()}>
+                            <SaveButton
+                              wordId={e.id}
+                              head={e.head}
+                              context={{
+                                form: e.head,
+                                text: e.head,
+                                textTitle: 'Dictionary',
+                              }}
+                              size="icon"
+                            />
+                          </div>
+                        }
                         definitionSlot={
                           e.pronunciation || e.definitions?.[0] ? (
                             <p className="mt-0.5 truncate text-xs text-muted-foreground/80">
