@@ -11,6 +11,7 @@ import { createRoot } from 'react-dom/client';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
+import { DictionaryCard } from './components/DictionaryCard';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -25,6 +26,8 @@ interface TranscriptAppProps {
   activeCueIdx: number;
   /** ISO 639-1 language code for the subtitle language (e.g. "ja", "zh", "ko") */
   l2Code: string;
+  /** ISO 639-1 language code for the UI / native language (e.g. "en") */
+  l1Code: string;
   /** Called when the user clicks a subtitle line to seek the video */
   onSeekTo: (timeSec: number) => void;
 }
@@ -44,10 +47,11 @@ interface TokenizedLineProps {
   l2Code: string;
   isActive: boolean;
   onClickLine: () => void;
+  onTokenClick: (token: LemmatizedToken) => void;
 }
 
 const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
-  ({ text, l2Code, isActive, onClickLine }) => {
+  ({ text, l2Code, isActive, onClickLine, onTokenClick }) => {
     const [tokens, setTokens] = useState<LemmatizedToken[] | null>(null);
     const [error, setError] = useState(false);
     const aborterRef = useRef<AbortController | null>(null);
@@ -131,6 +135,7 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
             l2Code={l2Code}
             isActive={isActive}
             onClickLine={onClickLine}
+            onTokenClick={onTokenClick}
           />
         ))}
       </span>
@@ -146,10 +151,11 @@ interface TokenSpanProps {
   l2Code: string;
   isActive: boolean;
   onClickLine: () => void;
+  onTokenClick: (token: LemmatizedToken) => void;
 }
 
 const TokenSpan: React.FC<TokenSpanProps> = React.memo(
-  ({ token, l2Code, isActive, onClickLine }) => {
+  ({ token, l2Code, isActive, onClickLine, onTokenClick }) => {
     // Structural tokens
     if (token.text === '\n' || token.text === '\r') {
       return <br />;
@@ -176,7 +182,7 @@ const TokenSpan: React.FC<TokenSpanProps> = React.memo(
         title={lemmaTitle}
         onClick={(e) => {
           e.stopPropagation();
-          // Future: open dictionary popup here
+          onTokenClick(token);
         }}
       >
         {rubySegments
@@ -205,10 +211,11 @@ interface CueLineProps {
   isActive: boolean;
   l2Code: string;
   onSeekTo: (timeSec: number) => void;
+  onTokenClick: (token: LemmatizedToken) => void;
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, l2Code, onSeekTo }) => {
+  ({ cue, index, isActive, l2Code, onSeekTo, onTokenClick }) => {
     const handleClick = useCallback(() => {
       onSeekTo(cue.start);
     }, [cue.start, onSeekTo]);
@@ -229,6 +236,7 @@ const CueLine: React.FC<CueLineProps> = React.memo(
           l2Code={l2Code}
           isActive={isActive}
           onClickLine={handleClick}
+          onTokenClick={onTokenClick}
         />
       </div>
     );
@@ -252,10 +260,12 @@ const TranscriptApp: React.FC<TranscriptAppProps> = ({
   cues,
   activeCueIdx,
   l2Code,
+  l1Code,
   onSeekTo,
 }) => {
   const listRef = useRef<HTMLDivElement>(null);
   const prevActiveRef = useRef(activeCueIdx);
+  const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
 
   // Auto-scroll to active cue
   useEffect(() => {
@@ -285,8 +295,19 @@ const TranscriptApp: React.FC<TranscriptAppProps> = ({
           isActive={i === activeCueIdx}
           l2Code={l2Code}
           onSeekTo={onSeekTo}
+          onTokenClick={setSelectedToken}
         />
       ))}
+
+      {/* Dictionary card: shown inline when a word is clicked */}
+      {selectedToken && (
+        <DictionaryCard
+          token={selectedToken}
+          l1Code={l1Code}
+          l2Code={l2Code}
+          onClose={() => setSelectedToken(null)}
+        />
+      )}
     </div>
   );
 };
@@ -300,6 +321,7 @@ export function mountTranscript(
   cues: SubtitleCue[],
   activeCueIdx: number,
   l2Code: string,
+  l1Code: string,
   onSeekTo: (timeSec: number) => void,
 ): void {
   if (!root) {
@@ -310,6 +332,7 @@ export function mountTranscript(
       cues={cues}
       activeCueIdx={activeCueIdx}
       l2Code={l2Code}
+      l1Code={l1Code}
       onSeekTo={onSeekTo}
     />,
   );
