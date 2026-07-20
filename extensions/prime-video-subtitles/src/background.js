@@ -49,16 +49,29 @@ chrome.webRequest.onCompleted.addListener(
                         const fileName = getFileNameFromUrl(details.url);
                         const extension = getExtensionFromUrl(details.url);
 
-                        detectedSubtitles.push({
+                        const subtitleEntry = {
                             tabId: details.tabId,
                             url: details.url,
                             fileName: fileName,
                             extension: extension,
                             timestamp: Date.now()
-                        });
+                        };
+
+                        detectedSubtitles.push(subtitleEntry);
 
                         // Update the badge to show number of available subtitles
                         updateBadge();
+
+                        // Forward subtitle to content script for transcript panel
+                        chrome.tabs.sendMessage(details.tabId, {
+                            action: 'subtitleDetected',
+                            url: details.url,
+                            fileName: fileName,
+                            extension: extension
+                        }).catch(() => {
+                            // Content script may not be ready yet; that's ok
+                        });
+
                         break;
                     }
                 }
@@ -68,7 +81,10 @@ chrome.webRequest.onCompleted.addListener(
     {urls: ["http://*/*", "https://*/*"]}
 );
 
-// Listen for messages from popup
+// Track tabs where content script is ready
+const readyTabs = new Set();
+
+// Listen for messages from popup and content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "clearSubtitles") {
         detectedSubtitles = [];
@@ -80,6 +96,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({success: true});
     } else if (request.action === "getSubtitles") {
         sendResponse({subtitles: detectedSubtitles});
+    } else if (request.action === "contentScriptReady") {
+        if (sender.tab) {
+            readyTabs.add(sender.tab.id);
+        }
+        sendResponse({success: true});
+    } else if (request.action === "loadSubtitlesInTab") {
+        // Popup wants to load a specific subtitle in the active tab
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs[0]) {
+                chrome.tabs.sendMessage(tabs[0].id, {
+                    action: 'loadSubtitles',
+                    url: request.url,
+                    fileName: request.fileName
+                }).catch(() => {});
+            }
+        });
+        sendResponse({success: true});
     }
     return true; // Keep message channel open for async response
 });

@@ -58,6 +58,12 @@ document.addEventListener('DOMContentLoaded', function() {
       downloadBtn.title = fullName;
       downloadBtn.addEventListener('click', () => downloadSubtitle(subtitle));
 
+      const viewBtn = document.createElement('button');
+      viewBtn.className = 'view-btn';
+      viewBtn.textContent = 'View';
+      viewBtn.title = 'Show transcript in panel';
+      viewBtn.addEventListener('click', () => viewInPanel(subtitle));
+
       const removeBtn = document.createElement('button');
       removeBtn.className = 'remove-btn';
       removeBtn.textContent = '×';
@@ -65,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
       removeBtn.addEventListener('click', () => removeSubtitle(subtitle.url));
 
       item.appendChild(info);
+      item.appendChild(viewBtn);
       item.appendChild(downloadBtn);
       item.appendChild(removeBtn);
       subtitlesList.appendChild(item);
@@ -76,6 +83,16 @@ document.addEventListener('DOMContentLoaded', function() {
       url: subtitle.url,
       filename: subtitle.fileName
     });
+  }
+
+  function viewInPanel(subtitle) {
+    chrome.runtime.sendMessage({
+      action: "loadSubtitlesInTab",
+      url: subtitle.url,
+      fileName: subtitle.fileName
+    });
+    // Close popup after sending
+    window.close();
   }
 
   function removeSubtitle(url) {
