@@ -8,8 +8,9 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { getUseTraditional, getShowPhonetics } from '@/lib/settings';
-import { matchHiragana } from '@langplayer/utils';
-import type { TokenCache } from '@/lib/token-cache';
+import { buildRuby } from '@langplayer/utils';
+import type { RubySegment } from '@langplayer/utils';
+import type { TokenCache } from '@langplayer/shared';
 
 // Simple in-memory cache to avoid re-lemmatizing the same text
 const lemmatizeCache = new Map<string, LemmatizedToken[]>();
@@ -335,7 +336,9 @@ const TokenSpan: React.FC<{
   // ── Ruby text (phonetic guide) — hidden on highlighted forms for cleaner display ──
   const hasPhonetics = !isHighlighted && showPhonetics && token.pronunciation && token.pronunciation !== token.text;
 
-  const rubyContent = hasPhonetics ? renderRuby(token.text, token.pronunciation!, l2Code) : null;
+  const rubySegments: RubySegment[] | null = hasPhonetics
+    ? buildRuby(token.text, token.pronunciation!, l2Code)
+    : null;
 
   return (
     <span
@@ -356,65 +359,16 @@ const TokenSpan: React.FC<{
       `}
       title={token.lemmas.map(l => l.lemma).join(', ')}
     >
-      {rubyContent ?? token.text}
+      {rubySegments ? rubySegments.map((seg, j) =>
+        seg.reading ? (
+          <ruby key={j}>{seg.text}<rt>{seg.reading}</rt></ruby>
+        ) : (
+          <React.Fragment key={j}>{seg.text}</React.Fragment>
+        )
+      ) : token.text}
     </span>
   );
 };
-
-/**
- * Render ruby text (phonetic guides) for a token.
- *
- * Japanese:  segments kanji↔furigana via matchHiragana.
- *            Only shows furigana above kanji (kana segments render as-is).
- * Chinese:   word-level pinyin above the entire word.
- * Other:     word-level pronunciation above the entire word.
- *
- * Returns a React fragment with <ruby> elements, or null if nothing to show.
- */
-function renderRuby(text: string, pronunciation: string, l2Code: string): React.ReactNode {
-  const base = baseCode(l2Code);
-
-  // ── Japanese: segment kanji from kana, show furigana only above kanji ──
-  if (base === 'ja') {
-    // Skip ruby entirely for words with no kanji (pure kana: を→オ, は→ワ, コンピューター, etc.)
-    if (!/[\u4e00-\u9faf]/.test(text)) {
-      return null;
-    }
-    const segments = matchHiragana({ text, reading: pronunciation });
-    return (
-      <>
-        {segments.map((seg, i) =>
-          seg.type === 'kanji' && seg.pronunciation !== seg.text ? (
-            <ruby key={i}>
-              {seg.text}
-              <rt>{seg.pronunciation}</rt>
-            </ruby>
-          ) : (
-            <React.Fragment key={i}>{seg.text}</React.Fragment>
-          ),
-        )}
-      </>
-    );
-  }
-
-  // ── Chinese / Cantonese: word-level pinyin/jyutping ──
-  if (base === 'zh' || base === 'yue') {
-    return (
-      <ruby>
-        {text}
-        <rt>{pronunciation}</rt>
-      </ruby>
-    );
-  }
-
-  // ── Other languages with pronunciation (e.g. Arabic) ──
-  return (
-    <ruby>
-      {text}
-      <rt>{pronunciation}</rt>
-    </ruby>
-  );
-}
 
 TokenizedText.displayName = 'TokenizedText';
 

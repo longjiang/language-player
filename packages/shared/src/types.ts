@@ -95,6 +95,14 @@ export interface LemmatizeResponse {
   tokens: LemmatizedToken[];
 }
 
+/** Client-side token cache for video subtitles.
+ *  Populated from GET /lemmatize-video-normalized and used to skip
+ *  per-line /lemmatize-normalized API calls during playback. */
+export interface TokenCache {
+  get(text: string): LemmatizedToken[] | undefined;
+  has(text: string): boolean;
+}
+
 export interface Token {
   text: string;
   pos?: string;

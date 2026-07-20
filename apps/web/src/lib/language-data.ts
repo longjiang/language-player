@@ -1,4 +1,5 @@
 import { SUPPORTED_L1S, SUPPORTED_L2S, LANGS_YOUTUBE_SUPPORTS, LANGS_WITH_LIVE_TV } from '@langplayer/shared';
+import { baseCode } from '@langplayer/utils';
 import { LOCALIZED_LANGUAGE_NAMES } from './language-names-i18n';
 
 /**
@@ -114,10 +115,9 @@ export function languageName(code: string, uiLocale?: string): string {
 }
 
 /** Strip BCP47 subtags (e.g., zh-Hans → zh) for backend compatibility.
- * The backend uses ISO 639-1 primary language codes only. */
-export function baseCode(code: string): string {
-  return code.split('-')[0]!;
-}
+ * The backend uses ISO 639-1 primary language codes only.
+ * Re-exported from @langplayer/utils for cross-platform use. */
+export { baseCode };
 
 /** Check if a language code uses RTL direction. */
 export function isRTL(code: string): boolean {
