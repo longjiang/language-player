@@ -33,7 +33,8 @@ function getDoc(slug: string): { content: string } | null {
 }
 
 export default function DocPage({ params }: Props) {
-  const doc = getDoc(params.slug);
+  const { l1, l2, slug } = params;
+  const doc = getDoc(slug);
 
   if (!doc) {
     notFound();
@@ -54,7 +55,7 @@ export default function DocPage({ params }: Props) {
 
         <hr className="my-8" />
         <Link
-          href=".."
+          href={`/${l1}/${l2}/docs`}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           ← Back to Documentation

@@ -37,7 +37,12 @@ function getDocs(): DocMeta[] {
   return [];
 }
 
-export default function DocsPage() {
+interface Props {
+  params: { l1: string; l2: string };
+}
+
+export default function DocsPage({ params }: Props) {
+  const { l1, l2 } = params;
   const docs = getDocs();
 
   return (
@@ -60,7 +65,7 @@ export default function DocsPage() {
             {docs.map(doc => (
               <Link
                 key={doc.slug}
-                href={`./${doc.slug}`}
+                href={`/${l1}/${l2}/docs/${doc.slug}`}
                 className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
               >
                 <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
