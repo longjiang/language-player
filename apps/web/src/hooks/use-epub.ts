@@ -63,8 +63,8 @@ export interface UseEpubReturn {
   prevChapter: () => Promise<void>;
   /** Close the book and clear state. */
   close: () => Promise<void>;
-  /** Restore from IndexedDB (check on mount). */
-  restoreFromStorage: () => Promise<{ anchor: string | null } | null>;
+  /** Restore from IndexedDB (check on mount). Returns markdown + anchor. */
+  restoreFromStorage: () => Promise<{ markdown: string; anchor: string | null } | null>;
   /** Update the last anchor in IndexedDB. */
   saveAnchor: (anchor: string) => Promise<void>;
 }
@@ -273,20 +273,22 @@ export function useEpub(): UseEpubReturn {
     await deleteEpub();
   }, []);
 
-  /** Restore from IndexedDB. */
-  const restoreFromStorage = useCallback(async (): Promise<{ anchor: string | null } | null> => {
+  /** Restore from IndexedDB. Returns the chapter markdown text and anchor. */
+  const restoreFromStorage = useCallback(async (): Promise<{
+    markdown: string;
+    anchor: string | null;
+  } | null> => {
     try {
       const stored = await loadEpub();
       if (stored?.data && stored.meta.fileName) {
         setFileName(stored.meta.fileName);
-        const b = await loadFile(stored.data, stored.meta.fileName);
-        if (b && stored.meta.lastChapterHref) {
-          // Wait for the book to be ready, then load the chapter
+        const result = await loadFile(stored.data, stored.meta.fileName);
+        if (result && stored.meta.lastChapterHref) {
           await new Promise(resolve => setTimeout(resolve, 100));
           const md = await loadChapter(stored.meta.lastChapterHref);
-          return { anchor: stored.meta.lastAnchor ?? null };
+          return { markdown: md, anchor: stored.meta.lastAnchor ?? null };
         }
-        return { anchor: stored.meta.lastAnchor ?? null };
+        return result ? { markdown: '', anchor: stored.meta.lastAnchor ?? null } : null;
       }
     } catch { /* ignore */ }
     return null;
