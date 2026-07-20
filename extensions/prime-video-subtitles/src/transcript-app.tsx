@@ -336,7 +336,7 @@ const EmptyState: React.FC = () => (
   <div className="lpv-empty">
     Waiting for subtitles...
     <br />
-    Start playing a video on Prime Video.
+    Start playing a video on Prime Video or YouTube.
   </div>
 );
 

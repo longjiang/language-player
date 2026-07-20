@@ -462,11 +462,23 @@ function parseYTTimedText(xmlText) {
 async function fetchYTTrack(track) {
   try {
     updateStatus('Loading subtitles...');
-    const response = await fetch(track.baseUrl);
+
+    // Ensure URL is absolute (YouTube sometimes uses protocol-relative or relative)
+    let url = track.baseUrl;
+    if (url.startsWith('//')) url = 'https:' + url;
+    else if (url.startsWith('/')) url = 'https://www.youtube.com' + url;
+
+    console.log('[LanguagePlayer] Fetching track URL:', url);
+    const response = await fetch(url);
+    console.log('[LanguagePlayer] Response status:', response.status, 'content-type:', response.headers.get('content-type'));
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const xmlText = await response.text();
+    console.log('[LanguagePlayer] Response length:', xmlText.length, 'chars');
+    console.log('[LanguagePlayer] Timedtext response preview:', xmlText.substring(0, 200));
+
     const cues = parseYTTimedText(xmlText);
+    console.log('[LanguagePlayer] Parsed', cues.length, 'cues');
 
     STATE.cues = cues;
     STATE.subtitleUrl = track.baseUrl;
@@ -484,6 +496,8 @@ async function fetchYTTrack(track) {
       if (!STATE.panelVisible) {
         setPanelVisible(true);
       }
+    } else {
+      console.log('[LanguagePlayer] No cues parsed — check the XML format');
     }
     setBadge(true);
     updateStatus(`${cues.length} subtitle entries loaded`);
