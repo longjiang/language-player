@@ -32,7 +32,7 @@ The file is stored locally in your browser (IndexedDB). Next time you visit, it 
 ## Supported Formats
 
 - **`.epub`** — Standard EPUB files (EPUB 2 and EPUB 3)
-- **`.epub` with furigana/ruby** — Japanese books with ruby annotations are converted to inline text: `基(き)礎(そ)`
+- **`.epub` with furigana/ruby** — Japanese books with ruby annotations are stripped of furigana, keeping only the base kanji text
 - **Vertical text** — Books with CSS `writing-mode: vertical-rl` are detected (display uses standard horizontal layout for readability)
 
 ## Progress Saving
