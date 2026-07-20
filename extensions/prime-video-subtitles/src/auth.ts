@@ -18,7 +18,7 @@ export interface AuthState {
 
 /** Login with Directus credentials. Returns the auth state on success. */
 export async function login(email: string, password: string): Promise<AuthState> {
-  const res = await fetch(`${DIRECTUS_URL}/auth/login`, {
+  const res = await fetch(`${DIRECTUS_URL}/auth/authenticate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -26,12 +26,12 @@ export async function login(email: string, password: string): Promise<AuthState>
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.errors?.[0]?.message || `Login failed (${res.status})`);
+    throw new Error(err.errors?.[0]?.message || err.message || `Login failed (${res.status})`);
   }
 
   const data = await res.json();
-  const token = data.data?.access_token;
-  if (!token) throw new Error('No access token in response');
+  const token = data.data?.token;
+  if (!token) throw new Error('No token in response');
 
   // Decode JWT to get user ID and expiry
   const payload = JSON.parse(atob(token.split('.')[1]));
