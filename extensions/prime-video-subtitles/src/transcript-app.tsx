@@ -53,6 +53,7 @@ interface TokenizedLineProps {
 const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
   ({ text, l2Code, isActive, onClickLine, onTokenClick }) => {
     const [tokens, setTokens] = useState<LemmatizedToken[] | null>(null);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
     const [hasBeenVisible, setHasBeenVisible] = useState(false);
     const aborterRef = useRef<AbortController | null>(null);
@@ -73,7 +74,7 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
             observer.disconnect();
           }
         },
-        { rootMargin: '200px' }, // start tokenizing 200px before visible
+        { rootMargin: '200px' },
       );
 
       observer.observe(el);
@@ -86,7 +87,6 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
 
       let cancelled = false;
 
-      // Check cache first
       const cacheKey = `${base}:${text}`;
       const cached = tokenCache.get(cacheKey);
       if (cached) {
@@ -94,7 +94,8 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
         return;
       }
 
-      // Fetch from API
+      setLoading(true);
+
       const controller = new AbortController();
       aborterRef.current = controller;
 
@@ -112,12 +113,14 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
           if (!cancelled) {
             tokenCache.set(cacheKey, data.tokens);
             setTokens(data.tokens);
+            setLoading(false);
           }
         })
         .catch((err) => {
           if (err.name !== 'AbortError' && !cancelled) {
             console.warn('[LPV] Tokenization failed for:', text, err);
             setError(true);
+            setLoading(false);
           }
         });
 
@@ -127,7 +130,7 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
       };
     }, [text, base, hasBeenVisible]);
 
-    // ── Plain text render (before tokenization) ──
+    // ── Render: three visual states ──
     return (
       <span
         ref={containerRef}
@@ -145,6 +148,8 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
               onTokenClick={onTokenClick}
             />
           ))
+        ) : loading ? (
+          <span className="lpv-cue-loading">{text}</span>
         ) : (
           text
         )}

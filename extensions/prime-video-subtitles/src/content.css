@@ -253,6 +253,15 @@ body.lpv-panel-open .dv-player-fullscreen {
   line-height: 1.8; /* extra space for ruby text */
 }
 
+.lpv-cue-loading {
+  animation: lpv-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes lpv-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
 .lpv-cue.lpv-active .lpv-cue-text {
   color: #ddd;
 }
