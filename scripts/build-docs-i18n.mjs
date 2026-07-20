@@ -139,12 +139,48 @@ if (docs.length === 0) {
 
 mkdirSync(OUT_DIR, { recursive: true });
 
+const API_URL = process.env.PYTHON_API_URL || 'http://127.0.0.1:5001';
+
 for (const locale of locales) {
-  const resolved = docs.map(doc => ({
-    slug: doc.slug,
-    title: resolveKeys(doc.title, csv, locale),
-    content: resolveKeys(doc.content, csv, locale),
-  }));
+  const isEnglish = locale === 'en';
+
+  const resolved = [];
+  for (const doc of docs) {
+    let content = doc.content;
+    let title = doc.title;
+
+    // Machine-translate body (non-English only). The translator's
+    // placeholder protection keeps {$key} intact automatically.
+    if (!isEnglish) {
+      try {
+        console.log(`  Translating ${doc.slug} to ${locale}…`);
+        const resp = await fetch(`${API_URL}/translate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: content,
+            l1: locale,
+            l2: 'en',
+          }),
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          content = data.translated_text;
+        } else {
+          console.warn(`  ⚠ Translation failed for ${doc.slug} (${resp.status}), using English`);
+        }
+      } catch (err) {
+        console.warn(`  ⚠ Translation error for ${doc.slug}: ${err.message}, using English`);
+      }
+    }
+
+    // Resolve {$key} with CSV translations
+    resolved.push({
+      slug: doc.slug,
+      title: resolveKeys(title, csv, locale),
+      content: resolveKeys(content, csv, locale),
+    });
+  }
 
   const outPath = resolve(OUT_DIR, `${locale}.json`);
   writeFileSync(outPath, JSON.stringify(resolved, null, 2), 'utf-8');
