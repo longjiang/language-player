@@ -45,14 +45,6 @@ Your reading position is saved automatically in your browser:
 
 **Note:** Progress is stored locally (IndexedDB), not synced to the cloud. Only one book is stored at a time — uploading a new one replaces the previous.
 
-## Tips for Language Learning
-
-- **Start with what you know** — Children's books, graded readers, or books you've already read in your native language
-- **Read actively** — Tap unfamiliar words to see their meaning, then save them for later review
-- **Use translation as a crutch** — Enable per-block translation when you get stuck, but try reading without it first
-- **Read aloud** — Use the speaker icon in each block's action menu (⋮) to hear pronunciation
-- **Japanese learners** — Ruby/furigana is preserved inline, making it easier to read kanji you haven't learned yet
-
 ## Getting Free EPUBs
 
 - **[Project Gutenberg](https://www.gutenberg.org/)** — 70,000+ free ebooks in many languages (look for " EPUB with images" or " Plain Text UTF-8")
