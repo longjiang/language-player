@@ -10,7 +10,7 @@ Music and entertainment content is separated from the main Explore page so your 
 
 ## Why Separate?
 
-Music videos and entertainment make up a large portion of YouTube content — about 30% of videos at any given difficulty level. Mixing them into Explore would dominate the feed and crowd out other content types. Keeping them separate gives you control over when you want music and when you want other types of videos.
+Music videos and entertainment make up a significant portion of YouTube content. For example, in our database of Japanese videos at the JLPT N1 level, about one-third (3,190 out of 9,489) fall into these two categories. Mixing them into Explore would dominate the feed and crowd out other content types. Keeping them separate gives you control over when you want music and when you want other types of videos.
 
 ## Channel Subscriptions
 
