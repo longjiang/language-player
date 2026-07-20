@@ -11,7 +11,7 @@ import { EpubUpload } from '@/components/reader/epub-upload';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { useEpub } from '@/hooks/use-epub';
 import {
-  BookOpen, Loader2,
+  BookOpen, Loader2, PanelRightClose, PanelRight, X,
 } from 'lucide-react';
 
 function stripMarkdown(md: string): string {
@@ -134,29 +134,28 @@ export default function EpubPage() {
           </h1>
           <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p>
         </div>
+        {/* Close EPUB */}
+        {epub.toc.length > 0 && (
+          <button
+            onClick={epub.close}
+            className="flex-shrink-0 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1"
+          >
+            <X className="h-3.5 w-3.5" />
+            {t('action.close')}
+          </button>
+        )}
+        {/* Collapse toggle — top right */}
+        <button
+          onClick={() => setSidebarOpen(o => !o)}
+          className="flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
+        >
+          {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
+        </button>
       </div>
 
-      {/* ── Content row ── */}
+      {/* ── Content row: reader panel first, then sidebar ── */}
       <div className="flex gap-4">
-        {/* Chapter sidebar */}
-        {epub.toc.length > 0 && (
-          <EpubChapterSidebar
-            toc={epub.toc}
-            currentChapterHref={epub.chapterHref}
-            chapterTitle={epub.chapterTitle}
-            fileName={epub.fileName}
-            loading={epub.loading}
-            onLoadChapter={handleLoadChapter}
-            onPrevChapter={epub.prevChapter}
-            onNextChapter={epub.nextChapter}
-            hasPrevChapter={!!epub.prevHref}
-            hasNextChapter={!!epub.nextHref}
-            onClose={epub.close}
-            sidebarOpen={sidebarOpen}
-            onToggle={() => setSidebarOpen(o => !o)}
-          />
-        )}
-
         {/* Content area */}
         <div className="min-w-0 flex-1">
           {epub.toc.length === 0 && !epub.fileName ? (
@@ -214,6 +213,21 @@ export default function EpubPage() {
             </div>
           ) : null}
         </div>
+
+        {/* Chapter sidebar — on the right */}
+        {epub.toc.length > 0 && (
+          <EpubChapterSidebar
+            toc={epub.toc}
+            currentChapterHref={epub.chapterHref}
+            loading={epub.loading}
+            onLoadChapter={handleLoadChapter}
+            onPrevChapter={epub.prevChapter}
+            onNextChapter={epub.nextChapter}
+            hasPrevChapter={!!epub.prevHref}
+            hasNextChapter={!!epub.nextHref}
+            sidebarOpen={sidebarOpen}
+          />
+        )}
       </div>
     </div>
   );
