@@ -283,6 +283,17 @@ body.lpv-panel-open .dv-player-fullscreen {
 
 /* ── Dictionary Card ───────────────────────────────────────────────────── */
 
+.lpv-dict-overlay {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: #0f171e;
+  border-top: 1px solid rgba(0, 168, 225, 0.25);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
 .lpv-dict-card {
   margin: 8px 16px;
   border: 1px solid rgba(0, 168, 225, 0.3);
