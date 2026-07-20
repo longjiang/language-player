@@ -13,6 +13,7 @@ import type { LemmatizedToken, DictionaryEntry, ProficiencyLevel } from '@langpl
 import { formatLevel } from '@langplayer/shared';
 import { useSavedWords } from './SavedWordsProvider';
 import { fetchInflectedForms } from '../saved-words';
+import { useSubscription } from '../use-subscription';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -113,6 +114,13 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   const [saving, setSaving] = useState(false);
 
   const { savedWords, saveWord, removeSavedWord, isLoggedIn } = useSavedWords();
+  const { isPro, loading: subLoading } = useSubscription();
+
+  // ── Explain state ──
+  const [explainText, setExplainText] = useState<string | null>(null);
+  const [explainLoading, setExplainLoading] = useState(false);
+  const [explainError, setExplainError] = useState<string | null>(null);
+  const [showExplain, setShowExplain] = useState(false);
 
   // Check if any form of this token is already saved
   const firstEntry = entries[0];
@@ -212,6 +220,42 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     }
   }, [firstEntry, isLoggedIn, isSaved, l2Code, token, contextText, saveWord, removeSavedWord]);
 
+  const handleExplain = useCallback(async () => {
+    if (showExplain) {
+      setShowExplain(false);
+      return;
+    }
+    setShowExplain(true);
+
+    // If already fetched, just toggle visibility
+    if (explainText || explainError) return;
+
+    setExplainLoading(true);
+    setExplainError(null);
+
+    try {
+      const prompt = `Explain the word "${token.text}" in ${l2Code}. Include:
+1. Meaning and usage
+2. Example sentences
+3. Any cultural notes or nuances
+Keep it concise (2-3 paragraphs). Respond in plain text.`;
+
+      const res = await fetch(`${API_BASE}/chatgpt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const text = data.response || data.text || data.result || JSON.stringify(data);
+      setExplainText(text);
+    } catch (err: any) {
+      setExplainError(err?.message || 'Explain failed');
+    } finally {
+      setExplainLoading(false);
+    }
+  }, [showExplain, explainText, explainError, token.text, l2Code]);
+
   const webAppUrl = `${WEB_APP}/dictionary/llm/${encodeURIComponent(token.text)}`;
 
   return (
@@ -230,6 +274,16 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           )}
         </div>
         <div className="lpv-dict-card-header-right">
+          {isPro && (
+            <button
+              onClick={handleExplain}
+              disabled={explainLoading}
+              className={`lpv-explain-btn ${showExplain ? 'lpv-explain-btn-active' : ''}`}
+              title="AI Explanation (Pro)"
+            >
+              {explainLoading ? '…' : '🤖 Explain'}
+            </button>
+          )}
           {isLoggedIn && firstEntry && (
             <button
               onClick={handleSave}
@@ -248,6 +302,21 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
 
       {/* Card body */}
       <div className="lpv-dict-card-body">
+        {/* AI Explanation */}
+        {showExplain && (
+          <div className="lpv-explain-section">
+            {explainLoading && (
+              <div className="lpv-explain-loading">🤖 AI is thinking…</div>
+            )}
+            {explainError && (
+              <div className="lpv-explain-error">{explainError}</div>
+            )}
+            {explainText && (
+              <div className="lpv-explain-text">{explainText}</div>
+            )}
+          </div>
+        )}
+
         {loading && (
           <div className="lpv-dict-loading">Looking up &ldquo;{token.text}&rdquo;…</div>
         )}

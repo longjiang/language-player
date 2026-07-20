@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { getAuthState } from '../auth';
+import { getAuthState } from './auth';
 
 const API_BASE = 'https://pythonvps.zerotohero.ca';
 

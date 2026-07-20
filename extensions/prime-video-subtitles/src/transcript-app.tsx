@@ -242,6 +242,21 @@ interface CueLineProps {
 
 const CueLine: React.FC<CueLineProps> = React.memo(
   ({ cue, index, isActive, l2Code, onSeekTo, onTokenClick, translation, showTranslation }) => {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    // Close menu on click outside
+    useEffect(() => {
+      if (!menuOpen) return;
+      const handler = (e: MouseEvent) => {
+        if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+          setMenuOpen(false);
+        }
+      };
+      document.addEventListener('mousedown', handler);
+      return () => document.removeEventListener('mousedown', handler);
+    }, [menuOpen]);
+
     const handleClick = useCallback(() => {
       onSeekTo(cue.start);
     }, [cue.start, onSeekTo]);
@@ -249,6 +264,7 @@ const CueLine: React.FC<CueLineProps> = React.memo(
     const handleCopy = useCallback((e: React.MouseEvent) => {
       e.stopPropagation();
       navigator.clipboard.writeText(cue.text).catch(() => {});
+      setMenuOpen(false);
     }, [cue.text]);
 
     const handleSpeak = useCallback((e: React.MouseEvent) => {
@@ -257,11 +273,11 @@ const CueLine: React.FC<CueLineProps> = React.memo(
       utterance.lang = l2Code;
       speechSynthesis.cancel();
       speechSynthesis.speak(utterance);
+      setMenuOpen(false);
     }, [cue.text, l2Code]);
 
     const minutes = Math.floor(cue.start / 60);
     const seconds = Math.floor(cue.start % 60);
-    const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
     return (
       <div
@@ -269,7 +285,6 @@ const CueLine: React.FC<CueLineProps> = React.memo(
         data-index={index}
         onClick={handleClick}
       >
-        <span className="lpv-cue-time">{timeStr}</span>
         <div className="lpv-cue-body">
           <TokenizedLine
             text={cue.text}
@@ -282,9 +297,20 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             <div className="lpv-cue-translation">{translation}</div>
           )}
         </div>
-        <div className="lpv-cue-actions">
-          <button onClick={handleCopy} title="Copy" className="lpv-cue-action-btn">📋</button>
-          <button onClick={handleSpeak} title="Speak" className="lpv-cue-action-btn">🔊</button>
+        <div className="lpv-cue-menu" ref={menuRef}>
+          <button
+            onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
+            className={`lpv-cue-menu-btn ${menuOpen ? 'lpv-cue-menu-btn-open' : ''}`}
+            title="Actions"
+          >
+            …
+          </button>
+          {menuOpen && (
+            <div className="lpv-cue-menu-dropdown">
+              <button onClick={handleCopy} className="lpv-cue-menu-item">📋 Copy</button>
+              <button onClick={handleSpeak} className="lpv-cue-menu-item">🔊 Speak</button>
+            </div>
+          )}
         </div>
       </div>
     );
