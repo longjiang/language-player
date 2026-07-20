@@ -319,7 +319,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
 
   return (
     <div className="lpv-dict-card" onClick={(e) => e.stopPropagation()}>
-      {/* Card header: word + pronunciation + save button + close */}
+      {/* Card header: word + pronunciation + save + close */}
       <div className="lpv-dict-card-header">
         <div className="lpv-dict-card-header-left">
           <span className="lpv-dict-card-word">{token.text}</span>
@@ -333,16 +333,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           )}
         </div>
         <div className="lpv-dict-card-header-right">
-          {isPro && (
-            <button
-              onClick={handleExplain}
-              disabled={explainLoading}
-              className={`lpv-explain-btn ${showExplain ? 'lpv-explain-btn-active' : ''}`}
-              title="AI Explanation (Pro)"
-            >
-              {explainLoading ? '…' : '🤖 Explain'}
-            </button>
-          )}
           {isLoggedIn && firstEntry && (
             <button
               onClick={handleSave}
@@ -358,6 +348,20 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Explain button — separate row below header, matching popup dictionary layout */}
+      {isPro && (
+        <div className="lpv-explain-bar">
+          <button
+            onClick={handleExplain}
+            disabled={explainLoading}
+            className={`lpv-explain-btn ${showExplain ? 'lpv-explain-btn-active' : ''}`}
+            title="AI Explanation (Pro)"
+          >
+            {explainLoading ? '…' : '🤖 Explain'}
+          </button>
+        </div>
+      )}
 
       {/* Card body */}
       <div className="lpv-dict-card-body">
