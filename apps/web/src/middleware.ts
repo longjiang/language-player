@@ -32,17 +32,30 @@ function detectLocale(request: NextRequest): string | null {
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Allow static assets, auth API, public API routes, and OG image
+  // Allow static assets, auth API, public API routes, OG image, docs, and about
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/videos') ||
     pathname.startsWith('/api/channels') ||
     pathname.startsWith('/og') ||
+    pathname.startsWith('/about') ||
+    pathname.startsWith('/docs') ||
     pathname.startsWith('/favicon') ||
     /\.(ico|png|jpg|jpeg|svg|css|js)$/.test(pathname)
   ) {
-    return NextResponse.next();
+    // Set NEXT_LOCALE so i18n works on these pages
+    const l1Cookie = req.cookies.get('l1');
+    const response = NextResponse.next();
+    if (l1Cookie?.value && SUPPORTED_L1S.includes(l1Cookie.value as any)) {
+      response.cookies.set('NEXT_LOCALE', l1Cookie.value, { path: '/', maxAge: 365 * 24 * 60 * 60 });
+    } else {
+      const detected = detectLocale(req);
+      if (detected) {
+        response.cookies.set('NEXT_LOCALE', detected, { path: '/', maxAge: 365 * 24 * 60 * 60 });
+      }
+    }
+    return response;
   }
 
   // Check auth via session cookie (NextAuth sets this)
