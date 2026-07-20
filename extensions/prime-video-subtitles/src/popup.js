@@ -36,18 +36,18 @@ document.addEventListener('DOMContentLoaded', function() {
     authError.classList.add('hidden');
 
     try {
-      const res = await fetch(`${DIRECTUS_URL}/auth/login`, {
+      const res = await fetch(`${DIRECTUS_URL}/auth/authenticate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.errors?.[0]?.message || `Login failed (${res.status})`);
+        throw new Error(err.errors?.[0]?.message || err.message || `Login failed (${res.status})`);
       }
       const data = await res.json();
-      const token = data.data?.access_token;
-      if (!token) throw new Error('No access token');
+      const token = data.data?.token;
+      if (!token) throw new Error('No token in response');
 
       const payload = JSON.parse(atob(token.split('.')[1]));
       await chrome.storage.local.set({
