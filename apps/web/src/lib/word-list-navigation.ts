@@ -1,5 +1,6 @@
 import type { SavedLexicalItemRecord } from '@langplayer/shared';
 import { buildEntryRoute } from '@/lib/entry-route';
+import { decomposeWordId } from '@/lib/word-id-resolver';
 
 /**
  * Lightweight word list item stored in sessionStorage for cross-page navigation.
@@ -86,15 +87,14 @@ export function buildEntryRouteWithList(
 
 /**
  * Convert a SavedLexicalItemRecord to a WordListNavItem.
+ * Uses decomposeWordId to extract dictionary and entry IDs from the raw word ID.
  */
-export function savedWordToNavItem(w: SavedLexicalItemRecord): WordListNavItem {
-  const dashIdx = w.id.indexOf('-');
-  const dictionaryId = dashIdx > 0 ? w.id.slice(0, dashIdx) : 'unknown';
-  const entryId = dashIdx > 0 ? w.id.slice(dashIdx + 1) : w.id;
+export function savedWordToNavItem(w: SavedLexicalItemRecord, l2: string): WordListNavItem {
+  const decomposed = decomposeWordId(w.id, l2);
   return {
     head: w.forms[0] ?? '',
-    dictionaryId,
-    entryId,
+    dictionaryId: decomposed?.dict ?? 'unknown',
+    entryId: decomposed?.id ?? w.id,
     id: w.id,
   };
 }

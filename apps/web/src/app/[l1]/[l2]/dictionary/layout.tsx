@@ -12,6 +12,7 @@ import { SavedWordRow } from '@/components/dictionary/saved-word-row';
 import { WordListItem } from '@/components/dictionary/word-list';
 import { SaveButton } from '@/components/save-button';
 import { buildEntryRoute } from '@/lib/entry-route';
+import { decomposeWordId } from '@/lib/word-id-resolver';
 import type { WordListNavItem as Wlni } from '@/lib/word-list-navigation';
 import { BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -46,11 +47,10 @@ function DictionaryLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   const handleSavedWordClick = (word: SavedLexicalItemRecord) => {
-    const dashIdx = word.id.indexOf('-');
-    const dictId = dashIdx > 0 ? word.id.slice(0, dashIdx) : 'llm';
-    const entryId = dashIdx > 0 ? word.id.slice(dashIdx + 1) : word.id;
+    const decomposed = decomposeWordId(word.id, l2.code);
+    if (!decomposed) return;
     setDetailHead(word.forms[0] ?? '');
-    const route = buildEntryRoute(l1.code, l2.code, dictId, entryId);
+    const route = buildEntryRoute(l1.code, l2.code, decomposed.dict, decomposed.id);
     router.push(route);
   };
 

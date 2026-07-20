@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { WordList } from '@/components/dictionary/word-list';
 import { SavedWordRow } from '@/components/dictionary/saved-word-row';
 import { setWordListNav, savedWordToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
+import { decomposeWordId } from '@/lib/word-id-resolver';
 import type { SavedLexicalItemRecord, SrsFields } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 
@@ -133,29 +134,17 @@ export default function SavedWordsPage() {
     }
   };
 
-  /** Navigate to the entry detail page for a saved word, with legacy fallback. */
+  /** Navigate to the entry detail page for a saved word. */
   const handleWordClick = (word: SavedLexicalItemRecord) => {
     // Store the full saved-words list so the entry page can show a sidebar
-    setWordListNav(words.map(savedWordToNavItem), word.id);
+    setWordListNav(words.map(w => savedWordToNavItem(w, l2.code)), word.id);
 
-    const dashIdx = word.id.indexOf('-');
-    if (dashIdx > 0) {
-      const dictId = word.id.slice(0, dashIdx);
-      const entryId = word.id.slice(dashIdx + 1);
-      router.push(buildEntryRouteWithList(l1.code, l2.code, dictId, entryId, word.id));
+    const decomposed = decomposeWordId(word.id, l2.code);
+    if (decomposed) {
+      router.push(buildEntryRouteWithList(l1.code, l2.code, decomposed.dict, decomposed.id, word.id));
     } else {
-      // Detect dictionary from ID pattern when no dash prefix
-      let dictId: string | null = null;
-      let entryId = word.id;
-      if (/^w\d+$/.test(word.id)) {
-        dictId = 'wiktionary';
-      }
-      if (dictId) {
-        router.push(buildEntryRouteWithList(l1.code, l2.code, dictId, entryId, word.id));
-      } else {
-        // Legacy fallback: search by first form
-        router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(word.forms[0] ?? '')}`);
-      }
+      // Unrecognized ID format — fall back to search by first form
+      router.push(`/${l1.code}/${l2.code}/dictionary?q=${encodeURIComponent(word.forms[0] ?? '')}`);
     }
   };
 
