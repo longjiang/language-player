@@ -51,6 +51,51 @@ function levelLabel(scale: string, value: string | number): string {
   return formatLevel({ scale, value } as ProficiencyLevel).long;
 }
 
+// ── Simple Markdown Renderer ────────────────────────────────────────────────
+
+/** Convert basic markdown to HTML. Handles bold, italic, code, lists, headers. */
+function renderMarkdown(text: string): string {
+  let html = text
+    // Escape HTML entities first
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    // Code blocks (``` ... ```)
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    // Inline code (`...`)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // Bold (**...**)
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    // Italic (*...*)
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    // Headers (### ...)
+    .replace(/^### (.+)$/gm, '<h4>$1</h4>')
+    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^# (.+)$/gm, '<h2>$1</h2>')
+    // Unordered list items (- ... or * ...)
+    .replace(/^[\-\*] (.+)$/gm, '<li>$1</li>')
+    // Wrap consecutive <li> in <ul>
+    .replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>')
+    // Line breaks
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br/>');
+
+  // Wrap in paragraph if not already
+  if (!html.startsWith('<')) {
+    html = '<p>' + html + '</p>';
+  }
+
+  return html;
+}
+
+const Markdown: React.FC<{ text: string }> = React.memo(({ text }) => (
+  <div
+    className="lpv-markdown"
+    dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}
+  />
+));
+Markdown.displayName = 'Markdown';
+
 // ── Entry Row ──────────────────────────────────────────────────────────────
 
 interface EntryRowProps {
@@ -234,11 +279,25 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     setExplainError(null);
 
     try {
-      const prompt = `Explain the word "${token.text}" in ${l2Code}. Include:
-1. Meaning and usage
-2. Example sentences
-3. Any cultural notes or nuances
-Keep it concise (2-3 paragraphs). Respond in plain text.`;
+      // Build prompt matching the web app's AiExplanation component
+      const l1Name = l1Code.toUpperCase();
+      const l2Name = l2Code.toUpperCase();
+      const code = l2Code;
+
+      let prompt: string;
+      if (contextText && token.text !== token.lemmas[0]?.lemma) {
+        prompt = `Succinctly explain using ${l1Name}, what the ${l2Name} (${code}) word ${token.lemmas[0]?.lemma || token.text} (inflected form: ${token.text}) means in the phrase: ${contextText}.`;
+      } else if (contextText) {
+        prompt = `Succinctly explain using ${l1Name}, what the ${l2Name} (${code}) word ${token.text} means in the phrase: ${contextText}.`;
+      } else {
+        prompt = `Succinctly explain using ${l1Name}, what the ${l2Name} (${code}) word ${token.text} means.`;
+      }
+
+      // Add morphology for inflecting languages
+      const nonInflecting = ['zh', 'vi', 'th', 'lo', 'km'];
+      if (!nonInflecting.includes(code)) {
+        prompt += ' Give its pronunciation and morphology (or etymology if appropriate). If inflected, give its lemma and inflection; otherwise do not mention inflection or lemma.';
+      }
 
       const res = await fetch(`${API_BASE}/chatgpt`, {
         method: 'POST',
@@ -254,7 +313,7 @@ Keep it concise (2-3 paragraphs). Respond in plain text.`;
     } finally {
       setExplainLoading(false);
     }
-  }, [showExplain, explainText, explainError, token.text, l2Code]);
+  }, [showExplain, explainText, explainError, token, l1Code, l2Code, contextText]);
 
   const webAppUrl = `${WEB_APP}/dictionary/llm/${encodeURIComponent(token.text)}`;
 
@@ -312,7 +371,7 @@ Keep it concise (2-3 paragraphs). Respond in plain text.`;
               <div className="lpv-explain-error">{explainError}</div>
             )}
             {explainText && (
-              <div className="lpv-explain-text">{explainText}</div>
+              <Markdown text={explainText} />
             )}
           </div>
         )}

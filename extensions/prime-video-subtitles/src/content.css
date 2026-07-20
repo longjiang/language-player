@@ -539,6 +539,71 @@ body.lpv-panel-open .dv-player-fullscreen {
   white-space: pre-wrap;
 }
 
+/* ── Markdown content ────────────────────────────────────────────────── */
+
+.lpv-markdown p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.7;
+}
+
+.lpv-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.lpv-markdown strong {
+  color: #eee;
+  font-weight: 600;
+}
+
+.lpv-markdown em {
+  color: #bbb;
+}
+
+.lpv-markdown code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 12px;
+  color: #a78bfa;
+}
+
+.lpv-markdown pre {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 6px 0;
+}
+
+.lpv-markdown pre code {
+  background: none;
+  padding: 0;
+  color: #ccc;
+}
+
+.lpv-markdown h2, .lpv-markdown h3, .lpv-markdown h4 {
+  margin: 10px 0 4px;
+  color: #ddd;
+  font-weight: 600;
+}
+
+.lpv-markdown h2 { font-size: 15px; }
+.lpv-markdown h3 { font-size: 14px; }
+.lpv-markdown h4 { font-size: 13px; }
+
+.lpv-markdown ul {
+  margin: 4px 0;
+  padding-left: 16px;
+}
+
+.lpv-markdown li {
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.6;
+}
+
 .lpv-dict-card-word {
   font-size: 18px;
   font-weight: 700;
