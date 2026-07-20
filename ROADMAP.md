@@ -76,10 +76,12 @@
 - ✅ TV Shows page
 - ✅ Live TV page
 - ✅ Reader and Notes
-- ⬜ ePub Reader
-- ⬜ Phrasebooks
-- ⬜ Music page
-- ⬜ Learning path / Level system
+- ✅ Music page
+- ✅ Level system
+- ⬜ Learning path
+- ⬜ Documentation / Help
+- ⬜ ePub Reader (Will Sunset)
+- ⬜ Phrasebooks (Will Sunset)
 
 ## Phase 6: User Features
 
