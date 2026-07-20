@@ -230,6 +230,48 @@ body.lpv-panel-open .dv-player-fullscreen {
   padding: 24px;
 }
 
+/* ── Tokenized Text ────────────────────────────────────────────────────── */
+
+/* Each clickable word token */
+.lpv-token {
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.1s, color 0.1s;
+}
+
+.lpv-token:hover {
+  background: rgba(0, 168, 225, 0.2);
+}
+
+.lpv-token-active {
+  /* Tokens inside the active (currently playing) subtitle line */
+}
+
+.lpv-cue-text {
+  font-size: 14px;
+  color: #bbb;
+  line-height: 1.8; /* extra space for ruby text */
+}
+
+.lpv-cue.lpv-active .lpv-cue-text {
+  color: #ddd;
+}
+
+/* Ruby text (furigana / pinyin) */
+.lpv-token ruby {
+  ruby-align: center;
+}
+
+.lpv-token rt {
+  font-size: 0.55em;
+  color: #888;
+  user-select: none;
+}
+
+.lpv-cue.lpv-active .lpv-token rt {
+  color: #aaa;
+}
+
 /* ── Responsive: smaller screens ───────────────────────────────────────── */
 
 @media (max-width: 600px) {
