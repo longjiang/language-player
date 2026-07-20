@@ -462,21 +462,46 @@ async function fetchYTTrack(track) {
   try {
     updateStatus('Loading subtitles...');
 
-    // Ensure URL is absolute (YouTube sometimes uses protocol-relative or relative)
+    // Ensure URL is absolute
     let url = track.baseUrl;
     if (url.startsWith('//')) url = 'https:' + url;
     else if (url.startsWith('/')) url = 'https://www.youtube.com' + url;
 
     console.log('[LanguagePlayer] Fetching track URL:', url);
-    const response = await fetch(url);
+    let response = await fetch(url);
     console.log('[LanguagePlayer] Response status:', response.status, 'content-type:', response.headers.get('content-type'));
+
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-    const xmlText = await response.text();
-    console.log('[LanguagePlayer] Response length:', xmlText.length, 'chars');
-    console.log('[LanguagePlayer] Timedtext response preview:', xmlText.substring(0, 200));
+    let text = await response.text();
+    let cues;
 
-    const cues = parseYTTimedText(xmlText);
+    if (text.length === 0) {
+      // YouTube's signed URL returned empty — fall back to simple unsigned URL
+      const videoId = getYTVideoId();
+      const lang = track.languageCode || 'en';
+      const fallbackUrl = `https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`;
+      console.log('[LanguagePlayer] BaseUrl returned empty, trying fallback:', fallbackUrl);
+      response = await fetch(fallbackUrl);
+      if (!response.ok) throw new Error(`Fallback HTTP ${response.status}`);
+      text = await response.text();
+      if (text.length === 0) {
+        console.log('[LanguagePlayer] Fallback also empty');
+        return;
+      }
+      cues = parseYTJSON3(text);
+    } else if (text.trim().startsWith('<')) {
+      // XML format (TTML / timedtext XML)
+      cues = parseYTTimedText(text);
+    } else {
+      // Try JSON3 format
+      try {
+        cues = parseYTJSON3(text);
+      } catch {
+        cues = parseYTTimedText(text);
+      }
+    }
+
     console.log('[LanguagePlayer] Parsed', cues.length, 'cues');
 
     STATE.cues = cues;
@@ -484,7 +509,6 @@ async function fetchYTTrack(track) {
 
     if (track.languageCode) {
       detectedL2Code = track.languageCode.split('-')[0];
-      // Update dropdown to reflect detected language
       if (l2SelectEl) l2SelectEl.value = detectedL2Code;
     }
     tryDetectL2FromCues(cues);
@@ -496,7 +520,7 @@ async function fetchYTTrack(track) {
         setPanelVisible(true);
       }
     } else {
-      console.log('[LanguagePlayer] No cues parsed — check the XML format');
+      console.log('[LanguagePlayer] No cues parsed');
     }
     setBadge(true);
     updateStatus(`${cues.length} subtitle entries loaded`);
@@ -504,6 +528,26 @@ async function fetchYTTrack(track) {
     console.error('[LanguagePlayer] Failed to fetch YouTube subtitles:', err);
     updateStatus('Failed to load subtitles');
   }
+}
+
+/** Parse YouTube JSON3 timedtext format */
+function parseYTJSON3(jsonText) {
+  const data = JSON.parse(jsonText);
+  const cues = [];
+  const events = data?.events || [];
+
+  for (const ev of events) {
+    const start = (ev.tStartMs || 0) / 1000;
+    const dur = (ev.dDurationMs || 0) / 1000;
+    const segs = ev.segs || [];
+    const text = segs.map(s => s.utf8 || '').join('').trim();
+    if (text && dur > 0) {
+      cues.push({ start, end: start + dur, text: decodeEntities(stripTags(text)) });
+    }
+  }
+
+  cues.sort((a, b) => a.start - b.start);
+  return cues;
 }
 
 /** Load YouTube subtitles — discover tracks and pick the best one */
