@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useDictionaryContext } from '@/providers/dictionary-provider';
 import { useT } from '@/hooks/use-t';
@@ -38,8 +38,9 @@ export default function DictionaryEntryPage() {
   }>();
   const { l1, l2 } = useLanguage();
   const t = useT();
+  const searchParams = useSearchParams();
 
-  const { setDetailHead } = useDictionaryContext();
+  const { setDetailHead, setSidebarSource } = useDictionaryContext();
 
   const [entry, setEntry] = useState<DictionaryEntry | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,6 +77,13 @@ export default function DictionaryEntryPage() {
   useEffect(() => {
     fetchEntry();
   }, [fetchEntry]);
+
+  // If reached from saved-words page (has ?listCurrent= param), show saved words in sidebar
+  useEffect(() => {
+    if (searchParams.get('listCurrent')) {
+      setSidebarSource({ kind: 'saved' });
+    }
+  }, [searchParams, setSidebarSource]);
 
   const levelLabel = (scale: string, value: string | number) =>
     formatLevel({ scale, value } as ProficiencyLevel).long;
