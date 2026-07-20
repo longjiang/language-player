@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { List } from 'lucide-react';
+import { List, ChevronDown } from 'lucide-react';
 
 interface TocItem {
   level: number;
@@ -13,6 +13,69 @@ interface TocItem {
 interface DocMeta {
   slug: string;
   title: string;
+  children?: DocMeta[];
+}
+
+/** Renders a doc link (leaf node) with optional active highlight. */
+function DocLink({ href, title, active, onClick }: { href: string; title: string; active: boolean; onClick: () => void }) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`block rounded px-2 py-1.5 text-sm transition-colors ${
+        active
+          ? 'bg-primary/10 text-primary font-medium'
+          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+      }`}
+    >
+      {title}
+    </Link>
+  );
+}
+
+/** Renders a category node (expandable). Auto-expands if any child is active. */
+function DocCategory({ category, l1, l2, currentSlug, onClick }: {
+  category: DocMeta;
+  l1: string;
+  l2: string;
+  currentSlug: string;
+  onClick: () => void;
+}) {
+  const hasActiveChild = category.children?.some(
+    c => c.slug === currentSlug || c.children?.some(cc => cc.slug === currentSlug)
+  );
+  const [expanded, setExpanded] = useState(!!hasActiveChild);
+
+  return (
+    <div>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex w-full items-center gap-1 rounded px-2 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+      >
+        <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform ${expanded ? '' : '-rotate-90'}`} />
+        {category.title}
+      </button>
+      {expanded && category.children && (
+        <ul className="ml-3 mt-0.5 space-y-0.5 border-l border-border/50 pl-2">
+          {category.children.map(child => {
+            if (child.children && child.children.length > 0) {
+              return (
+                <li key={child.slug}>
+                  <DocCategory category={child} l1={l1} l2={l2} currentSlug={currentSlug} onClick={onClick} />
+                </li>
+              );
+            }
+            const href = `/${l1}/${l2}/docs/${child.slug}`;
+            return (
+              <li key={child.slug}>
+                <DocLink href={href} title={child.title} active={child.slug === currentSlug} onClick={onClick} />
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 export function DocSidebar({ toc, docs, l1, l2, currentSlug }: {
@@ -30,7 +93,6 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug }: {
 
   return (
     <>
-      {/* Toggle button — visible on narrow screens */}
       <button
         onClick={() => setOpen(!open)}
         className="fixed bottom-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg xl:hidden"
@@ -39,7 +101,6 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug }: {
         <List className="h-5 w-5" />
       </button>
 
-      {/* Overlay — narrow screens only, below header */}
       {open && (
         <div
           className="fixed inset-0 top-14 z-40 bg-black/30 xl:hidden"
@@ -47,7 +108,6 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug }: {
         />
       )}
 
-      {/* Sidebar panel */}
       <aside
         className={`
           fixed top-14 right-0 bottom-0 z-40 w-64 overflow-y-auto border-l border-border bg-background p-4 shadow-lg
@@ -56,47 +116,53 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug }: {
           ${open ? 'translate-x-0' : 'translate-x-full xl:translate-x-0'}
         `}
       >
-        <nav>
-          <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Table of contents
-          </h4>
-          <ul className="space-y-0.5">
-            {docs.map((doc) => {
-              const isCurrent = doc.slug === currentSlug;
-              return (
-                <li key={doc.slug}>
-                  <Link
-                    href={`/${l1}/${l2}/docs/${doc.slug}`}
-                    onClick={close}
-                    className={`block rounded px-2 py-1.5 text-sm transition-colors ${
-                      isCurrent
-                        ? 'bg-primary/10 text-primary font-medium'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                  >
-                    {doc.title}
-                  </Link>
-                  {/* Expand headings for current doc */}
-                  {isCurrent && toc.length > 0 && (
-                    <ul className="mt-0.5 mb-1 space-y-0.5">
-                      {toc.map((item) => (
-                        <li key={item.id}>
-                          <a
-                            href={`#${item.id}`}
-                            onClick={close}
-                            className="block rounded px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            style={{ paddingLeft: `${(item.level - 1) * 0.75 + 0.25}rem` }}
-                          >
-                            {item.text}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+        <nav className="space-y-4">
+          {/* All docs tree */}
+          <div>
+            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Table of contents
+            </h4>
+            <ul className="space-y-0.5">
+              {docs.map(doc => {
+                if (doc.children && doc.children.length > 0) {
+                  return (
+                    <li key={doc.slug}>
+                      <DocCategory category={doc} l1={l1} l2={l2} currentSlug={currentSlug} onClick={close} />
+                    </li>
+                  );
+                }
+                const href = `/${l1}/${l2}/docs/${doc.slug}`;
+                return (
+                  <li key={doc.slug}>
+                    <DocLink href={href} title={doc.title} active={doc.slug === currentSlug} onClick={close} />
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {/* On this page headings */}
+          {toc.length > 0 && (
+            <div>
+              <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                On this page
+              </h4>
+              <ul className="space-y-0.5 border-l border-border/50 pl-2">
+                {toc.map((item) => (
+                  <li key={item.id}>
+                    <a
+                      href={`#${item.id}`}
+                      onClick={close}
+                      className="block rounded px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      style={{ paddingLeft: `${(item.level - 2) * 0.75 + 0.25}rem` }}
+                    >
+                      {item.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </nav>
       </aside>
     </>

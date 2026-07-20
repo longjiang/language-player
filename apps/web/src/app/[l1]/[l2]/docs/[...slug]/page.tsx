@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { readFileSync, readdirSync } from 'fs';
-import { resolve } from 'path';
+import { readFileSync, readdirSync, statSync } from 'fs';
+import { resolve, join } from 'path';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { DocSidebar } from '../doc-sidebar';
 
 interface Props {
-  params: { l1: string; l2: string; slug: string };
+  params: { l1: string; l2: string; slug: string[] };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -20,14 +20,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title };
 }
 
-function getDoc(slug: string): { content: string } | null {
+function getDoc(slug: string[]): { content: string } | null {
+  const relativePath = slug.join('/');
   const possibleDirs = [
     resolve(process.cwd(), 'apps/web/content/docs'),
     resolve(process.cwd(), 'content/docs'),
   ];
   for (const docsDir of possibleDirs) {
     try {
-      const filePath = resolve(docsDir, `${slug}.md`);
+      const filePath = resolve(docsDir, `${relativePath}.md`);
       return { content: readFileSync(filePath, 'utf-8') };
     } catch { /* try next */ }
   }
@@ -37,9 +38,50 @@ function getDoc(slug: string): { content: string } | null {
 interface DocMeta {
   slug: string;
   title: string;
+  children?: DocMeta[];
 }
 
-/** Read all .md files and extract titles. */
+/** Recursively read docs from a directory. Returns a sorted tree. */
+function readDocsTree(dir: string, basePath: string = ''): DocMeta[] {
+  const entries = readdirSync(dir);
+  const items: DocMeta[] = [];
+  const dirs: DocMeta[] = [];
+
+  for (const entry of entries) {
+    const fullPath = join(dir, entry);
+    const stat = statSync(fullPath);
+    if (stat.isDirectory()) {
+      const children = readDocsTree(fullPath, entry);
+      if (children.length > 0) {
+        dirs.push({ slug: entry, title: categoryLabel(entry), children });
+      }
+    } else if (entry.endsWith('.md')) {
+      const content = readFileSync(fullPath, 'utf-8');
+      const match = content.match(/^# (.+)$/m);
+      const slug = basePath ? `${basePath}/${entry.replace(/\.md$/, '')}` : entry.replace(/\.md$/, '');
+      const title: string = match?.[1] ?? entry.replace(/\.md$/, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      items.push({ slug, title });
+    }
+  }
+
+  // Sort: root items first (alphabetical), then directories (alphabetical)
+  items.sort((a, b) => a.title.localeCompare(b.title));
+  dirs.sort((a, b) => a.title.localeCompare(b.title));
+
+  return [...items, ...dirs];
+}
+
+function categoryLabel(slug: string): string {
+  const labels: Record<string, string> = {
+    media: 'Media',
+    reading: 'Reading',
+    vocab: 'Vocab',
+    account: 'Account',
+    interface: 'Interface',
+  };
+  return labels[slug] ?? slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function getAllDocs(): DocMeta[] {
   const possibleDirs = [
     resolve(process.cwd(), 'apps/web/content/docs'),
@@ -47,16 +89,7 @@ function getAllDocs(): DocMeta[] {
   ];
   for (const docsDir of possibleDirs) {
     try {
-      const files = readdirSync(docsDir).filter(f => f.endsWith('.md'));
-      return files
-        .map(f => {
-          const slug = f.replace(/\.md$/, '');
-          const content = readFileSync(resolve(docsDir, f), 'utf-8');
-          const match = content.match(/^# (.+)$/m);
-          const title: string = match?.[1] ?? slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-          return { slug, title };
-        })
-        .sort((a, b) => a.title.localeCompare(b.title));
+      return readDocsTree(docsDir);
     } catch { /* try next */ }
   }
   return [];
@@ -97,6 +130,7 @@ export default function DocPage({ params }: Props) {
   const { l1, l2, slug } = params;
   const doc = getDoc(slug);
   const docs = getAllDocs();
+  const currentSlug = slug.join('/');
 
   if (!doc) {
     notFound();
@@ -131,7 +165,7 @@ export default function DocPage({ params }: Props) {
       </article>
 
       {/* Sidebar TOC */}
-      <DocSidebar toc={toc} docs={docs} l1={l1} l2={l2} currentSlug={slug} />
+      <DocSidebar toc={toc} docs={docs} l1={l1} l2={l2} currentSlug={currentSlug} />
     </div>
   );
 }
