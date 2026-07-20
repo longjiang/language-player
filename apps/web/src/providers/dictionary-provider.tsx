@@ -122,13 +122,24 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     searchedRef.current = false;
   }, [l2.code]);
 
-  // Auto-search from ?q= param on first load
+  // Auto-search from ?q= param on first load; reset if no query
   useEffect(() => {
     const q = searchParams.get('q');
     if (q && !searchedRef.current) {
       searchedRef.current = true;
       setQuery(q);
       setTimeout(() => { doSearch(q); }, 100);
+    } else if (!q && searchedRef.current) {
+      // Navigated back to dictionary without query — reset to empty state
+      searchedRef.current = false;
+      setQuery('');
+      setResults(null);
+      setMessage(null);
+      setError(null);
+      setSearchedText('');
+      setCameFromSearch(false);
+      setSidebarSource({ kind: 'saved' });
+      setDetailHead(null);
     }
   }, [searchParams]);
 
