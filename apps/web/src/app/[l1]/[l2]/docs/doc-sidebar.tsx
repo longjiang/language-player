@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { List } from 'lucide-react';
 
 interface TocItem {
@@ -9,10 +10,23 @@ interface TocItem {
   id: string;
 }
 
-export function DocSidebar({ toc }: { toc: TocItem[] }) {
+interface DocMeta {
+  slug: string;
+  title: string;
+}
+
+export function DocSidebar({ toc, docs, l1, l2, currentSlug }: {
+  toc: TocItem[];
+  docs: DocMeta[];
+  l1: string;
+  l2: string;
+  currentSlug: string;
+}) {
   const [open, setOpen] = useState(false);
 
-  if (toc.length === 0) return null;
+  if (toc.length === 0 && docs.length === 0) return null;
+
+  const close = () => setOpen(false);
 
   return (
     <>
@@ -29,7 +43,7 @@ export function DocSidebar({ toc }: { toc: TocItem[] }) {
       {open && (
         <div
           className="fixed inset-0 top-14 z-40 bg-black/30 xl:hidden"
-          onClick={() => setOpen(false)}
+          onClick={close}
         />
       )}
 
@@ -42,25 +56,46 @@ export function DocSidebar({ toc }: { toc: TocItem[] }) {
           ${open ? 'translate-x-0' : 'translate-x-full xl:translate-x-0'}
         `}
       >
-        {/* Header */}
-        <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          On this page
-        </h4>
-
         <nav>
-          <ul className="space-y-1">
-            {toc.map((item) => (
-              <li key={item.id}>
-                <a
-                  href={`#${item.id}`}
-                  onClick={() => setOpen(false)}
-                  className="block rounded px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  style={{ paddingLeft: item.level === 3 ? '1.25rem' : '0.25rem' }}
-                >
-                  {item.text}
-                </a>
-              </li>
-            ))}
+          <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Table of contents
+          </h4>
+          <ul className="space-y-0.5">
+            {docs.map((doc) => {
+              const isCurrent = doc.slug === currentSlug;
+              return (
+                <li key={doc.slug}>
+                  <Link
+                    href={`/${l1}/${l2}/docs/${doc.slug}`}
+                    onClick={close}
+                    className={`block rounded px-2 py-1.5 text-sm transition-colors ${
+                      isCurrent
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    {doc.title}
+                  </Link>
+                  {/* Expand headings for current doc */}
+                  {isCurrent && toc.length > 0 && (
+                    <ul className="mt-0.5 mb-1 space-y-0.5">
+                      {toc.map((item) => (
+                        <li key={item.id}>
+                          <a
+                            href={`#${item.id}`}
+                            onClick={close}
+                            className="block rounded px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            style={{ paddingLeft: `${(item.level - 1) * 0.75 + 0.25}rem` }}
+                          >
+                            {item.text}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </aside>

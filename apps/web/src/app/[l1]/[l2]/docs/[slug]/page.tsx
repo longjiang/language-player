@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -32,6 +32,34 @@ function getDoc(slug: string): { content: string } | null {
     } catch { /* try next */ }
   }
   return null;
+}
+
+interface DocMeta {
+  slug: string;
+  title: string;
+}
+
+/** Read all .md files and extract titles. */
+function getAllDocs(): DocMeta[] {
+  const possibleDirs = [
+    resolve(process.cwd(), 'apps/web/content/docs'),
+    resolve(process.cwd(), 'content/docs'),
+  ];
+  for (const docsDir of possibleDirs) {
+    try {
+      const files = readdirSync(docsDir).filter(f => f.endsWith('.md'));
+      return files
+        .map(f => {
+          const slug = f.replace(/\.md$/, '');
+          const content = readFileSync(resolve(docsDir, f), 'utf-8');
+          const match = content.match(/^# (.+)$/m);
+          const title: string = match?.[1] ?? slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          return { slug, title };
+        })
+        .sort((a, b) => a.title.localeCompare(b.title));
+    } catch { /* try next */ }
+  }
+  return [];
 }
 
 /** Slugify a heading for use as an anchor ID (matches rehype-slug behaviour). */
@@ -68,6 +96,7 @@ function extractToc(markdown: string): TocItem[] {
 export default function DocPage({ params }: Props) {
   const { l1, l2, slug } = params;
   const doc = getDoc(slug);
+  const docs = getAllDocs();
 
   if (!doc) {
     notFound();
@@ -102,7 +131,7 @@ export default function DocPage({ params }: Props) {
       </article>
 
       {/* Sidebar TOC */}
-      <DocSidebar toc={toc} />
+      <DocSidebar toc={toc} docs={docs} l1={l1} l2={l2} currentSlug={slug} />
     </div>
   );
 }
