@@ -292,40 +292,72 @@ body.lpv-panel-open .dv-player-fullscreen {
   color: #999;
 }
 
-/* ── Cue Action Buttons (copy, speak) ────────────────────────────────── */
+/* ── Cue Menu (… popup) ─────────────────────────────────────────────── */
 
-.lpv-cue-actions {
-  display: flex;
-  gap: 2px;
-  opacity: 0;
-  transition: opacity 0.15s;
+.lpv-cue-menu {
+  position: relative;
   flex-shrink: 0;
   align-self: flex-start;
-  margin-top: 2px;
 }
 
-.lpv-cue:hover .lpv-cue-actions,
-.lpv-cue.lpv-active .lpv-cue-actions {
-  opacity: 1;
-}
-
-.lpv-cue-action-btn {
-  width: 24px;
-  height: 24px;
+.lpv-cue-menu-btn {
+  width: 20px;
+  height: 20px;
   padding: 0;
   border: none;
   border-radius: 4px;
   background: transparent;
-  font-size: 12px;
+  color: #555;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+.lpv-cue:hover .lpv-cue-menu-btn,
+.lpv-cue.lpv-active .lpv-cue-menu-btn,
+.lpv-cue-menu-btn-open {
+  opacity: 1;
+}
+
+.lpv-cue-menu-btn:hover,
+.lpv-cue-menu-btn-open {
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.lpv-cue-menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 20;
+  min-width: 120px;
+  margin-top: 2px;
+  background: #1a242f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.lpv-cue-menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  color: #bbb;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
   transition: background 0.1s;
 }
 
-.lpv-cue-action-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+.lpv-cue-menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
 }
 
 /* ── Control Bar (translate toggle) ──────────────────────────────────── */
@@ -453,6 +485,58 @@ body.lpv-panel-open .dv-player-fullscreen {
 
 .lpv-save-btn-saved:hover {
   background: rgba(255, 193, 7, 0.2);
+}
+
+.lpv-explain-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #a78bfa;
+  background: transparent;
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lpv-explain-btn:hover {
+  background: rgba(167, 139, 250, 0.15);
+}
+
+.lpv-explain-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.lpv-explain-btn-active {
+  background: rgba(167, 139, 250, 0.15);
+}
+
+/* ── AI Explanation Section ─────────────────────────────────────────── */
+
+.lpv-explain-section {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(167, 139, 250, 0.04);
+}
+
+.lpv-explain-loading {
+  font-size: 13px;
+  color: #a78bfa;
+  animation: lpv-pulse 1.5s ease-in-out infinite;
+}
+
+.lpv-explain-error {
+  font-size: 13px;
+  color: #e05555;
+}
+
+.lpv-explain-text {
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.7;
+  white-space: pre-wrap;
 }
 
 .lpv-dict-card-word {
