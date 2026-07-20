@@ -11,7 +11,6 @@ import { AiExplanation } from './ai-explanation';
 import { SaveButton } from './save-button';
 import { useT } from '@/hooks/use-t';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
-import { resolveLegacyId } from '@/lib/legacy-word-resolver';
 import { baseCode } from '@/lib/language-data';
 import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -120,12 +119,6 @@ export function DictionaryPopup({
     if (loading || error) return [];
     const langWords = savedWords[l2Code] ?? [];
     const entryIds = new Set(entries.map((e) => e.id));
-    // Also include resolved legacy IDs in the match check
-    const resolvedIds = new Set<string>();
-    for (const e of entries) {
-      const resolved = resolveLegacyId(e.id);
-      if (resolved) resolvedIds.add(resolved);
-    }
 
     return langWords.filter((sw) => {
       // Check if this saved word's forms include the token text
@@ -133,10 +126,8 @@ export function DictionaryPopup({
         (f) => f.toLowerCase() === token.text.toLowerCase()
       );
       if (!formMatch) return false;
-      // Check if this saved word's ID matches any entry (direct or resolved)
+      // Check if this saved word's ID matches any entry (direct comparison — same ID scheme)
       if (entryIds.has(sw.id)) return false;
-      const resolved = resolveLegacyId(sw.id);
-      if (resolved && entryIds.has(resolved)) return false;
       return true;
     });
   }, [savedWords, l2Code, entries, token.text, loading, error]);
