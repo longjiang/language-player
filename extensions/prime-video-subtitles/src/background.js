@@ -114,6 +114,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             }
         });
         sendResponse({success: true});
+    } else if (request.action === "setBadge") {
+        updateBadgeForTab(sender.tab?.id, request.found);
+        sendResponse({success: true});
     }
     return true; // Keep message channel open for async response
 });
@@ -170,6 +173,14 @@ function updateBadge() {
   chrome.action.setBadgeText({ text: found ? BADGE_CHECK : '' });
   chrome.action.setBadgeTextColor({ color: '#ffffff' });
   chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR });
+}
+
+/** Per-tab badge (for YouTube where subs aren't detected via webRequest) */
+function updateBadgeForTab(tabId, found) {
+  if (!tabId) return;
+  chrome.action.setBadgeText({ text: found ? BADGE_CHECK : '', tabId });
+  chrome.action.setBadgeTextColor({ color: '#ffffff', tabId });
+  chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR, tabId });
 }
 
 function clearDetectedSubtitlesByTab(tabId) {

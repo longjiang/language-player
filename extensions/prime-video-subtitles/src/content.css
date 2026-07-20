@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
 
 /**
  * Prime Video Subtitle Viewer — Content Styles
@@ -105,9 +105,9 @@ body.lpv-panel-open .dv-player-fullscreen {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Nunito', 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Inter', 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   color: #fff;
 }
 
@@ -135,6 +135,63 @@ body.lpv-panel-open .dv-player-fullscreen {
 #lpv-close-btn:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* ── L2 Language Selector ──────────────────────────────────────────── */
+
+#lpv-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+#lpv-l2-select {
+  padding: 2px 6px;
+  font-family: 'Inter', 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  max-width: 130px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  padding-right: 20px;
+}
+
+#lpv-l2-select:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#lpv-l2-select:focus {
+  border-color: rgba(0, 168, 225, 0.5);
+}
+
+#lpv-l2-select:disabled {
+  opacity: 0.5;
+  cursor: default;
+  background-image: none;
+  padding-right: 6px;
+}
+
+/* ── YouTube: panel layout adjustments ─────────────────────────────── */
+
+/* On YouTube, don't shrink the player */
+body.lpv-panel-open #movie_player,
+body.lpv-panel-open ytd-watch-flexy {
+  /* YouTube player is responsive — let it be */
+}
+
+body.lpv-panel-open #lpv-toggle-btn {
+  right: 390px;
 }
 
 /* ── Status Bar ────────────────────────────────────────────────────────── */
