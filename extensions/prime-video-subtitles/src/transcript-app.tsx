@@ -434,13 +434,15 @@ Text: ${cue.text}`;
     <>
       {/* Control bar */}
       <div className="lpv-control-bar">
-        <button
-          onClick={() => setShowTranslation(!showTranslation)}
-          className={`lpv-control-btn ${showTranslation ? 'lpv-control-btn-active' : ''}`}
-          title="Toggle translation (L1)"
-        >
-          {showTranslation ? '🌐 Translation ON' : '🌐 Translate'}
-        </button>
+        <label className="lpv-translate-switch" title="Show translation (L1)">
+          <input
+            type="checkbox"
+            checked={showTranslation}
+            onChange={(e) => setShowTranslation(e.target.checked)}
+          />
+          <span className="lpv-switch-slider" />
+          <span className="lpv-switch-label">Translate</span>
+        </label>
         {translating && (
           <span className="lpv-control-status">
             Translating… {progress}/{cues.length}
