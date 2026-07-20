@@ -102,44 +102,97 @@ interface EntryRowProps {
   entry: DictionaryEntry;
   l1Code: string;
   l2Code: string;
+  tokenForm: string;
+  contextText?: string;
 }
 
-const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code }) => {
+const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, tokenForm, contextText }) => {
+  const { savedWords, saveWord, removeSavedWord, isLoggedIn } = useSavedWords();
+  const [saving, setSaving] = useState(false);
+
   const dictId = entry.dictionary?.id ?? 'llm';
   const webAppUrl = `${WEB_APP}/dictionary/${dictId}/${entry.id}`;
 
+  const isSaved = isLoggedIn && (savedWords[l2Code] || []).some(w => w.id === entry.id);
+
+  const handleSave = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!isLoggedIn) return;
+
+    setSaving(true);
+    try {
+      if (isSaved) {
+        removeSavedWord(l2Code, entry.id);
+      } else {
+        const allForms = await fetchInflectedForms(entry.head, l2Code);
+        saveWord(l2Code, {
+          id: entry.id,
+          forms: allForms,
+          date: Date.now(),
+          context: {
+            form: tokenForm,
+            text: contextText || tokenForm,
+          },
+          instances: [{
+            timestamp: Date.now(),
+            form: tokenForm,
+            context: {
+              form: tokenForm,
+              text: contextText || tokenForm,
+            },
+          }],
+        });
+      }
+    } finally {
+      setSaving(false);
+    }
+  }, [entry, isLoggedIn, isSaved, l2Code, tokenForm, contextText, saveWord, removeSavedWord]);
+
   return (
-    <a
-      href={webAppUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="lpv-dict-entry"
-    >
-      <div className="lpv-dict-entry-header">
-        <span className="lpv-dict-head">{entry.head}</span>
-        {entry.pronunciation && (
-          <span className="lpv-dict-pron-small">[{entry.pronunciation}]</span>
-        )}
-        {entry.part_of_speech && (
-          <span className="lpv-dict-pos">{entry.part_of_speech}</span>
-        )}
-        {entry.dictionary && (
-          <span className="lpv-dict-source">{entry.dictionary.name}</span>
-        )}
-      </div>
-      {entry.definitions && entry.definitions.length > 0 && (
-        <div className="lpv-dict-def">{entry.definitions.join('; ')}</div>
-      )}
-      {entry.levels && entry.levels.length > 0 && (
-        <div className="lpv-dict-levels">
-          {entry.levels.map((lvl, i) => (
-            <span key={i} className="lpv-dict-level">
-              {levelLabel(lvl.scale, lvl.value)}
-            </span>
-          ))}
+    <div className="lpv-dict-entry-row">
+      <a
+        href={webAppUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="lpv-dict-entry"
+      >
+        <div className="lpv-dict-entry-header">
+          <span className="lpv-dict-head">{entry.head}</span>
+          {entry.pronunciation && (
+            <span className="lpv-dict-pron-small">[{entry.pronunciation}]</span>
+          )}
+          {entry.part_of_speech && (
+            <span className="lpv-dict-pos">{entry.part_of_speech}</span>
+          )}
+          {entry.dictionary && (
+            <span className="lpv-dict-source">{entry.dictionary.name}</span>
+          )}
         </div>
+        {entry.definitions && entry.definitions.length > 0 && (
+          <div className="lpv-dict-def">{entry.definitions.join('; ')}</div>
+        )}
+        {entry.levels && entry.levels.length > 0 && (
+          <div className="lpv-dict-levels">
+            {entry.levels.map((lvl, i) => (
+              <span key={i} className="lpv-dict-level">
+                {levelLabel(lvl.scale, lvl.value)}
+              </span>
+            ))}
+          </div>
+        )}
+      </a>
+      {isLoggedIn && (
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className={`lpv-entry-save-btn ${isSaved ? 'lpv-entry-save-btn-saved' : ''}`}
+          title={isSaved ? 'Unsave' : 'Save word'}
+        >
+          {saving ? '…' : isSaved ? '★' : '☆'}
+        </button>
       )}
-    </a>
+    </div>
   );
 });
 EntryRow.displayName = 'EntryRow';
@@ -156,7 +209,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   const [entries, setEntries] = useState<DictionaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
 
   const { savedWords, saveWord, removeSavedWord, isLoggedIn } = useSavedWords();
   const { isPro, loading: subLoading } = useSubscription();
@@ -166,12 +218,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   const [explainLoading, setExplainLoading] = useState(false);
   const [explainError, setExplainError] = useState<string | null>(null);
   const [showExplain, setShowExplain] = useState(false);
-
-  // Check if any form of this token is already saved
-  const firstEntry = entries[0];
-  const isSaved = !!firstEntry && (savedWords[l2Code] || []).some(
-    w => w.id === firstEntry.id
-  );
 
   useEffect(() => {
     let cancelled = false;
@@ -233,37 +279,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
       controller.abort();
     };
   }, [token, l1Code, l2Code]);
-
-  const handleSave = useCallback(async () => {
-    if (!firstEntry || !isLoggedIn) return;
-    setSaving(true);
-    try {
-      if (isSaved) {
-        removeSavedWord(l2Code, firstEntry.id);
-      } else {
-        const allForms = await fetchInflectedForms(firstEntry.head, l2Code);
-        saveWord(l2Code, {
-          id: firstEntry.id,
-          forms: allForms,
-          date: Date.now(),
-          context: {
-            form: token.text,
-            text: contextText || token.text,
-          },
-          instances: [{
-            timestamp: Date.now(),
-            form: token.text,
-            context: {
-              form: token.text,
-              text: contextText || token.text,
-            },
-          }],
-        });
-      }
-    } finally {
-      setSaving(false);
-    }
-  }, [firstEntry, isLoggedIn, isSaved, l2Code, token, contextText, saveWord, removeSavedWord]);
 
   const handleExplain = useCallback(async () => {
     if (showExplain) {
@@ -333,16 +348,6 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           )}
         </div>
         <div className="lpv-dict-card-header-right">
-          {isLoggedIn && firstEntry && (
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className={`lpv-save-btn ${isSaved ? 'lpv-save-btn-saved' : ''}`}
-              title={isSaved ? 'Unsave' : 'Save word'}
-            >
-              {saving ? '…' : isSaved ? '★ Saved' : '☆ Save'}
-            </button>
-          )}
           <button onClick={onClose} className="lpv-dict-card-close" title="Close">
             ✕
           </button>
@@ -356,9 +361,9 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
             onClick={handleExplain}
             disabled={explainLoading}
             className={`lpv-explain-btn ${showExplain ? 'lpv-explain-btn-active' : ''}`}
-            title="AI Explanation (Pro)"
+            title="Let DeepSeek Explain (Pro)"
           >
-            {explainLoading ? '…' : '🤖 Explain'}
+            {explainLoading ? '…' : '🤖 Let DeepSeek Explain'}
           </button>
         </div>
       )}
