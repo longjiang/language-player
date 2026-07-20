@@ -11,7 +11,7 @@ import {
   type FormEvent,
 } from 'react';
 import { flushSync } from 'react-dom';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { baseCode } from '@/lib/language-data';
 import { useDictionary } from '@langplayer/api-client';
@@ -90,6 +90,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const dict = useDictionary();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
@@ -122,15 +123,16 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     searchedRef.current = false;
   }, [l2.code]);
 
-  // Auto-search from ?q= param on first load; reset if no query
+  // Auto-search from ?q= param on first load; reset only on root dictionary page
   useEffect(() => {
     const q = searchParams.get('q');
+    const isRootPage = !pathname.includes('/entry/');
     if (q && !searchedRef.current) {
       searchedRef.current = true;
       setQuery(q);
       setTimeout(() => { doSearch(q); }, 100);
-    } else if (!q && searchedRef.current) {
-      // Navigated back to dictionary without query — reset to empty state
+    } else if (!q && isRootPage && searchedRef.current) {
+      // Navigated back to /dictionary without query — reset to empty state
       searchedRef.current = false;
       setQuery('');
       setResults(null);
@@ -141,7 +143,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       setSidebarSource({ kind: 'saved' });
       setDetailHead(null);
     }
-  }, [searchParams]);
+  }, [searchParams, pathname]);
 
   const doSearch = useCallback(
     async (term: string) => {
