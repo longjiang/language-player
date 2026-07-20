@@ -117,6 +117,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.action === "setBadge") {
         updateBadgeForTab(sender.tab?.id, request.found);
         sendResponse({success: true});
+    } else if (request.action === "bgFetch") {
+        fetch(request.url)
+            .then(r => r.text())
+            .then(text => sendResponse({ text }))
+            .catch(err => sendResponse({ text: '', error: err.message }));
+        return true; // async
     }
     return true; // Keep message channel open for async response
 });

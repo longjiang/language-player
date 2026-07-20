@@ -467,39 +467,25 @@ async function fetchYTTrack(track) {
     if (url.startsWith('//')) url = 'https:' + url;
     else if (url.startsWith('/')) url = 'https://www.youtube.com' + url;
 
-    console.log('[LanguagePlayer] Fetching track URL:', url);
-    let response = await fetch(url);
-    console.log('[LanguagePlayer] Response status:', response.status, 'content-type:', response.headers.get('content-type'));
-
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    let text = await response.text();
+    // Proxy fetch through background worker (bypasses YouTube service worker blocking)
+    let text = await bgFetch(url);
     let cues;
 
-    if (text.length === 0) {
-      // YouTube's signed URL returned empty — fall back to simple unsigned URL
+    if (!text || text.length === 0) {
+      // Fall back to simple unsigned JSON3 URL
       const videoId = getYTVideoId();
       const lang = track.languageCode || 'en';
       const fallbackUrl = `https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`;
-      console.log('[LanguagePlayer] BaseUrl returned empty, trying fallback:', fallbackUrl);
-      response = await fetch(fallbackUrl);
-      if (!response.ok) throw new Error(`Fallback HTTP ${response.status}`);
-      text = await response.text();
-      if (text.length === 0) {
-        console.log('[LanguagePlayer] Fallback also empty');
+      text = await bgFetch(fallbackUrl);
+      if (!text || text.length === 0) {
+        console.log('[LanguagePlayer] Both URLs returned empty');
         return;
       }
       cues = parseYTJSON3(text);
     } else if (text.trim().startsWith('<')) {
-      // XML format (TTML / timedtext XML)
       cues = parseYTTimedText(text);
     } else {
-      // Try JSON3 format
-      try {
-        cues = parseYTJSON3(text);
-      } catch {
-        cues = parseYTTimedText(text);
-      }
+      try { cues = parseYTJSON3(text); } catch { cues = parseYTTimedText(text); }
     }
 
     console.log('[LanguagePlayer] Parsed', cues.length, 'cues');
@@ -528,6 +514,15 @@ async function fetchYTTrack(track) {
     console.error('[LanguagePlayer] Failed to fetch YouTube subtitles:', err);
     updateStatus('Failed to load subtitles');
   }
+}
+
+/** Fetch a URL through the background service worker (bypasses page SW) */
+function bgFetch(url) {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ action: 'bgFetch', url }, (res) => {
+      resolve(res?.text || '');
+    });
+  });
 }
 
 /** Parse YouTube JSON3 timedtext format */
