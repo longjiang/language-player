@@ -53,6 +53,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
   const l2Code = baseCode(l2.code);
+  const l1Code = baseCode(l1.code);
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [showPhonetics, setShowPhoneticsState] = useState(true);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -71,7 +72,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     if (isSingleline) return;
     if (!youtubeId) return;
     const fetchSubtitles = async () => {
-      const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${l2Code}`);
+      const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${l2Code}&l1=${l1Code}`);
       if (!res.ok) return;
       const data = await res.json();
       const lines = data.lines?.map((l: any) => ({
@@ -82,7 +83,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       onLinesLoaded?.(lines.map((l: SubtitleLine) => l.starttime));
     };
     fetchSubtitles().catch(() => {});
-  }, [youtubeId, l2Code, initialLines, isSingleline]);
+  }, [youtubeId, l2Code, l1Code, initialLines, isSingleline]);
 
   useEffect(() => {
     setShowPhoneticsState(getShowPhonetics());

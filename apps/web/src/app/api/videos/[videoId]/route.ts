@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { parseCSVSubtitles, syncLines } from '@/lib/subtitle-csv';
+import {
+  fetchYouTubeL2Captions,
+  fetchYouTubeL1Captions,
+  fetchYouTubeMetadata,
+} from '@/lib/video-service';
 
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'https://directusvps.zerotohero.ca/zerotohero';
 
@@ -61,34 +66,78 @@ export async function GET(
     const item = json?.data?.[0] ?? json?.data ?? json?.[0] ?? null;
 
     if (!item) {
-      return NextResponse.json({
+      // Video not in Directus — fetch captions + metadata from YouTube via Python backend
+      const l1 = searchParams.get('l1') ?? 'en';
+
+      const [metadata, l2Lines, l1Lines] = await Promise.all([
+        fetchYouTubeMetadata(params.videoId),
+        fetchYouTubeL2Captions(params.videoId, l2),
+        fetchYouTubeL1Captions(params.videoId, l1, l2),
+      ]);
+
+      const syncedLines = syncLines(l1Lines, l2Lines);
+
+      const video: YouTubeVideo = {
         youtube_id: params.videoId,
-        title: 'YouTube Video',
-      });
+        id: '',
+        title: metadata?.title ?? 'YouTube Video',
+        channel_id: metadata?.channel_id,
+        duration: metadata?.duration,
+        views: metadata?.views,
+        likes: metadata?.likes,
+        comments: metadata?.comments,
+        locale: metadata?.locale,
+        subs_l1: l1Lines,
+        subs_l2: l2Lines,
+      };
+
+      return NextResponse.json(
+        { video, lines: syncedLines },
+        {
+          headers: {
+            'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+          },
+        },
+      );
     }
 
-    // Parse subtitles
-    const l2Lines = parseCSVSubtitles(item.subs_l2 ?? '');
-    const l1Lines = parseCSVSubtitles(item.subs_l1 ?? '');
+    // Parse subtitles — fall back to Python/YouTube if Directus has no subs
+    let l2Lines = parseCSVSubtitles(item.subs_l2 ?? '');
+    let l1Lines = parseCSVSubtitles(item.subs_l1 ?? '');
+
+    // Enrich sparse Directus records with YouTube data
+    let youtubeMeta: Partial<YouTubeVideo> | null = null;
+    if (l2Lines.length === 0 || !item.title || item.title === 'Untitled') {
+      const l1 = searchParams.get('l1') ?? 'en';
+      const [meta, fetchedL2, fetchedL1] = await Promise.all([
+        fetchYouTubeMetadata(params.videoId),
+        l2Lines.length === 0 ? fetchYouTubeL2Captions(params.videoId, l2) : Promise.resolve(l2Lines),
+        l1Lines.length === 0 ? fetchYouTubeL1Captions(params.videoId, l1, l2) : Promise.resolve(l1Lines),
+      ]);
+      youtubeMeta = meta;
+      l2Lines = fetchedL2;
+      l1Lines = fetchedL1;
+    }
+
     const syncedLines = syncLines(l1Lines, l2Lines);
 
-    // Build video object — only fields in YouTubeVideo type
+    // Build video object — enrich sparse Directus fields with YouTube metadata
     const video: YouTubeVideo = {
-      youtube_id: item.youtube_id,
+      youtube_id: item.youtube_id || params.videoId,
       id: String(item.id ?? ''),
-      title: item.title ?? 'Untitled',
+      title: (item.title && item.title !== 'Untitled' ? item.title : youtubeMeta?.title) ?? 'YouTube Video',
       difficulty: typeof item.difficulty === 'number' ? item.difficulty : undefined,
-      duration: parseDuration(item.duration),
-      views: typeof item.views === 'number' ? item.views : undefined,
-      likes: typeof item.likes === 'number' ? item.likes : undefined,
-      comments: typeof item.comments === 'number' ? item.comments : undefined,
-      locale: item.locale ?? undefined,
+      duration: parseDuration(item.duration) ?? youtubeMeta?.duration,
+      views: (typeof item.views === 'number' ? item.views : youtubeMeta?.views),
+      likes: (typeof item.likes === 'number' ? item.likes : youtubeMeta?.likes),
+      comments: (typeof item.comments === 'number' ? item.comments : youtubeMeta?.comments),
+      locale: item.locale ?? youtubeMeta?.locale,
       tv_show: item.tv_show ? String(item.tv_show) : undefined,
       date: item.date ?? undefined,
       tags: item.tags ?? undefined,
       category: item.category ? String(item.category) : undefined,
       talk: item.talk ? String(item.talk) : undefined,
-      channel_id: item.channel_id ?? undefined,
+      channel_id: item.channel_id ?? youtubeMeta?.channel_id,
       subs_l1: l1Lines,
       subs_l2: l2Lines,
     };

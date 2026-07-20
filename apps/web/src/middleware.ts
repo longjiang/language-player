@@ -5,6 +5,9 @@ const AUTH_PATHS = ['/login', '/register', '/forgot-password'];
 const GUEST_NAV_LIMIT = 3;
 const AUTH_REQUIRED_SEGMENTS = ['saved-words', 'review', 'settings', 'go-pro', 'watch-history', 'tokenizer'];
 
+/** Pages that don't count toward the guest navigation limit (content consumption). */
+const GUEST_NAV_FREE_SEGMENTS = ['watch', 'explore', 'search', 'dictionary', 'music', 'live-tv', 'tv-shows', 'reader', 'channel'];
+
 /** Parse Accept-Language header and return the best matching supported L1 code, or null. */
 function detectLocale(request: NextRequest): string | null {
   const header = request.headers.get('accept-language');
@@ -99,10 +102,17 @@ export default function middleware(req: NextRequest) {
     }
 
     // Guest nav tracking: after N page views, soft-gate to login
-    const navCount = parseInt(req.cookies.get('guest-nav-count')?.value || '0', 10) + 1;
-    response.cookies.set('guest-nav-count', String(navCount), {
-      path: '/', maxAge: 60 * 60 * 24, httpOnly: false,
-    });
+    // Content consumption pages (watch, explore, search, etc.) don't count
+    const isNavFree = segments.length >= 3 && GUEST_NAV_FREE_SEGMENTS.includes(segments[2]!);
+    const navCount = isNavFree
+      ? parseInt(req.cookies.get('guest-nav-count')?.value || '0', 10)
+      : parseInt(req.cookies.get('guest-nav-count')?.value || '0', 10) + 1;
+
+    if (!isNavFree) {
+      response.cookies.set('guest-nav-count', String(navCount), {
+        path: '/', maxAge: 60 * 60 * 24, httpOnly: false,
+      });
+    }
 
     if (navCount > GUEST_NAV_LIMIT) {
       const loginUrl = new URL('/login', req.url);
