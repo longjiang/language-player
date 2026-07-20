@@ -128,11 +128,11 @@ export default function DictionaryEntryPage() {
 
   // ── Entry detail: definitions panel + tabs panel (siblings) ──
   return (
-    <div className="h-full overflow-y-auto">
+    <div>
       {/* Two-column on lg+, stacked on smaller */}
-      <div className="flex flex-col lg:flex-row lg:gap-4 gap-4 h-full">
+      <div className="flex flex-col lg:flex-row lg:gap-4 gap-4">
         {/* Definitions panel */}
-        <div className="lg:flex-1 lg:min-w-0 rounded-xl border border-border bg-card p-6 overflow-y-auto">
+        <div className="lg:flex-1 lg:min-w-0 rounded-xl border border-border bg-card p-6">
           <DictionaryDefinitionsPanel
             entry={entry}
             l2Code={l2.code}
@@ -144,7 +144,7 @@ export default function DictionaryEntryPage() {
         </div>
 
         {/* Tabs panel */}
-        <div className="lg:flex-[2] lg:min-w-0 flex flex-col min-h-0">
+        <div className="lg:flex-[2] lg:min-w-0 flex flex-col">
           <TabbedPanel
             tabs={[
               { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
@@ -153,7 +153,6 @@ export default function DictionaryEntryPage() {
             ]}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            className="flex-1 min-h-0"
             contentClassName="overflow-y-auto"
           >
             {activeTab === 'examples' && (
