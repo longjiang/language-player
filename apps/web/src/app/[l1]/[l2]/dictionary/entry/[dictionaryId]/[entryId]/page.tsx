@@ -40,7 +40,7 @@ export default function DictionaryEntryPage() {
   const t = useT();
   const searchParams = useSearchParams();
 
-  const { setDetailHead, setSidebarSource } = useDictionaryContext();
+  const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
 
   const [entry, setEntry] = useState<DictionaryEntry | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,8 +82,9 @@ export default function DictionaryEntryPage() {
   useEffect(() => {
     if (searchParams.get('listCurrent')) {
       setSidebarSource({ kind: 'saved' });
+      setCameFromSearch(false);
     }
-  }, [searchParams, setSidebarSource]);
+  }, [searchParams, setSidebarSource, setCameFromSearch]);
 
   const levelLabel = (scale: string, value: string | number) =>
     formatLevel({ scale, value } as ProficiencyLevel).long;
