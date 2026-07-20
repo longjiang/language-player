@@ -1,20 +1,20 @@
-# Settings
+# {$title.settings}
 
-Settings controls how Language Player looks and behaves while you're learning. Open it from your profile menu. Settings are organized into four tabs — Display, Playback, Speech, and Review.
+{$title.settings} controls how {$title.app_name} looks and behaves while you're learning. Open it from your profile menu. {$title.settings} are organized into four tabs — {$setting.display}, {$setting.playback}, {$setting.speech}, and {$setting.review}.
 
 Your settings save automatically. They sync across devices when you're signed in.
 
-## Display
+## {$setting.display}
 
 Everything that affects how text and subtitles look on screen.
 
-### Theme
+### {$label.theme}
 
-Pick Light, Dark, or System. System follows your device's appearance setting and switches automatically.
+Pick {$setting.light}, {$setting.dark}, or {$setting.system}. {$setting.system} follows your device's appearance setting and switches automatically.
 
-### Translation
+### {$action.translation}
 
-Show Translation adds a line in your language below each subtitle. Turn it off for immersion, on for comprehension. You can also toggle this from the video player with the Translation pill button.
+{$label.show_translation} adds a line in your language below each subtitle. Turn it off for immersion, on for comprehension. You can also toggle this from the video player with the {$action.translation} pill button.
 
 ### Popup Dictionary
 
@@ -22,70 +22,70 @@ When enabled, tap any word to see its definition, pronunciation, and example sen
 
 A live preview below the toggle shows how your text will look — you can adjust font, size, and phonetics and see the result immediately.
 
-### Text Appearance
+### {$setting.text_appearance}
 
-**Font** — Default uses your browser's standard font. Serif adds small decorative strokes to characters. Sans-serif uses clean, modern letterforms.
+**{$label.font}** — {$setting.font_default} uses your browser's standard font. {$setting.font_serif} adds small decorative strokes to characters. Sans-serif uses clean, modern letterforms.
 
-**Text Size** — A slider from smallest to largest. Changes font size everywhere in the app — subtitles, transcripts, and [dictionary](/docs/vocab/dictionary) entries.
+**{$label.text_size}** — A slider from smallest to largest. Changes font size everywhere in the app — subtitles, transcripts, and [dictionary](/docs/vocab/dictionary) entries.
 
-### Phonetics
+### {$setting.phonetics}
 
-Phonetics are pronunciation guides that appear with the text. For Chinese, this is Pinyin above characters. For Japanese, it's Furigana. For other languages, it's a romanized reading.
+{$setting.phonetics} are pronunciation guides that appear with the text. For {$lang.zh}, this is {$word.pinyin} above characters. For {$lang.ja}, it's Furigana. For other languages, it's a romanized reading.
 
-**Show Phonetics** has three options:
-- **On top of word** — the pronunciation sits above each word
-- **Replacing word** — the pronunciation replaces the original script entirely
-- **Off** — no phonetics at all
+**{$label.show_phonetics}** has three options:
+- **{$setting.phonetics_on_top}** — the pronunciation sits above each word
+- **{$setting.phonetics_replace}** — the pronunciation replaces the original script entirely
+- **{$setting.off}** — no phonetics at all
 
-When "On top of word" is selected, a second control appears: **Show For**. Choose **All Words** to annotate everything, or **Hard Words Only** to only show phonetics on words above your proficiency level. You can set your proficiency level on your [profile page](/profile).
+When "{$setting.phonetics_on_top}" is selected, a second control appears: **Show For**. Choose **{$setting.all_words}** to annotate everything, or **{$setting.hard_words_only}** to only show phonetics on words above your proficiency level. You can set your proficiency level on your [profile page](/profile).
 
-### Word-Level Display
+### {$setting.word_level_display}
 
-**Quick Gloss** shows a short translation above words you've saved to your vocabulary list. It's a quick reminder of what the word means without opening the full dictionary.
+**{$label.show_gloss_saved}** shows a short translation above words you've saved to your vocabulary list. It's a quick reminder of what the word means without opening the full dictionary.
 
-**Interlinear Gloss** shows the first dictionary definition below every word in the text. Unlike Quick Gloss (saved words only), this applies to all words.
+**{$label.show_interlinear_gloss}** shows the first dictionary definition below every word in the text. Unlike {$label.show_gloss_saved} (saved words only), this applies to all words.
 
-**Character Set** is for Chinese learners — choose between Simplified and Traditional characters. For Korean, there's a **Show Hanja** toggle that displays Chinese characters alongside Hangul. For Vietnamese, **Show Hán Tự** adds the original Chinese-based characters.
+**{$label.character_set}** is for {$lang.zh} learners — choose between Simplified and Traditional characters. For {$lang.ko}, there's a **{$label.show_hanja}** toggle that displays {$lang.zh} characters alongside Hangul. For {$lang.vi}, **{$label.show_hantu}** adds the original {$lang.zh}-based characters.
 
-### Interaction
+### {$setting.interaction}
 
-**Quiz Mode** hides saved words in the text and replaces them with blanks. Tap a blank to reveal the word. It's a self-testing tool — see if you can recall a word by reading the surrounding sentence, then tap to check.
+**{$setting.quiz_mode}** hides saved words in the text and replaces them with blanks. Tap a blank to reveal the word. It's a self-testing tool — see if you can recall a word by reading the surrounding sentence, then tap to check.
 
-## Playback
+## {$setting.playback}
 
-Settings for how videos play and how subtitles behave.
+{$title.settings} for how videos play and how subtitles behave.
 
-### Captions
+### {$setting.captions}
 
-**Transcript Mode** shows the full interactive transcript of a video as a scrollable page, instead of syncing one subtitle line at a time to the video. Use it to read ahead, jump to specific lines, or study the entire dialogue at once.
+**{$label.transcript_mode}** shows the full interactive transcript of a video as a scrollable page, instead of syncing one subtitle line at a time to the video. Use it to read ahead, jump to specific lines, or study the entire dialogue at once.
 
-**Smooth Scroll** keeps the active subtitle line centered in the transcript panel as the video plays. The transcript scrolls gently to follow along.
+**{$label.smooth_scroll}** keeps the active subtitle line centered in the transcript panel as the video plays. The transcript scrolls gently to follow along.
 
-**Karaoke Mode** highlights each word in the current subtitle as it's spoken. The highlight moves word by word, matching the audio.
+**{$label.karaoke}** highlights each word in the current subtitle as it's spoken. The highlight moves word by word, matching the audio.
 
-### Auto-Pause
+### {$label.auto_pause}
 
 Pauses the video after each subtitle line finishes. Useful when you want time to read, look up words, and process what you heard before moving on.
 
-### Collapse Video
+### {$label.collapse_video}
 
 Collapses the video player to a compact mini-player when you scroll through the transcript. Gives you more room to read while keeping the video visible.
 
-## Speech
+## {$setting.speech}
 
-Choose the text-to-speech voice used when you play word pronunciations. You can pick a voice for your target language, adjust the speech rate, and test it before saving. See [Pronunciation Voice](/docs/vocab/dictionary#pronunciation) for more on how pronunciation works in the dictionary.
+Choose the text-to-speech voice used when you play word pronunciations. You can pick a voice for your target language, adjust the speech rate, and test it before saving. See [{$label.pronunciation_voice}](/docs/vocab/dictionary#pronunciation) for more on how pronunciation works in the dictionary.
 
-## Review
+## {$setting.review}
 
-Settings for your spaced repetition practice.
+{$title.settings} for your spaced repetition practice.
 
-**New Cards Per Day** sets the maximum number of new vocabulary cards introduced each day. Lower numbers mean fewer new words but more manageable daily sessions. Higher numbers ramp you up faster but increase your daily workload. The default is 20.
+**{$label.new_cards_per_day}** sets the maximum number of new vocabulary cards introduced each day. Lower numbers mean fewer new words but more manageable daily sessions. Higher numbers ramp you up faster but increase your daily workload. The default is 20.
 
-See [Saved Words & Review](/docs/vocab/saved-words) for how the review system works.
+See [{$title.saved_words} & {$setting.review}](/docs/vocab/saved-words) for how the review system works.
 
 ## Tips
 
-- Toggle Translation on and off from the video player itself — no need to open Settings every time
-- If you find yourself looking up every word, try **Hard Words Only** for phonetics to reduce visual clutter
-- Quiz Mode is most effective with shorter texts — start with a paragraph, not a full article
+- Toggle Translation on and off from the video player itself — no need to open {$title.settings} every time
+- If you find yourself looking up every word, try **{$setting.hard_words_only}** for phonetics to reduce visual clutter
+- {$setting.quiz_mode} is most effective with shorter texts — start with a paragraph, not a full article
 - Your per-language settings (phonetics, character set, voice) travel with you when you switch between language pairs
