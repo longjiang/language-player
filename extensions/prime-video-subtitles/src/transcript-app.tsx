@@ -312,29 +312,33 @@ const TranscriptApp: React.FC<TranscriptAppProps> = ({
   }
 
   return (
-    <div ref={listRef}>
-      {cues.map((cue, i) => (
-        <CueLine
-          key={i}
-          cue={cue}
-          index={i}
-          isActive={i === activeCueIdx}
-          l2Code={l2Code}
-          onSeekTo={handleSeekTo}
-          onTokenClick={handleTokenClick}
-        />
-      ))}
+    <>
+      <div ref={listRef}>
+        {cues.map((cue, i) => (
+          <CueLine
+            key={i}
+            cue={cue}
+            index={i}
+            isActive={i === activeCueIdx}
+            l2Code={l2Code}
+            onSeekTo={handleSeekTo}
+            onTokenClick={handleTokenClick}
+          />
+        ))}
+      </div>
 
-      {/* Dictionary card: shown inline when a word is clicked */}
+      {/* Dictionary card: fixed overlay at bottom of panel, always visible */}
       {selectedToken && (
-        <DictionaryCard
-          token={selectedToken}
-          l1Code={l1Code}
-          l2Code={l2Code}
-          onClose={() => setSelectedToken(null)}
-        />
+        <div className="lpv-dict-overlay">
+          <DictionaryCard
+            token={selectedToken}
+            l1Code={l1Code}
+            l2Code={l2Code}
+            onClose={() => setSelectedToken(null)}
+          />
+        </div>
       )}
-    </div>
+    </>
   );
 };
 
