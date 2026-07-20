@@ -344,27 +344,84 @@ function getYTVideoId() {
   return params.get('v') || '';
 }
 
-/** Read ytInitialPlayerResponse from the page's script tags */
+/** Extract a balanced JSON object from text, starting at '{' at startIdx.
+ *  Handles nested braces, strings, and escape sequences. */
+function extractBalancedJSON(text, startIdx) {
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+
+  for (let i = startIdx; i < text.length; i++) {
+    const ch = text[i];
+
+    if (escape) { escape = false; continue; }
+    if (ch === '\\' && inString) { escape = true; continue; }
+    if (ch === '"' && !escape) { inString = !inString; continue; }
+    if (inString) continue;
+
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return text.substring(startIdx, i + 1);
+    }
+  }
+  return null;
+}
+
+/** Read ytInitialPlayerResponse from the page using multiple strategies */
 function getYTPlayerResponse() {
+  // Strategy 1: window global (some YouTube versions)
+  if (window.ytInitialPlayerResponse) {
+    return window.ytInitialPlayerResponse;
+  }
+
+  // Strategy 2: getInitialData() mechanism (modern YouTube)
+  if (typeof window.getInitialData === 'function') {
+    try {
+      const id = window.getInitialData();
+      if (id?.playerResponse) return id.playerResponse;
+    } catch {}
+  }
+
+  // Strategy 3: Search script tags with brace-counting JSON extraction
   const scripts = document.querySelectorAll('script');
   for (const script of scripts) {
     const text = script.textContent || '';
-    // Try ytInitialPlayerResponse first
-    const match = text.match(/var\s+ytInitialPlayerResponse\s*=\s*(\{.*?\});/s);
-    if (match) {
-      try { return JSON.parse(match[1]); } catch {}
+
+    // Try var/let/const declaration
+    let idx = text.search(/(?:var|let|const)\s+ytInitialPlayerResponse\s*=\s*\{/);
+    if (idx < 0) {
+      // Try assignment without var (e.g. a.ytInitialPlayerResponse = {...})
+      idx = text.search(/ytInitialPlayerResponse\s*=\s*\{/);
     }
-    // Fallback: ytplayer.config
-    const cfgMatch = text.match(/ytplayer\.config\s*=\s*(\{.*?\});/s);
-    if (cfgMatch) {
-      try {
-        const cfg = JSON.parse(cfgMatch[1]);
-        if (cfg?.args?.player_response) {
-          return JSON.parse(cfg.args.player_response);
+    if (idx >= 0) {
+      const start = text.indexOf('{', idx);
+      if (start >= 0) {
+        const json = extractBalancedJSON(text, start);
+        if (json) {
+          try { return JSON.parse(json); } catch {}
         }
-      } catch {}
+      }
+    }
+
+    // Fallback: ytplayer.config
+    const cfgIdx = text.search(/ytplayer\.config\s*=\s*\{/);
+    if (cfgIdx >= 0) {
+      const start = text.indexOf('{', cfgIdx);
+      if (start >= 0) {
+        const json = extractBalancedJSON(text, start);
+        if (json) {
+          try {
+            const cfg = JSON.parse(json);
+            if (cfg?.args?.player_response) {
+              return JSON.parse(cfg.args.player_response);
+            }
+          } catch {}
+        }
+      }
     }
   }
+
   return null;
 }
 
@@ -439,7 +496,12 @@ async function fetchYTTrack(track) {
 /** Load YouTube subtitles — discover tracks and pick the best one */
 async function loadYouTubeSubtitles() {
   const videoId = getYTVideoId();
-  if (!videoId) return;
+  if (!videoId) {
+    console.log('[LanguagePlayer] No YouTube video ID found in URL');
+    return;
+  }
+
+  console.log('[LanguagePlayer] Looking for caption data...');
 
   // Wait for ytInitialPlayerResponse
   let pr = getYTPlayerResponse();
@@ -450,13 +512,22 @@ async function loadYouTubeSubtitles() {
     attempts++;
   }
 
-  if (!pr) return;
+  if (!pr) {
+    console.log('[LanguagePlayer] Could not read caption data after 15s — captions may not be available');
+    return;
+  }
+
   ytPlayerResponse = pr;
 
   const tracks = getYTCaptionTracks(pr);
   ytCaptionTracks = tracks;
+  console.log('[LanguagePlayer] Found', tracks.length, 'caption track(s):',
+    tracks.map(t => `${t.languageCode}${t.kind === 'asr' ? ' (auto)' : ''}`).join(', '));
 
-  if (tracks.length === 0) return;
+  if (tracks.length === 0) {
+    console.log('[LanguagePlayer] No caption tracks available for this video');
+    return;
+  }
 
   // Rebuild L2 selector
   populateL2Selector();
@@ -471,7 +542,10 @@ async function loadYouTubeSubtitles() {
     best = tracks.find(t => t.kind !== 'asr') || tracks[0];
   }
 
-  if (best) await fetchYTTrack(best);
+  if (best) {
+    console.log('[LanguagePlayer] Loading track:', best.languageCode, best.kind === 'asr' ? '(auto)' : '');
+    await fetchYTTrack(best);
+  }
 }
 
 /** Populate the L2 language dropdown with all supported languages */
