@@ -1,7 +1,8 @@
 'use client';
 
+import Image from 'next/image';
 import { useT } from '@/hooks/use-t';
-import { Info, GitBranch, Calendar, Globe, Package } from 'lucide-react';
+import { GitBranch, Calendar, Globe, Package } from 'lucide-react';
 
 interface BuildInfo {
   version: string;
@@ -44,9 +45,14 @@ export function AboutContent({ buildInfo }: { buildInfo: BuildInfo }) {
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-            <Info className="h-8 w-8 text-primary" />
-          </div>
+          <Image
+            src="/img/logo.png"
+            alt={t('title.app_name')}
+            width={64}
+            height={64}
+            className="mx-auto mb-4 h-16 w-16"
+            priority
+          />
           <h1 className="text-2xl font-bold">{t('title.app_name')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {t('title.about')}
