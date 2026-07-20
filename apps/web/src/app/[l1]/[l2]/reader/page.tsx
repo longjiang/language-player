@@ -88,6 +88,7 @@ export default function ReaderPage() {
   const [epubPageProgressionDir, setEpubPageProgressionDir] = useState<'ltr' | 'rtl'>('ltr');
   const [epubChapterLinks, setEpubChapterLinks] = useState<Set<string>>(new Set());
   const [initialAnchor, setInitialAnchor] = useState<string | null>(null);
+  const [showEpubUpload, setShowEpubUpload] = useState(false);
   const epubInitRef = useRef(false);
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -565,6 +566,17 @@ export default function ReaderPage() {
           )}
           <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p>
         </div>
+        {/* EPUB toggle */}
+        {!epubToc && !showEpubUpload && (
+          <button
+            onClick={() => setShowEpubUpload(true)}
+            className="flex-shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-xs flex items-center gap-1"
+            title={t('title.epub_reader')}
+          >
+            <BookOpen className="h-4 w-4" />
+            <span className="hidden sm:inline">EPUB</span>
+          </button>
+        )}
         {/* Collapse toggle — top right */}
         <button
           onClick={() => setSidebarOpen(o => !o)}
@@ -578,7 +590,7 @@ export default function ReaderPage() {
       {/* ── Content row: reader panel + sidebar ── */}
       <div className="flex gap-4">
         {epubToc ? (
-          /* ── EPUB mode ── */
+          /* ── EPUB mode (book loaded + TOC) ── */
           <div className="min-w-0 flex-1 flex flex-col">
             <EpubUpload
               toc={epubToc}
@@ -601,44 +613,67 @@ export default function ReaderPage() {
               hasPrevChapter={!!epubPrevHref}
               hasNextChapter={!!epubNextHref}
             />
-            {/* ReaderPanel renders the current chapter text */}
-            <div className="flex-1 min-h-0">
-              <ReaderPanel
-                l2={l2} l1={l1}
-                text={text}
-                loading={loading} activeTab={activeTab}
-                urlInput={urlInput} translating={translating}
-                blocks={blocks} blockTokens={blockTokens} tokenizing={tokenizing}
-                ctx={ctx}
-                onTextChange={handleTextChange}
-                onTabChange={setActiveTab}
-                onUrlInputChange={setUrlInput}
-                onUrlSubmit={(url) => loadUrl(url, false)}
-                onTokenize={handleTokenize}
-                onFillSample={(sampleText, sampleTitle) => { setText(sampleText); setTitle(sampleTitle); }}
-                onPageTranslate={async (texts) => {
-                  setTranslating(true);
-                  try {
-                    const res = await fetch(`${PYTHON_API_URL}/translate_array`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ texts, l1: l1.code, l2: l2.code }),
-                    });
-                    const data = await res.json();
-                    return data?.translated_texts ?? [];
-                  } catch (e: any) {
-                    setError(e?.message || 'Translation failed');
-                    return [];
-                  } finally {
-                    setTranslating(false);
-                  }
-                }}
-                onAnchorChange={(anchor) => {
-                  updateEpubMeta({ lastAnchor: anchor });
-                }}
-                initialAnchor={initialAnchor}
-              />
-            </div>
+            {epubCoverTapped && (
+              <div className="flex-1 min-h-0 mt-3">
+                <ReaderPanel
+                  l2={l2} l1={l1}
+                  text={text}
+                  loading={loading} activeTab={activeTab}
+                  urlInput={urlInput} translating={translating}
+                  blocks={blocks} blockTokens={blockTokens} tokenizing={tokenizing}
+                  ctx={ctx}
+                  onTextChange={handleTextChange}
+                  onTabChange={setActiveTab}
+                  onUrlInputChange={setUrlInput}
+                  onUrlSubmit={(url) => loadUrl(url, false)}
+                  onTokenize={handleTokenize}
+                  onFillSample={(sampleText, sampleTitle) => { setText(sampleText); setTitle(sampleTitle); }}
+                  onPageTranslate={async (texts) => {
+                    setTranslating(true);
+                    try {
+                      const res = await fetch(`${PYTHON_API_URL}/translate_array`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ texts, l1: l1.code, l2: l2.code }),
+                      });
+                      const data = await res.json();
+                      return data?.translated_texts ?? [];
+                    } catch (e: any) {
+                      setError(e?.message || 'Translation failed');
+                      return [];
+                    } finally {
+                      setTranslating(false);
+                    }
+                  }}
+                  onAnchorChange={(anchor) => {
+                    updateEpubMeta({ lastAnchor: anchor });
+                  }}
+                  initialAnchor={initialAnchor}
+                />
+              </div>
+            )}
+          </div>
+        ) : showEpubUpload || (epubFileName && !epubToc) ? (
+          /* ── EPUB upload zone ── */
+          <div className="min-w-0 flex-1">
+            <EpubUpload
+              toc={null}
+              currentChapterHref={null}
+              coverUrl={null}
+              coverTapped={false}
+              loading={false}
+              chapterTitle={null}
+              fileName={epubFileName}
+              onFileLoaded={handleEpubFile}
+              onChapterLoaded={() => {}}
+              onLoadChapter={async () => {}}
+              onClose={() => {
+                setEpubFileName(null);
+                setShowEpubUpload(false);
+                deleteEpub();
+              }}
+              onCoverTap={() => {}}
+            />
           </div>
         ) : (
           /* ── Normal reader mode ── */
