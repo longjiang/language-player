@@ -243,6 +243,14 @@ body.lpv-panel-open .dv-player-fullscreen {
   background: rgba(0, 168, 225, 0.2);
 }
 
+.lpv-token-saved {
+  background: rgba(255, 193, 7, 0.15);
+}
+
+.lpv-token-saved:hover {
+  background: rgba(255, 193, 7, 0.3);
+}
+
 .lpv-token-active {
   /* Tokens inside the active (currently playing) subtitle line */
 }
@@ -309,6 +317,50 @@ body.lpv-panel-open .dv-player-fullscreen {
   padding: 10px 12px;
   background: rgba(0, 168, 225, 0.08);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lpv-dict-card-header-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.lpv-dict-card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.lpv-save-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #00A8E1;
+  background: transparent;
+  border: 1px solid rgba(0, 168, 225, 0.4);
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lpv-save-btn:hover {
+  background: rgba(0, 168, 225, 0.15);
+}
+
+.lpv-save-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.lpv-save-btn-saved {
+  color: #ffc107;
+  border-color: rgba(255, 193, 7, 0.5);
+  background: rgba(255, 193, 7, 0.1);
+}
+
+.lpv-save-btn-saved:hover {
+  background: rgba(255, 193, 7, 0.2);
 }
 
 .lpv-dict-card-word {
@@ -408,6 +460,11 @@ body.lpv-panel-open .dv-player-fullscreen {
   font-size: 15px;
   font-weight: 600;
   color: #eee;
+}
+
+.lpv-dict-pron-small {
+  font-size: 11px;
+  color: #888;
 }
 
 .lpv-dict-pos {

@@ -9,6 +9,22 @@
   <div class="container">
     <h1>🎬 Prime Video Subtitles</h1>
 
+    <!-- Auth section -->
+    <div id="auth-section">
+      <div id="auth-logged-out">
+        <p class="auth-hint">Log in to save words and sync with Language Player.</p>
+        <input type="email" id="auth-email" placeholder="Email" />
+        <input type="password" id="auth-password" placeholder="Password" />
+        <button id="auth-login-btn">Log In</button>
+        <p id="auth-error" class="auth-error hidden"></p>
+      </div>
+      <div id="auth-logged-in" class="hidden">
+        <span id="auth-user"></span>
+        <button id="auth-logout-btn">Log Out</button>
+      </div>
+    </div>
+
+    <!-- Subtitle list -->
     <div id="subtitles-container">
       <div id="subtitles-list"></div>
       <div id="no-subtitles" class="hidden">No subtitle files detected yet.<br>Start playing a video on Prime Video.</div>
