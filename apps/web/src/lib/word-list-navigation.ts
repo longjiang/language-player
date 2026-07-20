@@ -1,4 +1,4 @@
-import type { SavedLexicalItemRecord, DictionaryEntry } from '@langplayer/shared';
+import type { SavedLexicalItemRecord } from '@langplayer/shared';
 import { buildEntryRoute } from '@/lib/entry-route';
 
 /**
@@ -96,20 +96,6 @@ export function savedWordToNavItem(w: SavedLexicalItemRecord): WordListNavItem {
     dictionaryId,
     entryId,
     id: w.id,
-  };
-}
-
-/**
- * Convert a DictionaryEntry to a WordListNavItem.
- */
-export function entryToNavItem(e: DictionaryEntry): WordListNavItem {
-  return {
-    head: e.head,
-    dictionaryId: e.dictionary?.id ?? 'llm',
-    entryId: e.id,
-    id: `${e.dictionary?.id ?? 'llm'}-${e.id}`,
-    pronunciation: e.pronunciation || undefined,
-    definition: e.definitions?.[0] || undefined,
   };
 }
 
