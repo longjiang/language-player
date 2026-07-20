@@ -4,10 +4,17 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeSlug from 'rehype-slug';
 import Link from 'next/link';
 
 interface Props {
   params: { l1: string; l2: string; slug: string };
+}
+
+interface TocItem {
+  level: number;
+  text: string;
+  id: string;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -32,6 +39,58 @@ function getDoc(slug: string): { content: string } | null {
   return null;
 }
 
+/** Slugify a heading for use as an anchor ID (matches rehype-slug behaviour). */
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/** Extract H2/H3 headings from markdown for the sidebar TOC. */
+function extractToc(markdown: string): TocItem[] {
+  const headings: TocItem[] = [];
+  const lines = markdown.split('\n');
+  for (const line of lines) {
+    const match = line.match(/^(##|###)\s+(.+)$/);
+    if (match) {
+      const level = match[1]!.length; // 2 or 3
+      const text = match[2]!.trim();
+      headings.push({ level, text, id: slugify(text) });
+    }
+  }
+  return headings;
+}
+
+/** Right sidebar table of contents — sticky, hidden on small screens. */
+function DocSidebar({ toc }: { toc: TocItem[] }) {
+  if (toc.length === 0) return null;
+  return (
+    <aside className="hidden xl:block sticky top-20 w-56 shrink-0 self-start">
+      <nav className="rounded-lg border border-border p-4">
+        <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          On this page
+        </h4>
+        <ul className="space-y-1">
+          {toc.map((item) => (
+            <li key={item.id}>
+              <a
+                href={`#${item.id}`}
+                className="block rounded px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                style={{ paddingLeft: item.level === 3 ? '1.25rem' : '0.25rem' }}
+              >
+                {item.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
+  );
+}
+
 export default function DocPage({ params }: Props) {
   const { l1, l2, slug } = params;
   const doc = getDoc(slug);
@@ -40,16 +99,22 @@ export default function DocPage({ params }: Props) {
     notFound();
   }
 
+  const toc = extractToc(doc.content);
+
   return (
-    <div className="min-h-screen px-4 py-12">
-      <article className="prose prose-slate dark:prose-invert mx-auto max-w-3xl
+    <div className="flex justify-center gap-8 px-4 py-12">
+      {/* Main content */}
+      <article className="prose prose-slate dark:prose-invert max-w-3xl min-w-0 flex-1
         prose-headings:scroll-mt-20
         prose-a:text-primary prose-a:no-underline hover:prose-a:underline
         prose-code:rounded prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm
         prose-pre:bg-muted
         prose-table:block prose-table:overflow-x-auto
         ">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeSlug]}
+        >
           {doc.content}
         </ReactMarkdown>
 
@@ -61,6 +126,9 @@ export default function DocPage({ params }: Props) {
           ← Back to Documentation
         </Link>
       </article>
+
+      {/* Sidebar TOC */}
+      <DocSidebar toc={toc} />
     </div>
   );
 }
