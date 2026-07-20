@@ -16,7 +16,7 @@ import { baseCode } from '@/lib/language-data';
 import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { WordList } from '@/components/dictionary/word-list';
-import { setWordListNav, entryToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
+import { buildEntryRoute } from '@/lib/entry-route';
 
 interface DictionaryPopupProps {
   token: LemmatizedToken;
@@ -142,10 +142,7 @@ export function DictionaryPopup({
   }, [savedWords, l2Code, entries, token.text, loading, error]);
 
   const handleEntryClick = (entry: DictionaryEntry) => {
-    // Store the popup results as the word list for the sidebar
-    const compositeId = `${entry.dictionary?.id ?? 'llm'}-${entry.id}`;
-    setWordListNav(entries.map(entryToNavItem), compositeId);
-    router.push(buildEntryRouteWithList(l1Code, l2Code, entry.dictionary?.id ?? 'llm', entry.id, compositeId));
+    router.push(buildEntryRoute(l1Code, l2Code, entry.dictionary?.id ?? 'llm', entry.id));
   };
 
   return (
