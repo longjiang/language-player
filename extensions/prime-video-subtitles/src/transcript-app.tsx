@@ -12,6 +12,7 @@ import type { LemmatizedToken } from '@langplayer/shared';
 import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { DictionaryCard } from './components/DictionaryCard';
+import { Markdown } from './components/Markdown';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
 import { useTranslateLines } from './use-translate-lines';
 import { useSubscription } from './use-subscription';
@@ -496,18 +497,7 @@ Text: ${cue.text}`;
                   <div className="lpv-explain-error">{explainError}</div>
                 )}
                 {explainText && (
-                  <div
-                    className="lpv-markdown"
-                    dangerouslySetInnerHTML={{
-                      __html: explainText
-                        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-                        .replace(/\n\n/g, '</p><p>')
-                        .replace(/\n/g, '<br/>')
-                        .replace(/^<p>/, '<p style="margin:0 0 8px;font-size:13px;color:#ccc;line-height:1.7">')
-                    }}
-                  />
+                  <Markdown text={explainText} />
                 )}
               </div>
             </div>
