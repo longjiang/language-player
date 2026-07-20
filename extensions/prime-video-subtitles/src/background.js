@@ -84,6 +84,7 @@ chrome.webRequest.onCompleted.addListener(
 
 // Track tabs where content script is ready
 const readyTabs = new Set();
+const tabIdMap = {};
 
 // Listen for messages from popup and content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -100,8 +101,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.action === "contentScriptReady") {
         if (sender.tab) {
             readyTabs.add(sender.tab.id);
+            // Store the tab ID so the content script can retrieve it
+            tabIdMap[sender.tab.id] = sender.tab.id;
         }
-        sendResponse({success: true});
+        sendResponse({ tabId: sender.tab?.id });
+    } else if (request.action === "getTabId") {
+        sendResponse(sender.tab?.id || null);
     } else if (request.action === "loadSubtitlesInTab") {
         // Popup wants to load a specific subtitle in the active tab
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
