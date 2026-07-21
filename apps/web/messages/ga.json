@@ -114,6 +114,12 @@
         "purchase": "Ceannaigh",
         "reset_time_to_zero": "Athshocraigh Am go Náid"
     },
+    "docs": {
+        "no_results": "Gan torthaí",
+        "on_this_page": "Ar an leathanach seo",
+        "search_placeholder": "Cuardaigh doiciméid…",
+        "table_of_contents": "Clár na n-ábhar"
+    },
     "duration": {
         "annual": "Billeáilte go bliantúil.",
         "lifetime": "Ní théann as feidhm riamh.",

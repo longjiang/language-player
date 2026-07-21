@@ -125,7 +125,7 @@ function csvToJson() {
     process.exit(1);
   }
 
-  const lines = csvText.trim().split('\n');
+  const lines = csvText.trim().replace(/\r/g, '').split('\n');
   const header = csvParseLine(lines[0]);
   const csvLocales = header.slice(1);
 

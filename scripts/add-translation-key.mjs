@@ -111,7 +111,8 @@ function processPayload(payload) {
 
   // 2. Read CSV
   const csvText = readFileSync(CSV_PATH, 'utf-8');
-  const lines = csvText.trim().split('\n');
+  // Strip \\r to handle CRLF line endings
+  const lines = csvText.trim().replace(/\r/g, '').split('\n');
   const header = csvParseLine(lines[0]);
 
   // Header should be: key, en, zh-Hans, zh-Hant, af, ar, ...

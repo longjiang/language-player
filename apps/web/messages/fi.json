@@ -114,6 +114,12 @@
         "purchase": "Osta",
         "reset_time_to_zero": "Nollaa Aika"
     },
+    "docs": {
+        "no_results": "Ei tuloksia",
+        "on_this_page": "Tällä sivulla",
+        "search_placeholder": "Etsi dokumenteista…",
+        "table_of_contents": "Sisällysluettelo"
+    },
     "duration": {
         "annual": "Laskutetaan vuosittain.",
         "lifetime": "Ei vanhene koskaan.",

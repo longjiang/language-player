@@ -5,6 +5,7 @@ import Fuse from 'fuse.js';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 import { stripMarkdown } from '@/lib/strip-markdown';
+import { useT } from '@/hooks/use-t';
 
 interface DocEntry {
   slug: string;
@@ -32,6 +33,7 @@ function snippet(content: string, query: string): string {
 }
 
 export function DocSearch({ docs, l1, l2, children }: Props) {
+  const t = useT();
   const [query, setQuery] = useState('');
 
   const fuse = useMemo(
@@ -57,7 +59,7 @@ export function DocSearch({ docs, l1, l2, children }: Props) {
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Search documentation…"
+          placeholder={t('docs.search_placeholder')}
           className="w-full rounded-lg border border-border bg-background py-2.5 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       </div>
@@ -84,7 +86,7 @@ export function DocSearch({ docs, l1, l2, children }: Props) {
       {/* No results */}
       {query.trim() && results.length === 0 && (
         <p className="text-center text-sm text-muted-foreground py-8">
-          No results for "{query}"
+          {t('docs.no_results')} &quot;{query}&quot;
         </p>
       )}
 

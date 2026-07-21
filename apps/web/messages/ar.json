@@ -114,6 +114,12 @@
         "purchase": "شراء",
         "reset_time_to_zero": "إعادة تعيين الوقت إلى الصفر"
     },
+    "docs": {
+        "no_results": "لا توجد نتائج",
+        "on_this_page": "في هذه الصفحة",
+        "search_placeholder": "البحث في المستندات…",
+        "table_of_contents": "جدول المحتويات"
+    },
     "duration": {
         "annual": "سنوي",
         "lifetime": "مدى الحياة",

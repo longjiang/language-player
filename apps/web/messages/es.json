@@ -114,6 +114,12 @@
         "purchase": "Comprar",
         "reset_time_to_zero": "Reiniciar Tiempo a Cero"
     },
+    "docs": {
+        "no_results": "Sin resultados",
+        "on_this_page": "En esta página",
+        "search_placeholder": "Buscar documentos…",
+        "table_of_contents": "Tabla de contenidos"
+    },
     "duration": {
         "annual": "Facturación anual.",
         "lifetime": "Nunca caduca.",

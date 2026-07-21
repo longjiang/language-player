@@ -114,6 +114,12 @@
         "purchase": "Kup",
         "reset_time_to_zero": "Zresetuj Czas do Zera"
     },
+    "docs": {
+        "no_results": "Brak wyników",
+        "on_this_page": "Na tej stronie",
+        "search_placeholder": "Szukaj w dokumentach…",
+        "table_of_contents": "Spis treści"
+    },
     "duration": {
         "annual": "Rozliczane rocznie.",
         "lifetime": "Nigdy nie wygasa.",

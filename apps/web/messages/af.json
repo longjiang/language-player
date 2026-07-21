@@ -114,6 +114,12 @@
         "purchase": "Koop",
         "reset_time_to_zero": "Herstel Tyd na Nul"
     },
+    "docs": {
+        "no_results": "Geen resultate",
+        "on_this_page": "Op hierdie bladsy",
+        "search_placeholder": "Soek dokumente…",
+        "table_of_contents": "Inhoudsopgawe"
+    },
     "duration": {
         "annual": "Jaarliks gefaktureer.",
         "lifetime": "Verval nooit.",

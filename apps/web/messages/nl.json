@@ -114,6 +114,12 @@
         "purchase": "Kopen",
         "reset_time_to_zero": "Tijd op Nul Zetten"
     },
+    "docs": {
+        "no_results": "Geen resultaten",
+        "on_this_page": "Op deze pagina",
+        "search_placeholder": "Documenten doorzoeken…",
+        "table_of_contents": "Inhoudsopgave"
+    },
     "duration": {
         "annual": "Jaarlijks gefactureerd.",
         "lifetime": "Verloopt nooit.",

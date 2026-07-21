@@ -114,6 +114,12 @@
         "purchase": "購入",
         "reset_time_to_zero": "時間をゼロにリセット"
     },
+    "docs": {
+        "no_results": "結果なし",
+        "on_this_page": "このページ内",
+        "search_placeholder": "ドキュメントを検索…",
+        "table_of_contents": "目次"
+    },
     "duration": {
         "annual": "毎年請求されます。",
         "lifetime": "有効期限はありません。",
