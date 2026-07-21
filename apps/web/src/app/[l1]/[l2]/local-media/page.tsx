@@ -146,6 +146,7 @@ export default function CustomMediaPage() {
         <h1 className="mb-4 text-xl font-bold">{t('title.local_media')}</h1>
         <CustomMediaUpload
           onOpenFile={customMedia.openFile}
+          onDropFile={customMedia.loadDroppedFile}
           onLoadCaptions={customMedia.loadCaptions}
           onClear={customMedia.clear}
           onRequestPermission={customMedia.requestPermission}
@@ -178,6 +179,7 @@ export default function CustomMediaPage() {
         <div className={`flex-1 space-y-4 ${hasSubtitles ? 'lg:overflow-y-auto' : ''}`}>
           <CustomMediaUpload
             onOpenFile={customMedia.openFile}
+            onDropFile={customMedia.loadDroppedFile}
             onLoadCaptions={customMedia.loadCaptions}
             onClear={customMedia.clear}
             onRequestPermission={customMedia.requestPermission}

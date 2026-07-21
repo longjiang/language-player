@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Upload, FileVideo, FileAudio, FileText, X, RefreshCw } from 'lucide-react';
 
 interface CustomMediaUploadProps {
-  /** Called when user selects a media file. */
+  /** Called when user selects a media file via picker. */
   onOpenFile: () => void;
+  /** Called when a file is dropped onto the upload area. */
+  onDropFile: (file: File) => void;
   /** Called when user selects a caption file. */
   onLoadCaptions: () => void;
   /** Called when user clears stored media. */
@@ -28,6 +30,7 @@ interface CustomMediaUploadProps {
 
 export function CustomMediaUpload({
   onOpenFile,
+  onDropFile,
   onLoadCaptions,
   onClear,
   onRequestPermission,
@@ -39,6 +42,13 @@ export function CustomMediaUpload({
 }: CustomMediaUploadProps) {
   const t = useT();
   const [dragOver, setDragOver] = useState(false);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) onDropFile(file);
+  }, [onDropFile]);
 
   // ── Needs permission state ──
   if (needsPermission) {
@@ -102,7 +112,7 @@ export function CustomMediaUpload({
   // ── Upload state ──
   return (
     <div
-      onDrop={(e) => { e.preventDefault(); setDragOver(false); onOpenFile(); }}
+      onDrop={handleDrop}
       onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
       onDragLeave={() => setDragOver(false)}
       className={`
