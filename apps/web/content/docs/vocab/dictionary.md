@@ -19,21 +19,21 @@ Every entry gives you the essentials up front:
 - **Definitions** in your native language, ordered by relevance
 - **Pronunciation** — tap the speaker icon to hear it aloud, plus a phonetic guide (Pinyin, Romaji, or IPA)
 - **Part of speech** — noun, verb, adjective, and so on
-- **Proficiency level** — where the word falls on scales like CEFR (A1–C2), HSK (1–6), or JLPT (N5–N1)
+- **Proficiency level** — where the word falls on scales like {$level.exam_cefr} (A1–C2), {$level.exam_hsk} (1–6), or {$level.exam_jlpt} (N5–N1)
 
 Depending on the language and the word, you might also see:
 
-- **Alternate scripts** — for Chinese, see the word in both simplified and traditional. For Vietnamese, see the Chữ Hán form. For Korean, see the Hanja. You control which scripts appear in [{$title.settings}](/settings).
-- **Classifiers** — for Chinese, see which measure words go with the noun (like 个, 本, 张). For French or German, see the grammatical gender.
-- **Textbook coverage** — if the word appears in a textbook like the HSK Standard Course, you'll see exactly which book, lesson, and dialog it's from.
+- **Alternate scripts** — for {$lang.zh}, see the word in both simplified and traditional. For {$lang.vi}, see the Chữ Hán form. For {$lang.ko}, see the Hanja. You control which scripts appear in [{$title.settings}](/settings).
+- **Classifiers** — for {$lang.zh}, see which measure words go with the noun (like 个, 本, 张). For {$lang.fr} or {$lang.de}, see the grammatical gender.
+- **Textbook coverage** — if the word appears in a textbook like the {$level.exam_hsk} Standard Course, you'll see exactly which book, lesson, and dialog it's from.
 
 ### Tabs
 
 The entry page has tabs next to the definitions panel:
 
-- **Examples from Videos** — see real subtitle lines from YouTube videos that contain this word. Great for hearing how it's actually used. Learn more in [Subtitle Search](/docs/media/subs-search).
-- **Conjugations** — full conjugation or declension tables for verbs and adjectives. Available for Japanese, Korean, Russian, Ukrainian, English, French, German, Spanish, Italian, and Dutch.
-- **AI Explanation** — a plain-English breakdown of the word's meaning, usage, and nuances. Generated on the fly by DeepSeek.
+- **{$title.examples_from_videos}** — see real subtitle lines from YouTube videos that contain this word. Great for hearing how it's actually used. Learn more in [Subtitle Search](/docs/vocab/subs-search).
+- **{$title.conjugations}** — full conjugation or declension tables for verbs and adjectives. Available for {$lang.ja}, {$lang.ko}, {$lang.ru}, {$lang.uk}, {$lang.en}, {$lang.fr}, {$lang.de}, {$lang.es}, {$lang.it}, and {$lang.nl}.
+- **AI Explanation** — a plain-{$lang.en} breakdown of the word's meaning, usage, and nuances. Generated on the fly by DeepSeek.
 
 ## Where Dictionary Entries Come From
 
@@ -41,11 +41,11 @@ Language Player uses curated, versioned dictionaries built from open data:
 
 | Language | Dictionary | Entries |
 |---|---|---|
-| Chinese | HSK CEDICT | 120,000+ |
-| Cantonese | CC-Canto | 50,000+ |
-| Japanese | EDICT | 170,000+ |
-| Korean | Kengdic | 120,000+ |
-| Klingon | Klingonska | 3,000+ |
+| {$lang.zh} | {$level.exam_hsk} CEDICT | 120,000+ |
+| {$lang.yue} | CC-Canto | 50,000+ |
+| {$lang.ja} | EDICT | 170,000+ |
+| {$lang.ko} | Kengdic | 120,000+ |
+| {$lang.tlh} | {$lang.tlh}ska | 3,000+ |
 | 60+ other languages | Wiktionary | varies by language |
 
 If a word isn't in any dictionary — like a rare dialect word or a new slang term — the app asks an AI model to generate a definition on the spot. These AI-generated entries are marked so you know they're not from a curated source.
@@ -62,5 +62,5 @@ Saved words sync across devices if you're logged in. You can browse and manage t
 - **Use the sidebar toggle** (the panel icon in the search bar) to show or hide your saved words list while browsing entries.
 - **Search Google Images** from any entry page — the link is at the bottom of the definitions panel. Useful for concrete nouns when a picture is worth a thousand words.
 - **If a word's definition seems off**, check the AI Explanation tab. The AI sometimes catches nuances that dictionary definitions miss.
-- **Switch scripts** in [{$title.settings}](/settings) if you prefer traditional Chinese characters or want to see Hanja alongside Korean Hangul.
+- **Switch scripts** in [{$title.settings}](/settings) if you prefer traditional {$lang.zh} characters or want to see Hanja alongside {$lang.ko} Hangul.
 
