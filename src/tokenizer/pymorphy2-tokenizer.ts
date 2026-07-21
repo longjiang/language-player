@@ -12,7 +12,7 @@ function normalizeToken(token: any): Token {
     text: token.word,
     lemmas: token.lemmas.map((lemma: any) => ({
       lemma: lemma.lemma,
-      pos: lemma.pos,
+      part_of_speech: lemma.pos,
       morphologies: lemma.morphologies
     })),
     pronunciation: token.pronunciation

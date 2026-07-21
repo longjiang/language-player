@@ -35,7 +35,7 @@ const normalizeToken = (entry: Entry, tokenMap: Map<string, Token>): void => {
   const token = tokenMap.get(entry.word)!;
   token.lemmas!.push({
     lemma: entry.lemma,
-    pos: entry.pos,
+    part_of_speech: entry.pos,
   });
 
   // Optionally, handle the 'pos' and 'pronunciation' fields

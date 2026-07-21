@@ -2,7 +2,9 @@
 
 export interface Lemma {
   lemma: string;
-  pos?: string;
+  /** Part of speech (e.g. 'noun', 'verb', 'adj-i'). Aligned with @langplayer/shared. */
+  part_of_speech?: string;
+  /** Morphological breakdown (e.g. Turkish morphemes). GO-specific, not in shared Lemma. */
   morphologies?: string[];
 }
 

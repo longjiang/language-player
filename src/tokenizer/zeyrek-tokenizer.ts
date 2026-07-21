@@ -34,7 +34,7 @@ const normalizeToken = (entry: RawEntry, tokenMap: Map<string, Token>): void => 
   const token = tokenMap.get(entry.word)!;
   
   // Check if a lemma with the same 'lemma' and 'pos' already exists
-  let existingLemma = token.lemmas!.find(l => l.lemma === entry.lemma && l.pos === entry.pos);
+  let existingLemma = token.lemmas!.find(l => l.lemma === entry.lemma && l.part_of_speech === entry.pos);
   
   if (existingLemma) {
     // If it exists, add the morphemes to the existing lemma's morphologies
@@ -46,7 +46,7 @@ const normalizeToken = (entry: RawEntry, tokenMap: Map<string, Token>): void => 
     // If it doesn't exist, create a new lemma
     const newLemma: Lemma = {
       lemma: entry.lemma,
-      pos: entry.pos,
+      part_of_speech: entry.pos,
       morphologies: entry.morphemes,
     };
     token.lemmas!.push(newLemma);
