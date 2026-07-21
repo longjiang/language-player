@@ -1,4 +1,4 @@
-# Subtitle Search
+# {$title.examples_from_videos}
 
 See how a word is actually used by native speakers — every result is a real subtitle line from a real video, with a timestamp ready to watch.
 
