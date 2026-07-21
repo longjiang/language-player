@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Fuse from 'fuse.js';
 import { List, ChevronDown, Search } from 'lucide-react';
+import { useT } from '@/hooks/use-t';
 
 interface TocItem {
   level: number;
@@ -21,6 +22,11 @@ interface DocEntry {
   slug: string;
   title: string;
   content: string;
+}
+
+/** Derives the translation key for a category folder slug. */
+function categoryKey(slug: string): string {
+  return `title.${slug}`;
 }
 
 /** Renders a doc link (leaf node) with optional active highlight. */
@@ -48,10 +54,15 @@ function DocCategory({ category, l1, l2, currentSlug, onClick }: {
   currentSlug: string;
   onClick: () => void;
 }) {
+  const t = useT();
   const hasActiveChild = category.children?.some(
     c => c.slug === currentSlug || c.children?.some(cc => cc.slug === currentSlug)
   );
   const [expanded, setExpanded] = useState(!!hasActiveChild);
+  const key = categoryKey(category.slug);
+  const translated = t(key);
+  // Fall back to server-provided title if no translation exists for this key
+  const title = translated !== key ? translated : category.title;
 
   return (
     <div>
@@ -60,7 +71,7 @@ function DocCategory({ category, l1, l2, currentSlug, onClick }: {
         className="flex w-full items-center gap-1 rounded px-2 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
       >
         <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform ${expanded ? '' : '-rotate-90'}`} />
-        {category.title}
+        {title}
       </button>
       {expanded && category.children && (
         <ul className="ml-3 mt-0.5 space-y-0.5 border-l border-border/50 pl-2">

@@ -916,7 +916,7 @@
     },
     "title": {
         "about": "حول",
-        "account": "الحساب",
+        "account": "حساب",
         "all_categories": "جميع الفئات",
         "all_countries": "جميع الدول",
         "annual": "سنوي",
@@ -954,6 +954,7 @@
         "featured": "مميز",
         "filter_by_locale": "تصفية حسب الموقع",
         "gender": "الجنس",
+        "general": "عام",
         "go_pro": "الترقية إلى النسخة المتقدمة",
         "how_did_you_hear": "كيف سمعت عنا؟",
         "i_learning": "أتعلم",

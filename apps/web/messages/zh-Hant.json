@@ -883,7 +883,7 @@
     },
     "title": {
         "about": "關於",
-        "account": "帳號",
+        "account": "帳戶",
         "all_categories": "所有類別",
         "all_countries": "所有國家",
         "annual": "年繳",
@@ -917,6 +917,7 @@
         "explore_media": "探索媒體",
         "featured": "精選",
         "filter_by_locale": "按地區篩選",
+        "general": "一般",
         "go_pro": "升級專業版",
         "how_did_you_hear": "你是怎麼認識我們的？",
         "i_learning": "我正在學",
