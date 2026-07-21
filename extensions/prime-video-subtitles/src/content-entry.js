@@ -906,25 +906,100 @@ function attachTimeTracking() {
 
 // ── Netflix Subtitle Integration ─────────────────────────────────────────
 
-/** Setup Netflix subtitle interception via JSON.parse monkeypatching */
+/**
+ * Inject a JSON.parse monkeypatch into the page's MAIN world.
+ * Content scripts run in an isolated world — their JSON.parse override
+ * does NOT intercept the page's own JSON.parse calls. We must inject
+ * a <script> tag that runs in the page's JavaScript context, then
+ * communicate back via window.postMessage.
+ */
 function setupNetflixInterceptor() {
-  const originalParse = JSON.parse;
-  let netflixSubsLoaded = false;
+  const script = document.createElement('script');
+  script.id = 'lpv-netflix-interceptor';
+  script.textContent = `
+    (function() {
+      if (window.__lpvNetflixActive) return;
+      window.__lpvNetflixActive = true;
 
-  JSON.parse = function(text) {
-    const data = originalParse(text);
+      const originalParse = JSON.parse;
+      let netflixSubsLoaded = false;
+      let interceptCount = 0;
 
-    // Detect Netflix subtitle metadata response
-    if (!netflixSubsLoaded && data?.result) {
-      const tracks = data.result.timedtexttracks || data.result.textTracks;
-      if (tracks && data.result.movieId) {
-        netflixSubsLoaded = true;
-        handleNetflixSubs(tracks);
-      }
+      JSON.parse = function(text) {
+        const data = originalParse(text);
+
+        if (!netflixSubsLoaded && data && data.result) {
+          interceptCount++;
+
+          // Check for subtitle tracks under various known Netflix field names
+          const tracks = data.result.timedtexttracks
+            || data.result.textTracks
+            || data.result.timedTextTracks
+            || data.result.subtitleTracks
+            || data.result.ttTracks;
+
+          if (tracks && tracks.length > 0) {
+            netflixSubsLoaded = true;
+
+            // Extract minimal track info to post back
+            const trackList = tracks.map(function(t) {
+              var dl = t.ttDownloadables || t.downloadables || {};
+              var url = '';
+              var fmt = '';
+              var formats = ['webvtt-lssdh-ios8', 'dfxp-ls-sdh', 'imsc1.1', 'simplesdh'];
+              for (var i = 0; i < formats.length; i++) {
+                var d = dl[formats[i]];
+                if (d) {
+                  var urls = d.downloadUrls || (d.urls ? d.urls.map(function(u) { return u.url; }) : []);
+                  if (urls.length > 0) {
+                    url = typeof urls[0] === 'string' ? urls[0] : Object.values(urls)[0];
+                    fmt = formats[i];
+                    break;
+                  }
+                }
+              }
+
+              return {
+                language: t.language || t.languageCode || '',
+                languageCode: t.language || t.languageCode || '',
+                trackType: t.trackType || '',
+                isNoneTrack: !!t.isNoneTrack,
+                url: url,
+                format: fmt,
+              };
+            });
+
+            window.postMessage({
+              source: 'lpv-netflix',
+              type: 'netflixTracks',
+              tracks: trackList,
+            }, '*');
+
+            console.log('[LanguagePlayer] MAIN: intercepted', trackList.length, 'Netflix subtitle tracks');
+          }
+        }
+
+        return data;
+      };
+
+      console.log('[LanguagePlayer] MAIN: JSON.parse monkeypatch active');
+    })();
+  `;
+
+  (document.head || document.documentElement).appendChild(script);
+
+  // Listen for messages from the MAIN world script
+  window.addEventListener('message', (event) => {
+    if (event.source !== window) return;
+    if (event.data?.source !== 'lpv-netflix') return;
+
+    if (event.data.type === 'netflixTracks') {
+      console.log('[LanguagePlayer] Received Netflix tracks from MAIN world:', event.data.tracks.length);
+      handleNetflixSubs(event.data.tracks);
     }
+  });
 
-    return data;
-  };
+  console.log('[LanguagePlayer] Netflix interceptor injected into MAIN world');
 }
 
 /** Process Netflix subtitle tracks and fetch the actual subtitle file */
@@ -933,20 +1008,14 @@ async function handleNetflixSubs(tracks) {
 
   for (const track of tracks) {
     if (track.isNoneTrack) continue;
-    const lang = track.language + (track.trackType === 'closedcaptions' ? '[cc]' : '');
-    const downloadables = track.ttDownloadables || track.downloadables || {};
+    if (!track.url) continue;
 
-    // Try WebVTT first, then DFXP/TTML
-    for (const fmt of ['webvtt-lssdh-ios8', 'dfxp-ls-sdh', 'imsc1.1', 'simplesdh']) {
-      const dl = downloadables[fmt];
-      if (dl) {
-        const urls = dl.downloadUrls || (dl.urls ? dl.urls.map(u => u.url) : []);
-        if (urls.length > 0) {
-          subs[lang] = { url: Object.values(urls)[0], format: fmt, languageCode: track.language };
-          break;
-        }
-      }
-    }
+    const langKey = track.language + (track.trackType === 'closedcaptions' ? '[cc]' : '');
+    subs[langKey] = {
+      url: track.url,
+      format: track.format,
+      languageCode: track.languageCode || track.language,
+    };
   }
 
   console.log('[LanguagePlayer] Netflix subtitle tracks:',
