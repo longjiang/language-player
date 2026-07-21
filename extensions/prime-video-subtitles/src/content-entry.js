@@ -907,88 +907,23 @@ function attachTimeTracking() {
 // ── Netflix Subtitle Integration ─────────────────────────────────────────
 
 /**
- * Inject a JSON.parse monkeypatch into the page's MAIN world.
- * Content scripts run in an isolated world — their JSON.parse override
- * does NOT intercept the page's own JSON.parse calls. We must inject
- * a <script> tag that runs in the page's JavaScript context, then
- * communicate back via window.postMessage.
+ * Inject a JSON.parse monkeypatch into the page's MAIN world via
+ * chrome.scripting.executeScript (proxied through background worker).
+ *
+ * We can't use DOM <script> injection because Netflix's CSP blocks
+ * inline scripts without a valid nonce. And content scripts run in an
+ * isolated world, so their JSON.parse override doesn't intercept the
+ * page's own calls.
+ *
+ * The flow:
+ *   1. Content script → background: { action: 'setupNetflixInterceptor' }
+ *   2. Background → executeScript(world:'MAIN') → runs monkeypatch on the page
+ *   3. MAIN world monkeypatch posts tracks via window.postMessage
+ *   4. Content script receives message → handleNetflixSubs()
  */
 function setupNetflixInterceptor() {
-  const script = document.createElement('script');
-  script.id = 'lpv-netflix-interceptor';
-  script.textContent = `
-    (function() {
-      if (window.__lpvNetflixActive) return;
-      window.__lpvNetflixActive = true;
-
-      const originalParse = JSON.parse;
-      let netflixSubsLoaded = false;
-      let interceptCount = 0;
-
-      JSON.parse = function(text) {
-        const data = originalParse(text);
-
-        if (!netflixSubsLoaded && data && data.result) {
-          interceptCount++;
-
-          // Check for subtitle tracks under various known Netflix field names
-          const tracks = data.result.timedtexttracks
-            || data.result.textTracks
-            || data.result.timedTextTracks
-            || data.result.subtitleTracks
-            || data.result.ttTracks;
-
-          if (tracks && tracks.length > 0) {
-            netflixSubsLoaded = true;
-
-            // Extract minimal track info to post back
-            const trackList = tracks.map(function(t) {
-              var dl = t.ttDownloadables || t.downloadables || {};
-              var url = '';
-              var fmt = '';
-              var formats = ['webvtt-lssdh-ios8', 'dfxp-ls-sdh', 'imsc1.1', 'simplesdh'];
-              for (var i = 0; i < formats.length; i++) {
-                var d = dl[formats[i]];
-                if (d) {
-                  var urls = d.downloadUrls || (d.urls ? d.urls.map(function(u) { return u.url; }) : []);
-                  if (urls.length > 0) {
-                    url = typeof urls[0] === 'string' ? urls[0] : Object.values(urls)[0];
-                    fmt = formats[i];
-                    break;
-                  }
-                }
-              }
-
-              return {
-                language: t.language || t.languageCode || '',
-                languageCode: t.language || t.languageCode || '',
-                trackType: t.trackType || '',
-                isNoneTrack: !!t.isNoneTrack,
-                url: url,
-                format: fmt,
-              };
-            });
-
-            window.postMessage({
-              source: 'lpv-netflix',
-              type: 'netflixTracks',
-              tracks: trackList,
-            }, '*');
-
-            console.log('[LanguagePlayer] MAIN: intercepted', trackList.length, 'Netflix subtitle tracks');
-          }
-        }
-
-        return data;
-      };
-
-      console.log('[LanguagePlayer] MAIN: JSON.parse monkeypatch active');
-    })();
-  `;
-
-  (document.head || document.documentElement).appendChild(script);
-
-  // Listen for messages from the MAIN world script
+  // Listen for messages from the MAIN world monkeypatch (set up BEFORE
+  // requesting injection, so we don't miss the message)
   window.addEventListener('message', (event) => {
     if (event.source !== window) return;
     if (event.data?.source !== 'lpv-netflix') return;
@@ -999,7 +934,18 @@ function setupNetflixInterceptor() {
     }
   });
 
-  console.log('[LanguagePlayer] Netflix interceptor injected into MAIN world');
+  // Ask background worker to inject the monkeypatch into MAIN world
+  chrome.runtime.sendMessage({ action: 'setupNetflixInterceptor' })
+    .then((res) => {
+      if (res?.success) {
+        console.log('[LanguagePlayer] Netflix interceptor injected into MAIN world');
+      } else {
+        console.error('[LanguagePlayer] Failed to inject Netflix interceptor:', res?.error);
+      }
+    })
+    .catch((err) => {
+      console.error('[LanguagePlayer] Netflix interceptor injection error:', err?.message);
+    });
 }
 
 /** Process Netflix subtitle tracks and fetch the actual subtitle file */

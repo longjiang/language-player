@@ -152,6 +152,89 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ text: '', error: err?.message });
         });
         return true; // async
+    } else if (request.action === "setupNetflixInterceptor") {
+        // Inject JSON.parse monkeypatch into Netflix's MAIN world.
+        // Content scripts can't do this because they run in an isolated world,
+        // and DOM <script> injection is blocked by Netflix's CSP.
+        const tabId = sender.tab?.id;
+        if (!tabId) { sendResponse({ success: false, error: 'No tab' }); return; }
+        chrome.scripting.executeScript({
+            target: { tabId },
+            func: () => {
+                if (window.__lpvNetflixActive) return;
+                window.__lpvNetflixActive = true;
+
+                const originalParse = JSON.parse;
+                let netflixSubsLoaded = false;
+
+                JSON.parse = function(text) {
+                    const data = originalParse(text);
+
+                    if (!netflixSubsLoaded && data && data.result) {
+                        const tracks = data.result.timedtexttracks
+                            || data.result.textTracks
+                            || data.result.timedTextTracks
+                            || data.result.subtitleTracks
+                            || data.result.ttTracks;
+
+                        if (tracks && tracks.length > 0) {
+                            netflixSubsLoaded = true;
+
+                            const trackList = [];
+                            for (let i = 0; i < tracks.length; i++) {
+                                const t = tracks[i];
+                                if (t.isNoneTrack) continue;
+
+                                const dl = t.ttDownloadables || t.downloadables || {};
+                                let url = '';
+                                let fmt = '';
+                                const formats = ['webvtt-lssdh-ios8', 'dfxp-ls-sdh', 'imsc1.1', 'simplesdh'];
+                                for (let j = 0; j < formats.length; j++) {
+                                    const d = dl[formats[j]];
+                                    if (d) {
+                                        const urls = d.downloadUrls || (d.urls ? d.urls.map(function(u) { return u.url; }) : []);
+                                        if (urls.length > 0) {
+                                            url = typeof urls[0] === 'string' ? urls[0] : Object.values(urls)[0];
+                                            fmt = formats[j];
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (url) {
+                                    trackList.push({
+                                        language: t.language || t.languageCode || '',
+                                        languageCode: t.language || t.languageCode || '',
+                                        trackType: t.trackType || '',
+                                        isNoneTrack: !!t.isNoneTrack,
+                                        url: url,
+                                        format: fmt,
+                                    });
+                                }
+                            }
+
+                            window.postMessage({
+                                source: 'lpv-netflix',
+                                type: 'netflixTracks',
+                                tracks: trackList,
+                            }, '*');
+
+                            console.log('[LanguagePlayer] MAIN: intercepted ' + trackList.length + ' Netflix subtitle tracks');
+                        }
+                    }
+
+                    return data;
+                };
+
+                console.log('[LanguagePlayer] MAIN: JSON.parse monkeypatch active');
+            },
+            world: 'MAIN',
+        }).then(() => {
+            sendResponse({ success: true });
+        }).catch(err => {
+            sendResponse({ success: false, error: err?.message });
+        });
+        return true; // async
     }
     return true; // Keep message channel open for async response
 });
