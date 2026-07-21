@@ -60,6 +60,13 @@ copyFileSync(
 );
 console.log('[build] Copied content.css');
 
+// Copy Netflix MAIN world script (injected via <script src> at document_start)
+copyFileSync(
+  resolve(__dirname, 'src/netflix-main-world.js'),
+  resolve(outDir, 'netflix-main-world.js'),
+);
+console.log('[build] Copied netflix-main-world.js');
+
 // Read and log output size
 const stats = readFileSync(resolve(outDir, 'content.js'));
 console.log(`[build] Done — dist/content.js (${(stats.length / 1024).toFixed(1)} KB)`);
