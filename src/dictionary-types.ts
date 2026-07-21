@@ -9,10 +9,23 @@ export interface DictionaryEntry {
   pronunciation?: string;
   alternate?: string;
   level?: Level;
+  /** @deprecated Use phonetic_detail or part_of_speech from shared LexicalEntry instead. */
   pos?: string;
 
   // hsk-cedict
   hskId?: number;
+
+  /** Language-specific phonetic detail.
+   *  Mirrors @langplayer/shared DictionaryEntry.phonetic_detail.
+   *  Populated by normalizers from raw dictionary CSV data. */
+  phonetic_detail?: {
+    pinyin?: string;
+    kana?: string;
+    romaji?: string;
+    jyutping?: string;
+    romanization?: string;
+    ipa?: string;
+  } | null;
 };
 
 export interface RawEntry {

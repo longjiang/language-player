@@ -10,6 +10,7 @@ import { languageLevelsByL2Code } from "@/src/language-levels";
 import { useLanguage } from "@/contexts/LanguageContext";
 import BookmarkButton from "@/components/BookmarkButton";
 import DefinitionList from "./DefinitionList";
+import { formatPronunciation } from '@langplayer/utils';
 
 interface DictionaryEntryContentProps {
   entry: DictionaryEntry;
@@ -46,7 +47,7 @@ const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, 
           />
         </View>
         <Text>
-          {entry.pronunciation && <ThemedText type="large">[{entry.pronunciation}]</ThemedText>}
+          {formatPronunciation(entry as any, l2Lang.code) && <ThemedText type="large">{formatPronunciation(entry as any, l2Lang.code)}</ThemedText>}
           {entry.pronunciation && entry.level && <ThemedText type="large"> </ThemedText>}
           {entry.level && <ThemedText type="defaultBold" level={entry.level}>{levels[entry.level].examLevelName}</ThemedText>}
         </Text>

@@ -8,6 +8,7 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { Token } from "@/src/tokenizer";
 import { DictionaryEntry } from "@/src/dictionary-types";
 import { popupDictionaryContentStyles as styles } from "@/src/styles";
+import { formatPronunciation } from '@langplayer/utils';
 import { languageLevelsByL2Code } from "@/src/language-levels";
 import BookmarkButton from "@/components/BookmarkButton";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -108,7 +109,7 @@ export const PopupDictionaryContent: React.FC<{
           </View>
           {(entry.pronunciation || entry.level) && (
             <ThemedText style={styles.entryText} variant="secondary">
-              {entry.pronunciation && <>[{entry.pronunciation}] </>}
+              {formatPronunciation(entry as any, l2Lang.code) && <>{formatPronunciation(entry as any, l2Lang.code)} </>}
               {entry.level && (
                 <ThemedText type="smallBold" level={entry.level}>
                   {entry.level ? "  " + levels[entry.level].examLevelName : ""}

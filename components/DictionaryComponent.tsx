@@ -9,6 +9,7 @@ import { router } from "expo-router";
 import { DictionaryEntry } from "@/src/dictionary-types";
 import { debounce } from "lodash";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatPronunciation } from '@langplayer/utils';
 import { useSettings } from "@/contexts/SettingsContext";
 import DefinitionList from "./DefinitionList";
 import { Language } from "@/src/languages";
@@ -129,9 +130,9 @@ export const DictionaryComponent: React.FC<DictionaryComponentProps> = ({
                   {" "}
                   {entry[alternateKey]}
                 </ThemedText>
-                {entry.pronunciation && <ThemedText type="default" variant="secondary">
+                {formatPronunciation(entry as any, l2Lang.code) && <ThemedText type="default" variant="secondary">
                   {" "}
-                  [{entry.pronunciation}]
+                  {formatPronunciation(entry as any, l2Lang.code)}
                 </ThemedText>}
               </ThemedText>
               {entry.definitions?.length && (

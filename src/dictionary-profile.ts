@@ -76,6 +76,7 @@ export const normalizeCedictEntry = (
     alternate: entry.traditional,
     definitions: definitionsArray,
     level,
+    phonetic_detail: entry.pinyin ? { pinyin: entry.pinyin } : null,
   };
 };
 
@@ -88,7 +89,8 @@ export const normalizeDialectDictEntry = (entry: RawEntry): DictionaryEntry => {
     alternate: entry.traditional,
     pronunciation: entry.pronunciation || "",
     definitions: definitionsArray,
-    level: undefined
+    level: undefined,
+    phonetic_detail: null,
   };
 }
 
@@ -101,7 +103,8 @@ export const normalizeCCCantoEntry = (entry: RawEntry): DictionaryEntry => {
     alternate: entry.traditional,
     pronunciation: entry.jyutping || "",
     definitions: definitionsArray,
-    level: undefined
+    level: undefined,
+    phonetic_detail: entry.jyutping ? { jyutping: entry.jyutping } : null,
   };
 }
 
@@ -115,7 +118,8 @@ export const normalizeEdictEntry = (entry: RawEntry):DictionaryEntry => {
     pronunciation: entry.kana,
     definitions,
     level: undefined,
-    pos: posKey ? edictPOS[posKey] || posKey : posKey
+    pos: posKey ? edictPOS[posKey] || posKey : posKey,
+    phonetic_detail: entry.kana ? { kana: entry.kana } : null,
   };
 
 
@@ -135,6 +139,8 @@ export const normalizeKengdicEntry = (entry: RawEntry): DictionaryEntry => {
       normalizedEntry.alternate = entry.hanja;
   }
 
+  normalizedEntry.phonetic_detail = null;
+
   return normalizedEntry;
 };
 
@@ -149,6 +155,7 @@ export const normalizeWiktionaryEntry = (entry: RawEntry): DictionaryEntry => {
     alternate,
     definitions,
     pronunciation: entry.pronunciation,
+    phonetic_detail: entry.pronunciation ? { romanization: entry.pronunciation } : null,
   };
 };
 
