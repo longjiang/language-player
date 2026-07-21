@@ -78,8 +78,8 @@
 - ✅ Reader and Notes
 - ✅ Music page
 - ✅ Level system
-- ⬜ Learning path
-- ⬜ Documentation / Help
+- ✅ Documentation / Help
+- ⬜ Learning path (Will Sunset)
 - ⬜ ePub Reader (Will Sunset)
 - ⬜ Phrasebooks (Will Sunset)
 
@@ -104,22 +104,22 @@
 > 🗄️ **Repo merge**: `language-player-3` → `apps/mobile/` (see specs/002)
 
 
-- ⬜ **Step 1: Expo SDK upgrade (51 → 57)** — two-hop strategy (do BEFORE shared package wiring; upgrade against known-working direct API calls):
-  - ⬜ **Hop 1: 51 → 54** (Legacy Architecture bridge)
+- ✅ **Step 1: Expo SDK upgrade (51 → 57)** — two-hop strategy (do BEFORE shared package wiring; upgrade against known-working direct API calls):
+  - ✅ **Hop 1: 51 → 54** (Legacy Architecture bridge)
     - Upgrade React 18.2 → 19.1, RN 0.74 → 0.81
     - Migrate `expo-av` → `expo-audio` + `expo-video` (SDK 55 removes `expo-av`)
     - Migrate `expo-sqlite` sync API → new async API (tagged templates, `db.sql`)
     - Update `expo-file-system` legacy → new API (or `/legacy` shim)
     - Update `react-native-reanimated` 3.x → 4.x (New Arch compatible)
     - Verify New Architecture works (opt-in in SDK 54; required from SDK 55)
-  - ⬜ **Hop 2: 54 → 57** (modernization leap)
+  - ✅ **Hop 2: 54 → 57** (modernization leap)
     - Enable New Architecture (mandatory from SDK 55)
     - Run `expo-router` / `react-navigation` split codemod (SDK 56)
     - Migrate `@expo/vector-icons` → `@react-native-vector-icons/*` (SDK 56 codemod)
     - Enable Hermes v1 (default from SDK 56)
     - React 19.1 → 19.2, RN 0.81 → 0.86 (SDK 57 is non-breaking)
     - Bump Xcode → 26.4+, iOS minimum → 16.4
-- ⬜ **Step 2: Wire shared packages** — refactor to use `@langplayer/shared`, `@langplayer/utils`, and `@langplayer/api-client` (replace direct API calls)
+- ✅ **Step 2: Wire shared packages** — refactor to use `@langplayer/shared`, `@langplayer/utils`, and `@langplayer/api-client` (replace direct API calls)
 - ⬜ **Step 3: Merge** — merge React Native app into monorepo with full Git history
 - ⬜ **Step 4: Feature parity audit** — validate mobile app against Classic for completeness
 
