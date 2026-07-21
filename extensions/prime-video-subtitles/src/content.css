@@ -183,20 +183,41 @@ body.lpv-panel-open .nf-player-container {
 
 /* ── Disney+: shrink player so panel sits beside it ────────────────── */
 
+/* Push the entire Disney+ viewport left so nothing (video, controls,
+   progress bar, overlays) is hidden behind the panel. */
+body.lpv-panel-open.disneyplus {
+  padding-right: 380px !important;
+}
+
+/* Shrink the custom player element */
 body.lpv-panel-open disney-web-player {
   width: calc(100vw - 380px) !important;
   max-width: calc(100vw - 380px) !important;
 }
 
-/* Disney+ content wrapper fallbacks */
+/* Catch absolutely-positioned UI overlays that span full viewport */
 body.lpv-panel-open .btm-media-overlays-container,
 body.lpv-panel-open .hive-video-player-container,
-body.lpv-panel-open .content-wrapper,
-body.lpv-panel-open #app > div > div:first-child {
+body.lpv-panel-open .hive-controls-container,
+body.lpv-panel-open [class*="overlay"],
+body.lpv-panel-open [class*="Overlay"] {
+  right: 380px !important;
   width: calc(100vw - 380px) !important;
 }
 
+/* Shrink any full-width fixed containers */
+body.lpv-panel-open .content-wrapper,
+body.lpv-panel-open #app > div > div:first-child {
+  width: calc(100vw - 380px) !important;
+  max-width: calc(100vw - 380px) !important;
+}
+
 /* ── Hulu: shrink player so panel sits beside it ───────────────────── */
+
+/* Push the entire Hulu viewport left */
+body.lpv-panel-open.hulu {
+  padding-right: 380px !important;
+}
 
 body.lpv-panel-open .hulu-player,
 body.lpv-panel-open .HuluPlayer,
@@ -208,6 +229,11 @@ body.lpv-panel-open .player-area {
 }
 
 /* ── HBO Max: shrink player so panel sits beside it ────────────────── */
+
+/* Push the entire HBO Max viewport left */
+body.lpv-panel-open.hbomax {
+  padding-right: 380px !important;
+}
 
 body.lpv-panel-open [data-testid="player-ux-video"],
 body.lpv-panel-open .video-player__container,
