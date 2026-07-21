@@ -183,8 +183,19 @@ for (const locale of locales) {
   }
 
   const outPath = resolve(OUT_DIR, `${locale}.json`);
-  writeFileSync(outPath, JSON.stringify(resolved, null, 2), 'utf-8');
-  console.log(`✓ ${outPath} (${resolved.length} docs)`);
+
+  // Merge with existing entries if any
+  let existing = [];
+  try { existing = JSON.parse(readFileSync(outPath, 'utf-8')); } catch {}
+
+  const bySlug = new Map(existing.map(e => [e.slug, e]));
+  for (const entry of resolved) {
+    bySlug.set(entry.slug, entry);
+  }
+
+  const merged = [...bySlug.values()].sort((a, b) => a.slug.localeCompare(b.slug));
+  writeFileSync(outPath, JSON.stringify(merged, null, 2), 'utf-8');
+  console.log(`✓ ${outPath} (${merged.length} docs)`);
 }
 
 console.log('Done.');
