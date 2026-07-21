@@ -32,6 +32,7 @@ interface TranscriptAppProps {
   l2Code: string;
   l1Code: string;
   onSeekTo: (timeSec: number) => void;
+  loadingL2?: string;
 }
 
 // Re-export SubCue type for content-entry.js
@@ -332,11 +333,20 @@ CueLine.displayName = 'CueLine';
 
 // ── Empty State ────────────────────────────────────────────────────────────
 
-const EmptyState: React.FC = () => (
+const EmptyState: React.FC<{ loadingL2?: string }> = ({ loadingL2 }) => (
   <div className="lpv-empty">
-    Waiting for subtitles...
-    <br />
-    Start playing a video on Prime Video or YouTube.
+    {loadingL2 ? (
+      <>
+        <span className="lpv-spinner" />
+        Loading {loadingL2}…
+      </>
+    ) : (
+      <>
+        Waiting for subtitles...
+        <br />
+        Start playing a video.
+      </>
+    )}
   </div>
 );
 
@@ -348,6 +358,7 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   l2Code,
   l1Code,
   onSeekTo,
+  loadingL2,
 }) => {
   const listRef = useRef<HTMLDivElement>(null);
   const prevActiveRef = useRef(activeCueIdx);
@@ -427,7 +438,7 @@ Text: ${cue.text}`;
   }, [activeCueIdx]);
 
   if (cues.length === 0) {
-    return <EmptyState />;
+    return <EmptyState loadingL2={loadingL2} />;
   }
 
   return (
@@ -521,6 +532,7 @@ export function mountTranscript(
   l2Code: string,
   l1Code: string,
   onSeekTo: (timeSec: number) => void,
+  loadingL2?: string,
 ): void {
   if (!root) {
     root = createRoot(container);
@@ -533,6 +545,7 @@ export function mountTranscript(
         l2Code={l2Code}
         l1Code={l1Code}
         onSeekTo={onSeekTo}
+        loadingL2={loadingL2}
       />
     </SavedWordsProvider>,
   );
