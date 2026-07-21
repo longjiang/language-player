@@ -274,7 +274,7 @@ function seekTo(timeSec) {
 
 // ── React Rendering ───────────────────────────────────────────────────────
 
-function renderTranscript() {
+function renderTranscript(loadingL2) {
   if (!panelContent) return;
   mountTranscript(
     panelContent,
@@ -283,6 +283,7 @@ function renderTranscript() {
     detectedL2Code,
     L1_CODE,
     seekTo,
+    loadingL2,
   );
 }
 
@@ -294,7 +295,10 @@ async function fetchAndParseSubtitles(url) {
   if (STATE.subtitleUrl === url) return;
   STATE.subtitleUrl = url;
   STATE.loading = true;
-  updateStatus('Loading subtitles...');
+  // Clear old cues and show spinner while loading new ones
+  STATE.cues = [];
+  renderTranscript(detectedL2Code);
+  updateStatus(`Loading ${detectedL2Code} subtitles…`);
 
   const gen = ++fetchGen;
 
@@ -779,6 +783,21 @@ async function onL2Change(newCode) {
     chrome.storage.local.set({ l2Language: newCode });
   } catch {}
 
+  // For Netflix: try to load a different subtitle track from cache
+  if (isNetflix && Object.keys(cachedNetflixTracks).length > 0) {
+    const langKeys = Object.keys(cachedNetflixTracks);
+    const bestKey = langKeys.find(k => cachedNetflixTracks[k].languageCode === newCode)
+      || langKeys.find(k => cachedNetflixTracks[k].languageCode?.startsWith?.(newCode?.split('-')[0]))
+      || null;
+    if (bestKey) {
+      // Clear old cues immediately, spinner shown by loadNetflixTrackForLanguage
+      STATE.cues = [];
+      renderTranscript(newCode);
+      await loadNetflixTrackForLanguage(cachedNetflixTracks[bestKey].languageCode);
+      return;
+    }
+  }
+
   // For YouTube: try to find a matching caption track
   if (isYouTube && ytCaptionTracks.length > 0) {
     const match = ytCaptionTracks.find(t =>
@@ -789,18 +808,16 @@ async function onL2Change(newCode) {
       await fetchYTTrack(match);
       return;
     }
-    // No matching track — try any track
     const best = ytCaptionTracks.find(t => t.kind !== 'asr') || ytCaptionTracks[0];
     if (best) {
       await fetchYTTrack(best);
-      // Override detected code to user's choice (tokenization follows user choice)
       detectedL2Code = newCode;
       renderTranscript();
       return;
     }
   }
 
-  // Prime Video or no track change: just re-render with new tokenization
+  // Other platforms: just re-render existing cues with new tokenization
   renderTranscript();
 }
 
@@ -1053,7 +1070,10 @@ async function loadNetflixTrackForLanguage(langCode) {
   const gen = ++fetchGen;
   console.log('[LanguagePlayer] Loading Netflix track:', bestKey, track.format);
 
-  updateStatus('Loading subtitles...');
+  // Clear old cues and show spinner
+  STATE.cues = [];
+  renderTranscript(bestKey);
+  updateStatus(`Loading ${bestKey} subtitles…`);
 
   try {
     const response = await fetch(track.url);

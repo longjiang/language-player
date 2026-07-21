@@ -275,6 +275,7 @@ body.lpv-panel-open disney-web-player-ui {
 
 .lpv-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 200px;
@@ -282,6 +283,23 @@ body.lpv-panel-open disney-web-player-ui {
   font-size: 14px;
   text-align: center;
   padding: 24px;
+  gap: 12px;
+}
+
+/* ── Loading spinner ──────────────────────────────────────────────────── */
+
+.lpv-spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-top-color: rgba(0, 168, 225, 0.8);
+  border-radius: 50%;
+  animation: lpv-spin 0.8s linear infinite;
+}
+
+@keyframes lpv-spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ── Tokenized Text ────────────────────────────────────────────────────── */
