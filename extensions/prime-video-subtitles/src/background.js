@@ -213,13 +213,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                                 }
                             }
 
+                            // Restore original JSON.parse IMMEDIATELY to avoid
+                            // the wrapper overhead on every subsequent call.
+                            // Netflix makes hundreds of JSON.parse calls during
+                            // playback — the wrapper adds up and causes tab slowdown.
+                            JSON.parse = originalParse;
+
                             window.postMessage({
                                 source: 'lpv-netflix',
                                 type: 'netflixTracks',
                                 tracks: trackList,
                             }, '*');
 
-                            console.log('[LanguagePlayer] MAIN: intercepted ' + trackList.length + ' Netflix subtitle tracks');
+                            console.log('[LanguagePlayer] MAIN: intercepted ' + trackList.length + ' Netflix tracks, JSON.parse restored');
                         }
                     }
 
