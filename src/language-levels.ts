@@ -2,6 +2,7 @@
 
 import { LEVELS, L2_LEVEL_6_HOURS, LevelInfo } from '@/constants/LanguageLevels';
 import { MAX_DIFFICULTY_BY_LEVEL } from '@/constants/MaxDifficultyByLevel';
+import { primaryScale } from '@langplayer/shared';
 
 interface LevelDetails {
   level: number;
@@ -47,13 +48,9 @@ export function languageLevelsByL2Code(l2Code: string): Record<number, LevelDeta
 }
 
 function l2LevelKey(l2Code: string): string {
-  switch (l2Code) {
-    case 'zh': return 'hsk';
-    case 'ko': return 'topik';
-    case 'ja': return 'jlpt';
-    case 'en': return 'ielts';
-    default: return 'cefr';
-  }
+  const scaleId = primaryScale(l2Code); // e.g. 'hsk_2010', 'cefr', 'jlpt', 'topik', 'ielts'
+  // Strip version suffix for GO's short key convention: hsk_2010 → hsk
+  return scaleId.replace(/_\d+$/, '');
 }
 
 function l2LevelName(l2Code: string): string {
