@@ -1032,6 +1032,8 @@ async function loadNetflixTrackForLanguage(langCode) {
   const track = cachedNetflixTracks[bestKey];
   console.log('[LanguagePlayer] Loading Netflix track:', bestKey, track.format);
 
+  updateStatus('Loading subtitles...');
+
   try {
     const response = await fetch(track.url);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -1060,8 +1062,10 @@ async function loadNetflixTrackForLanguage(langCode) {
       if (!STATE.panelVisible) setPanelVisible(true);
     }
     setBadge(true);
+    updateStatus(`${cues.length} subtitle entries loaded`);
   } catch (err) {
     console.error('[LanguagePlayer] Failed to fetch Netflix subtitles:', err);
+    updateStatus('Failed to load subtitles');
   }
 }
 
