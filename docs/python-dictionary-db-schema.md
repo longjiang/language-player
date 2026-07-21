@@ -471,13 +471,3 @@ The `/dictionary/download` endpoint (proposed in ADR-0008) needs to:
 3. Return pre-normalized `DictionaryEntry[]` JSON
 
 For dedicated dictionaries (cedict, edict, kengdic, cccanto, klingonska), queries are single-table SELECTs. For Wiktionary languages, queries filter by `lang_code`.
-
-**Available phonetic data for `formatPronunciation()`**:
-| Language | Source | Phonetic Field |
-|---|---|---|
-| zh | cedict | `pronunciation` (pinyin with tone marks) |
-| ja | edict | `pronunciation` (kana), `pitch_accent` |
-| ko | kengdic | `pronunciation` (romanization) |
-| yue | cccanto | `pronunciation` (jyutping with tones) |
-| ru | open_russian | `stressed` (Unicode acute), `pronunciation` (IPA) |
-| other | wiktionary | `pronunciation` (IPA or romanization), `gender` |
