@@ -1,43 +1,40 @@
 // @/src/i18n/load-messages.ts
-// Dynamically loads locale messages in nested format.
-// The source JSONs use nested format (compatible with both i18n-js and react-intl
-// via the resolveNested() bridge in use-t.ts).
+// Dynamically loads locale messages in nested format from shared directory.
+// Both i18n-js and react-intl (via resolveNested) read the same JSON files.
 
-// Map of locale code → require() the JSON
-// These are the same JSON files used by i18n-js (nested format).
-// In Phase 2, these paths change to @langplayer/shared/locales/.
+// Map of locale code → require() the JSON from packages/shared/locales/
 const localeLoaders: Record<string, () => Record<string, unknown>> = {
-  en: () => require('@/assets/localizations/en.json'),
-  'zh-Hans': () => require('@/assets/localizations/zh-Hans.json'),
-  'zh-Hant': () => require('@/assets/localizations/zh-Hant.json'),
-  af: () => require('@/assets/localizations/af.json'),
-  ar: () => require('@/assets/localizations/ar.json'),
-  ca: () => require('@/assets/localizations/ca.json'),
-  de: () => require('@/assets/localizations/de.json'),
-  el: () => require('@/assets/localizations/el.json'),
-  es: () => require('@/assets/localizations/es.json'),
-  fi: () => require('@/assets/localizations/fi.json'),
-  fr: () => require('@/assets/localizations/fr.json'),
-  ga: () => require('@/assets/localizations/ga.json'),
-  hi: () => require('@/assets/localizations/hi.json'),
-  hr: () => require('@/assets/localizations/hr.json'),
-  hu: () => require('@/assets/localizations/hu.json'),
-  id: () => require('@/assets/localizations/id.json'),
-  it: () => require('@/assets/localizations/it.json'),
-  ja: () => require('@/assets/localizations/ja.json'),
-  ko: () => require('@/assets/localizations/ko.json'),
-  nl: () => require('@/assets/localizations/nl.json'),
-  no: () => require('@/assets/localizations/no.json'),
-  pl: () => require('@/assets/localizations/pl.json'),
-  pt: () => require('@/assets/localizations/pt.json'),
-  ro: () => require('@/assets/localizations/ro.json'),
-  ru: () => require('@/assets/localizations/ru.json'),
-  sr: () => require('@/assets/localizations/sr.json'),
-  sv: () => require('@/assets/localizations/sv.json'),
-  sw: () => require('@/assets/localizations/sw.json'),
-  th: () => require('@/assets/localizations/th.json'),
-  tr: () => require('@/assets/localizations/tr.json'),
-  vi: () => require('@/assets/localizations/vi.json'),
+  en: () => require('../../../packages/shared/locales/en.json'),
+  'zh-Hans': () => require('../../../packages/shared/locales/zh-Hans.json'),
+  'zh-Hant': () => require('../../../packages/shared/locales/zh-Hant.json'),
+  af: () => require('../../../packages/shared/locales/af.json'),
+  ar: () => require('../../../packages/shared/locales/ar.json'),
+  ca: () => require('../../../packages/shared/locales/ca.json'),
+  de: () => require('../../../packages/shared/locales/de.json'),
+  el: () => require('../../../packages/shared/locales/el.json'),
+  es: () => require('../../../packages/shared/locales/es.json'),
+  fi: () => require('../../../packages/shared/locales/fi.json'),
+  fr: () => require('../../../packages/shared/locales/fr.json'),
+  ga: () => require('../../../packages/shared/locales/ga.json'),
+  hi: () => require('../../../packages/shared/locales/hi.json'),
+  hr: () => require('../../../packages/shared/locales/hr.json'),
+  hu: () => require('../../../packages/shared/locales/hu.json'),
+  id: () => require('../../../packages/shared/locales/id.json'),
+  it: () => require('../../../packages/shared/locales/it.json'),
+  ja: () => require('../../../packages/shared/locales/ja.json'),
+  ko: () => require('../../../packages/shared/locales/ko.json'),
+  nl: () => require('../../../packages/shared/locales/nl.json'),
+  no: () => require('../../../packages/shared/locales/no.json'),
+  pl: () => require('../../../packages/shared/locales/pl.json'),
+  pt: () => require('../../../packages/shared/locales/pt.json'),
+  ro: () => require('../../../packages/shared/locales/ro.json'),
+  ru: () => require('../../../packages/shared/locales/ru.json'),
+  sr: () => require('../../../packages/shared/locales/sr.json'),
+  sv: () => require('../../../packages/shared/locales/sv.json'),
+  sw: () => require('../../../packages/shared/locales/sw.json'),
+  th: () => require('../../../packages/shared/locales/th.json'),
+  tr: () => require('../../../packages/shared/locales/tr.json'),
+  vi: () => require('../../../packages/shared/locales/vi.json'),
 };
 
 /** Load messages for the given locale in nested format. Falls back to English. */
