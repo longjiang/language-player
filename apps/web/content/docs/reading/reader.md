@@ -12,7 +12,7 @@ There are three ways to add text:
 
 - **Write or paste** — Switch to the Edit tab and type or paste directly into the text area. Markdown formatting is supported (headings, lists, blockquotes, code, tables).
 - **Load a URL** — Paste a web page URL into the URL input at the top. The reader fetches the page and converts it to readable text.
-- **Fill with sample** — Click "Fill with sample" to load a short example text in your target language, useful for exploring the reader's features.
+- **{$action.fill_with_sample}** — Click "Fill with sample" to load a short example text in your target language, useful for exploring the reader's features.
 
 Each piece of text you work with is saved as a **note**. All your notes appear in the sidebar on the left. Click any note to load it back — your text, translations, and reading position are remembered.
 
@@ -20,7 +20,7 @@ Each piece of text you work with is saved as a **note**. All your notes appear i
 
 ### Edit Mode
 
-The **Edit** tab is where you add or edit text. Type directly into the text area, or paste from an external source. When you're ready to read, click **Tokenize** to make every word interactive.
+The **Edit** tab is where you add or edit text. Type directly into the text area, or paste from an external source. When you're ready to read, click **{$action.tokenize}** to make every word interactive.
 
 Markdown is fully supported. Use `#` for headings, `*` or `-` for lists, `>` for blockquotes, and backticks for code. The reader preserves your formatting in the Read tab.
 
@@ -44,9 +44,9 @@ When enabled, translations appear inline — on wide screens they sit next to th
 
 **Per-block actions** let you interact with each paragraph individually. Hover over any text block to reveal a `⋮` menu with these options:
 
-- **{$action.copy}** — {$action.copy} the text to your clipboard
+- **{$action.copy}** — Copy the text to your clipboard
 - **{$action.speak}** — Read the text aloud with text-to-speech
-- **AI Explain** — Get an AI breakdown of the text's grammar and structure
+- **{$action.let_ai_explain}** — Get an AI breakdown of the text's grammar and structure
 - **{$action.translation}** — See a popup translation for just that block
 
 ## Managing Notes
