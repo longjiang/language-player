@@ -322,7 +322,24 @@ async function fetchAndParseSubtitles(url) {
 // ── YouTube Subtitle Integration ─────────────────────────────────────────
 
 /** Get a readable language name for display in the dropdown */
+/** Get the UI language for DisplayNames (converts zh_CN → zh-Hans) */
+function getUILang() {
+  try {
+    const raw = chrome.i18n.getUILanguage(); // e.g. 'zh_CN', 'fr', 'ja'
+    // Chrome uses underscores, Intl uses hyphens for some codes
+    return raw.replace('_', '-');
+  } catch {}
+  return 'en';
+}
+
+/** Get a readable language name for display in the dropdown */
 function languageName(code) {
+  const uiLang = getUILang();
+  try {
+    const name = new Intl.DisplayNames([uiLang], { type: 'language' }).of(code);
+    if (name && name !== code) return name;
+  } catch {}
+  // Fallback: try English
   try {
     const name = new Intl.DisplayNames(['en'], { type: 'language' }).of(code);
     if (name && name !== code) return name;
