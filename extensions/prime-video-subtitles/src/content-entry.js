@@ -34,6 +34,11 @@ const STATE = {
   loading: false,
 };
 
+/** Generation counter — incremented before each subtitle fetch.
+ *  Prevents race conditions where a slow-loading subtitle file
+ *  overwrites a newer one that loaded faster. */
+let fetchGen = 0;
+
 // ── DOM refs ─────────────────────────────────────────────────────────────
 let panelRoot = null;
 let panelContent = null;
@@ -284,8 +289,14 @@ function renderTranscript() {
 // ── Subtitle Fetching ────────────────────────────────────────────────────
 
 async function fetchAndParseSubtitles(url) {
+  // Block duplicate URLs and set URL BEFORE async fetch to prevent
+  // concurrent fetches of different URLs from racing each other.
+  if (STATE.subtitleUrl === url) return;
+  STATE.subtitleUrl = url;
   STATE.loading = true;
   updateStatus('Loading subtitles...');
+
+  const gen = ++fetchGen;
 
   try {
     const response = await fetch(url);
@@ -305,8 +316,10 @@ async function fetchAndParseSubtitles(url) {
       cues = parseTTML(text);
     }
 
+    // Only apply if no newer fetch has started
+    if (fetchGen !== gen) return;
+
     STATE.cues = cues;
-    STATE.subtitleUrl = url;
 
     // Try to detect language from subtitle content
     tryDetectL2FromCues(cues);
@@ -1037,6 +1050,7 @@ async function loadNetflixTrackForLanguage(langCode) {
   }
 
   const track = cachedNetflixTracks[bestKey];
+  const gen = ++fetchGen;
   console.log('[LanguagePlayer] Loading Netflix track:', bestKey, track.format);
 
   updateStatus('Loading subtitles...');
@@ -1045,6 +1059,9 @@ async function loadNetflixTrackForLanguage(langCode) {
     const response = await fetch(track.url);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const text = await response.text();
+
+    // Only apply if no newer load has started
+    if (fetchGen !== gen) return;
 
     let cues;
     if (track.format.includes('webvtt')) {
@@ -1162,9 +1179,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'subtitleDetected') {
     const { url, fileName } = message;
     console.log('[LanguagePlayer] Subtitle detected:', fileName, url);
-    if (!STATE.subtitleUrl || STATE.subtitleUrl !== url) {
-      fetchAndParseSubtitles(url);
-    }
+    fetchAndParseSubtitles(url);
   }
 
   if (message.action === 'loadSubtitles') {
