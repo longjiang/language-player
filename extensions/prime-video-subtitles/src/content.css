@@ -154,7 +154,7 @@ body.lpv-panel-open .dv-player-fullscreen {
 
 /* ── YouTube: panel layout adjustments ─────────────────────────────── */
 
-/* On YouTube, don't shrink the player */
+/* On YouTube, the player is responsive — panel overlays without resizing */
 body.lpv-panel-open #movie_player,
 body.lpv-panel-open ytd-watch-flexy {
   /* YouTube player is responsive — let it be */
@@ -162,6 +162,23 @@ body.lpv-panel-open ytd-watch-flexy {
 
 body.lpv-panel-open #lpv-toggle-btn {
   right: 390px;
+}
+
+/* ── Netflix: shrink player so panel sits beside it ────────────────── */
+
+body.lpv-panel-open .watch-video {
+  width: calc(100vw - 380px) !important;
+  max-width: calc(100vw - 380px) !important;
+}
+
+/* Netflix player section container (fallback if .watch-video absent) */
+body.lpv-panel-open #appMountPoint > div > div:first-child {
+  padding-right: 380px;
+}
+
+/* Netflix fullscreen override */
+body.lpv-panel-open .nf-player-container {
+  width: calc(100vw - 380px) !important;
 }
 
 /* ── Status Bar ────────────────────────────────────────────────────────── */
