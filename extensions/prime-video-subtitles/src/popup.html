@@ -2,44 +2,44 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>__MSG_appName__</title>
+  <title>Language Player</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
     <h1>
       <img src="language-player-logo-64.png" alt="" width="28" height="28" />
-      __MSG_appName__
+      <span id="popup-title">Language Player</span>
     </h1>
 
     <!-- Auth section -->
     <div id="auth-section">
       <div id="auth-logged-out">
-        <p class="auth-hint">__MSG_popupLoginPrompt__</p>
-        <input type="email" id="auth-email" placeholder="__MSG_popupEmailPlaceholder__" />
-        <input type="password" id="auth-password" placeholder="__MSG_popupPasswordPlaceholder__" />
-        <button id="auth-login-btn">__MSG_popupLoginBtn__</button>
+        <p class="auth-hint" id="popup-login-prompt"></p>
+        <input type="email" id="auth-email" />
+        <input type="password" id="auth-password" />
+        <button id="auth-login-btn"></button>
         <p id="auth-error" class="auth-error hidden"></p>
       </div>
       <div id="auth-logged-in" class="hidden">
         <span id="auth-user"></span>
-        <button id="auth-logout-btn">__MSG_popupLogoutBtn__</button>
+        <button id="auth-logout-btn"></button>
       </div>
     </div>
 
     <!-- Instructions -->
     <div id="instructions">
-      <p>__MSG_popupInstructions__</p>
+      <p id="popup-instructions"></p>
       <ul>
-        <li>__MSG_popupClickWord__</li>
-        <li>__MSG_popupSaveWords__</li>
-        <li>__MSG_popupToggleShortcut__</li>
+        <li id="popup-click-word"></li>
+        <li id="popup-save-words"></li>
+        <li id="popup-toggle-shortcut"></li>
       </ul>
     </div>
 
     <!-- Transcript toggle -->
-    <button id="transcript-btn" disabled>__MSG_popupChecking__</button>
-    <p id="transcript-hint" class="hidden">__MSG_popupCaptionsHint__</p>
+    <button id="transcript-btn" disabled></button>
+    <p id="transcript-hint" class="hidden"></p>
 
   </div>
   <script src="popup.js"></script>
