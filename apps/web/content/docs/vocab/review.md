@@ -1,6 +1,6 @@
-# Review
+# {$title.review}
 
-Review your saved vocabulary with spaced repetition flashcards.
+{$title.review} your saved vocabulary with spaced repetition flashcards.
 
 ## How It Works
 
@@ -31,13 +31,13 @@ The top of the screen shows three colored indicators:
 - **Red** — Cards you're relearning after forgetting
 - **Green** — Cards coming back for a scheduled review
 
-The daily limit for new cards is 20 by default. You can change it in [Settings](/docs/account/settings).
+The daily limit for new cards is 20 by default. You can change it in [{$title.settings}](/docs/general/settings).
 
 ## Context & Translation
 
 Every card shows the sentence where you saved the word. The exact word form is highlighted. Below it you'll see where the word came from (the video title or text name, plus the date).
 
-If you have "Show Translation" enabled in Settings, the card shows the English translation of the sentence when you reveal the back. If no saved translation exists, it fetches one automatically.
+If you have "{$label.show_translation}" enabled in {$title.settings}, the card shows the {$lang.en} translation of the sentence when you reveal the back. If no saved translation exists, it fetches one automatically.
 
 The context sentence has a hover menu (the three dots) for copying the text, speaking it aloud, getting an AI explanation, or translating it on the spot.
 
@@ -52,8 +52,8 @@ To remove a word from your review deck, unsave it from the dictionary entry on t
 
 ## Tips
 
-- Review daily. Even 5 minutes makes a difference.
+- {$title.review} daily. Even 5 minutes makes a difference.
 - Be strict with Again. If you couldn't recall it in real life, it counts as a fail.
 - Use the context sentence. Seeing the word in its original sentence is more effective than memorizing in isolation.
 - Tap the three dots on the context sentence to translate or explain the full line before rating.
-- Adjust your daily new card limit in Settings if 20 feels too many or too few.
+- Adjust your daily new card limit in {$title.settings} if 20 feels too many or too few.
