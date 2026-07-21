@@ -206,7 +206,7 @@ This is the primary download management interface. The screen lists every L2 lan
 │  │ more]                            ││
 │  └──────────────────────────────────┘│
 │                                      │
-│  ── Your Languages ──                │
+│  ── Downloaded ──                    │
 │                                      │
 │  {$lang.ja}  Japanese                │
 │  ├─ 22,252 words  ~11 MB             │
@@ -222,7 +222,7 @@ This is the primary download management interface. The screen lists every L2 lan
 │  ├─ 20,112 words  ~10 MB             │
 │  └─ [Download]                       │
 │                                      │
-│  ── Other Languages ──               │
+│  ── Available ──                     │
 │                                      │
 │  {$lang.de}  German                  │
 │  ├─ 17,686 words  ~9 MB              │
@@ -245,7 +245,7 @@ This is the primary download management interface. The screen lists every L2 lan
 | Element | Behavior |
 |---|---|
 | **L1≠en callout** | Shown at top when user's L1 is not English. Explains English-only offline definitions with a link to a help doc or expands inline. Dismissible; stored in AsyncStorage so it doesn't reappear. |
-| **Language rows** | Grouped: "Your Languages" (L2s the user has configured or recently used) then "Other Languages" (all remaining available languages). Each row shows word count, estimated download size, and current status. |
+| **Language rows** | Grouped: "Downloaded" (L2s with an offline dictionary already downloaded or in progress) then "Available" (all remaining languages with frequency data). Each row shows word count, estimated download size, and current status. |
 | **Download button** | Initiates `GET /dictionary/download?l2=xx&l1=en`. Transforms into a progress bar during download. On completion, becomes a checkmark with date. |
 | **Progress bar** | Updates per chunk (every 500 entries stored). Shows percentage + "X of Y words" below the bar. Download runs in background — user can navigate away and return. |
 | **Delete button** | Removes the IndexedDB store for that language. Confirmation dialog: "Delete offline {$lang.xx} dictionary? You'll need internet to look up words." |
@@ -303,8 +303,8 @@ User taps [Download]
 
 Once a dictionary is downloaded, the app subtly indicates offline availability:
 
-- **Dictionary Hub:** Language pairs with offline dictionaries show a small "📚" icon next to the language name in the language selector.
-- **Video player:** When the user taps a word in subtitles and the lookup returns instantly from the offline dictionary, no special indicator is shown — speed is the reward. Only when the word is NOT in the offline dictionary and requires a network request does a small "🌐" icon appear momentarily.
+- **Top bar language switcher:** When the current L2 has an offline dictionary downloaded, a small green circle checkmark (●) appears beside the language name in the top bar language selector.
+- **Video player:** When the user taps a word in subtitles and the lookup returns instantly from the offline dictionary, no special indicator is shown — speed is the reward. Only when the word is NOT in the offline dictionary and requires a network request does a small cloud icon (☁️) appear momentarily. The icon fades out after 1.5 seconds using `opacity` animation — it is absolutely positioned within the lookup panel so it does not cause any layout shift.
 - **Settings → Offline Dictionaries:** Shows "Last updated: Jul 15" with an update button, so users can periodically refresh.
 
 ### Non-Blocking Loading (Phase 2)
