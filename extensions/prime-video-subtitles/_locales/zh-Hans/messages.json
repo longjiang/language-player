@@ -1,0 +1,96 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "等待字幕…"
+  },
+  "startPlaying": {
+    "message": "开始播放视频。"
+  },
+  "loadingLanguage": {
+    "message": "正在加载 $lang$…",
+    "placeholders": {
+      "lang": { "content": "$1" }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "已加载 $count$ 条字幕",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "字幕加载失败"
+  },
+  "loadingSubtitles": {
+    "message": "正在加载 $lang$ 字幕…",
+    "placeholders": {
+      "lang": { "content": "$1" }
+    }
+  },
+  "closePanel": {
+    "message": "关闭面板"
+  },
+  "learningLanguage": {
+    "message": "学习语言"
+  },
+  "popularLanguages": {
+    "message": "常用"
+  },
+  "allLanguages": {
+    "message": "所有语言"
+  },
+  "translate": {
+    "message": "翻译"
+  },
+  "showTranslation": {
+    "message": "显示翻译 (L1)"
+  },
+  "translating": {
+    "message": "翻译中… $progress$/$total$",
+    "placeholders": {
+      "progress": { "content": "$1" },
+      "total": { "content": "$2" }
+    }
+  },
+  "actions": {
+    "message": "操作"
+  },
+  "copy": {
+    "message": "📋 复制"
+  },
+  "speak": {
+    "message": "🔊 朗读"
+  },
+  "explain": {
+    "message": "🤖 解释"
+  },
+  "explainTitle": {
+    "message": "🤖 AI 解释"
+  },
+  "aiThinking": {
+    "message": "🤖 AI 思考中…"
+  },
+  "thinking": {
+    "message": "思考中…"
+  },
+  "save": {
+    "message": "收藏"
+  },
+  "saved": {
+    "message": "已收藏"
+  },
+  "close": {
+    "message": "关闭"
+  },
+  "showTranscript": {
+    "message": "显示字幕"
+  },
+  "noTranscriptFound": {
+    "message": "未找到字幕"
+  },
+  "extensionDescription": {
+    "message": "互动双语字幕，支持 Prime Video、YouTube、Netflix、Disney+、Hulu 与 Max。"
+  }
+}
