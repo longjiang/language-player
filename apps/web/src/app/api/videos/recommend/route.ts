@@ -25,9 +25,5 @@ export async function GET(request: Request) {
     excludeIds,
   );
 
-  return NextResponse.json(result, {
-    headers: {
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-    },
-  });
+  return NextResponse.json(result);
 }
