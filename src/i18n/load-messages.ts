@@ -1,11 +1,11 @@
 // @/src/i18n/load-messages.ts
-// Dynamically loads locale messages and flattens them for react-intl.
-// The source JSONs use nested format (for i18n-js compatibility during migration).
-
-import { flattenMessages } from './flatten-messages';
+// Dynamically loads locale messages in nested format.
+// The source JSONs use nested format (compatible with both i18n-js and react-intl
+// via the resolveNested() bridge in use-t.ts).
 
 // Map of locale code → require() the JSON
 // These are the same JSON files used by i18n-js (nested format).
+// In Phase 2, these paths change to @langplayer/shared/locales/.
 const localeLoaders: Record<string, () => Record<string, unknown>> = {
   en: () => require('@/assets/localizations/en.json'),
   'zh-Hans': () => require('@/assets/localizations/zh-Hans.json'),
@@ -40,13 +40,14 @@ const localeLoaders: Record<string, () => Record<string, unknown>> = {
   vi: () => require('@/assets/localizations/vi.json'),
 };
 
-/** Load and flatten messages for the given locale. Falls back to English. */
-export function loadLocaleMessages(locale: string): Record<string, string> {
+/** Load messages for the given locale in nested format. Falls back to English. */
+export function loadLocaleMessages(locale: string): Record<string, unknown> {
   const loader = localeLoaders[locale] ?? localeLoaders['en'];
   const nested = loader();
 
-  // Strip metadata keys that aren't translatable messages
+  // Strip the "key" metadata field (artifact from GO's old csv_to_json.py).
+  // e.g., { "key": "en", "action": { "cancel": "Cancel" } } → { "action": { "cancel": "Cancel" } }
   const { key, ...messages } = nested;
 
-  return flattenMessages(messages as Record<string, unknown>);
+  return messages as Record<string, unknown>;
 }
