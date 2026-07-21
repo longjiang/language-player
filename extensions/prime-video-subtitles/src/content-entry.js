@@ -335,15 +335,63 @@ function renderTranscript(loadingL2) {
 
 // ── Subtitle Fetching ────────────────────────────────────────────────────
 
+/**
+ * Merge new cue segments into the existing cue list. Disney+ loads VTT
+ * subtitles in time-bounded segments (seg_00001.vtt, seg_00002.vtt, …).
+ * Each segment only covers ~2-5 minutes. We merge instead of replacing
+ * so that seeking doesn't lose previously loaded segments.
+ */
+function mergeCues(existing, incoming) {
+  if (existing.length === 0) return incoming;
+  if (incoming.length === 0) return existing;
+
+  // Build a set of existing start times for O(1) dedup
+  const existingStarts = new Set(existing.map(c => c.start));
+
+  // Add only new cues (not already in the list)
+  const merged = [...existing];
+  for (const cue of incoming) {
+    if (!existingStarts.has(cue.start)) {
+      merged.push(cue);
+    }
+  }
+
+  // Sort by start time
+  merged.sort((a, b) => a.start - b.start);
+
+  // Fix overlapping end times
+  for (let i = 0; i < merged.length - 1; i++) {
+    if (merged[i].end > merged[i + 1].start) {
+      merged[i].end = merged[i + 1].start - 0.001;
+    }
+  }
+
+  return merged;
+}
+
+/**
+ * Trim cues that are more than 10 minutes away from the current playback
+ * position. Prevents unbounded memory growth from accumulated segments.
+ */
+function trimDistantCues(cues, currentTimeSec) {
+  const windowSec = 600; // 10 minutes
+  return cues.filter(c => c.end >= currentTimeSec - windowSec && c.start <= currentTimeSec + windowSec);
+}
+
 async function fetchAndParseSubtitles(url) {
   // Block duplicate URLs and set URL BEFORE async fetch to prevent
   // concurrent fetches of different URLs from racing each other.
   if (STATE.subtitleUrl === url) return;
   STATE.subtitleUrl = url;
   STATE.loading = true;
-  // Clear old cues and show spinner while loading new ones
-  STATE.cues = [];
-  renderTranscript(detectedL2Code);
+
+  // For Disney+: don't clear existing cues — we're loading a VTT segment
+  // that covers only part of the timeline. Merge it in instead.
+  const isDisneySegment = isDisneyPlus && /\.vtt(\?|$)/i.test(url);
+  if (!isDisneySegment) {
+    STATE.cues = [];
+    renderTranscript(detectedL2Code);
+  }
   updateStatus(`Loading ${detectedL2Code} subtitles…`);
 
   const gen = ++fetchGen;
@@ -368,6 +416,12 @@ async function fetchAndParseSubtitles(url) {
 
     // Only apply if no newer fetch has started
     if (fetchGen !== gen) return;
+
+    // Disney+ VTT segments: merge into existing cues
+    if (isDisneySegment && STATE.cues.length > 0) {
+      cues = mergeCues(STATE.cues, cues);
+      console.log('[LanguagePlayer] Merged Disney+ segment, total cues:', cues.length);
+    }
 
     STATE.cues = cues;
 
@@ -1001,6 +1055,15 @@ function onTimeUpdate() {
   timeUpdateRaf = requestAnimationFrame(() => {
     timeUpdateRaf = null;
     if (STATE.cues.length > 0) {
+      // Periodically trim cues far from current position (Disney+ segment accumulation)
+      if (isDisneyPlus && STATE.cues.length > 500) {
+        const t = getCurrentTime();
+        const trimmed = trimDistantCues(STATE.cues, t);
+        if (trimmed.length < STATE.cues.length) {
+          STATE.cues = trimmed;
+          console.log('[LanguagePlayer] Trimmed cues:', trimmed.length, '(was', STATE.cues.length + trimmed.length + ')');
+        }
+      }
       updateActiveCue(getCurrentTime());
     }
   });
