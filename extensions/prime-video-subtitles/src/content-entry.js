@@ -328,14 +328,17 @@ function languageName(code) {
   const entry = langNames[code];
   if (!entry) return code.toUpperCase();
 
-  // Get Chrome UI language (e.g., 'zh_CN', 'fr', 'en')
+  // Get Chrome UI language (e.g., 'fr-FR', 'zh_CN', 'en-US')
   let uiLang = 'en';
   try { uiLang = chrome.i18n.getUILanguage(); } catch {}
 
-  // Direct match (en, fr, ja, etc.)
+  // Direct match
   if (entry[uiLang]) return entry[uiLang];
 
-  // Try without region suffix (zh_CN → try zh_CN first, which we already did)
+  // Try stripping region suffix (fr-FR → fr, en-US → en, zh-Hans-CN → zh-Hans)
+  const bare = uiLang.replace(/[-_][A-Z]{2}$/i, '');
+  if (bare !== uiLang && entry[bare]) return entry[bare];
+
   // Fallback: try English
   if (entry.en) return entry.en;
 
