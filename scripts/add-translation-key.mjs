@@ -103,6 +103,80 @@ if (arg === '--stdin') {
   processPayload(payload);
 }
 
+// ── Integrity checks ──
+
+/**
+ * Validate CSV integrity before adding a key.
+ * Prints warnings for non-critical issues; fails on critical ones.
+ */
+function checkCsvIntegrity(csvText) {
+  const issues = [];
+
+  // 1. Check for CRLF line endings
+  if (csvText.includes('\r\n')) {
+    issues.push('CRLF line endings detected — will be stripped automatically.');
+  }
+
+  // 2. Parse all rows with proper CSV handling
+  const rawLines = csvText.trim().replace(/\r/g, '').split('\n');
+  const header = csvParseLine(rawLines[0]);
+  const expectedCols = header.length;
+
+  if (expectedCols < 3) {
+    fail(`CSV header has only ${expectedCols} columns — expected at least 3 (key + en + 1 locale).`);
+  }
+
+  const rows = [];
+  const colMismatchRows = [];
+  for (let i = 1; i < rawLines.length; i++) {
+    const row = csvParseLine(rawLines[i]);
+    if (row.length !== expectedCols) {
+      colMismatchRows.push({ line: i + 1, key: row[0], cols: row.length });
+    }
+    rows.push(row);
+  }
+
+  if (colMismatchRows.length > 0) {
+    const sample = colMismatchRows.slice(0, 5).map(r => `  line ${r.line}: "${r.key}" (${r.cols} cols, expected ${expectedCols})`).join('\n');
+    issues.push(`${colMismatchRows.length} row(s) have wrong column count:\n${sample}${colMismatchRows.length > 5 ? `\n  ... and ${colMismatchRows.length - 5} more` : ''}`);
+  }
+
+  // 3. Check for duplicate keys
+  const keyMap = new Map();
+  const dupes = [];
+  for (const row of rows) {
+    const key = row[0];
+    if (keyMap.has(key)) {
+      dupes.push(key);
+    } else {
+      keyMap.set(key, true);
+    }
+  }
+  if (dupes.length > 0) {
+    issues.push(`${dupes.length} duplicate key(s) found: ${dupes.slice(0, 5).join(', ')}${dupes.length > 5 ? '...' : ''}`);
+  }
+
+  // 4. Check for empty English values
+  const enIdx = header.indexOf('en');
+  let emptyEn = 0;
+  if (enIdx >= 0) {
+    for (const row of rows) {
+      if (!row[enIdx] || !row[enIdx].trim()) emptyEn++;
+    }
+  }
+  if (emptyEn > 0) {
+    issues.push(`${emptyEn} row(s) have empty English (en) values.`);
+  }
+
+  if (issues.length > 0) {
+    console.warn('⚠ CSV integrity issues:');
+    for (const issue of issues) {
+      console.warn(`  • ${issue.replace(/\n/g, '\n    ')}`);
+    }
+    console.warn('');
+  }
+}
+
 function processPayload(payload) {
   // 1. Validate payload
   if (!payload.key || typeof payload.key !== 'string') {
@@ -111,6 +185,7 @@ function processPayload(payload) {
 
   // 2. Read CSV
   const csvText = readFileSync(CSV_PATH, 'utf-8');
+  checkCsvIntegrity(csvText);
   // Strip \\r to handle CRLF line endings
   const lines = csvText.trim().replace(/\r/g, '').split('\n');
   const header = csvParseLine(lines[0]);
