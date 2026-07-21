@@ -204,6 +204,15 @@ body.lpv-panel-open .video-player-container {
   max-width: calc(100vw - 380px) !important;
 }
 
+/* ── HBO Max: shrink player so panel sits beside it ────────────────── */
+
+body.lpv-panel-open [data-testid="player-ux-video"],
+body.lpv-panel-open .video-player__container,
+body.lpv-panel-open .purr-player-container {
+  width: calc(100vw - 380px) !important;
+  max-width: calc(100vw - 380px) !important;
+}
+
 /* ── Status Bar ────────────────────────────────────────────────────────── */
 
 #lpv-status {
