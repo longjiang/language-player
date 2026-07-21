@@ -7,19 +7,45 @@
  * Panel slides in from the right side of the viewport.
  */
 
-/* ── Side-by-side layout: shrink the Prime Video player ───────────────── */
+/* ── Side-by-side layout: make room for the panel ──────────────────── */
 
+/*
+ * Universal approach: add right padding to <body>, pushing all page
+ * content left. The panel sits at position:fixed;right:0 in the gap.
+ *
+ * Some platforms use absolute/fixed positioning that ignores body padding.
+ * Those get minimal per-platform overrides below.
+ */
+body.lpv-panel-open {
+  padding-right: 380px !important;
+}
+
+/* ── Prime Video: player uses position:absolute ────────────────────── */
 body.lpv-panel-open #dv-web-player-2,
 body.lpv-panel-open #dv-web-player {
   width: calc(100vw - 380px) !important;
-  max-width: calc(100vw - 380px) !important;
   right: 0 !important;
   left: 0 !important;
 }
-
 body.lpv-panel-open .dv-player-fullscreen {
   width: calc(100vw - 380px) !important;
 }
+
+/* ── Netflix: player uses its own fixed layout ─────────────────────── */
+body.lpv-panel-open .watch-video {
+  width: calc(100vw - 380px) !important;
+  max-width: calc(100vw - 380px) !important;
+}
+body.lpv-panel-open .nf-player-container {
+  width: calc(100vw - 380px) !important;
+}
+
+/* ── Disney+: UI overlay uses position:absolute;inset:0 ────────────── */
+body.lpv-panel-open disney-web-player-ui {
+  right: 380px !important;
+}
+
+/* ── YouTube: no resize needed (player is responsive inline) ───────── */
 
 /* ── Transcript Panel ──────────────────────────────────────────────────── */
 
@@ -151,124 +177,6 @@ body.lpv-panel-open .dv-player-fullscreen {
   background-image: none;
   padding-right: 6px;
 }
-
-/* ── YouTube: panel layout adjustments ─────────────────────────────── */
-
-/* On YouTube, the player is responsive — panel overlays without resizing */
-body.lpv-panel-open #movie_player,
-body.lpv-panel-open ytd-watch-flexy {
-  /* YouTube player is responsive — let it be */
-}
-
-body.lpv-panel-open #lpv-toggle-btn {
-  right: 390px;
-}
-
-/* ── Netflix: shrink player so panel sits beside it ────────────────── */
-
-body.lpv-panel-open .watch-video {
-  width: calc(100vw - 380px) !important;
-  max-width: calc(100vw - 380px) !important;
-}
-
-/* Netflix player section container (fallback if .watch-video absent) */
-body.lpv-panel-open #appMountPoint > div > div:first-child {
-  padding-right: 380px;
-}
-
-/* Netflix fullscreen override */
-body.lpv-panel-open .nf-player-container {
-  width: calc(100vw - 380px) !important;
-}
-
-/* ── Disney+: shrink player so panel sits beside it ────────────────── */
-
-/* Push the entire Disney+ viewport left so nothing (video, controls,
-   progress bar, overlays) is hidden behind the panel. */
-body.lpv-panel-open.disneyplus {
-  padding-right: 380px !important;
-}
-
-/* Main player theater container — uses position:absolute;right:0;width:100% */
-body.lpv-panel-open .video_view--theater {
-  width: calc(100vw - 380px) !important;
-  right: 380px !important;
-}
-
-/* Full chain of player containers — constrain all to panel-adjusted width */
-body.lpv-panel-open .hudson-container,
-body.lpv-panel-open .player-container-root,
-body.lpv-panel-open .mini-player-bounds,
-body.lpv-panel-open .btm-media-player,
-body.lpv-panel-open .btm-media-clients {
-  width: 100% !important;
-  max-width: calc(100vw - 380px) !important;
-}
-
-/* Shrink the custom player element */
-body.lpv-panel-open disney-web-player {
-  width: 100% !important;
-  max-width: calc(100vw - 380px) !important;
-}
-
-/* UI overlay sibling — positioned absolute;inset:0, spans full viewport.
-   Must constrain its right edge to not overlap the panel. */
-body.lpv-panel-open disney-web-player-ui {
-  right: 380px !important;
-}
-
-/* Inline-styled overlay divs (DxcOverlay has inline width/height in px) */
-body.lpv-panel-open .DxcOverlay {
-  width: calc(100vw - 380px) !important;
-}
-
-/* Catch any absolutely-positioned overlay containers */
-body.lpv-panel-open .btm-media-overlays-container,
-body.lpv-panel-open .hive-video-player-container,
-body.lpv-panel-open .hive-controls-container {
-  right: 380px !important;
-  width: calc(100vw - 380px) !important;
-}
-
-/* ── Hulu: shrink player so panel sits beside it ───────────────────── */
-
-/* Push the entire Hulu viewport left */
-body.lpv-panel-open.hulu {
-  padding-right: 380px !important;
-}
-
-body.lpv-panel-open .hulu-player,
-body.lpv-panel-open .HuluPlayer,
-body.lpv-panel-open #content-video-player,
-body.lpv-panel-open #hulu-player,
-body.lpv-panel-open .player-area {
-  width: calc(100vw - 380px) !important;
-  max-width: calc(100vw - 380px) !important;
-}
-
-/* ── HBO Max: shrink player so panel sits beside it ────────────────── */
-
-/* Push the entire HBO Max viewport left */
-body.lpv-panel-open.hbomax {
-  padding-right: 380px !important;
-}
-
-body.lpv-panel-open [data-testid="player-ux-video"],
-body.lpv-panel-open .video-player__container,
-body.lpv-panel-open .purr-player-container,
-body.lpv-panel-open [data-testid="player-ux"] {
-  width: calc(100vw - 380px) !important;
-  max-width: calc(100vw - 380px) !important;
-}
-
-/* ── Universal fallback: shrink the video's nearest block container ─── */
-/* Only applies when a platform-specific rule hasn't already matched.
-   Targets the grandparent of <video> for Disney+/Hulu/HBO Max. */
-
-body.lpv-panel-open.disneyplus video,
-body.lpv-panel-open.hulu video,
-body.lpv-panel-open.hbomax video {
-  max-width: calc(100vw - 400px) !important;
 }
 
 /* ── Status Bar ────────────────────────────────────────────────────────── */
