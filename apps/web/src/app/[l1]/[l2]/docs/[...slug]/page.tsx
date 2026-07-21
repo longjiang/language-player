@@ -98,7 +98,7 @@ function categoryLabel(slug: string): string {
     reading: 'Reading',
     vocab: 'Vocab',
     account: 'Account',
-    navigation: 'Navigation',
+    general: 'General',
   };
   return labels[slug] ?? slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
