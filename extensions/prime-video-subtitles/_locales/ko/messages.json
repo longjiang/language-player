@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "자막을 기다리는 중…"
+  },
+  "startPlaying": {
+    "message": "동영상을 재생하세요."
+  },
+  "loadingLanguage": {
+    "message": "$lang$ 불러오는 중…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$개의 자막 항목을 불러왔습니다",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "자막을 불러오지 못했습니다"
+  },
+  "loadingSubtitles": {
+    "message": "$lang$ 자막 불러오는 중…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "닫기"
+  },
+  "learningLanguage": {
+    "message": "학습 언어"
+  },
+  "popularLanguages": {
+    "message": "인기"
+  },
+  "allLanguages": {
+    "message": "전체"
+  },
+  "translate": {
+    "message": "번역"
+  },
+  "showTranslation": {
+    "message": "번역 보기"
+  },
+  "translating": {
+    "message": "번역 중… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "동작"
+  },
+  "copy": {
+    "message": "복사"
+  },
+  "speak": {
+    "message": "말하기"
+  },
+  "explain": {
+    "message": "AI에 물어보기"
+  },
+  "explainTitle": {
+    "message": "AI에 물어보기"
+  },
+  "aiThinking": {
+    "message": "🤖 AI가 생각 중…"
+  },
+  "thinking": {
+    "message": "생각 중…"
+  },
+  "save": {
+    "message": "단어 저장"
+  },
+  "saved": {
+    "message": "저장됨"
+  },
+  "close": {
+    "message": "닫기"
+  },
+  "showTranscript": {
+    "message": "스크립트 보기"
+  },
+  "noTranscriptFound": {
+    "message": "스크립트를 찾을 수 없습니다"
+  },
+  "extensionDescription": {
+    "message": "Prime Video, YouTube, Netflix, Disney+, Hulu, Max에서 언어 학습을 위한 대화형 이중 자막."
+  },
+  "popupLoginPrompt": {
+    "message": "로그인하여 단어를 저장하고 Language Player와 동기화하세요."
+  },
+  "popupEmailPlaceholder": {
+    "message": "이메일"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "비밀번호"
+  },
+  "popupLoginBtn": {
+    "message": "로그인"
+  },
+  "popupLogoutBtn": {
+    "message": "로그아웃"
+  },
+  "popupChecking": {
+    "message": "확인 중…"
+  },
+  "popupShowTranscript": {
+    "message": "스크립트 보기"
+  },
+  "popupNoTranscript": {
+    "message": "스크립트를 찾을 수 없습니다"
+  },
+  "popupInstructions": {
+    "message": "<strong>Prime Video</strong>, <strong>YouTube</strong>, <strong>Netflix</strong>에서 동영상을 재생하세요. 자막이 발견되면 스크립트 패널이 자동으로 열립니다."
+  },
+  "popupClickWord": {
+    "message": "단어를 <strong>클릭</strong>하여 사전에서 찾아보세요"
+  },
+  "popupSaveWords": {
+    "message": "Language Player 계정에 단어를 <strong>저장</strong>하세요"
+  },
+  "popupToggleShortcut": {
+    "message": "<kbd>Alt</kbd> + <kbd>T</kbd>를 눌러 패널을 표시/숨깁니다"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 공부 중인 언어로 <strong>자막이 켜져 있는지</strong> 확인하세요."
+  }
+}

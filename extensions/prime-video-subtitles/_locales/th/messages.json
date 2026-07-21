@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "กำลังรอคำบรรยาย…"
+  },
+  "startPlaying": {
+    "message": "เริ่มเล่นวิดีโอ"
+  },
+  "loadingLanguage": {
+    "message": "กำลังโหลด $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "โหลดรายการคำบรรยาย $count$ รายการ",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "โหลดคำบรรยายไม่สำเร็จ"
+  },
+  "loadingSubtitles": {
+    "message": "กำลังโหลดคำบรรยาย $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "ปิด"
+  },
+  "learningLanguage": {
+    "message": "ภาษาที่เรียน"
+  },
+  "popularLanguages": {
+    "message": "ยอดนิยม"
+  },
+  "allLanguages": {
+    "message": "ทั้งหมด"
+  },
+  "translate": {
+    "message": "การแปล"
+  },
+  "showTranslation": {
+    "message": "แสดงคำแปล"
+  },
+  "translating": {
+    "message": "กำลังแปล… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "การดำเนินการ"
+  },
+  "copy": {
+    "message": "คัดลอก"
+  },
+  "speak": {
+    "message": "พูด"
+  },
+  "explain": {
+    "message": "ถาม AI"
+  },
+  "explainTitle": {
+    "message": "ถาม AI"
+  },
+  "aiThinking": {
+    "message": "🤖 AI กำลังคิด…"
+  },
+  "thinking": {
+    "message": "กำลังคิด…"
+  },
+  "save": {
+    "message": "บันทึกคำ"
+  },
+  "saved": {
+    "message": "บันทึกแล้ว"
+  },
+  "close": {
+    "message": "ปิด"
+  },
+  "showTranscript": {
+    "message": "แสดงบทถอดความ"
+  },
+  "noTranscriptFound": {
+    "message": "ไม่พบบทถอดความ"
+  },
+  "extensionDescription": {
+    "message": "คำบรรยายสองภาษาแบบโต้ตอบสำหรับการเรียนรู้ภาษาบน Prime Video, YouTube, Netflix, Disney+, Hulu และ Max"
+  },
+  "popupLoginPrompt": {
+    "message": "เข้าสู่ระบบเพื่อบันทึกคำศัพท์และซิงค์กับ Language Player"
+  },
+  "popupEmailPlaceholder": {
+    "message": "อีเมล"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "รหัสผ่าน"
+  },
+  "popupLoginBtn": {
+    "message": "เข้าสู่ระบบ"
+  },
+  "popupLogoutBtn": {
+    "message": "ออกจากระบบ"
+  },
+  "popupChecking": {
+    "message": "กำลังตรวจสอบ…"
+  },
+  "popupShowTranscript": {
+    "message": "แสดงบทถอดความ"
+  },
+  "popupNoTranscript": {
+    "message": "ไม่พบบทถอดความ"
+  },
+  "popupInstructions": {
+    "message": "เริ่มเล่นวิดีโอบน <strong>Prime Video</strong>, <strong>YouTube</strong> หรือ <strong>Netflix</strong> แผงบทถอดความจะเปิดโดยอัตโนมัติเมื่อพบคำบรรยาย"
+  },
+  "popupClickWord": {
+    "message": "<strong>คลิก</strong> คำใดก็ได้เพื่อค้นหาในพจนานุกรม"
+  },
+  "popupSaveWords": {
+    "message": "<strong>บันทึก</strong> คำศัพท์ลงในบัญชี Language Player ของคุณ"
+  },
+  "popupToggleShortcut": {
+    "message": "กด <kbd>Alt</kbd> + <kbd>T</kbd> เพื่อสลับแผง"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 ตรวจสอบว่า<strong>เปิดคำบรรยาย</strong>ในภาษาที่คุณกำลังเรียนอยู่"
+  }
+}

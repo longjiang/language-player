@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "في انتظار الترجمة…"
+  },
+  "startPlaying": {
+    "message": "ابدأ تشغيل فيديو."
+  },
+  "loadingLanguage": {
+    "message": "جارٍ تحميل $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "تم تحميل $count$ إدخال ترجمة",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "فشل تحميل الترجمة"
+  },
+  "loadingSubtitles": {
+    "message": "جارٍ تحميل ترجمة $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "إغلاق"
+  },
+  "learningLanguage": {
+    "message": "لغة التعلم"
+  },
+  "popularLanguages": {
+    "message": "شائع"
+  },
+  "allLanguages": {
+    "message": "الكل"
+  },
+  "translate": {
+    "message": "ترجمة"
+  },
+  "showTranslation": {
+    "message": "إظهار الترجمة"
+  },
+  "translating": {
+    "message": "جارٍ الترجمة… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "إجراءات"
+  },
+  "copy": {
+    "message": "نسخ"
+  },
+  "speak": {
+    "message": "تحدث"
+  },
+  "explain": {
+    "message": "اسأل الذكاء الاصطناعي"
+  },
+  "explainTitle": {
+    "message": "اسأل الذكاء الاصطناعي"
+  },
+  "aiThinking": {
+    "message": "🤖 الذكاء الاصطناعي يفكر…"
+  },
+  "thinking": {
+    "message": "يفكر…"
+  },
+  "save": {
+    "message": "حفظ الكلمة"
+  },
+  "saved": {
+    "message": "محفوظ"
+  },
+  "close": {
+    "message": "إغلاق"
+  },
+  "showTranscript": {
+    "message": "إظهار النص"
+  },
+  "noTranscriptFound": {
+    "message": "لم يتم العثور على نص"
+  },
+  "extensionDescription": {
+    "message": "ترجمات ثنائية تفاعلية لتعلم اللغات على Prime Video وYouTube وNetflix وDisney+ وHulu وMax."
+  },
+  "popupLoginPrompt": {
+    "message": "سجل الدخول لحفظ الكلمات والمزامنة مع Language Player."
+  },
+  "popupEmailPlaceholder": {
+    "message": "البريد الإلكتروني"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "كلمة المرور"
+  },
+  "popupLoginBtn": {
+    "message": "تسجيل الدخول"
+  },
+  "popupLogoutBtn": {
+    "message": "تسجيل الخروج"
+  },
+  "popupChecking": {
+    "message": "جارٍ التحقق…"
+  },
+  "popupShowTranscript": {
+    "message": "إظهار النص"
+  },
+  "popupNoTranscript": {
+    "message": "لم يتم العثور على نص"
+  },
+  "popupInstructions": {
+    "message": "ابدأ تشغيل أي فيديو على <strong>Prime Video</strong> أو <strong>YouTube</strong> أو <strong>Netflix</strong>. تفتح لوحة النص تلقائيًا عند العثور على ترجمات."
+  },
+  "popupClickWord": {
+    "message": "<strong>انقر</strong> على أي كلمة للبحث عنها في القاموس"
+  },
+  "popupSaveWords": {
+    "message": "<strong>احفظ</strong> الكلمات في حساب Language Player الخاص بك"
+  },
+  "popupToggleShortcut": {
+    "message": "اضغط على <kbd>Alt</kbd> + <kbd>T</kbd> لتبديل اللوحة"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 تأكد من <strong>تشغيل الترجمة</strong> باللغة التي تدرسها."
+  }
+}

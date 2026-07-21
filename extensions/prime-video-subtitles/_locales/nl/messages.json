@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "Wachten op ondertitels…"
+  },
+  "startPlaying": {
+    "message": "Start een video met afspelen."
+  },
+  "loadingLanguage": {
+    "message": "$lang$ laden…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$ ondertitelitems geladen",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Kan ondertitels niet laden"
+  },
+  "loadingSubtitles": {
+    "message": "$lang$ ondertitels laden…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "Sluiten"
+  },
+  "learningLanguage": {
+    "message": "Leertaal"
+  },
+  "popularLanguages": {
+    "message": "Populair"
+  },
+  "allLanguages": {
+    "message": "Alles"
+  },
+  "translate": {
+    "message": "Vertaling"
+  },
+  "showTranslation": {
+    "message": "Toon vertaling"
+  },
+  "translating": {
+    "message": "Vertalen… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "Acties"
+  },
+  "copy": {
+    "message": "Kopiëren"
+  },
+  "speak": {
+    "message": "Spreken"
+  },
+  "explain": {
+    "message": "Vraag AI"
+  },
+  "explainTitle": {
+    "message": "Vraag AI"
+  },
+  "aiThinking": {
+    "message": "🤖 AI denkt na…"
+  },
+  "thinking": {
+    "message": "denkt na…"
+  },
+  "save": {
+    "message": "Woord opslaan"
+  },
+  "saved": {
+    "message": "Opgeslagen"
+  },
+  "close": {
+    "message": "Sluiten"
+  },
+  "showTranscript": {
+    "message": "Transcriptie tonen"
+  },
+  "noTranscriptFound": {
+    "message": "Geen transcriptie gevonden"
+  },
+  "extensionDescription": {
+    "message": "Interactieve tweetalige ondertitels voor taalonderwijs op Prime Video, YouTube, Netflix, Disney+, Hulu en Max."
+  },
+  "popupLoginPrompt": {
+    "message": "Log in om woorden op te slaan en te synchroniseren met Language Player."
+  },
+  "popupEmailPlaceholder": {
+    "message": "E-mail"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Wachtwoord"
+  },
+  "popupLoginBtn": {
+    "message": "Inloggen"
+  },
+  "popupLogoutBtn": {
+    "message": "Uitloggen"
+  },
+  "popupChecking": {
+    "message": "Controleren…"
+  },
+  "popupShowTranscript": {
+    "message": "Transcriptie tonen"
+  },
+  "popupNoTranscript": {
+    "message": "Geen transcriptie gevonden"
+  },
+  "popupInstructions": {
+    "message": "Start een video op <strong>Prime Video</strong>, <strong>YouTube</strong> of <strong>Netflix</strong>. Het transcriptiepaneel opent automatisch zodra ondertitels worden gevonden."
+  },
+  "popupClickWord": {
+    "message": "<strong>Klik</strong> op een willekeurig woord om het op te zoeken in het woordenboek"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Sla</strong> woorden op in je Language Player-account"
+  },
+  "popupToggleShortcut": {
+    "message": "Druk op <kbd>Alt</kbd> + <kbd>T</kbd> om het paneel te tonen/verbergen"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Zorg ervoor dat <strong>ondertitels zijn ingeschakeld</strong> in de taal die je studeert."
+  }
+}

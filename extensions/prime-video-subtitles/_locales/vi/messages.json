@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "Đang chờ phụ đề…"
+  },
+  "startPlaying": {
+    "message": "Bắt đầu phát video."
+  },
+  "loadingLanguage": {
+    "message": "Đang tải $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "Đã tải $count$ mục phụ đề",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Không thể tải phụ đề"
+  },
+  "loadingSubtitles": {
+    "message": "Đang tải phụ đề $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "Đóng"
+  },
+  "learningLanguage": {
+    "message": "Ngôn ngữ đang học"
+  },
+  "popularLanguages": {
+    "message": "Phổ biến"
+  },
+  "allLanguages": {
+    "message": "Tất cả"
+  },
+  "translate": {
+    "message": "Dịch thuật"
+  },
+  "showTranslation": {
+    "message": "Hiển thị bản dịch"
+  },
+  "translating": {
+    "message": "Đang dịch… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "Hành động"
+  },
+  "copy": {
+    "message": "Sao chép"
+  },
+  "speak": {
+    "message": "Nói"
+  },
+  "explain": {
+    "message": "Hỏi AI"
+  },
+  "explainTitle": {
+    "message": "Hỏi AI"
+  },
+  "aiThinking": {
+    "message": "🤖 AI đang suy nghĩ…"
+  },
+  "thinking": {
+    "message": "đang suy nghĩ…"
+  },
+  "save": {
+    "message": "Lưu từ"
+  },
+  "saved": {
+    "message": "Đã lưu"
+  },
+  "close": {
+    "message": "Đóng"
+  },
+  "showTranscript": {
+    "message": "Hiện bản ghi"
+  },
+  "noTranscriptFound": {
+    "message": "Không tìm thấy bản ghi"
+  },
+  "extensionDescription": {
+    "message": "Phụ đề song ngữ tương tác để học ngôn ngữ trên Prime Video, YouTube, Netflix, Disney+, Hulu và Max."
+  },
+  "popupLoginPrompt": {
+    "message": "Đăng nhập để lưu từ và đồng bộ với Language Player."
+  },
+  "popupEmailPlaceholder": {
+    "message": "Email"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Mật khẩu"
+  },
+  "popupLoginBtn": {
+    "message": "Đăng nhập"
+  },
+  "popupLogoutBtn": {
+    "message": "Đăng xuất"
+  },
+  "popupChecking": {
+    "message": "Đang kiểm tra…"
+  },
+  "popupShowTranscript": {
+    "message": "Hiện bản ghi"
+  },
+  "popupNoTranscript": {
+    "message": "Không tìm thấy bản ghi"
+  },
+  "popupInstructions": {
+    "message": "Bắt đầu phát bất kỳ video nào trên <strong>Prime Video</strong>, <strong>YouTube</strong> hoặc <strong>Netflix</strong>. Bảng bản ghi sẽ tự động mở khi tìm thấy phụ đề."
+  },
+  "popupClickWord": {
+    "message": "<strong>Nhấp</strong> vào bất kỳ từ nào để tra từ điển"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Lưu</strong> từ vào tài khoản Language Player của bạn"
+  },
+  "popupToggleShortcut": {
+    "message": "Nhấn <kbd>Alt</kbd> + <kbd>T</kbd> để bật/tắt bảng điều khiển"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Đảm bảo <strong>phụ đề được bật</strong> bằng ngôn ngữ bạn đang học."
+  }
+}

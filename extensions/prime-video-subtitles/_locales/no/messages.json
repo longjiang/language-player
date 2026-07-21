@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "Venter på undertekster…"
+  },
+  "startPlaying": {
+    "message": "Start avspilling av en video."
+  },
+  "loadingLanguage": {
+    "message": "Laster $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$ undertekstoppføringer lastet",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Kunne ikke laste undertekster"
+  },
+  "loadingSubtitles": {
+    "message": "Laster $lang$ undertekster…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "Lukk"
+  },
+  "learningLanguage": {
+    "message": "Læringsspråk"
+  },
+  "popularLanguages": {
+    "message": "Populært"
+  },
+  "allLanguages": {
+    "message": "Alle"
+  },
+  "translate": {
+    "message": "Oversettelse"
+  },
+  "showTranslation": {
+    "message": "Vis oversettelse"
+  },
+  "translating": {
+    "message": "Oversetter… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "Handlinger"
+  },
+  "copy": {
+    "message": "Kopier"
+  },
+  "speak": {
+    "message": "Snakk"
+  },
+  "explain": {
+    "message": "Spør AI"
+  },
+  "explainTitle": {
+    "message": "Spør AI"
+  },
+  "aiThinking": {
+    "message": "🤖 AI tenker…"
+  },
+  "thinking": {
+    "message": "tenker…"
+  },
+  "save": {
+    "message": "Lagre ord"
+  },
+  "saved": {
+    "message": "Lagret"
+  },
+  "close": {
+    "message": "Lukk"
+  },
+  "showTranscript": {
+    "message": "Vis transkripsjon"
+  },
+  "noTranscriptFound": {
+    "message": "Ingen transkripsjon funnet"
+  },
+  "extensionDescription": {
+    "message": "Interaktive tospråklige undertekster for språklæring på Prime Video, YouTube, Netflix, Disney+, Hulu og Max."
+  },
+  "popupLoginPrompt": {
+    "message": "Logg inn for å lagre ord og synkronisere med Language Player."
+  },
+  "popupEmailPlaceholder": {
+    "message": "E-post"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Passord"
+  },
+  "popupLoginBtn": {
+    "message": "Logg inn"
+  },
+  "popupLogoutBtn": {
+    "message": "Logg ut"
+  },
+  "popupChecking": {
+    "message": "Sjekker…"
+  },
+  "popupShowTranscript": {
+    "message": "Vis transkripsjon"
+  },
+  "popupNoTranscript": {
+    "message": "Ingen transkripsjon funnet"
+  },
+  "popupInstructions": {
+    "message": "Start avspilling av en video på <strong>Prime Video</strong>, <strong>YouTube</strong> eller <strong>Netflix</strong>. Transkripsjonspanelet åpnes automatisk når undertekster blir funnet."
+  },
+  "popupClickWord": {
+    "message": "<strong>Klikk</strong> på et hvilket som helst ord for å slå det opp i ordboken"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Lagre</strong> ord til Language Player-kontoen din"
+  },
+  "popupToggleShortcut": {
+    "message": "Trykk <kbd>Alt</kbd> + <kbd>T</kbd> for å vise/skjule panelet"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Sørg for at <strong>undertekster er slått på</strong> på språket du studerer."
+  }
+}

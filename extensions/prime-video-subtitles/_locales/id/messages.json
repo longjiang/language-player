@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "Menunggu subtitle…"
+  },
+  "startPlaying": {
+    "message": "Mulai putar video."
+  },
+  "loadingLanguage": {
+    "message": "Memuat $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$ entri subtitle dimuat",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Gagal memuat subtitle"
+  },
+  "loadingSubtitles": {
+    "message": "Memuat subtitle $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "Tutup"
+  },
+  "learningLanguage": {
+    "message": "Bahasa pembelajaran"
+  },
+  "popularLanguages": {
+    "message": "Populer"
+  },
+  "allLanguages": {
+    "message": "Semua"
+  },
+  "translate": {
+    "message": "Terjemahan"
+  },
+  "showTranslation": {
+    "message": "Tampilkan terjemahan"
+  },
+  "translating": {
+    "message": "Menerjemahkan… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "Tindakan"
+  },
+  "copy": {
+    "message": "Salin"
+  },
+  "speak": {
+    "message": "Bicara"
+  },
+  "explain": {
+    "message": "Tanya AI"
+  },
+  "explainTitle": {
+    "message": "Tanya AI"
+  },
+  "aiThinking": {
+    "message": "🤖 AI sedang berpikir…"
+  },
+  "thinking": {
+    "message": "berpikir…"
+  },
+  "save": {
+    "message": "Simpan kata"
+  },
+  "saved": {
+    "message": "Tersimpan"
+  },
+  "close": {
+    "message": "Tutup"
+  },
+  "showTranscript": {
+    "message": "Tampilkan Transkrip"
+  },
+  "noTranscriptFound": {
+    "message": "Transkrip Tidak Ditemukan"
+  },
+  "extensionDescription": {
+    "message": "Subtitle bilingual interaktif untuk belajar bahasa di Prime Video, YouTube, Netflix, Disney+, Hulu, dan Max."
+  },
+  "popupLoginPrompt": {
+    "message": "Masuk untuk menyimpan kata dan menyinkronkan dengan Language Player."
+  },
+  "popupEmailPlaceholder": {
+    "message": "Email"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Kata sandi"
+  },
+  "popupLoginBtn": {
+    "message": "Masuk"
+  },
+  "popupLogoutBtn": {
+    "message": "Keluar"
+  },
+  "popupChecking": {
+    "message": "Memeriksa…"
+  },
+  "popupShowTranscript": {
+    "message": "Tampilkan Transkrip"
+  },
+  "popupNoTranscript": {
+    "message": "Transkrip Tidak Ditemukan"
+  },
+  "popupInstructions": {
+    "message": "Mulai putar video apa pun di <strong>Prime Video</strong>, <strong>YouTube</strong>, atau <strong>Netflix</strong>. Panel transkrip terbuka secara otomatis saat subtitle ditemukan."
+  },
+  "popupClickWord": {
+    "message": "<strong>Klik</strong> kata apa pun untuk mencarinya di kamus"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Simpan</strong> kata ke akun Language Player Anda"
+  },
+  "popupToggleShortcut": {
+    "message": "Tekan <kbd>Alt</kbd> + <kbd>T</kbd> untuk menampilkan/menyembunyikan panel"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Pastikan <strong>subtitle diaktifkan</strong> dalam bahasa yang Anda pelajari."
+  }
+}

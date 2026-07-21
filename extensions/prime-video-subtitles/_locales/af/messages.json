@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "Wag vir onderskrifte…"
+  },
+  "startPlaying": {
+    "message": "Begin om 'n video te speel."
+  },
+  "loadingLanguage": {
+    "message": "Laai $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$ onderskrifinskrywings gelaai",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Kon nie onderskrifte laai nie"
+  },
+  "loadingSubtitles": {
+    "message": "Laai $lang$ onderskrifte…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "Sluit"
+  },
+  "learningLanguage": {
+    "message": "Leertaal"
+  },
+  "popularLanguages": {
+    "message": "Gewild"
+  },
+  "allLanguages": {
+    "message": "Alles"
+  },
+  "translate": {
+    "message": "Vertaling"
+  },
+  "showTranslation": {
+    "message": "Wys Vertaling"
+  },
+  "translating": {
+    "message": "Vertaal… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "Aksies"
+  },
+  "copy": {
+    "message": "Kopieer"
+  },
+  "speak": {
+    "message": "Praat"
+  },
+  "explain": {
+    "message": "Vra KI"
+  },
+  "explainTitle": {
+    "message": "Vra KI"
+  },
+  "aiThinking": {
+    "message": "🤖 KI dink…"
+  },
+  "thinking": {
+    "message": "dink…"
+  },
+  "save": {
+    "message": "Stoor woord"
+  },
+  "saved": {
+    "message": "Gestoord"
+  },
+  "close": {
+    "message": "Sluit"
+  },
+  "showTranscript": {
+    "message": "Wys Transkripsie"
+  },
+  "noTranscriptFound": {
+    "message": "Geen Transkripsie Gevind"
+  },
+  "extensionDescription": {
+    "message": "Interaktiewe tweetalige onderskrifte vir taalonderrig op Prime Video, YouTube, Netflix, Disney+, Hulu en Max."
+  },
+  "popupLoginPrompt": {
+    "message": "Meld aan om woorde te stoor en met Language Player te sinkroniseer."
+  },
+  "popupEmailPlaceholder": {
+    "message": "E-pos"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Wagwoord"
+  },
+  "popupLoginBtn": {
+    "message": "Meld aan"
+  },
+  "popupLogoutBtn": {
+    "message": "Meld af"
+  },
+  "popupChecking": {
+    "message": "Kontroleer…"
+  },
+  "popupShowTranscript": {
+    "message": "Wys Transkripsie"
+  },
+  "popupNoTranscript": {
+    "message": "Geen Transkripsie Gevind"
+  },
+  "popupInstructions": {
+    "message": "Begin om enige video op <strong>Prime Video</strong>, <strong>YouTube</strong> of <strong>Netflix</strong> te speel. Die transkripsiepaneel maak outomaties oop wanneer onderskrifte gevind word."
+  },
+  "popupClickWord": {
+    "message": "<strong>Klik</strong> op enige woord om dit in die woordeboek na te slaan"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Stoor</strong> woorde na jou Language Player-rekening"
+  },
+  "popupToggleShortcut": {
+    "message": "Druk <kbd>Alt</kbd> + <kbd>T</kbd> om die paneel te wissel"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Maak seker <strong>onderskrifte is aangeskakel</strong> in die taal wat jy studeer."
+  }
+}
