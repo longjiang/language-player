@@ -4,6 +4,7 @@ import { useState, useMemo, type ReactNode } from 'react';
 import Fuse from 'fuse.js';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
+import { stripMarkdown } from '@/lib/strip-markdown';
 
 interface DocEntry {
   slug: string;
@@ -72,7 +73,7 @@ export function DocSearch({ docs, l1, l2, children }: Props) {
               >
                 <p className="text-sm font-medium">{item.title}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                  {snippet(item.content, query)}
+                  {stripMarkdown(snippet(item.content, query))}
                 </p>
               </Link>
             </li>
