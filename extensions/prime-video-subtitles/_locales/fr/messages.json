@@ -1,0 +1,87 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "En attente des sous-titres…"
+  },
+  "startPlaying": {
+    "message": "Lancez une vidéo."
+  },
+  "loadingLanguage": {
+    "message": "Chargement $lang$…",
+    "placeholders": { "lang": { "content": "$1" } }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$ sous-titres chargés",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Échec du chargement des sous-titres"
+  },
+  "loadingSubtitles": {
+    "message": "Chargement des sous-titres $lang$…",
+    "placeholders": { "lang": { "content": "$1" } }
+  },
+  "closePanel": {
+    "message": "Fermer le panneau"
+  },
+  "learningLanguage": {
+    "message": "Langue d'apprentissage"
+  },
+  "popularLanguages": {
+    "message": "Populaires"
+  },
+  "allLanguages": {
+    "message": "Toutes les langues"
+  },
+  "translate": {
+    "message": "Traduire"
+  },
+  "showTranslation": {
+    "message": "Afficher la traduction (L1)"
+  },
+  "translating": {
+    "message": "Traduction… $progress$/$total$",
+    "placeholders": { "progress": { "content": "$1" }, "total": { "content": "$2" } }
+  },
+  "actions": {
+    "message": "Actions"
+  },
+  "copy": {
+    "message": "📋 Copier"
+  },
+  "speak": {
+    "message": "🔊 Lire"
+  },
+  "explain": {
+    "message": "🤖 Expliquer"
+  },
+  "explainTitle": {
+    "message": "🤖 Explication IA"
+  },
+  "aiThinking": {
+    "message": "🤖 L'IA réfléchit…"
+  },
+  "thinking": {
+    "message": "réflexion…"
+  },
+  "save": {
+    "message": "Enregistrer"
+  },
+  "saved": {
+    "message": "Enregistré"
+  },
+  "close": {
+    "message": "Fermer"
+  },
+  "showTranscript": {
+    "message": "Afficher la transcription"
+  },
+  "noTranscriptFound": {
+    "message": "Aucune transcription trouvée"
+  },
+  "extensionDescription": {
+    "message": "Sous-titres bilingues interactifs pour Prime Video, YouTube, Netflix, Disney+, Hulu et Max."
+  }
+}
