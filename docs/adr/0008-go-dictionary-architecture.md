@@ -74,10 +74,10 @@ The Next.js web app uses a clean server-side architecture: `POST /dictionary/loo
 │  └─ Not found → LLM generate entry                   │
 │                                                      │
 │  /dictionary/download  (NEW)                         │
-│  ├─ Query dictionaries.db SQLite directly             │
-│  ├─ JOIN word_frequency → filter & sort by frequency  │
-│  ├─ Cache result (MD5 hash → disk)                   │
-│  └─ Return JSON: { entries, total, downloaded }      │
+│  ├─ Query dictionaries.db SQLite directly            │
+│  ├─ ORDER BY frequency DESC LIMIT ?                  │
+│  ├─ Cache result (MD5 hash → disk)                  │
+│  └─ Return JSON: { entries, total, downloaded }     │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -98,6 +98,41 @@ Each `DictionaryEntry` includes `match_type: 'exact' | 'lemma' | 'fuzzy' | 'llm'
 
 **LLM definition caching**: When `match_type === 'llm'`, store the result locally in a dedicated SQLite table (`llm_cache`) keyed by `(text, l1_code, l2_code)`. On subsequent offline lookups, the app can serve cached LLM definitions even without network access.
 
+### L1 Translation Strategy
+
+**Offline dictionaries always store English definitions.** Pre-translating definitions for every word is neither cost-effective nor accurate:
+
+- **Cost**: 20K words × 3 definitions × context-rich prompt ~ $0.50–$1.00 per language pair via DeepSeek. Across 31 L1 languages, that's $15–$30 per L2 — prohibitive at scale.
+- **Accuracy risk**: Direct string translation of definitions produces wrong results when the translation lacks word context. For example, translating "court" without knowing whether it's a legal term or a sports term yields the wrong L1 word. The `/dictionary/lookup` endpoint already handles this correctly by providing DeepSeek with full word metadata (head, POS, level, English definitions, language pair) in a structured prompt.
+
+**Lazy L1 definition accumulation**: When a user with L1≠en looks up a word online, the server returns L1 definitions (via `/dictionary/lookup`). If the user is offline, the app shows English definitions from the downloaded dictionary as a fallback. Each online lookup also populates the local `llm_cache` table with the L1 result. Over time, the cache naturally fills with the words the user actually cares about — at zero upfront translation cost.
+
+**The `llm_cache` serves dual purpose** — it stores both `match_type: 'llm'` entries (LLM-generated for words not in any curated dictionary) AND L1-translated definitions from online lookups (even for words that exist in the curated dictionary). The cache key is `(text, l1_code, l2_code)`.
+
+### Download Sizing
+
+The `/dictionary/download` endpoint returns English-definition entries ordered by frequency, capped at a configurable limit (default: 30,000). This keeps downloads small and fast while covering the vocabulary a typical learner needs:
+
+| Language | Dict Table | Freq-Covered Pool | Default Cap | Est. Download |
+|---|---|---|---|---|
+| zh | cedict | 33,020 | 30,000 | ~15 MB |
+| ja | edict | 22,252 | 22,252 (all) | ~11 MB |
+| ko | kengdic | 19,291 | 19,291 (all) | ~10 MB |
+| de | wiktionary | 17,686 | 17,686 (all) | ~9 MB |
+| fr | wiktionary | 20,112 | 20,112 (all) | ~10 MB |
+| es | wiktionary | 15,895 | 15,895 (all) | ~8 MB |
+| it | wiktionary | 19,773 | 19,773 (all) | ~10 MB |
+| pt | wiktionary | 17,317 | 17,317 (all) | ~9 MB |
+| nl | wiktionary | 18,057 | 18,057 (all) | ~9 MB |
+| ru | wiktionary | 12,825 | 12,825 (all) | ~6 MB |
+| ar | wiktionary | 14,726 | 14,726 (all) | ~7 MB |
+| tr | wiktionary | 6,237 | 6,237 (all) | ~3 MB |
+| … | … | … | … | … |
+
+**40 languages** (those with Zipf frequency data in `dictionaries.db`) have entries to offer. The top 20K–30K words by frequency cover 95%+ of everyday text — far more than any learner will actively look up. The remaining 140+ Wiktionary languages have no frequency data and cannot offer frequency-ordered downloads until Zipf data is available.
+
+**If the frequency pool exceeds the cap** (only `cedict` at 33K), the server returns the top N by Zipf score. The download size estimate is ~500 bytes per entry (head, pronunciation, definitions, POS, level, phonetic_detail as JSON).
+
 ### Offline Download (Phase 2)
 
 **New Python endpoint:** `GET /dictionary/download`
@@ -105,17 +140,16 @@ Each `DictionaryEntry` includes `match_type: 'exact' | 'lemma' | 'fuzzy' | 'llm'
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `l2` | string | required | Target language code (e.g. `ja`) |
-| `l1` | string | `en` | User's native language for definitions |
-| `limit` | number | 50000 | Max entries to return (top by frequency) |
+| `l1` | string | `en` | User's native language (for cache key only — definitions are always English) |
+| `limit` | number | 30000 | Max entries to return (top by frequency) |
 
 **Server-side flow:**
 1. Query `dictionaries.db` SQLite directly — data is already normalized (see `docs/python-dictionary-db-schema.md`)
-   - Dedicated dicts: `SELECT * FROM {cedict|edict|kengdic|cccanto|klingonska}` (language is the table itself)
-   - Wiktionary: `SELECT * FROM wiktionary WHERE lang_code = ?` (~800 languages, one table)
-2. JOIN with `word_frequency` to filter top N entries by Zipf score, then sort descending
-3. If `l1 !== 'en'`, optionally batch-translate definitions via DeepSeek LLM
-4. Cache the result on disk (MD5 of `l2:l1:limit` → JSON file)
-5. Return `{ entries: DictionaryEntry[], total: number, downloaded: number }`
+   - Dedicated dicts: `SELECT * FROM {cedict|edict|kengdic|cccanto|klingonska} ORDER BY frequency DESC LIMIT ?` (frequency is a column in each dict table)
+   - Wiktionary: `SELECT * FROM wiktionary WHERE lang_code = ? ORDER BY frequency DESC LIMIT ?` (~800 languages, one table)
+2. Definitions are always returned in English — no batch LLM translation at download time. L1 definitions are accumulated lazily via online lookups (see [L1 Translation Strategy](#l1-translation-strategy)).
+3. Cache the result on disk (MD5 of `l2:limit` → JSON file)
+4. Return `{ entries: DictionaryEntry[], total: number, downloaded: number }`
 
 **No CSV parsing needed** — the database already contains all entries in their final normalized form. The `/dictionary/lookup` endpoint queries the same tables at runtime. The download endpoint just bulk-exports instead of single-lookup.
 
@@ -165,7 +199,7 @@ async function loadEntries(entries: DictionaryEntry[], onProgress: (pct: number)
 5. Keep existing offline SQLite dictionary as fallback during migration
 
 ### Phase 2: Offline Download
-1. Add Python `/dictionary/download` endpoint (server-side normalization + frequency filtering + caching)
+1. Add Python `/dictionary/download` endpoint (direct SQLite query: `ORDER BY frequency DESC LIMIT ?`) with server-side caching
 2. Add `downloadDictionary(l2, l1)` to GO's API layer
 3. Create IndexedDB store for offline dictionary entries
 4. Build download UI (available languages, size estimate, progress, delete)
@@ -200,7 +234,7 @@ async function loadEntries(entries: DictionaryEntry[], onProgress: (pct: number)
 - **L1-aware definitions** — Spanish speakers learning Japanese get Spanish definitions, not English
 - **LLM fallback** — Rare words get AI-generated definitions instead of empty results
 - **No freezing** — Server-side normalization + chunked IndexedDB writes eliminate the 10–30 second app freeze
-- **Smaller downloads** — Frequency-filtered JSON (e.g., 5 MB for top 50K words) vs. raw CSV (10–50 MB)
+- **Smaller downloads** — Frequency-filtered English-only JSON (~10–15 MB for 20K entries) vs. raw CSV (10–50 MB)
 - **Single source of truth** — Normalization lives only on the Python server
 
 ### Negative
