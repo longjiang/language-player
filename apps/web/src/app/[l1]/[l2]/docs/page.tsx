@@ -130,7 +130,13 @@ interface DocEntry {
 }
 
 /** Build a flat search index with full doc content for fuzzy search. */
-function getSearchIndex(): DocEntry[] {
+function getSearchIndex(l1: string): DocEntry[] {
+  // Prefer translated locale JSON for non-English L1
+  if (l1 !== 'en') {
+    const localeEntries = loadLocaleEntries(l1);
+    if (localeEntries) return localeEntries;
+  }
+  // Fall back to raw .md files (English)
   const possibleDirs = [
     resolve(process.cwd(), 'apps/web/content/docs'),
     resolve(process.cwd(), 'content/docs'),
@@ -141,6 +147,25 @@ function getSearchIndex(): DocEntry[] {
     return entries;
   }
   return [];
+}
+
+/** Load translated entries from docs-i18n/{l1}.json if available. */
+function loadLocaleEntries(l1: string): DocEntry[] | null {
+  const dataDirs = [
+    resolve(process.cwd(), 'apps/web/src/data/docs-i18n'),
+    resolve(process.cwd(), 'src/data/docs-i18n'),
+  ];
+  for (const dataDir of dataDirs) {
+    try {
+      const entries = JSON.parse(readFileSync(resolve(dataDir, `${l1}.json`), 'utf-8'));
+      return entries.map((e: { slug: string; title: string; content: string }) => ({
+        slug: e.slug,
+        title: e.title,
+        content: e.content,
+      }));
+    } catch { /* try next */ }
+  }
+  return null;
 }
 
 function walkDocs(dir: string, basePath: string, out: DocEntry[]) {
@@ -167,7 +192,7 @@ interface Props {
 export default function DocsPage({ params }: Props) {
   const { l1, l2 } = params;
   const docs = getDocs(l1);
-  const searchIndex = getSearchIndex();
+  const searchIndex = getSearchIndex(l1);
 
   return (
     <div className="flex flex-col items-center px-4 py-12">
