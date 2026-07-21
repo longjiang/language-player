@@ -119,5 +119,57 @@
   "extensionDescription": {
     "message": "Interactive dual subtitles for language learning on Prime Video, YouTube, Netflix, Disney+, Hulu, and Max.",
     "description": "Extension description in manifest and Chrome Web Store"
+  },
+  "popupLoginPrompt": {
+    "message": "Log in to save words and sync with Language Player.",
+    "description": "Popup prompt above login form"
+  },
+  "popupEmailPlaceholder": {
+    "message": "Email",
+    "description": "Placeholder for email input"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Password",
+    "description": "Placeholder for password input"
+  },
+  "popupLoginBtn": {
+    "message": "Log In",
+    "description": "Login button text"
+  },
+  "popupLogoutBtn": {
+    "message": "Log Out",
+    "description": "Logout button text"
+  },
+  "popupChecking": {
+    "message": "Checking…",
+    "description": "Transcript button while checking status"
+  },
+  "popupShowTranscript": {
+    "message": "Show Transcript",
+    "description": "Transcript button when subtitles available"
+  },
+  "popupNoTranscript": {
+    "message": "No Transcript Found",
+    "description": "Transcript button when no subtitles"
+  },
+  "popupInstructions": {
+    "message": "Start playing any video on <strong>Prime Video</strong>, <strong>YouTube</strong>, or <strong>Netflix</strong>. The transcript panel opens automatically when subtitles are found.",
+    "description": "Popup instructions paragraph"
+  },
+  "popupClickWord": {
+    "message": "<strong>Click</strong> any word to look it up in the dictionary",
+    "description": "Popup instruction item 1"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Save</strong> words to your Language Player account",
+    "description": "Popup instruction item 2"
+  },
+  "popupToggleShortcut": {
+    "message": "Press <kbd>Alt</kbd> + <kbd>T</kbd> to toggle the panel",
+    "description": "Popup instruction item 3"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Make sure <strong>captions are turned on</strong> in the language you're studying.",
+    "description": "Popup hint about captions"
   }
 }

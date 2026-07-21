@@ -2,46 +2,44 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Prime Video Subtitles</title>
+  <title>__MSG_appName__</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
     <h1>
       <img src="language-player-logo-64.png" alt="" width="28" height="28" />
-      Language Player
+      __MSG_appName__
     </h1>
 
     <!-- Auth section -->
     <div id="auth-section">
       <div id="auth-logged-out">
-        <p class="auth-hint">Log in to save words and sync with Language Player.</p>
-        <input type="email" id="auth-email" placeholder="Email" />
-        <input type="password" id="auth-password" placeholder="Password" />
-        <button id="auth-login-btn">Log In</button>
+        <p class="auth-hint">__MSG_popupLoginPrompt__</p>
+        <input type="email" id="auth-email" placeholder="__MSG_popupEmailPlaceholder__" />
+        <input type="password" id="auth-password" placeholder="__MSG_popupPasswordPlaceholder__" />
+        <button id="auth-login-btn">__MSG_popupLoginBtn__</button>
         <p id="auth-error" class="auth-error hidden"></p>
       </div>
       <div id="auth-logged-in" class="hidden">
         <span id="auth-user"></span>
-        <button id="auth-logout-btn">Log Out</button>
+        <button id="auth-logout-btn">__MSG_popupLogoutBtn__</button>
       </div>
     </div>
 
     <!-- Instructions -->
     <div id="instructions">
-      <p>Start playing any video on <strong>Prime Video</strong>, <strong>YouTube</strong>, or <strong>Netflix</strong>. The transcript panel opens automatically when subtitles are found.</p>
+      <p>__MSG_popupInstructions__</p>
       <ul>
-        <li><strong>Click</strong> any word to look it up in the dictionary</li>
-        <li><strong>Save</strong> words to your Language Player account</li>
-        <li>Press <kbd>Alt</kbd> + <kbd>T</kbd> to toggle the panel</li>
+        <li>__MSG_popupClickWord__</li>
+        <li>__MSG_popupSaveWords__</li>
+        <li>__MSG_popupToggleShortcut__</li>
       </ul>
     </div>
 
     <!-- Transcript toggle -->
-    <button id="transcript-btn" disabled>Checking…</button>
-    <p id="transcript-hint" class="hidden">
-      💡 Make sure <strong>captions are turned on</strong> in the language you're studying.
-    </p>
+    <button id="transcript-btn" disabled>__MSG_popupChecking__</button>
+    <p id="transcript-hint" class="hidden">__MSG_popupCaptionsHint__</p>
 
   </div>
   <script src="popup.js"></script>

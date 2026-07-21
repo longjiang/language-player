@@ -92,5 +92,44 @@
   },
   "extensionDescription": {
     "message": "互动双语字幕，支持 Prime Video、YouTube、Netflix、Disney+、Hulu 与 Max。"
+  },
+  "popupLoginPrompt": {
+    "message": "登录以保存单词并与 Language Player 同步。"
+  },
+  "popupEmailPlaceholder": {
+    "message": "邮箱"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "密码"
+  },
+  "popupLoginBtn": {
+    "message": "登录"
+  },
+  "popupLogoutBtn": {
+    "message": "退出"
+  },
+  "popupChecking": {
+    "message": "检查中…"
+  },
+  "popupShowTranscript": {
+    "message": "显示字幕"
+  },
+  "popupNoTranscript": {
+    "message": "未找到字幕"
+  },
+  "popupInstructions": {
+    "message": "在 <strong>Prime Video</strong>、<strong>YouTube</strong> 或 <strong>Netflix</strong> 上播放任意视频。字幕面板将在检测到字幕后自动打开。"
+  },
+  "popupClickWord": {
+    "message": "<strong>点击</strong>任意单词即可查词典"
+  },
+  "popupSaveWords": {
+    "message": "<strong>收藏</strong>单词到您的 Language Player 账户"
+  },
+  "popupToggleShortcut": {
+    "message": "按 <kbd>Alt</kbd> + <kbd>T</kbd> 切换面板"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 请确保您学习语言的<strong>字幕已开启</strong>。"
   }
 }
