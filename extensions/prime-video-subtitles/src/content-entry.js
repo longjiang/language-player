@@ -1230,7 +1230,16 @@ async function init() {
     }, 2000);
   } else if (isNetflix) {
     // Netflix: interceptor already set up before waitForPlayer().
-    // Just attach time tracking and start watching for video element changes.
+    // Cues may have already been loaded while we were waiting for the player.
+    // If so, render them now that the panel exists.
+    if (STATE.cues.length > 0) {
+      console.log('[LanguagePlayer] Rendering pre-loaded cues:', STATE.cues.length);
+      STATE.activeCueIdx = -1;
+      renderTranscript();
+      if (!STATE.panelVisible) setPanelVisible(true);
+      setBadge(true);
+      updateStatus(`${STATE.cues.length} subtitle entries loaded`);
+    }
     attachTimeTracking();
     setInterval(() => {
       attachTimeTracking();
