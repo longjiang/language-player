@@ -15,7 +15,8 @@ The database contains:
 - **1 wiktionary table** — catch-all for ~800 languages, single table with `lang_code` column
 - **1 enrichment table** — Open Russian with stress marks and IPA
 - **1 HSK curriculum table** — textbook coverage for Chinese entries
-- **1 word frequency table** — survives dictionary rebuilds, independent of dictionary data
+
+Frequency data lives directly in each dictionary table's `frequency` column — there is no separate frequency table. `import_dict_to_sqlite.py --all` rebuilds dictionaries and then imports all frequency data from Zipf CSVs via `--freq`. The `--freq` flag can also be used standalone to update frequencies in an existing database without rebuilding dictionaries.
 
 ---
 
@@ -32,7 +33,7 @@ The database contains:
 | `definitions` | TEXT | Pipe-separated English definitions (`\|`) |
 | `part_of_speech` | TEXT | (null — reserved for future HSK 3.0 POS data) |
 | `level` | TEXT | Comma-separated scale:level pairs — e.g. `hsk_2025:3,hsk_2010:4` |
-| `frequency` | REAL | (null — migrated to `word_frequency` table) |
+| `frequency` | REAL | Zipf frequency score (populated by `--freq` flag; null until frequency import runs) |
 | `classifier` | TEXT | JSON array of `MeasureWord` objects — see [Classifier Format](#classifier-format) |
 | `pinyin_no_tone` | TEXT | Tone-stripped pinyin for search — e.g. `chi fan` ← `chī fàn` |
 | `pinyin_search` | TEXT | Lowercase, no spaces — e.g. `chifan` |
@@ -76,7 +77,7 @@ The database contains:
 | `definitions` | TEXT | Pipe-separated English definitions |
 | `part_of_speech` | TEXT | POS |
 | `level` | TEXT | CEFR/HSK level |
-| `frequency` | REAL | (null — in `word_frequency` table) |
+| `frequency` | REAL | Zipf frequency score (populated by `--freq` flag) |
 | `mandarin_pinyin` | TEXT | Cross-reference: Mandarin reading |
 | `jyutping_no_tone` | TEXT | Tone numbers removed — e.g. `jat gin` |
 | `jyutping_search` | TEXT | Lowercase, no spaces — e.g. `jatgin` |
@@ -186,34 +187,37 @@ This ensures saved-word IDs are cross-platform compatible between Classic, Next.
 
 **Stress conversion**: Apostrophe-after-vowel notation (`э'то`) is converted to Unicode combining acute accent (`э́то`, U+0301) for display.
 
+> **How Open Russian is used at lookup time**: Open Russian is a supplementary enrichment layer — Wiktionary is always the primary dictionary for Russian. After `_enrich_entry()` sets frequency-derived data on the Wiktionary entry, `_enrich_russian()` queries the `open_russian` table and polyfills missing fields by headword match:
+>
+> | Field | Polyfill behavior |
+> |---|---|
+> | `phonetic_detail.stressed` | Added if Open Russian has it (e.g. `спаси́бо`) |
+> | `pronunciation` (IPA) | Only if Wiktionary's is empty |
+> | `part_of_speech` | Only if Wiktionary's is empty |
+> | `levels` (CEFR) | Only if no levels exist — but in practice this **never fires** because `_enrich_entry` already sets frequency-derived CEFR levels before `_enrich_russian` runs. Open Russian's real CEFR labels (e.g. A1, B2) are currently superseded by frequency-derived ones. |
+>
+> The entry's `dictionary` field always reports `wiktionary` — Open Russian is not presented as a separate dictionary to clients.
+
 ---
 
-### `word_frequency` — Frequency Data
+### Frequency Data
 
-**Composite PK**: `(lang_code, head)` — **survives dictionary rebuilds**
+Frequency scores are stored directly in each dictionary table's `frequency` column (a `REAL` column). There is no separate frequency table — frequency data is loaded into the dictionary tables at import time and survives normal operation.
 
-| Column | Type | Description |
+**Source**: `data/frequency-lists/zipf_frequency_list_{lang}.csv` — 40 languages supported. Frequency CSVs are loaded by `import_dict_to_sqlite.py --freq` and matched to dictionary rows by headword.
+
+**Languages with frequency data**: ar, bg, ca, zh, hr, cs, da, nl, en, fi, fr, de, el, he, hi, hu, is, id, it, ja, ko, lv, lt, mk, ms, nb, fa, pl, pt, ro, ru, sk, sl, es, sv, ta, tr, uk, ur, vi
+
+**Dictionary → frequency language mapping**:
+| Dictionary Table | Frequency Lang | Match Column |
 |---|---|---|
-| `lang_code` | TEXT PK | ISO 639-1 code |
-| `head` | TEXT PK | Lemma/headword |
-| `frequency` | REAL NOT NULL | Zipf frequency score |
+| `cedict` | `zh` (ISO 639-1) | `head` |
+| `cccanto` | `yue` (ISO 639-1) | `head` |
+| `edict` | `ja` (ISO 639-1) | `head` |
+| `kengdic` | `ko` (ISO 639-1) | `head` |
+| `wiktionary` | ISO 639-3 → ISO 639-1 via `_ISO3_TO_ISO1` | `(lang_code, head)` |
 
-**Source**: `data/frequency-lists/zipf_frequency_list_{lang}.csv` — 40 languages supported. Uses `INSERT OR REPLACE` so individual languages can be re-imported without affecting others.
-
-**Language table**:
-| ar | bg | ca | zh | hr | cs | da | nl | en | fi |
-| fr | de | el | he | hi | hu | is | id | it | ja |
-| ko | lv | lt | mk | ms | nb | fa | pl | pt | ro |
-| ru | sk | sl | es | sv | ta | tr | uk | ur | vi |
-
-**Dictionary → frequency mapping**:
-| Dictionary Table | Frequency Lang |
-|---|---|
-| `cedict` | `zh` |
-| `edict` | `ja` |
-| `kengdic` | `ko` |
-
-To map Wiktionary languages (ISO 639-3) to frequency (ISO 639-1), use `_ISO3_TO_ISO1` (see code).
+Klingon has no frequency data. Wiktionary languages are mapped from ISO 639-3 to ISO 639-1 using `_ISO3_TO_ISO1` (see code).
 
 ---
 
@@ -237,7 +241,6 @@ To map Wiktionary languages (ISO 639-3) to frequency (ISO 639-1), use `_ISO3_TO_
 | `idx_wiktionary_lang_code` | wiktionary | `lang_code` | Language filter |
 | `idx_wiktionary_lookup` | wiktionary | `(lang_code, head)` | Composite lookup |
 | `idx_hsk_curriculum_entry` | hsk_curriculum | `entry_id` | FK join to cedict |
-| `idx_word_frequency_lookup` | word_frequency | `(lang_code, head)` | Composite lookup |
 
 ---
 
@@ -338,6 +341,8 @@ Each loader in `utils_dictionary.py` queries its table with a priority chain:
 4. **Fuzzy match** — substring for roman/pinyin ≥ 3 characters
 
 The `/dictionary/lookup` endpoint then:
+- Reads `frequency` directly from the matched row — no separate query or runtime CSV loading needed
+- If a language has canonical levels (HSK, JLPT, etc.), those are used as-is; otherwise a Zipf score → CEFR level mapping is applied inline
 - If L1 ≠ English → LLM translate definitions to L1
 - If no match → LLM generate entry (`match_type: "llm"`)
 
@@ -345,19 +350,24 @@ The `/dictionary/lookup` endpoint then:
 
 ## Database Maintenance
 
-**Rebuild (drops and recreates dictionary tables)**:
+All operations go through `import_dict_to_sqlite.py`. The legacy `import_frequency.py` and `frequency_assigner.py` scripts are archived — frequency is handled entirely within the unified import script.
+
+**Full rebuild (drops dict tables, re-imports dictionaries, then imports all frequencies)**:
 ```bash
 python import_dict_to_sqlite.py --all
 ```
+This is equivalent to `--cedict --cccanto --edict --kengdic --klingonska --wiktionary --open-russian --freq=all`.
 
-**Selective rebuild**:
+**Selective dictionary rebuild (includes frequency for those languages)**:
 ```bash
 python import_dict_to_sqlite.py --cedict --edict
 ```
+When specific dictionary flags are given, frequencies for the corresponding languages are imported automatically — no need to also pass `--freq`.
 
-**Frequency-only update (does not touch dictionary tables)**:
+**Frequency-only update (UPDATEs the `frequency` column in existing dictionary tables, no rebuild)**:
 ```bash
-python import_dict_to_sqlite.py --freq=ja,zh,ko
+python import_dict_to_sqlite.py --freq=all
+python import_dict_to_sqlite.py --freq=zh,ja,ko
 ```
 
 **Pragmas used**:
@@ -372,7 +382,7 @@ python import_dict_to_sqlite.py --freq=ja,zh,ko
 
 The `/dictionary/download` endpoint (proposed in ADR-0008) needs to:
 1. Query this database for a specific language
-2. Filter by frequency (join with `word_frequency` table)
+2. Filter by frequency using the dict table's `frequency` column directly (no join needed)
 3. Return pre-normalized `DictionaryEntry[]` JSON
 
 For dedicated dictionaries (cedict, edict, kengdic, cccanto, klingonska), queries are single-table SELECTs. For Wiktionary languages, queries filter by `lang_code`.
