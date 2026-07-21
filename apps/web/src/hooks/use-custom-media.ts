@@ -34,6 +34,8 @@ export interface UseCustomMediaReturn {
   savedPosition: number;
   /** Open file picker for a media file. */
   openFile: () => Promise<void>;
+  /** Load a file directly (from drag-and-drop). */
+  loadDroppedFile: (file: File) => Promise<void>;
   /** Open file picker for a caption file. */
   loadCaptions: () => Promise<void>;
   /** Remove stored media and captions. */
@@ -175,6 +177,26 @@ export function useCustomMedia(): UseCustomMediaReturn {
     loadFileData(file, stored);
   }, [loadFileData]);
 
+  // ── Load dropped file (no FileSystemFileHandle available) ──
+  const loadDroppedFile = useCallback(async (file: File) => {
+    const stored: StoredMedia = {
+      fileName: file.name,
+      mimeType: file.type || 'video/mp4',
+      isAudio: isAudioFile(file),
+      fileSize: file.size,
+      lastOpened: Date.now(),
+      position: 0,
+      // No file handle from drop — always store raw data as fallback
+      fileData: await file.arrayBuffer(),
+      captionText: '',
+      captionFormat: null,
+    };
+
+    await saveMedia(stored);
+    storedRef.current = stored;
+    loadFileData(file, stored);
+  }, [loadFileData]);
+
   // ── Load captions ──
   const loadCaptions = useCallback(async () => {
     const result = await openCaptionFile();
@@ -225,6 +247,7 @@ export function useCustomMedia(): UseCustomMediaReturn {
     needsPermission,
     savedPosition,
     openFile,
+    loadDroppedFile,
     loadCaptions,
     clear,
     savePosition: savePositionFn,
