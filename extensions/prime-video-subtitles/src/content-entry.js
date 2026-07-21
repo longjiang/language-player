@@ -1232,12 +1232,14 @@ async function init() {
 
   detectL2Code();
 
+  // Load saved language preference for ALL platforms
+  await loadSavedL2Preference();
+
   // Netflix: inject the JSON.parse monkeypatch IMMEDIATELY, before waiting
   // for the player. Netflix loads its playback manifest early in the page
   // lifecycle — if we wait for the player first, the manifest JSON has
   // already been parsed and our monkeypatch misses it.
   if (isNetflix) {
-    await loadSavedL2Preference();
     setupNetflixInterceptor();
   }
 
