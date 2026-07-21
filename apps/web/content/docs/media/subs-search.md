@@ -1,4 +1,4 @@
-# Subtitle {$action.search}
+# Subtitle Search
 
 See how a word is actually used by native speakers — every result is a real subtitle line from a real video, with a timestamp ready to watch.
 
