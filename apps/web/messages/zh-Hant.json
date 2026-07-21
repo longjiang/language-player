@@ -114,6 +114,7 @@
         "reset_time_to_zero": "將時間歸零"
     },
     "docs": {
+        "guides_reference": "指南、參考和常見問題解答",
         "no_results": "無結果",
         "on_this_page": "本頁內容",
         "search_placeholder": "搜尋文件…",
@@ -915,6 +916,7 @@
         "delete_my_account": "刪除我的帳號",
         "dictionary": "字典",
         "docs": "說明",
+        "documentation": "文件",
         "email": "電子信箱",
         "episodes": "劇集",
         "epub_reader": "EPUB閱讀器",

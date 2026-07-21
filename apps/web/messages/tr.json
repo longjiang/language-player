@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Zamanı Sıfırla"
     },
     "docs": {
+        "guides_reference": "Kılavuzlar, referans ve sık sorulan sorular",
         "no_results": "Sonuç yok",
         "on_this_page": "Bu sayfada",
         "search_placeholder": "Belgelerde ara…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Hesabımı Sil",
         "dictionary": "Sözlük",
         "docs": "Belgeler",
+        "documentation": "Dokümantasyon",
         "email": "E-posta",
         "episodes": "Bölümler",
         "epub_reader": "EPUK Okuyucu",

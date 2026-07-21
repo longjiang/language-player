@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Μηδενισμός Χρόνου"
     },
     "docs": {
+        "guides_reference": "Οδηγοί, αναφορές και συχνές ερωτήσεις",
         "no_results": "Κανένα αποτέλεσμα",
         "on_this_page": "Σε αυτή τη σελίδα",
         "search_placeholder": "Αναζήτηση εγγράφων…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Διαγραφή του λογαριασμού μου",
         "dictionary": "Λεξικό",
         "docs": "Έγγραφα",
+        "documentation": "Τεκμηρίωση",
         "email": "Ηλεκτρονικό ταχυδρομείο",
         "episodes": "Επεισόδια",
         "epub_reader": "Αναγνώστης EPUB",

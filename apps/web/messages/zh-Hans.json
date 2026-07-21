@@ -118,6 +118,7 @@
         "reset_time_to_zero": "将时间重置为零"
     },
     "docs": {
+        "guides_reference": "指南、参考和常见问题解答",
         "no_results": "无结果",
         "on_this_page": "本页内容",
         "search_placeholder": "搜索文档…",
@@ -948,6 +949,7 @@
         "delete_my_account": "删除我的账户",
         "dictionary": "字典",
         "docs": "帮助",
+        "documentation": "文档",
         "email": "电子邮箱",
         "episodes": "剧集",
         "epub_reader": "EPUB阅读器",

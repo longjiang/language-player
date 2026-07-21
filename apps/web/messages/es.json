@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Reiniciar Tiempo a Cero"
     },
     "docs": {
+        "guides_reference": "Guías, referencia y preguntas frecuentes",
         "no_results": "Sin resultados",
         "on_this_page": "En esta página",
         "search_placeholder": "Buscar documentos…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Eliminar mi cuenta",
         "dictionary": "Diccionario",
         "docs": "Documentos",
+        "documentation": "Documentación",
         "email": "Correo electrónico",
         "episodes": "Episodios",
         "epub_reader": "Lector EPUB",

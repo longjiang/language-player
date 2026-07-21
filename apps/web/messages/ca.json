@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Restablir Temps a Zero"
     },
     "docs": {
+        "guides_reference": "Guies, referència i preguntes freqüents",
         "no_results": "Sense resultats",
         "on_this_page": "En aquesta pàgina",
         "search_placeholder": "Cercar documents…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Eliminar el meu compte",
         "dictionary": "Diccionari",
         "docs": "Documents",
+        "documentation": "Documentació",
         "email": "Correu electrònic",
         "episodes": "Episodis",
         "epub_reader": "Lector EPUB",

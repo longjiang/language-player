@@ -115,6 +115,7 @@
         "reset_time_to_zero": "時間をゼロにリセット"
     },
     "docs": {
+        "guides_reference": "ガイド、リファレンス、よくある質問",
         "no_results": "結果なし",
         "on_this_page": "このページ内",
         "search_placeholder": "ドキュメントを検索…",
@@ -948,6 +949,7 @@
         "delete_my_account": "アカウントを削除",
         "dictionary": "辞書",
         "docs": "ヘルプ",
+        "documentation": "ドキュメント",
         "email": "メール",
         "episodes": "エピソード",
         "epub_reader": "EPUBリーダー",

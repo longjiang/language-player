@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Đặt Lại Thời Gian Về Không"
     },
     "docs": {
+        "guides_reference": "Hướng dẫn, tham khảo và câu hỏi thường gặp",
         "no_results": "Không có kết quả",
         "on_this_page": "Trên trang này",
         "search_placeholder": "Tìm kiếm tài liệu…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Xóa tài khoản của tôi",
         "dictionary": "Từ điển",
         "docs": "Tài liệu",
+        "documentation": "Tài liệu",
         "email": "Email",
         "episodes": "Tập",
         "epub_reader": "Trình đọc EPUB",

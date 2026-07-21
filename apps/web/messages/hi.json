@@ -115,6 +115,7 @@
         "reset_time_to_zero": "समय को शून्य पर रीसेट करें"
     },
     "docs": {
+        "guides_reference": "गाइड, संदर्भ और अक्सर पूछे जाने वाले प्रश्न",
         "no_results": "कोई परिणाम नहीं",
         "on_this_page": "इस पृष्ठ पर",
         "search_placeholder": "दस्तावेज़ खोजें…",
@@ -948,6 +949,7 @@
         "delete_my_account": "मेरा खाता हटाएं",
         "dictionary": "शब्दकोश",
         "docs": "दस्तावेज़",
+        "documentation": "दस्तावेज़ीकरण",
         "email": "ईमेल",
         "episodes": "एपिसोड",
         "epub_reader": "EPUB रीडर",

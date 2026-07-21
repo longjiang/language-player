@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Herstel Tyd na Nul"
     },
     "docs": {
+        "guides_reference": "Gidse, naslaanwerk en algemene vrae",
         "no_results": "Geen resultate",
         "on_this_page": "Op hierdie bladsy",
         "search_placeholder": "Soek dokumente…",
@@ -951,6 +952,7 @@
         "delete_my_account": "Verwyder my rekening",
         "dictionary": "Woordeboek",
         "docs": "Dokumente",
+        "documentation": "Dokumentasie",
         "email": "E-pos",
         "episodes": "Episodes",
         "epub_reader": "EPUB-leser",

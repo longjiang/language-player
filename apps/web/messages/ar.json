@@ -115,6 +115,7 @@
         "reset_time_to_zero": "إعادة تعيين الوقت إلى الصفر"
     },
     "docs": {
+        "guides_reference": "أدلة ومراجع وأسئلة شائعة",
         "no_results": "لا توجد نتائج",
         "on_this_page": "في هذه الصفحة",
         "search_placeholder": "البحث في المستندات…",
@@ -951,6 +952,7 @@
         "delete_my_account": "حذف حسابي",
         "dictionary": "القاموس",
         "docs": "المستندات",
+        "documentation": "توثيق",
         "email": "البريد الإلكتروني",
         "episodes": "حلقات",
         "epub_reader": "قارئ EPUB",
