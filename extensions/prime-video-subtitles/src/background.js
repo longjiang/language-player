@@ -241,6 +241,54 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ success: false, error: err?.message });
         });
         return true; // async
+    } else if (request.action === "netflixSeek") {
+        // Seek the Netflix player from the MAIN world.
+        // Direct video.currentTime manipulation triggers Netflix error M7375
+        // (DRM integrity check). Must use Netflix's own player API instead.
+        const tabId = sender.tab?.id;
+        if (!tabId) { sendResponse({ success: false, error: 'No tab' }); return; }
+        chrome.scripting.executeScript({
+            target: { tabId },
+            func: (timeSec) => {
+                try {
+                    // Try Netflix's internal player API first
+                    const nfx = window.netflix;
+                    if (nfx?.appContext?.state?.playerApp?.getAPI) {
+                        const api = nfx.appContext.state.playerApp.getAPI();
+                        const sessions = api.getAllVideoSessionIds?.();
+                        if (sessions?.length > 0) {
+                            const player = api.getVideoPlayerBySessionId?.(sessions[0]);
+                            if (player?.seek) {
+                                player.seek(timeSec * 1000);
+                                return 'netflix-api';
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // Netflix API changes frequently; fall through
+                }
+
+                // Fallback: try direct video manipulation
+                try {
+                    const video = document.querySelector('video');
+                    if (video) {
+                        video.currentTime = timeSec;
+                        return 'video-currentTime';
+                    }
+                } catch (e) {
+                    return 'error: ' + e.message;
+                }
+
+                return 'no-method';
+            },
+            args: [request.timeSec],
+            world: 'MAIN',
+        }).then(results => {
+            sendResponse({ success: true, method: results?.[0]?.result });
+        }).catch(err => {
+            sendResponse({ success: false, error: err?.message });
+        });
+        return true; // async
     }
     return true; // Keep message channel open for async response
 });
