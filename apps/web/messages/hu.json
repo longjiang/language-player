@@ -114,6 +114,12 @@
         "purchase": "Vásárlás",
         "reset_time_to_zero": "Idő Nullázása"
     },
+    "docs": {
+        "no_results": "Nincs találat",
+        "on_this_page": "Ezen az oldalon",
+        "search_placeholder": "Dokumentumok keresése…",
+        "table_of_contents": "Tartalomjegyzék"
+    },
     "duration": {
         "annual": "Évente számlázva.",
         "lifetime": "Soha nem jár le.",

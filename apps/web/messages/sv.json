@@ -114,6 +114,12 @@
         "purchase": "Köp",
         "reset_time_to_zero": "Återställ Tid till Noll"
     },
+    "docs": {
+        "no_results": "Inga resultat",
+        "on_this_page": "På denna sida",
+        "search_placeholder": "Sök i dokument…",
+        "table_of_contents": "Innehållsförteckning"
+    },
     "duration": {
         "annual": "Faktureras årligen.",
         "lifetime": "Går aldrig ut.",

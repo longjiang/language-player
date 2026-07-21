@@ -107,6 +107,7 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const t = useT();
 
   const fuse = useMemo(
     () => new Fuse(searchIndex, { keys: ['title', 'content'], threshold: 0.4, includeScore: true }),
@@ -125,7 +126,7 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
       <button
         onClick={() => setOpen(!open)}
         className="fixed top-[4.25rem] right-4 z-50 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground xl:hidden"
-        aria-label="Table of contents"
+        aria-label={t('docs.table_of_contents')}
       >
         <List className="h-5 w-5" />
       </button>
@@ -153,7 +154,7 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Search docs…"
+              placeholder={t('docs.search_placeholder')}
               className="w-full rounded-md border border-border bg-background py-1.5 pl-8 pr-3 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
             />
           </div>
@@ -179,7 +180,7 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
           )}
 
           {isSearching && results.length === 0 && (
-            <p className="text-xs text-muted-foreground px-2">No results</p>
+            <p className="text-xs text-muted-foreground px-2">{t('docs.no_results')}</p>
           )}
 
           {/* Regular sidebar content (hidden when searching) */}
@@ -188,7 +189,7 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
               {/* All docs tree */}
               <div>
                 <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Table of contents
+                  {t('docs.table_of_contents')}
                 </h4>
                 <ul className="space-y-0.5">
                   {docs.map(doc => {
@@ -213,7 +214,7 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
               {toc.length > 0 && (
                 <div>
                   <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    On this page
+                    {t('docs.on_this_page')}
                   </h4>
                   <ul className="space-y-0.5 border-l border-border/50 pl-2">
                     {toc.map((item) => (

@@ -114,6 +114,12 @@
         "purchase": "Купи",
         "reset_time_to_zero": "Ресетуј Време на Нулу"
     },
+    "docs": {
+        "no_results": "Nema rezultata",
+        "on_this_page": "Na ovoj stranici",
+        "search_placeholder": "Pretraži dokumente…",
+        "table_of_contents": "Sadržaj"
+    },
     "duration": {
         "annual": "Naplaćuje se godišnje.",
         "lifetime": "Nikad ne ističe.",

@@ -114,6 +114,12 @@
         "purchase": "Satın Al",
         "reset_time_to_zero": "Zamanı Sıfırla"
     },
+    "docs": {
+        "no_results": "Sonuç yok",
+        "on_this_page": "Bu sayfada",
+        "search_placeholder": "Belgelerde ara…",
+        "table_of_contents": "İçindekiler"
+    },
     "duration": {
         "annual": "Yıllık faturalandırılır.",
         "lifetime": "Asla sona ermez.",

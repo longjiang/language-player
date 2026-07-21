@@ -114,6 +114,12 @@
         "purchase": "खरीदें",
         "reset_time_to_zero": "समय को शून्य पर रीसेट करें"
     },
+    "docs": {
+        "no_results": "कोई परिणाम नहीं",
+        "on_this_page": "इस पृष्ठ पर",
+        "search_placeholder": "दस्तावेज़ खोजें…",
+        "table_of_contents": "विषय सूची"
+    },
     "duration": {
         "annual": "वार्षिक बिल किया गया।",
         "lifetime": "कभी समाप्त नहीं होता।",

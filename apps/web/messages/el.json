@@ -114,6 +114,12 @@
         "purchase": "Αγορά",
         "reset_time_to_zero": "Μηδενισμός Χρόνου"
     },
+    "docs": {
+        "no_results": "Κανένα αποτέλεσμα",
+        "on_this_page": "Σε αυτή τη σελίδα",
+        "search_placeholder": "Αναζήτηση εγγράφων…",
+        "table_of_contents": "Πίνακας περιεχομένων"
+    },
     "duration": {
         "annual": "Χρεώνεται ετησίως.",
         "lifetime": "Ποτέ δεν λήγει.",

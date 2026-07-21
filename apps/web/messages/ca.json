@@ -114,6 +114,12 @@
         "purchase": "Comprar",
         "reset_time_to_zero": "Restablir Temps a Zero"
     },
+    "docs": {
+        "no_results": "Sense resultats",
+        "on_this_page": "En aquesta pàgina",
+        "search_placeholder": "Cercar documents…",
+        "table_of_contents": "Taula de continguts"
+    },
     "duration": {
         "annual": "Facturació anual.",
         "lifetime": "Mai caduca.",

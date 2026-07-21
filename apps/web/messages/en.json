@@ -121,6 +121,12 @@
         "purchase": "Purchase",
         "reset_time_to_zero": "Reset Time to Zero"
     },
+    "docs": {
+        "no_results": "No results",
+        "on_this_page": "On this page",
+        "search_placeholder": "Search docs…",
+        "table_of_contents": "Table of contents"
+    },
     "duration": {
         "annual": "Billed annually.",
         "lifetime": "Never Expires.",

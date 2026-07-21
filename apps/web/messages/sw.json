@@ -114,6 +114,12 @@
         "purchase": "Nunua",
         "reset_time_to_zero": "Weka Upya Muda Kuwa Sifuri"
     },
+    "docs": {
+        "no_results": "Hakuna matokeo",
+        "on_this_page": "Kwenye ukurasa huu",
+        "search_placeholder": "Tafuta nyaraka…",
+        "table_of_contents": "Yaliyomo"
+    },
     "duration": {
         "annual": "Inatozwa kila mwaka.",
         "lifetime": "Haiwezi Kuisha.",

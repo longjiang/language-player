@@ -114,6 +114,12 @@
         "purchase": "ซื้อ",
         "reset_time_to_zero": "รีเซ็ตเวลาเป็นศูนย์"
     },
+    "docs": {
+        "no_results": "ไม่พบผลลัพธ์",
+        "on_this_page": "ในหน้านี้",
+        "search_placeholder": "ค้นหาเอกสาร…",
+        "table_of_contents": "สารบัญ"
+    },
     "duration": {
         "annual": "เรียกเก็บเงินรายปี",
         "lifetime": "ไม่มีวันหมดอายุ",

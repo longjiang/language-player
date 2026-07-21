@@ -117,6 +117,12 @@
         "purchase": "购买",
         "reset_time_to_zero": "将时间重置为零"
     },
+    "docs": {
+        "no_results": "无结果",
+        "on_this_page": "本页内容",
+        "search_placeholder": "搜索文档…",
+        "table_of_contents": "目录"
+    },
     "duration": {
         "annual": "按年计费。",
         "lifetime": "永不过期。",

@@ -113,6 +113,12 @@
         "purchase": "購買",
         "reset_time_to_zero": "將時間歸零"
     },
+    "docs": {
+        "no_results": "無結果",
+        "on_this_page": "本頁內容",
+        "search_placeholder": "搜尋文件…",
+        "table_of_contents": "目錄"
+    },
     "duration": {
         "annual": "年繳喔。",
         "lifetime": "永久有效啦。",

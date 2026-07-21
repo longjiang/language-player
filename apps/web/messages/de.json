@@ -114,6 +114,12 @@
         "purchase": "Kaufen",
         "reset_time_to_zero": "Zeit auf Null Zurücksetzen"
     },
+    "docs": {
+        "no_results": "Keine Ergebnisse",
+        "on_this_page": "Auf dieser Seite",
+        "search_placeholder": "Docs durchsuchen…",
+        "table_of_contents": "Inhaltsverzeichnis"
+    },
     "duration": {
         "annual": "Jährliche Abrechnung.",
         "lifetime": "Läuft nie ab.",

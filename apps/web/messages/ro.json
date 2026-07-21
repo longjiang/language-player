@@ -114,6 +114,12 @@
         "purchase": "Cumpără",
         "reset_time_to_zero": "Resetează Timpul la Zero"
     },
+    "docs": {
+        "no_results": "Niciun rezultat",
+        "on_this_page": "Pe această pagină",
+        "search_placeholder": "Căutare documente…",
+        "table_of_contents": "Cuprins"
+    },
     "duration": {
         "annual": "Facturat anual.",
         "lifetime": "Nu expiră niciodată.",
