@@ -13,6 +13,7 @@ import { SUPPORTED_L2S } from '@langplayer/shared';
 // ── Site detection ───────────────────────────────────────────────────────
 const isYouTube = /youtube\.com/.test(location.hostname);
 const isPrimeVideo = /primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)/.test(location.hostname);
+const isNetflix = /netflix\.com/.test(location.hostname);
 
 /** Popular languages shown first in the L2 dropdown */
 const POPULAR_L2S = [
@@ -216,6 +217,11 @@ function getVideoElement() {
       if (video && video.src) return video;
     }
     return document.querySelector('#dv-web-player-2 video, #dv-web-player video');
+  }
+  if (isNetflix) {
+    // Netflix uses a standard <video> element
+    const video = document.querySelector('video');
+    if (video && video.src) return video;
   }
   return document.querySelector('video');
 }
@@ -898,6 +904,94 @@ function attachTimeTracking() {
   }
 }
 
+// ── Netflix Subtitle Integration ─────────────────────────────────────────
+
+/** Setup Netflix subtitle interception via JSON.parse monkeypatching */
+function setupNetflixInterceptor() {
+  const originalParse = JSON.parse;
+  let netflixSubsLoaded = false;
+
+  JSON.parse = function(text) {
+    const data = originalParse(text);
+
+    // Detect Netflix subtitle metadata response
+    if (!netflixSubsLoaded && data?.result) {
+      const tracks = data.result.timedtexttracks || data.result.textTracks;
+      if (tracks && data.result.movieId) {
+        netflixSubsLoaded = true;
+        handleNetflixSubs(tracks);
+      }
+    }
+
+    return data;
+  };
+}
+
+/** Process Netflix subtitle tracks and fetch the actual subtitle file */
+async function handleNetflixSubs(tracks) {
+  const subs = {};
+
+  for (const track of tracks) {
+    if (track.isNoneTrack) continue;
+    const lang = track.language + (track.trackType === 'closedcaptions' ? '[cc]' : '');
+    const downloadables = track.ttDownloadables || track.downloadables || {};
+
+    // Try WebVTT first, then DFXP/TTML
+    for (const fmt of ['webvtt-lssdh-ios8', 'dfxp-ls-sdh', 'imsc1.1', 'simplesdh']) {
+      const dl = downloadables[fmt];
+      if (dl) {
+        const urls = dl.downloadUrls || (dl.urls ? dl.urls.map(u => u.url) : []);
+        if (urls.length > 0) {
+          subs[lang] = { url: Object.values(urls)[0], format: fmt, languageCode: track.language };
+          break;
+        }
+      }
+    }
+  }
+
+  console.log('[LanguagePlayer] Netflix subtitle tracks:',
+    Object.keys(subs).map(k => `${k} (${subs[k].languageCode})`).join(', '));
+
+  // Pick best track matching detected L2
+  const langKeys = Object.keys(subs);
+  const bestKey = langKeys.find(k => subs[k].languageCode === detectedL2Code)
+    || langKeys.find(k => subs[k].languageCode?.startsWith?.(detectedL2Code))
+    || langKeys[0];
+
+  if (bestKey && subs[bestKey]) {
+    const track = subs[bestKey];
+    console.log('[LanguagePlayer] Loading Netflix track:', bestKey, track.format);
+
+    try {
+      const response = await fetch(track.url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const text = await response.text();
+
+      let cues;
+      if (track.format.includes('webvtt')) {
+        cues = parseWebVTTLike(text);
+      } else {
+        cues = parseTTML(text);
+      }
+
+      console.log('[LanguagePlayer] Netflix parsed', cues.length, 'cues');
+
+      STATE.cues = cues;
+      detectedL2Code = track.languageCode || detectedL2Code;
+      tryDetectL2FromCues(cues);
+
+      if (cues.length > 0) {
+        STATE.activeCueIdx = -1;
+        renderTranscript();
+        if (!STATE.panelVisible) setPanelVisible(true);
+      }
+      setBadge(true);
+    } catch (err) {
+      console.error('[LanguagePlayer] Failed to fetch Netflix subtitles:', err);
+    }
+  }
+}
+
 // ── Player Detection ─────────────────────────────────────────────────────
 
 function waitForPlayer() {
@@ -910,6 +1004,11 @@ function waitForPlayer() {
       if (isPrimeVideo) {
         const player = document.getElementById('dv-web-player-2') || document.getElementById('dv-web-player');
         if (player) { resolve(player); return; }
+      }
+      if (isNetflix) {
+        // Netflix: wait for any video element to appear
+        const video = document.querySelector('video');
+        if (video && video.duration > 0) { resolve(video.parentElement); return; }
       }
       // Generic: any large video on the page
       const video = document.querySelector('video');
@@ -1002,6 +1101,17 @@ async function init() {
     // YouTube: extract subs from page data, re-attach time tracking periodically
     await loadYouTubeSubtitles();
     setupYouTubeNavigationObserver();
+    setInterval(() => {
+      const video = getVideoElement();
+      if (video && !video._lpvTimeTracking) {
+        video._lpvTimeTracking = true;
+        attachTimeTracking();
+      }
+    }, 2000);
+  } else if (isNetflix) {
+    // Netflix: subs come via JSON.parse monkeypatch
+    setupNetflixInterceptor();
+    attachTimeTracking();
     setInterval(() => {
       const video = getVideoElement();
       if (video && !video._lpvTimeTracking) {
