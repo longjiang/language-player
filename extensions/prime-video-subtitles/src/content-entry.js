@@ -540,34 +540,13 @@ function getTabId() {
   });
 }
 
-/** Fetch a URL by executing a script in the page's MAIN world.
- *  This is the only reliable way to bypass YouTube's service worker. */
+/** Fetch a URL via background worker (which calls executeScript in MAIN world).
+ *  Content scripts can't call chrome.scripting.executeScript directly. */
 function mainWorldFetch(url) {
-  return new Promise(async (resolve) => {
-    const tabId = await getTabId();
-    if (!tabId) { console.log('[LanguagePlayer] No tabId'); resolve(''); return; }
-    try {
-      const results = await chrome.scripting.executeScript({
-        target: { tabId },
-        func: (u) => {
-          return new Promise((res) => {
-            const x = new XMLHttpRequest();
-            x.open('GET', u, true);
-            x.timeout = 10000;
-            x.onload = () => res(x.responseText || '');
-            x.onerror = () => res('');
-            x.ontimeout = () => res('');
-            x.send();
-          });
-        },
-        args: [url],
-        world: 'MAIN',
-      });
-      resolve(results?.[0]?.result || '');
-    } catch (e) {
-      console.error('[LanguagePlayer] executeScript failed:', e?.message);
-      resolve('');
-    }
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ action: 'mainWorldFetch', url }, (res) => {
+      resolve(res?.text || '');
+    });
   });
 }
 
