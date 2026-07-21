@@ -129,7 +129,6 @@ console.log(`   Building for ${locales.length} locales…\n`);
 mkdirSync(OUT_DIR, { recursive: true });
 
 const canFetch = major >= 20;
-let canTranslate = canFetch;
 let translated = 0;
 
 let idx = 0;
@@ -140,7 +139,7 @@ for (const locale of locales) {
   let method = '🗝';
 
   // Machine-translate body for non-English (skip if fetch unavailable or fails)
-  if (!isEnglish && canTranslate) {
+  if (!isEnglish && canFetch) {
     try {
       const resp = await fetch(`${API_URL}/translate`, {
         method: 'POST',
@@ -153,11 +152,9 @@ for (const locale of locales) {
         content = data.translated_text;
         translated++;
         method = '🌐';
-      } else {
-        canTranslate = false;
       }
     } catch {
-      canTranslate = false;
+      // Per-locale failure — server might be rate-limiting, try next locale
     }
   }
 
