@@ -9,6 +9,11 @@
 
 import { mountTranscript, unmountTranscript } from './transcript-app';
 import { SUPPORTED_L2S } from '@langplayer/shared';
+import {
+  parseTimeToSeconds, stripTags, decodeEntities,
+  parseTTML, parseWebVTTLike, parseSRT,
+  parseYTTimedText, parseYTJSON3, tryDetectL2FromCues,
+} from './subtitle-parsers';
 
 // ── Site detection ───────────────────────────────────────────────────────
 const isYouTube = /youtube\.com/.test(location.hostname);
@@ -70,140 +75,6 @@ function detectL2Code() {
     if (code) { detectedL2Code = code; return; }
   }
   // Fallback: try subtitle filename heuristics later
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────
-
-/** Parse a TTML time string like "00:01:23.456" or "1.5s" to seconds */
-function parseTimeToSeconds(timeStr) {
-  if (!timeStr) return 0;
-
-  const hmsMatch = timeStr.match(/^(\d{1,}):(\d{2}):(\d{2})[.,](\d{1,3})$/);
-  if (hmsMatch) {
-    const h = parseInt(hmsMatch[1], 10);
-    const m = parseInt(hmsMatch[2], 10);
-    const s = parseInt(hmsMatch[3], 10);
-    let ms = hmsMatch[4];
-    while (ms.length < 3) ms += '0';
-    return h * 3600 + m * 60 + s + parseInt(ms, 10) / 1000;
-  }
-
-  const msMatch = timeStr.match(/^(\d{1,}):(\d{2})[.,](\d{1,3})$/);
-  if (msMatch) {
-    const m = parseInt(msMatch[1], 10);
-    const s = parseInt(msMatch[2], 10);
-    let ms = msMatch[3];
-    while (ms.length < 3) ms += '0';
-    return m * 60 + s + parseInt(ms, 10) / 1000;
-  }
-
-  const unitMatch = timeStr.match(/^([\d.]+)(s|ms|h|m)$/);
-  if (unitMatch) {
-    const val = parseFloat(unitMatch[1]);
-    const unit = unitMatch[2];
-    if (unit === 'h') return val * 3600;
-    if (unit === 'm') return val * 60;
-    if (unit === 'ms') return val / 1000;
-    return val;
-  }
-
-  const num = parseFloat(timeStr);
-  return isNaN(num) ? 0 : num;
-}
-
-function stripTags(text) {
-  if (!text) return '';
-  return text.replace(/<[^>]*>/g, '').trim();
-}
-
-function decodeEntities(text) {
-  if (!text) return '';
-  const txt = document.createElement('textarea');
-  txt.innerHTML = text;
-  return txt.value;
-}
-
-function parseTTML(xmlText) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xmlText, 'text/xml');
-  const parseError = doc.querySelector('parsererror');
-  if (parseError) {
-    const htmlDoc = parser.parseFromString(xmlText, 'text/html');
-    return extractCuesFromDoc(htmlDoc);
-  }
-  return extractCuesFromDoc(doc);
-}
-
-function extractCuesFromDoc(doc) {
-  const cues = [];
-  const paragraphs = doc.querySelectorAll('p');
-  for (const p of paragraphs) {
-    const begin = p.getAttribute('begin') || p.getAttribute('start') || '';
-    const end = p.getAttribute('end') || p.getAttribute('dur') || '';
-    const text = stripTags(p.innerHTML || p.textContent || '');
-    if (text && begin) {
-      const startTime = parseTimeToSeconds(begin);
-      let endTime = end ? parseTimeToSeconds(end) : null;
-      if (p.getAttribute('dur') && !p.getAttribute('end')) {
-        endTime = startTime + parseTimeToSeconds(p.getAttribute('dur'));
-      }
-      cues.push({
-        start: startTime,
-        end: endTime || startTime + 5,
-        text: decodeEntities(text),
-      });
-    }
-  }
-
-  if (cues.length === 0) {
-    const vttCues = parseWebVTTLike(doc.body?.textContent || '');
-    cues.push(...vttCues);
-  }
-
-  cues.sort((a, b) => a.start - b.start);
-  for (let i = 0; i < cues.length - 1; i++) {
-    if (cues[i].end > cues[i + 1].start) {
-      cues[i].end = cues[i + 1].start - 0.001;
-    }
-  }
-
-  return cues;
-}
-
-function parseWebVTTLike(text) {
-  const cues = [];
-  const lines = text.split(/\r?\n/);
-  let i = 0;
-  if (lines[0]?.trim() === 'WEBVTT') i = 1;
-
-  while (i < lines.length) {
-    while (i < lines.length && (lines[i].trim() === '' || /^\d+$/.test(lines[i].trim()))) {
-      i++;
-    }
-    if (i >= lines.length) break;
-    const timeMatch = lines[i]?.match(/^([\d:.,]+)\s*-->\s*([\d:.,]+)/);
-    if (timeMatch) {
-      const start = parseTimeToSeconds(timeMatch[1]);
-      const end = parseTimeToSeconds(timeMatch[2]);
-      i++;
-      const textLines = [];
-      while (i < lines.length && lines[i].trim() !== '') {
-        textLines.push(lines[i].trim());
-        i++;
-      }
-      const text = textLines.join(' ');
-      if (text) {
-        cues.push({ start, end, text: decodeEntities(stripTags(text)) });
-      }
-    } else {
-      i++;
-    }
-  }
-  return cues;
-}
-
-function parseSRT(text) {
-  return parseWebVTTLike(text);
 }
 
 // ── Video Integration ────────────────────────────────────────────────────
@@ -428,7 +299,7 @@ async function fetchAndParseSubtitles(url) {
     STATE.cues = cues;
 
     // Try to detect language from subtitle content
-    tryDetectL2FromCues(cues);
+    tryDetectL2FromCues(cues, (v) => { detectedL2Code = v; });
 
     if (cues.length === 0) {
       mountTranscript(panelContent, [], -1, detectedL2Code, L1_CODE, seekTo);
@@ -445,23 +316,6 @@ async function fetchAndParseSubtitles(url) {
   } finally {
     STATE.loading = false;
   }
-}
-
-/** Heuristic: detect language from the subtitle text content */
-function tryDetectL2FromCues(cues) {
-  if (cues.length === 0) return;
-  const sample = cues.slice(0, 5).map(c => c.text).join(' ');
-  // Japanese: contains hiragana or katakana
-  if (/[\u3040-\u309f\u30a0-\u30ff]/.test(sample)) { detectedL2Code = 'ja'; return; }
-  // Chinese: contains CJK characters
-  if (/[\u4e00-\u9fff]/.test(sample)) { detectedL2Code = 'zh'; return; }
-  // Korean: contains Hangul
-  if (/[\uac00-\ud7af]/.test(sample)) { detectedL2Code = 'ko'; return; }
-  // Thai
-  if (/[\u0e00-\u0e7f]/.test(sample)) { detectedL2Code = 'th'; return; }
-  // Arabic
-  if (/[\u0600-\u06ff]/.test(sample)) { detectedL2Code = 'ar'; return; }
-  // Default: keep the page-detected language
 }
 
 // ── YouTube Subtitle Integration ─────────────────────────────────────────
@@ -652,30 +506,6 @@ async function fetchInnerTubeTracks(videoId) {
   }
 }
 
-/** Parse YouTube timedtext XML into cues */
-function parseYTTimedText(xmlText) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xmlText, 'text/xml');
-  const cues = [];
-
-  const textEls = doc.querySelectorAll('text');
-  for (const el of textEls) {
-    const start = parseFloat(el.getAttribute('start') || '0');
-    const dur = parseFloat(el.getAttribute('dur') || '0');
-    const text = stripTags(el.innerHTML || el.textContent || '');
-    if (text && dur > 0) {
-      cues.push({
-        start,
-        end: start + dur,
-        text: decodeEntities(text),
-      });
-    }
-  }
-
-  cues.sort((a, b) => a.start - b.start);
-  return cues;
-}
-
 /** Cache tab ID from background (set once on init) */
 let _tabId = null;
 function getTabId() {
@@ -742,7 +572,7 @@ async function fetchYTTrack(track) {
       detectedL2Code = track.languageCode.split('-')[0];
       if (l2SelectEl) l2SelectEl.value = detectedL2Code;
     }
-    tryDetectL2FromCues(cues);
+    tryDetectL2FromCues(cues, (v) => { detectedL2Code = v; });
 
     if (cues.length > 0) {
       STATE.activeCueIdx = -1;
@@ -755,26 +585,6 @@ async function fetchYTTrack(track) {
     console.error('[LanguagePlayer] Failed to fetch YouTube subtitles:', err);
     updateStatus('Failed to load subtitles');
   }
-}
-
-/** Parse YouTube JSON3 timedtext format */
-function parseYTJSON3(jsonText) {
-  const data = JSON.parse(jsonText);
-  const cues = [];
-  const events = data?.events || [];
-
-  for (const ev of events) {
-    const start = (ev.tStartMs || 0) / 1000;
-    const dur = (ev.dDurationMs || 0) / 1000;
-    const segs = ev.segs || [];
-    const text = segs.map(s => s.utf8 || '').join('').trim();
-    if (text && dur > 0) {
-      cues.push({ start, end: start + dur, text: decodeEntities(stripTags(text)) });
-    }
-  }
-
-  cues.sort((a, b) => a.start - b.start);
-  return cues;
 }
 
 /** Load YouTube subtitles — discover tracks and pick the best one */
@@ -1204,7 +1014,7 @@ async function loadNetflixTrackForLanguage(langCode) {
 
     STATE.cues = cues;
     detectedL2Code = track.languageCode || detectedL2Code;
-    tryDetectL2FromCues(cues);
+    tryDetectL2FromCues(cues, (v) => { detectedL2Code = v; });
 
     if (l2SelectEl && detectedL2Code) {
       l2SelectEl.value = detectedL2Code;
