@@ -242,70 +242,82 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
         return true; // async
     } else if (request.action === "netflixSeek") {
-        // Seek the Netflix player from the MAIN world.
-        // Tries Netflix player API first, falls back to keyboard simulation.
+        // Seek the Netflix player by simulating a click on the progress bar.
+        // Keyboard simulation (ArrowRight x N) is imprecise (10s granularity).
+        // Progress bar click gives exact seeking, matching what the user does
+        // visually when they click the scrubber.
         const tabId = sender.tab?.id;
         if (!tabId) { sendResponse({ success: false, error: 'No tab' }); return; }
         chrome.scripting.executeScript({
             target: { tabId },
             func: (timeSec) => {
-                // Strategy 1: Netflix internal player API
-                try {
-                    const nfx = window.netflix;
-                    if (nfx?.appContext?.state?.playerApp?.getAPI) {
-                        const api = nfx.appContext.state.playerApp.getAPI();
-                        const sessions = api.getAllVideoSessionIds?.();
-                        if (sessions?.length > 0) {
-                            const player = api.getVideoPlayerBySessionId?.(sessions[0]);
-                            if (player?.seek) {
-                                player.seek(timeSec * 1000);
-                                return 'netflix-api';
-                            }
-                        }
-                    }
-                } catch (e) {}
-
-                // Strategy 2: Dispatch keyboard events on the video element.
-                // Netflix handles left/right arrow as 10s skip, space as play/pause.
-                // For arbitrary seeking, jump to beginning first (seek to 0),
-                // then fast-forward with repeated right-arrow events.
                 try {
                     const video = document.querySelector('video');
-                    if (!video) return 'no-video';
+                    if (!video || !video.duration) return 'no-video';
 
-                    // Seek to 0 first via Netflix API, or just start from current position
-                    const currentTime = video.currentTime;
-                    const targetTime = timeSec;
-                    const diff = targetTime - currentTime;
+                    // Try Netflix player API first (cleanest)
+                    try {
+                        const nfx = window.netflix;
+                        if (nfx?.appContext?.state?.playerApp?.getAPI) {
+                            const api = nfx.appContext.state.playerApp.getAPI();
+                            const sessions = api.getAllVideoSessionIds?.();
+                            if (sessions?.length > 0) {
+                                const player = api.getVideoPlayerBySessionId?.(sessions[0]);
+                                if (player?.seek) {
+                                    player.seek(timeSec * 1000);
+                                    return 'netflix-api';
+                                }
+                            }
+                        }
+                    } catch (e) {}
 
-                    if (Math.abs(diff) < 5) {
-                        // Close enough, try direct currentTime
-                        video.currentTime = targetTime;
-                        return 'video-currentTime';
+                    // Strategy 2: Click on Netflix's progress bar at the exact position.
+                    // Netflix's scrubber bar — try multiple known selectors.
+                    var scrubber = document.querySelector(
+                        '.watch-video--progress-bar, ' +
+                        '[data-uia="timeline"], ' +
+                        '[data-uia="scrubber"], ' +
+                        '.PlayerControlsNeo__progress, ' +
+                        'input[type="range"][aria-label*="timeline"], ' +
+                        '.timeline-bar, ' +
+                        '[class*="progress"][class*="bar"], ' +
+                        '[role="slider"]'
+                    );
+
+                    if (scrubber) {
+                        var rect = scrubber.getBoundingClientRect();
+                        var ratio = Math.min(Math.max(timeSec / video.duration, 0), 1);
+                        var clickX = rect.left + rect.width * ratio;
+                        var clickY = rect.top + rect.height / 2;
+
+                        // Dispatch a full click sequence at the calculated position
+                        var opts = {
+                            clientX: clickX, clientY: clickY,
+                            screenX: clickX, screenY: clickY,
+                            bubbles: true, cancelable: true, composed: true,
+                            view: window
+                        };
+
+                        scrubber.dispatchEvent(new MouseEvent('mousedown', opts));
+                        scrubber.dispatchEvent(new MouseEvent('mouseup', opts));
+                        scrubber.dispatchEvent(new MouseEvent('click', opts));
+
+                        // Also try on the parent (Netflix sometimes wraps it)
+                        if (scrubber.parentElement) {
+                            scrubber.parentElement.dispatchEvent(new MouseEvent('mousedown', opts));
+                            scrubber.parentElement.dispatchEvent(new MouseEvent('mouseup', opts));
+                        }
+
+                        return 'progress-bar(' + (ratio * 100).toFixed(0) + '%)';
                     }
 
-                    // Use repeated arrow key events to approximate the seek.
-                    // Right arrow = +10s, Left arrow = -10s
-                    const key = diff > 0 ? 'ArrowRight' : 'ArrowLeft';
-                    const steps = Math.round(Math.abs(diff) / 10);
+                    // Strategy 3: Last resort — direct currentTime for small jumps
+                    if (Math.abs(video.currentTime - timeSec) < 30) {
+                        video.currentTime = timeSec;
+                        return 'direct-currentTime';
+                    }
 
-                    // Dispatch keydown events rapidly (every 16ms ≈ 60fps)
-                    let dispatched = 0;
-                    const maxSteps = Math.min(steps, 300); // Cap at ~50 minutes of seeking
-                    const interval = setInterval(() => {
-                        if (dispatched >= maxSteps) {
-                            clearInterval(interval);
-                            return;
-                        }
-                        video.dispatchEvent(new KeyboardEvent('keydown', {
-                            key, code: key, keyCode: key === 'ArrowRight' ? 39 : 37,
-                            which: key === 'ArrowRight' ? 39 : 37,
-                            bubbles: true, cancelable: true, composed: true,
-                        }));
-                        dispatched++;
-                    }, 16);
-
-                    return 'keyboard-sim(' + maxSteps + ' steps)';
+                    return 'no-scrubber-found';
                 } catch (e) {
                     return 'error: ' + e.message;
                 }
