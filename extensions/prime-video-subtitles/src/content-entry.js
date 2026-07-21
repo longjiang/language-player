@@ -14,6 +14,7 @@ import {
   parseTTML, parseWebVTTLike, parseSRT,
   parseYTTimedText, parseYTJSON3, tryDetectL2FromCues,
 } from './subtitle-parsers';
+import { t } from './i18n';
 
 // ── Site detection ───────────────────────────────────────────────────────
 const isYouTube = /youtube\.com/.test(location.hostname);
@@ -263,7 +264,7 @@ async function fetchAndParseSubtitles(url) {
     STATE.cues = [];
     renderTranscript(detectedL2Code);
   }
-  updateStatus(`Loading ${detectedL2Code} subtitles…`);
+  updateStatus(t('loadingSubtitles', [detectedL2Code]));
 
   const gen = ++fetchGen;
 
@@ -312,7 +313,7 @@ async function fetchAndParseSubtitles(url) {
     }
   } catch (err) {
     console.error('[PrimeVideoSubs] Failed to fetch/parse subtitles:', err);
-    updateStatus('Failed to load subtitles');
+    updateStatus(t('failedToLoadSubtitles'));
   } finally {
     STATE.loading = false;
   }
@@ -531,7 +532,7 @@ function mainWorldFetch(url) {
 /** Fetch YouTube subtitles from a track and render */
 async function fetchYTTrack(track) {
   try {
-    updateStatus('Loading subtitles...');
+    updateStatus(t('loadingSubtitles', ['en']));
 
     // Ensure URL is absolute
     let url = track.baseUrl;
@@ -580,10 +581,10 @@ async function fetchYTTrack(track) {
       if (!STATE.panelVisible) setPanelVisible(true);
     }
     setBadge(true);
-    updateStatus(`${cues.length} subtitle entries loaded`);
+    updateStatus(t('subtitleEntriesLoaded', [cues.length.toString()]));
   } catch (err) {
     console.error('[LanguagePlayer] Failed to fetch YouTube subtitles:', err);
-    updateStatus('Failed to load subtitles');
+    updateStatus(t('failedToLoadSubtitles'));
   }
 }
 
@@ -649,7 +650,7 @@ function populateL2Selector() {
 
   // Popular group
   const popularGroup = document.createElement('optgroup');
-  popularGroup.label = 'Popular';
+  popularGroup.label = t('popularLanguages');
   for (const code of popular) {
     const opt = document.createElement('option');
     opt.value = code;
@@ -661,7 +662,7 @@ function populateL2Selector() {
 
   // Rest group
   const restGroup = document.createElement('optgroup');
-  restGroup.label = 'All Languages';
+  restGroup.label = t('allLanguages');
   for (const code of rest) {
     const opt = document.createElement('option');
     opt.value = code;
@@ -782,7 +783,7 @@ function createPanelUI() {
   logoImg.width = 24;
   logoImg.height = 24;
 
-  const titleText = document.createTextNode('Language Player');
+  const titleText = document.createTextNode(t('appName'));
 
   title.appendChild(logoImg);
   title.appendChild(titleText);
@@ -790,7 +791,7 @@ function createPanelUI() {
   // L2 language selector
   l2SelectEl = document.createElement('select');
   l2SelectEl.id = 'lpv-l2-select';
-  l2SelectEl.title = 'Learning language';
+  l2SelectEl.title = t('learningLanguage');
   l2SelectEl.addEventListener('change', () => {
     onL2Change(l2SelectEl.value);
   });
@@ -801,7 +802,7 @@ function createPanelUI() {
   const closeBtn = document.createElement('button');
   closeBtn.id = 'lpv-close-btn';
   closeBtn.innerHTML = '✕';
-  closeBtn.title = 'Close panel';
+  closeBtn.title = t('closePanel');
   closeBtn.addEventListener('click', () => setPanelVisible(false));
 
   headerRight.appendChild(l2SelectEl);
@@ -812,7 +813,7 @@ function createPanelUI() {
 
   statusEl = document.createElement('div');
   statusEl.id = 'lpv-status';
-  statusEl.textContent = 'Waiting for subtitles...';
+  statusEl.textContent = t('waitingForSubtitles');
 
   panelContent = document.createElement('div');
   panelContent.id = 'lpv-panel-content';
@@ -993,7 +994,7 @@ async function loadNetflixTrackForLanguage(langCode) {
   // Clear old cues and show spinner
   STATE.cues = [];
   renderTranscript(bestKey);
-  updateStatus(`Loading ${bestKey} subtitles…`);
+  updateStatus(t('loadingSubtitles', [bestKey]));
 
   try {
     const response = await fetch(track.url);
@@ -1026,10 +1027,10 @@ async function loadNetflixTrackForLanguage(langCode) {
       if (!STATE.panelVisible) setPanelVisible(true);
     }
     setBadge(true);
-    updateStatus(`${cues.length} subtitle entries loaded`);
+    updateStatus(t('subtitleEntriesLoaded', [cues.length.toString()]));
   } catch (err) {
     console.error('[LanguagePlayer] Failed to fetch Netflix subtitles:', err);
-    updateStatus('Failed to load subtitles');
+    updateStatus(t('failedToLoadSubtitles'));
   }
 }
 
@@ -1217,7 +1218,7 @@ async function init() {
       renderTranscript();
       if (!STATE.panelVisible) setPanelVisible(true);
       setBadge(true);
-      updateStatus(`${STATE.cues.length} subtitle entries loaded`);
+      updateStatus(t('subtitleEntriesLoaded', [String(STATE.cues.length)]));
     }
     attachTimeTracking();
     setInterval(() => {

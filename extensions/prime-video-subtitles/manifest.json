@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Language Player",
-  "version": "1.0.31",
-  "description": "Interactive dual subtitles for language learning on Prime Video, YouTube, Netflix, Disney+, Hulu, and HBO Max.",
+  "name": "__MSG_appName__",
+  "version": "1.0.32",
+  "default_locale": "en",
+  "description": "__MSG_extensionDescription__",
   "permissions": [
     "webRequest",
     "downloads",
