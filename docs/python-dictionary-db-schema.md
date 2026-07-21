@@ -13,10 +13,91 @@ The Python backend uses a single SQLite database (`data/dictionaries.db`) for al
 The database contains:
 - **5 dedicated dictionary tables** — one per curated dictionary source (cedict, cccanto, edict, kengdic, klingonska)
 - **1 wiktionary table** — catch-all for ~800 languages, single table with `lang_code` column
-- **1 enrichment table** — Open Russian with stress marks and IPA
-- **1 HSK curriculum table** — textbook coverage for Chinese entries
+- **1 enrichment table** — Open Russian with stress marks and IPA (not a standalone dictionary)
+- **1 curriculum coverage table** — HSK Standard Course textbook coverage for Chinese entries (not a dictionary)
 
 Frequency data lives directly in each dictionary table's `frequency` column — there is no separate frequency table. `import_dict_to_sqlite.py --all` rebuilds dictionaries and then imports all frequency data from Zipf CSVs via `--freq`. The `--freq` flag can also be used standalone to update frequencies in an existing database without rebuilding dictionaries.
+
+---
+
+## Record Counts
+
+> **Snapshot**: 2026-07-21, 1.3 GB database. Frequency coverage varies by table — Zipf data is available for 40 languages.
+
+### Dictionary Tables
+
+| Table | Total Records | Records with Frequency | Coverage | Notes |
+|---|---|---|---|---|
+| kengdic (Korean) | 133,771 | 19,291 | 14.4% | Hanja form in `alternate` |
+| cedict (Chinese) | 124,722 | 33,020 | 26.5% | Simplified + traditional + pinyin |
+| edict (Japanese) | 117,368 | 22,252 | 19.0% | Kanji + kana + pitch accent |
+| open_russian | 58,218 | 0 | — | Enrichment only — stress marks, not a standalone dictionary |
+| cccanto (Cantonese) | 32,095 | 0 | 0% | No Zipf frequency data for Cantonese (yue) |
+| klingonska | 3,032 | 0 | 0% | No frequency data |
+
+### Wiktionary
+
+| | |
+|---|---|
+| Total records | 6,626,697 |
+| Languages | 3,795 |
+| Records with frequency | 373,286 (5.6%) |
+| Languages with 1,000+ entries | 147 |
+
+**Wiktionary — top languages by record count (1,000+ entries, with frequency coverage):**
+
+| Code | Language | Total | With Freq | Pct | Notes |
+|---|---|---|---|---|---|
+| lat | Latin | 844,589 | 0 | — | No Zipf data for Latin |
+| ita | Italian | 598,609 | 19,773 | 3.3% | |
+| eng | English | 511,526 | 36,050 | 7.0% | |
+| rus | Russian | 419,467 | 12,825 | 3.1% | Enriched by `open_russian` (stress/IPA) |
+| fra | French | 381,102 | 20,112 | 5.3% | |
+| por | Portuguese | 297,974 | 17,317 | 5.8% | |
+| deu | German | 290,619 | 17,686 | 6.1% | |
+| spa | Spanish | 243,711 | 15,895 | 6.5% | |
+| fin | Finnish | 214,142 | 13,272 | 6.2% | |
+| zho | Chinese | 142,937 | 0 | — | **Not used for lookup** — Chinese uses dedicated `cedict` table |
+| nld | Dutch | 117,361 | 18,057 | 15.4% | |
+| swe | Swedish | 109,133 | 12,570 | 11.5% | |
+| pol | Polish | 103,802 | 10,766 | 10.4% | |
+| jpn | Japanese | 122,679 | 0 | — | **Not used for lookup** — Japanese uses dedicated `edict` table |
+| kor | Korean | 34,706 | 0 | — | **Not used for lookup** — Korean uses dedicated `kengdic` table |
+| cmn | Mandarin | 53,932 | 0 | — | **Not used for lookup** — Mandarin uses dedicated `cedict` table |
+| yue | Cantonese | 1,733 | 0 | — | **Not used for lookup** — Cantonese uses dedicated `cccanto` table |
+
+**Highest frequency coverage (1000+ entries):**
+
+| Code | Language | Total | With Freq | Pct |
+|---|---|---|---|---|
+| heb | Hebrew | 12,611 | 7,935 | 62.9% |
+| urd | Urdu | 4,323 | 2,571 | 59.5% |
+| hin | Hindi | 15,638 | 8,603 | 55.0% |
+| fas | Persian | 13,234 | 7,063 | 53.4% |
+| ukr | Ukrainian | 8,192 | 4,101 | 50.1% |
+| msa | Malay | 5,805 | 2,866 | 49.4% |
+| ind | Indonesian | 10,391 | 5,078 | 48.9% |
+| tam | Tamil | 4,446 | 2,143 | 48.2% |
+| slv | Slovenian | 5,461 | 2,447 | 44.8% |
+| isl | Icelandic | 20,452 | 7,500 | 36.7% |
+| slk | Slovak | 6,427 | 2,319 | 36.1% |
+| mkd | Macedonian | 25,694 | 8,870 | 34.5% |
+| ces | Czech | 42,760 | 9,950 | 23.3% |
+| vie | Vietnamese | 24,573 | 5,823 | 23.7% |
+| tur | Turkish | 26,861 | 6,237 | 23.2% |
+| hun | Hungarian | 68,991 | 13,810 | 20.0% |
+| ron | Romanian | 59,192 | 10,966 | 18.5% |
+| dan | Danish | 46,240 | 8,284 | 17.9% |
+| nob | Norwegian Bokmål | 71,605 | 12,249 | 17.1% |
+| nld | Dutch | 117,361 | 18,057 | 15.4% |
+
+> **Why some languages have 0 frequency**: Languages with dedicated dictionary tables (zh → cedict, ja → edict, ko → kengdic, yue → cccanto) do not need Wiktionary rows — the loader skips Wiktionary entirely for these languages. Their frequency data lives in the dedicated tables. `open_russian` has no frequency column because it is a supplementary enrichment layer, not a standalone dictionary. A further 140+ Wiktionary languages have entries but no Zipf frequency data is available for them.
+
+### Non-Dictionary Tables
+
+| Table | Records | Purpose |
+|---|---|---|
+| hsk_curriculum | 5,746 | Textbook coverage for Chinese entries (HSK Standard Course 2014). FK → `cedict.id`. **Not a dictionary** — no lookup queries target this table. |
 
 ---
 
@@ -51,7 +132,9 @@ Frequency data lives directly in each dictionary table's `frequency` column — 
 
 ---
 
-### `hsk_curriculum` — HSK Textbook Coverage
+### `hsk_curriculum` — HSK Textbook Coverage (not a dictionary)
+
+> **Not a dictionary table** — this is supplementary curriculum coverage data. No lookup queries target this table directly; it is joined to `cedict` via `entry_id` to surface textbook context for Chinese words.
 
 | Column | Type | Description |
 |---|---|---|
@@ -63,6 +146,8 @@ Frequency data lives directly in each dictionary table's `frequency` column — 
 | `exampleTranslation` | TEXT | English translation of example |
 
 **Source**: `hsk_standard_course.csv` (HSK Standard Course, Jiang Liping 2014)
+
+**Records**: 5,746 — each row links a Chinese word in `cedict` to where it first appears in the HSK Standard Course textbook series.
 
 ---
 
