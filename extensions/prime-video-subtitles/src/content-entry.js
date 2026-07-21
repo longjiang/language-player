@@ -16,6 +16,7 @@ const isPrimeVideo = /primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)/.test(locat
 const isNetflix = /netflix\.com/.test(location.hostname);
 const isDisneyPlus = /disneyplus\.com/.test(location.hostname);
 const isHulu = /hulu\.com/.test(location.hostname);
+const isHBOMax = /max\.com|hbonow\.com|hbomax\.com/.test(location.hostname);
 
 /** Popular languages shown first in the L2 dropdown */
 const POPULAR_L2S = [
@@ -1265,13 +1266,16 @@ async function init() {
     setInterval(() => {
       attachTimeTracking();
     }, 2000);
-  } else if (isDisneyPlus || isHulu) {
-    // Disney+ / Hulu: subs come via webRequest → message listener (same as Prime Video)
+  } else if (isDisneyPlus || isHulu || isHBOMax) {
+    // Disney+ / Hulu / HBO Max: subs via webRequest (same as Prime Video)
     attachTimeTracking();
     const playerObserver = new MutationObserver(() => {
       attachTimeTracking();
     });
-    const container = document.querySelector('disney-web-player') || document.querySelector('.hulu-player') || document.getElementById('content-video-player');
+    const container = document.querySelector('disney-web-player')
+      || document.querySelector('.hulu-player')
+      || document.getElementById('content-video-player')
+      || document.querySelector('[data-testid="player-ux-video"]');
     if (container) {
       playerObserver.observe(container, { childList: true, subtree: true });
     }
