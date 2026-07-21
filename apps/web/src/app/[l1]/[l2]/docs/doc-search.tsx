@@ -41,6 +41,7 @@ export function DocSearch({ docs, l1, l2, children }: Props) {
       new Fuse(docs, {
         keys: ['title', 'content'],
         threshold: 0.4,
+        ignoreLocation: true,
         includeScore: true,
       }),
     [docs],

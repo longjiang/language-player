@@ -110,7 +110,7 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
   const t = useT();
 
   const fuse = useMemo(
-    () => new Fuse(searchIndex, { keys: ['title', 'content'], threshold: 0.4, includeScore: true }),
+    () => new Fuse(searchIndex, { keys: ['title', 'content'], threshold: 0.4, ignoreLocation: true, includeScore: true }),
     [searchIndex],
   );
 

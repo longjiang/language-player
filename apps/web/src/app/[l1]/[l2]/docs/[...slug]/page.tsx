@@ -165,8 +165,9 @@ function getSearchIndex(l1: string): DocEntry[] {
 /** Load translated entries from docs-i18n/{l1}.json if available. */
 function loadLocaleEntries(l1: string): DocEntry[] | null {
   const dataDirs = [
-    resolve(process.cwd(), 'apps/web/src/data/docs-i18n'),
     resolve(process.cwd(), 'src/data/docs-i18n'),
+    resolve(process.cwd(), 'apps/web/src/data/docs-i18n'),
+    resolve(process.cwd(), '..', 'apps/web/src/data/docs-i18n'),
   ];
   for (const dataDir of dataDirs) {
     try {
