@@ -181,6 +181,19 @@ body.lpv-panel-open .nf-player-container {
   width: calc(100vw - 380px) !important;
 }
 
+/* ── Disney+: shrink player so panel sits beside it ────────────────── */
+
+body.lpv-panel-open disney-web-player {
+  width: calc(100vw - 380px) !important;
+  max-width: calc(100vw - 380px) !important;
+}
+
+/* Disney+ content container fallback */
+body.lpv-panel-open .btm-media-overlays-container,
+body.lpv-panel-open .hive-video-player-container {
+  width: calc(100vw - 380px) !important;
+}
+
 /* ── Status Bar ────────────────────────────────────────────────────────── */
 
 #lpv-status {

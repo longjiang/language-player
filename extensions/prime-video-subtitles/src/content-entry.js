@@ -14,6 +14,7 @@ import { SUPPORTED_L2S } from '@langplayer/shared';
 const isYouTube = /youtube\.com/.test(location.hostname);
 const isPrimeVideo = /primevideo\.com|amazon\.(com|co\.uk|de|co\.jp)/.test(location.hostname);
 const isNetflix = /netflix\.com/.test(location.hostname);
+const isDisneyPlus = /disneyplus\.com/.test(location.hostname);
 
 /** Popular languages shown first in the L2 dropdown */
 const POPULAR_L2S = [
@@ -222,6 +223,16 @@ function getVideoElement() {
     // Netflix uses a standard <video> element
     const video = document.querySelector('video');
     if (video && video.src) return video;
+  }
+  if (isDisneyPlus) {
+    // Disney+: video is inside <disney-web-player> Shadow DOM
+    const video = document.querySelector('video[src]');
+    if (video && video.src) return video;
+    const dwp = document.querySelector('disney-web-player');
+    if (dwp?.shadowRoot) {
+      const sv = dwp.shadowRoot.querySelector('video[src]');
+      if (sv && sv.src) return sv;
+    }
   }
   return document.querySelector('video');
 }
@@ -1125,6 +1136,15 @@ function waitForPlayer() {
         const video = document.querySelector('video');
         if (video && video.duration > 0) { resolve(video.parentElement); return; }
       }
+      if (isDisneyPlus) {
+        // Disney+: check regular DOM and Shadow DOM
+        let video = document.querySelector('video[src]');
+        if (!video) {
+          const dwp = document.querySelector('disney-web-player');
+          if (dwp?.shadowRoot) video = dwp.shadowRoot.querySelector('video[src]');
+        }
+        if (video && video.duration > 0) { resolve(video.parentElement || video); return; }
+      }
       // Generic: any large video on the page
       const video = document.querySelector('video');
       if (video && video.duration > 0) { resolve(video.parentElement); return; }
@@ -1244,6 +1264,16 @@ async function init() {
     setInterval(() => {
       attachTimeTracking();
     }, 2000);
+  } else if (isDisneyPlus) {
+    // Disney+: subs come via webRequest → message listener (same as Prime Video)
+    attachTimeTracking();
+    const playerObserver = new MutationObserver(() => {
+      attachTimeTracking();
+    });
+    const dwp = document.querySelector('disney-web-player');
+    if (dwp) {
+      playerObserver.observe(dwp, { childList: true, subtree: true });
+    }
   } else {
     // Prime Video: subs come via webRequest → message listener
     attachTimeTracking();
