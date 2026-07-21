@@ -1,0 +1,126 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "字幕を待っています…"
+  },
+  "startPlaying": {
+    "message": "動画を再生してください。"
+  },
+  "loadingLanguage": {
+    "message": "$lang$を読み込み中…",
+    "placeholders": { "lang": { "content": "$1" } }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$件の字幕を読み込みました",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "failedToLoadSubtitles": {
+    "message": "字幕の読み込みに失敗しました"
+  },
+  "loadingSubtitles": {
+    "message": "$lang$の字幕を読み込み中…",
+    "placeholders": { "lang": { "content": "$1" } }
+  },
+  "closePanel": {
+    "message": "パネルを閉じる"
+  },
+  "learningLanguage": {
+    "message": "学習言語"
+  },
+  "popularLanguages": {
+    "message": "人気"
+  },
+  "allLanguages": {
+    "message": "すべての言語"
+  },
+  "translate": {
+    "message": "翻訳"
+  },
+  "showTranslation": {
+    "message": "翻訳を表示（L1）"
+  },
+  "translating": {
+    "message": "翻訳中… $progress$/$total$",
+    "placeholders": { "progress": { "content": "$1" }, "total": { "content": "$2" } }
+  },
+  "actions": {
+    "message": "操作"
+  },
+  "copy": {
+    "message": "📋 コピー"
+  },
+  "speak": {
+    "message": "🔊 読み上げ"
+  },
+  "explain": {
+    "message": "🤖 説明"
+  },
+  "explainTitle": {
+    "message": "🤖 AIによる説明"
+  },
+  "aiThinking": {
+    "message": "🤖 AIが考えています…"
+  },
+  "thinking": {
+    "message": "考え中…"
+  },
+  "save": {
+    "message": "保存"
+  },
+  "saved": {
+    "message": "保存済み"
+  },
+  "close": {
+    "message": "閉じる"
+  },
+  "showTranscript": {
+    "message": "トランスクリプトを表示"
+  },
+  "noTranscriptFound": {
+    "message": "トランスクリプトが見つかりません"
+  },
+  "extensionDescription": {
+    "message": "Prime Video、YouTube、Netflix、Disney+、Hulu、Maxで語学学習のためのインタラクティブな二か国語字幕。"
+  },
+  "popupLoginPrompt": {
+    "message": "ログインして単語を保存し、Language Playerと同期しましょう。"
+  },
+  "popupEmailPlaceholder": {
+    "message": "メールアドレス"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "パスワード"
+  },
+  "popupLoginBtn": {
+    "message": "ログイン"
+  },
+  "popupLogoutBtn": {
+    "message": "ログアウト"
+  },
+  "popupChecking": {
+    "message": "確認中…"
+  },
+  "popupShowTranscript": {
+    "message": "トランスクリプトを表示"
+  },
+  "popupNoTranscript": {
+    "message": "トランスクリプトが見つかりません"
+  },
+  "popupInstructions": {
+    "message": "<strong>Prime Video</strong>、<strong>YouTube</strong>、<strong>Netflix</strong>で動画を再生してください。字幕が見つかるとトランスクリプトパネルが自動的に開きます。"
+  },
+  "popupClickWord": {
+    "message": "単語を<strong>クリック</strong>すると辞書で調べられます"
+  },
+  "popupSaveWords": {
+    "message": "Language Playerアカウントに単語を<strong>保存</strong>"
+  },
+  "popupToggleShortcut": {
+    "message": "<kbd>Alt</kbd> + <kbd>T</kbd> でパネルの表示/非表示を切り替え"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 学習中の言語で<strong>字幕がオン</strong>になっていることを確認してください。"
+  }
+}
