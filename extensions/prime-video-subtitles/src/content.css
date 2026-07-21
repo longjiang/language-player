@@ -188,9 +188,11 @@ body.lpv-panel-open disney-web-player {
   max-width: calc(100vw - 380px) !important;
 }
 
-/* Disney+ content container fallback */
+/* Disney+ content wrapper fallbacks */
 body.lpv-panel-open .btm-media-overlays-container,
-body.lpv-panel-open .hive-video-player-container {
+body.lpv-panel-open .hive-video-player-container,
+body.lpv-panel-open .content-wrapper,
+body.lpv-panel-open #app > div > div:first-child {
   width: calc(100vw - 380px) !important;
 }
 
@@ -199,7 +201,8 @@ body.lpv-panel-open .hive-video-player-container {
 body.lpv-panel-open .hulu-player,
 body.lpv-panel-open .HuluPlayer,
 body.lpv-panel-open #content-video-player,
-body.lpv-panel-open .video-player-container {
+body.lpv-panel-open #hulu-player,
+body.lpv-panel-open .player-area {
   width: calc(100vw - 380px) !important;
   max-width: calc(100vw - 380px) !important;
 }
@@ -208,9 +211,20 @@ body.lpv-panel-open .video-player-container {
 
 body.lpv-panel-open [data-testid="player-ux-video"],
 body.lpv-panel-open .video-player__container,
-body.lpv-panel-open .purr-player-container {
+body.lpv-panel-open .purr-player-container,
+body.lpv-panel-open [data-testid="player-ux"] {
   width: calc(100vw - 380px) !important;
   max-width: calc(100vw - 380px) !important;
+}
+
+/* ── Universal fallback: shrink the video's nearest block container ─── */
+/* Only applies when a platform-specific rule hasn't already matched.
+   Targets the grandparent of <video> for Disney+/Hulu/HBO Max. */
+
+body.lpv-panel-open.disneyplus video,
+body.lpv-panel-open.hulu video,
+body.lpv-panel-open.hbomax video {
+  max-width: calc(100vw - 400px) !important;
 }
 
 /* ── Status Bar ────────────────────────────────────────────────────────── */

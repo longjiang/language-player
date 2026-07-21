@@ -893,9 +893,14 @@ function setPanelVisible(visible) {
   if (visible) {
     panelRoot.classList.remove('lpv-collapsed');
     document.body.classList.add('lpv-panel-open');
+    // Platform-specific classes for CSS targeting
+    if (isDisneyPlus) document.body.classList.add('disneyplus');
+    if (isHulu) document.body.classList.add('hulu');
+    if (isHBOMax) document.body.classList.add('hbomax');
   } else {
     panelRoot.classList.add('lpv-collapsed');
     document.body.classList.remove('lpv-panel-open');
+    document.body.classList.remove('disneyplus', 'hulu', 'hbomax');
   }
 }
 
