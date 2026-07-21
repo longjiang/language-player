@@ -237,11 +237,21 @@ function findActiveCueIndex(timeSec) {
 }
 
 function seekTo(timeSec) {
-  const video = getVideoElement();
-  if (video) {
-    video.currentTime = timeSec;
-    renderTranscript();
+  if (isNetflix) {
+    // Direct video.currentTime manipulation triggers Netflix error M7375.
+    // Must seek via Netflix's own player API in the MAIN world.
+    chrome.runtime.sendMessage({ action: 'netflixSeek', timeSec })
+      .then((res) => {
+        console.log('[LanguagePlayer] Netflix seek result:', res?.method || res?.error);
+      })
+      .catch(() => {});
+   } else {
+    const video = getVideoElement();
+    if (video) {
+      video.currentTime = timeSec;
+    }
   }
+  renderTranscript();
 }
 
 // ── React Rendering ───────────────────────────────────────────────────────
@@ -965,6 +975,174 @@ function setupNetflixInterceptor() {
     });
 }
 
+/** Netflix subtitle tracks cache (all available tracks from manifest) */
+let cachedNetflixTracks = {};
+let netflixObservingSelection = false;
+
+/**
+ * Detect which subtitle language is currently selected in Netflix's own UI.
+ * Netflix's audio/subtitle selector uses various DOM patterns over the years.
+ * We try multiple strategies and return the language code (e.g. 'ja', 'en').
+ */
+function detectNetflixActiveSubtitle() {
+  // Strategy 1: Look for the subtitle button's label text.
+  // Netflix often shows the current language next to the subtitle icon.
+  const subLabels = document.querySelectorAll(
+    '[data-uia="selector-audio-subtitle"] span, ' +
+    '.audio-subtitle-controller span, ' +
+    'button[aria-label*="Subtitle"] span, ' +
+    'button[aria-label*="subtitle"] span'
+  );
+  for (const el of subLabels) {
+    const text = (el.textContent || '').trim().toLowerCase();
+    const code = languageNameToCode(text);
+    if (code) return code;
+  }
+
+  // Strategy 2: Look inside the open audio/subtitle menu for the checked item.
+  // Selected language typically has aria-checked="true" or a special class.
+  const checkedItems = document.querySelectorAll(
+    '[data-uia="menu-item"][aria-checked="true"], ' +
+    'li[aria-checked="true"], ' +
+    '.track-list li.selected, ' +
+    '[role="menuitemradio"][aria-checked="true"]'
+  );
+  for (const el of checkedItems) {
+    const text = (el.textContent || '').trim().toLowerCase();
+    const code = languageNameToCode(text);
+    if (code) return code;
+  }
+
+  return null;
+}
+
+/** Map common language display names to ISO 639-1 codes */
+function languageNameToCode(name) {
+  const map = {
+    'japanese': 'ja', '日本語': 'ja', 'japonais': 'ja', 'japanisch': 'ja', 'japonés': 'ja',
+    'english': 'en', 'english [original]': 'en', 'anglais': 'en', 'englisch': 'en', 'inglés': 'en',
+    'chinese': 'zh', '中文': 'zh', 'chinois': 'zh', 'chinesisch': 'zh',
+    'korean': 'ko', '한국어': 'ko', 'coréen': 'ko', 'koreanisch': 'ko',
+    'spanish': 'es', 'español': 'es', 'espagnol': 'es', 'spanisch': 'es',
+    'french': 'fr', 'français': 'fr', 'französisch': 'fr',
+    'german': 'de', 'deutsch': 'de', 'allemand': 'de',
+    'italian': 'it', 'italiano': 'it', 'italien': 'it',
+    'portuguese': 'pt', 'português': 'pt', 'portugiesisch': 'pt',
+    'russian': 'ru', 'русский': 'ru', 'russe': 'ru',
+    'arabic': 'ar', 'العربية': 'ar', 'arabe': 'ar',
+    'dutch': 'nl', 'nederlands': 'nl', 'néerlandais': 'nl',
+    'polish': 'pl', 'polski': 'pl', 'polonais': 'pl',
+    'turkish': 'tr', 'türkçe': 'tr', 'turc': 'tr',
+    'thai': 'th', 'ไทย': 'th', 'thaïlandais': 'th',
+    'vietnamese': 'vi', 'tiếng việt': 'vi', 'vietnamien': 'vi',
+    'indonesian': 'id', 'bahasa indonesia': 'id', 'indonésien': 'id',
+    'hindi': 'hi', 'हिन्दी': 'hi',
+    'swedish': 'sv', 'svenska': 'sv', 'suédois': 'sv',
+    'norwegian': 'no', 'norsk': 'no', 'norvégien': 'no',
+    'finnish': 'fi', 'suomi': 'fi', 'finnois': 'fi',
+    'danish': 'da', 'dansk': 'da', 'danois': 'da',
+    'romanian': 'ro', 'română': 'ro', 'roumain': 'ro',
+    'hungarian': 'hu', 'magyar': 'hu', 'hongrois': 'hu',
+    'croatian': 'hr', 'hrvatski': 'hr', 'croate': 'hr',
+    'serbian': 'sr', 'српски': 'sr', 'serbe': 'sr',
+    'greek': 'el', 'ελληνικά': 'el', 'grec': 'el',
+    'catalan': 'ca', 'català': 'ca',
+    'swahili': 'sw', 'kiswahili': 'sw',
+    'afrikaans': 'af',
+    'irish': 'ga', 'gaeilge': 'ga',
+    'hebrew': 'he', 'עברית': 'he', 'hébreu': 'he',
+    'czech': 'cs', 'čeština': 'cs', 'tchèque': 'cs',
+    'ukrainian': 'uk', 'українська': 'uk', 'ukrainien': 'uk',
+    'filipino': 'fil', 'tagalog': 'tl',
+  };
+  if (map[name]) return map[name];
+
+  // Try partial match
+  for (const [key, code] of Object.entries(map)) {
+    if (name.includes(key) || key.includes(name)) return code;
+  }
+  return null;
+}
+
+/** Start observing Netflix's DOM for subtitle selection changes */
+function observeNetflixSubtitleChanges() {
+  if (netflixObservingSelection) return;
+  netflixObservingSelection = true;
+
+  let lastActiveLang = null;
+
+  const checkAndReload = () => {
+    const activeLang = detectNetflixActiveSubtitle();
+    if (activeLang && activeLang !== lastActiveLang) {
+      lastActiveLang = activeLang;
+      console.log('[LanguagePlayer] Netflix subtitle selection changed to:', activeLang);
+      loadNetflixTrackForLanguage(activeLang);
+    }
+  };
+
+  // Check periodically (Netflix menu opens/closes, DOM changes)
+  const observer = new MutationObserver(() => {
+    checkAndReload();
+  });
+  observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+
+  // Also poll for cases where menu stays open but selection changes
+  setInterval(checkAndReload, 3000);
+
+  // Initial check
+  checkAndReload();
+}
+
+/** Load the Netflix subtitle track matching a language code from cache */
+async function loadNetflixTrackForLanguage(langCode) {
+  if (!langCode || Object.keys(cachedNetflixTracks).length === 0) return;
+
+  const langKeys = Object.keys(cachedNetflixTracks);
+  const bestKey = langKeys.find(k => cachedNetflixTracks[k].languageCode === langCode)
+    || langKeys.find(k => cachedNetflixTracks[k].languageCode?.startsWith?.(langCode?.split('-')[0]))
+    || null;
+
+  if (!bestKey) {
+    console.log('[LanguagePlayer] No cached Netflix track for language:', langCode);
+    return;
+  }
+
+  const track = cachedNetflixTracks[bestKey];
+  console.log('[LanguagePlayer] Loading Netflix track:', bestKey, track.format);
+
+  try {
+    const response = await fetch(track.url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const text = await response.text();
+
+    let cues;
+    if (track.format.includes('webvtt')) {
+      cues = parseWebVTTLike(text);
+    } else {
+      cues = parseTTML(text);
+    }
+
+    console.log('[LanguagePlayer] Netflix parsed', cues.length, 'cues');
+
+    STATE.cues = cues;
+    detectedL2Code = track.languageCode || detectedL2Code;
+    tryDetectL2FromCues(cues);
+
+    if (l2SelectEl && detectedL2Code) {
+      l2SelectEl.value = detectedL2Code;
+    }
+
+    if (cues.length > 0) {
+      STATE.activeCueIdx = -1;
+      renderTranscript();
+      if (!STATE.panelVisible) setPanelVisible(true);
+    }
+    setBadge(true);
+  } catch (err) {
+    console.error('[LanguagePlayer] Failed to fetch Netflix subtitles:', err);
+  }
+}
+
 /** Process Netflix subtitle tracks and fetch the actual subtitle file */
 async function handleNetflixSubs(tracks) {
   const subs = {};
@@ -981,51 +1159,32 @@ async function handleNetflixSubs(tracks) {
     };
   }
 
+  // Cache all tracks for later language switching
+  cachedNetflixTracks = subs;
+
   console.log('[LanguagePlayer] Netflix subtitle tracks:',
     Object.keys(subs).map(k => `${k} (${subs[k].languageCode})`).join(', '));
 
-  // Use the L2 selector value (reflects user's saved preference) over auto-detected
-  const userL2 = l2SelectEl?.value || detectedL2Code;
-  console.log('[LanguagePlayer] User L2 preference:', userL2, '(auto-detected:', detectedL2Code + ')');
+  // Detect which subtitle Netflix is currently showing (user's Netflix UI choice)
+  const activeLang = detectNetflixActiveSubtitle();
+  console.log('[LanguagePlayer] Detected Netflix active subtitle:', activeLang || '(none found, using default)');
 
-  // Pick best track: exact match > prefix match > first available
-  const langKeys = Object.keys(subs);
-  const bestKey = langKeys.find(k => subs[k].languageCode === userL2)
-    || langKeys.find(k => subs[k].languageCode?.startsWith?.(userL2?.split('-')[0]))
-    || langKeys[0];
-
-  if (bestKey && subs[bestKey]) {
-    const track = subs[bestKey];
-    console.log('[LanguagePlayer] Loading Netflix track:', bestKey, track.format);
-
-    try {
-      const response = await fetch(track.url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const text = await response.text();
-
-      let cues;
-      if (track.format.includes('webvtt')) {
-        cues = parseWebVTTLike(text);
-      } else {
-        cues = parseTTML(text);
-      }
-
-      console.log('[LanguagePlayer] Netflix parsed', cues.length, 'cues');
-
-      STATE.cues = cues;
-      detectedL2Code = track.languageCode || detectedL2Code;
-      tryDetectL2FromCues(cues);
-
-      if (cues.length > 0) {
-        STATE.activeCueIdx = -1;
-        renderTranscript();
-        if (!STATE.panelVisible) setPanelVisible(true);
-      }
-      setBadge(true);
-    } catch (err) {
-      console.error('[LanguagePlayer] Failed to fetch Netflix subtitles:', err);
+  if (activeLang) {
+    await loadNetflixTrackForLanguage(activeLang);
+  } else {
+    // Fallback: no detection possible, try saved preference then first track
+    const userL2 = l2SelectEl?.value || detectedL2Code;
+    const langKeys = Object.keys(subs);
+    const bestKey = langKeys.find(k => subs[k].languageCode === userL2)
+      || langKeys.find(k => subs[k].languageCode?.startsWith?.(userL2?.split('-')[0]))
+      || langKeys[0];
+    if (bestKey && subs[bestKey]) {
+      await loadNetflixTrackForLanguage(subs[bestKey].languageCode);
     }
   }
+
+  // Start watching for Netflix subtitle changes
+  observeNetflixSubtitleChanges();
 }
 
 // ── Player Detection ─────────────────────────────────────────────────────
