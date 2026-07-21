@@ -10,7 +10,7 @@ import { LanguageSwitcher } from './language-switcher';
 import { UserMenu } from './user-menu';
 import {
   Menu, X, ChevronDown, Search,
-  Compass, Music, Tv, Clapperboard, History,
+  Compass, Music, Tv, Clapperboard, History, Upload,
   BookOpen, Globe, BookMarked,
   Bookmark, RotateCcw, FileText,
 } from 'lucide-react';
@@ -29,6 +29,7 @@ const NAV_GROUPS: NavGroup[] = [
       { key: 'title.live_tv', href: 'live-tv' },
       { key: 'title.tv_shows', href: 'tv-shows' },
       { key: 'title.watch_history', href: 'watch-history' },
+      { key: 'title.local_media', href: 'local-media' },
     ],
   },
   {
@@ -61,6 +62,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   dictionary: <BookMarked className="h-4 w-4" />,
   'saved-words': <Bookmark className="h-4 w-4" />,
   review: <RotateCcw className="h-4 w-4" />,
+  'local-media': <Upload className="h-4 w-4" />,
 };
 
 function NavDropdown({ group, l1Code, l2Code }: { group: NavGroup; l1Code: string; l2Code: string }) {

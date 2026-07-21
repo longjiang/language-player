@@ -972,6 +972,7 @@
         "likes": "点赞数",
         "live_tv": "直播电视",
         "loading_dictionary": "正在加载{language}字典",
+        "local_media": "本地媒体",
         "login": "登录",
         "logout": "退出登录",
         "measure_words": "量词",
