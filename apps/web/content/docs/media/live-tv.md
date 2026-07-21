@@ -1,10 +1,10 @@
-# Live TV
+# {$title.live_tv}
 
-Watch live television broadcasts in your target language. No subtitles, no dubbing — just real TV as it airs.
+watch live television broadcasts in your target language. No subtitles, no dubbing — just real TV as it airs.
 
 ## How It Works
 
-Language Player streams live broadcasts from free-to-air channels around the world. The video player uses HLS streaming, which works in all modern browsers. Pick a channel from the list on the right and it starts playing immediately.
+{$title.app_name} streams live broadcasts from free-to-air channels around the world. The video player uses HLS streaming, which works in all modern browsers. Pick a channel from the list on the right and it starts playing immediately.
 
 Channels are tested automatically every few hours. Dead channels or streams that time out are removed from the list, so you only see channels that are actually broadcasting right now.
 
@@ -25,5 +25,5 @@ Click any channel to switch to it. The URL updates automatically, so you can boo
 
 - News channels tend to have the most reliable, lowest-latency streams
 - If a stream stops working, refreshing the page will re-fetch the channel list with fresh health checks
-- Live TV is pure immersion — there are no subtitles or translations. Use the [Video Player](/docs/media/video-player) if you want interactive captions
-- Try channels from different countries that speak the same language (e.g., France, Belgium, and Switzerland for French) to hear different accents and vocabulary
+- {$title.live_tv} is pure immersion — there are no subtitles or translations. Use the [Video Player](/docs/media/video-player) if you want interactive captions
+- Try channels from different countries that speak the same language (e.g., France, Belgium, and Switzerland for {$lang.fr}) to hear different accents and vocabulary
