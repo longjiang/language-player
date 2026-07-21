@@ -1,4 +1,23 @@
 document.addEventListener('DOMContentLoaded', function() {
+  // ── i18n ─────────────────────────────────────────────────────────────
+  function t(key) { return chrome.i18n.getMessage(key) || key; }
+  function fillText(sel, key) { const el = document.querySelector(sel); if (el) el.textContent = t(key); }
+  function fillHtml(sel, key) { const el = document.querySelector(sel); if (el) el.innerHTML = t(key); }
+  function fillPlaceholder(sel, key) { const el = document.querySelector(sel); if (el) el.placeholder = t(key); }
+
+  fillText('#popup-title', 'appName');
+  fillText('#popup-login-prompt', 'popupLoginPrompt');
+  fillPlaceholder('#auth-email', 'popupEmailPlaceholder');
+  fillPlaceholder('#auth-password', 'popupPasswordPlaceholder');
+  fillText('#auth-login-btn', 'popupLoginBtn');
+  fillText('#auth-logout-btn', 'popupLogoutBtn');
+  fillHtml('#popup-instructions', 'popupInstructions');
+  fillHtml('#popup-click-word', 'popupClickWord');
+  fillHtml('#popup-save-words', 'popupSaveWords');
+  fillHtml('#popup-toggle-shortcut', 'popupToggleShortcut');
+  fillText('#transcript-btn', 'popupChecking');
+  fillHtml('#transcript-hint', 'popupCaptionsHint');
+
   // ── Auth ──────────────────────────────────────────────────────────────
   const STORAGE_KEY = 'lpv_auth';
   const DIRECTUS_URL = 'https://directusvps.zerotohero.ca/zerotohero';
