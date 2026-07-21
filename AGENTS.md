@@ -249,29 +249,34 @@ When writing or editing markdown documentation in `apps/web/content/docs/`, foll
 
 Docs support `{$key}` syntax to reference CSV translation keys. When the page renders in a non-English locale, these keys are resolved to the locale's translation.
 
-**Where to use keys:**
-- **UI labels** mentioned in docs — button names, tab titles, menu items (e.g., `{$action.search}`, `{$title.dictionary}`, `{$label.show_translation}`)
+##### Where to Use Keys
+
+- **UI labels** — button names, tab titles, menu items (e.g., `{$action.search}`, `{$title.dictionary}`, `{$label.show_translation}`)
 - **Language names** — always use `{$lang.zh}`, `{$lang.ja}`, etc. (never hardcode "Chinese", "Japanese")
 - **Proficiency levels** — `{$level.exam_cefr}`, `{$level.exam_hsk}`, `{$level.exam_jlpt}`
 
-**Where NOT to use keys:**
-- **Doc H1 titles** — if no exact key exists, use plain English. The H1 is the sidebar label; a hybrid like "Popup {$title.dictionary}" produces "Popup 词典" in zh-Hans. Either use a single pure key (e.g., `# {$title.explore}`) or plain text (e.g., `# Popup Dictionary`).
-- **Common English words** — "video", "watch", "min", "new" are not UI labels. The programmatic replacement can match these by accident — always manually verify after applying keys.
-- **Descriptive phrases** — "See [Dictionary](/docs/vocab/dictionary) for details" does not need a key for "Dictionary" unless it refers to the UI element.
+##### Where NOT to Use Keys
 
-**Workflow for adding keys to a doc:**
+- **Doc H1 titles** — if no exact key exists, use plain English. A hybrid like "Popup {$title.dictionary}" produces "Popup 词典" in zh-Hans. Use a single pure key (e.g., `# {$title.explore}`) or plain text (e.g., `# Popup Dictionary`).
+- **Common English words** — "video", "watch", "min", "new" are not UI labels. Programmatic replacement can match these by accident — always manually verify.
+- **Descriptive phrases** — "See [Dictionary](/docs/vocab/dictionary) for details" does not need a key unless referring to the UI element.
+
+##### Workflow
+
 1. Read the doc and identify UI labels, language names, and level names that have CSV keys
 2. Replace them with `{$key}` syntax (case-sensitive — match the CSV English value exactly)
-3. Manually verify the result — check for false positives like `{$action.translation}s` (partial word matches)
+3. Manually verify — check for false positives like `{$action.translation}s` (partial word matches)
 4. Regenerate translations:
 
 ```bash
 nvm use 22 && node scripts/rebuild-doc.mjs apps/web/content/docs/<path>.md
 ```
 
-This resolves all `{$key}` in the doc for all 31 locales, machine-translates the body text via the Python `/translate` server (if running), and merges into `apps/web/src/data/docs-i18n/{locale}.json`. Requires Node ≥ 20 for the translation step; falls back to key-only resolution on older Node.
+This resolves `{$key}` for all 31 locales, machine-translates the body via the Python `/translate` server (if running), and merges into `apps/web/src/data/docs-i18n/{locale}.json`. Requires Node ≥ 20 for translation; falls back to key-only resolution on older Node.
 
-**Dynamic category titles:** Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{folderName}` keys. Adding a new doc folder (e.g., `grammar/`) automatically looks up `title.grammar` — just create the CSV key and it works.
+##### Dynamic Category Titles
+
+Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{folderName}` keys. Adding a new doc folder (e.g., `grammar/`) automatically looks up `title.grammar` — just create the CSV key and it works.
 
 ### When You Make Changes
 
