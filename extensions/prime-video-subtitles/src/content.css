@@ -189,27 +189,45 @@ body.lpv-panel-open.disneyplus {
   padding-right: 380px !important;
 }
 
+/* Main player theater container — uses position:absolute;right:0;width:100% */
+body.lpv-panel-open .video_view--theater {
+  width: calc(100vw - 380px) !important;
+  right: 380px !important;
+}
+
+/* Full chain of player containers — constrain all to panel-adjusted width */
+body.lpv-panel-open .hudson-container,
+body.lpv-panel-open .player-container-root,
+body.lpv-panel-open .mini-player-bounds,
+body.lpv-panel-open .btm-media-player,
+body.lpv-panel-open .btm-media-clients {
+  width: 100% !important;
+  max-width: calc(100vw - 380px) !important;
+}
+
 /* Shrink the custom player element */
 body.lpv-panel-open disney-web-player {
-  width: calc(100vw - 380px) !important;
+  width: 100% !important;
   max-width: calc(100vw - 380px) !important;
 }
 
-/* Catch absolutely-positioned UI overlays that span full viewport */
+/* UI overlay sibling — positioned absolute;inset:0, spans full viewport.
+   Must constrain its right edge to not overlap the panel. */
+body.lpv-panel-open disney-web-player-ui {
+  right: 380px !important;
+}
+
+/* Inline-styled overlay divs (DxcOverlay has inline width/height in px) */
+body.lpv-panel-open .DxcOverlay {
+  width: calc(100vw - 380px) !important;
+}
+
+/* Catch any absolutely-positioned overlay containers */
 body.lpv-panel-open .btm-media-overlays-container,
 body.lpv-panel-open .hive-video-player-container,
-body.lpv-panel-open .hive-controls-container,
-body.lpv-panel-open [class*="overlay"],
-body.lpv-panel-open [class*="Overlay"] {
+body.lpv-panel-open .hive-controls-container {
   right: 380px !important;
   width: calc(100vw - 380px) !important;
-}
-
-/* Shrink any full-width fixed containers */
-body.lpv-panel-open .content-wrapper,
-body.lpv-panel-open #app > div > div:first-child {
-  width: calc(100vw - 380px) !important;
-  max-width: calc(100vw - 380px) !important;
 }
 
 /* ── Hulu: shrink player so panel sits beside it ───────────────────── */
