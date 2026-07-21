@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Fuse from 'fuse.js';
 import { List, ChevronDown, Search } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
+import { stripMarkdown } from '@/lib/strip-markdown';
 
 interface TocItem {
   level: number;
@@ -169,7 +170,7 @@ export function DocSidebar({ toc, docs, l1, l2, currentSlug, searchIndex }: {
                   >
                     <span className="font-medium text-foreground">{item.title}</span>
                     <span className="mt-0.5 block text-xs text-muted-foreground line-clamp-1">
-                      {item.content.slice(0, 80)}…
+                      {stripMarkdown(item.content).slice(0, 80)}…
                     </span>
                   </Link>
                 </li>
