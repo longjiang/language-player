@@ -128,6 +128,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             .then(text => sendResponse({ text }))
             .catch(err => sendResponse({ text: '', error: err.message }));
         return true; // async
+    } else if (request.action === "mainWorldFetch") {
+        const tabId = sender.tab?.id;
+        if (!tabId) { sendResponse({ text: '' }); return; }
+        chrome.scripting.executeScript({
+            target: { tabId },
+            func: (url) => {
+                return new Promise((res) => {
+                    const x = new XMLHttpRequest();
+                    x.open('GET', url, true);
+                    x.timeout = 10000;
+                    x.onload = () => res(x.responseText || '');
+                    x.onerror = () => res('');
+                    x.ontimeout = () => res('');
+                    x.send();
+                });
+            },
+            args: [request.url],
+            world: 'MAIN',
+        }).then(results => {
+            sendResponse({ text: results?.[0]?.result || '' });
+        }).catch(err => {
+            sendResponse({ text: '', error: err?.message });
+        });
+        return true; // async
     }
     return true; // Keep message channel open for async response
 });
