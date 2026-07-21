@@ -166,10 +166,146 @@ The `/dictionary/download` endpoint returns English-definition entries ordered b
 - Simpler schema: one object store, keyed by `entry.id`
 - Built-in indexing via `createIndex()` for head word and pronunciation search
 
-**Download UI:** A settings page section where users can download offline dictionaries per language. Shows:
-- Available languages with download size estimate
-- Progress bar during download (chunked storage yields regular progress updates)
-- "Delete offline data" button
+**L1≠en users:** If the user's L1 is not English (e.g., a Spanish speaker learning Japanese), the offline dictionary still downloads English definitions (see [L1 Translation Strategy](#l1-translation-strategy)). The download UI explains this clearly: the user gets English definitions offline, and their L1 definitions accumulate naturally as they look up words online. The `l1` parameter is passed to the server for cache-key purposes but does not affect the downloaded content.
+
+### Offline Dictionary UI Design
+
+#### Discovery & Access
+
+Users encounter offline dictionaries through **three entry points**, each serving a different moment in the user journey:
+
+1. **Dictionary Hub banner** — When a user opens the Dictionary Hub for a language pair and no offline dictionary is downloaded, a dismissible banner appears at the top:
+   > "📚 Download offline dictionary for {$lang.xx} — look up words anytime, even without internet"
+   > [Download] [Dismiss]
+
+2. **Settings → Offline Dictionaries** — A dedicated settings section accessible from the main Settings screen. This is the primary management interface.
+
+3. **Lookup result prompt** — When a dictionary lookup succeeds online but the word isn't in the offline dictionary, a small inline prompt appears below the result:
+   > "💡 Save this word offline? [Download {$lang.xx} dictionary]"
+   This only appears if no download is in progress and the user hasn't dismissed it recently (once per session).
+
+#### Settings → Offline Dictionaries Screen
+
+This is the primary download management interface. The screen lists every L2 language the user has configured or recently used.
+
+```
+┌──────────────────────────────────────┐
+│  ← Offline Dictionaries              │
+│                                      │
+│  Download dictionaries to look up    │
+│  words without an internet           │
+│  connection.                         │
+│                                      │
+│  ┌──────────────────────────────────┐│
+│  │ ⚠️  Definitions are in English   ││  ← Only shown when L1≠en
+│  │                                  ││
+│  │ Offline dictionaries store       ││
+│  │ English definitions. {$lang.xx}  ││
+│  │ translations are added as you    ││
+│  │ look up words online. [Learn     ││
+│  │ more]                            ││
+│  └──────────────────────────────────┘│
+│                                      │
+│  ── Your Languages ──                │
+│                                      │
+│  {$lang.ja}  Japanese                │
+│  ├─ 22,252 words  ~11 MB             │
+│  ├─ ████████████░░░░  78%           │  ← Progress during download
+│  └─ [Download]  or  [Delete] [↻]    │     Delete + Update when downloaded
+│                                      │
+│  {$lang.zh}  Chinese                 │
+│  ├─ 30,000 words  ~15 MB             │
+│  ├─ ✅ Downloaded  Jul 15           │
+│  └─ [Delete] [↻ Update]             │
+│                                      │
+│  {$lang.fr}  French                  │
+│  ├─ 20,112 words  ~10 MB             │
+│  └─ [Download]                       │
+│                                      │
+│  ── Other Languages ──               │
+│                                      │
+│  {$lang.de}  German                  │
+│  ├─ 17,686 words  ~9 MB              │
+│  └─ [Download]                       │
+│                                      │
+│  {$lang.ko}  Korean                  │
+│  ├─ 19,291 words  ~10 MB             │
+│  └─ [Download]                       │
+│                                      │
+│  ──────────────────────────────────  │
+│  Storage: 26 MB used of 48 MB free   │
+│  ──────────────────────────────────  │
+│                                      │
+│  [Delete All Offline Data]           │
+└──────────────────────────────────────┘
+```
+
+**Key UI elements:**
+
+| Element | Behavior |
+|---|---|
+| **L1≠en callout** | Shown at top when user's L1 is not English. Explains English-only offline definitions with a link to a help doc or expands inline. Dismissible; stored in AsyncStorage so it doesn't reappear. |
+| **Language rows** | Grouped: "Your Languages" (L2s the user has configured or recently used) then "Other Languages" (all remaining available languages). Each row shows word count, estimated download size, and current status. |
+| **Download button** | Initiates `GET /dictionary/download?l2=xx&l1=en`. Transforms into a progress bar during download. On completion, becomes a checkmark with date. |
+| **Progress bar** | Updates per chunk (every 500 entries stored). Shows percentage + "X of Y words" below the bar. Download runs in background — user can navigate away and return. |
+| **Delete button** | Removes the IndexedDB store for that language. Confirmation dialog: "Delete offline {$lang.xx} dictionary? You'll need internet to look up words." |
+| **Update button** (↻) | Re-downloads the dictionary (e.g., after server-side data updates). Shows last download date so user knows if an update is needed. |
+| **Storage summary** | Footer showing total offline storage used vs. available (estimated from device info). Helps users manage space. |
+| **Delete All** | Nuke option at the bottom. Confirmation with destructive styling. |
+
+#### Download Flow
+
+```
+User taps [Download]
+        │
+        ▼
+┌──────────────────────┐
+│  Confirm Download    │
+│                      │
+│  Download {$lang.ja} │
+│  dictionary?         │
+│                      │
+│  Size: ~11 MB        │
+│  Words: 22,252       │
+│                      │
+│  Definitions are in  │  ← Only when L1≠en
+│  English.            │
+│                      │
+│  [Cancel]  [Download]│
+└──────────────────────┘
+        │
+        ▼  (user confirms)
+┌──────────────────────────────────┐
+│  ↓ Downloading {$lang.ja}...     │
+│  ████████████░░░░░░  62%         │
+│  13,844 of 22,252 words          │
+│                                  │
+│  [Hide]  ← runs in background   │
+└──────────────────────────────────┘
+        │
+        ▼  (completes)
+┌──────────────────────────────────┐
+│  ✅ {$lang.ja} dictionary ready  │
+│                                  │
+│  22,252 words available offline. │
+│  Tap any word while watching to  │
+│  see definitions instantly.      │
+│                                  │
+│  [OK]                            │
+└──────────────────────────────────┘
+```
+
+**Background download:** If the user navigates away, the download continues. A persistent mini-banner appears at the bottom of the main screens (like a music player mini-player): "↓ Downloading {$lang.ja} dictionary… 62%". Tapping it returns to the Offline Dictionaries screen.
+
+**Error handling:** If the download fails (network drop, server error), the row shows "⚠️ Download failed — Tap to retry". The partial data is discarded (not left in a broken state).
+
+#### Post-Download Experience
+
+Once a dictionary is downloaded, the app subtly indicates offline availability:
+
+- **Dictionary Hub:** Language pairs with offline dictionaries show a small "📚" icon next to the language name in the language selector.
+- **Video player:** When the user taps a word in subtitles and the lookup returns instantly from the offline dictionary, no special indicator is shown — speed is the reward. Only when the word is NOT in the offline dictionary and requires a network request does a small "🌐" icon appear momentarily.
+- **Settings → Offline Dictionaries:** Shows "Last updated: Jul 15" with an update button, so users can periodically refresh.
 
 ### Non-Blocking Loading (Phase 2)
 
