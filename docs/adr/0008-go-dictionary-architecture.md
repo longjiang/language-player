@@ -113,25 +113,32 @@ Each `DictionaryEntry` includes `match_type: 'exact' | 'lemma' | 'fuzzy' | 'llm'
 
 The `/dictionary/download` endpoint returns English-definition entries ordered by frequency, capped at a configurable limit (default: 30,000). This keeps downloads small and fast while covering the vocabulary a typical learner needs:
 
-| Language | Dict Table | Freq-Covered Pool | Default Cap | Est. Download |
+| L2 | Dict Table | Freq-Covered Pool | Default Cap | Est. Download |
 |---|---|---|---|---|
+| en | wiktionary | 36,050 | 30,000 | ~15 MB |
 | zh | cedict | 33,020 | 30,000 | ~15 MB |
 | ja | edict | 22,252 | 22,252 (all) | ~11 MB |
-| ko | kengdic | 19,291 | 19,291 (all) | ~10 MB |
-| de | wiktionary | 17,686 | 17,686 (all) | ~9 MB |
 | fr | wiktionary | 20,112 | 20,112 (all) | ~10 MB |
-| es | wiktionary | 15,895 | 15,895 (all) | ~8 MB |
 | it | wiktionary | 19,773 | 19,773 (all) | ~10 MB |
-| pt | wiktionary | 17,317 | 17,317 (all) | ~9 MB |
+| ko | kengdic | 19,291 | 19,291 (all) | ~10 MB |
 | nl | wiktionary | 18,057 | 18,057 (all) | ~9 MB |
-| ru | wiktionary | 12,825 | 12,825 (all) | ~6 MB |
+| de | wiktionary | 17,686 | 17,686 (all) | ~9 MB |
+| pt | wiktionary | 17,317 | 17,317 (all) | ~9 MB |
+| es | wiktionary | 15,895 | 15,895 (all) | ~8 MB |
 | ar | wiktionary | 14,726 | 14,726 (all) | ~7 MB |
+| ca | wiktionary | 14,449 | 14,449 (all) | ~7 MB |
+| hu | wiktionary | 13,810 | 13,810 (all) | ~7 MB |
+| fi | wiktionary | 13,272 | 13,272 (all) | ~7 MB |
+| ru | wiktionary | 12,825 | 12,825 (all) | ~6 MB |
+| sv | wiktionary | 12,570 | 12,570 (all) | ~6 MB |
+| no | wiktionary | 12,249 | 12,249 (all) | ~6 MB |
+| ro | wiktionary | 10,966 | 10,966 (all) | ~5 MB |
 | tr | wiktionary | 6,237 | 6,237 (all) | ~3 MB |
 | … | … | … | … | … |
 
 **40 languages** (those with Zipf frequency data in `dictionaries.db`) have entries to offer. The top 20K–30K words by frequency cover 95%+ of everyday text — far more than any learner will actively look up. The remaining 140+ Wiktionary languages have no frequency data and cannot offer frequency-ordered downloads until Zipf data is available.
 
-**If the frequency pool exceeds the cap** (only `cedict` at 33K), the server returns the top N by Zipf score. The download size estimate is ~500 bytes per entry (head, pronunciation, definitions, POS, level, phonetic_detail as JSON).
+**If the frequency pool exceeds the cap** (`en` at 36K, `zh` at 33K), the server returns the top N by Zipf score. The download size estimate is ~500 bytes per entry (head, pronunciation, definitions, POS, level, phonetic_detail as JSON).
 
 ### Offline Download (Phase 2)
 
