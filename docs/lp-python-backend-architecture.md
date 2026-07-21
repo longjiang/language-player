@@ -163,6 +163,8 @@ The primary database is MySQL managed by Directus 8 (headless CMS). The backend 
 
 Dictionary data is stored in `data/dictionaries.db` — a local SQLite database created by `import_dict_to_sqlite.py`.
 
+> **Full schema documentation**: See [`docs/python-dictionary-db-schema.md`](./python-dictionary-db-schema.md) for complete table schemas, ID formats, classifier format, and lookup strategies.
+
 **`utils_dictionary.py`** provides language-specific loaders:
 - **CedictLoader** — Chinese (CC-CEDICT)
 - **EdictLoader** — Japanese (JMdict/EDICT)

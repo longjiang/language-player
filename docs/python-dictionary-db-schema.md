@@ -1,0 +1,388 @@
+# Python Dictionary Database Schema
+
+> **Source**: `zerotohero-python-server/import_dict_to_sqlite.py`
+> **Database**: `data/dictionaries.db` (SQLite, WAL mode, 64 MB cache)
+> **Data sources**: `data/dictionaries/` and `data/wiktionary-csv/`
+
+---
+
+## Overview
+
+The Python backend uses a single SQLite database (`data/dictionaries.db`) for all dictionary lookups. It is built by `import_dict_to_sqlite.py` from raw CSV files and is queried by language-specific loaders (`utils_dictionary.py`) at `POST /dictionary/lookup` time.
+
+The database contains:
+- **5 dedicated dictionary tables** — one per curated dictionary source (cedict, cccanto, edict, kengdic, klingonska)
+- **1 wiktionary table** — catch-all for ~800 languages, single table with `lang_code` column
+- **1 enrichment table** — Open Russian with stress marks and IPA
+- **1 HSK curriculum table** — textbook coverage for Chinese entries
+- **1 word frequency table** — survives dictionary rebuilds, independent of dictionary data
+
+---
+
+## Table Schemas
+
+### `cedict` — Chinese (HSK CEDICT 2025)
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | TEXT PK | Classic-compatible: `{traditional},{pinyin_with_underscores},{index}` — e.g. `中國,zhōng_guó,0` |
+| `head` | TEXT NOT NULL | Simplified Chinese headword |
+| `alternate` | TEXT | Traditional form (null if same as head) |
+| `pronunciation` | TEXT | Pinyin with tone marks (e.g. `nǐ hǎo`) |
+| `definitions` | TEXT | Pipe-separated English definitions (`\|`) |
+| `part_of_speech` | TEXT | (null — reserved for future HSK 3.0 POS data) |
+| `level` | TEXT | Comma-separated scale:level pairs — e.g. `hsk_2025:3,hsk_2010:4` |
+| `frequency` | REAL | (null — migrated to `word_frequency` table) |
+| `classifier` | TEXT | JSON array of `MeasureWord` objects — see [Classifier Format](#classifier-format) |
+| `pinyin_no_tone` | TEXT | Tone-stripped pinyin for search — e.g. `chi fan` ← `chī fàn` |
+| `pinyin_search` | TEXT | Lowercase, no spaces — e.g. `chifan` |
+
+**Sources merged**: CC-CEDICT raw (`cedict_ts_utf8_mdbg.txt`) + HSK 3.0 (2025 standard) + HSK 2.0 (2010 standard, 5000 words) + HSK Standard Course textbook (Z2H)
+
+**ID format**: `{traditional},{tone_marked_pinyin_with_underscores},{index}` — e.g. `中國,zhōng_guó,0`. Duplicate traditional+pinyin entries get incrementing indices. Pinyin is converted from CC-CEDICT's numeric format (`zhong1 guo2` → `zhōng guó`) via `_numeric_pinyin_to_tone_marks()`.
+
+**Level resolution priority**:
+1. HSK 3.0 (2025) — `hsk_2025:N`
+2. HSK 2.0 (2010) — `hsk_2010:N`
+3. HSK Standard Course textbook — book number as `hsk_2010:N` fallback
+
+**Classifier extraction**: Standalone `/CL:本[ben3],冊|册[ce4]/` and inline `(CL:隻|只[zhi1])` tags are parsed from raw CC-CEDICT definitions and stored as JSON. See [Classifier Format](#classifier-format).
+
+---
+
+### `hsk_curriculum` — HSK Textbook Coverage
+
+| Column | Type | Description |
+|---|---|---|
+| `entry_id` | TEXT PK | FK → `cedict.id` |
+| `book` | TEXT | Textbook book number (1–6) |
+| `lesson` | TEXT | Lesson number within book |
+| `dialog` | TEXT | Dialog number within lesson |
+| `example` | TEXT | Example sentence from textbook |
+| `exampleTranslation` | TEXT | English translation of example |
+
+**Source**: `hsk_standard_course.csv` (HSK Standard Course, Jiang Liping 2014)
+
+---
+
+### `cccanto` — Cantonese (CC-Canto 2021)
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | TEXT PK | From source CSV |
+| `head` | TEXT NOT NULL | Traditional Chinese headword |
+| `alternate` | TEXT | Simplified form |
+| `pronunciation` | TEXT | Jyutping with tone numbers (e.g. `jat1 gin6`) |
+| `definitions` | TEXT | Pipe-separated English definitions |
+| `part_of_speech` | TEXT | POS |
+| `level` | TEXT | CEFR/HSK level |
+| `frequency` | REAL | (null — in `word_frequency` table) |
+| `mandarin_pinyin` | TEXT | Cross-reference: Mandarin reading |
+| `jyutping_no_tone` | TEXT | Tone numbers removed — e.g. `jat gin` |
+| `jyutping_search` | TEXT | Lowercase, no spaces — e.g. `jatgin` |
+
+**Source**: `cccanto_webdist.csv`
+
+---
+
+### `edict` — Japanese (EDICT 2019)
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | TEXT PK | From source CSV |
+| `head` | TEXT NOT NULL | Kanji form (e.g. `食べる`) |
+| `alternate` | TEXT | Kana reading (e.g. `たべる`) |
+| `pronunciation` | TEXT | Kana reading |
+| `definitions` | TEXT | Pipe-separated English definitions |
+| `part_of_speech` | TEXT | EDICT POS code (e.g. `v5k`, `adj-i`) |
+| `level` | TEXT | JLPT level |
+| `frequency` | REAL | Word frequency score (from source CSV) |
+| `pitch_accent` | TEXT | Pitch accent pattern (number or pattern string) |
+
+**Source**: `edict_normalized.csv`
+
+---
+
+### `kengdic` — Korean (kengdic 2011)
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | TEXT PK | From source CSV |
+| `head` | TEXT NOT NULL | Hangul (e.g. `먹다`) |
+| `alternate` | TEXT | Hanja form |
+| `pronunciation` | TEXT | Romanization |
+| `definitions` | TEXT | Pipe-separated English definitions |
+| `part_of_speech` | TEXT | POS |
+| `level` | TEXT | TOPIK/CEFR level |
+| `frequency` | REAL | Word frequency |
+| `roman_search` | TEXT | Lowercase, no spaces — e.g. `meokda` |
+
+**Source**: `kengdic_2011.csv`
+
+---
+
+### `klingonska` — Klingon (klingonska.org 2019)
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | TEXT PK | From source CSV |
+| `head` | TEXT NOT NULL | Klingon word |
+| `alternate` | TEXT | Alternate form |
+| `pronunciation` | TEXT | Pronunciation guide |
+| `definitions` | TEXT | Pipe-separated English definitions |
+| `part_of_speech` | TEXT | POS |
+| `level` | TEXT | Level |
+| `frequency` | REAL | Frequency |
+
+**Source**: `klingonska.csv`
+
+---
+
+### `wiktionary` — All Other Languages
+
+**Composite PK**: `(lang_code, id)`
+
+| Column | Type | Description |
+|---|---|---|
+| `lang_code` | TEXT PK | ISO 639-3 code (e.g. `deu`, `spa`, `fra`) |
+| `id` | TEXT PK | **Classic-compatible djb2 hash**: `w{djb2(head + first_def)}` |
+| `head` | TEXT NOT NULL | Headword |
+| `alternate` | TEXT | (null — not in raw CSV) |
+| `pronunciation` | TEXT | IPA or romanization |
+| `definitions` | TEXT | Pipe-separated English definitions |
+| `part_of_speech` | TEXT | POS (mapped from CSV `pos` column) |
+| `level` | TEXT | CEFR level |
+| `frequency` | REAL | Word frequency |
+| `han` | TEXT | Han script form (for CJK languages) |
+| `audio` | TEXT | Audio file reference |
+| `gender` | TEXT | Grammatical gender (for European languages) |
+
+**Source**: ~800 files in `data/dictionaries/wiktionary-csv/{l2}-eng.csv.txt`. Only English L1 files are imported.
+
+**ID generation**: Uses the **djb2 hash** algorithm identical to Classic's `hash-string.min.js`:
+```python
+h = 5381
+for ch in reversed(s):
+    h = ((h * 33) ^ ord(ch)) & 0xFFFFFFFF
+return f"w{h}"
+```
+This ensures saved-word IDs are cross-platform compatible between Classic, Next.js, and GO.
+
+---
+
+### `open_russian` — Russian Enrichment
+
+| Column | Type | Description |
+|---|---|---|
+| `head` | TEXT PK | Cyrillic headword |
+| `accented` | TEXT | Apostrophe-marked stress (e.g. `э'то`) |
+| `stressed` | TEXT | **Unicode combining acute** — computed from `accented` by `_accented_to_stressed()` (e.g. `э́то`) |
+| `part_of_speech` | TEXT | POS |
+| `level` | TEXT | CEFR level |
+| `definitions` | TEXT | Pipe-separated English definitions |
+| `pronunciation` | TEXT | IPA |
+
+**Source**: `open_russian.csv.txt` (Badestrand/russian-dictionary 2019)
+
+**Stress conversion**: Apostrophe-after-vowel notation (`э'то`) is converted to Unicode combining acute accent (`э́то`, U+0301) for display.
+
+---
+
+### `word_frequency` — Frequency Data
+
+**Composite PK**: `(lang_code, head)` — **survives dictionary rebuilds**
+
+| Column | Type | Description |
+|---|---|---|
+| `lang_code` | TEXT PK | ISO 639-1 code |
+| `head` | TEXT PK | Lemma/headword |
+| `frequency` | REAL NOT NULL | Zipf frequency score |
+
+**Source**: `data/frequency-lists/zipf_frequency_list_{lang}.csv` — 40 languages supported. Uses `INSERT OR REPLACE` so individual languages can be re-imported without affecting others.
+
+**Language table**:
+| ar | bg | ca | zh | hr | cs | da | nl | en | fi |
+| fr | de | el | he | hi | hu | is | id | it | ja |
+| ko | lv | lt | mk | ms | nb | fa | pl | pt | ro |
+| ru | sk | sl | es | sv | ta | tr | uk | ur | vi |
+
+**Dictionary → frequency mapping**:
+| Dictionary Table | Frequency Lang |
+|---|---|
+| `cedict` | `zh` |
+| `edict` | `ja` |
+| `kengdic` | `ko` |
+
+To map Wiktionary languages (ISO 639-3) to frequency (ISO 639-1), use `_ISO3_TO_ISO1` (see code).
+
+---
+
+## Indexes
+
+| Index | Table | Column(s) | Purpose |
+|---|---|---|---|
+| `idx_cedict_head` | cedict | `head` | Exact headword lookup |
+| `idx_cedict_pinyin_search` | cedict | `pinyin_search` | Pinyin search (no tones) |
+| `idx_cccanto_head` | cccanto | `head` | Exact headword lookup |
+| `idx_cccanto_alternate` | cccanto | `alternate` | Simplified form lookup |
+| `idx_cccanto_jyutping_search` | cccanto | `jyutping_search` | Jyutping search (no tones) |
+| `idx_edict_head` | edict | `head` | Exact headword lookup |
+| `idx_edict_alternate` | edict | `alternate` | Kana reading lookup |
+| `idx_edict_pronunciation` | edict | `pronunciation` | Romaji/kana lookup |
+| `idx_kengdic_head` | kengdic | `head` | Exact headword lookup |
+| `idx_kengdic_alternate` | kengdic | `alternate` | Hanja lookup |
+| `idx_kengdic_roman_search` | kengdic | `roman_search` | Romanization search |
+| `idx_klingonska_head` | klingonska | `head` | Exact headword lookup |
+| `idx_wiktionary_head` | wiktionary | `head` | Headword lookup within a language |
+| `idx_wiktionary_lang_code` | wiktionary | `lang_code` | Language filter |
+| `idx_wiktionary_lookup` | wiktionary | `(lang_code, head)` | Composite lookup |
+| `idx_hsk_curriculum_entry` | hsk_curriculum | `entry_id` | FK join to cedict |
+| `idx_word_frequency_lookup` | word_frequency | `(lang_code, head)` | Composite lookup |
+
+---
+
+## ID Formats — Cross-Platform Compatibility
+
+All dictionary IDs are designed to be stable across Classic, Next.js, and GO clients. This is critical for saved-word references.
+
+| Dictionary | ID Format | Example |
+|---|---|---|
+| **cedict** | `{traditional},{tone_marked_pinyin},{index}` | `中國,zhōng_guó,0` |
+| **cccanto** | From source CSV | (per-file) |
+| **edict** | From source CSV | (per-file) |
+| **kengdic** | From source CSV | (per-file) |
+| **klingonska** | From source CSV | (per-file) |
+| **wiktionary** | `w{djb2(head + first_definition)}` | `w123456789` |
+
+The **djb2 hash** for Wiktionary is replicated from Classic's `hash-string.min.js`:
+```javascript
+// Classic /hash-string.min.js
+function djb2(str) {
+  var h = 5381;
+  for (var i = str.length - 1; i >= 0; i--) {
+    h = ((h * 33) ^ str.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+```
+
+Python equivalent in `import_dict_to_sqlite.py`:
+```python
+def _djb2(s: str) -> int:
+    h = 5381
+    for ch in reversed(s):
+        h = ((h * 33) ^ ord(ch)) & 0xFFFFFFFF
+    return h
+```
+
+---
+
+## Classifier Format
+
+Classifiers (measure words, counters) are stored as JSON arrays in the `cedict.classifier` column.
+
+**Extraction**: Parsed from CC-CEDICT's raw definition format:
+- Standalone: `/CL:本[ben3],冊|册[ce4]/` → separate `CL:` definition part
+- Inline: `cat (CL:隻|只[zhi1])` → embedded within a definition
+
+**JSON shape**:
+```json
+[
+  {
+    "kind": "measure_word",
+    "traditional": "本",
+    "simplified": "本",
+    "reading": "ben3"
+  }
+]
+```
+
+**Format**: `{traditional}|{simplified}[{pinyin_with_tone_number}]` — the `|` separates traditional from simplified when they differ.
+
+---
+
+## Definition Format
+
+All dictionary tables store definitions as **pipe-separated strings** (`|`), not JSON arrays. This is for storage efficiency in SQLite. The `/dictionary/lookup` endpoint splits them client-side.
+
+Example:
+```
+"to eat|to consume|to have a meal"
+```
+
+---
+
+## Pinyin Storage
+
+Chinese (cedict) pinyin is stored in **three forms**:
+
+| Column | Format | Example | Use |
+|---|---|---|---|
+| `pronunciation` | Tone-marked | `nǐ hǎo` | Display |
+| `pinyin_no_tone` | Tone-stripped | `ni hao` | Direct comparison |
+| `pinyin_search` | Lowercase no spaces | `nihao` | Search index |
+
+**Tone mark conversion**: CC-CEDICT uses numeric tones (`ni3 hao3`). `_numeric_pinyin_to_tone_marks()` converts these to Unicode tone marks (`nǐ hǎo`).
+
+**Tone removal**: `remove_tones()` strips tone marks for search. `remove_jyutping_tones()` strips numeric tones from Jyutping.
+
+---
+
+## Lookup Strategy (per loader)
+
+Each loader in `utils_dictionary.py` queries its table with a priority chain:
+
+1. **Exact match** by head (primary form — simplified for zh, kanji for ja, hangul for ko)
+2. **Exact match** by alternate (traditional for zh, kana for ja, hanja for ko)
+3. **Exact match** by pronunciation (pinyin for zh, romaji for ja, romanization for ko)
+4. **Fuzzy match** — substring for roman/pinyin ≥ 3 characters
+
+The `/dictionary/lookup` endpoint then:
+- If L1 ≠ English → LLM translate definitions to L1
+- If no match → LLM generate entry (`match_type: "llm"`)
+
+---
+
+## Database Maintenance
+
+**Rebuild (drops and recreates dictionary tables)**:
+```bash
+python import_dict_to_sqlite.py --all
+```
+
+**Selective rebuild**:
+```bash
+python import_dict_to_sqlite.py --cedict --edict
+```
+
+**Frequency-only update (does not touch dictionary tables)**:
+```bash
+python import_dict_to_sqlite.py --freq=ja,zh,ko
+```
+
+**Pragmas used**:
+- `WAL` journal mode — better concurrent read performance
+- `NORMAL` synchronous — good balance of safety and speed
+- `64 MB` cache — reduces disk I/O for large lookups
+- Foreign keys OFF — not needed for this schema
+
+---
+
+## Relevance to ADR-0008
+
+The `/dictionary/download` endpoint (proposed in ADR-0008) needs to:
+1. Query this database for a specific language
+2. Filter by frequency (join with `word_frequency` table)
+3. Return pre-normalized `DictionaryEntry[]` JSON
+
+For dedicated dictionaries (cedict, edict, kengdic, cccanto, klingonska), queries are single-table SELECTs. For Wiktionary languages, queries filter by `lang_code`.
+
+**Available phonetic data for `formatPronunciation()`**:
+| Language | Source | Phonetic Field |
+|---|---|---|
+| zh | cedict | `pronunciation` (pinyin with tone marks) |
+| ja | edict | `pronunciation` (kana), `pitch_accent` |
+| ko | kengdic | `pronunciation` (romanization) |
+| yue | cccanto | `pronunciation` (jyutping with tones) |
+| ru | open_russian | `stressed` (Unicode acute), `pronunciation` (IPA) |
+| other | wiktionary | `pronunciation` (IPA or romanization), `gender` |
