@@ -42,12 +42,14 @@ async function resolveLocale(): Promise<string> {
   return SUPPORTED_L1S.includes(rawLocale as any) ? rawLocale : 'en';
 }
 
+
 export default getRequestConfig(async (): Promise<any> => {
   const locale = await resolveLocale();
 
-  const enMessages = (await import(`../messages/en.json`)).default as Messages;
+  // Load from shared packages/shared/locales/ directory
+  const enMessages = (await import(`../../../packages/shared/locales/en.json`)).default as Messages;
   if (locale === 'en') return { locale, messages: enMessages };
 
-  const localeMessages = (await import(`../messages/${locale}.json`)).default as Messages;
+  const localeMessages = (await import(`../../../packages/shared/locales/${locale}.json`)).default as Messages;
   return { locale, messages: deepMerge(enMessages, localeMessages) };
 });

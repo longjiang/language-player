@@ -7,33 +7,44 @@
  *   node scripts/sync-translations.mjs json-to-csv   # all locale JSONs → CSV
  */
 
-import { readFileSync, writeFileSync, readdirSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const MESSAGES_DIR = resolve(ROOT, 'apps', 'web', 'messages');
+const DEFAULT_OUT_DIR = resolve(ROOT, 'apps', 'web', 'messages');
 const CSV_PATH = resolve(ROOT, 'translations.csv');
 
 // ── Locale discovery ────────────────────────
 
 const PRIORITY = ['en', 'zh-Hans', 'zh-Hant'];
-const LOCALES = (() => {
-  const all = readdirSync(MESSAGES_DIR)
+
+function getLocales(messagesDir) {
+  const all = readdirSync(messagesDir)
     .filter(f => f.endsWith('.json'))
     .map(f => f.replace('.json', ''))
     .sort();
   return [...PRIORITY.filter(l => all.includes(l)), ...all.filter(l => !PRIORITY.includes(l))];
+}
+
+// Default to apps/web/messages for json-to-csv
+const LOCALES = (() => {
+  try {
+    return getLocales(DEFAULT_OUT_DIR);
+  } catch {
+    return PRIORITY; // fallback when messages dir doesn't exist
+  }
 })();
 
 // ── Helpers ─────────────────────────────────
 
-function loadLocales() {
+function loadLocales(dir) {
   /** @type {Record<string, Record<string, unknown>>} */
   const data = {};
-  for (const loc of LOCALES) {
-    data[loc] = JSON.parse(readFileSync(resolve(MESSAGES_DIR, `${loc}.json`), 'utf-8'));
+  const locales = getLocales(dir);
+  for (const loc of locales) {
+    data[loc] = JSON.parse(readFileSync(resolve(dir, `${loc}.json`), 'utf-8'));
   }
   return data;
 }
@@ -85,7 +96,7 @@ function csvParseLine(line) {
 // ── Commands ────────────────────────────────
 
 function jsonToCsv() {
-  const data = loadLocales();
+  const data = loadLocales(DEFAULT_OUT_DIR);
   const allKeys = flattenKeys(data);
 
   const lines = [];
@@ -116,7 +127,18 @@ function jsonToCsv() {
   console.log(`✓ ${CSV_PATH}: ${allKeys.length} keys × ${LOCALES.length} locales`);
 }
 
-function csvToJson() {
+function csvToJson(outDir) {
+  const MESSAGES_DIR = outDir || DEFAULT_OUT_DIR;
+
+  // Discover locales: from existing JSONs if they exist, otherwise from CSV header
+  let locales;
+  try {
+    locales = getLocales(MESSAGES_DIR);
+    if (locales.length === 0) throw new Error('empty');
+  } catch {
+    locales = LOCALES; // fallback to known locales
+  }
+
   let csvText;
   try {
     csvText = readFileSync(CSV_PATH, 'utf-8');
@@ -133,7 +155,7 @@ function csvToJson() {
   /** @type {Map<number, string>} */
   const colMap = new Map();
   for (let i = 0; i < csvLocales.length; i++) {
-    if (LOCALES.includes(csvLocales[i])) {
+    if (locales.includes(csvLocales[i])) {
       colMap.set(i, csvLocales[i]);
     }
   }
@@ -141,7 +163,7 @@ function csvToJson() {
   // Initialize data
   /** @type {Record<string, Record<string, unknown>>} */
   const data = {};
-  for (const loc of LOCALES) data[loc] = {};
+  for (const loc of locales) data[loc] = {};
 
   for (let lineIdx = 1; lineIdx < lines.length; lineIdx++) {
     const row = csvParseLine(lines[lineIdx]);
@@ -170,11 +192,14 @@ function csvToJson() {
     }
   }
 
+  // Ensure output directory exists
+  try { mkdirSync(MESSAGES_DIR, { recursive: true }); } catch { /* exists */ }
+
   // Sort keys and write
-  for (const loc of LOCALES) {
+  for (const loc of locales) {
     // Sort top-level keys
     const sorted = {};
-    for (const cat of Object.keys(data[loc]).sort()) {
+    for (const cat of Object.keys(data[loc] || {}).sort()) {
       const val = data[loc][cat];
       if (val && typeof val === 'object' && !Array.isArray(val)) {
         // Sort sub-keys
@@ -195,15 +220,19 @@ function csvToJson() {
     );
   }
 
-  console.log(`✓ ${CSV_PATH} → ${LOCALES.length} locale JSONs written`);
+  console.log(`✓ ${CSV_PATH} → ${locales.length} locale JSONs written to ${MESSAGES_DIR}`);
 }
 
 // ── CLI ─────────────────────────────────────
 
-const cmd = process.argv[2];
+const args = process.argv.slice(2);
+const cmd = args[0];
+const outIdx = args.indexOf('--out');
+const outDir = outIdx !== -1 ? resolve(ROOT, args[outIdx + 1]) : null;
+
 if (cmd === 'json-to-csv') jsonToCsv();
-else if (cmd === 'csv-to-json') csvToJson();
+else if (cmd === 'csv-to-json') csvToJson(outDir);
 else {
-  console.log('Usage: node scripts/sync-translations.mjs <json-to-csv|csv-to-json>');
+  console.log('Usage: node scripts/sync-translations.mjs <json-to-csv|csv-to-json> [--out <dir>]');
   process.exit(1);
 }
