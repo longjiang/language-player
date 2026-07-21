@@ -242,82 +242,32 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
         return true; // async
     } else if (request.action === "netflixSeek") {
-        // Seek the Netflix player by simulating a click on the progress bar.
-        // Keyboard simulation (ArrowRight x N) is imprecise (10s granularity).
-        // Progress bar click gives exact seeking, matching what the user does
-        // visually when they click the scrubber.
+        // Seek the Netflix player using the exact approach from Language Reactor v5.1.8.
+        // We access api.videoPlayer first, then call session/player methods on it.
         const tabId = sender.tab?.id;
         if (!tabId) { sendResponse({ success: false, error: 'No tab' }); return; }
         chrome.scripting.executeScript({
             target: { tabId },
             func: (timeSec) => {
                 try {
-                    const video = document.querySelector('video');
-                    if (!video || !video.duration) return 'no-video';
+                    // Language Reactor pattern: access .videoPlayer on the API object
+                    const api = window.netflix?.appContext?.state?.playerApp?.getAPI?.();
+                    if (!api?.videoPlayer) return 'no-api';
 
-                    // Try Netflix player API first (cleanest)
-                    try {
-                        const nfx = window.netflix;
-                        if (nfx?.appContext?.state?.playerApp?.getAPI) {
-                            const api = nfx.appContext.state.playerApp.getAPI();
-                            const sessions = api.getAllVideoSessionIds?.();
-                            if (sessions?.length > 0) {
-                                const player = api.getVideoPlayerBySessionId?.(sessions[0]);
-                                if (player?.seek) {
-                                    player.seek(timeSec * 1000);
-                                    return 'netflix-api';
-                                }
-                            }
-                        }
-                    } catch (e) {}
+                    const vp = api.videoPlayer;
+                    const sessions = vp.getAllPlayerSessionIds?.();
+                    if (!sessions) return 'no-sessions';
 
-                    // Strategy 2: Click on Netflix's progress bar at the exact position.
-                    // Netflix's scrubber bar — try multiple known selectors.
-                    var scrubber = document.querySelector(
-                        '.watch-video--progress-bar, ' +
-                        '[data-uia="timeline"], ' +
-                        '[data-uia="scrubber"], ' +
-                        '.PlayerControlsNeo__progress, ' +
-                        'input[type="range"][aria-label*="timeline"], ' +
-                        '.timeline-bar, ' +
-                        '[class*="progress"][class*="bar"], ' +
-                        '[role="slider"]'
-                    );
+                    // Filter for "watch" sessions (Netflix uses "watch-<id>" format)
+                    const watch = sessions.filter(s => s.startsWith('watch'));
+                    if (!watch[0]) return 'no-watch-session';
 
-                    if (scrubber) {
-                        var rect = scrubber.getBoundingClientRect();
-                        var ratio = Math.min(Math.max(timeSec / video.duration, 0), 1);
-                        var clickX = rect.left + rect.width * ratio;
-                        var clickY = rect.top + rect.height / 2;
+                    const player = vp.getVideoPlayerBySessionId?.(watch[0]);
+                    if (!player?.seek) return 'no-seek-method';
 
-                        // Dispatch a full click sequence at the calculated position
-                        var opts = {
-                            clientX: clickX, clientY: clickY,
-                            screenX: clickX, screenY: clickY,
-                            bubbles: true, cancelable: true, composed: true,
-                            view: window
-                        };
-
-                        scrubber.dispatchEvent(new MouseEvent('mousedown', opts));
-                        scrubber.dispatchEvent(new MouseEvent('mouseup', opts));
-                        scrubber.dispatchEvent(new MouseEvent('click', opts));
-
-                        // Also try on the parent (Netflix sometimes wraps it)
-                        if (scrubber.parentElement) {
-                            scrubber.parentElement.dispatchEvent(new MouseEvent('mousedown', opts));
-                            scrubber.parentElement.dispatchEvent(new MouseEvent('mouseup', opts));
-                        }
-
-                        return 'progress-bar(' + (ratio * 100).toFixed(0) + '%)';
-                    }
-
-                    // Strategy 3: Last resort — direct currentTime for small jumps
-                    if (Math.abs(video.currentTime - timeSec) < 30) {
-                        video.currentTime = timeSec;
-                        return 'direct-currentTime';
-                    }
-
-                    return 'no-scrubber-found';
+                    // Netflix player seek expects milliseconds
+                    player.seek(timeSec * 1000);
+                    return 'netflix-videoplayer-seek';
                 } catch (e) {
                     return 'error: ' + e.message;
                 }
