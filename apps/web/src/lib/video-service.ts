@@ -43,7 +43,7 @@ export async function getRecommendedVideos(
     if (excludeIds && excludeIds.length > 0) params.set('exclude_ids', excludeIds.join(','));
 
     const res = await fetch(`${PYTHON_URL}/recommend-videos?${params}`, {
-      next: { revalidate: 300 }, // 5 min — recommendations don't change rapidly
+      cache: 'no-store', // per-user — must not be cached globally
     });
 
     if (!res.ok) {
