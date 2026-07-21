@@ -1207,6 +1207,15 @@ async function init() {
 
   detectL2Code();
 
+  // Netflix: inject the JSON.parse monkeypatch IMMEDIATELY, before waiting
+  // for the player. Netflix loads its playback manifest early in the page
+  // lifecycle — if we wait for the player first, the manifest JSON has
+  // already been parsed and our monkeypatch misses it.
+  if (isNetflix) {
+    await loadSavedL2Preference();
+    setupNetflixInterceptor();
+  }
+
   const playerEl = await waitForPlayer();
   console.log('[LanguagePlayer] Player found');
 
@@ -1222,11 +1231,8 @@ async function init() {
       attachTimeTracking();
     }, 2000);
   } else if (isNetflix) {
-    // Netflix: subs come via JSON.parse monkeypatch
-    // Load saved L2 preference first so we pick the right track
-    loadSavedL2Preference().then(() => {
-      setupNetflixInterceptor();
-    });
+    // Netflix: interceptor already set up before waitForPlayer().
+    // Just attach time tracking and start watching for video element changes.
     attachTimeTracking();
     setInterval(() => {
       attachTimeTracking();
