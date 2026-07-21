@@ -977,120 +977,38 @@ function setupNetflixInterceptor() {
 
 /** Netflix subtitle tracks cache (all available tracks from manifest) */
 let cachedNetflixTracks = {};
-let netflixObservingSelection = false;
 
 /**
- * Detect which subtitle language is currently selected in Netflix's own UI.
- * Netflix's audio/subtitle selector uses various DOM patterns over the years.
- * We try multiple strategies and return the language code (e.g. 'ja', 'en').
+ * Probe the MAIN world to detect which subtitle track Netflix is currently
+ * showing. Netflix populates <video>.textTracks even though they render
+ * subtitles in their own overlay — the active track has mode='showing'.
+ * Returns the language code (e.g. 'ja') or null.
  */
-function detectNetflixActiveSubtitle() {
-  // Strategy 1: Look for the subtitle button's label text.
-  // Netflix often shows the current language next to the subtitle icon.
-  const subLabels = document.querySelectorAll(
-    '[data-uia="selector-audio-subtitle"] span, ' +
-    '.audio-subtitle-controller span, ' +
-    'button[aria-label*="Subtitle"] span, ' +
-    'button[aria-label*="subtitle"] span'
-  );
-  for (const el of subLabels) {
-    const text = (el.textContent || '').trim().toLowerCase();
-    const code = languageNameToCode(text);
-    if (code) return code;
-  }
-
-  // Strategy 2: Look inside the open audio/subtitle menu for the checked item.
-  // Selected language typically has aria-checked="true" or a special class.
-  const checkedItems = document.querySelectorAll(
-    '[data-uia="menu-item"][aria-checked="true"], ' +
-    'li[aria-checked="true"], ' +
-    '.track-list li.selected, ' +
-    '[role="menuitemradio"][aria-checked="true"]'
-  );
-  for (const el of checkedItems) {
-    const text = (el.textContent || '').trim().toLowerCase();
-    const code = languageNameToCode(text);
-    if (code) return code;
-  }
-
-  return null;
+async function detectNetflixActiveSubtitle() {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({
+      action: 'netflixProbeActiveTrack',
+    }, (res) => {
+      resolve(res?.language || null);
+    });
+  });
 }
 
-/** Map common language display names to ISO 639-1 codes */
-function languageNameToCode(name) {
-  const map = {
-    'japanese': 'ja', '日本語': 'ja', 'japonais': 'ja', 'japanisch': 'ja', 'japonés': 'ja',
-    'english': 'en', 'english [original]': 'en', 'anglais': 'en', 'englisch': 'en', 'inglés': 'en',
-    'chinese': 'zh', '中文': 'zh', 'chinois': 'zh', 'chinesisch': 'zh',
-    'korean': 'ko', '한국어': 'ko', 'coréen': 'ko', 'koreanisch': 'ko',
-    'spanish': 'es', 'español': 'es', 'espagnol': 'es', 'spanisch': 'es',
-    'french': 'fr', 'français': 'fr', 'französisch': 'fr',
-    'german': 'de', 'deutsch': 'de', 'allemand': 'de',
-    'italian': 'it', 'italiano': 'it', 'italien': 'it',
-    'portuguese': 'pt', 'português': 'pt', 'portugiesisch': 'pt',
-    'russian': 'ru', 'русский': 'ru', 'russe': 'ru',
-    'arabic': 'ar', 'العربية': 'ar', 'arabe': 'ar',
-    'dutch': 'nl', 'nederlands': 'nl', 'néerlandais': 'nl',
-    'polish': 'pl', 'polski': 'pl', 'polonais': 'pl',
-    'turkish': 'tr', 'türkçe': 'tr', 'turc': 'tr',
-    'thai': 'th', 'ไทย': 'th', 'thaïlandais': 'th',
-    'vietnamese': 'vi', 'tiếng việt': 'vi', 'vietnamien': 'vi',
-    'indonesian': 'id', 'bahasa indonesia': 'id', 'indonésien': 'id',
-    'hindi': 'hi', 'हिन्दी': 'hi',
-    'swedish': 'sv', 'svenska': 'sv', 'suédois': 'sv',
-    'norwegian': 'no', 'norsk': 'no', 'norvégien': 'no',
-    'finnish': 'fi', 'suomi': 'fi', 'finnois': 'fi',
-    'danish': 'da', 'dansk': 'da', 'danois': 'da',
-    'romanian': 'ro', 'română': 'ro', 'roumain': 'ro',
-    'hungarian': 'hu', 'magyar': 'hu', 'hongrois': 'hu',
-    'croatian': 'hr', 'hrvatski': 'hr', 'croate': 'hr',
-    'serbian': 'sr', 'српски': 'sr', 'serbe': 'sr',
-    'greek': 'el', 'ελληνικά': 'el', 'grec': 'el',
-    'catalan': 'ca', 'català': 'ca',
-    'swahili': 'sw', 'kiswahili': 'sw',
-    'afrikaans': 'af',
-    'irish': 'ga', 'gaeilge': 'ga',
-    'hebrew': 'he', 'עברית': 'he', 'hébreu': 'he',
-    'czech': 'cs', 'čeština': 'cs', 'tchèque': 'cs',
-    'ukrainian': 'uk', 'українська': 'uk', 'ukrainien': 'uk',
-    'filipino': 'fil', 'tagalog': 'tl',
-  };
-  if (map[name]) return map[name];
-
-  // Try partial match
-  for (const [key, code] of Object.entries(map)) {
-    if (name.includes(key) || key.includes(name)) return code;
-  }
-  return null;
-}
-
-/** Start observing Netflix's DOM for subtitle selection changes */
+/**
+ * Start watching for Netflix subtitle changes. Netflix recreates text tracks
+ * when the user changes subtitles, so we poll video.textTracks.
+ */
 function observeNetflixSubtitleChanges() {
-  if (netflixObservingSelection) return;
-  netflixObservingSelection = true;
-
   let lastActiveLang = null;
 
-  const checkAndReload = () => {
-    const activeLang = detectNetflixActiveSubtitle();
-    if (activeLang && activeLang !== lastActiveLang) {
+  setInterval(async () => {
+    const activeLang = await detectNetflixActiveSubtitle();
+    if (activeLang && activeLang !== lastActiveLang && cachedNetflixTracks[activeLang]) {
       lastActiveLang = activeLang;
-      console.log('[LanguagePlayer] Netflix subtitle selection changed to:', activeLang);
-      loadNetflixTrackForLanguage(activeLang);
+      console.log('[LanguagePlayer] Netflix subtitle changed to:', activeLang);
+      await loadNetflixTrackForLanguage(activeLang);
     }
-  };
-
-  // Check periodically (Netflix menu opens/closes, DOM changes)
-  const observer = new MutationObserver(() => {
-    checkAndReload();
-  });
-  observer.observe(document.body, { childList: true, subtree: true, attributes: true });
-
-  // Also poll for cases where menu stays open but selection changes
-  setInterval(checkAndReload, 3000);
-
-  // Initial check
-  checkAndReload();
+  }, 3000);
 }
 
 /** Load the Netflix subtitle track matching a language code from cache */
@@ -1098,8 +1016,12 @@ async function loadNetflixTrackForLanguage(langCode) {
   if (!langCode || Object.keys(cachedNetflixTracks).length === 0) return;
 
   const langKeys = Object.keys(cachedNetflixTracks);
+  // Find cached track: exact languageCode match > prefix match
   const bestKey = langKeys.find(k => cachedNetflixTracks[k].languageCode === langCode)
-    || langKeys.find(k => cachedNetflixTracks[k].languageCode?.startsWith?.(langCode?.split('-')[0]))
+    || langKeys.find(k => {
+      const cl = cachedNetflixTracks[k].languageCode;
+      return cl && langCode && (cl.startsWith(langCode) || langCode.startsWith(cl));
+    })
     || null;
 
   if (!bestKey) {
@@ -1165,14 +1087,14 @@ async function handleNetflixSubs(tracks) {
   console.log('[LanguagePlayer] Netflix subtitle tracks:',
     Object.keys(subs).map(k => `${k} (${subs[k].languageCode})`).join(', '));
 
-  // Detect which subtitle Netflix is currently showing (user's Netflix UI choice)
-  const activeLang = detectNetflixActiveSubtitle();
-  console.log('[LanguagePlayer] Detected Netflix active subtitle:', activeLang || '(none found, using default)');
+  // Detect which subtitle Netflix is currently showing via video.textTracks
+  const activeLang = await detectNetflixActiveSubtitle();
+  console.log('[LanguagePlayer] Detected Netflix active subtitle:', activeLang || '(none found)');
 
   if (activeLang) {
     await loadNetflixTrackForLanguage(activeLang);
   } else {
-    // Fallback: no detection possible, try saved preference then first track
+    // Fallback: save preference then first available
     const userL2 = l2SelectEl?.value || detectedL2Code;
     const langKeys = Object.keys(subs);
     const bestKey = langKeys.find(k => subs[k].languageCode === userL2)

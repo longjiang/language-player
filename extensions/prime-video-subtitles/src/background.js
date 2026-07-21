@@ -243,15 +243,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true; // async
     } else if (request.action === "netflixSeek") {
         // Seek the Netflix player from the MAIN world.
-        // Direct video.currentTime manipulation triggers Netflix error M7375
-        // (DRM integrity check). Must use Netflix's own player API instead.
+        // Tries Netflix player API first, falls back to keyboard simulation.
         const tabId = sender.tab?.id;
         if (!tabId) { sendResponse({ success: false, error: 'No tab' }); return; }
         chrome.scripting.executeScript({
             target: { tabId },
             func: (timeSec) => {
+                // Strategy 1: Netflix internal player API
                 try {
-                    // Try Netflix's internal player API first
                     const nfx = window.netflix;
                     if (nfx?.appContext?.state?.playerApp?.getAPI) {
                         const api = nfx.appContext.state.playerApp.getAPI();
@@ -264,22 +263,52 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             }
                         }
                     }
-                } catch (e) {
-                    // Netflix API changes frequently; fall through
-                }
+                } catch (e) {}
 
-                // Fallback: try direct video manipulation
+                // Strategy 2: Dispatch keyboard events on the video element.
+                // Netflix handles left/right arrow as 10s skip, space as play/pause.
+                // For arbitrary seeking, jump to beginning first (seek to 0),
+                // then fast-forward with repeated right-arrow events.
                 try {
                     const video = document.querySelector('video');
-                    if (video) {
-                        video.currentTime = timeSec;
+                    if (!video) return 'no-video';
+
+                    // Seek to 0 first via Netflix API, or just start from current position
+                    const currentTime = video.currentTime;
+                    const targetTime = timeSec;
+                    const diff = targetTime - currentTime;
+
+                    if (Math.abs(diff) < 5) {
+                        // Close enough, try direct currentTime
+                        video.currentTime = targetTime;
                         return 'video-currentTime';
                     }
+
+                    // Use repeated arrow key events to approximate the seek.
+                    // Right arrow = +10s, Left arrow = -10s
+                    const key = diff > 0 ? 'ArrowRight' : 'ArrowLeft';
+                    const steps = Math.round(Math.abs(diff) / 10);
+
+                    // Dispatch keydown events rapidly (every 16ms ≈ 60fps)
+                    let dispatched = 0;
+                    const maxSteps = Math.min(steps, 300); // Cap at ~50 minutes of seeking
+                    const interval = setInterval(() => {
+                        if (dispatched >= maxSteps) {
+                            clearInterval(interval);
+                            return;
+                        }
+                        video.dispatchEvent(new KeyboardEvent('keydown', {
+                            key, code: key, keyCode: key === 'ArrowRight' ? 39 : 37,
+                            which: key === 'ArrowRight' ? 39 : 37,
+                            bubbles: true, cancelable: true, composed: true,
+                        }));
+                        dispatched++;
+                    }, 16);
+
+                    return 'keyboard-sim(' + maxSteps + ' steps)';
                 } catch (e) {
                     return 'error: ' + e.message;
                 }
-
-                return 'no-method';
             },
             args: [request.timeSec],
             world: 'MAIN',
@@ -287,6 +316,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ success: true, method: results?.[0]?.result });
         }).catch(err => {
             sendResponse({ success: false, error: err?.message });
+        });
+        return true; // async
+    } else if (request.action === "netflixProbeActiveTrack") {
+        // Probe <video>.textTracks in MAIN world to find the active subtitle language.
+        const tabId = sender.tab?.id;
+        if (!tabId) { sendResponse({ language: null }); return; }
+        chrome.scripting.executeScript({
+            target: { tabId },
+            func: () => {
+                try {
+                    const video = document.querySelector('video');
+                    if (!video || !video.textTracks) return null;
+                    for (let i = 0; i < video.textTracks.length; i++) {
+                        const track = video.textTracks[i];
+                        // Netflix sets mode='showing' on the active subtitle track
+                        if (track.mode === 'showing' && track.language) {
+                            return track.language;
+                        }
+                    }
+                    // Fallback: check for 'hidden' tracks (some Netflix versions)
+                    for (let i = 0; i < video.textTracks.length; i++) {
+                        const track = video.textTracks[i];
+                        if (track.kind === 'subtitles' && track.language) {
+                            return track.language;
+                        }
+                    }
+                } catch (e) {}
+                return null;
+            },
+            world: 'MAIN',
+        }).then(results => {
+            sendResponse({ language: results?.[0]?.result || null });
+        }).catch(() => {
+            sendResponse({ language: null });
         });
         return true; // async
     }
