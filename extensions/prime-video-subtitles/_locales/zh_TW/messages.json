@@ -1,0 +1,126 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "等待字幕…"
+  },
+  "startPlaying": {
+    "message": "開始播放影片。"
+  },
+  "loadingLanguage": {
+    "message": "正在載入 $lang$…",
+    "placeholders": { "lang": { "content": "$1" } }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "已載入 $count$ 條字幕",
+    "placeholders": { "count": { "content": "$1" } }
+  },
+  "failedToLoadSubtitles": {
+    "message": "字幕載入失敗"
+  },
+  "loadingSubtitles": {
+    "message": "正在載入 $lang$ 字幕…",
+    "placeholders": { "lang": { "content": "$1" } }
+  },
+  "closePanel": {
+    "message": "關閉面板"
+  },
+  "learningLanguage": {
+    "message": "學習語言"
+  },
+  "popularLanguages": {
+    "message": "常用"
+  },
+  "allLanguages": {
+    "message": "所有語言"
+  },
+  "translate": {
+    "message": "翻譯"
+  },
+  "showTranslation": {
+    "message": "顯示翻譯 (L1)"
+  },
+  "translating": {
+    "message": "翻譯中… $progress$/$total$",
+    "placeholders": { "progress": { "content": "$1" }, "total": { "content": "$2" } }
+  },
+  "actions": {
+    "message": "操作"
+  },
+  "copy": {
+    "message": "📋 複製"
+  },
+  "speak": {
+    "message": "🔊 朗讀"
+  },
+  "explain": {
+    "message": "🤖 解釋"
+  },
+  "explainTitle": {
+    "message": "🤖 AI 解釋"
+  },
+  "aiThinking": {
+    "message": "🤖 AI 思考中…"
+  },
+  "thinking": {
+    "message": "思考中…"
+  },
+  "save": {
+    "message": "收藏"
+  },
+  "saved": {
+    "message": "已收藏"
+  },
+  "close": {
+    "message": "關閉"
+  },
+  "showTranscript": {
+    "message": "顯示字幕"
+  },
+  "noTranscriptFound": {
+    "message": "未找到字幕"
+  },
+  "extensionDescription": {
+    "message": "互動雙語字幕，支援 Prime Video、YouTube、Netflix、Disney+、Hulu 與 Max。"
+  },
+  "popupLoginPrompt": {
+    "message": "登入以儲存單字並與 Language Player 同步。"
+  },
+  "popupEmailPlaceholder": {
+    "message": "電子郵件"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "密碼"
+  },
+  "popupLoginBtn": {
+    "message": "登入"
+  },
+  "popupLogoutBtn": {
+    "message": "登出"
+  },
+  "popupChecking": {
+    "message": "檢查中…"
+  },
+  "popupShowTranscript": {
+    "message": "顯示字幕"
+  },
+  "popupNoTranscript": {
+    "message": "未找到字幕"
+  },
+  "popupInstructions": {
+    "message": "在 <strong>Prime Video</strong>、<strong>YouTube</strong> 或 <strong>Netflix</strong> 上播放任意影片。字幕面板將在檢測到字幕後自動開啟。"
+  },
+  "popupClickWord": {
+    "message": "<strong>點擊</strong>任意單字即可查詞典"
+  },
+  "popupSaveWords": {
+    "message": "<strong>收藏</strong>單字到您的 Language Player 帳戶"
+  },
+  "popupToggleShortcut": {
+    "message": "按 <kbd>Alt</kbd> + <kbd>T</kbd> 切換面板"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 請確保您學習語言的<strong>字幕已開啟</strong>。"
+  }
+}
