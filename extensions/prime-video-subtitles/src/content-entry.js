@@ -15,6 +15,7 @@ import {
   parseYTTimedText, parseYTJSON3, tryDetectL2FromCues,
 } from './subtitle-parsers';
 import { t } from './i18n';
+import langNames from '../dist/lang-names.json';
 
 // ── Site detection ───────────────────────────────────────────────────────
 const isYouTube = /youtube\.com/.test(location.hostname);
@@ -321,29 +322,23 @@ async function fetchAndParseSubtitles(url) {
 
 // ── YouTube Subtitle Integration ─────────────────────────────────────────
 
-/** Get a readable language name for display in the dropdown */
-/** Get the UI language for DisplayNames (converts zh_CN → zh-Hans) */
-function getUILang() {
-  try {
-    const raw = chrome.i18n.getUILanguage(); // e.g. 'zh_CN', 'fr', 'ja'
-    // Chrome uses underscores, Intl uses hyphens for some codes
-    return raw.replace('_', '-');
-  } catch {}
-  return 'en';
-}
-
-/** Get a readable language name for display in the dropdown */
+/** Get a readable language name for display in the dropdown.
+ *  Uses translations from the monorepo's translations.csv (lang.* keys). */
 function languageName(code) {
-  const uiLang = getUILang();
-  try {
-    const name = new Intl.DisplayNames([uiLang], { type: 'language' }).of(code);
-    if (name && name !== code) return name;
-  } catch {}
+  const entry = langNames[code];
+  if (!entry) return code.toUpperCase();
+
+  // Get Chrome UI language (e.g., 'zh_CN', 'fr', 'en')
+  let uiLang = 'en';
+  try { uiLang = chrome.i18n.getUILanguage(); } catch {}
+
+  // Direct match (en, fr, ja, etc.)
+  if (entry[uiLang]) return entry[uiLang];
+
+  // Try without region suffix (zh_CN → try zh_CN first, which we already did)
   // Fallback: try English
-  try {
-    const name = new Intl.DisplayNames(['en'], { type: 'language' }).of(code);
-    if (name && name !== code) return name;
-  } catch {}
+  if (entry.en) return entry.en;
+
   return code.toUpperCase();
 }
 
