@@ -7,6 +7,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { VideoPlayerProvider } from "@/contexts/VideoPlayerContext";
 import { DictionaryProvider } from "@/contexts/DictionaryContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { IntlProviderWrapper } from "@/contexts/IntlProvider";
 import { AuthProvider } from '@/contexts/AuthContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -36,10 +37,11 @@ export default function RootLayout() {
 
   return (
     <LanguageProvider>
-      <AuthProvider>
-        <SubscriptionProvider>
-          <UserDataProvider>
-            <SettingsProvider>
+      <IntlProviderWrapper>
+        <AuthProvider>
+          <SubscriptionProvider>
+            <UserDataProvider>
+              <SettingsProvider>
                 <DictionaryProvider>
                   <ThemeProvider>
                     <TVShowsProvider>
@@ -69,10 +71,11 @@ export default function RootLayout() {
                     </TVShowsProvider>
                   </ThemeProvider>
                 </DictionaryProvider>
-            </SettingsProvider>
-          </UserDataProvider>
-        </SubscriptionProvider>
-      </AuthProvider>
+              </SettingsProvider>
+            </UserDataProvider>
+          </SubscriptionProvider>
+        </AuthProvider>
+      </IntlProviderWrapper>
     </LanguageProvider>
   );
 }
