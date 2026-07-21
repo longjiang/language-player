@@ -12,6 +12,7 @@ import * as esbuild from 'esbuild';
 import { readFileSync, copyFileSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '../..');
@@ -19,6 +20,14 @@ const root = resolve(__dirname, '../..');
 const outDir = resolve(__dirname, 'dist');
 mkdirSync(outDir, { recursive: true });
 
+// Step 1: Generate language name translations from monorepo CSV
+console.log('[build] Generating language name translations...');
+execSync('node scripts/generate-lang-names.js', {
+  cwd: __dirname,
+  stdio: 'inherit',
+});
+
+// Step 2: Bundle content script
 console.log('[build] Bundling content script...');
 
 const result = await esbuild.build({
