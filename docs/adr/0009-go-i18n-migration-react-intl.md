@@ -1,6 +1,6 @@
 # ADR 0009: GO App i18n Migration — i18n-js → react-intl (ICU MessageFormat)
 
-> **Status:** Proposed
+> **Status:** Phase 1 complete — `react-intl` installed & wired. Phases 2–4 pending.
 > **Date:** 2026-07-21
 > **Replaces:** `i18n-js` library in `language-player-3/contexts/LanguageContext.tsx`
 > **See also:**
@@ -40,14 +40,14 @@ This split has real costs:
 
 | Library | Pros | Cons |
 |---|---|---|
-| **react-intl** (FormatJS) | React Native support via `@formatjs/intl-reactnative`; full ICU; rich formatting (dates, numbers, plurals, select); mature ecosystem | Heavier bundle (~45 KB gzipped) |
+| **react-intl** (FormatJS) | React Native support built in (v6+); full ICU; rich formatting (dates, numbers, plurals, select); mature ecosystem | Heavier bundle (~45 KB gzipped) |
 | `i18next` | Popular; React Native support via `react-i18next` | ICU support requires plugin; different key format |
 | `next-intl` | What web app uses | Next.js only; no React Native support |
 | Keep `i18n-js` | No migration effort | No ICU; separate CSV; drift risk |
 
 `react-intl` is the right choice because:
 - It's maintained by the same team as `formatjs` (the ICU MessageFormat polyfill), ensuring correctness
-- `@formatjs/intl-reactnative` provides `<IntlProvider>`, `useIntl()`, and `<FormattedMessage>` for React Native
+- React Native support is built in (v6+)
 - It supports all ICU features out of the box — no plugins, no config
 - The bundle size is acceptable for a React Native app (~45 KB added vs. `i18n-js`'s ~5 KB, but eliminates the need for custom plural logic)
 
@@ -103,7 +103,7 @@ Replace the current `LanguageContext.tsx` approach with a standard `react-intl` 
 ```tsx
 // contexts/IntlProvider.tsx
 import React, { ReactNode, useMemo } from 'react';
-import { IntlProvider as ReactIntlProvider } from '@formatjs/intl-reactnative';
+import { IntlProvider } from 'react-intl';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { loadLocaleMessages } from '@/src/i18n/load-messages';
 
@@ -115,9 +115,9 @@ export const IntlProviderWrapper: React.FC<{ children: ReactNode }> = ({ childre
   const messages = useMemo(() => loadLocaleMessages(locale), [locale]);
 
   return (
-    <ReactIntlProvider locale={locale} messages={messages} defaultLocale="en">
+    <IntlProvider locale={locale} messages={messages} defaultLocale="en">
       {children}
-    </ReactIntlProvider>
+    </IntlProvider>
   );
 };
 ```
@@ -143,7 +143,7 @@ const { t } = useLanguage();
 <ThemedText>{t('action.cancel')}</ThemedText>
 
 // After (react-intl)
-import { useIntl, FormattedMessage } from '@formatjs/intl-reactnative';
+import { useIntl, FormattedMessage } from 'react-intl';
 
 const intl = useIntl();
 // Simple string:
@@ -160,7 +160,7 @@ To reduce migration friction, keep a familiar `useT()` hook signature:
 
 ```tsx
 // hooks/use-t.ts
-import { useIntl } from '@formatjs/intl-reactnative';
+import { useIntl } from 'react-intl';
 
 export function useT() {
   const intl = useIntl();
@@ -179,9 +179,9 @@ This makes the migration a mechanical find-and-replace:
 
 ### Phase 1: Add `react-intl`, Keep `i18n-js` Running
 
-1. Install `@formatjs/intl-reactnative` and `react-intl`:
+1. Install `react-intl`:
    ```bash
-   cd language-player-3 && npm install @formatjs/intl-reactnative react-intl
+   cd language-player-3 && npm install react-intl
    ```
 2. Add `IntlProviderWrapper` around the app root (wraps existing `LanguageProvider`)
 3. Create `hooks/use-t.ts` as a wrapper around `useIntl().formatMessage`
@@ -241,7 +241,7 @@ This makes the migration a mechanical find-and-replace:
 - **Rich text messages** — `<FormattedMessage>` supports React elements in translations (links, bold, etc.)
 
 ### Negative
-- **Bundle size increase** — `react-intl` + `@formatjs/intl-reactnative` adds ~45 KB gzipped (vs. `i18n-js`'s ~5 KB). Acceptable trade-off for ICU support and shared pipeline.
+- **Bundle size increase** — `react-intl` adds ~45 KB gzipped (vs. `i18n-js`'s ~5 KB). Acceptable trade-off for ICU support and shared pipeline.
 - **Migration effort** — ~100–200 files touch `useLanguage().t`. Mitigated by keeping the same call signature via `useT()` wrapper — mechanical find-and-replace.
 - **JSON format shift** — `react-intl` expects flat `{ "key": "value" }` JSON, not the nested `{ "action": { "cancel": "Cancel" } }` format that `i18n-js` uses. The `sync-translations.mjs` script must be updated to output flat format (or a separate output mode added).
 - **ICU syntax learning curve** — Developers must learn ICU MessageFormat syntax (`{count, plural, ...}`). This is already required for the web app, so it's a one-time investment across the team.
