@@ -22,3 +22,4 @@ NNNN-title-with-dashes.md
 | 0005 | Payment methods plan support | proposed | 2026-07-14 |
 | 0006 | Consolidated lexical data types | accepted | 2026-07-14 |
 | 0007 | Dictionary Hub UX — persistent search bar & panel layout | proposed | 2026-07-19 |
+| 0008 | GO app dictionary architecture — online lookup + offline download | proposed | 2026-07-21 |
