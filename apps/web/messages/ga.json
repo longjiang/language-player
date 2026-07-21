@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Athshocraigh Am go Náid"
     },
     "docs": {
+        "guides_reference": "Treoracha, tagairt agus ceisteanna coitianta",
         "no_results": "Gan torthaí",
         "on_this_page": "Ar an leathanach seo",
         "search_placeholder": "Cuardaigh doiciméid…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Scrios mo chuntas",
         "dictionary": "Foclóir",
         "docs": "Doiciméid",
+        "documentation": "Doiciméadú",
         "email": "Ríomhphost",
         "episodes": "Eachtraí",
         "epub_reader": "Léitheoir EPUB",

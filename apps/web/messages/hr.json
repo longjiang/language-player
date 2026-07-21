@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Resetiraj Vrijeme na Nulu"
     },
     "docs": {
+        "guides_reference": "Vodiči, reference i često postavljana pitanja",
         "no_results": "Nema rezultata",
         "on_this_page": "Na ovoj stranici",
         "search_placeholder": "Pretraži dokumente…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Izbriši moj račun",
         "dictionary": "Rječnik",
         "docs": "Dokumenti",
+        "documentation": "Dokumentacija",
         "email": "E-mail",
         "episodes": "Epizode",
         "epub_reader": "EPUB čitač",

@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Nullstill Tid"
     },
     "docs": {
+        "guides_reference": "Veiledninger, referanse og vanlige spørsmål",
         "no_results": "Ingen resultater",
         "on_this_page": "På denne siden",
         "search_placeholder": "Søk i dokumenter…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Slett kontoen min",
         "dictionary": "Ordbok",
         "docs": "Dokumenter",
+        "documentation": "Dokumentasjon",
         "email": "E-post",
         "episodes": "Episoder",
         "epub_reader": "EPUB-leser",

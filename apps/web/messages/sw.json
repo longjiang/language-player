@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Weka Upya Muda Kuwa Sifuri"
     },
     "docs": {
+        "guides_reference": "Mwongozo, marejeleo na maswali ya kawaida",
         "no_results": "Hakuna matokeo",
         "on_this_page": "Kwenye ukurasa huu",
         "search_placeholder": "Tafuta nyaraka…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Futa Akaunti Yangu",
         "dictionary": "Kamusi",
         "docs": "Nyaraka",
+        "documentation": "Nyaraka",
         "email": "Barua pepe",
         "episodes": "Vipindi",
         "epub_reader": "Kisoma EPUB",

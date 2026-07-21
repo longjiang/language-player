@@ -115,6 +115,7 @@
         "reset_time_to_zero": "รีเซ็ตเวลาเป็นศูนย์"
     },
     "docs": {
+        "guides_reference": "คู่มือ เอกสารอ้างอิง และคำถามที่พบบ่อย",
         "no_results": "ไม่พบผลลัพธ์",
         "on_this_page": "ในหน้านี้",
         "search_placeholder": "ค้นหาเอกสาร…",
@@ -948,6 +949,7 @@
         "delete_my_account": "ลบบัญชีของฉัน",
         "dictionary": "พจนานุกรม",
         "docs": "เอกสาร",
+        "documentation": "เอกสาร",
         "email": "อีเมล",
         "episodes": "ตอน",
         "epub_reader": "โปรแกรมอ่าน EPUB",

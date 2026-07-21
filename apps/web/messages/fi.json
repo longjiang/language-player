@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Nollaa Aika"
     },
     "docs": {
+        "guides_reference": "Oppaat, viitteet ja usein kysytyt kysymykset",
         "no_results": "Ei tuloksia",
         "on_this_page": "Tällä sivulla",
         "search_placeholder": "Etsi dokumenteista…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Poista tilini",
         "dictionary": "Sanakirja",
         "docs": "Dokumentit",
+        "documentation": "Dokumentaatio",
         "email": "Sähköposti",
         "episodes": "Jaksot",
         "epub_reader": "EPUB-lukija",

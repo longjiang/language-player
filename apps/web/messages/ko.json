@@ -115,6 +115,7 @@
         "reset_time_to_zero": "시간을 0으로 재설정"
     },
     "docs": {
+        "guides_reference": "가이드, 참조 및 자주 묻는 질문",
         "no_results": "결과 없음",
         "on_this_page": "이 페이지에서",
         "search_placeholder": "문서 검색…",
@@ -948,6 +949,7 @@
         "delete_my_account": "내 계정 삭제",
         "dictionary": "사전",
         "docs": "도움말",
+        "documentation": "문서",
         "email": "이메일",
         "episodes": "에피소드",
         "epub_reader": "EPUB 리더",

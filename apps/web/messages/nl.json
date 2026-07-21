@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Tijd op Nul Zetten"
     },
     "docs": {
+        "guides_reference": "Handleidingen, naslag en veelgestelde vragen",
         "no_results": "Geen resultaten",
         "on_this_page": "Op deze pagina",
         "search_placeholder": "Documenten doorzoeken…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Mijn account verwijderen",
         "dictionary": "Woordenboek",
         "docs": "Documentatie",
+        "documentation": "Documentatie",
         "email": "E-mail",
         "episodes": "Afleveringen",
         "epub_reader": "EPUB-lezer",

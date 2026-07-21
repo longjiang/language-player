@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Idő Nullázása"
     },
     "docs": {
+        "guides_reference": "Útmutatók, referencia és gyakori kérdések",
         "no_results": "Nincs találat",
         "on_this_page": "Ezen az oldalon",
         "search_placeholder": "Dokumentumok keresése…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Fiókom törlése",
         "dictionary": "Szótár",
         "docs": "Dokumentumok",
+        "documentation": "Dokumentáció",
         "email": "E-mail",
         "episodes": "Epizódok",
         "epub_reader": "EPUB-olvasó",

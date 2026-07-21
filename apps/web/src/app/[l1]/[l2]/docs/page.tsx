@@ -2,8 +2,10 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { resolve, join } from 'path';
-import { BookOpen, FileText, FolderOpen } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { DocSearch } from './doc-search';
+import { CategoryTitle } from './category-title';
+import { DocPageHeading } from './doc-page-heading';
 
 export const metadata: Metadata = {
   title: 'Documentation',
@@ -98,8 +100,8 @@ function DocList({ docs, l1, l2 }: { docs: DocMeta[]; l1: string; l2: string }) 
           return (
             <li key={doc.slug}>
               <div className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-semibold text-foreground">
-                <FolderOpen className="h-4 w-4 shrink-0 text-muted-foreground" />
-                {doc.title}
+                <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <CategoryTitle slug={doc.slug} />
               </div>
               <div className="ml-7 border-l border-border/50 pl-4">
                 <DocList docs={doc.children} l1={l1} l2={l2} />
@@ -197,15 +199,7 @@ export default function DocsPage({ params }: Props) {
   return (
     <div className="flex flex-col items-center px-4 py-12">
       <div className="w-full max-w-2xl">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-            <BookOpen className="h-7 w-7 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold">Documentation</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Guides, reference, and frequently asked questions
-          </p>
-        </div>
+        <DocPageHeading />
 
         {/* Search + Doc list */}
         {docs.length === 0 ? (

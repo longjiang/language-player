@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Zresetuj Czas do Zera"
     },
     "docs": {
+        "guides_reference": "Przewodniki, materiały referencyjne i często zadawane pytania",
         "no_results": "Brak wyników",
         "on_this_page": "Na tej stronie",
         "search_placeholder": "Szukaj w dokumentach…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Usuń moje konto",
         "dictionary": "Słownik",
         "docs": "Dokumenty",
+        "documentation": "Dokumentacja",
         "email": "E-mail",
         "episodes": "Odcinki",
         "epub_reader": "Czytnik EPUB",

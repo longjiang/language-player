@@ -115,6 +115,7 @@
         "reset_time_to_zero": "Setel Ulang Waktu ke Nol"
     },
     "docs": {
+        "guides_reference": "Panduan, referensi, dan pertanyaan umum",
         "no_results": "Tidak ada hasil",
         "on_this_page": "Di halaman ini",
         "search_placeholder": "Cari dokumen…",
@@ -948,6 +949,7 @@
         "delete_my_account": "Hapus Akun Saya",
         "dictionary": "Kamus",
         "docs": "Dokumen",
+        "documentation": "Dokumentasi",
         "email": "Email",
         "episodes": "Episode",
         "epub_reader": "Pembaca EPUB",
