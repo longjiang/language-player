@@ -12,8 +12,8 @@ import {
   PREFERRED_COUNTRY_CODES,
   CONTINUA_LANGUAGES,
   HAN_LANGUAGES,
-  RTL_LANGUAGES,
 } from "@/constants/LanguageConstants";
+import { isRTL } from '@langplayer/utils';
 
 export type Language = {
   id: number;
@@ -78,7 +78,7 @@ class Languages {
         code,
         continua,
         han: HAN_LANGUAGES.includes(lang.iso639_3),
-        direction: RTL_LANGUAGES.includes(lang.iso639_3) ? 'rtl' : 'ltr',
+        direction: isRTL(lang.iso639_3) ? 'rtl' : 'ltr',
         stats: {
           videoCount: LANGUAGE_VIDEO_COUNT[code] || 0
         },

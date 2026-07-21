@@ -1,5 +1,7 @@
 // @/src/utils.tsx
 
+export { formatDuration } from '@langplayer/utils';
+
 // Convert ISO 8601 duration string to total seconds
 export const parseDuration = (duration: string): number => {
   const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
@@ -14,7 +16,8 @@ export const parseDuration = (duration: string): number => {
 };
 
 // Convert seconds into a human-readable format HH:MM:SS
-export const formatDuration = (seconds: number, locale: string): string => {
+// @deprecated Use formatDuration from @langplayer/utils instead (no locale param needed)
+export const formatDurationLocalized = (seconds: number, locale: string): string => {
   const date = new Date(0);
   date.setSeconds(seconds);
   return date.toLocaleTimeString(locale, { timeZone: 'UTC', hour12: false, minute: '2-digit', second: '2-digit' });

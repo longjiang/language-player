@@ -67,7 +67,7 @@ export const VideoControlBar: React.FC = () => {
   const isNextVideoDisabled = currentVideoIndex >= playlist.length - 1;
 
   const videoInfo = [
-    video.duration ? formatDuration(video.duration, i18n.locale) : undefined,
+    video.duration ? formatDuration(video.duration) : undefined,
     video.date instanceof Date ? video.date.toLocaleDateString(i18n.locale, { month: 'long', day: 'numeric', year: 'numeric' }) : undefined,
     t('lang.' + video.locale)
   ];
