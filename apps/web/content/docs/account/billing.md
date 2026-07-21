@@ -1,4 +1,4 @@
-# Billing
+# {$title.subscription}
 
 Choose a plan, manage your subscription, and understand what you get with Pro.
 
