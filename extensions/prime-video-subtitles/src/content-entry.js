@@ -433,6 +433,77 @@ function getYTCaptionTracks(pr) {
   }
 }
 
+// ── InnerTube API (replicates youtube_transcript_api client-side) ───────────
+
+/** Extract INNERTUBE_API_KEY from the page HTML */
+function extractInnertubeApiKey() {
+  const html = document.documentElement.innerHTML;
+  const match = html.match(/"INNERTUBE_API_KEY"\s*:\s*"([a-zA-Z0-9_-]+)"/);
+  if (match) return match[1];
+
+  // Fallback: search script tags individually
+  const scripts = document.querySelectorAll('script');
+  for (const script of scripts) {
+    const m = (script.textContent || '').match(/"INNERTUBE_API_KEY"\s*:\s*"([a-zA-Z0-9_-]+)"/);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+/** POST to YouTube's InnerTube API and extract caption tracks */
+async function fetchInnerTubeTracks(videoId) {
+  const apiKey = extractInnertubeApiKey();
+  if (!apiKey) {
+    console.log('[LanguagePlayer] No INNERTUBE_API_KEY found');
+    return [];
+  }
+
+  console.log('[LanguagePlayer] InnerTube API key:', apiKey.substring(0, 8) + '...');
+
+  try {
+    const res = await fetch(`https://www.youtube.com/youtubei/v1/player?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        context: {
+          client: {
+            clientName: 'ANDROID',
+            clientVersion: '20.10.38',
+          },
+        },
+        videoId,
+      }),
+    });
+
+    if (!res.ok) {
+      console.log('[LanguagePlayer] InnerTube HTTP', res.status);
+      return [];
+    }
+
+    const data = await res.json();
+    const captions = data?.captions?.playerCaptionsTracklistRenderer;
+    if (!captions?.captionTracks) {
+      console.log('[LanguagePlayer] InnerTube: no caption tracks');
+      return [];
+    }
+
+    const tracks = captions.captionTracks.map(t => ({
+      baseUrl: (t.baseUrl || '').replace(/&fmt=srv3/, '').replace(/&fmt=vtt/, ''),
+      languageCode: t.languageCode,
+      kind: t.kind || '',
+      name: t.name?.runs?.[0]?.text || t.name?.simpleText || '',
+    }));
+
+    console.log('[LanguagePlayer] InnerTube found', tracks.length, 'tracks:',
+      tracks.map(t => `${t.languageCode}${t.kind === 'asr' ? ' (auto)' : ''}`).join(', '));
+
+    return tracks;
+  } catch (err) {
+    console.error('[LanguagePlayer] InnerTube fetch failed:', err?.message);
+    return [];
+  }
+}
+
 /** Parse YouTube timedtext XML into cues */
 function parseYTTimedText(xmlText) {
   const parser = new DOMParser();
@@ -589,33 +660,31 @@ async function loadYouTubeSubtitles() {
 
   console.log('[LanguagePlayer] Looking for caption data...');
 
-  // Wait for ytInitialPlayerResponse
-  let pr = getYTPlayerResponse();
-  let attempts = 0;
-  while (!pr && attempts < 30) {
-    await new Promise(r => setTimeout(r, 500));
-    pr = getYTPlayerResponse();
-    attempts++;
-  }
-
-  if (!pr) {
-    console.log('[LanguagePlayer] Could not read caption data after 15s — captions may not be available');
-    return;
-  }
-
-  ytPlayerResponse = pr;
-
-  const tracks = getYTCaptionTracks(pr);
-  ytCaptionTracks = tracks;
-  console.log('[LanguagePlayer] Found', tracks.length, 'caption track(s):',
-    tracks.map(t => `${t.languageCode}${t.kind === 'asr' ? ' (auto)' : ''}`).join(', '));
+  // Try InnerTube API first (mimics ANDROID client)
+  let tracks = await fetchInnerTubeTracks(videoId);
 
   if (tracks.length === 0) {
-    console.log('[LanguagePlayer] No caption tracks available for this video');
+    // Fall back to ytInitialPlayerResponse from the page
+    let pr = getYTPlayerResponse();
+    let attempts = 0;
+    while (!pr && attempts < 30) {
+      await new Promise(r => setTimeout(r, 500));
+      pr = getYTPlayerResponse();
+      attempts++;
+    }
+    if (pr) {
+      ytPlayerResponse = pr;
+      tracks = getYTCaptionTracks(pr);
+    }
+  }
+
+  ytCaptionTracks = tracks;
+
+  if (tracks.length === 0) {
+    console.log('[LanguagePlayer] No caption tracks found');
     return;
   }
 
-  // Rebuild L2 selector
   populateL2Selector();
 
   // Pick best track: prefer manual matching detected L2
