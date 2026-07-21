@@ -232,12 +232,18 @@ function getVideoElement() {
     if (video && video.src) return video;
   }
   if (isDisneyPlus) {
-    // Disney+: video is inside <disney-web-player> Shadow DOM
-    const video = document.querySelector('video[src]');
+    // Disney+ has multiple <video> elements — one hidden, one playing.
+    // The playing video is inside <disney-web-player> Shadow DOM.
+    // Prefer visible (non-hidden) videos by checking offsetParent.
+    let video = document.querySelector('#hivePlayer1, video.hive-video, video[src]:not([style*="display: none"])');
+    if (video && video.src && video.offsetParent !== null) return video;
+    // Fallback: any video[src] even if hidden
+    video = document.querySelector('video[src]');
     if (video && video.src) return video;
+    // Fallback: penetrate Shadow DOM
     const dwp = document.querySelector('disney-web-player');
     if (dwp?.shadowRoot) {
-      const sv = dwp.shadowRoot.querySelector('video[src]');
+      const sv = dwp.shadowRoot.querySelector('#hivePlayer1, video.hive-video, video[src]');
       if (sv && sv.src) return sv;
     }
   }
@@ -254,16 +260,53 @@ function findActiveCueIndex(timeSec) {
   return -1;
 }
 
+/** Get the current playback time in seconds, using platform-specific APIs */
+function getCurrentTime() {
+  if (isDisneyPlus) {
+    // Disney+ internal player API (used by Trancy) — immune to Shadow DOM issues
+    try {
+      const dwp = document.querySelector('disney-web-player');
+      const ms = dwp?.mediaPlayer?.timeline?.info?.playheadPositionMs;
+      if (typeof ms === 'number') return ms / 1000;
+    } catch {}
+  }
+  const video = getVideoElement();
+  return video ? video.currentTime : 0;
+}
+
+/** Get the video duration in seconds */
+function getDuration() {
+  if (isDisneyPlus) {
+    try {
+      const dwp = document.querySelector('disney-web-player');
+      const ms = dwp?.mediaPlayer?.timeline?.info?.seekableDurationMs;
+      if (typeof ms === 'number') return ms / 1000;
+    } catch {}
+  }
+  const video = getVideoElement();
+  return video ? video.duration : 0;
+}
+
 function seekTo(timeSec) {
   if (isNetflix) {
-    // Direct video.currentTime manipulation triggers Netflix error M7375.
-    // Must seek via Netflix's own player API in the MAIN world.
+    // Netflix: must use player API (M7375 DRM error on direct currentTime)
     chrome.runtime.sendMessage({ action: 'netflixSeek', timeSec })
       .then((res) => {
         console.log('[LanguagePlayer] Netflix seek result:', res?.method || res?.error);
       })
       .catch(() => {});
-   } else {
+  } else if (isDisneyPlus) {
+    // Disney+: use internal mediaPlayer API (more reliable than video element)
+    try {
+      const dwp = document.querySelector('disney-web-player');
+      if (dwp?.mediaPlayer?.seek) {
+        dwp.mediaPlayer.seek(timeSec * 1000);
+      }
+    } catch {}
+    // Fallback: also try direct video currentTime
+    const video = getVideoElement();
+    if (video) video.currentTime = timeSec;
+  } else {
     const video = getVideoElement();
     if (video) {
       video.currentTime = timeSec;
@@ -954,9 +997,8 @@ function onTimeUpdate() {
   if (timeUpdateRaf) return;
   timeUpdateRaf = requestAnimationFrame(() => {
     timeUpdateRaf = null;
-    const video = getVideoElement();
-    if (video && STATE.cues.length > 0) {
-      updateActiveCue(video.currentTime);
+    if (STATE.cues.length > 0) {
+      updateActiveCue(getCurrentTime());
     }
   });
 }
@@ -968,7 +1010,7 @@ function attachTimeTracking() {
     video.addEventListener('timeupdate', onTimeUpdate);
     video.addEventListener('seeked', () => {
       if (STATE.cues.length > 0) {
-        updateActiveCue(video.currentTime);
+        updateActiveCue(getCurrentTime());
       }
     });
   }
