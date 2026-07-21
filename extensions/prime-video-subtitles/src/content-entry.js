@@ -260,17 +260,20 @@ function findActiveCueIndex(timeSec) {
   return -1;
 }
 
-/** Get the current playback time in seconds, using platform-specific APIs */
+/** Get the current playback time in seconds.
+ *  Prefers video.currentTime (matches subtitle cue timestamps).
+ *  Falls back to Disney+ internal API if video element unavailable. */
 function getCurrentTime() {
+  const video = getVideoElement();
+  if (video && video.currentTime > 0) return video.currentTime;
+  // Disney+ fallback: internal player API (may have offset from cues)
   if (isDisneyPlus) {
-    // Disney+ internal player API (used by Trancy) — immune to Shadow DOM issues
     try {
       const dwp = document.querySelector('disney-web-player');
       const ms = dwp?.mediaPlayer?.timeline?.info?.playheadPositionMs;
       if (typeof ms === 'number') return ms / 1000;
     } catch {}
   }
-  const video = getVideoElement();
   return video ? video.currentTime : 0;
 }
 
