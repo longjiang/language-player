@@ -1,5 +1,16 @@
 import { AxiosResponse } from "axios";
 import { API } from "@/src/api/python";
+import type { LemmatizeResponse } from '@langplayer/shared';
+
+/**
+ * Unified lemmatization endpoint (same as Next.js web app).
+ * Returns tokens in the shared LemmatizedToken format.
+ * Replaces the language-specific endpoints below.
+ */
+export const lemmatizeNormalized = async (text: string, l2: string): Promise<LemmatizeResponse> => {
+  const response = await API.post<LemmatizeResponse>("/lemmatize-normalized", { text, l2 });
+  return response.data;
+};
 
 
 export const lemmatizeSpacy = async (lang: string, text: string): Promise<AxiosResponse<any>> => {

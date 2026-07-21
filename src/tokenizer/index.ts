@@ -1,11 +1,12 @@
 // @/src/tokenizer/index.ts
 
 import { PYTHON_SERVER } from "@/src/api/python"
+import { lemmatizeNormalized } from "@/src/api/python/nlp";
 import { Language } from '@/src/languages';
 import LocalTokenizer from './local-tokenizer';
 import { tokenizers, languagesWithSpaCyCache } from './tokenizer-list';
 import CryptoJS from 'crypto-js';
-import { Token, Lemma, TokenizerModule } from '@/types/tokenTypes';
+import { Token, LemmatizedToken, TokenizerModule, Tokenizer } from '@/types/tokenTypes';
 import SpacyTokenizer from './spacy-tokenizer';
 
 export const getTokenizer = (languageCode: string): Tokenizer | null => {
@@ -19,7 +20,7 @@ export const getTokenizer = (languageCode: string): Tokenizer | null => {
 
 export class TokenizerService {
   private static instance: TokenizerService;
-  private cache: Map<string, Token[]>;
+  private cache: Map<string, LemmatizedToken[]>;
   private localTokenizer: LocalTokenizer;
 
   private constructor(wordset?: Set<string>) {
@@ -55,7 +56,7 @@ export class TokenizerService {
     return tokenData;
   }
 
-  public async tokenize(text: string, l2Lang: Language): Promise<Token[] | undefined> {
+  public async tokenize(text: string, l2Lang: Language): Promise<LemmatizedToken[] | undefined> {
     const cacheKey = this.generateCacheKey(text);
     const remoteTokenizer = getTokenizer(l2Lang.code);
 
@@ -70,12 +71,25 @@ export class TokenizerService {
       }
 
       const normalizedTokens = tokenizerForNormalizing
-        ? tokenizerForNormalizing.normalizeTokens(cacheEntry, text)
+        ? tokenizerForNormalizing.normalizeTokens(cacheEntry as Token[], text)
         : cacheEntry;
-      return normalizedTokens
+      return normalizedTokens as LemmatizedToken[];
     }
 
     try {
+      // Prefer the unified /lemmatize-normalized endpoint (same as Next.js web app)
+      try {
+        const response = await lemmatizeNormalized(text, l2Lang.code);
+        if (response.tokens?.length > 0) {
+          this.cache.set(cacheKey, response.tokens as Token[]);
+          return response.tokens;
+        }
+      } catch {
+        // Fall through to language-specific endpoint or local tokenizer
+        console.log('Unified lemmatize endpoint unavailable, falling back to language-specific tokenizer');
+      }
+
+      // Fallback: language-specific endpoint or local tokenizer
       let rawTokens: Token[] | undefined = undefined;
       if (remoteTokenizer) {
         rawTokens = await this.fetchTokens(remoteTokenizer, text, l2Lang);
@@ -85,7 +99,7 @@ export class TokenizerService {
 
       if (!rawTokens || rawTokens.length === 0) {
         console.error("Tokenization returned empty result");
-        rawTokens = [{ text }];
+        rawTokens = [{ text } as Token];
       }
 
       // Cache the raw results
@@ -93,11 +107,11 @@ export class TokenizerService {
 
       // Return normalized tokens
       return remoteTokenizer
-        ? remoteTokenizer.module.normalizeTokens(rawTokens, text)
-        : rawTokens;
+        ? remoteTokenizer.module.normalizeTokens(rawTokens, text) as LemmatizedToken[]
+        : rawTokens as LemmatizedToken[];
     } catch (error) {
       console.error("Error fetching tokens:", error);
-      return [{ text }];
+      return [{ text } as LemmatizedToken];
     }
   }
 
