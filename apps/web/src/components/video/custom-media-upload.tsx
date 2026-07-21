@@ -112,10 +112,10 @@ export function CustomMediaUpload({
     >
       <Upload className="mx-auto mb-4 h-12 w-12 text-muted-foreground/40" />
       <p className="mb-2 text-sm text-muted-foreground">
-        Drop a video or audio file here
+        {t('msg.drop_media_here')}
       </p>
       <p className="mb-4 text-xs text-muted-foreground/60">
-        Supports MP4, WebM, MKV, MP3, WAV, and more
+        {t('msg.supported_media_formats')}
       </p>
       <Button variant="outline" size="sm" onClick={onOpenFile}>
         <Upload className="mr-1.5 h-4 w-4" />
