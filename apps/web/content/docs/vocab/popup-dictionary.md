@@ -1,4 +1,4 @@
-# Popup {$title.dictionary}
+# Popup Dictionary
 
 Click any word in the subtitles or transcript, and a popup opens with everything you need — definitions, pronunciation, and a quick way to save the word.
 
