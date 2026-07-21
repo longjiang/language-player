@@ -36,18 +36,18 @@ After tokenization, every word is clickable. Tap or click any word to open the [
 
 Words you've previously saved are shown with a quick gloss — the first definition appears inline next to the word.
 
-## Translation
+## {$action.translation}
 
-Toggle the **Translation** switch in the page navigation bar to show or hide translations. This setting is remembered across sessions.
+Toggle the **{$action.translation}** switch in the page navigation bar to show or hide translations. This setting is remembered across sessions.
 
 When enabled, translations appear inline — on wide screens they sit next to the original text, and on narrow screens they appear below each paragraph. Translations are fetched per page and appear as you navigate.
 
 **Per-block actions** let you interact with each paragraph individually. Hover over any text block to reveal a `⋮` menu with these options:
 
-- **Copy** — Copy the text to your clipboard
-- **Speak** — Read the text aloud with text-to-speech
+- **{$action.copy}** — {$action.copy} the text to your clipboard
+- **{$action.speak}** — Read the text aloud with text-to-speech
 - **AI Explain** — Get an AI breakdown of the text's grammar and structure
-- **Translation** — See a popup translation for just that block
+- **{$action.translation}** — See a popup translation for just that block
 
 ## Managing Notes
 
@@ -61,10 +61,10 @@ Your note is saved as you type. There's no save button — changes are saved to 
 
 ## See Also
 
-- [Web Reader](/docs/reading/web-reader) — Read web articles by URL without saving notes
-- [EPUB Reader](/docs/reading/epub) — Read EPUB books with chapter navigation
+- [{$title.web_reader}](/docs/reading/web-reader) — Read web articles by URL without saving notes
+- [{$title.epub_reader}](/docs/reading/epub) — Read EPUB books with chapter navigation
 - [Popup Dictionary](/docs/vocab/popup-dictionary) — How clicking words works
-- [Dictionary](/docs/vocab/dictionary) — Full dictionary features
+- [{$title.dictionary}](/docs/vocab/dictionary) — Full dictionary features
 
 ## Tips
 
