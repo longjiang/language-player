@@ -132,13 +132,17 @@ const canFetch = major >= 20;
 let translated = 0;
 
 let idx = 0;
+const hasKeys = KEY_RE.test(title);
+KEY_RE.lastIndex = 0; // reset regex
+
 for (const locale of locales) {
   idx++;
   const isEnglish = locale === 'en';
   let content = md;
+  let docTitle = title;
   let method = '🗝';
 
-  // Machine-translate body for non-English (skip if fetch unavailable or fails)
+  // Machine-translate body and plain-text title for non-English
   if (!isEnglish && canFetch) {
     try {
       const resp = await fetch(`${API_URL}/translate`, {
@@ -152,6 +156,19 @@ for (const locale of locales) {
         content = data.translated_text;
         translated++;
         method = '🌐';
+        // Also translate the title if it's plain text (no {$key})
+        if (!hasKeys) {
+          const titleResp = await fetch(`${API_URL}/translate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: title, l1: locale, l2: 'en' }),
+            signal: AbortSignal.timeout(15000),
+          });
+          if (titleResp.ok) {
+            const titleData = await titleResp.json();
+            docTitle = titleData.translated_text;
+          }
+        }
       }
     } catch {
       // Per-locale failure — server might be rate-limiting, try next locale
@@ -161,7 +178,7 @@ for (const locale of locales) {
   // Resolve {$key} with CSV translations
   const entry = {
     slug,
-    title: resolveKeys(title, csv, locale),
+    title: resolveKeys(docTitle, csv, locale),
     content: resolveKeys(content, csv, locale),
   };
 

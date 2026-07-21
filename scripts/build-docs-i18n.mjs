@@ -149,8 +149,12 @@ for (const locale of locales) {
     let content = doc.content;
     let title = doc.title;
 
-    // Machine-translate body (non-English only). The translator's
-    // placeholder protection keeps {$key} intact automatically.
+    // Check if the title contains any {$key} patterns — if not, it's plain text
+    // and should also be machine-translated.
+    const hasKeys = KEY_RE.test(title);
+    KEY_RE.lastIndex = 0; // reset regex
+
+    // Machine-translate body and plain-text title (non-English only).
     if (!isEnglish) {
       try {
         console.log(`  Translating ${doc.slug} to ${locale}…`);
@@ -166,6 +170,22 @@ for (const locale of locales) {
         if (resp.ok) {
           const data = await resp.json();
           content = data.translated_text;
+          // Also translate the title if it's plain text (no {$key})
+          if (!hasKeys) {
+            const titleResp = await fetch(`${API_URL}/translate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: title,
+                l1: locale,
+                l2: 'en',
+              }),
+            });
+            if (titleResp.ok) {
+              const titleData = await titleResp.json();
+              title = titleData.translated_text;
+            }
+          }
         } else {
           console.warn(`  ⚠ Translation failed for ${doc.slug} (${resp.status}), using English`);
         }
