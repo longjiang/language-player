@@ -23,15 +23,19 @@ function parseSRT(text: string): SubtitleLine[] {
     const timeIdx = parts.findIndex((p) => p.includes('-->'));
     if (timeIdx === -1) continue;
 
+    // Only validate the start time — end time may be missing or NaN
     const timeMatch = parts[timeIdx]!.match(
-      /(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*\d{2}:\d{2}:\d{2}[,.]\d{3}/,
+      /(\d{2}):(\d{2}):(\d{2})[,.]\d{3}\s*-->/,
     );
     if (!timeMatch) continue;
 
     const hours = parseInt(timeMatch[1]!, 10);
     const minutes = parseInt(timeMatch[2]!, 10);
     const seconds = parseInt(timeMatch[3]!, 10);
-    const millis = parseInt(timeMatch[4]!, 10);
+    // Extract milliseconds from the start time portion
+    const msMatch = parts[timeIdx]!.match(/(\d{2}):(\d{2}):(\d{2})[,.]/);
+    const millisPart = parts[timeIdx]!.match(/[,.](\d{3})\s*-->/);
+    const millis = millisPart ? parseInt(millisPart[1]!, 10) : 0;
     const starttime = hours * 3600 + minutes * 60 + seconds + millis / 1000;
 
     const textLines = parts.slice(timeIdx + 1);
@@ -76,15 +80,17 @@ function parseVTT(text: string): SubtitleLine[] {
     const timeIdx = parts.findIndex((p) => p.includes('-->'));
     if (timeIdx === -1) continue;
 
+    // Only validate the start time — end time may be missing or NaN
     const timeMatch = parts[timeIdx]!.match(
-      /(\d{2}):(\d{2}):(\d{2})[.,](\d{3})\s*-->\s*\d{2}:\d{2}:\d{2}[.,]\d{3}/,
+      /(\d{2}):(\d{2}):(\d{2})[.,]\d{3}\s*-->/,
     );
     if (!timeMatch) continue;
 
     const hours = parseInt(timeMatch[1]!, 10);
     const minutes = parseInt(timeMatch[2]!, 10);
     const seconds = parseInt(timeMatch[3]!, 10);
-    const millis = parseInt(timeMatch[4]!, 10);
+    const msMatch = parts[timeIdx]!.match(/[.,](\d{3})\s*-->/);
+    const millis = msMatch ? parseInt(msMatch[1]!, 10) : 0;
     const starttime = hours * 3600 + minutes * 60 + seconds + millis / 1000;
 
     const textLines = parts.slice(timeIdx + 1);
