@@ -59,7 +59,7 @@ interface DocMeta {
 }
 
 /** Recursively read docs from a directory. Returns a sorted tree. */
-function readDocsTree(dir: string, basePath: string = ''): DocMeta[] {
+function readDocsTree(dir: string, basePath: string = '', titleMap?: Map<string, string>): DocMeta[] {
   const entries = readdirSync(dir);
   const items: DocMeta[] = [];
   const dirs: DocMeta[] = [];
@@ -68,23 +68,27 @@ function readDocsTree(dir: string, basePath: string = ''): DocMeta[] {
     const fullPath = join(dir, entry);
     const stat = statSync(fullPath);
     if (stat.isDirectory()) {
-      const children = readDocsTree(fullPath, entry);
+      const children = readDocsTree(fullPath, entry, titleMap);
       if (children.length > 0) {
         dirs.push({ slug: entry, title: categoryLabel(entry), children });
       }
     } else if (entry.endsWith('.md')) {
-      const content = readFileSync(fullPath, 'utf-8');
-      const match = content.match(/^# (.+)$/m);
       const slug = basePath ? `${basePath}/${entry.replace(/\.md$/, '')}` : entry.replace(/\.md$/, '');
-      const title: string = match?.[1] ?? entry.replace(/\.md$/, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      items.push({ slug, title });
+      // Use resolved title from locale JSON if available
+      const resolvedTitle = titleMap?.get(slug);
+      if (resolvedTitle) {
+        items.push({ slug, title: resolvedTitle });
+      } else {
+        const content = readFileSync(fullPath, 'utf-8');
+        const match = content.match(/^# (.+)$/m);
+        const title: string = match?.[1] ?? entry.replace(/\.md$/, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        items.push({ slug, title });
+      }
     }
   }
 
-  // Sort: root items first (alphabetical), then directories (alphabetical)
   items.sort((a, b) => a.title.localeCompare(b.title));
   dirs.sort((a, b) => a.title.localeCompare(b.title));
-
   return [...items, ...dirs];
 }
 
@@ -99,17 +103,38 @@ function categoryLabel(slug: string): string {
   return labels[slug] ?? slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function getAllDocs(): DocMeta[] {
+function getAllDocs(l1: string): DocMeta[] {
+  const titleMap = loadTitleMap(l1);
   const possibleDirs = [
     resolve(process.cwd(), 'apps/web/content/docs'),
     resolve(process.cwd(), 'content/docs'),
   ];
   for (const docsDir of possibleDirs) {
     try {
-      return readDocsTree(docsDir);
+      return readDocsTree(docsDir, '', titleMap);
     } catch { /* try next */ }
   }
   return [];
+}
+
+/** Load slug→resolved-title map from the locale JSON if available. */
+function loadTitleMap(l1: string): Map<string, string> | undefined {
+  if (l1 === 'en') return undefined; // English titles don't need resolution
+  const dataDirs = [
+    resolve(process.cwd(), 'apps/web/src/data/docs-i18n'),
+    resolve(process.cwd(), 'src/data/docs-i18n'),
+  ];
+  for (const dataDir of dataDirs) {
+    try {
+      const entries = JSON.parse(readFileSync(resolve(dataDir, `${l1}.json`), 'utf-8'));
+      const map = new Map<string, string>();
+      for (const e of entries) {
+        map.set(e.slug, e.title);
+      }
+      return map;
+    } catch { /* try next */ }
+  }
+  return undefined;
 }
 
 interface DocEntry {
@@ -180,7 +205,7 @@ function extractToc(markdown: string): TocItem[] {
 export default function DocPage({ params }: Props) {
   const { l1, l2, slug } = params;
   const doc = getDoc(l1, slug);
-  const docs = getAllDocs();
+  const docs = getAllDocs(l1);
   const searchIndex = getSearchIndex();
   const currentSlug = slug.join('/');
 
