@@ -322,10 +322,20 @@ async function fetchAndParseSubtitles(url) {
 
 // ── YouTube Subtitle Integration ─────────────────────────────────────────
 
+/** Language code aliases — variant codes that share the same display name */
+const LANG_ALIASES = {
+  arb: 'ar', // Modern Standard Arabic → Standard Arabic
+};
+
+/** Get the lang-names entry for a code, following aliases if needed */
+function getLangEntry(code) {
+  return langNames[code] || langNames[LANG_ALIASES[code]];
+}
+
 /** Get a readable language name for display in the dropdown.
  *  Uses translations from the monorepo's translations.csv (lang.* keys). */
 function languageName(code) {
-  const entry = langNames[code];
+  const entry = getLangEntry(code);
   if (!entry) return code.toUpperCase();
 
   // Get Chrome UI language (e.g., 'fr-FR', 'zh_CN', 'en-US')
