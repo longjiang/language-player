@@ -245,7 +245,7 @@ When writing or editing markdown documentation in `apps/web/content/docs/`, foll
 **Example (avoid):**
 > The interactive subtitle feature enables users to select lexical items, which triggers the display of dictionary entries including definitions and audio pronunciation, with the option to persist selections to a personalized vocabulary collection.
 
-### Using Translation Keys in Docs
+#### Using Translation Keys in Docs
 
 Docs support `{$key}` syntax to reference CSV translation keys. When the page renders in a non-English locale, these keys are resolved to the locale's translation.
 
