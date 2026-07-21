@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Language Player",
-  "version": "1.0.17",
-  "description": "Interactive dual subtitles for language learning on Prime Video, YouTube, Netflix, and Disney+.",
+  "version": "1.0.18",
+  "description": "Interactive dual subtitles for language learning on Prime Video, YouTube, Netflix, Disney+, and Hulu.",
   "permissions": [
     "webRequest",
     "downloads",
@@ -21,7 +21,7 @@
       "run_at": "document_start"
     },
     {
-      "matches": ["https://*.primevideo.com/*", "https://*.amazon.com/*", "https://*.amazon.co.uk/*", "https://*.amazon.de/*", "https://*.amazon.co.jp/*", "*://*.youtube.com/*", "*://*.disneyplus.com/*"],
+      "matches": ["https://*.primevideo.com/*", "https://*.amazon.com/*", "https://*.amazon.co.uk/*", "https://*.amazon.de/*", "https://*.amazon.co.jp/*", "*://*.youtube.com/*", "*://*.disneyplus.com/*", "*://*.hulu.com/*"],
       "js": ["dist/content.js"],
       "css": ["dist/content.css"],
       "run_at": "document_idle"
@@ -30,7 +30,7 @@
   "web_accessible_resources": [
     {
       "resources": ["src/language-player-logo-64.png", "dist/netflix-main-world.js"],
-      "matches": ["https://*.primevideo.com/*", "https://*.amazon.com/*", "https://*.amazon.co.uk/*", "https://*.amazon.de/*", "https://*.amazon.co.jp/*", "*://*.youtube.com/*", "*://*.netflix.com/*", "*://*.disneyplus.com/*"]
+      "matches": ["https://*.primevideo.com/*", "https://*.amazon.com/*", "https://*.amazon.co.uk/*", "https://*.amazon.de/*", "https://*.amazon.co.jp/*", "*://*.youtube.com/*", "*://*.netflix.com/*", "*://*.disneyplus.com/*", "*://*.hulu.com/*"]
     }
   ],
   "action": {

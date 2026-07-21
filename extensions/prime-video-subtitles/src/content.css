@@ -194,6 +194,16 @@ body.lpv-panel-open .hive-video-player-container {
   width: calc(100vw - 380px) !important;
 }
 
+/* ── Hulu: shrink player so panel sits beside it ───────────────────── */
+
+body.lpv-panel-open .hulu-player,
+body.lpv-panel-open .HuluPlayer,
+body.lpv-panel-open #content-video-player,
+body.lpv-panel-open .video-player-container {
+  width: calc(100vw - 380px) !important;
+  max-width: calc(100vw - 380px) !important;
+}
+
 /* ── Status Bar ────────────────────────────────────────────────────────── */
 
 #lpv-status {
