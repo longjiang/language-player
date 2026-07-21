@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const res = await chrome.tabs.sendMessage(tab.id, { action: 'getTranscriptStatus' });
       if (res?.cuesCount > 0) {
-        transcriptBtn.textContent = 'Show Transcript';
+        transcriptBtn.textContent = chrome.i18n.getMessage('popupShowTranscript');
         transcriptBtn.className = 'lpv-btn-available';
         transcriptBtn.disabled = false;
         transcriptBtn.onclick = () => {
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function showNoTranscript() {
-    transcriptBtn.textContent = 'No Transcript Found';
+    transcriptBtn.textContent = chrome.i18n.getMessage('popupNoTranscript');
     transcriptBtn.className = 'lpv-btn-unavailable';
     transcriptBtn.disabled = true;
     transcriptHint.classList.remove('hidden');

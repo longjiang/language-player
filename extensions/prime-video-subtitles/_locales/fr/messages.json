@@ -83,5 +83,44 @@
   },
   "extensionDescription": {
     "message": "Sous-titres bilingues interactifs pour Prime Video, YouTube, Netflix, Disney+, Hulu et Max."
+  },
+  "popupLoginPrompt": {
+    "message": "Connectez-vous pour enregistrer des mots et synchroniser avec Language Player."
+  },
+  "popupEmailPlaceholder": {
+    "message": "Email"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Mot de passe"
+  },
+  "popupLoginBtn": {
+    "message": "Connexion"
+  },
+  "popupLogoutBtn": {
+    "message": "Déconnexion"
+  },
+  "popupChecking": {
+    "message": "Vérification…"
+  },
+  "popupShowTranscript": {
+    "message": "Afficher la transcription"
+  },
+  "popupNoTranscript": {
+    "message": "Aucune transcription trouvée"
+  },
+  "popupInstructions": {
+    "message": "Lancez une vidéo sur <strong>Prime Video</strong>, <strong>YouTube</strong> ou <strong>Netflix</strong>. Le panneau de transcription s'ouvre automatiquement."
+  },
+  "popupClickWord": {
+    "message": "<strong>Cliquez</strong> sur un mot pour le rechercher dans le dictionnaire"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Enregistrez</strong> des mots sur votre compte Language Player"
+  },
+  "popupToggleShortcut": {
+    "message": "Appuyez sur <kbd>Alt</kbd> + <kbd>T</kbd> pour afficher le panneau"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Assurez-vous que <strong>les sous-titres sont activés</strong> dans la langue que vous étudiez."
   }
 }
