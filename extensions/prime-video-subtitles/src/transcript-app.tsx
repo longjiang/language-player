@@ -17,6 +17,7 @@ import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvid
 import { useTranslateLines } from './use-translate-lines';
 import { useSubscription } from './use-subscription';
 import type { SubCue } from './use-translate-lines';
+import { t } from './i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -306,20 +307,20 @@ const CueLine: React.FC<CueLineProps> = React.memo(
           <button
             onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
             className={`lpv-cue-menu-btn ${menuOpen ? 'lpv-cue-menu-btn-open' : ''}`}
-            title="Actions"
+            title={t('actions')}
           >
             …
           </button>
           {menuOpen && (
             <div className="lpv-cue-menu-dropdown">
-              <button onClick={handleCopy} className="lpv-cue-menu-item">📋 Copy</button>
-              <button onClick={handleSpeak} className="lpv-cue-menu-item">🔊 Speak</button>
+              <button onClick={handleCopy} className="lpv-cue-menu-item">{t('copy')}</button>
+              <button onClick={handleSpeak} className="lpv-cue-menu-item">{t('speak')}</button>
               {!explainLoading && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onExplainLine(cue); }}
                   className="lpv-cue-menu-item"
                 >
-                  🤖 Explain
+                  {t('explain')}
                 </button>
               )}
             </div>
@@ -338,13 +339,13 @@ const EmptyState: React.FC<{ loadingL2?: string }> = ({ loadingL2 }) => (
     {loadingL2 ? (
       <>
         <span className="lpv-spinner" />
-        Loading {loadingL2}…
+        {t('loadingLanguage', [loadingL2])}
       </>
     ) : (
       <>
-        Waiting for subtitles...
+        {t('waitingForSubtitles')}
         <br />
-        Start playing a video.
+        {t('startPlaying')}
       </>
     )}
   </div>
@@ -445,18 +446,18 @@ Text: ${cue.text}`;
     <>
       {/* Control bar */}
       <div className="lpv-control-bar">
-        <label className="lpv-translate-switch" title="Show translation (L1)">
+        <label className="lpv-translate-switch" title={t('showTranslation')}>
           <input
             type="checkbox"
             checked={showTranslation}
             onChange={(e) => setShowTranslation(e.target.checked)}
           />
           <span className="lpv-switch-slider" />
-          <span className="lpv-switch-label">Translate</span>
+          <span className="lpv-switch-label">{t('translate')}</span>
         </label>
         {translating && (
           <span className="lpv-control-status">
-            Translating… {progress}/{cues.length}
+            {t('translating', [String(progress), String(cues.length)])}
           </span>
         )}
       </div>
@@ -496,15 +497,15 @@ Text: ${cue.text}`;
           <div className="lpv-dict-card" onClick={(e) => e.stopPropagation()}>
             <div className="lpv-dict-card-header">
               <div className="lpv-dict-card-header-left">
-                <span className="lpv-dict-card-word">🤖 Explain</span>
-                {explainLoading && <span className="lpv-dict-card-pron">thinking…</span>}
+                <span className="lpv-dict-card-word">{t('explainTitle')}</span>
+                {explainLoading && <span className="lpv-dict-card-pron">{t('thinking')}</span>}
               </div>
               <button onClick={closeExplain} className="lpv-dict-card-close" title="Close">✕</button>
             </div>
             <div className="lpv-dict-card-body">
               <div className="lpv-explain-section" style={{ borderBottom: 'none' }}>
                 {explainLoading && (
-                  <div className="lpv-explain-loading">🤖 AI is thinking…</div>
+                  <div className="lpv-explain-loading">{t('aiThinking')}</div>
                 )}
                 {explainError && (
                   <div className="lpv-explain-error">{explainError}</div>

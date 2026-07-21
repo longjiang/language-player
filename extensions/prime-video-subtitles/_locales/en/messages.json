@@ -1,0 +1,123 @@
+{
+  "appName": {
+    "message": "Language Player",
+    "description": "Extension name shown in panel header"
+  },
+  "waitingForSubtitles": {
+    "message": "Waiting for subtitles...",
+    "description": "Shown when no subtitles are available"
+  },
+  "startPlaying": {
+    "message": "Start playing a video.",
+    "description": "Instruction shown below 'Waiting for subtitles'"
+  },
+  "loadingLanguage": {
+    "message": "Loading $lang$…",
+    "description": "Spinner label while fetching subtitles. $lang$ = language code like 'ja'",
+    "placeholders": {
+      "lang": { "content": "$1", "example": "ja" }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$ subtitle entries loaded",
+    "description": "Status after loading subtitles",
+    "placeholders": {
+      "count": { "content": "$1", "example": "390" }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Failed to load subtitles",
+    "description": "Error status when subtitle fetch fails"
+  },
+  "loadingSubtitles": {
+    "message": "Loading $lang$ subtitles…",
+    "description": "Status bar while fetching subtitles",
+    "placeholders": {
+      "lang": { "content": "$1", "example": "ja" }
+    }
+  },
+  "closePanel": {
+    "message": "Close panel",
+    "description": "Tooltip for the close button"
+  },
+  "learningLanguage": {
+    "message": "Learning language",
+    "description": "Tooltip for the L2 language dropdown"
+  },
+  "popularLanguages": {
+    "message": "Popular",
+    "description": "Optgroup label for popular languages"
+  },
+  "allLanguages": {
+    "message": "All Languages",
+    "description": "Optgroup label for all other languages"
+  },
+  "translate": {
+    "message": "Translate",
+    "description": "Label for the translation toggle switch"
+  },
+  "showTranslation": {
+    "message": "Show translation (L1)",
+    "description": "Tooltip for translation toggle"
+  },
+  "translating": {
+    "message": "Translating… $progress$/$total$",
+    "description": "Status during translation. $progress$ = current, $total$ = total lines",
+    "placeholders": {
+      "progress": { "content": "$1", "example": "5" },
+      "total": { "content": "$2", "example": "390" }
+    }
+  },
+  "actions": {
+    "message": "Actions",
+    "description": "Tooltip for the cue menu button (…)"
+  },
+  "copy": {
+    "message": "📋 Copy",
+    "description": "Menu item to copy subtitle text"
+  },
+  "speak": {
+    "message": "🔊 Speak",
+    "description": "Menu item to speak subtitle text via TTS"
+  },
+  "explain": {
+    "message": "🤖 Explain",
+    "description": "Menu item to get AI explanation of a line"
+  },
+  "explainTitle": {
+    "message": "🤖 Explain",
+    "description": "Header for the AI explanation card"
+  },
+  "aiThinking": {
+    "message": "🤖 AI is thinking…",
+    "description": "Shown while waiting for AI explanation"
+  },
+  "thinking": {
+    "message": "thinking…",
+    "description": "Shown next to 'Explain' during loading"
+  },
+  "save": {
+    "message": "Save",
+    "description": "Button to save a word"
+  },
+  "saved": {
+    "message": "Saved",
+    "description": "Button state after word is saved"
+  },
+  "close": {
+    "message": "Close",
+    "description": "Tooltip/aria for close buttons"
+  },
+  "showTranscript": {
+    "message": "Show Transcript",
+    "description": "Popup button to open the transcript panel"
+  },
+  "noTranscriptFound": {
+    "message": "No Transcript Found",
+    "description": "Popup message when no subtitles detected"
+  },
+  "extensionDescription": {
+    "message": "Interactive dual subtitles for language learning on Prime Video, YouTube, Netflix, Disney+, Hulu, and Max.",
+    "description": "Extension description in manifest and Chrome Web Store"
+  }
+}
