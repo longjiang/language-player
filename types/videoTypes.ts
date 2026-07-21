@@ -1,32 +1,11 @@
-export interface YouTubeVideo {
-  difficulty?: number;
-  starttime?: number; // Used for subs search results
-  date?: Date;
-  youtube_id: string; // The ID of the video on YouTube
-  id?: string; // The ID in our own database
-  title?: string;
-  subs_l1?: Line[];
-  subs_l2?: Line[];
-  views?: number;
-  comments?: number;
-  likes?: number;
-  duration?: number; // Duration in seconds
-  locale?: string;
-  tv_show?: string; // ID of the TV show
-}
+// Re-exported from @langplayer/shared for cross-platform consistency.
+// GO-specific extensions and aliases are kept here.
+
+export { YouTubeVideo } from '@langplayer/shared';
+export { SubtitleLine as Line, type SubtitleLine } from '@langplayer/shared';
+export { SyncedLine } from '@langplayer/shared';
 
 export interface VideoWithTranscriptProps {
   router: any; // Adjust the type according to your router's type
-  video: YouTubeVideo;
-}
-
-export interface Line {
-  line: string;
-  starttime: number;
-}
-
-export interface SyncedLine {
-  starttime: number;
-  l1Line: string;
-  l2Line: string;
+  video: import('@langplayer/shared').YouTubeVideo;
 }

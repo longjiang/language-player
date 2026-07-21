@@ -33,11 +33,7 @@
       "expo-font",
       "expo-localization",
       "expo-secure-store",
-      "expo-sharing",
-      "expo-splash-screen",
-      "expo-sqlite",
-      "expo-status-bar",
-      "expo-web-browser"
+      "expo-splash-screen"
     ],
     "experiments": {
       "typedRoutes": true

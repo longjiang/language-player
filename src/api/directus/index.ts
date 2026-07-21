@@ -1,15 +1,15 @@
 // @/api/directus/index.js
 
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
+import { createApiClient } from '@langplayer/api-client';
+import type { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
-export const DIRECTUS_URL = "https://directusvps.zerotohero.ca/zerotohero";
-export const DIRECTUS_URL_ALT = "https://db2.zerotohero.ca/zerotohero";
+export const DIRECTUS_URL = 'https://directusvps.zerotohero.ca/zerotohero';
+export const DIRECTUS_URL_ALT = 'https://db2.zerotohero.ca/zerotohero';
 
 let currentBaseUrl = DIRECTUS_URL;
 
-const API: AxiosInstance = axios.create({
-  baseURL: currentBaseUrl,
-});
+// Use shared api-client for the Axios instance (auth interceptor, error normalization)
+const API: AxiosInstance = createApiClient({ baseURL: currentBaseUrl, timeout: 15000 });
 
 const switchBaseUrl = () => {
   currentBaseUrl = currentBaseUrl === DIRECTUS_URL ? DIRECTUS_URL_ALT : DIRECTUS_URL;
