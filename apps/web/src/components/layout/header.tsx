@@ -12,7 +12,7 @@ import {
   Menu, X, ChevronDown, Search,
   Compass, Music, Tv, Clapperboard, History,
   BookOpen, Globe, BookMarked,
-  Library, Bookmark, RotateCcw, FileText,
+  Bookmark, RotateCcw, FileText,
 } from 'lucide-react';
 
 interface NavGroup {
@@ -58,7 +58,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   reader: <FileText className="h-4 w-4" />,
   'web-reader': <Globe className="h-4 w-4" />,
   epub: <BookOpen className="h-4 w-4" />,
-  dictionary: <Library className="h-4 w-4" />,
+  dictionary: <BookMarked className="h-4 w-4" />,
   'saved-words': <Bookmark className="h-4 w-4" />,
   review: <RotateCcw className="h-4 w-4" />,
 };
