@@ -44,13 +44,12 @@ export function SavedWordRow({
   };
 
   const headForm = word.forms[0] ?? '?';
-  const altForms = word.forms.length > 1 ? word.forms.slice(1) : undefined;
   const contextForm = ctx.form !== headForm ? ctx.form : undefined;
 
   return (
     <WordListItem
       head={headForm}
-      altForms={altForms}
+      altForms={undefined}
       contextForm={contextForm}
       definitionSlot={<InlineDefinition wordId={word.id} l1Code={l1Code} l2Code={l2Code} />}
       contextSlot={

@@ -3,23 +3,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { decomposeWordId } from '@/lib/word-id-resolver';
 
 // ── Definition cache (module-level, lives for the lifetime of the page) ──
-const definitionCache = new Map<string, { definition: string; pronunciation: string } | null>();
+const definitionCache = new Map<string, { definition: string; pronunciation: string; partOfSpeech?: string } | null>();
 
 export async function fetchDefinition(
   wordId: string,
   l1Code: string,
   l2Code: string,
-): Promise<{ definition: string; pronunciation: string } | null> {
+): Promise<{ definition: string; pronunciation: string; partOfSpeech?: string } | null> {
   if (definitionCache.has(wordId)) return definitionCache.get(wordId) ?? null;
 
-  const dashIdx = wordId.indexOf('-');
-  if (dashIdx <= 0) { definitionCache.set(wordId, null); return null; }
+  const decomposed = decomposeWordId(wordId, l2Code);
+  if (!decomposed) { definitionCache.set(wordId, null); return null; }
 
-  const dictId = wordId.slice(0, dashIdx);
-  const entryId = wordId.slice(dashIdx + 1);
-  const url = `${PYTHON_API_URL}/dictionary/entry?l2=${baseCode(l2Code)}&dict=${dictId}&id=${encodeURIComponent(entryId)}&l1=${baseCode(l1Code)}`;
+  const url = `${PYTHON_API_URL}/dictionary/entry?l2=${baseCode(l2Code)}&dict=${decomposed.dict}&id=${encodeURIComponent(decomposed.id)}&l1=${baseCode(l1Code)}`;
 
   try {
     const res = await fetch(url);
@@ -29,6 +28,7 @@ export async function fetchDefinition(
     const result = {
       definition: (entry?.definitions?.[0] as string) ?? '',
       pronunciation: (entry?.pronunciation as string) ?? '',
+      partOfSpeech: (entry?.part_of_speech as string) ?? undefined,
     };
     definitionCache.set(wordId, result);
     return result;
@@ -55,7 +55,7 @@ export function InlineDefinition({
   l1Code: string;
   l2Code: string;
 }) {
-  const [def, setDef] = useState<{ definition: string; pronunciation: string } | null | undefined>(
+  const [def, setDef] = useState<{ definition: string; pronunciation: string; partOfSpeech?: string } | null | undefined>(
     () => definitionCache.get(wordId),
   );
   const sentinelRef = useRef<HTMLSpanElement>(null);
@@ -102,6 +102,9 @@ export function InlineDefinition({
     <p className="mt-0.5 truncate text-xs text-muted-foreground/80">
       {def.pronunciation && (
         <span className="mr-1.5 text-muted-foreground/50">{def.pronunciation}</span>
+      )}
+      {def.partOfSpeech && (
+        <span className="mr-1 text-muted-foreground/50 italic">{def.partOfSpeech}</span>
       )}
       {def.definition && <span>{def.definition}</span>}
     </p>
