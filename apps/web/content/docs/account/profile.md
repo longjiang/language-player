@@ -24,7 +24,7 @@ The **{$title.subscription}** section shows your current plan and lets you manag
 
 ### Free Account
 
-If you're on a free account, you'll see a **{$label.free_account}** badge and three plan cards — Monthly ($10/mo), Annual ($90/yr), and Lifetime ($169). Click **{$action.upgrade_to_pro}** to go to the [{$title.go_pro}](/docs/account/billing) page and choose a plan.
+If you're on a free account, you'll see a **{$label.free_account}** badge and three plan cards — Monthly ($10/mo), Annual ($90/yr), and Lifetime ($169). Click **{$action.upgrade_to_pro}** to go to the [{$title.go_pro}](/docs/account/subscription) page and choose a plan.
 
 ### Active Pro Subscription
 
