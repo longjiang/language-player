@@ -74,9 +74,8 @@ The Next.js web app uses a clean server-side architecture: `POST /dictionary/loo
 │  └─ Not found → LLM generate entry                   │
 │                                                      │
 │  /dictionary/download  (NEW)                         │
-│  ├─ Load CSV dict for l2                             │
-│  ├─ Normalize all entries (same normalizers)         │
-│  ├─ Filter top N by word frequency                   │
+│  ├─ Query dictionaries.db SQLite directly             │
+│  ├─ JOIN word_frequency → filter & sort by frequency  │
 │  ├─ Cache result (MD5 hash → disk)                   │
 │  └─ Return JSON: { entries, total, downloaded }      │
 └──────────────────────────────────────────────────────┘
@@ -110,12 +109,15 @@ Each `DictionaryEntry` includes `match_type: 'exact' | 'lemma' | 'fuzzy' | 'llm'
 | `limit` | number | 50000 | Max entries to return (top by frequency) |
 
 **Server-side flow:**
-1. Load the appropriate dictionary CSV for `l2` (cedict/edict/kengdic/wiktionary)
-2. Normalize all entries through the same normalizers used by `/dictionary/lookup`
-3. Filter to top N entries by word frequency (using existing `LANGS_WITH_WORD_FREQ` data)
-4. If `l1 !== 'en'`, optionally batch-translate definitions via LLM
-5. Cache the result on disk (MD5 of `l2:l1:limit` → JSON file)
-6. Return `{ entries: DictionaryEntry[], total: number, downloaded: number }`
+1. Query `dictionaries.db` SQLite directly — data is already normalized (see `docs/python-dictionary-db-schema.md`)
+   - Dedicated dicts: `SELECT * FROM {cedict|edict|kengdic|cccanto|klingonska}` (language is the table itself)
+   - Wiktionary: `SELECT * FROM wiktionary WHERE lang_code = ?` (~800 languages, one table)
+2. JOIN with `word_frequency` to filter top N entries by Zipf score, then sort descending
+3. If `l1 !== 'en'`, optionally batch-translate definitions via DeepSeek LLM
+4. Cache the result on disk (MD5 of `l2:l1:limit` → JSON file)
+5. Return `{ entries: DictionaryEntry[], total: number, downloaded: number }`
+
+**No CSV parsing needed** — the database already contains all entries in their final normalized form. The `/dictionary/lookup` endpoint queries the same tables at runtime. The download endpoint just bulk-exports instead of single-lookup.
 
 **Client-side storage:** IndexedDB (via `expo-sqlite` or a dedicated key-value store). IndexedDB is preferred over SQLite for this use case because:
 - No normalization needed — JSON is already `DictionaryEntry[]`
