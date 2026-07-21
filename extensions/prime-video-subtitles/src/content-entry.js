@@ -722,10 +722,26 @@ function populateL2Selector() {
   l2SelectEl.disabled = false;
 }
 
+/** Load the user's saved L2 language preference from storage */
+async function loadSavedL2Preference() {
+  try {
+    const result = await chrome.storage.local.get(['l2Language']);
+    if (result.l2Language && SUPPORTED_L2S.includes(result.l2Language)) {
+      detectedL2Code = result.l2Language;
+      console.log('[LanguagePlayer] Loaded saved L2 preference:', detectedL2Code);
+    }
+  } catch {}
+}
+
 /** Handle L2 language change from the dropdown */
 async function onL2Change(newCode) {
   if (newCode === detectedL2Code) return;
   detectedL2Code = newCode;
+
+  // Persist user preference
+  try {
+    chrome.storage.local.set({ l2Language: newCode });
+  } catch {}
 
   // For YouTube: try to find a matching caption track
   if (isYouTube && ytCaptionTracks.length > 0) {
@@ -894,7 +910,8 @@ function onTimeUpdate() {
 
 function attachTimeTracking() {
   const video = getVideoElement();
-  if (video) {
+  if (video && !video._lpvTimeTracking) {
+    video._lpvTimeTracking = true;
     video.addEventListener('timeupdate', onTimeUpdate);
     video.addEventListener('seeked', () => {
       if (STATE.cues.length > 0) {
@@ -967,10 +984,14 @@ async function handleNetflixSubs(tracks) {
   console.log('[LanguagePlayer] Netflix subtitle tracks:',
     Object.keys(subs).map(k => `${k} (${subs[k].languageCode})`).join(', '));
 
-  // Pick best track matching detected L2
+  // Use the L2 selector value (reflects user's saved preference) over auto-detected
+  const userL2 = l2SelectEl?.value || detectedL2Code;
+  console.log('[LanguagePlayer] User L2 preference:', userL2, '(auto-detected:', detectedL2Code + ')');
+
+  // Pick best track: exact match > prefix match > first available
   const langKeys = Object.keys(subs);
-  const bestKey = langKeys.find(k => subs[k].languageCode === detectedL2Code)
-    || langKeys.find(k => subs[k].languageCode?.startsWith?.(detectedL2Code))
+  const bestKey = langKeys.find(k => subs[k].languageCode === userL2)
+    || langKeys.find(k => subs[k].languageCode?.startsWith?.(userL2?.split('-')[0]))
     || langKeys[0];
 
   if (bestKey && subs[bestKey]) {
@@ -1117,32 +1138,23 @@ async function init() {
     await loadYouTubeSubtitles();
     setupYouTubeNavigationObserver();
     setInterval(() => {
-      const video = getVideoElement();
-      if (video && !video._lpvTimeTracking) {
-        video._lpvTimeTracking = true;
-        attachTimeTracking();
-      }
+      attachTimeTracking();
     }, 2000);
   } else if (isNetflix) {
     // Netflix: subs come via JSON.parse monkeypatch
-    setupNetflixInterceptor();
+    // Load saved L2 preference first so we pick the right track
+    loadSavedL2Preference().then(() => {
+      setupNetflixInterceptor();
+    });
     attachTimeTracking();
     setInterval(() => {
-      const video = getVideoElement();
-      if (video && !video._lpvTimeTracking) {
-        video._lpvTimeTracking = true;
-        attachTimeTracking();
-      }
+      attachTimeTracking();
     }, 2000);
   } else {
     // Prime Video: subs come via webRequest → message listener
     attachTimeTracking();
     const playerObserver = new MutationObserver(() => {
-      const video = getVideoElement();
-      if (video && !video._lpvTimeTracking) {
-        video._lpvTimeTracking = true;
-        attachTimeTracking();
-      }
+      attachTimeTracking();
     });
     const playerContainer = document.getElementById('dv-web-player-2') || document.getElementById('dv-web-player');
     if (playerContainer) {
