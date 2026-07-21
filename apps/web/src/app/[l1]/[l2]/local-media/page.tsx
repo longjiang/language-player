@@ -168,7 +168,7 @@ export default function CustomMediaPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 lg:h-[calc(100vh-5rem)] lg:overflow-hidden">
+    <div className={`mx-auto max-w-7xl px-4 py-6 ${hasSubtitles ? 'lg:h-[calc(100vh-5rem)] lg:overflow-hidden' : ''}`}>
       <div className="mb-4">
         <h1 className="text-xl font-bold">{t('title.local_media')}</h1>
       </div>
@@ -215,7 +215,7 @@ export default function CustomMediaPage() {
         {/* Right column: transcript (only when captions loaded) */}
         {hasSubtitles && (
           <aside className="min-h-0 overflow-hidden">
-            <div ref={transcriptScrollRef} className="h-full">
+            <div ref={transcriptScrollRef} className="h-full overflow-y-auto rounded-xl border border-border bg-card p-4">
               <SubtitleDisplay
                 youtubeId=""
                 videoTitle={customMedia.fileName ?? undefined}
