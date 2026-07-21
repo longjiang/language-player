@@ -422,7 +422,7 @@ export function ReaderPanel({
           {activeTab === 'read' && !text && !loading && (
             <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
               <BookOpen className="mb-3 h-12 w-12 text-muted-foreground/40" />
-              <h2 className="text-lg font-semibold text-muted-foreground">{t('title.reader')}</h2>
+              <h2 className="text-lg font-semibold text-muted-foreground">{t('title.notes_reader')}</h2>
               <p className="mt-1 max-w-md text-sm text-muted-foreground">
                 {t('msg.reader_empty_state', { l2: l2.name })}
               </p>

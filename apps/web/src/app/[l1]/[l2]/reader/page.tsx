@@ -284,7 +284,7 @@ export default function ReaderPage() {
             />
           ) : (
             <div className="flex items-center gap-1.5">
-              <h1 className="text-xl font-bold truncate">{title || t('title.reader')}</h1>
+              <h1 className="text-xl font-bold truncate">{title || t('title.notes_reader')}</h1>
               <button
                 onClick={() => setIsEditingTitle(true)}
                 className="flex-shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
