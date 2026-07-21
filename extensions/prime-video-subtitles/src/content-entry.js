@@ -414,8 +414,10 @@ async function fetchAndParseSubtitles(url) {
       cues = parseTTML(text);
     }
 
-    // Only apply if no newer fetch has started
-    if (fetchGen !== gen) return;
+    // For non-Disney+ platforms: discard if a newer fetch started
+    // (prevents stale cues from overwriting newer ones).
+    // Disney+ segments are merged — every segment must complete.
+    if (!isDisneySegment && fetchGen !== gen) return;
 
     // Disney+ VTT segments: merge into existing cues
     if (isDisneySegment && STATE.cues.length > 0) {
