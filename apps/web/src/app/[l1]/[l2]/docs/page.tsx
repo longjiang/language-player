@@ -62,7 +62,7 @@ function readDocsTree(dir: string, basePath: string = '', titleMap?: Map<string,
 }
 
 function getDocs(l1: string): DocMeta[] {
-  const titleMap = l1 !== 'en' ? loadTitleMap(l1) : undefined;
+  const titleMap = loadTitleMap(l1);
   const possibleDirs = [
     resolve(process.cwd(), 'apps/web/content/docs'),
     resolve(process.cwd(), 'content/docs'),
@@ -133,11 +133,9 @@ interface DocEntry {
 
 /** Build a flat search index with full doc content for fuzzy search. */
 function getSearchIndex(l1: string): DocEntry[] {
-  // Prefer translated locale JSON for non-English L1
-  if (l1 !== 'en') {
-    const localeEntries = loadLocaleEntries(l1);
-    if (localeEntries) return localeEntries;
-  }
+  // Prefer translated locale JSON if available
+  const localeEntries = loadLocaleEntries(l1);
+  if (localeEntries) return localeEntries;
   // Fall back to raw .md files (English)
   const possibleDirs = [
     resolve(process.cwd(), 'apps/web/content/docs'),

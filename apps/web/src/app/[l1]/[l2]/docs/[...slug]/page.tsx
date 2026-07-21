@@ -119,7 +119,7 @@ function getAllDocs(l1: string): DocMeta[] {
 
 /** Load slug→resolved-title map from the locale JSON if available. */
 function loadTitleMap(l1: string): Map<string, string> | undefined {
-  if (l1 === 'en') return undefined; // English titles don't need resolution
+  // Always try locale JSON — en.json has resolved {$key} titles
   const dataDirs = [
     resolve(process.cwd(), 'apps/web/src/data/docs-i18n'),
     resolve(process.cwd(), 'src/data/docs-i18n'),
@@ -144,11 +144,9 @@ interface DocEntry {
 }
 
 function getSearchIndex(l1: string): DocEntry[] {
-  // Prefer translated locale JSON for non-English L1
-  if (l1 !== 'en') {
-    const localeEntries = loadLocaleEntries(l1);
-    if (localeEntries) return localeEntries;
-  }
+  // Prefer translated locale JSON if available
+  const localeEntries = loadLocaleEntries(l1);
+  if (localeEntries) return localeEntries;
   // Fall back to raw .md files (English)
   const possibleDirs = [
     resolve(process.cwd(), 'apps/web/content/docs'),
