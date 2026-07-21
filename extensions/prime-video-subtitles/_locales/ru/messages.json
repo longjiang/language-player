@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "Ожидание субтитров…"
+  },
+  "startPlaying": {
+    "message": "Начните воспроизведение видео."
+  },
+  "loadingLanguage": {
+    "message": "Загрузка $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "Загружено $count$ записей субтитров",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Не удалось загрузить субтитры"
+  },
+  "loadingSubtitles": {
+    "message": "Загрузка субтитров $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "Закрыть"
+  },
+  "learningLanguage": {
+    "message": "Изучаемый язык"
+  },
+  "popularLanguages": {
+    "message": "Популярные"
+  },
+  "allLanguages": {
+    "message": "All"
+  },
+  "translate": {
+    "message": "Перевод"
+  },
+  "showTranslation": {
+    "message": "Показать перевод"
+  },
+  "translating": {
+    "message": "Перевод… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "Действия"
+  },
+  "copy": {
+    "message": "Копировать"
+  },
+  "speak": {
+    "message": "Говорить"
+  },
+  "explain": {
+    "message": "Спросить ИИ"
+  },
+  "explainTitle": {
+    "message": "Спросить ИИ"
+  },
+  "aiThinking": {
+    "message": "🤖 ИИ думает…"
+  },
+  "thinking": {
+    "message": "думает…"
+  },
+  "save": {
+    "message": "Сохранить слово"
+  },
+  "saved": {
+    "message": "Сохранено"
+  },
+  "close": {
+    "message": "Закрыть"
+  },
+  "showTranscript": {
+    "message": "Показать транскрипт"
+  },
+  "noTranscriptFound": {
+    "message": "Транскрипт не найден"
+  },
+  "extensionDescription": {
+    "message": "Интерактивные двуязычные субтитры для изучения языков на Prime Video, YouTube, Netflix, Disney+, Hulu и Max."
+  },
+  "popupLoginPrompt": {
+    "message": "Войдите, чтобы сохранять слова и синхронизировать с Language Player."
+  },
+  "popupEmailPlaceholder": {
+    "message": "Эл. почта"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Пароль"
+  },
+  "popupLoginBtn": {
+    "message": "Войти"
+  },
+  "popupLogoutBtn": {
+    "message": "Выйти"
+  },
+  "popupChecking": {
+    "message": "Проверка…"
+  },
+  "popupShowTranscript": {
+    "message": "Показать транскрипт"
+  },
+  "popupNoTranscript": {
+    "message": "Транскрипт не найден"
+  },
+  "popupInstructions": {
+    "message": "Начните воспроизведение любого видео на <strong>Prime Video</strong>, <strong>YouTube</strong> или <strong>Netflix</strong>. Панель транскрипта открывается автоматически при обнаружении субтитров."
+  },
+  "popupClickWord": {
+    "message": "<strong>Нажмите</strong> на любое слово, чтобы посмотреть его в словаре"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Сохраняйте</strong> слова в свой аккаунт Language Player"
+  },
+  "popupToggleShortcut": {
+    "message": "Нажмите <kbd>Alt</kbd> + <kbd>T</kbd> для переключения панели"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Убедитесь, что <strong>субтитры включены</strong> на изучаемом языке."
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "Altyazı bekleniyor…"
+  },
+  "startPlaying": {
+    "message": "Bir video oynatmaya başlayın."
+  },
+  "loadingLanguage": {
+    "message": "$lang$ yükleniyor…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$ altyazı girdisi yüklendi",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Altyazılar yüklenemedi"
+  },
+  "loadingSubtitles": {
+    "message": "$lang$ altyazıları yükleniyor…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "Kapat"
+  },
+  "learningLanguage": {
+    "message": "Öğrenilen dil"
+  },
+  "popularLanguages": {
+    "message": "Popüler"
+  },
+  "allLanguages": {
+    "message": "Tümü"
+  },
+  "translate": {
+    "message": "Çeviri"
+  },
+  "showTranslation": {
+    "message": "Çeviriyi Göster"
+  },
+  "translating": {
+    "message": "Çevriliyor… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "Eylemler"
+  },
+  "copy": {
+    "message": "Kopyala"
+  },
+  "speak": {
+    "message": "Konuş"
+  },
+  "explain": {
+    "message": "AI'ye Sor"
+  },
+  "explainTitle": {
+    "message": "AI'ye Sor"
+  },
+  "aiThinking": {
+    "message": "🤖 YZ düşünüyor…"
+  },
+  "thinking": {
+    "message": "düşünüyor…"
+  },
+  "save": {
+    "message": "Kelimeyi Kaydet"
+  },
+  "saved": {
+    "message": "Kaydedildi"
+  },
+  "close": {
+    "message": "Kapat"
+  },
+  "showTranscript": {
+    "message": "Transkripti Göster"
+  },
+  "noTranscriptFound": {
+    "message": "Transkript Bulunamadı"
+  },
+  "extensionDescription": {
+    "message": "Prime Video, YouTube, Netflix, Disney+, Hulu ve Max'te dil öğrenimi için etkileşimli çift altyazı."
+  },
+  "popupLoginPrompt": {
+    "message": "Kelimeleri kaydetmek ve Language Player ile senkronize etmek için giriş yapın."
+  },
+  "popupEmailPlaceholder": {
+    "message": "E-posta"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Şifre"
+  },
+  "popupLoginBtn": {
+    "message": "Giriş Yap"
+  },
+  "popupLogoutBtn": {
+    "message": "Çıkış Yap"
+  },
+  "popupChecking": {
+    "message": "Kontrol ediliyor…"
+  },
+  "popupShowTranscript": {
+    "message": "Transkripti Göster"
+  },
+  "popupNoTranscript": {
+    "message": "Transkript Bulunamadı"
+  },
+  "popupInstructions": {
+    "message": "<strong>Prime Video</strong>, <strong>YouTube</strong> veya <strong>Netflix</strong>'te herhangi bir videoyu oynatmaya başlayın. Altyazı bulunduğunda transkript paneli otomatik olarak açılır."
+  },
+  "popupClickWord": {
+    "message": "Sözlükte aramak için herhangi bir kelimeye <strong>tıklayın</strong>"
+  },
+  "popupSaveWords": {
+    "message": "Language Player hesabınıza kelimeleri <strong>kaydedin</strong>"
+  },
+  "popupToggleShortcut": {
+    "message": "Paneli açıp kapatmak için <kbd>Alt</kbd> + <kbd>T</kbd> tuşlarına basın"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Çalıştığınız dilde <strong>altyazıların açık olduğundan</strong> emin olun."
+  }
+}

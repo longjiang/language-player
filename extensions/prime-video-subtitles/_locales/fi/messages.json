@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "Odotetaan tekstityksiä…"
+  },
+  "startPlaying": {
+    "message": "Aloita videon toisto."
+  },
+  "loadingLanguage": {
+    "message": "Ladataan $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$ tekstitysmerkintää ladattu",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Tekstitysten lataaminen epäonnistui"
+  },
+  "loadingSubtitles": {
+    "message": "Ladataan $lang$-tekstityksiä…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "Sulje"
+  },
+  "learningLanguage": {
+    "message": "Opiskelukieli"
+  },
+  "popularLanguages": {
+    "message": "Suositut"
+  },
+  "allLanguages": {
+    "message": "Kaikki"
+  },
+  "translate": {
+    "message": "Käännös"
+  },
+  "showTranslation": {
+    "message": "Näytä käännös"
+  },
+  "translating": {
+    "message": "Käännetään… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "Toiminnot"
+  },
+  "copy": {
+    "message": "Kopioi"
+  },
+  "speak": {
+    "message": "Puhu"
+  },
+  "explain": {
+    "message": "Kysy tekoälyltä"
+  },
+  "explainTitle": {
+    "message": "Kysy tekoälyltä"
+  },
+  "aiThinking": {
+    "message": "🤖 Tekoäly miettii…"
+  },
+  "thinking": {
+    "message": "miettii…"
+  },
+  "save": {
+    "message": "Tallenna sana"
+  },
+  "saved": {
+    "message": "Tallennettu"
+  },
+  "close": {
+    "message": "Sulje"
+  },
+  "showTranscript": {
+    "message": "Näytä transkriptio"
+  },
+  "noTranscriptFound": {
+    "message": "Transkriptiota ei löytynyt"
+  },
+  "extensionDescription": {
+    "message": "Vuorovaikutteiset kaksikieliset tekstitykset kielten oppimiseen Prime Video, YouTube, Netflix, Disney+, Hulu ja Max -palveluissa."
+  },
+  "popupLoginPrompt": {
+    "message": "Kirjaudu sisään tallentaaksesi sanoja ja synkronoidaksesi Language Playerin kanssa."
+  },
+  "popupEmailPlaceholder": {
+    "message": "Sähköposti"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Salasana"
+  },
+  "popupLoginBtn": {
+    "message": "Kirjaudu sisään"
+  },
+  "popupLogoutBtn": {
+    "message": "Kirjaudu ulos"
+  },
+  "popupChecking": {
+    "message": "Tarkistetaan…"
+  },
+  "popupShowTranscript": {
+    "message": "Näytä transkriptio"
+  },
+  "popupNoTranscript": {
+    "message": "Transkriptiota ei löytynyt"
+  },
+  "popupInstructions": {
+    "message": "Aloita minkä tahansa videon toisto <strong>Prime Video</strong>ssa, <strong>YouTube</strong>ssa tai <strong>Netflix</strong>issä. Transkriptiopaneeli avautuu automaattisesti, kun tekstitykset löytyvät."
+  },
+  "popupClickWord": {
+    "message": "<strong>Napsauta</strong> mitä tahansa sanaa etsiäksesi sen sanakirjasta"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Tallenna</strong> sanoja Language Player -tilillesi"
+  },
+  "popupToggleShortcut": {
+    "message": "Paina <kbd>Alt</kbd> + <kbd>T</kbd> vaihtaaksesi paneelia"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Varmista, että <strong>tekstitykset ovat päällä</strong> opiskelemallasi kielellä."
+  }
+}

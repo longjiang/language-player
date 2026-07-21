@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "Se așteaptă subtitrări…"
+  },
+  "startPlaying": {
+    "message": "Începeți redarea unui videoclip."
+  },
+  "loadingLanguage": {
+    "message": "Se încarcă $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$ intrări de subtitrări încărcate",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Eroare la încărcarea subtitrărilor"
+  },
+  "loadingSubtitles": {
+    "message": "Se încarcă subtitrările $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "Închideți"
+  },
+  "learningLanguage": {
+    "message": "Limba de învățare"
+  },
+  "popularLanguages": {
+    "message": "Populare"
+  },
+  "allLanguages": {
+    "message": "Toate"
+  },
+  "translate": {
+    "message": "Traducere"
+  },
+  "showTranslation": {
+    "message": "Arată traducerea"
+  },
+  "translating": {
+    "message": "Se traduce… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "Acțiuni"
+  },
+  "copy": {
+    "message": "Copiază"
+  },
+  "speak": {
+    "message": "Vorbiți"
+  },
+  "explain": {
+    "message": "Întreabă AI"
+  },
+  "explainTitle": {
+    "message": "Întreabă AI"
+  },
+  "aiThinking": {
+    "message": "🤖 IA se gândește…"
+  },
+  "thinking": {
+    "message": "se gândește…"
+  },
+  "save": {
+    "message": "Salvează cuvântul"
+  },
+  "saved": {
+    "message": "Salvat"
+  },
+  "close": {
+    "message": "Închideți"
+  },
+  "showTranscript": {
+    "message": "Afișează transcrierea"
+  },
+  "noTranscriptFound": {
+    "message": "Nicio transcriere găsită"
+  },
+  "extensionDescription": {
+    "message": "Subtitrări bilingve interactive pentru învățarea limbilor străine pe Prime Video, YouTube, Netflix, Disney+, Hulu și Max."
+  },
+  "popupLoginPrompt": {
+    "message": "Autentifică-te pentru a salva cuvinte și a sincroniza cu Language Player."
+  },
+  "popupEmailPlaceholder": {
+    "message": "Email"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Parolă"
+  },
+  "popupLoginBtn": {
+    "message": "Autentificare"
+  },
+  "popupLogoutBtn": {
+    "message": "Deconectare"
+  },
+  "popupChecking": {
+    "message": "Se verifică…"
+  },
+  "popupShowTranscript": {
+    "message": "Afișează transcrierea"
+  },
+  "popupNoTranscript": {
+    "message": "Nicio transcriere găsită"
+  },
+  "popupInstructions": {
+    "message": "Începeți redarea oricărui videoclip pe <strong>Prime Video</strong>, <strong>YouTube</strong> sau <strong>Netflix</strong>. Panoul de transcriere se deschide automat când sunt găsite subtitrări."
+  },
+  "popupClickWord": {
+    "message": "Faceți <strong>clic</strong> pe orice cuvânt pentru a-l căuta în dicționar"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Salvați</strong> cuvinte în contul dvs. Language Player"
+  },
+  "popupToggleShortcut": {
+    "message": "Apăsați <kbd>Alt</kbd> + <kbd>T</kbd> pentru a comuta panoul"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Asigurați-vă că <strong>subtitrările sunt activate</strong> în limba pe care o studiați."
+  }
+}

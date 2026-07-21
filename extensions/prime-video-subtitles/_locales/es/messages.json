@@ -1,0 +1,150 @@
+{
+  "appName": {
+    "message": "Language Player"
+  },
+  "waitingForSubtitles": {
+    "message": "Esperando subtítulos…"
+  },
+  "startPlaying": {
+    "message": "Comienza a reproducir un video."
+  },
+  "loadingLanguage": {
+    "message": "Cargando $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "subtitleEntriesLoaded": {
+    "message": "$count$ entradas de subtítulos cargadas",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "390"
+      }
+    }
+  },
+  "failedToLoadSubtitles": {
+    "message": "Error al cargar los subtítulos"
+  },
+  "loadingSubtitles": {
+    "message": "Cargando subtítulos en $lang$…",
+    "placeholders": {
+      "lang": {
+        "content": "$1",
+        "example": "ja"
+      }
+    }
+  },
+  "closePanel": {
+    "message": "Cerrar"
+  },
+  "learningLanguage": {
+    "message": "Idioma de aprendizaje"
+  },
+  "popularLanguages": {
+    "message": "Populares"
+  },
+  "allLanguages": {
+    "message": "Todo"
+  },
+  "translate": {
+    "message": "Traducción"
+  },
+  "showTranslation": {
+    "message": "Mostrar traducción"
+  },
+  "translating": {
+    "message": "Traduciendo… $progress$/$total$",
+    "placeholders": {
+      "progress": {
+        "content": "$1",
+        "example": "5"
+      },
+      "total": {
+        "content": "$2",
+        "example": "390"
+      }
+    }
+  },
+  "actions": {
+    "message": "Acciones"
+  },
+  "copy": {
+    "message": "Copiar"
+  },
+  "speak": {
+    "message": "Hablar"
+  },
+  "explain": {
+    "message": "Preguntar a la IA"
+  },
+  "explainTitle": {
+    "message": "Preguntar a la IA"
+  },
+  "aiThinking": {
+    "message": "🤖 La IA está pensando…"
+  },
+  "thinking": {
+    "message": "pensando…"
+  },
+  "save": {
+    "message": "Guardar palabra"
+  },
+  "saved": {
+    "message": "Guardado"
+  },
+  "close": {
+    "message": "Cerrar"
+  },
+  "showTranscript": {
+    "message": "Mostrar transcripción"
+  },
+  "noTranscriptFound": {
+    "message": "No se encontró transcripción"
+  },
+  "extensionDescription": {
+    "message": "Subtítulos bilingües interactivos para aprender idiomas en Prime Video, YouTube, Netflix, Disney+, Hulu y Max."
+  },
+  "popupLoginPrompt": {
+    "message": "Inicia sesión para guardar palabras y sincronizar con Language Player."
+  },
+  "popupEmailPlaceholder": {
+    "message": "Correo electrónico"
+  },
+  "popupPasswordPlaceholder": {
+    "message": "Contraseña"
+  },
+  "popupLoginBtn": {
+    "message": "Iniciar sesión"
+  },
+  "popupLogoutBtn": {
+    "message": "Cerrar sesión"
+  },
+  "popupChecking": {
+    "message": "Comprobando…"
+  },
+  "popupShowTranscript": {
+    "message": "Mostrar transcripción"
+  },
+  "popupNoTranscript": {
+    "message": "No se encontró transcripción"
+  },
+  "popupInstructions": {
+    "message": "Reproduce cualquier video en <strong>Prime Video</strong>, <strong>YouTube</strong> o <strong>Netflix</strong>. El panel de transcripción se abre automáticamente cuando se encuentran subtítulos."
+  },
+  "popupClickWord": {
+    "message": "Haz <strong>clic</strong> en cualquier palabra para buscarla en el diccionario"
+  },
+  "popupSaveWords": {
+    "message": "<strong>Guarda</strong> palabras en tu cuenta de Language Player"
+  },
+  "popupToggleShortcut": {
+    "message": "Pulsa <kbd>Alt</kbd> + <kbd>T</kbd> para mostrar/ocultar el panel"
+  },
+  "popupCaptionsHint": {
+    "message": "💡 Asegúrate de que <strong>los subtítulos estén activados</strong> en el idioma que estudias."
+  }
+}
