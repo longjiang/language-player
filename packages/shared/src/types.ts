@@ -51,6 +51,18 @@ export interface TVShow {
   episode?: number;
 }
 
+export interface LiveTVChannel {
+  id: number;
+  name: string;
+  logo: string;
+  url: string;
+  category: string;
+  countries: string;
+  alive: number | null;
+  latency_ms: number | null;
+  last_checked: string | null;
+}
+
 // ── Dictionary & Tokens ───────────────────────
 
 export interface Lemma {
