@@ -86,7 +86,7 @@ export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
         {/* Buffering overlay */}
         {buffering && (
           <View className="absolute inset-0 items-center justify-center bg-black/50">
-            <ActivityIndicator size="large" color="white" />
+            <ActivityIndicator size="large" color={ICON_ON_PRIMARY} />
           </View>
         )}
 
@@ -103,9 +103,9 @@ export const LiveTVPlayer = forwardRef<LiveTVPlayerHandle, LiveTVPlayerProps>(
           className="absolute right-3 top-3 rounded-full bg-black/60 p-2"
         >
           {muted ? (
-            <VolumeX size={18} color="white" />
+            <VolumeX size={18} color={ICON_ON_PRIMARY} />
           ) : (
-            <Volume2 size={18} color="white" />
+            <Volume2 size={18} color={ICON_ON_PRIMARY} />
           )}
         </Pressable>
       </View>

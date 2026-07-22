@@ -6,7 +6,7 @@ import { useT } from '@/hooks/use-t';
 import { useVideos, apiClient } from '@langplayer/api-client';
 import { VideoCard } from '@/components/video/VideoCard';
 import { Search, AlertCircle, Film, Tag } from 'lucide-react-native';
-import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
+import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import type { YouTubeVideo } from '@langplayer/shared';
 
 interface VideoTag {
@@ -92,7 +92,7 @@ export default function SearchScreen() {
       {/* Search bar */}
       <View className="flex-row items-center gap-2 border-b border-border px-4 pb-2">
         <View className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search size={16} color={ICON_MUTED} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <TextInput
             className="flex-1 rounded-lg border border-border bg-card py-2 pl-10 pr-3 text-sm text-foreground"
             placeholder={t('placeholder.search_dots')}
@@ -127,7 +127,7 @@ export default function SearchScreen() {
           ) : tags.length > 0 ? (
             <>
               <View className="mb-2 flex-row items-center gap-1">
-                <Tag size={16} className="text-muted-foreground" />
+                <Tag size={16} color={ICON_MUTED} className="text-muted-foreground" />
                 <Text className="text-sm text-muted-foreground">{t('title.tags')}</Text>
               </View>
               <View className="flex-row flex-wrap gap-1.5">
@@ -159,7 +159,7 @@ export default function SearchScreen() {
       {/* Error */}
       {error && (
         <View className="mx-4 mt-4 flex-row items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
-          <AlertCircle size={16} className="text-destructive" />
+          <AlertCircle size={16} color={ICON_DESTRUCTIVE} className="text-destructive" />
           <Text className="text-sm text-destructive">{error}</Text>
         </View>
       )}
@@ -167,7 +167,7 @@ export default function SearchScreen() {
       {/* No results */}
       {hasSearched && !hasResults && !loading && !error && (
         <View className="mt-12 items-center px-8">
-          <Film size={48} className="mb-4 text-muted-foreground/40" />
+          <Film size={48} color={ICON_MUTED} className="mb-4 text-muted-foreground/40" />
           <Text className="text-center text-muted-foreground">{t('msg.no_videos_found')}</Text>
         </View>
       )}

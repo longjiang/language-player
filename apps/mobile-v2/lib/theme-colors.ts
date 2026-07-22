@@ -8,3 +8,6 @@ export const ICON_ON_PRIMARY = hslToHex(darkSemantic.primaryForeground);
 
 /** Placeholder text color. */
 export const PLACEHOLDER_COLOR = hslToHex(darkSemantic.mutedForeground);
+
+/** Destructive/error color. */
+export const ICON_DESTRUCTIVE = hslToHex(darkSemantic.destructive);

@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react';
 import { View, ActivityIndicator, Text, useWindowDimensions } from 'react-native';
 import YoutubePlayer, { type YoutubeIframeRef } from 'react-native-youtube-iframe';
+import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 
 /**
@@ -169,7 +170,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
       <View className="w-full bg-black" style={{ height: videoHeight }}>
         {!ready && (
           <View className="absolute inset-0 items-center justify-center">
-            <ActivityIndicator size="large" color="white" />
+            <ActivityIndicator size="large" color={ICON_ON_PRIMARY} />
           </View>
         )}
         <YoutubePlayer

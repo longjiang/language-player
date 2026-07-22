@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 
@@ -61,7 +62,7 @@ export default function LoginScreen() {
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator color="white" />
+          <ActivityIndicator color={ICON_ON_PRIMARY} />
         ) : (
           <Text className="text-primary-foreground font-bold text-base">
             {t('action.login')}
