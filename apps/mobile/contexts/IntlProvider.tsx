@@ -21,7 +21,19 @@ export const IntlProviderWrapper: React.FC<{ children: ReactNode }> = ({ childre
   }, [locale]);
 
   return (
-    <ReactIntlProvider locale={locale} messages={messages} defaultLocale="en">
+    <ReactIntlProvider
+      locale={locale}
+      messages={messages}
+      defaultLocale="en"
+      onError={(err) => {
+        // Suppress MISSING_TRANSLATION in development — the useT() hook
+        // already falls back to showing the key name. Without this handler,
+        // react-intl throws these as errors which crash the error boundary.
+        if (err.code !== 'MISSING_TRANSLATION') {
+          console.error(err);
+        }
+      }}
+    >
       {children}
     </ReactIntlProvider>
   );
