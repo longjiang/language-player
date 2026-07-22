@@ -43,20 +43,28 @@ const localeMessages: Record<string, Record<string, unknown>> = {
   ja, ko, nl, no, pl, pt, ro, ru, sr, sv, sw, th, tr, vi,
 };
 
+/** Direct access to nested locale messages — useT() resolves from this, not IntlProvider. */
+export function getLocaleMessages(locale: string): Record<string, unknown> {
+  return (localeMessages as any)[locale] ?? localeMessages['en'] ?? {};
+}
+
 export function IntlProviderWrapper({ children }: { children: ReactNode }) {
   const { l1Lang } = useLanguage();
   const locale = l1Lang?.code ?? 'en';
 
-  const messages = useMemo(() => {
-    return localeMessages[locale] ?? localeMessages['en'] ?? {};
-  }, [locale]);
+  // Pass empty messages to IntlProvider — useT() resolves directly from
+  // the static import map via resolveNested(). Simple {key} placeholders are
+  // handled by string replacement; only complex ICU (plural/select) goes
+  // through intl.formatMessage({ defaultMessage }), which falls back
+  // gracefully when the flat key isn't found in empty messages.
+  const emptyMessages = useMemo(() => ({} as Record<string, string>), []);
 
   // react-intl's IntlProvider has a React 19 type incompatibility
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const Provider = IntlProvider as any;
 
   return (
-    <Provider locale={locale} messages={messages} defaultLocale="en">
+    <Provider locale={locale} messages={emptyMessages} defaultLocale="en">
       {children}
     </Provider>
   );
