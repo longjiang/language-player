@@ -169,7 +169,7 @@ export default function LocalMediaScreen() {
             <SkipBack size={20} className="text-foreground" />
           </Pressable>
           <Pressable onPress={handlePlayPause} className="rounded-full bg-primary p-2 active:bg-primary/80">
-            {paused ? <Play size={20} className="text-primary-foreground" /> : <Pause size={20} className="text-primary-foreground" />}
+            {paused ? <Play size={20} color="#ffffff" /> : <Pause size={20} color="#ffffff" />}
           </Pressable>
           <Pressable onPress={handleRewind} className="rounded p-1 active:bg-muted">
             <SkipForward size={20} className="text-foreground" />
@@ -182,7 +182,7 @@ export default function LocalMediaScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <Text className="px-4 py-3 text-lg font-bold text-foreground">{t('title.local_media')}</Text>
+      <Text className="px-4 py-3 text-xl font-bold text-foreground">{t('title.local_media')}</Text>
 
       {/* Upload state — matches web's dashed border upload area */}
       {!localMedia.hasMedia && (

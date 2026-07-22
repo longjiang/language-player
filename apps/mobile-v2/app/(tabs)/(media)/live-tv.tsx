@@ -98,6 +98,7 @@ export default function LiveTvScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <Text className="px-4 py-3 text-xl font-bold text-foreground">{t('title.live_tv')}</Text>
       {/* Player section */}
       {selectedChannel && (
         <LiveTVPlayer
