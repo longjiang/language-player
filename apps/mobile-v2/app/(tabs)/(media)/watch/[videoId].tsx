@@ -19,7 +19,9 @@ export default function WatchScreen() {
   const [video, setVideo] = useState<YouTubeVideo | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [paused, setPaused] = useState(true);
+  // Start paused=false because YouTubePlayer has autoplay=true.
+  // onStateChange will sync when the video actually starts playing.
+  const [paused, setPaused] = useState(false);
 
   // Subtitle line navigation state
   const subtitleStartTimesRef = useRef<number[]>([]);
@@ -71,7 +73,7 @@ export default function WatchScreen() {
     }
     if (idx >= 0) {
       setActiveLineIndex(idx);
-      playerRef.current?.seekTo(times[idx]!);
+      playerRef.current?.seekTo(Math.max(0, times[idx]! - 0.1));
     }
   }, [currentTime]);
 
@@ -81,7 +83,7 @@ export default function WatchScreen() {
     // Find the line just after current time
     let idx = -1;
     for (let i = 0; i < times.length; i++) {
-      if (times[i]! > currentTime + 0.1) { idx = i; break; }
+      if (times[i]! > currentTime + 0.3) { idx = i; break; }
     }
     if (idx >= 0) {
       setActiveLineIndex(idx);
