@@ -1,6 +1,7 @@
 // @/components/SyncedTranscript/index.tsx
 
 import React from 'react';
+import { useT } from '@/hooks/use-t';
 import { View, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { useVideoWithTranscriptContext } from "@/contexts/VideoWithTranscriptContext";
@@ -13,7 +14,7 @@ interface SyncedTranscriptProps {
 
 export const SyncedTranscript: React.FC<SyncedTranscriptProps> = ({ transcriptLimitReached = false }) => {
   const { video, syncedLines, currentLine, updatePlayVideo } = useVideoWithTranscriptContext();
-  const { t } = useLanguage();
+  const t = useT();
 
   const handlePopupOpen = () => {
     updatePlayVideo(false);

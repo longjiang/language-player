@@ -1,5 +1,6 @@
 // @/app/account.tsx
 import React, { useState, useEffect } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View, Alert } from "react-native";
 import { ThemedButton, ThemedScreen, ThemedText } from "@/components";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -12,7 +13,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const AccountScreen = () => {
-  const { t } = useLanguage();
+  const t = useT();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const secondaryTextColor = useThemeColor({}, "secondaryText");
   const { handleLogout, getStoredUserInfo } = useAuth();

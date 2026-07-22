@@ -1,6 +1,7 @@
 // @/app/verify-email.tsx
 
 import React, { useState } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, Alert } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -13,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/contexts/AuthContext";
 
 const VerifyEmailScreen = () => {
-  const { t } = useLanguage();
+  const t = useT();
   const [code, setCode] = useState("");
   const { email } = useLocalSearchParams();
   const [loading, setLoading] = useState(false);

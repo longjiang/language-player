@@ -6,6 +6,7 @@ import { dictionaryLoadingModalStyles as styles } from '@/src/styles';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from './ThemedText';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 
 interface DictionaryLoadingModalProps {
   logs: string[];
@@ -13,7 +14,7 @@ interface DictionaryLoadingModalProps {
 }
 
 export const DictionaryLoadingModal: React.FC<DictionaryLoadingModalProps> = ({ logs, l2Code }) => {
-  const { t } = useLanguage();
+  const t = useT();
   const lastLog = logs.length > 0 ? logs[logs.length - 1] : t('msg.initializing');
 
   return (

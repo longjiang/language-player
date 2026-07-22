@@ -1,6 +1,7 @@
 // @/components/VideoWithTranscript/index.tsx
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useT } from '@/hooks/use-t';
 import { View, Dimensions } from "react-native";
 import Ionicon from "react-native-vector-icons/Ionicons";
 import { YouTubeVideo } from "./YouTubeVideo";
@@ -34,7 +35,7 @@ export const VideoWithTranscript: React.FC<VideoWithTranscriptProps> = ({
 }) => {
   const { syncedLines, currentLine, video, playVideo, updatePlayVideo, currentTime, startTime, playlist } = useVideoWithTranscriptContext();
   const { subscriptionIsActive, subscription } = useSubscription();
-  const { t } = useLanguage();
+  const t = useT();
   const { closePlayer, maximizePlayer } = useVideoPlayer();
   const [showProModal, setShowProModal] = useState(false);
   const hasShownModalRef = useRef(false);

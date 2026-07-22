@@ -56,7 +56,6 @@ interface LanguageContextType {
   l2Lang: Language | null;
   languages: Languages | null;
   i18n: I18n;
-  t: typeof i18n.t;
 }
 
 // Create the context with a default value
@@ -67,7 +66,6 @@ const LanguageContext = createContext<LanguageContextType>({
   l2Lang: null,
   languages: null,
   i18n,
-  t: i18n.t.bind(i18n)
 });
 
 export const useLanguage = () => useContext(LanguageContext);
@@ -99,9 +97,6 @@ export const LanguageProvider: React.FC<{children: ReactNode}> = ({ children }) 
   }, [l1Lang]);
 
 
-  // Stable t function — avoids re-running downstream effects on every render
-  const t = useMemo(() => i18n.t.bind(i18n), []);
-
   // Context value that will be exposed to other components
   const value = useMemo(() => ({
     setL1Lang,
@@ -110,8 +105,7 @@ export const LanguageProvider: React.FC<{children: ReactNode}> = ({ children }) 
     l2Lang,
     languages,
     i18n,
-    t
-  }), [l1Lang, l2Lang, languages, i18n, t]);
+  }), [l1Lang, l2Lang, languages, i18n]);
 
   return (
     <LanguageContext.Provider value={value}>

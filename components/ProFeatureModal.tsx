@@ -1,6 +1,7 @@
 // @/components/ProFeatureModal.tsx
 
 import React from "react";
+import { useT } from '@/hooks/use-t';
 import { View, Modal, TouchableOpacity, StyleSheet, Image } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
@@ -20,7 +21,7 @@ export const ProFeatureModal: React.FC<ProFeatureModalProps> = ({
   onClose,
   upgradeText,
 }) => {
-  const { t } = useLanguage();
+  const t = useT();
 
   const handleUpgrade = () => {
     onClose();

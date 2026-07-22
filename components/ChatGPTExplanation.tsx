@@ -1,6 +1,7 @@
 // @/components/ChatGPTExplanation.tsx
 
 import React, { useState } from "react";
+import { useT } from '@/hooks/use-t';
 import { View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedButton } from "./ThemedButton";
@@ -24,7 +25,7 @@ export const ChatGPTExplanation: React.FC<ChatGPTExplanationProps> = ({
 }) => {
   const { subscriptionIsActive, subscription } = useSubscription();
   const [modalVisible, setModalVisible] = useState(false);
-  const { t } = useLanguage();
+  const t = useT();
 
   const handlePress = () => {
     if (subscriptionIsActive(subscription)) {

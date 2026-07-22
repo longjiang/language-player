@@ -1,6 +1,7 @@
 // @/app/select-l2.tsx
 
 import React, { useState, useEffect } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View, ScrollView } from "react-native";
 import { Option, ThemedLanguageSelect } from "@/components/ThemedLanguageSelect";
 import { ThemedButton, ThemedScreen, LanguageIcon, ThemedText } from "@/components";
@@ -10,7 +11,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 
 const SelectL2Screen = () => {
-  const { l2Lang, setL2Lang, languages, t } = useLanguage();
+  const t = useT();
+  const { l2Lang, setL2Lang, languages } = useLanguage();
   const [selectedLanguage, setSelectedLanguage] = useState(l2Lang?.iso639_1 || l2Lang?.iso639_3 || "");
   const [showIcons, setShowIcons] = useState(true);
 

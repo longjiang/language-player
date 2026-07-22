@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/hooks/use-t';
 import { StyleSheet } from 'react-native';
 import { ThemedText, ThemedButton } from "@/components";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -14,7 +15,7 @@ export const CancelSubscription: React.FC<CancelSubscriptionProps> = ({
   onConfirm,
   onCancel
 }) => {
-  const { t } = useLanguage();
+  const t = useT();
 
   return (
     <>

@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Dictionary } from '@/src/dictionary';
 import { TokenizerService } from '@/src/tokenizer';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 import { DictionaryLoadingModal } from '@/components/DictionaryLoadingModal';
 import { Converter } from 'opencc-js';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -29,7 +30,8 @@ export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children
   const [convert, setConvert] = useState<((text: string) => string) | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   const { settings } = useSettings();
   const translationManager = TranslationManager.getInstance();
 

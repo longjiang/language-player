@@ -1,6 +1,7 @@
 // @/components/DictionaryEntryContent.tsx
 
 import React from "react";
+import { useT } from '@/hooks/use-t';
 import { View, ScrollView, Text } from "react-native";
 import { ThemedText, SubsSearch } from "@/components";
 import { DictionaryEntry } from "@/src/dictionary-types";
@@ -19,7 +20,8 @@ interface DictionaryEntryContentProps {
 }
 
 const DictionaryEntryContent: React.FC<DictionaryEntryContentProps> = ({ entry, headKey, alternateKey }) => {
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   if (!l2Lang) return null;
   const levels = languageLevelsByL2Code(l2Lang.code);
 

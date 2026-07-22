@@ -6,13 +6,14 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Typography } from '@/constants/Typography';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const activeColor = Colors[colorScheme ?? 'light'].primaryLink;
   const tabBackgroundColor = Colors[colorScheme ?? 'light'].secondaryBackground;
-  const { t } = useLanguage();
+  const t = useT();
 
   return (
     <Tabs

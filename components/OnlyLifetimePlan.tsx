@@ -1,4 +1,5 @@
 import React from "react";
+import { useT } from '@/hooks/use-t';
 import { View, StyleSheet, Linking } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "@/components/ThemedText";
@@ -8,7 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const OnlyLifetimePlan = () => {
   const semanticWarningColor = useThemeColor({}, "semanticWarning");
-  const { t } = useLanguage();
+  const t = useT();
 
   return (
     <View style={styles.container}>

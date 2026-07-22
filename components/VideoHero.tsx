@@ -1,5 +1,6 @@
 // @/components/VideoHero
 import React, { useState } from "react";
+import { useT } from '@/hooks/use-t';
 import { View, StyleSheet, Dimensions, FlexAlignType } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -15,7 +16,7 @@ export const VideoHero: React.FC<{
   title: string;
   height: number;
 }> = ({ youtubeId, title, height }) => {
-  const { t } = useLanguage();
+  const t = useT();
   const screenWidth = Dimensions.get("window").width;
   const videoWidth = (height * 16) / 9;
   const padding = 26;

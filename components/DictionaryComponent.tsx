@@ -1,5 +1,6 @@
 // @/components/DictionaryComponent.tsx
 import React, { useState, useEffect } from "react";
+import { useT } from '@/hooks/use-t';
 import { View, ScrollView } from "react-native";
 import { ThemedInput } from "./ThemedInput";
 import { ThemedText } from "./ThemedText";
@@ -66,7 +67,8 @@ export const DictionaryComponent: React.FC<DictionaryComponentProps> = ({
   const [results, setResults] = useState<DictionaryEntry[]>([]);
   const { dictionary } = useDictionary();
   const { settings } = useSettings();
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   if (!dictionary) return null;
 
   if (!l2Lang) return null;

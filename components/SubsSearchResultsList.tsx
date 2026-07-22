@@ -9,6 +9,7 @@ import { subsSearchResultsListStyles as styles } from "@/src/styles";
 import { Ionicons } from "@expo/vector-icons";
 import { ThemedButton } from "./ThemedButton";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 
 const extractContexts = (line: string, term: string) => {
   const lowercaseLine = line.toLowerCase().replace(/\s/g, '');
@@ -59,7 +60,7 @@ export const SubsSearchResultsList = ({
   const [filteredResults, setFilteredResults] = useState(results);
   const [searchTerm, setSearchTerm] = useState(term);
   const [sortBy, setSortBy] = useState("popularity");
-  const { t } = useLanguage();
+  const t = useT();
 
   useEffect(() => {
     filterAndSortResults(searchTerm, sortBy);

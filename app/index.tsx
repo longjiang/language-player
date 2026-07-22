@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, Platform, Dimensions } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 import { ClippedImage } from '@/components/ClippedImage';
 import { useThemeColor } from '@/hooks';
 import { ThemedText, ThemedButton } from '@/components';
@@ -14,7 +15,8 @@ import { TestLinks } from '@/components/TestLinks';
 const { width, height } = Dimensions.get('window');
 
 const IndexScreen = () => {
-  const { t, l2Lang } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   const insets = useSafeAreaInsets();
   const [bottomContentHeight, setBottomContentHeight] = useState(0);
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');

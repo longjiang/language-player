@@ -1,6 +1,7 @@
 // @/app/tv-shows.tsx
 
 import React, { useRef, useState, useMemo } from "react";
+import { useT } from '@/hooks/use-t';
 import { View, TouchableOpacity, ViewStyle } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
@@ -23,7 +24,7 @@ const TVShowsScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('views');
   const [localeFilter, setLocaleFilter] = useState('all');
-  const { t } = useLanguage();
+  const t = useT();
 
   const rbSheetRef = useRef<any>(null);
 

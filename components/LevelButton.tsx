@@ -1,6 +1,7 @@
 // @/components/LevelButton.tsx
 
 import React from "react";
+import { useT } from '@/hooks/use-t';
 import { ViewStyle } from "react-native";
 import { ThemedButton, ButtonProps } from "@/components/ThemedButton";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -16,7 +17,8 @@ interface LevelButtonProps extends Omit<ButtonProps, 'onPress'> {
 
 const LevelButton: React.FC<LevelButtonProps> = ({ level, onPress, style, size = "small", type = "accent" }) => {
   const colorScheme = useColorScheme();
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
 
   if (!l2Lang) return null;
 

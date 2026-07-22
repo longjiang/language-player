@@ -13,6 +13,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { ProFeatureModal } from "./ProFeatureModal";
 import { timeout } from "@/src/utils";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 import { getBestL1Subs } from '@/src/api/python/video';
 
 const MAX_FREE_SUBS_SEARCH_RESULTS = 3;
@@ -25,7 +26,8 @@ export const SubsSearchResults = ({ term }: { term: string }) => {
   const { subscriptionIsActive, subscription } = useSubscription();
   const [showProModal, setShowProModal] = useState(false);
   const previousIndexRef = useRef(currentVideoIndex);
-  const { t, l2Lang, l1Lang, languages } = useLanguage();
+  const t = useT();
+  const { l2Lang, l1Lang, languages } = useLanguage();
   if (!languages || !l2Lang || !l1Lang) return null;
 
   useEffect(() => {

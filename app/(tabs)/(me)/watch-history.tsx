@@ -1,5 +1,6 @@
 // @/app/watch-history.tsx
 import React, { useEffect, useState } from "react";
+import { useT } from '@/hooks/use-t';
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router } from "expo-router";
 import { YouTubeVideoList } from "@/components/YouTubeVideoList";
@@ -12,7 +13,8 @@ const WatchHistoryScreen = () => {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   const { getStoredUserInfo } = useAuth();
   
   if (!l2Lang) {

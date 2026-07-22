@@ -1,6 +1,7 @@
 // @/app/acquisition-survey.tsx
 
 import React, { useState, useEffect } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View, Alert } from "react-native";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { ThemedButton } from "@/components/ThemedButton";
@@ -12,7 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const AcquisitionSurveyScreen = () => {
-  const { t } = useLanguage();
+  const t = useT();
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [otherText, setOtherText] = useState("");
   const [userId, setUserId] = useState(null);

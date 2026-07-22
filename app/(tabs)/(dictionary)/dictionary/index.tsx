@@ -1,6 +1,7 @@
 // @/app/search.tsx
 
 import React, { useEffect, useState } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View } from "react-native";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { ActivityIndicator } from 'react-native';
@@ -12,7 +13,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const DictionaryScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { t } = useLanguage();
+  const t = useT();
   const [items, setItems] = useState<DictionaryEntry[]>([]);
 
 

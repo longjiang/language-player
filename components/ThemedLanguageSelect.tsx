@@ -1,6 +1,7 @@
 // @/components/ThemedLanguageSelect
 
 import React from 'react';
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedSearchableSelect, Option } from "@/components/ThemedSearchableSelect";
@@ -24,7 +25,8 @@ export const ThemedLanguageSelect: React.FC<{
   onFocus,  // Destructure onFocus prop
   onBlur   // Destructure onBlur prop
 }) => {
-  const { languages, t } = useLanguage();
+  const t = useT();
+  const { languages } = useLanguage();
 
   const langToOption = (lang: any): Option => {
     const country = languages?.getCountry(lang)

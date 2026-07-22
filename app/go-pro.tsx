@@ -1,6 +1,7 @@
 // @/app/go-pro.tsx
 
 import React, { useRef, useState, ReactElement } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View, Image, Platform } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedScreen } from "@/components/ThemedScreen";
@@ -22,7 +23,7 @@ const GoProScreen = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const refRBSheet = useRef<ThemedRBSheet>(null);
   const { subscription, subscriptionIsActive, subscriptionWillAutoRenew, cancelSubscription } = useSubscription();
-  const { t } = useLanguage();
+  const t = useT();
 
   const showMessage = (message: ReactElement) => {
     setCurrentMessage(message);

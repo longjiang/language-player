@@ -1,6 +1,7 @@
 // @/components/PricingBlock.tsx
 
 import React, { useRef } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 import { ThemedText, ThemedButton } from "@/components";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -36,7 +37,7 @@ export const PricingBlock: React.FC<PricingBlockProps> = ({
   showUpgrade = true,
   showCancel = false,
 }) => {
-  const { t } = useLanguage();
+  const t = useT();
   const secondaryBrandColor = useThemeColor({}, 'semanticSuccess');
   const secondaryStrokeColor = useThemeColor({}, 'secondaryStroke');
   const primaryTextColor = useThemeColor({}, 'primaryText');

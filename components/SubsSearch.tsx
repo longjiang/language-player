@@ -5,12 +5,14 @@ import { View, Text, ActivityIndicator } from 'react-native';
 import { VideoWithTranscriptProvider } from '@/contexts/VideoWithTranscriptContext';
 import { SubsSearchResults } from './SubsSearchResults';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 import { subsSearch } from '@/src/api/python/video';
 
 export const SubsSearch = ({ term }: { term: string }): JSX.Element => {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   
   useEffect(() => {
     if (l2Lang && term) {

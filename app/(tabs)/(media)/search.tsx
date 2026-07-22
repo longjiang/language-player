@@ -1,6 +1,7 @@
 // @/app/search.tsx
 // @/app/search.tsx
 import React, { useState, useCallback, useMemo } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View } from "react-native";
 import { ThemedButton, ThemedScreen, ThemedInput, ThemedText } from "@/components";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -20,7 +21,8 @@ const SearchScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
-  const { t, l2Lang } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   const { setVideoAndQueue } = useVideoPlayer();
   const insets = useSafeAreaInsets();
 

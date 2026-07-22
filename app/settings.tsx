@@ -9,10 +9,12 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { settingsStyles as styles } from '@/src/styles';
 import { SettingsState } from '@/contexts/SettingsContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 
 const SettingsScreen = () => {
   const { settings, dispatch } = useSettings();
-  const { t, l2Lang } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   const secondaryBrandColor = useThemeColor({}, 'secondaryBrand');
 
   const toggleSetting = async (settingKey: keyof SettingsState) => {

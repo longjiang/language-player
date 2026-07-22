@@ -1,6 +1,7 @@
 // @/components/ContextRow.tsx
 
 import React from "react";
+import { useT } from '@/hooks/use-t';
 import { View, TouchableOpacity, Platform, ActionSheetIOS, Alert, Clipboard } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
@@ -16,7 +17,8 @@ interface ContextRowProps {
 }
 
 export const ContextRow: React.FC<ContextRowProps> = ({ context, translatedContext, translation }) => {
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
 
   const handleMenuPress = () => {
     if (Platform.OS === 'ios') {

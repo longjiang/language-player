@@ -1,5 +1,6 @@
 // @/components/LevelResetSheet.tsx
 import React, { forwardRef } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View } from "react-native";
 import { ThemedRBSheet } from "./ThemedRBSheet";
 import { ThemedText } from "@/components/ThemedText";
@@ -11,7 +12,7 @@ interface LevelResetSheetProps {
 }
 
 const LevelResetSheet = forwardRef<RBSheet, LevelResetSheetProps>(({ onConfirm }, ref) => {
-  const { t } = useLanguage();
+  const t = useT();
 
   return (
     <ThemedRBSheet ref={ref}>

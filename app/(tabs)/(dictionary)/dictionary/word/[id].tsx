@@ -1,6 +1,7 @@
 // @/app/(tabs)/(dictionary)/dictionary/word/[id].tsx
 
 import React, { useEffect, useState, useCallback } from "react";
+import { useT } from '@/hooks/use-t';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { View, ActivityIndicator } from "react-native";
 import { ThemedButton, ThemedInput, ThemedText } from "@/components";
@@ -18,7 +19,8 @@ import { DictionaryComponent, getDictionaryPlaceholder } from "@/components/Dict
 const DictionaryEntryScreen = () => {
   const { id: encodedId } = useLocalSearchParams<{ id: string }>();
   const { dictionary } = useDictionary();
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   const { settings } = useSettings();
   const primaryBackgroundColor = useThemeColor({}, 'primaryBackground');
   const secondaryBackgroundColor = useThemeColor({}, 'secondaryBackground');

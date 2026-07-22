@@ -1,6 +1,7 @@
 // @/app/(tabs)/(media)/index.tsx
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useT } from '@/hooks/use-t';
 import { SafeAreaView, Dimensions, View, Image, TouchableOpacity, ActivityIndicator, Button } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -19,7 +20,8 @@ import { mediaHomeScreenStyles as styles } from "@/src/styles";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 const MediaHomeScreen = () => {
-  const { languages, l2Lang, t } = useLanguage();
+  const t = useT();
+  const { languages, l2Lang } = useLanguage();
   const { progress, lastSignificantChange } = useUserData();
   const { getStoredUserInfo } = useAuth();
   const { shows, isLoading: isLoadingShows } = useTVShows();

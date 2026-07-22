@@ -10,6 +10,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserData } from '@/contexts/UserDataContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 import { useSettings } from '@/contexts/SettingsContext';
 
 const LoginScreen = () => {
@@ -17,7 +18,7 @@ const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { userData } = useUserData();
-    const { t } = useLanguage();
+    const t = useT();
     const { settings } = useSettings();
 
     useEffect(() => {

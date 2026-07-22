@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View, Text, Platform, ActionSheetIOS, Modal, TouchableOpacity } from "react-native";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router } from "expo-router";
@@ -11,7 +12,8 @@ import { ThemedText } from "@/components/ThemedText";
 
 const SavedWordsScreen = () => {
   const { savedWords, clearSavedWords } = useUserData();
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   const [savedWordIds, setSavedWordIds] = useState<string[] | null>(null);
   const [isAndroidMenuVisible, setIsAndroidMenuVisible] = useState(false);
 

@@ -1,6 +1,7 @@
 // @/components/PopupDictionaryHeader.tsx
 
 import React, { useCallback, useState, useEffect, useMemo } from "react";
+import { useT } from '@/hooks/use-t';
 import { View, Text, Clipboard, ToastAndroid, Platform, Alert } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ThemedText } from "./ThemedText";
@@ -25,7 +26,8 @@ export const PopupDictionaryHeader: React.FC<PopupDictionaryHeaderProps> = ({
   context,
   translatedContext,
 }) => {
-  const { l1Lang, l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l1Lang, l2Lang } = useLanguage();
   const { settings } = useSettings();
   const { convert, translationManager } = useDictionary();
 

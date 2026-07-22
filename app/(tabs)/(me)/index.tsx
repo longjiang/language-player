@@ -1,5 +1,6 @@
 // @/app/(tabs)/(me)/index.tsx
 import React, { useEffect, useState } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View } from "react-native";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
@@ -14,7 +15,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const LanguageProgressScreen = () => {
   const { handleLogout } = useAuth();
   const { progress, getTimeFromStorage } = useUserData();
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   const [currentTime, setCurrentTime] = useState(0);
 
   if (!l2Lang) return null;

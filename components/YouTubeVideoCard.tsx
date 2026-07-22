@@ -13,6 +13,7 @@ import { formatDuration } from '@/src/utils';
 import { YouTubeVideo } from '@/types';
 import { languageLevelsByL2Code } from '@/src/language-levels';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 import { youtubeVideoCardStyles } from '@/src/styles';
 import { useThemeColorForLevel } from '@/hooks/useThemeColor';
 import { useThemeColor } from "@/hooks/useThemeColor";
@@ -42,7 +43,8 @@ export const YouTubeVideoCard = ({
 }) => {
   if (videos.length === 0) videos = [video];
   const { setVideoAndQueue } = useVideoPlayer();
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   const accent1Color = useThemeColor({}, 'accent1');
   if (!l2Lang) return null;
 

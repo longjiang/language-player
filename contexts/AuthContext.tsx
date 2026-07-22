@@ -1,6 +1,7 @@
 // @/contexts/AuthContext.tsx
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useT } from '@/hooks/use-t';
 import { verifyEmailCode } from "@/src/api/python/verify-email";
 import {
   login as apiLogin,
@@ -40,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
     const [userInfo, setUserInfo] = useState<User | null>(null);
-    const { t } = useLanguage();
+    const t = useT();
 
     useEffect(() => {
         const initializeAuth = async () => {

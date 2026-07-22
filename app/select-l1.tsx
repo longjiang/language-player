@@ -1,6 +1,7 @@
 // @/app/select-l1
 
 import React, { useState, useEffect } from "react";
+import { useT } from '@/hooks/use-t';
 import { ThemedLanguageSelect } from "@/components/ThemedLanguageSelect";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedScreen } from "@/components/ThemedScreen";
@@ -13,7 +14,8 @@ import { useUserData } from "@/contexts/UserDataContext";
 import { ThemedText } from "@/components/ThemedText";
 
 const SelectL1Screen = () => {
-  const { l1Lang, l2Lang, setL1Lang, languages, t } = useLanguage();
+  const t = useT();
+  const { l1Lang, l2Lang, setL1Lang, languages } = useLanguage();
   const { progress } = useUserData();
   const [defaultLanguage, setDefaultLanguage] = useState<string | null>(null);
 

@@ -1,5 +1,6 @@
 // @/app/account.tsx
 import React, { useState } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View } from "react-native";
 import { ThemedButton, ThemedScreen, ThemedText } from "@/components";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -10,7 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const AccountScreen = () => {
   const [code, setCode] = useState("");
-  const { t } = useLanguage();
+  const t = useT();
 
   const onSelect = (value: string) => {
     console.log("Selected:", value);

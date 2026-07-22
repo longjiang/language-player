@@ -1,6 +1,7 @@
 // @/app/register.tsx
 
 import React, { useState } from 'react';
+import { useT } from '@/hooks/use-t';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { ThemedScreen } from '@/components/ThemedScreen';
 import { ThemedInput } from '@/components/ThemedInput';
@@ -17,7 +18,7 @@ import { registerScreenStyles as styles } from '@/src/styles';
 import { storageManager } from "@/src/StorageManager";
 
 const RegisterScreen = () => {
-    const { t } = useLanguage();
+    const t = useT();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');

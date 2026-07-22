@@ -12,6 +12,7 @@ import { YouTubeVideoList } from './YouTubeVideoList';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 
 interface HeaderProps {
   minimizePlayer: () => void;
@@ -21,7 +22,7 @@ export const Header: React.FC<HeaderProps> = ({ minimizePlayer }) => {
   const { tvShow, searchTerm, queue, queueType, currentVideo } = useVideoPlayer();
   const refRBSheet = useRef<ThemedRBSheet>(null);
   const secondaryBrandColor = useThemeColor({}, 'secondaryBrand');
-  const { t } = useLanguage();
+  const t = useT();
 
   const openQueueSheet = useCallback(() => {
     refRBSheet.current?.open();

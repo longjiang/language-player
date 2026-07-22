@@ -1,6 +1,7 @@
 // @/app/select-level.tsx
 
 import React, { useRef } from "react";
+import { useT } from '@/hooks/use-t';
 import { StyleSheet, View } from "react-native";
 import { ThemedScreen } from "@/components/ThemedScreen";
 import { router } from "expo-router";
@@ -12,7 +13,8 @@ import LevelResetSheet from "@/components/LevelResetSheet";
 import RBSheet from "react-native-raw-bottom-sheet";
 
 const SelectLevelScreen = () => {
-  const { l2Lang, t } = useLanguage();
+  const t = useT();
+  const { l2Lang } = useLanguage();
   const { userData, updateProgress } = useUserData();
   const refRBSheet = useRef<RBSheet>(null);
   const selectedLevelRef = useRef<number | null>(null);

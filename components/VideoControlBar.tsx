@@ -1,6 +1,7 @@
 // @/components/VideoControlBar.tsx
 
 import React, { useRef, useMemo } from "react";
+import { useT } from '@/hooks/use-t';
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedButton } from "./ThemedButton";
 import Ionicon from "react-native-vector-icons/Ionicons";
@@ -26,7 +27,8 @@ const formatNumber = (num: number): string => {
 };
 
 export const VideoControlBar: React.FC = () => {
-  const { t, i18n, l1Lang, l2Lang } = useLanguage();
+  const t = useT();
+  const { i18n, l1Lang, l2Lang } = useLanguage();
   if (!l1Lang || !l2Lang) return null;
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const disabledColor = useThemeColor({}, "disabled");
