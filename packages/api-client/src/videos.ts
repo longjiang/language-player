@@ -20,8 +20,12 @@ const _getById = (id: string) => apiClient.get<YouTubeVideo>(`/videos/${id}`);
 const _getSubtitles = (videoId: string, lang: string) =>
   apiClient.get<SubtitleLine[]>(`/videos/${videoId}/subtitles/${lang}`);
 
-const _getRecommendations = (lang: string, level: number) =>
-  apiClient.get<YouTubeVideo[]>('/videos/recommendations', { params: { lang, level } });
+const _getRecommendations = (params: {
+  l2: string;
+  level?: number;
+  page?: number;
+  limit?: number;
+}) => apiClient.get<YouTubeVideo[]>('/recommend-videos', { params });
 
 const _getLiveTV = (lang: string) =>
   apiClient.get<YouTubeVideo[]>('/videos/live-tv', { params: { lang } });

@@ -28,8 +28,8 @@ export default function ExploreScreen() {
 
   const fetchVideos = async (append: boolean) => {
     try {
-      const res = await getRecommendations(l2Lang.code, level ?? 1);
-      const newVideos = Array.isArray(res) ? res : (res as any)?.videos ?? [];
+      const res = await getRecommendations({ l2: l2Lang.code, level, limit: 24 });
+      const newVideos = Array.isArray(res) ? res : (res as any)?.videos ?? (res as any)?.data ?? [];
       setVideos((prev) => (append ? [...prev, ...newVideos] : newVideos));
       setHasMore(newVideos.length >= 24);
     } catch (err) {
