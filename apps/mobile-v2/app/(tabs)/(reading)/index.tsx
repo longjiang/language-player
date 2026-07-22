@@ -22,6 +22,7 @@ export default function ReaderScreen() {
   const [tokens, setTokens] = useState<any[] | null>(null);
   const [blocks, setBlocks] = useState<TextBlock[] | null>(null);
   const [tokenizing, setTokenizing] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -59,8 +60,17 @@ export default function ReaderScreen() {
   const handleTokenize = useCallback(async () => {
     if (!text.trim()) return;
     setTokenizing(true);
+    setParseError(null);
     try {
-      const parsed = parseMarkdownBlocks(text);
+      let parsed: TextBlock[];
+      try {
+        parsed = parseMarkdownBlocks(text);
+      } catch (parseErr: any) {
+        console.error('Markdown parse failed:', parseErr?.message ?? parseErr);
+        // Fallback: treat entire text as one paragraph block
+        parsed = [{ kind: 'text', type: 'paragraph', text }];
+        setParseError('Markdown parsing unavailable — showing plain text.');
+      }
       setBlocks(parsed);
 
       // Tokenize all block texts in one call
