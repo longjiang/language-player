@@ -142,7 +142,6 @@
         "failed_to_load": "Gagal memuat ({status})",
         "failed_to_load_items": "Gagal memuat item:",
         "general": "Terjadi kesalahan",
-        "generic": "Kesalahan",
         "invalid_credentials": "Email atau kata sandi tidak valid. Silakan coba lagi.",
         "invalid_verification_code": "Kode verifikasi tidak valid. Silakan coba lagi.",
         "language_not_selected": "Bahasa belum dipilih",
@@ -914,9 +913,7 @@
         "code_resent": "Kode verifikasi dikirim ulang ke email Anda."
     },
     "tab": {
-        "dictionary": "Kamus",
-        "me": "Saya",
-        "media": "Media"
+        "me": "Saya"
     },
     "time": {
         "hours": "jam",

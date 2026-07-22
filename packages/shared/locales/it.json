@@ -142,7 +142,6 @@
         "failed_to_load": "Caricamento fallito ({status})",
         "failed_to_load_items": "Impossibile caricare gli elementi:",
         "general": "Si è verificato un errore",
-        "generic": "Errore",
         "invalid_credentials": "Email o password non validi. Per favore riprova.",
         "invalid_verification_code": "Codice di verifica non valido. Per favore riprova.",
         "language_not_selected": "Lingua non selezionata",
@@ -914,9 +913,7 @@
         "code_resent": "Codice di verifica reinviato alla tua email."
     },
     "tab": {
-        "dictionary": "Dizionario",
-        "me": "Io",
-        "media": "Media"
+        "me": "Io"
     },
     "time": {
         "hours": "ore",

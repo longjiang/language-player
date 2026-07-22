@@ -142,7 +142,6 @@
         "failed_to_load": "فشل التحميل ({status})",
         "failed_to_load_items": "فشل في تحميل العناصر:",
         "general": "حدث خطأ",
-        "generic": "خطأ",
         "invalid_credentials": "بريد إلكتروني أو كلمة مرور غير صالحة. يرجى المحاولة مرة أخرى.",
         "invalid_verification_code": "رمز التحقق غير صالح. يرجى المحاولة مرة أخرى.",
         "language_not_selected": "لم يتم اختيار اللغة",
@@ -914,9 +913,7 @@
         "code_resent": "تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني."
     },
     "tab": {
-        "dictionary": "قاموس",
-        "me": "أنا",
-        "media": "وسائط"
+        "me": "أنا"
     },
     "time": {
         "hours": "ساعات",

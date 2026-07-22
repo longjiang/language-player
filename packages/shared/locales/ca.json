@@ -142,7 +142,6 @@
         "failed_to_load": "No s'ha pogut carregar ({status})",
         "failed_to_load_items": "Error en carregar elements:",
         "general": "S'ha produït un error",
-        "generic": "Error",
         "invalid_credentials": "Correu electrònic o contrasenya no vàlids. Torna-ho a provar.",
         "invalid_verification_code": "Codi de verificació no vàlid. Torna-ho a provar.",
         "language_not_selected": "Idioma no seleccionat",
@@ -914,9 +913,7 @@
         "code_resent": "Codi de verificació reenviat al teu correu electrònic."
     },
     "tab": {
-        "dictionary": "Diccionari",
-        "me": "Jo",
-        "media": "Mitjans"
+        "me": "Jo"
     },
     "time": {
         "hours": "hores",

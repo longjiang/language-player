@@ -141,7 +141,6 @@
         "failed_to_load": "載入失敗（{status}）",
         "failed_to_load_items": "載入失敗：",
         "general": "發生錯誤",
-        "generic": "出錯啦",
         "invalid_credentials": "電子郵件或密碼無效，請重試。",
         "invalid_verification_code": "驗證碼無效，請重試。",
         "language_not_selected": "還沒選語言耶",
@@ -881,9 +880,7 @@
         "code_resent": "驗證碼已經重新寄到你的信箱囉。"
     },
     "tab": {
-        "dictionary": "詞典",
-        "me": "我的",
-        "media": "媒體"
+        "me": "我的"
     },
     "time": {
         "days": "one {# day} other {# days}}",

@@ -142,7 +142,6 @@
         "failed_to_load": "Betöltés sikertelen ({status})",
         "failed_to_load_items": "Elemek betöltése sikertelen:",
         "general": "Hiba történt",
-        "generic": "Hiba",
         "invalid_credentials": "Érvénytelen e-mail vagy jelszó. Kérjük, próbálja újra.",
         "invalid_verification_code": "Érvénytelen megerősítő kód. Kérjük, próbálja újra.",
         "language_not_selected": "Nyelv nincs kiválasztva",
@@ -914,9 +913,7 @@
         "code_resent": "Az ellenőrző kód újra lett küldve az e-mail címére."
     },
     "tab": {
-        "dictionary": "Szótár",
-        "me": "Én",
-        "media": "Média"
+        "me": "Én"
     },
     "time": {
         "hours": "óra",

@@ -142,7 +142,6 @@
         "failed_to_load": "Nie udało się załadować ({status})",
         "failed_to_load_items": "Nie udało się załadować elementów:",
         "general": "Wystąpił błąd",
-        "generic": "Błąd",
         "invalid_credentials": "Nieprawidłowy e-mail lub hasło. Spróbuj ponownie.",
         "invalid_verification_code": "Nieprawidłowy kod weryfikacyjny. Spróbuj ponownie.",
         "language_not_selected": "Nie wybrano języka",
@@ -914,9 +913,7 @@
         "code_resent": "Kod weryfikacyjny został ponownie wysłany na Twój e-mail."
     },
     "tab": {
-        "dictionary": "Słownik",
-        "me": "Ja",
-        "media": "Media"
+        "me": "Ja"
     },
     "time": {
         "hours": "godz.",

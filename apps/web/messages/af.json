@@ -142,7 +142,6 @@
         "failed_to_load": "Kon nie laai nie ({status})",
         "failed_to_load_items": "Kon nie items laai nie:",
         "general": "'n Fout het voorgekom",
-        "generic": "Fout",
         "invalid_credentials": "Ongeldige e-pos of wagwoord. Probeer asseblief weer.",
         "invalid_verification_code": "Ongeldige verifikasiekode. Probeer asseblief weer.",
         "language_not_selected": "Taal nie gekies nie",
@@ -914,9 +913,7 @@
         "code_resent": "Verifikasiekode is weer na jou e-pos gestuur."
     },
     "tab": {
-        "dictionary": "Woordeboek",
-        "me": "Ek",
-        "media": "Media"
+        "me": "Ek"
     },
     "time": {
         "hours": "ure",

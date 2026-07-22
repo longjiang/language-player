@@ -142,7 +142,6 @@
         "failed_to_load": "लोड करने में विफल ({status})",
         "failed_to_load_items": "आइटम लोड करने में विफल:",
         "general": "एक त्रुटि उत्पन्न हुई",
-        "generic": "त्रुटि",
         "invalid_credentials": "अमान्य ईमेल या पासवर्ड। कृपया पुनः प्रयास करें।",
         "invalid_verification_code": "अमान्य सत्यापन कोड। कृपया पुनः प्रयास करें।",
         "language_not_selected": "भाषा का चयन नहीं किया गया",
@@ -914,9 +913,7 @@
         "code_resent": "सत्यापन कोड आपके ईमेल पर पुनः भेजा गया।"
     },
     "tab": {
-        "dictionary": "शब्दकोश",
-        "me": "मैं",
-        "media": "मीडिया"
+        "me": "मैं"
     },
     "time": {
         "hours": "घंटे",

@@ -142,7 +142,6 @@
         "failed_to_load": "Laden fehlgeschlagen ({status})",
         "failed_to_load_items": "Fehler beim Laden der Elemente:",
         "general": "Ein Fehler ist aufgetreten",
-        "generic": "Fehler",
         "invalid_credentials": "Ungültige E-Mail oder Passwort. Bitte versuche es erneut.",
         "invalid_verification_code": "Ungültiger Bestätigungscode. Bitte versuche es erneut.",
         "language_not_selected": "Sprache nicht ausgewählt",
@@ -914,9 +913,7 @@
         "code_resent": "Verifizierungscode erneut an Ihre E-Mail gesendet."
     },
     "tab": {
-        "dictionary": "Wörterbuch",
-        "me": "Ich",
-        "media": "Medien"
+        "me": "Ich"
     },
     "time": {
         "hours": "Stunden",

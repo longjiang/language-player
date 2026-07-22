@@ -142,7 +142,6 @@
         "failed_to_load": "Yüklenemedi ({status})",
         "failed_to_load_items": "Öğeler yüklenemedi:",
         "general": "Bir hata oluştu",
-        "generic": "Hata",
         "invalid_credentials": "Geçersiz e-posta veya şifre. Lütfen tekrar deneyin.",
         "invalid_verification_code": "Geçersiz doğrulama kodu. Lütfen tekrar deneyin.",
         "language_not_selected": "Dil seçilmedi",
@@ -914,9 +913,7 @@
         "code_resent": "Doğrulama kodu e-postanıza yeniden gönderildi."
     },
     "tab": {
-        "dictionary": "Sözlük",
-        "me": "Ben",
-        "media": "Medya"
+        "me": "Ben"
     },
     "time": {
         "hours": "saat",

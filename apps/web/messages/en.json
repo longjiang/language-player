@@ -151,7 +151,6 @@
         "failed_to_load": "Failed to load ({status})",
         "failed_to_load_items": "Failed to load items:",
         "general": "An error occurred",
-        "generic": "Error",
         "invalid_credentials": "Invalid email or password. Please try again.",
         "invalid_user_credentials": "Invalid email or password",
         "invalid_verification_code": "Invalid verification code. Please try again.",
@@ -938,9 +937,7 @@
         "code_resent": "Verification code resent to your email."
     },
     "tab": {
-        "dictionary": "Dictionary",
-        "me": "Me",
-        "media": "Media"
+        "me": "Me"
     },
     "time": {
         "days": "{count",
