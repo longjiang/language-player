@@ -3,6 +3,8 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
+import { useT } from '@/hooks/use-t';
+import { PYTHON_API_URL } from '@/lib/api-url';
 import { TokenizedText } from './TokenizedText';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
@@ -36,6 +38,7 @@ export function SubtitleDisplay({
 }: SubtitleDisplayProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const { display } = useSettingsContext();
+  const t = useT();
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [activeIdx, setActiveIdx] = useState(-1);
   const scrollRef = useRef<ScrollView>(null);
@@ -59,7 +62,7 @@ export function SubtitleDisplay({
     if (!youtubeId) return;
     (async () => {
       try {
-        const res = await fetch(`https://pythonvps.zerotohero.ca/api/videos/${youtubeId}/subtitles?l2=${l2Lang.code}&l1=${l1Lang.code}`);
+        const res = await fetch(`${PYTHON_API_URL}/videos/${youtubeId}/subtitles?l2=${l2Lang.code}&l1=${l1Lang.code}`);
         if (!res.ok) return;
         const data = await res.json();
         const lines: SubtitleLine[] = (data.lines ?? []).map((l: any) => ({
@@ -92,7 +95,7 @@ export function SubtitleDisplay({
   if (l2Lines.length === 0) {
     return (
       <View className="flex-1 items-center justify-center py-8">
-        <Text className="text-muted-foreground">No subtitles available</Text>
+        <Text className="text-muted-foreground">{t('subtitle.subtitles_unavailable')}</Text>
       </View>
     );
   }
