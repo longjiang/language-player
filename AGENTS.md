@@ -9,7 +9,7 @@
 ### What This Project Is
 A monorepo consolidating three legacy codebases:
 1. `zerotohero-nuxt/` (Vue 2/Nuxt 2) — **Classic** full-featured web app. REFERENCE ONLY. Do not edit.
-2. `language-player-3/` (React Native/Expo 51) — **GO** mobile app. REFERENCE + eventual migration source.
+2. `language-player-3/` (React Native/Expo 51) — **GO** mobile app. REFERENCE ONLY. Merged into `apps/mobile/` (Phase 8 Step 3).
    See `docs/lp-go-app-architecture.md` for a full analysis of its screens, components, and patterns.
 3. `zerotohero-python-server/` or `zerotohero-python/` (Flask) — Backend. REFERENCE + eventual migration source.
    See `docs/lp-python-backend-architecture.md` for a full analysis of its routes, utilities, and patterns.
@@ -18,6 +18,7 @@ Note that the above three directories are **independent Git repositories**. They
 
 The **active development** happens in:
 - `apps/web/` — Next.js 14 (replaces Classic)
+- `apps/mobile/` — React Native/Expo 57 (replaces legacy `language-player-3/`)
 - `packages/shared/` — Shared types & constants
 - `packages/api-client/` — Shared API client
 - `packages/utils/` — Shared utilities
@@ -290,7 +291,13 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
 
 **One server instance only.** Before starting `npx expo start` (or similar commands to start Next.js, Nuxt, or Python servers), check if an instance of the server is already running: `lsof -ti:8081` (and other similar ports, and potential alternate ports, e.g. 8082 for Metro). If the user says "it's running," trust them — don't open another.
 
-**Always check you are in the right directory.** For the Classic Nuxt app, `cd` into zerotohero-nuxt/ before running `npm run dev`. For the GO app, `cd` into language-player-3/ before running `npx expo start`. For the Python backend, `cd` into zerotohero-python-server/ before running `python3.10 app.py`.
+**Always check you are in the right directory.** For the Classic Nuxt app, `cd` into zerotohero-nuxt/ before running `npm run dev`. For the mobile app, `cd` into apps/mobile/ before running `npx expo start`. For the Python backend, `cd` into zerotohero-python-server/ before running `python3.10 app.py`.
+
+**Always use Node 22 for the mobile app.** Expo SDK 57 requires Node ≥20.19.4; Node 18 fails with `toReversed is not a function`. Before any Expo command:
+```bash
+cd apps/mobile && source ~/.nvm/nvm.sh && nvm use 22 && npx expo start --ios
+```
+The `nvm use 22` is **not optional** — the shell loses nvm context between terminal sessions, and `npx expo start` run from the repo root will pick up the wrong project config.
 
 **Never use `--clear` unless proven necessary.** It wipes the bundle cache, forcing a full rebuild of 2000+ modules. Use `r` in the Metro terminal to reload instead.
 
