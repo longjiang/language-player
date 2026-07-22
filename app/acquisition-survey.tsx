@@ -29,9 +29,11 @@ const AcquisitionSurveyScreen = () => {
           throw new Error(t('error.user_info_not_found'));
         }
       } catch (error: any) {
-        Alert.alert(t('error.generic'), error.message);
+        Alert.alert(t('error.general'), error.message);
       }
     };
+
+    submitSurvey();
 
     fetchUserInfo();
   }, []);
@@ -61,7 +63,7 @@ const AcquisitionSurveyScreen = () => {
       await submitAcquisitionSurvey(userId, selectedOption.value, acquisitionDetails);
       router.push("select-l2");
     } catch (error: any) {
-      Alert.alert(t('error.generic'), error.message);
+      Alert.alert(t('error.general'), error.message);
     }
   };
 

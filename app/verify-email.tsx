@@ -29,7 +29,7 @@ const VerifyEmailScreen = () => {
         router.push("/acquisition-survey");
       }
     } catch (error: any) {
-      Alert.alert(t('error.generic'), error.message);
+      Alert.alert(t('error.general'), error.message);
       setLoading(false);
     }
   };
@@ -39,7 +39,7 @@ const VerifyEmailScreen = () => {
       await sendVerificationEmail(email as string);
       Alert.alert(t('success.code_resent'));
     } catch (error: any) {
-      Alert.alert(t('error.generic'), error.message);
+      Alert.alert(t('error.general'), error.message);
     }
   };
 

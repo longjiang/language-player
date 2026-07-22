@@ -38,7 +38,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(media)"
         options={{
-          title: t('tab.media'),
+          title: t('nav.media'),
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'movie' : 'movie-outline'} color={color} />
           ),
@@ -47,7 +47,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(dictionary)"
         options={{
-          title: t('tab.dictionary'),
+          title: t('title.dictionary'),
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'book' : 'book-outline'} color={color} />
           ),
