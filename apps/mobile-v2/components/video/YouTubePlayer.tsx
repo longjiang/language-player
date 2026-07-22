@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react';
-import { View, ActivityIndicator, Text } from 'react-native';
+import { View, ActivityIndicator, Text, useWindowDimensions } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import { useT } from '@/hooks/use-t';
 
@@ -26,12 +26,15 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const playerRef = useRef<any>(null);
     const [ready, setReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    // shouldPlay = desired state (controls the `play` prop)
-    // playerState = actual YouTube player state (from onChangeState)
     const [shouldPlay, setShouldPlay] = useState(autoplay);
+    const shouldPlayRef = useRef(shouldPlay);
+    shouldPlayRef.current = shouldPlay;
     const [playerState, setPlayerState] = useState<string>('unstarted');
     const [playbackRate, setPlaybackRateState] = useState(1);
     const t = useT();
+    const { width: screenWidth } = useWindowDimensions();
+    const videoWidth = screenWidth;
+    const videoHeight = (screenWidth / 16) * 9; // 16:9 aspect ratio
     const timeRef = useRef(0);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const onTimeUpdateRef = useRef(onTimeUpdate);
@@ -80,14 +83,14 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
 
     if (error) {
       return (
-        <View className="aspect-video w-full items-center justify-center bg-muted p-4">
+        <View className="w-full items-center justify-center bg-muted p-4" style={{ height: videoHeight }}>
           <Text className="text-center text-sm text-destructive">{error}</Text>
         </View>
       );
     }
 
     return (
-      <View className="aspect-video w-full bg-black">
+      <View className="w-full bg-black" style={{ height: videoHeight }}>
         {!ready && (
           <View className="absolute inset-0 items-center justify-center">
             <ActivityIndicator size="large" className="text-white" />
@@ -95,14 +98,23 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
         )}
         <YoutubePlayer
           ref={playerRef}
-          height={300}
-          width={360}
+          height={videoHeight}
+          width={videoWidth}
           videoId={youtubeId}
           play={shouldPlay}
           playbackRate={playbackRate}
           initialPlayerParams={{ start: startTime }}
           onChangeState={handleStateChange}
-          onReady={() => { setReady(true); }}
+          onReady={() => {
+            setReady(true);
+            // Workaround: react-native-youtube-iframe's sendPostMessage
+            // drops messages if playerReady is false. If the user tapped
+            // play before onReady, the command was lost. Re-apply.
+            if (shouldPlayRef.current) {
+              setShouldPlay(false);
+              requestAnimationFrame(() => setShouldPlay(true));
+            }
+          }}
           onError={(e: any) => {
             const msg = typeof e === 'string' ? e : (e?.message ?? e?.error ?? t('msg.playback_error'));
             setError(String(msg));
