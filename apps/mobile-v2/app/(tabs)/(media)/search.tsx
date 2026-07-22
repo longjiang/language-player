@@ -91,10 +91,10 @@ export default function SearchScreen() {
 
       {/* Search bar */}
       <View className="flex-row items-center gap-2 border-b border-border px-4 pb-2">
-        <View className="flex-1 flex-row items-center rounded-lg border border-border bg-card">
-          <Search size={16} color={ICON_MUTED} className="ml-3" />
+        <View className="flex-1 flex-row items-center rounded-lg border border-border bg-card px-3">
+          <Search size={16} color={ICON_MUTED} />
           <TextInput
-            className="flex-1 py-2.5 pl-2 pr-3 text-sm text-foreground"
+            className="flex-1 py-2.5 pl-2 pr-0 text-sm text-foreground"
             placeholder={t('placeholder.search_dots')}
             placeholderTextColor={PLACEHOLDER_COLOR}
             value={query}
