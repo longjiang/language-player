@@ -16,35 +16,35 @@ const ICON_COLOR = hslToHex(darkSemantic.mutedForeground);
 
 interface NavGroup {
   label: string;
-  links: { key: string; href: string }[];
+  links: { key: string; href: string; icon: string }[];
 }
 
 const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Media',
     links: [
-      { key: 'title.explore', href: '/(tabs)/(media)' },
-      { key: 'title.music_and_entertainment', href: '/(tabs)/(media)/music' },
-      { key: 'title.live_tv', href: '/(tabs)/(media)/live-tv' },
-      { key: 'title.tv_shows', href: '/(tabs)/(media)/tv-shows' },
-      { key: 'title.watch_history', href: '/(tabs)/(media)/watch-history' },
-      { key: 'title.local_media', href: '/(tabs)/(media)/local-media' },
+      { key: 'title.explore', href: '/(tabs)/(media)', icon: 'explore' },
+      { key: 'title.music_and_entertainment', href: '/(tabs)/(media)/music', icon: 'music' },
+      { key: 'title.live_tv', href: '/(tabs)/(media)/live-tv', icon: 'live-tv' },
+      { key: 'title.tv_shows', href: '/(tabs)/(media)/tv-shows', icon: 'tv-shows' },
+      { key: 'title.watch_history', href: '/(tabs)/(media)/watch-history', icon: 'watch-history' },
+      { key: 'title.local_media', href: '/(tabs)/(media)/local-media', icon: 'local-media' },
     ],
   },
   {
     label: 'Reading',
     links: [
-      { key: 'title.notes_reader', href: '/(tabs)/(reading)' },
-      { key: 'title.web_reader', href: '/(tabs)/(reading)' },
-      { key: 'title.epub_reader', href: '/(tabs)/(reading)' },
+      { key: 'title.notes_reader', href: '/(tabs)/(reading)', icon: 'reader' },
+      { key: 'title.web_reader', href: '/(tabs)/(reading)', icon: 'web-reader' },
+      { key: 'title.epub_reader', href: '/(tabs)/(reading)', icon: 'epub' },
     ],
   },
   {
     label: 'Vocab',
     links: [
-      { key: 'title.dictionary', href: '/(tabs)/(vocab)' },
-      { key: 'title.saved_words', href: '/(tabs)/(vocab)/saved-words' },
-      { key: 'title.review', href: '/(tabs)/(vocab)/review' },
+      { key: 'title.dictionary', href: '/(tabs)/(vocab)', icon: 'dictionary' },
+      { key: 'title.saved_words', href: '/(tabs)/(vocab)/saved-words', icon: 'saved-words' },
+      { key: 'title.review', href: '/(tabs)/(vocab)/review', icon: 'review' },
     ],
   },
 ];
@@ -64,12 +64,6 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   'saved-words': <Bookmark size={16} color={ICON_COLOR} />,
   review: <RotateCcw size={16} color={ICON_COLOR} />,
 };
-
-/** Extract last path segment as icon key (e.g., "/(tabs)/(media)/live-tv" → "live-tv"). */
-function iconKey(href: string): string {
-  const parts = href.split('/');
-  return parts[parts.length - 1]!;
-}
 
 interface HamburgerDrawerProps {
   open: boolean;
@@ -110,7 +104,7 @@ export function HamburgerDrawer({ open, onClose }: HamburgerDrawerProps) {
                     router.push(link.href as any);
                   }}
                 >
-                  <View className="opacity-100">{NAV_ICONS[iconKey(link.href)]}</View>
+                  <View className="opacity-100">{NAV_ICONS[link.icon]}</View>
                   <Text className="text-sm text-foreground">{t(link.key)}</Text>
                 </Pressable>
               ))}
