@@ -6,6 +6,7 @@ import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { TokenizedText } from '../TokenizedText';
+import { DictionaryPopup } from '../dictionary/DictionaryPopup';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
 
@@ -41,6 +42,7 @@ export function SubtitleDisplay({
   const t = useT();
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [activeIdx, setActiveIdx] = useState(-1);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   const showTranslation = display.translation;
@@ -125,6 +127,7 @@ export function SubtitleDisplay({
               text={line.line}
               l2Code={l2Lang.code}
               highlightTerms={highlightTerms}
+              onWordPress={(word) => setSelectedWord(word)}
             />
             {translation && showTranslation && (
               <Text className="mt-1 text-sm text-muted-foreground">
@@ -134,6 +137,11 @@ export function SubtitleDisplay({
           </Pressable>
         );
       })}
+      <DictionaryPopup
+        visible={!!selectedWord}
+        word={selectedWord ?? ''}
+        onClose={() => setSelectedWord(null)}
+      />
     </ScrollView>
   );
 }

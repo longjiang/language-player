@@ -1,25 +1,23 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { Text } from 'react-native';
 
 interface TokenizedTextProps {
   text: string;
   l2Code: string;
   highlightTerms?: string[];
+  onWordPress?: (word: string) => void;
 }
 
 /**
- * Renders a subtitle line as tappable word tokens.
- * Phase 3 stub: shows plain text with basic word splitting.
- * Full version (Phase 4+) will integrate server-side lemmatization
- * and open the dictionary popup on word tap.
+ * Renders text as tappable word tokens.
+ * CJK text: character-level tokens.
+ * Space-separated: word-level tokens.
+ * Tapping a word calls onWordPress with the word text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms }: TokenizedTextProps) {
-  // Simple word splitting — CJK characters get individual tokens,
-  // space-separated languages get word tokens
+export function TokenizedText({ text, l2Code, highlightTerms, onWordPress }: TokenizedTextProps) {
   const isCJK = /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/.test(text);
 
   if (isCJK) {
-    // Character-level tokens for CJK
     const chars = [...text];
     return (
       <Text className="text-base leading-relaxed text-foreground">
@@ -28,6 +26,7 @@ export function TokenizedText({ text, l2Code, highlightTerms }: TokenizedTextPro
           return (
             <Text
               key={i}
+              onPress={() => onWordPress?.(char)}
               className={isHighlighted ? 'font-bold text-primary' : ''}
             >
               {char}
@@ -38,7 +37,6 @@ export function TokenizedText({ text, l2Code, highlightTerms }: TokenizedTextPro
     );
   }
 
-  // Word-level tokens for space-separated languages
   const words = text.split(/(\s+)/);
   return (
     <Text className="text-base leading-relaxed text-foreground">
@@ -48,6 +46,7 @@ export function TokenizedText({ text, l2Code, highlightTerms }: TokenizedTextPro
         return (
           <Text
             key={i}
+            onPress={() => trimmed && onWordPress?.(trimmed)}
             className={isHighlighted ? 'font-bold text-primary' : ''}
           >
             {word}
