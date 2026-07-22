@@ -28,7 +28,7 @@ export default function LiveTvScreen() {
     fetch(`${PYTHON_API_URL}/live-tv/channels?l2=${l2Lang.code}&sort=${sortBy}&limit=200`)
       .then((r) => r.json())
       .then((data) => {
-        const list = Array.isArray(data) ? data : [];
+        const list = data.channels || [];
         setChannels(list);
         setError(null);
         // Auto-select first alive channel
