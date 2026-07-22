@@ -8,6 +8,9 @@ import type { NoteListItem } from '@langplayer/shared';
 import { BookOpen, PenLine, Plus, Trash2, StickyNote } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
+import { TokenizedText } from '@/components/TokenizedText';
+import { parseMarkdownBlocks } from '@/lib/parse-markdown';
+import type { TextBlock } from '@/lib/parse-markdown';
 
 export default function ReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -17,6 +20,7 @@ export default function ReaderScreen() {
   const [text, setText] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('edit');
   const [tokens, setTokens] = useState<any[] | null>(null);
+  const [blocks, setBlocks] = useState<TextBlock[] | null>(null);
   const [tokenizing, setTokenizing] = useState(false);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -51,14 +55,20 @@ export default function ReaderScreen() {
     }
   }, [notes.currentNoteId]);
 
-  // Tokenize text
+  // Tokenize text — parse markdown into blocks, then lemmatize each block
   const handleTokenize = useCallback(async () => {
+    if (!text.trim()) return;
     setTokenizing(true);
     try {
+      const parsed = parseMarkdownBlocks(text);
+      setBlocks(parsed);
+
+      // Tokenize all block texts in one call
+      const blockTexts = parsed.map((b) => b.text);
       const res = await fetch(`${apiClient.defaults.baseURL}/lemmatize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, l2: l2Lang.code }),
+        body: JSON.stringify({ text: blockTexts.join('\n'), l2: l2Lang.code }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -162,23 +172,54 @@ export default function ReaderScreen() {
               <Text className="mt-2 text-xs text-muted-foreground">{t('msg.making_words_interactive')}</Text>
             </ScrollView>
           )}
-          {activeTab === 'read' && !tokenizing && (
+          {activeTab === 'read' && !tokenizing && blocks && (
             <ScrollView className="flex-1 p-4">
-              {tokens ? (
-                tokens.map((token: any, i: number) => (
-                  <Text
-                    key={i}
-                    onPress={() => token.text && setSelectedWord(token.text)}
-                    className="text-base leading-relaxed text-foreground"
-                  >
-                    {token.lemmas?.length > 0
-                      ? token.text
-                      : token.text}{' '}
-                  </Text>
-                ))
-              ) : (
-                <Text className="text-base leading-relaxed text-foreground">{text}</Text>
-              )}
+              {blocks.map((block, bi) => {
+                const blockTokens = tokens?.[bi] ?? [];
+                return (
+                  <View key={bi} className="mb-3">
+                    {/* Block type styling */}
+                    {block.type === 'heading' && (
+                      <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'}`}>
+                        {block.text}
+                      </Text>
+                    )}
+                    {block.type === 'paragraph' && (
+                      <TokenizedText
+                        text={block.text}
+                        l2Code={l2Lang.code}
+                        onWordPress={(word) => setSelectedWord(word)}
+                      />
+                    )}
+                    {block.type === 'blockquote' && (
+                      <View className="border-l-2 border-muted-foreground/30 pl-3">
+                        <TokenizedText
+                          text={block.text}
+                          l2Code={l2Lang.code}
+                          onWordPress={(word) => setSelectedWord(word)}
+                        />
+                      </View>
+                    )}
+                    {block.type === 'list-item' && (
+                      <View className="flex-row">
+                        <Text className="mr-2 text-muted-foreground">•</Text>
+                        <View className="flex-1">
+                          <TokenizedText
+                            text={block.text}
+                            l2Code={l2Lang.code}
+                            onWordPress={(word) => setSelectedWord(word)}
+                          />
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
+          )}
+          {activeTab === 'read' && !tokenizing && !blocks && (
+            <ScrollView className="flex-1 p-4">
+              <Text className="text-base leading-relaxed text-foreground">{text}</Text>
             </ScrollView>
           )}
         </View>
