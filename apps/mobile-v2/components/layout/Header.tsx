@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Search, Menu, X } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { HamburgerDrawer } from './HamburgerDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -38,7 +39,7 @@ export function Header() {
             onPress={() => router.push('/(tabs)/(media)/search' as any)}
             className="rounded-lg p-2 active:bg-muted"
           >
-            <Text className="text-base text-muted-foreground">🔍</Text>
+            <Search size={20} color="#9ca3af" />
           </Pressable>
 
           {/* Language switcher */}
@@ -52,7 +53,7 @@ export function Header() {
             onPress={() => setDrawerOpen(!drawerOpen)}
             className="rounded-lg p-1.5 active:bg-muted"
           >
-            <Text className="text-lg text-muted-foreground">{drawerOpen ? '✕' : '☰'}</Text>
+            {drawerOpen ? <X size={22} color="#9ca3af" /> : <Menu size={22} color="#9ca3af" />}
           </Pressable>
         </View>
       </View>

@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
+import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import type { YouTubePlayerHandle } from './YouTubePlayer';
 
@@ -74,17 +75,17 @@ export function VideoControlBar({
           disabled={!hasPreviousVideo}
           className={`p-2 ${!hasPreviousVideo ? 'opacity-30' : ''}`}
         >
-          <Text className="text-lg text-foreground">⏮</Text>
+          <SkipBack size={20} color="#fff" />
         </Pressable>
 
         {/* Rewind 2s */}
         <Pressable onPress={onRewind} className="p-2">
-          <Text className="text-lg text-foreground">⏪</Text>
+          <RotateCcw size={20} color="#fff" />
         </Pressable>
 
         {/* Play/Pause */}
         <Pressable onPress={onPauseToggle} className="rounded-full bg-primary p-3">
-          <Text className="text-lg text-primary-foreground">{paused ? '▶' : '⏸'}</Text>
+          {paused ? <Play size={22} color="#fff" /> : <Pause size={22} color="#fff" />}
         </Pressable>
 
         {/* Speed toggle */}
@@ -98,7 +99,7 @@ export function VideoControlBar({
           disabled={!hasNextVideo}
           className={`p-2 ${!hasNextVideo ? 'opacity-30' : ''}`}
         >
-          <Text className="text-lg text-foreground">⏭</Text>
+          <SkipForward size={20} color="#fff" />
         </Pressable>
       </View>
     </View>
