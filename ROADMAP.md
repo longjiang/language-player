@@ -119,8 +119,8 @@
     - Enable Hermes v1 (default from SDK 56)
     - React 19.1 → 19.2, RN 0.81 → 0.86 (SDK 57 is non-breaking)
     - Bump Xcode → 26.4+, iOS minimum → 16.4
-- ✅ **Step 2: Wire shared packages** — refactor to use `@langplayer/shared`, `@langplayer/utils`, and `@langplayer/api-client` (replace direct API calls)
-- ⬜ **Step 3: Merge** — merge React Native app into monorepo with full Git history
+- ✅ **Step 2: Wire shared packages** — refactor to use `@langplayer/shared`, `@langplayer/utils`, and `@langplayer/api-client` (replace direct API calls), consolidate i18n.
+- ✅ **Step 3: Merge** — merge React Native app into monorepo with full Git history at `apps/mobile/`
 - ⬜ **Step 4: Feature parity audit** — validate mobile app against Classic for completeness
 
 ## Phase 9: Sunset Classic
