@@ -169,7 +169,7 @@ export default function LocalMediaScreen() {
             <SkipBack size={20} className="text-foreground" />
           </Pressable>
           <Pressable onPress={handlePlayPause} className="rounded-full bg-primary p-2 active:bg-primary/80">
-            {paused ? <Play size={20} color="white" /> : <Pause size={20} color="white" />}
+            {paused ? <Play size={20} className="text-primary-foreground" /> : <Pause size={20} className="text-primary-foreground" />}
           </Pressable>
           <Pressable onPress={handleRewind} className="rounded p-1 active:bg-muted">
             <SkipForward size={20} className="text-foreground" />
