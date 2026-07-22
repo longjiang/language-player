@@ -45,16 +45,16 @@ const NAV_GROUPS: NavGroup[] = [
 
 // Icons matching Next.js NAV_ICONS (apps/web/src/components/layout/header.tsx)
 const NAV_ICONS: Record<string, React.ReactNode> = {
-  explore: <Compass size={16} />,
-  music: <Music size={16} />,
-  'live-tv': <Tv size={16} />,
-  'tv-shows': <Clapperboard size={16} />,
-  'watch-history': <History size={16} />,
-  'local-media': <FolderOpen size={16} />,
-  reader: <FileText size={16} />,
-  dictionary: <BookMarked size={16} />,
-  'saved-words': <Bookmark size={16} />,
-  review: <Brain size={16} />,
+  explore: <Compass size={16} color="#94a3b8" />,
+  music: <Music size={16} color="#94a3b8" />,
+  'live-tv': <Tv size={16} color="#94a3b8" />,
+  'tv-shows': <Clapperboard size={16} color="#94a3b8" />,
+  'watch-history': <History size={16} color="#94a3b8" />,
+  'local-media': <FolderOpen size={16} color="#94a3b8" />,
+  reader: <FileText size={16} color="#94a3b8" />,
+  dictionary: <BookMarked size={16} color="#94a3b8" />,
+  'saved-words': <Bookmark size={16} color="#94a3b8" />,
+  review: <Brain size={16} color="#94a3b8" />,
 };
 
 /** Extract last path segment as icon key (e.g., "/(tabs)/(media)/live-tv" → "live-tv"). */
@@ -102,7 +102,7 @@ export function HamburgerDrawer({ open, onClose }: HamburgerDrawerProps) {
                     router.push(link.href as any);
                   }}
                 >
-                  <View className="opacity-60">{NAV_ICONS[iconKey(link.href)]}</View>
+                  <View className="opacity-100">{NAV_ICONS[iconKey(link.href)]}</View>
                   <Text className="text-sm text-foreground">{t(link.key)}</Text>
                 </Pressable>
               ))}
