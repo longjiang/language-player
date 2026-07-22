@@ -33,7 +33,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Reading',
     links: [
-      { key: 'title.notes_reader', href: '/(tabs)/(reading)/reader' },
+      { key: 'title.notes_reader', href: '/(tabs)/(reading)' },
       { key: 'title.web_reader', href: '/(tabs)/(reading)/web-reader' },
       { key: 'title.epub_reader', href: '/(tabs)/(reading)/epub' },
     ],
@@ -51,6 +51,7 @@ const NAV_GROUPS: NavGroup[] = [
 // Icons matching Next.js NAV_ICONS (apps/web/src/components/layout/header.tsx)
 const NAV_ICONS: Record<string, React.ReactNode> = {
   '(media)': <Compass size={16} color={ICON_COLOR} />,
+  '(reading)': <FileText size={16} color={ICON_COLOR} />,
   explore: <Compass size={16} color={ICON_COLOR} />,
   music: <Music size={16} color={ICON_COLOR} />,
   'live-tv': <Tv size={16} color={ICON_COLOR} />,
