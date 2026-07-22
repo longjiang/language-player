@@ -11,6 +11,11 @@ function getLanguageName(code: string): string {
   return enLangNames[code] ?? code.toUpperCase();
 }
 
+/** Short code for the pill display (e.g. 'zh-Hans' → 'ZH', 'en' → 'EN'). */
+function getLanguageCode(code: string): string {
+  return code.split('-')[0]!.toUpperCase();
+}
+
 /** Top languages to show first in the L2 selector, matches Next.js. */
 const POPULAR_LANGUAGES = [
   'en', 'zh-Hans', 'zh-Hant', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
@@ -103,7 +108,7 @@ export function LanguageSwitcher() {
         onPress={() => { setOpen(open === 'l1' ? null : 'l1'); setSearch(''); }}
         className="rounded-full bg-primary/10 px-2.5 py-1"
       >
-        <Text className="text-xs font-bold text-primary" numberOfLines={1}>{getLanguageName(l1Lang.code)}</Text>
+        <Text className="text-xs font-bold text-primary" numberOfLines={1}>{getLanguageCode(l1Lang.code)}</Text>
       </Pressable>
 
       <Pressable
@@ -118,7 +123,7 @@ export function LanguageSwitcher() {
         onPress={() => { setOpen(open === 'l2' ? null : 'l2'); setSearch(''); }}
         className="rounded-full bg-accent/10 px-2.5 py-1"
       >
-        <Text className="text-xs font-bold text-accent" numberOfLines={1}>{getLanguageName(l2Lang.code)}</Text>
+        <Text className="text-xs font-bold text-accent" numberOfLines={1}>{getLanguageCode(l2Lang.code)}</Text>
       </Pressable>
 
       {open && (
