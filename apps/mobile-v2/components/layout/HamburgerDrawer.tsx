@@ -7,6 +7,10 @@ import {
   Compass, Music, Tv, Clapperboard, History, FolderOpen,
   FileText, BookMarked, Bookmark, Brain,
 } from 'lucide-react-native';
+import { darkSemantic, hslToHex } from '@langplayer/shared';
+
+// Icon color from dark theme muted-foreground token
+const ICON_COLOR = hslToHex(darkSemantic.mutedForeground);
 
 // ── Same nav structure + icons as web (apps/web/src/components/layout/header.tsx) ──
 
@@ -45,16 +49,16 @@ const NAV_GROUPS: NavGroup[] = [
 
 // Icons matching Next.js NAV_ICONS (apps/web/src/components/layout/header.tsx)
 const NAV_ICONS: Record<string, React.ReactNode> = {
-  explore: <Compass size={16} color="#94a3b8" />,
-  music: <Music size={16} color="#94a3b8" />,
-  'live-tv': <Tv size={16} color="#94a3b8" />,
-  'tv-shows': <Clapperboard size={16} color="#94a3b8" />,
-  'watch-history': <History size={16} color="#94a3b8" />,
-  'local-media': <FolderOpen size={16} color="#94a3b8" />,
-  reader: <FileText size={16} color="#94a3b8" />,
-  dictionary: <BookMarked size={16} color="#94a3b8" />,
-  'saved-words': <Bookmark size={16} color="#94a3b8" />,
-  review: <Brain size={16} color="#94a3b8" />,
+  explore: <Compass size={16} color={ICON_COLOR} />,
+  music: <Music size={16} color={ICON_COLOR} />,
+  'live-tv': <Tv size={16} color={ICON_COLOR} />,
+  'tv-shows': <Clapperboard size={16} color={ICON_COLOR} />,
+  'watch-history': <History size={16} color={ICON_COLOR} />,
+  'local-media': <FolderOpen size={16} color={ICON_COLOR} />,
+  reader: <FileText size={16} color={ICON_COLOR} />,
+  dictionary: <BookMarked size={16} color={ICON_COLOR} />,
+  'saved-words': <Bookmark size={16} color={ICON_COLOR} />,
+  review: <Brain size={16} color={ICON_COLOR} />,
 };
 
 /** Extract last path segment as icon key (e.g., "/(tabs)/(media)/live-tv" → "live-tv"). */
