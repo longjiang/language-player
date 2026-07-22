@@ -3,6 +3,56 @@ import { View, ActivityIndicator, Text, useWindowDimensions } from 'react-native
 import YoutubePlayer, { type YoutubeIframeRef } from 'react-native-youtube-iframe';
 import { useT } from '@/hooks/use-t';
 
+/**
+ * YouTube player wrapper using react-native-youtube-iframe v2.3.0.
+ *
+ * ## How play/pause works (per official docs)
+ * The `play` prop (boolean) controls playback declaratively. There are NO
+ * imperative playVideo()/pauseVideo() methods on the ref — those were removed
+ * in v2.x. The ref only exposes: seekTo, getCurrentTime, getDuration,
+ * getPlaybackRate, getVolume, isMuted, getAvailablePlaybackRates.
+ *
+ * ## What works
+ * - onReady fires correctly when the YouTube iframe loads
+ * - onChangeState fires when YouTube's NATIVE play button is tapped
+ *   (confirmed via idb ui tap on the simulator)
+ * - seekTo works (uses injectJavaScript directly, bypassing postMessage)
+ * - Subtitles render, time polling works when onChangeState reports 'playing'
+ * - Video metadata loads (getById API)
+ *
+ * ## What DOESN'T work (as of 2026-07-22)
+ * - The `play` prop change does NOT start/pause the video on iOS Simulator.
+ *   The library's internal sendPostMessage drops playVideo/pauseVideo commands
+ *   if playerReady is false, but even when onReady has already fired and
+ *   playerReady is true, the postMessage doesn't reach the YouTube iframe.
+ *
+ * ## Approaches tried (none resolved the issue)
+ * 1. Declarative `play` prop + onChangeState sync — current approach, per docs
+ * 2. Deferred play: call setShouldPlay(false) then setShouldPlay(true) after
+ *    onReady to "re-apply" the play command — didn't work
+ * 3. requestAnimationFrame wrapping to defer state updates outside render —
+ *    fixed "Cannot update component while rendering" error but play still fails
+ * 4. Key remount (increment playKey to force WebView remount with play=true) —
+ *    caused full WebView reload on every toggle, and reference errors
+ * 5. useLocalHTML prop — no effect
+ * 6. webViewProps.mediaPlaybackRequiresUserAction=false — no effect
+ * 7. initialPlayerParams.controls=false — hides YT native UI, doesn't fix play
+ *
+ * ## Likely root cause
+ * The library's sendPostMessage sends commands via WebView postMessage.
+ * On iOS, the message may not reach the YouTube iframe, or the iframe
+ * ignores programmatic play without a direct user gesture inside the WebView.
+ * The idb tap (through simulator accessibility layer directly to the WebView)
+ * DOES start playback — confirming the iframe works but only responds to
+ * in-WebView interaction.
+ *
+ * ## Next steps
+ * - Try hosting iframe.html locally (baseUrlOverride) to debug postMessage
+ * - Consider upgrading react-native-youtube-iframe or trying an alternative
+ * - The GO app (language-player-3) uses same library v2.3.0 and play works
+ *   there — diff their full setup for clues
+ */
+
 interface YouTubePlayerProps {
   youtubeId: string;
   autoplay?: boolean;
