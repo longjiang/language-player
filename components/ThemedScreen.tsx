@@ -7,6 +7,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CountryFlag from 'react-native-country-flag';
 import { router } from "expo-router";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 import { ClippedImage } from '@/components/ClippedImage';
 
 const { width, height } = Dimensions.get('window');
@@ -32,7 +33,8 @@ export const ThemedScreen = ({
   onAction?: () => void,
   scroll?: boolean
 }) => {
-  const { languages, i18n, l2Lang } = useLanguage();
+  const { languages, l2Lang } = useLanguage();
+  const t = useT();
   const country = l2Lang ? languages?.getCountry(l2Lang) : null;
 
   const ContentWrapper = scroll ? ScrollView : View;
@@ -54,7 +56,7 @@ export const ThemedScreen = ({
             <View style={styles.header}>
               <View style={styles.headerLeft}>
                 {onBackPress && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="chevron-left" />} onPress={onBackPress} />}
-                <ThemedText type="title" style={styles.title}>{i18n.t(title, titleParams)}</ThemedText>
+                <ThemedText type="title" style={styles.title}>{t(title, titleParams)}</ThemedText>
               </View>
               {onAction && <ThemedButton type="ghost" size="title" trailingIcon={<Icon name="dots-horizontal-circle" />} onPress={onAction} />}
               {showFlag && (

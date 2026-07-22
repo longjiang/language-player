@@ -28,7 +28,7 @@ const formatNumber = (num: number): string => {
 
 export const VideoControlBar: React.FC = () => {
   const t = useT();
-  const { i18n, l1Lang, l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   if (!l1Lang || !l2Lang) return null;
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const disabledColor = useThemeColor({}, "disabled");
@@ -70,7 +70,7 @@ export const VideoControlBar: React.FC = () => {
 
   const videoInfo = [
     video.duration ? formatDuration(video.duration) : undefined,
-    video.date instanceof Date ? video.date.toLocaleDateString(i18n.locale, { month: 'long', day: 'numeric', year: 'numeric' }) : undefined,
+    video.date instanceof Date ? video.date.toLocaleDateString(l1Lang.code, { month: 'long', day: 'numeric', year: 'numeric' }) : undefined,
     t('lang.' + video.locale)
   ];
 

@@ -37,8 +37,14 @@ const localeLoaders: Record<string, () => Record<string, unknown>> = {
   vi: () => require('../../../packages/shared/locales/vi.json'),
 };
 
+// Module-level cache — ensures same reference for same locale (critical for useCallback stability)
+const messageCache = new Map<string, Record<string, unknown>>();
+
 /** Load messages for the given locale in nested format. Falls back to English. */
 export function loadLocaleMessages(locale: string): Record<string, unknown> {
+  const cached = messageCache.get(locale);
+  if (cached) return cached;
+
   const loader = localeLoaders[locale] ?? localeLoaders['en'];
   const nested = loader();
 
@@ -46,5 +52,7 @@ export function loadLocaleMessages(locale: string): Record<string, unknown> {
   // e.g., { "key": "en", "action": { "cancel": "Cancel" } } → { "action": { "cancel": "Cancel" } }
   const { key, ...messages } = nested;
 
-  return messages as Record<string, unknown>;
+  const result = messages as Record<string, unknown>;
+  messageCache.set(locale, result);
+  return result;
 }

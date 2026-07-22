@@ -10,7 +10,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { Swatches, Typography } from "@/constants";
 import { ThemedText } from "./ThemedText";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 export type ButtonProps = {
   type?: "neutral" | "accent" | "primary" | "ghost" | "pro";
@@ -37,7 +36,6 @@ export function ThemedButton({
   const secondaryTextColor = useThemeColor({}, "secondaryText");
   const primaryBrandColor = useThemeColor({}, "primaryBrand");
   const secondaryBackgroundColor = useThemeColor({}, "secondaryBackground");
-  const { i18n } = useLanguage();
 
   const universalStyles = {
     flexDirection: "row",

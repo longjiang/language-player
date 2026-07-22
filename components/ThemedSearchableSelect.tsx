@@ -49,7 +49,7 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
   const textColor = useThemeColor({}, 'primaryText');
   const placeholderTextColor = useThemeColor({}, 'secondaryText');
 
-  const { i18n } = useLanguage();
+  const t = useT();
 
   useEffect(() => {
     if (initialValue) {
@@ -121,7 +121,7 @@ export const ThemedSearchableSelect: React.FC<ThemedSearchableSelectProps> = ({
       <View style={[styles.container, { borderColor, backgroundColor }, style]}>
         <TouchableOpacity style={styles.input} onPress={() => isOpen ? handleClose() : handleOpen()}>
           <ThemedText style={{ color: textColor }} variant="secondary">
-            {i18n.t(selectedLabel || placeholder, { missingBehavior: "guess" })}
+            {t(selectedLabel || placeholder)}
           </ThemedText>
           <Icon name={isOpen ? "chevron-up" : "chevron-down"} size={24} color={placeholderTextColor} />
         </TouchableOpacity>
