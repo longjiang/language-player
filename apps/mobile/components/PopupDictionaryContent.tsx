@@ -63,12 +63,20 @@ export const PopupDictionaryContent: React.FC<{
       // Phase 1: Try online lookup first (same endpoint as Next.js web app).
       // The Python backend handles normalization, LLM fallback, and L1 translation.
       const onlineResults = await dictionary.onlineLookup(token.text, l1Lang?.code);
+      console.log('[PHASE1] onlineLookup:', {
+        text: token.text,
+        l1: l1Lang?.code,
+        l2: l2Lang?.code,
+        resultCount: onlineResults?.length ?? 'null',
+        source: onlineResults !== null && onlineResults.length > 0 ? 'PYTHON' : 'FALLBACK',
+      });
       if (onlineResults !== null && onlineResults.length > 0) {
         setDictionaryEntries(onlineResults);
         return;
       }
 
       // Fallback: local SQLite dictionary (existing behavior)
+      console.log('[PHASE1] falling back to local SQLite for:', token.text);
       const tokenizerName = l2Lang && getTokenizer(l2Lang.code)?.name || '';
       let entries: DictionaryEntry[] = []
       if (["PyidaungsuTokenizer", "JiebaTokenizer"].includes(tokenizerName)) {
