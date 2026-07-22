@@ -653,6 +653,7 @@
         "payment_processing": "Ваш платеж обрабатывается. Это может занять несколько мгновений.",
         "payment_received": "Платеж получен",
         "paypal_available": "PayPal также доступен для пожизненных покупок.",
+        "playback_error": "Ошибка воспроизведения",
         "popular_languages": "Популярное",
         "preparing_review_cards": "Подготовка карточек для повторения...",
         "pro_feature_chatgpt": "Только пользователи Pro могут использовать функции ИИ в Language Player Go. Чтобы использовать эту функцию, обновитесь до Pro.",
