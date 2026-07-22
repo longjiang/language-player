@@ -4,6 +4,14 @@ import YoutubePlayer, { type YoutubeIframeRef } from 'react-native-youtube-ifram
 import { useT } from '@/hooks/use-t';
 
 /**
+ * Bridge variable that carries the desired play state across component
+ * remounts. When play()/pause() is called, we write the intention here
+ * BEFORE incrementing mountKey, and the new component instance reads it
+ * in its useState initializer. Cleared immediately after reading.
+ */
+let _pendingPlayState: boolean | undefined;
+
+/**
  * YouTube player wrapper using react-native-youtube-iframe v2.3.0.
  *
  * ## How play/pause works (per official docs)
@@ -47,9 +55,12 @@ import { useT } from '@/hooks/use-t';
  * in-WebView interaction.
  *
  * ## Current approach (2026-07-22)
- * Key remount: each play/pause toggle increments mountKey, forcing a fresh
- * WebView load with the new `play` value. The YouTube iframe autoplays on
- * mount when play=true. Trade-off: WebView reloads on every toggle.
+ * Key remount with bridge variable: each play/pause toggle writes the
+ * desired state to `_pendingPlayState`, then increments `mountKey` to
+ * force a fresh WebView load. The new component instance reads
+ * `_pendingPlayState` in its useState initializer to determine the
+ * `play` prop. This avoids the bug where state was lost on remount.
+ * Trade-off: WebView reloads on every toggle.
  */
 
 interface YouTubePlayerProps {
@@ -75,11 +86,18 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const playerRef = useRef<YoutubeIframeRef>(null);
     const [ready, setReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    // mountKey drives remount: each play/pause toggle increments it,
-    // forcing the WebView to reload with the new `play` value. This is
-    // needed because postMessage-based play/pause doesn't work on iOS.
+    // Key remount: each play/pause toggle increments mountKey to force
+    // the WebView to reload with the correct play state. The desired
+    // play state is carried across remounts via _pendingPlayState.
     const [mountKey, setMountKey] = useState(0);
-    const [shouldPlay, setShouldPlay] = useState(autoplay);
+    const [shouldPlay, setShouldPlay] = useState(() => {
+      if (_pendingPlayState !== undefined) {
+        const val = _pendingPlayState;
+        _pendingPlayState = undefined; // consumed — only valid for one mount
+        return val;
+      }
+      return autoplay;
+    });
     const [playerState, setPlayerState] = useState<string>('unstarted');
     const [playbackRate, setPlaybackRateState] = useState(1);
     const t = useT();
@@ -109,11 +127,11 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
 
     useImperativeHandle(ref, () => ({
       play: () => {
-        setShouldPlay(true);
+        _pendingPlayState = true;
         setMountKey(k => k + 1);
       },
       pause: () => {
-        setShouldPlay(false);
+        _pendingPlayState = false;
         setMountKey(k => k + 1);
       },
       seekTo: (seconds: number) => {
@@ -131,12 +149,12 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
       },
     }), []);
 
-    // Sync shouldPlay with actual player state from YouTube
+    // Track actual player state for time polling and parent callbacks.
+    // We do NOT sync shouldPlay here — with the key-remount approach,
+    // shouldPlay is a per-instance constant; play/pause requires a remount.
     const handleStateChange = useCallback((state: string) => {
       onStateChangeRef.current?.(state);
       setPlayerState(state);
-      if (state === 'playing') setShouldPlay(true);
-      else if (state === 'paused' || state === 'ended') setShouldPlay(false);
     }, []);
 
     if (error) {

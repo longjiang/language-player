@@ -14,13 +14,14 @@ export default function LiveTvScreen() {
   const t = useT();
   const [channels, setChannels] = useState<LiveChannel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`${PYTHON_API_URL}/live-tv/channels?l2=${l2Lang.code}&sort=latency&limit=200`)
       .then((r) => r.json())
-      .then((data) => setChannels(Array.isArray(data) ? data : []))
-      .catch(() => {})
+      .then((data) => { setChannels(Array.isArray(data) ? data : []); setError(null); })
+      .catch(() => setError('msg.no_videos_found'))
       .finally(() => setLoading(false));
   }, [l2Lang.code]);
 
@@ -29,6 +30,10 @@ export default function LiveTvScreen() {
 
   if (loading) {
     return <View className="flex-1 items-center justify-center bg-background"><ActivityIndicator size="large" className="text-primary" /></View>;
+  }
+
+  if (error) {
+    return <View className="flex-1 items-center justify-center bg-background"><Text className="text-muted-foreground">{t(error as any)}</Text></View>;
   }
 
   return (
