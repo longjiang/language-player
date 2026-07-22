@@ -53,6 +53,7 @@ export default function ReaderScreen() {
       setText(notes.currentNote.text ?? '');
       setActiveTab('read');
       setTokens(null);
+      setBlocks(null);
     }
   }, [notes.currentNoteId]);
 
