@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Image, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Menu, X } from 'lucide-react-native';
@@ -8,10 +8,16 @@ import { HamburgerDrawer } from './HamburgerDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
 
+/** Matches Next.js sm: breakpoint (640px). */
+const SM_BREAKPOINT = 640;
+
 export function Header() {
   const t = useT();
   const insets = useSafeAreaInsets();
+  const { width: screenWidth } = useWindowDimensions();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const showAppName = screenWidth >= SM_BREAKPOINT;
 
   return (
     <>
@@ -20,15 +26,19 @@ export function Header() {
         style={{ paddingTop: insets.top + 8 }}
       >
         <View className="flex-row items-center gap-3">
-          {/* Logo + app name — tapping goes to explore (home) */}
+          {/* Logo — matches Next.js header.tsx */}
           <Pressable
             onPress={() => router.push('/(tabs)/(media)' as any)}
-            className="flex-row items-center gap-1.5"
+            className="flex-row items-center gap-2"
           >
-            <View className="h-6 w-6 items-center justify-center rounded bg-primary">
-              <Text className="text-xs font-bold text-primary-foreground">LP</Text>
-            </View>
-            <Text className="text-sm font-bold text-foreground">{t('title.app_name')}</Text>
+            <Image
+              source={require('@/assets/logo.png')}
+              className="h-7 w-7"
+              resizeMode="contain"
+            />
+            {showAppName && (
+              <Text className="text-sm font-bold text-foreground">{t('title.app_name')}</Text>
+            )}
           </Pressable>
 
           {/* Spacer */}
