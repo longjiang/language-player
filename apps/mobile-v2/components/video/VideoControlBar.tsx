@@ -85,7 +85,7 @@ export function VideoControlBar({
 
       {/* Time display */}
       <View className="flex-row items-center justify-center gap-1">
-        <Clock size={12} color="#9ca3af" />
+        <Clock size={12} className="text-muted-foreground" />
         <Text className="text-xs text-muted-foreground">{formatTime(currentTime)}</Text>
         <Text className="text-xs text-muted-foreground">/</Text>
         <Text className="text-xs text-muted-foreground">{formatTime(duration)}</Text>
@@ -99,13 +99,13 @@ export function VideoControlBar({
           disabled={!hasPreviousVideo || !onPreviousVideo}
           className={`rounded p-2 ${!hasPreviousVideo || !onPreviousVideo ? 'opacity-30' : ''}`}
         >
-          <SkipBack size={18} color="#9ca3af" />
+          <SkipBack size={18} className="text-muted-foreground" />
         </Pressable>
 
         {/* Info */}
         {onOpenInfo && (
           <Pressable onPress={onOpenInfo} className="rounded p-2">
-            <Info size={18} color="#9ca3af" />
+            <Info size={18} className="text-muted-foreground" />
           </Pressable>
         )}
 
@@ -115,12 +115,12 @@ export function VideoControlBar({
           disabled={!hasPreviousLine}
           className={`rounded p-2 ${!hasPreviousLine ? 'opacity-30' : ''}`}
         >
-          <ChevronUp size={20} color="#9ca3af" />
+          <ChevronUp size={20} className="text-muted-foreground" />
         </Pressable>
 
         {/* Rewind 2s */}
         <Pressable onPress={handleRewind} className="rounded p-2">
-          <RotateCcw size={18} color="#9ca3af" />
+          <RotateCcw size={18} className="text-muted-foreground" />
         </Pressable>
 
         {/* Play/Pause */}
@@ -134,7 +134,7 @@ export function VideoControlBar({
           disabled={!hasNextLine}
           className={`rounded p-2 ${!hasNextLine ? 'opacity-30' : ''}`}
         >
-          <ChevronDown size={20} color="#9ca3af" />
+          <ChevronDown size={20} className="text-muted-foreground" />
         </Pressable>
 
         {/* Speed toggle */}
@@ -148,7 +148,7 @@ export function VideoControlBar({
           disabled={!hasNextVideo || !onNextVideo}
           className={`rounded p-2 ${!hasNextVideo || !onNextVideo ? 'opacity-30' : ''}`}
         >
-          <SkipForward size={18} color="#9ca3af" />
+          <SkipForward size={18} className="text-muted-foreground" />
         </Pressable>
       </View>
     </View>
