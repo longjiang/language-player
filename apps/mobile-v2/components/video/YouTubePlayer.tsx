@@ -104,6 +104,10 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
           play={shouldPlay}
           playbackRate={playbackRate}
           initialPlayerParams={{ start: startTime }}
+          webViewProps={{
+            allowsInlineMediaPlayback: true,
+            allowsFullscreenVideo: true,
+          }}
           onChangeState={handleStateChange}
           onReady={() => {
             setReady(true);
