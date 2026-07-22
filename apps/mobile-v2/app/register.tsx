@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-nativ
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
+import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 
 export default function RegisterScreen() {
@@ -60,7 +61,7 @@ export default function RegisterScreen() {
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator color="white" />
+          <ActivityIndicator color={ICON_ON_PRIMARY} />
         ) : (
           <Text className="text-primary-foreground font-bold text-base">
             {t('action.register')}

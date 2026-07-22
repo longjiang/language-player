@@ -144,7 +144,7 @@ export default function LocalMediaScreen() {
         />
         {buffering && (
           <View className="absolute inset-0 items-center justify-center bg-black/50">
-            <ActivityIndicator size="large" color="white" />
+            <ActivityIndicator size="large" color={ICON_ON_PRIMARY} />
           </View>
         )}
       </View>
