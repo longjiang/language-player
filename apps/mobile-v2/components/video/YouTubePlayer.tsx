@@ -46,11 +46,10 @@ import { useT } from '@/hooks/use-t';
  * DOES start playback — confirming the iframe works but only responds to
  * in-WebView interaction.
  *
- * ## Next steps
- * - Try hosting iframe.html locally (baseUrlOverride) to debug postMessage
- * - Consider upgrading react-native-youtube-iframe or trying an alternative
- * - The GO app (language-player-3) uses same library v2.3.0 and play works
- *   there — diff their full setup for clues
+ * ## Current approach (2026-07-22)
+ * Key remount: each play/pause toggle increments mountKey, forcing a fresh
+ * WebView load with the new `play` value. The YouTube iframe autoplays on
+ * mount when play=true. Trade-off: WebView reloads on every toggle.
  */
 
 interface YouTubePlayerProps {
@@ -76,6 +75,10 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const playerRef = useRef<YoutubeIframeRef>(null);
     const [ready, setReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // mountKey drives remount: each play/pause toggle increments it,
+    // forcing the WebView to reload with the new `play` value. This is
+    // needed because postMessage-based play/pause doesn't work on iOS.
+    const [mountKey, setMountKey] = useState(0);
     const [shouldPlay, setShouldPlay] = useState(autoplay);
     const [playerState, setPlayerState] = useState<string>('unstarted');
     const [playbackRate, setPlaybackRateState] = useState(1);
@@ -105,8 +108,14 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     }, [playerState]);
 
     useImperativeHandle(ref, () => ({
-      play: () => setShouldPlay(true),
-      pause: () => setShouldPlay(false),
+      play: () => {
+        setShouldPlay(true);
+        setMountKey(k => k + 1);
+      },
+      pause: () => {
+        setShouldPlay(false);
+        setMountKey(k => k + 1);
+      },
       seekTo: (seconds: number) => {
         playerRef.current?.seekTo(seconds, true);
       },
@@ -147,6 +156,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
         )}
         <YoutubePlayer
           ref={playerRef}
+          key={mountKey}
           height={videoHeight}
           width={screenWidth}
           videoId={youtubeId}
