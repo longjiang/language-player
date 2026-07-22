@@ -83,12 +83,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session on mount — always init API client first
-  useEffect(() => {
-    // API client must be initialized unconditionally — endpoints like
-    // /get_best_l2_subs and /recommend-videos work without auth.
-    initApiClient();
+  // API client must be initialized synchronously — useEffect runs after
+  // the first render, but child components (like WatchScreen) may call
+  // apiClient.get() during their first render. initApiClient() is
+  // idempotent (module-level `initialized` flag).
+  initApiClient();
 
+  // Restore session on mount
+  useEffect(() => {
     (async () => {
       try {
         const storedToken = await SecureStore.getItemAsync('authToken');
