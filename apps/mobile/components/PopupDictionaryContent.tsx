@@ -42,6 +42,7 @@ export const PopupDictionaryContent: React.FC<{
   const { dictionary, tokenizer } = useDictionary();
   const primaryBackgroundColor = useThemeColor({}, "primaryBackground");
   const { l2Lang } = useLanguage();
+  const { l1Lang } = useLanguage();
   const levels = languageLevelsByL2Code(l2Lang.code);
   const primaryTextColor = useThemeColor({}, "primaryText");
 
@@ -61,7 +62,7 @@ export const PopupDictionaryContent: React.FC<{
 
       // Phase 1: Try online lookup first (same endpoint as Next.js web app).
       // The Python backend handles normalization, LLM fallback, and L1 translation.
-      const onlineResults = await dictionary.onlineLookup(token.text);
+      const onlineResults = await dictionary.onlineLookup(token.text, l1Lang?.code);
       if (onlineResults !== null && onlineResults.length > 0) {
         setDictionaryEntries(onlineResults);
         return;
