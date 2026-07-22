@@ -886,8 +886,10 @@
         "media": "媒體"
     },
     "time": {
+        "days": "one {# day} other {# days}}",
         "hours": "小時",
         "min": "分鐘",
+        "months": "one {# month} other {# months}}",
         "sec": "秒"
     },
     "title": {
