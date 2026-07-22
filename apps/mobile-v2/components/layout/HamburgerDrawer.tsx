@@ -3,8 +3,12 @@ import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '@/hooks/use-t';
+import {
+  Compass, Music, Tv, Clapperboard, History, FolderOpen,
+  FileText, BookMarked, Bookmark, Brain,
+} from 'lucide-react-native';
 
-// ── Same nav structure as web (apps/web/src/components/layout/header.tsx) ──
+// ── Same nav structure + icons as web (apps/web/src/components/layout/header.tsx) ──
 
 interface NavGroup {
   label: string;
@@ -39,6 +43,26 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
+// Icons matching Next.js NAV_ICONS (apps/web/src/components/layout/header.tsx)
+const NAV_ICONS: Record<string, React.ReactNode> = {
+  explore: <Compass size={16} />,
+  music: <Music size={16} />,
+  'live-tv': <Tv size={16} />,
+  'tv-shows': <Clapperboard size={16} />,
+  'watch-history': <History size={16} />,
+  'local-media': <FolderOpen size={16} />,
+  reader: <FileText size={16} />,
+  dictionary: <BookMarked size={16} />,
+  'saved-words': <Bookmark size={16} />,
+  review: <Brain size={16} />,
+};
+
+/** Extract last path segment as icon key (e.g., "/(tabs)/(media)/live-tv" → "live-tv"). */
+function iconKey(href: string): string {
+  const parts = href.split('/');
+  return parts[parts.length - 1]!;
+}
+
 interface HamburgerDrawerProps {
   open: boolean;
   onClose: () => void;
@@ -52,13 +76,13 @@ export function HamburgerDrawer({ open, onClose }: HamburgerDrawerProps) {
 
   return (
     <>
-      {/* Backdrop — covers entire screen including notch */}
+      {/* Backdrop */}
       <Pressable
         style={StyleSheet.absoluteFill}
         className="z-40 bg-black/20"
         onPress={onClose}
       />
-      {/* Drawer — starts at very top, gets safe area top padding */}
+      {/* Drawer */}
       <View
         className="absolute right-0 z-50 h-full w-64 border-l border-border bg-background shadow-lg"
         style={{ paddingTop: insets.top + 8 }}
@@ -72,12 +96,13 @@ export function HamburgerDrawer({ open, onClose }: HamburgerDrawerProps) {
               {group.links.map((link) => (
                 <Pressable
                   key={link.href}
-                  className="rounded-lg px-3 py-2 active:bg-muted"
+                  className="flex-row items-center gap-3 rounded-lg px-3 py-2 active:bg-muted"
                   onPress={() => {
                     onClose();
                     router.push(link.href as any);
                   }}
                 >
+                  <View className="opacity-60">{NAV_ICONS[iconKey(link.href)]}</View>
                   <Text className="text-sm text-foreground">{t(link.key)}</Text>
                 </Pressable>
               ))}
