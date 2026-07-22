@@ -23,3 +23,6 @@ NNNN-title-with-dashes.md
 | 0006 | Consolidated lexical data types | accepted | 2026-07-14 |
 | 0007 | Dictionary Hub UX — persistent search bar & panel layout | proposed | 2026-07-19 |
 | 0008 | GO app dictionary architecture — online lookup + offline download | proposed | 2026-07-21 |
+| 0009 | GO app i18n migration to react-intl | proposed | 2026-07-21 |
+| 0010 | Port Next.js web app to React Native — fresh start | proposed | 2026-07-22 |
+| 0011 | Shared design tokens — CSS variables (web) + StyleSheet values (mobile) | proposed | 2026-07-22 |

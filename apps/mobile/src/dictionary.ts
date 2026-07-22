@@ -64,13 +64,24 @@ export class Dictionary {
 
     // 1. Check memory cache
     const cached = this.onlineCache.get(cacheKey);
-    if (cached) return cached;
+    if (cached) {
+      console.log('[PHASE1] memory cache hit:', { text, l1: l1 || this.l1Code, count: cached.length });
+      return cached;
+    }
 
     try {
       const l1Code = l1 || this.l1Code;
       const response = await dictionaryLookup(text, this.l2Code, l1Code);
 
       const entries = response.results.map(sharedEntryToMobileEntry);
+      console.log('[PHASE1] online lookup success:', {
+        text,
+        l1: l1Code,
+        l2: this.l2Code,
+        count: entries.length,
+        matchTypes: response.results.map(e => (e as any).match_type || 'exact'),
+        llmCount: response.results.filter(e => (e as any).match_type === 'llm').length,
+      });
 
       // 2. Cache in memory
       this.onlineCache.set(cacheKey, entries);
