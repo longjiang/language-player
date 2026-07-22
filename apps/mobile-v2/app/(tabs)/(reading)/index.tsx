@@ -59,19 +59,22 @@ export default function ReaderScreen() {
 
   // Tokenize text — parse markdown into blocks, then lemmatize each block
   const handleTokenize = useCallback(async () => {
+    console.log('[READER] handleTokenize called. text length:', text.length, 'first 50 chars:', text.slice(0, 50));
     if (!text.trim()) return;
     setTokenizing(true);
     setParseError(null);
     try {
       let parsed: TextBlock[];
       try {
+        console.log('[READER] Calling parseMarkdownBlocks...');
         parsed = parseMarkdownBlocks(text);
+        console.log('[READER] parseMarkdownBlocks succeeded. blocks:', parsed.length, 'types:', parsed.map(b => b.type));
       } catch (parseErr: any) {
-        console.error('Markdown parse failed:', parseErr?.message ?? parseErr);
-        // Fallback: treat entire text as one paragraph block
+        console.error('[READER] Markdown parse FAILED:', parseErr?.message ?? parseErr);
         parsed = [{ kind: 'text', type: 'paragraph', text }];
         setParseError('Markdown parsing unavailable — showing plain text.');
       }
+      console.log('[READER] Setting blocks state. parsed:', parsed.length);
       setBlocks(parsed);
 
       // Tokenize all block texts in one call
@@ -140,7 +143,7 @@ export default function ReaderScreen() {
           </Text>
         </Pressable>
         <Pressable
-          onPress={handleTokenize}
+          onPress={() => { console.log('[READER] Read tab pressed'); handleTokenize(); }}
           className={`flex-row items-center gap-1.5 border-b-2 py-2 ${activeTab === 'read' ? 'border-primary' : 'border-transparent'}`}
         >
           <BookOpen size={14} color={ICON_MUTED} />
@@ -185,6 +188,7 @@ export default function ReaderScreen() {
           )}
           {activeTab === 'read' && !tokenizing && blocks && (
             <ScrollView className="flex-1 p-4">
+              {console.log('[READER] Rendering blocks. count:', blocks.length, 'tokens:', tokens?.length)}
               {blocks.map((block, bi) => {
                 const blockTokens = tokens?.[bi] ?? [];
                 return (
@@ -228,6 +232,7 @@ export default function ReaderScreen() {
               })}
             </ScrollView>
           )}
+          {console.log('[READER] no-blocks fallback. activeTab:', activeTab, 'tokenizing:', tokenizing, 'hasBlocks:', !!blocks)}
           {activeTab === 'read' && !tokenizing && !blocks && (
             <ScrollView className="flex-1 p-4">
               <Text className="text-base leading-relaxed text-foreground">{text}</Text>
