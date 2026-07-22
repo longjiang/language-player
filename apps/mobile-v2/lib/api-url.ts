@@ -1,21 +1,21 @@
 /**
  * Python backend URL for the mobile app.
  *
- * In development, this points to the local Flask server.
- * In production, this points to the production server.
+ * In development, this points to the local Flask server via the host machine's IP.
+ * The iOS Simulator shares the host network — localhost from the simulator
+ * points to the simulator itself, not the Mac. Use the Mac's LAN IP instead.
  *
- * The value is configured via app.json extra fields or expo-constants.
+ * In production, this points to the production server.
  */
 
-import Constants from 'expo-constants';
-
-const LOCAL_DEFAULT = 'http://127.0.0.1:5001';
+const LOCAL_DEFAULT = 'http://192.168.1.130:5001';
 
 /** The base URL of the Python/Flask backend. */
 export const PYTHON_API_URL: string =
-  (Constants.expoConfig?.extra?.apiUrl as string) || LOCAL_DEFAULT;
+  (typeof process !== 'undefined' && (process.env as any).EXPO_PUBLIC_API_URL) ||
+  LOCAL_DEFAULT;
 
 /** Directus 8 URL for authentication. */
 export const DIRECTUS_URL: string =
-  (Constants.expoConfig?.extra?.directusUrl as string) ||
+  (typeof process !== 'undefined' && (process.env as any).EXPO_PUBLIC_DIRECTUS_URL) ||
   'https://directus.zerotohero.ca';

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useVideos } from '@langplayer/api-client';
 import { useProgress } from '@/hooks/use-progress';
 import { VideoGrid } from '@/components/video/VideoGrid';
@@ -9,6 +10,7 @@ import type { YouTubeVideo } from '@langplayer/shared';
 
 export default function ExploreScreen() {
   const { l2Lang } = useLanguage();
+  const { user } = useAuth();
   const { level: savedLevel, loaded: progressLoaded } = useProgress(l2Lang.code);
   const { getRecommendations } = useVideos();
 
@@ -28,7 +30,7 @@ export default function ExploreScreen() {
 
   const fetchVideos = async (append: boolean) => {
     try {
-      const res = await getRecommendations({ l2: l2Lang.code, level, limit: 24 });
+      const res = await getRecommendations({ l2: l2Lang.code, level, limit: 24, userId: user?.id });
       const newVideos = Array.isArray(res) ? res : (res as any)?.videos ?? (res as any)?.data ?? [];
       setVideos((prev) => (append ? [...prev, ...newVideos] : newVideos));
       setHasMore(newVideos.length >= 24);

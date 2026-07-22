@@ -25,6 +25,7 @@ const _getRecommendations = (params: {
   level?: number;
   page?: number;
   limit?: number;
+  userId?: string;
 }) => apiClient.get<YouTubeVideo[]>('/recommend-videos', { params });
 
 const _getLiveTV = (lang: string) =>
