@@ -9,7 +9,8 @@
     "android": "expo start --android",
     "web": "expo start --web",
     "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build-tokens": "npx tsx ../../scripts/build-tokens.mts"
   },
   "dependencies": {
     "@expo-google-fonts/nunito": "^0.2.3",
