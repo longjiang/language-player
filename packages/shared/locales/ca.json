@@ -524,66 +524,18 @@
         "zu": "Zulú"
     },
     "level": {
-        "cefr": {
-            "1": "MECR Pre-A1",
-            "2": "MECR A1",
-            "3": "MECR A2",
-            "4": "MECR B1",
-            "5": "MECR B2",
-            "6": "MECR C1",
-            "7": "MECR C2"
-        },
+        "cefr": "{1:MECR Pre-A1,2:MECR A1,3:MECR A2,4:MECR B1,5:MECR B2,6:MECR C1,7:MECR C2}",
         "exam_cefr": "CEFR",
         "exam_hsk": "HSK",
         "exam_ielts": "IELTS",
         "exam_jlpt": "JLPT",
         "exam_topik": "TOPIK",
-        "hsk": {
-            "1": "HSK 1",
-            "2": "HSK 2",
-            "3": "HSK 3",
-            "4": "HSK 4",
-            "5": "HSK 5",
-            "6": "HSK 6",
-            "7": "HSK 7-9"
-        },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
-        },
-        "jlpt": {
-            "1": "JLPT N5",
-            "2": "JLPT N4",
-            "3": "JLPT N3",
-            "4": "JLPT N2",
-            "5": "JLPT N1",
-            "6": "JLPT N1",
-            "7": "MECR C2"
-        },
+        "hsk": "{1:HSK 1,2:HSK 2,3:HSK 3,4:HSK 4,5:HSK 5,6:HSK 6,7:HSK 7-9}",
+        "ielts": "{1:IELTS 1,2:IELTS 2,3:IELTS 3.5,4:IELTS 5,5:IELTS 6.5,6:IELTS 8,7:IELTS 9}",
+        "jlpt": "{1:JLPT N5,2:JLPT N4,3:JLPT N3,4:JLPT N2,5:JLPT N1,6:JLPT N1,7:MECR C2}",
         "label": "{levelName} ({examLevelName})",
-        "name": {
-            "1": "Principiant I",
-            "2": "Principiant II",
-            "3": "Principiant III",
-            "4": "Intermedi I",
-            "5": "Intermedi II",
-            "6": "Avançat I",
-            "7": "Avançat II"
-        },
-        "topik": {
-            "1": "Pre-TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
-        }
+        "name": "{1:Principiant I,2:Principiant II,3:Principiant III,4:Intermedi I,5:Intermedi II,6:Avançat I,7:Avançat II}",
+        "topik": "{1:Pre-TOPIK 1,2:TOPIK 1,3:TOPIK 2,4:TOPIK 3,5:TOPIK 4,6:TOPIK 5,7:TOPIK 6}"
     },
     "log": {
         "database_already_loaded": "Base de dades ja carregada.",
@@ -644,7 +596,7 @@
         "for_term": "per a {term}",
         "forgot_password": "Has oblidat la contrasenya?",
         "getting_ai_response": "Obtenint resposta de DeepSeek...",
-        "hsk_explanation": "\"HSK\" és la prova oficial de competència en xinès, amb el Nivell 1 com el més baix i el Nivell 9 com el més alt.",
+        "hsk_explanation": "HSK és la prova oficial de competència en xinès, amb el Nivell 1 com el més baix i el Nivell 9 com el més alt.",
         "initializing": "Inicialitzant...",
         "keep_or_reset_time": "Vols mantenir el temps actual o restablir-lo a zero?",
         "landing_cta_desc": "Uneix-te a milers d'estudiants que utilitzen vídeos autèntics per dominar nous idiomes.",
@@ -758,7 +710,7 @@
         "verifying_pro_subscription": "Verificant la teva subscripció Pro...",
         "video_n_of_total": "Vídeo {n} de {total}",
         "video_unavailable": "Aquest vídeo no s'ha pogut carregar. Pot haver estat eliminat o fet privat.",
-        "videos_matching": "Vídeos que coincideixen amb \"{searchTerm}\"",
+        "videos_matching": "Vídeos que coincideixen amb {searchTerm}",
         "want_lifetime_access": "Vols accés vitalici?",
         "watched_progress": "{pct} visualitzat",
         "web_reader_empty_state": "Enganxa una URL a dalt per llegir una pàgina web, article o història en {l2}.",

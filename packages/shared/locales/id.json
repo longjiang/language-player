@@ -512,7 +512,7 @@
         "yi": "Bahasa Yiddish",
         "yo": "Yoruba",
         "yue": "Kantonis",
-        "yue-HK": "Bahasa Kanton (Hong Kong)",
+        "yue-HK": "Cantonese (Hong Kong)",
         "za": "Zhuang",
         "zh": "Tionghoa",
         "zh-CN": "Tionghoa (China)",
@@ -524,66 +524,18 @@
         "zu": "Zulu"
     },
     "level": {
-        "cefr": {
-            "1": "CEFR Pre-A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        },
+        "cefr": "{1:CEFR Pre-A1,2:CEFR A1,3:CEFR A2,4:CEFR B1,5:CEFR B2,6:CEFR C1,7:CEFR C2}",
         "exam_cefr": "CEFR",
         "exam_hsk": "HSK",
         "exam_ielts": "IELTS",
         "exam_jlpt": "JLPT",
         "exam_topik": "TOPIK",
-        "hsk": {
-            "1": "HSK 1",
-            "2": "HSK 2",
-            "3": "HSK 3",
-            "4": "HSK 4",
-            "5": "HSK 5",
-            "6": "HSK 6",
-            "7": "HSK 7-9"
-        },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
-        },
-        "jlpt": {
-            "1": "JLPT N5",
-            "2": "JLPT N4",
-            "3": "JLPT N3",
-            "4": "JLPT N2",
-            "5": "JLPT N1",
-            "6": "JLPT N1",
-            "7": "CEFR C2"
-        },
+        "hsk": "{1:HSK 1,2:HSK 2,3:HSK 3,4:HSK 4,5:HSK 5,6:HSK 6,7:HSK 7-9}",
+        "ielts": "{1:IELTS 1,2:IELTS 2,3:IELTS 3.5,4:IELTS 5,5:IELTS 6.5,6:IELTS 8,7:IELTS 9}",
+        "jlpt": "{1:JLPT N5,2:JLPT N4,3:JLPT N3,4:JLPT N2,5:JLPT N1,6:JLPT N1,7:CEFR C2}",
         "label": "{levelName} ({examLevelName})",
-        "name": {
-            "1": "Pemula I",
-            "2": "Pemula II",
-            "3": "Pemula III",
-            "4": "Menengah I",
-            "5": "Menengah II",
-            "6": "Lanjutan I",
-            "7": "Lanjutan II"
-        },
-        "topik": {
-            "1": "Pre-TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
-        }
+        "name": "{1:Pemula I,2:Pemula II,3:Pemula III,4:Menengah I,5:Menengah II,6:Lanjutan I,7:Lanjutan II}",
+        "topik": "{1:Pre-TOPIK 1,2:TOPIK 1,3:TOPIK 2,4:TOPIK 3,5:TOPIK 4,6:TOPIK 5,7:TOPIK 6}"
     },
     "log": {
         "database_already_loaded": "Basis data sudah dimuat.",
@@ -644,7 +596,7 @@
         "for_term": "untuk {term}",
         "forgot_password": "Lupa kata sandi?",
         "getting_ai_response": "Mendapatkan respons dari DeepSeek...",
-        "hsk_explanation": "\"HSK\" adalah tes kemahiran bahasa Mandarin resmi, dengan Level 1 sebagai yang terendah dan Level 9 sebagai yang tertinggi.",
+        "hsk_explanation": "HSK adalah tes kemahiran bahasa Mandarin resmi, dengan Level 1 sebagai yang terendah dan Level 9 sebagai yang tertinggi.",
         "initializing": "Memulai...",
         "keep_or_reset_time": "Apakah Anda ingin mempertahankan waktu saat ini atau mengatur ulang ke nol?",
         "landing_cta_desc": "Bergabunglah dengan ribuan pembelajar yang menggunakan video autentik untuk menguasai bahasa baru.",
@@ -758,7 +710,7 @@
         "verifying_pro_subscription": "Memverifikasi langganan Pro Anda...",
         "video_n_of_total": "Video {n} dari {total}",
         "video_unavailable": "Video ini tidak dapat dimuat. Mungkin telah dihapus atau dibuat pribadi.",
-        "videos_matching": "Video yang cocok dengan \"{searchTerm}\"",
+        "videos_matching": "Video yang cocok dengan {searchTerm}",
         "want_lifetime_access": "Ingin akses seumur hidup?",
         "watched_progress": "{pct} ditonton",
         "web_reader_empty_state": "Tempelkan URL di atas untuk membaca halaman web, artikel, atau cerita {l2}.",

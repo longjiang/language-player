@@ -240,7 +240,7 @@
     "lang": {
         "ab": "Abcaso",
         "acf": "St. Lucia Creolo Francese",
-        "acu": "cantone di Achuar",
+        "acu": "Achuar",
         "af": "Afrikaans",
         "aib": "Ainu",
         "ain": "Ainu",
@@ -269,7 +269,7 @@
         "bsk": "Spazzola",
         "byq": "Basai",
         "ca": "Catalano",
-        "ceb": "cantone di Cebuano",
+        "ceb": "Cebuano",
         "cjy": "Lingua Jin",
         "ckb": "Curdo medio",
         "cmn": "Mandarini",
@@ -349,7 +349,7 @@
         "hi-IN": "Hindi (India)",
         "hi-Latn": "Hindi (alfabeto latino)",
         "hil": "Heligaignon",
-        "hne": "Cantone di Chattisgarh",
+        "hne": "Chhattisgarhi",
         "hni": "Lingua Hani",
         "hr": "Croato",
         "hsh": "Lingua dei segni ungherese",
@@ -524,66 +524,18 @@
         "zu": "Zulù"
     },
     "level": {
-        "cefr": {
-            "1": "QCER Pre-A1",
-            "2": "QCER A1",
-            "3": "QCER A2",
-            "4": "QCER B1",
-            "5": "QCER B2",
-            "6": "QCER C1",
-            "7": "QCER C2"
-        },
+        "cefr": "{1:QCER Pre-A1,2:QCER A1,3:QCER A2,4:QCER B1,5:QCER B2,6:QCER C1,7:QCER C2}",
         "exam_cefr": "CEFR",
         "exam_hsk": "HSK",
         "exam_ielts": "IELTS",
         "exam_jlpt": "JLPT",
         "exam_topik": "TOPIK",
-        "hsk": {
-            "1": "HSK 1",
-            "2": "HSK 2",
-            "3": "HSK 3",
-            "4": "HSK 4",
-            "5": "HSK 5",
-            "6": "HSK 6",
-            "7": "HSK 7-9"
-        },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
-        },
-        "jlpt": {
-            "1": "JLPT N5",
-            "2": "JLPT N4",
-            "3": "JLPT N3",
-            "4": "JLPT N2",
-            "5": "JLPT N1",
-            "6": "JLPT N1",
-            "7": "QCER C2"
-        },
+        "hsk": "{1:HSK 1,2:HSK 2,3:HSK 3,4:HSK 4,5:HSK 5,6:HSK 6,7:HSK 7-9}",
+        "ielts": "{1:IELTS 1,2:IELTS 2,3:IELTS 3.5,4:IELTS 5,5:IELTS 6.5,6:IELTS 8,7:IELTS 9}",
+        "jlpt": "{1:JLPT N5,2:JLPT N4,3:JLPT N3,4:JLPT N2,5:JLPT N1,6:JLPT N1,7:QCER C2}",
         "label": "{levelName} ({examLevelName})",
-        "name": {
-            "1": "Principiante I",
-            "2": "Principiante II",
-            "3": "Principiante III",
-            "4": "Intermedio I",
-            "5": "Intermedio II",
-            "6": "Avanzato I",
-            "7": "Avanzato II"
-        },
-        "topik": {
-            "1": "Pre-TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
-        }
+        "name": "{1:Principiante I,2:Principiante II,3:Principiante III,4:Intermedio I,5:Intermedio II,6:Avanzato I,7:Avanzato II}",
+        "topik": "{1:Pre-TOPIK 1,2:TOPIK 1,3:TOPIK 2,4:TOPIK 3,5:TOPIK 4,6:TOPIK 5,7:TOPIK 6}"
     },
     "log": {
         "database_already_loaded": "Database già caricato.",
@@ -644,7 +596,7 @@
         "for_term": "per {term}",
         "forgot_password": "Hai dimenticato la password?",
         "getting_ai_response": "Ricezione della risposta da DeepSeek...",
-        "hsk_explanation": "\"HSK\" è il test ufficiale di competenza in cinese, con il Livello 1 come il più basso e il Livello 9 come il più alto.",
+        "hsk_explanation": "HSK è il test ufficiale di competenza in cinese, con il Livello 1 come il più basso e il Livello 9 come il più alto.",
         "initializing": "Inizializzazione...",
         "keep_or_reset_time": "Vuoi mantenere il tempo attuale o azzerarlo?",
         "landing_cta_desc": "Unisciti a migliaia di studenti che usano video autentici per padroneggiare nuove lingue.",
@@ -758,7 +710,7 @@
         "verifying_pro_subscription": "Verifica del tuo abbonamento Pro in corso...",
         "video_n_of_total": "Video {n} di {total}",
         "video_unavailable": "Questo video non può essere caricato. Potrebbe essere stato rimosso o reso privato.",
-        "videos_matching": "Video corrispondenti a \"{searchTerm}\"",
+        "videos_matching": "Video corrispondenti a {searchTerm}",
         "want_lifetime_access": "Vuoi accesso a vita?",
         "watched_progress": "{pct} visualizzato",
         "web_reader_empty_state": "Incolla un URL sopra per leggere una pagina web, un articolo o una storia in {l2}.",
