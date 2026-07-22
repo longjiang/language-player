@@ -86,7 +86,7 @@ export function VideoCard({ video, layout = 'card' }: VideoCardProps) {
               <Text className="text-xs font-bold text-primary">{levelText}</Text>
             </View>
           )}
-          {views ? <Text className="text-xs text-muted-foreground">{views} views</Text> : null}
+          {views ? <Text className="text-xs text-muted-foreground">{t('label.views_count', { count: views })}</Text> : null}
         </View>
       </View>
     </Pressable>

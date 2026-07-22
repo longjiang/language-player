@@ -2,6 +2,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { View, Text } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 import { useVideos } from '@langplayer/api-client';
 import { YouTubePlayer, type YouTubePlayerHandle } from '@/components/video/YouTubePlayer';
 import { VideoControlBar } from '@/components/video/VideoControlBar';
@@ -11,6 +12,7 @@ import type { YouTubeVideo } from '@langplayer/shared';
 export default function WatchScreen() {
   const { videoId } = useLocalSearchParams<{ videoId: string }>();
   const { l1Lang, l2Lang } = useLanguage();
+  const t = useT();
   const { getById } = useVideos();
 
   const playerRef = useRef<YouTubePlayerHandle>(null);
@@ -50,7 +52,7 @@ export default function WatchScreen() {
   if (!videoId) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
-        <Text className="text-muted-foreground">No video selected</Text>
+        <Text className="text-muted-foreground">{t('msg.no_videos_found')}</Text>
       </View>
     );
   }
@@ -85,7 +87,7 @@ export default function WatchScreen() {
           </Text>
           {video.views ? (
             <Text className="mt-0.5 text-xs text-muted-foreground">
-              {video.views.toLocaleString()} views
+              {t('label.views_count', { count: video.views.toLocaleString() })}
             </Text>
           ) : null}
         </View>
