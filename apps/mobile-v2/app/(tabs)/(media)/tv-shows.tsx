@@ -49,6 +49,7 @@ export default function TvShowsScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <Text className="px-4 py-3 text-xl font-bold text-foreground">{t('title.tv_shows')}</Text>
       <View className="flex-row items-center gap-2 border-b border-border px-4 py-2">
         <TextInput
           className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"

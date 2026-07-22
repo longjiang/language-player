@@ -23,7 +23,7 @@ export default function MusicScreen() {
 
   return (
     <View className="flex-1 bg-background px-4">
-      <Text className="py-3 text-lg font-bold text-foreground">{t('title.music_and_entertainment')}</Text>
+      <Text className="py-3 text-xl font-bold text-foreground">{t('title.music_and_entertainment')}</Text>
       {loading ? (
         <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" className="text-primary" /></View>
       ) : error ? (

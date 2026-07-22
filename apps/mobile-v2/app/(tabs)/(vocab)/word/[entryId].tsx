@@ -1,11 +1,13 @@
 import { View, Text } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useT } from '@/hooks/use-t';
 
 export default function WordDetailScreen() {
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
+  const t = useT();
   return (
     <View className="flex-1 items-center justify-center bg-background p-4">
-      <Text className="text-xl font-bold text-foreground">Word Detail</Text>
+      <Text className="text-xl font-bold text-foreground">{t('title.dictionary')}</Text>
       <Text className="text-muted-foreground mt-2">{entryId}</Text>
     </View>
   );

@@ -106,7 +106,7 @@ export default function WatchHistoryScreen() {
   if (!user) {
     return (
       <View className="flex-1 bg-background">
-        <Text className="px-4 py-3 text-lg font-bold text-foreground">{t('title.watch_history')}</Text>
+        <Text className="px-4 py-3 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <AlertCircle size={40} className="mb-3 text-muted-foreground" />
           <Text className="text-center text-muted-foreground">{t('msg.not_authenticated')}</Text>
@@ -119,7 +119,7 @@ export default function WatchHistoryScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-background">
-        <Text className="px-4 py-3 text-lg font-bold text-foreground">{t('title.watch_history')}</Text>
+        <Text className="px-4 py-3 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" className="text-primary" />
         </View>
@@ -131,7 +131,7 @@ export default function WatchHistoryScreen() {
   if (error) {
     return (
       <View className="flex-1 bg-background">
-        <Text className="px-4 py-3 text-lg font-bold text-foreground">{t('title.watch_history')}</Text>
+        <Text className="px-4 py-3 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="mx-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
           <Text className="text-sm text-destructive">{error}</Text>
         </View>
@@ -143,7 +143,7 @@ export default function WatchHistoryScreen() {
   if (items.length === 0) {
     return (
       <View className="flex-1 bg-background">
-        <Text className="px-4 py-3 text-lg font-bold text-foreground">{t('title.watch_history')}</Text>
+        <Text className="px-4 py-3 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <Clock size={40} className="mb-3 text-muted-foreground" />
           <Text className="text-center text-muted-foreground">{t('msg.no_watch_history')}</Text>
@@ -155,7 +155,7 @@ export default function WatchHistoryScreen() {
   // ── List ──
   return (
     <View className="flex-1 bg-background">
-      <Text className="px-4 py-3 text-lg font-bold text-foreground">{t('title.watch_history')}</Text>
+      <Text className="px-4 py-3 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
       <FlatList
         data={items}
         keyExtractor={(item, idx) => `${item.id}-${idx}`}
