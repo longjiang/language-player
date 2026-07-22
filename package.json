@@ -59,7 +59,6 @@
     "expo-system-ui": "~57.0.1",
     "expo-web-browser": "~57.0.1",
     "he": "^1.2.0",
-    "i18n-js": "^4.4.3",
     "langs": "^2.0.0",
     "lodash": "^4.17.23",
     "opencc-js": "^1.0.5",
