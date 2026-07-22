@@ -27,6 +27,15 @@ const { darkSemantic, typography, spacing, borderRadius } = await import(TOKENS_
 /** Wrap HSL channels in hsl() for Tailwind/NativeWind. */
 const hsl = (channels: string) => `hsl(${channels})`;
 
+/** Mobile font sizes render ~12% smaller than web at the same rem value
+ *  due to platform font rendering differences. Scale up to match visually. */
+const MOBILE_FONT_SCALE = 1.125;
+function scaleRem(rem: string): string {
+  const num = parseFloat(rem);
+  if (isNaN(num)) return rem;
+  return `${(num * MOBILE_FONT_SCALE).toFixed(3)}rem`;
+}
+
 /** camelCase → kebab-case (e.g., primaryForeground → primary-foreground) */
 function kebabCase(str: string): string {
   return str.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());
@@ -67,15 +76,15 @@ module.exports = {
 ${colorEntries.join('\n')}
       },
       fontSize: {
-        xs: '${typography.fontSize.xs}',
-        sm: '${typography.fontSize.sm}',
-        base: '${typography.fontSize.base}',
-        lg: '${typography.fontSize.lg}',
-        xl: '${typography.fontSize.xl}',
-        '2xl': '${typography.fontSize['2xl']}',
-        '3xl': '${typography.fontSize['3xl']}',
-        '4xl': '${typography.fontSize['4xl']}',
-        '5xl': '${typography.fontSize['5xl']}',
+        xs: '${scaleRem(typography.fontSize.xs)}',
+        sm: '${scaleRem(typography.fontSize.sm)}',
+        base: '${scaleRem(typography.fontSize.base)}',
+        lg: '${scaleRem(typography.fontSize.lg)}',
+        xl: '${scaleRem(typography.fontSize.xl)}',
+        '2xl': '${scaleRem(typography.fontSize['2xl'])}',
+        '3xl': '${scaleRem(typography.fontSize['3xl'])}',
+        '4xl': '${scaleRem(typography.fontSize['4xl'])}',
+        '5xl': '${scaleRem(typography.fontSize['5xl'])}',
       },
       fontWeight: {
         normal: '${typography.fontWeight.normal}',
