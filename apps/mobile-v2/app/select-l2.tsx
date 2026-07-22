@@ -11,7 +11,8 @@ export default function SelectL2Screen() {
 
   const handleSelect = async (code: string) => {
     await setL2Lang(code);
-    router.replace('/(tabs)');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    router.replace('/(tabs)' as any);
   };
 
   return (

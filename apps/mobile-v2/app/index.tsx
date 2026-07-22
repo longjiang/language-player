@@ -25,7 +25,8 @@ export default function Index() {
       router.replace('/login');
     } else {
       // Authenticated → show main tabs
-      router.replace('/(tabs)');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.replace('/(tabs)' as any);
     }
   }, [user, authLoading]);
 

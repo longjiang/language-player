@@ -17,7 +17,8 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await login(email.trim(), password);
-      router.replace('/(tabs)');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.replace('/(tabs)' as any);
     } catch (e: any) {
       setError(e.message || t('error.login'));
     } finally {

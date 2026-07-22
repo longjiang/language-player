@@ -78,17 +78,16 @@ Rationale:
 - Port `useSubtitleTranslation`, `useVideoTokenCache`, `useSpeech`
 
 ### Phase 3: UI Components
-- Components styled via NativeWind `className` — same Tailwind syntax as the web app. Where the web app uses `<div className="bg-primary text-sm px-4">`, the mobile app uses `<View className="bg-primary text-sm px-4">`.
-- For complex interactive components that exceed NativeWind's supported Tailwind subset (~90% — no `hover:`, `focus:`, CSS grid, arbitrary selectors), fall back to `StyleSheet.create()` fed by shared tokens from ADR-0011.
+- **Navigation chrome**: Header bar with logo, search icon, language switcher, user menu, and hamburger drawer — port of `apps/web/src/components/layout/header.tsx` + `user-menu.tsx` + `language-switcher.tsx`
+- Components styled via NativeWind `className` — same Tailwind syntax as the web app
+- For complex interactive components that exceed NativeWind's supported Tailwind subset (~90%), fall back to `StyleSheet.create()` fed by shared tokens from ADR-0011
 - Port video components: `YouTubePlayer`, `VideoControlBar`, `SubtitleDisplay`, `TokenizedText`, `VideoCard`, `VideoGrid` (FlatList)
 - Port dictionary components: `DictionaryPopup` (bottom sheet), `DictionaryEntryCard`, `WordList`, `SearchBar`
-- Port layout: Tab bar (3 tabs: Media, Reading, Vocab — matching web sidebar)
 
 ### Phase 4: Feature Pages
-- Tab 1 (Media): Explore (FlatList + infinite scroll), Watch (player + synced transcript), Music, Live TV, TV Shows, Watch History, Local Media, Search, Channels
-- Tab 2 (Reading): Reader (tokenized text, translation, text action menu)
-- Tab 3 (Vocab): Dictionary Search, Word Detail (definitions, SubsSearch, inflection table, AI explanation), Saved Words, SRS Review
-- Additional: Reader, SRS Review, Live TV, Music, Channels
+- Media: Explore (FlatList + infinite scroll), Watch (player + synced transcript), Music, Live TV, TV Shows, Watch History, Local Media, Search, Channels
+- Reading: Reader (tokenized text, translation, text action menu)
+- Vocab: Dictionary Search, Word Detail (definitions, SubsSearch, inflection table, AI explanation), Saved Words, SRS Review
 
 ### Phase 5: Offline & Performance
 - Offline dictionary download per ADR-0008: new `GET /dictionary/download` Python endpoint (frequency-filtered, pre-normalized JSON), chunked IndexedDB insert (500 entries/tick, yields to main thread), download UI (language selector, progress bar, delete/update, L1≠en callout, background download with mini-banner)
@@ -117,87 +116,112 @@ This eliminates the GO app's main-thread-freezing CSV normalization, provides LL
 ### Tokenization: Server-side with local cache
 **Decision**: Call `POST /lemmatize` for subtitle lines, cache tokens locally via `useVideoTokenCache`. Consider batch-tokenizing all lines for a video in one call when the watch page loads.
 
-### Navigation: Expo Router Tabs
+### Navigation: Top Bar + Hamburger Drawer (matching Next.js header)
 
-**Decision**: Three bottom tabs — **Media**, **Reading**, **Vocab** — matching the Next.js sidebar's three dropdown groups exactly. This is a full port of the web app's information architecture; the GO app's legacy tab structure (Media, Dictionary, Me) is discarded entirely. Expo Router provides file-based routing with stack pushes for detail screens and modals for auth/onboarding.
+**Decision**: A sticky top bar header with a hamburger drawer — mirroring the Next.js app's `Header` component exactly. No bottom tabs. The web app uses a desktop top bar (logo, dropdown nav groups, search, language switcher, user menu) with a hamburger slide-out drawer on narrow screens. Since mobile screens are always narrow, the nav groups (Media, Reading, Vocab) live in the hamburger drawer. The top bar shows: logo, search icon, language switcher, user avatar, and hamburger.
 
-**Route tree** — every route maps directly to a Next.js web page:
+This is a full port of `apps/web/src/components/layout/header.tsx` — the same NAV_GROUPS constant, the same icons, the same link structure, the same dropdown behavior, the same mobile drawer. The GO app's bottom tab bar is discarded entirely.
+
+**Top bar layout** (port of `Header` component, lines ~140–200):
+
+```
+┌──────────────────────────────────────────────────┐
+│ [Logo]  [☰]              [🔍] [🌐 L1↔L2] [👤] │
+└──────────────────────────────────────────────────┘
+```
+
+| Element | Web source | Mobile implementation |
+|---|---|---|
+| **Logo** | `<Image>` + app name, links to `/explore` | `<Text>` with app name, links to `/(tabs)/(media)` |
+| **Hamburger** | `<Menu>` icon, shown `< md` breakpoint | Always visible (mobile is always narrow). Opens a slide-out drawer containing the three nav groups. |
+| **Search icon** | `<Search>` icon, navigates to `/search` | Same icon, navigates to `/(tabs)/(media)/search` |
+| **Language switcher** | `LanguageSwitcher` — L1/L2 flag buttons with dropdown pickers + swap button | Same component ported to RN. Uses `<Pressable>` instead of `<button>`. |
+| **User menu** | `UserMenu` — avatar initial (or user icon if logged out), dropdown with Profile, Settings, Docs, About, Login/Logout | Same component ported to RN. |
+
+**Hamburger drawer** (port of mobile drawer, lines ~215–245):
+
+```
+┌─────────────────────────┐
+│  MEDIA                  │
+│  🧭 Explore             │
+│  🎵 Music & Ent.        │
+│  📺 Live TV             │
+│  🎬 TV Shows            │
+│  📜 Watch History       │
+│  📤 Local Media         │
+│                         │
+│  READING                │
+│  📄 Notes & Reader      │
+│                         │
+│  VOCAB                  │
+│  📚 Dictionary          │
+│  🔖 Saved Words         │
+│  🔄 Review              │
+└─────────────────────────┘
+```
+
+The drawer uses the same `NAV_GROUPS` constant, same icons via `NAV_ICONS`, same link structure, and same i18n keys (`nav.media`, `nav.reading`, `nav.vocab`) as the web header. Each link navigates to the corresponding route in the `(tabs)/` stack.
+
+**User menu dropdown** (port of `UserMenu` component):
+
+- **Logged out**: User icon → dropdown with Login, Docs, About
+- **Logged in**: Avatar initial (first letter of name/email) → dropdown with:
+  - Header row: name + email
+  - Profile (→ `/(tabs)/(vocab)/...` — no dedicated profile page yet, uses saved-words as placeholder)
+  - Settings (→ `/settings` modal)
+  - Documentation (→ WebView link to docs)
+  - About (→ WebView link to about page)
+  - Logout (→ clear auth + redirect to login)
+
+**Language switcher** (port of `LanguageSwitcher` component):
+
+- Two pill-shaped buttons showing current L1 and L2 language codes (e.g., `EN` `ZH`)
+- Swap button (⇄) between them — only enabled when L2 is also a valid L1
+- Tapping a pill opens a searchable dropdown of all supported languages for that slot
+- L1 dropdown shows `SUPPORTED_L1S` (31 languages); L2 dropdown shows `SUPPORTED_L2S` (207 languages)
+- Popular languages shown first, rest alphabetically
+
+**Route tree** — unchanged from the tab structure; the only change is the navigation chrome (top bar instead of bottom tabs):
 
 ```
 app/
-├── _layout.tsx              ← Root: providers (Language → Intl → Auth → Stack)
+├── _layout.tsx              ← Root: providers + Header + Stack
 ├── index.tsx                ← Splash → redirect to (tabs) or login
 │
-├── (auth)/                  ← Modal-presented auth + onboarding (no tabs)
-│   ├── login.tsx            ← /login
-│   ├── register.tsx         ← /register
-│   ├── forgot-password.tsx  ← /forgot-password
-│   ├── select-l1.tsx        ← /language-select
-│   ├── select-l2.tsx        ← /language-select (step 2)
-│   └── select-level.tsx     ← Set CEFR/HSK/JLPT level
-│
+├── (auth)/                  ← Modal-presented auth + onboarding
 ├── go-pro.tsx               ← Modal: /[l1]/[l2]/go-pro
 ├── settings.tsx             ← Modal: /[l1]/[l2]/settings
 │
-└── (tabs)/                  ← 3-tab layout (authenticated users)
-    ├── _layout.tsx
-    │
-    ├── (media)/             ← TAB 1: Media  (matches web sidebar "Media" group)
-    │   ├── _layout.tsx
-    │   ├── index.tsx         ← /[l1]/[l2]/explore
-    │   ├── music.tsx         ← /[l1]/[l2]/music
-    │   ├── live-tv.tsx       ← /[l1]/[l2]/live-tv
-    │   ├── tv-shows.tsx      ← /[l1]/[l2]/tv-shows
-    │   ├── watch-history.tsx ← /[l1]/[l2]/watch-history
-    │   ├── local-media.tsx   ← /[l1]/[l2]/local-media
-    │   ├── search.tsx        ← /[l1]/[l2]/search (YouTube + URL paste)
-    │   ├── channel/
-    │   │   └── [channelId].tsx ← /[l1]/[l2]/channel/[id]
-    │   └── watch/
-    │       └── [videoId].tsx ← /[l1]/[l2]/watch/[videoId]
-    │
-    ├── (reading)/           ← TAB 2: Reading  (matches web sidebar "Reading" group)
-    │   ├── _layout.tsx
-    │   └── index.tsx         ← /[l1]/[l2]/reader
-    │
-    └── (vocab)/             ← TAB 3: Vocab  (matches web sidebar "Vocab" group)
-        ├── _layout.tsx
-        ├── index.tsx         ← /[l1]/[l2]/dictionary (search + result list)
-        ├── saved-words.tsx   ← /[l1]/[l2]/saved-words
-        ├── review.tsx        ← /[l1]/[l2]/review (SRS flashcards)
-        └── word/
-            └── [entryId].tsx ← /[l1]/[l2]/dictionary/word/[id]
+└── (tabs)/                  ← Stack-based layout (authenticated users)
+    ├── _layout.tsx           ← Header + Stack (no bottom tab bar)
+    ├── (media)/             ← Media group
+    ├── (reading)/           ← Reading group
+    └── (vocab)/             ← Vocab group
 ```
 
-**Next.js sidebar → mobile tab mapping**. The tabs mirror the web sidebar groups 1:1:
+**Implementation notes**:
+- The `(tabs)` directory is an Expo Router layout group (parentheses = no URL segment). Unlike the Next.js app which uses URL-based language routing (`/[l1]/[l2]/explore`), the mobile app stores L1/L2 in React Context (`LanguageProvider`) persisted to `SecureStore`. All components access language state via `useLanguage()` — no URL params needed. The web's URL is the source of truth; the mobile's persisted context is.
+- The header is `<Header />` placed above the `<Stack>` in the layout — it persists across all stack screens (same as web's sticky header).
+- The hamburger drawer slides in from the right (matching web's mobile drawer at `right-0`).
 
-| Web Sidebar | Web Page (key) | Web Route | Mobile Tab | Mobile Route |
-|---|---|---|---|---|
-| **Media** | `title.explore` | `/explore` | Media | `(media)/index.tsx` |
-| | `title.music_and_entertainment` | `/music` | Media | `(media)/music.tsx` |
-| | `title.live_tv` | `/live-tv` | Media | `(media)/live-tv.tsx` |
-| | `title.tv_shows` | `/tv-shows` | Media | `(media)/tv-shows.tsx` |
-| | `title.watch_history` | `/watch-history` | Media | `(media)/watch-history.tsx` |
-| | `title.local_media` | `/local-media` | Media | `(media)/local-media.tsx` |
-| **Reading** | `title.notes_reader` | `/reader` | Reading | `(reading)/index.tsx` |
-| | `title.web_reader` | `/web-reader` | — | (desktop-only, dropped) |
-| | `title.epub_reader` | `/epub` | — | (desktop-only, dropped) |
-| **Vocab** | `title.dictionary` | `/dictionary` | Vocab | `(vocab)/index.tsx` |
-| | `title.saved_words` | `/saved-words` | Vocab | `(vocab)/saved-words.tsx` |
-| | `title.review` | `/review` | Vocab | `(vocab)/review.tsx` |
+**Deep linking without `[l1]/[l2]` in the route**:
 
-**Additional mobile routes** (not in web sidebar, but in web app):
-- `search.tsx` — YouTube search + URL paste. On web this is accessed via the header search bar; on mobile it gets a dedicated screen in the Media stack.
-- `channel/[channelId].tsx` — YouTube channel detail. On web this is nested under the Media sidebar group but not listed as a top-level link.
-- `watch/[videoId].tsx` — Video player with transcript. The web app's primary surface; lives in the Media stack because users arrive here from content discovery.
-- `settings.tsx` — Presented as a modal (not a tab). Matches the web app's settings page at `/[l1]/[l2]/settings`.
-- `go-pro.tsx` — Subscription upgrade, presented as a modal.
+The web app encodes language pairs in URLs (`languageplayer.io/en/ja/watch/abc123`). The mobile app handles deep links via a different mechanism:
 
-**Pages dropped** (web-only, no mobile equivalent):
-- `epub`, `web-reader` — desktop reading formats. Mobile uses the unified Reader in the Reading tab.
-- `tokenizer` — developer tool.
-- `docs` — documentation hub (could be a WebView link later).
-- `about`, `og` — landing/marketing pages for unauthenticated web visitors.
+```
+Web URL:  https://languageplayer.io/en/ja/watch/abc123
+Mobile:   languageplayer://watch/abc123
+                    ↑
+          No l1/l2 — read from SecureStore
+```
+
+When a deep link opens the app:
+
+1. **L1/L2 are set** → The `LanguageProvider` already has `l1Lang`/`l2Lang` from `SecureStore` (set during onboarding, persisted across sessions). The deep link handler directly navigates to the content using the stored language pair. The user never sees a language picker.
+
+2. **L1/L2 are NOT set** (first launch from a deep link) → The app stores the deep link URL, redirects to `/select-l1` → `/select-l2` onboarding, then resumes the deep link to the original destination.
+
+This is how most mobile apps work: Instagram's `instagram://post/123` doesn't include your UI language. Language is user state, not URL state. The `LanguageProvider` + `SecureStore` pattern is the mobile equivalent of the web's `/[l1]/[l2]/` URL prefix — both ensure the language pair is available before any content renders, just through different transport mechanisms.
 
 ### i18n: Shared locale directory (per ADR-0009)
 **Decision**: Both apps consume translations from the same `packages/shared/locales/*.json` files (31 locales, nested JSON, ICU MessageFormat), generated from a single `translations.csv`. The mobile app uses `react-intl` with a `resolveNested()` bridge in `useT()`; the web app uses `next-intl`. The `useT()` hook has identical call signature on both platforms. No per-app translation copies, no separate CSVs, no translation drift. See ADR-0009 for the full migration architecture.
