@@ -30,6 +30,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     // playerState = actual YouTube player state (from onChangeState)
     const [shouldPlay, setShouldPlay] = useState(autoplay);
     const [playerState, setPlayerState] = useState<string>('unstarted');
+    const [playbackRate, setPlaybackRateState] = useState(1);
     const t = useT();
     const timeRef = useRef(0);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -57,7 +58,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
         if (player) player.seekTo(seconds, true);
       },
       setPlaybackRate: (rate: number) => {
-        playerRef.current?.setPlaybackRate?.(rate);
+        setPlaybackRateState(rate);
       },
       getCurrentTime: async () => {
         try {
@@ -98,6 +99,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
           width={360}
           videoId={youtubeId}
           play={shouldPlay}
+          playbackRate={playbackRate}
           initialPlayerParams={{ start: startTime }}
           onChangeState={handleStateChange}
           onReady={() => { setReady(true); }}

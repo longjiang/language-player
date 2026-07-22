@@ -21,6 +21,10 @@ export default function WatchScreen() {
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(true);
 
+  // Subtitle line navigation state
+  const subtitleStartTimesRef = useRef<number[]>([]);
+  const [activeLineIndex, setActiveLineIndex] = useState(-1);
+
   // Load video metadata
   React.useEffect(() => {
     if (!videoId) return;
@@ -47,6 +51,42 @@ export default function WatchScreen() {
 
   const handleRewind = useCallback(() => {
     playerRef.current?.seekTo(Math.max(0, currentTime - 2));
+  }, [currentTime]);
+
+  const handleLinesLoaded = useCallback((startTimes: number[]) => {
+    subtitleStartTimesRef.current = startTimes;
+  }, []);
+
+  const handleSeekToLine = useCallback((starttime: number) => {
+    playerRef.current?.seekTo(starttime);
+  }, []);
+
+  const handlePreviousLine = useCallback(() => {
+    const times = subtitleStartTimesRef.current;
+    if (times.length === 0) return;
+    // Find the line just before current time
+    let idx = -1;
+    for (let i = times.length - 1; i >= 0; i--) {
+      if (times[i]! < currentTime - 0.5) { idx = i; break; }
+    }
+    if (idx >= 0) {
+      setActiveLineIndex(idx);
+      playerRef.current?.seekTo(times[idx]!);
+    }
+  }, [currentTime]);
+
+  const handleNextLine = useCallback(() => {
+    const times = subtitleStartTimesRef.current;
+    if (times.length === 0) return;
+    // Find the line just after current time
+    let idx = -1;
+    for (let i = 0; i < times.length; i++) {
+      if (times[i]! > currentTime + 0.1) { idx = i; break; }
+    }
+    if (idx >= 0) {
+      setActiveLineIndex(idx);
+      playerRef.current?.seekTo(times[idx]!);
+    }
   }, [currentTime]);
 
   if (!videoId) {
@@ -77,6 +117,8 @@ export default function WatchScreen() {
         paused={paused}
         onPauseToggle={handlePauseToggle}
         onRewind={handleRewind}
+        onPreviousLine={handlePreviousLine}
+        onNextLine={handleNextLine}
       />
 
       {/* Video title */}
@@ -98,6 +140,8 @@ export default function WatchScreen() {
         youtubeId={videoId}
         currentTime={currentTime}
         videoTitle={video?.title}
+        onLinesLoaded={handleLinesLoaded}
+        onSeekToLine={handleSeekToLine}
       />
     </View>
   );
