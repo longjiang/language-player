@@ -72,21 +72,16 @@ export default function ReaderScreen() {
     setTokenizing(true);
     const base = apiClient.defaults.baseURL || '';
 
-    // Tokenize each block in parallel — same effect as /lemmatize-normalized/batch
-    Promise.all(
-      blocks.map((b) =>
-        fetch(`${base}/lemmatize`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: b.text, l2: l2Lang.code }),
-        }).then((r) => (r.ok ? r.json() : null))
-      )
-    )
-      .then((results) => {
+    // Use /lemmatize-normalized/batch — same endpoint as Next.js
+    fetch(`${base}/lemmatize-normalized/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts: blocks.map((b) => b.text), l2: l2Lang.code }),
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
         if (cancelled) return;
-        // Extract tokens per block: results[i]?.tokens ?? []
-        const perBlockTokens = results.map((r) => r?.tokens ?? []);
-        setTokens(perBlockTokens);
+        setTokens(data?.results ?? []);
       })
       .catch(() => { if (!cancelled) setTokens(null); })
       .finally(() => { if (!cancelled) setTokenizing(false); });
