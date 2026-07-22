@@ -864,6 +864,7 @@
     },
     "setting": {
         "all_words": "All Words",
+        "auto_pronounce": "Auto Pronounce",
         "bigger": "Bigger",
         "captions": "Captions",
         "dark": "Dark",
@@ -890,6 +891,10 @@
         "review": "Review",
         "romanization": "Romanization",
         "ruby": "Ruby",
+        "saved_words_blanks": "Saved Words as Blanks",
+        "show_gloss_saved": "Show Gloss for Saved",
+        "show_phonetics": "Show Phonetics",
+        "show_translation": "Show Translation",
         "simplified": "简体 Simplified",
         "slow": "Slow",
         "smaller": "Smaller",
@@ -898,6 +903,7 @@
         "text_appearance": "Text Appearance",
         "theme": "Theme",
         "traditional": "繁體 Traditional",
+        "use_traditional": "Use Traditional",
         "word_level_display": "Word-Level Display"
     },
     "sort": {
