@@ -74,11 +74,14 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     }));
 
     const handleStateChange = useCallback((state: string) => {
-      onStateChange?.(state);
-      setPlayerState(state);
-      // When user interacts with native YouTube controls, sync shouldPlay
-      if (state === 'playing') setShouldPlay(true);
-      else if (state === 'paused' || state === 'ended') setShouldPlay(false);
+      // Defer state updates — onChangeState can fire synchronously
+      requestAnimationFrame(() => {
+        onStateChange?.(state);
+        setPlayerState(state);
+        // Sync shouldPlay with actual player state
+        if (state === 'playing') setShouldPlay(true);
+        else if (state === 'paused' || state === 'ended') setShouldPlay(false);
+      });
     }, [onStateChange]);
 
     if (error) {
@@ -106,14 +109,19 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
           initialPlayerParams={{ start: startTime }}
           onChangeState={handleStateChange}
           onReady={() => {
-            setReady(true);
-            // Workaround: react-native-youtube-iframe's sendPostMessage
-            // drops messages if playerReady is false. If the user tapped
-            // play before onReady, the command was lost. Re-apply.
-            if (shouldPlayRef.current) {
-              setShouldPlay(false);
-              requestAnimationFrame(() => setShouldPlay(true));
-            }
+            // Defer state updates — onReady can fire synchronously during
+            // render, causing React "Cannot update a component while
+            // rendering" error.
+            requestAnimationFrame(() => {
+              setReady(true);
+              // Workaround: react-native-youtube-iframe drops play/pause
+              // postMessages if playerReady is false. If the user tapped
+              // play before onReady, re-apply the command now.
+              if (shouldPlayRef.current) {
+                setShouldPlay(false);
+                requestAnimationFrame(() => setShouldPlay(true));
+              }
+            });
           }}
           onError={(e: any) => {
             const msg = typeof e === 'string' ? e : (e?.message ?? e?.error ?? t('msg.playback_error'));
