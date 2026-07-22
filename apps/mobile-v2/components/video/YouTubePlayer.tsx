@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useImperativeHandle, forwardRef, useState } from 'react';
+import React, { useCallback, useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
@@ -25,37 +25,60 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const playerRef = useRef<any>(null);
     const [ready, setReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // shouldPlay = desired state (controls the `play` prop)
+    // playerState = actual YouTube player state (from onChangeState)
+    const [shouldPlay, setShouldPlay] = useState(autoplay);
+    const [playerState, setPlayerState] = useState<string>('unstarted');
     const timeRef = useRef(0);
+    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const onTimeUpdateRef = useRef(onTimeUpdate);
+    onTimeUpdateRef.current = onTimeUpdate;
+
+    // Time polling while the video is actually playing
+    useEffect(() => {
+      if (playerState === 'playing') {
+        pollRef.current = setInterval(async () => {
+          try {
+            const t = await playerRef.current?.getCurrentTime();
+            if (t != null) { timeRef.current = t; onTimeUpdateRef.current?.(t); }
+          } catch {}
+        }, 500);
+        return () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; } };
+      }
+    }, [playerState]);
 
     useImperativeHandle(ref, () => ({
-      play: () => playerRef.current?.getPlayerState().then((s: string) => { if (s !== 'playing') playerRef.current?.playVideo(); }),
-      pause: () => playerRef.current?.pauseVideo(),
-      seekTo: (seconds: number) => playerRef.current?.seekTo(seconds, true),
-      setPlaybackRate: (rate: number) => playerRef.current?.setPlaybackRate?.(rate),
+      play: () => setShouldPlay(true),
+      pause: () => setShouldPlay(false),
+      seekTo: (seconds: number) => {
+        const player = playerRef.current;
+        if (player) player.seekTo(seconds, true);
+      },
+      setPlaybackRate: (rate: number) => {
+        playerRef.current?.setPlaybackRate?.(rate);
+      },
       getCurrentTime: async () => {
-        const t = await playerRef.current?.getCurrentTime();
-        return t ?? timeRef.current;
+        try {
+          const t = await playerRef.current?.getCurrentTime();
+          return t ?? timeRef.current;
+        } catch {
+          return timeRef.current;
+        }
       },
     }));
 
     const handleStateChange = useCallback((state: string) => {
       onStateChange?.(state);
-      if (state === 'playing') {
-        // Start time polling
-        const poll = setInterval(async () => {
-          try {
-            const t = await playerRef.current?.getCurrentTime();
-            if (t != null) { timeRef.current = t; onTimeUpdate?.(t); }
-          } catch {}
-        }, 500);
-        return () => clearInterval(poll);
-      }
-    }, [onTimeUpdate, onStateChange]);
+      setPlayerState(state);
+      // When user interacts with native YouTube controls, sync shouldPlay
+      if (state === 'playing') setShouldPlay(true);
+      else if (state === 'paused' || state === 'ended') setShouldPlay(false);
+    }, [onStateChange]);
 
     if (error) {
       return (
-        <View className="aspect-video w-full items-center justify-center bg-muted">
-          <Text className="text-destructive">{error}</Text>
+        <View className="aspect-video w-full items-center justify-center bg-muted p-4">
+          <Text className="text-center text-sm text-destructive">{error}</Text>
         </View>
       );
     }
@@ -72,11 +95,15 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
           height={300}
           width={360}
           videoId={youtubeId}
-          play={autoplay}
+          play={shouldPlay}
           initialPlayerParams={{ start: startTime }}
           onChangeState={handleStateChange}
           onReady={() => { setReady(true); }}
-          onError={(e: any) => setError(e ?? 'Playback error')}
+          onError={(e: any) => {
+            const msg = typeof e === 'string' ? e : (e?.message ?? e?.error ?? 'Playback error');
+            setError(String(msg));
+            onError?.(new Error(String(msg)));
+          }}
           webViewStyle={{ opacity: ready ? 1 : 0 }}
         />
       </View>
