@@ -83,8 +83,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session on mount
+  // Restore session on mount — always init API client first
   useEffect(() => {
+    // API client must be initialized unconditionally — endpoints like
+    // /get_best_l2_subs and /recommend-videos work without auth.
+    initApiClient();
+
     (async () => {
       try {
         const storedToken = await SecureStore.getItemAsync('authToken');
@@ -92,8 +96,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (storedToken && storedUser) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
-          // Initialize API client with restored token
-          initApiClient();
         }
       } catch { /* ignore */ }
       setLoading(false);
