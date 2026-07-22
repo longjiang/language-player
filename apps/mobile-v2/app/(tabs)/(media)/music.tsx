@@ -12,26 +12,31 @@ export default function MusicScreen() {
   const { getRecommendations } = useVideos();
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getRecommendations({ l2: l2Lang.code, limit: 24 })
-      .then((res) => setVideos(Array.isArray(res) ? res : (res as any)?.videos ?? []))
-      .catch(() => {})
+      .then((res) => { setVideos(Array.isArray(res) ? res : (res as any)?.videos ?? []); setError(null); })
+      .catch(() => setError('msg.no_videos_found'))
       .finally(() => setLoading(false));
   }, [l2Lang.code]);
-
-  if (loading) {
-    return <View className="flex-1 items-center justify-center bg-background"><ActivityIndicator size="large" className="text-primary" /></View>;
-  }
 
   return (
     <View className="flex-1 bg-background px-4">
       <Text className="py-3 text-lg font-bold text-foreground">{t('title.music_and_entertainment')}</Text>
-      <FlatList
-        data={videos}
-        keyExtractor={(item) => item.youtube_id}
-        renderItem={({ item }) => <VideoCard video={item} />}
-      />
+      {loading ? (
+        <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" className="text-primary" /></View>
+      ) : error ? (
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-muted-foreground">{t(error as any)}</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={videos}
+          keyExtractor={(item) => item.youtube_id}
+          renderItem={({ item }) => <VideoCard video={item} />}
+        />
+      )}
     </View>
   );
 }

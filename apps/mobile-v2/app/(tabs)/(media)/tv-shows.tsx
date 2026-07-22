@@ -18,6 +18,7 @@ export default function TvShowsScreen() {
   const t = useT();
   const [shows, setShows] = useState<ShowWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'views' | 'title' | 'year'>('views');
 
@@ -25,8 +26,8 @@ export default function TvShowsScreen() {
     setLoading(true);
     fetch(`${PYTHON_API_URL}/tv-shows?l2=${l2Lang.code}&limit=200`)
       .then((r) => r.json())
-      .then((data) => setShows(Array.isArray(data) ? data : []))
-      .catch(() => {})
+      .then((data) => { setShows(Array.isArray(data) ? data : []); setError(null); })
+      .catch(() => setError('msg.no_videos_found'))
       .finally(() => setLoading(false));
   }, [l2Lang.code]);
 
@@ -40,6 +41,10 @@ export default function TvShowsScreen() {
 
   if (loading) {
     return <View className="flex-1 items-center justify-center bg-background"><ActivityIndicator size="large" className="text-primary" /></View>;
+  }
+
+  if (error) {
+    return <View className="flex-1 items-center justify-center bg-background"><Text className="text-muted-foreground">{t(error as any)}</Text></View>;
   }
 
   return (
