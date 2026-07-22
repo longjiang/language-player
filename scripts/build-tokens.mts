@@ -8,9 +8,7 @@
  * Writes: apps/mobile-v2/tailwind.config.js (generated, do not edit manually)
  *
  * The generated config uses NativeWind preset + shared HSL color tokens.
- * Dark mode colors are handled at runtime by NativeWind's .dark: prefix —
- * the config only needs the light semantic tokens.
- *
+ * Uses dark semantic tokens as the default theme (light mode TBD).
  * ADR-0011: Shared Design Tokens
  * ADR-0010: Port Web to Mobile (see "Styling: NativeWind + shared tokens")
  */
@@ -22,7 +20,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TOKENS_PATH = path.resolve(__dirname, '../packages/shared/src/tokens');
-const { lightSemantic, typography, spacing, borderRadius } = await import(TOKENS_PATH);
+const { darkSemantic, typography, spacing, borderRadius } = await import(TOKENS_PATH);
 
 // ── Helpers ────────────────────────────────────
 
@@ -42,7 +40,7 @@ function formatKey(key: string): string {
   return k.includes('-') ? `'${k}'` : k;
 }
 
-const colorEntries = Object.entries(lightSemantic).map(([key, channels]) =>
+const colorEntries = Object.entries(darkSemantic).map(([key, channels]) =>
   `        ${formatKey(key)}: '${hsl(channels)}',`
 );
 
