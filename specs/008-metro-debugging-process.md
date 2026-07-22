@@ -22,9 +22,11 @@ The AI agent MUST start all servers itself so it owns the terminal UUIDs and can
 ```bash
 # Check what's running
 lsof -ti:8081 2>/dev/null && echo "Metro running" || echo "Metro not running"
-lsof -ti:5000 2>/dev/null && echo "Flask running" || echo "Flask not running"
+lsof -i:5001 2>&1 | grep -q python && echo "Flask running on 5001" || echo "Flask not running"
 idb list-targets 2>&1 | grep -i booted
 ```
+
+**Important:** Port 5000 on macOS is occupied by `ControlCenter` (AirPlay Receiver), NOT available for Flask. The Python backend is configured for port **5001**. Use `lsof -i:5001` to check Flask, not `lsof -ti:5000`. The PID on port 5000 is always macOS AirPlay, not Flask.
 
 ### Start Python Backend (if not running)
 
@@ -32,10 +34,12 @@ idb list-targets 2>&1 | grep -i booted
 cd zerotohero-python-server && python3.10 app.py
 ```
 
-Run in **async mode** since it's a long-running server. The Flask dev server runs on port 5000. Key endpoints used by mobile:
+Run in **async mode** since it's a long-running server. The Flask dev server runs on **port 5001** (not 5000). Key endpoints used by mobile:
 - `POST /dictionary/lookup` — dictionary search with LLM fallback
 - `GET /recommend-videos` — video recommendations
 - `POST /translate_array` — batch subtitle translation
+
+**Startup time:** Flask takes ~10–15 seconds to start (database connection pooling, module imports). Any request before it's ready gets `Connection refused`. Wait for the `* Running on http://0.0.0.0:5001` line before testing. Do NOT kill the terminal — Flask logs to stdout only.
 
 ### Start Metro + iOS Simulator
 
@@ -233,8 +237,8 @@ The NativeWind Metro plugin loads `tailwind.config.js` via Node's `require()`, w
 
 When code changes are made during debugging, reload the app in the simulator:
 
-- **Fast reload**: Press `r` in the Metro terminal (reloads JS bundle, ~1 second)
-- **Full restart**: Kill and restart Metro (only if `r` doesn't pick up changes)
+- **Fast reload**: Press `r` in the Metro terminal (reloads JS bundle, ~1 second). Reloads component code and hooks, but does NOT re-evaluate module-level constants (e.g., `const API_URL = '...'`). For changes to module-level values or imported config files, a full restart is required.
+- **Full restart**: Kill Metro, `rm -rf apps/mobile-v2/.expo`, and restart WITHOUT `--clear`. Necessary for: module-level constant changes, new dependencies, NativeWind/Tailwind config changes, metro.config.js changes.
 
 To send `r` to Metro programmatically:
 
@@ -287,9 +291,33 @@ send_to_terminal(id=<metro-uuid>, command="r")
 **Cause**: `--clear` flag sometimes fails to fully purge the Metro transform cache in monorepo setups. Old module transforms persist and cause errors that reference code you've already changed.
 **Fix**: Kill Metro, `rm -rf apps/mobile-v2/.expo`, restart WITHOUT `--clear`. The `.expo` directory contains the transform cache; manual deletion is reliable.
 
+### Hot reload doesn't pick up module-level constant changes
+**Cause**: Metro's HMR (Hot Module Replacement) patches function/component changes but does NOT re-evaluate module-level constants. If you change `const API_URL = 'http://old:5000'` to `'http://new:5001'` in a file that's been imported, the old value persists until a full restart.
+**Fix**: Kill Metro, `rm -rf apps/mobile-v2/.expo`, restart WITHOUT `--clear`. Module-level changes require a cold start.
+
+### Simulator Networking: 127.0.0.1 vs host IP
+**Cause**: The iOS Simulator shares the host Mac's network but has its own loopback interface. `127.0.0.1` (and `localhost`) from the simulator point to the **simulator itself**, not the Mac. For the simulator to reach services running on the Mac (Flask, etc.), you must use the Mac's LAN IP address (e.g., `192.168.1.130`).
+**Fix**: 
+- **Metro/Expo**: Uses `exp://192.168.1.130:8081` automatically — Expo handles this.
+- **Custom API calls (axios/fetch)**: Must use the host IP, not 127.0.0.1. Configure the api-client's `baseURL` as `http://192.168.1.130:5001`.
+- **Verification**: `curl http://127.0.0.1:5001/...` from the Mac terminal works (same machine). `curl` from the simulator would fail with 127.0.0.1.
+
+### Flask port confusion: 5000 is macOS AirPlay, not Flask
+**Cause**: `lsof -ti:5000` returns PID 652 (`ControlCenter`) — this is macOS's AirPlay Receiver, not Flask. The Python backend is configured for port **5001** (`app.py` line 67: `port=5001`).
+**Fix**: Always use `lsof -i:5001 | grep python` to check if Flask is running. Never assume port 5000 is available.
+
+### 403 Forbidden from mobile app but curl returns 200
+**Cause**: Usually a stale Metro bundle — the app is sending requests to the wrong URL (old cached value). Module-level constants like `PYTHON_API_URL` are baked into the bundle at build time and don't update via hot reload. The old URL may point to a port/service that returns 403.
+**Fix**: Full clean restart: kill Metro → `rm -rf apps/mobile-v2/.expo` → restart WITHOUT `--clear`. Also verify the URL is reachable from the simulator's network perspective (use host IP, not 127.0.0.1).
+**Debug**: Test the endpoint with `curl http://<host-ip>:5001/recommend-videos?l2=ja&limit=2`. If curl returns 200 but the app returns 403, the bundle is stale.
+
+### Flask startup takes 10–15 seconds
+**Cause**: The Python backend initializes MySQL connection pools, imports large modules, and sets up routes on startup. During this time, the port is not yet listening.
+**Fix**: Wait for the `* Running on http://0.0.0.0:5001` line in the Flask terminal before making requests. The app will show `[explore] Fetch failed: {"code": "NETWORK_ERROR"}` if Flask isn't ready yet. This is transient — once Flask is up, subsequent requests succeed.
+
 ### "Online dictionary lookup unavailable (network)"
 **Cause**: Flask backend not running or not reachable from simulator.
-**Fix**: Verify Flask is running on port 5000. The simulator uses the host machine's network; ensure `localhost` is accessible (Expo's `exp://` URL handles this automatically for Metro, but the app's Axios calls to Flask need the correct base URL).
+**Fix**: Verify Flask is running on **port 5001** (`lsof -i:5001 | grep python`). Port 5000 is macOS AirPlay, not Flask. The simulator cannot reach `127.0.0.1` — the app must be configured to use the host machine's LAN IP (e.g., `192.168.1.130:5001`). See [Simulator Networking](#simulator-networking-127001-vs-host-ip).
 
 ### Bundle fails to load (white screen in simulator)
 **Cause**: Metro not finished bundling or HMR cache corruption.
