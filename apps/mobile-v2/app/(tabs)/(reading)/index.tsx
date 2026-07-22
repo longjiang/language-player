@@ -7,6 +7,7 @@ import { apiClient } from '@langplayer/api-client';
 import type { NoteListItem } from '@langplayer/shared';
 import { BookOpen, PenLine, Plus, Trash2, StickyNote } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 
 export default function ReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -17,6 +18,7 @@ export default function ReaderScreen() {
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('edit');
   const [tokens, setTokens] = useState<any[] | null>(null);
   const [tokenizing, setTokenizing] = useState(false);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [renameId, setRenameId] = useState<number | null>(null);
@@ -145,7 +147,11 @@ export default function ReaderScreen() {
             <ScrollView className="flex-1 p-4">
               {tokens ? (
                 tokens.map((token: any, i: number) => (
-                  <Text key={i} className="text-base leading-relaxed text-foreground">
+                  <Text
+                    key={i}
+                    onPress={() => token.text && setSelectedWord(token.text)}
+                    className="text-base leading-relaxed text-foreground"
+                  >
                     {token.lemmas?.length > 0
                       ? token.text
                       : token.text}{' '}
@@ -226,6 +232,11 @@ export default function ReaderScreen() {
           </View>
         )}
       </View>
+      <DictionaryPopup
+        visible={!!selectedWord}
+        word={selectedWord ?? ''}
+        onClose={() => setSelectedWord(null)}
+      />
     </View>
   );
 }
