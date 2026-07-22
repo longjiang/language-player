@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, Pressable, TextInput, ScrollView } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
+import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import enLocale from '@langplayer/shared/locales/en.json';
 
@@ -133,7 +134,7 @@ export function LanguageSwitcher() {
             <TextInput
               className="mb-1 rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground"
               placeholder={t('placeholder.search_dots')}
-              placeholderTextColor="#888"
+              placeholderTextColor={PLACEHOLDER_COLOR}
               value={search}
               onChangeText={setSearch}
               autoFocus

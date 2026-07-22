@@ -4,6 +4,7 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { useT } from '@/hooks/use-t';
 import { useLocalMedia } from '@/hooks/use-local-media';
 import type { SubtitleLine } from '@langplayer/shared';
+import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { Play, Pause, SkipBack, SkipForward, Upload, FileText, X, FileVideo, FileAudio } from 'lucide-react-native';
 
 export default function LocalMediaScreen() {
@@ -169,7 +170,7 @@ export default function LocalMediaScreen() {
             <SkipBack size={20} className="text-foreground" />
           </Pressable>
           <Pressable onPress={handlePlayPause} className="rounded-full bg-primary p-2 active:bg-primary/80">
-            {paused ? <Play size={20} color="#ffffff" /> : <Pause size={20} color="#ffffff" />}
+            {paused ? <Play size={20} color={ICON_ON_PRIMARY} /> : <Pause size={20} color={ICON_ON_PRIMARY} />}
           </Pressable>
           <Pressable onPress={handleRewind} className="rounded p-1 active:bg-muted">
             <SkipForward size={20} className="text-foreground" />

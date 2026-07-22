@@ -5,6 +5,7 @@ import {
   ChevronUp, ChevronDown, Info, Clock,
 } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
+import { ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import type { YouTubePlayerHandle } from './YouTubePlayer';
 
 // Speed options matching Next.js: 1× → 0.75× → 0.5× → 1×
@@ -85,7 +86,7 @@ export function VideoControlBar({
 
       {/* Time display */}
       <View className="flex-row items-center justify-center gap-1">
-        <Clock size={12} color="#94a3b8" />
+        <Clock size={12} color={ICON_MUTED} />
         <Text className="text-xs text-muted-foreground">{formatTime(currentTime)}</Text>
         <Text className="text-xs text-muted-foreground">/</Text>
         <Text className="text-xs text-muted-foreground">{formatTime(duration)}</Text>
@@ -99,13 +100,13 @@ export function VideoControlBar({
           disabled={!hasPreviousVideo || !onPreviousVideo}
           className={`rounded p-2 ${!hasPreviousVideo || !onPreviousVideo ? 'opacity-30' : ''}`}
         >
-          <SkipBack size={18} color="#94a3b8" />
+          <SkipBack size={18} color={ICON_MUTED} />
         </Pressable>
 
         {/* Info */}
         {onOpenInfo && (
           <Pressable onPress={onOpenInfo} className="rounded p-2">
-            <Info size={18} color="#94a3b8" />
+            <Info size={18} color={ICON_MUTED} />
           </Pressable>
         )}
 
@@ -115,17 +116,17 @@ export function VideoControlBar({
           disabled={!hasPreviousLine}
           className={`rounded p-2 ${!hasPreviousLine ? 'opacity-30' : ''}`}
         >
-          <ChevronUp size={20} color="#94a3b8" />
+          <ChevronUp size={20} color={ICON_MUTED} />
         </Pressable>
 
         {/* Rewind 2s */}
         <Pressable onPress={handleRewind} className="rounded p-2">
-          <RotateCcw size={18} color="#94a3b8" />
+          <RotateCcw size={18} color={ICON_MUTED} />
         </Pressable>
 
         {/* Play/Pause */}
         <Pressable onPress={onPauseToggle} className="mx-1 rounded-full bg-primary p-3">
-          {paused ? <Play size={22} color="#ffffff" /> : <Pause size={22} color="#ffffff" />}
+          {paused ? <Play size={22} color={ICON_ON_PRIMARY} /> : <Pause size={22} color={ICON_ON_PRIMARY} />}
         </Pressable>
 
         {/* Next subtitle line */}
@@ -134,7 +135,7 @@ export function VideoControlBar({
           disabled={!hasNextLine}
           className={`rounded p-2 ${!hasNextLine ? 'opacity-30' : ''}`}
         >
-          <ChevronDown size={20} color="#94a3b8" />
+          <ChevronDown size={20} color={ICON_MUTED} />
         </Pressable>
 
         {/* Speed toggle */}
@@ -148,7 +149,7 @@ export function VideoControlBar({
           disabled={!hasNextVideo || !onNextVideo}
           className={`rounded p-2 ${!hasNextVideo || !onNextVideo ? 'opacity-30' : ''}`}
         >
-          <SkipForward size={18} color="#94a3b8" />
+          <SkipForward size={18} color={ICON_MUTED} />
         </Pressable>
       </View>
     </View>

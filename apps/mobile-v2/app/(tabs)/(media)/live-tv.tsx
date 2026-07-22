@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, FlatList, Pressable, ActivityIndicator, Image, TextInput } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { LiveTVPlayer } from '@/components/video/LiveTVPlayer';
@@ -120,7 +121,7 @@ export default function LiveTvScreen() {
           <TextInput
             className="flex-1 px-2 py-1.5 text-sm text-foreground"
             placeholder={t('action.search')}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={PLACEHOLDER_COLOR}
             value={search}
             onChangeText={setSearch}
           />
