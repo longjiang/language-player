@@ -58,12 +58,21 @@ export const PopupDictionaryContent: React.FC<{
         setDictionaryEntries([]);
         return;
       }
-      const tokenizerName = l2Lang && getTokenizer(l2Lang.code)?.name || ''; // getTokenizer gets the tokenizer for the specific language
+
+      // Phase 1: Try online lookup first (same endpoint as Next.js web app).
+      // The Python backend handles normalization, LLM fallback, and L1 translation.
+      const onlineResults = await dictionary.onlineLookup(token.text);
+      if (onlineResults !== null && onlineResults.length > 0) {
+        setDictionaryEntries(onlineResults);
+        return;
+      }
+
+      // Fallback: local SQLite dictionary (existing behavior)
+      const tokenizerName = l2Lang && getTokenizer(l2Lang.code)?.name || '';
       let entries: DictionaryEntry[] = []
       if (["PyidaungsuTokenizer", "JiebaTokenizer"].includes(tokenizerName)) {
           entries = await dictionary.findWordsInPhrase(token.text) || [];
       } else {
-          // Match lemmas (if exists) and token.text
           let searchTerms = [...getLemmas(token), token.text].filter(Boolean);
           entries = await dictionary.findEntriesByLemmas(searchTerms) || [];
       }

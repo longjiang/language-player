@@ -10,6 +10,8 @@ import { stripAccents } from '@/src/utils';
 import { DictionaryEntry, RawEntry, Level } from '@/src/dictionary-types';
 import { sortEntries, transformToDictionaryEntry } from '@/src/dictionary-utils';
 import { Language } from '@/src/languages';
+import { dictionaryLookup } from '@/src/api/python/dictionary';
+import { sharedEntryToMobileEntry } from '@/src/dictionary-adapter';
 
 /**
  * Manages dictionary operations including data loading, searching, and retrieval.
@@ -21,6 +23,9 @@ export class Dictionary {
   private localData: { csvData?: string } | undefined;
   private normalizeEntry: (entry: RawEntry, entryCount: Record<string, number>) => DictionaryEntry;
   private t: (key: string, params?: Record<string, any>) => string;
+
+  /** In-memory session cache for online lookup results. Key: lookup text. */
+  private onlineCache: Map<string, DictionaryEntry[]> = new Map();
 
   readonly l1Code: string;
   readonly l2Code: string;
@@ -40,6 +45,58 @@ export class Dictionary {
     this.dictionaryDB = new DictionaryDB(this.dbName);
     this.normalizeEntry = normalizeEntry;
     this.t = t;
+  }
+
+  /**
+   * Online dictionary lookup via the Python backend.
+   * Tries POST /dictionary/lookup first. On network failure, returns null
+   * so callers can fall back to the local SQLite dictionary.
+   *
+   * Results are cached in memory for the session. LLM-generated entries
+   * (match_type === 'llm') are also persisted to the llm_cache SQLite table.
+   *
+   * @param text - The word or phrase to look up
+   * @param l1 - The user's native language code (defaults to this.l1Code)
+   * @returns DictionaryEntry[] on success, null on network failure
+   */
+  async onlineLookup(text: string, l1?: string): Promise<DictionaryEntry[] | null> {
+    const cacheKey = `${text}:${l1 || this.l1Code}`;
+
+    // 1. Check memory cache
+    const cached = this.onlineCache.get(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const l1Code = l1 || this.l1Code;
+      const response = await dictionaryLookup(text, this.l2Code, l1Code);
+
+      const entries = response.results.map(sharedEntryToMobileEntry);
+
+      // 2. Cache in memory
+      this.onlineCache.set(cacheKey, entries);
+
+      // 3. Persist LLM-generated entries to llm_cache for offline use
+      //    Note: The shared DictionaryEntry type doesn't include 'llm' in match_type,
+      //    but the Python backend returns it for AI-generated entries.
+      const llmEntries = response.results.filter(e => (e as any).match_type === 'llm');
+      if (llmEntries.length > 0) {
+        try {
+          await this.dictionaryDB.insertLlmCacheEntries(text, l1Code, this.l2Code, llmEntries as any[]);
+        } catch (llmCacheError) {
+          console.warn('Failed to persist LLM cache entries:', llmCacheError);
+        }
+      }
+
+      return entries;
+    } catch (error: any) {
+      // Network errors, timeouts, server errors — return null so caller falls back
+      if (error?.code === 'ECONNABORTED' || error?.message?.includes('Network') || error?.code === 'ERR_NETWORK') {
+        console.log('Online dictionary lookup unavailable (network), falling back to local');
+      } else {
+        console.warn('Online dictionary lookup failed:', error?.message || error);
+      }
+      return null;
+    }
   }
 
   /**

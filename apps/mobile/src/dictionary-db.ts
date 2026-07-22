@@ -86,6 +86,67 @@ export class DictionaryDB {
     await this.db!.execAsync(`CREATE INDEX IF NOT EXISTS idx_definitions ON ${this.dbName}(definitions)`);
   }
 
+  // ── LLM Cache ────────────────────────────────────────────────
+
+  /**
+   * Creates the llm_cache table if it doesn't exist.
+   * Stores LLM-generated dictionary entries for offline use.
+   * Also stores L1-translated definitions from online lookups.
+   * Keyed by (text, l1_code, l2_code).
+   */
+  async createLlmCacheTable(): Promise<void> {
+    await this.db!.execAsync(`
+      CREATE TABLE IF NOT EXISTS llm_cache (
+        text TEXT NOT NULL,
+        l1_code TEXT NOT NULL DEFAULT 'en',
+        l2_code TEXT NOT NULL,
+        entry_json TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY (text, l1_code, l2_code)
+      );
+    `);
+  }
+
+  /**
+   * Persists LLM-generated dictionary entries to the llm_cache table.
+   * Entries are stored as JSON strings for later retrieval.
+   */
+  async insertLlmCacheEntries(
+    text: string,
+    l1Code: string,
+    l2Code: string,
+    entries: Record<string, unknown>[]
+  ): Promise<void> {
+    await this.createLlmCacheTable();
+    const entryJson = JSON.stringify(entries);
+    await this.db!.runAsync(
+      `INSERT OR REPLACE INTO llm_cache (text, l1_code, l2_code, entry_json) VALUES (?, ?, ?, ?)`,
+      [text, l1Code, l2Code, entryJson]
+    );
+  }
+
+  /**
+   * Retrieves LLM-cached entries for a given text and language pair.
+   * Returns null if not found.
+   */
+  async getLlmCacheEntries(
+    text: string,
+    l1Code: string,
+    l2Code: string
+  ): Promise<Record<string, unknown>[] | null> {
+    await this.createLlmCacheTable();
+    const row = await this.db!.getFirstAsync<{ entry_json: string }>(
+      `SELECT entry_json FROM llm_cache WHERE text = ? AND l1_code = ? AND l2_code = ?`,
+      [text, l1Code, l2Code]
+    );
+    if (!row) return null;
+    try {
+      return JSON.parse(row.entry_json);
+    } catch {
+      return null;
+    }
+  }
+
   async get(id: string): Promise<any> {
     return await this.db!.getFirstAsync(`SELECT * FROM ${this.dbName} WHERE id = ?`, [id]).catch((err) => { console.log(err) });
   }
