@@ -6,6 +6,7 @@ import { useT } from '@/hooks/use-t';
 import { useVideos, apiClient } from '@langplayer/api-client';
 import { VideoCard } from '@/components/video/VideoCard';
 import { Search, AlertCircle, Film, Tag } from 'lucide-react-native';
+import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import type { YouTubeVideo } from '@langplayer/shared';
 
 interface VideoTag {
@@ -95,7 +96,7 @@ export default function SearchScreen() {
           <TextInput
             className="flex-1 rounded-lg border border-border bg-card py-2 pl-10 pr-3 text-sm text-foreground"
             placeholder={t('placeholder.search_dots')}
-            placeholderTextColor="#888"
+            placeholderTextColor={PLACEHOLDER_COLOR}
             value={query}
             onChangeText={setQuery}
             onSubmitEditing={() => doSearch(query)}

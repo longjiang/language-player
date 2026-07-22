@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, FlatList, Pressable, Image, ActivityIndicator, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { YouTubeVideo } from '@langplayer/shared';
@@ -54,7 +55,7 @@ export default function TvShowsScreen() {
         <TextInput
           className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
           placeholder={t('action.search')}
-          placeholderTextColor="#888"
+          placeholderTextColor={PLACEHOLDER_COLOR}
           value={search}
           onChangeText={setSearch}
         />

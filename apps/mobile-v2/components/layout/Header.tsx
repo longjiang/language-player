@@ -3,6 +3,7 @@ import { View, Text, Pressable, Image, useWindowDimensions } from 'react-native'
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Menu, X } from 'lucide-react-native';
+import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { HamburgerDrawer } from './HamburgerDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -49,7 +50,7 @@ export function Header() {
             onPress={() => router.push('/(tabs)/(media)/search' as any)}
             className="rounded-lg p-2 active:bg-muted"
           >
-            <Search size={20} color="#94a3b8" />
+            <Search size={20} color={ICON_MUTED} />
           </Pressable>
 
           {/* Language switcher */}
@@ -63,7 +64,7 @@ export function Header() {
             onPress={() => setDrawerOpen(!drawerOpen)}
             className="rounded-lg p-1.5 active:bg-muted"
           >
-            {drawerOpen ? <X size={22} color="#94a3b8" /> : <Menu size={22} color="#94a3b8" />}
+            {drawerOpen ? <X size={22} color={ICON_MUTED} /> : <Menu size={22} color={ICON_MUTED} />}
           </Pressable>
         </View>
       </View>

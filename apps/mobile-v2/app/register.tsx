@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 
 export default function RegisterScreen() {
@@ -38,7 +39,7 @@ export default function RegisterScreen() {
       <TextInput
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
         placeholder={t('placeholder.email')}
-        placeholderTextColor="#888"
+        placeholderTextColor={PLACEHOLDER_COLOR}
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
@@ -47,7 +48,7 @@ export default function RegisterScreen() {
       <TextInput
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-6"
         placeholder={t('placeholder.password')}
-        placeholderTextColor="#888"
+        placeholderTextColor={PLACEHOLDER_COLOR}
         secureTextEntry
         value={password}
         onChangeText={setPassword}

@@ -7,10 +7,9 @@ import {
   Compass, Music, Tv, Clapperboard, History, Upload,
   FileText, BookMarked, Bookmark, RotateCcw, Globe, BookOpen,
 } from 'lucide-react-native';
-import { darkSemantic, hslToHex } from '@langplayer/shared';
+import { ICON_MUTED } from '@/lib/theme-colors';
 
-// Icon color from dark theme muted-foreground token
-const ICON_COLOR = hslToHex(darkSemantic.mutedForeground);
+const ICON_COLOR = ICON_MUTED;
 
 // ── Same nav structure + icons as web (apps/web/src/components/layout/header.tsx) ──
 

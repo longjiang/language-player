@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TextInput, Pressable, Text, ActivityIndicator } from 'react-native';
+import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 
 interface SearchBarProps {
@@ -23,7 +24,7 @@ export function SearchBar({ value, onChangeText, onSubmit, onClear, loading, pla
         onChangeText={onChangeText}
         onSubmitEditing={onSubmit}
         placeholder={placeholder ?? t('placeholder.dictionary_search')}
-        placeholderTextColor="#888"
+        placeholderTextColor={PLACEHOLDER_COLOR}
         returnKeyType="search"
         autoCapitalize="none"
         autoCorrect={false}

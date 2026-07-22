@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-nativ
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
+import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 
 export default function LoginScreen() {
   const t = useT();
@@ -39,7 +40,7 @@ export default function LoginScreen() {
       <TextInput
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
         placeholder={t('placeholder.email')}
-        placeholderTextColor="#888"
+        placeholderTextColor={PLACEHOLDER_COLOR}
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
@@ -48,7 +49,7 @@ export default function LoginScreen() {
       <TextInput
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-6"
         placeholder={t('placeholder.password')}
-        placeholderTextColor="#888"
+        placeholderTextColor={PLACEHOLDER_COLOR}
         secureTextEntry
         value={password}
         onChangeText={setPassword}
