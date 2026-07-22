@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
+import { useT } from '@/hooks/use-t';
 
 interface YouTubePlayerProps {
   youtubeId: string;
@@ -29,6 +30,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     // playerState = actual YouTube player state (from onChangeState)
     const [shouldPlay, setShouldPlay] = useState(autoplay);
     const [playerState, setPlayerState] = useState<string>('unstarted');
+    const t = useT();
     const timeRef = useRef(0);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const onTimeUpdateRef = useRef(onTimeUpdate);
@@ -100,7 +102,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
           onChangeState={handleStateChange}
           onReady={() => { setReady(true); }}
           onError={(e: any) => {
-            const msg = typeof e === 'string' ? e : (e?.message ?? e?.error ?? 'Playback error');
+            const msg = typeof e === 'string' ? e : (e?.message ?? e?.error ?? t('msg.playback_error'));
             setError(String(msg));
             onError?.(new Error(String(msg)));
           }}

@@ -41,6 +41,7 @@ key,en,zh-Hans,zh-Hant,af,ar,ca,de,el,es,fi,fr,ga,hi,hr,hu,id,it,ja,ko,nl,no,pl,
 "Texto: {text},Oferă o analiză clară a următorului text în {l2Code}. Include:"
 "Téacs: {text},निम्नलिखित {l2Code} पाठ का स्पष्ट विश्लेषण प्रदान करें। शामिल करें:"
 "Téacs: {text},निम्नलिखित {l2Code} पाठ का स्पष्ट विश्लेषण प्रदान करें। शामिल करें:"
+msg.playback_error,Playback error,播放错误,播放錯誤,Terugspeelfout,خطأ في التشغيل,Error de reproducció,Wiedergabefehler,Σφάλμα αναπαραγωγής,Error de reproducción,Toistovirhe,Erreur de lecture,Earráid athsheinm,प्लेबैक त्रुटि,Pogreška reprodukcije,Lejátszási hiba,Kesalahan pemutaran,Errore di riproduzione,再生エラー,재생 오류,Afspeelfout,Avspillingsfeil,Błąd odtwarzania,Erro de reprodução,Eroare de redare,Ошибка воспроизведения,Грешка при репродукцији,Uppspelningsfel,Hitilafu ya uchezaji,ข้อผิดพลาดในการเล่น,Oynatma hatası,Lỗi phát lại
 "Κείμενο: {text},Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:"
 "Κείμενο: {text},Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:"
 "Текст: {text},Pruži jasnu analizu sledećeg teksta na {l2Code}. Uključi:"

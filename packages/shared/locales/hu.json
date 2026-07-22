@@ -653,6 +653,7 @@
         "payment_processing": "A fizetés feldolgozása folyamatban van. Ez néhány pillanatig tarthat.",
         "payment_received": "Fizetés megérkezett",
         "paypal_available": "A PayPal élethosszig tartó vásárlások esetén is elérhető.",
+        "playback_error": "Lejátszási hiba",
         "popular_languages": "Népszerű",
         "preparing_review_cards": "Ismétlőkártyák előkészítése...",
         "pro_feature_chatgpt": "Csak Pro felhasználók használhatják az AI-funkciókat a Language Player Go-ban. Ennek a funkciónak a használatához frissítsen Pro-ra.",

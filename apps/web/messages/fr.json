@@ -653,6 +653,7 @@
         "payment_processing": "Votre paiement est en cours de traitement. Cela peut prendre quelques instants.",
         "payment_received": "Paiement reçu",
         "paypal_available": "PayPal est également disponible pour les achats à vie.",
+        "playback_error": "Erreur de lecture",
         "popular_languages": "Populaire",
         "preparing_review_cards": "Préparation des cartes de révision...",
         "pro_feature_chatgpt": "Seuls les utilisateurs Pro peuvent utiliser les fonctionnalités d'IA dans Language Player Go. Pour utiliser cette fonctionnalité, passez à la version Pro.",

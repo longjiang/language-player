@@ -653,6 +653,7 @@
         "payment_processing": "Din betalning bearbetas. Detta kan ta en liten stund.",
         "payment_received": "Betalning mottagen",
         "paypal_available": "PayPal finns också tillgängligt för livstidköp.",
+        "playback_error": "Uppspelningsfel",
         "popular_languages": "Populära",
         "preparing_review_cards": "Förbereder repetitionskort...",
         "pro_feature_chatgpt": "Endast Pro-användare kan använda AI-funktioner i Language Player Go. För att använda denna funktion, uppgradera till Pro.",
