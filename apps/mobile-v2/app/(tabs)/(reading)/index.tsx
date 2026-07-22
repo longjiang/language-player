@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, Alert,
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
-import { apiClient } from '@langplayer/api-client';
+import { PYTHON_API_URL } from '@/lib/api-url';
 import type { NoteListItem } from '@langplayer/shared';
 import { BookOpen, PenLine, Plus, Trash2, StickyNote } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -70,10 +70,9 @@ export default function ReaderScreen() {
     if (!blocks || blocks.length === 0 || !l2Lang.code) { setTokens(null); return; }
     let cancelled = false;
     setTokenizing(true);
-    const base = apiClient.defaults.baseURL || '';
 
     // Use /lemmatize-normalized/batch — same endpoint as Next.js
-    fetch(`${base}/lemmatize-normalized/batch`, {
+    fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts: blocks.map((b) => b.text), l2: l2Lang.code }),
