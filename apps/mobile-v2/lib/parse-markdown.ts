@@ -1,6 +1,4 @@
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import type { Root } from 'mdast';
+import { marked } from 'marked';
 
 export interface TextBlock {
   kind: 'text';
@@ -11,59 +9,59 @@ export interface TextBlock {
 
 /**
  * Parse markdown into plain-text blocks for tokenization.
- * Headings (#, ##, ###), paragraphs, blockquotes (> ), and list items (-, *, 1.)
- * all become TextBlock entries. Code blocks, tables, images, and horizontal rules
- * are skipped (not supported in mobile reader yet).
+ * Uses marked.Lexer for proper parsing — no regex hacks.
  */
 export function parseMarkdownBlocks(md: string): TextBlock[] {
-  const ast = unified().use(remarkParse).parse(md) as Root;
+  const tokens = marked.lexer(md);
   const blocks: TextBlock[] = [];
 
-  for (const node of ast.children as any[]) {
-    switch (node.type) {
-      case 'heading': {
-        const text = extractPlainText(node);
-        if (!text.trim()) break;
-        blocks.push({ kind: 'text', type: 'heading', depth: (node as any).depth, text });
+  for (const token of tokens) {
+    switch (token.type) {
+      case 'heading':
+        blocks.push({
+          kind: 'text',
+          type: 'heading',
+          depth: token.depth,
+          text: token.text,
+        });
         break;
-      }
-      case 'paragraph': {
-        const text = extractPlainText(node);
-        if (!text.trim()) break;
-        blocks.push({ kind: 'text', type: 'paragraph', text });
+
+      case 'paragraph':
+        blocks.push({
+          kind: 'text',
+          type: 'paragraph',
+          text: token.text,
+        });
         break;
-      }
-      case 'blockquote': {
-        const text = extractPlainText(node);
-        if (!text.trim()) break;
-        blocks.push({ kind: 'text', type: 'blockquote', text });
-        break;
-      }
-      case 'list': {
-        for (const item of (node as any).children ?? []) {
-          const text = extractPlainText(item);
-          if (!text.trim()) continue;
-          blocks.push({ kind: 'text', type: 'list-item', text });
+
+      case 'blockquote':
+        // Flatten blockquote children into one text
+        const bqText = (token.tokens ?? [])
+          .filter((t): t is { type: 'paragraph'; text: string } =>
+            t.type === 'paragraph' && 'text' in t)
+          .map((t) => t.text)
+          .join(' ');
+        if (bqText.trim()) {
+          blocks.push({ kind: 'text', type: 'blockquote', text: bqText });
         }
         break;
-      }
-      // code, table, thematicBreak, image — skip for now
+
+      case 'list':
+        for (const item of token.items) {
+          const liText = (item.tokens ?? [])
+            .filter((t): t is { type: 'text' | 'paragraph'; text?: string } =>
+              (t.type === 'text' || t.type === 'paragraph') && 'text' in t)
+            .map((t) => (t as any).text ?? '')
+            .join(' ');
+          if (liText.trim()) {
+            blocks.push({ kind: 'text', type: 'list-item', text: liText });
+          }
+        }
+        break;
+
+      // code, table, space, hr — skip
     }
   }
 
   return blocks;
-}
-
-/** Walk a node tree and collect all text values into a single string. */
-function extractPlainText(node: any): string {
-  if (node.type === 'text') return node.value ?? '';
-  if (node.type === 'inlineCode') return node.value ?? '';
-  if (node.type === 'break') return '\n';
-  let result = '';
-  if (node.children) {
-    for (const child of node.children) {
-      result += extractPlainText(child);
-    }
-  }
-  return result;
 }
