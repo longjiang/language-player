@@ -240,10 +240,10 @@
     "lang": {
         "ab": "Abchazisch",
         "acf": "St. Lucia Creools Frans",
-        "acu": "Kanton Achuar",
+        "acu": "Achuar",
         "af": "Afrikaans",
-        "aib": "Kanton Ainu",
-        "ain": "Kanton Ainu",
+        "aib": "Aynu",
+        "ain": "Ainu",
         "akk": "Akkadisch",
         "am": "Amhaars",
         "ami": "Amis",
@@ -348,8 +348,8 @@
         "hi": "Hindi",
         "hi-IN": "Hindi (India)",
         "hi-Latn": "Hindi (Latijns schrift)",
-        "hil": "Kanton Heligaignon",
-        "hne": "Kanton Chattisgarh",
+        "hil": "Hiligaynon",
+        "hne": "Chhattisgarhi",
         "hni": "Hani taal",
         "hr": "Kroatisch",
         "hsh": "Hongaarse gebarentaal",
@@ -524,66 +524,18 @@
         "zu": "Zulu"
     },
     "level": {
-        "cefr": {
-            "1": "ERK Pre-A1",
-            "2": "ERK A1",
-            "3": "ERK A2",
-            "4": "ERK B1",
-            "5": "ERK B2",
-            "6": "ERK C1",
-            "7": "ERK C2"
-        },
+        "cefr": "{1:ERK Pre-A1,2:ERK A1,3:ERK A2,4:ERK B1,5:ERK B2,6:ERK C1,7:ERK C2}",
         "exam_cefr": "CEFR",
         "exam_hsk": "HSK",
         "exam_ielts": "IELTS",
         "exam_jlpt": "JLPT",
         "exam_topik": "TOPIK",
-        "hsk": {
-            "1": "HSK 1",
-            "2": "HSK 2",
-            "3": "HSK 3",
-            "4": "HSK 4",
-            "5": "HSK 5",
-            "6": "HSK 6",
-            "7": "HSK 7-9"
-        },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
-        },
-        "jlpt": {
-            "1": "JLPT N5",
-            "2": "JLPT N4",
-            "3": "JLPT N3",
-            "4": "JLPT N2",
-            "5": "JLPT N1",
-            "6": "JLPT N1",
-            "7": "ERK C2"
-        },
+        "hsk": "{1:HSK 1,2:HSK 2,3:HSK 3,4:HSK 4,5:HSK 5,6:HSK 6,7:HSK 7-9}",
+        "ielts": "{1:IELTS 1,2:IELTS 2,3:IELTS 3.5,4:IELTS 5,5:IELTS 6.5,6:IELTS 8,7:IELTS 9}",
+        "jlpt": "{1:JLPT N5,2:JLPT N4,3:JLPT N3,4:JLPT N2,5:JLPT N1,6:JLPT N1,7:ERK C2}",
         "label": "{levelName} ({examLevelName})",
-        "name": {
-            "1": "Beginner I",
-            "2": "Beginner II",
-            "3": "Beginner III",
-            "4": "Gemiddeld I",
-            "5": "Gemiddeld II",
-            "6": "Gevorderd I",
-            "7": "Gevorderd II"
-        },
-        "topik": {
-            "1": "Pre-TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
-        }
+        "name": "{1:Beginner I,2:Beginner II,3:Beginner III,4:Gemiddeld I,5:Gemiddeld II,6:Gevorderd I,7:Gevorderd II}",
+        "topik": "{1:Pre-TOPIK 1,2:TOPIK 1,3:TOPIK 2,4:TOPIK 3,5:TOPIK 4,6:TOPIK 5,7:TOPIK 6}"
     },
     "log": {
         "database_already_loaded": "Database is al geladen.",
@@ -644,7 +596,7 @@
         "for_term": "voor {term}",
         "forgot_password": "Wachtwoord vergeten?",
         "getting_ai_response": "Reactie van DeepSeek ophalen...",
-        "hsk_explanation": "\"HSK\" is de officiële Chinese vaardigheidstest, waarbij niveau 1 het laagste is en niveau 9 het hoogste.",
+        "hsk_explanation": "HSK is de officiële Chinese vaardigheidstest, waarbij niveau 1 het laagste is en niveau 9 het hoogste.",
         "initializing": "Initialiseren...",
         "keep_or_reset_time": "Wil je je huidige tijd behouden of op nul zetten?",
         "landing_cta_desc": "Sluit je aan bij duizenden leerlingen die authentieke video's gebruiken om nieuwe talen te beheersen.",
@@ -758,7 +710,7 @@
         "verifying_pro_subscription": "Uw Pro-abonnement wordt geverifieerd...",
         "video_n_of_total": "Video {n} van {total}",
         "video_unavailable": "Deze video kon niet worden geladen. Mogelijk is deze verwijderd of privé gemaakt.",
-        "videos_matching": "Video's die overeenkomen met \"{searchTerm}\"",
+        "videos_matching": "Video's die overeenkomen met {searchTerm}",
         "want_lifetime_access": "Levenslange toegang gewenst?",
         "watched_progress": "{pct} bekeken",
         "web_reader_empty_state": "Plak een URL hierboven om een {l2} webpagina, artikel of verhaal te lezen.",

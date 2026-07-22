@@ -527,66 +527,18 @@
         "zu": "祖鲁语"
     },
     "level": {
-        "cefr": {
-            "1": "欧标准A1级",
-            "2": "欧标A1级",
-            "3": "欧标A2级",
-            "4": "欧标B1级",
-            "5": "欧标B2级",
-            "6": "欧标C1级",
-            "7": "欧标C2级"
-        },
+        "cefr": "{1:欧标准A1级,2:欧标A1级,3:欧标A2级,4:欧标B1级,5:欧标B2级,6:欧标C1级,7:欧标C2级}",
         "exam_cefr": "CEFR",
         "exam_hsk": "HSK",
         "exam_ielts": "IELTS",
         "exam_jlpt": "JLPT",
         "exam_topik": "TOPIK",
-        "hsk": {
-            "1": "HSK1级",
-            "2": "HSK2级",
-            "3": "HSK3级",
-            "4": "HSK4级",
-            "5": "HSK5级",
-            "6": "HSK6级",
-            "7": "HSK7-9级"
-        },
-        "ielts": {
-            "1": "雅思1分",
-            "2": "雅思2分",
-            "3": "雅思3.5分",
-            "4": "雅思5分",
-            "5": "雅思6.5分",
-            "6": "雅思8分",
-            "7": "雅思9分"
-        },
-        "jlpt": {
-            "1": "JLPT N5级",
-            "2": "JLPT N4级",
-            "3": "JLPT N3级",
-            "4": "JLPT N2级",
-            "5": "JLPT N1级",
-            "6": "JLPT N1级",
-            "7": "欧标 C2级"
-        },
+        "hsk": "{1:HSK1级,2:HSK2级,3:HSK3级,4:HSK4级,5:HSK5级,6:HSK6级,7:HSK7-9级}",
+        "ielts": "{1:雅思1分,2:雅思2分,3:雅思3.5分,4:雅思5分,5:雅思6.5分,6:雅思8分,7:雅思9分}",
+        "jlpt": "{1:JLPT N5级,2:JLPT N4级,3:JLPT N3级,4:JLPT N2级,5:JLPT N1级,6:JLPT N1级,7:欧标 C2级}",
         "label": "{levelName}（{examLevelName}）",
-        "name": {
-            "1": "初级一",
-            "2": "初级二",
-            "3": "初级三",
-            "4": "中级一",
-            "5": "中级二",
-            "6": "高级一",
-            "7": "高级二"
-        },
-        "topik": {
-            "1": "TOPIK准1级",
-            "2": "TOPIK 1级",
-            "3": "TOPIK 2级",
-            "4": "TOPIK 3级",
-            "5": "TOPIK 4级",
-            "6": "TOPIK 5级",
-            "7": "TOPIK 6级"
-        }
+        "name": "{1:初级一,2:初级二,3:初级三,4:中级一,5:中级二,6:高级一,7:高级二}",
+        "topik": "{1:TOPIK准1级,2:TOPIK 1级,3:TOPIK 2级,4:TOPIK 3级,5:TOPIK 4级,6:TOPIK 5级,7:TOPIK 6级}"
     },
     "log": {
         "database_already_loaded": "数据库已加载。",
@@ -647,7 +599,7 @@
         "for_term": "搜索「{term}」",
         "forgot_password": "忘记密码？",
         "getting_ai_response": "正在获取 DeepSeek 的回复...",
-        "hsk_explanation": "\"HSK\"是官方HSK，1级为最低，9级为最高。",
+        "hsk_explanation": "HSK是官方HSK，1级为最低，9级为最高。",
         "initializing": "正在初始化...",
         "keep_or_reset_time": "您想保留当前时间还是将其重置为零？",
         "landing_cta_desc": "加入成千上万通过真实视频掌握新语言的学习者。",
@@ -710,7 +662,7 @@
         "pro_subscription_active": "您的订阅已激活。所有 Pro 功能现已解锁。",
         "pro_transcript": "升级到专业版以查看完整文字记录！",
         "pro_transcript_limit_reached": "已达到文字记录限制。请升级到专业版以访问更多文字记录。",
-        "purchase_confirmation": "点击\"购买\"，您将被要求确认来自Apple App Store的应用内购买。",
+        "purchase_confirmation": "点击购买，您将被要求确认来自Apple App Store的应用内购买。",
         "quiz_mode_desc": "将已保存的单词隐藏为空格以测试记忆。点击空格显示单词。",
         "reader_empty_state": "粘贴{l2}文本，加载网址，或从AI解释中打开。点击任意单词查看词典释义。",
         "ready_to_start": "准备好开始学习了吗？",
@@ -758,7 +710,7 @@
         "verifying_pro_subscription": "正在验证您的 Pro 订阅...",
         "video_n_of_total": "第 {n} 个视频（共 {total} 个）",
         "video_unavailable": "无法加载此视频。可能已被删除或设为私密。",
-        "videos_matching": "匹配\"{searchTerm}\"的视频",
+        "videos_matching": "匹配{searchTerm}的视频",
         "want_lifetime_access": "想要终身访问？",
         "watched_progress": "已观看 {pct}",
         "web_reader_empty_state": "在上方粘贴 URL 以阅读{l2}网页、文章或故事。",

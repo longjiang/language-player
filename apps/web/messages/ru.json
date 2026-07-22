@@ -524,66 +524,18 @@
         "zu": "Зулусский"
     },
     "level": {
-        "cefr": {
-            "1": "CEFR Pre-A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        },
+        "cefr": "{1:CEFR Pre-A1,2:CEFR A1,3:CEFR A2,4:CEFR B1,5:CEFR B2,6:CEFR C1,7:CEFR C2}",
         "exam_cefr": "CEFR",
         "exam_hsk": "HSK",
         "exam_ielts": "IELTS",
         "exam_jlpt": "JLPT",
         "exam_topik": "TOPIK",
-        "hsk": {
-            "1": "HSK 1",
-            "2": "HSK 2",
-            "3": "HSK 3",
-            "4": "HSK 4",
-            "5": "HSK 5",
-            "6": "HSK 6",
-            "7": "HSK 7-9"
-        },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
-        },
-        "jlpt": {
-            "1": "JLPT N5",
-            "2": "JLPT N4",
-            "3": "JLPT N3",
-            "4": "JLPT N2",
-            "5": "JLPT N1",
-            "6": "JLPT N1",
-            "7": "CEFR C2"
-        },
+        "hsk": "{1:HSK 1,2:HSK 2,3:HSK 3,4:HSK 4,5:HSK 5,6:HSK 6,7:HSK 7-9}",
+        "ielts": "{1:IELTS 1,2:IELTS 2,3:IELTS 3.5,4:IELTS 5,5:IELTS 6.5,6:IELTS 8,7:IELTS 9}",
+        "jlpt": "{1:JLPT N5,2:JLPT N4,3:JLPT N3,4:JLPT N2,5:JLPT N1,6:JLPT N1,7:CEFR C2}",
         "label": "{levelName} ({examLevelName})",
-        "name": {
-            "1": "Начинающий I",
-            "2": "Начинающий II",
-            "3": "Начинающий III",
-            "4": "Средний I",
-            "5": "Средний II",
-            "6": "Продвинутый I",
-            "7": "Продвинутый II"
-        },
-        "topik": {
-            "1": "Pre-TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
-        }
+        "name": "{1:Начинающий I,2:Начинающий II,3:Начинающий III,4:Средний I,5:Средний II,6:Продвинутый I,7:Продвинутый II}",
+        "topik": "{1:Pre-TOPIK 1,2:TOPIK 1,3:TOPIK 2,4:TOPIK 3,5:TOPIK 4,6:TOPIK 5,7:TOPIK 6}"
     },
     "log": {
         "database_already_loaded": "База данных уже загружена.",
@@ -644,7 +596,7 @@
         "for_term": "для {term}",
         "forgot_password": "Забыли пароль?",
         "getting_ai_response": "Получение ответа от DeepSeek...",
-        "hsk_explanation": "\"HSK\" — это официальный тест на знание китайского языка, где уровень 1 является самым низким, а уровень 9 — самым высоким.",
+        "hsk_explanation": "HSK — это официальный тест на знание китайского языка, где уровень 1 является самым низким, а уровень 9 — самым высоким.",
         "initializing": "Инициализация...",
         "keep_or_reset_time": "Вы хотите сохранить текущее время или сбросить его на ноль?",
         "landing_cta_desc": "Присоединяйтесь к тысячам учащихся, которые используют аутентичные видео для освоения новых языков.",
@@ -758,7 +710,7 @@
         "verifying_pro_subscription": "Проверка вашей подписки Pro...",
         "video_n_of_total": "Видео {n} из {total}",
         "video_unavailable": "Это видео не может быть загружено. Возможно, оно было удалено или сделано приватным.",
-        "videos_matching": "Видео, соответствующие \"{searchTerm}\"",
+        "videos_matching": "Видео, соответствующие {searchTerm}",
         "want_lifetime_access": "Хотите пожизненный доступ?",
         "watched_progress": "{pct} просмотрено",
         "web_reader_empty_state": "Вставьте URL выше, чтобы прочитать веб-страницу, статью или рассказ на {l2}.",

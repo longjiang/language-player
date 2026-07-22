@@ -524,66 +524,18 @@
         "zu": "Zulu"
     },
     "level": {
-        "cefr": {
-            "1": "EVK Pre-A1",
-            "2": "EVK A1",
-            "3": "EVK A2",
-            "4": "EVK B1",
-            "5": "EVK B2",
-            "6": "EVK C1",
-            "7": "EVK C2"
-        },
+        "cefr": "{1:EVK Pre-A1,2:EVK A1,3:EVK A2,4:EVK B1,5:EVK B2,6:EVK C1,7:EVK C2}",
         "exam_cefr": "CEFR",
         "exam_hsk": "HSK",
         "exam_ielts": "IELTS",
         "exam_jlpt": "JLPT",
         "exam_topik": "TOPIK",
-        "hsk": {
-            "1": "HSK 1",
-            "2": "HSK 2",
-            "3": "HSK 3",
-            "4": "HSK 4",
-            "5": "HSK 5",
-            "6": "HSK 6",
-            "7": "HSK 7-9"
-        },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
-        },
-        "jlpt": {
-            "1": "JLPT N5",
-            "2": "JLPT N4",
-            "3": "JLPT N3",
-            "4": "JLPT N2",
-            "5": "JLPT N1",
-            "6": "JLPT N1",
-            "7": "EVK C2"
-        },
+        "hsk": "{1:HSK 1,2:HSK 2,3:HSK 3,4:HSK 4,5:HSK 5,6:HSK 6,7:HSK 7-9}",
+        "ielts": "{1:IELTS 1,2:IELTS 2,3:IELTS 3.5,4:IELTS 5,5:IELTS 6.5,6:IELTS 8,7:IELTS 9}",
+        "jlpt": "{1:JLPT N5,2:JLPT N4,3:JLPT N3,4:JLPT N2,5:JLPT N1,6:JLPT N1,7:EVK C2}",
         "label": "{levelName} ({examLevelName})",
-        "name": {
-            "1": "Aloittelija I",
-            "2": "Aloittelija II",
-            "3": "Aloittelija III",
-            "4": "Keskitaso I",
-            "5": "Keskitaso II",
-            "6": "Edistynyt I",
-            "7": "Edistynyt II"
-        },
-        "topik": {
-            "1": "Pre-TOPIK 1",
-            "2": "TOPIK 1",
-            "3": "TOPIK 2",
-            "4": "TOPIK 3",
-            "5": "TOPIK 4",
-            "6": "TOPIK 5",
-            "7": "TOPIK 6"
-        }
+        "name": "{1:Aloittelija I,2:Aloittelija II,3:Aloittelija III,4:Keskitaso I,5:Keskitaso II,6:Edistynyt I,7:Edistynyt II}",
+        "topik": "{1:Pre-TOPIK 1,2:TOPIK 1,3:TOPIK 2,4:TOPIK 3,5:TOPIK 4,6:TOPIK 5,7:TOPIK 6}"
     },
     "log": {
         "database_already_loaded": "Tietokanta on jo ladattu.",
@@ -644,7 +596,7 @@
         "for_term": "kohteelle {term}",
         "forgot_password": "Unohditko salasanasi?",
         "getting_ai_response": "Haetaan vastausta DeepSeekistä...",
-        "hsk_explanation": "\"HSK\" on virallinen kiinan kielen taitotasokoe, jossa taso 1 on alin ja taso 9 korkein.",
+        "hsk_explanation": "HSK on virallinen kiinan kielen taitotasokoe, jossa taso 1 on alin ja taso 9 korkein.",
         "initializing": "Alustetaan...",
         "keep_or_reset_time": "Haluatko säilyttää nykyisen aikasi vai nollata sen?",
         "landing_cta_desc": "Liity tuhansien oppijoiden joukkoon, jotka käyttävät aitoja videoita uusien kielten hallitsemiseen.",
@@ -758,7 +710,7 @@
         "verifying_pro_subscription": "Vahvistetaan Pro-tilaustasi...",
         "video_n_of_total": "Video {n} / {total}",
         "video_unavailable": "Tätä videota ei voitu ladata. Se on saatettu poistaa tai asettaa yksityiseksi.",
-        "videos_matching": "Videot hakusanalla \"{searchTerm}\"",
+        "videos_matching": "Videot hakusanalla {searchTerm}",
         "want_lifetime_access": "Haluatko elinikäisen pääsyn?",
         "watched_progress": "{pct} katsottu",
         "web_reader_empty_state": "Liitä URL-osoite yläpuolelle lukeaksesi {l2}-verkkosivun, artikkelin tai tarinan.",

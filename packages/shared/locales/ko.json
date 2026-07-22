@@ -524,66 +524,18 @@
         "zu": "줄루어"
     },
     "level": {
-        "cefr": {
-            "1": "CEFR Pre-A1",
-            "2": "CEFR A1",
-            "3": "CEFR A2",
-            "4": "CEFR B1",
-            "5": "CEFR B2",
-            "6": "CEFR C1",
-            "7": "CEFR C2"
-        },
+        "cefr": "{1:CEFR Pre-A1,2:CEFR A1,3:CEFR A2,4:CEFR B1,5:CEFR B2,6:CEFR C1,7:CEFR C2}",
         "exam_cefr": "CEFR",
         "exam_hsk": "HSK",
         "exam_ielts": "IELTS",
         "exam_jlpt": "JLPT",
         "exam_topik": "TOPIK",
-        "hsk": {
-            "1": "HSK 1급",
-            "2": "HSK 2급",
-            "3": "HSK 3급",
-            "4": "HSK 4급",
-            "5": "HSK 5급",
-            "6": "HSK 6급",
-            "7": "HSK 7-9급"
-        },
-        "ielts": {
-            "1": "IELTS 1",
-            "2": "IELTS 2",
-            "3": "IELTS 3.5",
-            "4": "IELTS 5",
-            "5": "IELTS 6.5",
-            "6": "IELTS 8",
-            "7": "IELTS 9"
-        },
-        "jlpt": {
-            "1": "JLPT N5",
-            "2": "JLPT N4",
-            "3": "JLPT N3",
-            "4": "JLPT N2",
-            "5": "JLPT N1",
-            "6": "JLPT N1",
-            "7": "CEFR C2"
-        },
+        "hsk": "{1:HSK 1급,2:HSK 2급,3:HSK 3급,4:HSK 4급,5:HSK 5급,6:HSK 6급,7:HSK 7-9급}",
+        "ielts": "{1:IELTS 1,2:IELTS 2,3:IELTS 3.5,4:IELTS 5,5:IELTS 6.5,6:IELTS 8,7:IELTS 9}",
+        "jlpt": "{1:JLPT N5,2:JLPT N4,3:JLPT N3,4:JLPT N2,5:JLPT N1,6:JLPT N1,7:CEFR C2}",
         "label": "{levelName} ({examLevelName})",
-        "name": {
-            "1": "초급 I",
-            "2": "초급 II",
-            "3": "초급 III",
-            "4": "중급 I",
-            "5": "중급 II",
-            "6": "고급 I",
-            "7": "고급 II"
-        },
-        "topik": {
-            "1": "TOPIK 1급 이전",
-            "2": "TOPIK 1급",
-            "3": "TOPIK 2급",
-            "4": "TOPIK 3급",
-            "5": "TOPIK 4급",
-            "6": "TOPIK 5급",
-            "7": "TOPIK 6급"
-        }
+        "name": "{1:초급 I,2:초급 II,3:초급 III,4:중급 I,5:중급 II,6:고급 I,7:고급 II}",
+        "topik": "{1:TOPIK 1급 이전,2:TOPIK 1급,3:TOPIK 2급,4:TOPIK 3급,5:TOPIK 4급,6:TOPIK 5급,7:TOPIK 6급}"
     },
     "log": {
         "database_already_loaded": "데이터베이스가 이미 로드되었습니다.",
@@ -644,7 +596,7 @@
         "for_term": "{term}의",
         "forgot_password": "비밀번호를 잊으셨나요?",
         "getting_ai_response": "DeepSeek에서 응답을 받는 중...",
-        "hsk_explanation": "\"HSK\"는 공식 중국어 능력 시험으로, 1급이 가장 낮고 9급이 가장 높습니다.",
+        "hsk_explanation": "HSK는 공식 중국어 능력 시험으로, 1급이 가장 낮고 9급이 가장 높습니다.",
         "initializing": "초기화 중...",
         "keep_or_reset_time": "현재 시간을 유지하시겠습니까 아니면 0으로 재설정하시겠습니까?",
         "landing_cta_desc": "수천 명의 학습자와 함께 실제 동영상으로 새로운 언어를 마스터하세요.",
@@ -758,7 +710,7 @@
         "verifying_pro_subscription": "Pro 구독 확인 중...",
         "video_n_of_total": "동영상 {n} / {total}",
         "video_unavailable": "이 비디오를 로드할 수 없습니다. 삭제되었거나 비공개로 설정되었을 수 있습니다.",
-        "videos_matching": "\"{searchTerm}\"와(과) 일치하는 동영상",
+        "videos_matching": "{searchTerm}와(과) 일치하는 동영상",
         "want_lifetime_access": "평생 이용권을 원하시나요?",
         "watched_progress": "{pct} 시청함",
         "web_reader_empty_state": "위에 URL을 붙여넣어 {l2} 웹페이지, 기사 또는 이야기를 읽으세요.",
