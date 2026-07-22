@@ -34,15 +34,15 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Reading',
     links: [
-      { key: 'title.notes_reader', href: '/(tabs)/(reading)' },
-      { key: 'title.web_reader', href: '/(tabs)/(reading)' },
-      { key: 'title.epub_reader', href: '/(tabs)/(reading)' },
+      { key: 'title.notes_reader', href: '/(tabs)/(reading)/reader' },
+      { key: 'title.web_reader', href: '/(tabs)/(reading)/web-reader' },
+      { key: 'title.epub_reader', href: '/(tabs)/(reading)/epub' },
     ],
   },
   {
     label: 'Vocab',
     links: [
-      { key: 'title.dictionary', href: '/(tabs)/(vocab)' },
+      { key: 'title.dictionary', href: '/(tabs)/(vocab)/dictionary' },
       { key: 'title.saved_words', href: '/(tabs)/(vocab)/saved-words' },
       { key: 'title.review', href: '/(tabs)/(vocab)/review' },
     ],
