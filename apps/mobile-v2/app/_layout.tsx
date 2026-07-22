@@ -1,7 +1,7 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme, View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { IntlProviderWrapper } from '@/contexts/IntlProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -41,7 +41,6 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
 
   return (
     <ErrorBoundary>
@@ -52,7 +51,7 @@ export default function RootLayout() {
             <SettingsProvider>
               <DictionaryProvider>
                 <VideoPlayerProvider>
-                  <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+                  <StatusBar style="light" />
                   <Stack screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="index" />
                     <Stack.Screen name="(tabs)" />
