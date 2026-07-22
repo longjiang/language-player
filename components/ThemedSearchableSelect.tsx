@@ -5,7 +5,7 @@ import { View, StyleSheet, TouchableOpacity, ScrollView, TouchableWithoutFeedbac
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedInput } from '@/components/ThemedInput';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type Option = {
