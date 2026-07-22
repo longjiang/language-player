@@ -919,8 +919,10 @@
         "media": "媒体"
     },
     "time": {
+        "days": "plural",
         "hours": "小时",
         "min": "分钟",
+        "months": "plural",
         "sec": "秒"
     },
     "title": {
