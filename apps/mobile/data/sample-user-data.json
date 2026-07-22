@@ -1,0 +1,198 @@
+{
+  "id": "71041",
+  "status": "draft",
+  "owner": "53470",
+  "created_on": "2024-06-28 07:07:56",
+  "saved_words": {
+    "zh": [
+      {
+        "id": "對不起,duì_bu_qǐ,0",
+        "forms": [
+          "对不起"
+        ],
+        "date": 1719558811494,
+        "context": {
+          "form": "对不起"
+        }
+      },
+      {
+        "id": "沒關係,méi_guān_xi,0",
+        "forms": [
+          "没关系"
+        ],
+        "date": 1719558811512,
+        "context": {
+          "form": "没关系"
+        }
+      },
+      {
+        "id": "你們,nǐ_men,0",
+        "forms": [
+          "你们"
+        ],
+        "date": 1719558811522,
+        "context": {
+          "form": "你们"
+        }
+      },
+      {
+        "id": "你,nǐ,0",
+        "forms": [
+          "你"
+        ],
+        "date": 1719558811532,
+        "context": {
+          "form": "你"
+        }
+      },
+      {
+        "id": "好,hǎo,0",
+        "forms": [
+          "好"
+        ],
+        "date": 1719558811541,
+        "context": {
+          "form": "好"
+        }
+      },
+      {
+        "id": "不客氣,bù_kè_qi,0",
+        "forms": [
+          "不客气"
+        ],
+        "date": 1719559068982,
+        "context": {
+          "form": "不客气"
+        }
+      },
+      {
+        "id": "謝謝,xiè_xie,0",
+        "forms": [
+          "谢谢"
+        ],
+        "date": 1719559068998,
+        "context": {
+          "form": "谢谢"
+        }
+      },
+      {
+        "id": "再見,zài_jiàn,0",
+        "forms": [
+          "再见"
+        ],
+        "date": 1719559069014,
+        "context": {
+          "form": "再见"
+        }
+      },
+      {
+        "id": "不,bù,0",
+        "forms": [
+          "不"
+        ],
+        "date": 1719559069027,
+        "context": {
+          "form": "不"
+        }
+      },
+      {
+        "id": "自由,zì_yóu,0",
+        "forms": [
+          "自由"
+        ],
+        "date": 1719559978927,
+        "context": {
+          "form": "自由",
+          "starttime": 221.5,
+          "youtube_id": "v2d1buLAOGE",
+          "text": "自由 自由 自由"
+        }
+      }
+    ]
+  },
+  "history": null,
+  "saved_phrases": {
+    "zh": [
+      {
+        "phrase": "大门将开",
+        "date": 1719559024639,
+        "en": "The gates will open"
+      },
+      {
+        "phrase": "是",
+        "exact": true,
+        "date": 1719559094091,
+        "en": "yes"
+      },
+      {
+        "phrase": "好",
+        "exact": true,
+        "date": 1719559096895,
+        "en": "ok"
+      },
+      {
+        "phrase": "的",
+        "exact": false,
+        "date": 1719559111065,
+        "en": "of"
+      },
+      {
+        "phrase": "是的",
+        "exact": false,
+        "date": 1719559112323,
+        "en": "Yes"
+      }
+    ]
+  },
+  "saved_hits": null,
+  "saved_collocations": null,
+  "settings": {
+    "adminMode": false,
+    "skin": "dark",
+    "preferredCategories": [
+      "10",
+      "1",
+      "17",
+      "19",
+      "28",
+      "25"
+    ],
+    "mode": "subtitles",
+    "autoPause": false,
+    "speed": 1,
+    "hideWord": false,
+    "hidePhonetics": false,
+    "hideDefinitions": false,
+    "subsSearchLimit": true,
+    "muteAutoplay": false,
+    "karaokeAnimation": true,
+    "useSmoothScroll": true,
+    "l2Settings": {
+      "zh": {
+        "l1": "en",
+        "showDefinition": true,
+        "showPinyin": true,
+        "useTraditional": false,
+        "showTranslation": true,
+        "showQuickGloss": true,
+        "useSerif": false,
+        "showQuiz": true,
+        "showByeonggi": true,
+        "tvShowFilter": null,
+        "categoryFilter": null,
+        "autoPronounce": true,
+        "quizMode": true,
+        "disableAnnotation": false,
+        "zoomLevel": "1",
+        "corpname": "preloaded/zhtenten17_simplified_stf2"
+      }
+    }
+  },
+  "progress": {
+    "zh": {
+      "level": "1",
+      "time": 3060000
+    }
+  },
+  "bookshelf": null
+}

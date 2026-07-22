@@ -1,0 +1,22 @@
+{
+  "2fa_secret": null,
+  "avatar": null,
+  "company": null,
+  "email": "longjiang2005@gmail.com",
+  "email_notifications": true,
+  "external_id": "b5a10275-b1aa-4f0d-93cc-365fe1a1233f",
+  "first_name": "Jon",
+  "id": 986,
+  "last_access_on": "2022-06-06 08:07:36",
+  "last_name": "Long",
+  "last_page": "/zerotohero/collections",
+  "locale": null,
+  "locale_options": null,
+  "password_reset_token": null,
+  "role": 3,
+  "status": "active",
+  "theme": "auto",
+  "timezone": "America/Los_Angeles",
+  "title": null,
+  "token": "SECRET"
+}

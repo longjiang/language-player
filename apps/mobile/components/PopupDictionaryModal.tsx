@@ -1,0 +1,56 @@
+// @/components/PopupDictionaryModal
+
+import React, { useContext, useRef, useImperativeHandle, forwardRef } from 'react';
+import { View, ScrollView, Dimensions } from 'react-native';
+import { ThemedRBSheet } from '@/components/ThemedRBSheet';
+import { PopupDictionaryContent } from '@/components/PopupDictionaryContent';
+import { PopupDictionaryHeader } from '@/components/PopupDictionaryHeader';
+import { Token as TokenType } from '@/src/tokenizer';
+
+// Define the structure of the state expected by the component
+interface PopupDictionaryModalState {
+    token: TokenType;
+    context?: string; // '?' makes the property optional
+    translatedContext?: string;
+}
+
+// Define the props structure, if needed. Here, we do not have specific props other than state.
+interface PopupDictionaryModalProps {
+    state: PopupDictionaryModalState;
+}
+
+export const PopupDictionaryModal = forwardRef<typeof ThemedRBSheet, PopupDictionaryModalProps>(({ state }, ref) => {
+    const refRBSheet = useRef<typeof ThemedRBSheet>(null);
+
+    const openModal = () => {
+      refRBSheet.current?.open();
+    };
+    const closeModal = () => {
+      refRBSheet.current?.close();
+    };
+
+    // Use useImperativeHandle to expose methods to the parent component
+    useImperativeHandle(ref, () => ({
+        open: openModal,
+        close: closeModal,
+    }));
+
+    const screenHeight = Dimensions.get("screen").height;
+
+    return (
+        <ThemedRBSheet
+            ref={refRBSheet}
+            height={screenHeight - 200}
+            closeOnPressMask={true}
+        >
+            {state.token && (
+                <View>
+                    <ScrollView>
+                        <PopupDictionaryHeader token={state.token} context={state.context} translatedContext={state.translatedContext} />
+                        <PopupDictionaryContent token={state.token} context={state.context} />
+                    </ScrollView>
+                </View>
+            )}
+        </ThemedRBSheet>
+    );
+});
