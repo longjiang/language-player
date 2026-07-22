@@ -19,10 +19,9 @@ export default function ReaderScreen() {
 
   const [text, setText] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('edit');
-  const [tokens, setTokens] = useState<any[] | null>(null);
   const [blocks, setBlocks] = useState<TextBlock[] | null>(null);
+  const [tokens, setTokens] = useState<any[][] | null>(null);
   const [tokenizing, setTokenizing] = useState(false);
-  const [parseError, setParseError] = useState<string | null>(null);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -52,56 +51,47 @@ export default function ReaderScreen() {
     if (notes.currentNote) {
       setText(notes.currentNote.text ?? '');
       setActiveTab('read');
-      setTokens(null);
-      setBlocks(null);
     }
   }, [notes.currentNoteId]);
 
-  // Auto-tokenize when switching to read tab with text but no blocks
-  const textRef = useRef(text);
-  textRef.current = text;
+  // ── Parse markdown automatically (matches Next.js useEffect) ──
   useEffect(() => {
-    if (activeTab === 'read' && !blocks && !tokenizing && textRef.current.trim()) {
-      console.log('[READER] Auto-triggering tokenization for activeTab=read, text length:', textRef.current.length);
-      handleTokenize();
-    }
-  }, [activeTab, blocks, tokenizing]);
-
-  // Tokenize text — parse markdown into blocks, then lemmatize each block
-  const handleTokenize = useCallback(async () => {
-    console.log('[READER] handleTokenize called. text length:', text.length, 'first 50 chars:', text.slice(0, 50));
-    if (!text.trim()) return;
-    setTokenizing(true);
-    setParseError(null);
+    if (!text.trim()) { setBlocks(null); setTokens(null); return; }
     try {
-      let parsed: TextBlock[];
-      try {
-        console.log('[READER] Calling parseMarkdownBlocks...');
-        parsed = parseMarkdownBlocks(text);
-        console.log('[READER] parseMarkdownBlocks succeeded. blocks:', parsed.length, 'types:', parsed.map(b => b.type));
-      } catch (parseErr: any) {
-        console.error('[READER] Markdown parse FAILED:', parseErr?.message ?? parseErr);
-        parsed = [{ kind: 'text', type: 'paragraph', text }];
-        setParseError('Markdown parsing unavailable — showing plain text.');
-      }
-      console.log('[READER] Setting blocks state. parsed:', parsed.length);
-      setBlocks(parsed);
+      setBlocks(parseMarkdownBlocks(text));
+    } catch {
+      setBlocks([{ kind: 'text', type: 'paragraph', text }]);
+    }
+    setTokens(null);
+  }, [text]);
 
-      // Tokenize all block texts in one call
-      const blockTexts = parsed.map((b) => b.text);
-      const res = await fetch(`${apiClient.defaults.baseURL}/lemmatize`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: blockTexts.join('\n'), l2: l2Lang.code }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTokens(data.tokens ?? []);
-        setActiveTab('read');
-      }
-    } catch {}
-    finally { setTokenizing(false); }
-  }, [text, l2Lang.code]);
+  // ── Lemmatize per block automatically (matches Next.js useEffect) ──
+  useEffect(() => {
+    if (!blocks || blocks.length === 0 || !l2Lang.code) { setTokens(null); return; }
+    let cancelled = false;
+    setTokenizing(true);
+    const base = apiClient.defaults.baseURL || '';
+
+    // Tokenize each block in parallel — same effect as /lemmatize-normalized/batch
+    Promise.all(
+      blocks.map((b) =>
+        fetch(`${base}/lemmatize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: b.text, l2: l2Lang.code }),
+        }).then((r) => (r.ok ? r.json() : null))
+      )
+    )
+      .then((results) => {
+        if (cancelled) return;
+        // Extract tokens per block: results[i]?.tokens ?? []
+        const perBlockTokens = results.map((r) => r?.tokens ?? []);
+        setTokens(perBlockTokens);
+      })
+      .catch(() => { if (!cancelled) setTokens(null); })
+      .finally(() => { if (!cancelled) setTokenizing(false); });
+    return () => { cancelled = true; };
+  }, [blocks, l2Lang.code]);
 
   // Auto-save with 2s debounce
   const autoSave = useCallback((newText: string) => {
@@ -153,7 +143,7 @@ export default function ReaderScreen() {
           </Text>
         </Pressable>
         <Pressable
-          onPress={() => { console.log('[READER] Read tab pressed'); handleTokenize(); }}
+          onPress={() => setActiveTab('read')}
           className={`flex-row items-center gap-1.5 border-b-2 py-2 ${activeTab === 'read' ? 'border-primary' : 'border-transparent'}`}
         >
           <BookOpen size={14} color={ICON_MUTED} />
@@ -175,7 +165,7 @@ export default function ReaderScreen() {
       <View className="flex-1 flex-row">
         {/* Editor / Reader */}
         <View className="flex-1">
-          {activeTab === 'edit' && !tokenizing && (
+          {activeTab === 'edit' && (
             <TextInput
               className="flex-1 p-4 text-sm text-foreground"
               placeholder={t('placeholder.search_dots') ?? 'Type or paste text here…'}
@@ -188,6 +178,8 @@ export default function ReaderScreen() {
               autoCorrect={false}
             />
           )}
+
+          {/* Tokenizing: show pulsing text */}
           {tokenizing && (
             <ScrollView className="flex-1 p-4">
               <Animated.View style={{ opacity: pulseAnim }}>
@@ -196,14 +188,15 @@ export default function ReaderScreen() {
               <Text className="mt-2 text-xs text-muted-foreground">{t('msg.making_words_interactive')}</Text>
             </ScrollView>
           )}
+
+          {/* Read tab: parsed blocks with per-block tokenized text */}
           {activeTab === 'read' && !tokenizing && blocks && (
             <ScrollView className="flex-1 p-4">
-              {console.log('[READER] Rendering blocks. count:', blocks.length, 'tokens:', tokens?.length)}
               {blocks.map((block, bi) => {
-                const blockTokens = tokens?.[bi] ?? [];
+                // Per-block tokens (matches Next.js blockTokens[i])
+                const blockTokens = tokens?.[bi];
                 return (
                   <View key={bi} className="mb-3">
-                    {/* Block type styling */}
                     {block.type === 'heading' && (
                       <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'}`}>
                         {block.text}
@@ -242,7 +235,8 @@ export default function ReaderScreen() {
               })}
             </ScrollView>
           )}
-          {console.log('[READER] no-blocks fallback. activeTab:', activeTab, 'tokenizing:', tokenizing, 'hasBlocks:', !!blocks)}
+
+          {/* Read tab: plain text fallback (no blocks parsed) */}
           {activeTab === 'read' && !tokenizing && !blocks && (
             <ScrollView className="flex-1 p-4">
               <Text className="text-base leading-relaxed text-foreground">{text}</Text>
@@ -318,6 +312,7 @@ export default function ReaderScreen() {
           </View>
         )}
       </View>
+
       <DictionaryPopup
         visible={!!selectedWord}
         word={selectedWord ?? ''}
