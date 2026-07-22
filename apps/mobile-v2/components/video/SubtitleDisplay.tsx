@@ -62,12 +62,14 @@ export function SubtitleDisplay({
     if (!youtubeId) return;
     (async () => {
       try {
-        const res = await fetch(`${PYTHON_API_URL}/videos/${youtubeId}/subtitles?l2=${l2Lang.code}&l1=${l1Lang.code}`);
+        // Python backend exposes /get_best_l2_subs (fetches from YouTube transcript API)
+        const res = await fetch(`${PYTHON_API_URL}/get_best_l2_subs?v=${youtubeId}&l2=${l2Lang.code}`);
         if (!res.ok) return;
         const data = await res.json();
-        const lines: SubtitleLine[] = (data.lines ?? []).map((l: any) => ({
-          line: stripDurationPrefix(l.l2Line ?? ''),
-          starttime: l.starttime,
+        if (!Array.isArray(data)) return;
+        const lines: SubtitleLine[] = data.map((item: any) => ({
+          line: item.text ?? '',
+          starttime: item.start ?? 0,
         }));
         setL2Lines(lines);
         onLinesLoaded?.(lines.map((l) => l.starttime));
