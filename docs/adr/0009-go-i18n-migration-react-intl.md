@@ -1,6 +1,6 @@
 # ADR 0009: GO App i18n Migration — i18n-js → react-intl (ICU MessageFormat)
 
-> **Status:** Phases 1–5 complete — `react-intl` fully operational, `i18n-js` removed, GO keys aligned with Next.js. Phase 6 pending (lang names cleanup).
+> **Status:** Complete ✅ — All 6 phases done. `react-intl` operational, `i18n-js` removed, shared locale directory active, GO keys aligned with Next.js, lang names fixed.
 > **Date:** 2026-07-21
 > **Replaces:** `i18n-js` library in `language-player-3/contexts/LanguageContext.tsx`
 > **See also:**
