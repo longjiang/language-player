@@ -172,9 +172,10 @@ export const darkSemantic: SemanticColors = {
 
 // ── Typography ──────────────────────────────
 
+// Typography values match Next.js (apps/web/tailwind.config.ts + Inter font).
 export const typography = {
   fontFamily: {
-    sans: 'Nunito',
+    sans: 'Inter',
     mono: 'JetBrains Mono',
   },
   fontSize: {
@@ -190,7 +191,7 @@ export const typography = {
   },
   fontWeight: {
     normal: '400',
-    bold: '800',
+    bold: '700',
   },
   lineHeight: {
     tight: '1.25',

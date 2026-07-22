@@ -53,7 +53,7 @@ module.exports = {
       },
       fontWeight: {
         normal: '400',
-        bold: '800',
+        bold: '700',
       },
       lineHeight: {
         tight: '1.25',
@@ -89,7 +89,7 @@ module.exports = {
         full: '9999px',
       },
       fontFamily: {
-        sans: ['Nunito'],
+        sans: ['Inter'],
         mono: ['JetBrains Mono'],
       },
     },

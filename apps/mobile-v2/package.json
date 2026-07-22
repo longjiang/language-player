@@ -13,7 +13,7 @@
     "build-tokens": "npx tsx ../../scripts/build-tokens.mts"
   },
   "dependencies": {
-    "@expo-google-fonts/nunito": "^0.2.3",
+    "@expo-google-fonts/inter": "^0.4.2",
     "@langplayer/api-client": "*",
     "@langplayer/shared": "*",
     "@langplayer/utils": "*",
