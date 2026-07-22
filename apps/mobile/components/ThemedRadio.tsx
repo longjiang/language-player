@@ -1,0 +1,56 @@
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { ThemedText } from './ThemedText';
+
+export const ThemedRadio: React.FC<{
+  label: string;
+  isSelected: boolean;
+  onPress: () => void
+}> = ({
+  label,
+  isSelected,
+  onPress,
+}) => {
+  const checkedRadioColor = useThemeColor({}, 'primaryBrand');
+  const uncheckedRadioColor = useThemeColor({}, 'secondaryBackground');
+  const uncheckedBorderColor = useThemeColor({}, 'secondaryStroke');
+  const checkedRadioFillColor = useThemeColor({}, 'primaryText');
+
+  return (
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.6}>
+      <View style={[
+        styles.radioCircle,
+        { borderColor: isSelected ? checkedRadioColor : uncheckedBorderColor, backgroundColor: isSelected ? checkedRadioColor : uncheckedRadioColor}
+      ]}>
+        {isSelected && <View style={[
+          styles.selectedCircle,
+          { backgroundColor: checkedRadioFillColor }
+        ]} />}
+      </View>
+      <ThemedText >{label}</ThemedText>
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  radioCircle: {
+    height: 24,
+    width: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  selectedCircle: {
+    height: 12,
+    width: 12,
+    borderRadius: 6,
+  },
+});

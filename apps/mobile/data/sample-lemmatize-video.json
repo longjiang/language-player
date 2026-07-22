@@ -1,0 +1,20 @@
+{
+  "e4d909c290d0fb1ca068ffaddf22cbd0": [
+      {"word": "The", "lemma": "the", "pos": "DET"},
+      {"word": "quick", "lemma": "quick", "pos": "ADJ"},
+      {"word": "brown", "lemma": "brown", "pos": "ADJ"},
+      {"word": "fox", "lemma": "fox", "pos": "NOUN"},
+      {"word": "jumps", "lemma": "jump", "pos": "VERB"},
+      {"word": "over", "lemma": "over", "pos": "ADP"},
+      {"word": "the", "lemma": "the", "pos": "DET"},
+      {"word": "lazy", "lemma": "lazy", "pos": "ADJ"},
+      {"word": "dog", "lemma": "dog", "pos": "NOUN"}
+  ],
+  "fe8ce5884ed6dd8d8a1f1b2a3a49a5f4": [
+      {"word": "lorem", "lemma": "lorem", "pos": "VERB"},
+      {"word": "ipsum", "lemma": "ipsum", "pos": "PROPN"},
+      {"word": "dolor", "lemma": "dolor", "pos": "PROPN"},
+      {"word": "sit", "lemma": "sit", "pos": "PROPN"},
+      {"word": "amet", "lemma": "amet", "pos": "NOUN"}
+  ]
+}
