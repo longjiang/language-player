@@ -1,9 +1,13 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react-native';
+import {
+  Play, Pause, SkipBack, SkipForward, RotateCcw,
+  ChevronUp, ChevronDown, Info, Clock,
+} from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import type { YouTubePlayerHandle } from './YouTubePlayer';
 
+// Speed options matching Next.js: 1× → 0.75× → 0.5× → 1×
 const SPEEDS = [1, 0.75, 0.5] as const;
 
 interface VideoControlBarProps {
@@ -13,8 +17,13 @@ interface VideoControlBarProps {
   paused: boolean;
   onPauseToggle: () => void;
   onRewind?: () => void;
+  onPreviousLine?: () => void;
+  onNextLine?: () => void;
+  onOpenInfo?: () => void;
   onPreviousVideo?: () => void;
   onNextVideo?: () => void;
+  hasPreviousLine?: boolean;
+  hasNextLine?: boolean;
   hasPreviousVideo?: boolean;
   hasNextVideo?: boolean;
 }
@@ -32,8 +41,13 @@ export function VideoControlBar({
   paused,
   onPauseToggle,
   onRewind,
+  onPreviousLine,
+  onNextLine,
+  onOpenInfo,
   onPreviousVideo,
   onNextVideo,
+  hasPreviousLine = true,
+  hasNextLine = true,
   hasPreviousVideo = false,
   hasNextVideo = false,
 }: VideoControlBarProps) {
@@ -46,6 +60,14 @@ export function VideoControlBar({
     setSpeedIndex(next);
     playerRef.current?.setPlaybackRate(SPEEDS[next]!);
   }, [speedIndex, playerRef]);
+
+  const handleRewind = useCallback(() => {
+    if (onRewind) {
+      onRewind();
+    } else {
+      playerRef.current?.seekTo(Math.max(0, currentTime - 2));
+    }
+  }, [onRewind, currentTime, playerRef]);
 
   const progress = duration > 0 ? currentTime / duration : 0;
 
@@ -62,30 +84,57 @@ export function VideoControlBar({
       </Pressable>
 
       {/* Time display */}
-      <View className="flex-row justify-between px-1">
+      <View className="flex-row items-center justify-center gap-1">
+        <Clock size={12} color="#9ca3af" />
         <Text className="text-xs text-muted-foreground">{formatTime(currentTime)}</Text>
+        <Text className="text-xs text-muted-foreground">/</Text>
         <Text className="text-xs text-muted-foreground">{formatTime(duration)}</Text>
       </View>
 
-      {/* Controls row */}
-      <View className="mt-1 flex-row items-center justify-center gap-4">
-        {/* Previous video */}
+      {/* Controls row — matches Next.js order */}
+      <View className="mt-1 flex-row items-center justify-center gap-1">
+        {/* Previous video (queue) */}
         <Pressable
           onPress={onPreviousVideo}
-          disabled={!hasPreviousVideo}
-          className={`p-2 ${!hasPreviousVideo ? 'opacity-30' : ''}`}
+          disabled={!hasPreviousVideo || !onPreviousVideo}
+          className={`rounded p-2 ${!hasPreviousVideo || !onPreviousVideo ? 'opacity-30' : ''}`}
         >
-          <SkipBack size={20} color="#fff" />
+          <SkipBack size={18} color="#9ca3af" />
+        </Pressable>
+
+        {/* Info */}
+        {onOpenInfo && (
+          <Pressable onPress={onOpenInfo} className="rounded p-2">
+            <Info size={18} color="#9ca3af" />
+          </Pressable>
+        )}
+
+        {/* Previous subtitle line */}
+        <Pressable
+          onPress={onPreviousLine}
+          disabled={!hasPreviousLine}
+          className={`rounded p-2 ${!hasPreviousLine ? 'opacity-30' : ''}`}
+        >
+          <ChevronUp size={20} color="#9ca3af" />
         </Pressable>
 
         {/* Rewind 2s */}
-        <Pressable onPress={onRewind} className="p-2">
-          <RotateCcw size={20} color="#fff" />
+        <Pressable onPress={handleRewind} className="rounded p-2">
+          <RotateCcw size={18} color="#9ca3af" />
         </Pressable>
 
         {/* Play/Pause */}
-        <Pressable onPress={onPauseToggle} className="rounded-full bg-primary p-3">
+        <Pressable onPress={onPauseToggle} className="mx-1 rounded-full bg-primary p-3">
           {paused ? <Play size={22} color="#fff" /> : <Pause size={22} color="#fff" />}
+        </Pressable>
+
+        {/* Next subtitle line */}
+        <Pressable
+          onPress={onNextLine}
+          disabled={!hasNextLine}
+          className={`rounded p-2 ${!hasNextLine ? 'opacity-30' : ''}`}
+        >
+          <ChevronDown size={20} color="#9ca3af" />
         </Pressable>
 
         {/* Speed toggle */}
@@ -93,13 +142,13 @@ export function VideoControlBar({
           <Text className="text-xs font-bold text-foreground">{currentSpeed}×</Text>
         </Pressable>
 
-        {/* Next video */}
+        {/* Next video (queue) */}
         <Pressable
           onPress={onNextVideo}
-          disabled={!hasNextVideo}
-          className={`p-2 ${!hasNextVideo ? 'opacity-30' : ''}`}
+          disabled={!hasNextVideo || !onNextVideo}
+          className={`rounded p-2 ${!hasNextVideo || !onNextVideo ? 'opacity-30' : ''}`}
         >
-          <SkipForward size={20} color="#fff" />
+          <SkipForward size={18} color="#9ca3af" />
         </Pressable>
       </View>
     </View>
