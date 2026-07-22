@@ -22,7 +22,7 @@ export function parseMarkdownBlocks(md: string): TextBlock[] {
           kind: 'text',
           type: 'heading',
           depth: token.depth,
-          text: token.text,
+          text: plainText(token),
         });
         break;
 
@@ -30,38 +30,40 @@ export function parseMarkdownBlocks(md: string): TextBlock[] {
         blocks.push({
           kind: 'text',
           type: 'paragraph',
-          text: token.text,
+          text: plainText(token),
         });
         break;
 
-      case 'blockquote':
-        // Flatten blockquote children into one text
+      case 'blockquote': {
         const bqText = (token.tokens ?? [])
-          .filter((t): t is { type: 'paragraph'; text: string } =>
-            t.type === 'paragraph' && 'text' in t)
-          .map((t) => t.text)
+          .map((t) => plainText(t))
           .join(' ');
         if (bqText.trim()) {
           blocks.push({ kind: 'text', type: 'blockquote', text: bqText });
         }
         break;
+      }
 
       case 'list':
         for (const item of token.items) {
           const liText = (item.tokens ?? [])
-            .filter((t): t is { type: 'text' | 'paragraph'; text?: string } =>
-              (t.type === 'text' || t.type === 'paragraph') && 'text' in t)
-            .map((t) => (t as any).text ?? '')
+            .map((t) => plainText(t))
             .join(' ');
           if (liText.trim()) {
             blocks.push({ kind: 'text', type: 'list-item', text: liText });
           }
         }
         break;
-
-      // code, table, space, hr — skip
     }
   }
 
   return blocks;
+}
+
+/** Walk inner tokens to extract plain text, stripping **bold**, *italic*, `code` markers. */
+function plainText(token: any): string {
+  // If token has child tokens, walk them to strip inline formatting
+  if (token.tokens) return token.tokens.map((t: any) => plainText(t)).join('');
+  if (token.type === 'text') return token.text ?? '';
+  if (token.type === 'codespan') return token.text ?? '';
 }
