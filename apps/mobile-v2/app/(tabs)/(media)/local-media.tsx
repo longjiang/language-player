@@ -182,7 +182,7 @@ export default function LocalMediaScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <Text className="px-4 py-3 text-xl font-bold text-foreground">{t('title.local_media')}</Text>
+      <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.local_media')}</Text>
 
       {/* Upload state — matches web's dashed border upload area */}
       {!localMedia.hasMedia && (

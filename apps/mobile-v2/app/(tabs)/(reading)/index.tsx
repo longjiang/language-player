@@ -5,7 +5,7 @@ export default function ReaderScreen() {
   const t = useT();
   return (
     <View className="flex-1 items-center justify-center bg-background p-4">
-      <Text className="text-xl font-bold text-foreground">{t('title.notes_reader')}</Text>
+      <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.notes_reader')}</Text>
       <Text className="text-muted-foreground mt-2">{t('msg.all_done_for_now')}</Text>
     </View>
   );
