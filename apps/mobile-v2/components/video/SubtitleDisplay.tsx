@@ -5,7 +5,7 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { TokenizedText } from './TokenizedText';
+import { TokenizedText } from '../TokenizedText';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
 
