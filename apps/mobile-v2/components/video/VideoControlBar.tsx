@@ -125,7 +125,7 @@ export function VideoControlBar({
 
         {/* Play/Pause */}
         <Pressable onPress={onPauseToggle} className="mx-1 rounded-full bg-primary p-3">
-          {paused ? <Play size={22} color="#fff" /> : <Pause size={22} color="#fff" />}
+          {paused ? <Play size={22} className="text-primary-foreground" /> : <Pause size={22} className="text-primary-foreground" />}
         </Pressable>
 
         {/* Next subtitle line */}
