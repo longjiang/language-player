@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '@/hooks/use-t';
 import {
   Compass, Music, Tv, Clapperboard, History, FolderOpen,
-  FileText, BookMarked, Bookmark, Brain,
+  FileText, BookMarked, Bookmark, Brain, Globe, BookOpen,
 } from 'lucide-react-native';
 import { darkSemantic, hslToHex } from '@langplayer/shared';
 
@@ -35,6 +35,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Reading',
     links: [
       { key: 'title.notes_reader', href: '/(tabs)/(reading)' },
+      { key: 'title.web_reader', href: '/(tabs)/(reading)' },
+      { key: 'title.epub_reader', href: '/(tabs)/(reading)' },
     ],
   },
   {
@@ -56,6 +58,8 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   'watch-history': <History size={16} color={ICON_COLOR} />,
   'local-media': <FolderOpen size={16} color={ICON_COLOR} />,
   reader: <FileText size={16} color={ICON_COLOR} />,
+  'web-reader': <Globe size={16} color={ICON_COLOR} />,
+  epub: <BookOpen size={16} color={ICON_COLOR} />,
   dictionary: <BookMarked size={16} color={ICON_COLOR} />,
   'saved-words': <Bookmark size={16} color={ICON_COLOR} />,
   review: <Brain size={16} color={ICON_COLOR} />,
