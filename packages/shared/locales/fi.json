@@ -142,7 +142,6 @@
         "failed_to_load": "Lataus epäonnistui ({status})",
         "failed_to_load_items": "Kohteiden lataaminen epäonnistui:",
         "general": "Tapahtui virhe",
-        "generic": "Virhe",
         "invalid_credentials": "Virheellinen sähköposti tai salasana. Yritä uudelleen.",
         "invalid_verification_code": "Virheellinen vahvistuskoodi. Yritä uudelleen.",
         "language_not_selected": "Kieltä ei valittu",
@@ -914,9 +913,7 @@
         "code_resent": "Vahvistuskoodi lähetetty uudelleen sähköpostiisi."
     },
     "tab": {
-        "dictionary": "Sanakirja",
-        "me": "Minä",
-        "media": "Media"
+        "me": "Minä"
     },
     "time": {
         "hours": "tuntia",

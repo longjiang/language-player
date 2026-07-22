@@ -142,7 +142,6 @@
         "failed_to_load": "Laden mislukt ({status})",
         "failed_to_load_items": "Kon items niet laden:",
         "general": "Er is een fout opgetreden",
-        "generic": "Fout",
         "invalid_credentials": "Ongeldige e-mail of wachtwoord. Probeer het opnieuw.",
         "invalid_verification_code": "Ongeldige verificatiecode. Probeer het opnieuw.",
         "language_not_selected": "Taal niet geselecteerd",
@@ -914,9 +913,7 @@
         "code_resent": "Verificatiecode opnieuw naar je e-mail verzonden."
     },
     "tab": {
-        "dictionary": "Woordenboek",
-        "me": "Ik",
-        "media": "Media"
+        "me": "Ik"
     },
     "time": {
         "hours": "uur",

@@ -142,7 +142,6 @@
         "failed_to_load": "Error al cargar ({status})",
         "failed_to_load_items": "Error al cargar elementos:",
         "general": "Ocurrió un error",
-        "generic": "Error",
         "invalid_credentials": "Correo electrónico o contraseña inválidos. Inténtelo de nuevo.",
         "invalid_verification_code": "Código de verificación inválido. Inténtelo de nuevo.",
         "language_not_selected": "Idioma no seleccionado",
@@ -914,9 +913,7 @@
         "code_resent": "Código de verificación reenviado a tu correo electrónico."
     },
     "tab": {
-        "dictionary": "Diccionario",
-        "me": "Yo",
-        "media": "Medios"
+        "me": "Yo"
     },
     "time": {
         "hours": "horas",

@@ -142,7 +142,6 @@
         "failed_to_load": "Không thể tải ({status})",
         "failed_to_load_items": "Không thể tải các mục:",
         "general": "Đã xảy ra lỗi",
-        "generic": "Lỗi",
         "invalid_credentials": "Email hoặc mật khẩu không hợp lệ. Vui lòng thử lại.",
         "invalid_verification_code": "Mã xác minh không hợp lệ. Vui lòng thử lại.",
         "language_not_selected": "Chưa chọn ngôn ngữ",
@@ -914,9 +913,7 @@
         "code_resent": "Đã gửi lại mã xác minh đến email của bạn."
     },
     "tab": {
-        "dictionary": "Từ điển",
-        "me": "Tôi",
-        "media": "Phương tiện truyền thông"
+        "me": "Tôi"
     },
     "time": {
         "hours": "giờ",

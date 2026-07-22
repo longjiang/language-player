@@ -142,7 +142,6 @@
         "failed_to_load": "読み込みに失敗しました ({status})",
         "failed_to_load_items": "アイテムの読み込みに失敗しました:",
         "general": "エラーが発生しました",
-        "generic": "エラー",
         "invalid_credentials": "メールアドレスまたはパスワードが無効です。もう一度お試しください。",
         "invalid_verification_code": "確認コードが無効です。もう一度お試しください。",
         "language_not_selected": "言語が選択されていません",
@@ -914,9 +913,7 @@
         "code_resent": "確認コードがメールに再送信されました。"
     },
     "tab": {
-        "dictionary": "辞書",
-        "me": "私",
-        "media": "メディア"
+        "me": "私"
     },
     "time": {
         "hours": "時間",

@@ -142,7 +142,6 @@
         "failed_to_load": "Učitavanje nije uspjelo ({status})",
         "failed_to_load_items": "Neuspjelo učitavanje stavki:",
         "general": "Došlo je do pogreške",
-        "generic": "Pogreška",
         "invalid_credentials": "Nevažeća e-pošta ili lozinka. Pokušajte ponovno.",
         "invalid_verification_code": "Nevažeći verifikacijski kod. Pokušajte ponovno.",
         "language_not_selected": "Jezik nije odabran",
@@ -914,9 +913,7 @@
         "code_resent": "Verifikacijski kod ponovno poslan na tvoj e-mail."
     },
     "tab": {
-        "dictionary": "Rječnik",
-        "me": "Ja",
-        "media": "Mediji"
+        "me": "Ja"
     },
     "time": {
         "hours": "sati",

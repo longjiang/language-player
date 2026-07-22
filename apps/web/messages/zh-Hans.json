@@ -145,7 +145,6 @@
         "failed_to_load": "加载失败（{status}）",
         "failed_to_load_items": "加载项目失败：",
         "general": "发生错误",
-        "generic": "错误",
         "invalid_credentials": "邮箱或密码无效，请重试。",
         "invalid_verification_code": "验证码无效，请重试。",
         "language_not_selected": "未选择语言",
@@ -914,9 +913,7 @@
         "code_resent": "验证码已重新发送到您的邮箱。"
     },
     "tab": {
-        "dictionary": "词典",
-        "me": "我的",
-        "media": "媒体"
+        "me": "我的"
     },
     "time": {
         "days": "plural",

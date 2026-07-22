@@ -142,7 +142,6 @@
         "failed_to_load": "Kunne ikke laste inn ({status})",
         "failed_to_load_items": "Kunne ikke laste inn elementer:",
         "general": "Det oppstod en feil",
-        "generic": "Feil",
         "invalid_credentials": "Ugyldig e-post eller passord. Vennligst prøv igjen.",
         "invalid_verification_code": "Ugyldig bekreftelseskode. Vennligst prøv igjen.",
         "language_not_selected": "Språk ikke valgt",
@@ -914,9 +913,7 @@
         "code_resent": "Verifikasjonskoden er sendt på nytt til e-posten din."
     },
     "tab": {
-        "dictionary": "Ordbok",
-        "me": "Meg",
-        "media": "Media"
+        "me": "Meg"
     },
     "time": {
         "hours": "timer",

@@ -142,7 +142,6 @@
         "failed_to_load": "Încărcarea a eșuat ({status})",
         "failed_to_load_items": "Eșec la încărcarea elementelor:",
         "general": "A apărut o eroare",
-        "generic": "Eroare",
         "invalid_credentials": "Email sau parolă invalidă. Vă rugăm să încercați din nou.",
         "invalid_verification_code": "Cod de verificare invalid. Vă rugăm să încercați din nou.",
         "language_not_selected": "Limba nu a fost selectată",
@@ -914,9 +913,7 @@
         "code_resent": "Codul de verificare a fost retrimis pe emailul tău."
     },
     "tab": {
-        "dictionary": "Dicționar",
-        "me": "Eu",
-        "media": "Media"
+        "me": "Eu"
     },
     "time": {
         "hours": "ore",

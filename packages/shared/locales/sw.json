@@ -142,7 +142,6 @@
         "failed_to_load": "Imeshindwa kupakia ({status})",
         "failed_to_load_items": "Kushindwa kupakia vitu:",
         "general": "Hitilafu imetokea",
-        "generic": "Hitilafu",
         "invalid_credentials": "Barua pepe au nenosiri batili. Tafadhali jaribu tena.",
         "invalid_verification_code": "Nambari batili ya uthibitishaji. Tafadhali jaribu tena.",
         "language_not_selected": "Lugha haijachaguliwa",
@@ -914,9 +913,7 @@
         "code_resent": "Msimbo wa uthibitisho umetumwa tena kwa barua pepe yako."
     },
     "tab": {
-        "dictionary": "Kamusi",
-        "me": "Mimi",
-        "media": "Vyombo vya habari"
+        "me": "Mimi"
     },
     "time": {
         "hours": "saa",

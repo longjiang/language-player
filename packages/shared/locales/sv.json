@@ -142,7 +142,6 @@
         "failed_to_load": "Kunde inte ladda ({status})",
         "failed_to_load_items": "Kunde inte ladda objekt:",
         "general": "Ett fel uppstod",
-        "generic": "Fel",
         "invalid_credentials": "Ogiltig e-post eller lösenord. Försök igen.",
         "invalid_verification_code": "Ogiltig verifieringskod. Försök igen.",
         "language_not_selected": "Språk ej valt",
@@ -914,9 +913,7 @@
         "code_resent": "Verifieringskod skickad igen till din e-post."
     },
     "tab": {
-        "dictionary": "Ordbok",
-        "me": "Jag",
-        "media": "Media"
+        "me": "Jag"
     },
     "time": {
         "hours": "timmar",

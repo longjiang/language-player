@@ -142,7 +142,6 @@
         "failed_to_load": "Theip ar lódáil ({status})",
         "failed_to_load_items": "Theip ar luchtú na míreanna:",
         "general": "Tharla earráid",
-        "generic": "Earráid",
         "invalid_credentials": "Ríomhphost nó pasfhocal neamhbhailí. Bain triail eile as.",
         "invalid_verification_code": "Cód fíorúcháin neamhbhailí. Bain triail eile as.",
         "language_not_selected": "Níor roghnaíodh teanga",
@@ -914,9 +913,7 @@
         "code_resent": "Cód fíoraithe athsheoladh chuig do ríomhphost."
     },
     "tab": {
-        "dictionary": "Foclóir",
-        "me": "Mise",
-        "media": "Meáin"
+        "me": "Mise"
     },
     "time": {
         "hours": "uair",
