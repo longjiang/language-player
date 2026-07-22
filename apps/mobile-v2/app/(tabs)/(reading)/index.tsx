@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, Alert, Animated } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
@@ -24,6 +24,23 @@ export default function ReaderScreen() {
   const [renameId, setRenameId] = useState<number | null>(null);
   const [renameText, setRenameText] = useState('');
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Pulse animation when tokenizing
+  useEffect(() => {
+    if (tokenizing) {
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 0.4, duration: 800, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+        ])
+      );
+      loop.start();
+      return () => loop.stop();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [tokenizing, pulseAnim]);
 
   // When current note changes, load its text
   useEffect(() => {
@@ -138,10 +155,12 @@ export default function ReaderScreen() {
             />
           )}
           {tokenizing && (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color={ICON_MUTED} />
-              <Text className="mt-2 text-sm text-muted-foreground">{t('msg.making_words_interactive')}</Text>
-            </View>
+            <ScrollView className="flex-1 p-4">
+              <Animated.View style={{ opacity: pulseAnim }}>
+                <Text className="text-base leading-relaxed text-muted-foreground">{text}</Text>
+              </Animated.View>
+              <Text className="mt-2 text-xs text-muted-foreground">{t('msg.making_words_interactive')}</Text>
+            </ScrollView>
           )}
           {activeTab === 'read' && !tokenizing && (
             <ScrollView className="flex-1 p-4">
