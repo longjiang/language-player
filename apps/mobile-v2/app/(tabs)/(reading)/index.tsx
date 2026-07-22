@@ -200,7 +200,8 @@ export default function ReaderScreen() {
                       <TokenizedText
                         text={block.text}
                         l2Code={l2Lang.code}
-                        onWordPress={(word) => setSelectedWord(word)}
+                        tokens={blockTokens}
+                          onWordPress={(word) => setSelectedWord(word)}
                       />
                     )}
                     {block.type === 'blockquote' && (
@@ -208,6 +209,7 @@ export default function ReaderScreen() {
                         <TokenizedText
                           text={block.text}
                           l2Code={l2Lang.code}
+                          tokens={blockTokens}
                           onWordPress={(word) => setSelectedWord(word)}
                         />
                       </View>
@@ -219,7 +221,8 @@ export default function ReaderScreen() {
                           <TokenizedText
                             text={block.text}
                             l2Code={l2Lang.code}
-                            onWordPress={(word) => setSelectedWord(word)}
+                            tokens={blockTokens}
+                          onWordPress={(word) => setSelectedWord(word)}
                           />
                         </View>
                       </View>
