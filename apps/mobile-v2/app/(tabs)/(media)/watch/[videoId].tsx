@@ -19,9 +19,9 @@ export default function WatchScreen() {
   const [video, setVideo] = useState<YouTubeVideo | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  // Start paused=false because YouTubePlayer has autoplay=true.
-  // onStateChange will sync when the video actually starts playing.
-  const [paused, setPaused] = useState(false);
+  // Start paused — autoplay is unreliable on iOS and causes state mismatch.
+  // User explicitly taps play to start. Matches GO app behavior.
+  const [paused, setPaused] = useState(true);
 
   // Subtitle line navigation state
   const subtitleStartTimesRef = useRef<number[]>([]);
@@ -39,13 +39,15 @@ export default function WatchScreen() {
   }, [videoId]);
 
   const handlePauseToggle = useCallback(() => {
-    if (paused) {
-      playerRef.current?.play();
-    } else {
-      playerRef.current?.pause();
-    }
-    setPaused(!paused);
-  }, [paused]);
+    setPaused((prev) => {
+      if (prev) {
+        playerRef.current?.play();
+      } else {
+        playerRef.current?.pause();
+      }
+      return !prev;
+    });
+  }, []);
 
   const handleStateChange = useCallback((state: string) => {
     setPaused(state !== 'playing');
@@ -105,7 +107,7 @@ export default function WatchScreen() {
       <YouTubePlayer
         ref={playerRef}
         youtubeId={videoId}
-        autoplay
+        autoplay={false}
         onTimeUpdate={setCurrentTime}
         onDuration={setDuration}
         onStateChange={handleStateChange}
