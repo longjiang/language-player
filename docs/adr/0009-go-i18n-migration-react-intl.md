@@ -1,6 +1,6 @@
 # ADR 0009: GO App i18n Migration — i18n-js → react-intl (ICU MessageFormat)
 
-> **Status:** Phases 1–2 complete — `react-intl` installed & wired, shared `packages/shared/locales/` directory active. Phases 3–6 pending.
+> **Status:** Phases 1–3 complete — `react-intl` installed, shared locale directory active, all components migrated to `useT()`. Phases 4–6 pending.
 > **Date:** 2026-07-21
 > **Replaces:** `i18n-js` library in `language-player-3/contexts/LanguageContext.tsx`
 > **See also:**
