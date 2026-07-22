@@ -50,37 +50,38 @@ export function DictionaryPopup({
   return (
     <Modal
       visible={visible}
+      transparent
       animationType="slide"
-      presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View className="flex-1 bg-background">
+      <Pressable className="flex-1 bg-black/30" onPress={onClose}>
+        <View />
+      </Pressable>
+      <View className="max-h-[65%] rounded-t-xl border-t border-border bg-background px-4 pb-8 pt-4">
         {/* Header */}
-        <View className="border-b border-border px-4 py-3">
-          <View className="flex-row items-center justify-between">
-            <Text className="text-lg font-bold text-foreground" numberOfLines={1}>
-              {word}
-            </Text>
-            <Pressable onPress={onClose} className="rounded-full bg-muted p-1.5">
-              <Text className="text-base text-muted-foreground">✕</Text>
-            </Pressable>
-          </View>
-
-          {/* Context */}
-          {context ? (
-            <View className="mt-2 rounded-lg bg-muted/50 p-2">
-              <Text className="text-sm text-foreground">{context}</Text>
-              {translatedContext ? (
-                <Text className="mt-1 text-sm text-muted-foreground">
-                  {translatedContext}
-                </Text>
-              ) : null}
-            </View>
-          ) : null}
+        <View className="mb-3 flex-row items-center justify-between">
+          <Text className="text-lg font-bold text-foreground" numberOfLines={1}>
+            {word}
+          </Text>
+          <Pressable onPress={onClose} className="rounded-full bg-muted p-1.5">
+            <Text className="text-base text-muted-foreground">✕</Text>
+          </Pressable>
         </View>
 
+        {/* Context */}
+        {context ? (
+          <View className="mt-2 rounded-lg bg-muted/50 p-2">
+            <Text className="text-sm text-foreground">{context}</Text>
+            {translatedContext ? (
+              <Text className="mt-1 text-sm text-muted-foreground">
+                {translatedContext}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+
         {/* Results */}
-        <ScrollView className="flex-1 px-4 pt-3">
+        <ScrollView className="pt-3">
           {loading && (
             <View className="items-center py-12">
               <ActivityIndicator size="large" className="text-primary" />
