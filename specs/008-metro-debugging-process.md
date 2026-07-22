@@ -39,7 +39,14 @@ Run in **async mode** since it's a long-running server. The Flask dev server run
 - `GET /recommend-videos` — video recommendations
 - `POST /translate_array` — batch subtitle translation
 
-**Startup time:** Flask takes ~10–15 seconds to start (database connection pooling, module imports). Any request before it's ready gets `Connection refused`. Wait for the `* Running on http://0.0.0.0:5001` line before testing. Do NOT kill the terminal — Flask logs to stdout only.
+**Startup time:** Flask takes ~10–15 seconds to start (database connection pooling, module imports). Any request before it's ready gets `Connection refused`.
+
+**Startup output:** With `debug=True`, Flask prints exactly two lines and then idles:
+```
+ * Serving Flask app 'app'
+ * Debug mode: on
+```
+It does NOT print `* Running on http://0.0.0.0:5001` in debug mode. The server IS listening despite the absence of the "Running on" line. Verify with `lsof -i:5001 | grep python` — if Python has the port in LISTEN state, Flask is ready.
 
 ### Start Metro + iOS Simulator
 
@@ -58,11 +65,42 @@ Sometimes Expo Go loads a cached bundle instead of connecting to the new Metro i
 ```bash
 # Kill Expo Go on the simulator
 xcrun simctl terminate <UDID> host.exp.Exponent
+# Wait — without a delay, Expo Go reopens to the home screen instead of connecting
+sleep 3
 # Re-open the Metro URL directly (bypasses Expo Go home screen)
 xcrun simctl openurl <UDID> "exp://192.168.1.130:8081"
 ```
 
-This avoids the Expo Go "Recent Projects" screen entirely. The app connects directly and triggers a fresh bundle build. Confirmation: Metro terminal shows `iOS Bundled Xms node_modules/expo-router/entry.js (N modules)`.
+**Critical:** The 3-second delay between terminate and openurl is necessary. Without it, Expo Go reopens to the "Recent Projects" home screen instead of connecting directly to Metro. Confirmation: Metro terminal shows `iOS Bundled Xms node_modules/expo-router/entry.js (N modules)`.
+
+### The `cd` Command is Stripped — Use Subshell
+
+The `run_in_terminal` tool strips `cd` from the beginning of commands. This means:
+
+```bash
+# ❌ BROKEN — cd is stripped, runs in monorepo root
+cd apps/mobile-v2 && npx expo start --ios
+
+# ✅ CORRECT — use subshell to preserve directory change
+(cd apps/mobile-v2 && npx expo start --ios)
+```
+
+When Metro starts in the wrong directory, it tries to bundle from the monorepo root and fails with `Unable to resolve "../../App" from "node_modules/expo/AppEntry.js"`.
+
+### Terminal ID Tracking (Session Memory)
+
+The AI agent must track terminal UUIDs across turns to access server output. Store them in `/memories/session/terminals.md`:
+
+```markdown
+# Active Terminal IDs
+
+| Server | Terminal ID | Status |
+|---|---|---|
+| Flask (5001) | 53300260-918d-4181-a6c4-f57df7ea3788 | Running |
+| Metro (8081) | 5e37c2b0-1b9c-4706-bf9d-d89d5f654adb | Running — 1787 modules |
+```
+
+Without this, terminal IDs are lost when the conversation context shifts. Access output at any time with `get_terminal_output(id=<uuid>)`.
 
 ---
 
@@ -256,7 +294,7 @@ send_to_terminal(id=<metro-uuid>, command="r")
 
 ## Verification Checklist (Phase 1 Dictionary)
 
-1. [ ] Flask running on port 5000
+1. [ ] Flask running on port 5001 (verify: `lsof -i:5001 | grep python`)
 2. [ ] Metro running, app loaded in simulator
 3. [ ] Log in with test credentials
 4. [ ] Navigate to a video with subtitles (e.g., Chinese)
@@ -329,3 +367,54 @@ send_to_terminal(id=<metro-uuid>, command="r")
 ### LLM cache insert fails silently
 **Cause**: The `DictionaryDB.insertLlmCacheEntries` method catches errors and only `console.warn`s them. The dictionary DB must be open before calling this.
 **Fix**: Check that `dictionaryDB.openDB()` was called (it's part of `loadData()`, which runs on DictionaryContext mount).
+
+### TypeError with no stack trace (e.g., "undefined is not a function")
+**Cause**: Metro's default error reporting sometimes shows only the error message without a component stack trace, making it impossible to identify the source file. This is common for errors thrown outside of React's render cycle (e.g., in Promise chains, setTimeout callbacks, or useEffect).
+**Fix**: Add a React Error Boundary at the root `_layout.tsx` to catch errors and log full stack traces via `console.error`:
+
+```tsx
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('[ROOT ERROR BOUNDARY]', error.message, '\n', error.stack, '\nComponent stack:', info.componentStack);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <View className="flex-1 items-center justify-center bg-background p-4">
+          <Text className="mb-2 text-lg font-bold text-destructive">App Error</Text>
+          <ScrollView className="max-h-80 w-full rounded-lg border border-border bg-card p-3">
+            <Text className="text-xs text-foreground font-mono">{this.state.error.message}</Text>
+            <Text className="mt-2 text-xs text-muted-foreground font-mono">{this.state.error.stack}</Text>
+          </ScrollView>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+```
+
+Wrap the entire provider tree in `<ErrorBoundary>...</ErrorBoundary>`. On the next error, Metro will show the full stack trace in `[ROOT ERROR BOUNDARY]` logs.
+
+### Port 5001 stuck after killing Flask
+**Cause**: Sometimes the Python process leaves the port in a TIME_WAIT state, or a child process (Flask reloader) holds the port after the parent is killed.
+**Fix**: Force-kill ALL processes on the port:
+```bash
+lsof -ti:5001 | xargs kill -9
+```
+Then verify with `lsof -ti:5001` — should print nothing. If a process still holds the port, wait 5 seconds for TIME_WAIT to clear and try again.
+
+### Metro log file as alternative to terminal output
+**Cause**: When the AI agent doesn't own the Metro terminal (user started it manually), `get_terminal_output()` is unavailable.
+**Fix**: Metro writes structured JSON logs to `apps/mobile-v2/.expo/dev/logs/start.log`. Read them directly:
+```bash
+cat apps/mobile-v2/.expo/dev/logs/start.log | grep 'client_log' | tail -20
+```
+Log entries use the format `{"_e":"metro:client_log","_t":<timestamp>,"level":"<error|warn>","data":[...]}`. The `_t` field is an epoch timestamp in milliseconds.
