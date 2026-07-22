@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react';
 import { View, ActivityIndicator, Text, useWindowDimensions } from 'react-native';
-import YoutubePlayer from 'react-native-youtube-iframe';
+import YoutubePlayer, { type YoutubeIframeRef } from 'react-native-youtube-iframe';
 import { useT } from '@/hooks/use-t';
 
 interface YouTubePlayerProps {
@@ -23,24 +23,25 @@ export interface YouTubePlayerHandle {
 
 export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(
   function YouTubePlayer({ youtubeId, autoplay = false, startTime, onTimeUpdate, onDuration, onStateChange, onError }, ref) {
-    const playerRef = useRef<any>(null);
+    const playerRef = useRef<YoutubeIframeRef>(null);
     const [ready, setReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [shouldPlay, setShouldPlay] = useState(autoplay);
-    const shouldPlayRef = useRef(shouldPlay);
-    shouldPlayRef.current = shouldPlay;
     const [playerState, setPlayerState] = useState<string>('unstarted');
     const [playbackRate, setPlaybackRateState] = useState(1);
     const t = useT();
     const { width: screenWidth } = useWindowDimensions();
-    const videoWidth = screenWidth;
-    const videoHeight = (screenWidth / 16) * 9; // 16:9 aspect ratio
+    const videoHeight = (screenWidth / 16) * 9;
     const timeRef = useRef(0);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    // Stable callback refs to avoid re-rendering the player
     const onTimeUpdateRef = useRef(onTimeUpdate);
     onTimeUpdateRef.current = onTimeUpdate;
+    const onStateChangeRef = useRef(onStateChange);
+    onStateChangeRef.current = onStateChange;
 
-    // Time polling while the video is actually playing
+    // Time polling while playing
     useEffect(() => {
       if (playerState === 'playing') {
         pollRef.current = setInterval(async () => {
@@ -57,29 +58,27 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
       play: () => setShouldPlay(true),
       pause: () => setShouldPlay(false),
       seekTo: (seconds: number) => {
-        const player = playerRef.current;
-        if (player) player.seekTo(seconds, true);
+        playerRef.current?.seekTo(seconds, true);
       },
       setPlaybackRate: (rate: number) => {
         setPlaybackRateState(rate);
       },
       getCurrentTime: async () => {
         try {
-          const t = await playerRef.current?.getCurrentTime();
-          return t ?? timeRef.current;
+          return await playerRef.current?.getCurrentTime() ?? timeRef.current;
         } catch {
           return timeRef.current;
         }
       },
-    }));
+    }), []);
 
+    // Sync shouldPlay with actual player state from YouTube
     const handleStateChange = useCallback((state: string) => {
-      onStateChange?.(state);
+      onStateChangeRef.current?.(state);
       setPlayerState(state);
-      // Sync shouldPlay with actual player state
       if (state === 'playing') setShouldPlay(true);
       else if (state === 'paused' || state === 'ended') setShouldPlay(false);
-    }, [onStateChange]);
+    }, []);
 
     if (error) {
       return (
@@ -93,38 +92,30 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
       <View className="w-full bg-black" style={{ height: videoHeight }}>
         {!ready && (
           <View className="absolute inset-0 items-center justify-center">
-            <ActivityIndicator size="large" className="text-white" />
+            <ActivityIndicator size="large" color="#fff" />
           </View>
         )}
         <YoutubePlayer
           ref={playerRef}
           height={videoHeight}
-          width={videoWidth}
+          width={screenWidth}
           videoId={youtubeId}
           play={shouldPlay}
           playbackRate={playbackRate}
-          initialPlayerParams={{ start: startTime }}
+          initialPlayerParams={{ start: startTime, controls: false }}
           webViewProps={{
             allowsInlineMediaPlayback: true,
             allowsFullscreenVideo: true,
+            mediaPlaybackRequiresUserAction: false,
           }}
           onChangeState={handleStateChange}
-          onReady={() => {
-            setReady(true);
-            // Workaround: react-native-youtube-iframe's sendPostMessage
-            // drops messages if playerReady is false. If the user tapped
-            // play before onReady, re-apply the command after a frame.
-            if (shouldPlayRef.current) {
-              setShouldPlay(false);
-              requestAnimationFrame(() => setShouldPlay(true));
-            }
-          }}
+          onReady={() => setReady(true)}
           onError={(e: any) => {
             const msg = typeof e === 'string' ? e : (e?.message ?? e?.error ?? t('msg.playback_error'));
             setError(String(msg));
             onError?.(new Error(String(msg)));
           }}
-          webViewStyle={{ opacity: ready ? 1 : 0 }}
+          webViewStyle={{ opacity: ready ? 1 : 0.99 }}
         />
       </View>
     );
