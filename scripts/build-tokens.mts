@@ -29,11 +29,11 @@ const hsl = (channels: string) => `hsl(${channels})`;
 
 /** Mobile font sizes render ~12% smaller than web at the same rem value
  *  due to platform font rendering differences. Scale up to match visually. */
-const MOBILE_FONT_SCALE = 1.125;
+const MOBILE_SCALE = 1.25;
 function scaleRem(rem: string): string {
   const num = parseFloat(rem);
   if (isNaN(num)) return rem;
-  return `${(num * MOBILE_FONT_SCALE).toFixed(3)}rem`;
+  return `${(num * MOBILE_SCALE).toFixed(3)}rem`;
 }
 
 /** camelCase → kebab-case (e.g., primaryForeground → primary-foreground) */
@@ -96,23 +96,23 @@ ${colorEntries.join('\n')}
         relaxed: '${typography.lineHeight.relaxed}',
       },
       spacing: {
-        0: '${spacing[0]}',
-        0.5: '${spacing[0.5]}',
-        1: '${spacing[1]}',
-        1.5: '${spacing[1.5]}',
-        2: '${spacing[2]}',
-        2.5: '${spacing[2.5]}',
-        3: '${spacing[3]}',
-        3.5: '${spacing[3.5]}',
-        4: '${spacing[4]}',
-        5: '${spacing[5]}',
-        6: '${spacing[6]}',
-        7: '${spacing[7]}',
-        8: '${spacing[8]}',
-        9: '${spacing[9]}',
-        10: '${spacing[10]}',
-        12: '${spacing[12]}',
-        16: '${spacing[16]}',
+        0: '0',
+        0.5: '${scaleRem(spacing[0.5])}',
+        1: '${scaleRem(spacing[1])}',
+        1.5: '${scaleRem(spacing[1.5])}',
+        2: '${scaleRem(spacing[2])}',
+        2.5: '${scaleRem(spacing[2.5])}',
+        3: '${scaleRem(spacing[3])}',
+        3.5: '${scaleRem(spacing[3.5])}',
+        4: '${scaleRem(spacing[4])}',
+        5: '${scaleRem(spacing[5])}',
+        6: '${scaleRem(spacing[6])}',
+        7: '${scaleRem(spacing[7])}',
+        8: '${scaleRem(spacing[8])}',
+        9: '${scaleRem(spacing[9])}',
+        10: '${scaleRem(spacing[10])}',
+        12: '${scaleRem(spacing[12])}',
+        16: '${scaleRem(spacing[16])}',
       },
       borderRadius: {
         none: '${borderRadius.none}',
