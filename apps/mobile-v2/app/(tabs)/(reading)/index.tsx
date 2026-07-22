@@ -57,6 +57,16 @@ export default function ReaderScreen() {
     }
   }, [notes.currentNoteId]);
 
+  // Auto-tokenize when switching to read tab with text but no blocks
+  const textRef = useRef(text);
+  textRef.current = text;
+  useEffect(() => {
+    if (activeTab === 'read' && !blocks && !tokenizing && textRef.current.trim()) {
+      console.log('[READER] Auto-triggering tokenization for activeTab=read, text length:', textRef.current.length);
+      handleTokenize();
+    }
+  }, [activeTab, blocks, tokenizing]);
+
   // Tokenize text — parse markdown into blocks, then lemmatize each block
   const handleTokenize = useCallback(async () => {
     console.log('[READER] handleTokenize called. text length:', text.length, 'first 50 chars:', text.slice(0, 50));
