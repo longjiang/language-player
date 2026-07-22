@@ -16,16 +16,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: 'hsl(210 20% 98%)',
-        foreground: 'hsl(222 47% 18%)',
-        card: 'hsl(210 20% 98%)',
-        'card-foreground': 'hsl(222 47% 18%)',
-        popover: 'hsl(210 20% 98%)',
-        'popover-foreground': 'hsl(222 47% 18%)',
+        background: 'hsl(0 0% 100%)',
+        foreground: 'hsl(222 47% 11%)',
+        card: 'hsl(0 0% 100%)',
+        'card-foreground': 'hsl(222 47% 11%)',
+        popover: 'hsl(0 0% 100%)',
+        'popover-foreground': 'hsl(222 47% 11%)',
         primary: 'hsl(228 74% 59%)',
         'primary-foreground': 'hsl(0 0% 100%)',
         secondary: 'hsl(210 17% 94%)',
-        'secondary-foreground': 'hsl(222 47% 18%)',
+        'secondary-foreground': 'hsl(222 47% 11%)',
         muted: 'hsl(210 17% 94%)',
         'muted-foreground': 'hsl(215 14% 46%)',
         accent: 'hsl(24 100% 62%)',
