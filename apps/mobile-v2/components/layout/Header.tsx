@@ -39,7 +39,7 @@ export function Header() {
             onPress={() => router.push('/(tabs)/(media)/search' as any)}
             className="rounded-lg p-2 active:bg-muted"
           >
-            <Search size={20} color="#9ca3af" />
+            <Search size={20} className="text-muted-foreground" />
           </Pressable>
 
           {/* Language switcher */}
@@ -53,7 +53,7 @@ export function Header() {
             onPress={() => setDrawerOpen(!drawerOpen)}
             className="rounded-lg p-1.5 active:bg-muted"
           >
-            {drawerOpen ? <X size={22} color="#9ca3af" /> : <Menu size={22} color="#9ca3af" />}
+            {drawerOpen ? <X size={22} className="text-muted-foreground" /> : <Menu size={22} className="text-muted-foreground" />}
           </Pressable>
         </View>
       </View>

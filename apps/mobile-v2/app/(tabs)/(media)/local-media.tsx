@@ -143,7 +143,7 @@ export default function LocalMediaScreen() {
         />
         {buffering && (
           <View className="absolute inset-0 items-center justify-center bg-black/50">
-            <ActivityIndicator size="large" color="#fff" />
+            <ActivityIndicator size="large" color="white" />
           </View>
         )}
       </View>
@@ -169,7 +169,7 @@ export default function LocalMediaScreen() {
             <SkipBack size={20} className="text-foreground" />
           </Pressable>
           <Pressable onPress={handlePlayPause} className="rounded-full bg-primary p-2 active:bg-primary/80">
-            {paused ? <Play size={20} color="#fff" /> : <Pause size={20} color="#fff" />}
+            {paused ? <Play size={20} color="white" /> : <Pause size={20} color="white" />}
           </Pressable>
           <Pressable onPress={handleRewind} className="rounded p-1 active:bg-muted">
             <SkipForward size={20} className="text-foreground" />

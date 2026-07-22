@@ -169,7 +169,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
       <View className="w-full bg-black" style={{ height: videoHeight }}>
         {!ready && (
           <View className="absolute inset-0 items-center justify-center">
-            <ActivityIndicator size="large" color="#fff" />
+            <ActivityIndicator size="large" color="white" />
           </View>
         )}
         <YoutubePlayer
