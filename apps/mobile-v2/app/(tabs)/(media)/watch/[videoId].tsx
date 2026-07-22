@@ -39,15 +39,16 @@ export default function WatchScreen() {
   }, [videoId]);
 
   const handlePauseToggle = useCallback(() => {
-    setPaused((prev) => {
-      if (prev) {
-        playerRef.current?.play();
-      } else {
-        playerRef.current?.pause();
-      }
-      return !prev;
-    });
-  }, []);
+    // Call the imperative method FIRST, then update state.
+    // Do NOT put side effects inside setState updater functions —
+    // React calls them during render phase.
+    if (paused) {
+      playerRef.current?.play();
+    } else {
+      playerRef.current?.pause();
+    }
+    setPaused(!paused);
+  }, [paused]);
 
   const handleStateChange = useCallback((state: string) => {
     setPaused(state !== 'playing');
