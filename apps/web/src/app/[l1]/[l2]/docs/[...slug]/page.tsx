@@ -40,7 +40,7 @@ function getDoc(l1: string, slug: string[]): { content: string } | null {
 
   // 2. Fall back to raw .md
   const possibleDirs = [
-    resolve(process.cwd(), 'docs/content'),
+    resolve(process.cwd(), 'apps/web/content/docs'),
     resolve(process.cwd(), 'content/docs'),
   ];
   for (const docsDir of possibleDirs) {
@@ -106,7 +106,7 @@ function categoryLabel(slug: string): string {
 function getAllDocs(l1: string): DocMeta[] {
   const titleMap = loadTitleMap(l1);
   const possibleDirs = [
-    resolve(process.cwd(), 'docs/content'),
+    resolve(process.cwd(), 'apps/web/content/docs'),
     resolve(process.cwd(), 'content/docs'),
   ];
   for (const docsDir of possibleDirs) {
@@ -149,7 +149,7 @@ function getSearchIndex(l1: string): DocEntry[] {
   if (localeEntries) return localeEntries;
   // Fall back to raw .md files (English)
   const possibleDirs = [
-    resolve(process.cwd(), 'docs/content'),
+    resolve(process.cwd(), 'apps/web/content/docs'),
     resolve(process.cwd(), 'content/docs'),
   ];
   for (const docsDir of possibleDirs) {
