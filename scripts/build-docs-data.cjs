@@ -77,5 +77,20 @@ for (const item of items) {
 }
 lines.push('];');
 
+// ── Embed locale translations ──
+const i18nDir = 'packages/docs/i18n';
+const locales = fs.readdirSync(i18nDir).filter(f => f.endsWith('.json')).map(f => f.replace('.json', ''));
+lines.push('');
+lines.push('export const DOCS_BY_LOCALE: Record<string, DocEntry[]> = {');
+for (const loc of locales) {
+  const data = JSON.parse(fs.readFileSync(path.join(i18nDir, loc + '.json'), 'utf-8'));
+  const entries = data.map((d) => {
+    const content = d.content.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+    return `    { path: '${d.slug}', title: '${d.title.replace(/'/g, "\\'")}', category: '${d.slug.split('/')[0] || ''}', content: \`${content}\` }`;
+  });
+  lines.push(`  '${loc}': [\n${entries.join(',\n')}\n  ],`);
+}
+lines.push('};');
+
 fs.writeFileSync('packages/shared/src/docs.ts', lines.join('\n'));
-console.log('Written', items.length, 'docs to packages/shared/src/docs.ts');
+console.log('Written', items.length, 'English +', locales.length, 'locales to packages/shared/src/docs.ts');
