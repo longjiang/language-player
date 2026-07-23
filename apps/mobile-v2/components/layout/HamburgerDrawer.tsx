@@ -41,7 +41,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Vocab',
     links: [
-      { key: 'title.dictionary', href: '/(tabs)/(vocab)/dictionary' },
+      { key: 'title.dictionary', href: '/(tabs)/(vocab)' },
       { key: 'title.saved_words', href: '/(tabs)/(vocab)/saved-words' },
       { key: 'title.review', href: '/(tabs)/(vocab)/review' },
     ],
@@ -52,6 +52,7 @@ const NAV_GROUPS: NavGroup[] = [
 const NAV_ICONS: Record<string, React.ReactNode> = {
   '(media)': <Compass size={16} color={ICON_COLOR} />,
   '(reading)': <FileText size={16} color={ICON_COLOR} />,
+  '(vocab)': <BookMarked size={16} color={ICON_COLOR} />,
   explore: <Compass size={16} color={ICON_COLOR} />,
   music: <Music size={16} color={ICON_COLOR} />,
   'live-tv': <Tv size={16} color={ICON_COLOR} />,
