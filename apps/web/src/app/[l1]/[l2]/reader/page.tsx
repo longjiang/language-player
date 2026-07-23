@@ -248,9 +248,9 @@ export default function ReaderPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
+    <div className="mx-auto flex h-full max-w-7xl flex-col overflow-hidden px-4 py-6">
       {/* ── Full-width title bar ── */}
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-4 flex flex-shrink-0 items-center gap-3">
         <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           {isEditingTitle ? (
@@ -288,7 +288,7 @@ export default function ReaderPage() {
       </div>
 
       {/* ── Content row: reader panel + sidebar ── */}
-      <div className="flex gap-4">
+      <div className="flex flex-1 gap-4 min-h-0">
         <ReaderPanel
             l2={l2} l1={l1}
             text={text}
