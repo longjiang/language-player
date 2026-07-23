@@ -1,15 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useT } from '@/hooks/use-t';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_ON_PRIMARY, ICON_DESTRUCTIVE, ICON_PRIMARY } from '@/lib/theme-colors';
 import { RotateCcw, Check, X } from 'lucide-react-native';
+
+function getDisplayName(word: { head?: string; forms?: string[]; id: string }): string {
+  return word.head || word.forms?.[0] || word.id;
+}
 
 export default function ReviewScreen() {
   const { l2Lang } = useLanguage();
   const t = useT();
-  const { savedWords, loading, loadWords } = useSavedWords();
+  const { savedWords, loaded } = useSavedWords();
   const words = savedWords[l2Lang.code] ?? [];
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -17,11 +21,9 @@ export default function ReviewScreen() {
   const [reviewed, setReviewed] = useState(0);
   const [known, setKnown] = useState(0);
 
-  useEffect(() => { loadWords(); }, []);
-
   const currentWord = words[currentIndex];
 
-  const handleFlipped = () => setFlipped(!flipped);
+  const handleFlip = () => setFlipped(!flipped);
 
   const handleResponse = useCallback((knew: boolean) => {
     setReviewed((p) => p + 1);
@@ -39,7 +41,7 @@ export default function ReviewScreen() {
     setKnown(0);
   };
 
-  if (loading) {
+  if (!loaded) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color={ICON_MUTED} />
@@ -50,7 +52,7 @@ export default function ReviewScreen() {
   if (words.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.review')}</Text>
+        <Text className="mb-4 px-4 py-5 text-xl font-bold text-foreground">{t('title.review')}</Text>
         <RotateCcw size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
         <Text className="text-center text-muted-foreground">{t('msg.no_saved_words')}</Text>
       </View>
@@ -60,12 +62,12 @@ export default function ReviewScreen() {
   if (currentIndex >= words.length) {
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
-        <Text className="text-2xl font-bold text-foreground mb-2">{t('title.review')}</Text>
-        <Text className="text-muted-foreground mb-4">
-          {'Reviewed {n}. Knew {known}.'.replace('{n}', String(reviewed)).replace('{known}', String(known))}
+        <Text className="mb-2 text-2xl font-bold text-foreground">{t('title.review')}</Text>
+        <Text className="mb-4 text-muted-foreground">
+          Reviewed {reviewed}. Knew {known}.
         </Text>
-        <Pressable onPress={handleRestart} className="flex-row items-center gap-2 rounded-lg bg-primary px-4 py-2 active:bg-primary/80">
-          <RotateCcw size={16} color="#fff" />
+        <Pressable onPress={handleRestart} className="flex-row items-center gap-2 rounded-lg bg-primary px-4 py-2">
+          <RotateCcw size={16} color={ICON_ON_PRIMARY} />
           <Text className="text-sm font-bold text-primary-foreground">{t('action.review')}</Text>
         </Pressable>
       </View>
@@ -76,7 +78,7 @@ export default function ReviewScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <View className="px-4 py-5 mb-4 flex-row items-center justify-between">
+      <View className="mb-4 flex-row items-center justify-between px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.review')}</Text>
         <Text className="text-sm text-muted-foreground">
           {currentIndex + 1} / {words.length}
@@ -91,18 +93,15 @@ export default function ReviewScreen() {
       {/* Flashcard */}
       <View className="flex-1 items-center justify-center px-6">
         <Pressable
-          onPress={handleFlipped}
-          className="w-full max-w-sm rounded-xl border border-border bg-card p-8 active:bg-muted"
+          onPress={handleFlip}
+          className="w-full max-w-sm rounded-xl border border-border bg-card p-8"
           style={{ minHeight: 200 }}
         >
           <Text className="text-center text-2xl font-bold text-foreground">
-            {flipped ? (currentWord?.definition || currentWord?.head) : currentWord?.head}
+            {flipped ? getDisplayName(currentWord!) : getDisplayName(currentWord!)}
           </Text>
-          {flipped && currentWord?.pronunciation && (
-            <Text className="mt-2 text-center text-muted-foreground">{currentWord.pronunciation}</Text>
-          )}
           <Text className="mt-4 text-center text-xs text-muted-foreground">
-            {flipped ? 'Tap to reveal' : 'Tap to reveal'}
+            {flipped ? t('action.tap_to_hide') : t('action.tap_to_reveal')}
           </Text>
         </Pressable>
       </View>
@@ -110,13 +109,13 @@ export default function ReviewScreen() {
       {/* Response buttons */}
       {flipped && (
         <View className="flex-row justify-center gap-4 px-4 pb-8">
-          <Pressable onPress={() => handleResponse(false)} className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 py-3 active:bg-destructive/20">
-            <X size={18} color="#ef4444" />
-            <Text className="text-sm font-medium text-destructive">{"Didn't know"}</Text>
+          <Pressable onPress={() => handleResponse(false)} className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 py-3">
+            <X size={18} color={ICON_DESTRUCTIVE} />
+            <Text className="text-sm font-medium text-destructive">{t('action.didnt_know')}</Text>
           </Pressable>
-          <Pressable onPress={() => handleResponse(true)} className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-success/30 bg-success/10 py-3 active:bg-success/20">
-            <Check size={18} color="#22c55e" />
-            <Text className="text-sm font-medium text-success">{'Knew it'}</Text>
+          <Pressable onPress={() => handleResponse(true)} className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 py-3">
+            <Check size={18} color={ICON_PRIMARY} />
+            <Text className="text-sm font-medium text-primary">{t('action.knew_it')}</Text>
           </Pressable>
         </View>
       )}
