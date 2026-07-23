@@ -7,7 +7,8 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { getUseTraditional, getShowPhonetics } from '@/lib/settings';
+import { getUseTraditional } from '@/lib/settings';
+import { useSettingsContext } from '@/providers/settings-provider';
 import { buildRuby } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { TokenCache } from '@langplayer/shared';
@@ -61,6 +62,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     typeFace === 'sans-serif' ? 'font-sans' : '';
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
+  const { getL2 } = useSettingsContext();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);
@@ -279,7 +281,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     <span ref={containerRef} className={fontClass}>
       <span className="leading-relaxed" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {tokens.map((token, i) => {
-          const showPhonetics = getShowPhonetics();
+          const l2Settings = getL2(l2Code);
+          const phoneticsShow = l2Settings.tokenSpan.phonetics.show;
+          const showPhonetics = phoneticsShow !== false;
           return (
             <TokenSpan
               key={i}
