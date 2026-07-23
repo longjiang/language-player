@@ -9,6 +9,7 @@ export default function TabLayout() {
         <Stack.Screen name="(media)" />
         <Stack.Screen name="(reading)" />
         <Stack.Screen name="(vocab)" />
+        <Stack.Screen name="(me)" />
       </Stack>
     </>
   );
