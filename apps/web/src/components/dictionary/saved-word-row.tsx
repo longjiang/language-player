@@ -36,15 +36,22 @@ export function SavedWordRow({
   const { removeSavedWord } = useSavedWordsContext();
   const insts = normalizeInstances(word);
   const latest = insts[insts.length - 1];
+
+  const headForm = word.forms?.[0] ?? word.context?.form ?? '?';
+
   const ctx = latest?.context ?? word.context;
+  // Fully defensive: some legacy/corrupt records have no context at all.
+  // Fall back to a minimal context so downstream components don't crash.
+  const safeCtx = (ctx && (ctx.form || ctx.text))
+    ? ctx
+    : { form: headForm, text: headForm, textTitle: '' };
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
     removeSavedWord(l2Code, word.id);
   };
 
-  const headForm = word.forms[0] ?? '?';
-  const contextForm = ctx.form !== headForm ? ctx.form : undefined;
+  const contextForm = safeCtx?.form !== headForm ? safeCtx?.form : undefined;
 
   return (
     <WordListItem
@@ -53,11 +60,11 @@ export function SavedWordRow({
       contextForm={contextForm}
       definitionSlot={<InlineDefinition wordId={word.id} l1Code={l1Code} l2Code={l2Code} />}
       contextSlot={
-        ctx.text && ctx.text !== headForm ? (
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">…{ctx.text}…</p>
+        safeCtx?.text && safeCtx.text !== headForm ? (
+          <p className="mt-0.5 truncate text-sm text-muted-foreground">…{safeCtx.text}…</p>
         ) : undefined
       }
-      sourceSlot={<SavedWordSource context={ctx} date={word.date} />}
+      sourceSlot={<SavedWordSource context={safeCtx} date={word.date} />}
       prefix={
         <>
           <button

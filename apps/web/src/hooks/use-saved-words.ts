@@ -38,6 +38,7 @@ export function useSavedWords() {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (typeof parsed === 'object' && parsed !== null) {
+            sanitizeStore(parsed);
             setSavedWords(parsed);
           }
         }
@@ -116,7 +117,7 @@ export function useSavedWords() {
           }
         }
         existing.instances = existingInsts;
-        existing.forms = [...new Set([...existing.forms, ...word.forms])];
+        existing.forms = [...new Set([...(existing.forms ?? []), ...(word.forms ?? [])])];
         existing.date = Math.max(existing.date, word.date);
         // Keep legacy context in sync (= latest instance)
         existing.context = existingInsts[existingInsts.length - 1]!.context;
@@ -125,6 +126,7 @@ export function useSavedWords() {
         if (!word.instances || word.instances.length === 0) {
           word.instances = normalizeInstances(word);
         }
+        sanitizeForms(word);
         langWords.push(word);
       }
       const next = { ...prev, [l2Code]: langWords };
@@ -189,6 +191,35 @@ export function normalizeInstances(record: SavedLexicalItemRecord): SavedLexical
   return [];
 }
 
+/** Ensure every record has a forms array. Falls back to context.form or '?' for legacy records. */
+function sanitizeForms(record: SavedLexicalItemRecord): void {
+  if (!Array.isArray(record.forms) || record.forms.length === 0) {
+    record.forms = [record.context?.form ?? '?'];
+  }
+}
+
+/** Ensure a record has at least a minimal valid context. */
+function sanitizeContext(record: SavedLexicalItemRecord): void {
+  if (!record.context || (!record.context.form && !record.context.text)) {
+    const head = record.forms?.[0] ?? '?';
+    record.context = { form: head, text: head, textTitle: '' };
+  }
+}
+
+/** Sanitize an entire store — ensures every record in every L2 has forms + context. */
+function sanitizeStore(store: SavedLexicalItemStore): void {
+  for (const [l2, words] of Object.entries(store)) {
+    store[l2] = words.filter(w => {
+      // Drop records that are completely unrecoverable (no id, no forms, no context)
+      if (!w.id) return false;
+      sanitizeForms(w);
+      sanitizeContext(w);
+      if (typeof w.date !== 'number') w.date = Date.now();
+      return true;
+    });
+  }
+}
+
 /** Merge two instance arrays, deduping by timestamp+form+text. */
 export function mergeInstances(
   a: SavedLexicalItemInstance[],
@@ -223,7 +254,7 @@ export function mergeSavedWords(local: SavedLexicalItemStore, cloud: SavedLexica
       } else {
         // Merge instances from both, dedup
         lw.instances = mergeInstances(normalizeInstances(lw), normalizeInstances(cw));
-        lw.forms = [...new Set([...lw.forms, ...cw.forms])];
+        lw.forms = [...new Set([...(lw.forms ?? []), ...(cw.forms ?? [])])];
         lw.date = Math.max(lw.date, cw.date);
         lw.context = lw.instances[lw.instances.length - 1]!.context;
       }
