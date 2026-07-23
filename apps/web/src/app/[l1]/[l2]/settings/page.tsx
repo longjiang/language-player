@@ -156,18 +156,16 @@ export default function SettingsPage() {
               ]} />
           </Section>
 
-          {popupEnabled && (
-            <Section title={t('label.tokenized_text_preview')}>
-              <div className="rounded-lg border border-border bg-muted/50 p-4">
-                <TokenizedText text={previewText} l2Code={l2.code} textScale={tokenizedText.zoom} />
-                {previewTranslation && (
-                  <p className="pt-1 text-sm text-muted-foreground leading-relaxed">
-                    {previewTranslation}
-                  </p>
-                )}
-              </div>
-            </Section>
-          )}
+          <Section title={t('label.tokenized_text_preview')}>
+            <div className="rounded-lg border border-border bg-muted/50 p-4">
+              <TokenizedText text={previewText} l2Code={l2.code} textScale={tokenizedText.zoom} />
+              {previewTranslation && (
+                <p className="pt-1 text-sm text-muted-foreground leading-relaxed">
+                  {previewTranslation}
+                </p>
+              )}
+            </div>
+          </Section>
 
           <Section title="">
             <Toggle label={t('label.show_translation')} desc={t('msg.show_translation_desc')}
