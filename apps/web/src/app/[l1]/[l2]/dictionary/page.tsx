@@ -7,7 +7,7 @@ import { useDictionaryContext } from '@/providers/dictionary-provider';
 import { languageName } from '@/lib/language-data';
 import { useT } from '@/hooks/use-t';
 import { buildEntryRoute } from '@/lib/entry-route';
-import type { DictionaryEntry, ProficiencyLevel } from '@langplayer/shared';
+import type { DictionaryEntry } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
 import { Search, Loader2, BookOpen, AlertCircle, Clock } from 'lucide-react';
 import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
@@ -27,7 +27,7 @@ export default function DictionaryPage() {
   const redirectingRef = useRef(false);
 
   const levelLabel = (scale: string, value: string | number) =>
-    formatLevel({ scale, value } as ProficiencyLevel).long;
+    formatLevel({ scale, value }).long;
 
   const saveContext = {
     form: searchedText,

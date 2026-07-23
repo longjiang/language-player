@@ -90,8 +90,10 @@ export interface FormattedLevel {
   hexColor: string;
 }
 
-/** Format a ProficiencyLevel (from dictionary entries) for display. */
-export function formatLevel(level: ProficiencyLevel): FormattedLevel {
+/** Format a proficiency level for display.
+ *  Accepts `{ scale, value }` with optional `numeric` — `numeric` is
+ *  derived from the scale+value pair if not provided. */
+export function formatLevel(level: { scale: string; value: number | string; numeric?: number }): FormattedLevel {
   const scale = SCALES[level.scale as ScaleId];
   const valueStr = String(level.value);
 
@@ -104,7 +106,7 @@ export function formatLevel(level: ProficiencyLevel): FormattedLevel {
     };
   }
 
-  const numeric = _reverseLabels(scale).get(valueStr);
+  const numeric = level.numeric ?? _reverseLabels(scale).get(valueStr);
 
   return {
     short: `${scale.shortPrefix} ${level.value}`,
