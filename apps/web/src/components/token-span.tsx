@@ -6,11 +6,41 @@ import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { getCachedEntries } from '@/lib/dictionary-cache';
 
+/**
+ * Get the lowest difficulty value for a word from its cached dictionary entries.
+ * Checks both `levels[].numeric` and `frequencyLevel`, returns the minimum.
+ * Returns null if no difficulty data is available in any cached entry.
+ */
+function getWordDifficulty(l2Code: string, lemmas: LemmatizedToken['lemmas']): number | null {
+  let lowest: number | null = null;
+  for (const lemma of lemmas) {
+    const entries = getCachedEntries(l2Code, lemma.lemma);
+    if (!entries) continue;
+    for (const entry of entries) {
+      if (entry.levels) {
+        for (const l of entry.levels) {
+          if (typeof l.numeric === 'number' && l.numeric >= 1 && l.numeric <= 7) {
+            if (lowest === null || l.numeric < lowest) lowest = l.numeric;
+          }
+        }
+      }
+      if (typeof entry.frequencyLevel === 'number' && entry.frequencyLevel >= 1 && entry.frequencyLevel <= 7) {
+        if (lowest === null || entry.frequencyLevel < lowest) lowest = entry.frequencyLevel;
+      }
+    }
+  }
+  return lowest;
+}
+
 export interface TokenSpanProps {
   token: LemmatizedToken;
   l2Code: string;
   /** Phonetics display mode: 'ruby' (above), 'word' (replace text), or false (hidden). */
   phoneticsMode: 'ruby' | 'word' | false;
+  /** Phonetics filter: 'always' or 'hardWords' (only words above user level). */
+  phoneticsConditions: 'always' | 'hardWords';
+  /** User's proficiency level (1–7). Used when conditions === 'hardWords'. */
+  userLevel?: number;
   quickGloss: boolean;
   /** Show the first dictionary definition below every word (interlinear gloss). */
   showDefinition: boolean;
@@ -28,6 +58,8 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   token,
   l2Code,
   phoneticsMode,
+  phoneticsConditions,
+  userLevel,
   quickGloss,
   showDefinition,
   isSelected,
@@ -54,6 +86,17 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const quickGlossDef = (isSaved && quickGloss) ? firstDef : null;
   // ── Interlinear definition: for all words (when enabled) ──
   const interlinearDef = showDefinition ? firstDef : null;
+
+  // ── "Hard words only" filter: suppress phonetics for easy words ──
+  const showPhonetics = useMemo(() => {
+    if (phoneticsMode === false) return false;
+    if (phoneticsConditions === 'always') return true;
+    // hardWords: show only if word difficulty >= user level
+    if (!userLevel || userLevel < 1) return true; // no level set → show all
+    const diff = getWordDifficulty(l2Code, token.lemmas);
+    if (diff === null) return true; // no difficulty data → err on side of helping
+    return diff >= userLevel;
+  }, [phoneticsMode, phoneticsConditions, userLevel, l2Code, token.lemmas]);
 
   // ── Structural tokens: newlines → <br />, spaces/punctuation → raw text ──
   if (token.text === '\n' || token.text === '\r') {
@@ -89,13 +132,13 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   let wordContent: React.ReactNode;
 
   // ── Phonetics-only mode: show reading instead of surface text ──
-  if (phoneticsMode === 'word' && token.pronunciation && token.pronunciation !== token.text
+  if (showPhonetics && phoneticsMode === 'word' && token.pronunciation && token.pronunciation !== token.text
       && (!isJapanese || hasKanji)) {
     const displayText = base === 'ja' ? katakanaToHiragana(token.pronunciation) : token.pronunciation;
     wordContent = <span className={wordBgClass}>{displayText}</span>;
   } else {
     // ── Ruby text ──
-    const hasPhonetics = !isHighlighted && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text;
+    const hasPhonetics = !isHighlighted && showPhonetics && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text;
     const rubySegments: RubySegment[] | null = hasPhonetics
       ? buildRuby(token.text, token.pronunciation!, l2Code)
       : null;
