@@ -9,7 +9,7 @@ import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { getUseTraditional } from '@/lib/settings';
 import { useSettingsContext } from '@/providers/settings-provider';
-import { buildRuby } from '@langplayer/utils';
+import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { TokenCache } from '@langplayer/shared';
 
@@ -283,13 +283,12 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
         {tokens.map((token, i) => {
           const l2Settings = getL2(l2Code);
           const phoneticsShow = l2Settings.tokenSpan.phonetics.show;
-          const showPhonetics = phoneticsShow !== false;
           return (
             <TokenSpan
               key={i}
               token={token}
               l2Code={l2Code}
-              showPhonetics={showPhonetics}
+              phoneticsMode={phoneticsShow}
               isSelected={selectedToken === token}
               isSaved={savedFormSet.has(token.text.toLowerCase())}
               isHighlighted={
@@ -324,12 +323,13 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 const TokenSpan: React.FC<{
   token: LemmatizedToken;
   l2Code: string;
-  showPhonetics: boolean;
+  /** Phonetics display mode: 'ruby' (above), 'word' (replace text), or false (hidden). */
+  phoneticsMode: 'ruby' | 'word' | false;
   isSelected: boolean;
   isSaved: boolean;
   isHighlighted: boolean;
   onClick: () => void;
-}> = ({ token, l2Code, showPhonetics, isSelected, isSaved, isHighlighted, onClick }) => {
+}> = ({ token, l2Code, phoneticsMode, isSelected, isSaved, isHighlighted, onClick }) => {
   // ── Structural tokens: newlines → <br />, spaces/punctuation → raw text ──
   if (token.text === '\n' || token.text === '\r') {
     return <br />;
@@ -344,8 +344,43 @@ const TokenSpan: React.FC<{
     return <>{token.text}</>;
   }
 
+  const base = l2Code.split('-')[0]!;
+  const isJapanese = base === 'ja';
+  const hasKanji = isJapanese && /[一-龯]/.test(token.text);
+
+  // ── Phonetics-only mode: show reading instead of surface text ──
+  // For Japanese, only replace if the word contains kanji — pure kana words
+  // (like ありがとう) are already readable.
+  if (phoneticsMode === 'word' && token.pronunciation && token.pronunciation !== token.text
+      && (!isJapanese || hasKanji)) {
+    // For Japanese, convert katakana reading to hiragana for natural display
+    const displayText = base === 'ja' ? katakanaToHiragana(token.pronunciation) : token.pronunciation;
+    return (
+      <span
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        className={`
+          cursor-pointer rounded transition-colors
+          ${isSelected
+            ? 'bg-primary/20 text-primary'
+            : isHighlighted
+              ? 'bg-primary/15 text-primary font-semibold ring-1 ring-primary/30'
+              : isSaved
+                ? 'bg-yellow-200/25 hover:bg-yellow-200/40'
+                : 'hover:bg-muted/80'
+          }
+        `}
+        title={token.lemmas.map(l => l.lemma).join(', ')}
+      >
+        {displayText}
+      </span>
+    );
+  }
+
   // ── Ruby text (phonetic guide) — hidden on highlighted forms for cleaner display ──
-  const hasPhonetics = !isHighlighted && showPhonetics && token.pronunciation && token.pronunciation !== token.text;
+  const hasPhonetics = !isHighlighted && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text;
 
   const rubySegments: RubySegment[] | null = hasPhonetics
     ? buildRuby(token.text, token.pronunciation!, l2Code)
