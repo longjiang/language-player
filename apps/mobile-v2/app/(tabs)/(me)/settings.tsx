@@ -3,7 +3,6 @@ import { View, Text, ScrollView, Pressable, Switch } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
-import { TokenizedText } from '@/components/TokenizedText';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 // ── Sample sentences for tokenized text preview ──
@@ -307,7 +306,7 @@ export default function SettingsScreen() {
               {popupEnabled && (
                 <Section title={t('label.tokenized_text_preview')}>
                   <View className="rounded-lg border border-border bg-muted/50 p-4">
-                    <TokenizedText text={previewText} l2Code={l2Lang.code} />
+                    <Text className="text-base leading-relaxed text-foreground">{previewText}</Text>
                   </View>
                 </Section>
               )}
