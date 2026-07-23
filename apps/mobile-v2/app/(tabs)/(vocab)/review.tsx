@@ -2,9 +2,12 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
+import { useDictionary } from '@langplayer/api-client';
+import { decomposeWordId } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_ON_PRIMARY, ICON_DESTRUCTIVE, ICON_PRIMARY } from '@/lib/theme-colors';
 import { RotateCcw, Check, X } from 'lucide-react-native';
+import type { DictionaryEntry } from '@langplayer/shared';
 
 function getDisplayName(word: { head?: string; forms?: string[]; id: string }): string {
   return word.head || word.forms?.[0] || word.id;
@@ -20,10 +23,32 @@ export default function ReviewScreen() {
   const [flipped, setFlipped] = useState(false);
   const [reviewed, setReviewed] = useState(0);
   const [known, setKnown] = useState(0);
+  const [entry, setEntry] = useState<DictionaryEntry | null>(null);
+  const [loadingDef, setLoadingDef] = useState(false);
 
+  const dict = useDictionary();
   const currentWord = words[currentIndex];
 
-  const handleFlip = () => setFlipped(!flipped);
+  const handleFlip = () => {
+    setFlipped(!flipped);
+    // Fetch definition from API on first flip
+    if (!entry && currentWord) {
+      setLoadingDef(true);
+      const decomposed = decomposeWordId(currentWord.id, l2Lang.code);
+      if (decomposed) {
+        const { dict: dictId, id: scopedId } = decomposed;
+        dict.getEntry(l2Lang.code, dictId, scopedId)
+          .then((res) => setEntry(res.entry))
+          .catch(() => {})
+          .finally(() => setLoadingDef(false));
+      } else {
+        setLoadingDef(false);
+      }
+    }
+  };
+
+  // Reset entry when word changes
+  React.useEffect(() => { setEntry(null); }, [currentIndex]);
 
   const handleResponse = useCallback((knew: boolean) => {
     setReviewed((p) => p + 1);
@@ -98,8 +123,26 @@ export default function ReviewScreen() {
           style={{ minHeight: 200 }}
         >
           <Text className="text-center text-2xl font-bold text-foreground">
-            {flipped ? getDisplayName(currentWord!) : getDisplayName(currentWord!)}
+            {getDisplayName(currentWord!)}
           </Text>
+          {flipped && (
+            <View className="mt-4 border-t border-border pt-4">
+              {loadingDef ? (
+                <ActivityIndicator size="small" color={ICON_MUTED} />
+              ) : entry?.definitions?.length ? (
+                entry.definitions.map((def, i) => (
+                  <Text key={i} className="text-center text-base text-foreground">
+                    {def}
+                  </Text>
+                ))
+              ) : (
+                <Text className="text-center text-sm text-muted-foreground">{getDisplayName(currentWord!)}</Text>
+              )}
+              {entry?.pronunciation && (
+                <Text className="mt-2 text-center text-sm text-muted-foreground">{entry.pronunciation}</Text>
+              )}
+            </View>
+          )}
           <Text className="mt-4 text-center text-xs text-muted-foreground">
             {flipped ? t('action.tap_to_hide') : t('action.tap_to_reveal')}
           </Text>
