@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useVideos } from '@langplayer/api-client';
-import { TokenCache } from '@/lib/token-cache';
+import { TokenCache } from '@langplayer/utils';
 
 /**
  * Fetches the pre-computed token cache for a video and makes it available

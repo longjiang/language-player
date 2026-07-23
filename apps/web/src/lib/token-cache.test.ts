@@ -3,8 +3,7 @@
  * Verifies cache loading, lookup, and server hash compatibility.
  */
 import { describe, it, expect } from 'vitest';
-import { TokenCache } from './token-cache';
-import { md5 } from './md5';
+import { TokenCache, md5 } from '@langplayer/utils';
 
 describe('md5', () => {
   it('produces the same hash as Python hashlib.md5', () => {

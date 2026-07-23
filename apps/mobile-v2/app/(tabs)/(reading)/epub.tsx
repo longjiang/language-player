@@ -7,7 +7,6 @@ import { TokenizedText } from '@/components/TokenizedText';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { parseMarkdownBlocks } from '@/lib/parse-markdown';
-import { PYTHON_API_URL } from '@/lib/api-url';
 import type { TextBlock } from '@/lib/parse-markdown';
 import { BookOpen, Upload, X } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -17,8 +16,6 @@ export default function EpubReaderScreen() {
   const t = useT();
   const [text, setText] = useState('');
   const [blocks, setBlocks] = useState<TextBlock[] | null>(null);
-  const [tokens, setTokens] = useState<any[][] | null>(null);
-  const [tokenizing, setTokenizing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
@@ -27,29 +24,11 @@ export default function EpubReaderScreen() {
   }, []);
   const epub = useEpub(onChapterChange);
 
-  // Parse — same pipeline as notes reader
+  // Parse markdown for layout — TokenizedText handles its own tokenization
   useEffect(() => {
-    if (!text.trim()) { setBlocks(null); setTokens(null); return; }
+    if (!text.trim()) { setBlocks(null); return; }
     try { setBlocks(parseMarkdownBlocks(text)); } catch { setBlocks(null); }
-    setTokens(null);
   }, [text]);
-
-  // Lemmatize — same pipeline as notes reader
-  useEffect(() => {
-    if (!blocks || blocks.length === 0 || !l2Lang.code) { setTokens(null); return; }
-    let cancelled = false;
-    setTokenizing(true);
-    fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texts: blocks.map((b) => b.text), l2: l2Lang.code }),
-    })
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (!cancelled) setTokens(data?.results ?? []); })
-      .catch(() => { if (!cancelled) setTokens(null); })
-      .finally(() => { if (!cancelled) setTokenizing(false); });
-    return () => { cancelled = true; };
-  }, [blocks, l2Lang.code]);
 
   // ── Upload state ──
   if (!epub.fileName && !epub.loading) {
@@ -134,12 +113,7 @@ export default function EpubReaderScreen() {
 
       <View className="flex-1 flex-row">
         <View className="flex-1">
-          {tokenizing && (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color={ICON_MUTED} />
-            </View>
-          )}
-          {!tokenizing && blocks && (
+          {blocks && (
             <ScrollView className="flex-1 p-4">
               {blocks.map((block, bi) => (
                 <View key={bi} className="mb-3">
@@ -149,16 +123,16 @@ export default function EpubReaderScreen() {
                     </Text>
                   )}
                   {block.type === 'paragraph' && (
-                    <TokenizedText text={block.text} l2Code={l2Lang.code} tokens={tokens?.[bi]} onWordPress={(w) => setSelectedWord(w)} />
+                    <TokenizedText text={block.text} l2Code={l2Lang.code} onWordPress={(w) => setSelectedWord(w)} />
                   )}
                   {block.type === 'blockquote' && (
                     <View className="border-l-2 border-muted-foreground/30 pl-3">
-                      <TokenizedText text={block.text} l2Code={l2Lang.code} tokens={tokens?.[bi]} onWordPress={(w) => setSelectedWord(w)} />
+                      <TokenizedText text={block.text} l2Code={l2Lang.code} onWordPress={(w) => setSelectedWord(w)} />
                     </View>
                   )}
                   {block.type === 'list-item' && (
                     <View className="flex-row"><Text className="mr-2 text-muted-foreground">•</Text>
-                      <View className="flex-1"><TokenizedText text={block.text} l2Code={l2Lang.code} tokens={tokens?.[bi]} onWordPress={(w) => setSelectedWord(w)} /></View>
+                      <View className="flex-1"><TokenizedText text={block.text} l2Code={l2Lang.code} onWordPress={(w) => setSelectedWord(w)} /></View>
                     </View>
                   )}
                 </View>

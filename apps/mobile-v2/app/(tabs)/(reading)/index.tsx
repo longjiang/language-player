@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, Alert, Animated } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
-import { PYTHON_API_URL } from '@/lib/api-url';
 import type { NoteListItem } from '@langplayer/shared';
 import { BookOpen, PenLine, Plus, Trash2, StickyNote } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -20,31 +19,12 @@ export default function ReaderScreen() {
   const [text, setText] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('edit');
   const [blocks, setBlocks] = useState<TextBlock[] | null>(null);
-  const [tokens, setTokens] = useState<any[][] | null>(null);
-  const [tokenizing, setTokenizing] = useState(false);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [renameId, setRenameId] = useState<number | null>(null);
   const [renameText, setRenameText] = useState('');
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  // Pulse animation when tokenizing
-  useEffect(() => {
-    if (tokenizing) {
-      const loop = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 0.4, duration: 800, useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
-        ])
-      );
-      loop.start();
-      return () => loop.stop();
-    } else {
-      pulseAnim.setValue(1);
-    }
-  }, [tokenizing, pulseAnim]);
 
   // When current note changes, load its text
   useEffect(() => {
@@ -54,38 +34,15 @@ export default function ReaderScreen() {
     }
   }, [notes.currentNoteId]);
 
-  // ── Parse markdown automatically (matches Next.js useEffect) ──
+  // ── Parse markdown for layout (TokenizedText handles its own tokenization) ──
   useEffect(() => {
-    if (!text.trim()) { setBlocks(null); setTokens(null); return; }
+    if (!text.trim()) { setBlocks(null); return; }
     try {
       setBlocks(parseMarkdownBlocks(text));
     } catch {
       setBlocks([{ kind: 'text', type: 'paragraph', text }]);
     }
-    setTokens(null);
   }, [text]);
-
-  // ── Lemmatize per block automatically (matches Next.js useEffect) ──
-  useEffect(() => {
-    if (!blocks || blocks.length === 0 || !l2Lang.code) { setTokens(null); return; }
-    let cancelled = false;
-    setTokenizing(true);
-
-    // Use /lemmatize-normalized/batch — same endpoint as Next.js
-    fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texts: blocks.map((b) => b.text), l2: l2Lang.code }),
-    })
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => {
-        if (cancelled) return;
-        setTokens(data?.results ?? []);
-      })
-      .catch(() => { if (!cancelled) setTokens(null); })
-      .finally(() => { if (!cancelled) setTokenizing(false); });
-    return () => { cancelled = true; };
-  }, [blocks, l2Lang.code]);
 
   // Auto-save with 2s debounce
   const autoSave = useCallback((newText: string) => {
@@ -173,22 +130,10 @@ export default function ReaderScreen() {
             />
           )}
 
-          {/* Tokenizing: show pulsing text */}
-          {tokenizing && (
-            <ScrollView className="flex-1 p-4">
-              <Animated.View style={{ opacity: pulseAnim }}>
-                <Text className="text-base leading-relaxed text-muted-foreground">{text}</Text>
-              </Animated.View>
-              <Text className="mt-2 text-xs text-muted-foreground">{t('msg.making_words_interactive')}</Text>
-            </ScrollView>
-          )}
-
-          {/* Read tab: parsed blocks with per-block tokenized text */}
-          {activeTab === 'read' && !tokenizing && blocks && (
+          {/* Read tab: parsed blocks — TokenizedText handles its own tokenization */}
+          {activeTab === 'read' && blocks && (
             <ScrollView className="flex-1 p-4">
               {blocks.map((block, bi) => {
-                // Per-block tokens (matches Next.js blockTokens[i])
-                const blockTokens = tokens?.[bi];
                 return (
                   <View key={bi} className="mb-3">
                     {block.type === 'heading' && (
@@ -200,8 +145,7 @@ export default function ReaderScreen() {
                       <TokenizedText
                         text={block.text}
                         l2Code={l2Lang.code}
-                        tokens={blockTokens}
-                          onWordPress={(word) => setSelectedWord(word)}
+                        onWordPress={(word) => setSelectedWord(word)}
                       />
                     )}
                     {block.type === 'blockquote' && (
@@ -209,7 +153,6 @@ export default function ReaderScreen() {
                         <TokenizedText
                           text={block.text}
                           l2Code={l2Lang.code}
-                          tokens={blockTokens}
                           onWordPress={(word) => setSelectedWord(word)}
                         />
                       </View>
@@ -221,8 +164,7 @@ export default function ReaderScreen() {
                           <TokenizedText
                             text={block.text}
                             l2Code={l2Lang.code}
-                            tokens={blockTokens}
-                          onWordPress={(word) => setSelectedWord(word)}
+                            onWordPress={(word) => setSelectedWord(word)}
                           />
                         </View>
                       </View>
@@ -234,9 +176,9 @@ export default function ReaderScreen() {
           )}
 
           {/* Read tab: plain text fallback (no blocks parsed) */}
-          {activeTab === 'read' && !tokenizing && !blocks && (
+          {activeTab === 'read' && !blocks && (
             <ScrollView className="flex-1 p-4">
-              <Text className="text-base leading-relaxed text-foreground">{text}</Text>
+              <TokenizedText text={text} l2Code={l2Lang.code} />
             </ScrollView>
           )}
         </View>

@@ -28,4 +28,6 @@ export {
   applyRomajiAccent,
   circledPattern,
 } from './pitch-accent';
+export { md5 } from './md5';
+export { TokenCache } from './token-cache';
 export { parseSubsL2, _parseCSVRow, stripTimestampPrefix, findMatchLine } from './subs-csv';
