@@ -248,9 +248,9 @@ export default function ReaderPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
+    <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Full-width title bar ── */}
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-4 flex items-center gap-3 flex-shrink-0">
         <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           {isEditingTitle ? (
@@ -288,7 +288,7 @@ export default function ReaderPage() {
       </div>
 
       {/* ── Content row: reader panel + sidebar ── */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 flex-1 min-h-0">
         <ReaderPanel
             l2={l2} l1={l1}
             text={text}
@@ -339,7 +339,7 @@ export default function ReaderPage() {
       </div>
 
       {error && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 shadow-lg">{error}</div>
+        <div className="flex-shrink-0 mt-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 shadow-lg">{error}</div>
       )}
     </div>
   );
