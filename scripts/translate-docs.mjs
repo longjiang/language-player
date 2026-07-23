@@ -8,9 +8,9 @@
  *   3. Write apps/web/src/data/docs-i18n/{locale}.json
  *
  * Usage:
- *   node scripts/build-docs-i18n.mjs                    # all locales
- *   node scripts/build-docs-i18n.mjs --locale=zh-Hans   # single locale
- *   node scripts/build-docs-i18n.mjs --locale=zh-Hans --doc=media/explore  # single doc
+ *   node scripts/translate-docs.mjs                    # all locales
+ *   node scripts/translate-docs.mjs --locale=zh-Hans   # single locale
+ *   node scripts/translate-docs.mjs --locale=zh-Hans --doc=media/explore  # single doc
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync } from 'fs';

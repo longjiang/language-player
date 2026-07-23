@@ -6,8 +6,8 @@
  *
  * Usage:
  *   nvm use 22
- *   node scripts/rebuild-doc.mjs <path-to-md>
- *   node scripts/rebuild-doc.mjs apps/web/content/docs/media/explore.md
+ *   node scripts/translate-doc.mjs <path-to-md>
+ *   node scripts/translate-doc.mjs apps/web/content/docs/media/explore.md
  *
  * What it does:
  *   1. Resolves {$key} from translations.csv for every locale (always).
@@ -97,8 +97,8 @@ function docSlug(filePath) {
 
 const filePath = process.argv[2];
 if (!filePath) {
-  console.error('Usage: node scripts/rebuild-doc.mjs <path-to-md>');
-  console.error('Example: node scripts/rebuild-doc.mjs apps/web/content/docs/media/explore.md');
+  console.error('Usage: node scripts/translate-doc.mjs <path-to-md>');
+  console.error('Example: node scripts/translate-doc.mjs apps/web/content/docs/media/explore.md');
   process.exit(1);
 }
 
