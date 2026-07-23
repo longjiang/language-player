@@ -7,7 +7,7 @@ import { useDictionaryContext } from '@/providers/dictionary-provider';
 import { useT } from '@/hooks/use-t';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import type { DictionaryEntry, ProficiencyLevel } from '@langplayer/shared';
+import type { DictionaryEntry } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
 import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
 import { Loader2, AlertCircle, BookOpen, Film, Binary, Sparkles } from 'lucide-react';
@@ -87,7 +87,7 @@ export default function DictionaryEntryPage() {
   }, [searchParams, setSidebarSource, setCameFromSearch]);
 
   const levelLabel = (scale: string, value: string | number) =>
-    formatLevel({ scale, value } as ProficiencyLevel).long;
+    formatLevel({ scale, value }).long;
 
   const saveContext = {
     form: entry?.head ?? '',
