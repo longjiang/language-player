@@ -1,17 +1,50 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, ScrollView } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useDictionary } from '@langplayer/api-client';
 import { decomposeWordId } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_ON_PRIMARY, ICON_DESTRUCTIVE, ICON_PRIMARY } from '@/lib/theme-colors';
-import { RotateCcw, Check, X } from 'lucide-react-native';
+import { RotateCcw, CheckCircle2, BookOpen } from 'lucide-react-native';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import type { DictionaryEntry } from '@langplayer/shared';
 
+type Rating = 'again' | 'hard' | 'good' | 'easy';
+
+const RATING_COLORS: Record<Rating, string> = {
+  again: 'bg-red-600',
+  hard: 'bg-orange-500',
+  good: 'bg-green-600',
+  easy: 'bg-blue-600',
+};
+
+const RATING_ICON_COLORS: Record<Rating, string> = {
+  again: '#dc2626',
+  hard: '#f97316',
+  good: '#16a34a',
+  easy: '#2563eb',
+};
+
+function useRatingLabels() {
+  const t = useT();
+  return [
+    { key: 'again' as const, label: t('review.again'), hint: t('review.again_hint'), keyShortcut: '1' },
+    { key: 'hard' as const, label: t('review.hard'), hint: t('review.hard_hint'), keyShortcut: '2' },
+    { key: 'good' as const, label: t('review.good'), hint: t('review.good_hint'), keyShortcut: '3' },
+    { key: 'easy' as const, label: t('review.easy'), hint: t('review.easy_hint'), keyShortcut: '4' },
+  ];
+}
+
 function getDisplayName(word: { head?: string; forms?: string[]; id: string }): string {
   return word.head || word.forms?.[0] || word.id;
+}
+
+function getRatingColor(rating: Rating): string {
+  if (rating === 'again') return 'bg-destructive';
+  if (rating === 'hard') return 'bg-orange-500';
+  if (rating === 'good') return 'bg-green-600';
+  return 'bg-blue-600';
 }
 
 export default function ReviewScreen() {
@@ -19,20 +52,20 @@ export default function ReviewScreen() {
   const t = useT();
   const { savedWords, loaded } = useSavedWords();
   const words = savedWords[l2Lang.code] ?? [];
+  const RATING_LABELS = useRatingLabels();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [reviewed, setReviewed] = useState(0);
-  const [known, setKnown] = useState(0);
+  const [rated, setRated] = useState(false);
   const [entry, setEntry] = useState<DictionaryEntry | null>(null);
   const [loadingDef, setLoadingDef] = useState(false);
+  const [justCompleted, setJustCompleted] = useState(false);
 
   const dict = useDictionary();
   const currentWord = words[currentIndex];
 
-  const handleFlip = () => {
-    setFlipped(!flipped);
-    // Fetch definition from API on first flip
+  const handleReveal = () => {
+    setFlipped(true);
     if (!entry && currentWord) {
       setLoadingDef(true);
       const decomposed = decomposeWordId(currentWord.id, l2Lang.code);
@@ -48,24 +81,34 @@ export default function ReviewScreen() {
     }
   };
 
-  // Reset entry when word changes
-  React.useEffect(() => { setEntry(null); }, [currentIndex]);
+  React.useEffect(() => { setEntry(null); setRated(false); }, [currentIndex]);
 
-  const handleResponse = useCallback((knew: boolean) => {
-    setReviewed((p) => p + 1);
-    if (knew) setKnown((p) => p + 1);
-    if (currentIndex < words.length - 1) {
-      setCurrentIndex((i) => i + 1);
-      setFlipped(false);
-    }
+  const handleRate = useCallback((quality: Rating) => {
+    setRated(true);
+    // Move to next card after a brief pause (matches Next.js animation timing)
+    setTimeout(() => {
+      if (currentIndex < words.length - 1) {
+        setCurrentIndex((i) => i + 1);
+        setFlipped(false);
+      } else {
+        setJustCompleted(true);
+      }
+    }, 600);
   }, [currentIndex, words.length]);
 
   const handleRestart = () => {
     setCurrentIndex(0);
     setFlipped(false);
-    setReviewed(0);
-    setKnown(0);
+    setRated(false);
+    setJustCompleted(false);
   };
+
+  // ── Card counts (new / learning / review) ──
+  const cardCounts = React.useMemo(() => {
+    let remaining = words.length - currentIndex;
+    let reviewed = currentIndex;
+    return { remaining, reviewed };
+  }, [currentIndex, words.length]);
 
   if (!loaded) {
     return (
@@ -78,23 +121,23 @@ export default function ReviewScreen() {
   if (words.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
-        <Text className="mb-4 px-4 py-5 text-xl font-bold text-foreground">{t('title.review')}</Text>
-        <RotateCcw size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
+        <BookOpen size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
         <Text className="text-center text-muted-foreground">{t('msg.no_saved_words')}</Text>
       </View>
     );
   }
 
-  if (currentIndex >= words.length) {
+  if (currentIndex >= words.length || justCompleted) {
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
-        <Text className="mb-2 text-2xl font-bold text-foreground">{t('title.review')}</Text>
-        <Text className="mb-4 text-muted-foreground">
-          Reviewed {reviewed}. Knew {known}.
+        <CheckCircle2 size={56} color={ICON_PRIMARY} style={{ marginBottom: 16 }} />
+        <Text className="mb-2 text-2xl font-bold text-foreground">{t('review.complete')}</Text>
+        <Text className="mb-4 text-center text-muted-foreground">
+          You reviewed {cardCounts.reviewed} cards. Great job!
         </Text>
         <Pressable onPress={handleRestart} className="flex-row items-center gap-2 rounded-lg bg-primary px-4 py-2">
           <RotateCcw size={16} color={ICON_ON_PRIMARY} />
-          <Text className="text-sm font-bold text-primary-foreground">{t('action.review')}</Text>
+          <Text className="text-sm font-bold text-primary-foreground">{t('action.review_again')}</Text>
         </Pressable>
       </View>
     );
@@ -104,30 +147,42 @@ export default function ReviewScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <View className="mb-4 flex-row items-center justify-between px-4 py-5">
-        <Text className="text-xl font-bold text-foreground">{t('title.review')}</Text>
-        <Text className="text-sm text-muted-foreground">
-          {currentIndex + 1} / {words.length}
-        </Text>
+      {/* Header with card counts */}
+      <View className="mb-2 flex-row items-center justify-between px-4 py-4">
+        <View>
+          <Text className="text-xl font-bold text-foreground">{t('title.review')}</Text>
+          <Text className="mt-0.5 text-xs text-muted-foreground">
+            {cardCounts.reviewed} done · {cardCounts.remaining} remaining
+          </Text>
+        </View>
+        <Pressable onPress={handleRestart} className="rounded-full bg-muted p-2">
+          <RotateCcw size={16} color={ICON_MUTED} />
+        </Pressable>
       </View>
 
       {/* Progress bar */}
       <View className="mx-4 h-1 rounded-full bg-muted">
-        <View className="h-full rounded-full bg-primary" style={{ width: `${progress * 100}%` }} />
+        <View className="h-full rounded-full bg-primary" style={{ width: `${Math.min(progress * 100, 100)}%` }} />
       </View>
+
+      {/* Card count indicator */}
+      <Text className="mt-2 px-4 text-xs text-muted-foreground">
+        {currentIndex + 1} / {words.length}
+      </Text>
 
       {/* Flashcard */}
       <View className="flex-1 items-center justify-center px-6">
         <Pressable
-          onPress={handleFlip}
+          onPress={!flipped ? handleReveal : undefined}
+          disabled={flipped}
           className="w-full max-w-sm rounded-xl border border-border bg-card p-8"
-          style={{ minHeight: 200 }}
+          style={{ minHeight: 240 }}
         >
           <Text className="text-center text-2xl font-bold text-foreground">
             {getDisplayName(currentWord!)}
           </Text>
           {flipped && (
-            <View className="mt-4 w-full border-t border-border pt-4">
+            <ScrollView className="mt-4 max-h-80 w-full border-t border-border pt-4">
               {loadingDef ? (
                 <ActivityIndicator size="small" color={ICON_MUTED} />
               ) : entry ? (
@@ -135,25 +190,30 @@ export default function ReviewScreen() {
               ) : (
                 <Text className="text-center text-sm text-muted-foreground">{getDisplayName(currentWord!)}</Text>
               )}
-            </View>
+            </ScrollView>
           )}
-          <Text className="mt-4 text-center text-xs text-muted-foreground">
-            {flipped ? t('action.tap_to_hide') : t('action.tap_to_reveal')}
-          </Text>
+          {!flipped && (
+            <Text className="mt-4 text-center text-xs text-muted-foreground">
+              {t('action.tap_to_reveal')}
+            </Text>
+          )}
         </Pressable>
       </View>
 
-      {/* Response buttons */}
-      {flipped && (
-        <View className="flex-row justify-center gap-4 px-4 pb-8">
-          <Pressable onPress={() => handleResponse(false)} className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 py-3">
-            <X size={18} color={ICON_DESTRUCTIVE} />
-            <Text className="text-sm font-medium text-destructive">{t('action.didnt_know')}</Text>
-          </Pressable>
-          <Pressable onPress={() => handleResponse(true)} className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 py-3">
-            <Check size={18} color={ICON_PRIMARY} />
-            <Text className="text-sm font-medium text-primary">{t('action.knew_it')}</Text>
-          </Pressable>
+      {/* Rating buttons — matches Next.js Again/Hard/Good/Easy */}
+      {flipped && !rated && (
+        <View className="flex-row gap-2 px-4 pb-8">
+          {RATING_LABELS.map((r) => (
+            <Pressable
+              key={r.key}
+              onPress={() => handleRate(r.key)}
+              className="flex-1 items-center rounded-lg py-3"
+              style={{ backgroundColor: RATING_ICON_COLORS[r.key] }}
+            >
+              <Text className="text-xs font-bold text-white">{r.label}</Text>
+              <Text className="mt-0.5 text-[10px] text-white/70">{r.hint}</Text>
+            </Pressable>
+          ))}
         </View>
       )}
     </View>
