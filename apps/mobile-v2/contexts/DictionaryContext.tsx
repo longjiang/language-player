@@ -46,15 +46,30 @@ interface DictionaryContextValue {
 const DictionaryContext = createContext<DictionaryContextValue | null>(null);
 
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Provider ────────────────────────────────
 
 const RECENT_STORAGE_KEY = 'zthRecentSearches';
 const MAX_RECENT = 10;
 
+// AsyncStorage fallback — SecureStore can fail on iOS simulators
+const recentStorage = {
+  getItem: async (key: string) => {
+    try { const v = await SecureStore.getItemAsync(key); if (v) return v; } catch {}
+    return AsyncStorage.getItem(key);
+  },
+  setItem: async (key: string, value: string) => {
+    try { await SecureStore.setItemAsync(key, value); } catch { await AsyncStorage.setItem(key, value); }
+  },
+  removeItem: async (key: string) => {
+    try { await SecureStore.deleteItemAsync(key); } catch { await AsyncStorage.removeItem(key); }
+  },
+};
+
 async function loadRecent(l2Code: string): Promise<string[]> {
   try {
-    const raw = await SecureStore.getItemAsync(`${RECENT_STORAGE_KEY}:${l2Code}`);
+    const raw = await recentStorage.getItem(`${RECENT_STORAGE_KEY}:${l2Code}`);
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch { return []; }
 }
@@ -66,7 +81,7 @@ async function saveRecent(l2Code: string, term: string) {
     filtered.unshift(term);
     const items = filtered.slice(0, MAX_RECENT);
     console.log('[Dict] saveRecent — l2:', l2Code, 'term:', term, 'items:', items.length);
-    await SecureStore.setItemAsync(`${RECENT_STORAGE_KEY}:${l2Code}`, JSON.stringify(items));
+    await recentStorage.setItem(`${RECENT_STORAGE_KEY}:${l2Code}`, JSON.stringify(items));
   } catch (e) { console.log('[Dict] saveRecent failed:', e); }
 }
 
@@ -137,7 +152,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
 
   const clearRecent = useCallback(async () => {
     try {
-      await SecureStore.deleteItemAsync(`${RECENT_STORAGE_KEY}:${l2Code}`);
+      await recentStorage.removeItem(`${RECENT_STORAGE_KEY}:${l2Code}`);
       setRecentSearches([]);
     } catch { /* ignore */ }
   }, [l2Code]);

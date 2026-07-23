@@ -898,7 +898,9 @@
         "word_level_display": "Word-Level Display"
     },
     "sort": {
+        "alphabetical": "Alphabetical",
         "most_viewed": "Most Viewed",
+        "newest": "Newest",
         "title": "Title",
         "year": "Year"
     },

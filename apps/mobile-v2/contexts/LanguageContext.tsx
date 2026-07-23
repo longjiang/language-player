@@ -15,7 +15,16 @@ export interface LanguageMeta {
 // For now, use the code as fallback — full lang.* resolution will be added
 // in Phase 2 when we integrate language-name lookups into the useT() hook.
 function getLanguageName(code: string): string {
-  return code;
+  // Resolve from locale JSON lang.* keys (e.g., lang.zh-Hans → "Chinese (Simplified)")
+  try {
+    const { getLocaleMessages } = require('@/contexts/IntlProvider');
+    const msgs = getLocaleMessages('en') as Record<string, unknown>;
+    const lang = (msgs as any)?.lang;
+    if (lang && typeof lang === 'object' && code in lang) {
+      return (lang as Record<string, string>)[code]!;
+    }
+  } catch {}
+  return code.replace('-', ' ').toUpperCase();
 }
 
 // RTL languages
