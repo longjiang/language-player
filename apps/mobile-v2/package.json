@@ -15,6 +15,7 @@
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
     "@langplayer/api-client": "*",
+    "@langplayer/docs": "*",
     "@langplayer/shared": "*",
     "@langplayer/utils": "*",
     "expo": "~57.0.0",
