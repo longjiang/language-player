@@ -57,7 +57,7 @@ export default function DictionaryScreen() {
       {!query && !loading && !results?.length && recentSearches.length === 0 && (
         <View className="mt-12 items-center px-8">
           <Search size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
-          <Text className="text-center text-muted-foreground">{t('placeholder.dictionary_search')}</Text>
+          <Text className="text-center text-muted-foreground">{t('title.dictionary')}</Text>
         </View>
       )}
 
