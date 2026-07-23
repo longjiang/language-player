@@ -140,7 +140,7 @@ export default function EpubPage() {
       {/* ── Content row: reader panel first, then sidebar ── */}
       <div className="flex gap-4 flex-1 min-h-0">
         {/* Content area */}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 flex flex-col min-h-0">
           {epub.toc.length === 0 && !epub.fileName ? (
             /* ── Upload zone ── */
             <EpubUpload
