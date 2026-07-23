@@ -55,9 +55,14 @@ interface LexicalEntry {
    *  Each level includes a `numeric` field — a normalized 1–7 difficulty
    *  that maps every scale onto a common ladder:
    *    1 = total beginner (HSK 1, CEFR A1, JLPT N5)
-   *    7 = advanced/native (HSK 6–7, CEFR C2, JLPT N1)
+   *    7 = advanced/native (HSK 7-9, CEFR C2, JLPT N1)
    *  This is the common denominator for cross-scale comparisons and
    *  drives features like the "Hard Words Only" phonetics filter.
+   *
+   *  NOTE: HSK 2025 level 7 uses the value "7-9" (not "7") — the 2025
+   *  standard merged the old levels 7, 8, and 9 into a single top band.
+   *  The `numeric` field normalizes this to 7. HSK 2010 level 6 maps to
+   *  numeric 6; HSK 2010 had no level 7-9 band.
    *
    *  null or empty array means unclassified (not "beginner"). */
   levels?: { scale: string; value: number | string; numeric: number }[] | null;

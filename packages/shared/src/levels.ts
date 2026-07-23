@@ -33,7 +33,7 @@ export const SCALES: Record<ScaleId, ScaleMeta> = {
     id: 'hsk_2025',
     shortPrefix: 'HSK',
     longPrefix: 'HSK (2025)',
-    labels: { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7' },
+    labels: { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7-9' },
   },
   cefr: {
     id: 'cefr',
