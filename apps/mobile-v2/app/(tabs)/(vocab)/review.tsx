@@ -103,11 +103,11 @@ export default function ReviewScreen() {
     setJustCompleted(false);
   };
 
-  // ── Card counts (new / learning / review) ──
+  // ── Card counts (new / learning / review) — matches Next.js colored dots ──
   const cardCounts = React.useMemo(() => {
-    let remaining = words.length - currentIndex;
-    let reviewed = currentIndex;
-    return { remaining, reviewed };
+    const remaining = words.length - currentIndex;
+    const reviewed = currentIndex;
+    return { remaining, reviewed, newCount: remaining, reviewCount: reviewed, total: words.length };
   }, [currentIndex, words.length]);
 
   if (!loaded) {
@@ -159,6 +159,28 @@ export default function ReviewScreen() {
           <RotateCcw size={16} color={ICON_MUTED} />
         </Pressable>
       </View>
+
+      {/* Card count indicators — matches Next.js colored dots */}
+      {cardCounts.total > 0 && (
+        <View className="mt-2 flex-row items-center gap-3 px-4">
+          {cardCounts.newCount > 0 && (
+            <View className="flex-row items-center gap-1">
+              <View className="h-2 w-2 rounded-full bg-blue-500" />
+              <Text className="text-xs text-blue-600">{cardCounts.newCount}</Text>
+            </View>
+          )}
+          {cardCounts.reviewCount > 0 && (
+            <View className="flex-row items-center gap-1">
+              <View className="h-2 w-2 rounded-full bg-green-500" />
+              <Text className="text-xs text-green-600">{cardCounts.reviewCount}</Text>
+            </View>
+          )}
+          <View className="flex-row items-center gap-1">
+            <View className="h-2 w-2 rounded-full bg-muted-foreground" />
+            <Text className="text-xs text-muted-foreground">{cardCounts.total}</Text>
+          </View>
+        </View>
+      )}
 
       {/* Progress bar */}
       <View className="mx-4 h-1 rounded-full bg-muted">
