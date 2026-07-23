@@ -314,3 +314,46 @@ The `nvm use 22` is **not optional** — the shell loses nvm context between ter
 EXPO_NO_POD_INSTALL=1 npx expo prebuild --platform ios && \
 /usr/bin/ruby -S pod install --project-directory=ios && \
 npx expo run:ios --no-install
+
+### Mobile-V2 Porting Rules
+
+**What "port" means**: Take the Next.js source file, translate EVERY line, EVERY component, EVERY toggle, EVERY control to React Native. Nothing skipped. Nothing simplified. Nothing "deferred." If Next.js has a feature, mobile-v2 must have it too.
+
+**Porting Checklist (follow in order):**
+1. Read the Next.js file completely first
+2. Map NEXT component/API → MOBILE equivalent (see table below)
+3. Use NativeWind className for styling (same tokens: `bg-background`, `text-foreground`, `border-border`, `bg-card`, etc.)
+4. Use `useT()` / `t('key')` for ALL user-facing strings — never hardcode English
+5. Use `ICON_MUTED`, `ICON_PRIMARY`, etc. from `@/lib/theme-colors` — never hardcode hex colors
+6. Check SettingsContext API before calling — it has `updateDisplay()`, `updatePlayback()`, `updateTokenizedText()`, `updateReview()`, `getL2()`, `updateL2()`, `ensureL2()` — NEVER `set()`
+7. Check DictionaryContext API — `doSearch()`, `saveRecent()`, `clearSearch()`, etc.
+8. Check hooks (`useSavedWords`, `useLanguage`, `useSettingsContext`, `useDictionaryContext`, `useInflection`, `useStreamingExplanation`, `useDictionary`) for available methods
+
+**Component Mapping Table:**
+
+| Next.js | Mobile-v2 |
+|---|---|
+| `<div className="...">` | `<View className="...">` |
+| `<span>`, `<p>`, `<h1>` | `<Text>` |
+| `<button>` | `<Pressable>` |
+| `<input type="checkbox">` + `<label>` | `<Switch>` |
+| `<input type="range">` | Stepper buttons (+/−) with `<Pressable>` |
+| `<select>` | Segmented `<Pressable>` row |
+| `onClick` | `onPress` |
+| `onChange` (text input) | `onChangeText` |
+| `e.target.checked` | direct `value` from Switch `onValueChange` |
+| `e.target.value` (range) | direct `number` from stepper |
+| `cursor-pointer` | Remove (RN handles touches) |
+| `hover:`, `focus:`, `active:` | Remove (web-only pseudo-classes) |
+| `<TabbedPanel>` | `<TabbedPanel>` (already ported, same API) |
+| `<TokenizedText>` | Skip if causes NativeWind interop crash; use plain `<Text>` |
+| `useSettingsContext()` | `useSettingsContext()` (same API, different file) |
+| `useLanguage()` → `{ l1, l2 }` | `useLanguage()` → `{ l1Lang, l2Lang }` (`.code` equivalent) |
+| `useSession()` / `useAuth()` | `useAuth()` (same shape: `user`, `logout`) |
+| `fetch(PYTHON_API_URL + ...)` | Same `fetch(PYTHON_API_URL + ...)` |
+| `import { Button } from '@/components/ui/button'` | Skip (not ported) |
+| `import Link from 'next/link'` | `useRouter()` from `expo-router` |
+| `router.push(url)` | `router.push(path as any)` |
+| `searchParams.get('key')` | `useLocalSearchParams<{ key: string }>()` |
+
+**GOLDEN RULE**: Port, don't invent. Every time you think "I'll simplify this" or "I'll skip this for now" or "this is too complex for mobile" — STOP. You're wrong. Port it exactly. If something crashes (like NativeWind interop), use inline styles as fallback, but KEEP the feature.
