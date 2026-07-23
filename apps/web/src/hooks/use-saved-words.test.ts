@@ -84,6 +84,6 @@ describe('mergeSavedWords', () => {
     const cloud: SavedLexicalItemStore = { zh: [cloudWord] };
 
     const merged = mergeSavedWords(local, cloud);
-    expect(merged['zh']![0]!.context.form).toBe('local-form');
+    expect(merged['zh']![0]!.context?.form).toBe('local-form');
   });
 });

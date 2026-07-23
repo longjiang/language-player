@@ -367,8 +367,8 @@ export default function ReviewPage() {
   useEffect(() => {
     if (!showDefinition || !getShowTranslation()) return;
 
-    const ctxText = currentCard?.word.context.text;
-    const savedTranslation = currentCard?.word.context.translation;
+    const ctxText = currentCard?.word.context?.text;
+    const savedTranslation = currentCard?.word.context?.translation;
     if (!ctxText || savedTranslation) {
       setContextTranslation(null);
       return;
@@ -392,7 +392,7 @@ export default function ReviewPage() {
     };
     fetchTranslation();
     return () => { cancelled = true; };
-  }, [showDefinition, currentCard?.word.context.text, l2Code, l1.code]);
+  }, [showDefinition, currentCard?.word.context?.text, l2Code, l1.code]);
 
   // ── Render states ──
 
@@ -509,6 +509,7 @@ export default function ReviewPage() {
 
   const entry = currentCard.entry;
   const wordForm = currentCard.word.forms[0] || entry?.head || currentCard.word.id;
+  const wordCtx = currentCard.word.context ?? { form: wordForm, text: '', textTitle: '' };
   const srs = currentCard.srs;
 
   return (
@@ -565,32 +566,32 @@ export default function ReviewPage() {
         }}
       >
         {/* Context sentence — always visible, tokenized/interactive */}
-        {currentCard.word.context.text && (
+        {wordCtx.text && (
           <div className="mb-4 p-3 bg-muted/50 rounded-lg text-left w-full">
             <p className="text-xs text-muted-foreground mb-1 font-medium">{t('review.context_label')}</p>
             <TextActionMenu
-              text={currentCard.word.context.text}
+              text={wordCtx.text}
               l2Code={l2Code}
               l1Code={baseCode(l1.code)}
             >
               <TokenizedText
-                text={currentCard.word.context.text}
+                text={wordCtx.text}
                 l2Code={l2Code}
-                highlightForm={currentCard.word.context.form}
+                highlightForm={wordCtx.form}
                 context={{
                   form: wordForm,
-                  text: currentCard.word.context.text,
-                  youtube_id: currentCard.word.context.youtube_id,
-                  videoTitle: currentCard.word.context.videoTitle,
+                  text: wordCtx.text,
+                  youtube_id: wordCtx.youtube_id,
+                  videoTitle: wordCtx.videoTitle,
                 }}
               />
             </TextActionMenu>
             <div className="text-xs text-muted-foreground/70 mt-1">
-              <SavedWordSource context={currentCard.word.context} date={currentCard.word.date} />
+              <SavedWordSource context={wordCtx} date={currentCard.word.date} />
             </div>
-            {showDefinition && getShowTranslation() && (currentCard.word.context.translation || contextTranslation) && (
+            {showDefinition && getShowTranslation() && (wordCtx.translation || contextTranslation) && (
               <p className="text-sm mt-2 italic text-muted-foreground border-t border-border pt-2">
-                {currentCard.word.context.translation || contextTranslation}
+                {wordCtx.translation || contextTranslation}
               </p>
             )}
           </div>
@@ -625,12 +626,12 @@ export default function ReviewPage() {
                 l1Code={baseCode(l1.code)}
                 saveContext={{
                   form: wordForm,
-                  text: currentCard.word.context.text,
-                  youtube_id: currentCard.word.context.youtube_id,
-                  videoTitle: currentCard.word.context.videoTitle,
+                  text: wordCtx.text,
+                  youtube_id: wordCtx.youtube_id,
+                  videoTitle: wordCtx.videoTitle,
                 }}
-                contextText={currentCard.word.context.text}
-                contextForm={currentCard.word.context.form}
+                contextText={wordCtx.text}
+                contextForm={wordCtx.form}
               />
             ) : (
               <p className="text-muted-foreground italic text-sm text-center">

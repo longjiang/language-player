@@ -484,8 +484,9 @@ export interface SavedLexicalItemRecord {
   /** Unix-ms timestamp of the FIRST save. */
   date: number;
   /** @deprecated Single context — legacy. Use `instances` instead.
-   *  Still written for backward compatibility (= instances[0].context). */
-  context: SavedWordContext;
+   *  Still written for backward compatibility (= instances[0].context).
+   *  Optional because legacy Classic data may not include it. */
+  context?: SavedWordContext;
   /** Multiple occurrences, each with its own surface form and context.
    *  When present, this is the source of truth. When absent, `context`
    *  is normalized into a single-element array by `normalizeInstances()`. */

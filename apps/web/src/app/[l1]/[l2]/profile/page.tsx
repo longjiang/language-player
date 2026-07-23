@@ -458,7 +458,7 @@ export default function ProfilePage() {
                     {(() => {
                       const insts = normalizeInstances(word);
                       const ctx = insts[insts.length - 1]?.context ?? word.context;
-                      if (ctx.videoTitle) {
+                      if (ctx?.videoTitle) {
                         return (
                           <p className="mt-0.5 truncate text-xs text-muted-foreground">
                             <Play className="mr-1 inline h-3 w-3" />
@@ -466,7 +466,7 @@ export default function ProfilePage() {
                           </p>
                         );
                       }
-                      if (ctx.text && !ctx.videoTitle) {
+                      if (ctx?.text && !ctx.videoTitle) {
                         return (
                           <p className="mt-0.5 truncate text-xs text-muted-foreground">
                             {ctx.text}
