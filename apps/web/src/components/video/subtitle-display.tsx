@@ -5,7 +5,6 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
-import { getShowPhonetics, setShowPhonetics } from '@/lib/settings';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
@@ -50,12 +49,11 @@ function stripDurationPrefix(text: string): string {
 
 export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, mode = 'multiline', contextLines = 1, highlightTerms }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
-  const { display, updateDisplay } = useSettingsContext();
+  const { display, updateDisplay, getL2, updateL2 } = useSettingsContext();
   const t = useT();
   const l2Code = baseCode(l2.code);
   const l1Code = baseCode(l1.code);
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
-  const [showPhonetics, setShowPhoneticsState] = useState(true);
   const [activeIndex, setActiveIndex] = useState(-1);
   const isSingleline = mode === 'singleline';
   // In singleline mode, never show translation (lines come from subs-search, not full subtitle track)
@@ -85,9 +83,8 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     fetchSubtitles().catch(() => {});
   }, [youtubeId, l2Code, l1Code, initialLines, isSingleline]);
 
-  useEffect(() => {
-    setShowPhoneticsState(getShowPhonetics());
-  }, []);
+  const l2Settings = getL2(l2.code);
+  const showPhonetics = l2Settings.tokenSpan.phonetics.show !== false;
 
   const { translatedLines, loading: translating, progress } = useSubtitleTranslation(
     l2Lines,
@@ -145,9 +142,11 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   };
 
   const togglePhonetics = () => {
-    const next = !showPhonetics;
-    setShowPhoneticsState(next);
-    setShowPhonetics(next);
+    const ts = l2Settings.tokenSpan;
+    const next = showPhonetics ? false : 'ruby';
+    updateL2(l2.code, {
+      tokenSpan: { ...ts, phonetics: { ...ts.phonetics, show: next } },
+    });
   };
 
   // ── Empty state ──

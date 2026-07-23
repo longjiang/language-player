@@ -11,7 +11,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { getUseTraditional } from '@/lib/settings';
+import { useSettingsContext } from '@/providers/settings-provider';
 
 /** ISO 639-1 codes for languages that use Chinese characters and have a
  *  traditional/simplified script toggle. */
@@ -28,9 +28,11 @@ const HAN_SCRIPT_LANGS = new Set(['vi', 'ko']);
  * Returns script preference helpers for the given L2 language.
  */
 export function useScriptPreference(l2Code: string) {
+  const { getL2 } = useSettingsContext();
+  const l2Settings = getL2(l2Code);
   const isChinese = isChineseLang(l2Code);
   const isHanScript = HAN_SCRIPT_LANGS.has(l2Code);
-  const useTraditional = isChinese ? getUseTraditional() : false;
+  const useTraditional = isChinese ? l2Settings.display.traditional : false;
 
   return useMemo(() => {
     /**

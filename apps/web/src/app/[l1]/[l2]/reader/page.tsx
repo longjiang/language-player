@@ -9,7 +9,7 @@ import type { LemmatizedToken, SavedWordContext, NoteListItem, Note } from '@lan
 import { apiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
-import { getUseTraditional } from '@/lib/settings';
+import { useSettingsContext } from '@/providers/settings-provider';
 import { toTraditional } from '@/lib/chinese-script';
 import {
   Loader2, BookOpen, PenLine,
@@ -76,8 +76,10 @@ export default function ReaderPage() {
   const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
   const [convertedText, setConvertedText] = useState(text);
 
+  const { getL2 } = useSettingsContext();
+  const l2Settings = getL2(l2.code);
   const isChinese = l2.code === 'zh' || l2.code.startsWith('zh-');
-  const useTraditional = isChinese ? getUseTraditional() : false;
+  const useTraditional = isChinese ? l2Settings.display.traditional : false;
 
   // ── Notes ──
   const { data: session } = useSession();

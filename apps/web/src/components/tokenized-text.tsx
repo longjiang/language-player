@@ -7,7 +7,6 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { getUseTraditional } from '@/lib/settings';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
@@ -110,8 +109,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     let cancelled = false;
 
     async function convert() {
+      const l2Settings = getL2(l2Code);
       const isChinese = baseCode(l2Code) === 'zh';
-      if (!isChinese || !getUseTraditional()) {
+      if (!isChinese || !l2Settings.display.traditional) {
         setConvertedText(text);
         return;
       }
