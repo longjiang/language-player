@@ -6,7 +6,6 @@ import { useReaderNotes } from '@/hooks/use-reader-notes';
 import type { NoteListItem } from '@langplayer/shared';
 import { BookOpen, PenLine, Plus, Trash2, StickyNote } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { TokenizedText } from '@/components/TokenizedText';
 import { parseMarkdownBlocks } from '@/lib/parse-markdown';
 import type { TextBlock } from '@/lib/parse-markdown';
@@ -19,7 +18,6 @@ export default function ReaderScreen() {
   const [text, setText] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('edit');
   const [blocks, setBlocks] = useState<TextBlock[] | null>(null);
-  const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [renameId, setRenameId] = useState<number | null>(null);
@@ -145,7 +143,6 @@ export default function ReaderScreen() {
                       <TokenizedText
                         text={block.text}
                         l2Code={l2Lang.code}
-                        onWordPress={(word) => setSelectedWord(word)}
                       />
                     )}
                     {block.type === 'blockquote' && (
@@ -153,7 +150,6 @@ export default function ReaderScreen() {
                         <TokenizedText
                           text={block.text}
                           l2Code={l2Lang.code}
-                          onWordPress={(word) => setSelectedWord(word)}
                         />
                       </View>
                     )}
@@ -164,7 +160,6 @@ export default function ReaderScreen() {
                           <TokenizedText
                             text={block.text}
                             l2Code={l2Lang.code}
-                            onWordPress={(word) => setSelectedWord(word)}
                           />
                         </View>
                       </View>
@@ -251,12 +246,6 @@ export default function ReaderScreen() {
           </View>
         )}
       </View>
-
-      <DictionaryPopup
-        visible={!!selectedWord}
-        word={selectedWord ?? ''}
-        onClose={() => setSelectedWord(null)}
-      />
     </View>
   );
 }

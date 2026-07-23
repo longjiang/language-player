@@ -4,7 +4,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useEpub } from '@/hooks/use-epub';
 import { TokenizedText } from '@/components/TokenizedText';
-import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { parseMarkdownBlocks } from '@/lib/parse-markdown';
 import type { TextBlock } from '@/lib/parse-markdown';
@@ -17,7 +16,6 @@ export default function EpubReaderScreen() {
   const [text, setText] = useState('');
   const [blocks, setBlocks] = useState<TextBlock[] | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
   const onChapterChange = useCallback((chapterText: string, _title: string) => {
     setText(chapterText);
@@ -123,16 +121,16 @@ export default function EpubReaderScreen() {
                     </Text>
                   )}
                   {block.type === 'paragraph' && (
-                    <TokenizedText text={block.text} l2Code={l2Lang.code} onWordPress={(w) => setSelectedWord(w)} />
+                    <TokenizedText text={block.text} l2Code={l2Lang.code} />
                   )}
                   {block.type === 'blockquote' && (
                     <View className="border-l-2 border-muted-foreground/30 pl-3">
-                      <TokenizedText text={block.text} l2Code={l2Lang.code} onWordPress={(w) => setSelectedWord(w)} />
+                      <TokenizedText text={block.text} l2Code={l2Lang.code} />
                     </View>
                   )}
                   {block.type === 'list-item' && (
                     <View className="flex-row"><Text className="mr-2 text-muted-foreground">•</Text>
-                      <View className="flex-1"><TokenizedText text={block.text} l2Code={l2Lang.code} onWordPress={(w) => setSelectedWord(w)} /></View>
+                      <View className="flex-1"><TokenizedText text={block.text} l2Code={l2Lang.code} /></View>
                     </View>
                   )}
                 </View>
@@ -152,8 +150,6 @@ export default function EpubReaderScreen() {
           />
         )}
       </View>
-
-      <DictionaryPopup visible={!!selectedWord} word={selectedWord ?? ''} onClose={() => setSelectedWord(null)} />
     </View>
   );
 }

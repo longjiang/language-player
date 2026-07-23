@@ -9,7 +9,6 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
 import { parseMarkdownBlocks, type TextBlock } from '@/lib/parse-markdown';
 import { TokenizedText } from '@/components/TokenizedText';
-import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { Globe } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
@@ -23,7 +22,6 @@ export default function WebReaderScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [blocks, setBlocks] = useState<TextBlock[] | null>(null);
-  const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
   const handleLoad = useCallback(async (loadUrl?: string) => {
     const targetUrl = loadUrl || url;
@@ -133,7 +131,6 @@ export default function WebReaderScreen() {
                   <TokenizedText
                     text={block.text}
                     l2Code={l2Lang.code}
-                    onWordPress={(word) => setSelectedWord(word)}
                   />
                 )}
                 {block.type === 'blockquote' && (
@@ -141,7 +138,6 @@ export default function WebReaderScreen() {
                     <TokenizedText
                       text={block.text}
                       l2Code={l2Lang.code}
-                      onWordPress={(word) => setSelectedWord(word)}
                     />
                   </View>
                 )}
@@ -152,7 +148,6 @@ export default function WebReaderScreen() {
                       <TokenizedText
                         text={block.text}
                         l2Code={l2Lang.code}
-                        onWordPress={(word) => setSelectedWord(word)}
                       />
                     </View>
                   </View>
@@ -183,12 +178,6 @@ export default function WebReaderScreen() {
         )}
       </ScrollView>
 
-      {/* ── Dictionary Popup ── */}
-      <DictionaryPopup
-        visible={!!selectedWord}
-        word={selectedWord ?? ''}
-        onClose={() => setSelectedWord(null)}
-      />
     </View>
   );
 }
