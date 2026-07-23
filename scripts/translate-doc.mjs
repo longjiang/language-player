@@ -7,7 +7,7 @@
  * Usage:
  *   nvm use 22
  *   node scripts/translate-doc.mjs <path-to-md>
- *   node scripts/translate-doc.mjs apps/web/content/docs/media/explore.md
+ *   node scripts/translate-doc.mjs packages/docs/content/media/explore.md
  *
  * What it does:
  *   1. Resolves {$key} from translations.csv for every locale (always).
@@ -29,8 +29,8 @@ if (major < 20) {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const DOCS_DIR = resolve(ROOT, 'apps/web/content/docs');
-const OUT_DIR = resolve(ROOT, 'apps/web/src/data/docs-i18n');
+const DOCS_DIR = resolve(ROOT, 'packages/docs/content');
+const OUT_DIR = resolve(ROOT, 'packages/docs/i18n');
 const CSV_PATH = resolve(ROOT, 'translations.csv');
 const API_URL = process.env.PYTHON_API_URL || 'http://localhost:5001';
 
@@ -98,7 +98,7 @@ function docSlug(filePath) {
 const filePath = process.argv[2];
 if (!filePath) {
   console.error('Usage: node scripts/translate-doc.mjs <path-to-md>');
-  console.error('Example: node scripts/translate-doc.mjs apps/web/content/docs/media/explore.md');
+  console.error('Example: node scripts/translate-doc.mjs packages/docs/content/media/explore.md');
   process.exit(1);
 }
 

@@ -26,8 +26,8 @@ function getDoc(l1: string, slug: string[]): { content: string } | null {
 
   // 1. Try locale JSON (in data/docs-i18n/)
   const dataDirs = [
-    resolve(process.cwd(), 'apps/web/src/data/docs-i18n'),
-    resolve(process.cwd(), 'src/data/docs-i18n'),
+    resolve(process.cwd(), '../packages/docs/i18n'),
+    resolve(process.cwd(), '../packages/docs/i18n'),
   ];
   for (const dataDir of dataDirs) {
     try {
@@ -40,8 +40,8 @@ function getDoc(l1: string, slug: string[]): { content: string } | null {
 
   // 2. Fall back to raw .md
   const possibleDirs = [
-    resolve(process.cwd(), 'apps/web/content/docs'),
-    resolve(process.cwd(), 'content/docs'),
+    resolve(process.cwd(), '../packages/docs/content'),
+    resolve(process.cwd(), '../packages/docs/content'),
   ];
   for (const docsDir of possibleDirs) {
     try {
@@ -106,8 +106,8 @@ function categoryLabel(slug: string): string {
 function getAllDocs(l1: string): DocMeta[] {
   const titleMap = loadTitleMap(l1);
   const possibleDirs = [
-    resolve(process.cwd(), 'apps/web/content/docs'),
-    resolve(process.cwd(), 'content/docs'),
+    resolve(process.cwd(), '../packages/docs/content'),
+    resolve(process.cwd(), '../packages/docs/content'),
   ];
   for (const docsDir of possibleDirs) {
     try {
@@ -121,8 +121,8 @@ function getAllDocs(l1: string): DocMeta[] {
 function loadTitleMap(l1: string): Map<string, string> | undefined {
   // Always try locale JSON — en.json has resolved {$key} titles
   const dataDirs = [
-    resolve(process.cwd(), 'apps/web/src/data/docs-i18n'),
-    resolve(process.cwd(), 'src/data/docs-i18n'),
+    resolve(process.cwd(), '../packages/docs/i18n'),
+    resolve(process.cwd(), '../packages/docs/i18n'),
   ];
   for (const dataDir of dataDirs) {
     try {
@@ -149,8 +149,8 @@ function getSearchIndex(l1: string): DocEntry[] {
   if (localeEntries) return localeEntries;
   // Fall back to raw .md files (English)
   const possibleDirs = [
-    resolve(process.cwd(), 'apps/web/content/docs'),
-    resolve(process.cwd(), 'content/docs'),
+    resolve(process.cwd(), '../packages/docs/content'),
+    resolve(process.cwd(), '../packages/docs/content'),
   ];
   for (const docsDir of possibleDirs) {
     const entries: DocEntry[] = [];
@@ -163,9 +163,8 @@ function getSearchIndex(l1: string): DocEntry[] {
 /** Load translated entries from docs-i18n/{l1}.json if available. */
 function loadLocaleEntries(l1: string): DocEntry[] | null {
   const dataDirs = [
-    resolve(process.cwd(), 'src/data/docs-i18n'),
-    resolve(process.cwd(), 'apps/web/src/data/docs-i18n'),
-    resolve(process.cwd(), '..', 'apps/web/src/data/docs-i18n'),
+    resolve(process.cwd(), '../packages/docs/i18n'),
+    resolve(process.cwd(), '../packages/docs/i18n'),
   ];
   for (const dataDir of dataDirs) {
     try {

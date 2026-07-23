@@ -64,8 +64,8 @@ function readDocsTree(dir: string, basePath: string = '', titleMap?: Map<string,
 function getDocs(l1: string): DocMeta[] {
   const titleMap = loadTitleMap(l1);
   const possibleDirs = [
-    resolve(process.cwd(), 'apps/web/content/docs'),
-    resolve(process.cwd(), 'content/docs'),
+    resolve(process.cwd(), '../packages/docs/content'),
+    resolve(process.cwd(), '../packages/docs/content'),
   ];
   for (const docsDir of possibleDirs) {
     try { return readDocsTree(docsDir, '', titleMap); } catch { /* try next */ }
@@ -76,8 +76,7 @@ function getDocs(l1: string): DocMeta[] {
 /** Load slug→resolved-title map from the locale JSON if available. */
 function loadTitleMap(l1: string): Map<string, string> | undefined {
   const dataDirs = [
-    resolve(process.cwd(), 'apps/web/src/data/docs-i18n'),
-    resolve(process.cwd(), 'src/data/docs-i18n'),
+    resolve(process.cwd(), '../packages/docs/i18n'),
   ];
   for (const dataDir of dataDirs) {
     try {
@@ -138,8 +137,8 @@ function getSearchIndex(l1: string): DocEntry[] {
   if (localeEntries) return localeEntries;
   // Fall back to raw .md files (English)
   const possibleDirs = [
-    resolve(process.cwd(), 'apps/web/content/docs'),
-    resolve(process.cwd(), 'content/docs'),
+    resolve(process.cwd(), '../packages/docs/content'),
+    resolve(process.cwd(), '../packages/docs/content'),
   ];
   for (const docsDir of possibleDirs) {
     const entries: DocEntry[] = [];
@@ -152,9 +151,8 @@ function getSearchIndex(l1: string): DocEntry[] {
 /** Load translated entries from docs-i18n/{l1}.json if available. */
 function loadLocaleEntries(l1: string): DocEntry[] | null {
   const dataDirs = [
-    resolve(process.cwd(), 'src/data/docs-i18n'),
-    resolve(process.cwd(), 'apps/web/src/data/docs-i18n'),
-    resolve(process.cwd(), '..', 'apps/web/src/data/docs-i18n'),
+    resolve(process.cwd(), '../packages/docs/i18n'),
+    resolve(process.cwd(), '../packages/docs/i18n'),
   ];
   for (const dataDir of dataDirs) {
     try {
