@@ -57,6 +57,8 @@ export function useSavedWords() {
       const cloud = cloudData.saved_words
         ? (JSON.parse(cloudData.saved_words) as SavedLexicalItemStore)
         : {};
+      // Sanitize cloud data before merging — cloud may have records with missing forms/context
+      sanitizeStore(cloud);
       setSavedWords((prev) => {
         const merged = mergeSavedWords(prev, cloud);
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
@@ -250,6 +252,10 @@ export function mergeSavedWords(local: SavedLexicalItemStore, cloud: SavedLexica
     for (const cw of cloudWords) {
       const lw = localById.get(cw.id);
       if (!lw) {
+        // Sanitize cloud-only words before adding — they may have missing forms/context
+        sanitizeForms(cw);
+        sanitizeContext(cw);
+        if (typeof cw.date !== 'number') cw.date = Date.now();
         localWords.push(cw);
       } else {
         // Merge instances from both, dedup
