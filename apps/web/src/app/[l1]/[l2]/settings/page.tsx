@@ -6,6 +6,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
+import { translateText } from '@/lib/translate';
 import { getSampleSentence } from '@langplayer/shared';
 import { TokenizedText } from '@/components/tokenized-text';
 import { VoicePicker } from '@/components/voice-picker';
@@ -101,6 +102,20 @@ export default function SettingsPage() {
   );
 
   const previewText = getSampleSentence(l2.code);
+  const [previewTranslation, setPreviewTranslation] = useState('');
+
+  // Fetch L1 translation for the preview box
+  useEffect(() => {
+    if (!previewText || !display.translation) {
+      setPreviewTranslation('');
+      return;
+    }
+    let cancelled = false;
+    translateText(previewText, l1.code, l2.code).then(result => {
+      if (!cancelled) setPreviewTranslation(result);
+    });
+    return () => { cancelled = true; };
+  }, [previewText, l1.code, l2.code, display.translation]);
 
   if (!loaded) {
     return <div className="mx-auto max-w-lg px-4 py-12 text-center text-muted-foreground">{t('msg.loading')}</div>;
@@ -145,6 +160,11 @@ export default function SettingsPage() {
             <Section title={t('label.tokenized_text_preview')}>
               <div className="rounded-lg border border-border bg-muted/50 p-4">
                 <TokenizedText text={previewText} l2Code={l2.code} textScale={tokenizedText.zoom} />
+                {previewTranslation && (
+                  <p className="pt-1 text-sm text-muted-foreground leading-relaxed">
+                    {previewTranslation}
+                  </p>
+                )}
               </div>
             </Section>
           )}
