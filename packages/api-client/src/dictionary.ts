@@ -17,9 +17,9 @@ export function useDictionary() {
         params: { l2, dict: dictId, id: entryId, l1 },
       }),
 
-    /** Tokenize + lemmatize a sentence. POST /lemmatize */
+    /** Tokenize + lemmatize a sentence. POST /lemmatize-normalized */
     tokenize: (text: string, l2: string) =>
-      apiClient.post<LemmatizeResponse>('/lemmatize', { text, l2 }),
+      apiClient.post<LemmatizeResponse>('/lemmatize-normalized', { text, l2 }),
 
     /** Get saved words for the current user. */
     getSavedWords: (lang: string, page?: number) =>

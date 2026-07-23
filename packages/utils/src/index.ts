@@ -28,3 +28,4 @@ export {
   applyRomajiAccent,
   circledPattern,
 } from './pitch-accent';
+export { parseSubsL2, _parseCSVRow, stripTimestampPrefix, findMatchLine } from './subs-csv';

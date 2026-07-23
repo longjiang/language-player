@@ -6,6 +6,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useDictionary } from '@langplayer/api-client';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
+import { SubsSearchResults } from '@/components/video/SubsSearchResults';
+import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { decomposeWordId } from '@langplayer/shared';
@@ -83,6 +85,11 @@ export default function WordDetailScreen() {
   const entry = contextEntry ?? apiEntry;
   const loading = ctxLoading || apiLoading;
   const error = ctxError ?? apiError;
+
+  // Inflected search terms for subs-search (head + alternate forms)
+  const { allTerms, headTerm, formCount } = useInflectedSearchTerms(entry, l2Lang.code);
+  const [exactMatch, setExactMatch] = useState(false);
+  const searchTermString = exactMatch ? headTerm : allTerms.join(',');
 
   if (loading) {
     return (
@@ -167,6 +174,17 @@ export default function WordDetailScreen() {
               {entry.dictionary.name} ({entry.dictionary.version})
             </Text>
           </View>
+        </View>
+
+        {/* Examples from Videos */}
+        <View className="mb-4 border-t border-border pt-4">
+          <Text className="mb-2 text-sm font-semibold text-muted-foreground">{'Examples from Videos'}</Text>
+          <SubsSearchResults
+            term={searchTermString}
+            exactMatch={exactMatch}
+            onExactToggle={setExactMatch}
+            formCount={formCount}
+          />
         </View>
       </ScrollView>
     </View>
