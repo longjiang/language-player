@@ -421,7 +421,7 @@ See [Saved Words & Review](/docs/vocab/saved-words) for how the review system wo
 - Quiz Mode is most effective with shorter texts — start with a paragraph, not a full article
 - Your per-language settings (phonetics, character set, voice) travel with you when you switch between language pairs
 ` },
-  { path: 'getting-started', title: 'Getting Started', category: 'getting-started', content: `# Getting Started
+  { path: 'getting-started', title: 'Getting Started', category: '', content: `# Getting Started
 
 Welcome to Language Player — learn any language by watching real videos with interactive subtitles. Click any word to see its definition, save it to your vocabulary, and let the app schedule reviews so you never forget.
 
@@ -1395,7 +1395,6 @@ Toggle **Exact Match** to restrict results to only the dictionary headword. This
 export const DOC_CATEGORIES: { key: string; title: string }[] = [
   { key: 'account', title: 'Account' },
   { key: 'general', title: 'General' },
-  { key: 'getting-started', title: 'Getting Started' },
   { key: 'media', title: 'Media' },
   { key: 'reading', title: 'Reading' },
   { key: 'vocab', title: 'Vocab' },
