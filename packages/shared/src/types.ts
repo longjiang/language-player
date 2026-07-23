@@ -506,11 +506,27 @@ export interface SavedLexicalItemRecord {
  *  This is what gets serialized to localStorage and the Directus column. */
 export type SavedLexicalItemStore = Record<string, SavedLexicalItemRecord[]>;
 
+/** Per-L2 learning progress entry. Mirrors Classic's zthProgress shape. */
+export interface L2Progress {
+  /** Proficiency level (1–7 numeric). Stored as number but some legacy data uses strings (e.g. `"4"`). */
+  level?: number | string;
+  /** Total time studying this language, in milliseconds. */
+  time?: number;
+  /** Hours studied (rare — mostly from very old Classic data). */
+  hours?: number;
+  /** Weekly study hours goal/target set by the user. */
+  weeklyHours?: number;
+}
+
+/** Per-L2 learning progress store, keyed by ISO 639-1 code.
+ *  Some legacy entries may be `null` instead of an object. */
+export type ProgressStore = Record<string, L2Progress | null>;
+
 /** Directus user_data record shape (partial — only the fields we sync). */
 export interface UserDataRecord {
   id: string | number;
   saved_words: string;  // JSON.stringify(SavedLexicalItemStore)
-  progress?: string;    // JSON (reserved for Phase 6)
+  progress?: string;    // JSON.stringify(ProgressStore)
   srs_progress?: string;  // JSON.stringify(SrsProgressStore)
 }
 
