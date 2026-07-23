@@ -2,7 +2,6 @@ import { View, Text, Pressable, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { AlertTriangle } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
-import { ICON_MUTED } from '@/lib/theme-colors';
 
 /**
  * Top-level error page redirected to by the Python backend after a failed
