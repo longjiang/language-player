@@ -12,7 +12,7 @@ import { SavedWordRow } from '@/components/dictionary/saved-word-row';
 import { WordListItem } from '@/components/dictionary/word-list';
 import { SaveButton } from '@/components/save-button';
 import { buildEntryRoute } from '@/lib/entry-route';
-import { decomposeWordId } from '@/lib/word-id-resolver';
+import { decomposeWordId } from '@langplayer/shared';
 import type { WordListNavItem as Wlni } from '@/lib/word-list-navigation';
 import { BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';

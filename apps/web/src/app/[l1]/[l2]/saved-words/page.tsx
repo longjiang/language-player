@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { WordList } from '@/components/dictionary/word-list';
 import { SavedWordRow } from '@/components/dictionary/saved-word-row';
 import { setWordListNav, savedWordToNavItem, buildEntryRouteWithList } from '@/lib/word-list-navigation';
-import { decomposeWordId } from '@/lib/word-id-resolver';
+import { decomposeWordId } from '@langplayer/shared';
 import type { SavedLexicalItemRecord, SrsFields } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 

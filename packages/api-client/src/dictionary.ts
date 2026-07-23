@@ -11,6 +11,12 @@ export function useDictionary() {
         l1,
       }),
 
+    /** Fetch a single entry by ID. GET /dictionary/entry?l2=&dict=&id=&l1= */
+    getEntry: (l2: string, dictId: string, entryId: string, l1: string = 'en') =>
+      apiClient.get<{ entry: DictionaryEntry }>('/dictionary/entry', {
+        params: { l2, dict: dictId, id: entryId, l1 },
+      }),
+
     /** Tokenize + lemmatize a sentence. POST /lemmatize */
     tokenize: (text: string, l2: string) =>
       apiClient.post<LemmatizeResponse>('/lemmatize', { text, l2 }),

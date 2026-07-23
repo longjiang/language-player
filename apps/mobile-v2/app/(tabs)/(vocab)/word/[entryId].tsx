@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
+import { useDictionary } from '@langplayer/api-client';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import type { DictionaryEntry } from '@langplayer/shared';
+import { decomposeWordId } from '@langplayer/shared';
 
 export default function WordDetailScreen() {
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
   const t = useT();
-  const { results, loading, error, sidebarSource, cameFromSearch } = useDictionaryContext();
+  const { l2Lang } = useLanguage();
+  const { results, loading: ctxLoading, error: ctxError, sidebarSource, cameFromSearch } = useDictionaryContext();
+  const dict = useDictionary();
+
+  // State for API-fetched entry (deep-link fallback)
+  const [apiEntry, setApiEntry] = useState<DictionaryEntry | null>(null);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // DEBUG: This screen receives the entry ID via expo-router params and looks up
   // the full entry from context (sidebarSource set by handleEntryPress, or fallback
@@ -22,22 +33,56 @@ export default function WordDetailScreen() {
     console.log('[Dict] WordDetailScreen mounted with entryId:', entryId);
   }, [entryId]);
 
-  // Find the entry from sidebar source or search results
-  const entry = React.useMemo(() => {
-    console.log('[Dict] WordDetailScreen useMemo — entryId:', entryId, 'sidebarSource.kind:', sidebarSource.kind);
+  // Find the entry from sidebar source or search results (context).
+  // The route may have ~ in place of , (CEDICT encoding), but context entries
+  // have the raw ID with commas. Match both forms.
+  const contextEntry = React.useMemo(() => {
+    const decodedId = entryId.replace(/~/g, ',');
+    console.log('[Dict] WordDetailScreen useMemo — entryId:', entryId, 'decodedId:', decodedId, 'sidebarSource.kind:', sidebarSource.kind, 'results count:', results?.length ?? 0);
     if (sidebarSource.kind === 'results') {
-      const found = sidebarSource.items.find((e) => e.id === entryId);
-      console.log('[Dict] WordDetailScreen — searching sidebarSource.results, found:', !!found, found ? `head: ${found.head}` : '');
+      const found = sidebarSource.items.find((e) => e.id === entryId || e.id === decodedId);
+      console.log('[Dict] WordDetailScreen — searching sidebarSource.results, found:', !!found);
       return found;
     }
     if (results) {
-      const found = results.find((e) => e.id === entryId);
-      console.log('[Dict] WordDetailScreen — searching results, found:', !!found, found ? `head: ${found.head}` : '');
+      const found = results.find((e) => e.id === entryId || e.id === decodedId);
+      console.log('[Dict] WordDetailScreen — searching results, found:', !!found);
       return found;
     }
-    console.log('[Dict] WordDetailScreen — no source available to find entry');
     return null;
   }, [entryId, results, sidebarSource]);
+
+  // Deep-link fallback: fetch entry from API when not found in context.
+  // Uses decomposeWordId() (matches Next.js lib/word-id-resolver.ts) to
+  // determine the correct dictionary and scoped entry ID for the API call.
+  useEffect(() => {
+    if (contextEntry || !entryId) return;
+    const l2 = l2Lang.code;
+    const decomposed = decomposeWordId(entryId, l2);
+    if (!decomposed) {
+      console.log('[Dict] WordDetailScreen — deep-link: unrecognized entryId format:', entryId);
+      setApiError('Unrecognized entry ID format');
+      return;
+    }
+    const { dict: dictId, id: scopedId } = decomposed;
+    console.log('[Dict] WordDetailScreen — deep-link: fetching entry from API, l2:', l2, 'dict:', dictId, 'id:', scopedId);
+    setApiLoading(true);
+    setApiError(null);
+    dict.getEntry(l2, dictId, scopedId)
+      .then((res) => {
+        console.log('[Dict] WordDetailScreen — API returned entry:', res.entry?.head);
+        setApiEntry(res.entry);
+      })
+      .catch((e) => {
+        console.log('[Dict] WordDetailScreen — API fetch failed:', e?.message);
+        setApiError(e?.message ?? 'Failed to load entry');
+      })
+      .finally(() => setApiLoading(false));
+  }, [contextEntry, entryId, l2Lang.code]);
+
+  const entry = contextEntry ?? apiEntry;
+  const loading = ctxLoading || apiLoading;
+  const error = ctxError ?? apiError;
 
   if (loading) {
     return (
