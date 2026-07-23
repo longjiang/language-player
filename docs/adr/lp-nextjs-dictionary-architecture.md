@@ -133,8 +133,9 @@ interface DictionaryEntry {
   // ── Optional metadata ──
   part_of_speech?: string;
   level?: {
-    scale: "hsk_2010" | "hsk_2026" | "cefr" | "jlpt";
-    value: number | string;
+    scale: "hsk_2010" | "hsk_2025" | "cefr" | "jlpt";
+    value: number | string;  // HSK 2025 level 7 uses "7-9" — see note below
+    numeric: number;         // normalized 1–7 across all scales
   };
   frequency?: number;            // 0-1 normalized rank
 
@@ -165,6 +166,22 @@ interface DictionaryEntry {
   source: "hsk-cedict" | "cc-canto" | "edict" | "kengdic" | "klingonska" | "wiktionary" | "llm";
 }
 ```
+
+### Proficiency Level Notes
+
+The `numeric` field (1–7) normalizes all proficiency scales onto a common ladder, enabling cross-scale comparison and powering features like the "Hard Words Only" phonetics filter.
+
+| numeric | HSK 2025 | HSK 2010 | CEFR | JLPT |
+|---|---|---|---|---|
+| 1 | 1 | 1 | Pre-A1 | Pre-N5 |
+| 2 | 2 | 2 | A1 | N5 |
+| 3 | 3 | 3 | A2 | N4 |
+| 4 | 4 | 4 | B1 | N3 |
+| 5 | 5 | 5 | B2 | N2 |
+| 6 | 6 | 6 | C1 | N1 |
+| 7 | **7-9** | *(none)* | C2 | *(none)* |
+
+**HSK 2025 "7-9"**: The 2025 HSK standard merged levels 7, 8, and 9 into a single advanced band using the value `"7-9"` (not `"7"`). This is the canonical `value` in the API response. The `numeric` field normalizes it to 7. HSK 2010 had no equivalent — its top band was level 6.
 
 ---
 
