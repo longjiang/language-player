@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
