@@ -72,14 +72,14 @@ export interface ReaderPanelProps {
   activeTab: 'edit' | 'read';
   translating: boolean;
   blocks: ReaderBlock[] | null;
-  blockTokens: LemmatizedToken[][] | null;
-  tokenizing: boolean;
   ctx: Partial<SavedWordContext>;
   onTextChange: (text: string) => void;
   onTabChange: (tab: 'edit' | 'read') => void;
   onTokenize: () => void;
   onFillSample: (text: string, title: string) => void;
   onPageTranslate: (texts: string[]) => Promise<string[]>;
+  /** Called by ReaderPanel to lemmatize text blocks for the current page. */
+  onLemmatize: (texts: string[]) => Promise<LemmatizedToken[][]>;
   /** Called when the visible page changes — gives the first ~40 chars as anchor. */
   onAnchorChange?: (anchor: string) => void;
   /** If set, seek to the page containing this anchor text after blocks load. */
@@ -91,11 +91,12 @@ export function ReaderPanel({
   text, loading,
   activeTab,
   translating,
-  blocks, blockTokens, tokenizing,
+  blocks,
   ctx,
   onTextChange,
   onTabChange,
   onTokenize, onFillSample, onPageTranslate,
+  onLemmatize,
   onAnchorChange,
   initialAnchor,
 }: ReaderPanelProps) {
@@ -110,12 +111,18 @@ export function ReaderPanel({
   const [blockTranslations, setBlockTranslations] = useState<Record<number, string>>({});
   const translateGenerationRef = useRef(0);
   const [isAutoTranslating, setIsAutoTranslating] = useState(false);
+  const [hasMeasured, setHasMeasured] = useState(false);
+  const [tokenCache, setTokenCache] = useState<Record<number, LemmatizedToken[]>>({});
+  const [loadingTokens, setLoadingTokens] = useState(false);
+  const tokenLoadGenRef = useRef(0);
 
-  // Clear translations when blocks change (new note / re-tokenize / page turn)
+  // Clear translations and token cache when blocks change (new note / re-tokenize)
   const prevBlocksRef = useRef(blocks);
   useEffect(() => {
     if (prevBlocksRef.current !== blocks) {
       setBlockTranslations({});
+      setTokenCache({});
+      setHasMeasured(false);
       prevBlocksRef.current = blocks;
     }
   }, [blocks]);
@@ -133,7 +140,7 @@ export function ReaderPanel({
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const children = Array.from(container.children) as HTMLElement[];
-        if (children.length === 0) { setPageBreaks([]); setPage(0); return; }
+        if (children.length === 0) { setPageBreaks([]); setPage(0); setHasMeasured(true); return; }
 
         const maxHeight = container.clientHeight || window.innerHeight - 160;
         const breaks: number[] = [];
@@ -153,9 +160,10 @@ export function ReaderPanel({
 
         setPageBreaks(breaks);
         setPage(0);
+        setHasMeasured(true);
       });
     });
-  }, [text, blocks, blockTokens, activeTab, showTranslation]);
+  }, [text, blocks, activeTab, showTranslation]);
 
   // Get blocks for the current page
   const visibleBlocks = (() => {
@@ -163,6 +171,17 @@ export function ReaderPanel({
     const start = page === 0 ? 0 : pageBreaks[page - 1]!;
     const end = page < pageBreaks.length ? pageBreaks[page]! : blocks.length;
     return blocks.slice(start, end);
+  })();
+
+  // Whether all text blocks on the current page have tokens cached
+  const allTokensReady = (() => {
+    if (!hasMeasured || !visibleBlocks || !blocks) return false;
+    return visibleBlocks.every(block => {
+      if (block.kind === 'markdown') return true;
+      const globalIndex = blocks.indexOf(block);
+      const tbi = blocks.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
+      return tbi in tokenCache;
+    });
   })();
 
   const prevPage = useCallback(() => {
@@ -187,10 +206,49 @@ export function ReaderPanel({
     if (first) onAnchorChange(first.text.slice(0, 40));
   }, [page, visibleBlocks, onAnchorChange]);
 
+  // ── Load tokens for the current page (lazy, per-page) ──
+  useEffect(() => {
+    if (!hasMeasured || !blocks || pageBreaks.length === 0 || !onLemmatize) return;
+
+    const start = page === 0 ? 0 : pageBreaks[page - 1]!;
+    const end = page < pageBreaks.length ? pageBreaks[page]! : blocks.length;
+    const pageBlocks = blocks.slice(start, end);
+    const textBlocks = pageBlocks.filter((b): b is TextBlock => b.kind === 'text');
+
+    const missing: { textBlockIndex: number; text: string }[] = [];
+    for (const tb of textBlocks) {
+      const globalIndex = blocks.indexOf(tb);
+      const tbi = blocks.slice(0, globalIndex).filter((b): b is TextBlock => b.kind === 'text').length;
+      if (!(tbi in tokenCache)) {
+        missing.push({ textBlockIndex: tbi, text: tb.text });
+      }
+    }
+
+    if (missing.length === 0) return;
+
+    tokenLoadGenRef.current += 1;
+    const gen = tokenLoadGenRef.current;
+    setLoadingTokens(true);
+    onLemmatize(missing.map(m => m.text)).then(results => {
+      if (tokenLoadGenRef.current !== gen) return;
+      setTokenCache(prev => {
+        const next = { ...prev };
+        missing.forEach((m, i) => {
+          if (results[i]) next[m.textBlockIndex] = results[i]!;
+        });
+        return next;
+      });
+      setLoadingTokens(false);
+    }).catch(() => {
+      if (tokenLoadGenRef.current !== gen) return;
+      setLoadingTokens(false);
+    });
+  }, [hasMeasured, page, blocks, pageBreaks, onLemmatize, tokenCache]);
+
   // Seek to initialAnchor on first blocks load
   const initialAnchorSeen = useRef(false);
   useEffect(() => {
-    if (!initialAnchor || !blocks || !blockTokens || tokenizing) return;
+    if (!initialAnchor || !blocks || !allTokensReady) return;
     if (initialAnchorSeen.current) return;
     initialAnchorSeen.current = true;
     // Find which page contains the anchor text
@@ -204,11 +262,11 @@ export function ReaderPanel({
       );
       if (hasAnchor) { setPage(p); break; }
     }
-  }, [initialAnchor, blocks, blockTokens, tokenizing, pageBreaks]);
+  }, [initialAnchor, blocks, allTokensReady, pageBreaks]);
 
   // Auto-translate on page advance (only when translation is enabled)
   useEffect(() => {
-    if (!showTranslation || !visibleBlocks || !blockTokens || tokenizing || isAutoTranslating) return;
+    if (!showTranslation || !visibleBlocks || !allTokensReady || loadingTokens || isAutoTranslating) return;
     const textBlocks = visibleBlocks.filter((b): b is TextBlock => b.kind === 'text');
     if (textBlocks.length === 0) return;
     // Only auto-translate if no cached translations exist for this page
@@ -230,9 +288,7 @@ export function ReaderPanel({
     }).finally(() => {
       setIsAutoTranslating(false);
     });
-    // Only run once per visibleBlocks identity — no deps on blockTranslations or isAutoTranslating
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleBlocks, blockTokens, tokenizing, showTranslation]);
+  }, [visibleBlocks, allTokensReady, loadingTokens, showTranslation]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -309,9 +365,10 @@ export function ReaderPanel({
                   [&_hr]:border-border [&_hr]:my-6"
                   lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
                 >
-                  {(!visibleBlocks || tokenizing) && (
+                  {/* State 1: measuring or loading tokens — raw markdown */}
+                  {(!hasMeasured || loadingTokens) && blocks && (
                     <>
-                      {tokenizing && (
+                      {loadingTokens && (
                         <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
                           <Loader2 className="h-3 w-3 animate-spin" /> {t('msg.making_words_interactive')}
                         </div>
@@ -321,7 +378,8 @@ export function ReaderPanel({
                       </div>
                     </>
                   )}
-                  {visibleBlocks && blockTokens && !tokenizing && (
+                  {/* State 2: ready — paginated with tokens */}
+                  {hasMeasured && allTokensReady && visibleBlocks && blocks && (
                     <>
                       <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
                         <Sparkles className="h-3 w-3" /> {t('msg.tap_any_word_to_lookup')}
@@ -342,14 +400,15 @@ export function ReaderPanel({
                             loading={isAutoTranslating && !blockTranslations[i]}>
                             <Tag className={blockClass(tb)}>
                               <TokenizedText text={tb.text} l2Code={l2.code} textScale={0} context={ctx}
-                                tokens={blockTokens[textBlockIndex]} />
+                                tokens={tokenCache[textBlockIndex]} />
                             </Tag>
                           </TextActionMenu>
                         );
                       })}
                     </>
                   )}
-                  {!visibleBlocks && (
+                  {/* State 3: no blocks yet — fallback */}
+                  {!blocks && text && (
                     <TextActionMenu text={stripMarkdown(text)} l2Code={l2.code} l1Code={l1.code}>
                       <TokenizedText text={stripMarkdown(text)} l2Code={l2.code} textScale={1.15} context={ctx} />
                     </TextActionMenu>
@@ -388,7 +447,7 @@ export function ReaderPanel({
             className="absolute inset-x-0 top-0 -z-10 overflow-hidden opacity-0 pointer-events-none"
             style={{ height: '100%' }}
           >
-            {activeTab === 'read' && blocks && blockTokens && !tokenizing && blocks.map((block, i) => {
+            {activeTab === 'read' && blocks && blocks.map((block, i) => {
               if (block.kind === 'markdown') {
                 return (
                   <div key={i} className="mb-4">
@@ -399,7 +458,6 @@ export function ReaderPanel({
               }
               const tb = block as TextBlock;
               const Tag = blockTag(tb);
-              const textBlockIndex = blocks.slice(0, i).filter((b): b is TextBlock => b.kind === 'text').length;
               const lines = Math.max(1, Math.ceil(tb.text.length / 50));
               return (
                 <div key={i} className="mb-4">
