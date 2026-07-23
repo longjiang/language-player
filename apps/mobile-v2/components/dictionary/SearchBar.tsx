@@ -25,7 +25,7 @@ export function SearchBar({ value, onChangeText, onSubmit, onClear, loading, pla
         value={value}
         onChangeText={onChangeText}
         onSubmitEditing={onSubmit}
-        placeholder={placeholder ?? t('placeholder.dictionary_search', { language: l2Lang.name })}
+        placeholder={placeholder ?? t('placeholder.dictionary_search', { language: t(`lang.${l2Lang.code}`) })}
         placeholderTextColor={PLACEHOLDER_COLOR}
         returnKeyType="search"
         autoCapitalize="none"
