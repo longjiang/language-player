@@ -41,7 +41,28 @@ key,en,zh-Hans,zh-Hant,af,ar,ca,de,el,es,fi,fr,ga,hi,hr,hu,id,it,ja,ko,nl,no,pl,
 "Texto: {text},Oferă o analiză clară a următorului text în {l2Code}. Include:"
 "Téacs: {text},निम्नलिखित {l2Code} पाठ का स्पष्ट विश्लेषण प्रदान करें। शामिल करें:"
 "Téacs: {text},निम्नलिखित {l2Code} पाठ का स्पष्ट विश्लेषण प्रदान करें। शामिल करें:"
+action.didnt_know,Didn't know,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+action.knew_it,Knew it,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+action.tap_to_hide,Tap to hide,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+action.tap_to_reveal,Tap to reveal,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+label.earlier,Earlier,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+label.hamburger_menu,Menu,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+label.media,Media,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+label.popular,Popular,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+label.reading,Reading,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+label.today,Today,今天,今天,Vandag,اليوم,Avui,Heute,Σήμερα,Hoy,Tänään,Aujourd'hui,Inniu,आज,Danas,Ma,Hari ini,Oggi,今日,오늘,Vandaag,I dag,Dzisiaj,Hoje,Astăzi,Сегодня,Данас,Idag,Leo,วันนี้,Bugün,Hôm nay
+label.vocab,Vocab,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 msg.playback_error,Playback error,播放错误,播放錯誤,Terugspeelfout,خطأ في التشغيل,Error de reproducció,Wiedergabefehler,Σφάλμα αναπαραγωγής,Error de reproducción,Toistovirhe,Erreur de lecture,Earráid athsheinm,प्लेबैक त्रुटि,Pogreška reprodukcije,Lejátszási hiba,Kesalahan pemutaran,Errore di riproduzione,再生エラー,재생 오류,Afspeelfout,Avspillingsfeil,Błąd odtwarzania,Erro de reprodução,Eroare de redare,Ошибка воспроизведения,Грешка при репродукцији,Uppspelningsfel,Hitilafu ya uchezaji,ข้อผิดพลาดในการเล่น,Oynatma hatası,Lỗi phát lại
+plan.annual,Annual,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+plan.lifetime,Lifetime,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+plan.monthly,Monthly,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+pro.desc,"Unlock the full learning experience with 600,000+ videos across 207+ languages.",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+pro.feature_ai,AI word explanations,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+pro.feature_examples,Hundreds of examples of words in videos,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+pro.feature_saved_words,Unlimited saved words,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+pro.feature_srs,SRS review system,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+pro.feature_transcripts,Complete interactive transcripts with translation,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+pro.features_title,Pro Features,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 "Κείμενο: {text},Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:"
 "Κείμενο: {text},Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:"
 "Текст: {text},Pruži jasnu analizu sledećeg teksta na {l2Code}. Uključi:"
