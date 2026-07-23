@@ -182,11 +182,29 @@ export default function ReviewScreen() {
             {getDisplayName(currentWord!)}
           </Text>
           {flipped && (
-            <ScrollView className="mt-4 max-h-80 w-full border-t border-border pt-4">
+            <ScrollView className="mt-4 max-h-96 w-full border-t border-border pt-4">
               {loadingDef ? (
                 <ActivityIndicator size="small" color={ICON_MUTED} />
               ) : entry ? (
-                <DictionaryEntryCard entry={entry} variant="full" />
+                <View>
+                  <DictionaryEntryCard entry={entry} variant="full" />
+                  {/* Source context — where the word was saved from */}
+                  {currentWord?.context && (
+                    <View className="mt-3 rounded-lg bg-muted/30 p-3">
+                      <Text className="mb-1 text-xs font-medium text-muted-foreground">{t('review.source')}</Text>
+                      {(currentWord.context as any).videoTitle && (
+                        <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                          📺 {(currentWord.context as any).videoTitle}
+                        </Text>
+                      )}
+                      {(currentWord.context as any).text && (
+                        <Text className="mt-1 text-sm text-foreground" numberOfLines={3}>
+                          {(currentWord.context as any).text}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                </View>
               ) : (
                 <Text className="text-center text-sm text-muted-foreground">{getDisplayName(currentWord!)}</Text>
               )}
