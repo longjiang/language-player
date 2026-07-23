@@ -37,7 +37,18 @@ function walk(dir, base = '') {
     } else if (e.name.endsWith('.md')) {
       const relPath = base ? base + '/' + e.name.replace(/\.md$/, '') : e.name.replace(/\.md$/, '');
       const cat = base.split('/')[0] || 'getting-started';
-      const title = e.name.replace(/\.md$/, '').split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      // Parse title from H1 line (supports both {$key} and plain text)
+      const raw = fs.readFileSync(path.join(dir, e.name), 'utf-8');
+      const h1Match = raw.match(/^# (.+)$/m);
+      let title = '';
+      if (h1Match) {
+        const h1 = h1Match[1].trim();
+        // If H1 is a {$key} reference, resolve it from CSV (English)
+        title = h1.replace(/\{\$([a-z0-9_.]+)\}/gi, (_, key) => keys[key] || `{$key}`);
+        // If still contains {$key}, fallback to filename
+        if (/\{\$/.test(title)) title = '';
+      }
+      if (!title) title = e.name.replace(/\.md$/, '').split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
       files.push({ relPath, fullPath: path.join(dir, e.name), cat, title });
     }
   }
