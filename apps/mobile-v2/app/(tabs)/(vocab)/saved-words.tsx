@@ -22,10 +22,10 @@ export default function SavedWordsScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <View className="border-b border-border px-4 py-3">
-        <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.saved_words')}</Text>
+      <View className="px-4 py-5 mb-4">
+        <Text className="text-xl font-bold text-foreground">{t('title.saved_words')}</Text>
         <Text className="mt-0.5 text-sm text-muted-foreground">
-          {words.length} {t('label.words')}
+          {words.length} {'words'}
         </Text>
       </View>
       <WordList words={words} onRemove={handleRemove} />
