@@ -15,7 +15,7 @@ export const PYTHON_API_URL: string =
   (typeof process !== 'undefined' && (process.env as any).EXPO_PUBLIC_API_URL) ||
   LOCAL_DEFAULT;
 
-/** Directus 8 URL for authentication. */
+/** Directus 8 URL for authentication (includes /zerotohero project prefix). */
 export const DIRECTUS_URL: string =
   (typeof process !== 'undefined' && (process.env as any).EXPO_PUBLIC_DIRECTUS_URL) ||
-  'https://directus.zerotohero.ca';
+  'https://directusvps.zerotohero.ca/zerotohero';
