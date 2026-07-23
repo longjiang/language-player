@@ -56,6 +56,10 @@ export default function ProfileScreen() {
   const l2Code = baseCode(l2Lang.code);
   const savedWords = (allSaved[l2Lang.code] ?? []).slice(0, 5);
 
+  const displayName = user?.firstName || user?.lastName
+    ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
+    : t('label.unknown_user');
+
   // Watch history
   const [history, setHistory] = useState<WatchHistoryItem[]>([]);
   const [histLoading, setHistLoading] = useState(true);
@@ -87,7 +91,7 @@ export default function ProfileScreen() {
       <View style={S.header}>
         <View style={S.avatar}><User size={28} color="#3b82f6" /></View>
         <View style={{ flex: 1 }}>
-          <Text style={S.title}>{user.name ?? t('label.unknown_user')}</Text>
+          <Text style={S.title}>{displayName}</Text>
           <View style={S.email}><Mail size={14} color="#94a3b8" /><Text style={S.emailText}>{user.email}</Text></View>
         </View>
       </View>
