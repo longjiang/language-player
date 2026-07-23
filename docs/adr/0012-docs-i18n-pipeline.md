@@ -48,11 +48,13 @@ Both layers produce `apps/web/src/data/docs-i18n/{locale}.json` — an array of 
 
 ## Scripts
 
-| Script | Purpose |
-|---|---|
-| `scripts/rebuild-doc.mjs` | Rebuild a single doc after editing. Resolves `{$key}` from CSV, machine-translates body + plain-text H1 (via Python `/translate` if running), merges into all 31 locale JSONs. Shows per-locale progress (🗝 key-only / 🌐 translated). Usage: `nvm use 22 && node scripts/rebuild-doc.mjs <path-to-md>` |
-| `scripts/build-docs-i18n.mjs` | Bulk rebuild. All docs × all locales, or `--locale=xx` for one locale. Calls Python `/translate`. Slower; use `rebuild-doc.mjs` for single-doc edits. |
-| `scripts/build-docs-keys.mjs` | Key resolution only (CSV lookup, no Python). Fast, offline. `--doc=media/explore` for one doc, no flag for all. |
+| Script | Scope | Translates? | When to use |
+|---|---|---|---|
+| `scripts/translate-doc.mjs` | One doc → all 31 locales | ✅ (if Python up) | **Daily driver.** After editing a single `.md` — resolves keys, translates body + plain H1, merges into locale JSONs. Shows per-locale progress (🗝/🌐). |
+| `scripts/translate-docs.mjs` | All docs × all locales, or `--locale=xx` | ✅ (if Python up) | **Full rebuild.** Use after sweeping changes across multiple docs, or to regenerate all locales from scratch. Slow. |
+| `scripts/resolve-doc-keys.mjs` | One doc or all docs | ❌ | **Offline fix.** CSV key resolution only — no Python needed. Use when you only changed `{$key}` references and don't need body re-translation. Instant. |
+
+Each script merges into `apps/web/src/data/docs-i18n/{locale}.json` — existing entries for other docs are preserved.
 
 ## Search
 
@@ -80,7 +82,7 @@ Doc H1s should use a pure `{$key}` (e.g., `# {$title.explore}`) when a matching 
 
 ## Consequences
 
-- Docs must be rebuilt after editing: `nvm use 22 && node scripts/rebuild-doc.mjs <path>`
+- Docs must be rebuilt after editing: `nvm use 22 && node scripts/translate-doc.mjs <path>`
 - Python `/translate` server must be running for full translation (falls back to key-only if unavailable)
 - Node ≥ 20 required for `fetch` API (Node 18's experimental fetch cannot resolve localhost)
 - `en.json` is now treated identically to other locale JSONs — it resolves `{$key}` to English values

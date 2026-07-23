@@ -4,8 +4,8 @@
  * Pure key resolution only — no machine translation (no Python needed).
  *
  * Usage:
- *   node scripts/build-docs-keys.mjs --doc=reading/epub
- *   node scripts/build-docs-keys.mjs                    # all docs
+ *   node scripts/resolve-doc-keys.mjs --doc=reading/epub
+ *   node scripts/resolve-doc-keys.mjs                    # all docs
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync } from 'fs';
