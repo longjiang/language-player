@@ -9,7 +9,6 @@ import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { TokenizedText } from '../TokenizedText';
-import { DictionaryPopup } from '../dictionary/DictionaryPopup';
 import type { DictionaryEntry, SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
 
@@ -63,7 +62,6 @@ export function SubtitleDisplay({
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [loadingSubs, setLoadingSubs] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
-  const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   const showTranslation = display.translation;
@@ -187,7 +185,6 @@ export function SubtitleDisplay({
               text={line.line}
               l2Code={l2Lang.code}
               highlightTerms={highlightTerms}
-              onWordPress={(word) => setSelectedWord(word)}
             />
             {translation && showTranslation && (
               <Text className="mt-1 text-sm text-muted-foreground">
@@ -197,19 +194,6 @@ export function SubtitleDisplay({
           </Pressable>
         );
       })}
-      <DictionaryPopup
-        visible={!!selectedWord}
-        word={selectedWord ?? ''}
-        onClose={() => setSelectedWord(null)}
-        onViewDetail={(entry: DictionaryEntry, popupResults: DictionaryEntry[]) => {
-          setSelectedWord(null); // close popup before navigating
-          setDetailHead(entry.head);
-          setSidebarSource({ kind: 'results', items: popupResults });
-          setCameFromSearch(true);
-          const safeId = entry.id.replace(/,/g, '~');
-          router.push(`word/${safeId}` as any);
-        }}
-      />
     </ScrollView>
   );
 }

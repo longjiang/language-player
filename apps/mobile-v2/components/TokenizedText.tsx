@@ -3,6 +3,7 @@ import { Text } from 'react-native';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { TokenCache } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
+import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 
 // ── Shared in-memory lemmatize cache ──────────────────
 // All TokenizedText instances share this Map, so if two components
@@ -13,7 +14,6 @@ export interface TokenizedTextProps {
   text: string;
   l2Code: string;
   highlightTerms?: string[];
-  onWordPress?: (word: string) => void;
   /** Pre-computed lemmatized tokens — when set, skips all API calls. */
   tokens?: LemmatizedToken[];
   /** Video-level token cache from /lemmatize-video-normalized (optional optimization). */
@@ -29,12 +29,15 @@ export interface TokenizedTextProps {
  *   2. Shared in-memory cache (cross-component dedup)
  *   3. Server API call
  *
- * Falls back to basic CJK/whitespace splitting while the server request
- * is in flight or on error.
+ * Includes a built-in dictionary popup — tapping any word opens the
+ * dictionary lookup. No `onWordPress` prop needed (matches Next.js).
+ *
+ * While loading or on error, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, onWordPress, tokens: preloadedTokens, tokenCache }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false);
   const lastTextRef = useRef(text);
@@ -144,68 +147,31 @@ export function TokenizedText({ text, l2Code, highlightTerms, onWordPress, token
   // ── Render server tokens ──
   if (tokens.length > 0) {
     return (
-      <Text className="text-base leading-relaxed text-foreground">
-        {tokens.map((token, i) => {
-          const word = token.text;
-          const isHighlighted = highlightTerms?.some((t) => t === word);
-          return (
-            <Text
-              key={i}
-              onPress={() => onWordPress?.(word)}
-              className={isHighlighted ? 'font-bold text-primary' : ''}
-            >
-              {word}
-            </Text>
-          );
-        })}
-      </Text>
+      <>
+        <Text className="text-base leading-relaxed text-foreground">
+          {tokens.map((token, i) => {
+            const word = token.text;
+            const isHighlighted = highlightTerms?.some((t) => t === word);
+            return (
+              <Text
+                key={i}
+                onPress={() => setSelectedWord(word)}
+                className={isHighlighted ? 'font-bold text-primary' : ''}
+              >
+                {word}
+              </Text>
+            );
+          })}
+        </Text>
+        <DictionaryPopup
+          visible={!!selectedWord}
+          word={selectedWord ?? ''}
+          onClose={() => setSelectedWord(null)}
+        />
+      </>
     );
   }
 
-  // ── Loading: show plain text ──
-  if (loading) {
-    return <Text className="text-base leading-relaxed text-foreground">{text}</Text>;
-  }
-
-  // ── Fallback: basic splitting (no server tokens available) ──
-  const isCJK = /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/.test(text);
-
-  if (isCJK) {
-    const chars = [...text];
-    return (
-      <Text className="text-base leading-relaxed text-foreground">
-        {chars.map((char, i) => {
-          const isHighlighted = highlightTerms?.some((t) => char === t);
-          return (
-            <Text
-              key={i}
-              onPress={() => onWordPress?.(char)}
-              className={isHighlighted ? 'font-bold text-primary' : ''}
-            >
-              {char}
-            </Text>
-          );
-        })}
-      </Text>
-    );
-  }
-
-  const words = text.split(/(\s+)/);
-  return (
-    <Text className="text-base leading-relaxed text-foreground">
-      {words.map((word, i) => {
-        const trimmed = word.trim();
-        const isHighlighted = highlightTerms?.some((t) => t === trimmed);
-        return (
-          <Text
-            key={i}
-            onPress={() => trimmed && onWordPress?.(trimmed)}
-            className={isHighlighted ? 'font-bold text-primary' : ''}
-          >
-            {word}
-          </Text>
-        );
-      })}
-    </Text>
-  );
+  // ── Loading / no tokens: show plain undivided text (matches Next.js) ──
+  return <Text className="text-base leading-relaxed text-foreground">{text}</Text>;
 }
