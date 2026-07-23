@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Text } from 'react-native';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { View, Text, Platform } from 'react-native';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { TokenCache } from '@langplayer/utils';
 import { buildRuby } from '@langplayer/utils';
@@ -45,12 +45,29 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const loadingRef = useRef(false);
   const lastTextRef = useRef(text);
 
-  // ── Phonetics settings (matches Next.js getShowPhonetics) ──
-  const { getL2 } = useSettingsContext();
+  // ── Settings (matches Next.js) ──
+  const { getL2, tokenizedText: tokenSettings } = useSettingsContext();
   const l2Settings = getL2(l2Code);
   const phonetics = l2Settings.tokenSpan.phonetics;
-  const showPhonetics = phonetics.show !== false; // 'ruby' | 'word' → true, false → false
+  const showPhonetics = phonetics.show !== false;
   const replaceWithPhonetics = phonetics.show === 'word';
+  const popupEnabled = tokenSettings.enabled;
+
+  // ── Computed text styles from zoom + typeFace settings ──
+  const textStyle = useMemo(() => {
+    const zoom = tokenSettings.zoom;
+    const baseSize = 16; // text-base
+    const size = zoom === 0 ? baseSize : baseSize + zoom * 2; // zoom 1→18, 2→20, ..., 7→30
+    const style: { fontSize: number; fontFamily?: string; lineHeight?: number } = { fontSize: size };
+
+    if (tokenSettings.typeFace === 'serif') {
+      style.fontFamily = Platform.OS === 'ios' ? 'Georgia' : 'serif';
+    } else if (tokenSettings.typeFace === 'sans-serif') {
+      style.fontFamily = Platform.OS === 'ios' ? 'Avenir Next' : 'sans-serif';
+    }
+
+    return style;
+  }, [tokenSettings.zoom, tokenSettings.typeFace]);
 
   // ── Preloaded tokens: use directly ──
   useEffect(() => {
@@ -157,6 +174,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   // ── Render server tokens ──
   if (tokens.length > 0) {
     const isWord = (t: LemmatizedToken) => t.lemmas.length > 0;
+    const readingSize = Math.max(8, Math.round(textStyle.fontSize! * 0.55));
+    const baseLeading = textStyle.fontSize! + 6;
 
     return (
       <>
@@ -165,11 +184,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
           <View className="flex-row flex-wrap items-end">
             {tokens.map((token, i) => {
               if (!isWord(token)) {
-                // Non-word tokens (spaces, punctuation): wrap in same column
-                // structure as ruby tokens so they share bottom alignment.
                 return (
                   <View key={i} className="items-center mx-px">
-                    <Text className="text-base leading-[18px] text-foreground">{token.text}</Text>
+                    <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">{token.text}</Text>
                   </View>
                 );
               }
@@ -177,7 +194,6 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const word = token.text;
               const isHighlighted = highlightTerms?.some((t) => t === word);
 
-              // Build ruby segments from pronunciation data
               const hasRuby = token.pronunciation && token.pronunciation !== token.text;
               const rubySegs: RubySegment[] = hasRuby
                 ? buildRuby(token.text, token.pronunciation!, l2Code)
@@ -188,11 +204,12 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   {rubySegs.map((seg, j) => (
                     <View key={j} className="items-center mx-px">
                       {seg.reading && (
-                        <Text className="text-[9px] leading-[11px] text-muted-foreground">{seg.reading}</Text>
+                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
                       )}
                       <Text
-                        className={`text-base leading-[18px] ${isHighlighted ? 'font-bold text-primary' : 'text-foreground'}`}
-                        onPress={() => setSelectedWord(word)}
+                        style={[textStyle, { lineHeight: baseLeading }]}
+                        className={isHighlighted ? 'font-bold text-primary' : 'text-foreground'}
+                        onPress={popupEnabled ? () => setSelectedWord(word) : undefined}
                       >
                         {seg.text}
                       </Text>
@@ -204,9 +221,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
           </View>
         ) : (
           /* Word-replace or no-phonetics mode: plain inline Text */
-          <Text className="text-base leading-relaxed text-foreground">
+          <Text style={textStyle} className="text-foreground">
             {tokens.map((token, i) => {
-              // Word mode: replace text with pronunciation
               const displayText = replaceWithPhonetics && isWord(token) && token.pronunciation
                 ? token.pronunciation
                 : token.text;
@@ -215,7 +231,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               return (
                 <Text
                   key={i}
-                  onPress={() => isWord(token) && setSelectedWord(word)}
+                  onPress={popupEnabled && isWord(token) ? () => setSelectedWord(word) : undefined}
                   className={isHighlighted ? 'font-bold text-primary' : ''}
                 >
                   {displayText}
@@ -225,11 +241,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
           </Text>
         )}
 
-        <DictionaryPopup
-          visible={!!selectedWord}
-          word={selectedWord ?? ''}
-          onClose={() => setSelectedWord(null)}
-        />
+        {popupEnabled && (
+          <DictionaryPopup
+            visible={!!selectedWord}
+            word={selectedWord ?? ''}
+            onClose={() => setSelectedWord(null)}
+          />
+        )}
       </>
     );
   }
