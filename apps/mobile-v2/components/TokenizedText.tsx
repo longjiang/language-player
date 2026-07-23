@@ -1,8 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { TokenCache } from '@langplayer/utils';
+import { buildRuby } from '@langplayer/utils';
+import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
+import { useSettingsContext } from '@/contexts/SettingsContext';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 
 // ── Shared in-memory lemmatize cache ──────────────────
@@ -41,6 +44,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false);
   const lastTextRef = useRef(text);
+
+  // ── Phonetics settings (matches Next.js getShowPhonetics) ──
+  const { getL2 } = useSettingsContext();
+  const l2Settings = getL2(l2Code);
+  const phonetics = l2Settings.tokenSpan.phonetics;
+  const showPhonetics = phonetics.show !== false; // 'ruby' | 'word' → true, false → false
+  const replaceWithPhonetics = phonetics.show === 'word';
 
   // ── Preloaded tokens: use directly ──
   useEffect(() => {
@@ -146,23 +156,75 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   // ── Render server tokens ──
   if (tokens.length > 0) {
+    const isWord = (t: LemmatizedToken) => t.lemmas.length > 0;
+
     return (
       <>
-        <Text className="text-base leading-relaxed text-foreground">
-          {tokens.map((token, i) => {
-            const word = token.text;
-            const isHighlighted = highlightTerms?.some((t) => t === word);
-            return (
-              <Text
-                key={i}
-                onPress={() => setSelectedWord(word)}
-                className={isHighlighted ? 'font-bold text-primary' : ''}
-              >
-                {word}
-              </Text>
-            );
-          })}
-        </Text>
+        {/* Ruby mode: View-based flex row for readings-above-characters layout */}
+        {showPhonetics && phonetics.show === 'ruby' ? (
+          <View className="flex-row flex-wrap items-end">
+            {tokens.map((token, i) => {
+              if (!isWord(token)) {
+                // Non-word tokens (spaces, punctuation): wrap in same column
+                // structure as ruby tokens so they share bottom alignment.
+                return (
+                  <View key={i} className="items-center mx-px">
+                    <Text className="text-base leading-[18px] text-foreground">{token.text}</Text>
+                  </View>
+                );
+              }
+
+              const word = token.text;
+              const isHighlighted = highlightTerms?.some((t) => t === word);
+
+              // Build ruby segments from pronunciation data
+              const hasRuby = token.pronunciation && token.pronunciation !== token.text;
+              const rubySegs: RubySegment[] = hasRuby
+                ? buildRuby(token.text, token.pronunciation!, l2Code)
+                : [{ text: token.text }];
+
+              return (
+                <React.Fragment key={i}>
+                  {rubySegs.map((seg, j) => (
+                    <View key={j} className="items-center mx-px">
+                      {seg.reading && (
+                        <Text className="text-[9px] leading-[11px] text-muted-foreground">{seg.reading}</Text>
+                      )}
+                      <Text
+                        className={`text-base leading-[18px] ${isHighlighted ? 'font-bold text-primary' : 'text-foreground'}`}
+                        onPress={() => setSelectedWord(word)}
+                      >
+                        {seg.text}
+                      </Text>
+                    </View>
+                  ))}
+                </React.Fragment>
+              );
+            })}
+          </View>
+        ) : (
+          /* Word-replace or no-phonetics mode: plain inline Text */
+          <Text className="text-base leading-relaxed text-foreground">
+            {tokens.map((token, i) => {
+              // Word mode: replace text with pronunciation
+              const displayText = replaceWithPhonetics && isWord(token) && token.pronunciation
+                ? token.pronunciation
+                : token.text;
+              const word = token.text;
+              const isHighlighted = highlightTerms?.some((t) => t === word);
+              return (
+                <Text
+                  key={i}
+                  onPress={() => isWord(token) && setSelectedWord(word)}
+                  className={isHighlighted ? 'font-bold text-primary' : ''}
+                >
+                  {displayText}
+                </Text>
+              );
+            })}
+          </Text>
+        )}
+
         <DictionaryPopup
           visible={!!selectedWord}
           word={selectedWord ?? ''}
