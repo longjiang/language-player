@@ -67,7 +67,6 @@ export default function DocsScreen() {
   return (
     <ScrollView style={S.root}>
       <Text style={S.title}>{t('title.docs')}</Text>
-      <Text style={S.subtitle}>Learn how to use Language Player to its full potential.</Text>
 
       <View style={S.searchBox}>
         <Search size={16} color={ICON_MUTED} />
