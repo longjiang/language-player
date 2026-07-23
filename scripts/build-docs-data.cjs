@@ -36,7 +36,7 @@ function walk(dir, base = '') {
       files.push(...walk(path.join(dir, e.name), base ? base + '/' + e.name : e.name));
     } else if (e.name.endsWith('.md')) {
       const relPath = base ? base + '/' + e.name.replace(/\.md$/, '') : e.name.replace(/\.md$/, '');
-      const cat = base.split('/')[0] || 'getting-started';
+      const cat = base.split('/')[0] || '';
       // Parse title from H1 line (supports both {$key} and plain text)
       const raw = fs.readFileSync(path.join(dir, e.name), 'utf-8');
       const h1Match = raw.match(/^# (.+)$/m);
@@ -70,9 +70,10 @@ lines.push('');
 lines.push('export const DOC_CATEGORIES: { key: string; title: string }[] = [');
 const seen = new Set();
 for (const item of items) {
-  if (seen.has(item.cat)) continue;
+  if (!item.cat || seen.has(item.cat)) continue;
+  const catTitle = keys[`title.${item.cat}`] || item.cat.charAt(0).toUpperCase() + item.cat.slice(1);
   seen.add(item.cat);
-  lines.push(`  { key: '${item.cat}', title: '${item.cat.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}' },`);
+  lines.push(`  { key: '${item.cat}', title: '${catTitle}' },`);
 }
 lines.push('];');
 
