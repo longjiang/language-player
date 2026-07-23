@@ -11,14 +11,31 @@ export default function WordDetailScreen() {
   const t = useT();
   const { results, loading, error, sidebarSource, cameFromSearch } = useDictionaryContext();
 
+  // DEBUG: This screen receives the entry ID via expo-router params and looks up
+  // the full entry from context (sidebarSource set by handleEntryPress, or fallback
+  // to results). Logging confirms: navigation reached this screen, entryId populated,
+  // and whether the entry was found in context.
+
+  console.log('[Dict] WordDetailScreen render — entryId:', entryId, '— timestamp:', Date.now(), '— cameFromSearch:', cameFromSearch, '— sidebarSource.kind:', sidebarSource.kind, '— results count:', results?.length ?? 0);
+
+  React.useEffect(() => {
+    console.log('[Dict] WordDetailScreen mounted with entryId:', entryId);
+  }, [entryId]);
+
   // Find the entry from sidebar source or search results
   const entry = React.useMemo(() => {
+    console.log('[Dict] WordDetailScreen useMemo — entryId:', entryId, 'sidebarSource.kind:', sidebarSource.kind);
     if (sidebarSource.kind === 'results') {
-      return sidebarSource.items.find((e) => e.id === entryId);
+      const found = sidebarSource.items.find((e) => e.id === entryId);
+      console.log('[Dict] WordDetailScreen — searching sidebarSource.results, found:', !!found, found ? `head: ${found.head}` : '');
+      return found;
     }
     if (results) {
-      return results.find((e) => e.id === entryId);
+      const found = results.find((e) => e.id === entryId);
+      console.log('[Dict] WordDetailScreen — searching results, found:', !!found, found ? `head: ${found.head}` : '');
+      return found;
     }
+    console.log('[Dict] WordDetailScreen — no source available to find entry');
     return null;
   }, [entryId, results, sidebarSource]);
 
