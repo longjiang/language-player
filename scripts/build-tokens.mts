@@ -20,7 +20,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TOKENS_PATH = path.resolve(__dirname, '../packages/shared/src/tokens');
-const { lightSemantic, darkSemantic, typography, spacing, borderRadius } = await import(TOKENS_PATH);
+const { darkSemantic, typography, spacing, borderRadius } = await import(TOKENS_PATH);
 
 // ── Helpers ────────────────────────────────────
 
@@ -44,15 +44,16 @@ function scaleRem(rem: string): string {
   return `${(num * MOBILE_SCALE).toFixed(3)}rem`;
 }
 
-// ── Build color maps from semantic tokens ──
-// Uses CSS custom properties — light/dark values are defined in global.css
-// via :root and .dark selectors, matching the web app's approach.
-// NativeWind resolves hsl(var(--...)) at build time.
+/** Wrap HSL channels in hsl() for Tailwind/NativeWind. */
+const hsl = (channels: string) => `hsl(${channels})`;
 
-const colorEntries = Object.keys(lightSemantic).map((key) => {
-  const varName = kebabCase(key);
-  return `        ${formatKey(key)}: 'hsl(var(--${varName}))',`;
-});
+// ── Build color map from dark semantic tokens ──
+// Dark is the default theme. Light theme support is planned (ADR-0011).
+// ThemeProvider toggles StatusBar + NativeWind colorScheme for dark: utilities.
+
+const colorEntries = Object.entries(darkSemantic).map(([key, channels]) =>
+  `        ${formatKey(key)}: '${hsl(channels)}',`
+);
 
 // ── Generate config ──
 
