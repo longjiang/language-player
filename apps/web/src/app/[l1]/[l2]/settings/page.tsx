@@ -141,13 +141,6 @@ export default function SettingsPage() {
               ]} />
           </Section>
 
-          <Section title="">
-            <Toggle label={t('label.show_translation')} desc={t('msg.show_translation_desc')}
-              checked={display.translation} onChange={v => updateDisplay({ translation: v })} />
-            <Toggle label={t('label.enable_popup_dictionary')} desc={t('msg.enable_popup_dictionary_desc')}
-              checked={tokenizedText.enabled} onChange={v => updateTokenizedText({ enabled: v })} />
-          </Section>
-
           {popupEnabled && (
             <Section title={t('label.tokenized_text_preview')}>
               <div className="rounded-lg border border-border bg-muted/50 p-4">
@@ -155,6 +148,13 @@ export default function SettingsPage() {
               </div>
             </Section>
           )}
+
+          <Section title="">
+            <Toggle label={t('label.show_translation')} desc={t('msg.show_translation_desc')}
+              checked={display.translation} onChange={v => updateDisplay({ translation: v })} />
+            <Toggle label={t('label.enable_popup_dictionary')} desc={t('msg.enable_popup_dictionary_desc')}
+              checked={tokenizedText.enabled} onChange={v => updateTokenizedText({ enabled: v })} />
+          </Section>
 
           {popupEnabled && (<>
             <Section title={t('setting.text_appearance')}>
