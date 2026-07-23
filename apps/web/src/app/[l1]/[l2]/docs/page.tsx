@@ -64,7 +64,7 @@ function readDocsTree(dir: string, basePath: string = '', titleMap?: Map<string,
 function getDocs(l1: string): DocMeta[] {
   const titleMap = loadTitleMap(l1);
   const possibleDirs = [
-    resolve(process.cwd(), 'apps/web/content/docs'),
+    resolve(process.cwd(), 'docs/content'),
     resolve(process.cwd(), 'content/docs'),
   ];
   for (const docsDir of possibleDirs) {
@@ -138,7 +138,7 @@ function getSearchIndex(l1: string): DocEntry[] {
   if (localeEntries) return localeEntries;
   // Fall back to raw .md files (English)
   const possibleDirs = [
-    resolve(process.cwd(), 'apps/web/content/docs'),
+    resolve(process.cwd(), 'docs/content'),
     resolve(process.cwd(), 'content/docs'),
   ];
   for (const docsDir of possibleDirs) {
