@@ -121,49 +121,53 @@ export default function WordDetailScreen() {
         )}
       </View>
       <ScrollView className="flex-1 px-4">
+        {/* Definitions — strings from the API */}
         {entry.definitions && entry.definitions.length > 0 && (
           <View className="mb-4">
             <Text className="mb-2 text-sm font-semibold text-muted-foreground">{'Definitions'}</Text>
             {entry.definitions.map((def, i) => (
               <View key={i} className="mb-2 rounded-lg bg-muted/50 p-3">
-                <Text className="text-sm text-foreground">{def.definition}</Text>
-                {def.pos && <Text className="mt-1 text-xs text-muted-foreground">{def.pos}</Text>}
-                {def.examples && def.examples.length > 0 && (
-                  <View className="mt-2">
-                    {def.examples.slice(0, 3).map((ex, j) => (
-                      <View key={j} className="mt-1 border-l-2 border-muted-foreground/20 pl-2">
-                        <Text className="text-xs text-foreground">{ex.text}</Text>
-                        {ex.translation && (
-                          <Text className="text-xs text-muted-foreground">{ex.translation}</Text>
-                        )}
-                      </View>
-                    ))}
-                  </View>
-                )}
+                <Text className="text-sm text-foreground">{def}</Text>
               </View>
             ))}
           </View>
         )}
 
-        {entry.inflections && entry.inflections.length > 0 && (
+        {/* Part of speech */}
+        {entry.part_of_speech && (
           <View className="mb-4">
-            <Text className="mb-2 text-sm font-semibold text-muted-foreground">{'Inflections'}</Text>
+            <Text className="mb-2 text-sm font-semibold text-muted-foreground">{'Part of Speech'}</Text>
+            <View className="rounded-lg bg-muted/50 p-3">
+              <Text className="text-sm text-foreground">{entry.part_of_speech}</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Proficiency levels */}
+        {entry.levels && entry.levels.length > 0 && (
+          <View className="mb-4">
+            <Text className="mb-2 text-sm font-semibold text-muted-foreground">{'Level'}</Text>
             <View className="flex-row flex-wrap gap-1.5">
-              {entry.inflections.map((infl, i) => (
+              {entry.levels.map((l, i) => (
                 <View key={i} className="rounded-full border border-border bg-muted/30 px-3 py-1">
-                  <Text className="text-xs text-foreground">{infl.text}</Text>
+                  <Text className="text-xs text-foreground">
+                    {l.scale.toUpperCase()}: {l.value}
+                  </Text>
                 </View>
               ))}
             </View>
           </View>
         )}
 
-        {entry.ai_explain && (
-          <View className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-3">
-            <Text className="mb-1 text-xs font-semibold text-primary">{'AI Explanation'}</Text>
-            <Text className="text-sm text-foreground">{entry.ai_explain}</Text>
+        {/* Dictionary source */}
+        <View className="mb-4">
+          <Text className="mb-2 text-sm font-semibold text-muted-foreground">{'Source'}</Text>
+          <View className="rounded-lg bg-muted/50 p-3">
+            <Text className="text-sm text-foreground">
+              {entry.dictionary.name} ({entry.dictionary.version})
+            </Text>
           </View>
-        )}
+        </View>
       </ScrollView>
     </View>
   );
