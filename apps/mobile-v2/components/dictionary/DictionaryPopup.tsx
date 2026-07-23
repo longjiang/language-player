@@ -12,7 +12,7 @@ interface DictionaryPopupProps {
   context?: string;
   translatedContext?: string;
   onClose: () => void;
-  onViewDetail?: (entry: DictionaryEntry) => void;
+  onViewDetail?: (entry: DictionaryEntry, allResults: DictionaryEntry[]) => void;
 }
 
 export function DictionaryPopup({
@@ -110,7 +110,7 @@ export function DictionaryPopup({
               <DictionaryEntryCard
                 entry={entry}
                 variant="compact"
-                onPress={onViewDetail}
+                onPress={onViewDetail ? (e) => onViewDetail(e, results ?? []) : undefined}
               />
             </View>
           ))}

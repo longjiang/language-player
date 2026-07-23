@@ -37,6 +37,19 @@ export interface SubtitleLine {
   starttime: number;
 }
 
+/** A video result from the /subs-search endpoint. */
+export interface SubsSearchVideo {
+  id: number;
+  title: string;
+  youtube_id: string;
+  subs_l2: SubtitleLine[];
+  views?: number;
+  duration?: number;
+  date?: string;
+  /** Index of the best-matching subtitle line for the search terms. Set by client after parsing. */
+  matchLineIndex: number;
+}
+
 export interface SyncedLine {
   starttime: number;
   l1Line: string;

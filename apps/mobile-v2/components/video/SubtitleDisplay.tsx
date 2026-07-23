@@ -1,13 +1,16 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { ICON_MUTED } from '@/lib/theme-colors';
 import { TokenizedText } from '../TokenizedText';
 import { DictionaryPopup } from '../dictionary/DictionaryPopup';
-import type { SubtitleLine } from '@langplayer/shared';
+import type { DictionaryEntry, SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
 
 interface SubtitleDisplayProps {
@@ -40,7 +43,10 @@ export function SubtitleDisplay({
   const { l1Lang, l2Lang } = useLanguage();
   const { display } = useSettingsContext();
   const t = useT();
+  const router = useRouter();
+  const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
+  const [loadingSubs, setLoadingSubs] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -62,6 +68,7 @@ export function SubtitleDisplay({
       return;
     }
     if (!youtubeId) return;
+    setLoadingSubs(true);
     (async () => {
       try {
         // Python backend exposes /get_best_l2_subs (fetches from YouTube transcript API)
@@ -75,7 +82,9 @@ export function SubtitleDisplay({
         }));
         setL2Lines(lines);
         onLinesLoaded?.(lines.map((l) => l.starttime));
-      } catch {}
+      } catch {} finally {
+        setLoadingSubs(false);
+      }
     })();
   }, [youtubeId, initialLines]);
 
@@ -95,6 +104,14 @@ export function SubtitleDisplay({
       }
     }
   }, [currentTime, l2Lines, activeIdx]);
+
+  if (loadingSubs) {
+    return (
+      <View className="flex-1 items-center justify-center py-8">
+        <ActivityIndicator size="large" color={ICON_MUTED} />
+      </View>
+    );
+  }
 
   if (l2Lines.length === 0) {
     return (
@@ -141,6 +158,14 @@ export function SubtitleDisplay({
         visible={!!selectedWord}
         word={selectedWord ?? ''}
         onClose={() => setSelectedWord(null)}
+        onViewDetail={(entry: DictionaryEntry, popupResults: DictionaryEntry[]) => {
+          setSelectedWord(null); // close popup before navigating
+          setDetailHead(entry.head);
+          setSidebarSource({ kind: 'results', items: popupResults });
+          setCameFromSearch(true);
+          const safeId = entry.id.replace(/,/g, '~');
+          router.push(`word/${safeId}` as any);
+        }}
       />
     </ScrollView>
   );

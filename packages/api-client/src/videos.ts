@@ -34,6 +34,13 @@ const _getLiveTV = (lang: string) =>
 const _report = (videoId: string, reason: string) =>
   apiClient.post<void>(`/videos/${videoId}/report`, { reason });
 
+const _searchSubs = (params: {
+  terms: string;
+  l2: string;
+  limit?: number;
+  context?: number;
+}) => apiClient.get<import('@langplayer/shared').SubsSearchVideo[]>('/subs-search', { params });
+
 const _getVideoTokenCache = (videoId: string, lang: string) =>
   apiClient.get<VideoTokenCache>('/lemmatize-video-normalized', {
     params: { video_id: videoId, lang },
@@ -46,6 +53,7 @@ const _stableReturn = {
   getRecommendations: _getRecommendations,
   getLiveTV: _getLiveTV,
   report: _report,
+  searchSubs: _searchSubs,
   getVideoTokenCache: _getVideoTokenCache,
 } as const;
 
