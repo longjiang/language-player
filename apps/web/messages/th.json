@@ -229,6 +229,7 @@
         "text_size": "ขนาดข้อความ",
         "textbook_format": "{material} — หนังสือ {book}, บทที่ {lesson}",
         "theme": "ธีม",
+        "today": "วันนี้",
         "tokenized_text_preview": "ตัวอย่าง",
         "transcript_mode": "โหมดบทถอดความ",
         "unknown_user": "ผู้ใช้",

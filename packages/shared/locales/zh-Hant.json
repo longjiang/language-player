@@ -228,6 +228,7 @@
         "text_size": "文字大小",
         "textbook_format": "{material} — 第 {book} 冊，第 {lesson} 課",
         "theme": "主題",
+        "today": "今天",
         "tokenized_text_preview": "預覽",
         "transcript_mode": "逐字稿模式",
         "unknown_user": "使用者",

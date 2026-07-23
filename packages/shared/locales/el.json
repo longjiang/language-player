@@ -229,6 +229,7 @@
         "text_size": "Μέγεθος κειμένου",
         "textbook_format": "{material} — Βιβλίο {book}, Μάθημα {lesson}",
         "theme": "Θέμα",
+        "today": "Σήμερα",
         "tokenized_text_preview": "Προεπισκόπηση",
         "transcript_mode": "Λειτουργία απομαγνητοφώνησης",
         "unknown_user": "Χρήστης",

@@ -229,6 +229,7 @@
         "text_size": "文字サイズ",
         "textbook_format": "{material} — ブック{book}、レッスン{lesson}",
         "theme": "テーマ",
+        "today": "今日",
         "tokenized_text_preview": "プレビュー",
         "transcript_mode": "トランスクリプトモード",
         "unknown_user": "ユーザー",

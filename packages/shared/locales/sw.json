@@ -229,6 +229,7 @@
         "text_size": "Ukubwa wa maandishi",
         "textbook_format": "{material} — Kitabu {book}, Somo {lesson}",
         "theme": "Mandhari",
+        "today": "Leo",
         "tokenized_text_preview": "Onyesho la awali",
         "transcript_mode": "Hali ya nakala",
         "unknown_user": "Mtumiaji",

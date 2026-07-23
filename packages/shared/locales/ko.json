@@ -229,6 +229,7 @@
         "text_size": "텍스트 크기",
         "textbook_format": "{material} — 책 {book}, 레슨 {lesson}",
         "theme": "테마",
+        "today": "오늘",
         "tokenized_text_preview": "미리보기",
         "transcript_mode": "대본 모드",
         "unknown_user": "사용자",

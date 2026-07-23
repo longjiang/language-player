@@ -229,6 +229,7 @@
         "text_size": "Dimensiune text",
         "textbook_format": "{material} — Cartea {book}, Lecția {lesson}",
         "theme": "Temă",
+        "today": "Astăzi",
         "tokenized_text_preview": "Previzualizare",
         "transcript_mode": "Mod transcriere",
         "unknown_user": "Utilizator",

@@ -229,6 +229,7 @@
         "text_size": "Cỡ chữ",
         "textbook_format": "{material} — Sách {book}, Bài {lesson}",
         "theme": "Chủ đề",
+        "today": "Hôm nay",
         "tokenized_text_preview": "Xem trước",
         "transcript_mode": "Chế độ bảng điểm",
         "unknown_user": "Người dùng",

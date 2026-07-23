@@ -229,6 +229,7 @@
         "text_size": "Tekstgrootte",
         "textbook_format": "{material} — Boek {book}, Les {lesson}",
         "theme": "Thema",
+        "today": "Vandaag",
         "tokenized_text_preview": "Voorbeeld",
         "transcript_mode": "Transcriptmodus",
         "unknown_user": "Gebruiker",

@@ -229,6 +229,7 @@
         "text_size": "Tamanho do texto",
         "textbook_format": "{material} — Livro {book}, Lição {lesson}",
         "theme": "Tema",
+        "today": "Hoje",
         "tokenized_text_preview": "Pré-visualização",
         "transcript_mode": "Modo transcrição",
         "unknown_user": "Usuário",

@@ -229,6 +229,7 @@
         "text_size": "Mida del text",
         "textbook_format": "{material} — Llibre {book}, Lliçó {lesson}",
         "theme": "Tema",
+        "today": "Avui",
         "tokenized_text_preview": "Vista prèvia",
         "transcript_mode": "Mode de transcripció",
         "unknown_user": "Usuari",

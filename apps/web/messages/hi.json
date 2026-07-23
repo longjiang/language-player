@@ -229,6 +229,7 @@
         "text_size": "पाठ का आकार",
         "textbook_format": "{material} — पुस्तक {book}, पाठ {lesson}",
         "theme": "थीम",
+        "today": "आज",
         "tokenized_text_preview": "पूर्वावलोकन",
         "transcript_mode": "ट्रांसक्रिप्ट मोड",
         "unknown_user": "उपयोगकर्ता",

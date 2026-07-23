@@ -229,6 +229,7 @@
         "text_size": "Teksgrootte",
         "textbook_format": "{material} — 第 {book} 冊，第 {lesson} 課",
         "theme": "Tema",
+        "today": "Vandag",
         "tokenized_text_preview": "Voorskou",
         "transcript_mode": "Transkripsiemodus",
         "unknown_user": "Gebruiker",

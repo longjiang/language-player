@@ -229,6 +229,7 @@
         "text_size": "Tekstin koko",
         "textbook_format": "{material} — Kirja {book}, oppitunti {lesson}",
         "theme": "Teema",
+        "today": "Tänään",
         "tokenized_text_preview": "Esikatselu",
         "transcript_mode": "Transkriptiotila",
         "unknown_user": "Käyttäjä",
