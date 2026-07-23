@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from 'react-native';
-import { getDocsForLocale, type DocEntryI18n } from '@langplayer/docs';
+import { DOCS, type DocEntry } from '@langplayer/shared';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -34,21 +34,19 @@ export default function DocsScreen() {
   const t = useT();
   const { l1Lang } = useLanguage();
   const [query, setQuery] = useState('');
-  const [selectedDoc, setSelectedDoc] = useState<DocEntryI18n | null>(null);
-
-  const docs = useMemo(() => getDocsForLocale(l1Lang.code), [l1Lang.code]);
+  const [selectedDoc, setSelectedDoc] = useState<DocEntry | null>(null);
 
   const filtered = useMemo(() => {
-    if (!query.trim()) return docs;
+    if (!query.trim()) return DOCS;
     const q = query.toLowerCase();
-    return docs.filter((d) => d.title.toLowerCase().includes(q) || d.content.toLowerCase().includes(q));
-  }, [query, docs]);
+    return DOCS.filter((d) => d.title.toLowerCase().includes(q) || d.content.toLowerCase().includes(q));
+  }, [query]);
 
-  // Group by category (derived from slug)
+  // Group by category
   const grouped = useMemo(() => {
-    const map: Record<string, DocEntryI18n[]> = {};
+    const map: Record<string, DocEntry[]> = {};
     for (const doc of filtered) {
-      const cat = doc.slug.split('/')[0] ?? 'general';
+      const cat = doc.category || 'general';
       if (!map[cat]) map[cat] = [];
       map[cat]!.push(doc);
     }
@@ -60,7 +58,7 @@ export default function DocsScreen() {
       <ScrollView style={S.root}>
         <Pressable onPress={() => setSelectedDoc(null)}><Text style={S.backBtn}>← {t('action.go_back')}</Text></Pressable>
         <Text style={S.selectedTitle}>{selectedDoc.title}</Text>
-        <Text style={[S.categoryLabel, { marginBottom: 16 }]}>{selectedDoc.slug.split('/')[0]}</Text>
+        <Text style={[S.categoryLabel, { marginBottom: 16 }]}>{selectedDoc.category}</Text>
         <Text style={S.selectedBody}>{stripMarkdown(selectedDoc.content)}</Text>
       </ScrollView>
     );
