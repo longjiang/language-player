@@ -210,7 +210,7 @@ Before translating, always check if `translations.csv` already has the same or v
 
 ### Writing User-Facing Documentation
 
-When writing or editing markdown documentation in `apps/web/content/docs/`, follow these guidelines:
+When writing or editing markdown documentation in `docs/content/`, follow these guidelines:
 
 **Tone & Voice**
 - **Informal and friendly** — write like you're explaining to a friend, not writing a textbook
@@ -272,7 +272,7 @@ Docs support `{$key}` syntax to reference CSV translation keys. When the page re
 4. Regenerate translations:
 
 ```bash
-nvm use 22 && node scripts/rebuild-doc.mjs apps/web/content/docs/<path>.md
+nvm use 22 && node scripts/rebuild-doc.mjs docs/content/<path>.md
 ```
 
 This resolves `{$key}` for all 31 locales, machine-translates the body via the Python `/translate` server (if running), and merges into `apps/web/src/data/docs-i18n/{locale}.json`. Requires Node ≥ 20 for translation; falls back to key-only resolution on older Node.
