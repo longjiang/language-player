@@ -19,7 +19,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const DOCS_DIR = resolve(ROOT, 'docs/content');
+const DOCS_DIR = resolve(ROOT, 'apps/web/content/docs');
 const OUT_DIR = resolve(ROOT, 'apps/web/src/data/docs-i18n');
 const CSV_PATH = resolve(ROOT, 'translations.csv');
 
