@@ -8,6 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_ON_PRIMARY, ICON_DESTRUCTIVE, ICON_PRIMARY } from '@/lib/theme-colors';
 import { RotateCcw, CheckCircle2, BookOpen } from 'lucide-react-native';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
+import { TabbedPanel } from '@/components/TabbedPanel';
 import type { DictionaryEntry } from '@langplayer/shared';
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
@@ -217,24 +218,33 @@ export default function ReviewScreen() {
                   </Text>
                   <ScrollView className="mt-4 max-h-96 w-full border-t border-border pt-4">
                     {entry ? (
-                      <View>
-                        <DictionaryEntryCard entry={entry} variant="full" />
-                        {currentWord?.context && (
-                          <View className="mt-3 rounded-lg bg-muted/30 p-3">
-                            <Text className="mb-1 text-xs font-medium text-muted-foreground">{t('review.source')}</Text>
-                            {(currentWord.context as any).videoTitle && (
-                              <Text className="text-xs text-muted-foreground" numberOfLines={1}>
-                                📺 {(currentWord.context as any).videoTitle}
-                              </Text>
-                            )}
-                            {(currentWord.context as any).text && (
-                              <Text className="mt-1 text-sm text-foreground" numberOfLines={3}>
-                                {(currentWord.context as any).text}
-                              </Text>
-                            )}
-                          </View>
-                        )}
-                      </View>
+                      <TabbedPanel
+                        tabs={[
+                          { key: 'dictionary', label: t('title.definitions') },
+                          { key: 'source', label: t('review.source') },
+                        ]}
+                        defaultTab="dictionary"
+                      >
+                        <View><DictionaryEntryCard entry={entry} variant="full" /></View>
+                        <View className="p-3">
+                          {currentWord?.context ? (
+                            <View className="rounded-lg bg-muted/30 p-3">
+                              {(currentWord.context as any).videoTitle && (
+                                <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                                  📺 {(currentWord.context as any).videoTitle}
+                                </Text>
+                              )}
+                              {(currentWord.context as any).text && (
+                                <Text className="mt-2 text-sm text-foreground" numberOfLines={5}>
+                                  {(currentWord.context as any).text}
+                                </Text>
+                              )}
+                            </View>
+                          ) : (
+                            <Text className="text-sm text-muted-foreground">{t('msg.no_context')}</Text>
+                          )}
+                        </View>
+                      </TabbedPanel>
                     ) : (
                       <Text className="text-center text-sm text-muted-foreground">{getDisplayName(currentWord!)}</Text>
                     )}
