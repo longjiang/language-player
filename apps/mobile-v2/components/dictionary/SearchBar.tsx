@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TextInput, Pressable, Text, ActivityIndicator } from 'react-native';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SearchBarProps {
   value: string;
@@ -14,6 +15,7 @@ interface SearchBarProps {
 
 export function SearchBar({ value, onChangeText, onSubmit, onClear, loading, placeholder }: SearchBarProps) {
   const t = useT();
+  const { l2Lang } = useLanguage();
 
   return (
     <View className="flex-row items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
@@ -23,7 +25,7 @@ export function SearchBar({ value, onChangeText, onSubmit, onClear, loading, pla
         value={value}
         onChangeText={onChangeText}
         onSubmitEditing={onSubmit}
-        placeholder={placeholder ?? t('placeholder.dictionary_search')}
+        placeholder={placeholder ?? t('placeholder.dictionary_search', { language: l2Lang.name })}
         placeholderTextColor={PLACEHOLDER_COLOR}
         returnKeyType="search"
         autoCapitalize="none"
