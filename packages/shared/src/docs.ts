@@ -1,16 +1,12 @@
-// Auto-generated from docs/content/ — DO NOT EDIT
-export type DocEntry = { path: string; title: string; category: string; content: string };
-
-export const DOCS: DocEntry[] = [
-  { path: 'account/login', title: 'Login', category: 'account', content: `# Logging In
+// Auto-generated from docs/content/ — DO NOT EDIT\nexport type DocEntry = { path: string; title: string; category: string; content: string };\n\nexport const DOCS: DocEntry[] = [\n  { path: 'account/login.md', title: 'Login.md', category: 'account', content: `# Logging In
 
 Sign in to your account, reset a forgotten password, and sign out when you're done.
 
 ## How to Log In
 
-1. Go to the **[login page](/login)** by clicking the user icon in the top-right corner and selecting **{\$action.log_in}**
-2. Enter your **{\$placeholder.email}** and **{\$placeholder.password}**
-3. Click **{\$action.log_in}**
+1. Go to the **[login page](/login)** by clicking the user icon in the top-right corner and selecting **Log In**
+2. Enter your **Email** and **Password**
+3. Click **Log In**
 
 If your credentials are correct, you'll be redirected to the language selection page (or back to the page you were on before logging in).
 
@@ -18,14 +14,14 @@ If you enter the wrong email or password, an error message appears — double-ch
 
 ## Don't Have an Account?
 
-Click **{\$action.sign_up}** below the login form to create a new account. See [Registration](/docs/account/registration) for the full sign-up walkthrough.
+Click **Sign up** below the login form to create a new account. See [Registration](/docs/account/registration) for the full sign-up walkthrough.
 
 ## Forgot Your Password?
 
 If you can't remember your password:
 
-1. On the login page, click **{\$action.forgot_password}**
-2. Enter your email address and click **{\$action.send_reset_link}**
+1. On the login page, click **Forgot password?**
+2. Enter your email address and click **Send Reset Link**
 3. Check your inbox for a password reset email
 4. Follow the link in the email to set a new password
 
@@ -35,7 +31,7 @@ For security, the page always shows a success message after you submit — even 
 
 ## How to Log Out
 
-Click the user icon in the top-right corner (it shows your initial), then click **{\$action.log_out}** at the bottom of the menu. You'll be signed out and redirected to the home page.
+Click the user icon in the top-right corner (it shows your initial), then click **Log Out** at the bottom of the menu. You'll be signed out and redirected to the home page.
 
 Logging out clears your local session, but your saved words, watch history, and settings are preserved — they'll be restored next time you sign in.
 
@@ -48,9 +44,8 @@ To switch to a different account, log out first, then log in with the other emai
 - Your login session persists across browser restarts — you won't need to log in every time you visit
 - If you're on a shared device, always log out when you're done
 - The forgot password flow works even if you registered with the same email — it sends a reset link regardless
-- You can manage your account details from your **[{\$title.profile}](/docs/account/profile)**
-` },
-  { path: 'account/profile', title: 'Profile', category: 'account', content: `# {\$title.profile}
+- You can manage your account details from your **[Profile](/docs/account/profile)**
+` },\n  { path: 'account/profile.md', title: 'Profile.md', category: 'account', content: `# Profile
 
 Your profile page shows account info, language level, subscription status, watch history, and saved words — all in one place.
 
@@ -60,61 +55,60 @@ At the top of the page you'll see your display name and email address. This is t
 
 ## Language Level
 
-The **{\$title.settings}** section lets you set your proficiency level for the current target language. Choose from the dropdown to match your ability:
+The **Settings** section lets you set your proficiency level for the current target language. Choose from the dropdown to match your ability:
 
-- **{\$lang.zh}** shows {\$level.exam_hsk} levels (1 through 7-9)
-- **{\$lang.ja}** shows {\$level.exam_jlpt} levels (Pre-N5 through N1)
-- **{\$lang.ko}** shows {\$level.exam_topik} levels (Pre-1 through 6)
-- **{\$lang.en}** shows {\$level.exam_ielts} levels (1 through 9)
-- **All other languages** show {\$level.exam_cefr} levels (Pre-A1 through C2)
+- **Chinese** shows HSK levels (1 through 7-9)
+- **Japanese** shows JLPT levels (Pre-N5 through N1)
+- **Korean** shows TOPIK levels (Pre-1 through 6)
+- **English** shows IELTS levels (1 through 9)
+- **All other languages** show CEFR levels (Pre-A1 through C2)
 
-Your level is used to filter video recommendations on the [{\$title.explore}](/docs/media/explore) page and to color-code difficulty badges on video cards. You can change it anytime — your recommendations update immediately.
+Your level is used to filter video recommendations on the [Explore](/docs/media/explore) page and to color-code difficulty badges on video cards. You can change it anytime — your recommendations update immediately.
 
 ## Subscription
 
-The **{\$title.subscription}** section shows your current plan and lets you manage it.
+The **Subscription** section shows your current plan and lets you manage it.
 
 ### Free Account
 
-If you're on a free account, you'll see a **{\$label.free_account}** badge and three plan cards — Monthly (\$10/mo), Annual (\$90/yr), and Lifetime (\$169). Click **{\$action.upgrade_to_pro}** to go to the [{\$title.go_pro}](/docs/account/subscription) page and choose a plan.
+If you're on a free account, you'll see a **Free Account** badge and three plan cards — Monthly ($10/mo), Annual ($90/yr), and Lifetime ($169). Click **Upgrade to Pro** to go to the [Go Pro](/docs/account/subscription) page and choose a plan.
 
 ### Active Pro Subscription
 
 If you have an active subscription, you'll see:
 
-- A **{\$subscription.monthly_cap}**, **{\$subscription.annual_cap}**, or **{\$subscription.lifetime_cap}** badge
+- A **Monthly**, **Annual**, or **Lifetime** badge
 - Days remaining until renewal (monthly and annual plans)
-- An **{\$label.auto_renews}** badge if auto-renewal is on
+- An **Auto-renews** badge if auto-renewal is on
 - The payment method used (Stripe, PayPal, or Apple App Store)
 
 From here you can:
 
-- **{\$action.cancel_auto_renewal}** — stops auto-renewal at the end of your current billing period. Your Pro access stays active until then.
-- **{\$action.upgrade}** — switch from Monthly to Annual, or from any plan to Lifetime
-- **{\$action.upgrade_to_lifetime}** — a one-time \$169 payment for permanent Pro access
+- **Cancel Auto-Renewal** — stops auto-renewal at the end of your current billing period. Your Pro access stays active until then.
+- **Upgrade** — switch from Monthly to Annual, or from any plan to Lifetime
+- **Upgrade to Lifetime** — a one-time $169 payment for permanent Pro access
 
 ### Expired Subscription
 
-If your subscription has ended, you'll see a red expired badge and a **{\$action.renew}** button. All your saved words, watch history, and settings are preserved — just renew to pick up where you left off.
+If your subscription has ended, you'll see a red expired badge and a **Renew** button. All your saved words, watch history, and settings are preserved — just renew to pick up where you left off.
 
 ## Watch History
 
-The **{\$title.watch_history}** section shows the last 5 videos you watched, with thumbnails and durations. Click any video to resume playback from where you left off, with your full watch history loaded as a queue.
+The **Watch History** section shows the last 5 videos you watched, with thumbnails and durations. Click any video to resume playback from where you left off, with your full watch history loaded as a queue.
 
-Click **{\$action.see_all}** to open the full [{\$title.watch_history}](/docs/media/watch-history) page, where you can browse, search, and replay every video you've watched in this language.
+Click **See All** to open the full [Watch History](/docs/media/watch-history) page, where you can browse, search, and replay every video you've watched in this language.
 
 ## Saved Words
 
-The **{\$title.saved_words}** section shows your 10 most recently saved words for the current target language. Each entry shows the word and the video it came from — click a word to open its dictionary entry, or click **{\$action.see_all}** to browse your full vocabulary on the [{\$title.saved_words}](/docs/vocab/saved-words) page.
+The **Saved Words** section shows your 10 most recently saved words for the current target language. Each entry shows the word and the video it came from — click a word to open its dictionary entry, or click **See All** to browse your full vocabulary on the [Saved Words](/docs/vocab/saved-words) page.
 
 ## Tips
 
-- Your language level is per-language — setting your {\$lang.zh} level to {\$level.exam_hsk} 3 won't affect your {\$lang.ja} level
-- The {\$title.watch_history} and {\$title.saved_words} sections only show content for the current target language — switch L2 in the header to see other languages
-- {\$msg.money_back_guarantee} [{\$action.contact_us}](mailto:jon.long@zerotohero.ca)
+- Your language level is per-language — setting your Chinese level to HSK 3 won't affect your Japanese level
+- The Watch History and Saved Words sections only show content for the current target language — switch L2 in the header to see other languages
+- 14-day money-back guarantee. Questions? [Contact us](mailto:jon.long@zerotohero.ca)
 - Cancelling auto-renewal keeps your Pro features active until the end of your billing period — nothing is interrupted early
-` },
-  { path: 'account/registration', title: 'Registration', category: 'account', content: `# {\$title.create_account}
+` },\n  { path: 'account/registration.md', title: 'Registration.md', category: 'account', content: `# Create your account
 
 Create your Language Player account in two steps — fill in your details, then verify your email.
 
@@ -128,26 +122,26 @@ Registration has three steps:
 
 ## Step 1: Create Your Account
 
-Go to the **[registration page](/register)** by clicking **{\$action.sign_up}** on the [login page](/docs/account/login).
+Go to the **[registration page](/register)** by clicking **Sign up** on the [login page](/docs/account/login).
 
 Fill in the form:
 
-- **{\$placeholder.first_name}** and **{\$placeholder.last_name}** — your name as you'd like it to appear on your profile
-- **{\$placeholder.email}** — the email you'll use to sign in and receive password resets
-- **{\$placeholder.password}** — {\$placeholder.password_min}
+- **First** and **Last** — your name as you'd like it to appear on your profile
+- **Email** — the email you'll use to sign in and receive password resets
+- **Password** — Min. 8 characters
 
-Click **{\$action.create_account}** to submit. If the email is already registered, you'll see an error — use the [forgot password](/docs/account/login#forgot-your-password) flow instead.
+Click **Create Account** to submit. If the email is already registered, you'll see an error — use the [forgot password](/docs/account/login#forgot-your-password) flow instead.
 
 ## Step 2: Verify Your Email
 
 After submitting the form, we send a 6-digit verification code to your email. The page changes to a code entry screen:
 
-- Enter the code in the **{\$placeholder.verification_code}** field — it accepts digits only
-- Click **{\$action.verify_email}** to confirm
+- Enter the code in the **Verification code** field — it accepts digits only
+- Click **Verify Email** to confirm
 
 If the code is incorrect, you'll see an error — double-check the email and try again.
 
-Didn't get the code? Click **{\$action.resend}** to send a new one. If it still doesn't arrive, check your spam folder.
+Didn't get the code? Click **Resend** to send a new one. If it still doesn't arrive, check your spam folder.
 
 ## Step 3: You're In
 
@@ -155,16 +149,15 @@ Once your email is verified, you're automatically signed in and redirected to th
 
 ## Already Have an Account?
 
-If you already registered, click **{\$action.log_in}** at the bottom of the registration form to go to the [login page](/docs/account/login) instead.
+If you already registered, click **Log In** at the bottom of the registration form to go to the [login page](/docs/account/login) instead.
 
 ## Tips
 
 - Use a real email address — you'll need it for password resets and account recovery
-- The verification code expires after a short time — if it does, click **{\$action.resend}** to get a fresh one
+- The verification code expires after a short time — if it does, click **Resend** to get a fresh one
 - Passwords must be at least 8 characters — longer is better for security
-- After registering, set your language level on your **[{\$title.profile}](/docs/account/profile)** to get level-matched video recommendations
-` },
-  { path: 'account/subscription', title: 'Subscription', category: 'account', content: `# {\$title.subscription}
+- After registering, set your language level on your **[Profile](/docs/account/profile)** to get level-matched video recommendations
+` },\n  { path: 'account/subscription.md', title: 'Subscription.md', category: 'account', content: `# Subscription
 
 Choose a plan, manage your subscription, and understand what you get with Pro.
 
@@ -186,17 +179,17 @@ Language Player is free to use, with an optional Pro upgrade that unlocks the fu
 
 | Plan | Price | Billing |
 |---|---|---|
-| **Monthly** | US\$10/mo | {\$duration.monthly} Cancel anytime. |
-| **Annual** | US\$90/yr | {\$duration.annual} Save 25% vs monthly. |
-| **Lifetime** | US\$169 | {\$duration.lifetime} {\$msg.pay_once_forever} |
+| **Monthly** | US$10/mo | Billed each month. Cancel anytime. |
+| **Annual** | US$90/yr | Billed annually. Save 25% vs monthly. |
+| **Lifetime** | US$169 | Never Expires. Pay once, access forever. |
 
-All plans include a {\$msg.money_back_guarantee}
+All plans include a 14-day money-back guarantee. Questions?
 
 ## How to Upgrade
 
-1. Open your **[{\$title.profile}](/docs/account/profile)** from the top-right menu
+1. Open your **[Profile](/docs/account/profile)** from the top-right menu
 2. Scroll to the **Subscription** section
-3. Click **{\$title.upgrade_to_pro}** (or **{\$action.upgrade}** if you're already on a Pro plan)
+3. Click **Upgrade to Pro** (or **Upgrade** if you're already on a Pro plan)
 4. Choose a plan — Monthly, Annual, or Lifetime
 5. Pick a payment method and complete checkout
 
@@ -206,10 +199,10 @@ After payment, you'll be redirected to a confirmation page. Your Pro features ar
 
 | Method | Available for | Currency |
 |---|---|---|
-| {\$payment.credit_card} | All plans | USD |
-| {\$payment.wechat_pay} | All plans | CNY |
-| {\$payment.alipay} | All plans | CNY |
-| {\$msg.paypal_available} | Lifetime only | USD |
+| Credit Card | All plans | USD |
+| WeChat Pay | All plans | CNY |
+| Alipay | All plans | CNY |
+| PayPal is also available for lifetime purchases. | Lifetime only | USD |
 
 Credit card payments are processed securely through Stripe. Your card details are never stored on our servers.
 
@@ -217,73 +210,72 @@ Credit card payments are processed securely through Stripe. Your card details ar
 
 ### Check Your Status
 
-Your current plan, billing cycle, and renewal date are shown on your **[{\$title.profile}](/docs/account/profile)** page under the Subscription section.
+Your current plan, billing cycle, and renewal date are shown on your **[Profile](/docs/account/profile)** page under the Subscription section.
 
 ### Cancel Auto-Renewal
 
 Monthly and Annual plans renew automatically. To stop auto-renewal:
 
-1. Go to your **[{\$title.profile}](/docs/account/profile)**
-2. In the Subscription section, click **{\$action.cancel_auto_renewal}**
-3. Confirm by clicking **{\$action.confirm_cancellation}**
+1. Go to your **[Profile](/docs/account/profile)**
+2. In the Subscription section, click **Cancel Auto-Renewal**
+3. Confirm by clicking **Confirm Cancellation**
 
 Your Pro access continues until the end of your current billing period. After that, your account returns to Free and you'll keep all your saved words, watch history, and settings.
 
 ### Renew an Expired Subscription
 
-If your Pro subscription expired, click **{\$action.renew}** on your profile page to subscribe again. All your data is preserved — nothing is lost when a subscription lapses.
+If your Pro subscription expired, click **Renew** on your profile page to subscribe again. All your data is preserved — nothing is lost when a subscription lapses.
 
 ### Upgrade Your Plan
 
 You can upgrade from Monthly to Annual or Lifetime at any time:
 
-1. Go to your **[{\$title.profile}](/docs/account/profile)**
-2. Click **{\$action.upgrade}** in the Subscription section
+1. Go to your **[Profile](/docs/account/profile)**
+2. Click **Upgrade** in the Subscription section
 3. Choose your new plan and complete payment
 
 When you upgrade, the remaining value of your current plan is credited toward the new one. Your new billing cycle starts immediately.
 
 ## Tips
 
-- The {\$title.go_pro} page shows real-time prices — no hidden fees or taxes added at checkout
-- Lifetime is a one-time payment with no recurring charges — {\$footnote.lifetime_assumption}
+- The Go Pro page shows real-time prices — no hidden fees or taxes added at checkout
+- Lifetime is a one-time payment with no recurring charges — 1. Assuming you will live longer than 2.4 years.
 - Cancelling auto-renewal doesn't delete anything — you keep full Pro access until the period ends
-- If you run into payment issues, contact [{\$button.email_support}](mailto:jon.long@zerotohero.ca) and we'll help within 24 hours
-` },
-  { path: 'general/language-switcher', title: 'Language Switcher', category: 'general', content: `# Language Switcher
+- If you run into payment issues, contact [Email Support](mailto:jon.long@zerotohero.ca) and we'll help within 24 hours
+` },\n  { path: 'general/language-switcher.md', title: 'Language Switcher.md', category: 'general', content: `# Language Switcher
 
-{\$title.app_name} works with a language pair — the language you speak and the language you're learning. Everything in the app is built around this pair: the interface appears in your language, videos and dictionary entries are in your learning language, and translations go between the two.
+Language Player works with a language pair — the language you speak and the language you're learning. Everything in the app is built around this pair: the interface appears in your language, videos and dictionary entries are in your learning language, and translations go between the two.
 
 You pick your pair when you first sign up, and you can change it any time from the header.
 
 ## Your Language Pair
 
-{\$title.app_name} uses two languages at all times:
+Language Player uses two languages at all times:
 
 - **L1** — Your native language. This is what the interface, menus, and buttons appear in. It's also the language translations go into.
 - **L2** — The language you're learning. Videos, subtitles, and dictionary results are all in this language.
 
-For example, if you speak {\$lang.en} and you're learning {\$lang.ja}, your pair is {\$lang.en} → {\$lang.ja}. The interface is in {\$lang.en}, videos play in {\$lang.ja}, and translations go from {\$lang.ja} to {\$lang.en}.
+For example, if you speak English and you're learning Japanese, your pair is English → Japanese. The interface is in English, videos play in Japanese, and translations go from Japanese to English.
 
 ## First Visit — Onboarding
 
-The first time you open {\$title.app_name}, you'll see the language picker. It has two columns side by side:
+The first time you open Language Player, you'll see the language picker. It has two columns side by side:
 
-- **Left column** — **{\$title.i_speak}**. Pick the language you're most comfortable with. This becomes your L1.
-- **Right column** — **{\$title.i_learning}**. Pick the language you want to learn. This becomes your L2.
+- **Left column** — **I speak**. Pick the language you're most comfortable with. This becomes your L1.
+- **Right column** — **I'm learning**. Pick the language you want to learn. This becomes your L2.
 
 Each column has a search bar at the top. Start typing to find your language, or scroll through the list. Popular languages are shown first, followed by all available languages in alphabetical order.
 
-Click a language to select it. Your choice is highlighted — blue for L1, orange for L2. Once you've picked both, a **{\$action.continue}** button appears at the bottom. Click it to start using {\$title.app_name} with your chosen pair.
+Click a language to select it. Your choice is highlighted — blue for L1, orange for L2. Once you've picked both, a **Continue** button appears at the bottom. Click it to start using Language Player with your chosen pair.
 
 ### Chinese Script Choice
 
-If you pick {\$lang.zh} as your L2, a script toggle appears between the two columns after you select it. Choose between:
+If you pick Chinese as your L2, a script toggle appears between the two columns after you select it. Choose between:
 
-- **{\$setting.simplified}** — Characters used in mainland China and Singapore
-- **{\$setting.traditional}** — Characters used in Taiwan, Hong Kong, and Macau
+- **简体 Simplified** — Characters used in mainland China and Singapore
+- **繁體 Traditional** — Characters used in Taiwan, Hong Kong, and Macau
 
-You can change this preference later in [{\$title.settings}](/docs/general/settings), under the **{\$label.character_set}** option in the {\$setting.display} tab.
+You can change this preference later in [Settings](/docs/general/settings), under the **Character set** option in the Display tab.
 
 ## Changing Languages — The Header Switcher
 
@@ -295,7 +287,7 @@ Click either language label to open a dropdown. The dropdown has a search bar an
 
 Between the two language labels there's a swap button (two arrows, ↔). Click it to flip your pair — your L1 becomes your L2, and your L2 becomes your L1. This only works if your L2 is also available as an interface language (one of the 31 supported UI languages). If it isn't, the button has no effect.
 
-Swapping is useful when you want to see the app from the other perspective — for example, if you're a {\$lang.ja} speaker learning {\$lang.en}, swap to see the interface in {\$lang.ja} and dictionary entries in {\$lang.en}.
+Swapping is useful when you want to see the app from the other perspective — for example, if you're a Japanese speaker learning English, swap to see the interface in Japanese and dictionary entries in English.
 
 ## What Changes When You Switch
 
@@ -304,10 +296,10 @@ Changing your language pair affects almost everything in the app:
 | What changes | Details |
 |---|---|
 | **Interface language** | All menus, buttons, and labels switch to your new L1 |
-| **Videos** | {\$title.explore}, {\$title.tv_shows}, and {\$title.live_tv} show content in your new L2 |
+| **Videos** | Explore, TV Shows, and Live TV show content in your new L2 |
 | **Dictionary** | The dictionary switches to your new L2 ↔ L1 pair. Definitions appear in your new L1 |
 | **Saved words** | Vocabulary lists are per-language. Switching to a different L2 shows that language's saved words |
-| **{\$title.settings}** | Per-language settings (like phonetics and voice) change to match your new L2 |
+| **Settings** | Per-language settings (like phonetics and voice) change to match your new L2 |
 | **Search** | Video search and dictionary search target your new L2 |
 
 Your watch history, saved words, and settings are all saved per language — nothing is lost when you switch.
@@ -319,7 +311,7 @@ Both the onboarding picker and the header dropdown have a search bar. Type to fi
 - The language's name in its own script (e.g., 日本語, Español)
 - The localized name in your current interface language
 - The English name
-- The ISO language code (e.g., \`ja\`, \`es\`, \`zh\`)
+- The ISO language code (e.g., \\`ja\\`, \\`es\\`, \\`zh\\`)
 
 Clear the search to see the full list again with Popular languages at the top.
 
@@ -328,25 +320,24 @@ Clear the search to see the full list again with Popular languages at the top.
 - Pick your **actual strongest language** as L1, not the one you're "supposed" to speak. Accurate translations depend on it.
 - Use the swap button to check how the app looks in your L2 — it's a quick way to test your reading comprehension.
 - If you're learning multiple languages, switch between them from the header. Your progress for each is kept separate.
-- The script toggle for {\$lang.zh} remembers your choice, so you only need to set it once.
-- Your last-used language pair is saved in your browser. Next time you visit, you'll go straight to your content — no need to pick again.` },
-  { path: 'general/settings', title: 'Settings', category: 'general', content: `# {\$title.settings}
+- The script toggle for Chinese remembers your choice, so you only need to set it once.
+- Your last-used language pair is saved in your browser. Next time you visit, you'll go straight to your content — no need to pick again.` },\n  { path: 'general/settings.md', title: 'Settings.md', category: 'general', content: `# Settings
 
-{\$title.settings} controls how {\$title.app_name} looks and behaves while you're learning. Open it from your profile menu. {\$title.settings} are organized into four tabs — {\$setting.display}, {\$setting.playback}, {\$setting.speech}, and {\$setting.review}.
+Settings controls how Language Player looks and behaves while you're learning. Open it from your profile menu. Settings are organized into four tabs — Display, Playback, Speech, and Review.
 
 Your settings save automatically. They sync across devices when you're signed in.
 
-## {\$setting.display}
+## Display
 
 Everything that affects how text and subtitles look on screen.
 
-### {\$label.theme}
+### Theme
 
-Pick {\$setting.light}, {\$setting.dark}, or {\$setting.system}. {\$setting.system} follows your device's appearance setting and switches automatically.
+Pick Light, Dark, or System. System follows your device's appearance setting and switches automatically.
 
-### {\$action.translation}
+### Translation
 
-{\$label.show_translation} adds a line in your language below each subtitle. Turn it off for immersion, on for comprehension. You can also toggle this from the video player with the {\$action.translation} pill button.
+Show Translation adds a line in your language below each subtitle. Turn it off for immersion, on for comprehension. You can also toggle this from the video player with the Translation pill button.
 
 ### Popup Dictionary
 
@@ -354,187 +345,185 @@ When enabled, tap any word to see its definition, pronunciation, and example sen
 
 A live preview below the toggle shows how your text will look — you can adjust font, size, and phonetics and see the result immediately.
 
-### {\$setting.text_appearance}
+### Text Appearance
 
-**{\$label.font}** — {\$setting.font_default} uses your browser's standard font. {\$setting.font_serif} adds small decorative strokes to characters. Sans-serif uses clean, modern letterforms.
+**Font** — Default uses your browser's standard font. Serif adds small decorative strokes to characters. Sans-serif uses clean, modern letterforms.
 
-**{\$label.text_size}** — A slider from smallest to largest. Changes font size everywhere in the app — subtitles, transcripts, and [dictionary](/docs/vocab/dictionary) entries.
+**Text Size** — A slider from smallest to largest. Changes font size everywhere in the app — subtitles, transcripts, and [dictionary](/docs/vocab/dictionary) entries.
 
-### {\$setting.phonetics}
+### Phonetics
 
-{\$setting.phonetics} are pronunciation guides that appear with the text. For {\$lang.zh}, this is {\$word.pinyin} above characters. For {\$lang.ja}, it's Furigana. For other languages, it's a romanized reading.
+Phonetics are pronunciation guides that appear with the text. For Chinese, this is Pinyin above characters. For Japanese, it's Furigana. For other languages, it's a romanized reading.
 
-**{\$label.show_phonetics}** has three options:
-- **{\$setting.phonetics_on_top}** — the pronunciation sits above each word
-- **{\$setting.phonetics_replace}** — the pronunciation replaces the original script entirely
-- **{\$setting.off}** — no phonetics at all
+**Show Phonetics** has three options:
+- **On top of word** — the pronunciation sits above each word
+- **Replacing word** — the pronunciation replaces the original script entirely
+- **Off** — no phonetics at all
 
-When "{\$setting.phonetics_on_top}" is selected, a second control appears: **Show For**. Choose **{\$setting.all_words}** to annotate everything, or **{\$setting.hard_words_only}** to only show phonetics on words above your proficiency level. You can set your proficiency level on your [profile page](/profile).
+When "On top of word" is selected, a second control appears: **Show For**. Choose **All Words** to annotate everything, or **Hard Words Only** to only show phonetics on words above your proficiency level. You can set your proficiency level on your [profile page](/profile).
 
-### {\$setting.word_level_display}
+### Word-Level Display
 
-**{\$label.show_gloss_saved}** shows a short translation above words you've saved to your vocabulary list. It's a quick reminder of what the word means without opening the full dictionary.
+**Show Quick Gloss** shows a short translation above words you've saved to your vocabulary list. It's a quick reminder of what the word means without opening the full dictionary.
 
-**{\$label.show_interlinear_gloss}** shows the first dictionary definition below every word in the text. Unlike {\$label.show_gloss_saved} (saved words only), this applies to all words.
+**Show Interlinear Gloss** shows the first dictionary definition below every word in the text. Unlike Show Quick Gloss (saved words only), this applies to all words.
 
-**{\$label.character_set}** is for {\$lang.zh} learners — choose between Simplified and Traditional characters. For {\$lang.ko}, there's a **{\$label.show_hanja}** toggle that displays {\$lang.zh} characters alongside Hangul. For {\$lang.vi}, **{\$label.show_hantu}** adds the original {\$lang.zh}-based characters.
+**Character set** is for Chinese learners — choose between Simplified and Traditional characters. For Korean, there's a **Show Hanja** toggle that displays Chinese characters alongside Hangul. For Vietnamese, **Show Hán Tự** adds the original Chinese-based characters.
 
-### {\$setting.interaction}
+### Interaction
 
-**{\$setting.quiz_mode}** hides saved words in the text and replaces them with blanks. Tap a blank to reveal the word. It's a self-testing tool — see if you can recall a word by reading the surrounding sentence, then tap to check.
+**Quiz Mode** hides saved words in the text and replaces them with blanks. Tap a blank to reveal the word. It's a self-testing tool — see if you can recall a word by reading the surrounding sentence, then tap to check.
 
-## {\$setting.playback}
+## Playback
 
-{\$title.settings} for how videos play and how subtitles behave.
+Settings for how videos play and how subtitles behave.
 
-### {\$setting.captions}
+### Captions
 
-**{\$label.transcript_mode}** shows the full interactive transcript of a video as a scrollable page, instead of syncing one subtitle line at a time to the video. Use it to read ahead, jump to specific lines, or study the entire dialogue at once.
+**Transcript Mode** shows the full interactive transcript of a video as a scrollable page, instead of syncing one subtitle line at a time to the video. Use it to read ahead, jump to specific lines, or study the entire dialogue at once.
 
-**{\$label.smooth_scroll}** keeps the active subtitle line centered in the transcript panel as the video plays. The transcript scrolls gently to follow along.
+**Smooth Scroll** keeps the active subtitle line centered in the transcript panel as the video plays. The transcript scrolls gently to follow along.
 
-**{\$label.karaoke}** highlights each word in the current subtitle as it's spoken. The highlight moves word by word, matching the audio.
+**Karaoke Mode** highlights each word in the current subtitle as it's spoken. The highlight moves word by word, matching the audio.
 
-### {\$label.auto_pause}
+### Auto-Pause
 
 Pauses the video after each subtitle line finishes. Useful when you want time to read, look up words, and process what you heard before moving on.
 
-### {\$label.collapse_video}
+### Collapse Video
 
 Collapses the video player to a compact mini-player when you scroll through the transcript. Gives you more room to read while keeping the video visible.
 
-## {\$setting.speech}
+## Speech
 
-Choose the text-to-speech voice used when you play word pronunciations. You can pick a voice for your target language, adjust the speech rate, and test it before saving. See [{\$label.pronunciation_voice}](/docs/vocab/dictionary#pronunciation) for more on how pronunciation works in the dictionary.
+Choose the text-to-speech voice used when you play word pronunciations. You can pick a voice for your target language, adjust the speech rate, and test it before saving. See [Pronunciation Voice](/docs/vocab/dictionary#pronunciation) for more on how pronunciation works in the dictionary.
 
-## {\$setting.review}
+## Review
 
-{\$title.settings} for your spaced repetition practice.
+Settings for your spaced repetition practice.
 
-**{\$label.new_cards_per_day}** sets the maximum number of new vocabulary cards introduced each day. Lower numbers mean fewer new words but more manageable daily sessions. Higher numbers ramp you up faster but increase your daily workload. The default is 20.
+**New cards per day** sets the maximum number of new vocabulary cards introduced each day. Lower numbers mean fewer new words but more manageable daily sessions. Higher numbers ramp you up faster but increase your daily workload. The default is 20.
 
-See [{\$title.saved_words} & {\$setting.review}](/docs/vocab/saved-words) for how the review system works.
+See [Saved Words & Review](/docs/vocab/saved-words) for how the review system works.
 
 ## Tips
 
-- Toggle Translation on and off from the video player itself — no need to open {\$title.settings} every time
-- If you find yourself looking up every word, try **{\$setting.hard_words_only}** for phonetics to reduce visual clutter
-- {\$setting.quiz_mode} is most effective with shorter texts — start with a paragraph, not a full article
+- Toggle Translation on and off from the video player itself — no need to open Settings every time
+- If you find yourself looking up every word, try **Hard Words Only** for phonetics to reduce visual clutter
+- Quiz Mode is most effective with shorter texts — start with a paragraph, not a full article
 - Your per-language settings (phonetics, character set, voice) travel with you when you switch between language pairs
-` },
-  { path: 'getting-started', title: 'Getting Started', category: 'getting-started', content: `# Getting Started
+` },\n  { path: 'getting-started.md', title: 'Getting Started.md', category: 'getting-started', content: `# Getting Started
 
-Welcome to {\$title.app_name} — learn any language by watching real videos with interactive subtitles. Click any word to see its definition, save it to your vocabulary, and let the app schedule reviews so you never forget.
+Welcome to Language Player — learn any language by watching real videos with interactive subtitles. Click any word to see its definition, save it to your vocabulary, and let the app schedule reviews so you never forget.
 
 This guide walks you through everything from creating an account to watching your first video.
 
 ## Create a Free Account
 
-You can browse {\$title.app_name} without an account, but signing up lets you save words, track your watch history, and sync your progress across devices.
+You can browse Language Player without an account, but signing up lets you save words, track your watch history, and sync your progress across devices.
 
-1. Click **{\$action.sign_up}** in the top-right corner
+1. Click **Sign up** in the top-right corner
 2. Enter your email and a password
 3. Check your inbox for a verification code — enter it to confirm your email
 4. You're in! Your account is free and stays free
 
-A {\$label.free_account} gives you access to 600,000+ videos across 207+ languages, the full dictionary, and spaced repetition review. See [{\$title.subscription}](/docs/account/subscription) for what's included and how to upgrade if you want more.
+A Free Account gives you access to 600,000+ videos across 207+ languages, the full dictionary, and spaced repetition review. See [Subscription](/docs/account/subscription) for what's included and how to upgrade if you want more.
 
 ## Choose Your Languages
 
-{\$title.app_name} works with a **language pair** — your native language (L1) and the language you're learning (L2). Pick both to get started.
+Language Player works with a **language pair** — your native language (L1) and the language you're learning (L2). Pick both to get started.
 
 ### First Time
 
 When you sign up, you'll see the language selection page with two columns:
 
-- **Left column** — {\$msg.choose_languages} (your native language). This sets the app's interface language.
+- **Left column** — Choose your languages to get started (your native language). This sets the app's interface language.
 - **Right column** — your target language (the one you want to learn).
 
-Type to search. You can search by the language's **native name**, its **English name**, or its **ISO code**. For example, to find {\$lang.ja}, you can type \`日本語\`, \`Japanese\`, or \`ja\`.
+Type to search. You can search by the language's **native name**, its **English name**, or its **ISO code**. For example, to find Japanese, you can type \\`日本語\\`, \\`Japanese\\`, or \\`ja\\`.
 
-If you're learning {\$lang.zh}, a toggle appears below the search bar to switch between Simplified and Traditional characters.
+If you're learning Chinese, a toggle appears below the search bar to switch between Simplified and Traditional characters.
 
-Click a language in each column, then click **{\$action.start_learning}** at the bottom. Your choices are saved in the URL and remembered across sessions.
+Click a language in each column, then click **Start Learning** at the bottom. Your choices are saved in the URL and remembered across sessions.
 
 ### Switching Later
 
-You can change either language at any time from the header. Click the language name in the top bar to open a dropdown, or use the **swap button** between the two language labels to flip your pair (L1 ↔ L2). See [{\$title.language_switcher}](/docs/general/language-switcher) for all the ways to switch.
+You can change either language at any time from the header. Click the language name in the top bar to open a dropdown, or use the **swap button** between the two language labels to flip your pair (L1 ↔ L2). See [[?title.language_switcher]](/docs/general/language-switcher) for all the ways to switch.
 
 ## Watch Your First Video
 
 The fastest way to get started:
 
-1. Go to **{\$title.explore}** from the sidebar or navigation menu
-2. You'll see a grid of video cards — each one has a thumbnail, a difficulty badge (like {\$level.exam_cefr} A1 or {\$level.exam_hsk} 3), and a view count
+1. Go to **Explore** from the sidebar or navigation menu
+2. You'll see a grid of video cards — each one has a thumbnail, a difficulty badge (like CEFR A1 or HSK 3), and a view count
 3. Use the **level filter pills** at the top to find videos at your proficiency level
-4. Click any video to open the [{\$title.reading}](/docs/media/video-player)
+4. Click any video to open the [Reading](/docs/media/video-player)
 
 The video player shows interactive subtitles beside the video. Every word is clickable — tap a word to see its definition, pronunciation, and a bookmark button to save it to your vocabulary list. Translations appear below each subtitle line in your native language.
 
-See [{\$title.explore}](/docs/media/explore) for details on filtering, channel subscriptions, and difficulty scoring.
+See [Explore](/docs/media/explore) for details on filtering, channel subscriptions, and difficulty scoring.
 
 ## What You Can Do
 
-{\$title.app_name} has more than just videos. Here's what's available:
+Language Player has more than just videos. Here's what's available:
 
 | Feature | What it does | Where |
 |---|---|---|
-| **Interactive video player** | Watch with dual subtitles and clickable words | [{\$title.explore}](/docs/media/explore) → click any video |
-| **{\$title.dictionary}** | Look up any word, see conjugations, get AI explanations | **{\$title.vocab}** → [{\$title.dictionary}](/docs/vocab/dictionary) |
-| **{\$title.saved_words}** | Build your personal vocabulary list | Click the bookmark icon on any word |
-| **{\$title.review}** | Spaced repetition flashcards for your saved words | **{\$title.vocab}** → [{\$title.review}](/docs/vocab/review) |
-| **{\$title.reader}** | Paste or write text, read with interactive word lookup | **{\$title.reading}** → [{\$title.reader}](/docs/reading/reader) |
-| **{\$title.tv_shows}** | Browse TV series with full episode queues | **{\$title.notes}** → [{\$title.tv_shows}](/docs/media/tv-shows) |
-| **{\$title.live_tv}** | Stream live broadcasts in your target language | [{\$title.live_tv}](/docs/media/live-tv) |
-| **{\$title.music_and_entertainment}** | Music videos and entertainment content | [{\$title.music_and_entertainment}](/docs/media/music) |
-| **{\$action.search}** | Find videos by title or paste any {\$option.youtube} URL | [{\$action.search}](/docs/media/search) |
+| **Interactive video player** | Watch with dual subtitles and clickable words | [Explore](/docs/media/explore) → click any video |
+| **Dictionary** | Look up any word, see conjugations, get AI explanations | **Vocab** → [Dictionary](/docs/vocab/dictionary) |
+| **Saved Words** | Build your personal vocabulary list | Click the bookmark icon on any word |
+| **Review** | Spaced repetition flashcards for your saved words | **Vocab** → [Review](/docs/vocab/review) |
+| **Reader** | Paste or write text, read with interactive word lookup | **Reading** → [Reader](/docs/reading/reader) |
+| **TV Shows** | Browse TV series with full episode queues | **Notes** → [TV Shows](/docs/media/tv-shows) |
+| **Live TV** | Stream live broadcasts in your target language | [Live TV](/docs/media/live-tv) |
+| **Music & Entertainment** | Music videos and entertainment content | [Music & Entertainment](/docs/media/music) |
+| **Search** | Find videos by title or paste any YouTube URL | [Search](/docs/media/search) |
 
 ## Build Your Vocabulary
 
 As you watch, click unfamiliar words and click the bookmark icon to save them. Over time, you'll build a personal vocabulary list organized by the date you saved each word.
 
-Your saved words feed into the [{\$title.review}](/docs/vocab/review) system — the app schedules flashcards so you review each word just before you'd forget it. Each card shows the original sentence where you found the word, so you're always learning in context.
+Your saved words feed into the [Review](/docs/vocab/review) system — the app schedules flashcards so you review each word just before you'd forget it. Each card shows the original sentence where you found the word, so you're always learning in context.
 
-See [Popup Dictionary](/docs/vocab/popup-dictionary) for how word lookup works, and [{\$title.saved_words}](/docs/vocab/saved-words) for managing your vocabulary list.
+See [Popup Dictionary](/docs/vocab/popup-dictionary) for how word lookup works, and [Saved Words](/docs/vocab/saved-words) for managing your vocabulary list.
 
 ## Free vs Pro
 
-{\$title.app_name} is free to use. The Pro upgrade unlocks:
+Language Player is free to use. The Pro upgrade unlocks:
 
 - Full interactive transcripts with translation (free accounts see the first 10 lines)
 - Hundreds of video examples per word (free accounts see 2)
 - AI-powered word explanations
 - Priority support
 
-Plans start at US\$10/mo with a {\$msg.money_back_guarantee}. See [{\$title.subscription}](/docs/account/subscription) for all plans, payment methods, and what's included.
+Plans start at US$10/mo with a 14-day money-back guarantee. Questions?. See [Subscription](/docs/account/subscription) for all plans, payment methods, and what's included.
 
 ## Customize Your Experience
 
-Open [{\$title.settings}](/docs/general/settings) from your profile menu to adjust:
+Open [Settings](/docs/general/settings) from your profile menu to adjust:
 
-- **{\$setting.display}** — Theme, translation toggle, phonetics (pinyin, furigana), font size, character set
-- **{\$setting.playback}** — Playback speed, auto-pause, karaoke animation, smooth scrolling
-- **{\$setting.speech}** — Text-to-speech voice and rate for word pronunciation
-- **{\$setting.review}** — How many new vocabulary cards to introduce per day (default: 20)
+- **Display** — Theme, translation toggle, phonetics (pinyin, furigana), font size, character set
+- **Playback** — Playback speed, auto-pause, karaoke animation, smooth scrolling
+- **Speech** — Text-to-speech voice and rate for word pronunciation
+- **Review** — How many new vocabulary cards to introduce per day (default: 20)
 
-{\$title.settings} save automatically and sync across your devices when you're signed in.
+Settings save automatically and sync across your devices when you're signed in.
 
 ## Tips
 
 - **Click everything.** Words in subtitles, words in the dictionary, words in your saved list — they're all interactive.
-- **Set your proficiency level** on your [{\$title.profile}](/docs/account/profile) so {\$title.explore} starts with the right level filter.
+- **Set your proficiency level** on your [Profile](/docs/account/profile) so Explore starts with the right level filter.
 - **Save words as you watch**, not after. The bookmark button is one click and keeps you in the flow.
 - **Use keyboard shortcuts** in the video player — Space for play/pause, ←/→ to jump between subtitle lines, R to rewind 2 seconds.
 - **Switch languages anytime** from the header. Your settings, saved words, and watch history are tracked per language pair.
 - **Read the docs** — each feature page ends with a Tips section that covers shortcuts and workflows you might miss otherwise.
-` },
-  { path: 'media/explore', title: 'Explore', category: 'media', content: `# {\$title.explore}
+` },\n  { path: 'media/explore.md', title: 'Explore.md', category: 'media', content: `# Explore
 
 Discover videos in your target language, matched to your level.
 
 ## How It Works
 
-The {\$title.explore} page shows recommended videos for your language pair. Each video is sourced from {\$option.youtube} and selected for language learning — we exclude music and entertainment content (those have their own [{\$title.music_and_entertainment}](/docs/media/music) page).
+The Explore page shows recommended videos for your language pair. Each video is sourced from YouTube and selected for language learning — we exclude music and entertainment content (those have their own [Music & Entertainment](/docs/media/music) page).
 
 Videos are sorted by popularity and filtered by difficulty when you select a level. The recommendation engine learns from your watch history, so videos you've already watched won't appear again.
 
@@ -544,29 +533,29 @@ The pills at the top let you filter by proficiency level. The labels adapt to yo
 
 | L2 | Pills show |
 |---|---|
-| {\$lang.zh} | {\$level.exam_hsk} 1 → {\$level.exam_hsk} 7-9 |
-| {\$lang.ja} | {\$level.exam_jlpt} Pre-N5 → N1 |
-| {\$lang.ko} | {\$level.exam_topik} Pre-1 → 6 |
-| {\$lang.en} | {\$level.exam_ielts} 1 → 9 |
-| Others | {\$level.exam_cefr} Pre-A1 → C2 |
+| Chinese | HSK 1 → HSK 7-9 |
+| Japanese | JLPT Pre-N5 → N1 |
+| Korean | TOPIK Pre-1 → 6 |
+| English | IELTS 1 → 9 |
+| Others | CEFR Pre-A1 → C2 |
 
-Click a pill to filter videos at that level. Click **{\$filter.all}** to see videos at every level. The filter remembers your choice as you browse, and resets to your saved proficiency level when you return.
+Click a pill to filter videos at that level. Click **All** to see videos at every level. The filter remembers your choice as you browse, and resets to your saved proficiency level when you return.
 
 ## Video Cards
 
 Each card shows a color-coded **level badge** in the top-left corner. See [How Difficulty Is Calculated](#how-difficulty-is-calculated) for how these levels are determined.
 
-Click any card to open the video player. When you return to {\$title.explore}, your place in the list is preserved exactly where you left it.
+Click any card to open the video player. When you return to Explore, your place in the list is preserved exactly where you left it.
 
 ### Channel Actions
 
 Each video card has a **…** menu in the top-right corner with two options:
 
-- **{\$action.subscribe}** — Videos from this channel will appear first in your recommendations. About 25% of each page is reserved for subscribed channels, so you'll always see their newest content near the top. This is useful for channels you want to follow regularly — news outlets, educational creators, or your favorite vloggers.
+- **Subscribe** — Videos from this channel will appear first in your recommendations. About 25% of each page is reserved for subscribed channels, so you'll always see their newest content near the top. This is useful for channels you want to follow regularly — news outlets, educational creators, or your favorite vloggers.
 
 - **Not interested** — Videos from this channel will be hidden from your recommendations entirely. This is useful for channels that consistently show up but aren't a good fit — maybe the content is too advanced, too easy, or just not relevant to your learning goals.
 
-Your channel preferences are saved per language, so subscribing to a {\$lang.ja} news channel won't affect your {\$lang.ko} recommendations. You can manage all your subscriptions and hidden channels from your profile.
+Your channel preferences are saved per language, so subscribing to a Japanese news channel won't affect your Korean recommendations. You can manage all your subscriptions and hidden channels from your profile.
 
 ## How Difficulty Is Calculated
 
@@ -574,24 +563,23 @@ Every video is assigned a difficulty score based on the frequency of words in it
 
 The scores are bucketed into 7 levels using exponential thresholds: the top 1/127 most frequent words are level 1, the next 2/127 are level 2, the next 4/127 are level 3, and so on — doubling each step. Level 7 covers the rarest 64/127 of words.
 
-Because word frequency distributions differ between languages, the thresholds are **language-specific**. A difficulty score of 0.008 in {\$lang.ja} maps to {\$level.exam_jlpt} N1 (level 6), while the same score in {\$lang.ko} maps to {\$level.exam_topik} 3 (level 4). The frontend fetches these thresholds once from the backend and uses them to label every video card.
+Because word frequency distributions differ between languages, the thresholds are **language-specific**. A difficulty score of 0.008 in Japanese maps to JLPT N1 (level 6), while the same score in Korean maps to TOPIK 3 (level 4). The frontend fetches these thresholds once from the backend and uses them to label every video card.
 
-Your channel preferences are saved per language, so subscribing to a {\$lang.ja} news channel won't affect your {\$lang.ko} recommendations. You can manage all your subscriptions and hidden channels from your profile.
+Your channel preferences are saved per language, so subscribing to a Japanese news channel won't affect your Korean recommendations. You can manage all your subscriptions and hidden channels from your profile.
 
 ## Tips
 
-- Set your proficiency level on your [profile page](/docs/account/profile) so {\$title.explore} starts with the right filter
+- Set your proficiency level on your [profile page](/docs/account/profile) so Explore starts with the right filter
 - Switch levels to find easier or harder content — switching back is instant
-- Use [{\$title.music_and_entertainment}](/docs/media/music) for music videos and entertainment content
+- Use [Music & Entertainment](/docs/media/music) for music videos and entertainment content
 - Your watch history is private and only used to avoid showing the same video twice
-` },
-  { path: 'media/live-tv', title: 'Live Tv', category: 'media', content: `# {\$title.live_tv}
+` },\n  { path: 'media/live-tv.md', title: 'Live Tv.md', category: 'media', content: `# Live TV
 
 watch live television broadcasts in your target language. No subtitles, no dubbing — just real TV as it airs.
 
 ## How It Works
 
-{\$title.app_name} streams live broadcasts from free-to-air channels around the world. The video player uses HLS streaming, which works in all modern browsers. Pick a channel from the list on the right and it starts playing immediately.
+Language Player streams live broadcasts from free-to-air channels around the world. The video player uses HLS streaming, which works in all modern browsers. Pick a channel from the list on the right and it starts playing immediately.
 
 Channels are tested automatically every few hours. Dead channels or streams that time out are removed from the list, so you only see channels that are actually broadcasting right now.
 
@@ -612,64 +600,62 @@ Click any channel to switch to it. The URL updates automatically, so you can boo
 
 - News channels tend to have the most reliable, lowest-latency streams
 - If a stream stops working, refreshing the page will re-fetch the channel list with fresh health checks
-- {\$title.live_tv} is pure immersion — there are no subtitles or translations. Use the [Video Player](/docs/media/video-player) if you want interactive captions
-- Try channels from different countries that speak the same language (e.g., France, Belgium, and Switzerland for {\$lang.fr}) to hear different accents and vocabulary
-` },
-  { path: 'media/music', title: 'Music', category: 'media', content: `# {\$title.music_and_entertainment}
+- Live TV is pure immersion — there are no subtitles or translations. Use the [Video Player](/docs/media/video-player) if you want interactive captions
+- Try channels from different countries that speak the same language (e.g., France, Belgium, and Switzerland for French) to hear different accents and vocabulary
+` },\n  { path: 'media/music.md', title: 'Music.md', category: 'media', content: `# Music & Entertainment
 
 Music videos and entertainment content for your target language.
 
 ## How It Works
 
-This page works exactly like [{\$title.explore}](/docs/media/explore), but only shows music ({\$option.youtube} category 10) and entertainment (category 24) videos. Everything else — level filters, infinite scroll, video cards, and channel subscriptions — works the same way.
+This page works exactly like [Explore](/docs/media/explore), but only shows music (YouTube category 10) and entertainment (category 24) videos. Everything else — level filters, infinite scroll, video cards, and channel subscriptions — works the same way.
 
-Music and entertainment content is separated from the main {\$title.explore} page so your learning feed stays focused on general content like vlogs, news, educational videos, and conversations.
+Music and entertainment content is separated from the main Explore page so your learning feed stays focused on general content like vlogs, news, educational videos, and conversations.
 
 ## Why Separate?
 
-Music videos and entertainment make up a significant portion of {\$option.youtube} content. For example, in our database of {\$lang.ja} videos at the {\$level.exam_jlpt} N1 level, about one-third (3,190 out of 9,489) fall into these two categories. Mixing them into {\$title.explore} would dominate the feed and crowd out other content types. Keeping them separate gives you control over when you want music and when you want other types of videos.
+Music videos and entertainment make up a significant portion of YouTube content. For example, in our database of Japanese videos at the JLPT N1 level, about one-third (3,190 out of 9,489) fall into these two categories. Mixing them into Explore would dominate the feed and crowd out other content types. Keeping them separate gives you control over when you want music and when you want other types of videos.
 
-## Channel {\$title.subscription}s
+## Channel Subscriptions
 
 If you subscribe to a music or entertainment channel, those videos still appear here. The channel subscription system works across both pages — your preferences are shared.
 
 ## Tips
 
 - Use the level filter to find music at your proficiency level
-- {\$action.subscribe} to your favorite music channels to see their newest videos first
-- Switch between {\$title.explore} and {\$title.music_and_entertainment} to vary your learning
-` },
-  { path: 'media/search', title: 'Search', category: 'media', content: `# {\$action.search}
+- Subscribe to your favorite music channels to see their newest videos first
+- Switch between Explore and Music & Entertainment to vary your learning
+` },\n  { path: 'media/search.md', title: 'Search.md', category: 'media', content: `# Search
 
-Find videos and channels in your target language, or jump straight to any {\$option.youtube} video.
+Find videos and channels in your target language, or jump straight to any YouTube video.
 
 ## What You Can Do
 
 The search page is the fastest way to find content in your target language (L2). You can:
 
-- **{\$placeholder.search} title** — Type what you want to watch and get matching videos
-- **Open any {\$option.youtube} video** — Paste a {\$option.youtube} URL to watch it instantly with interactive subtitles
-- **browse popular tags** — {\$title.explore} trending topics in your target language
+- **Search... title** — Type what you want to watch and get matching videos
+- **Open any YouTube video** — Paste a YouTube URL to watch it instantly with interactive subtitles
+- **browse popular tags** — Explore trending topics in your target language
 
-## How to {\$action.search}
+## How to Search
 
-Type a keyword into the search bar and click **{\$placeholder.search} {\$title.app_name} looks through all available videos and returns matches by title. You'll see video cards with thumbnails, titles, difficulty levels, and view counts.
+Type a keyword into the search bar and click **Search... Language Player looks through all available videos and returns matches by title. You'll see video cards with thumbnails, titles, difficulty levels, and view counts.
 
-{\$placeholder.search} your target language for the best results. For example, if you're learning {\$lang.ja}, search \`料理\` (cooking) instead of "cooking."
+Search... your target language for the best results. For example, if you're learning Japanese, search \\`料理\\` (cooking) instead of "cooking."
 
 The search updates the page URL, so you can bookmark or share your search results.
 
-## Opening Any {\$option.youtube} Video
+## Opening Any YouTube Video
 
-You don't need to search for a video that's already in our database. You can paste **any {\$option.youtube} URL** directly into the search bar and {\$title.app_name} will open it with full interactive subtitles and dictionary lookup.
+You don't need to search for a video that's already in our database. You can paste **any YouTube URL** directly into the search bar and Language Player will open it with full interactive subtitles and dictionary lookup.
 
 Paste any of these:
 
-- A full {\$option.youtube} URL: \`https://www.youtube.com/watch?v=dQw4w9WgXcQ\`
-- A short {\$option.youtube} link: \`https://youtu.be/dQw4w9WgXcQ\`
-- An embedded link: \`https://www.youtube.com/embed/dQw4w9WgXcQ\`
+- A full YouTube URL: \\`https://www.youtube.com/watch?v=dQw4w9WgXcQ\\`
+- A short YouTube link: \\`https://youtu.be/dQw4w9WgXcQ\\`
+- An embedded link: \\`https://www.youtube.com/embed/dQw4w9WgXcQ\\`
 
-As soon as {\$title.app_name} recognizes a {\$option.youtube} link, it takes you straight to the watch page where you can see the video with synced subtitles, click any word for its definition, and save words to your vocabulary list.
+As soon as Language Player recognizes a YouTube link, it takes you straight to the watch page where you can see the video with synced subtitles, click any word for its definition, and save words to your vocabulary list.
 
 See [watch Page](/docs/media/watch) for details on the video player.
 
@@ -677,28 +663,27 @@ See [watch Page](/docs/media/watch) for details on the video player.
 
 When you first open the search page, you'll see a tag cloud of popular topics in your target language. These are the most-searched terms by other learners. Click any tag to search for it instantly — a great way to find content when you're not sure what to look for.
 
-tags vary by language. A {\$lang.ja} learner might see \`ニュース\` (news), \`アニメ\` (anime), and \`料理\` (cooking), while a Spanish learner might see \`música\`, \`noticias\`, and \`cocina\`.
+tags vary by language. A Japanese learner might see \\`ニュース\\` (news), \\`アニメ\\` (anime), and \\`料理\\` (cooking), while a Spanish learner might see \\`música\\`, \\`noticias\\`, and \\`cocina\\`.
 
-## {\$title.search_results}
+## Search Results
 
 Each result shows a video card with:
 
 - **Thumbnail** — A preview image from the video
 - **title** — The video title in your target language
-- **Difficulty** — {\$level.exam_cefr} level or equivalent (A1–C2, {\$level.exam_jlpt} N5–N1, {\$level.exam_hsk} 1–6)
-- **View count** — How many times the video has been watched on {\$option.youtube}
+- **Difficulty** — CEFR level or equivalent (A1–C2, JLPT N5–N1, HSK 1–6)
+- **View count** — How many times the video has been watched on YouTube
 
 Click any video to open it in the watch page with interactive dual subtitles.
 
 ## Tips
 
 - Use **target language keywords** — you'll get more relevant results than searching in your native language
-- **Paste {\$option.youtube} links** instead of searching when you already know which video you want to watch — it's faster and works for any video on {\$option.youtube}
+- **Paste YouTube links** instead of searching when you already know which video you want to watch — it's faster and works for any video on YouTube
 - browse **popular tags** when you want inspiration — they're a window into what other learners are watching
-- The search bar **detects {\$option.youtube} URLs in real time**, so you don't even need to press Enter
+- The search bar **detects YouTube URLs in real time**, so you don't even need to press Enter
 
-` },
-  { path: 'media/subs-search', title: 'Subs Search', category: 'media', content: `# Subtitle Search
+` },\n  { path: 'media/subs-search.md', title: 'Subs Search.md', category: 'media', content: `# Subtitle Search
 
 Search for any word or phrase across millions of video subtitles. See how native speakers actually use it — in context, with timestamps, ready to watch.
 
@@ -732,14 +717,13 @@ Toggle **Exact Match** to restrict results to the exact form you typed. This is 
 - **Use it to verify usage** — before using a new word yourself, check how native speakers use it in real conversations.
 - **Jump between examples** — click different timestamps for the same word to hear it in different contexts, accents, and speaking speeds.
 - **Combine with saved words** — save a word from the dictionary, then use the Examples tab to find videos where you can hear it in action.
-` },
-  { path: 'media/tv-shows', title: 'Tv Shows', category: 'media', content: `# {\$title.tv_shows}
+` },\n  { path: 'media/tv-shows.md', title: 'Tv Shows.md', category: 'media', content: `# TV Shows
 
 Browse TV series in your target language and watch full episodes with interactive dual subtitles.
 
 ## How It Works
 
-The {\$title.tv_shows} page lists every TV series available in your target language. Each show is a card with a cover image, the show's title, release year, and country of origin. Click any show to see its episodes.
+The TV Shows page lists every TV series available in your target language. Each show is a card with a cover image, the show's title, release year, and country of origin. Click any show to see its episodes.
 
 Episodes are organized by series and numbered in order. Click any episode to open it in the [Video Player](/docs/media/video-player) — every episode gets interactive subtitles and dictionary lookup, just like any other video.
 
@@ -755,13 +739,13 @@ Use the search bar at the top of the page to find a show by name. Type a keyword
 
 Sort the list three ways:
 
-- **{\$sort.most_viewed}** — shows with the most-watched episodes first. Good for finding popular series.
-- **{\$sort.title}** — alphabetical by show title. Good when you know the name.
-- **{\$sort.year}** — newest shows first. Good for discovering recent series.
+- **Most Viewed** — shows with the most-watched episodes first. Good for finding popular series.
+- **Title** — alphabetical by show title. Good when you know the name.
+- **Year** — newest shows first. Good for discovering recent series.
 
 ### Locale Filter
 
-Some languages are spoken in multiple countries. For example, {\$lang.fr} TV comes from France, Belgium, Switzerland, and Canada. The **{\$title.filter_by_locale}** dropdown lets you narrow the list to shows from a specific country. It only appears when more than one locale is available.
+Some languages are spoken in multiple countries. For example, French TV comes from France, Belgium, Switzerland, and Canada. The **FILTER BY LOCALE** dropdown lets you narrow the list to shows from a specific country. It only appears when more than one locale is available.
 
 ## Episode View
 
@@ -773,23 +757,22 @@ After clicking a show, you'll see:
 
 Click any episode to start watching. The video player opens with the full series queued — you can skip between episodes with the Previous/Next controls in the player.
 
-A **{\$action.back}** button at the top returns you to the show list. Your place in the list is preserved, so you can quickly pick another show without starting over.
+A **Back** button at the top returns you to the show list. Your place in the list is preserved, so you can quickly pick another show without starting over.
 
 ## Tips
 
-- Sort by **{\$sort.most_viewed}** when exploring a new language — popular shows tend to have better subtitle quality
+- Sort by **Most Viewed** when exploring a new language — popular shows tend to have better subtitle quality
 - Bookmark a show's page to jump straight to its episodes without searching
 - The whole series queues up when you play an episode, so you can binge-watch without interruptions
-- Use the [{\$title.explore}](/docs/media/explore) page for individual videos, not full TV series
+- Use the [Explore](/docs/media/explore) page for individual videos, not full TV series
 - If a show has episodes in multiple languages, filter by locale to see only the ones in your target language
-` },
-  { path: 'media/video-player', title: 'Video Player', category: 'media', content: `# Video Player
+` },\n  { path: 'media/video-player.md', title: 'Video Player.md', category: 'media', content: `# Video Player
 
 Watch videos with interactive dual subtitles — click any word to see its definition and save it to your vocabulary list.
 
 ## How It Works
 
-The video player opens when you click any video card on the [{\$title.explore}](/docs/media/explore) page, from your [{\$title.watch_history}](/docs/media/watch-history), from the [{\$title.tv_shows}](/docs/media/tv-shows) page, or the [{\$action.search}](/docs/media/search) page.
+The video player opens when you click any video card on the [Explore](/docs/media/explore) page, from your [Watch History](/docs/media/watch-history), from the [TV Shows](/docs/media/tv-shows) page, or the [Search](/docs/media/search) page.
 
 The page embeds the YouTube video and displays interactive subtitles in a separate transcript panel beside or below the video. The player synchronizes with the transcript — as the video plays, the current subtitle line is highlighted and the transcript scrolls automatically to follow along.
 
@@ -802,35 +785,35 @@ The layout adapts to your screen size:
 
 ### Video Info
 
-Above the controls, the page shows the video's title, view count, likes, comments, and publish date. A color-coded difficulty badge shows the {\$level.exam_cefr} level (or language-specific equivalent like {\$level.exam_hsk}, {\$level.exam_jlpt}, or {\$level.exam_topik}). The video's locale, category, and YouTube channel are shown as well.
+Above the controls, the page shows the video's title, view count, likes, comments, and publish date. A color-coded difficulty badge shows the CEFR level (or language-specific equivalent like HSK, JLPT, or TOPIK). The video's locale, category, and YouTube channel are shown as well.
 
-## {\$title.transcript} Panel
+## Transcript Panel
 
 The right sidebar (or the section below the video on narrow screens) has two tabs:
 
-- **{\$title.transcript}** — The interactive subtitles with clickable words
-- **{\$title.queue}** — Upcoming videos when watching from a list or TV show
+- **Transcript** — The interactive subtitles with clickable words
+- **Queue** — Upcoming videos when watching from a list or TV show
 
 ### Interactive Words
 
-Every word in the transcript is clickable. When you click a word, a dictionary popup appears with definitions, pronunciation, example sentences, conjugations, and more. See [{\$title.dictionary}](/docs/vocab/dictionary) for details on what each entry contains.
+Every word in the transcript is clickable. When you click a word, a dictionary popup appears with definitions, pronunciation, example sentences, conjugations, and more. See [Dictionary](/docs/vocab/dictionary) for details on what each entry contains.
 
 Words you've already saved to your vocabulary list appear with a subtle yellow highlight.
 
 Click a subtitle line (outside of any word) to seek the video to that timestamp.
 
-### {\$action.translation}
+### Translation
 
 The translation toggle above the transcript switches between showing and hiding L1 translations below each L2 line. When off, you see only the L2 text.
 
 Translations are generated automatically. A progress counter shows how many lines have been translated so far.
 
-### {\$setting.phonetics}
+### Phonetics
 
 The phonetics toggle shows pronunciation guides above each word:
 
-- **{\$lang.zh}** — pinyin above each word
-- **{\$lang.ja}** — furigana above kanji characters (kana are left as-is)
+- **Chinese** — pinyin above each word
+- **Japanese** — furigana above kanji characters (kana are left as-is)
 - **Other languages** — word-level pronunciation where available
 
 Toggle it off to read without pronunciation aids.
@@ -850,7 +833,7 @@ The control bar sits below the video with these buttons:
 | **Previous video** | Go to the previous video in your queue |
 | **Next video** | Go to the next video in your queue |
 
-The previous/next video buttons only appear when you have a queue, such as from [{\$title.explore}](/docs/media/explore) or [{\$title.tv_shows}](/docs/media/tv-shows).
+The previous/next video buttons only appear when you have a queue, such as from [Explore](/docs/media/explore) or [TV Shows](/docs/media/tv-shows).
 
 ## Keyboard Shortcuts
 
@@ -867,9 +850,9 @@ You can control the player from your keyboard:
 
 Shortcuts only work when the page has focus — they won't work while typing in a text field or when the YouTube player has captured your keyboard input. Click outside the video to return focus to the page.
 
-## {\$title.queue}
+## Queue
 
-When you start watching from {\$title.explore}, {\$title.tv_shows}, or another list, a queue is created automatically. The **{\$title.queue}** tab (next to the transcript) shows all upcoming videos as compact cards. Click any video to jump to it, or let autoplay take you through in order.
+When you start watching from Explore, TV Shows, or another list, a queue is created automatically. The **Queue** tab (next to the transcript) shows all upcoming videos as compact cards. Click any video to jump to it, or let autoplay take you through in order.
 
 TV show episodes are numbered and grouped by series.
 
@@ -884,20 +867,19 @@ Your playback position is saved automatically in your browser and whenever you c
 - Use ← and → to replay lines
 - Slow down playback with the speed toggle when needed
 - Use the queue to watch through a TV show or channel in order
-` },
-  { path: 'media/watch-history', title: 'Watch History', category: 'media', content: `# {\$title.watch_history}
+` },\n  { path: 'media/watch-history.md', title: 'Watch History.md', category: 'media', content: `# Watch History
 
 Every video you watch is saved to your history. Pick up where you left off, replay favorites, and track what you've been watching.
 
 ## How It Works
 
-{\$title.app_name} saves your watch history automatically. Every 15 seconds while you're watching a video, your current playback position is recorded. When you return to a video later, you can resume from where you left off.
+Language Player saves your watch history automatically. Every 15 seconds while you're watching a video, your current playback position is recorded. When you return to a video later, you can resume from where you left off.
 
-Your history is per-language — switching from {\$lang.ja} to {\$lang.ko} shows a different list. It's also tied to your account, so it follows you across devices.
+Your history is per-language — switching from Japanese to Korean shows a different list. It's also tied to your account, so it follows you across devices.
 
 ## Viewing Your History
 
-Open **{\$title.watch_history}** from the main navigation menu. You'll see a list of every video you've watched in your current target language, most recent first.
+Open **Watch History** from the main navigation menu. You'll see a list of every video you've watched in your current target language, most recent first.
 
 Each item shows:
 
@@ -905,7 +887,7 @@ Each item shows:
 - The **video title**
 - The **duration** and the **date** you watched it
 - A **progress bar** on the thumbnail — a colored line at the bottom shows how much you've watched
-- A **percentage** like "{\$msg.watched_progress}" so you know your place at a glance
+- A **percentage** like "{pct} watched" so you know your place at a glance
 
 Click any video to resume watching. The entire history becomes your queue, so you can skip between recently watched videos with the Previous/Next controls in the player.
 
@@ -913,8 +895,8 @@ Click any video to resume watching. The entire history becomes your queue, so yo
 
 Your watch history shows up in two places:
 
-- **The {\$title.watch_history} page** — your full history for the current language, with every video you've watched
-- **Your [{\$title.profile}](/docs/account/profile)** — the last 5 videos you watched, with a link to see the full list
+- **The Watch History page** — your full history for the current language, with every video you've watched
+- **Your [Profile](/docs/account/profile)** — the last 5 videos you watched, with a link to see the full list
 
 ## Resume Playback
 
@@ -927,16 +909,15 @@ Position is saved even if you close the tab mid-video. As long as you were watch
 Your watch history is private. It's only visible to you when you're signed in. It's used to:
 
 - Show your recently watched videos for easy access
-- Avoid recommending videos you've already seen on the [{\$title.explore}](/docs/media/explore) page
+- Avoid recommending videos you've already seen on the [Explore](/docs/media/explore) page
 
 ## Tips
 
 - Use your history as a quick way to replay a video you didn't finish
 - The progress bar on each thumbnail gives you an instant sense of where you left off
 - Switch languages to see separate histories for each language you're learning
-- Your history is scoped to your current L2 — you won't see {\$lang.ja} videos when you're in {\$lang.ko} mode
-` },
-  { path: 'reading/epub', title: 'Epub', category: 'reading', content: `# {\$title.epub_reader}
+- Your history is scoped to your current L2 — you won't see Japanese videos when you're in Korean mode
+` },\n  { path: 'reading/epub.md', title: 'Epub.md', category: 'reading', content: `# EPUB Reader
 
 Read EPUB e-books with interactive word lookup, per-block translation, and progress that persists across sessions.
 
@@ -944,8 +925,8 @@ Read EPUB e-books with interactive word lookup, per-block translation, and progr
 
 ### Upload an EPUB
 
-1. Navigate to **Reading → {\$title.epub_reader}** in the menu
-2. **Drag & drop** an \`.epub\` file onto the upload zone, or click **Browse** to select one from your device
+1. Navigate to **Reading → EPUB Reader** in the menu
+2. **Drag & drop** an \\`.epub\\` file onto the upload zone, or click **Browse** to select one from your device
 3. The cover image appears — tap it to start reading
 
 The file is stored locally in your browser (IndexedDB). Next time you visit, it will load automatically and you'll resume from where you left off.
@@ -955,23 +936,23 @@ The file is stored locally in your browser (IndexedDB). Next time you visit, it 
 | Feature | How |
 |---|---|
 | **Next/Previous chapter** | Use the buttons at the top of the sidebar, or click chapter titles in the table of contents |
-| **Collapse/expand sidebar** | Click the \`≡\` toggle in the top-right corner of the title bar |
-| **Close the book** | Click \`✕ Close\` in the title bar to return to the upload screen |
-| **Page turn within a chapter** | Use \`←\` / \`→\` keys or the page controls at the bottom of the reader |
+| **Collapse/expand sidebar** | Click the \\`≡\\` toggle in the top-right corner of the title bar |
+| **Close the book** | Click \\`✕ Close\\` in the title bar to return to the upload screen |
+| **Page turn within a chapter** | Use \\`←\\` / \\`→\\` keys or the page controls at the bottom of the reader |
 | **Table of contents** | Nested TOC items are indented for easy navigation |
 
 ### Reading Features
 
 - **Click any word** to look up its dictionary definition, pronunciation, and example sentences
-- **Per-block translation** — Click the \`Languages\` icon in the page nav bar to translate the current page's visible blocks
+- **Per-block translation** — Click the \\`Languages\\` icon in the page nav bar to translate the current page's visible blocks
 - **Auto-translate on page turn** — When translation is enabled, the next page's content is translated automatically
 - **Inline translation display** — On wide screens, original and translation appear side by side. On narrow screens, translation appears below each block.
 
 ## Supported Formats
 
-- **\`.epub\`** — Standard EPUB files (EPUB 2 and EPUB 3)
-- **\`.epub\` with furigana/ruby** — {\$lang.ja} books with ruby annotations are stripped of furigana, keeping only the base kanji text
-- **Vertical text** — Books with CSS \`writing-mode: vertical-rl\` are detected (display uses standard horizontal layout for readability)
+- **\\`.epub\\`** — Standard EPUB files (EPUB 2 and EPUB 3)
+- **\\`.epub\\` with furigana/ruby** — Japanese books with ruby annotations are stripped of furigana, keeping only the base kanji text
+- **Vertical text** — Books with CSS \\`writing-mode: vertical-rl\\` are detected (display uses standard horizontal layout for readability)
 
 ## Progress Saving
 
@@ -986,10 +967,9 @@ Your reading position is saved automatically in your browser:
 ## Getting Free EPUBs
 
 - **[Project Gutenberg](https://www.gutenberg.org/)** — 70,000+ free ebooks in many languages (look for " EPUB with images" or " Plain Text UTF-8")
-- **[Aozora Bunko](https://www.aozora.gr.jp/)** (青空文庫) — {\$lang.ja} literature, public domain
+- **[Aozora Bunko](https://www.aozora.gr.jp/)** (青空文庫) — Japanese literature, public domain
 - **[Wikisource](https://wikisource.org/)** — Public domain texts in many languages, downloadable as EPUB
-` },
-  { path: 'reading/reader', title: 'Reader', category: 'reading', content: `# Notes Reader
+` },\n  { path: 'reading/reader.md', title: 'Reader.md', category: 'reading', content: `# Notes Reader
 
 Paste or write text in your target language and read it with interactive word lookup, per-block translations, and a built-in note-taking system.
 
@@ -1003,7 +983,7 @@ There are three ways to add text:
 
 - **Write or paste** — Switch to the Edit tab and type or paste directly into the text area. Markdown formatting is supported (headings, lists, blockquotes, code, tables).
 - **Load a URL** — Paste a web page URL into the URL input at the top. The reader fetches the page and converts it to readable text.
-- **{\$action.fill_with_sample}** — Click "Fill with sample" to load a short example text in your target language, useful for exploring the reader's features.
+- **Fill with sample** — Click "Fill with sample" to load a short example text in your target language, useful for exploring the reader's features.
 
 Each piece of text you work with is saved as a **note**. All your notes appear in the sidebar on the left. Click any note to load it back — your text, translations, and reading position are remembered.
 
@@ -1011,15 +991,15 @@ Each piece of text you work with is saved as a **note**. All your notes appear i
 
 ### Edit Mode
 
-The **Edit** tab is where you add or edit text. Type directly into the text area, or paste from an external source. When you're ready to read, click **{\$action.tokenize}** to make every word interactive.
+The **Edit** tab is where you add or edit text. Type directly into the text area, or paste from an external source. When you're ready to read, click **Tokenize** to make every word interactive.
 
-Markdown is fully supported. Use \`#\` for headings, \`*\` or \`-\` for lists, \`>\` for blockquotes, and backticks for code. The reader preserves your formatting in the Read tab.
+Markdown is fully supported. Use \\`#\\` for headings, \\`*\\` or \\`-\\` for lists, \\`>\\` for blockquotes, and backticks for code. The reader preserves your formatting in the Read tab.
 
 ### Read Mode
 
 The **Read** tab shows your text paginated to fit the screen. Each page shows as much text as fits without scrolling.
 
-**Navigate pages** with the \`←\` \`→\` buttons at the bottom, or use your keyboard: \`←\` and \`↑\` for previous page, \`→\`, \`↓\`, and \`Space\` for next page.
+**Navigate pages** with the \\`←\\` \\`→\\` buttons at the bottom, or use your keyboard: \\`←\\` and \\`↑\\` for previous page, \\`→\\`, \\`↓\\`, and \\`Space\\` for next page.
 
 ## Interactive Words
 
@@ -1027,44 +1007,43 @@ After tokenization, every word is clickable. Tap or click any word to open the [
 
 Words you've previously saved are shown with a quick gloss — the first definition appears inline next to the word.
 
-## {\$action.translation}
+## Translation
 
-Toggle the **{\$action.translation}** switch in the page navigation bar to show or hide translations. This setting is remembered across sessions.
+Toggle the **Translation** switch in the page navigation bar to show or hide translations. This setting is remembered across sessions.
 
 When enabled, translations appear inline — on wide screens they sit next to the original text, and on narrow screens they appear below each paragraph. Translations are fetched per page and appear as you navigate.
 
-**Per-block actions** let you interact with each paragraph individually. Hover over any text block to reveal a \`⋮\` menu with these options:
+**Per-block actions** let you interact with each paragraph individually. Hover over any text block to reveal a \\`⋮\\` menu with these options:
 
-- **{\$action.copy}** — Copy the text to your clipboard
-- **{\$action.speak}** — Read the text aloud with text-to-speech
-- **{\$action.let_ai_explain}** — Get an AI breakdown of the text's grammar and structure
-- **{\$action.translation}** — See a popup translation for just that block
+- **Copy** — Copy the text to your clipboard
+- **Speak** — Read the text aloud with text-to-speech
+- **Let DeepSeek Explain** — Get an AI breakdown of the text's grammar and structure
+- **Translation** — See a popup translation for just that block
 
 ## Managing Notes
 
 All your notes appear in the sidebar. You can:
 
 - **Create a new note** — Click "New Note" to start with a blank text area
-- **Rename a note** — Click the \`⋮\` next to a note and choose Rename
-- **Delete a note** — Click the \`⋮\` next to a note and choose Delete
+- **Rename a note** — Click the \\`⋮\\` next to a note and choose Rename
+- **Delete a note** — Click the \\`⋮\\` next to a note and choose Delete
 
 Your note is saved as you type. There's no save button — changes are saved to your account after a brief pause. When you switch between notes or close the reader, your latest changes are always preserved.
 
 ## See Also
 
-- [{\$title.web_reader}](/docs/reading/web-reader) — Read web articles by URL without saving notes
-- [{\$title.epub_reader}](/docs/reading/epub) — Read EPUB books with chapter navigation
+- [Web Reader](/docs/reading/web-reader) — Read web articles by URL without saving notes
+- [EPUB Reader](/docs/reading/epub) — Read EPUB books with chapter navigation
 - [Popup Dictionary](/docs/vocab/popup-dictionary) — How clicking words works
-- [{\$title.dictionary}](/docs/vocab/dictionary) — Full dictionary features
+- [Dictionary](/docs/vocab/dictionary) — Full dictionary features
 
 ## Tips
 
 - Use markdown headings to organize longer texts — they help break content into readable sections
-- The \`⋮\` menu on each block is a quick way to look up a single word or phrase without switching tabs
-- Keyboard navigation (\`←\` \`→\`) is faster than clicking page buttons for extended reading
+- The \\`⋮\\` menu on each block is a quick way to look up a single word or phrase without switching tabs
+- Keyboard navigation (\\`←\\` \\`→\\`) is faster than clicking page buttons for extended reading
 - Rename your notes to something descriptive — "Chapter 3 notes" is easier to find later than "Untitled"
-` },
-  { path: 'reading/web-reader', title: 'Web Reader', category: 'reading', content: `# Web Reader
+` },\n  { path: 'reading/web-reader.md', title: 'Web Reader.md', category: 'reading', content: `# Web Reader
 
 Paste a URL and read any web page in your target language with interactive word lookup and translations. No account needed.
 
@@ -1076,15 +1055,15 @@ The Web Reader is read-only — it doesn't save anything to your account. If you
 
 ## Loading a Page
 
-1. Paste a full URL (starting with \`https://\`) into the input at the top of the page
-2. Click **{\$action.load}**
+1. Paste a full URL (starting with \\`https://\\`) into the input at the top of the page
+2. Click **Load**
 3. The page content appears as clean text, ready to read
 
-You can also share a link directly. Add \`?url=\` to the Web Reader URL:
+You can also share a link directly. Add \\`?url=\\` to the Web Reader URL:
 
-\`\`\`
+\\`\\`\\`
 /en/zh/web-reader?url=https://zh.wikipedia.org/wiki/...
-\`\`\`
+\\`\\`\\`
 
 This loads the page when someone opens the link.
 
@@ -1101,7 +1080,7 @@ The cleaned content is displayed as formatted text with markdown styling. Headin
 
 ## Interactive Words
 
-After the page loads, click **{\$action.tokenize}** to make every word interactive. Tap or click any word to open the [Popup Dictionary](/docs/vocab/popup-dictionary). You can see definitions, pronunciations, and example sentences, and save words to your vocabulary.
+After the page loads, click **Tokenize** to make every word interactive. Tap or click any word to open the [Popup Dictionary](/docs/vocab/popup-dictionary). You can see definitions, pronunciations, and example sentences, and save words to your vocabulary.
 
 Words you've previously saved are highlighted — the first definition appears inline next to the word as a quick reminder.
 
@@ -1109,16 +1088,16 @@ Words you've previously saved are highlighted — the first definition appears i
 
 Toggle the **Translation** switch to show or hide translations. When enabled, translations appear inline — on wide screens they sit next to the original text, and on narrow screens they appear below each paragraph. Translations load as you navigate between pages.
 
-**Per-block actions** let you interact with each paragraph individually. Hover over any text block to reveal a \`⋮\` menu with these options:
+**Per-block actions** let you interact with each paragraph individually. Hover over any text block to reveal a \\`⋮\\` menu with these options:
 
-- **{\$action.copy}** — Copy the text to your clipboard
-- **{\$action.speak}** — Read the text aloud with text-to-speech
-- **{\$action.let_ai_explain}** — Get an AI breakdown of the text's grammar and structure
-- **{\$action.translation}** — See a popup translation for just that block
+- **Copy** — Copy the text to your clipboard
+- **Speak** — Read the text aloud with text-to-speech
+- **Let DeepSeek Explain** — Get an AI breakdown of the text's grammar and structure
+- **Translation** — See a popup translation for just that block
 
 ## Page Navigation
 
-The text is paginated to fit your screen. Use the \`←\` \`→\` buttons at the bottom to move between pages, or use your keyboard: \`←\` and \`↑\` for previous page, \`→\`, \`↓\`, and \`Space\` for next page.
+The text is paginated to fit your screen. Use the \\`←\\` \\`→\\` buttons at the bottom to move between pages, or use your keyboard: \\`←\\` and \\`↑\\` for previous page, \\`→\\`, \\`↓\\`, and \\`Space\\` for next page.
 
 ## See Also
 
@@ -1129,10 +1108,9 @@ The text is paginated to fit your screen. Use the \`←\` \`→\` buttons at the
 ## Tips
 
 - Wikipedia articles work particularly well — the content extraction is tuned for Wikipedia's layout
-- Use the \`?url=\` parameter to bookmark specific articles in your target language
+- Use the \\`?url=\\` parameter to bookmark specific articles in your target language
 - The Web Reader doesn't save your text — if you want to annotate or come back later, copy the URL and paste it into the Notes Reader instead
-- Long articles benefit from keyboard navigation (\`←\` \`→\`) for faster reading` },
-  { path: 'vocab/dictionary', title: 'Dictionary', category: 'vocab', content: `# {\$title.dictionary}
+- Long articles benefit from keyboard navigation (\\`←\\` \\`→\\`) for faster reading` },\n  { path: 'vocab/dictionary.md', title: 'Dictionary.md', category: 'vocab', content: `# Dictionary
 
 The dictionary is your instant word lookup tool. It works everywhere — in subtitles, in search, and on its own dedicated page.
 
@@ -1153,21 +1131,21 @@ Every entry gives you the essentials up front:
 - **Definitions** in your native language, ordered by relevance
 - **Pronunciation** — tap the speaker icon to hear it aloud, plus a phonetic guide (Pinyin, Romaji, or IPA)
 - **Part of speech** — noun, verb, adjective, and so on
-- **Proficiency level** — where the word falls on scales like {\$level.exam_cefr} (A1–C2), {\$level.exam_hsk} (1–6), or {\$level.exam_jlpt} (N5–N1)
+- **Proficiency level** — where the word falls on scales like CEFR (A1–C2), HSK (1–6), or JLPT (N5–N1)
 
 Depending on the language and the word, you might also see:
 
-- **Alternate scripts** — for {\$lang.zh}, see the word in both simplified and traditional. For {\$lang.vi}, see the Chữ Hán form. For {\$lang.ko}, see the Hanja. You control which scripts appear in [{\$title.settings}](/settings).
-- **Classifiers** — for {\$lang.zh}, see which measure words go with the noun (like 个, 本, 张). For {\$lang.fr} or {\$lang.de}, see the grammatical gender.
-- **Textbook coverage** — if the word appears in a textbook like the {\$level.exam_hsk} Standard Course, you'll see exactly which book, lesson, and dialog it's from.
+- **Alternate scripts** — for Chinese, see the word in both simplified and traditional. For Vietnamese, see the Chữ Hán form. For Korean, see the Hanja. You control which scripts appear in [Settings](/settings).
+- **Classifiers** — for Chinese, see which measure words go with the noun (like 个, 本, 张). For French or German, see the grammatical gender.
+- **Textbook coverage** — if the word appears in a textbook like the HSK Standard Course, you'll see exactly which book, lesson, and dialog it's from.
 
 ### Tabs
 
 The entry page has tabs next to the definitions panel:
 
-- **{\$title.examples_from_videos}** — see real subtitle lines from YouTube videos that contain this word. Great for hearing how it's actually used. Learn more in [Subtitle Search](/docs/vocab/subs-search).
-- **{\$title.conjugations}** — full conjugation or declension tables for verbs and adjectives. Available for {\$lang.ja}, {\$lang.ko}, {\$lang.ru}, {\$lang.uk}, {\$lang.en}, {\$lang.fr}, {\$lang.de}, {\$lang.es}, {\$lang.it}, and {\$lang.nl}.
-- **AI Explanation** — a plain-{\$lang.en} breakdown of the word's meaning, usage, and nuances. Generated on the fly by DeepSeek.
+- **Examples from Videos** — see real subtitle lines from YouTube videos that contain this word. Great for hearing how it's actually used. Learn more in [Subtitle Search](/docs/vocab/subs-search).
+- **Conjugations** — full conjugation or declension tables for verbs and adjectives. Available for Japanese, Korean, Russian, Ukrainian, English, French, German, Spanish, Italian, and Dutch.
+- **AI Explanation** — a plain-English breakdown of the word's meaning, usage, and nuances. Generated on the fly by DeepSeek.
 
 ## Where Dictionary Entries Come From
 
@@ -1175,11 +1153,11 @@ Language Player uses curated, versioned dictionaries built from open data:
 
 | Language | Dictionary | Entries |
 |---|---|---|
-| {\$lang.zh} | {\$level.exam_hsk} CEDICT | 120,000+ |
-| {\$lang.yue} | CC-Canto | 50,000+ |
-| {\$lang.ja} | EDICT | 170,000+ |
-| {\$lang.ko} | Kengdic | 120,000+ |
-| {\$lang.tlh} | {\$lang.tlh}ska | 3,000+ |
+| Chinese | HSK CEDICT | 120,000+ |
+| Cantonese | CC-Canto | 50,000+ |
+| Japanese | EDICT | 170,000+ |
+| Korean | Kengdic | 120,000+ |
+| Klingon | Klingonska | 3,000+ |
 | 60+ other languages | Wiktionary | varies by language |
 
 If a word isn't in any dictionary — like a rare dialect word or a new slang term — the app asks an AI model to generate a definition on the spot. These AI-generated entries are marked so you know they're not from a curated source.
@@ -1188,7 +1166,7 @@ If a word isn't in any dictionary — like a rare dialect word or a new slang te
 
 Click the bookmark icon on any dictionary entry to save the word to your personal vocabulary list. Your saved words appear in the sidebar while you're browsing the dictionary, so you can quickly jump between them.
 
-Saved words sync across devices if you're logged in. You can browse and manage them on the [{\$title.saved_words}](/docs/vocab/saved-words) page. Use the [{\$title.review}](/docs/vocab/review) feature to practice your saved words with spaced repetition — the app schedules reviews so you see each word just before you'd forget it.
+Saved words sync across devices if you're logged in. You can browse and manage them on the [Saved Words](/docs/vocab/saved-words) page. Use the [Review](/docs/vocab/review) feature to practice your saved words with spaced repetition — the app schedules reviews so you see each word just before you'd forget it.
 
 ## Tips
 
@@ -1196,10 +1174,9 @@ Saved words sync across devices if you're logged in. You can browse and manage t
 - **Use the sidebar toggle** (the panel icon in the search bar) to show or hide your saved words list while browsing entries.
 - **Search Google Images** from any entry page — the link is at the bottom of the definitions panel. Useful for concrete nouns when a picture is worth a thousand words.
 - **If a word's definition seems off**, check the AI Explanation tab. The AI sometimes catches nuances that dictionary definitions miss.
-- **Switch scripts** in [{\$title.settings}](/settings) if you prefer traditional {\$lang.zh} characters or want to see Hanja alongside {\$lang.ko} Hangul.
+- **Switch scripts** in [Settings](/settings) if you prefer traditional Chinese characters or want to see Hanja alongside Korean Hangul.
 
-` },
-  { path: 'vocab/popup-dictionary', title: 'Popup Dictionary', category: 'vocab', content: `# Popup Dictionary
+` },\n  { path: 'vocab/popup-dictionary.md', title: 'Popup Dictionary.md', category: 'vocab', content: `# Popup Dictionary
 
 Click any word in the subtitles or transcript, and a popup opens with everything you need — definitions, pronunciation, and a quick way to save the word.
 
@@ -1228,30 +1205,29 @@ Below the dictionary entries, an **AI Explanation** section gives you a plain-la
 
 Click the bookmark icon on any entry to save it. The app automatically fetches all inflected and conjugated forms of the word, so every form you encounter in the future will be recognized as saved.
 
-When you save a word from a video, the subtitle line and video title are stored as context. You'll see exactly where you first encountered the word when you browse your [{\$title.saved_words}](/docs/vocab/saved-words) list.
+When you save a word from a video, the subtitle line and video title are stored as context. You'll see exactly where you first encountered the word when you browse your [Saved Words](/docs/vocab/saved-words) list.
 
-## Full {\$title.dictionary} Entry
+## Full Dictionary Entry
 
 Click any entry card in the popup to jump to the full dictionary page. The full page gives you everything the popup does, plus:
 
 - Conjugation tables for verbs and adjectives
 - Real video examples from our subtitle database
-- Textbook appearances ({\$level.exam_hsk} Standard Course and more)
+- Textbook appearances (HSK Standard Course and more)
 - A Google Images search link
 
-## Unrecognized {\$title.saved_words}
+## Unrecognized Saved Words
 
 If you have a word saved in your vocabulary but none of the popup's dictionary entries match it, the popup shows an "unrecognized saved word" warning. This can happen when a saved word uses an older ID format that doesn't match the current dictionary. The warning lets you know the word is still in your list — it just couldn't be matched to a specific entry in this popup.
 
 ## Tips
 
 - **Click the entry card** (not just the bookmark) to open the full dictionary page for more detail.
-- **Save first, read later** — bookmark interesting words as you watch, then review them in your [{\$title.saved_words}](/docs/vocab/saved-words) list after the video.
+- **Save first, read later** — bookmark interesting words as you watch, then review them in your [Saved Words](/docs/vocab/saved-words) list after the video.
 - **The popup works on any word** — even conjugated verbs, declined nouns, and words with typos. The lemmatizer finds the dictionary form automatically.
-` },
-  { path: 'vocab/review', title: 'Review', category: 'vocab', content: `# {\$title.review}
+` },\n  { path: 'vocab/review.md', title: 'Review.md', category: 'vocab', content: `# Review
 
-{\$title.review} your saved vocabulary with spaced repetition flashcards.
+Review your saved vocabulary with spaced repetition flashcards.
 
 ## How It Works
 
@@ -1282,13 +1258,13 @@ The top of the screen shows three colored indicators:
 - **Red** — Cards you're relearning after forgetting
 - **Green** — Cards coming back for a scheduled review
 
-The daily limit for new cards is 20 by default. You can change it in [{\$title.settings}](/docs/general/settings).
+The daily limit for new cards is 20 by default. You can change it in [Settings](/docs/general/settings).
 
 ## Context & Translation
 
 Every card shows the sentence where you saved the word. The exact word form is highlighted. Below it you'll see where the word came from (the video title or text name, plus the date).
 
-If you have "{\$label.show_translation}" enabled in {\$title.settings}, the card shows the {\$lang.en} translation of the sentence when you reveal the back. If no saved translation exists, it fetches one automatically.
+If you have "Show Translation" enabled in Settings, the card shows the English translation of the sentence when you reveal the back. If no saved translation exists, it fetches one automatically.
 
 The context sentence has a hover menu (the three dots) for copying the text, speaking it aloud, getting an AI explanation, or translating it on the spot.
 
@@ -1303,13 +1279,12 @@ To remove a word from your review deck, unsave it from the dictionary entry on t
 
 ## Tips
 
-- {\$title.review} daily. Even 5 minutes makes a difference.
+- Review daily. Even 5 minutes makes a difference.
 - Be strict with Again. If you couldn't recall it in real life, it counts as a fail.
 - Use the context sentence. Seeing the word in its original sentence is more effective than memorizing in isolation.
 - Tap the three dots on the context sentence to translate or explain the full line before rating.
-- Adjust your daily new card limit in {\$title.settings} if 20 feels too many or too few.
-` },
-  { path: 'vocab/saved-words', title: 'Saved Words', category: 'vocab', content: `# Saved Words
+- Adjust your daily new card limit in Settings if 20 feels too many or too few.
+` },\n  { path: 'vocab/saved-words.md', title: 'Saved Words.md', category: 'vocab', content: `# Saved Words
 
 Your personal vocabulary collection. Every word you bookmark from subtitles, the dictionary, or the popup ends up here.
 
@@ -1352,14 +1327,13 @@ A colored dot next to each word in your saved list shows its review status: blue
 - **Use the filter** to find all words from a specific video or TV show. Type part of the video title in the search box.
 - **Export regularly** as a backup. The JSON file includes every form, definition, and context for each word.
 - **Click through to the entry** for any saved word to see its full conjugation tables, video examples, and AI explanation.
-` },
-  { path: 'vocab/subs-search', title: 'Subs Search', category: 'vocab', content: `# {\$title.examples_from_videos}
+` },\n  { path: 'vocab/subs-search.md', title: 'Subs Search.md', category: 'vocab', content: `# Examples from Videos
 
 See how a word is actually used by native speakers — every result is a real subtitle line from a real video, with a timestamp ready to watch.
 
 ## How It Works
 
-Subtitle search is part of the dictionary. Open any word in the [{\$title.dictionary}](/docs/vocab/dictionary) and go to the **{\$title.examples_from_videos}** tab. The search runs automatically for that word, no typing needed. You can also access it from the [popup dictionary](/docs/vocab/popup-dictionary) when you click a word in subtitles or text.
+Subtitle search is part of the dictionary. Open any word in the [Dictionary](/docs/vocab/dictionary) and go to the **Examples from Videos** tab. The search runs automatically for that word, no typing needed. You can also access it from the [popup dictionary](/docs/vocab/popup-dictionary) when you click a word in subtitles or text.
 
 The search runs across millions of subtitle lines and returns every video where the word appears. An embedded mini-player shows the first result immediately, with the search term highlighted in yellow.
 
@@ -1369,9 +1343,9 @@ Use the arrows above the player to move between videos. Each video may contain m
 
 The video counter (e.g., "3 / 50") shows your position in the results. Click **Watch** to open any video in the full [Video Player](/docs/media/video-player).
 
-### {\$action.list_all}
+### List All
 
-Click **{\$action.list_all}** to see every matched video as a scrollable list. Each item shows:
+Click **List All** to see every matched video as a scrollable list. Each item shows:
 
 - The video thumbnail and title
 - The subtitle line containing your word, plus the lines before and after it for context
@@ -1381,7 +1355,7 @@ You can sort the list by views, likes, date, or line length. There's also a text
 
 ## Multiple Forms vs. Exact Match
 
-By default, the search looks for the word in all its forms — inflections, conjugations, and script variants. For example, searching the {\$lang.ja} verb 食べる also finds 食べた, 食べます, 食べて, and other forms. For {\$lang.zh}, it searches both simplified and traditional characters.
+By default, the search looks for the word in all its forms — inflections, conjugations, and script variants. For example, searching the Japanese verb 食べる also finds 食べた, 食べます, 食べて, and other forms. For Chinese, it searches both simplified and traditional characters.
 
 Toggle **Exact Match** to restrict results to only the dictionary headword. This shows fewer, more targeted results.
 
@@ -1389,15 +1363,5 @@ Toggle **Exact Match** to restrict results to only the dictionary headword. This
 
 - Click through different timestamps for the same word to hear varied accents and speaking speeds
 - Save a word first, then browse the Examples tab to find videos where you can hear it in action
-- Use the {\$action.list_all} view to compare how a word is used across dozens of videos at a glance
-` },
-];
-
-export const DOC_CATEGORIES: { key: string; title: string }[] = [
-  { key: 'account', title: 'Account' },
-  { key: 'general', title: 'General' },
-  { key: 'getting-started', title: 'Getting Started' },
-  { key: 'media', title: 'Media' },
-  { key: 'reading', title: 'Reading' },
-  { key: 'vocab', title: 'Vocab' },
-];
+- Use the List All view to compare how a word is used across dozens of videos at a glance
+` },\n];\n\nexport const DOC_CATEGORIES: { key: string; title: string }[] = [\n  { key: 'account', title: 'Account' },\n  { key: 'general', title: 'General' },\n  { key: 'getting-started', title: 'Getting Started' },\n  { key: 'media', title: 'Media' },\n  { key: 'reading', title: 'Reading' },\n  { key: 'vocab', title: 'Vocab' },\n];
