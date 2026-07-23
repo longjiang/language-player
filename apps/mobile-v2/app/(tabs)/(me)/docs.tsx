@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from 'react-native';
-import { DOCS, type DocEntry } from '@langplayer/shared';
+import { DOCS, DOCS_BY_LOCALE, type DocEntry } from '@langplayer/shared';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -36,11 +36,13 @@ export default function DocsScreen() {
   const [query, setQuery] = useState('');
   const [selectedDoc, setSelectedDoc] = useState<DocEntry | null>(null);
 
+  const localeDocs = useMemo(() => DOCS_BY_LOCALE[l1Lang.code] ?? DOCS, [l1Lang.code]);
+
   const filtered = useMemo(() => {
-    if (!query.trim()) return DOCS;
+    if (!query.trim()) return localeDocs;
     const q = query.toLowerCase();
-    return DOCS.filter((d) => d.title.toLowerCase().includes(q) || d.content.toLowerCase().includes(q));
-  }, [query]);
+    return localeDocs.filter((d) => d.title.toLowerCase().includes(q) || d.content.toLowerCase().includes(q));
+  }, [query, localeDocs]);
 
   // Group by category
   const grouped = useMemo(() => {
