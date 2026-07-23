@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { decomposeWordId } from '@/lib/word-id-resolver';
+import { decomposeWordId } from '@langplayer/shared';
 
 // ── Definition cache (module-level, lives for the lifetime of the page) ──
 const definitionCache = new Map<string, { definition: string; pronunciation: string; partOfSpeech?: string } | null>();

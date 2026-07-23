@@ -1,6 +1,6 @@
 import type { SavedLexicalItemRecord } from '@langplayer/shared';
 import { buildEntryRoute } from '@/lib/entry-route';
-import { decomposeWordId } from '@/lib/word-id-resolver';
+import { decomposeWordId } from '@langplayer/shared';
 
 /**
  * Lightweight word list item stored in sessionStorage for cross-page navigation.

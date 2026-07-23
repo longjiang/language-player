@@ -6,7 +6,7 @@ import type { SavedWordContext } from '@langplayer/shared';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
-import { isWordSaved } from '@/lib/word-id-resolver';
+import { isWordSaved } from '@langplayer/shared';
 import { baseCode } from '@/lib/language-data';
 import { dedupeSearchTerms } from '@/lib/mutually-exclusive';
 import { PYTHON_API_URL } from '@/lib/api-url';

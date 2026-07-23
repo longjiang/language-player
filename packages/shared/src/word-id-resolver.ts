@@ -1,5 +1,5 @@
 /**
- * Word ID resolution — decomposes saved-word IDs into (dictionary, entry) pairs
+ * Word ID resolution — decomposes word IDs into (dictionary, entry) pairs
  * for navigation and bookmark-state detection.
  *
  * All saved words and dictionary entries share the same ID scheme
@@ -81,4 +81,3 @@ export function isWordSaved(
 ): boolean {
   return hasSavedWord(l2Code, wordId);
 }
-

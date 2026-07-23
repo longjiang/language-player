@@ -26,6 +26,9 @@ export default function DictionaryScreen() {
   // Called when user taps a search result card.
   // Flow: set context state so WordDetailScreen can find the entry,
   // then navigate via expo-router to the word detail screen.
+  // CEDICT entries have comma-containing IDs (e.g. "寬廣,kuān_guǎng,0").
+  // Commas break expo-router, so we encode them as ~ (matching Next.js buildEntryRoute).
+  // WordDetailScreen reverses this before calling the API.
   // DEBUG: Verbose logging to trace the tap → navigation → detail chain.
   // If handleEntryPress never fires, the bug is upstream (card Pressable).
   const handleEntryPress = (entry: DictionaryEntry) => {
@@ -36,8 +39,10 @@ export default function DictionaryScreen() {
     console.log('[Dict] handleEntryPress — setSidebarSource done');
     setCameFromSearch(true);
     console.log('[Dict] handleEntryPress — setCameFromSearch done, pushing route...');
-    router.push(`word/${entry.id}`);
-    console.log('[Dict] handleEntryPress — router.push called');
+    // Encode commas for expo-router compatibility
+    const safeId = entry.id.replace(/,/g, '~');
+    router.push(`word/${safeId}` as any);
+    console.log('[Dict] handleEntryPress — router.push called, safeId:', safeId);
   };
 
   return (
