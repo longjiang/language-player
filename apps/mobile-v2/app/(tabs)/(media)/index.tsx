@@ -67,8 +67,8 @@ export default function ExploreScreen() {
     <View className="flex-1 bg-background">
       <LevelFilter level={level} onSelect={setLevel} l2Code={l2Lang.code} />
       {error && videos.length === 0 && (
-        <View className="mx-4 mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-4 py-3">
-          <Text className="text-sm text-yellow-600 dark:text-yellow-400">{t(error as any)}</Text>
+        <View className="mx-4 mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
+          <Text className="text-sm text-destructive">{t(error as any)}</Text>
         </View>
       )}
       <VideoGrid
