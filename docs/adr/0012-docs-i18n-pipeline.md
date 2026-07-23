@@ -39,7 +39,7 @@ Keys are resolved for **all 31 locales** including English — the `en` value is
 The Python `/translate` endpoint at `localhost:5001` translates the body text from English to each target locale. Plain-text H1 titles (without `{$key}`) are also translated. The translator's placeholder protection keeps `{$key}` patterns intact during translation, so key resolution happens cleanly after translation.
 
 ### Layer 3: Locale JSON output
-Both layers produce `apps/web/src/data/docs-i18n/{locale}.json` — an array of `{slug, title, content}` objects, one per doc. These files are committed and served statically at runtime.
+Both layers produce `packages/docs/i18n/{locale}.json` — an array of `{slug, title, content}` objects, one per doc. These files are committed and served statically at runtime.
 
 ### Data flow
 ```
@@ -50,11 +50,11 @@ Both layers produce `apps/web/src/data/docs-i18n/{locale}.json` — an array of 
 
 | Script | Scope | Translates? | When to use |
 |---|---|---|---|
-| `scripts/translate-doc.mjs` | One doc → all 31 locales | ✅ (if Python up) | **Daily driver.** After editing a single `.md` — resolves keys, translates body + plain H1, merges into locale JSONs. Shows per-locale progress (🗝/🌐). |
-| `scripts/translate-docs.mjs` | All docs × all locales, or `--locale=xx` | ✅ (if Python up) | **Full rebuild.** Use after sweeping changes across multiple docs, or to regenerate all locales from scratch. Slow. |
-| `scripts/resolve-doc-keys.mjs` | One doc or all docs | ❌ | **Offline fix.** CSV key resolution only — no Python needed. Use when you only changed `{$key}` references and don't need body re-translation. Instant. |
+| `scripts/translate-doc.mjs` | One doc → all 31 locales | ✅ (if Python up) | **Daily driver.** After editing a single `.md` — resolves keys, translates body + plain H1, merges into locale JSONs. Shows per-locale progress (🗝/🌐). Example: `nvm use 22 && node scripts/translate-doc.mjs packages/docs/content/vocab/review.md` |
+| `scripts/translate-docs.mjs` | All docs × all locales, or `--locale=xx` | ✅ (if Python up) | **Full rebuild.** Use after sweeping changes across multiple docs, or to regenerate all locales from scratch. Slow. Example: `nvm use 22 && node scripts/translate-docs.mjs --locale=zh-Hans` |
+| `scripts/resolve-doc-keys.mjs` | One doc or all docs | ❌ | **Offline fix.** CSV key resolution only — no Python needed. Use when you only changed `{$key}` references and don't need body re-translation. Instant. Example: you fix a wrong key in `dictionary.md` — `{$action.translation}` → `{$label.show_translation}` — and run `node scripts/resolve-doc-keys.mjs --doc=vocab/dictionary`. All 31 locale JSONs update instantly without hitting the translate server. |
 
-Each script merges into `apps/web/src/data/docs-i18n/{locale}.json` — existing entries for other docs are preserved.
+Each script merges into `packages/docs/i18n/{locale}.json` — existing entries for other docs are preserved.
 
 ## Search
 
