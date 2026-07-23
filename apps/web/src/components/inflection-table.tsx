@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
 
 /** ISO 639-1 → ISO 639-3 mappings for languages with inflection support. */
-const L2_TO_L3: Record<string, string> = {
+const ISO_639_1_TO_3: Record<string, string> = {
   ja: 'jpn',
   ko: 'kor',
   en: 'eng',
@@ -58,8 +58,8 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const l3 = L2_TO_L3[l2Code];
-  const isSupported = l3 != null;
+  const iso639_3 = ISO_639_1_TO_3[l2Code];
+  const isSupported = iso639_3 != null;
 
   useEffect(() => {
     if (!isSupported || !head) return;
@@ -75,9 +75,9 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
     } else if (KO_LANGS.has(l2Code)) {
       promise = inflection.korean(head);
     } else if (PATTERN_LANGS.has(l2Code)) {
-      promise = inflection.pattern(head, l3);
+      promise = inflection.pattern(head, iso639_3);
     } else if (PYMORPHY_LANGS.has(l2Code)) {
-      promise = inflection.pymorphy(head, l3);
+      promise = inflection.pymorphy(head, iso639_3);
     } else {
       setLoading(false);
       return;

@@ -7,6 +7,8 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useDictionary } from '@langplayer/api-client';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { SubsSearchResults } from '@/components/video/SubsSearchResults';
+import { InflectionTable } from '@/components/InflectionTable';
+import { TabbedPanel } from '@/components/TabbedPanel';
 import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
@@ -121,72 +123,71 @@ export default function WordDetailScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <View className="px-4 py-5 mb-4">
+      {/* Head word + pronunciation header */}
+      <View className="px-4 py-4">
         <Text className="text-xl font-bold text-foreground">{entry.head}</Text>
         {entry.pronunciation && (
           <Text className="mt-1 text-sm text-muted-foreground">{entry.pronunciation}</Text>
         )}
+        {/* Proficiency levels + source inline below head */}
+        <View className="mt-2 flex-row flex-wrap items-center gap-1.5">
+          {entry.levels?.map((l, i) => (
+            <View key={i} className="rounded-full border border-border bg-muted/30 px-2 py-0.5">
+              <Text className="text-xs text-muted-foreground">
+                {l.scale.toUpperCase()}: {l.value}
+              </Text>
+            </View>
+          ))}
+          {entry.part_of_speech && (
+            <View className="rounded-full border border-border bg-muted/30 px-2 py-0.5">
+              <Text className="text-xs text-muted-foreground">{entry.part_of_speech}</Text>
+            </View>
+          )}
+          <Text className="text-xs text-muted-foreground/50">
+            {entry.dictionary.name} ({entry.dictionary.version})
+          </Text>
+        </View>
       </View>
-      <ScrollView className="flex-1 px-4">
-        {/* Definitions — strings from the API */}
-        {entry.definitions && entry.definitions.length > 0 && (
-          <View className="mb-4">
-            <Text className="mb-2 text-sm font-semibold text-muted-foreground">{'Definitions'}</Text>
-            {entry.definitions.map((def, i) => (
+
+      {/* Tabbed content — matches Next.js */}
+      <TabbedPanel
+        tabs={[
+          { key: 'definitions', label: t('title.definitions') },
+          { key: 'examples', label: t('title.examples_from_videos') },
+          { key: 'conjugations', label: t('title.conjugations') },
+        ]}
+        defaultTab="definitions"
+      >
+        {/* Tab 1: Definitions */}
+        <ScrollView className="px-4 pt-3">
+          {entry.definitions && entry.definitions.length > 0 ? (
+            entry.definitions.map((def, i) => (
               <View key={i} className="mb-2 rounded-lg bg-muted/50 p-3">
                 <Text className="text-sm text-foreground">{def}</Text>
               </View>
-            ))}
-          </View>
-        )}
-
-        {/* Part of speech */}
-        {entry.part_of_speech && (
-          <View className="mb-4">
-            <Text className="mb-2 text-sm font-semibold text-muted-foreground">{'Part of Speech'}</Text>
-            <View className="rounded-lg bg-muted/50 p-3">
-              <Text className="text-sm text-foreground">{entry.part_of_speech}</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Proficiency levels */}
-        {entry.levels && entry.levels.length > 0 && (
-          <View className="mb-4">
-            <Text className="mb-2 text-sm font-semibold text-muted-foreground">{'Level'}</Text>
-            <View className="flex-row flex-wrap gap-1.5">
-              {entry.levels.map((l, i) => (
-                <View key={i} className="rounded-full border border-border bg-muted/30 px-3 py-1">
-                  <Text className="text-xs text-foreground">
-                    {l.scale.toUpperCase()}: {l.value}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Dictionary source */}
-        <View className="mb-4">
-          <Text className="mb-2 text-sm font-semibold text-muted-foreground">{'Source'}</Text>
-          <View className="rounded-lg bg-muted/50 p-3">
-            <Text className="text-sm text-foreground">
-              {entry.dictionary.name} ({entry.dictionary.version})
+            ))
+          ) : (
+            <Text className="py-4 text-center text-sm text-muted-foreground">
+              {t('msg.no_results')}
             </Text>
-          </View>
-        </View>
+          )}
+        </ScrollView>
 
-        {/* Examples from Videos */}
-        <View className="mb-4 border-t border-border pt-4">
-          <Text className="mb-2 text-sm font-semibold text-muted-foreground">{'Examples from Videos'}</Text>
+        {/* Tab 2: Examples from Videos */}
+        <ScrollView className="pt-3">
           <SubsSearchResults
             term={searchTermString}
             exactMatch={exactMatch}
             onExactToggle={setExactMatch}
             formCount={formCount}
           />
-        </View>
-      </ScrollView>
+        </ScrollView>
+
+        {/* Tab 3: Conjugations */}
+        <ScrollView className="px-4 pt-3">
+          <InflectionTable head={entry.head} l2Code={l2Lang.code} embedded />
+        </ScrollView>
+      </TabbedPanel>
     </View>
   );
 }
