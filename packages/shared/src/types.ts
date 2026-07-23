@@ -704,9 +704,13 @@ export interface TokenSpanSettings {
     show: 'ruby' | 'word' | false;
     /**
      * `always`    — on every word
-     * `hardWords` — only on words above the user's proficiency level
+     * `hardWords` — only on words at or above the user's proficiency level.
+     *                When `show` is `'word'`, easy words stay in the original script;
+     *                hard words are replaced with phonetics. When `show` is `'ruby'`,
+     *                only hard words get ruby annotations. When `show` is `false`,
+     *                this field has no effect (nothing is shown regardless).
      */
-    conditions: 'always' | 'hardWords'; // If phonetics.show is 'word', then 'always' is manditory.
+    conditions: 'always' | 'hardWords';
   };
   definition: {
     /** Show first dictionary definition inline on ALL word blocks. */

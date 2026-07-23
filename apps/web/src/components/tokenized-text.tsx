@@ -8,6 +8,7 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { useSettingsContext } from '@/providers/settings-provider';
+import { useProgress } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { bulkLookupWords } from '@/lib/dictionary-cache';
 import { TokenSpan } from './token-span';
@@ -62,6 +63,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
+  const { level: userLevel } = useProgress(l2Code);
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);
@@ -321,6 +323,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               token={token}
               l2Code={l2Code}
               phoneticsMode={phoneticsShow}
+              phoneticsConditions={l2Settings.tokenSpan.phonetics.conditions}
+              userLevel={typeof userLevel === 'number' ? userLevel : undefined}
               quickGloss={settingsTokenizedText.quickGloss}
               showDefinition={l2Settings.tokenSpan.definition.show}
               isSelected={selectedToken === token}
