@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { getSampleSentence } from '@/lib/sample-sentences';
+import { VoicePicker } from '@/components/VoicePicker';
 
 const S = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#fff' },
@@ -217,9 +218,7 @@ export default function SettingsScreen() {
       </View>}
 
       {tab === 'speech' && <View style={S.section}>
-        <View style={S.placeholder}>
-          <Text style={S.placeholderText}>{t('msg.speech_settings_coming_soon')}</Text>
-        </View>
+        <VoicePicker />
       </View>}
 
       {tab === 'review' && <View style={S.section}>
