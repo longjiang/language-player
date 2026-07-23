@@ -174,13 +174,22 @@ export interface LexicalEntry {
 }
 
 /** A proficiency level on a given grading scale.
- *  e.g. `{ scale: 'hsk_2010', value: 3 }`, `{ scale: 'cefr', value: 'B1' }`.
+ *
+ *  `scale`  — the grading framework (e.g. `'hsk_2010'`, `'cefr'`, `'jlpt'`)
+ *  `value`  — the scale-specific level (e.g. `3`, `'B1'`, `'N4'`)
+ *  `numeric` — normalized 1–7 difficulty across all scales.
+ *              1 = total beginner (HSK 1, CEFR A1, JLPT N5).
+ *              7 = advanced/native (HSK 6–7, CEFR C2, JLPT N1).
+ *              This is the common denominator for cross-scale comparisons
+ *              and drives the "Hard Words Only" phonetics filter.
  *
  *  @typeParam Scale — narrow this to a literal union for known scales (e.g. `'hsk_2010' | 'cefr'`),
  *                     or leave as the default `string` for open-ended data. */
 export interface ProficiencyLevel<Scale extends string = string> {
   scale: Scale;
   value: number | string;
+  /** Normalized 1–7 difficulty. 1 = beginner, 7 = advanced/native. */
+  numeric: number;
 }
 
 /** Study material coverage for a dictionary entry (ADR 0006). */

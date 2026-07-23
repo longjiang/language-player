@@ -51,8 +51,16 @@ interface LexicalEntry {
    *  hsk_2010:3 and hsk_2025:2). The UI displays the most relevant one
    *  based on user preference; when both are present, hsk_2025 is shown
    *  by default for Chinese.
+   *
+   *  Each level includes a `numeric` field — a normalized 1–7 difficulty
+   *  that maps every scale onto a common ladder:
+   *    1 = total beginner (HSK 1, CEFR A1, JLPT N5)
+   *    7 = advanced/native (HSK 6–7, CEFR C2, JLPT N1)
+   *  This is the common denominator for cross-scale comparisons and
+   *  drives features like the "Hard Words Only" phonetics filter.
+   *
    *  null or empty array means unclassified (not "beginner"). */
-  levels?: { scale: string; value: number | string }[] | null;
+  levels?: { scale: string; value: number | string; numeric: number }[] | null;
 
   /** Part of speech. Language-specific values:
    *  English/European: 'noun', 'verb', 'adjective', etc.
@@ -254,10 +262,12 @@ interface StudyMaterialCoverage {
   year?: number;
 
   /** Scale and level this material targets.
-   *  Example: { scale: 'hsk_2010', level: 3 } means HSK Level 3 */
+   *  Example: { scale: 'hsk_2010', level: 3, numeric: 3 } means HSK Level 3 */
   targetLevel: {
     scale: string;
     level: number | string;
+    /** Normalized 1–7 difficulty. 1 = beginner, 7 = advanced. */
+    numeric: number;
   };
 
   /** Location within the material — book/volume, lesson/chapter, dialog/exercise.
@@ -424,7 +434,7 @@ HSK Standard Course (hsk_standard_course.csv):
           不但……而且……,不但……而且……,3,18,3,"他不但听到，而且也看到了。","He not only heard..."
   Parse:  Match headword → map book/lesson/dialog → build StudyMaterialCoverage
   Output: { material: 'HSK Standard Course', author: 'Jiang Liping', year: 2014,
-            targetLevel: { scale: 'hsk_2010', value: 3 },
+            targetLevel: { scale: 'hsk_2010', value: 3, numeric: 3 },
             location: { book: 3, lesson: 18, dialog: 3 },
             example: '他不但听到，而且也看到了。',
             exampleTranslation: 'He not only heard it, but he saw it, too.' }

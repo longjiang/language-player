@@ -12,6 +12,8 @@ export interface TokenSpanProps {
   /** Phonetics display mode: 'ruby' (above), 'word' (replace text), or false (hidden). */
   phoneticsMode: 'ruby' | 'word' | false;
   quickGloss: boolean;
+  /** Show the first dictionary definition below every word (interlinear gloss). */
+  showDefinition: boolean;
   isSelected: boolean;
   isSaved: boolean;
   isHighlighted: boolean;
@@ -19,7 +21,7 @@ export interface TokenSpanProps {
 }
 
 /**
- * Individual clickable word token with ruby text and quick gloss.
+ * Individual clickable word token with ruby text, quick gloss, and interlinear definition.
  * Extracted from tokenized-text.tsx to keep the file manageable.
  */
 export const TokenSpan: React.FC<TokenSpanProps> = ({
@@ -27,14 +29,14 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   l2Code,
   phoneticsMode,
   quickGloss,
+  showDefinition,
   isSelected,
   isSaved,
   isHighlighted,
   onClick,
 }) => {
-  // ── Quick gloss: first definition of first cached entry, only for saved words ──
-  const quickGlossDef = useMemo(() => {
-    if (!isSaved || !quickGloss) return null;
+  // ── First cached entry's first definition — shared by quick gloss and interlinear ──
+  const firstDef = useMemo(() => {
     for (const lemma of token.lemmas) {
       const entries = getCachedEntries(l2Code, lemma.lemma);
       if (entries && entries.length > 0 && entries[0]!.definitions.length > 0) {
@@ -46,7 +48,12 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
       return surfaceEntries[0]!.definitions[0]!;
     }
     return null;
-  }, [isSaved, l2Code, token.text, token.lemmas]);
+  }, [l2Code, token.text, token.lemmas]);
+
+  // ── Quick gloss: only for saved words with gloss enabled ──
+  const quickGlossDef = (isSaved && quickGloss) ? firstDef : null;
+  // ── Interlinear definition: for all words (when enabled) ──
+  const interlinearDef = showDefinition ? firstDef : null;
 
   // ── Structural tokens: newlines → <br />, spaces/punctuation → raw text ──
   if (token.text === '\n' || token.text === '\r') {
@@ -78,26 +85,22 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
   const title = token.lemmas.map(l => l.lemma).join(', ');
 
+  // ── Word content (reused by both layout variants) ──
+  let wordContent: React.ReactNode;
+
   // ── Phonetics-only mode: show reading instead of surface text ──
   if (phoneticsMode === 'word' && token.pronunciation && token.pronunciation !== token.text
       && (!isJapanese || hasKanji)) {
     const displayText = base === 'ja' ? katakanaToHiragana(token.pronunciation) : token.pronunciation;
-    return (
-      <span onClick={(e) => { e.stopPropagation(); onClick(); }} className={wrapperClass} title={title}>
-        <span className={wordBgClass}>{displayText}</span>
-        {quickGlossDef && <QuickGloss def={quickGlossDef} />}
-      </span>
-    );
-  }
+    wordContent = <span className={wordBgClass}>{displayText}</span>;
+  } else {
+    // ── Ruby text ──
+    const hasPhonetics = !isHighlighted && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text;
+    const rubySegments: RubySegment[] | null = hasPhonetics
+      ? buildRuby(token.text, token.pronunciation!, l2Code)
+      : null;
 
-  // ── Ruby text ──
-  const hasPhonetics = !isHighlighted && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text;
-  const rubySegments: RubySegment[] | null = hasPhonetics
-    ? buildRuby(token.text, token.pronunciation!, l2Code)
-    : null;
-
-  return (
-    <span onClick={(e) => { e.stopPropagation(); onClick(); }} className={wrapperClass} title={title}>
+    wordContent = (
       <span className={wordBgClass}>
         {rubySegments
           ? rubySegments.map((seg, j) =>
@@ -107,6 +110,27 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
             )
           : token.text}
       </span>
+    );
+  }
+
+  // ── Interlinear definition: word stacked above definition, centered ──
+  if (interlinearDef) {
+    return (
+      <span onClick={(e) => { e.stopPropagation(); onClick(); }} className={wrapperClass} title={title}>
+        <span className="inline-flex flex-col items-center">
+          {wordContent}
+          <span className="text-[0.55em] text-muted-foreground/60 font-normal select-none leading-none">
+            {interlinearDef}
+          </span>
+        </span>
+      </span>
+    );
+  }
+
+  // ── Inline layout: word with optional quick gloss alongside ──
+  return (
+    <span onClick={(e) => { e.stopPropagation(); onClick(); }} className={wrapperClass} title={title}>
+      {wordContent}
       {quickGlossDef && <QuickGloss def={quickGlossDef} />}
     </span>
   );
