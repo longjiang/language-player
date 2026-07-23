@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { SearchBar } from '@/components/dictionary/SearchBar';
@@ -10,6 +11,7 @@ import type { DictionaryEntry } from '@langplayer/shared';
 
 export default function DictionaryScreen() {
   const t = useT();
+  const router = useRouter();
   const {
     query, setQuery, results, loading, error, message,
     doSearch, clearSearch,
@@ -21,10 +23,21 @@ export default function DictionaryScreen() {
     if (query.trim()) doSearch(query.trim());
   };
 
+  // Called when user taps a search result card.
+  // Flow: set context state so WordDetailScreen can find the entry,
+  // then navigate via expo-router to the word detail screen.
+  // DEBUG: Verbose logging to trace the tap → navigation → detail chain.
+  // If handleEntryPress never fires, the bug is upstream (card Pressable).
   const handleEntryPress = (entry: DictionaryEntry) => {
+    console.log('[Dict] handleEntryPress — entry:', JSON.stringify({ id: entry.id, head: entry.head }), '— timestamp:', Date.now());
     setDetailHead(entry.head);
+    console.log('[Dict] handleEntryPress — setDetailHead done');
     setSidebarSource({ kind: 'results', items: results! });
+    console.log('[Dict] handleEntryPress — setSidebarSource done');
     setCameFromSearch(true);
+    console.log('[Dict] handleEntryPress — setCameFromSearch done, pushing route...');
+    router.push(`word/${entry.id}`);
+    console.log('[Dict] handleEntryPress — router.push called');
   };
 
   return (
@@ -97,7 +110,8 @@ export default function DictionaryScreen() {
           data={results}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <View className="px-4 py-1">
+            <View className="px-4 py-1"
+              onTouchEnd={() => console.log('[Dict] FlatList item touch — id:', item.id, 'head:', item.head)}>
               <DictionaryEntryCard entry={item} onPress={handleEntryPress} />
             </View>
           )}

@@ -109,6 +109,9 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
 
     try {
       const res = await dict.lookup(trimmed, l2Code, 'en');
+      // DEBUG: Confirms search completed and how many results returned.
+      // If this logs but handleEntryPress never does, the tap isn't reaching the card's Pressable.
+      console.log('[Dict] doSearch results — query:', trimmed, '— count:', res.results?.length ?? 0, '— timestamp:', Date.now());
       setResults(res.results ?? []);
       setMessage(res.message ?? null);
       await saveRecent(l2Code, trimmed);

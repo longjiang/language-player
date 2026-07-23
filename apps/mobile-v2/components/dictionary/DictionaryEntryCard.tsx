@@ -17,8 +17,13 @@ export function DictionaryEntryCard({ entry, variant = 'compact', onPress }: Dic
   const definitions = entry.definitions?.slice(0, variant === 'compact' ? 2 : undefined) ?? [];
   const isFull = variant === 'full';
 
+  // NOTE: Do NOT use web-only pseudo-classes like `active:bg-muted` in React Native.
+  // NativeWind in RN does not support `active:` — it silently blocks Pressable touch
+  // propagation, causing taps to never reach the `onPress` handler. Use Pressable's
+  // `style` callback with `pressed` state for press feedback instead (see below).
+
   const content = (
-    <View className={`rounded-xl border border-border bg-card p-4 ${isFull ? '' : 'active:bg-muted'}`}>
+    <View className="rounded-xl border border-border bg-card p-4">
       {/* Head word + pronunciation */}
       <View className="flex-row items-baseline gap-2">
         <Text className={`font-bold text-foreground ${isFull ? 'text-3xl' : 'text-lg'}`}>
@@ -63,8 +68,20 @@ export function DictionaryEntryCard({ entry, variant = 'compact', onPress }: Dic
     </View>
   );
 
+  // DEBUG: Logging helps trace the full tap → word detail chain:
+  //   card onPressIn → card onPress → handleEntryPress → router.push → WordDetailScreen
+  // onPressIn fires on touch-down (before onPress), confirming the Pressable receives touches.
+  // style callback provides press feedback via opacity since NativeWind's active: pseudo-class is unsupported.
   if (onPress) {
-    return <Pressable onPress={() => onPress(entry)}>{content}</Pressable>;
+    return (
+      <Pressable
+        onPress={() => { console.log('[Dict] card onPress fired — id:', entry.id, 'head:', entry.head); onPress(entry); }}
+        onPressIn={() => console.log('[Dict] card onPressIn — id:', entry.id)}
+        style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+      >
+        {content}
+      </Pressable>
+    );
   }
 
   return content;
