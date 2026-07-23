@@ -5,7 +5,7 @@
 
 ## Context
 
-The docs system (`apps/web/content/docs/`) contains 23 markdown files across 5 categories (general, account, media, reading, vocab). These need to be served in all 31 supported UI locales. The docs contain two types of translatable content:
+The docs system (`packages/docs/content/`) contains 23 markdown files across 5 categories (general, account, media, reading, vocab). These need to be served in all 31 supported UI locales. The docs contain two types of translatable content:
 
 1. **UI labels** referenced in docs — button names, tab titles, language names, proficiency levels — which have existing CSV translation keys
 2. **Body text** — freeform English prose that needs machine translation

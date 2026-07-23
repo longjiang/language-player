@@ -5,7 +5,7 @@
  * For each locale:
  *   1. Read every .md in content/docs/
  *   2. Replace {$key} → t(key, locale) using translations.csv
- *   3. Write apps/web/src/data/docs-i18n/{locale}.json
+ *   3. Write packages/docs/i18n/{locale}.json
  *
  * Usage:
  *   node scripts/translate-docs.mjs                    # all locales
@@ -19,8 +19,8 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const DOCS_DIR = resolve(ROOT, 'apps/web/content/docs');
-const OUT_DIR = resolve(ROOT, 'apps/web/src/data/docs-i18n');
+const DOCS_DIR = resolve(ROOT, 'packages/docs/content');
+const OUT_DIR = resolve(ROOT, 'packages/docs/i18n');
 const CSV_PATH = resolve(ROOT, 'translations.csv');
 
 // ── Parse CSV ──────────────────────────────────────────────────────────
