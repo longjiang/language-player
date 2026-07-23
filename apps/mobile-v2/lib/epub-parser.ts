@@ -48,16 +48,24 @@ export function parseOPF(opfXml: string, ncxXml?: string): EpubMetadata {
     if (href) spine.push({ href: resolvePath(opfDir, href), title: '' });
   }
 
-  // Cover image: <meta name="cover" content="X" />
+  // Cover image — attribute-order independent
   let coverBase64: string | null = null;
-  const coverMetaMatch = opfXml.match(/<meta\b[^>]*name="cover"[^>]*content="([^"]+)"/);
-  if (coverMetaMatch) {
-    const coverId = coverMetaMatch[1]!;
-    const coverHrefMatch = opfXml.match(
-      new RegExp(`<item\\b[^>]*id="${coverId}"[^>]*href="([^"]+)"`),
-    );
-    if (coverHrefMatch) {
-      coverBase64 = coverHrefMatch[1]!; // Resolved later
+  const metaRegex = /<meta\b([^>]*)>/g;
+  let mm: RegExpExecArray | null;
+  while ((mm = metaRegex.exec(opfXml))) {
+    if (extractAttr(mm[1]!, 'name') === 'cover') {
+      const coverId = extractAttr(mm[1]!, 'content');
+      if (coverId) {
+        const itemRegex = /<item\b([^>]*)>/g;
+        let im: RegExpExecArray | null;
+        while ((im = itemRegex.exec(opfXml))) {
+          if (extractAttr(im[1]!, 'id') === coverId) {
+            coverBase64 = extractAttr(im[1]!, 'href') || null;
+            break;
+          }
+        }
+      }
+      break;
     }
   }
 
