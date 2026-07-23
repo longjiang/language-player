@@ -14,6 +14,7 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { getCachedEntries, setCachedEntries } from '@/lib/dictionary-cache';
 import { WordList } from '@/components/dictionary/word-list';
 import { buildEntryRoute } from '@/lib/entry-route';
 
@@ -62,7 +63,6 @@ export function DictionaryPopup({
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
-    setLoading(true);
     setError(null);
 
     const search = async () => {
@@ -73,18 +73,41 @@ export function DictionaryPopup({
 
       let allEntries: DictionaryEntry[] = [];
 
+      // ── Check cache first ──
       for (const text of texts) {
-        if (cancelled) break;
-        const results = await lookupWord(text, controller.signal);
-        if (!cancelled) {
-          for (const e of results) {
+        const cached = getCachedEntries(l2Code, text);
+        if (cached && cached.length > 0) {
+          for (const e of cached) {
             if (!e.match_type) {
               e.match_type = text === token.text ? 'exact' : 'lemma';
             }
           }
-          allEntries.push(...results);
+          allEntries.push(...cached);
+          break; // use first matching cached result
         }
-        if (allEntries.length > 0) break;
+      }
+
+      // ── Cache miss: fetch from server ──
+      if (allEntries.length === 0) {
+        setLoading(true);
+        for (const text of texts) {
+          if (cancelled) break;
+          const results = await lookupWord(text, controller.signal);
+          if (!cancelled) {
+            for (const e of results) {
+              if (!e.match_type) {
+                e.match_type = text === token.text ? 'exact' : 'lemma';
+              }
+            }
+            // Cache the results for future use
+            if (results.length > 0) {
+              setCachedEntries(l2Code, text, results);
+            }
+            allEntries.push(...results);
+          }
+          if (allEntries.length > 0) break;
+        }
+        setLoading(false);
       }
 
       if (!cancelled) {
@@ -110,7 +133,7 @@ export function DictionaryPopup({
       cancelled = true;
       controller.abort();
     };
-  }, [token, lookupWord]);
+  }, [token, lookupWord, l2Code]);
 
   const levelLabel = (scale: string, value: string | number) => formatLevel({ scale, value } as ProficiencyLevel).long;
 

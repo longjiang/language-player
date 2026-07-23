@@ -12,6 +12,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { TokenCache } from '@langplayer/shared';
+import { bulkLookupWords } from '@/lib/dictionary-cache';
 
 // Simple in-memory cache to avoid re-lemmatizing the same text
 const lemmatizeCache = new Map<string, LemmatizedToken[]>();
@@ -231,6 +232,38 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       loadingRef.current = false;
     };
   }, [convertedText, converting, l2Code, preloadedTokens, tokenCacheLoaded, hasBeenVisible]);
+
+  // ── Bulk dictionary lookup: pre-fetch entries for all unique lemmas ──
+  useEffect(() => {
+    if (loading || error || tokens.length === 0) return;
+
+    const uniqueLemmas = new Map<string, string>(); // text → part_of_speech
+    for (const token of tokens) {
+      for (const lemma of token.lemmas) {
+        const t = lemma.lemma.trim();
+        // Skip whitespace, punctuation, and single-char non-word tokens
+        if (!t || t.length === 0 || /^[\s\p{P}]+$/u.test(t)) continue;
+        if (!uniqueLemmas.has(t)) {
+          uniqueLemmas.set(t, lemma.part_of_speech ?? '');
+        }
+      }
+      // Also include the surface form if it differs from all lemmas
+      const surface = token.text.trim();
+      if (surface && surface.length > 0 && !/^[\s\p{P}]+$/u.test(surface) && !uniqueLemmas.has(surface)) {
+        uniqueLemmas.set(surface, '');
+      }
+    }
+
+    if (uniqueLemmas.size === 0) return;
+
+    const words = Array.from(uniqueLemmas.keys()).map((text) => ({
+      text,
+      l2Code: baseCode(l2Code),
+      l1Code: l1.code,
+    }));
+
+    bulkLookupWords(words);
+  }, [tokens, loading, error, l2Code, l1.code]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken) => {
     setSelectedToken(prev => prev === token ? null : token);
