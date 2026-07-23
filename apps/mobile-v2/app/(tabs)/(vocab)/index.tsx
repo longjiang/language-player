@@ -5,7 +5,7 @@ import { useT } from '@/hooks/use-t';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { SearchBar } from '@/components/dictionary/SearchBar';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
-import { Search, BookOpen } from 'lucide-react-native';
+import { Search, BookOpen, Clock } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
 
@@ -71,7 +71,38 @@ export default function DictionaryScreen() {
         <ActivityIndicator size="large" color={ICON_MUTED} style={{ marginTop: 40 }} />
       )}
 
-      {/* Empty initial state */}
+      {/* Empty state: recent searches (matches Next.js) */}
+      {!query && !loading && !results?.length && recentSearches.length > 0 && (
+        <View className="px-4 pt-4">
+          <View className="rounded-xl border border-border bg-card p-5">
+            <View className="mb-3 flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2">
+                <Clock size={16} color={ICON_MUTED} />
+                <Text className="text-sm font-medium text-muted-foreground">
+                  {t('title.recent_searches')}
+                </Text>
+              </View>
+              <Text className="text-xs text-primary" onPress={clearRecent}>
+                {t('action.clear_recent_searches')}
+              </Text>
+            </View>
+            {recentSearches.map((term) => (
+              <Pressable
+                key={term}
+                onPress={() => { setQuery(term); doSearch(term); }}
+                className="flex-row items-center gap-3 rounded-lg px-3 py-2 active:bg-muted/60"
+              >
+                <Clock size={14} color={ICON_MUTED} />
+                <Text className="flex-1 text-sm text-foreground" numberOfLines={1}>
+                  {term}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Empty initial state (no recents) */}
       {!query && !loading && !results?.length && recentSearches.length === 0 && (
         <View className="mt-12 items-center px-8">
           <Search size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
@@ -85,26 +116,22 @@ export default function DictionaryScreen() {
         </View>
       )}
 
-      {!query && recentSearches.length > 0 && !results?.length && (
-        <View className="px-4 pt-4">
-          <View className="flex-row items-center justify-between">
-            <Text className="text-xs font-bold uppercase text-muted-foreground">
-              {t('action.recent_searches')}
-            </Text>
-            <Text className="text-xs text-primary" onPress={clearRecent}>
-              {t('action.clear')}
-            </Text>
+      {/* Recent searches strip — shown above results when available */}
+      {recentSearches.length > 0 && (
+        <View className={`px-4 ${results?.length ? 'pt-1' : 'pt-4'}`}>
+          <View className="flex-row items-center gap-2">
+            <Clock size={12} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">{t('title.recent_searches')}</Text>
           </View>
-          <View className="mt-2 flex-row flex-wrap gap-2">
+          <View className="mt-1.5 flex-row flex-wrap gap-2">
             {recentSearches.map((term) => (
-              <View key={term} className="rounded-full bg-muted px-3 py-1">
-                <Text
-                  className="text-sm text-foreground"
-                  onPress={() => { setQuery(term); doSearch(term); }}
-                >
-                  {term}
-                </Text>
-              </View>
+              <Pressable
+                key={term}
+                onPress={() => { setQuery(term); doSearch(term); }}
+                className="rounded-full bg-muted/50 px-3 py-1"
+              >
+                <Text className="text-xs text-muted-foreground" numberOfLines={1}>{term}</Text>
+              </Pressable>
             ))}
           </View>
         </View>

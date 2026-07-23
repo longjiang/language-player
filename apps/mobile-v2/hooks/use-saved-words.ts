@@ -1,21 +1,52 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserData } from '@langplayer/api-client';
+import { useUserData, useDictionary } from '@langplayer/api-client';
+import { decomposeWordId } from '@langplayer/shared';
 import { useCloudUserData } from '@/contexts/UserDataContext';
 
 const STORAGE_KEY = 'zthSavedWords';
 const SYNC_DEBOUNCE_MS = 2000;
 
 interface SavedWordMeta {
-  head: string;
-  dictionaryId: string;
-  entryId: string;
   id: string;
-  savedAt?: string;
+  head?: string;          // mobile-v2 format
+  dictionaryId?: string;  // mobile-v2 format
+  entryId?: string;       // mobile-v2 format
+  savedAt?: string;       // mobile-v2 format
+  forms?: string[];       // Classic/Nuxt format
+  date?: number;          // Classic/Nuxt format (millis)
+  context?: Record<string, unknown>; // Classic/Nuxt format
 }
 
 type SavedWordsStore = Record<string, SavedWordMeta[]>; // keyed by L2 code
+
+// ── Enrichment: fill missing heads for old saved-word records ──
+async function enrichMissingHeads(
+  store: SavedWordsStore,
+  l2Code: string,
+  dict: ReturnType<typeof useDictionary>,
+): Promise<SavedWordsStore> {
+  const words = store[l2Code] ?? [];
+  const missing = words.filter((w) => !w.head);
+  if (missing.length === 0) return store;
+
+  const enriched = [...words];
+  for (let i = 0; i < enriched.length; i++) {
+    const w = enriched[i]!;
+    if (w.head) continue;
+    try {
+      const decomposed = decomposeWordId(w.id, l2Code);
+      if (!decomposed) continue;
+      const { dict: dictId, id: scopedId } = decomposed;
+      const res = await dict.getEntry(l2Code, dictId, scopedId);
+      if (res?.entry?.head) {
+        enriched[i] = { ...w, head: res.entry.head };
+      }
+    } catch { /* skip failed lookups */ }
+  }
+  return { ...store, [l2Code]: enriched };
+}
 
 function mergeSavedWords(local: SavedWordsStore, cloud: SavedWordsStore): SavedWordsStore {
   const merged = { ...local };
@@ -32,6 +63,7 @@ export function useSavedWords() {
   const { user } = useAuth();
   const { getUserData } = useUserData();
   const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
+  const dict = useDictionary();
   const [savedWords, setSavedWords] = useState<SavedWordsStore>({});
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -43,7 +75,22 @@ export function useSavedWords() {
     (async () => {
       try {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
-        if (raw) setSavedWords(JSON.parse(raw));
+        if (raw) {
+          const parsed = JSON.parse(raw) as SavedWordsStore;
+          // Enrich old records missing head words + persist
+          let enriched = false;
+          for (const lang of Object.keys(parsed)) {
+            const result = await enrichMissingHeads(parsed, lang, dict);
+            if (result[lang] !== parsed[lang]) {
+              parsed = result;
+              enriched = true;
+            }
+          }
+          if (enriched) {
+            SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(parsed));
+          }
+          setSavedWords(parsed);
+        }
       } catch {}
       setLoaded(true);
     })();

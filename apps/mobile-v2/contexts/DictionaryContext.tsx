@@ -64,8 +64,10 @@ async function saveRecent(l2Code: string, term: string) {
     const prev = await loadRecent(l2Code);
     const filtered = prev.filter((t) => t !== term);
     filtered.unshift(term);
-    await SecureStore.setItemAsync(`${RECENT_STORAGE_KEY}:${l2Code}`, JSON.stringify(filtered.slice(0, MAX_RECENT)));
-  } catch { /* quota */ }
+    const items = filtered.slice(0, MAX_RECENT);
+    console.log('[Dict] saveRecent — l2:', l2Code, 'term:', term, 'items:', items.length);
+    await SecureStore.setItemAsync(`${RECENT_STORAGE_KEY}:${l2Code}`, JSON.stringify(items));
+  } catch (e) { console.log('[Dict] saveRecent failed:', e); }
 }
 
 export function DictionaryProvider({ children }: { children: ReactNode }) {

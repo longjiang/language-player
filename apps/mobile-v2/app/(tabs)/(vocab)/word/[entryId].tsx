@@ -8,8 +8,10 @@ import { useDictionary } from '@langplayer/api-client';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { SubsSearchResults } from '@/components/video/SubsSearchResults';
 import { InflectionTable } from '@/components/InflectionTable';
+import { AiExplanation } from '@/components/AiExplanation';
 import { TabbedPanel } from '@/components/TabbedPanel';
 import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
+import { SaveButton } from '@/components/dictionary/SaveButton';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { decomposeWordId } from '@langplayer/shared';
@@ -125,10 +127,15 @@ export default function WordDetailScreen() {
     <View className="flex-1 bg-background">
       {/* Head word + pronunciation header */}
       <View className="px-4 py-4">
-        <Text className="text-xl font-bold text-foreground">{entry.head}</Text>
-        {entry.pronunciation && (
-          <Text className="mt-1 text-sm text-muted-foreground">{entry.pronunciation}</Text>
-        )}
+        <View className="flex-row items-center justify-between">
+          <View className="flex-1">
+            <Text className="text-xl font-bold text-foreground">{entry.head}</Text>
+            {entry.pronunciation && (
+              <Text className="mt-1 text-sm text-muted-foreground">{entry.pronunciation}</Text>
+            )}
+          </View>
+          {entry && <SaveButton entry={entry} />}
+        </View>
         {/* Proficiency levels + source inline below head */}
         <View className="mt-2 flex-row flex-wrap items-center gap-1.5">
           {entry.levels?.map((l, i) => (
@@ -155,6 +162,7 @@ export default function WordDetailScreen() {
           { key: 'definitions', label: t('title.definitions') },
           { key: 'examples', label: t('title.examples_from_videos') },
           { key: 'conjugations', label: t('title.conjugations') },
+          { key: 'deepseek', label: 'DeepSeek' },
         ]}
         defaultTab="definitions"
       >
@@ -187,6 +195,9 @@ export default function WordDetailScreen() {
         <ScrollView className="px-4 pt-3">
           <InflectionTable head={entry.head} l2Code={l2Lang.code} embedded />
         </ScrollView>
+
+        {/* Tab 4: DeepSeek AI */}
+        <AiExplanation word={entry.head} entryFound={true} autoLoad />
       </TabbedPanel>
     </View>
   );

@@ -7,7 +7,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { useSpeech } from '@/hooks/use-speech';
 import { TokenizedText } from '@/components/tokenized-text';
-import { useStreamingExplanation } from '@/hooks/use-streaming-explanation';
+import { useStreamingExplanation } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { toast } from 'sonner';
 import {

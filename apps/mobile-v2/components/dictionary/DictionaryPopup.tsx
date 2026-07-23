@@ -3,6 +3,7 @@ import { View, Text, Modal, Pressable, ScrollView, ActivityIndicator } from 'rea
 import { useDictionary } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
+import { SaveButton } from '@/components/dictionary/SaveButton';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 
@@ -106,12 +107,15 @@ export function DictionaryPopup({
           )}
 
           {results?.map((entry) => (
-            <View key={entry.id} className="mb-2">
-              <DictionaryEntryCard
-                entry={entry}
-                variant="compact"
-                onPress={onViewDetail ? (e) => onViewDetail(e, results ?? []) : undefined}
-              />
+            <View key={entry.id} className="mb-2 flex-row items-start gap-2">
+              <View className="flex-1">
+                <DictionaryEntryCard
+                  entry={entry}
+                  variant="compact"
+                  onPress={onViewDetail ? (e) => onViewDetail(e, results ?? []) : undefined}
+                />
+              </View>
+              <SaveButton entry={entry} size={18} />
             </View>
           ))}
         </ScrollView>

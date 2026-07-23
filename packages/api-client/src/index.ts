@@ -6,4 +6,6 @@ export { useUserData } from './user-data';
 export type { UserDataResponse } from './user-data';
 export { useNotes } from './notes';
 export { useInflection } from './inflection';
+export { useStreamingExplanation } from './chat';
+export type { StreamState, StreamActions } from './chat';
 export type { ApiClientConfig } from './client';

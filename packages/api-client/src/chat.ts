@@ -1,15 +1,13 @@
-'use client';
-
 import { useState, useRef, useCallback } from 'react';
-import { PYTHON_API_URL } from '@/lib/api-url';
+import { apiClient } from './client';
 
-interface StreamState {
+export interface StreamState {
   text: string;
   error: string | null;
   loading: boolean;
 }
 
-interface StreamActions {
+export interface StreamActions {
   /** Start streaming a DeepSeek explanation for the given prompt. */
   stream: (prompt: string) => Promise<void>;
   /** Reset state and abort any in-flight request. */
@@ -20,7 +18,7 @@ interface StreamActions {
 
 /**
  * Shared hook for streaming DeepSeek AI explanations via SSE.
- * Used by both AiExplanation (dictionary popup) and TextActionMenu (reader/watch).
+ * Uses the apiClient's base URL so it works in both web and mobile.
  */
 export function useStreamingExplanation(): StreamState & StreamActions {
   const [text, setText] = useState('');
@@ -43,7 +41,7 @@ export function useStreamingExplanation(): StreamState & StreamActions {
   }, []);
 
   const stream = useCallback(async (prompt: string) => {
-    abort(); // cancel any previous stream
+    abort();
     setLoading(true);
     setError(null);
     setText('');
@@ -52,7 +50,8 @@ export function useStreamingExplanation(): StreamState & StreamActions {
     controllerRef.current = controller;
 
     try {
-      const res = await fetch(`${PYTHON_API_URL}/chatgpt/stream`, {
+      const baseURL = apiClient.instance.defaults.baseURL ?? '';
+      const res = await fetch(`${baseURL}/chatgpt/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
