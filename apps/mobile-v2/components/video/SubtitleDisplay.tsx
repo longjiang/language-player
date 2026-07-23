@@ -13,6 +13,21 @@ import { DictionaryPopup } from '../dictionary/DictionaryPopup';
 import type { DictionaryEntry, SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
 
+/** Parse Directus-style CSV subs_l2 string → SubtitleLine[]. Format: starttime,line */
+function parseCSVSubs(csv: string): SubtitleLine[] {
+  const lines: SubtitleLine[] = [];
+  const rows = csv.split('\n');
+  for (const row of rows) {
+    const parts = row.split(',');
+    const t = parseFloat(parts[0]!);
+    if (isNaN(t)) continue;
+    const text = parts.slice(1).join(',').trim();
+    if (!text) continue;
+    lines.push({ starttime: t, line: text });
+  }
+  return lines;
+}
+
 interface SubtitleDisplayProps {
   youtubeId?: string;
   currentTime: number;
@@ -70,21 +85,49 @@ export function SubtitleDisplay({
     if (!youtubeId) return;
     setLoadingSubs(true);
     (async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      let lines: SubtitleLine[] = [];
+
       try {
-        // Python backend exposes /get_best_l2_subs (fetches from YouTube transcript API)
-        const res = await fetch(`${PYTHON_API_URL}/get_best_l2_subs?v=${youtubeId}&l2=${l2Lang.code}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!Array.isArray(data)) return;
-        const lines: SubtitleLine[] = data.map((item: any) => ({
-          line: item.text ?? '',
-          starttime: item.start ?? 0,
-        }));
-        setL2Lines(lines);
-        onLinesLoaded?.(lines.map((l) => l.starttime));
-      } catch {} finally {
-        setLoadingSubs(false);
+        // 1. Try Directus first (fast — stored subs in youtube_videos table)
+        const dr = await fetch(
+          `${PYTHON_API_URL}/videos?youtube_id=${encodeURIComponent(youtubeId)}&subs_l2=1&l2=${l2Lang.code}`,
+          { signal: controller.signal },
+        );
+        if (dr.ok) {
+          const dj = await dr.json();
+          const video = Array.isArray(dj) ? dj[0] : dj?.data?.[0] ?? dj;
+          if (video?.subs_l2 && typeof video.subs_l2 === 'string' && video.subs_l2.length > 100) {
+            lines = parseCSVSubs(video.subs_l2);
+          }
+        }
+      } catch { /* Directus failed, fall through to YouTube */ }
+
+      if (lines.length === 0) {
+        try {
+          // 2. Fall back to YouTube transcript API
+          const yr = await fetch(
+            `${PYTHON_API_URL}/get_best_l2_subs?v=${encodeURIComponent(youtubeId)}&l2=${l2Lang.code}`,
+            { signal: controller.signal },
+          );
+          if (yr.ok) {
+            const yd = await yr.json();
+            if (Array.isArray(yd)) {
+              lines = yd.map((item: any) => ({
+                line: item.text ?? '',
+                starttime: item.start ?? 0,
+              }));
+            }
+          }
+        } catch { /* YouTube API also failed */ }
       }
+
+      clearTimeout(timeout);
+      if (lines.length === 0) { setLoadingSubs(false); return; }
+      setL2Lines(lines);
+      onLinesLoaded?.(lines.map((l) => l.starttime));
+      setLoadingSubs(false);
     })();
   }, [youtubeId, initialLines]);
 
