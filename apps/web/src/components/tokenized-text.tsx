@@ -12,7 +12,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { TokenCache } from '@langplayer/shared';
-import { bulkLookupWords } from '@/lib/dictionary-cache';
+import { bulkLookupWords, getCachedEntries } from '@/lib/dictionary-cache';
 
 // Simple in-memory cache to avoid re-lemmatizing the same text
 const lemmatizeCache = new Map<string, LemmatizedToken[]>();
@@ -63,7 +63,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     typeFace === 'sans-serif' ? 'font-sans' : '';
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
-  const { getL2 } = useSettingsContext();
+  const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);
@@ -322,6 +322,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               token={token}
               l2Code={l2Code}
               phoneticsMode={phoneticsShow}
+              quickGloss={settingsTokenizedText.quickGloss}
               isSelected={selectedToken === token}
               isSaved={savedFormSet.has(token.text.toLowerCase())}
               isHighlighted={
@@ -358,11 +359,29 @@ const TokenSpan: React.FC<{
   l2Code: string;
   /** Phonetics display mode: 'ruby' (above), 'word' (replace text), or false (hidden). */
   phoneticsMode: 'ruby' | 'word' | false;
+  quickGloss: boolean;
   isSelected: boolean;
   isSaved: boolean;
   isHighlighted: boolean;
   onClick: () => void;
-}> = ({ token, l2Code, phoneticsMode, isSelected, isSaved, isHighlighted, onClick }) => {
+}> = ({ token, l2Code, phoneticsMode, quickGloss, isSelected, isSaved, isHighlighted, onClick }) => {
+  // ── Quick gloss: first definition of first cached entry, only for saved words ──
+  const quickGlossDef = useMemo(() => {
+    if (!isSaved || !quickGloss) return null;
+    // Try each lemma's cached entries, take the first definition from the first hit
+    for (const lemma of token.lemmas) {
+      const entries = getCachedEntries(l2Code, lemma.lemma);
+      if (entries && entries.length > 0 && entries[0]!.definitions.length > 0) {
+        return entries[0]!.definitions[0]!;
+      }
+    }
+    // Also try the surface form
+    const surfaceEntries = getCachedEntries(l2Code, token.text);
+    if (surfaceEntries && surfaceEntries.length > 0 && surfaceEntries[0]!.definitions.length > 0) {
+      return surfaceEntries[0]!.definitions[0]!;
+    }
+    return null;
+  }, [isSaved, l2Code, token.text, token.lemmas]);
   // ── Structural tokens: newlines → <br />, spaces/punctuation → raw text ──
   if (token.text === '\n' || token.text === '\r') {
     return <br />;
@@ -408,6 +427,11 @@ const TokenSpan: React.FC<{
         title={token.lemmas.map(l => l.lemma).join(', ')}
       >
         {displayText}
+        {quickGlossDef && (
+          <sup className="ml-0.5 text-[0.6em] text-muted-foreground/70 font-normal select-none">
+            '{quickGlossDef}'
+          </sup>
+        )}
       </span>
     );
   }
@@ -445,6 +469,11 @@ const TokenSpan: React.FC<{
           <React.Fragment key={j}>{seg.text}</React.Fragment>
         )
       ) : token.text}
+      {quickGlossDef && (
+        <sup className="ml-0.5 text-[0.6em] text-muted-foreground/70 font-normal select-none">
+          ‘{quickGlossDef}’
+        </sup>
+      )}
     </span>
   );
 };
