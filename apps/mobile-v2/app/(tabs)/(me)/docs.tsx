@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from 'react-native';
 import { DOCS, DOC_CATEGORIES, type DocEntry, getDocsForLocale } from '@langplayer/shared';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { IntlContext } from '@/contexts/IntlProvider';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { Search, BookOpen } from 'lucide-react-native';
@@ -30,11 +30,26 @@ export default function DocsScreen() {
   const [query, setQuery] = useState('');
   const [selectedDoc, setSelectedDoc] = useState<DocEntry | null>(null);
 
+  // Get locale from IntlContext (matches use-t.ts hook pattern)
+  const intlCtx = React.useContext(IntlContext);
+  const locale = intlCtx?.locale ?? 'en';
+
+  const translatedDocs = useMemo(() => getDocsForLocale(locale), [locale]);
+
+  // Convert i18n docs (slug-based) to DocEntry (path-based) with category derived from slug
+  const allDocs: DocEntry[] = useMemo(() => 
+    translatedDocs.map((d: any) => ({
+      path: d.slug,
+      title: d.title,
+      category: d.slug.split('/')[0] ?? '',
+      content: d.content,
+    })), [translatedDocs]);
+
   const filtered = useMemo(() => {
-    if (!query.trim()) return DOCS;
+    if (!query.trim()) return allDocs;
     const q = query.toLowerCase();
-    return DOCS.filter((d) => d.title.toLowerCase().includes(q) || d.content.toLowerCase().includes(q));
-  }, [query]);
+    return allDocs.filter((d) => d.title.toLowerCase().includes(q) || d.content.toLowerCase().includes(q));
+  }, [query, allDocs]);
 
   // Group by category
   const grouped = useMemo(() => {
