@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from 'react-native';
-import { DOCS, DOC_CATEGORIES, type DocEntry } from '@langplayer/shared';
+import { DOCS, type DocEntry } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { Search, BookOpen } from 'lucide-react-native';
