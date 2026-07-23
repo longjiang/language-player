@@ -1,12 +1,12 @@
 import React from 'react';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { View, Text, ScrollView } from 'react-native';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { IntlProviderWrapper } from '@/contexts/IntlProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { UserDataProvider } from '@/contexts/UserDataContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { DictionaryProvider } from '@/contexts/DictionaryContext';
 import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 import '../global.css';
@@ -49,21 +49,22 @@ export default function RootLayout() {
         <AuthProvider>
           <UserDataProvider>
             <SettingsProvider>
-              <DictionaryProvider>
-                <VideoPlayerProvider>
-                  <StatusBar style="light" />
-                  <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="index" />
-                    <Stack.Screen name="(tabs)" />
-                    <Stack.Screen name="login" options={{ presentation: 'modal' }} />
-                    <Stack.Screen name="register" options={{ presentation: 'modal' }} />
-                    <Stack.Screen name="select-l1" options={{ presentation: 'modal' }} />
-                    <Stack.Screen name="select-l2" options={{ presentation: 'modal' }} />
-                    <Stack.Screen name="go-pro-error" />
-                    <Stack.Screen name="go-pro-success" />
-                  </Stack>
-                </VideoPlayerProvider>
-              </DictionaryProvider>
+              <ThemeProvider>
+                <DictionaryProvider>
+                  <VideoPlayerProvider>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name="index" />
+                      <Stack.Screen name="(tabs)" />
+                      <Stack.Screen name="login" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="register" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="select-l1" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="select-l2" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="go-pro-error" />
+                      <Stack.Screen name="go-pro-success" />
+                    </Stack>
+                  </VideoPlayerProvider>
+                </DictionaryProvider>
+              </ThemeProvider>
             </SettingsProvider>
           </UserDataProvider>
         </AuthProvider>

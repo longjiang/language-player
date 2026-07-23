@@ -20,12 +20,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TOKENS_PATH = path.resolve(__dirname, '../packages/shared/src/tokens');
-const { darkSemantic, typography, spacing, borderRadius } = await import(TOKENS_PATH);
+const { lightSemantic, darkSemantic, typography, spacing, borderRadius } = await import(TOKENS_PATH);
 
 // ── Helpers ────────────────────────────────────
 
-/** Wrap HSL channels in hsl() for Tailwind/NativeWind. */
-const hsl = (channels: string) => `hsl(${channels})`;
+/** camelCase → kebab-case (e.g., primaryForeground → primary-foreground) */
+function kebabCase(str: string): string {
+  return str.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());
+}
+
+/** Format a color key — quote it if it contains hyphens (kebab-case). */
+function formatKey(key: string): string {
+  const k = kebabCase(key);
+  return k.includes('-') ? `'${k}'` : k;
+}
 
 /** Mobile font sizes render ~12% smaller than web at the same rem value
  *  due to platform font rendering differences. Scale up to match visually. */
@@ -36,22 +44,15 @@ function scaleRem(rem: string): string {
   return `${(num * MOBILE_SCALE).toFixed(3)}rem`;
 }
 
-/** camelCase → kebab-case (e.g., primaryForeground → primary-foreground) */
-function kebabCase(str: string): string {
-  return str.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());
-}
+// ── Build color maps from semantic tokens ──
+// Uses CSS custom properties — light/dark values are defined in global.css
+// via :root and .dark selectors, matching the web app's approach.
+// NativeWind resolves hsl(var(--...)) at build time.
 
-// ── Build color map from light semantic tokens ──
-
-/** Format a color key — quote it if it contains hyphens (kebab-case). */
-function formatKey(key: string): string {
-  const k = kebabCase(key);
-  return k.includes('-') ? `'${k}'` : k;
-}
-
-const colorEntries = Object.entries(darkSemantic).map(([key, channels]) =>
-  `        ${formatKey(key)}: '${hsl(channels)}',`
-);
+const colorEntries = Object.keys(lightSemantic).map((key) => {
+  const varName = kebabCase(key);
+  return `        ${formatKey(key)}: 'hsl(var(--${varName}))',`;
+});
 
 // ── Generate config ──
 
