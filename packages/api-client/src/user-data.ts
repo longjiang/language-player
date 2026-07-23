@@ -21,6 +21,11 @@ const _syncSavedWords = (savedWords: string) =>
     saved_words: savedWords,
   });
 
+const _syncProgress = (progress: string) =>
+  apiClient.post<{ success: boolean }>('/user-data/sync', {
+    progress,
+  });
+
 const _syncSrsProgress = (srsProgress: string) =>
   apiClient.post<{ success: boolean }>('/user-data/sync', {
     srs_progress: srsProgress,
@@ -29,6 +34,7 @@ const _syncSrsProgress = (srsProgress: string) =>
 const _stableReturn = {
   getUserData: _getUserData,
   syncSavedWords: _syncSavedWords,
+  syncProgress: _syncProgress,
   syncSrsProgress: _syncSrsProgress,
 } as const;
 
