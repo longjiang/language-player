@@ -192,14 +192,67 @@ export default function ReviewScreen() {
         {currentIndex + 1} / {words.length}
       </Text>
 
-      {/* Flashcard */}
+      {/* Flashcard — left/right tap regions match Next.js */}
       <View className="flex-1 items-center justify-center px-6">
-        <Pressable
-          onPress={!flipped ? handleReveal : undefined}
-          disabled={flipped}
-          className="w-full max-w-sm rounded-xl border border-border bg-card p-8"
-          style={{ minHeight: 240 }}
-        >
+        <View className="w-full max-w-sm rounded-xl border border-border bg-card p-8" style={{ minHeight: 240 }}>
+          {!flipped ? (
+            <Pressable onPress={handleReveal} className="flex-1">
+              <Text className="text-center text-2xl font-bold text-foreground">
+                {getDisplayName(currentWord!)}
+              </Text>
+              <Text className="mt-4 text-center text-xs text-muted-foreground">
+                {t('action.tap_to_reveal')}
+              </Text>
+            </Pressable>
+          ) : !rated ? (
+            <View className="flex-1 flex-row">
+              {/* Left half → Again */}
+              <Pressable onPress={() => handleRate('again')} className="flex-1 justify-center" />
+              {loadingDef ? (
+                <ActivityIndicator size="small" color={ICON_MUTED} />
+              ) : (
+                <View className="flex-2">
+                  <Text className="text-center text-2xl font-bold text-foreground">
+                    {getDisplayName(currentWord!)}
+                  </Text>
+                  <ScrollView className="mt-4 max-h-96 w-full border-t border-border pt-4">
+                    {entry ? (
+                      <View>
+                        <DictionaryEntryCard entry={entry} variant="full" />
+                        {currentWord?.context && (
+                          <View className="mt-3 rounded-lg bg-muted/30 p-3">
+                            <Text className="mb-1 text-xs font-medium text-muted-foreground">{t('review.source')}</Text>
+                            {(currentWord.context as any).videoTitle && (
+                              <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                                📺 {(currentWord.context as any).videoTitle}
+                              </Text>
+                            )}
+                            {(currentWord.context as any).text && (
+                              <Text className="mt-1 text-sm text-foreground" numberOfLines={3}>
+                                {(currentWord.context as any).text}
+                              </Text>
+                            )}
+                          </View>
+                        )}
+                      </View>
+                    ) : (
+                      <Text className="text-center text-sm text-muted-foreground">{getDisplayName(currentWord!)}</Text>
+                    )}
+                  </ScrollView>
+                </View>
+              )}
+              {/* Right half → Good */}
+              <Pressable onPress={() => handleRate('good')} className="flex-1 justify-center" />
+            </View>
+          ) : (
+            <View className="flex-1 items-center justify-center">
+              <Text className="text-center text-2xl font-bold text-foreground">
+                {getDisplayName(currentWord!)}
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
           <Text className="text-center text-2xl font-bold text-foreground">
             {getDisplayName(currentWord!)}
           </Text>
