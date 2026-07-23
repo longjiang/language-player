@@ -89,5 +89,5 @@ for (const item of items) {
 }
 lines.push('];');
 
-fs.writeFileSync('packages/shared/src/docs.ts', lines.join('\\n'));
+fs.writeFileSync('packages/shared/src/docs.ts', lines.join('\n'));
 console.log('Written', items.length, 'docs to packages/shared/src/docs.ts');
