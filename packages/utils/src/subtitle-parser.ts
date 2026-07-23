@@ -32,8 +32,6 @@ function parseSRT(text: string): SubtitleLine[] {
     const hours = parseInt(timeMatch[1]!, 10);
     const minutes = parseInt(timeMatch[2]!, 10);
     const seconds = parseInt(timeMatch[3]!, 10);
-    // Extract milliseconds from the start time portion
-    const msMatch = parts[timeIdx]!.match(/(\d{2}):(\d{2}):(\d{2})[,.]/);
     const millisPart = parts[timeIdx]!.match(/[,.](\d{3})\s*-->/);
     const millis = millisPart ? parseInt(millisPart[1]!, 10) : 0;
     const starttime = hours * 3600 + minutes * 60 + seconds + millis / 1000;
@@ -108,10 +106,19 @@ function parseVTT(text: string): SubtitleLine[] {
 }
 
 /**
- * Parse subtitle text (SRT or VTT) into SubtitleLine[].
- * Format must be explicitly specified.
+ * Detect subtitle format from text content.
  */
-export function parseSubtitles(text: string, format: 'srt' | 'vtt'): SubtitleLine[] {
-  if (format === 'vtt') return parseVTT(text);
+export function detectSubtitleFormat(text: string): 'srt' | 'vtt' {
+  if (/^WEBVTT/i.test(text.trim())) return 'vtt';
+  return 'srt';
+}
+
+/**
+ * Parse subtitle text (SRT or VTT) into SubtitleLine[].
+ * Auto-detects format when not specified.
+ */
+export function parseSubtitles(text: string, format?: 'srt' | 'vtt'): SubtitleLine[] {
+  const fmt = format ?? detectSubtitleFormat(text);
+  if (fmt === 'vtt') return parseVTT(text);
   return parseSRT(text);
 }

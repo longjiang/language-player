@@ -4,3 +4,4 @@ export * from './levels';
 export * from './tokens';
 export * from './word-id-resolver';
 export * from './docs';
+export * from './sample-sentences';

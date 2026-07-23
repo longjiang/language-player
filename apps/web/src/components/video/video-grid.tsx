@@ -1,5 +1,5 @@
 import type { YouTubeVideo } from '@langplayer/shared';
-import type { QueueType } from '@/lib/queue-manager';
+import type { QueueType } from '@langplayer/utils';
 import { VideoCard } from './video-card';
 
 interface VideoGridProps {

@@ -5,7 +5,7 @@
  * demonstrates the language's script and is suitable for showing
  * phonetics, glosses, and definitions in the preview area.
  *
- * TODO: expand coverage to all 60+ supported languages.
+ * Shared between web and mobile apps.
  */
 
 const SAMPLES: Record<string, string> = {

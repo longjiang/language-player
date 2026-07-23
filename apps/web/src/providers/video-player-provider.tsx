@@ -14,7 +14,7 @@ import {
   getGlobalQueueManager,
   type QueueType,
   type QueueState,
-} from '@/lib/queue-manager';
+} from '@langplayer/utils';
 import { useLanguage } from './language-provider';
 import { baseCode } from '@/lib/language-data';
 
