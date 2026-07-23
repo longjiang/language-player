@@ -107,9 +107,9 @@ export default function EpubPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
+    <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Title bar ── */}
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-4 flex items-center gap-3 flex-shrink-0">
         <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold truncate">
@@ -138,7 +138,7 @@ export default function EpubPage() {
       </div>
 
       {/* ── Content row: reader panel first, then sidebar ── */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 flex-1 min-h-0">
         {/* Content area */}
         <div className="min-w-0 flex-1">
           {epub.toc.length === 0 && !epub.fileName ? (

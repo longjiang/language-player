@@ -90,9 +90,9 @@ export default function WebReaderPage() {
   const ctx = { text: text.slice(0, 200), textTitle: title || 'Web Reader' };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
+    <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Header ── */}
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-4 flex items-center gap-3 flex-shrink-0">
         <Globe className="h-6 w-6 flex-shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold truncate">{title || t('title.web_reader')}</h1>
@@ -103,7 +103,7 @@ export default function WebReaderPage() {
       {/* ── URL input ── */}
       <form
         onSubmit={(e) => { e.preventDefault(); handleLoad(); }}
-        className="mb-6 flex gap-2"
+        className="mb-6 flex gap-2 flex-shrink-0"
       >
         <div className="relative flex-1">
           <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -167,7 +167,7 @@ export default function WebReaderPage() {
 
       {/* ── Empty state ── */}
       {!text && !loading && (
-        <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
+        <div className="flex min-h-[40vh] flex-col items-center justify-center text-center flex-1">
           <Globe className="mb-3 h-12 w-12 text-muted-foreground/40" />
           <h2 className="text-lg font-semibold text-muted-foreground">{t('title.web_reader')}</h2>
           <p className="mt-1 max-w-md text-sm text-muted-foreground">

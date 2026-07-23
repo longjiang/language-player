@@ -68,7 +68,7 @@ export function TabbedPanel<T extends string = string>({
       </div>
 
       {/* Content */}
-      <div className={cn('min-h-0 flex-1', contentClassName)}>
+      <div className={cn('min-h-0 flex-1 flex flex-col overflow-hidden', contentClassName)}>
         {children}
       </div>
     </div>

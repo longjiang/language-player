@@ -307,16 +307,16 @@ export function ReaderPanel({
   ] as const;
 
   return (
-    <div className="min-w-0 flex-1">
+    <div className="min-w-0 flex-1 flex flex-col min-h-0">
       <TabbedPanel
         tabs={readerTabs}
         activeTab={activeTab}
         onTabChange={onTabChange}
         onTabClick={(key) => key === 'read' ? onTokenize() : onTabChange(key)}
-        className="h-[calc(100vh-7.5rem)]"
+        className="flex-1 min-h-0"
         contentClassName="p-4"
       >
-        <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col h-full">
+        <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col">
           {/* Edit mode */}
           {activeTab === 'edit' && (
             <div className="space-y-3">
