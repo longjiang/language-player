@@ -90,9 +90,9 @@ export default function WebReaderPage() {
   const ctx = { text: text.slice(0, 200), textTitle: title || 'Web Reader' };
 
   return (
-    <div className="mx-auto flex h-full max-w-7xl flex-col overflow-hidden px-4 py-6">
+    <div className="mx-auto max-w-7xl px-4 py-6">
       {/* ── Header ── */}
-      <div className="mb-4 flex flex-shrink-0 items-center gap-3">
+      <div className="mb-4 flex items-center gap-3">
         <Globe className="h-6 w-6 flex-shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold truncate">{title || t('title.web_reader')}</h1>
@@ -103,7 +103,7 @@ export default function WebReaderPage() {
       {/* ── URL input ── */}
       <form
         onSubmit={(e) => { e.preventDefault(); handleLoad(); }}
-        className="mb-6 flex flex-shrink-0 gap-2"
+        className="mb-6 flex gap-2"
       >
         <div className="relative flex-1">
           <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -121,14 +121,13 @@ export default function WebReaderPage() {
       </form>
 
       {error && (
-        <div className="mb-4 flex-shrink-0 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950">
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950">
           {error}
         </div>
       )}
 
       {/* ── Content ── */}
       {text && (
-        <div className="flex-1 min-h-0">
         <ReaderPanel
           l2={l2} l1={l1}
           text={text}
@@ -164,7 +163,6 @@ export default function WebReaderPage() {
             }
           }}
         />
-        </div>
       )}
 
       {/* ── Empty state ── */}
