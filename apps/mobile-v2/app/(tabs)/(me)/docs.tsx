@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from 'react-native';
-import { type DocEntry, getDocsForLocale } from '@langplayer/shared';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { DOCS, DOC_CATEGORIES, type DocEntry, getDocsForLocale } from '@langplayer/shared';
+import { IntlContext } from '@/contexts/IntlProvider';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { Search, BookOpen } from 'lucide-react-native';
@@ -30,9 +30,9 @@ export default function DocsScreen() {
   const [query, setQuery] = useState('');
   const [selectedDoc, setSelectedDoc] = useState<DocEntry | null>(null);
 
-  // Get locale from user's L1 language code (their UI language)
-  const { l1Lang } = useLanguage();
-  const locale = l1Lang.code;
+  // Get locale from IntlContext (matches use-t.ts hook pattern)
+  const intlCtx = React.useContext(IntlContext);
+  const locale = intlCtx?.locale ?? 'en';
 
   const translatedDocs = useMemo(() => getDocsForLocale(locale), [locale]);
 
