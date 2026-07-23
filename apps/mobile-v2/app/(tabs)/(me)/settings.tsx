@@ -3,80 +3,77 @@ import { View, Text, ScrollView, Pressable, Switch } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
-import { ICON_MUTED } from '@/lib/theme-colors';
 
 export default function SettingsScreen() {
   const { l1Lang, l2Lang } = useLanguage();
-  const { display, set, loaded } = useSettingsContext();
+  const { display, updateDisplay, loaded } = useSettingsContext();
   const t = useT();
 
-  const Toggle = ({ label, desc, value, onValue }: { label: string; desc?: string; value: boolean; onValue: (v: boolean) => void }) => (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12 }}>
-      <View style={{ flex: 1, paddingRight: 16 }}>
-        <Text style={{ fontSize: 14, fontWeight: '500', color: '#0f172a' }}>{label}</Text>
-        {desc ? <Text style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{desc}</Text> : null}
-      </View>
-      <Switch value={value} onValueChange={onValue} trackColor={{ false: '#cbd5e1', true: '#3b82f6' }} />
-    </View>
-  );
-
-  const Segmented = ({ label, options, value, onChange }: { label: string; options: { value: string; label: string }[]; value: string; onChange: (v: string) => void }) => (
-    <View style={{ paddingVertical: 8 }}>
-      <Text style={{ fontSize: 14, fontWeight: '500', color: '#0f172a', marginBottom: 8 }}>{label}</Text>
-      <View style={{ flexDirection: 'row', borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0', padding: 4 }}>
-        {options.map((opt) => (
-          <Pressable
-            key={opt.value}
-            onPress={() => onChange(opt.value)}
-            style={{
-              flex: 1, paddingVertical: 8, borderRadius: 6,
-              backgroundColor: value === opt.value ? '#fff' : 'transparent',
-            }}
-          >
-            <Text style={{ textAlign: 'center', fontSize: 14, fontWeight: '500', color: value === opt.value ? '#0f172a' : '#94a3b8' }}>
-              {opt.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-    </View>
-  );
+  const section = { borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, backgroundColor: '#fff', padding: 16 };
+  const h1 = { fontSize: 24, fontWeight: 'bold' as const, color: '#0f172a', marginBottom: 20 };
+  const sectionTitle = { fontSize: 12, fontWeight: '600' as const, color: '#94a3b8', textTransform: 'uppercase' as const, marginBottom: 8 };
+  const label = { fontSize: 14, fontWeight: '500' as const, color: '#0f172a' };
+  const desc = { fontSize: 12, color: '#64748b', marginTop: 2 };
+  const row = { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const, paddingVertical: 12 };
+  const muted = { fontSize: 14, color: '#64748b' };
 
   if (!loaded) return null;
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#f8fafc', padding: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0f172a', marginBottom: 20 }}>{t('title.settings')}</Text>
+      <Text style={h1}>{t('title.settings')}</Text>
 
       {/* DISPLAY */}
-      <View style={{ marginTop: 8, borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', backgroundColor: '#fff', padding: 16 }}>
-        <Text style={{ fontSize: 12, fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 8 }}>{'Display'}</Text>
+      <View style={[section, { marginTop: 8 }]}>
+        <Text style={sectionTitle}>{'Display'}</Text>
 
-        <Segmented
-          label={t('label.theme')}
-          value={display.theme}
-          onChange={(v) => set('display.theme', v as any)}
-          options={[
-            { value: 'light', label: '☀️ Light' },
-            { value: 'dark', label: '🌙 Dark' },
-            { value: 'system', label: '💻 System' },
-          ]}
-        />
+        <View style={{ paddingVertical: 8 }}>
+          <Text style={label}>{t('label.theme')}</Text>
+          <View style={{ flexDirection: 'row', marginTop: 8, borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0', padding: 4 }}>
+            {['light','dark','system'].map((v) => (
+              <Pressable key={v} onPress={() => updateDisplay({ theme: v as any })}
+                style={{ flex: 1, paddingVertical: 8, borderRadius: 6, backgroundColor: display.theme === v ? '#e2e8f0' : 'transparent' }}>
+                <Text style={{ textAlign: 'center', fontSize: 14, color: display.theme === v ? '#0f172a' : '#94a3b8' }}>
+                  {v === 'light' ? '☀️ Light' : v === 'dark' ? '🌙 Dark' : '💻 System'}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
 
-        <Toggle label={t('label.show_translation')} desc={t('msg.show_translation_desc')} value={display.translation} onValue={(v) => set('display.translation', v)} />
-        <Toggle label={t('label.enable_popup_dictionary')} desc={t('msg.enable_popup_dictionary_desc')} value={display.popupDictionary ?? true} onValue={(v) => set('display.popupDictionary', v)} />
+        <View style={row}>
+          <View style={{ flex: 1 }}>
+            <Text style={label}>{t('label.show_translation')}</Text>
+            <Text style={desc}>{t('msg.show_translation_desc')}</Text>
+          </View>
+          <Switch value={display.translation} onValueChange={(v) => updateDisplay({ translation: v })} trackColor={{ false: '#cbd5e1', true: '#3b82f6' }} />
+        </View>
+
+        <View style={row}>
+          <View style={{ flex: 1 }}>
+            <Text style={label}>{t('label.enable_popup_dictionary')}</Text>
+            <Text style={desc}>{t('msg.enable_popup_dictionary_desc')}</Text>
+          </View>
+          <Switch value={display.popupDictionary ?? true} onValueChange={(v) => updateDisplay({ popupDictionary: v })} trackColor={{ false: '#cbd5e1', true: '#3b82f6' }} />
+        </View>
       </View>
 
       {/* PLAYBACK */}
-      <View style={{ marginTop: 16, borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', backgroundColor: '#fff', padding: 16 }}>
-        <Text style={{ fontSize: 12, fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 8 }}>{'Playback'}</Text>
-        <Toggle label={t('label.auto_pause')} desc={t('msg.auto_pause_desc')} value={display.autoPause ?? false} onValue={(v) => set('display.autoPause', v)} />
+      <View style={[section, { marginTop: 16 }]}>
+        <Text style={sectionTitle}>{'Playback'}</Text>
+        <View style={row}>
+          <View style={{ flex: 1 }}>
+            <Text style={label}>{t('label.auto_pause')}</Text>
+            <Text style={desc}>{t('msg.auto_pause_desc')}</Text>
+          </View>
+          <Switch value={display.autoPause ?? false} onValueChange={(v) => updateDisplay({ autoPause: v })} trackColor={{ false: '#cbd5e1', true: '#3b82f6' }} />
+        </View>
       </View>
 
       {/* REVIEW / SRS */}
-      <View style={{ marginTop: 16, borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', backgroundColor: '#fff', padding: 16, marginBottom: 32 }}>
-        <Text style={{ fontSize: 12, fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 8 }}>{'SRS Review'}</Text>
-        <Text style={{ fontSize: 14, color: '#64748b' }}>{t('msg.review_settings_desc')}</Text>
+      <View style={[section, { marginTop: 16, marginBottom: 32 }]}>
+        <Text style={sectionTitle}>{'SRS Review'}</Text>
+        <Text style={muted}>{t('msg.review_settings_desc')}</Text>
       </View>
     </ScrollView>
   );
