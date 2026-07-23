@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View, Text, TextInput, Pressable, ScrollView,
-  ActivityIndicator, Animated,
+  ActivityIndicator,
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
@@ -22,30 +22,8 @@ export default function WebReaderScreen() {
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [blocks, setBlocks] = useState<TextBlock[] | null>(null);
-  const [blockTokens, setBlockTokens] = useState<any[][] | null>(null);
-  const [tokenizing, setTokenizing] = useState(false);
-
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
-
-  const pulseAnim = useState(new Animated.Value(1))[0];
-
-  // Pulse animation when tokenizing
-  useEffect(() => {
-    if (tokenizing) {
-      const loop = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 0.4, duration: 800, useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
-        ])
-      );
-      loop.start();
-      return () => loop.stop();
-    } else {
-      pulseAnim.setValue(1);
-    }
-  }, [tokenizing, pulseAnim]);
 
   const handleLoad = useCallback(async (loadUrl?: string) => {
     const targetUrl = loadUrl || url;
@@ -54,7 +32,6 @@ export default function WebReaderScreen() {
     setLoading(true);
     setError(null);
     setBlocks(null);
-    setBlockTokens(null);
 
     try {
       const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`);
@@ -65,35 +42,19 @@ export default function WebReaderScreen() {
       setTitle(extractedTitle);
       setText(md);
 
-      // Parse and tokenize immediately (same user flow as Next.js)
+      // Parse markdown for layout — TokenizedText handles its own tokenization
       try {
         const parsed = parseMarkdownBlocks(md);
         setBlocks(parsed);
-        setTokenizing(true);
-        const textBlocks = parsed.filter((b): b is TextBlock => b.kind === 'text');
-        if (textBlocks.length === 0) {
-          setBlockTokens([]);
-          setTokenizing(false);
-        } else {
-          const tokenRes = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ texts: textBlocks.map((b) => b.text), l2: l2Lang.code }),
-          });
-          const data = tokenRes.ok ? await tokenRes.json() : null;
-          setBlockTokens(data?.results ?? null);
-          setTokenizing(false);
-        }
       } catch {
         setBlocks(null);
-        setTokenizing(false);
       }
     } catch (e: any) {
       setError(e?.message || t('msg.failed_to_load_url'));
     } finally {
       setLoading(false);
     }
-  }, [url, l2Lang.code, t]);
+  }, [url, t]);
 
   return (
     <View className="flex-1 bg-background">
@@ -154,71 +115,50 @@ export default function WebReaderScreen() {
           </View>
         )}
 
-        {/* ── Tokenizing: show pulsing text ── */}
-        {tokenizing && (
-          <View className="px-4">
-            <Animated.View style={{ opacity: pulseAnim }}>
-              <Text className="text-base leading-relaxed text-muted-foreground">
-                {text.slice(0, 500)}
-                {text.length > 500 ? '…' : ''}
-              </Text>
-            </Animated.View>
-            <Text className="mt-2 text-xs text-muted-foreground">
-              {t('msg.making_words_interactive')}
-            </Text>
-          </View>
-        )}
-
-        {/* ── Content: parsed blocks with per-block tokenized text ── */}
-        {!tokenizing && blocks && (
+        {/* ── Content: parsed blocks — TokenizedText handles its own tokenization ── */}
+        {blocks && (
           <View className="px-4 pb-8">
-            {blocks.map((block, bi) => {
-              const bt = blockTokens?.[bi];
-              return (
-                <View key={bi} className="mb-3">
-                  {block.type === 'heading' && (
-                    <Text
-                      className={`mb-2 font-bold text-foreground ${
-                        block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'
-                      }`}
-                    >
-                      {block.text}
-                    </Text>
-                  )}
-                  {block.type === 'paragraph' && (
+            {blocks.map((block, bi) => (
+              <View key={bi} className="mb-3">
+                {block.type === 'heading' && (
+                  <Text
+                    className={`mb-2 font-bold text-foreground ${
+                      block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'
+                    }`}
+                  >
+                    {block.text}
+                  </Text>
+                )}
+                {block.type === 'paragraph' && (
+                  <TokenizedText
+                    text={block.text}
+                    l2Code={l2Lang.code}
+                    onWordPress={(word) => setSelectedWord(word)}
+                  />
+                )}
+                {block.type === 'blockquote' && (
+                  <View className="border-l-2 border-muted-foreground/30 pl-3">
                     <TokenizedText
                       text={block.text}
                       l2Code={l2Lang.code}
-                      tokens={bt}
                       onWordPress={(word) => setSelectedWord(word)}
                     />
-                  )}
-                  {block.type === 'blockquote' && (
-                    <View className="border-l-2 border-muted-foreground/30 pl-3">
+                  </View>
+                )}
+                {block.type === 'list-item' && (
+                  <View className="flex-row">
+                    <Text className="mr-2 text-muted-foreground">•</Text>
+                    <View className="flex-1">
                       <TokenizedText
                         text={block.text}
                         l2Code={l2Lang.code}
-                        tokens={bt}
                         onWordPress={(word) => setSelectedWord(word)}
                       />
                     </View>
-                  )}
-                  {block.type === 'list-item' && (
-                    <View className="flex-row">
-                      <Text className="mr-2 text-muted-foreground">•</Text>
-                      <View className="flex-1">
-                        <TokenizedText
-                          text={block.text}
-                          l2Code={l2Lang.code}
-                          tokens={bt}
-                          onWordPress={(word) => setSelectedWord(word)}
-                        />
-                      </View>
-                    </View>
-                  )}
-                </View>
-              );
-            })}
+                  </View>
+                )}
+              </View>
+            ))}
           </View>
         )}
 

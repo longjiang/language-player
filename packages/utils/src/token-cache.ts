@@ -1,10 +1,10 @@
 /**
  * Client-side token cache for video subtitles.
+ *
  * Populated from GET /lemmatize-video-normalized and used to skip
  * per-line /lemmatize-normalized API calls during playback.
  *
- * Implements the TokenCache interface from @langplayer/shared so the
- * extension and web app share a common contract.
+ * Shared between web and mobile apps via @langplayer/utils.
  */
 
 import type { LemmatizedToken, TokenCache as ITokenCache } from '@langplayer/shared';
