@@ -313,7 +313,7 @@ export function ReaderPanel({
         activeTab={activeTab}
         onTabChange={onTabChange}
         onTabClick={(key) => key === 'read' ? onTokenize() : onTabChange(key)}
-        className="h-full"
+        className="h-[calc(100vh-7.5rem)]"
         contentClassName="p-4"
       >
         <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col h-full">
