@@ -1,7 +1,7 @@
 export type DocEntry = { path: string; title: string; category: string; content: string };
 
 export const DOCS: DocEntry[] = [
-  { path: 'account/login', title: 'Login', category: 'account', content: `# Logging In
+  { path: 'account/login', title: 'Logging In', category: 'account', content: `# Logging In
 
 Sign in to your account, reset a forgotten password, and sign out when you're done.
 
@@ -113,7 +113,7 @@ The **Saved Words** section shows your 10 most recently saved words for the curr
 - 14-day money-back guarantee. Questions? [Contact us](mailto:jon.long@zerotohero.ca)
 - Cancelling auto-renewal keeps your Pro features active until the end of your billing period — nothing is interrupted early
 ` },
-  { path: 'account/registration', title: 'Registration', category: 'account', content: `# Create your account
+  { path: 'account/registration', title: 'Create your account', category: 'account', content: `# Create your account
 
 Create your Language Player account in two steps — fill in your details, then verify your email.
 
@@ -584,7 +584,7 @@ Your channel preferences are saved per language, so subscribing to a Japanese ne
 - Use [Music & Entertainment](/docs/media/music) for music videos and entertainment content
 - Your watch history is private and only used to avoid showing the same video twice
 ` },
-  { path: 'media/live-tv', title: 'Live Tv', category: 'media', content: `# Live TV
+  { path: 'media/live-tv', title: 'Live TV', category: 'media', content: `# Live TV
 
 watch live television broadcasts in your target language. No subtitles, no dubbing — just real TV as it airs.
 
@@ -614,7 +614,7 @@ Click any channel to switch to it. The URL updates automatically, so you can boo
 - Live TV is pure immersion — there are no subtitles or translations. Use the [Video Player](/docs/media/video-player) if you want interactive captions
 - Try channels from different countries that speak the same language (e.g., France, Belgium, and Switzerland for French) to hear different accents and vocabulary
 ` },
-  { path: 'media/music', title: 'Music', category: 'media', content: `# Music & Entertainment
+  { path: 'media/music', title: 'Music & Entertainment', category: 'media', content: `# Music & Entertainment
 
 Music videos and entertainment content for your target language.
 
@@ -697,7 +697,7 @@ Click any video to open it in the watch page with interactive dual subtitles.
 - The search bar **detects YouTube URLs in real time**, so you don't even need to press Enter
 
 ` },
-  { path: 'media/subs-search', title: 'Subs Search', category: 'media', content: `# Subtitle Search
+  { path: 'media/subs-search', title: 'Subtitle Search', category: 'media', content: `# Subtitle Search
 
 Search for any word or phrase across millions of video subtitles. See how native speakers actually use it — in context, with timestamps, ready to watch.
 
@@ -732,7 +732,7 @@ Toggle **Exact Match** to restrict results to the exact form you typed. This is 
 - **Jump between examples** — click different timestamps for the same word to hear it in different contexts, accents, and speaking speeds.
 - **Combine with saved words** — save a word from the dictionary, then use the Examples tab to find videos where you can hear it in action.
 ` },
-  { path: 'media/tv-shows', title: 'Tv Shows', category: 'media', content: `# TV Shows
+  { path: 'media/tv-shows', title: 'TV Shows', category: 'media', content: `# TV Shows
 
 Browse TV series in your target language and watch full episodes with interactive dual subtitles.
 
@@ -935,7 +935,7 @@ Your watch history is private. It's only visible to you when you're signed in. I
 - Switch languages to see separate histories for each language you're learning
 - Your history is scoped to your current L2 — you won't see Japanese videos when you're in Korean mode
 ` },
-  { path: 'reading/epub', title: 'Epub', category: 'reading', content: `# EPUB Reader
+  { path: 'reading/epub', title: 'EPUB Reader', category: 'reading', content: `# EPUB Reader
 
 Read EPUB e-books with interactive word lookup, per-block translation, and progress that persists across sessions.
 
@@ -988,7 +988,7 @@ Your reading position is saved automatically in your browser:
 - **[Aozora Bunko](https://www.aozora.gr.jp/)** (青空文庫) — Japanese literature, public domain
 - **[Wikisource](https://wikisource.org/)** — Public domain texts in many languages, downloadable as EPUB
 ` },
-  { path: 'reading/reader', title: 'Reader', category: 'reading', content: `# Notes Reader
+  { path: 'reading/reader', title: 'Notes Reader', category: 'reading', content: `# Notes Reader
 
 Paste or write text in your target language and read it with interactive word lookup, per-block translations, and a built-in note-taking system.
 
@@ -1352,7 +1352,7 @@ A colored dot next to each word in your saved list shows its review status: blue
 - **Export regularly** as a backup. The JSON file includes every form, definition, and context for each word.
 - **Click through to the entry** for any saved word to see its full conjugation tables, video examples, and AI explanation.
 ` },
-  { path: 'vocab/subs-search', title: 'Subs Search', category: 'vocab', content: `# Examples from Videos
+  { path: 'vocab/subs-search', title: 'Examples from Videos', category: 'vocab', content: `# Examples from Videos
 
 See how a word is actually used by native speakers — every result is a real subtitle line from a real video, with a timestamp ready to watch.
 
