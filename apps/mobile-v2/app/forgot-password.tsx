@@ -17,7 +17,7 @@ export default function ForgotPasswordScreen() {
     setError(null);
     setLoading(true);
     try {
-      await fetch(`${DIRECTUS_URL}/zerotohero/auth/password/request`, {
+      await fetch(`${DIRECTUS_URL}/auth/password/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),
