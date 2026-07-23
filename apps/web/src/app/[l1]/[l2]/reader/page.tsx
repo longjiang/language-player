@@ -74,6 +74,8 @@ export default function ReaderPage() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
+  const [blockTokens, setBlockTokens] = useState<LemmatizedToken[][] | null>(null);
+  const [tokenizing, setTokenizing] = useState(false);
   const [convertedText, setConvertedText] = useState(text);
 
   const isChinese = l2.code === 'zh' || l2.code.startsWith('zh-');
@@ -203,10 +205,27 @@ export default function ReaderPage() {
 
   // Parse markdown
   useEffect(() => {
-    if (!convertedText.trim()) { setBlocks(null); return; }
-    try { setBlocks(parseMarkdown(convertedText)); }
-    catch { setBlocks(null); }
+    if (!convertedText.trim()) { setBlocks(null); setBlockTokens(null); return; }
+    try { setBlocks(parseMarkdown(convertedText)); setBlockTokens(null); }
+    catch { setBlocks(null); setBlockTokens(null); }
   }, [convertedText]);
+
+  // Lemmatize
+  useEffect(() => {
+    if (!blocks || !l2.code) return;
+    const textBlocks = blocks.filter((b): b is TextBlock => b.kind === 'text');
+    if (textBlocks.length === 0) { setBlockTokens([]); return; }
+    setTokenizing(true);
+    let cancelled = false;
+    fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts: textBlocks.map(b => b.text), l2: l2.code }),
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (!cancelled) { setBlockTokens(d?.results ?? null); setTokenizing(false); } })
+      .catch(() => { if (!cancelled) setTokenizing(false); });
+    return () => { cancelled = true; };
+  }, [blocks, l2.code]);
 
   // Load from localStorage / URL params
   const loadUrl = useCallback(async (url: string, isMarkdown: boolean) => {
@@ -294,21 +313,12 @@ export default function ReaderPage() {
             text={text}
             loading={loading} activeTab={activeTab}
             translating={translating}
-            blocks={blocks}
+            blocks={blocks} blockTokens={blockTokens} tokenizing={tokenizing}
             ctx={ctx}
             onTextChange={handleTextChange}
             onTabChange={setActiveTab}
             onTokenize={handleTokenize}
             onFillSample={(sampleText, sampleTitle) => { setText(sampleText); setTitle(sampleTitle); }}
-            onLemmatize={async (texts) => {
-              const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ texts, l2: l2.code }),
-              });
-              const data = res.ok ? await res.json() : null;
-              return data?.results ?? [];
-            }}
             onPageTranslate={async (texts) => {
               setTranslating(true);
               try {

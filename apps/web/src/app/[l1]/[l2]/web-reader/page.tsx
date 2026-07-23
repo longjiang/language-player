@@ -44,6 +44,8 @@ export default function WebReaderPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
+  const [blockTokens, setBlockTokens] = useState<any[] | null>(null);
+  const [tokenizing, setTokenizing] = useState(false);
 
   // Load from URL param on mount
   const urlParam = searchParams.get('url');
@@ -71,6 +73,7 @@ export default function WebReaderPage() {
       setTitle(titleMatch?.[1]?.replace(/[#\s]/g, '') || targetUrl);
       setText(md);
       setBlocks(null);
+      setBlockTokens(null);
     } catch (e: any) {
       setError(e?.message || t('msg.failed_to_load_url'));
     } finally {
@@ -78,14 +81,27 @@ export default function WebReaderPage() {
     }
   }, [url, t]);
 
-  const handleTokenize = useCallback(() => {
+  const handleTokenize = useCallback(async () => {
     if (!text.trim()) return;
     try {
-      setBlocks(parseMarkdown(text));
+      const parsed = parseMarkdown(text);
+      setBlocks(parsed);
+      setTokenizing(true);
+      const textBlocks = parsed.filter((b): b is TextBlock => b.kind === 'text');
+      if (textBlocks.length === 0) { setBlockTokens([]); setTokenizing(false); return; }
+      const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: textBlocks.map(b => b.text), l2: l2.code }),
+      });
+      const data = res.ok ? await res.json() : null;
+      setBlockTokens(data?.results ?? null);
+      setTokenizing(false);
     } catch {
       setBlocks(null);
+      setTokenizing(false);
     }
-  }, [text]);
+  }, [text, l2.code]);
 
   const ctx = { text: text.slice(0, 200), textTitle: title || 'Web Reader' };
 
@@ -135,20 +151,13 @@ export default function WebReaderPage() {
           activeTab="read"
           translating={false}
           blocks={blocks}
+          blockTokens={blockTokens}
+          tokenizing={tokenizing}
           ctx={ctx}
           onTextChange={() => {}}
           onTabChange={() => {}}
           onTokenize={handleTokenize}
           onFillSample={() => {}}
-          onLemmatize={async (texts) => {
-            const res = await fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ texts, l2: l2.code }),
-            });
-            const data = res.ok ? await res.json() : null;
-            return data?.results ?? [];
-          }}
           onPageTranslate={async (texts) => {
             try {
               const res = await fetch(`${PYTHON_API_URL}/translate_array`, {
