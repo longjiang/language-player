@@ -7,6 +7,7 @@ import { decomposeWordId } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_ON_PRIMARY, ICON_DESTRUCTIVE, ICON_PRIMARY } from '@/lib/theme-colors';
 import { RotateCcw, Check, X } from 'lucide-react-native';
+import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import type { DictionaryEntry } from '@langplayer/shared';
 
 function getDisplayName(word: { head?: string; forms?: string[]; id: string }): string {
@@ -126,20 +127,13 @@ export default function ReviewScreen() {
             {getDisplayName(currentWord!)}
           </Text>
           {flipped && (
-            <View className="mt-4 border-t border-border pt-4">
+            <View className="mt-4 w-full border-t border-border pt-4">
               {loadingDef ? (
                 <ActivityIndicator size="small" color={ICON_MUTED} />
-              ) : entry?.definitions?.length ? (
-                entry.definitions.map((def, i) => (
-                  <Text key={i} className="text-center text-base text-foreground">
-                    {def}
-                  </Text>
-                ))
+              ) : entry ? (
+                <DictionaryEntryCard entry={entry} variant="full" />
               ) : (
                 <Text className="text-center text-sm text-muted-foreground">{getDisplayName(currentWord!)}</Text>
-              )}
-              {entry?.pronunciation && (
-                <Text className="mt-2 text-center text-sm text-muted-foreground">{entry.pronunciation}</Text>
               )}
             </View>
           )}
