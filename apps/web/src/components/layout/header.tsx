@@ -8,7 +8,6 @@ import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/providers/language-provider';
 import { LanguageSwitcher } from './language-switcher';
 import { UserMenu } from './user-menu';
-import { ThemeToggle } from '@/components/theme-toggle';
 import {
   Menu, X, ChevronDown, Search,
   Compass, Music, Tv, Clapperboard, History, Upload,
@@ -183,9 +182,6 @@ export function Header() {
 
         {/* Language switcher */}
         <LanguageSwitcher />
-
-        {/* Theme toggle */}
-        <ThemeToggle />
 
         {/* User menu */}
         <UserMenu />
