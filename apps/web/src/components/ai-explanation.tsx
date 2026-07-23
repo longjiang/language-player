@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useSubscription } from '@/hooks/use-subscription';
-import { useStreamingExplanation } from '@/hooks/use-streaming-explanation';
+import { useStreamingExplanation } from '@langplayer/api-client';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, AlertCircle, RefreshCw, BookOpen } from 'lucide-react';
