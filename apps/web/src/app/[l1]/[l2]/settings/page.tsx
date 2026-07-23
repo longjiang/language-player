@@ -71,9 +71,9 @@ export default function SettingsPage() {
     </div>
   );
 
-  const Slider = ({ label, desc, min, max, step, value, onChange, leftLabel, rightLabel, centerLabel }: {
+  const Slider = ({ label, desc, min, max, step, value, onChange, leftLabel, rightLabel, centerLabel, valueDisplay }: {
     label: string; desc?: string; min: number; max: number; step: number; value: number;
-    onChange: (v: number) => void; leftLabel?: string; rightLabel?: string; centerLabel?: string;
+    onChange: (v: number) => void; leftLabel?: string; rightLabel?: string; centerLabel?: string; valueDisplay?: string;
   }) => (
     <div>
       <label className="block text-sm font-medium mb-1">{label}</label>
@@ -84,7 +84,7 @@ export default function SettingsPage() {
           className="flex-1 h-2 rounded-full appearance-none bg-muted cursor-pointer
             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
             [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer" />
-        <span className="w-10 text-center text-lg font-semibold tabular-nums">{value}</span>
+        <span className="w-10 text-center text-lg font-semibold tabular-nums">{valueDisplay ?? value}</span>
       </div>
       <div className="flex justify-between mt-1">
         <span className="text-xs text-muted-foreground">{leftLabel ?? min}</span>
@@ -103,6 +103,10 @@ export default function SettingsPage() {
 
   const previewText = getSampleSentence(l2.code);
   const [previewTranslation, setPreviewTranslation] = useState('');
+
+  // Map zoom (0-7) to meaningful rem values: 1rem (16px) base, ~2-3px per step
+  const ZOOM_TO_REM = [1, 1.125, 1.25, 1.375, 1.5, 1.75, 2, 2.25] as const;
+  const zoomRem = ZOOM_TO_REM[tokenizedText.zoom] ?? 1;
 
   // Fetch L1 translation for the preview box
   useEffect(() => {
@@ -158,7 +162,7 @@ export default function SettingsPage() {
 
           <Section title={t('label.tokenized_text_preview')}>
             <div className="rounded-lg border border-border bg-muted/50 p-4">
-              <TokenizedText text={previewText} l2Code={l2.code} textScale={tokenizedText.zoom} />
+              <TokenizedText text={previewText} l2Code={l2.code} textScale={zoomRem} typeFace={tokenizedText.typeFace} />
               {previewTranslation && (
                 <p className="pt-1 text-sm text-muted-foreground leading-relaxed">
                   {previewTranslation}
@@ -184,7 +188,10 @@ export default function SettingsPage() {
                   { value: 'sans-serif', label: t('setting.font_sans_serif') },
                 ]} />
               <Slider label={t('label.text_size')} min={0} max={7} step={1} value={tokenizedText.zoom}
-                onChange={v => updateTokenizedText({ zoom: v })} leftLabel={t('setting.smaller')} rightLabel={t('setting.bigger')} />
+                onChange={v => updateTokenizedText({ zoom: v })}
+                valueDisplay={`${Math.round(zoomRem * 16)}px`}
+                leftLabel={t('setting.smaller')} rightLabel={t('setting.bigger')}
+                centerLabel={`${Math.round(ZOOM_TO_REM[0] * 16)}–${Math.round(ZOOM_TO_REM[7] * 16)}px`} />
             </Section>
 
             <Section title={t('setting.phonetics')}>

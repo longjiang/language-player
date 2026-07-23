@@ -20,6 +20,8 @@ export interface TokenizedTextProps {
   l2Code: string;
   /** Scale factor for text size (default: 1). Pass 0 to inherit from parent. */
   textScale?: number;
+  /** Font family override: 'default' (inherit), 'serif', or 'sans-serif'. */
+  typeFace?: 'default' | 'serif' | 'sans-serif';
   /** Contextual info for word saving (subtitle line, video title, etc.) */
   context?: Partial<SavedWordContext>;
   /** Pre-populated token cache from /lemmatize-video-normalized */
@@ -45,6 +47,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   text,
   l2Code,
   textScale = 1,
+  typeFace = 'default',
   context: externalContext,
   tokenCache,
   tokenCacheLoaded,
@@ -52,6 +55,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   highlightForm,
   highlightForms,
 }) => {
+  // Map typeFace to Tailwind font-family class
+  const fontClass =
+    typeFace === 'serif' ? 'font-serif' :
+    typeFace === 'sans-serif' ? 'font-sans' : '';
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
@@ -246,7 +253,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // ── Pre-visible: plain text, no tokenization yet ──
   if (!hasBeenVisible && !preloadedTokens) {
     return (
-      <span ref={containerRef} className="text-muted-foreground/80" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground/80 ${fontClass}`} style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {convertedText}
       </span>
     );
@@ -254,7 +261,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (loading || converting) {
     return (
-      <span ref={containerRef} className="text-muted-foreground animate-pulse" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground animate-pulse ${fontClass}`} style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {convertedText}
       </span>
     );
@@ -262,14 +269,14 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (error && tokens.length <= 1) {
     return (
-      <span ref={containerRef} className="text-muted-foreground" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground ${fontClass}`} style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {convertedText}
       </span>
     );
   }
 
   return (
-    <span ref={containerRef}>
+    <span ref={containerRef} className={fontClass}>
       <span className="leading-relaxed" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {tokens.map((token, i) => {
           const showPhonetics = getShowPhonetics();
