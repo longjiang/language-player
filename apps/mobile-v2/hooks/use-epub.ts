@@ -122,7 +122,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       if (ncxFile) ncxXml = await ncxFile.async('text');
     }
 
-    const meta = parseOPF(opfXml, ncxXml);
+    const meta = parseOPF(opfXml, opfDir, ncxXml);
     spineRef.current = meta.spine;
 
     // Cover image

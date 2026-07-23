@@ -21,7 +21,7 @@ function extractAttr(attrsStr: string, name: string): string | undefined {
  * Parse OPF file to extract manifest, spine, cover, and TOC.
  * All attribute extraction is order-independent.
  */
-export function parseOPF(opfXml: string, ncxXml?: string): EpubMetadata {
+export function parseOPF(opfXml: string, opfDir: string, ncxXml?: string): EpubMetadata {
   // Manifest: <item id="X" href="Y" media-type="Z" />
   const manifest = new Map<string, string>();
   const itemRegex = /<item\b([^>]*)>/g;
@@ -37,10 +37,6 @@ export function parseOPF(opfXml: string, ncxXml?: string): EpubMetadata {
   const spineMatch = opfXml.match(/<spine[^>]*>([\s\S]*?)<\/spine>/);
   const idrefs = spineMatch?.[1]?.match(/idref="([^"]+)"/g)
     ?.map((s) => s.replace(/idref="([^"]+)"/, '$1')) ?? [];
-
-  // OPF directory for resolving relative hrefs
-  const opfDirMatch = opfXml.match(/opf:file-as="([^"]*)"/);
-  const opfDir = '';
 
   const spine: { href: string; title: string }[] = [];
   for (const idref of idrefs) {
