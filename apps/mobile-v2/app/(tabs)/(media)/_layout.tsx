@@ -11,6 +11,7 @@ export default function MediaLayout() {
       <Stack.Screen name="local-media" />
       <Stack.Screen name="search" />
       <Stack.Screen name="watch/[videoId]" />
+      <Stack.Screen name="channel/[channelId]" />
     </Stack>
   );
 }

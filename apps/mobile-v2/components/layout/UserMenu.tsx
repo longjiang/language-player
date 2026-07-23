@@ -46,7 +46,7 @@ export function UserMenu() {
                 </Pressable>
                 <Pressable
                   className="rounded-md px-3 py-2 active:bg-muted"
-                  onPress={() => { setOpen(false); /* TODO: WebView link */ }}
+                  onPress={() => { setOpen(false); router.push('/(tabs)/(me)/docs' as any); }}
                 >
                   <Text className="text-sm text-foreground">{t('title.docs')}</Text>
                 </Pressable>

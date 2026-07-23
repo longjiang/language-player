@@ -1,44 +1,92 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+import { BookOpen, FileText, ExternalLink } from 'lucide-react-native';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
-import { BookOpen, MessageCircle, HelpCircle } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
+
+/** Base URL for the web docs — adjust for your environment as needed. */
+const WEB_BASE = 'https://languageplayer.com';
+
+interface DocCategory {
+  slug: string;
+  titleKey: string;
+}
+
+/** Static list mirroring the web content/docs directory structure. */
+const DOC_CATEGORIES: DocCategory[] = [
+  { slug: 'general', titleKey: 'title.general' },
+  { slug: 'getting-started', titleKey: 'title.getting_started' },
+  { slug: 'media', titleKey: 'title.media' },
+  { slug: 'reading', titleKey: 'title.reading' },
+  { slug: 'vocab', titleKey: 'title.vocab' },
+  { slug: 'account', titleKey: 'title.account' },
+];
+
+/** Resolve a human-readable label for a category slug via i18n. */
+function categoryLabel(slug: string, t: ReturnType<typeof useT>): string {
+  const key = `title.${slug}`;
+  const translated = t(key);
+  if (translated !== key) return translated;
+  // Fallback: capitalize and replace hyphens
+  return slug
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export default function DocsScreen() {
   const t = useT();
+  const { l1Lang, l2Lang } = useLanguage();
 
-  const items = [
-    { icon: BookOpen, label: 'Dictionary', desc: 'How to look up words, save vocabulary, and use the popup dictionary.' },
-    { icon: BookOpen, label: 'Saved Words & Review', desc: 'Build your vocabulary list and review with flashcards.' },
-    { icon: BookOpen, label: 'Watch Videos', desc: 'Learn from authentic videos with interactive dual subtitles.' },
-    { icon: BookOpen, label: 'Reader', desc: 'Import text and read with interactive word lookups.' },
-    { icon: BookOpen, label: 'Pro Features', desc: 'Unlock complete transcripts, hundreds of examples, and AI explanations.' },
-  ];
+  const openDoc = async (slug: string) => {
+    const url = `${WEB_BASE}/${l1Lang.code}/${l2Lang.code}/docs/${slug}`;
+    await WebBrowser.openBrowserAsync(url);
+  };
 
   return (
-    <ScrollView className="flex-1 bg-background px-4 py-5">
-      <Text className="text-2xl font-bold text-foreground">{t('title.docs')}</Text>
-      <Text className="mt-2 text-sm text-muted-foreground">
-        Learn how to use Language Player to its full potential.
-      </Text>
-
-      <View className="mt-6 gap-3">
-        {items.map((item, i) => (
-          <View key={i} className="rounded-lg border border-border bg-card p-4">
-            <View className="flex-row items-center gap-2">
-              <item.icon size={18} color={ICON_MUTED} />
-              <Text className="text-base font-semibold text-foreground">{item.label}</Text>
+    <ScrollView className="flex-1 bg-background">
+      <View className="flex-1 items-center px-4 py-12">
+        <View className="w-full max-w-lg">
+          {/* ── Header ── */}
+          <View className="mb-8 items-center">
+            <View className="mb-4 h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+              <BookOpen size={32} color={ICON_MUTED} />
             </View>
-            <Text className="mt-1 text-sm text-muted-foreground">{item.desc}</Text>
+            <Text className="text-2xl font-bold text-foreground">
+              {t('title.documentation')}
+            </Text>
+            <Text className="mt-1 text-sm text-muted-foreground">
+              {t('docs.guides_reference')}
+            </Text>
           </View>
-        ))}
-      </View>
 
-      <View className="mt-6 items-center">
-        <Pressable onPress={() => Linking.openURL('mailto:jon.long@zerotohero.ca')} className="flex-row items-center gap-2">
-          <MessageCircle size={16} color={ICON_MUTED} />
-          <Text className="text-sm text-primary">Contact Support</Text>
-        </Pressable>
+          {/* ── Category list ── */}
+          <View className="rounded-xl border border-border bg-card">
+            {DOC_CATEGORIES.map((cat, i) => (
+              <Pressable
+                key={cat.slug}
+                onPress={() => openDoc(cat.slug)}
+                className={`flex-row items-center gap-3 px-4 py-3 active:bg-muted ${
+                  i < DOC_CATEGORIES.length - 1 ? 'border-b border-border' : ''
+                }`}
+              >
+                <FileText size={20} color={ICON_MUTED} />
+                <Text className="flex-1 text-sm text-foreground">
+                  {categoryLabel(cat.slug, t)}
+                </Text>
+                <ExternalLink size={14} color={ICON_MUTED} />
+              </Pressable>
+            ))}
+          </View>
+
+          {/* ── Footer note ── */}
+          <View className="mt-6 items-center">
+            <Text className="text-xs text-muted-foreground">
+              {t('docs.guides_reference')}
+            </Text>
+          </View>
+        </View>
       </View>
     </ScrollView>
   );
