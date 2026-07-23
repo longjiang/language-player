@@ -64,10 +64,10 @@ export function MarkdownText({ children }: MarkdownTextProps) {
         return <Text key={i} className="text-primary underline">{renderInline(tok.tokens)}</Text>;
       }
       if (tok.type === 'text') {
-        return (tok as Tokens.Text).text as string;
+        return <Text key={i}>{(tok as Tokens.Text).text as string}</Text>;
       }
       if (tok.type === 'space') {
-        return ' ';
+        return <Text key={i}> </Text>;
       }
       if (hasTokens(tok)) {
         return <Text key={i}>{renderInline(tok.tokens)}</Text>;
