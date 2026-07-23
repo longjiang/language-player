@@ -96,7 +96,7 @@ export function VoicePicker() {
           <Text style={s.label}>{t('label.pronunciation_voice')}</Text>
           <Pressable onPress={() => setShowVoices(!showVoices)} style={s.pickerBtn}>
             <Text style={s.pickerText} numberOfLines={1}>
-              {selectedVoice ? voiceList.find((v) => v.identifier === selectedVoice)?.name ?? t('label.custom_voice') : t('label.auto_best_available')}
+              {selectedVoice ? voiceList.find((v) => v.identifier === selectedVoice)?.name ?? t('label.custom_voice') : l2Voices.length > 0 ? t('label.auto_best_available') : t('label.auto_best_for', { l2: l2Lang.code.toUpperCase() })}
             </Text>
             <ChevronDown size={16} color={ICON_MUTED} />
           </Pressable>
@@ -121,8 +121,8 @@ export function VoicePicker() {
                 </Pressable>
               ))}
 
-              {/* Other voices */}
-              {otherVoices.slice(0, 10).map((v) => (
+              {/* Other voices — only show if no L2 voices available */}
+              {l2Voices.length === 0 && otherVoices.slice(0, 10).map((v) => (
                 <Pressable key={v.identifier} onPress={() => { setSelectedVoice(v.identifier); setShowVoices(false); }}
                   style={[s.dropdownItem, selectedVoice === v.identifier && s.activeItem]}>
                   <Volume2 size={14} color={selectedVoice === v.identifier ? ICON_PRIMARY : ICON_MUTED} />
