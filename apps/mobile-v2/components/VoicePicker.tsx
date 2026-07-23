@@ -8,6 +8,19 @@ import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
 const RATES = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
 
+/** Language names in their own language (for TTS test). */
+const L2_SELF_NAME: Record<string, string> = {
+  af: 'Afrikaans', ar: 'العربية', ca: 'Català', de: 'Deutsch',
+  el: 'Ελληνικά', en: 'English', es: 'Español', fi: 'Suomi',
+  fr: 'Français', ga: 'Gaeilge', hi: 'हिन्दी', hr: 'Hrvatski',
+  hu: 'Magyar', id: 'Bahasa Indonesia', it: 'Italiano',
+  ja: '日本語', ko: '한국어', nl: 'Nederlands',
+  no: 'Norsk', pl: 'Polski', pt: 'Português', ro: 'Română',
+  ru: 'Русский', sr: 'Српски', sv: 'Svenska', sw: 'Kiswahili',
+  th: 'ไทย', tr: 'Türkçe', vi: 'Tiếng Việt',
+  'zh-Hans': '简体中文', 'zh-Hant': '繁體中文', yue: '廣東話',
+};
+
 /** VoicePicker for mobile — simplified Web Speech API to expo-speech port.
  *  expo-speech doesn't expose voice enumeration, so we fall back to
  *  language-based selection + rate. */
@@ -43,7 +56,7 @@ export function VoicePicker() {
       rate,
     };
     if (selectedVoice) (options as any).voice = selectedVoice;
-    Speech.speak(l2Lang.name, options);
+    Speech.speak(L2_SELF_NAME[l2Lang.code] ?? l2Lang.name, options);
     setIsSpeaking(true);
     // expo-speech doesn't have onDone callback in v14+, so use a timer
     setTimeout(() => setIsSpeaking(false), 3000);
