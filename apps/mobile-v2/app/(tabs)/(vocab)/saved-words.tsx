@@ -104,7 +104,7 @@ export default function SavedWordsScreen() {
             {t('msg.no_saved_words')}
           </Text>
           <Text className="mt-1 text-center text-sm text-muted-foreground/70">
-            Click the bookmark icon next to any word to save it.
+            {t('msg.save_word_hint')}
           </Text>
         </View>
       </View>
@@ -118,7 +118,7 @@ export default function SavedWordsScreen() {
         <View className="flex-1">
           <Text className="text-2xl font-bold text-foreground">{t('title.saved_words')}</Text>
           <Text className="mt-1 text-sm text-muted-foreground">
-            {allWords.length} {allWords.length === 1 ? 'word' : 'words'} in {l1Lang.name} → {l2Lang.name}
+            {t('msg.saved_words_count', { count: allWords.length, l1: l1Lang.name, l2: l2Lang.name })}
           </Text>
         </View>
         <View className="flex-row gap-2">

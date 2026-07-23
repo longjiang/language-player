@@ -48,7 +48,7 @@ function getRatingColor(rating: Rating): string {
 }
 
 export default function ReviewScreen() {
-  const { l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { savedWords, loaded } = useSavedWords();
   const words = savedWords[l2Lang.code] ?? [];
@@ -71,7 +71,7 @@ export default function ReviewScreen() {
       const decomposed = decomposeWordId(currentWord.id, l2Lang.code);
       if (decomposed) {
         const { dict: dictId, id: scopedId } = decomposed;
-        dict.getEntry(l2Lang.code, dictId, scopedId)
+        dict.getEntry(l2Lang.code, dictId, scopedId, l1Lang.code)
           .then((res) => setEntry(res.entry))
           .catch(() => {})
           .finally(() => setLoadingDef(false));
@@ -133,7 +133,7 @@ export default function ReviewScreen() {
         <CheckCircle2 size={56} color={ICON_PRIMARY} style={{ marginBottom: 16 }} />
         <Text className="mb-2 text-2xl font-bold text-foreground">{t('review.complete')}</Text>
         <Text className="mb-4 text-center text-muted-foreground">
-          You reviewed {cardCounts.reviewed} cards. Great job!
+{t('review.complete_desc', { count: cardCounts.reviewed })}
         </Text>
         <Pressable onPress={handleRestart} className="flex-row items-center gap-2 rounded-lg bg-primary px-4 py-2">
           <RotateCcw size={16} color={ICON_ON_PRIMARY} />
@@ -152,7 +152,7 @@ export default function ReviewScreen() {
         <View>
           <Text className="text-xl font-bold text-foreground">{t('title.review')}</Text>
           <Text className="mt-0.5 text-xs text-muted-foreground">
-            {cardCounts.reviewed} done · {cardCounts.remaining} remaining
+            {t('review.progress', { done: cardCounts.reviewed, remaining: cardCounts.remaining })}
           </Text>
         </View>
         <Pressable onPress={handleRestart} className="rounded-full bg-muted p-2">

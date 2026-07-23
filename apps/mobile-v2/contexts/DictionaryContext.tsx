@@ -71,7 +71,7 @@ async function saveRecent(l2Code: string, term: string) {
 }
 
 export function DictionaryProvider({ children }: { children: ReactNode }) {
-  const { l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const dict = useDictionary();
   const l2Code = l2Lang.code;
 
@@ -110,7 +110,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     setSearchedText(trimmed);
 
     try {
-      const res = await dict.lookup(trimmed, l2Code, 'en');
+      const res = await dict.lookup(trimmed, l2Code, l1Lang.code);
       // DEBUG: Confirms search completed and how many results returned.
       // If this logs but handleEntryPress never does, the tap isn't reaching the card's Pressable.
       console.log('[Dict] doSearch results — query:', trimmed, '— count:', res.results?.length ?? 0, '— timestamp:', Date.now());
