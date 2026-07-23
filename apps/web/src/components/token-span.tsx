@@ -1,0 +1,120 @@
+'use client';
+
+import React, { useMemo } from 'react';
+import type { LemmatizedToken } from '@langplayer/shared';
+import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
+import type { RubySegment } from '@langplayer/utils';
+import { getCachedEntries } from '@/lib/dictionary-cache';
+
+export interface TokenSpanProps {
+  token: LemmatizedToken;
+  l2Code: string;
+  /** Phonetics display mode: 'ruby' (above), 'word' (replace text), or false (hidden). */
+  phoneticsMode: 'ruby' | 'word' | false;
+  quickGloss: boolean;
+  isSelected: boolean;
+  isSaved: boolean;
+  isHighlighted: boolean;
+  onClick: () => void;
+}
+
+/**
+ * Individual clickable word token with ruby text and quick gloss.
+ * Extracted from tokenized-text.tsx to keep the file manageable.
+ */
+export const TokenSpan: React.FC<TokenSpanProps> = ({
+  token,
+  l2Code,
+  phoneticsMode,
+  quickGloss,
+  isSelected,
+  isSaved,
+  isHighlighted,
+  onClick,
+}) => {
+  // ── Quick gloss: first definition of first cached entry, only for saved words ──
+  const quickGlossDef = useMemo(() => {
+    if (!isSaved || !quickGloss) return null;
+    for (const lemma of token.lemmas) {
+      const entries = getCachedEntries(l2Code, lemma.lemma);
+      if (entries && entries.length > 0 && entries[0]!.definitions.length > 0) {
+        return entries[0]!.definitions[0]!;
+      }
+    }
+    const surfaceEntries = getCachedEntries(l2Code, token.text);
+    if (surfaceEntries && surfaceEntries.length > 0 && surfaceEntries[0]!.definitions.length > 0) {
+      return surfaceEntries[0]!.definitions[0]!;
+    }
+    return null;
+  }, [isSaved, l2Code, token.text, token.lemmas]);
+
+  // ── Structural tokens: newlines → <br />, spaces/punctuation → raw text ──
+  if (token.text === '\n' || token.text === '\r') {
+    return <br />;
+  }
+
+  const isWord = token.lemmas.length > 0;
+  if (!isWord) {
+    return <>{token.text}</>;
+  }
+
+  const base = l2Code.split('-')[0]!;
+  const isJapanese = base === 'ja';
+  const hasKanji = isJapanese && /[一-龯]/.test(token.text);
+
+  // ── Common class for the outer clickable wrapper ──
+  const wrapperClass = `cursor-pointer rounded transition-colors ${
+    isSelected
+      ? 'bg-primary/20 text-primary'
+      : isHighlighted
+        ? 'bg-primary/15 text-primary font-semibold ring-1 ring-primary/30'
+        : 'hover:bg-muted/80'
+  }`;
+
+  // ── Saved-word background — only on the word itself, never on the gloss ──
+  const wordBgClass = (!isSelected && !isHighlighted && isSaved)
+    ? 'bg-yellow-200/25 rounded'
+    : '';
+
+  const title = token.lemmas.map(l => l.lemma).join(', ');
+
+  // ── Phonetics-only mode: show reading instead of surface text ──
+  if (phoneticsMode === 'word' && token.pronunciation && token.pronunciation !== token.text
+      && (!isJapanese || hasKanji)) {
+    const displayText = base === 'ja' ? katakanaToHiragana(token.pronunciation) : token.pronunciation;
+    return (
+      <span onClick={(e) => { e.stopPropagation(); onClick(); }} className={wrapperClass} title={title}>
+        <span className={wordBgClass}>{displayText}</span>
+        {quickGlossDef && <QuickGloss def={quickGlossDef} />}
+      </span>
+    );
+  }
+
+  // ── Ruby text ──
+  const hasPhonetics = !isHighlighted && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text;
+  const rubySegments: RubySegment[] | null = hasPhonetics
+    ? buildRuby(token.text, token.pronunciation!, l2Code)
+    : null;
+
+  return (
+    <span onClick={(e) => { e.stopPropagation(); onClick(); }} className={wrapperClass} title={title}>
+      <span className={wordBgClass}>
+        {rubySegments
+          ? rubySegments.map((seg, j) =>
+              seg.reading
+                ? <ruby key={j}>{seg.text}<rt>{seg.reading}</rt></ruby>
+                : <React.Fragment key={j}>{seg.text}</React.Fragment>
+            )
+          : token.text}
+      </span>
+      {quickGlossDef && <QuickGloss def={quickGlossDef} />}
+    </span>
+  );
+};
+
+/** Inline quick gloss — first definition shown after a saved word. Bottom-aligned, not highlighted. */
+const QuickGloss: React.FC<{ def: string }> = ({ def }) => (
+  <span className="ml-0.5 text-[0.6em] text-muted-foreground/70 font-normal select-none align-text-bottom">
+    '{def}'
+  </span>
+);
