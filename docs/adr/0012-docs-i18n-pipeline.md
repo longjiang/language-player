@@ -50,9 +50,9 @@ Both layers produce `apps/web/src/data/docs-i18n/{locale}.json` — an array of 
 
 | Script | Purpose |
 |---|---|
-| `scripts/rebuild-doc.mjs` | Rebuild one doc for all 31 locales. `nvm use 22 && node scripts/rebuild-doc.mjs <path-to-md>` |
-| `scripts/build-docs-i18n.mjs` | Rebuild all docs. `--locale=xx` for single locale, no flag for all 31. Calls Python `/translate`. |
-| `scripts/build-docs-keys.mjs` | Key resolution only (no Python needed). `--doc=media/explore` for one doc. |
+| `scripts/rebuild-doc.mjs` | Rebuild a single doc after editing. Resolves `{$key}` from CSV, machine-translates body + plain-text H1 (via Python `/translate` if running), merges into all 31 locale JSONs. Shows per-locale progress (🗝 key-only / 🌐 translated). Usage: `nvm use 22 && node scripts/rebuild-doc.mjs <path-to-md>` |
+| `scripts/build-docs-i18n.mjs` | Bulk rebuild. All docs × all locales, or `--locale=xx` for one locale. Calls Python `/translate`. Slower; use `rebuild-doc.mjs` for single-doc edits. |
+| `scripts/build-docs-keys.mjs` | Key resolution only (CSV lookup, no Python). Fast, offline. `--doc=media/explore` for one doc, no flag for all. |
 
 ## Search
 
