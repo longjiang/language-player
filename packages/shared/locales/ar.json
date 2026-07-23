@@ -229,6 +229,7 @@
         "text_size": "حجم النص",
         "textbook_format": "{material} — الكتاب {book}، الدرس {lesson}",
         "theme": "المظهر",
+        "today": "اليوم",
         "tokenized_text_preview": "معاينة",
         "transcript_mode": "وضع النص الكامل",
         "unknown_user": "مستخدم",

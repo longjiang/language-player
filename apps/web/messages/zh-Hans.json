@@ -232,6 +232,7 @@
         "text_size": "文字大小",
         "textbook_format": "{material} — 第{book}册，第{lesson}课",
         "theme": "主题",
+        "today": "今天",
         "tokenized_text_preview": "预览",
         "transcript_mode": "字幕模式",
         "unknown_user": "用户",

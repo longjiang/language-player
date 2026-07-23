@@ -229,6 +229,7 @@
         "text_size": "Méid an téacs",
         "textbook_format": "{material} — Leabhar {book}, Ceacht {lesson}",
         "theme": "Téama",
+        "today": "Inniu",
         "tokenized_text_preview": "Réamhamharc",
         "transcript_mode": "Mód athscríbhinne",
         "unknown_user": "Úsáideoir",

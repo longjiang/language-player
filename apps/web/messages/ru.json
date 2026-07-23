@@ -229,6 +229,7 @@
         "text_size": "Размер текста",
         "textbook_format": "{material} — Книга {book}, Урок {lesson}",
         "theme": "Тема",
+        "today": "Сегодня",
         "tokenized_text_preview": "Предпросмотр",
         "transcript_mode": "Режим транскрипта",
         "unknown_user": "Пользователь",

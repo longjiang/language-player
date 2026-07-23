@@ -229,6 +229,7 @@
         "text_size": "Tekststørrelse",
         "textbook_format": "{material} — Bok {book}, Leksjon {lesson}",
         "theme": "Tema",
+        "today": "I dag",
         "tokenized_text_preview": "Forhåndsvisning",
         "transcript_mode": "Transkripsjonsmodus",
         "unknown_user": "Bruker",

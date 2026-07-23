@@ -229,6 +229,7 @@
         "text_size": "Ukuran teks",
         "textbook_format": "{material} — Buku {book}, Pelajaran {lesson}",
         "theme": "Tema",
+        "today": "Hari ini",
         "tokenized_text_preview": "Pratinjau",
         "transcript_mode": "Mode transkrip",
         "unknown_user": "Pengguna",

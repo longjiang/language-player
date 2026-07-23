@@ -229,6 +229,7 @@
         "text_size": "Metin Boyutu",
         "textbook_format": "{material} — Kitap {book}, Ders {lesson}",
         "theme": "Tema",
+        "today": "Bugün",
         "tokenized_text_preview": "Önizleme",
         "transcript_mode": "Transkript Modu",
         "unknown_user": "Kullanıcı",

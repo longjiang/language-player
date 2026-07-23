@@ -229,6 +229,7 @@
         "text_size": "Szövegméret",
         "textbook_format": "{material} — Könyv {book}, Lecke {lesson}",
         "theme": "Téma",
+        "today": "Ma",
         "tokenized_text_preview": "Előnézet",
         "transcript_mode": "Átirat mód",
         "unknown_user": "Felhasználó",

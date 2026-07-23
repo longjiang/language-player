@@ -229,6 +229,7 @@
         "text_size": "Veličina teksta",
         "textbook_format": "{material} — Knjiga {book}, Lekcija {lesson}",
         "theme": "Tema",
+        "today": "Danas",
         "tokenized_text_preview": "Pregled",
         "transcript_mode": "Način transkripta",
         "unknown_user": "Korisnik",
