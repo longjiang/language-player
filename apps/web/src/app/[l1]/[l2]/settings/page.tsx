@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
@@ -20,6 +21,7 @@ export default function SettingsPage() {
     getL2, updateL2, ensureL2,
     loaded,
   } = useSettingsContext();
+  const { setTheme } = useTheme();
   const t = useT();
 
   const [tab, setTab] = useState<'display' | 'playback' | 'speech' | 'review'>('display');
@@ -127,7 +129,11 @@ export default function SettingsPage() {
 
           <Section title={t('setting.theme')}>
             <Segmented label={t('label.theme')} value={display.theme}
-              onChange={(v: string) => updateDisplay({ theme: v as 'light' | 'dark' | 'system' })}
+              onChange={(v: string) => {
+                const theme = v as 'light' | 'dark' | 'system';
+                updateDisplay({ theme });
+                setTheme(theme);
+              }}
               options={[
                 { value: 'light', label: '☀️ ' + t('setting.light') },
                 { value: 'dark', label: '🌙 ' + t('setting.dark') },
