@@ -322,6 +322,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               l2Code={l2Code}
               phoneticsMode={phoneticsShow}
               quickGloss={settingsTokenizedText.quickGloss}
+              showDefinition={l2Settings.tokenSpan.definition.show}
               isSelected={selectedToken === token}
               isSaved={savedFormSet.has(token.text.toLowerCase())}
               isHighlighted={
