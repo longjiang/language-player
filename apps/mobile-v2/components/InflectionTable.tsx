@@ -1,10 +1,9 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { useInflection } from '@langplayer/api-client';
 import type { InflectedForm } from '@langplayer/shared';
-import { Loader2 } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
+import { ICON_MUTED } from '@/lib/theme-colors';
 
 /** ISO 639-1 → ISO 639-3 mappings for languages with inflection support. */
 const ISO_639_1_TO_3: Record<string, string> = {
@@ -36,7 +35,7 @@ interface InflectionTableProps {
   l2Code: string;
   /** Verb type hint for Japanese ichidan verbs ("v1"). Ignored for other languages. */
   verbType?: 'v1';
-  /** When true, removes outer border/shadow and hides the title (for use inside a TabbedPanel). */
+  /** When true, removes outer card styling and hides the title (for use inside a scroll section). */
   embedded?: boolean;
 }
 
@@ -106,23 +105,21 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
   // ── Loading ──
   if (loading) {
     return (
-      <div className={embedded ? 'flex justify-center py-4' : 'rounded-lg border border-border bg-card p-4'}>
-        <div className="flex justify-center py-4">
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        </div>
-      </div>
+      <View className={embedded ? 'py-4' : 'my-3 rounded-lg border border-border bg-card p-4'}>
+        <ActivityIndicator size="small" color={ICON_MUTED} />
+      </View>
     );
   }
 
   // ── Error ──
   if (error) {
     return (
-      <div className={embedded
-        ? 'text-sm text-red-700 dark:text-red-300'
-        : 'rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300'
+      <View className={embedded
+        ? 'py-2'
+        : 'my-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4'
       }>
-        {error}
-      </div>
+        <Text className="text-sm text-destructive">{error}</Text>
+      </View>
     );
   }
 
@@ -155,43 +152,47 @@ export function InflectionTable({ head, l2Code, verbType, embedded = false }: In
 
   // ── Render ──
   return (
-    <section className={embedded ? 'space-y-4' : 'space-y-4 rounded-lg border border-border bg-card p-4'}>
-      {!embedded && <h2 className="text-base font-semibold">{t('title.conjugations')}</h2>}
+    <View className={embedded ? '' : 'my-3 rounded-lg border border-border bg-card p-4'}>
+      {!embedded && (
+        <Text className="mb-3 text-base font-semibold text-foreground">{t('title.conjugations')}</Text>
+      )}
 
-      <div className="space-y-4">
-        {tableNames.map((table) => {
+      {tableNames.map((table) => {
         const group = groups[table];
         if (!group || group.length === 0) return null;
 
-        // "head" table: render inline, not as a grid
+        // "head" table: show the base form prominently (unlike Next.js which hides it).
+        // Mobile screens benefit from seeing the dictionary form for orientation.
         if (table === 'head') {
-          return null;
+          return (
+            <View key="head" className="mb-3 rounded-lg bg-primary/5 px-4 py-3">
+              <Text className="text-xs font-medium text-primary">Dictionary form</Text>
+              <Text className="mt-1 text-lg font-bold text-foreground">{group[0]!.form}</Text>
+            </View>
+          );
         }
 
         return (
-          <div key={table} className="rounded-lg border border-border bg-card overflow-hidden">
-            <div className="bg-muted/50 px-4 py-2">
-              <h3 className="text-sm font-medium text-muted-foreground">
+          <View key={table} className="mb-3 overflow-hidden rounded-lg border border-border bg-card">
+            <View className="bg-muted/50 px-4 py-2">
+              <Text className="text-sm font-medium text-muted-foreground">
                 {tableLabel(table)}
-              </h3>
-            </div>
-            <div className="divide-y divide-border sm:columns-2">
+              </Text>
+            </View>
+            <View className="divide-y divide-border">
               {group.map((f, i) => (
-                <div
+                <View
                   key={i}
-                  className="flex items-center justify-between px-4 py-2 text-sm hover:bg-muted/20 transition-colors break-inside-avoid-column"
+                  className="flex-row items-center justify-between px-4 py-2"
                 >
-                  <span className="text-muted-foreground">{f.field}</span>
-                  <span className="font-medium" lang={l2Code}>
-                    {f.form}
-                  </span>
-                </div>
+                  <Text className="text-sm text-muted-foreground">{f.field}</Text>
+                  <Text className="text-sm font-medium text-foreground">{f.form}</Text>
+                </View>
               ))}
-            </div>
-          </div>
+            </View>
+          </View>
         );
       })}
-      </div>
-    </section>
+    </View>
   );
 }
