@@ -9,7 +9,7 @@ import { VideoControlBar } from '@/components/video/VideoControlBar';
 import { SubtitleDisplay } from '@/components/video/SubtitleDisplay';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { Languages } from 'lucide-react-native';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import type { YouTubeVideo } from '@langplayer/shared';
 
 export default function WatchScreen() {
@@ -17,7 +17,7 @@ export default function WatchScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { getById } = useVideos();
-  const { display, set } = useSettingsContext();
+  const { display, updateDisplay } = useSettingsContext();
 
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const [video, setVideo] = useState<YouTubeVideo | null>(null);
@@ -144,10 +144,10 @@ export default function WatchScreen() {
             ) : null}
           </View>
           <Pressable
-            onPress={() => set('display.translation', !display.translation)}
+            onPress={() => updateDisplay({ translation: !display.translation })}
             className={`ml-2 rounded-full p-2 ${display.translation ? 'bg-primary/20' : 'bg-muted'}`}
           >
-            <Languages size={18} color={display.translation ? '#3b82f6' : ICON_MUTED} />
+            <Languages size={18} color={display.translation ? ICON_PRIMARY : ICON_MUTED} />
           </Pressable>
         </View>
       )}
