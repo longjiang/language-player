@@ -12,7 +12,7 @@ import { useVideoPlayer } from '@/providers/video-player-provider';
 import { useT } from '@/hooks/use-t';
 import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
 import { ChannelActionsMenu } from './channel-actions-menu';
-import type { QueueType } from '@/lib/queue-manager';
+import type { QueueType } from '@langplayer/utils';
 
 interface VideoCardProps {
   video: YouTubeVideo;

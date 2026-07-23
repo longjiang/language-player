@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Fuse from 'fuse.js';
 import { List, ChevronDown, Search } from 'lucide-react';
 import { useT } from '@/hooks/use-t';
-import { stripMarkdown } from '@/lib/strip-markdown';
+import { stripMarkdown } from '@langplayer/utils';
 
 interface TocItem {
   level: number;

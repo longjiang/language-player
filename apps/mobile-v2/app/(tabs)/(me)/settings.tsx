@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, Switch } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
-import { getSampleSentence } from '@/lib/sample-sentences';
+import { getSampleSentence } from '@langplayer/shared';
 import { VoicePicker } from '@/components/VoicePicker';
 import { TokenizedText } from '@/components/TokenizedText';
 

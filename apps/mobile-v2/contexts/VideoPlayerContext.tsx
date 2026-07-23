@@ -12,7 +12,7 @@ import {
   getGlobalQueueManager,
   type QueueType,
   type QueueState,
-} from '@/lib/queue-manager';
+} from '@langplayer/utils';
 
 interface VideoPlayerContextValue {
   queueState: QueueState;

@@ -30,7 +30,6 @@ export class QueueManager {
     this._queueType = queueType;
 
     if (queueType === 'tvShow') {
-      // Preserve existing if not provided
       if (metadata?.tvShow !== undefined) {
         this._tvShow = metadata.tvShow;
       }
@@ -45,7 +44,6 @@ export class QueueManager {
       this._searchTerm = undefined;
     }
 
-    // Ensure the current video is in the queue; if not, prepend it
     if (
       video &&
       !this._queue.some((v) => v.youtube_id === video.youtube_id)
@@ -68,8 +66,6 @@ export class QueueManager {
   }
 
   get currentIndex(): number {
-    // Derive from matching youtube_id in queue. The queue is populated from
-    // setVideoAndQueue which ensures the current video is in the queue.
     return 0;
   }
 
@@ -129,12 +125,10 @@ export class QueueManager {
   }
 }
 
-/** Singleton instance shared across the app */
-let _globalQueueManager: QueueManager | null = null;
+let _globalQM: QueueManager | null = null;
 
+/** Singleton accessor shared by components that need a single queue instance. */
 export function getGlobalQueueManager(): QueueManager {
-  if (!_globalQueueManager) {
-    _globalQueueManager = new QueueManager();
-  }
-  return _globalQueueManager;
+  if (!_globalQM) _globalQM = new QueueManager();
+  return _globalQM;
 }

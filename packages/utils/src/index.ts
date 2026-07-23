@@ -30,4 +30,8 @@ export {
 } from './pitch-accent';
 export { md5 } from './md5';
 export { TokenCache } from './token-cache';
+export { parseSubtitles, detectSubtitleFormat } from './subtitle-parser';
+export { QueueManager, getGlobalQueueManager } from './queue-manager';
+export type { QueueState, QueueType } from './queue-manager';
+export { stripMarkdown } from './strip-markdown';
 export { parseSubsL2, _parseCSVRow, stripTimestampPrefix, findMatchLine } from './subs-csv';

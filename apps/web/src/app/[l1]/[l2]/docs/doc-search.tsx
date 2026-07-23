@@ -4,7 +4,7 @@ import { useState, useMemo, type ReactNode } from 'react';
 import Fuse from 'fuse.js';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
-import { stripMarkdown } from '@/lib/strip-markdown';
+import { stripMarkdown } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 
 interface DocEntry {

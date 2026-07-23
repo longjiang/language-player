@@ -13,7 +13,7 @@ import {
   isAudioFile,
   type StoredMedia,
 } from '@/lib/media-store';
-import { parseSubtitles } from '@/lib/subtitle-parser';
+import { parseSubtitles } from '@langplayer/utils';
 
 export interface UseCustomMediaReturn {
   /** Object URL for the current media file (for <video>/<audio> src). */

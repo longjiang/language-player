@@ -5,7 +5,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
-import { getSampleSentence } from '@/lib/sample-sentences';
+import { getSampleSentence } from '@langplayer/shared';
 import { TokenizedText } from '@/components/tokenized-text';
 import { VoicePicker } from '@/components/voice-picker';
 import { TabbedPanel } from '@/components/tabbed-panel';

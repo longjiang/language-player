@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import type { SubtitleLine } from '@langplayer/shared';
-import { parseSubtitles } from '@/lib/subtitle-parser';
+import { parseSubtitles } from '@langplayer/utils';
 
 const MEDIA_DIR = `${FileSystem.documentDirectory}local-media/`;
 const STORAGE_KEY = 'local_media_state';
