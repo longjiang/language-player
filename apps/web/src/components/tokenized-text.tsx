@@ -61,7 +61,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [convertedText, setConvertedText] = useState(text);
   const [converting, setConverting] = useState(false);
   const [hasBeenVisible, setHasBeenVisible] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLSpanElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false); // prevent concurrent fetches
   const lastTextRef = useRef(text); // avoid redundant convert+tokenize
@@ -246,30 +246,30 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // ── Pre-visible: plain text, no tokenization yet ──
   if (!hasBeenVisible && !preloadedTokens) {
     return (
-      <div ref={containerRef} className="text-muted-foreground/80" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <span ref={containerRef} className="text-muted-foreground/80" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {convertedText}
-      </div>
+      </span>
     );
   }
 
   if (loading || converting) {
     return (
-      <div ref={containerRef} className="text-muted-foreground animate-pulse" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <span ref={containerRef} className="text-muted-foreground animate-pulse" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {convertedText}
-      </div>
+      </span>
     );
   }
 
   if (error && tokens.length <= 1) {
     return (
-      <div ref={containerRef} className="text-muted-foreground" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <span ref={containerRef} className="text-muted-foreground" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {convertedText}
-      </div>
+      </span>
     );
   }
 
   return (
-    <div ref={containerRef}>
+    <span ref={containerRef}>
       <span className="leading-relaxed" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {tokens.map((token, i) => {
           const showPhonetics = getShowPhonetics();
@@ -305,7 +305,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           onClose={() => setSelectedToken(null)}
         />
       )}
-    </div>
+    </span>
   );
 };
 
