@@ -34,22 +34,11 @@ export function setShowTranslation(value: boolean): void {
   set('show_translation', value);
 }
 
-/** Whether to use traditional Chinese characters (zh L2 only). Default: false (simplified). */
-export function getUseTraditional(): boolean {
-  return get<boolean>('use_traditional', false);
-}
-
+/** Whether to use traditional Chinese characters (zh L2 only). Default: false (simplified).
+ *  @deprecated Write-only from language-select onboarding page.
+ *  Readers use SettingsV2 l2[code].display.traditional instead. */
 export function setUseTraditional(value: boolean): void {
   set('use_traditional', value);
-}
-
-/** Whether to show phonetic guides (pinyin, furigana, etc.) above word blocks. Default: true. */
-export function getShowPhonetics(): boolean {
-  return get<boolean>('show_phonetics', true);
-}
-
-export function setShowPhonetics(value: boolean): void {
-  set('show_phonetics', value);
 }
 
 /** Subscribe to changes to a setting. Returns unsubscribe function. */
