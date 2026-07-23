@@ -48,13 +48,25 @@ Both layers produce `packages/docs/i18n/{locale}.json` — an array of `{slug, t
 
 ## Scripts
 
+Two pipelines serve two different targets:
+
+| Pipeline | Target | Output | Translation |
+|---|---|---|---|
+| **Web** (`scripts/translate-doc.mjs`, `scripts/translate-docs.mjs`) | Next.js (server) | `packages/docs/i18n/{locale}.json` — 31 locale JSONs, one per language | ✅ Body text translated via Python `/translate` |
+| **Mobile** (`scripts/build-docs-data.cjs`) | React Native (no Node.js at runtime) | `packages/shared/src/docs.ts` — single TypeScript module with all docs embedded as string content | ❌ English only — embed path, no runtime translation |
+
+The web pipeline produces per-locale JSONs read at request time by the Next.js server. The mobile pipeline embeds English docs directly into the app bundle via `@langplayer/shared`, since React Native has no filesystem access and can't fetch locale JSONs at runtime.
+
+### Script reference
+
 | Script | Scope | Translates? | When to use |
 |---|---|---|---|
 | `scripts/translate-doc.mjs` | One doc → all 31 locales | ✅ (if Python up) | **Daily driver.** After editing a single `.md` — resolves keys, translates body + plain H1, merges into locale JSONs. Shows per-locale progress (🗝/🌐). Example: `nvm use 22 && node scripts/translate-doc.mjs packages/docs/content/vocab/review.md` |
 | `scripts/translate-docs.mjs` | All docs × all locales, or `--locale=xx` | ✅ (if Python up) | **Full rebuild.** Use after sweeping changes across multiple docs, or to regenerate all locales from scratch. Slow. Example: `nvm use 22 && node scripts/translate-docs.mjs --locale=zh-Hans` |
 | `scripts/resolve-doc-keys.mjs` | One doc or all docs | ❌ | **Offline fix.** CSV key resolution only — no Python needed. Use when you only changed `{$key}` references and don't need body re-translation. Instant. Example: you fix a wrong key in `dictionary.md` — `{$action.translation}` → `{$label.show_translation}` — and run `node scripts/resolve-doc-keys.mjs --doc=vocab/dictionary`. All 31 locale JSONs update instantly without hitting the translate server. |
+| `scripts/build-docs-data.cjs` | All docs → one `.ts` file | ❌ | **Mobile embed.** Walks all `.md` files, resolves `{$key}` to English via CSV, generates `packages/shared/src/docs.ts` with inline content. Mobile imports it as `DOCS` from `@langplayer/shared`. Run after any doc edit + after `translate-doc.mjs`. |
 
-Each script merges into `packages/docs/i18n/{locale}.json` — existing entries for other docs are preserved.
+Each web script merges into `packages/docs/i18n/{locale}.json` — existing entries for other docs are preserved.
 
 ## Search
 
@@ -82,9 +94,12 @@ Doc H1s should use a pure `{$key}` (e.g., `# {$title.explore}`) when a matching 
 
 ## Consequences
 
-- Docs must be rebuilt after editing: `nvm use 22 && node scripts/translate-doc.mjs <path>`
+- After editing any `.md` file, run both `translate-doc.mjs` (web i18n) and `build-docs-data.cjs` (mobile embed) to keep both pipelines in sync
 - Python `/translate` server must be running for full translation (falls back to key-only if unavailable)
 - Node ≥ 20 required for `fetch` API (Node 18's experimental fetch cannot resolve localhost)
 - `en.json` is now treated identically to other locale JSONs — it resolves `{$key}` to English values
-- All 31 locale JSONs are committed to the repo
+- Web locale JSONs live in `packages/docs/i18n/`; mobile embed lives in `packages/shared/src/docs.ts`
+- The mobile embed (`build-docs-data.cjs`) is English-only by design — `translate-doc.mjs` handles per-locale i18n for the web app
+- `packages/shared/src/docs.ts` is a generated 1400+ line file committed to the repo (same pattern as `tokens.ts`)
 - Cross-references between docs use absolute paths (`/docs/vocab/dictionary`) and must be updated when files are renamed
+- Category titles use `title.{folderName}` CSV keys dynamically — adding a new folder automatically picks up the translation
