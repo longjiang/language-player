@@ -1,8 +1,4 @@
-// Auto-generated from docs/content/ — DO NOT EDIT
-export type DocEntry = { path: string; title: string; category: string; content: string };
-
-export const DOCS: DocEntry[] = [
-  { path: 'account/login.md', title: 'Login.md', category: 'account', content: `# Logging In
+// Auto-generated from docs/content/ — DO NOT EDIT\nexport type DocEntry = { path: string; title: string; category: string; content: string };\n\nexport const DOCS: DocEntry[] = [\n  { path: 'account/login.md', title: 'Login.md', category: 'account', content: `# Logging In
 
 Sign in to your account, reset a forgotten password, and sign out when you're done.
 
@@ -49,8 +45,7 @@ To switch to a different account, log out first, then log in with the other emai
 - If you're on a shared device, always log out when you're done
 - The forgot password flow works even if you registered with the same email — it sends a reset link regardless
 - You can manage your account details from your **[Profile](/docs/account/profile)**
-` },
-  { path: 'account/profile.md', title: 'Profile.md', category: 'account', content: `# Profile
+` },\n  { path: 'account/profile.md', title: 'Profile.md', category: 'account', content: `# Profile
 
 Your profile page shows account info, language level, subscription status, watch history, and saved words — all in one place.
 
@@ -113,8 +108,7 @@ The **Saved Words** section shows your 10 most recently saved words for the curr
 - The Watch History and Saved Words sections only show content for the current target language — switch L2 in the header to see other languages
 - 14-day money-back guarantee. Questions? [Contact us](mailto:jon.long@zerotohero.ca)
 - Cancelling auto-renewal keeps your Pro features active until the end of your billing period — nothing is interrupted early
-` },
-  { path: 'account/registration.md', title: 'Registration.md', category: 'account', content: `# Create your account
+` },\n  { path: 'account/registration.md', title: 'Registration.md', category: 'account', content: `# Create your account
 
 Create your Language Player account in two steps — fill in your details, then verify your email.
 
@@ -163,8 +157,7 @@ If you already registered, click **Log In** at the bottom of the registration fo
 - The verification code expires after a short time — if it does, click **Resend** to get a fresh one
 - Passwords must be at least 8 characters — longer is better for security
 - After registering, set your language level on your **[Profile](/docs/account/profile)** to get level-matched video recommendations
-` },
-  { path: 'account/subscription.md', title: 'Subscription.md', category: 'account', content: `# Subscription
+` },\n  { path: 'account/subscription.md', title: 'Subscription.md', category: 'account', content: `# Subscription
 
 Choose a plan, manage your subscription, and understand what you get with Pro.
 
@@ -249,8 +242,7 @@ When you upgrade, the remaining value of your current plan is credited toward th
 - Lifetime is a one-time payment with no recurring charges — 1. Assuming you will live longer than 2.4 years.
 - Cancelling auto-renewal doesn't delete anything — you keep full Pro access until the period ends
 - If you run into payment issues, contact [Email Support](mailto:jon.long@zerotohero.ca) and we'll help within 24 hours
-` },
-  { path: 'general/language-switcher.md', title: 'Language Switcher.md', category: 'general', content: `# Language Switcher
+` },\n  { path: 'general/language-switcher.md', title: 'Language Switcher.md', category: 'general', content: `# Language Switcher
 
 Language Player works with a language pair — the language you speak and the language you're learning. Everything in the app is built around this pair: the interface appears in your language, videos and dictionary entries are in your learning language, and translations go between the two.
 
@@ -329,8 +321,7 @@ Clear the search to see the full list again with Popular languages at the top.
 - Use the swap button to check how the app looks in your L2 — it's a quick way to test your reading comprehension.
 - If you're learning multiple languages, switch between them from the header. Your progress for each is kept separate.
 - The script toggle for Chinese remembers your choice, so you only need to set it once.
-- Your last-used language pair is saved in your browser. Next time you visit, you'll go straight to your content — no need to pick again.` },
-  { path: 'general/settings.md', title: 'Settings.md', category: 'general', content: `# Settings
+- Your last-used language pair is saved in your browser. Next time you visit, you'll go straight to your content — no need to pick again.` },\n  { path: 'general/settings.md', title: 'Settings.md', category: 'general', content: `# Settings
 
 Settings controls how Language Player looks and behaves while you're learning. Open it from your profile menu. Settings are organized into four tabs — Display, Playback, Speech, and Review.
 
@@ -421,8 +412,7 @@ See [Saved Words & Review](/docs/vocab/saved-words) for how the review system wo
 - If you find yourself looking up every word, try **Hard Words Only** for phonetics to reduce visual clutter
 - Quiz Mode is most effective with shorter texts — start with a paragraph, not a full article
 - Your per-language settings (phonetics, character set, voice) travel with you when you switch between language pairs
-` },
-  { path: 'getting-started.md', title: 'Getting Started.md', category: 'getting-started', content: `# Getting Started
+` },\n  { path: 'getting-started.md', title: 'Getting Started.md', category: 'getting-started', content: `# Getting Started
 
 Welcome to Language Player — learn any language by watching real videos with interactive subtitles. Click any word to see its definition, save it to your vocabulary, and let the app schedule reviews so you never forget.
 
@@ -527,8 +517,7 @@ Settings save automatically and sync across your devices when you're signed in.
 - **Use keyboard shortcuts** in the video player — Space for play/pause, ←/→ to jump between subtitle lines, R to rewind 2 seconds.
 - **Switch languages anytime** from the header. Your settings, saved words, and watch history are tracked per language pair.
 - **Read the docs** — each feature page ends with a Tips section that covers shortcuts and workflows you might miss otherwise.
-` },
-  { path: 'media/explore.md', title: 'Explore.md', category: 'media', content: `# Explore
+` },\n  { path: 'media/explore.md', title: 'Explore.md', category: 'media', content: `# Explore
 
 Discover videos in your target language, matched to your level.
 
@@ -584,8 +573,7 @@ Your channel preferences are saved per language, so subscribing to a Japanese ne
 - Switch levels to find easier or harder content — switching back is instant
 - Use [Music & Entertainment](/docs/media/music) for music videos and entertainment content
 - Your watch history is private and only used to avoid showing the same video twice
-` },
-  { path: 'media/live-tv.md', title: 'Live Tv.md', category: 'media', content: `# Live TV
+` },\n  { path: 'media/live-tv.md', title: 'Live Tv.md', category: 'media', content: `# Live TV
 
 watch live television broadcasts in your target language. No subtitles, no dubbing — just real TV as it airs.
 
@@ -614,8 +602,7 @@ Click any channel to switch to it. The URL updates automatically, so you can boo
 - If a stream stops working, refreshing the page will re-fetch the channel list with fresh health checks
 - Live TV is pure immersion — there are no subtitles or translations. Use the [Video Player](/docs/media/video-player) if you want interactive captions
 - Try channels from different countries that speak the same language (e.g., France, Belgium, and Switzerland for French) to hear different accents and vocabulary
-` },
-  { path: 'media/music.md', title: 'Music.md', category: 'media', content: `# Music & Entertainment
+` },\n  { path: 'media/music.md', title: 'Music.md', category: 'media', content: `# Music & Entertainment
 
 Music videos and entertainment content for your target language.
 
@@ -638,8 +625,7 @@ If you subscribe to a music or entertainment channel, those videos still appear 
 - Use the level filter to find music at your proficiency level
 - Subscribe to your favorite music channels to see their newest videos first
 - Switch between Explore and Music & Entertainment to vary your learning
-` },
-  { path: 'media/search.md', title: 'Search.md', category: 'media', content: `# Search
+` },\n  { path: 'media/search.md', title: 'Search.md', category: 'media', content: `# Search
 
 Find videos and channels in your target language, or jump straight to any YouTube video.
 
@@ -697,8 +683,7 @@ Click any video to open it in the watch page with interactive dual subtitles.
 - browse **popular tags** when you want inspiration — they're a window into what other learners are watching
 - The search bar **detects YouTube URLs in real time**, so you don't even need to press Enter
 
-` },
-  { path: 'media/subs-search.md', title: 'Subs Search.md', category: 'media', content: `# Subtitle Search
+` },\n  { path: 'media/subs-search.md', title: 'Subs Search.md', category: 'media', content: `# Subtitle Search
 
 Search for any word or phrase across millions of video subtitles. See how native speakers actually use it — in context, with timestamps, ready to watch.
 
@@ -732,8 +717,7 @@ Toggle **Exact Match** to restrict results to the exact form you typed. This is 
 - **Use it to verify usage** — before using a new word yourself, check how native speakers use it in real conversations.
 - **Jump between examples** — click different timestamps for the same word to hear it in different contexts, accents, and speaking speeds.
 - **Combine with saved words** — save a word from the dictionary, then use the Examples tab to find videos where you can hear it in action.
-` },
-  { path: 'media/tv-shows.md', title: 'Tv Shows.md', category: 'media', content: `# TV Shows
+` },\n  { path: 'media/tv-shows.md', title: 'Tv Shows.md', category: 'media', content: `# TV Shows
 
 Browse TV series in your target language and watch full episodes with interactive dual subtitles.
 
@@ -782,8 +766,7 @@ A **Back** button at the top returns you to the show list. Your place in the lis
 - The whole series queues up when you play an episode, so you can binge-watch without interruptions
 - Use the [Explore](/docs/media/explore) page for individual videos, not full TV series
 - If a show has episodes in multiple languages, filter by locale to see only the ones in your target language
-` },
-  { path: 'media/video-player.md', title: 'Video Player.md', category: 'media', content: `# Video Player
+` },\n  { path: 'media/video-player.md', title: 'Video Player.md', category: 'media', content: `# Video Player
 
 Watch videos with interactive dual subtitles — click any word to see its definition and save it to your vocabulary list.
 
@@ -884,8 +867,7 @@ Your playback position is saved automatically in your browser and whenever you c
 - Use ← and → to replay lines
 - Slow down playback with the speed toggle when needed
 - Use the queue to watch through a TV show or channel in order
-` },
-  { path: 'media/watch-history.md', title: 'Watch History.md', category: 'media', content: `# Watch History
+` },\n  { path: 'media/watch-history.md', title: 'Watch History.md', category: 'media', content: `# Watch History
 
 Every video you watch is saved to your history. Pick up where you left off, replay favorites, and track what you've been watching.
 
@@ -935,8 +917,7 @@ Your watch history is private. It's only visible to you when you're signed in. I
 - The progress bar on each thumbnail gives you an instant sense of where you left off
 - Switch languages to see separate histories for each language you're learning
 - Your history is scoped to your current L2 — you won't see Japanese videos when you're in Korean mode
-` },
-  { path: 'reading/epub.md', title: 'Epub.md', category: 'reading', content: `# EPUB Reader
+` },\n  { path: 'reading/epub.md', title: 'Epub.md', category: 'reading', content: `# EPUB Reader
 
 Read EPUB e-books with interactive word lookup, per-block translation, and progress that persists across sessions.
 
@@ -988,8 +969,7 @@ Your reading position is saved automatically in your browser:
 - **[Project Gutenberg](https://www.gutenberg.org/)** — 70,000+ free ebooks in many languages (look for " EPUB with images" or " Plain Text UTF-8")
 - **[Aozora Bunko](https://www.aozora.gr.jp/)** (青空文庫) — Japanese literature, public domain
 - **[Wikisource](https://wikisource.org/)** — Public domain texts in many languages, downloadable as EPUB
-` },
-  { path: 'reading/reader.md', title: 'Reader.md', category: 'reading', content: `# Notes Reader
+` },\n  { path: 'reading/reader.md', title: 'Reader.md', category: 'reading', content: `# Notes Reader
 
 Paste or write text in your target language and read it with interactive word lookup, per-block translations, and a built-in note-taking system.
 
@@ -1063,8 +1043,7 @@ Your note is saved as you type. There's no save button — changes are saved to 
 - The \\`⋮\\` menu on each block is a quick way to look up a single word or phrase without switching tabs
 - Keyboard navigation (\\`←\\` \\`→\\`) is faster than clicking page buttons for extended reading
 - Rename your notes to something descriptive — "Chapter 3 notes" is easier to find later than "Untitled"
-` },
-  { path: 'reading/web-reader.md', title: 'Web Reader.md', category: 'reading', content: `# Web Reader
+` },\n  { path: 'reading/web-reader.md', title: 'Web Reader.md', category: 'reading', content: `# Web Reader
 
 Paste a URL and read any web page in your target language with interactive word lookup and translations. No account needed.
 
@@ -1131,8 +1110,7 @@ The text is paginated to fit your screen. Use the \\`←\\` \\`→\\` buttons at
 - Wikipedia articles work particularly well — the content extraction is tuned for Wikipedia's layout
 - Use the \\`?url=\\` parameter to bookmark specific articles in your target language
 - The Web Reader doesn't save your text — if you want to annotate or come back later, copy the URL and paste it into the Notes Reader instead
-- Long articles benefit from keyboard navigation (\\`←\\` \\`→\\`) for faster reading` },
-  { path: 'vocab/dictionary.md', title: 'Dictionary.md', category: 'vocab', content: `# Dictionary
+- Long articles benefit from keyboard navigation (\\`←\\` \\`→\\`) for faster reading` },\n  { path: 'vocab/dictionary.md', title: 'Dictionary.md', category: 'vocab', content: `# Dictionary
 
 The dictionary is your instant word lookup tool. It works everywhere — in subtitles, in search, and on its own dedicated page.
 
@@ -1198,8 +1176,7 @@ Saved words sync across devices if you're logged in. You can browse and manage t
 - **If a word's definition seems off**, check the AI Explanation tab. The AI sometimes catches nuances that dictionary definitions miss.
 - **Switch scripts** in [Settings](/settings) if you prefer traditional Chinese characters or want to see Hanja alongside Korean Hangul.
 
-` },
-  { path: 'vocab/popup-dictionary.md', title: 'Popup Dictionary.md', category: 'vocab', content: `# Popup Dictionary
+` },\n  { path: 'vocab/popup-dictionary.md', title: 'Popup Dictionary.md', category: 'vocab', content: `# Popup Dictionary
 
 Click any word in the subtitles or transcript, and a popup opens with everything you need — definitions, pronunciation, and a quick way to save the word.
 
@@ -1248,8 +1225,7 @@ If you have a word saved in your vocabulary but none of the popup's dictionary e
 - **Click the entry card** (not just the bookmark) to open the full dictionary page for more detail.
 - **Save first, read later** — bookmark interesting words as you watch, then review them in your [Saved Words](/docs/vocab/saved-words) list after the video.
 - **The popup works on any word** — even conjugated verbs, declined nouns, and words with typos. The lemmatizer finds the dictionary form automatically.
-` },
-  { path: 'vocab/review.md', title: 'Review.md', category: 'vocab', content: `# Review
+` },\n  { path: 'vocab/review.md', title: 'Review.md', category: 'vocab', content: `# Review
 
 Review your saved vocabulary with spaced repetition flashcards.
 
@@ -1308,8 +1284,7 @@ To remove a word from your review deck, unsave it from the dictionary entry on t
 - Use the context sentence. Seeing the word in its original sentence is more effective than memorizing in isolation.
 - Tap the three dots on the context sentence to translate or explain the full line before rating.
 - Adjust your daily new card limit in Settings if 20 feels too many or too few.
-` },
-  { path: 'vocab/saved-words.md', title: 'Saved Words.md', category: 'vocab', content: `# Saved Words
+` },\n  { path: 'vocab/saved-words.md', title: 'Saved Words.md', category: 'vocab', content: `# Saved Words
 
 Your personal vocabulary collection. Every word you bookmark from subtitles, the dictionary, or the popup ends up here.
 
@@ -1352,8 +1327,7 @@ A colored dot next to each word in your saved list shows its review status: blue
 - **Use the filter** to find all words from a specific video or TV show. Type part of the video title in the search box.
 - **Export regularly** as a backup. The JSON file includes every form, definition, and context for each word.
 - **Click through to the entry** for any saved word to see its full conjugation tables, video examples, and AI explanation.
-` },
-  { path: 'vocab/subs-search.md', title: 'Subs Search.md', category: 'vocab', content: `# Examples from Videos
+` },\n  { path: 'vocab/subs-search.md', title: 'Subs Search.md', category: 'vocab', content: `# Examples from Videos
 
 See how a word is actually used by native speakers — every result is a real subtitle line from a real video, with a timestamp ready to watch.
 
@@ -1390,14 +1364,4 @@ Toggle **Exact Match** to restrict results to only the dictionary headword. This
 - Click through different timestamps for the same word to hear varied accents and speaking speeds
 - Save a word first, then browse the Examples tab to find videos where you can hear it in action
 - Use the List All view to compare how a word is used across dozens of videos at a glance
-` },
-];
-
-export const DOC_CATEGORIES: { key: string; title: string }[] = [
-  { key: 'account', title: 'Account' },
-  { key: 'general', title: 'General' },
-  { key: 'getting-started', title: 'Getting Started' },
-  { key: 'media', title: 'Media' },
-  { key: 'reading', title: 'Reading' },
-  { key: 'vocab', title: 'Vocab' },
-];
+` },\n];\n\nexport const DOC_CATEGORIES: { key: string; title: string }[] = [\n  { key: 'account', title: 'Account' },\n  { key: 'general', title: 'General' },\n  { key: 'getting-started', title: 'Getting Started' },\n  { key: 'media', title: 'Media' },\n  { key: 'reading', title: 'Reading' },\n  { key: 'vocab', title: 'Vocab' },\n];
