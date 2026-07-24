@@ -104,19 +104,36 @@ export interface LemmatizedToken {
   /** Possible base/dictionary forms. Empty array = non-word token (space, punctuation, line break). */
   lemmas: Lemma[];
   /**
-   * Phonetic guide, populated by these lemmatizers:
-   *   ja — katakana reading from MeCab (e.g. アサゴハン)
-   *   zh / yue — tone-marked pinyin/jyutping from Jieba (e.g. nǐ hǎo)
-   *   ar — Buckwalter transliteration from Qalsadi (e.g. a:lssilaa:mu)
-   *   fa — Latin transliteration via PersianG2p (e.g. salām, xubi)
-   *   ko — Revised Romanization from romanize.py (e.g. annyeonghaseyo)
-   *   ru — Cyrillic→Latin from romanize.py (e.g. privet)
+   * Phonetic guide, populated by these lemmatizers only:
    *
-   * Other non-Latin scripts (el, bg, uk, hy, ka) get romanization
-   * from romanize.py when their lemmatizers are available.
+   *   Language-specific lemmatizers (high-quality, language-aware):
+   *     ja — katakana reading from MeCab (e.g. アサゴハン)
+   *     zh / yue — tone-marked pinyin/jyutping from Jieba (e.g. nǐ hǎo)
+   *     ar — Buckwalter transliteration from Qalsadi (e.g. a:lssilaa:mu)
+   *     fa — Latin transliteration via PersianG2p (e.g. salām, xubi)
    *
-   * Absent (null/undefined) for Latin-script languages:
-   *   tr, my, and all spaCy/Simplemma languages (en, fr, de, es, fi, sw, etc.)
+   *   romanize.py (script-level transliteration, all non-Latin scripts):
+   *     ko — Revised Romanization (e.g. annyeonghaseyo)
+   *     ru, bg, uk — Cyrillic→Latin (e.g. privet)
+   *     el — Greek→Latin (e.g. kaliméra)
+   *     hy — Armenian→Latin   ka — Georgian→Latin
+   *     th — Thai→Latin (when lemmatizer is available)
+   *
+   * Absent (null/undefined) for languages where phonetics are suppressed
+   * by isPhoneticsEligible() (packages/utils/src/language.ts):
+   *   — All Latin-script languages (en, fr, de, es, vi, tr, sw, etc.)
+   *     Reason: the native script is already readable to the learner.
+   *   — Burmese (my)
+   *     Reason: complex script with no reliable romanizer yet.
+   *
+   * IPA display on individual words was explored but deemed infeasible:
+   *   — Dictionary phonetic_detail.ipa coverage is sparse and inconsistent
+   *     across sources (CEDICT, EDICT, Wiktionary).
+   *   — IPA is visually dense and distracting when shown on every word
+   *     (unlike pinyin/furigana which use familiar Latin characters).
+   *   — For the small subset of words with IPA data, showing it would
+   *     create an inconsistent experience where some words have it and
+   *     others don't, confusing learners.
    */
   pronunciation?: string;
 }
@@ -702,9 +719,13 @@ export interface L2Settings {
 export interface TokenSpanSettings {
   phonetics: {
     /**
-     * `ruby`  — annotation above characters (pinyin on hanzi, furigana on kanji)
-     * `word`  — show ONLY phonetics, hide the original script
-     * `false` — hidden entirely
+     * `ruby`  — annotation above characters (pinyin on hanzi, furigana on kanji,
+     *            romanization above Cyrillic / Greek / Thai / hangul).
+     * `word`  — show ONLY phonetics, hide the original script.
+     * `false` — hidden entirely. Also forced for languages where phonetics are
+     *            suppressed: all Latin-script languages (en, fr, de, vi, tr, sw,
+     *            etc.) and Burmese (my). See isPhoneticsEligible() in
+     *            @langplayer/utils.
      */
     show: 'ruby' | 'word' | false;
     /**
