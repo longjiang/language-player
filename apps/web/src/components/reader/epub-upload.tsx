@@ -18,21 +18,33 @@ interface EpubUploadProps {
   onFileLoaded: (data: ArrayBuffer, fileName: string) => void;
   /** Stored EPUB file name (shown as "last opened"). */
   fileName?: string | null;
+  /** Error message to display (e.g. parse failure from parent). */
+  error?: string | null;
 }
 
 export function EpubUpload({
   onFileLoaded,
   fileName,
+  error,
 }: EpubUploadProps) {
   const t = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleFile = useCallback(async (file: File) => {
-    if (!file.name.endsWith('.epub')) return;
-    const arrayBuffer = await file.arrayBuffer();
-    onFileLoaded(arrayBuffer, file.name);
-  }, [onFileLoaded]);
+    if (!file.name.endsWith('.epub')) {
+      setLocalError(t('msg.epub_not_supported'));
+      return;
+    }
+    setLocalError(null);
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      onFileLoaded(arrayBuffer, file.name);
+    } catch {
+      setLocalError(t('msg.epub_file_unreadable'));
+    }
+  }, [onFileLoaded, t]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -75,6 +87,9 @@ export function EpubUpload({
           <p className="mt-4 text-xs text-muted-foreground">
             {t('msg.last_epub', { name: fileName })}
           </p>
+        )}
+        {(localError || error) && (
+          <p className="mt-4 text-sm text-destructive">{localError || error}</p>
         )}
       </div>
     </div>
