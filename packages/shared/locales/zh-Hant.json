@@ -680,6 +680,7 @@
         "sending": "傳送中…",
         "set_level_for_recommendations": "設定您目前的 {l2} 程度以獲得個人化影片推薦。",
         "settings_desc": "設定您的 {l1} → {l2} 學習體驗。",
+        "settings_saved": "設定已儲存",
         "show_definition_desc": "在每個單字下方顯示字典的第一條釋義。",
         "show_gloss_saved_desc": "在已儲存到詞彙表的單字上方顯示快速翻譯。",
         "show_phonetics_desc": "在字幕和文本中的字詞上方顯示拼音、注音或發音。",

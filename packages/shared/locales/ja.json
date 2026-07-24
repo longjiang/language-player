@@ -683,6 +683,7 @@
         "sending": "送信中...",
         "set_level_for_recommendations": "パーソナライズされた動画のおすすめのために、現在の{l2}レベルを設定してください。",
         "settings_desc": "{l1} → {l2} の学習体験を設定してください。",
+        "settings_saved": "設定を保存しました",
         "show_definition_desc": "各単語の下に辞書の最初の定義を表示します。",
         "show_gloss_saved_desc": "単語帳に保存した単語の上にクイック訳を表示します。",
         "show_phonetics_desc": "字幕やテキストの単語の上にピンイン・ふりがな・発音を表示します。",

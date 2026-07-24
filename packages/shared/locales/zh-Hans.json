@@ -685,6 +685,7 @@
         "sending": "正在发送...",
         "set_level_for_recommendations": "设置您当前的{l2}水平，以获取匹配的视频推荐。",
         "settings_desc": "配置您的 {l1} → {l2} 学习体验。",
+        "settings_saved": "设置已保存",
         "show_definition_desc": "在每个单词下方显示词典的第一条释义。",
         "show_gloss_saved_desc": "在已保存到词汇表的单词上方显示快速翻译。",
         "show_phonetics_desc": "在字幕和文本中的字词上方显示拼音、注音或发音。",

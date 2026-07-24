@@ -683,6 +683,7 @@
         "sending": "Lähetetään...",
         "set_level_for_recommendations": "Aseta nykyinen {l2}-tasosi henkilökohtaisia videosuosituksia varten.",
         "settings_desc": "Määritä {l1} → {l2}-oppimiskokemuksesi.",
+        "settings_saved": "Asetukset tallennettu",
         "show_definition_desc": "Näytä kunkin sanan ensimmäinen sanakirjamääritelmä sanan alla.",
         "show_gloss_saved_desc": "Näytä nopea käännös sanastolistaasi tallentamiesi sanojen yläpuolella.",
         "show_phonetics_desc": "Näytä pinyin, furigana tai ääntämys sanojen yllä tekstityksissä ja teksteissä.",
