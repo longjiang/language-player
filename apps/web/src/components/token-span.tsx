@@ -52,6 +52,9 @@ export interface TokenSpanProps {
   /** ko: show hanja alongside hangul. vi: show hán tự alongside quốc ngữ. Ignored otherwise. */
   byeonggi: boolean;
   onClick: () => void;
+  /** Monotonically incremented by TokenizedText when bulk dictionary lookup completes.
+   *  TokenSpan reads this to know when cached entries may have updated. */
+  cacheVersion: number;
 }
 
 /**
@@ -72,6 +75,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   mode,
   byeonggi,
   onClick,
+  cacheVersion,
 }) => {
   // ── Quiz mode: toggle blank reveal per-word ──
   const [quizRevealed, setQuizRevealed] = useState(false);
@@ -129,15 +133,23 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   ) : null;
 
   // ── "Hard words only" filter: suppress phonetics for easy words ──
-  const showPhonetics = useMemo(() => {
+  //
+  // NOT memoized: the dictionary cache is populated asynchronously.
+  // memoizing would lock in the initial (cache-miss) result and never
+  // recompute when entries arrive.
+  const showPhonetics = (() => {
     if (phoneticsMode === false) return false;
     if (phoneticsConditions === 'always') return true;
-    // hardWords: show only if word difficulty >= user level
+
+    // hardWords — only show if we have dictionary data confirming the
+    // word is at or above the user's proficiency level.
     if (!userLevel || userLevel < 1) return true; // no level set → show all
     const diff = getWordDifficulty(l2Code, token.lemmas);
-    if (diff === null) return true; // no difficulty data → err on side of helping
+    // No cached entry yet → don't show. We don't know if it's easy or hard.
+    // Once the async bulk lookup completes and re-renders, this will re-evaluate.
+    if (diff === null) return false;
     return diff >= userLevel;
-  }, [phoneticsMode, phoneticsConditions, userLevel, l2Code, token.lemmas]);
+  })();
 
   // ── Structural tokens: newlines → <br />, spaces/punctuation → raw text ──
   if (token.text === '\n' || token.text === '\r') {

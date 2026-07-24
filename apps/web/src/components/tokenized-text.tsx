@@ -85,6 +85,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [convertedText, setConvertedText] = useState(text);
   const [converting, setConverting] = useState(false);
   const [hasBeenVisible, setHasBeenVisible] = useState(false);
+  const [cacheVersion, setCacheVersion] = useState(0);
   const containerRef = useRef<HTMLSpanElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false); // prevent concurrent fetches
@@ -277,7 +278,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       l1Code: l1.code,
     }));
 
-    bulkLookupWords(words);
+    bulkLookupWords(words).then(() => setCacheVersion(v => v + 1));
   }, [tokens, loading, error, l2Code, l1.code]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken) => {
@@ -352,6 +353,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
                 (!!highlightForms && highlightForms.some((f) => f === token.text))
               }
               onClick={() => handleTokenClick(token)}
+              cacheVersion={cacheVersion}
             />
           );
         })}
