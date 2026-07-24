@@ -44,6 +44,7 @@ function savePosition(videoId: string, time: number) {
 
 interface SyncedLine {
   starttime: number;
+  duration?: number;
   l1Line: string;
   l2Line: string;
 }

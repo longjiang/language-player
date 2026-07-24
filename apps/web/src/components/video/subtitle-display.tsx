@@ -29,7 +29,7 @@ interface SubtitleDisplayProps {
   /** Ref to the scrollable container — when provided, scrolling only happens when line leaves view */
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
   /** Pre-loaded subtitle lines — if provided, skips the subtitles API fetch */
-  initialLines?: { starttime: number; l1Line: string; l2Line: string }[];
+  initialLines?: SyncedLine[];
   /** Display mode: 'multiline' (default) shows all lines; 'singleline' shows only the active line ± contextLines. */
   mode?: 'multiline' | 'singleline';
   /** In singleline mode, how many context lines to show before and after the active line. Default: 0. */
@@ -61,7 +61,11 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
 
   useEffect(() => {
     if (initialLines) {
-      const l2Only = initialLines.map(l => ({ line: stripDurationPrefix(l.l2Line), starttime: l.starttime }));
+      const l2Only = initialLines.map(l => ({
+        line: stripDurationPrefix(l.l2Line),
+        starttime: l.starttime,
+        duration: l.duration,
+      }));
       setL2Lines(l2Only);
       onLinesLoaded?.(l2Only.map(l => l.starttime));
       return;
@@ -73,9 +77,10 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       const res = await fetch(`/api/videos/${youtubeId}/subtitles?l2=${l2Code}&l1=${l1Code}`);
       if (!res.ok) return;
       const data = await res.json();
-      const lines = data.lines?.map((l: any) => ({
+      const lines = data.lines?.map((l: SyncedLine) => ({
         line: stripDurationPrefix(l.l2Line ?? ''),
         starttime: l.starttime,
+        duration: l.duration,
       })) ?? [];
       setL2Lines(lines);
       onLinesLoaded?.(lines.map((l: SubtitleLine) => l.starttime));
@@ -97,7 +102,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     if (translatedLines.length > 0) {
       return syncLines(translatedLines, l2Lines);
     }
-    return l2Lines.map((l) => ({ starttime: l.starttime, l1Line: '', l2Line: l.line }));
+    return l2Lines.map((l) => ({ starttime: l.starttime, duration: l.duration, l1Line: '', l2Line: l.line }));
   }, [l2Lines, translatedLines]);
 
   useEffect(() => {
@@ -237,9 +242,8 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
           // Compute karaoke progress for the active line
           let karaokeProgress: number | undefined;
           if (isActive && playback.karaokeMode) {
-            const lineDuration = syncedLines[i + 1]
-              ? syncedLines[i + 1]!.starttime - line.starttime
-              : 3; // fallback for last line
+            const lineDuration = line.duration
+              ?? (syncedLines[i + 1] ? syncedLines[i + 1]!.starttime - line.starttime : 3);
             karaokeProgress = lineDuration > 0
               ? Math.min(1, Math.max(0, (currentTime - line.starttime) / lineDuration))
               : 0;

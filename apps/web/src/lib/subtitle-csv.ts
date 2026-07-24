@@ -136,6 +136,9 @@ export function parseCSVSubtitles(csv: string): SubtitleLine[] {
   const timeIdx = headerFields.findIndex(
     (h) => h.trim().toLowerCase() === 'starttime',
   );
+  const durIdx = headerFields.findIndex(
+    (h) => h.trim().toLowerCase() === 'duration',
+  );
   if (lineIdx === -1 || timeIdx === -1) return [];
 
   const dataRows = rows.slice(1);
@@ -154,7 +157,16 @@ export function parseCSVSubtitles(csv: string): SubtitleLine[] {
     const line = decodeHTMLEntities(fields[lineIdx]!).trim();
     if (!line) continue;
 
-    result.push({ starttime, line });
+    const entry: SubtitleLine = { starttime, line };
+    // Parse duration if the column exists in the CSV
+    if (durIdx !== -1 && fields.length > durIdx) {
+      const dur = parseFloat(fields[durIdx]!);
+      if (!isNaN(dur) && dur > 0) {
+        entry.duration = dur;
+      }
+    }
+
+    result.push(entry);
   }
 
   return result;
@@ -164,6 +176,7 @@ export function parseCSVSubtitles(csv: string): SubtitleLine[] {
 
 export interface SyncedLine {
   starttime: number;
+  duration?: number;
   l1Line: string;
   l2Line: string;
 }
@@ -201,6 +214,7 @@ export function syncLines(
       used.add(bestIdx);
       synced.push({
         starttime: l1.starttime,
+        duration: l1.duration ?? l2Sorted[bestIdx]?.duration,
         l1Line: l1.line,
         l2Line: l2Sorted[bestIdx]!.line,
       });
@@ -212,6 +226,7 @@ export function syncLines(
     if (!used.has(i)) {
       synced.push({
         starttime: l2Sorted[i]!.starttime,
+        duration: l2Sorted[i]?.duration,
         l1Line: '',
         l2Line: l2Sorted[i]!.line,
       });

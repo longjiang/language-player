@@ -35,6 +35,8 @@ export interface YouTubeVideo {
 export interface SubtitleLine {
   line: string;
   starttime: number;
+  /** Duration in seconds from the subtitle data. Available when parsed from Directus CSV. */
+  duration?: number;
 }
 
 /** A video result from the /subs-search endpoint. */
