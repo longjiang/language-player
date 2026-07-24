@@ -9,23 +9,8 @@ import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { TokenizedText } from '../TokenizedText';
-import type { DictionaryEntry, SubtitleLine } from '@langplayer/shared';
-import type { TokenCache } from '@langplayer/shared';
-
-/** Parse Directus-style CSV subs_l2 string → SubtitleLine[]. Format: starttime,line */
-function parseCSVSubs(csv: string): SubtitleLine[] {
-  const lines: SubtitleLine[] = [];
-  const rows = csv.split('\n');
-  for (const row of rows) {
-    const parts = row.split(',');
-    const t = parseFloat(parts[0]!);
-    if (isNaN(t)) continue;
-    const text = parts.slice(1).join(',').trim();
-    if (!text) continue;
-    lines.push({ starttime: t, line: text });
-  }
-  return lines;
-}
+import { parseSubtitleCSV } from '@langplayer/utils';
+import type { DictionaryEntry, SubtitleLine, TokenCache } from '@langplayer/shared';
 
 interface SubtitleDisplayProps {
   youtubeId?: string;
@@ -97,7 +82,7 @@ export function SubtitleDisplay({
           const dj = await dr.json();
           const video = Array.isArray(dj) ? dj[0] : dj?.data?.[0] ?? dj;
           if (video?.subs_l2 && typeof video.subs_l2 === 'string' && video.subs_l2.length > 100) {
-            lines = parseCSVSubs(video.subs_l2);
+            lines = parseSubtitleCSV(video.subs_l2);
           }
         }
       } catch { /* Directus failed, fall through to YouTube */ }
