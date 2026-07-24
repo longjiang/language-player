@@ -320,25 +320,27 @@ export default function WatchPage() {
     return (
       <div className="mx-auto max-w-7xl px-4 py-6">
         <div className="flex flex-col gap-6">
-          <div ref={videoWrapperRef} className="sticky top-[3.5rem] z-10 bg-background pb-2">
-            {playerElement}
-          </div>
-          <div className="flex justify-end">
-            <VideoControlBar
-              reduced
-              playerRef={playerRef}
-              currentTime={currentTime}
-              duration={duration}
-              paused={paused}
-              onPauseToggle={handlePauseToggle}
-              onPreviousLine={handlePreviousLine}
-              onNextLine={handleNextLine}
-              onPreviousVideo={playPrevious}
-              onNextVideo={playNext}
-              onTogglePanel={handleTogglePanel}
-              hasPreviousVideo={hasPrevious}
-              hasNextVideo={hasNext}
-            />
+          <div className="sticky top-[3.5rem] z-10 bg-background">
+            <div ref={videoWrapperRef} className="pb-2">
+              {playerElement}
+            </div>
+            <div className="flex justify-end pb-3">
+              <VideoControlBar
+                reduced
+                playerRef={playerRef}
+                currentTime={currentTime}
+                duration={duration}
+                paused={paused}
+                onPauseToggle={handlePauseToggle}
+                onPreviousLine={handlePreviousLine}
+                onNextLine={handleNextLine}
+                onPreviousVideo={playPrevious}
+                onNextVideo={playNext}
+                onTogglePanel={handleTogglePanel}
+                hasPreviousVideo={hasPrevious}
+                hasNextVideo={hasNext}
+              />
+            </div>
           </div>
           <VideoMeta video={v} />
           {v.channel_id && <YouTubeChannelCard channelId={v.channel_id!} />}
