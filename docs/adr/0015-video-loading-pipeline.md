@@ -24,6 +24,46 @@ This ADR documents the end-to-end data flow as it currently stands, including al
 
 ---
 
+## Pipeline 0: Page Metadata (SEO / Social Sharing)
+
+### Design decision
+
+`generateMetadata` in the watch layout is **deliberately static** — no Directus fetch, no API calls of any kind. Only the `videoId` from the URL params is used to construct the YouTube thumbnail URL.
+
+### Rationale
+
+In Next.js App Router, `generateMetadata` runs before the layout renders and **blocks the entire RSC response**. This means:
+
+- `loading.tsx` cannot show until `generateMetadata` resolves
+- Any outbound I/O (Directus fetch, translate API) adds latency before any UI change is visible to the user
+- On client-side navigation, the user sees a freeze (old page remains visible) until metadata resolves
+
+This was especially problematic with `cache: 'no-store'` which forced fresh fetches on every request, but even with ISR caching (`next: { revalidate }`), the first request to each video still blocks. In dev mode, `revalidate` is ignored entirely.
+
+### Current behavior
+
+| Meta tag | Value |
+|---|---|
+| `<title>` | "Watch Video" (static, updated client-side via `document.title` after `/api/videos` resolves) |
+| `og:title` | "Watch Video" |
+| `og:description` | Generic description |
+| `og:image` | `https://img.youtube.com/vi/{videoId}/hqdefault.jpg` (constructed from URL param, no fetch) |
+
+### Trade-off
+
+**Pro:** Zero blocking — navigation is instant, `loading.tsx` spinner shows immediately.
+
+**Con:** Social crawlers see "Watch Video" as the title instead of the actual video title. The YouTube thumbnail is still correct (video ID is in the URL). A future OG image route (`/og/video`) could render a rich share card with the translated title fetched asynchronously — social crawlers fetch images lazily, so this wouldn't block page loads.
+
+### Files
+
+| File | Role |
+|---|---|
+| `apps/web/src/app/[l1]/[l2]/watch/[videoId]/layout.tsx` | Static `generateMetadata` |
+| `apps/web/src/app/[l1]/[l2]/watch/[videoId]/page.tsx` | Client-side `document.title` update after video loads |
+
+---
+
 ## Pipeline 1: Video Metadata + Subtitle Lines
 
 ### Flow

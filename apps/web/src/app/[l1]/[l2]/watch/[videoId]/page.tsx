@@ -109,7 +109,12 @@ export default function WatchPage() {
         const res = await fetch(`/api/videos/${videoId}?l2=${baseCode(l2.code)}&l1=${baseCode(l1.code)}`);
         if (!res.ok) throw new Error('Video not found');
         const data = await res.json();
-        setVideo(data.video ?? data);
+        const v = data.video ?? data;
+        setVideo(v);
+        // Update document title client-side (generateMetadata is static for perf)
+        if (v?.title) {
+          document.title = v.title;
+        }
         if (data.lines) {
           setSubtitleLines(data.lines);
           setSubtitleStartTimes(data.lines.map((l: any) => l.starttime));
