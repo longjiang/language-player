@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Vis full interaktiv transkripsjon i stedet for undertekster synkronisert med videoen.",
         "translated_subtitles": "Oversatt teksting tilgjengelig",
         "translating": "Oversetter…",
+        "translation_failed": "Oversettelsen mislyktes. Vennligst prøv igjen.",
         "tried_lemmas": "Prøvde lemmaer",
         "try_again_or_contact": "Vennligst prøv igjen, eller kontakt oss for hjelp.",
         "tv_shows_desc": "Bla gjennom TV-serier på {l2} med undertekster.",

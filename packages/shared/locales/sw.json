@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Onyesha nakala kamili wasilianifu badala ya manukuu yanayosawazishwa na video.",
         "translated_subtitles": "Manukuu yaliyotafsiriwa yanapatikana",
         "translating": "Inatafsiri…",
+        "translation_failed": "Tafsiri imeshindwa. Tafadhali jaribu tena.",
         "tried_lemmas": "Majaribio ya lema",
         "try_again_or_contact": "Tafadhali jaribu tena, au wasiliana nasi kwa usaidizi.",
         "tv_shows_desc": "Vinjari vipindi vya TV katika {l2} vilivyo na manukuu.",

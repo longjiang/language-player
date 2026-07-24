@@ -92,14 +92,13 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     fetchSubtitles().catch(() => {});
   }, [youtubeId, l2Code, l1Code, initialLines, isSingleline]);
 
-  const { translatedLines, loading: translating, progress } = useSubtitleTranslation(
+  const { translatedLines, loading: translating, progress, error, retry } = useSubtitleTranslation(
     l2Lines,
     l1.code,
     l2Code,
     showTranslation,
     activeIndex,
   );
-  // retry available on the returned object for error recovery UI (future)
 
   const syncedLines = useMemo(() => {
     // translatedLines is a sparse array from the lazy translation hook —
@@ -220,6 +219,17 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   // ── Multiline mode (default) ──
   return (
     <div>
+      {error && showTranslation && (
+        <div className="mb-3 flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm">
+          <span className="text-destructive">{t('msg.translation_failed')}</span>
+          <button
+            onClick={retry}
+            className="rounded-md bg-destructive/20 px-3 py-1 text-xs font-medium text-destructive hover:bg-destructive/30 transition-colors"
+          >
+            {t('action.retry')}
+          </button>
+        </div>
+      )}
       <div className="space-y-2" ref={listRef}>
         {syncedLines.map((line, i) => {
           const isActive = i === activeIndex;

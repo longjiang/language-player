@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Hiển thị bảng điểm tương tác đầy đủ thay vì phụ đề đồng bộ với video.",
         "translated_subtitles": "Có phụ đề dịch",
         "translating": "Đang dịch…",
+        "translation_failed": "Dịch thuật thất bại. Vui lòng thử lại.",
         "tried_lemmas": "Đã thử các dạng gốc",
         "try_again_or_contact": "Vui lòng thử lại hoặc liên hệ với chúng tôi để được hỗ trợ.",
         "tv_shows_desc": "Duyệt các chương trình TV bằng {l2} có phụ đề.",

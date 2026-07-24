@@ -707,6 +707,7 @@
         "transcript_mode_desc": "동영상에 동기화된 자막 대신 전체 대화형 대본을 표시합니다.",
         "translated_subtitles": "번역 자막 가능",
         "translating": "번역 중…",
+        "translation_failed": "번역에 실패했습니다. 다시 시도해 주세요.",
         "tried_lemmas": "시도한 표제어",
         "try_again_or_contact": "다시 시도하거나 지원을 위해 문의해 주세요.",
         "tv_shows_desc": "자막과 함께 {l2}의 TV 프로그램을 탐색하세요.",

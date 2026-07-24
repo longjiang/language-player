@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Wyświetl pełny interaktywny transkrypt zamiast napisów zsynchronizowanych z wideo.",
         "translated_subtitles": "Przetłumaczone napisy dostępne",
         "translating": "Tłumaczenie…",
+        "translation_failed": "Tłumaczenie nie powiodło się. Spróbuj ponownie.",
         "tried_lemmas": "Próbowane lematy",
         "try_again_or_contact": "Spróbuj ponownie lub skontaktuj się z nami po pomoc.",
         "tv_shows_desc": "Przeglądaj programy telewizyjne w {l2} z napisami.",

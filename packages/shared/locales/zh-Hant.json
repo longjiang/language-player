@@ -704,6 +704,7 @@
         "transcript_mode_desc": "顯示完整的互動式逐字稿，而非與影片同步的字幕。",
         "translated_subtitles": "提供翻譯字幕",
         "translating": "翻譯中…",
+        "translation_failed": "翻譯失敗，請重試。",
         "tried_lemmas": "已嘗試以下詞條：",
         "try_again_or_contact": "請再試一次，或聯絡我們尋求協助。",
         "tv_shows_desc": "瀏覽 {l2} 的電視節目，附帶字幕。",

@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Mostrar la transcripción interactiva completa en lugar de subtítulos sincronizados con el vídeo.",
         "translated_subtitles": "Subtítulos traducidos disponibles",
         "translating": "Traduciendo…",
+        "translation_failed": "Falló la traducción. Inténtalo de nuevo.",
         "tried_lemmas": "Lemas probados",
         "try_again_or_contact": "Intente de nuevo o contáctenos para recibir ayuda.",
         "tv_shows_desc": "Explore programas de TV en {l2} con subtítulos.",

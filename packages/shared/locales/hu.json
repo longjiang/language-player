@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Teljes interaktív átirat megjelenítése a videóval szinkronizált feliratok helyett.",
         "translated_subtitles": "Fordított feliratok elérhetők",
         "translating": "Fordítás…",
+        "translation_failed": "A fordítás nem sikerült. Kérlek próbáld újra.",
         "tried_lemmas": "Kipróbált lemmák",
         "try_again_or_contact": "Kérjük, próbáld újra, vagy vedd fel velünk a kapcsolatot segítségért.",
         "tv_shows_desc": "Böngéssz TV-műsorokat a következőben: {l2} felirattal.",

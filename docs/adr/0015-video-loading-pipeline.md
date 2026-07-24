@@ -147,34 +147,39 @@ TokenizedText (after tokens load)
 
 ### Flow
 
-Since `subs_l1` is deprecated, all L1 translations come from `/translate_array` with a server-side cache. Translation is **lazy** — only chunks near the user's viewport are translated eagerly; the rest fills in the background.
+Since `subs_l1` is deprecated, all L1 translations come from `/translate_array` with a server-side cache. Translation is **playhead-driven** — only chunks within a fixed window (±LOOKAHEAD_CHUNKS) of the current playhead position are translated. Lines far from the playhead are never translated unless the user watches (or seeks) near them.
 
 ```
 SubtitleDisplay
   → useSubtitleTranslation(l2Lines, l1, l2, enabled, activeIndex)
-    → _pickNextChunk(activeIndex, done, totalChunks)  ← priority order
-      1. Chunk 0 (top of transcript — always first)
-      2. Chunks ±LOOKAHEAD_CHUNKS around activeIndex
-      3. Remaining chunks sequentially (background fill)
-    → POST /translate_array { texts: chunk }
-      → Python: server-side cache → cache HIT returns instantly
-      → cache MISS → ChatGPT → stores in cache
+    → Watcher effect: activeIndex changes → any new chunks in lookahead window?
+      → YES → increment retryCounter → restart translation loop
+      → NO  → nothing (all chunks in window already translated)
+
+    → Translation loop (runs when retryCounter changes):
+      → while (_pickNextChunk(activeIndex, done, totalChunks) !== -1):
+        → POST /translate_array { texts: chunk }
+          → Python: server-side cache → cache HIT returns instantly
+          → cache MISS → ChatGPT → stores in cache
+      → all lookahead chunks done → loop exits, loading = false
+
   → syncLines(validTranslatedLines, l2Lines) → paired output
 ```
 
-### Priority-based lazy loading
+### Playhead-driven window
 
-Instead of translating all 300 lines eagerly (60 API calls), the hook uses `_pickNextChunk()` to order chunks by relevance to the user's current position:
+Only chunks within ±LOOKAHEAD_CHUNKS of the playhead are ever translated. `_pickNextChunk()` expands outward from the priority chunk (ahead first):
 
-| Priority | What | When |
-|---|---|---|
-| 1 | Chunk 0 (lines 0–4) | Immediately — fills initial viewport |
-| 2 | Chunks ±3 around `activeIndex` | Keeps ahead of the user as they watch/scroll |
-| 3 | Remaining chunks in order | Background fill once priority chunks are done |
+| Radius | Chunks checked |
+|---|---|
+| 0 | `prio` (chunk containing activeIndex) |
+| 1 | `prio+1`, `prio-1` |
+| 2 | `prio+2`, `prio-2` |
+| 3 | `prio+3`, `prio-3` |
 
-The user's `activeIndex` is read via a **ref** (not an effect dependency), so the translation loop isn't restarted on every frame during playback. Priority is re-checked before each chunk via `_pickNextChunk()`.
+Returns `-1` when all chunks in the window are translated. A **watcher effect** monitors `activeIndex` changes and restarts the translation loop (via `retryCounter`) whenever the playhead moves into a new chunk region that has untranslated chunks.
 
-A 300-line transcript costs ~10 API calls for a typical viewing session instead of 60. Jumping to line 250 mid-session prioritizes that region without discarding already-translated chunks.
+A 300-line video (60 chunks) with the playhead at 0 translates chunks 0–3 (~20 lines) on initial load. As the video plays, the watcher triggers a restart roughly every 15 lines (3 chunks × 5 lines/chunk) as the playhead crosses a chunk boundary at the edge of the window. A full watch-through costs ~20 API calls — proportional to video length, not transcript length.
 
 ### Error handling
 
@@ -183,21 +188,22 @@ If a chunk fails (network error, server down), the loop **stops immediately** ra
 - `error: string | null` — set to a translation key on failure
 - `retry()` — increments a counter that restarts the loop, preserving already-translated chunks
 
-Error is auto-cleared when `l2Lines` changes (new video).
+A destructive-themed error banner with a Retry button is shown above the subtitle lines when `error` is set and `showTranslation` is true. Error is auto-cleared when `l2Lines` changes (new video).
 
 ### Key facts
 
 - **Server-side translation cache** per `(text, l1, l2)`. Warm cache returns instantly — no ChatGPT cost. Cold cache calls ChatGPT and stores the result.
 - **Chunk size of 5** is intentional — shows progressive results. With a warm cache, each chunk returns near-instantly regardless of priority.
-- **`display.translation` setting** enables/disables the entire pipeline. When disabled, no API calls are made.
-- **Transcript mode**: all lines in DOM, translation is lazy. **Subtitles mode**: only the active line renders, so only one chunk is ever needed.
+- **`display.translation` setting** enables/disables the entire pipeline. When disabled, no API calls are made and `loading` is set to `false`.
+- **Transcript mode**: all lines in DOM, translation is playhead-driven. **Subtitles mode**: only the active line renders, so only one chunk is ever needed.
+- **Lines far from the playhead remain untranslated.** If the user never watches near the end of a video, those lines are never sent to the translation server. Seeking or scrubbing to a new position triggers translation of the new region.
 
 ### Files
 
 | File | Role |
 |---|---|
-| `apps/web/src/components/video/subtitle-display.tsx` | Receives `initialLines`, triggers translation |
-| `apps/web/src/hooks/use-subtitle-translation.ts` | Lazy, priority-based `/translate_array` calls with stop-on-error, retry, and ref-based activeIndex tracking |
+| `apps/web/src/components/video/subtitle-display.tsx` | Receives `initialLines`, triggers translation, shows error banner with retry |
+| `apps/web/src/hooks/use-subtitle-translation.ts` | Playhead-driven `/translate_array` calls with watcher effect, stop-on-error, retry, and ref-based activeIndex tracking |
 | `zerotohero-python-server/routes/translate.py` | `/translate_array` — ChatGPT-powered translation |
 
 ---
@@ -262,10 +268,12 @@ User opens video
 │   └─ 3c. User level (per TokenizedText)
 │       └─ useProgressLevel() → localStorage read (instant, no API)
 │
-├─ 4. Translation (SubtitleDisplay — lazy, priority-based)
-│   ├─ _pickNextChunk(activeIndex) → chunk 0 first, then chunks near user
-│   ├─ POST /translate_array (only chunks near user's viewport)
-│   └─ Remaining chunks fill in background as user scrolls
+├─ 4. Translation (SubtitleDisplay — playhead-driven window)
+│   ├─ Watcher effect fires on initial activeIndex → starts translation loop
+│   ├─ _pickNextChunk(activeIndex) → chunks within ±LOOKAHEAD_CHUNKS of playhead
+│   ├─ POST /translate_array (only chunks in the lookahead window)
+│   ├─ All lookahead chunks done → loop exits, loading = false
+│   └─ As video plays: watcher re-triggers when new chunks enter the window
 │
 └─ 5. UI ready — video plays, subtitles show with word-level dictionary popups
 ```
@@ -281,7 +289,7 @@ User opens video
 | 300× `POST /lemmatize-normalized` fallback | All instances check empty cache before first response | In-flight promise dedup in `TokenizedText` | `3b4034a3` |
 | `/lemmatize-video-normalized` called with wrong ID | YouTube ID (`params.videoId`) passed instead of Directus ID | Pass `video?.id` (Directus ID) instead | `92990974` |
 | — | — | — | — |
-| `/translate_array` eager for all 300 lines | `subs_l1` is deprecated; translations must be computed on-the-fly | Lazy, priority-based loading: only chunks near viewport. ~10 calls per session instead of 60. Stop-on-error with retry. | `bbd6522c` |
+| `/translate_array` eager for all 300 lines | `subs_l1` is deprecated; translations must be computed on-the-fly | Playhead-driven window: only chunks within ±LOOKAHEAD_CHUNKS of activeIndex. Watcher effect restarts loop when playhead moves into new regions. ~20 calls per full watch-through (proportional to video length). Stop-on-error with retry + error banner. | `bbd6522c` |
 
 ---
 
@@ -291,7 +299,7 @@ User opens video
 |---|---|
 | `/lemmatize-video-normalized` | Server-side disk cache via `utils_video_lemma.py`. Lemmatized once, served from cache on subsequent requests. |
 | `/dictionary/lookup-batch` | LLM results cached in `cache/dictionary_llm/{l1}/{l2}-{hash}.json`. CSV dictionaries are in-memory SQLite. |
-| `/translate_array` | Server-side cache per (text, l1, l2). Frontend lazy-loads by priority — only chunks near viewport requested. Stop-on-error with retry. |
+| `/translate_array` | Server-side cache per (text, l1, l2). Frontend translates only chunks within ±LOOKAHEAD_CHUNKS of playhead. Watcher effect triggers translation of new regions as the video plays. Stop-on-error with retry + error banner. |
 
 ---
 

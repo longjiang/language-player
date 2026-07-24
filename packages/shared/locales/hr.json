@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Prikaži cijeli interaktivni transkript umjesto titlova sinkroniziranih s videom.",
         "translated_subtitles": "Prevedeni titlovi dostupni",
         "translating": "Prevođenje…",
+        "translation_failed": "Prijevod nije uspio. Pokušajte ponovno.",
         "tried_lemmas": "Isprobane leme",
         "try_again_or_contact": "Pokušajte ponovno ili nas kontaktirajte za pomoć.",
         "tv_shows_desc": "Pregledavajte TV emisije na {l2} s titlovima.",

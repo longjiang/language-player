@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Vollständiges interaktives Transkript anstelle von mit dem Video synchronisierten Untertiteln anzeigen.",
         "translated_subtitles": "Übersetzte Untertitel verfügbar",
         "translating": "Übersetzen…",
+        "translation_failed": "Übersetzung fehlgeschlagen. Bitte versuche es erneut.",
         "tried_lemmas": "Ausprobiert: Lemmata",
         "try_again_or_contact": "Bitte versuchen Sie es erneut oder kontaktieren Sie uns für Hilfe.",
         "tv_shows_desc": "Durchsuchen Sie TV-Sendungen in {l2} mit Untertiteln.",

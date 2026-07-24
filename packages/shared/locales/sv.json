@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Visa hela interaktiva transkriptet istället för undertexter synkroniserade med videon.",
         "translated_subtitles": "Översatt textning tillgänglig",
         "translating": "Översätter…",
+        "translation_failed": "Översättningen misslyckades. Försök igen.",
         "tried_lemmas": "Testade lemman",
         "try_again_or_contact": "Försök igen, eller kontakta oss för hjälp.",
         "tv_shows_desc": "Bläddra bland TV-program på {l2} med undertexter.",

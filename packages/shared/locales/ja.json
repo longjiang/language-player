@@ -707,6 +707,7 @@
         "transcript_mode_desc": "動画に同期した字幕ではなく、完全なインタラクティブトランスクリプトを表示します。",
         "translated_subtitles": "翻訳字幕あり",
         "translating": "翻訳中…",
+        "translation_failed": "翻訳に失敗しました。もう一度お試しください。",
         "tried_lemmas": "試したレンマ",
         "try_again_or_contact": "もう一度お試しいただくか、サポートにお問い合わせください。",
         "tv_shows_desc": "{l2}のテレビ番組を字幕付きで閲覧する。",

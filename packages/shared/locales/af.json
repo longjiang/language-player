@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Wys volledige interaktiewe transkripsie in plaas van onderskrifte wat met video gesinchroniseer is.",
         "translated_subtitles": "Vertaalde onderskrifte beskikbaar",
         "translating": "Vertaal…",
+        "translation_failed": "Vertaling het misluk. Probeer asseblief weer.",
         "tried_lemmas": "Die volgende lemmas is probeer:",
         "try_again_or_contact": "請再試一次，或聯絡我們尋求協助。",
         "tv_shows_desc": "Blaai deur TV-programme in {l2} met onderskrifte.",
