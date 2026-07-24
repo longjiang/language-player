@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { translateText } from '@/lib/translate';
 
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'https://directusvps.zerotohero.ca/zerotohero';
 
@@ -13,7 +12,7 @@ async function getVideoTitle(videoId: string, l2: string): Promise<VideoData | n
     const suffix = getTableSuffix(l2);
     const fields = 'youtube_id,title';
     const url = `${DIRECTUS_URL}/items/youtube_videos${suffix}?filter[youtube_id][eq]=${videoId}&fields=${fields}&limit=1`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetch(url, { next: { revalidate: 3600 } });
     if (!res.ok) return null;
     const json = await res.json();
     const item = json?.data?.[0] ?? json?.data ?? json?.[0] ?? null;
@@ -40,8 +39,7 @@ export async function generateMetadata({
   const { videoId, l1, l2 } = params;
   const video = await getVideoTitle(videoId, l2);
 
-  const rawTitle = video?.title?.trim() || 'Watch Video';
-  const title = await translateText(rawTitle, l1, l2);
+  const title = video?.title?.trim() || 'Watch Video';
   const description = video?.title
     ? `Watch "${title}" with interactive dual subtitles on Language Player.`
     : 'Watch videos with interactive dual subtitles on Language Player.';

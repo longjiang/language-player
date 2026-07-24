@@ -5,7 +5,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 async function getRecommendedIds(l2: string): Promise<string[]> {
   try {
     const res = await fetch(`${PYTHON_API_URL}/recommend-videos?l2=${l2}&limit=4`, {
-      cache: 'no-store',
+      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return [];
