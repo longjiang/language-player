@@ -691,7 +691,7 @@ export interface PlaybackSettings {
   smoothScroll: boolean;
   /** Collapse the video player to a mini player when scrolling the transcript. */
   collapsedVideo: boolean;
-  /** `subtitles` = full scrollable transcript; `transcript` = one line at a time. */
+  /** `subtitles` = one line at a time, synced to video; `transcript` = full scrollable transcript. */
   transcriptMode: 'subtitles' | 'transcript';
 }
 
