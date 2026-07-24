@@ -16,7 +16,6 @@ export interface NotesSidebarProps {
   notesLoading: boolean;
   notesError: string | null;
   currentNoteId: number | null;
-  sidebarOpen: boolean;
   session: any;
   onSelectNote: (noteId: number) => void;
   onNewNote: () => void;
@@ -29,7 +28,6 @@ export function NotesSidebar({
   notesLoading,
   notesError,
   currentNoteId,
-  sidebarOpen,
   session,
   onSelectNote,
   onNewNote,
@@ -56,26 +54,21 @@ export function NotesSidebar({
 
   return (
     <>
-      <aside className={cn(
-        'flex-shrink-0 transition-all duration-200',
-        sidebarOpen ? 'w-56' : 'w-0 overflow-hidden',
-      )}>
-        <div className="sticky top-4 rounded-xl border border-border bg-card">
-          <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
-            <h3 className="text-sm font-semibold">{t('title.notes')}</h3>
-          </div>
-          <div className="px-3 py-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start gap-1.5"
-              onClick={onNewNote}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              {t('action.new_note')}
-            </Button>
-          </div>
-          <div className="max-h-[calc(100vh-16rem)] overflow-y-auto px-1">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
+        <h3 className="text-sm font-semibold">{t('title.notes')}</h3>
+      </div>
+      <div className="px-3 py-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full justify-start gap-1.5"
+          onClick={onNewNote}
+        >
+          <Plus className="h-3.5 w-3.5" />
+          {t('action.new_note')}
+        </Button>
+      </div>
+      <div className="flex-1 overflow-y-auto px-1">
             {notesLoading && (
               <div className="flex items-center justify-center py-6">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -123,9 +116,7 @@ export function NotesSidebar({
                 </button>
               </div>
             ))}
-          </div>
-        </div>
-      </aside>
+      </div>
 
       {/* Portal action menu */}
       {menuOpen !== null && typeof document !== 'undefined' && createPortal(

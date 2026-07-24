@@ -5,8 +5,9 @@ import { useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { ReaderPanel } from '@/components/reader/reader-panel';
+import { ReaderSidebar } from '@/components/reader/reader-sidebar';
 import { Button } from '@/components/ui/button';
-import { Globe, Loader2 } from 'lucide-react';
+import { Globe, Loader2, PanelRightClose, PanelRight } from 'lucide-react';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 
@@ -44,6 +45,7 @@ export default function WebReaderPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Load from URL param on mount
   const urlParam = searchParams.get('url');
@@ -92,12 +94,18 @@ export default function WebReaderPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Header ── */}
-      <div className="mb-4 flex items-center gap-3 flex-shrink-0">
+      <div className="mb-4 flex items-center gap-3 flex-shrink-0 relative z-50">
         <Globe className="h-6 w-6 flex-shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold truncate">{title || t('title.web_reader')}</h1>
-          <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p>
         </div>
+        <button
+          onClick={() => setSidebarOpen(o => !o)}
+          className="flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
+        >
+          {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
+        </button>
       </div>
 
       {/* ── URL input ── */}
@@ -126,9 +134,11 @@ export default function WebReaderPage() {
         </div>
       )}
 
-      {/* ── Content ── */}
-      {text && (
-        <ReaderPanel
+      {/* ── Content row ── */}
+      <div className="flex gap-4 flex-1 min-h-0 relative">
+        <div className="min-w-0 flex-1 flex flex-col min-h-0">
+          {text && (
+            <ReaderPanel
           l2={l2} l1={l1}
           text={text}
           loading={loading}
@@ -166,16 +176,25 @@ export default function WebReaderPage() {
         />
       )}
 
-      {/* ── Empty state ── */}
-      {!text && !loading && (
-        <div className="flex min-h-[40vh] flex-col items-center justify-center text-center flex-1">
-          <Globe className="mb-3 h-12 w-12 text-muted-foreground/40" />
-          <h2 className="text-lg font-semibold text-muted-foreground">{t('title.web_reader')}</h2>
-          <p className="mt-1 max-w-md text-sm text-muted-foreground">
-            {t('msg.web_reader_empty_state', { l2: l2.name })}
-          </p>
+          {/* ── Empty state ── */}
+          {!text && !loading && (
+            <div className="flex min-h-[40vh] flex-col items-center justify-center text-center flex-1">
+              <Globe className="mb-3 h-12 w-12 text-muted-foreground/40" />
+              <h2 className="text-lg font-semibold text-muted-foreground">{t('title.web_reader')}</h2>
+              <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                {t('msg.web_reader_empty_state', { l2: l2.name })}
+              </p>
+            </div>
+          )}
         </div>
-      )}
+
+        <ReaderSidebar sidebarOpen={sidebarOpen}>
+          <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
+            <h3 className="text-sm font-semibold">{t('title.notes')}</h3>
+          </div>
+          <div className="flex-1" />
+        </ReaderSidebar>
+      </div>
     </div>
   );
 }
