@@ -6,16 +6,27 @@ import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { getCachedEntries } from '@/lib/dictionary-cache';
 
-/**
- * Get the lowest difficulty value for a word from its cached dictionary entries.
- * Checks both `levels[].numeric` and `frequencyLevel`, returns the minimum.
- * Returns null if no difficulty data is available in any cached entry.
- */
-function getWordDifficulty(l2Code: string, lemmas: LemmatizedToken['lemmas']): number | null {
+/** Word difficulty result from the local dictionary cache.
+ *
+ *  `not_cached`  — no entry in cache yet (bulk lookup still pending).
+ *  `unclassified` — cached entry exists but has no `levels[].numeric` and no
+ *                    `frequencyLevel`. Unknown → treat as "hard" (show phonetics).
+ *  `classified`   — at least one `levels[].numeric` or `frequencyLevel` value
+ *                    found; `value` is the lowest (easiest) on a 1–7 scale. */
+type WordDifficulty =
+  | { kind: 'not_cached' }
+  | { kind: 'unclassified' }
+  | { kind: 'classified'; value: number };
+
+/** Get the lowest difficulty value for a word from its cached dictionary entries.
+ *  Checks both `levels[].numeric` and `frequencyLevel`, returns the minimum. */
+function getWordDifficulty(l2Code: string, lemmas: LemmatizedToken['lemmas']): WordDifficulty {
+  let hasEntry = false;
   let lowest: number | null = null;
   for (const lemma of lemmas) {
     const entries = getCachedEntries(l2Code, lemma.lemma);
     if (!entries) continue;
+    hasEntry = true;
     for (const entry of entries) {
       if (entry.levels) {
         for (const l of entry.levels) {
@@ -29,7 +40,9 @@ function getWordDifficulty(l2Code: string, lemmas: LemmatizedToken['lemmas']): n
       }
     }
   }
-  return lowest;
+  if (!hasEntry) return { kind: 'not_cached' };
+  if (lowest === null) return { kind: 'unclassified' };
+  return { kind: 'classified', value: lowest };
 }
 
 export interface TokenSpanProps {
@@ -145,10 +158,13 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     // word is at or above the user's proficiency level.
     if (!userLevel || userLevel < 1) return true; // no level set → show all
     const diff = getWordDifficulty(l2Code, token.lemmas);
-    // No cached entry yet → don't show. We don't know if it's easy or hard.
-    // Once the async bulk lookup completes and re-renders, this will re-evaluate.
-    if (diff === null) return false;
-    return diff >= userLevel;
+    // No cached entry yet → don't show. Once the async bulk lookup
+    // completes and re-renders, this will re-evaluate.
+    if (diff.kind === 'not_cached') return false;
+    // Entry exists but no levels or frequency data → unknown word,
+    // likely uncommon; treat as hard so the learner gets help.
+    if (diff.kind === 'unclassified') return true;
+    return diff.value >= userLevel;
   })();
 
   // ── Structural tokens: newlines → <br />, spaces/punctuation → raw text ──
