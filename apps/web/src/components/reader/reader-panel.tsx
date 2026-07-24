@@ -84,6 +84,8 @@ export interface ReaderPanelProps {
   onAnchorChange?: (anchor: string) => void;
   /** If set, seek to the page containing this anchor text after blocks load. */
   initialAnchor?: string | null;
+  /** Show edit/read tabs. True for Notes Reader, false for EPUB/Web reader. */
+  showTabs?: boolean;
 }
 
 export function ReaderPanel({
@@ -99,6 +101,7 @@ export function ReaderPanel({
   onLemmatize,
   onAnchorChange,
   initialAnchor,
+  showTabs = true,
 }: ReaderPanelProps) {
   const t = useT();
   const { display, updateDisplay } = useSettingsContext();
@@ -306,17 +309,8 @@ export function ReaderPanel({
     { key: 'read', label: t('action.read'), icon: <BookOpen className="h-4 w-4" /> },
   ] as const;
 
-  return (
-    <div className="min-w-0 flex-1 flex flex-col min-h-0">
-      <TabbedPanel
-        tabs={readerTabs}
-        activeTab={activeTab}
-        onTabChange={onTabChange}
-        onTabClick={(key) => key === 'read' ? onTokenize() : onTabChange(key)}
-        className="flex-1 min-h-0"
-        contentClassName="p-4"
-      >
-        <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col">
+  const innerContent = (
+    <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col">
           {/* Edit mode */}
           {activeTab === 'edit' && (
             <div className="space-y-3">
@@ -484,13 +478,34 @@ export function ReaderPanel({
               <p className="mt-1 max-w-md text-sm text-muted-foreground">
                 {t('msg.reader_empty_state', { l2: l2.name })}
               </p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => onTabChange('edit')}>
-                <FileText className="mr-1 h-4 w-4" />{t('action.start_writing')}
-              </Button>
+              {showTabs && (
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => onTabChange('edit')}>
+                  <FileText className="mr-1 h-4 w-4" />{t('action.start_writing')}
+                </Button>
+              )}
             </div>
           )}
         </div>
-      </TabbedPanel>
+      );
+
+  return (
+    <div className="min-w-0 flex-1 flex flex-col min-h-0">
+      {showTabs ? (
+        <TabbedPanel
+          tabs={readerTabs}
+          activeTab={activeTab}
+          onTabChange={onTabChange}
+          onTabClick={(key) => key === 'read' ? onTokenize() : onTabChange(key)}
+          className="flex-1 min-h-0"
+          contentClassName="p-4"
+        >
+          {innerContent}
+        </TabbedPanel>
+      ) : (
+        <div className="flex-1 min-h-0 p-4">
+          {innerContent}
+        </div>
+      )}
     </div>
   );
 }
