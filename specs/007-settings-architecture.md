@@ -60,7 +60,7 @@ This document analyzes how settings are stored, mutated, and synced across all t
 
 | Setting | Scope | Rationale |
 |---|---|---|
-| `theme`, `playbackSpeed`, `autoPause`, `karaokeMode`, `smoothScroll`, `collapsedVideo`, `transcriptMode` | **Global** | Video player behavior is independent of which language you're studying |
+| `theme`, `playbackSpeed`, `autoPause`, `karaokeMode`, `smoothScroll`, `transcriptMode` | **Global** | Video player behavior is independent of which language you're studying |
 | `translation`, `quickGloss`, `definition`, `zoom`, `serifFont` | **Global** | Display preferences are consistent across languages — if you want translations, you want them everywhere |
 | `quizMode`, `autoPronounce`, `disableAnnotation` | **Global** | Interaction preferences apply regardless of L2 |
 | `phonetics`, `traditional`, `phoneticsOnly`, `phoneticsForHardWordsOnly` | **Per-L2** | Phonetic needs differ by language (pinyin for zh, furigana for ja, none for en). `hardWords`: a word is "hard" if its `levels[].numeric` or `frequencyLevel` ≥ user's level, OR if the entry is cached but has neither — unknown words are treated as hard. Words not yet in cache are NOT shown (wait for async lookup). |
@@ -218,7 +218,10 @@ SettingsV2
 ├── ts: string
 ├── global: GlobalSettings
 │   ├── theme: 'light' | 'dark' | 'system'
-│   ├── playback: { speed, autoPause, karaokeMode, smoothScroll, collapsedVideo, transcriptMode }
+│   ├── playback: { speed, autoPause, karaokeMode, smoothScroll, transcriptMode }
+│   │   └── NOTE: collapsedVideo exists in the type but is NOT in the settings UI.
+│   │       The web player delegates to YouTube's embedded controls, making it
+│   │       impractical to collapse the player at this time.
 │   ├── display: { translation, quickGloss, definition, zoom, serifFont }        ← Display tab
 │   ├── interaction: { quizMode, autoPronounce, disableAnnotation }
 │   └── review: { dailyNewLimit }                                                 ← Review tab
