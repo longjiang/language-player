@@ -14,6 +14,7 @@ import { VideoQueueList } from '@/components/video/video-queue-list';
 import { SubtitleDisplay } from '@/components/video/subtitle-display';
 import { SubtitlesModeBand } from '@/components/video/subtitles-mode-band';
 import type { YouTubeVideo } from '@langplayer/shared';
+import type { SyncedLine } from '@/lib/subtitle-csv';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
 import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
@@ -40,13 +41,6 @@ function savePosition(videoId: string, time: number) {
       localStorage.setItem(WATCH_POS_PREFIX + videoId, String(Math.round(time)));
     }
   } catch { /* quota exceeded — ignore */ }
-}
-
-interface SyncedLine {
-  starttime: number;
-  duration?: number;
-  l1Line: string;
-  l2Line: string;
 }
 
 export default function WatchPage() {
