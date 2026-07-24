@@ -147,35 +147,57 @@ TokenizedText (after tokens load)
 
 ### Flow
 
-Since `subs_l1` is deprecated (no pre-translated subtitles in Directus), all L1 translations come from a single source — the `/translate_array` endpoint — with a server-side cache to avoid redundant ChatGPT calls:
+Since `subs_l1` is deprecated, all L1 translations come from `/translate_array` with a server-side cache. Translation is **lazy** — only chunks near the user's viewport are translated eagerly; the rest fills in the background.
 
 ```
 SubtitleDisplay
-  → receives initialLines (SyncedLine[] from API — L2 only, no L1)
-  → useSubtitleTranslation(l2Lines, l1, l2, enabled)
-    → calls /translate_array in chunks of 5 (sequential)
-      → Python: app_translator_chatgpt.chatgpt_translate_text_array()
-        → checks server-side translation cache keyed by (text, l1, l2)
-        → cache HIT → returns instantly (no API cost)
-        → cache MISS → ChatGPT API → stores in cache
-        → cache HIT → returns cached translation instantly
-  → syncLines(translatedLines, l2Lines) → paired output
+  → useSubtitleTranslation(l2Lines, l1, l2, enabled, activeIndex)
+    → _pickNextChunk(activeIndex, done, totalChunks)  ← priority order
+      1. Chunk 0 (top of transcript — always first)
+      2. Chunks ±LOOKAHEAD_CHUNKS around activeIndex
+      3. Remaining chunks sequentially (background fill)
+    → POST /translate_array { texts: chunk }
+      → Python: server-side cache → cache HIT returns instantly
+      → cache MISS → ChatGPT → stores in cache
+  → syncLines(validTranslatedLines, l2Lines) → paired output
 ```
+
+### Priority-based lazy loading
+
+Instead of translating all 300 lines eagerly (60 API calls), the hook uses `_pickNextChunk()` to order chunks by relevance to the user's current position:
+
+| Priority | What | When |
+|---|---|---|
+| 1 | Chunk 0 (lines 0–4) | Immediately — fills initial viewport |
+| 2 | Chunks ±3 around `activeIndex` | Keeps ahead of the user as they watch/scroll |
+| 3 | Remaining chunks in order | Background fill once priority chunks are done |
+
+The user's `activeIndex` is read via a **ref** (not an effect dependency), so the translation loop isn't restarted on every frame during playback. Priority is re-checked before each chunk via `_pickNextChunk()`.
+
+A 300-line transcript costs ~10 API calls for a typical viewing session instead of 60. Jumping to line 250 mid-session prioritizes that region without discarding already-translated chunks.
+
+### Error handling
+
+If a chunk fails (network error, server down), the loop **stops immediately** rather than retrying every remaining chunk. The hook returns:
+
+- `error: string | null` — set to a translation key on failure
+- `retry()` — increments a counter that restarts the loop, preserving already-translated chunks
+
+Error is auto-cleared when `l2Lines` changes (new video).
 
 ### Key facts
 
-- **Server-side translation cache exists.** The Python `/translate_array` endpoint caches translations per (text, l1, l2) tuple. Repeated views of the same video reuse cached translations without additional ChatGPT calls.
-- **Chunk size of 5 is intentional** — it shows progressive results to the user (translations appear chunk by chunk). With a warm cache, each chunk returns near-instantly.
-- **`useSubtitleTranslation` is enabled/disabled by `display.translation` setting.** When disabled, no translation calls are made.
-- **In subtitles mode**, translation only affects the single visible line overlay band (one `TokenizedText` per active line).
-- **In transcript mode**, all 300 lines are in the DOM. Translation chunks run sequentially and update `translatedLines` state progressively, causing `syncedLines` to re-sync with each chunk, and all rendered lines to update.
+- **Server-side translation cache** per `(text, l1, l2)`. Warm cache returns instantly — no ChatGPT cost. Cold cache calls ChatGPT and stores the result.
+- **Chunk size of 5** is intentional — shows progressive results. With a warm cache, each chunk returns near-instantly regardless of priority.
+- **`display.translation` setting** enables/disables the entire pipeline. When disabled, no API calls are made.
+- **Transcript mode**: all lines in DOM, translation is lazy. **Subtitles mode**: only the active line renders, so only one chunk is ever needed.
 
 ### Files
 
 | File | Role |
 |---|---|
 | `apps/web/src/components/video/subtitle-display.tsx` | Receives `initialLines`, triggers translation |
-| `apps/web/src/hooks/use-subtitle-translation.ts` | Chunked `/translate_array` calls (fallback only) |
+| `apps/web/src/hooks/use-subtitle-translation.ts` | Lazy, priority-based `/translate_array` calls with stop-on-error, retry, and ref-based activeIndex tracking |
 | `zerotohero-python-server/routes/translate.py` | `/translate_array` — ChatGPT-powered translation |
 
 ---
@@ -240,9 +262,10 @@ User opens video
 │   └─ 3c. User level (per TokenizedText)
 │       └─ useProgressLevel() → localStorage read (instant, no API)
 │
-├─ 4. Translation (SubtitleDisplay)
-│   ├─ initialLines have empty L1 (subs_l1 deprecated)
-│   └─ useSubtitleTranslation → /translate_array, chunks of 5, sequential
+├─ 4. Translation (SubtitleDisplay — lazy, priority-based)
+│   ├─ _pickNextChunk(activeIndex) → chunk 0 first, then chunks near user
+│   ├─ POST /translate_array (only chunks near user's viewport)
+│   └─ Remaining chunks fill in background as user scrolls
 │
 └─ 5. UI ready — video plays, subtitles show with word-level dictionary popups
 ```
@@ -258,7 +281,7 @@ User opens video
 | 300× `POST /lemmatize-normalized` fallback | All instances check empty cache before first response | In-flight promise dedup in `TokenizedText` | `3b4034a3` |
 | `/lemmatize-video-normalized` called with wrong ID | YouTube ID (`params.videoId`) passed instead of Directus ID | Pass `video?.id` (Directus ID) instead | `92990974` |
 | — | — | — | — |
-| `/translate_array` called for every video (no pre-translated subs) | `subs_l1` is deprecated; L1 translations must be computed on-the-fly | Normal operation. Each 300-line video = 60 sequential ChatGPT calls. No server-side cache. | — |
+| `/translate_array` eager for all 300 lines | `subs_l1` is deprecated; translations must be computed on-the-fly | Lazy, priority-based loading: only chunks near viewport. ~10 calls per session instead of 60. Stop-on-error with retry. | `bbd6522c` |
 
 ---
 
@@ -268,7 +291,7 @@ User opens video
 |---|---|
 | `/lemmatize-video-normalized` | Server-side disk cache via `utils_video_lemma.py`. Lemmatized once, served from cache on subsequent requests. |
 | `/dictionary/lookup-batch` | LLM results cached in `cache/dictionary_llm/{l1}/{l2}-{hash}.json`. CSV dictionaries are in-memory SQLite. |
-| `/translate_array` | Server-side translation cache per (text, l1, l2). Cold: calls ChatGPT. Warm: instant. |
+| `/translate_array` | Server-side cache per (text, l1, l2). Frontend lazy-loads by priority — only chunks near viewport requested. Stop-on-error with retry. |
 
 ---
 
