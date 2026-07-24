@@ -182,7 +182,8 @@ export function TextActionMenu({
 
       {/* Dropdown menu */}
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 min-w-[180px] rounded-lg border border-border bg-card p-1 shadow-lg animate-in fade-in zoom-in-95">
+        <div className="absolute right-0 top-full z-50 mt-1 min-w-[180px] rounded-lg border border-border bg-card p-1 shadow-lg animate-in fade-in zoom-in-95"
+          onClick={(e) => e.stopPropagation()}>
           {menuItems.map((item) => (
             <button
               key={item.kind}
@@ -203,7 +204,7 @@ export function TextActionMenu({
 
       {/* Explain modal */}
       {activeAction === 'explain' && (explainText || explainError || explainLoading) && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-[10vh]" onClick={() => { setActiveAction(null); resetExplain(); }}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-[10vh]" onClick={(e) => { e.stopPropagation(); setActiveAction(null); resetExplain(); }}>
           <div className="w-full max-w-2xl rounded-xl border border-border bg-card shadow-2xl" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border px-5 py-3">
@@ -242,7 +243,8 @@ export function TextActionMenu({
 
       {/* Translate result */}
       {activeAction === 'translate' && (translateText || translateError) && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-[360px] max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-card p-4 shadow-lg">
+        <div className="absolute right-0 top-full z-50 mt-1 w-[360px] max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-card p-4 shadow-lg"
+          onClick={(e) => e.stopPropagation()}>
           <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-semibold">{t('action.translation')}</span>
             <button onClick={() => { setActiveAction(null); setTranslateText(null); setTranslateError(null); }}
