@@ -75,13 +75,13 @@ The watch page reads `playback.transcriptMode` from `useSettingsContext()` and r
 
 - **`←` `→`** — prev/next subtitle line
 - **`⏮` `⏭`** — prev/next video in queue
-- **`◧`** — in transcript mode: toggles side panel (collapse/expand). In subtitles mode: switches to transcript mode.
+- **`◧`** — toggles between transcript mode (full sidebar) and subtitles mode (immersive overlay band).
 
 **Rewind** (to start of current line): no visual button. Tap any empty space around the subtitle text, or press `R`.
 
 The mode can be toggled via:
 - Settings page (persistent preference)
-- ◧ button in the controls (subtitles mode → switches to transcript mode)
+- ◧ button in either mode
 
 ### Layout: Wide Screen (≥1024px)
 
@@ -140,29 +140,30 @@ The mode can be toggled via:
 
 ### Layout: Narrow Screen (<1024px)
 
-#### Transcript Mode (reduced control bar, side panel open)
+#### Transcript Mode (controls sticky below video)
 
 ```
 ┌──────────────────────────────────────┐
-│          YOUTUBE PLAYER              │
+│          YOUTUBE PLAYER              │  ← sticky top-[3.5rem]
 │     (native controls on tap)         │
-│                                      │
-│  Video Title          [⏮← →⏭◧]      │
+├──────────────────────────────────────┤
+│         [⏮← →⏭◧]                    │  ← sticky, right-aligned
+├──────────────────────────────────────┤  (sticky zone ends)
 │  👁 1.2M  👍 45K  [A2]             │
 │  ┌ Channel Card ──────────┐          │
 │  └────────────────────────┘          │
 ├──────────────────────────────────────┤
 │  📄  📋                              │  ← tab bar
 │                                      │
-│  transcript or queue content         │  ← panel (open by default)
-│  fills remaining screen space        │     ◧ in control bar toggles
-│                                      │     collapse/expand
+│  transcript or queue content         │  ← scrollable
+│  fills remaining screen space        │
 │                                      │
 └──────────────────────────────────────┘
 ```
 
-- **Mini control bar**: `[⏮ ← → ⏭ ◧]` — huddled group, right-aligned in title row. `◧` toggles the panel below.
-- **Side panel**: open by default, fills remaining space. Tab icons (`📄` `📋`) switch between transcript and queue.
+- **Player + controls sticky zone**: Both the YouTube player and the `[⏮ ← → ⏭ ◧]` control bar are grouped in a single sticky container at `top-[3.5rem]`. When the user scrolls down through the transcript, the video and controls stay visible at the top.
+- **Mini control bar**: `[⏮ ← → ⏭ ◧]` — huddled group, right-aligned below the player. `◧` toggles to subtitles mode (immersive overlay).
+- **Side panel**: below the sticky zone, fills remaining space. Tab icons (`📄` `📋`) switch between transcript and queue.
 - **Rewind**: tap empty space around any subtitle line, or press `R`.
 
 #### Subtitles Mode
