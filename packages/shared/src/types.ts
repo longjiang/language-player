@@ -16,9 +16,10 @@ export interface YouTubeVideo {
   youtube_id: string;
   id?: string;
   title?: string;
-  /** @deprecated Pre-translated L1 subtitles are no longer stored in Directus.
-   *  Translations are now computed on-the-fly via `/translate_array`.
-   *  Kept in the type for backward compatibility with cached API responses. */
+  /** @deprecated Pre-translated L1 subtitles are no longer stored in Directus
+   *  and are never populated by live translation (/translate_array writes to
+   *  local component state, not this field). Always empty at runtime.
+   *  Kept for backward compatibility with cached API responses. */
   subs_l1?: SubtitleLine[];
   subs_l2?: SubtitleLine[];
   views?: number;

@@ -43,7 +43,7 @@ watch page (page.tsx)
 ### Key facts
 
 - **Directus is the source of truth for L2 subtitles.** `subs_l2` (original language) is stored as a CSV string in the `youtube_videos_{suffix}` table, uploaded during video ingestion.
-- **`subs_l1` (pre-translated subtitles) is deprecated.** It is no longer stored in Directus. The `parseCSVSubtitles` call always returns an empty array for L1. Translations are now computed on-the-fly via `/translate_array` (see Pipeline 4).
+- **`subs_l1` (pre-translated subtitles) is deprecated.** It is no longer stored in Directus. The `parseCSVSubtitles` call always returns an empty array for L1. Live translations from `/translate_array` are stored in `SubtitleDisplay`'s local component state — they are **never** written back to `video.subs_l1`. The field is always empty at runtime and only kept for backward compatibility with cached API response types.
 - **`syncLines` is effectively obsolete.** Since L1 is always empty, it simply wraps each L2 line in a `SyncedLine` struct with `l1Line: ''`. The greedy-nearest-neighbor pairing logic never executes.
 - **YouTube fallback for L2 only.** If Directus has no L2 subtitles, the API falls back to `/get_best_l2_subs` (YouTube auto-captions). `/get_best_l1_subs` is no longer called — L1 translations are always live-translated (see Pipeline 4).
 - **Watch page receives `data.lines`** (paired L2 + empty L1, since `subs_l1` is deprecated) and passes them as `initialLines` to `SubtitleDisplay`.
