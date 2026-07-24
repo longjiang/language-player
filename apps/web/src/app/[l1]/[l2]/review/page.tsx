@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
@@ -13,6 +14,7 @@ import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langpl
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import { baseCode } from '@/lib/language-data';
 import { getShowTranslation } from '@/lib/settings';
+import { buildEntryRoute } from '@/lib/entry-route';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
@@ -69,6 +71,7 @@ export default function ReviewPage() {
   const { loaded: cloudLoaded } = useCloudUserData();
   const { speak } = useSpeech();
   const t = useT();
+  const router = useRouter();
   const RATING_LABELS = useRatingLabels();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -714,6 +717,10 @@ export default function ReviewPage() {
                 }}
                 contextText={wordCtx.text}
                 contextForm={wordCtx.form}
+                onClick={(e) => {
+                  const dictId = e.dictionary?.id ?? 'llm';
+                  router.push(buildEntryRoute(l1.code, l2.code, dictId, e.id));
+                }}
               />
             ) : (
               <p className="text-muted-foreground italic text-sm text-center">
