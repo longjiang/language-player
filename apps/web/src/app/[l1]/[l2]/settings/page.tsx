@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
+import { toast } from 'sonner';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
@@ -120,6 +121,27 @@ export default function SettingsPage() {
     });
     return () => { cancelled = true; };
   }, [previewText, l1.code, l2.code, display.translation]);
+
+  // Debounced toast when settings change (skip initial mount)
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
+    const timer = setTimeout(() => {
+      toast.success(t('msg.settings_saved'));
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [
+    tokenizedText, display, playback, review,
+    l2Settings.tokenSpan.phonetics.show,
+    l2Settings.tokenSpan.phonetics.conditions,
+    l2Settings.tokenSpan.definition.show,
+    l2Settings.display.traditional,
+    l2Settings.display.byeonggi,
+    t,
+  ]);
 
   if (!loaded) {
     return <div className="mx-auto max-w-lg px-4 py-12 text-center text-muted-foreground">{t('msg.loading')}</div>;

@@ -710,6 +710,7 @@
         "sending": "Sending...",
         "set_level_for_recommendations": "Set your current {l2} level for personalized video recommendations.",
         "settings_desc": "Configure your {l1} → {l2} learning experience.",
+        "settings_saved": "Settings saved",
         "show_definition_desc": "Show the first dictionary definition of each word below the word.",
         "show_gloss_saved_desc": "Show a quick translation above words you have saved to your vocabulary list.",
         "show_phonetics_desc": "Show pinyin, furigana, or pronunciation above words in subtitles and texts.",

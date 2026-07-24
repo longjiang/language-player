@@ -683,6 +683,7 @@
         "sending": "Sender...",
         "set_level_for_recommendations": "Angi gjeldende {l2}-nivå for personlige videoanbefalinger.",
         "settings_desc": "Konfigurer {l1} → {l2}-læringsopplevelsen din.",
+        "settings_saved": "Innstillinger lagret",
         "show_definition_desc": "Vis den første ordbokdefinisjonen av hvert ord under ordet.",
         "show_gloss_saved_desc": "Vis en rask oversettelse over ord du har lagret i ordlisten din.",
         "show_phonetics_desc": "Vis pinyin, furigana eller uttale over ord i undertekster og tekster.",

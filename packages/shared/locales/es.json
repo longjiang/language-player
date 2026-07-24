@@ -683,6 +683,7 @@
         "sending": "Enviando...",
         "set_level_for_recommendations": "Establece tu nivel actual de {l2} para recomendaciones de video personalizadas.",
         "settings_desc": "Configura tu experiencia de aprendizaje de {l1} → {l2}.",
+        "settings_saved": "Configuración guardada",
         "show_definition_desc": "Muestra la primera definición del diccionario de cada palabra debajo de la palabra.",
         "show_gloss_saved_desc": "Muestra una traducción rápida encima de las palabras que has guardado en tu lista de vocabulario.",
         "show_phonetics_desc": "Mostrar pinyin, furigana o pronunciación sobre las palabras en subtítulos y textos.",

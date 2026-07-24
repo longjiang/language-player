@@ -683,6 +683,7 @@
         "sending": "Enviant...",
         "set_level_for_recommendations": "Estableix el teu nivell actual de {l2} per a recomanacions de vídeo personalitzades.",
         "settings_desc": "Configura la teva experiència d'aprenentatge de {l1} → {l2}.",
+        "settings_saved": "Configuració desada",
         "show_definition_desc": "Mostra la primera definició del diccionari de cada paraula sota la paraula.",
         "show_gloss_saved_desc": "Mostra una traducció ràpida a sobre de les paraules que has desat a la teva llista de vocabulari.",
         "show_phonetics_desc": "Mostra pinyin, furigana o pronunciació a sobre de les paraules als subtítols i textos.",

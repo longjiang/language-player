@@ -683,6 +683,7 @@
         "sending": "Skickar...",
         "set_level_for_recommendations": "Ange din nuvarande {l2}-nivå för personliga videorekommendationer.",
         "settings_desc": "Konfigurera din {l1} → {l2}-inlärningsupplevelse.",
+        "settings_saved": "Inställningar sparade",
         "show_definition_desc": "Visa den första ordboksdefinitionen av varje ord under ordet.",
         "show_gloss_saved_desc": "Visa en snabb översättning ovanför ord du har sparat i din ordlista.",
         "show_phonetics_desc": "Visa pinyin, furigana eller uttal ovanför ord i undertexter och texter.",

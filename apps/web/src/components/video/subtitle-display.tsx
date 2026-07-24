@@ -37,6 +37,8 @@ interface SubtitleDisplayProps {
   contextLines?: number;
   /** Word forms to highlight in the displayed text (e.g. search terms from subs-search). */
   highlightTerms?: string[];
+  /** Called when autoPause triggers — the current subtitle line has finished. */
+  onPauseLine?: () => void;
 }
 
 /**
@@ -48,7 +50,7 @@ function stripDurationPrefix(text: string): string {
   return text.replace(/^[\d.]+,\s*/, '');
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, mode = 'multiline', contextLines = 1, highlightTerms }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, mode = 'multiline', contextLines = 1, highlightTerms, onPauseLine }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
   const { display, updateDisplay, playback, getL2, updateL2 } = useSettingsContext();
   const t = useT();
@@ -126,6 +128,32 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     scrollContainerRef,
     smoothScrollEnabled: playback.smoothScroll,
   });
+
+  // ── Auto-pause ─────────────────────────────────────────────────────────
+  const autoPausedRef = useRef<number>(-1);
+
+  // Reset paused-line tracker when the active line changes
+  useEffect(() => {
+    autoPausedRef.current = -1;
+  }, [activeIndex]);
+
+  // Fire onPauseLine when the active line's duration elapses
+  useEffect(() => {
+    if (!playback.autoPause || activeIndex < 0) return;
+    if (autoPausedRef.current === activeIndex) return; // already paused this line
+
+    const line = syncedLines[activeIndex];
+    if (!line) return;
+
+    const lineDuration = line.duration
+      ?? (syncedLines[activeIndex + 1] ? syncedLines[activeIndex + 1]!.starttime - line.starttime : 5);
+    const elapsed = currentTime - line.starttime;
+
+    if (lineDuration > 0 && elapsed >= lineDuration) {
+      autoPausedRef.current = activeIndex;
+      onPauseLine?.();
+    }
+  }, [currentTime, activeIndex, syncedLines, playback.autoPause, onPauseLine]);
 
   const toggleTranslation = () => {
     updateDisplay({ translation: !showTranslation });
