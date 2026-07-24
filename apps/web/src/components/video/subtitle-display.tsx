@@ -97,6 +97,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     l1.code,
     l2Code,
     showTranslation,
+    activeIndex,
   );
 
   const syncedLines = useMemo(() => {

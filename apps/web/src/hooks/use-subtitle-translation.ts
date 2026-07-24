@@ -6,86 +6,165 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 
 const PYTHON_URL = PYTHON_API_URL;
 const CHUNK_SIZE = 5;
+/** How many chunks ahead of the active line to pre-translate before continuing sequentially. */
+const LOOKAHEAD_CHUNKS = 3;
 
 /**
- * Translates subtitle lines in chunks of 5, updating state progressively.
- * Ported from Classic's autoTranslateMixin.js.
+ * Translates subtitle lines in chunks of 5, prioritizing lines near the
+ * user's current position. Chunk 0 (top of transcript) is always first.
+ *
+ * Uses a ref-based priority check so the translation loop isn't restarted
+ * on every frame when activeIndex changes — it re-checks the user's
+ * position before each chunk and adjusts accordingly.
+ *
+ * A 300-line transcript costs ~10 API calls for a typical session
+ * instead of 60 (all lines translated eagerly).
  */
 export function useSubtitleTranslation(
   l2Lines: SubtitleLine[],
   l1: string,
   l2: string,
   enabled: boolean,
+  /** Current active subtitle line index (0-based). Used to prioritize translation. */
+  activeIndex?: number,
 ): { translatedLines: SubtitleLine[]; loading: boolean; progress: number } {
   const [translatedLines, setTranslatedLines] = useState<SubtitleLine[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
+  const resultRef = useRef<SubtitleLine[]>([]);
+  const translatedChunksRef = useRef<Set<number>>(new Set());
+  const totalChunks = l2Lines.length === 0 ? 0 : Math.ceil(l2Lines.length / CHUNK_SIZE);
 
-  const translate = useCallback(async () => {
+  // Keep a ref in sync with activeIndex so the translation loop can
+  // re-check priority without restarting on every frame update.
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
+
+  // ── Reset state when subtitle lines change (new video) ──
+  useEffect(() => {
+    resultRef.current = new Array(l2Lines.length);
+    translatedChunksRef.current = new Set();
+    setTranslatedLines([]);
+    setProgress(0);
+    setLoading(true);
+  }, [l2Lines]);
+
+  const translateChunk = useCallback(async (
+    chunkIdx: number,
+    controller: AbortController,
+  ): Promise<boolean> => {
+    if (translatedChunksRef.current.has(chunkIdx)) return false;
+
+    const start = chunkIdx * CHUNK_SIZE;
+    const end = Math.min(start + CHUNK_SIZE, l2Lines.length);
+    const chunk = l2Lines.slice(start, end).map((s) => s.line);
+
+    try {
+      const res = await fetch(`${PYTHON_URL}/translate_array`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: chunk, l1, l2 }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+      const translated = data.translated_texts ?? [];
+
+      for (let i = 0; i < translated.length; i++) {
+        const idx = start + i;
+        resultRef.current[idx] = {
+          line: translated[i] ?? '',
+          starttime: l2Lines[idx]!.starttime,
+        };
+      }
+
+      translatedChunksRef.current.add(chunkIdx);
+      const doneCount = translatedChunksRef.current.size * CHUNK_SIZE;
+      setTranslatedLines([...resultRef.current]);
+      setProgress(Math.min(doneCount, l2Lines.length));
+      return true;
+    } catch (err: any) {
+      if (err?.name === 'AbortError' || controller.signal.aborted) return false;
+      console.error('Translation chunk failed:', err);
+      return false;
+    }
+  }, [l2Lines, l1, l2]);
+
+  // ── Translation loop — runs once per video, re-checks priority via ref ──
+  useEffect(() => {
     if (!enabled || l2Lines.length === 0) return;
 
-    // Cancel any previous translation
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
-    setLoading(true);
-    setProgress(0);
-    setTranslatedLines([]);
+    const run = async () => {
+      setLoading(true);
 
-    const lines = l2Lines.map((s) => s.line);
-    const total = lines.length;
-    const result: SubtitleLine[] = [];
+      // Keep translating chunks until all are done or aborted.
+      // Re-check the user's position (via ref) before each chunk
+      // so scrolling re-prioritizes without restarting the loop.
+      while (translatedChunksRef.current.size < totalChunks) {
+        if (controller.signal.aborted) break;
 
-    for (let start = 0; start < total; start += CHUNK_SIZE) {
-      if (controller.signal.aborted) break;
+        const next = _pickNextChunk(
+          activeIndexRef.current,
+          translatedChunksRef.current,
+          totalChunks,
+        );
+        if (next === -1) break; // all done
 
-      const end = Math.min(start + CHUNK_SIZE, total);
-      const chunk = lines.slice(start, end);
-
-      try {
-        const res = await fetch(`${PYTHON_URL}/translate_array`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ texts: chunk, l1, l2 }),
-          signal: controller.signal,
-        });
-
-        if (!res.ok) throw new Error(`Translation failed: ${res.status}`);
-
-        const data = await res.json();
-        const translated = data.translated_texts ?? [];
-
-        for (let i = 0; i < translated.length; i++) {
-          const idx = start + i;
-          result[idx] = {
-            line: translated[i] ?? '',
-            starttime: l2Lines[idx]!.starttime,
-          };
-        }
-
-        setTranslatedLines([...result]);
-        setProgress(Math.min(end, total));
-      } catch (err: any) {
-        if (err?.name === 'AbortError' || controller.signal.aborted) break;
-        console.error('Translation chunk failed:', err);
-        break;
+        await translateChunk(next, controller);
       }
-    }
 
-    if (!controller.signal.aborted) {
-      setLoading(false);
-      setProgress(total);
-    }
-  }, [l2Lines, l1, l2, enabled]);
-
-  useEffect(() => {
-    translate();
-    return () => {
-      abortRef.current?.abort();
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     };
-  }, [translate]);
+
+    run();
+
+    return () => {
+      controller.abort();
+    };
+  }, [enabled, l2Lines, l1, l2, totalChunks, translateChunk]);
 
   return { translatedLines, loading, progress };
+}
+
+/**
+ * Pick the next chunk to translate based on priority:
+ * 1. Chunk 0 (top of transcript — always first)
+ * 2. Chunks around the active line (±LOOKAHEAD_CHUNKS radius)
+ * 3. Remaining untranslated chunks in order (background fill)
+ */
+function _pickNextChunk(
+  activeIndex: number | undefined,
+  done: Set<number>,
+  totalChunks: number,
+): number {
+  const prio = activeIndex !== undefined && activeIndex >= 0
+    ? Math.floor(activeIndex / CHUNK_SIZE)
+    : 0;
+
+  // 1. Chunk 0
+  if (!done.has(0)) return 0;
+
+  // 2. Chunks around active line, expanding outward
+  for (let radius = 0; radius <= LOOKAHEAD_CHUNKS; radius++) {
+    for (const offset of [radius, -radius]) {
+      const c = prio + offset;
+      if (c >= 0 && c < totalChunks && !done.has(c)) return c;
+    }
+  }
+
+  // 3. First remaining untranslated chunk (sequential fill)
+  for (let c = 0; c < totalChunks; c++) {
+    if (!done.has(c)) return c;
+  }
+
+  return -1; // all done
 }
