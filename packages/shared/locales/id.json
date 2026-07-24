@@ -810,7 +810,7 @@
         "shortcut_hint": "Tekan {space} untuk membalik, {k1}–{k2} untuk menilai, {enter} untuk lanjut",
         "show_definition": "Tampilkan Definisi",
         "srs_new": "baru",
-        "srs_review": "ulasan"
+        "srs_review": "{count, plural, other {diulas # kali}}"
     },
     "setting": {
         "all_words": "Semua kata",

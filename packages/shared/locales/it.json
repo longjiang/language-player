@@ -810,7 +810,7 @@
         "shortcut_hint": "Premi {space} per girare, {k1}–{k2} per valutare, {enter} per continuare",
         "show_definition": "Mostra definizione",
         "srs_new": "nuovo",
-        "srs_review": "revisione"
+        "srs_review": "{count, plural, one {revisionato 1 volta} other {revisionato # volte}}"
     },
     "setting": {
         "all_words": "Tutte le parole",

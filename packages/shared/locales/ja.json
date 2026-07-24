@@ -810,7 +810,7 @@
         "shortcut_hint": "{space}で裏返す、{k1}–{k2}で評価、{enter}で続行",
         "show_definition": "定義を表示",
         "srs_new": "新しい",
-        "srs_review": "復習"
+        "srs_review": "{count, plural, other {# 回復習済み}}"
     },
     "setting": {
         "all_words": "すべての単語",

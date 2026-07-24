@@ -810,7 +810,7 @@
         "shortcut_hint": "Brúigh {space} chun smeach, {k1}–{k2} chun rátáil, {enter} chun leanúint",
         "show_definition": "Taispeáin Sainmhíniú",
         "srs_new": "nua",
-        "srs_review": "athbhreithniú"
+        "srs_review": "{count, plural, one {athbhreithnithe 1 uair} two {athbhreithnithe 2 uair} other {athbhreithnithe # uair}}"
     },
     "setting": {
         "all_words": "Gach focal",

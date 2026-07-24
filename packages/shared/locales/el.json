@@ -810,7 +810,7 @@
         "shortcut_hint": "Πάτησε {space} για αναστροφή, {k1}–{k2} για βαθμολόγηση, {enter} για συνέχεια",
         "show_definition": "Εμφάνιση Ορισμού",
         "srs_new": "νέο",
-        "srs_review": "επανάληψη"
+        "srs_review": "{count, plural, one {επαναλήφθηκε 1 φορά} other {επαναλήφθηκε # φορές}}"
     },
     "setting": {
         "all_words": "Όλες οι λέξεις",

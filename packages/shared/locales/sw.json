@@ -810,7 +810,7 @@
         "shortcut_hint": "Bonyeza {space} kupindua, {k1}–{k2} kutathmini, {enter} kuendelea",
         "show_definition": "Onyesha Ufafanuzi",
         "srs_new": "mpya",
-        "srs_review": "hakiki"
+        "srs_review": "{count, plural, one {imekaguliwa mara 1} other {imekaguliwa mara #}}"
     },
     "setting": {
         "all_words": "Maneno yote",

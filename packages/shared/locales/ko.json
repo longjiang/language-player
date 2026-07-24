@@ -810,7 +810,7 @@
         "shortcut_hint": "{space} 눌러 뒤집기, {k1}–{k2} 평가, {enter} 계속",
         "show_definition": "정의 보기",
         "srs_new": "새로 배우기",
-        "srs_review": "복습"
+        "srs_review": "{count, plural, other {#회 복습함}}"
     },
     "setting": {
         "all_words": "모든 단어",

@@ -810,7 +810,7 @@
         "shortcut_hint": "Nhấn {space} để lật, {k1}–{k2} để đánh giá, {enter} để tiếp tục",
         "show_definition": "Hiển thị định nghĩa",
         "srs_new": "mới",
-        "srs_review": "ôn tập"
+        "srs_review": "{count, plural, other {đã ôn tập # lần}}"
     },
     "setting": {
         "all_words": "Tất cả các từ",

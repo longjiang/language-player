@@ -810,7 +810,7 @@
         "shortcut_hint": "กด {space} เพื่อพลิก, {k1}–{k2} เพื่อให้คะแนน, {enter} เพื่อดำเนินการต่อ",
         "show_definition": "แสดงคำจำกัดความ",
         "srs_new": "ใหม่",
-        "srs_review": "ทบทวน"
+        "srs_review": "{count, plural, other {ทบทวนแล้ว # ครั้ง}}"
     },
     "setting": {
         "all_words": "ทุกคำ",

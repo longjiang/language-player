@@ -810,7 +810,7 @@
         "shortcut_hint": "Druk {space} om te draai, {k1}–{k2} om te gradeer, {enter} om voort te gaan",
         "show_definition": "Wys Definisie",
         "srs_new": "nuut",
-        "srs_review": "hersien"
+        "srs_review": "{count, plural, one {# keer hersien} other {# keer hersien}}"
     },
     "setting": {
         "all_words": "Alle Woorde",

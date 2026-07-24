@@ -810,7 +810,7 @@
         "shortcut_hint": "Нажми {space} чтобы перевернуть, {k1}–{k2} чтобы оценить, {enter} чтобы продолжить",
         "show_definition": "Показать определение",
         "srs_new": "новый",
-        "srs_review": "повторение"
+        "srs_review": "{count, plural, one {повторено 1 раз} few {повторено # раза} many {повторено # раз} other {повторено # раз}}"
     },
     "setting": {
         "all_words": "Все слова",

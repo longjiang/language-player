@@ -810,7 +810,7 @@
         "shortcut_hint": "Trykk {space} for å snu, {k1}–{k2} for å vurdere, {enter} for å fortsette",
         "show_definition": "Vis definisjon",
         "srs_new": "ny",
-        "srs_review": "gjennomgang"
+        "srs_review": "{count, plural, one {gjennomgått 1 gang} other {gjennomgått # ganger}}"
     },
     "setting": {
         "all_words": "Alle ord",

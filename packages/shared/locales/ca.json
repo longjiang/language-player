@@ -810,7 +810,7 @@
         "shortcut_hint": "Prem {space} per girar, {k1}–{k2} per valorar, {enter} per continuar",
         "show_definition": "Mostrar definició",
         "srs_new": "nou",
-        "srs_review": "revisió"
+        "srs_review": "{count, plural, one {revisat 1 cop} other {revisat # cops}}"
     },
     "setting": {
         "all_words": "Totes les paraules",

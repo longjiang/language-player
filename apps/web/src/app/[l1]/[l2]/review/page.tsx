@@ -418,6 +418,11 @@ export default function ReviewPage() {
 
   const currentCard = cards[currentIndex];
 
+  // ── Clear stale context translation when card changes ──
+  useEffect(() => {
+    setContextTranslation(null);
+  }, [currentCard?.word.id]);
+
   // ── Auto-translate context text when back is revealed (if no saved translation) ──
   useEffect(() => {
     if (!showDefinition || !getShowTranslation()) return;
@@ -655,8 +660,9 @@ export default function ReviewPage() {
         {/* SRS info (compact) */}
         <p className="text-xs text-muted-foreground mb-4">
           {srs.interval > 0 ? `${srs.interval}d` : t('review.srs_new')}
-          {' · '}{srs.ease.toFixed(1)}x
-          {' · '}{srs.repetitions} {t('review.srs_review')}{srs.repetitions !== 1 ? 's' : ''}
+          {srs.repetitions > 0 && (
+            <>{' · '}{srs.ease.toFixed(1)}x{' · '}{t('review.srs_review', { count: srs.repetitions })}</>
+          )}
         </p>
 
         {/* Definition (hidden until revealed) */}

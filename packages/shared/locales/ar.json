@@ -810,7 +810,7 @@
         "shortcut_hint": "اضغط {space} للقلب، {k1}–{k2} للتقييم، {enter} للمتابعة",
         "show_definition": "إظهار التعريف",
         "srs_new": "جديد",
-        "srs_review": "مراجعة"
+        "srs_review": "{count, plural, one {تمت المراجعة مرة واحدة} two {تمت المراجعة مرتين} few {تمت المراجعة # مرات} other {تمت المراجعة # مرة}}"
     },
     "setting": {
         "all_words": "كل الكلمات",
