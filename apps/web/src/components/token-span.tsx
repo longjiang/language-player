@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
@@ -47,6 +47,8 @@ export interface TokenSpanProps {
   isSelected: boolean;
   isSaved: boolean;
   isHighlighted: boolean;
+  /** `normal` = show all words; `quiz` = blank out saved words for self-testing. */
+  mode: 'normal' | 'quiz';
   onClick: () => void;
 }
 
@@ -65,8 +67,12 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   isSelected,
   isSaved,
   isHighlighted,
+  mode,
   onClick,
 }) => {
+  // ── Quiz mode: toggle blank reveal per-word ──
+  const [quizRevealed, setQuizRevealed] = useState(false);
+
   // ── First cached entry's first definition — shared by quick gloss and interlinear ──
   const firstDef = useMemo(() => {
     for (const lemma of token.lemmas) {
@@ -112,33 +118,44 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const isJapanese = base === 'ja';
   const hasKanji = isJapanese && /[一-龯]/.test(token.text);
 
+  // ── Quiz mode: blank out saved words for self-testing ──
+  const isQuizBlanking = mode === 'quiz' && isSaved && !quizRevealed;
+
   // ── Common class for the outer clickable wrapper ──
   const wrapperClass = `cursor-pointer rounded transition-colors ${
     isSelected
       ? 'bg-primary/20 text-primary'
       : isHighlighted
         ? 'bg-primary/15 text-primary font-semibold ring-1 ring-primary/30'
-        : 'hover:bg-muted/80'
+        : isQuizBlanking
+          ? 'hover:bg-muted/80 border-b-2 border-dashed border-muted-foreground/40'
+          : 'hover:bg-muted/80'
   }`;
 
   // ── Saved-word background — only on the word itself, never on the gloss ──
-  const wordBgClass = (!isSelected && !isHighlighted && isSaved)
+  const wordBgClass = (!isSelected && !isHighlighted && isSaved && !isQuizBlanking)
     ? 'bg-yellow-200/25 rounded'
     : '';
 
-  const title = token.lemmas.map(l => l.lemma).join(', ');
+  const title = isQuizBlanking ? 'Click to reveal' : token.lemmas.map(l => l.lemma).join(', ');
 
   // ── Word content (reused by both layout variants) ──
   let wordContent: React.ReactNode;
 
-  // ── Phonetics-only mode: show reading instead of surface text ──
-  if (showPhonetics && phoneticsMode === 'word' && token.pronunciation && token.pronunciation !== token.text
+  // ── Quiz blank: show placeholder instead of word ──
+  if (isQuizBlanking) {
+    wordContent = (
+      <span className="px-1 text-muted-foreground/40 select-none">
+        {'＿'.repeat(Math.max(1, token.text.length))}
+      </span>
+    );
+  } else if (showPhonetics && phoneticsMode === 'word' && token.pronunciation && token.pronunciation !== token.text
       && (!isJapanese || hasKanji)) {
     const displayText = base === 'ja' ? katakanaToHiragana(token.pronunciation) : token.pronunciation;
     wordContent = <span className={wordBgClass}>{displayText}</span>;
   } else {
     // ── Ruby text ──
-    const hasPhonetics = !isHighlighted && showPhonetics && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text;
+    const hasPhonetics = !isHighlighted && !isQuizBlanking && showPhonetics && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text;
     const rubySegments: RubySegment[] | null = hasPhonetics
       ? buildRuby(token.text, token.pronunciation!, l2Code)
       : null;
@@ -156,10 +173,19 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     );
   }
 
+  // ── Handle click: in quiz mode, reveal blank first; otherwise open popup ──
+  const handleClick = () => {
+    if (isQuizBlanking) {
+      setQuizRevealed(true);
+      return;
+    }
+    onClick();
+  };
+
   // ── Interlinear definition: word stacked above definition, centered ──
-  if (interlinearDef) {
+  if (interlinearDef && !isQuizBlanking) {
     return (
-      <span onClick={(e) => { e.stopPropagation(); onClick(); }} className={wrapperClass} title={title}>
+      <span onClick={(e) => { e.stopPropagation(); handleClick(); }} className={wrapperClass} title={title}>
         <span className="inline-flex flex-col items-center">
           {wordContent}
           <span className="text-[0.55em] text-muted-foreground/60 font-normal select-none leading-none">
@@ -172,9 +198,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
   // ── Inline layout: word with optional quick gloss alongside ──
   return (
-    <span onClick={(e) => { e.stopPropagation(); onClick(); }} className={wrapperClass} title={title}>
+    <span onClick={(e) => { e.stopPropagation(); handleClick(); }} className={wrapperClass} title={title}>
       {wordContent}
-      {quickGlossDef && <QuickGloss def={quickGlossDef} />}
+      {quickGlossDef && !isQuizBlanking && <QuickGloss def={quickGlossDef} />}
     </span>
   );
 };
