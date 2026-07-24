@@ -99,6 +99,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     showTranslation,
     activeIndex,
   );
+  // retry available on the returned object for error recovery UI (future)
 
   const syncedLines = useMemo(() => {
     // translatedLines is a sparse array from the lazy translation hook —
