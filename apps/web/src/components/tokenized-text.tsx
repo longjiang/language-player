@@ -42,6 +42,8 @@ export interface TokenizedTextProps {
   /** Multiple word forms to highlight (e.g. search terms in subs-search). Any token
    *  whose text matches one of these forms gets the highlight ring. */
   highlightForms?: string[];
+  /** Karaoke progress for the active subtitle line: 0 (start) to 1 (end). When undefined, karaoke is off. */
+  karaokeProgress?: number;
 }
 
 /**
@@ -63,6 +65,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   tokens: preloadedTokens,
   highlightForm,
   highlightForms,
+  karaokeProgress,
 }) => {
   // Map typeFace to Tailwind font-family class
   const fontClass =
@@ -334,6 +337,15 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           const phoneticsShow = isPhoneticsEligible(l2Code)
             ? l2Settings.tokenSpan.phonetics.show
             : false;
+          // In karaoke mode, determine if this token has been spoken
+          let isKaraokeSpoken: boolean | undefined;
+          if (karaokeProgress !== undefined) {
+            const wordTokens = tokens.filter(t => t.lemmas.length > 0);
+            const wordCount = wordTokens.length;
+            const spokenWordCount = Math.floor(karaokeProgress * wordCount);
+            const wordTokensSoFar = tokens.slice(0, i + 1).filter(t => t.lemmas.length > 0).length;
+            isKaraokeSpoken = wordTokensSoFar <= spokenWordCount;
+          }
           return (
             <TokenSpan
               key={i}
@@ -354,6 +366,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               }
               onClick={() => handleTokenClick(token)}
               cacheVersion={cacheVersion}
+              isKaraokeSpoken={isKaraokeSpoken}
             />
           );
         })}
