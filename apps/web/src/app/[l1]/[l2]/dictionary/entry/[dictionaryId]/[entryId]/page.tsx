@@ -52,7 +52,7 @@ export default function DictionaryEntryPage() {
     setError(null);
     try {
       const queryL2 = baseCode(params.l2);
-      const queryL1 = baseCode(params.l1);
+      const queryL1 = params.l1;  // keep BCP 47 subtag (e.g. "zh-Hans") — backend cache is keyed by full l1
       const entryId = decodeURIComponent(params.entryId).replace(/~/g, ',');
       const url = `${PYTHON_API_URL}/dictionary/entry?l2=${queryL2}&dict=${encodeURIComponent(params.dictionaryId)}&id=${encodeURIComponent(entryId)}&l1=${queryL1}`;
       const res = await fetch(url);
