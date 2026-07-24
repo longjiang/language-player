@@ -49,20 +49,20 @@ export function TabbedPanel<T extends string = string>({
   return (
     <div className={cn('flex flex-col rounded-xl border border-border bg-card', className)}>
       {/* Tab bar */}
-      <div className="flex shrink-0 justify-between border-b border-border">
+      <div className="flex shrink-0 border-b border-border">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => onTabClick ? onTabClick(tab.key) : onTabChange(tab.key)}
             className={cn(
-              'flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors',
+              'flex flex-1 items-center justify-center gap-1.5 min-w-0 px-4 py-2.5 text-sm font-medium transition-colors max-sm:px-2',
               activeTab === tab.key
                 ? 'border-b-2 border-primary -mb-px text-primary'
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            {tab.icon}
-            {tab.label}
+            {tab.icon && <span className="flex-shrink-0">{tab.icon}</span>}
+            <span className="truncate">{tab.label}</span>
           </button>
         ))}
       </div>
