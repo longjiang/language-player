@@ -50,3 +50,27 @@ export function isRTL(code: string): boolean {
 export function getLanguageDirection(code: string): 'ltr' | 'rtl' {
   return isRTL(code) ? 'rtl' : 'ltr';
 }
+
+/**
+ * Languages whose native script is Latin or for which phonetics display
+ * is intentionally suppressed. Burmese is excluded because its script is
+ * complex to romanize reliably.
+ */
+const PHONETICS_SUPPRESSED = new Set([
+  // Latin-script languages — already written in the learner's alphabet
+  'en', 'fr', 'de', 'es', 'it', 'pt', 'nl', 'sv', 'no', 'da', 'fi',
+  'tr', 'pl', 'cs', 'sk', 'hu', 'ro', 'hr', 'sl', 'lv', 'lt', 'et',
+  'is', 'ga', 'cy', 'mt', 'eu', 'ca', 'gl', 'af', 'id', 'ms', 'vi',
+  'tl', 'ceb', 'sw', 'zu', 'xh', 'ha', 'yo', 'ig', 'so', 'rw', 'ny',
+  // Burmese — complex script, no reliable romanizer yet
+  'my',
+]);
+
+/**
+ * Returns true if the given language code is eligible for phonetics display
+ * (ruby text, romanization, etc.). Returns false for Latin-script languages
+ * (where the native script is already readable) and for Burmese.
+ */
+export function isPhoneticsEligible(l2Code: string): boolean {
+  return !PHONETICS_SUPPRESSED.has(l2Code.split('-')[0]!);
+}
