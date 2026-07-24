@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/providers/language-provider';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
+import { useCloudUserData } from '@/providers/user-data-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
 import { sm2, newCard, remainingNewCardsToday } from '@langplayer/utils';
@@ -65,6 +66,7 @@ export default function ReviewPage() {
   const { l1, l2 } = useLanguage();
   const { savedWords, loaded: wordsLoaded, removeSavedWord } = useSavedWordsContext();
   const { store, loaded: srsLoaded, updateCard, removeCard, dailyNewLimit: dailyLimit } = useSrs();
+  const { loaded: cloudLoaded } = useCloudUserData();
   const { speak } = useSpeech();
   const t = useT();
   const RATING_LABELS = useRatingLabels();
@@ -475,7 +477,7 @@ export default function ReviewPage() {
 
   // ── Render states ──
 
-  const isLoading = status === 'loading' || !wordsLoaded || !srsLoaded || initializing;
+  const isLoading = status === 'loading' || !wordsLoaded || !srsLoaded || initializing || (status === 'authenticated' && !cloudLoaded);
 
   if (isLoading) {
     return (
