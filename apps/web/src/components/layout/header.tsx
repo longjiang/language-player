@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/providers/language-provider';
 import { LanguageSwitcher } from './language-switcher';
 import { UserMenu } from './user-menu';
+import { Logo } from '@/components/ui/logo';
 import {
   Menu, X, ChevronDown, Search,
   Compass, Music, Tv, Clapperboard, History, Upload,
@@ -144,18 +144,11 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
-        {/* Logo */}
-        <Link href={`/${l1.code}/${l2.code}/explore`} className="flex items-center gap-2 font-bold">
-          <Image
-            src="/img/logo.png"
-            alt={t('title.app_name')}
-            width={28}
-            height={28}
-            className="h-7 w-7 flex-shrink-0"
-            priority
-          />
-          <span className="hidden sm:inline">{t('title.app_name')}</span>
-        </Link>
+        <Logo
+          linkHref={`/${l1.code}/${l2.code}/explore`}
+          showText
+          priority
+        />
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-1 md:flex">
