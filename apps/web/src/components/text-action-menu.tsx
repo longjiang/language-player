@@ -59,16 +59,18 @@ export function TextActionMenu({
   const menuRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  // Close on click outside
+  // Close on click outside — use capture phase so we can stop propagation
+  // before the click reaches any underlying element (e.g., review card onClick).
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        e.stopPropagation();
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('click', handler, true);
+    return () => document.removeEventListener('click', handler, true);
   }, [open]);
 
   // Close on Escape
