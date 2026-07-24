@@ -14,6 +14,10 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 
 const cache = new Map<string, DictionaryEntry[]>();
 
+/** Monotonically incremented on every cache write. Components can read this to invalidate stale computations. */
+let _cacheVersion = 0;
+export function getCacheVersion(): number { return _cacheVersion; }
+
 export function getCachedEntries(l2Code: string, text: string): DictionaryEntry[] | undefined {
   return cache.get(`${l2Code}:${text}`);
 }
@@ -21,6 +25,7 @@ export function getCachedEntries(l2Code: string, text: string): DictionaryEntry[
 export function setCachedEntries(l2Code: string, text: string, entries: DictionaryEntry[]): void {
   if (entries.length > 0) {
     cache.set(`${l2Code}:${text}`, entries);
+    _cacheVersion++;
   }
 }
 
@@ -51,6 +56,7 @@ export async function bulkLookupWords(
       const l2 = uncached[0]?.l2Code ?? '';
       if (entries.length > 0) {
         cache.set(`${l2}:${text}`, entries);
+        _cacheVersion++;
       }
     }
   } catch {
