@@ -14,7 +14,7 @@ export async function translateText(
   try {
     const params = new URLSearchParams({ text, l1, l2 });
     const res = await fetch(`${PYTHON_API_URL}/translate?${params}`, {
-      cache: 'no-store',
+      next: { revalidate: 86400 },
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return text;

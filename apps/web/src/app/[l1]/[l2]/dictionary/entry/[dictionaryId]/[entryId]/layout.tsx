@@ -17,7 +17,7 @@ interface SubsSearchResult {
 async function getEntry(l2: string, dict: string, id: string, l1: string): Promise<EntryData | null> {
   try {
     const url = `${PYTHON_API_URL}/dictionary/entry?l2=${l2}&dict=${dict}&id=${encodeURIComponent(id)}&l1=${l1}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetch(url, { next: { revalidate: 86400 } });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -28,7 +28,7 @@ async function getEntry(l2: string, dict: string, id: string, l1: string): Promi
 async function getFirstSubsVideo(term: string, l2: string): Promise<string | null> {
   try {
     const url = `${PYTHON_API_URL}/subs-search?terms=${encodeURIComponent(term)}&l2=${l2}&limit=1&context=0`;
-    const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+    const res = await fetch(url, { next: { revalidate: 86400 }, signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
     const data = await res.json();
     const videos: SubsSearchResult[] = Array.isArray(data) ? data : data?.results ?? [];

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { translateText } from '@/lib/translate';
 
 interface TvShow {
   id: number;
@@ -9,7 +8,7 @@ interface TvShow {
 
 async function getShow(id: number): Promise<TvShow | null> {
   try {
-    const res = await fetch(`${PYTHON_API_URL}/tv-shows/${id}`, { cache: 'no-store' });
+    const res = await fetch(`${PYTHON_API_URL}/tv-shows/${id}`, { next: { revalidate: 3600 } });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -25,14 +24,12 @@ export async function generateMetadata({
   const showId = Number(params.id);
   const { l1, l2 } = params;
   const show = !isNaN(showId) ? await getShow(showId) : null;
-  const rawTitle = show?.title || 'TV Show';
-  const translatedTitle = await translateText(rawTitle, l1, l2);
-  const title = `TV Show: ${translatedTitle}`;
+  const title = `TV Show: ${show?.title || 'TV Show'}`;
 
   return {
     title,
     description: show?.title
-      ? `Watch ${translatedTitle} with interactive dual subtitles on Language Player.`
+      ? `Watch ${show.title} with interactive dual subtitles on Language Player.`
       : 'Watch TV shows with interactive dual subtitles.',
     openGraph: {
       images: [{ url: `/og?emoji=%F0%9F%93%BA&title=${encodeURIComponent(title)}`, width: 1200, height: 630 }],
