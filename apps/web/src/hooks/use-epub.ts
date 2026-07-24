@@ -134,7 +134,7 @@ export function useEpub(): UseEpubReturn {
       return { flatToc: flat, firstChapterHref: null };
     } catch (err) {
       console.error('Error loading EPUB:', err);
-      setError('Failed to parse EPUB file');
+      setError('msg.epub_parse_error');
     }
     return null;
   }, []);
@@ -237,7 +237,7 @@ export function useEpub(): UseEpubReturn {
       return md;
     } catch (err) {
       console.error('Error loading chapter:', err);
-      setError('Failed to load chapter');
+      setError('msg.epub_chapter_error');
       return '';
     } finally {
       setLoading(false);

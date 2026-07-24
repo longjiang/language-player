@@ -122,7 +122,6 @@ export default function EpubPage() {
           <h1 className="text-xl font-bold truncate">
             {epub.chapterTitle || epub.fileName || t('title.epub_reader')}
           </h1>
-          <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p>
         </div>
         {/* Close EPUB */}
         {epub.toc.length > 0 && (
@@ -153,6 +152,7 @@ export default function EpubPage() {
             <EpubUpload
               onFileLoaded={handleFileLoaded}
               fileName={epub.fileName}
+              error={epub.error ? t(epub.error) : null}
             />
           ) : epub.toc.length > 0 && !epub.coverTapped && epub.coverUrl ? (
             /* ── Cover ── */
@@ -209,6 +209,17 @@ export default function EpubPage() {
           ) : epub.loading ? (
             <div className="flex min-h-[40vh] items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : epub.error ? (
+            /* ── Parse / load error ── */
+            <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
+              <p className="text-sm text-destructive">{t(epub.error)}</p>
+              <button
+                onClick={epub.close}
+                className="rounded px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {t('action.close')}
+              </button>
             </div>
           ) : null}
         </div>
