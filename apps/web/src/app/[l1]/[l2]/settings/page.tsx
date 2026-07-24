@@ -162,7 +162,7 @@ export default function SettingsPage() {
 
           <Section title={t('label.tokenized_text_preview')}>
             <div className="rounded-lg border border-border bg-muted/50 p-4">
-              <TokenizedText text={previewText} l2Code={l2.code} textScale={zoomRem} typeFace={tokenizedText.typeFace} />
+              <TokenizedText text={previewText} l2Code={l2.code} typeFace={tokenizedText.typeFace} />
               {previewTranslation && (
                 <p className="pt-1 text-sm text-muted-foreground leading-relaxed">
                   {previewTranslation}
