@@ -5,6 +5,7 @@ import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
+import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
@@ -115,32 +116,16 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     setActiveIndex(idx);
   }, [currentTime, syncedLines]);
 
-  // Auto-scroll to active line — only when activeIndex changes, not on every render
-  const prevActiveRef = useRef(activeIndex);
+  // Auto-scroll to active line.
+  // When smoothScroll is OFF: uses browser scrollIntoView (original behavior).
+  // When smoothScroll is ON: throttled, eased RAF animation that centers the active line.
   const listRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (activeIndex === prevActiveRef.current) return;
-    prevActiveRef.current = activeIndex;
-    if (activeIndex < 0) return;
-
-    const el = listRef.current?.querySelector(`[data-subtitle-index="${activeIndex}"]`) as HTMLElement | null;
-    if (!el) return;
-
-    const container = scrollContainerRef?.current ?? el.closest('.overflow-y-auto') as HTMLElement | null;
-    const cr = container?.getBoundingClientRect();
-    const er = el.getBoundingClientRect();
-    const vh = window.innerHeight;
-
-    const top = cr && cr.height < vh * 0.8 ? cr.top : 0;
-    const bottom = cr && cr.height < vh * 0.8 ? cr.bottom : vh;
-    const margin = (bottom - top) * 0.25;
-
-    const nearTop = er.top < top + margin;
-    const nearBottom = er.bottom > bottom - margin;
-    if (nearTop || nearBottom) {
-      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }
-  }, [activeIndex, scrollContainerRef]);
+  useTranscriptAutoScroll({
+    activeIndex,
+    listRef,
+    scrollContainerRef,
+    smoothScrollEnabled: playback.smoothScroll,
+  });
 
   const toggleTranslation = () => {
     updateDisplay({ translation: !showTranslation });
