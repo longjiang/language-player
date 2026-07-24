@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@langplayer/shared": "*",
+    "papaparse": "^5.4.1",
     "spark-md5": "^3.0.2"
   },
   "devDependencies": {

@@ -1,64 +1,65 @@
+import Papa from 'papaparse';
 import type { SubtitleLine } from '@langplayer/shared';
 
-/** Parse the CSV subs_l2 format returned by the Python /subs-search endpoint.
- *  Uses the header row to find the "line" column index (follows Python
- *  reduce_video_subs_to_context which does csv_header.index('line')). */
-export function parseSubsL2(csv: string): SubtitleLine[] {
+/**
+ * Parse CSV subtitle data into SubtitleLine[] using PapaParse.
+ *
+ * Handles the CSV format returned by the Python /subs-search endpoint
+ * and stored in Directus 8's `subs_l2` column. The CSV has a header row
+ * with "starttime", optionally "duration", and "line" columns. Data rows
+ * may have quoted line fields containing embedded newlines, commas, and
+ * escaped double-quotes — all handled correctly by PapaParse.
+ *
+ * @param csv — Raw CSV string (header + data rows)
+ * @returns Parsed subtitle lines, or [] if CSV is empty or malformed
+ */
+export function parseSubtitleCSV(csv: string): SubtitleLine[] {
   if (!csv) return [];
-  const lines: SubtitleLine[] = [];
-  const rows = csv.split('\n');
-  if (rows.length < 2) return [];
 
-  // Parse header to find the "line" column index
-  const header = rows[0]!.split(',');
-  const lineIdx = header.findIndex((h) => h.trim().toLowerCase() === 'line');
-  const timeIdx = header.findIndex((h) => h.trim().toLowerCase() === 'starttime');
-  if (lineIdx === -1 || timeIdx === -1) return [];
+  const result = Papa.parse<Record<string, string>>(csv, {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: (h: string) => h.trim().toLowerCase(),
+  });
 
-  for (let i = 1; i < rows.length; i++) {
-    const row = rows[i]!;
-    if (!row.trim()) continue;
+  if (result.errors.length > 0 && result.data.length === 0) return [];
 
-    // Parse CSV row splitting by comma, handling quoted fields
-    const fields = _parseCSVRow(row);
-    if (fields.length <= Math.max(timeIdx, lineIdx)) continue;
+  return result.data
+    .map((row): SubtitleLine | null => {
+      const starttime = parseFloat(row.starttime ?? '');
+      if (isNaN(starttime)) return null;
 
-    const starttime = parseFloat(fields[timeIdx]!);
-    if (isNaN(starttime)) continue;
+      const line = (row.line ?? '').trim();
+      if (!line) return null;
 
-    const line = fields[lineIdx]!.trim();
-    if (!line) continue;
+      const entry: SubtitleLine = { starttime, line };
 
-    lines.push({ starttime, line });
-  }
-  return lines;
-}
-
-/** Split a CSV row into fields, handling quoted values. */
-export function _parseCSVRow(row: string): string[] {
-  const fields: string[] = [];
-  let current = '';
-  let inQuotes = false;
-
-  for (let i = 0; i < row.length; i++) {
-    const ch = row[i]!;
-    if (ch === '"') {
-      if (inQuotes && i + 1 < row.length && row[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
+      // Parse optional duration column
+      if (row.duration) {
+        const dur = parseFloat(row.duration);
+        if (!isNaN(dur) && dur > 0) entry.duration = dur;
       }
-    } else if (ch === ',' && !inQuotes) {
-      fields.push(current);
-      current = '';
-    } else {
-      current += ch;
-    }
-  }
-  fields.push(current);
-  return fields;
+
+      return entry;
+    })
+    .filter((l): l is SubtitleLine => l !== null);
 }
+
+/**
+ * Legacy alias for parseSubtitleCSV. Used by subs-search-results and
+ * other components that imported the old name.
+ * @deprecated Use parseSubtitleCSV instead.
+ */
+export const parseSubsL2 = parseSubtitleCSV;
+
+/**
+ * Legacy export — no longer needed (PapaParse handles field parsing).
+ * @deprecated Use parseSubtitleCSV instead.
+ */
+export const _parseCSVRow = (_row: string): string[] => {
+  const result = Papa.parse<string[]>(_row, { header: false });
+  return result.data[0] ?? [];
+};
 
 /** Strip a leading timestamp prefix like "0.067," or "1.234, " from a line. */
 export function stripTimestampPrefix(text: string): string {
