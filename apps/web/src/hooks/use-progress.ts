@@ -19,6 +19,41 @@ function parseLevel(raw: unknown): number | undefined {
 }
 
 /**
+ * Lightweight hook that reads the user's proficiency level for a given L2
+ * from localStorage ONLY — no cloud fetch, no sync. Safe to call in
+ * repeated child components (e.g., TokenizedText per subtitle line).
+ *
+ * Cloud sync is handled separately by useProgress() at the page/layout level.
+ */
+export function useProgressLevel(l2Code: string): number | undefined {
+  const [level, setLevel] = useState<number | undefined>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const store: ProgressStore = JSON.parse(raw);
+        return parseLevel(store[l2Code]?.level);
+      }
+    } catch { /* corrupted */ }
+    return undefined;
+  });
+
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          const store: ProgressStore = JSON.parse(e.newValue);
+          setLevel(parseLevel(store[l2Code]?.level));
+        } catch { /* ignore */ }
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [l2Code]);
+
+  return level;
+}
+
+/**
  * Hook for managing per-L2 learning progress (level, time, etc.).
  *
  * Data flow:
