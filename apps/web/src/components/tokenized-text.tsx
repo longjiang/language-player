@@ -20,7 +20,11 @@ const lemmatizeCache = new Map<string, LemmatizedToken[]>();
 export interface TokenizedTextProps {
   text: string;
   l2Code: string;
-  /** Scale factor for text size (default: 1). Pass 0 to inherit from parent. */
+  /**
+   * Explicit text size in rem. When omitted, uses the user's zoom setting
+   * from SettingsContext (tokenizedText.zoom). Pass 0 to inherit from parent
+   * (no inline font-size set).
+   */
   textScale?: number;
   /** Font family override: 'default' (inherit), 'serif', or 'sans-serif'. */
   typeFace?: 'default' | 'serif' | 'sans-serif';
@@ -45,10 +49,13 @@ export interface TokenizedTextProps {
  * Tokens are clickable — clicking shows lemma info and enables dictionary lookup.
  * Passes context through for word saving (video title, subtitle line, etc.).
  */
+/** Map zoom index (0–7) to rem values: 1rem (16px) to 2.25rem (36px). */
+const ZOOM_TO_REM = [1, 1.125, 1.25, 1.375, 1.5, 1.75, 2, 2.25] as const;
+
 export const TokenizedText: React.FC<TokenizedTextProps> = ({
   text,
   l2Code,
-  textScale = 1,
+  textScale,
   typeFace = 'default',
   context: externalContext,
   tokenCache,
@@ -65,6 +72,12 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const { savedWords } = useSavedWordsContext();
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
   const { level: userLevel } = useProgress(l2Code);
+
+  // Resolve effective font size:
+  //   - textScale explicitly provided → use as absolute rem value
+  //   - textScale omitted        → use user's zoom setting from SettingsContext
+  //   - textScale === 0          → inherit (no inline fontSize set)
+  const effectiveScale = textScale ?? (ZOOM_TO_REM[settingsTokenizedText.zoom] ?? 1);
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);
@@ -290,7 +303,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // ── Pre-visible: plain text, no tokenization yet ──
   if (!hasBeenVisible && !preloadedTokens) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground/80 ${fontClass}`} style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground/80 ${fontClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
         {convertedText}
       </span>
     );
@@ -298,7 +311,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (loading || converting) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground animate-pulse ${fontClass}`} style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground animate-pulse ${fontClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
         {convertedText}
       </span>
     );
@@ -306,7 +319,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (error && tokens.length <= 1) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground ${fontClass}`} style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground ${fontClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
         {convertedText}
       </span>
     );
@@ -314,7 +327,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   return (
     <span ref={containerRef} className={fontClass}>
-      <span className="leading-relaxed" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
+      <span className="leading-relaxed" style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
         {tokens.map((token, i) => {
           const l2Settings = getL2(l2Code);
           const phoneticsShow = isPhoneticsEligible(l2Code)
