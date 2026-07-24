@@ -137,8 +137,10 @@ export function ReaderPanel({
     const contentWidth = containerRef.current?.clientWidth;
     container.style.width = contentWidth ? contentWidth + 'px' : '100%';
     // Ensure measuring div has the same height as the viewport
-    const viewportH = containerRef.current?.clientHeight;
-    container.style.height = (viewportH && viewportH > 100 ? viewportH : window.innerHeight - 200) + 'px';
+    // Use window.innerHeight - 200 (and NOT containerRef.clientHeight) because
+    // during measurement the container only contains a small spinner — using its
+    // actual height would produce page breaks every 1-2 paragraphs.
+    container.style.height = (window.innerHeight - 200) + 'px';
 
     // Double rAF to ensure layout is complete
     requestAnimationFrame(() => {
