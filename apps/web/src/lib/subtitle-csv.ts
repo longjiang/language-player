@@ -186,6 +186,12 @@ export interface SyncedLine {
  * nearest-neighbor matching. Lines without a match in the other language
  * are still included (with an empty counterpart).
  *
+ * @deprecated L1 subtitles (subs_l1) are no longer stored in Directus.
+ *   This function is effectively a no-op — it wraps L2 lines as SyncedLine
+ *   structs with empty l1Line. The pairing logic is dead code.
+ *   Kept for backward compatibility with SubtitleDisplay's syncLines usage
+ *   when matching progressively translated lines to L2 lines.
+ *
  * Ported from the GO app's syncLines().
  */
 export function syncLines(
