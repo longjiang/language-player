@@ -63,9 +63,10 @@ export function DictionaryEntryCard({
   const [tab, setTab] = useState<string>('word');
 
   // ── Inflected search terms ──
-  const { allTerms, headTerm, formCount } = useInflectedSearchTerms(entry, l2Code ?? '');
+  const { allTerms, headTerm, formCount, loading: inflectionsLoading } = useInflectedSearchTerms(entry, l2Code ?? '');
   const [exactMatch, setExactMatch] = useState(false);
-  const searchTermString = exactMatch ? headTerm : allTerms.join(',');
+  // Don't pass multi-form term until inflections are resolved (avoids wasteful single-form fetch)
+  const searchTermString = exactMatch ? headTerm : (inflectionsLoading ? '' : allTerms.join(','));
 
   const levels = entry.levels ?? [];
   const levelTexts = levels.map((l) => levelLabel

@@ -174,25 +174,38 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       playerRef.current?.destroy();
+      playerRef.current = null;
     };
   }, [apiReady, youtubeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle autoplay changes
   useEffect(() => {
+    const p = playerRef.current;
+    if (!p) return;
     if (autoplay) {
-      playerRef.current?.playVideo();
+      if (typeof p.playVideo === 'function') p.playVideo();
     } else {
-      playerRef.current?.pauseVideo();
+      if (typeof p.pauseVideo === 'function') p.pauseVideo();
     }
   }, [autoplay]);
 
   // Seek to a specific time
   const seekTo = useCallback((seconds: number) => {
-    playerRef.current?.seekTo(seconds, true);
+    if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
+      playerRef.current.seekTo(seconds, true);
+    }
   }, []);
 
-  const play = useCallback(() => playerRef.current?.playVideo(), []);
-  const pause = useCallback(() => playerRef.current?.pauseVideo(), []);
+  const play = useCallback(() => {
+    if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
+      playerRef.current.playVideo();
+    }
+  }, []);
+  const pause = useCallback(() => {
+    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+      playerRef.current.pauseVideo();
+    }
+  }, []);
   const setPlaybackRate = useCallback(
     (rate: number) => {
       // YouTube IFrame API: setPlaybackRate via player.setPlaybackRate
