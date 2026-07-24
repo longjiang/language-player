@@ -240,14 +240,14 @@ export default function ReviewPage() {
     const label = RATING_LABELS.find((r) => r.key === quality);
     if (label) {
       toast(
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-white">{label.label}</p>
             <p className="text-xs text-white/80 truncate">{label.hint}</p>
           </div>
           <button
             onClick={() => handleUndo()}
-            className="shrink-0 rounded-lg border border-white/60 px-4 py-1.5 text-sm font-medium text-white hover:bg-white/10 transition-colors"
+            className="shrink-0 ml-auto rounded-lg border border-white/60 px-4 py-1.5 text-sm font-medium text-white hover:bg-white/10 transition-colors"
           >
             {t('action.undo')}
           </button>
