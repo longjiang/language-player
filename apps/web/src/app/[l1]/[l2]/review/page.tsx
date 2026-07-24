@@ -37,6 +37,13 @@ const RATING_MAP: Record<Rating, 0 | 2 | 4 | 5> = {
   easy: 5,
 };
 
+/** State saved before a rating, so the user can undo it. */
+interface UndoState {
+  wordId: string;
+  prevSrs: SrsFields;
+  wasLastCard: boolean;
+}
+
 function useRatingLabels() {
   const t = useT();
   return [
@@ -77,6 +84,8 @@ export default function ReviewPage() {
   const fetchGenerationRef = useRef(0);
   /** Track the current card's word ID to detect unsave-triggered card changes. */
   const lastCardIdRef = useRef<string | null>(null);
+  /** Previous card SRS state saved before a rating, used by the Undo action. */
+  const undoRef = useRef<UndoState | null>(null);
 
   const l2Code = baseCode(l2.code);
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
@@ -223,31 +232,52 @@ export default function ReviewPage() {
       return;
     }
 
-    // Visual feedback via toast — matches button color
+    // Save state for undo
+    const wasLastCard = currentIndex >= cards.length - 1;
+    undoRef.current = { wordId: card.word.id, prevSrs: { ...card.srs }, wasLastCard };
+
+    // Visual feedback via toast — matches button color, includes Undo
     const label = RATING_LABELS.find((r) => r.key === quality);
     if (label) {
       toast(label.label, {
         description: label.hint,
-        duration: 600,
+        duration: 3000,
         className: `${RATING_TOAST_COLORS[quality]} !text-white !border`,
+        action: {
+          label: t('action.undo'),
+          onClick: () => handleUndo(),
+        },
       });
     }
-
-    // Detect if this is the last card in the session
-    const isLastCard = currentIndex >= cards.length - 1;
 
     const sm2Quality = RATING_MAP[quality];
     const updated = sm2(card.srs, sm2Quality);
     updateCard(l2Code, card.word.id, updated);
 
-    if (isLastCard) {
+    if (wasLastCard) {
       setJustCompleted(true);
     }
 
     setTimeout(() => {
       setRated(false);
     }, 400);
-  }, [cards, currentIndex, rated, updateCard, l2Code]);
+  }, [cards, currentIndex, rated, updateCard, l2Code, t]);
+
+  /** Undo the most recent rating — restores the card's previous SRS state. */
+  const handleUndo = useCallback(() => {
+    const state = undoRef.current;
+    if (!state) return;
+
+    updateCard(l2Code, state.wordId, state.prevSrs);
+
+    if (state.wasLastCard) {
+      setJustCompleted(false);
+    }
+
+    // Reset currentIndex so the undone card reappears at the top
+    setCurrentIndex(0);
+    undoRef.current = null;
+  }, [l2Code, updateCard]);
 
   const handleReveal = useCallback(() => {
     setShowDefinition(true);
