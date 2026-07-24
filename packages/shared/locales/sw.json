@@ -812,7 +812,7 @@
         "hard": "Ngumu",
         "hard_hint": "Nimekumbuka kwa shida",
         "no_definition_available": "Hakuna ufafanuzi unaopatikana. Tafuta neno hili ukiangalia video.",
-        "shortcut_hint": "Bonyeza {space} kupindua, {k1}–{k2} kutathmini, {enter} kuendelea",
+        "shortcut_hint": "Bonyeza <space></space> kupindua, <k1></k1>–<k2></k2> kutathmini, <enter></enter> kuendelea",
         "show_definition": "Onyesha Ufafanuzi",
         "srs_new": "mpya",
         "srs_review": "{count, plural, one {imekaguliwa mara 1} other {imekaguliwa mara #}}"

@@ -812,7 +812,7 @@
         "hard": "Nehéz",
         "hard_hint": "Nehezen idézett fel",
         "no_definition_available": "Nincs elérhető definíció. Nézz utána ennek a szónak videók nézése közben.",
-        "shortcut_hint": "Nyomj {space}-t a fordításhoz, {k1}–{k2}-t az értékeléshez, {enter}-t a folytatáshoz",
+        "shortcut_hint": "Nyomj <space></space>-t a fordításhoz, <k1></k1>–<k2></k2>-t az értékeléshez, <enter></enter>-t a folytatáshoz",
         "show_definition": "Definíció megjelenítése",
         "srs_new": "új",
         "srs_review": "{count, plural, one {1 alkalommal áttekintve} other {# alkalommal áttekintve}}"

@@ -812,7 +812,7 @@
         "hard": "Vaikea",
         "hard_hint": "Muistettu vaivalla",
         "no_definition_available": "Määritelmää ei saatavilla. Etsi tämä sana katsoessasi videoita.",
-        "shortcut_hint": "Paina {space} kääntääksesi, {k1}–{k2} arvioidaksesi, {enter} jatkaaksesi",
+        "shortcut_hint": "Paina <space></space> kääntääksesi, <k1></k1>–<k2></k2> arvioidaksesi, <enter></enter> jatkaaksesi",
         "show_definition": "Näytä määritelmä",
         "srs_new": "uusi",
         "srs_review": "{count, plural, one {kerrattu 1 kerran} other {kerrattu # kertaa}}"
