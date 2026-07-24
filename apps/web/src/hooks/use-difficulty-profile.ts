@@ -6,6 +6,8 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 
 /** Module-level cache — fetched once, shared across all components. */
 let _cachedProfiles: DifficultyProfile | null = null;
+/** In-flight promise — deduplicates concurrent fetches during initial mount. */
+let _pendingPromise: Promise<DifficultyProfile | void> | null = null;
 
 /**
  * Fetch difficulty profiles from the Python backend once.
@@ -16,13 +18,25 @@ export function useDifficultyProfile(): DifficultyProfile | null {
 
   useEffect(() => {
     if (_cachedProfiles) return;
-    fetch(`${PYTHON_API_URL}/difficulty-profiles`)
+
+    // If a fetch is already in-flight, await it instead of firing a duplicate.
+    if (_pendingPromise) {
+      _pendingPromise.then((data) => { if (data) setProfiles(data); });
+      return;
+    }
+
+    _pendingPromise = fetch(`${PYTHON_API_URL}/difficulty-profiles`)
       .then((res) => res.json())
       .then((data: DifficultyProfile) => {
         _cachedProfiles = data;
+        _pendingPromise = null;
         setProfiles(data);
+        return data;
       })
-      .catch(() => {}); // silently fail — components fall back to hardcoded getLevel()
+      .catch(() => {
+        _pendingPromise = null;
+        // silently fail — components fall back to hardcoded getLevel()
+      });
   }, []);
 
   return profiles;
