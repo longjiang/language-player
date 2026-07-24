@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const DEFAULT_OUT_DIR = resolve(ROOT, 'apps', 'web', 'messages');
+const DEFAULT_OUT_DIR = resolve(ROOT, 'packages', 'shared', 'locales');
 const CSV_PATH = resolve(ROOT, 'translations.csv');
 
 // ── Locale discovery ────────────────────────
@@ -28,7 +28,7 @@ function getLocales(messagesDir) {
   return [...PRIORITY.filter(l => all.includes(l)), ...all.filter(l => !PRIORITY.includes(l))];
 }
 
-// Default to apps/web/messages for json-to-csv
+// Default to packages/shared/locales for json-to-csv
 const LOCALES = (() => {
   try {
     return getLocales(DEFAULT_OUT_DIR);

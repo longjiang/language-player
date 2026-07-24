@@ -10,6 +10,7 @@
 > - `apps/web/src/hooks/use-t.ts` — Next.js `useT()` hook wrapping `next-intl`
 > - `apps/web/src/i18n.ts` — Next.js request-scoped locale config with en fallback
 > - `specs/005-phase2.5-i18n.md` — Web app i18n implementation spec (middleware, build config, verification)
+> - [ADR-0014](./0014-shared-i18n-pipeline.md) — Ongoing pipeline documentation (output directory, workflow, conventions)
 > - `docs/translation-keys-reference.md` — Translation key reference
 
 ---

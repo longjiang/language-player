@@ -2,7 +2,7 @@
 
 **Date**: 2026-07-22
 **Status**: proposed
-**See also**: [ADR-0003 (no shared UI, amended)](./0003-no-shared-ui.md), [ADR-0008 (GO dictionary architecture)](./0008-go-dictionary-architecture.md), [ADR-0009 (i18n migration — shared locale directory)](./0009-go-i18n-migration-react-intl.md), [ADR-0011 (shared design tokens)](./0011-shared-design-tokens.md)
+**See also**: [ADR-0003 (no shared UI, amended)](./0003-no-shared-ui.md), [ADR-0008 (GO dictionary architecture)](./0008-go-dictionary-architecture.md), [ADR-0009 (i18n migration — shared locale directory)](./0009-go-i18n-migration-react-intl.md), [ADR-0011 (shared design tokens)](./0011-shared-design-tokens.md), [ADR-0014 (shared i18n pipeline)](./0014-shared-i18n-pipeline.md)
 
 ## Context
 
@@ -223,8 +223,8 @@ When a deep link opens the app:
 
 This is how most mobile apps work: Instagram's `instagram://post/123` doesn't include your UI language. Language is user state, not URL state. The `LanguageProvider` + `SecureStore` pattern is the mobile equivalent of the web's `/[l1]/[l2]/` URL prefix — both ensure the language pair is available before any content renders, just through different transport mechanisms.
 
-### i18n: Shared locale directory (per ADR-0009)
-**Decision**: Both apps consume translations from the same `packages/shared/locales/*.json` files (31 locales, nested JSON, ICU MessageFormat), generated from a single `translations.csv`. The mobile app uses `react-intl` with a `resolveNested()` bridge in `useT()`; the web app uses `next-intl`. The `useT()` hook has identical call signature on both platforms. No per-app translation copies, no separate CSVs, no translation drift. See ADR-0009 for the full migration architecture.
+### i18n: Shared locale directory (per ADR-0009, ADR-0014)
+**Decision**: Both apps consume translations from the same `packages/shared/locales/*.json` files (31 locales, nested JSON, ICU MessageFormat), generated from a single `translations.csv`. The mobile app uses `react-intl` with a `resolveNested()` bridge in `useT()`; the web app uses `next-intl`. The `useT()` hook has identical call signature on both platforms. No per-app translation copies, no separate CSVs, no translation drift. See ADR-0009 for the migration architecture and ADR-0014 for the ongoing pipeline documentation.
 
 ### Styling: NativeWind + shared tokens (per ADR-0011, amended ADR-0003)
 **Decision**: Use NativeWind (Tailwind for React Native) with design tokens shared from `packages/shared/tokens.ts`. Both apps use the same `className` syntax — `"bg-primary text-sm px-4 rounded-lg"` means the same thing on web and mobile. The shared Tailwind config sources its values from `packages/shared/tokens.ts` (colors, spacing, typography, border radius). Dark mode uses `.dark:` prefix on both platforms. For complex styles that exceed NativeWind's ~90% Tailwind subset (no `hover:`, `focus:`, CSS grid, arbitrary selectors), fall back to `StyleSheet.create()` fed by the same shared tokens. Components are never shared (ADR-0003), but the styling language is identical. See ADR-0011 for token architecture and ADR-0003 (amended) for the refined component boundary.
