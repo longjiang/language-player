@@ -9,7 +9,6 @@ import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
-import { Settings2 } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
 import { syncLines, type SyncedLine } from '@/lib/subtitle-csv';
 
@@ -39,6 +38,8 @@ interface SubtitleDisplayProps {
   highlightTerms?: string[];
   /** Called when autoPause triggers — the current subtitle line has finished. */
   onPauseLine?: () => void;
+  /** Called with translation progress. `null` = not translating. */
+  onTranslationProgress?: (text: string | null) => void;
 }
 
 /**
@@ -50,9 +51,9 @@ function stripDurationPrefix(text: string): string {
   return text.replace(/^[\d.]+,\s*/, '');
 }
 
-export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, mode = 'multiline', contextLines = 1, highlightTerms, onPauseLine }: SubtitleDisplayProps) {
+export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, mode = 'multiline', contextLines = 1, highlightTerms, onPauseLine, onTranslationProgress }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
-  const { display, updateDisplay, playback, getL2, updateL2 } = useSettingsContext();
+  const { display, playback, getL2 } = useSettingsContext();
   const t = useT();
   const l2Code = baseCode(l2.code);
   const l1Code = baseCode(l1.code);
@@ -90,9 +91,6 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     };
     fetchSubtitles().catch(() => {});
   }, [youtubeId, l2Code, l1Code, initialLines, isSingleline]);
-
-  const l2Settings = getL2(l2.code);
-  const showPhonetics = l2Settings.tokenSpan.phonetics.show !== false;
 
   const { translatedLines, loading: translating, progress } = useSubtitleTranslation(
     l2Lines,
@@ -155,17 +153,14 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
     }
   }, [currentTime, activeIndex, syncedLines, playback.autoPause, onPauseLine]);
 
-  const toggleTranslation = () => {
-    updateDisplay({ translation: !showTranslation });
-  };
-
-  const togglePhonetics = () => {
-    const ts = l2Settings.tokenSpan;
-    const next = showPhonetics ? false : 'ruby';
-    updateL2(l2.code, {
-      tokenSpan: { ...ts, phonetics: { ...ts.phonetics, show: next } },
-    });
-  };
+  // Report translation progress to parent
+  useEffect(() => {
+    if (translating) {
+      onTranslationProgress?.(`${t('subtitle.translating')} ${progress}/${l2Lines.length}`);
+    } else {
+      onTranslationProgress?.(null);
+    }
+  }, [translating, progress, l2Lines.length, onTranslationProgress, t]);
 
   // ── Empty state ──
   if (l2Lines.length === 0) {
@@ -220,34 +215,6 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   // ── Multiline mode (default) ──
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <button
-            onClick={toggleTranslation}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium transition-colors ${
-              showTranslation ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-            }`}
-          >
-            <Settings2 className="h-3 w-3" />
-            {showTranslation ? t('subtitle.translation_on') : t('subtitle.translation_off')}
-          </button>
-          <button
-            onClick={togglePhonetics}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium transition-colors ${
-              showPhonetics ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-            }`}
-          >
-            {showPhonetics ? 'あ' : 'a'}
-            {t('label.show_phonetics')}
-          </button>
-          {translating && (
-            <span className="tabular-nums">
-              {t('subtitle.translating')} {progress}/{l2Lines.length}
-            </span>
-          )}
-        </div>
-      </div>
-
       <div className="space-y-2" ref={listRef}>
         {syncedLines.map((line, i) => {
           const isActive = i === activeIndex;

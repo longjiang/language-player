@@ -66,6 +66,7 @@ export default function WatchPage() {
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
   const videoWrapperRef = useRef<HTMLDivElement>(null);
   const [isWide, setIsWide] = useState(false);
+  const [translatingText, setTranslatingText] = useState<string | null>(null);
 
   useWatchHistoryRecorder(video?.id, currentTime);
 
@@ -344,6 +345,7 @@ export default function WatchPage() {
               onTogglePanel={handleTogglePanel}
               hasPreviousVideo={hasPrevious}
               hasNextVideo={hasNext}
+              translatingText={translatingText}
             />
           </div>
         </div>
@@ -351,7 +353,7 @@ export default function WatchPage() {
         <div className="flex-1 min-h-0 px-4 pb-4">
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} />}
+            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />}
             queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
             info={videoInfo}
           />
@@ -383,6 +385,7 @@ export default function WatchPage() {
               onTogglePanel={handleTogglePanel}
               hasPreviousVideo={hasPrevious}
               hasNextVideo={hasNext}
+              translatingText={translatingText}
             />
           </div>
           <VideoMeta video={v} />
@@ -391,7 +394,7 @@ export default function WatchPage() {
         <aside className="min-h-0 overflow-hidden">
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} />}
+            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} onPauseLine={() => { playerRef.current?.pause(); setPaused(true); }} onTranslationProgress={setTranslatingText} />}
             queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
           />
         </aside>

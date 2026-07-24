@@ -44,6 +44,8 @@ interface VideoControlBarProps {
   className?: string;
   /** When true, only shows LP-specific controls: ⏮ ← → ⏭ ◧. No progress, time, play, rewind, or speed. */
   reduced?: boolean;
+  /** Optional translation progress text shown inline in reduced mode (e.g. "Translating 5/120"). */
+  translatingText?: string | null;
 }
 
 export function VideoControlBar({
@@ -65,6 +67,7 @@ export function VideoControlBar({
   hasNextVideo = false,
   className,
   reduced = false,
+  translatingText,
 }: VideoControlBarProps) {
   const t = useT();
   const [speedIndex, setSpeedIndex] = useState(0);
@@ -137,6 +140,9 @@ export function VideoControlBar({
         >
           <SkipForward className="h-3.5 w-3.5" />
         </Button>
+        {translatingText && (
+          <span className="text-xs text-muted-foreground tabular-nums ml-1">{translatingText}</span>
+        )}
         {onTogglePanel && (
           <Button
             variant="ghost"
