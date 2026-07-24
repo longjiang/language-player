@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
 
+const BRAND_NAME = 'Language Player';
+
 interface LogoProps {
   /** Logo size in pixels. Default 28 (h-7/w-7). */
   size?: number;
@@ -15,6 +17,12 @@ interface LogoProps {
   className?: string;
   /** Whether to prioritize loading. */
   priority?: boolean;
+  /**
+   * L1 (UI) language code. When provided and not 'en', and the localized
+   * app name differs from "Language Player", the localized name appears
+   * as small muted text underneath the brand name.
+   */
+  l1?: string;
 }
 
 export function Logo({
@@ -23,8 +31,11 @@ export function Logo({
   showText = false,
   className = '',
   priority,
+  l1,
 }: LogoProps) {
   const t = useT();
+  const localizedName = t('title.app_name');
+  const showSubtitle = l1 && l1 !== 'en' && localizedName !== BRAND_NAME;
 
   const logoContent = (
     <>
@@ -38,7 +49,14 @@ export function Logo({
         priority={priority}
       />
       {showText && (
-        <span className="hidden sm:inline">{t('title.app_name')}</span>
+        <span className="hidden sm:flex flex-col leading-tight">
+          <span className="font-bold">{BRAND_NAME}</span>
+          {showSubtitle && (
+            <span className="text-[10px] font-normal">
+              {localizedName}
+            </span>
+          )}
+        </span>
       )}
     </>
   );
@@ -47,7 +65,7 @@ export function Logo({
     return (
       <Link
         href={linkHref}
-        className={`flex items-center gap-2 font-bold ${className}`}
+        className={`flex items-center gap-2 ${className}`}
       >
         {logoContent}
       </Link>
@@ -55,7 +73,7 @@ export function Logo({
   }
 
   return (
-    <div className={`flex items-center gap-2 font-bold ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`}>
       {logoContent}
     </div>
   );
