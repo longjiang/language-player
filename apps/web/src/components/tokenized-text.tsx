@@ -11,6 +11,7 @@ import { useSettingsContext } from '@/providers/settings-provider';
 import { useProgress } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { bulkLookupWords } from '@/lib/dictionary-cache';
+import { isPhoneticsEligible } from '@langplayer/utils';
 import { TokenSpan } from './token-span';
 
 // Simple in-memory cache to avoid re-lemmatizing the same text
@@ -316,7 +317,9 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       <span className="leading-relaxed" style={textScale ? { fontSize: `${textScale}rem` } : undefined}>
         {tokens.map((token, i) => {
           const l2Settings = getL2(l2Code);
-          const phoneticsShow = l2Settings.tokenSpan.phonetics.show;
+          const phoneticsShow = isPhoneticsEligible(l2Code)
+            ? l2Settings.tokenSpan.phonetics.show
+            : false;
           return (
             <TokenSpan
               key={i}

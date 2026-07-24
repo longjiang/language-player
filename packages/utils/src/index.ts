@@ -1,5 +1,5 @@
 export { formatDuration, formatNumber, formatRelativeDate } from './format';
-export { languageNameFromCode, baseCode, isRTL, getLanguageDirection } from './language';
+export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhoneticsEligible } from './language';
 export { clampDifficulty, levelFromHours, hoursFromLevel } from './difficulty';
 export { cn } from './cn';
 export { formatPronunciation } from './pronunciation';
