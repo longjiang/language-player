@@ -57,14 +57,17 @@ export function TextActionMenu({
   const [translateText, setTranslateText] = useState<string | null>(null);
   const [translateError, setTranslateError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  // Close on click outside — use capture phase so we can stop propagation
-  // before the click reaches any underlying element (e.g., review card onClick).
+  // Close on click outside the dropdown popup — use capture phase so we can
+  // stop propagation before the click reaches any underlying element (e.g.,
+  // review card onClick). We check dropdownRef (just the popup), not menuRef
+  // (the whole component), so clicking the text content also dismisses safely.
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         e.stopPropagation();
         setOpen(false);
       }
@@ -184,7 +187,8 @@ export function TextActionMenu({
 
       {/* Dropdown menu */}
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 min-w-[180px] rounded-lg border border-border bg-card p-1 shadow-lg animate-in fade-in zoom-in-95"
+        <div ref={dropdownRef}
+          className="absolute right-0 top-full z-50 mt-1 min-w-[180px] rounded-lg border border-border bg-card p-1 shadow-lg animate-in fade-in zoom-in-95"
           onClick={(e) => e.stopPropagation()}>
           {menuItems.map((item) => (
             <button
