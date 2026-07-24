@@ -6,22 +6,26 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 
 const PYTHON_URL = PYTHON_API_URL;
 const CHUNK_SIZE = 5;
-/** How many chunks ahead of the active line to pre-translate before continuing sequentially. */
+/** How many chunks ahead of and behind the active line to translate. Only lines
+ *  within ±LOOKAHEAD_CHUNKS of the playhead are ever translated — the rest
+ *  stay untranslated until the playhead moves near them. */
 const LOOKAHEAD_CHUNKS = 3;
 
 /** Result of a single chunk translation attempt. */
 type ChunkResult = 'success' | 'aborted' | 'error';
 
 /**
- * Translates subtitle lines in chunks of 5, prioritizing lines near the
- * user's current position. Chunk 0 (top of transcript) is always first.
+ * Translates subtitle lines in chunks of 5, only for lines near the
+ * playhead (±LOOKAHEAD_CHUNKS). Lines far from the playhead are never
+ * translated — they fill in as the user watches.
  *
- * Uses a ref-based priority check so the translation loop isn't restarted
- * on every frame when activeIndex changes — it re-checks the user's
- * position before each chunk and adjusts accordingly.
+ * A watcher effect monitors activeIndex changes and restarts the
+ * translation loop whenever the playhead moves into a new chunk region
+ * that has untranslated chunks. Already-translated chunks are preserved
+ * across restarts.
  *
  * If a chunk fails (e.g. server unreachable), the loop stops immediately
- * rather than hammering the server with 59 more failing requests.
+ * rather than hammering the server with more failing requests.
  * Call `retry()` to resume translation once the server is back.
  */
 export function useSubtitleTranslation(
@@ -54,7 +58,7 @@ export function useSubtitleTranslation(
     translatedChunksRef.current = new Set();
     setTranslatedLines([]);
     setProgress(0);
-    setLoading(true);
+    setLoading(enabled && l2Lines.length > 0);
     setError(null);
   }, [l2Lines]);
 
@@ -79,7 +83,16 @@ export function useSubtitleTranslation(
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const data = await res.json();
-      const translated = data.translated_texts ?? [];
+      const translated: string[] = data.translated_texts ?? [];
+
+      // Guard against malformed server responses — don't mark the chunk
+      // as done if we got fewer translations than lines in the chunk.
+      if (translated.length < chunk.length) {
+        console.warn(
+          `Translation chunk ${chunkIdx}: expected ${chunk.length} results, got ${translated.length}. Retrying next cycle.`,
+        );
+        return 'error';
+      }
 
       for (let i = 0; i < translated.length; i++) {
         const idx = start + i;
@@ -100,9 +113,21 @@ export function useSubtitleTranslation(
     }
   }, [l2Lines, l1, l2]);
 
-  // ── Translation loop — runs once per video, re-checks priority via ref ──
+  // ── Watcher: restart translation when playhead moves into a new chunk region ──
   useEffect(() => {
     if (!enabled || l2Lines.length === 0) return;
+    const next = _pickNextChunk(activeIndex, translatedChunksRef.current, totalChunks);
+    if (next !== -1) {
+      setRetryCounter((c) => c + 1);
+    }
+  }, [activeIndex, enabled, l2Lines.length, totalChunks]);
+
+  // ── Translation loop — translates lookahead chunks, then stops ──
+  useEffect(() => {
+    if (!enabled || l2Lines.length === 0) {
+      setLoading(false);
+      return;
+    }
 
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -112,10 +137,10 @@ export function useSubtitleTranslation(
       setLoading(true);
       setError(null);
 
-      // Keep translating chunks until all done, aborted, or an error occurs.
-      // Re-check the user's position (via ref) before each chunk
-      // so scrolling re-prioritizes without restarting the loop.
-      while (translatedChunksRef.current.size < totalChunks) {
+      // Translate chunks within the lookahead window until all are done.
+      // Uses the ref (activeIndexRef) so the loop re-checks priority
+      // mid-flight if the user scrolls during translation.
+      while (true) {
         if (controller.signal.aborted) break;
 
         const next = _pickNextChunk(
@@ -123,7 +148,7 @@ export function useSubtitleTranslation(
           translatedChunksRef.current,
           totalChunks,
         );
-        if (next === -1) break; // all done
+        if (next === -1) break; // all lookahead chunks done — stop
 
         const result = await translateChunk(next, controller);
         if (result === 'error') {
@@ -153,10 +178,11 @@ export function useSubtitleTranslation(
 }
 
 /**
- * Pick the next chunk to translate based on priority:
- * 1. Chunk 0 (top of transcript — always first)
- * 2. Chunks around the active line (±LOOKAHEAD_CHUNKS radius)
- * 3. Remaining untranslated chunks in order (background fill)
+ * Pick the next chunk to translate within the lookahead window.
+ * Only chunks within ±LOOKAHEAD_CHUNKS of the active line are eligible.
+ * Chunks expand outward from the priority chunk (ahead first).
+ *
+ * Returns -1 when all chunks in the lookahead window are translated.
  */
 function _pickNextChunk(
   activeIndex: number | undefined,
@@ -167,21 +193,16 @@ function _pickNextChunk(
     ? Math.floor(activeIndex / CHUNK_SIZE)
     : 0;
 
-  // 1. Chunk 0
-  if (!done.has(0)) return 0;
+  // Check priority chunk first
+  if (!done.has(prio)) return prio;
 
-  // 2. Chunks around active line, expanding outward
-  for (let radius = 0; radius <= LOOKAHEAD_CHUNKS; radius++) {
-    for (const offset of [radius, -radius]) {
-      const c = prio + offset;
-      if (c >= 0 && c < totalChunks && !done.has(c)) return c;
-    }
+  // Expand outward from prio (ahead first — user more likely to go forward)
+  for (let radius = 1; radius <= LOOKAHEAD_CHUNKS; radius++) {
+    const ahead = prio + radius;
+    if (ahead < totalChunks && !done.has(ahead)) return ahead;
+    const behind = prio - radius;
+    if (behind >= 0 && !done.has(behind)) return behind;
   }
 
-  // 3. First remaining untranslated chunk (sequential fill)
-  for (let c = 0; c < totalChunks; c++) {
-    if (!done.has(c)) return c;
-  }
-
-  return -1; // all done
+  return -1; // all lookahead chunks translated
 }

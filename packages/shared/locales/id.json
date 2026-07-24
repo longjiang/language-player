@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Tampilkan transkrip interaktif lengkap alih-alih subtitle yang disinkronkan dengan video.",
         "translated_subtitles": "Subtitle terjemahan tersedia",
         "translating": "Menerjemahkan…",
+        "translation_failed": "Terjemahan gagal. Silakan coba lagi.",
         "tried_lemmas": "Lemma yang sudah dicoba",
         "try_again_or_contact": "Silakan coba lagi, atau hubungi kami untuk bantuan.",
         "tv_shows_desc": "Jelajahi acara TV di {l2} dengan teks terjemahan.",

@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Toon volledig interactief transcript in plaats van met video gesynchroniseerde ondertitels.",
         "translated_subtitles": "Vertaalde ondertiteling beschikbaar",
         "translating": "Vertalen…",
+        "translation_failed": "Vertaling mislukt. Probeer het opnieuw.",
         "tried_lemmas": "Geprobeerde lemma's",
         "try_again_or_contact": "Probeer het opnieuw, of neem contact met ons op voor hulp.",
         "tv_shows_desc": "Blader door tv-programma's in {l2} met ondertiteling.",

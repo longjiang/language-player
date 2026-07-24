@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Taispeáin an athscríbhinn idirghníomhach iomlán in ionad fotheideal atá sioncronaithe leis an bhfíseán.",
         "translated_subtitles": "Fotheidil aistrithe ar fáil",
         "translating": "Ag aistriú…",
+        "translation_failed": "Theip ar an aistriúchán. Bain triail eile as.",
         "tried_lemmas": "Léamanna triailte",
         "try_again_or_contact": "Bain triail eile as, nó déan teagmháil linn le haghaidh cabhrach.",
         "tv_shows_desc": "Brabhsáil cláir theilifíse in {l2} le fotheidil.",

@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Afișează transcrierea interactivă completă în loc de subtitrări sincronizate cu videoclipul.",
         "translated_subtitles": "Subtitrări traduse disponibile",
         "translating": "Se traduce…",
+        "translation_failed": "Traducerea a eșuat. Vă rugăm să încercați din nou.",
         "tried_lemmas": "Leme încercate",
         "try_again_or_contact": "Încearcă din nou sau contactează-ne pentru asistență.",
         "tv_shows_desc": "Navighează prin emisiunile TV în {l2} cu subtitrări.",

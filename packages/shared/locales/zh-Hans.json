@@ -709,6 +709,7 @@
         "transcript_mode_desc": "显示完整的交互式文字记录，而非与视频同步的字幕。",
         "translated_subtitles": "提供翻译字幕",
         "translating": "翻译中…",
+        "translation_failed": "翻译失败，请重试。",
         "tried_lemmas": "已尝试词形",
         "try_again_or_contact": "请重试，或联系我们获取帮助。",
         "tv_shows_desc": "浏览带字幕的{l2}电视剧。",

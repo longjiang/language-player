@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Mostrar a transcrição interativa completa em vez de legendas sincronizadas com o vídeo.",
         "translated_subtitles": "Legendas traduzidas disponíveis",
         "translating": "Traduzindo…",
+        "translation_failed": "A tradução falhou. Por favor, tente novamente.",
         "tried_lemmas": "Lemas testados",
         "try_again_or_contact": "Tente novamente ou entre em contato conosco para obter ajuda.",
         "tv_shows_desc": "Navegue por programas de TV em {l2} com legendas.",

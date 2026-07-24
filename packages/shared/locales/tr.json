@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Videoyla senkronize altyazılar yerine tam etkileşimli transkripti göster.",
         "translated_subtitles": "Çevrilmiş altyazılar mevcut",
         "translating": "Çevriliyor…",
+        "translation_failed": "Çeviri başarısız oldu. Lütfen tekrar deneyin.",
         "tried_lemmas": "Denenmiş lemma",
         "try_again_or_contact": "Lütfen tekrar deneyin veya yardım için bizimle iletişime geçin.",
         "tv_shows_desc": "{l2} dilindeki TV şovlarını altyazılarla keşfedin.",

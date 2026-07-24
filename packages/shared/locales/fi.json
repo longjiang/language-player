@@ -707,6 +707,7 @@
         "transcript_mode_desc": "Näytä koko interaktiivinen transkriptio synkronoitujen tekstitysten sijaan.",
         "translated_subtitles": "Käännetty tekstitys saatavilla",
         "translating": "Käännetään…",
+        "translation_failed": "Käännös epäonnistui. Yritä uudelleen.",
         "tried_lemmas": "Kokeillut lemmaa",
         "try_again_or_contact": "Yritä uudelleen tai ota meihin yhteyttä saadaksesi apua.",
         "tv_shows_desc": "Selaa TV-ohjelmia {l2}-kielellä tekstityksellä.",
