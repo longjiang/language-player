@@ -240,7 +240,7 @@ export default function ReviewPage() {
     const label = RATING_LABELS.find((r) => r.key === quality);
     if (label) {
       toast(
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 w-full">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-white">{label.label}</p>
             <p className="text-xs text-white/80 truncate">{label.hint}</p>
