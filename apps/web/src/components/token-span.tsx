@@ -96,8 +96,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     return null;
   }, [l2Code, token.text, token.lemmas]);
 
-  // ── Quick gloss: only for saved words with gloss enabled ──
-  const quickGlossDef = (isSaved && quickGloss) ? firstDef : null;
+  // ── Quick gloss: only for saved words with gloss enabled.
+  //    Suppressed for highlighted words (e.g. the term being tested on the review page). ──
+  const quickGlossDef = (isSaved && quickGloss && !isHighlighted) ? firstDef : null;
   // ── Interlinear definition: for all words (when enabled) ──
   const interlinearDef = showDefinition ? firstDef : null;
 
