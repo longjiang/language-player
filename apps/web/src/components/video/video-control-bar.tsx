@@ -10,7 +10,7 @@ import {
   ChevronDown,
   RotateCcw,
   Gauge,
-  Info,
+  PanelRightOpen,
   Clock,
   ChevronLeft,
   ChevronRight,
@@ -32,7 +32,7 @@ interface VideoControlBarProps {
   onPreviousLine?: () => void;
   onNextLine?: () => void;
   onRewind?: () => void;
-  onOpenInfo?: () => void;
+  onTogglePanel?: () => void;
   onPreviousVideo?: () => void;
   onNextVideo?: () => void;
   onSeekBarClick?: (fraction: number) => void;
@@ -41,6 +41,8 @@ interface VideoControlBarProps {
   hasPreviousVideo?: boolean;
   hasNextVideo?: boolean;
   className?: string;
+  /** When true, only shows LP-specific controls: ⏮ ← → ⏭ ◧. No progress, time, play, rewind, or speed. */
+  reduced?: boolean;
 }
 
 export function VideoControlBar({
@@ -52,7 +54,7 @@ export function VideoControlBar({
   onPreviousLine,
   onNextLine,
   onRewind,
-  onOpenInfo,
+  onTogglePanel,
   onPreviousVideo,
   onNextVideo,
   onSeekBarClick,
@@ -61,6 +63,7 @@ export function VideoControlBar({
   hasPreviousVideo = false,
   hasNextVideo = false,
   className,
+  reduced = false,
 }: VideoControlBarProps) {
   const t = useT();
   const [speedIndex, setSpeedIndex] = useState(0);
@@ -89,6 +92,66 @@ export function VideoControlBar({
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  // ── Reduced mode: compact inline bar with only LP-specific controls ──
+  if (reduced) {
+    return (
+      <div className={cn('inline-flex items-center gap-0.5', className)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-30"
+          onClick={onPreviousVideo}
+          disabled={!hasPreviousVideo || !onPreviousVideo}
+          title={t('a11y.previous_video')}
+        >
+          <SkipBack className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-30"
+          onClick={onPreviousLine}
+          disabled={!hasPreviousLine}
+          title={t('a11y.previous_line')}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-30"
+          onClick={onNextLine}
+          disabled={!hasNextLine}
+          title={t('a11y.next_line')}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-30"
+          onClick={onNextVideo}
+          disabled={!hasNextVideo || !onNextVideo}
+          title={t('a11y.next_video')}
+        >
+          <SkipForward className="h-3.5 w-3.5" />
+        </Button>
+        {onTogglePanel && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+            onClick={onTogglePanel}
+            title={t('a11y.video_info')}
+          >
+            <PanelRightOpen className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  // ── Full mode ──
   return (
     <div className={cn('space-y-2', className)}>
       {/* Progress bar */}
@@ -132,16 +195,16 @@ export function VideoControlBar({
           <SkipBack className="h-4 w-4" />
         </Button>
 
-        {/* Info */}
-        {onOpenInfo && (
+        {/* Panel toggle */}
+        {onTogglePanel && (
           <Button
             variant="ghost"
             size="icon"
             className="h-9 w-9 text-muted-foreground hover:text-foreground"
-            onClick={onOpenInfo}
+            onClick={onTogglePanel}
             title={t('a11y.video_info')}
           >
-            <Info className="h-4 w-4" />
+            <PanelRightOpen className="h-4 w-4" />
           </Button>
         )}
 
