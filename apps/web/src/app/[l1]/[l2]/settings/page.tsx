@@ -287,19 +287,27 @@ export default function SettingsPage() {
         <div className="space-y-6">
 
           <Section title={t('setting.captions')}>
-            <Toggle label={t('label.transcript_mode')} desc={t('msg.transcript_mode_desc')}
-              checked={playback.transcriptMode === 'transcript'}
-              onChange={v => updatePlayback({ transcriptMode: v ? 'transcript' : 'subtitles' })} />
-            <Toggle label={t('label.smooth_scroll')} checked={playback.smoothScroll}
-              onChange={v => updatePlayback({ smoothScroll: v })} />
+            <Segmented<string>
+              label={t('label.captions_display_as')}
+              value={playback.transcriptMode}
+              onChange={v => updatePlayback({ transcriptMode: v as 'subtitles' | 'transcript' })}
+              options={[
+                { value: 'transcript', label: t('title.transcript') },
+                { value: 'subtitles', label: t('label.subtitles') },
+              ]} />
+            <p className="text-xs text-muted-foreground mt-1.5">{t('msg.captions_display_as_desc', { transcriptLabel: t('title.transcript'), subtitlesLabel: t('label.subtitles') })}</p>
+            {playback.transcriptMode === 'transcript' && (
+              <Toggle label={t('label.smooth_scroll')} checked={playback.smoothScroll}
+                onChange={v => updatePlayback({ smoothScroll: v })} />
+            )}
             <Toggle label={t('label.karaoke')} checked={playback.karaokeMode}
               onChange={v => updatePlayback({ karaokeMode: v })} />
           </Section>
 
-          <Toggle label={t('label.auto_pause')} checked={playback.autoPause}
-            onChange={v => updatePlayback({ autoPause: v })} />
-          <Toggle label={t('label.collapse_video')} checked={playback.collapsedVideo}
-            onChange={v => updatePlayback({ collapsedVideo: v })} />
+          <Section title={t('setting.playback')}>
+            <Toggle label={t('label.auto_pause')} checked={playback.autoPause}
+              onChange={v => updatePlayback({ autoPause: v })} />
+          </Section>
         </div>
       )}
 

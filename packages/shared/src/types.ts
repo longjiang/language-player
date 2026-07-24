@@ -691,7 +691,9 @@ export interface PlaybackSettings {
   karaokeMode: boolean;
   /** Smooth-scroll the transcript to the active line. */
   smoothScroll: boolean;
-  /** Collapse the video player to a mini player when scrolling the transcript. */
+  /** Collapse the video player to a mini player when scrolling the transcript.
+   *  NOT ACTIVELY USED — the web player delegates to YouTube's embedded controls,
+   *  so collapsing the video player is not currently implemented. */
   collapsedVideo: boolean;
   /** `subtitles` = one line at a time, synced to video; `transcript` = full scrollable transcript. */
   transcriptMode: 'subtitles' | 'transcript';

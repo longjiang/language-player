@@ -272,13 +272,22 @@ export default function SettingsScreen() {
         <View className="pt-1">
           <View className="mb-5 px-4">
             <SectionHeader title={t('setting.captions')} />
-            <ToggleRow label={t('label.transcript_mode')} desc={t('msg.transcript_mode_desc')} value={playback.transcriptMode === 'transcript'} onValueChange={(v) => updatePlayback({ transcriptMode: v ? 'transcript' : 'subtitles' })} />
-            <ToggleRow label={t('label.smooth_scroll')} value={playback.smoothScroll} onValueChange={(v) => updatePlayback({ smoothScroll: v })} />
+            <Text className="text-sm font-medium text-foreground mb-1.5">{t('label.captions_display_as')}</Text>
+            <SegmentedRow
+              options={['transcript', 'subtitles'] as const}
+              value={playback.transcriptMode}
+              onChange={(v) => updatePlayback({ transcriptMode: v })}
+              renderLabel={(v) => t(v === 'transcript' ? 'title.transcript' : 'label.subtitles')}
+            />
+            <Text className="text-xs text-muted-foreground mt-1.5">{t('msg.captions_display_as_desc', { transcriptLabel: t('title.transcript'), subtitlesLabel: t('label.subtitles') })}</Text>
+            {playback.transcriptMode === 'transcript' && (
+              <ToggleRow label={t('label.smooth_scroll')} value={playback.smoothScroll} onValueChange={(v) => updatePlayback({ smoothScroll: v })} />
+            )}
             <ToggleRow label={t('label.karaoke')} value={playback.karaokeMode} onValueChange={(v) => updatePlayback({ karaokeMode: v })} />
           </View>
           <View className="mb-5 px-4">
+            <SectionHeader title={t('setting.playback')} />
             <ToggleRow label={t('label.auto_pause')} value={playback.autoPause} onValueChange={(v) => updatePlayback({ autoPause: v })} />
-            <ToggleRow label={t('label.collapse_video')} value={playback.collapsedVideo} onValueChange={(v) => updatePlayback({ collapsedVideo: v })} />
           </View>
         </View>
       )}
