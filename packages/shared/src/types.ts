@@ -735,6 +735,16 @@ export interface TokenSpanSettings {
      *                hard words are replaced with phonetics. When `show` is `'ruby'`,
      *                only hard words get ruby annotations. When `show` is `false`,
      *                this field has no effect (nothing is shown regardless).
+     *
+     *                A word is considered "hard" when:
+     *                 1. `levels[].numeric` ≥ user's level, OR
+     *                 2. `frequencyLevel` ≥ user's level, OR
+     *                 3. The entry is cached but has NO levels AND NO
+     *                    frequencyLevel — unknown words are treated as
+     *                    hard so the learner gets help.
+     *
+     *                Words not yet in cache are NOT shown (wait for
+     *                the async bulk lookup to complete).
      */
     conditions: 'always' | 'hardWords';
   };
