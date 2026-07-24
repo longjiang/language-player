@@ -150,71 +150,71 @@ export default function ReviewPage() {
     [dueCards, entriesCache],
   );
 
-  // ── Fetch dictionary entries for due cards not yet cached ──
+  // ── Fetch dictionary entries for the current card + a small lookahead ──
+  const ENTRY_LOOKAHEAD = 2;
+
   useEffect(() => {
     if (dueCards.length === 0 || fetchingEntries || initializing) return;
 
-    const uncachedIds = dueCards
-      .map((dc) => dc.word.id)
-      .filter((id) => !(id in entriesCache));
+    // Only fetch entries within a sliding window around the current card
+    const windowEnd = Math.min(currentIndex + ENTRY_LOOKAHEAD, dueCards.length - 1);
+    const uncachedInWindow: string[] = [];
+    for (let i = currentIndex; i <= windowEnd; i++) {
+      const id = dueCards[i]?.word.id;
+      if (id && !(id in entriesCache)) {
+        uncachedInWindow.push(id);
+      }
+    }
 
-    if (uncachedIds.length === 0) return;
+    if (uncachedInWindow.length === 0) return;
 
     const generation = ++fetchGenerationRef.current;
 
     const fetchEntries = async () => {
       setFetchingEntries(true);
       const controller = new AbortController();
-      const batchSize = 8;
       const newEntries: Record<string, DictionaryEntry | null> = {};
 
-      for (let i = 0; i < uncachedIds.length; i += batchSize) {
-        const batchIds = uncachedIds.slice(i, i + batchSize);
-        const batchCards = batchIds
-          .map((id) => dueCards.find((dc) => dc.word.id === id))
-          .filter(Boolean) as Omit<ReviewCard, 'entry'>[];
+      const results = await Promise.all(
+        uncachedInWindow.map(async (id) => {
+          const card = dueCards.find((dc) => dc.word.id === id);
+          if (!card) return { id, entry: null };
+          try {
+            const res = await fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: card.word.forms[0] || card.word.id,
+                l2: l2Code,
+                l1: baseCode(l1.code),
+              }),
+              signal: controller.signal,
+            });
+            if (!res.ok) return { id, entry: null };
+            const data = await res.json();
+            const entries: DictionaryEntry[] = data.results ?? [];
+            const match =
+              entries.find((e) => e.id === card.word.id) ||
+              entries.find((e) => e.head === card.word.forms[0]) ||
+              entries[0];
+            return { id, entry: match || null };
+          } catch {
+            return { id, entry: null };
+          }
+        })
+      );
 
-        const results = await Promise.all(
-          batchCards.map(async (card) => {
-            try {
-              const res = await fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  text: card.word.forms[0] || card.word.id,
-                  l2: l2Code,
-                  l1: baseCode(l1.code),
-                }),
-                signal: controller.signal,
-              });
-              if (!res.ok) return { id: card.word.id, entry: null };
-              const data = await res.json();
-              const entries: DictionaryEntry[] = data.results ?? [];
-              const match =
-                entries.find((e) => e.id === card.word.id) ||
-                entries.find((e) => e.head === card.word.forms[0]) ||
-                entries[0];
-              return { id: card.word.id, entry: match || null };
-            } catch {
-              return { id: card.word.id, entry: null };
-            }
-          })
-        );
-
+      if (!controller.signal.aborted && generation === fetchGenerationRef.current) {
         for (const r of results) {
           newEntries[r.id] = r.entry;
         }
-      }
-
-      // Only apply if this is still the latest fetch generation
-      if (!controller.signal.aborted && generation === fetchGenerationRef.current) {
         setEntriesCache((prev) => ({ ...prev, ...newEntries }));
         setFetchingEntries(false);
       }
     };
 
     fetchEntries();
-  }, [dueCards, fetchingEntries, initializing]);
+  }, [dueCards, currentIndex, fetchingEntries, initializing]);
 
   // ── Handlers ──
 
