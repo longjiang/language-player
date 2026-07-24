@@ -104,14 +104,19 @@ export interface LemmatizedToken {
   /** Possible base/dictionary forms. Empty array = non-word token (space, punctuation, line break). */
   lemmas: Lemma[];
   /**
-   * Phonetic guide, populated by these lemmatizers only:
+   * Phonetic guide, populated by these lemmatizers:
    *   ja — katakana reading from MeCab (e.g. アサゴハン)
    *   zh / yue — tone-marked pinyin/jyutping from Jieba (e.g. nǐ hǎo)
    *   ar — Buckwalter transliteration from Qalsadi (e.g. a:lssilaa:mu)
    *   fa — Latin transliteration via PersianG2p (e.g. salām, xubi)
+   *   ko — Revised Romanization from romanize.py (e.g. annyeonghaseyo)
+   *   ru — Cyrillic→Latin from romanize.py (e.g. privet)
    *
-   * Absent (null/undefined) for all other languages:
-   *   ko, ru, tr, my, and all spaCy/Simplemma languages (en, fr, de, es, fi, sw, etc.)
+   * Other non-Latin scripts (el, bg, uk, hy, ka) get romanization
+   * from romanize.py when their lemmatizers are available.
+   *
+   * Absent (null/undefined) for Latin-script languages:
+   *   tr, my, and all spaCy/Simplemma languages (en, fr, de, es, fi, sw, etc.)
    */
   pronunciation?: string;
 }
