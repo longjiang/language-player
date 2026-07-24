@@ -239,15 +239,24 @@ export default function ReviewPage() {
     // Visual feedback via toast — matches button color, includes Undo
     const label = RATING_LABELS.find((r) => r.key === quality);
     if (label) {
-      toast(label.label, {
-        description: label.hint,
-        duration: 3000,
-        className: `${RATING_TOAST_COLORS[quality]} !text-white !border`,
-        action: {
-          label: t('action.undo'),
-          onClick: () => handleUndo(),
+      toast(
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white">{label.label}</p>
+            <p className="text-xs text-white/80 truncate">{label.hint}</p>
+          </div>
+          <button
+            onClick={() => handleUndo()}
+            className="shrink-0 rounded-lg border border-white/60 px-4 py-1.5 text-sm font-medium text-white hover:bg-white/10 transition-colors"
+          >
+            {t('action.undo')}
+          </button>
+        </div>,
+        {
+          duration: 3000,
+          className: `${RATING_TOAST_COLORS[quality]} !text-white !border`,
         },
-      });
+      );
     }
 
     const sm2Quality = RATING_MAP[quality];
