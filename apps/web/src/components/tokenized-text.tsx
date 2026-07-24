@@ -328,6 +328,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               quickGloss={settingsTokenizedText.quickGloss}
               showDefinition={l2Settings.tokenSpan.definition.show}
               mode={settingsTokenizedText.mode}
+              byeonggi={l2Settings.display.byeonggi}
               isSelected={selectedToken === token}
               isSaved={savedFormSet.has(token.text.toLowerCase())}
               isHighlighted={
