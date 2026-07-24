@@ -17,6 +17,10 @@ import { TokenSpan } from './token-span';
 // Simple in-memory cache to avoid re-lemmatizing the same text
 const lemmatizeCache = new Map<string, LemmatizedToken[]>();
 
+// In-flight request deduplication — prevents thundering herd when many
+// TokenizedText instances mount simultaneously and all hit the fallback.
+const lemmatizeInflight = new Map<string, Promise<LemmatizedToken[]>>();
+
 export interface TokenizedTextProps {
   text: string;
   l2Code: string;
@@ -217,18 +221,30 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           }
         }
 
-        // 3. Fall back to per-line API call
-        const response = await fetch(`${PYTHON_API_URL}/lemmatize-normalized`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: effectiveText, l2: baseCode(l2Code) }),
-          signal: controller.signal,
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
+        // 3. Fall back to per-line API call — with in-flight deduplication
+        // so that concurrent TokenizedText instances for the same text
+        // share a single request instead of each launching their own.
+        let inflight = lemmatizeInflight.get(cacheKey);
+        if (!inflight) {
+          inflight = fetch(`${PYTHON_API_URL}/lemmatize-normalized`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: effectiveText, l2: baseCode(l2Code) }),
+            signal: controller.signal,
+          }).then(async (response) => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            lemmatizeCache.set(cacheKey, data.tokens);
+            return data.tokens as LemmatizedToken[];
+          }).finally(() => {
+            lemmatizeInflight.delete(cacheKey);
+          });
+          lemmatizeInflight.set(cacheKey, inflight);
+        }
+
+        const resultTokens = await inflight;
         if (!cancelled) {
-          lemmatizeCache.set(cacheKey, data.tokens);
-          setTokens(data.tokens);
+          setTokens(resultTokens);
           setLoading(false);
           loadingRef.current = false;
         }

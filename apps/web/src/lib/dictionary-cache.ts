@@ -29,6 +29,14 @@ export function setCachedEntries(l2Code: string, text: string, entries: Dictiona
   }
 }
 
+// ── In-flight request deduplication ──
+// When hundreds of TokenizedText instances mount simultaneously (transcript mode),
+// they all call bulkLookupWords before any response populates the cache.
+// Track in-flight promises keyed by the first uncached word so concurrent
+// callers reuse the same request instead of each launching their own.
+
+const _inflightRequests = new Map<string, Promise<void>>();
+
 // ── Bulk lookup ──
 
 export async function bulkLookupWords(
@@ -38,6 +46,26 @@ export async function bulkLookupWords(
   const uncached = words.filter((w) => !cache.has(`${w.l2Code}:${w.text}`));
   if (uncached.length === 0) return;
 
+  // Deduplicate: if an identical batch is already in-flight, reuse its promise.
+  // We key by the first uncached word + count — conservative but catches the
+  // common case where many TokenizedText instances share the same lemmas.
+  const batchKey = uncached.length === 1
+    ? `1:${uncached[0]!.l2Code}:${uncached[0]!.text}`
+    : `N:${uncached.length}:${uncached[0]!.l2Code}`;
+
+  const existing = _inflightRequests.get(batchKey);
+  if (existing) return existing;
+
+  const promise = _doBulkLookup(uncached).finally(() => {
+    _inflightRequests.delete(batchKey);
+  });
+  _inflightRequests.set(batchKey, promise);
+  return promise;
+}
+
+async function _doBulkLookup(
+  uncached: { text: string; l2Code: string; l1Code: string }[],
+): Promise<void> {
   try {
     const res = await fetch(`${PYTHON_API_URL}/dictionary/lookup-batch`, {
       method: 'POST',
