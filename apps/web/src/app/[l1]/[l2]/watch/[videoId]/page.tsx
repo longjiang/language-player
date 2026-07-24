@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useVideoPlayer } from '@/providers/video-player-provider';
+import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { YouTubePlayer, type YouTubePlayerHandle, PLAYER_STATES } from '@/components/video/youtube-player';
 import { VideoMeta } from '@/components/video/video-meta';
@@ -11,6 +12,7 @@ import { VideoControlBar } from '@/components/video/video-control-bar';
 import { TranscriptQueuePanel } from '@/components/video/transcript-queue-panel';
 import { VideoQueueList } from '@/components/video/video-queue-list';
 import { SubtitleDisplay } from '@/components/video/subtitle-display';
+import { SubtitlesModeBand } from '@/components/video/subtitles-mode-band';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { baseCode } from '@/lib/language-data';
@@ -19,7 +21,7 @@ import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
 import { YouTubeChannelCard } from '@/components/video/youtube-channel-card';
 
 const WATCH_POS_PREFIX = 'lp-watch-pos-';
-const SAVE_POS_INTERVAL = 5000; // save position every 5s
+const SAVE_POS_INTERVAL = 5000;
 
 function getSavedPosition(videoId: string): number {
   try {
@@ -51,13 +53,13 @@ export default function WatchPage() {
   const { l1, l2 } = useLanguage();
   const t = useT();
   const { playNext, playPrevious, hasNext, hasPrevious } = useVideoPlayer();
+  const { playback, updatePlayback } = useSettingsContext();
   const videoId = params.videoId;
 
   const [video, setVideo] = useState<YouTubeVideo | null>(null);
   const [loading, setLoading] = useState(true);
   const [startTime] = useState(() => getSavedPosition(videoId));
 
-  // Pre-load token cache for the video (skips per-line /lemmatize-normalized calls)
   const { cache: tokenCache, loaded: tokenCacheLoaded } = useVideoTokenCache(videoId, baseCode(l2.code));
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -69,15 +71,13 @@ export default function WatchPage() {
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
   const videoWrapperRef = useRef<HTMLDivElement>(null);
   const [isWide, setIsWide] = useState(false);
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
 
-  // Auto-save watch history every 15s during playback
   useWatchHistoryRecorder(video?.id, currentTime);
 
-  // Keep a ref to currentTime so save effects don't need to re-register
   const currentTimeRef = useRef(currentTime);
   currentTimeRef.current = currentTime;
 
-  // Save position to localStorage periodically for resume
   useEffect(() => {
     const interval = setInterval(() => {
       if (currentTimeRef.current > 1) {
@@ -87,7 +87,6 @@ export default function WatchPage() {
     return () => clearInterval(interval);
   }, [videoId]);
 
-  // Save position on page unload / navigation away
   useEffect(() => {
     const handleBeforeUnload = () => savePosition(videoId, currentTimeRef.current);
     const handleVisibility = () => {
@@ -109,7 +108,6 @@ export default function WatchPage() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Fetch video metadata + subtitles in one call
   useEffect(() => {
     const fetchVideo = async () => {
       try {
@@ -130,14 +128,8 @@ export default function WatchPage() {
     fetchVideo();
   }, [videoId]);
 
-  const handleTimeUpdate = useCallback((time: number) => {
-    setCurrentTime(time);
-  }, []);
-
-  const handleDuration = useCallback((d: number) => {
-    setDuration(d);
-  }, []);
-
+  const handleTimeUpdate = useCallback((time: number) => { setCurrentTime(time); }, []);
+  const handleDuration = useCallback((d: number) => { setDuration(d); }, []);
   const handleStateChange = useCallback((state: number) => {
     setPaused(state === PLAYER_STATES.PAUSED || state === PLAYER_STATES.ENDED);
   }, []);
@@ -145,56 +137,64 @@ export default function WatchPage() {
   const handlePauseToggle = useCallback(() => {
     const player = playerRef.current;
     if (!player) return;
-    if (paused) {
-      player.play();
-      setPaused(false);
-    } else {
-      player.pause();
-      setPaused(true);
-    }
+    if (paused) { player.play(); setPaused(false); }
+    else { player.pause(); setPaused(true); }
   }, [paused]);
 
   const handleRewind = useCallback(() => {
     playerRef.current?.seekTo(Math.max(0, currentTime - 2));
   }, [currentTime]);
 
+  const handleRewindToLine = useCallback(() => {
+    for (let i = subtitleStartTimes.length - 1; i >= 0; i--) {
+      if (subtitleStartTimes[i]! <= currentTime) {
+        playerRef.current?.seekTo(subtitleStartTimes[i]!);
+        return;
+      }
+    }
+  }, [currentTime, subtitleStartTimes]);
+
   const handlePreviousLine = useCallback(() => {
-    // Find the subtitle line that ended just before currentTime
     for (let i = subtitleStartTimes.length - 1; i >= 0; i--) {
       if (subtitleStartTimes[i]! < currentTime - 0.5) {
         playerRef.current?.seekTo(subtitleStartTimes[i]!);
         return;
       }
     }
-    // Fallback: seek back 3 seconds
     playerRef.current?.seekTo(Math.max(0, currentTime - 3));
   }, [currentTime, subtitleStartTimes]);
 
   const handleNextLine = useCallback(() => {
-    // Find the next subtitle line after currentTime
     for (let i = 0; i < subtitleStartTimes.length; i++) {
       if (subtitleStartTimes[i]! > currentTime + 0.5) {
         playerRef.current?.seekTo(subtitleStartTimes[i]!);
         return;
       }
     }
-    // Fallback: seek forward 3 seconds
     playerRef.current?.seekTo(Math.min(duration, currentTime + 3));
   }, [currentTime, duration, subtitleStartTimes]);
 
   const handleSeekBarClick = useCallback(
-    (fraction: number) => {
-      playerRef.current?.seekTo(fraction * duration);
-    },
+    (fraction: number) => { playerRef.current?.seekTo(fraction * duration); },
     [duration],
   );
 
-  // Keyboard shortcuts (matching Classic: Space, R, ←, →, M)
+  const handleSeekToLine = useCallback((t: number) => { playerRef.current?.seekTo(t); }, []);
+
+  const handleSwitchToTranscriptMode = useCallback(() => {
+    updatePlayback({ transcriptMode: 'transcript' });
+  }, [updatePlayback]);
+
+  const handleTogglePanel = useCallback(() => {
+    setPanelCollapsed(v => !v);
+  }, []);
+
+  const isSubtitles = playback.transcriptMode === 'subtitles';
+
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore when typing in input fields
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-
       switch (e.key) {
         case ' ':
           e.preventDefault();
@@ -202,36 +202,24 @@ export default function WatchPage() {
           break;
         case 'ArrowLeft':
           e.preventDefault();
-          if (e.shiftKey && hasPrevious) {
-            playPrevious();
-          } else {
-            handlePreviousLine();
-          }
+          if (e.shiftKey && hasPrevious) { playPrevious(); }
+          else { handlePreviousLine(); }
           break;
         case 'ArrowRight':
           e.preventDefault();
-          if (e.shiftKey && hasNext) {
-            playNext();
-          } else {
-            handleNextLine();
-          }
+          if (e.shiftKey && hasNext) { playNext(); }
+          else { handleNextLine(); }
           break;
         case 'r':
         case 'R':
           e.preventDefault();
-          handleRewind();
-          break;
-        case 'm':
-        case 'M':
-          e.preventDefault();
-          // Speed toggle handled by VideoControlBar internally
+          handleRewindToLine();
           break;
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handlePauseToggle, handlePreviousLine, handleNextLine, handleRewind, hasPrevious, hasNext, playPrevious, playNext]);
+  }, [handlePauseToggle, handlePreviousLine, handleNextLine, handleRewindToLine, hasPrevious, hasNext, playPrevious, playNext]);
 
   if (loading) {
     return (
@@ -241,76 +229,204 @@ export default function WatchPage() {
     );
   }
 
-  if (error || !video) {
+  if (error) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-12 text-center">
         <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
         <h1 className="mt-4 text-2xl font-bold">{t('msg.video_unavailable')}</h1>
-        <p className="mt-2 text-muted-foreground">
-          {error ?? t('msg.video_unavailable')}
-        </p>
+        <p className="mt-2 text-muted-foreground">{error}</p>
+      </div>
+    );
+  }
+  if (!video) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-12 text-center">
+        <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
+        <h1 className="mt-4 text-2xl font-bold">{t('msg.video_unavailable')}</h1>
+        <p className="mt-2 text-muted-foreground">{t('msg.video_unavailable')}</p>
       </div>
     );
   }
 
-  // ── Narrow layout: flex column, video sticky as direct flex child (Classic) ──
+  const v = video;
+
+  const playerElement = (
+    <YouTubePlayer
+      ref={playerRef}
+      youtubeId={v.youtube_id}
+      autoplay
+      startTime={startTime}
+      onTimeUpdate={handleTimeUpdate}
+      onDuration={handleDuration}
+      onStateChange={handleStateChange}
+    />
+  );
+
+  // ── Subtitles Mode: Wide ──
+  if (isSubtitles && isWide) {
+    return (
+      <div className="mx-auto h-[calc(100vh-3.5rem)] overflow-hidden">
+        <div className="relative h-full">
+          <div className="h-full">{playerElement}</div>
+          <SubtitlesModeBand
+            overlay
+            subtitleLines={subtitleLines}
+            currentTime={currentTime}
+            onSeekToLine={handleSeekToLine}
+            onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
+            hasPrevVideo={hasPrevious}
+            hasNextVideo={hasNext}
+            onPrevVideo={playPrevious}
+            onNextVideo={playNext}
+            tokenCache={tokenCache}
+            tokenCacheLoaded={tokenCacheLoaded}
+            videoTitle={video.title}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Subtitles Mode: Narrow ──
+  if (isSubtitles) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-6">
+        <div ref={videoWrapperRef} className="bg-background pb-2">
+          {playerElement}
+        </div>
+        <SubtitlesModeBand
+          overlay={false}
+          subtitleLines={subtitleLines}
+          currentTime={currentTime}
+          onSeekToLine={handleSeekToLine}
+          onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
+          hasPrevVideo={hasPrevious}
+          hasNextVideo={hasNext}
+          onPrevVideo={playPrevious}
+          onNextVideo={playNext}
+          tokenCache={tokenCache}
+          tokenCacheLoaded={tokenCacheLoaded}
+          videoTitle={video.title}
+        />
+      </div>
+    );
+  }
+
+  // ── Transcript Mode: Narrow ──
   if (!isWide) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-6">
         <div className="flex flex-col gap-6">
           <div ref={videoWrapperRef} className="sticky top-[3.5rem] z-10 bg-background pb-2">
-            <YouTubePlayer
-              ref={playerRef}
-              youtubeId={video.youtube_id}
-              autoplay
-              startTime={startTime}
-              onTimeUpdate={handleTimeUpdate}
-              onDuration={handleDuration}
-              onStateChange={handleStateChange}
+            {playerElement}
+          </div>
+          <div className="flex justify-end">
+            <VideoControlBar
+              reduced
+              playerRef={playerRef}
+              currentTime={currentTime}
+              duration={duration}
+              paused={paused}
+              onPauseToggle={handlePauseToggle}
+              onPreviousLine={handlePreviousLine}
+              onNextLine={handleNextLine}
+              onPreviousVideo={playPrevious}
+              onNextVideo={playNext}
+              onTogglePanel={handleTogglePanel}
+              hasPreviousVideo={hasPrevious}
+              hasNextVideo={hasNext}
             />
           </div>
-          <div className="space-y-4">
-            <VideoControlBar playerRef={playerRef} currentTime={currentTime} duration={duration} paused={paused} onPauseToggle={handlePauseToggle} onPreviousLine={handlePreviousLine} onNextLine={handleNextLine} onRewind={handleRewind} onSeekBarClick={handleSeekBarClick} onPreviousVideo={playPrevious} onNextVideo={playNext} hasPreviousVideo={hasPrevious} hasNextVideo={hasNext} />
-            <VideoMeta video={video} />
-            {video.channel_id && <YouTubeChannelCard channelId={video.channel_id} />}
-          </div>
-          <TranscriptQueuePanel
-            contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={video.youtube_id} videoTitle={video.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
-            queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}
-          />
+          <VideoMeta video={v} />
+          {v.channel_id && <YouTubeChannelCard channelId={v.channel_id!} />}
+          {!panelCollapsed && (
+            <TranscriptQueuePanel
+              contentRef={transcriptScrollRef}
+              transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
+              queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
+            />
+          )}
         </div>
       </div>
     );
   }
 
-  // ── Wide layout: two-column grid, independently scrollable ──
+  // ── Transcript Mode: Wide ──
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 lg:h-[calc(100vh-5rem)] lg:overflow-hidden">
       <div className="flex flex-col gap-6 lg:grid lg:h-full lg:overflow-hidden lg:grid-cols-[1fr_320px]">
         <div className="flex-1 space-y-4 lg:overflow-y-auto">
           <div ref={videoWrapperRef} className="sticky top-[3.5rem] z-10 bg-background pb-2 lg:static lg:top-auto lg:z-auto">
-            <YouTubePlayer
-              ref={playerRef}
-              youtubeId={video.youtube_id}
-              autoplay
-              startTime={startTime}
-              onTimeUpdate={handleTimeUpdate}
-              onDuration={handleDuration}
-              onStateChange={handleStateChange}
+            {playerElement}
+          </div>
+          <div className="flex justify-end">
+            <VideoControlBar
+              reduced
+              playerRef={playerRef}
+              currentTime={currentTime}
+              duration={duration}
+              paused={paused}
+              onPauseToggle={handlePauseToggle}
+              onPreviousLine={handlePreviousLine}
+              onNextLine={handleNextLine}
+              onPreviousVideo={playPrevious}
+              onNextVideo={playNext}
+              onTogglePanel={handleTogglePanel}
+              hasPreviousVideo={hasPrevious}
+              hasNextVideo={hasNext}
             />
           </div>
-          <VideoControlBar playerRef={playerRef} currentTime={currentTime} duration={duration} paused={paused} onPauseToggle={handlePauseToggle} onPreviousLine={handlePreviousLine} onNextLine={handleNextLine} onRewind={handleRewind} onSeekBarClick={handleSeekBarClick} onPreviousVideo={playPrevious} onNextVideo={playNext} hasPreviousVideo={hasPrevious} hasNextVideo={hasNext} />
-          <VideoMeta video={video} />
-          {video.channel_id && <YouTubeChannelCard channelId={video.channel_id} />}
+          <VideoMeta video={v} />
+          {v.channel_id && <YouTubeChannelCard channelId={v.channel_id!} />}
         </div>
-        <aside className="min-h-0 overflow-hidden">
-          <TranscriptQueuePanel
-            contentRef={transcriptScrollRef}
-            transcript={<SubtitleDisplay youtubeId={video.youtube_id} videoTitle={video.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={(t) => playerRef.current?.seekTo(t)} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
-            queue={<VideoQueueList currentYoutubeId={video.youtube_id} />}
-          />
-        </aside>
+        {!panelCollapsed && (
+          <aside className="min-h-0 overflow-hidden">
+            <TranscriptQueuePanel
+              contentRef={transcriptScrollRef}
+              transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
+              queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
+            />
+          </aside>
+        )}
+      </div>
+    </div>
+  );
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-6 lg:h-[calc(100vh-5rem)] lg:overflow-hidden">
+      <div className="flex flex-col gap-6 lg:grid lg:h-full lg:overflow-hidden lg:grid-cols-[1fr_320px]">
+        <div className="flex-1 space-y-4 lg:overflow-y-auto">
+          <div ref={videoWrapperRef} className="sticky top-[3.5rem] z-10 bg-background pb-2 lg:static lg:top-auto lg:z-auto">
+            {playerElement}
+          </div>
+          <div className="flex justify-end">
+            <VideoControlBar
+              reduced
+              playerRef={playerRef}
+              currentTime={currentTime}
+              duration={duration}
+              paused={paused}
+              onPauseToggle={handlePauseToggle}
+              onPreviousLine={handlePreviousLine}
+              onNextLine={handleNextLine}
+              onPreviousVideo={playPrevious}
+              onNextVideo={playNext}
+              onTogglePanel={handleTogglePanel}
+              hasPreviousVideo={hasPrevious}
+              hasNextVideo={hasNext}
+            />
+          </div>
+          <VideoMeta video={v} />
+          {v.channel_id && <YouTubeChannelCard channelId={v.channel_id!} />}
+        </div>
+        {!panelCollapsed && (
+          <aside className="min-h-0 overflow-hidden">
+            <TranscriptQueuePanel
+              contentRef={transcriptScrollRef}
+              transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
+              queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
+            />
+          </aside>
+        )}
       </div>
     </div>
   );
