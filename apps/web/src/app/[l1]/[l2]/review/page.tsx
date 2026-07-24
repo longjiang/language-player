@@ -382,6 +382,22 @@ export default function ReviewPage() {
     return () => window.removeEventListener('keydown', handler);
   }, [showDefinition, rated, handleReveal]);
 
+  // ── Keyboard shortcut: u = unsave the current word (always active) ──
+  useEffect(() => {
+    if (cards.length === 0) return;
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === 'u' || e.key === 'U') {
+        e.preventDefault();
+        handleRemove();
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [cards.length, handleRemove]);
+
   // ── Anki-style card counts (new / again / review) ──
   // Must be BEFORE any conditional returns (React hooks rule).
   const cardCounts = useMemo(() => {
@@ -713,6 +729,9 @@ export default function ReviewPage() {
               space: () => <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">Space</kbd>,
               enter: () => <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">Enter</kbd>,
             })}
+            {' · '}
+            <kbd className="px-1 py-0.5 bg-muted rounded text-xs mx-0.5">u</kbd>
+            {' '}{t('action.delete').toLowerCase()}
           </p>
         </>
       )}
