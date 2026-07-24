@@ -303,7 +303,7 @@ export default function ReaderPage() {
             onDeleteNote={handleDeleteNote}
           />
         </ReaderSidebar>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 flex flex-col min-h-0">
         <ReaderPanel
             l2={l2} l1={l1}
             text={text}
