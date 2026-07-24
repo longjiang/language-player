@@ -100,6 +100,9 @@ export function VideoControlBar({
   if (reduced) {
     return (
       <div className={cn('inline-flex items-center gap-0.5', className)}>
+        {translatingText && (
+          <span className="text-xs text-muted-foreground tabular-nums mr-1">{translatingText}</span>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -140,9 +143,6 @@ export function VideoControlBar({
         >
           <SkipForward className="h-3.5 w-3.5" />
         </Button>
-        {translatingText && (
-          <span className="text-xs text-muted-foreground tabular-nums ml-1">{translatingText}</span>
-        )}
         {onTogglePanel && (
           <Button
             variant="ghost"
