@@ -16,6 +16,7 @@ import {
   PanelRightClose, PanelRight,
 } from 'lucide-react';
 import { ReaderPanel } from '@/components/reader/reader-panel';
+import { ReaderSidebar } from '@/components/reader/reader-sidebar';
 import { NotesSidebar } from '@/components/reader/notes-sidebar';
 
 // Lazy-load turndown for HTML→markdown conversion
@@ -252,7 +253,7 @@ export default function ReaderPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Full-width title bar ── */}
-      <div className="mb-4 flex items-center gap-3 flex-shrink-0">
+      <div className="mb-4 flex items-center gap-3 flex-shrink-0 relative z-50">
         <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           {isEditingTitle ? (
@@ -268,16 +269,17 @@ export default function ReaderPage() {
           ) : (
             <div className="flex items-center gap-1.5">
               <h1 className="text-xl font-bold truncate">{title || t('title.notes_reader')}</h1>
-              <button
-                onClick={() => setIsEditingTitle(true)}
-                className="flex-shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                title={t('action.edit')}
-              >
-                <PenLine className="h-4 w-4" />
-              </button>
+              {currentNoteId != null && (
+                <button
+                  onClick={() => setIsEditingTitle(true)}
+                  className="flex-shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  title={t('action.edit')}
+                >
+                  <PenLine className="h-4 w-4" />
+                </button>
+              )}
             </div>
           )}
-          <p className="text-xs text-muted-foreground">{l2.name} → {l1.name}</p>
         </div>
         {/* Collapse toggle — top right */}
         <button
@@ -330,14 +332,16 @@ export default function ReaderPage() {
             }}
           />
 
-        <NotesSidebar
-          notes={notes} notesLoading={notesLoading} notesError={notesError}
-          currentNoteId={currentNoteId} sidebarOpen={sidebarOpen} session={session}
-          onSelectNote={handleSelectNote}
-          onNewNote={handleNewNote}
-          onRenameNote={handleRenameNote}
-          onDeleteNote={handleDeleteNote}
-        />
+        <ReaderSidebar sidebarOpen={sidebarOpen}>
+          <NotesSidebar
+            notes={notes} notesLoading={notesLoading} notesError={notesError}
+            currentNoteId={currentNoteId} session={session}
+            onSelectNote={handleSelectNote}
+            onNewNote={handleNewNote}
+            onRenameNote={handleRenameNote}
+            onDeleteNote={handleDeleteNote}
+          />
+        </ReaderSidebar>
       </div>
 
       {error && (

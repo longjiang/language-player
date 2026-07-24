@@ -9,6 +9,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { EpubUpload } from '@/components/reader/epub-upload';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
+import { ReaderSidebar } from '@/components/reader/reader-sidebar';
 import { useEpub } from '@/hooks/use-epub';
 import {
   BookOpen, Loader2, PanelRightClose, PanelRight, X,
@@ -116,7 +117,7 @@ export default function EpubPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Title bar ── */}
-      <div className="mb-4 flex items-center gap-3 flex-shrink-0">
+      <div className="mb-4 flex items-center gap-3 flex-shrink-0 relative z-50">
         <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold truncate">
@@ -228,7 +229,7 @@ export default function EpubPage() {
         </div>
 
         {/* Chapter sidebar — on the right */}
-        {epub.toc.length > 0 && (
+        <ReaderSidebar sidebarOpen={sidebarOpen && epub.toc.length > 0}>
           <EpubChapterSidebar
             toc={epub.toc}
             currentChapterHref={epub.chapterHref}
@@ -238,9 +239,8 @@ export default function EpubPage() {
             onNextChapter={epub.nextChapter}
             hasPrevChapter={!!epub.prevHref}
             hasNextChapter={!!epub.nextHref}
-            sidebarOpen={sidebarOpen}
           />
-        )}
+        </ReaderSidebar>
       </div>
     </div>
   );
