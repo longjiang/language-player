@@ -117,7 +117,7 @@ export default function EpubPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Title bar ── */}
-      <div className="mb-4 flex items-center gap-3 flex-shrink-0 relative z-50">
+      <div className="mb-4 flex items-center gap-3 flex-shrink-0">
         <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold truncate">
@@ -146,8 +146,22 @@ export default function EpubPage() {
         )}
       </div>
 
-      {/* ── Content row: reader panel first, then sidebar ── */}
-      <div className="flex gap-4 flex-1 min-h-0 relative">
+      {/* ── Content row: sidebar first (right on wide, top on narrow) ── */}
+      <div className="flex gap-4 flex-1 min-h-0 flex-row-reverse max-lg:flex-col">
+        {/* Chapter sidebar — on the right (wide) or top (narrow) */}
+        <ReaderSidebar sidebarOpen={sidebarOpen && epub.toc.length > 0}>
+          <EpubChapterSidebar
+            toc={epub.toc}
+            currentChapterHref={epub.chapterHref}
+            loading={epub.loading}
+            onLoadChapter={handleLoadChapter}
+            onPrevChapter={epub.prevChapter}
+            onNextChapter={epub.nextChapter}
+            hasPrevChapter={!!epub.prevHref}
+            hasNextChapter={!!epub.nextHref}
+          />
+        </ReaderSidebar>
+
         {/* Content area */}
         <div className="min-w-0 flex-1 flex flex-col min-h-0">
           {epub.toc.length === 0 && !epub.fileName ? (
@@ -227,20 +241,6 @@ export default function EpubPage() {
             </div>
           ) : null}
         </div>
-
-        {/* Chapter sidebar — on the right */}
-        <ReaderSidebar sidebarOpen={sidebarOpen && epub.toc.length > 0}>
-          <EpubChapterSidebar
-            toc={epub.toc}
-            currentChapterHref={epub.chapterHref}
-            loading={epub.loading}
-            onLoadChapter={handleLoadChapter}
-            onPrevChapter={epub.prevChapter}
-            onNextChapter={epub.nextChapter}
-            hasPrevChapter={!!epub.prevHref}
-            hasNextChapter={!!epub.nextHref}
-          />
-        </ReaderSidebar>
       </div>
     </div>
   );
