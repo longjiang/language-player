@@ -14,11 +14,12 @@ const SYNC_DEBOUNCE_MS = 2000;
  *
  * - Read/write localStorage immediately (offline-first)
  * - If authenticated, sync the full blob to Directus via Flask /user-data/sync
- * - On login, load from cloud and merge with local (cloud ∪ local, by id per L2)
+ * - On login, hydrate from cloud data (cloud is source of truth)
+ * - Last-writer-wins on sync: local state is the user's intent (saves + deletes)
  */
 export function useSavedWords() {
   const { data: session, status } = useSession();
-  const { getUserData, syncSavedWords } = useUserData();
+  const { syncSavedWords } = useUserData();
   const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
   const [savedWords, setSavedWords] = useState<SavedLexicalItemStore>({});
   const [loaded, setLoaded] = useState(false);
@@ -48,7 +49,9 @@ export function useSavedWords() {
     setLoaded(true);
   }, [status, loaded]);
 
-  // ── On cloud load, merge cloud data (newer date wins per word) ──
+  // ── On cloud load, hydrate from cloud data ──
+  // Cloud is the source of truth. For authenticated users, prev is always {}
+  // (localStorage is skipped on mount), so replacement is safe.
   useEffect(() => {
     if (status !== 'authenticated' || !loaded || !cloudLoaded) return;
     if (!cloudData) return;
@@ -57,19 +60,18 @@ export function useSavedWords() {
       const cloud = cloudData.saved_words
         ? (JSON.parse(cloudData.saved_words) as SavedLexicalItemStore)
         : {};
-      // Sanitize cloud data before merging — cloud may have records with missing forms/context
       sanitizeStore(cloud);
-      setSavedWords((prev) => {
-        const merged = mergeSavedWords(prev, cloud);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged)); } catch {}
-        return merged;
-      });
+      setSavedWords(cloud);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cloud)); } catch {}
     } catch (err) {
       console.warn('[savedWords] Could not parse cloud data:', err);
     }
   }, [status, loaded, cloudLoaded, cloudData]);
 
-  // ── Debounced cloud sync (read-merge-write) ──
+  // ── Debounced cloud sync (write local state directly) ──
+  // Last-writer-wins: the local state represents the user's intent (saves + deletes).
+  // Merging cloud data back in would re-add words the user deleted on another device,
+  // making deletions non-propagating.
   const scheduleSync = useCallback((words: SavedLexicalItemStore) => {
     if (!session) return;
     if (syncTimer.current) clearTimeout(syncTimer.current);
@@ -77,12 +79,6 @@ export function useSavedWords() {
       if (isSyncing.current) return;
       isSyncing.current = true;
       try {
-        // Read-merge-write: avoid overwriting changes from other devices
-        const cloudResp = await getUserData();
-        if (cloudResp?.saved_words) {
-          const cloud = JSON.parse(cloudResp.saved_words) as SavedLexicalItemStore;
-          words = mergeSavedWords(words, cloud);
-        }
         await syncSavedWords(JSON.stringify(words));
       } catch (err) {
         console.warn('[savedWords] Sync failed:', err);
@@ -90,7 +86,7 @@ export function useSavedWords() {
         isSyncing.current = false;
       }
     }, SYNC_DEBOUNCE_MS);
-  }, [session, getUserData]);
+  }, [session, syncSavedWords]);
 
   // ── Persist to localStorage + schedule sync ──
   const persist = useCallback((words: SavedLexicalItemStore) => {
