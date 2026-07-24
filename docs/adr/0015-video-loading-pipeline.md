@@ -148,7 +148,7 @@ TokenizedText (after tokens load)
 
 ### Flow
 
-Since `subs_l1` is deprecated (no pre-translated subtitles in Directus), all L1 translations come from one of two sources:
+Since `subs_l1` is deprecated (no pre-translated subtitles in Directus), all L1 translations come from a single source — the `/translate_array` endpoint — with a server-side cache to avoid redundant ChatGPT calls:
 
 ```
 SubtitleDisplay
@@ -156,7 +156,8 @@ SubtitleDisplay
   → useSubtitleTranslation(l2Lines, l1, l2, enabled)
     → calls /translate_array in chunks of 5 (sequential)
       → Python: app_translator_chatgpt.chatgpt_translate_text_array()
-        → checks server-side translation cache first
+        → checks server-side translation cache keyed by (text, l1, l2)
+        → cache HIT → returns instantly (no API cost)
         → cache MISS → ChatGPT API → stores in cache
         → cache HIT → returns cached translation instantly
   → syncLines(translatedLines, l2Lines) → paired output
