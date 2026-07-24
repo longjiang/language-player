@@ -75,7 +75,7 @@ export function EpubChapterSidebar({
   if (!sidebarOpen) return null;
 
   return (
-    <div className="w-64 flex-shrink-0 rounded-xl border border-border bg-card flex flex-col overflow-hidden">
+    <div className="w-64 flex-shrink-0 rounded-xl border border-border bg-card flex flex-col overflow-hidden max-lg:absolute max-lg:inset-0 max-lg:z-30 max-lg:w-full max-lg:rounded-none">
       {/* Chapter nav buttons */}
       <div className="flex items-center gap-1 border-b border-border px-3 py-2">
         <button
