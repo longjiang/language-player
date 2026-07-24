@@ -98,9 +98,12 @@ export default function DictionaryEntryPage() {
   // Inflected search terms for the examples tab (hook requires valid entry shape)
   const dummyEntry = { head: '', pronunciation: '' };
   const entryForTerms = entry ?? dummyEntry;
-  const { allTerms, headTerm, formCount } = useInflectedSearchTerms(entryForTerms as any, l2.code);
+  const { allTerms, headTerm, formCount, loading: inflectionsLoading } = useInflectedSearchTerms(entryForTerms as any, l2.code);
   const [exactMatch, setExactMatch] = useState(false);
-  const searchTermString = exactMatch ? headTerm : (entry ? allTerms.join(',') : '');
+  // Don't pass multi-form term until inflections are resolved (avoids wasteful single-form fetch)
+  const searchTermString = exactMatch
+    ? headTerm
+    : (inflectionsLoading || !entry ? '' : allTerms.join(','));
 
   // ── Loading ──
   if (loading) {

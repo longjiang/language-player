@@ -65,7 +65,7 @@ export function useInflectedSearchTerms(
   l2Code: string,
 ): UseInflectedSearchTermsResult {
   const [allTerms, setAllTerms] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const base = baseCode(l2Code);
 
   const headTerm = entry?.head ?? '';

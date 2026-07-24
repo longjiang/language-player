@@ -352,9 +352,52 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
 
   if (videos.length === 0) {
     return (
-      <p className="py-4 text-sm text-muted-foreground">
-        {t('msg.no_results')}
-      </p>
+      <div className={embedded ? '' : 'rounded-xl border border-border bg-card shadow-sm overflow-hidden'}>
+        {/* Nav bar — keep toggle accessible even when empty */}
+        <div className="flex items-center justify-between border-b border-border px-4 py-2">
+          <span className="text-xs text-muted-foreground">
+            {t('msg.video_n_of_total', { n: 0, total: 0 })}
+          </span>
+          <div className="flex items-center gap-1">
+            {formCount > 1 && (
+              <button
+                onClick={() => onExactToggle?.(!exactMatch)}
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                  exactMatch
+                    ? 'bg-primary/10 text-primary'
+                    : 'bg-muted text-muted-foreground hover:text-foreground'
+                }`}
+                title={
+                  exactMatch
+                    ? `Searching only "${term}" — click to search ${formCount} forms`
+                    : `Searching ${formCount} forms — click for exact match only`
+                }
+              >
+                {exactMatch ? term : `${formCount} forms`}
+              </button>
+            )}
+            <span className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground/50">
+              <Play className="h-3.5 w-3.5" />
+              Watch
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 text-xs"
+              disabled
+            >
+              <List className="h-3.5 w-3.5" />
+              List All
+            </Button>
+          </div>
+        </div>
+
+        {/* Player placeholder */}
+        <div className="aspect-video w-full bg-black/90 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+          <Search className="h-10 w-10 text-muted-foreground/30" />
+          <p className="text-sm">{t('msg.no_results')}</p>
+        </div>
+      </div>
     );
   }
 
