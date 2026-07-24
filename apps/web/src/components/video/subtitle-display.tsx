@@ -49,7 +49,7 @@ function stripDurationPrefix(text: string): string {
 
 export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache, tokenCacheLoaded, onLinesLoaded, onSeekToLine, scrollContainerRef, initialLines, mode = 'multiline', contextLines = 1, highlightTerms }: SubtitleDisplayProps) {
   const { l1, l2 } = useLanguage();
-  const { display, updateDisplay, getL2, updateL2 } = useSettingsContext();
+  const { display, updateDisplay, playback, getL2, updateL2 } = useSettingsContext();
   const t = useT();
   const l2Code = baseCode(l2.code);
   const l1Code = baseCode(l1.code);
@@ -233,6 +233,17 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
       <div className="space-y-2" ref={listRef}>
         {syncedLines.map((line, i) => {
           const isActive = i === activeIndex;
+
+          // Compute karaoke progress for the active line
+          let karaokeProgress: number | undefined;
+          if (isActive && playback.karaokeMode) {
+            const lineDuration = syncedLines[i + 1]
+              ? syncedLines[i + 1]!.starttime - line.starttime
+              : 3; // fallback for last line
+            karaokeProgress = lineDuration > 0
+              ? Math.min(1, Math.max(0, (currentTime - line.starttime) / lineDuration))
+              : 0;
+          }
           return (
             <div
               key={i}
@@ -249,6 +260,7 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
                   textScale={0.875}
                   tokenCache={tokenCache}
                   tokenCacheLoaded={tokenCacheLoaded}
+                  karaokeProgress={karaokeProgress}
                   context={{
                     text: line.l2Line,
                     starttime: line.starttime,

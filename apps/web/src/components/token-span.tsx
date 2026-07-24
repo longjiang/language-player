@@ -68,6 +68,8 @@ export interface TokenSpanProps {
   /** Monotonically incremented by TokenizedText when bulk dictionary lookup completes.
    *  TokenSpan reads this to know when cached entries may have updated. */
   cacheVersion: number;
+  /** In karaoke mode: true = this word has been spoken (full brightness), false = not yet spoken (dimmed). */
+  isKaraokeSpoken?: boolean;
 }
 
 /**
@@ -89,6 +91,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   byeonggi,
   onClick,
   cacheVersion,
+  isKaraokeSpoken,
 }) => {
   // ── Quiz mode: toggle blank reveal per-word ──
   const [quizRevealed, setQuizRevealed] = useState(false);
@@ -181,7 +184,10 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const hasKanji = isJapanese && /[一-龯]/.test(token.text);
 
   // ── Common class for the outer clickable wrapper ──
-  const wrapperClass = `cursor-pointer rounded transition-colors ${
+  const karaokeClass = isKaraokeSpoken === false && !isSelected && !isHighlighted && !isQuizBlanking
+    ? 'text-muted-foreground/50'
+    : '';
+  const wrapperClass = `cursor-pointer rounded transition-colors ${karaokeClass} ${
     isSelected
       ? 'bg-primary/20 text-primary'
       : isHighlighted
