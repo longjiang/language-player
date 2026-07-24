@@ -502,7 +502,7 @@ export function ReaderPanel({
           {innerContent}
         </TabbedPanel>
       ) : (
-        <div className="flex-1 min-h-0 p-4">
+        <div className="flex-1 min-h-0 p-4 flex flex-col">
           {innerContent}
         </div>
       )}
