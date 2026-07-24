@@ -148,6 +148,7 @@ export function Header() {
           linkHref={`/${l1.code}/${l2.code}/explore`}
           showText
           priority
+          l1={l1.code}
         />
 
         {/* Desktop Navigation */}
