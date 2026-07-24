@@ -810,7 +810,7 @@
         "shortcut_hint": "Paina {space} kääntääksesi, {k1}–{k2} arvioidaksesi, {enter} jatkaaksesi",
         "show_definition": "Näytä määritelmä",
         "srs_new": "uusi",
-        "srs_review": "kertaus"
+        "srs_review": "{count, plural, one {kerrattu 1 kerran} other {kerrattu # kertaa}}"
     },
     "setting": {
         "all_words": "Kaikki sanat",

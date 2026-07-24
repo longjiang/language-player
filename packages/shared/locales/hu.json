@@ -810,7 +810,7 @@
         "shortcut_hint": "Nyomj {space}-t a fordításhoz, {k1}–{k2}-t az értékeléshez, {enter}-t a folytatáshoz",
         "show_definition": "Definíció megjelenítése",
         "srs_new": "új",
-        "srs_review": "áttekintés"
+        "srs_review": "{count, plural, one {1 alkalommal áttekintve} other {# alkalommal áttekintve}}"
     },
     "setting": {
         "all_words": "Minden szó",

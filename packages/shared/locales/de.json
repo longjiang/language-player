@@ -810,7 +810,7 @@
         "shortcut_hint": "Drücke {space} zum Umdrehen, {k1}–{k2} zum Bewerten, {enter} zum Fortfahren",
         "show_definition": "Definition anzeigen",
         "srs_new": "neu",
-        "srs_review": "Wiederholung"
+        "srs_review": "{count, plural, one {1 Mal wiederholt} other {# Mal wiederholt}}"
     },
     "setting": {
         "all_words": "Alle Wörter",

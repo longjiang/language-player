@@ -810,7 +810,7 @@
         "shortcut_hint": "Pulsa {space} para voltear, {k1}–{k2} para valorar, {enter} para continuar",
         "show_definition": "Mostrar definición",
         "srs_new": "nuevo",
-        "srs_review": "revisar"
+        "srs_review": "{count, plural, one {revisado 1 vez} other {revisado # veces}}"
     },
     "setting": {
         "all_words": "Todas las palabras",

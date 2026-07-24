@@ -810,7 +810,7 @@
         "shortcut_hint": "Pritisni {space} za okretanje, {k1}–{k2} za ocenu, {enter} za nastavak",
         "show_definition": "Prikaži definiciju",
         "srs_new": "novo",
-        "srs_review": "pregled"
+        "srs_review": "{count, plural, one {pregledano 1 put} few {pregledano # puta} other {pregledano # puta}}"
     },
     "setting": {
         "all_words": "Све речи",

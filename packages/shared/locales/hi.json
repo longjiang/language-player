@@ -810,7 +810,7 @@
         "shortcut_hint": "{space} दबाएं पलटने के लिए, {k1}–{k2} रेटिंग के लिए, {enter} जारी रखने के लिए",
         "show_definition": "परिभाषा दिखाएँ",
         "srs_new": "नया",
-        "srs_review": "समीक्षा"
+        "srs_review": "{count, plural, one {1 बार समीक्षित} other {# बार समीक्षित}}"
     },
     "setting": {
         "all_words": "सभी शब्द",

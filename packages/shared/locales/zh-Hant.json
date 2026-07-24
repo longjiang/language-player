@@ -788,7 +788,8 @@
         "easy": "簡單",
         "good": "良好",
         "hard": "困難",
-        "shortcut_hint": "按{space}翻轉，{k1}–{k2}評分，{enter}繼續"
+        "shortcut_hint": "按{space}翻轉，{k1}–{k2}評分，{enter}繼續",
+        "srs_review": "{count, plural, other {已複習 # 次}}"
     },
     "setting": {
         "all_words": "所有單字",

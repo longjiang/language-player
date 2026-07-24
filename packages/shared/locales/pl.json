@@ -810,7 +810,7 @@
         "shortcut_hint": "Naciśnij {space} aby odwrócić, {k1}–{k2} aby ocenić, {enter} aby kontynuować",
         "show_definition": "Pokaż definicję",
         "srs_new": "nowy",
-        "srs_review": "przegląd"
+        "srs_review": "{count, plural, one {przejrzane 1 raz} few {przejrzane # razy} many {przejrzane # razy} other {przejrzane # razy}}"
     },
     "setting": {
         "all_words": "Wszystkie słowa",

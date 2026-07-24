@@ -810,7 +810,7 @@
         "shortcut_hint": "按{space}翻转，{k1}–{k2}评分，{enter}继续",
         "show_definition": "显示释义",
         "srs_new": "新",
-        "srs_review": "复习"
+        "srs_review": "{count, plural, other {已复习 # 次}}"
     },
     "setting": {
         "all_words": "所有单词",

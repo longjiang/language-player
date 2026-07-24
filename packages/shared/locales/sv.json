@@ -810,7 +810,7 @@
         "shortcut_hint": "Tryck {space} för att vända, {k1}–{k2} för att betygsätta, {enter} för att fortsätta",
         "show_definition": "Visa definition",
         "srs_new": "ny",
-        "srs_review": "granska"
+        "srs_review": "{count, plural, one {granskad 1 gång} other {granskad # gånger}}"
     },
     "setting": {
         "all_words": "Alla ord",
