@@ -71,7 +71,6 @@ export default function WatchPage() {
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
   const videoWrapperRef = useRef<HTMLDivElement>(null);
   const [isWide, setIsWide] = useState(false);
-  const [panelCollapsed, setPanelCollapsed] = useState(false);
 
   useWatchHistoryRecorder(video?.id, currentTime);
 
@@ -174,6 +173,8 @@ export default function WatchPage() {
     playerRef.current?.seekTo(Math.min(duration, currentTime + 3));
   }, [currentTime, duration, subtitleStartTimes]);
 
+  const isSubtitles = playback.transcriptMode === 'subtitles';
+
   const handleSeekBarClick = useCallback(
     (fraction: number) => { playerRef.current?.seekTo(fraction * duration); },
     [duration],
@@ -185,11 +186,13 @@ export default function WatchPage() {
     updatePlayback({ transcriptMode: 'transcript' });
   }, [updatePlayback]);
 
-  const handleTogglePanel = useCallback(() => {
-    setPanelCollapsed(v => !v);
-  }, []);
+  const handleSwitchToSubtitlesMode = useCallback(() => {
+    updatePlayback({ transcriptMode: 'subtitles' });
+  }, [updatePlayback]);
 
-  const isSubtitles = playback.transcriptMode === 'subtitles';
+  const handleTogglePanel = useCallback(() => {
+    updatePlayback({ transcriptMode: isSubtitles ? 'transcript' : 'subtitles' });
+  }, [updatePlayback, isSubtitles]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -339,13 +342,11 @@ export default function WatchPage() {
           </div>
           <VideoMeta video={v} />
           {v.channel_id && <YouTubeChannelCard channelId={v.channel_id!} />}
-          {!panelCollapsed && (
-            <TranscriptQueuePanel
-              contentRef={transcriptScrollRef}
-              transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
-              queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
-            />
-          )}
+          <TranscriptQueuePanel
+            contentRef={transcriptScrollRef}
+            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
+            queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
+          />
         </div>
       </div>
     );
@@ -379,55 +380,15 @@ export default function WatchPage() {
           <VideoMeta video={v} />
           {v.channel_id && <YouTubeChannelCard channelId={v.channel_id!} />}
         </div>
-        {!panelCollapsed && (
-          <aside className="min-h-0 overflow-hidden">
-            <TranscriptQueuePanel
-              contentRef={transcriptScrollRef}
-              transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
-              queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
-            />
-          </aside>
-        )}
-      </div>
-    </div>
-  );
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-6 lg:h-[calc(100vh-5rem)] lg:overflow-hidden">
-      <div className="flex flex-col gap-6 lg:grid lg:h-full lg:overflow-hidden lg:grid-cols-[1fr_320px]">
-        <div className="flex-1 space-y-4 lg:overflow-y-auto">
-          <div ref={videoWrapperRef} className="sticky top-[3.5rem] z-10 bg-background pb-2 lg:static lg:top-auto lg:z-auto">
-            {playerElement}
-          </div>
-          <div className="flex justify-end">
-            <VideoControlBar
-              reduced
-              playerRef={playerRef}
-              currentTime={currentTime}
-              duration={duration}
-              paused={paused}
-              onPauseToggle={handlePauseToggle}
-              onPreviousLine={handlePreviousLine}
-              onNextLine={handleNextLine}
-              onPreviousVideo={playPrevious}
-              onNextVideo={playNext}
-              onTogglePanel={handleTogglePanel}
-              hasPreviousVideo={hasPrevious}
-              hasNextVideo={hasNext}
-            />
-          </div>
-          <VideoMeta video={v} />
-          {v.channel_id && <YouTubeChannelCard channelId={v.channel_id!} />}
-        </div>
-        {!panelCollapsed && (
-          <aside className="min-h-0 overflow-hidden">
-            <TranscriptQueuePanel
-              contentRef={transcriptScrollRef}
-              transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
-              queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
-            />
-          </aside>
-        )}
+        <aside className="min-h-0 overflow-hidden">
+          <TranscriptQueuePanel
+            contentRef={transcriptScrollRef}
+            transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
+            queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
+          />
+        </aside>
       </div>
     </div>
   );
 }
+
