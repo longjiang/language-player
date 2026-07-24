@@ -253,7 +253,7 @@ export default function ReaderPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-57px)] flex flex-col overflow-hidden">
       {/* ── Full-width title bar ── */}
-      <div className="mb-4 flex items-center gap-3 flex-shrink-0 relative z-50">
+      <div className="mb-4 flex items-center gap-3 flex-shrink-0">
         <BookOpen className="h-6 w-6 flex-shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           {isEditingTitle ? (
@@ -291,8 +291,19 @@ export default function ReaderPage() {
         </button>
       </div>
 
-      {/* ── Content row: reader panel + sidebar ── */}
-      <div className="flex gap-4 flex-1 min-h-0">
+      {/* ── Content row: sidebar first (right on wide, top on narrow) ── */}
+      <div className="flex gap-4 flex-1 min-h-0 flex-row-reverse max-lg:flex-col">
+        <ReaderSidebar sidebarOpen={sidebarOpen}>
+          <NotesSidebar
+            notes={notes} notesLoading={notesLoading} notesError={notesError}
+            currentNoteId={currentNoteId} session={session}
+            onSelectNote={handleSelectNote}
+            onNewNote={handleNewNote}
+            onRenameNote={handleRenameNote}
+            onDeleteNote={handleDeleteNote}
+          />
+        </ReaderSidebar>
+        <div className="min-w-0 flex-1">
         <ReaderPanel
             l2={l2} l1={l1}
             text={text}
@@ -331,17 +342,7 @@ export default function ReaderPage() {
               }
             }}
           />
-
-        <ReaderSidebar sidebarOpen={sidebarOpen}>
-          <NotesSidebar
-            notes={notes} notesLoading={notesLoading} notesError={notesError}
-            currentNoteId={currentNoteId} session={session}
-            onSelectNote={handleSelectNote}
-            onNewNote={handleNewNote}
-            onRenameNote={handleRenameNote}
-            onDeleteNote={handleDeleteNote}
-          />
-        </ReaderSidebar>
+        </div>
       </div>
 
       {error && (

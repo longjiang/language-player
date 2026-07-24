@@ -178,18 +178,19 @@ On screens too narrow for side-by-side layout:
 
 - The sidebar is **closed by default** (no EPUB loaded = nothing to show)
 - The content area fills the full width
-- When the user opens the sidebar, it becomes a full-width overlay:
+- When the user opens the sidebar, it appears as a full-width section above the content:
   - The site header bar at the very top of the page remains visible
-  - The reader's title bar (with the toggle button) remains visible and clickable above the overlay
-  - A semi-transparent backdrop appears behind the sidebar, dimming the content
-  - The sidebar panel fills the entire area below the site header
-- Tapping the toggle button again, or tapping the backdrop, dismisses the sidebar
+  - The reader's title bar (with the toggle button) remains visible above the sidebar
+  - The sidebar panel fills the full width
+  - The content area is pushed down below the sidebar
+- The sidebar is still scrollable if its content exceeds the available height
+- Tapping the toggle button again dismisses the sidebar and returns content to its full position
 
 ### Sidebar Toggle Button
 
 - Always present in the title bar (when applicable: EPUB has chapters loaded, Notes has a note open)
 - Icon changes to indicate current state (open vs closed)
-- On narrow screens with the sidebar open, this button renders **above** the overlay so the user can always close it
+- Toggles the sidebar between visible and hidden on all screen sizes
 
 ## Sidebar Content Per Reader
 
@@ -234,15 +235,13 @@ ReaderPage
 │   ├── Title (editable for notes)
 │   └── SidebarToggle
 └── ContentRow
-    ├── ContentArea
-    │   └── ReaderPanel
-    │       ├── PaginatedText
-    │       ├── PageNavigation
-    │       └── TranslationToggle
-    └── ReaderSidebar
-        ├── Backdrop (narrow only)
-        └── SidebarContent
-            └── (NotesSidebar | EpubChapterSidebar | placeholder)
+    ├── ReaderSidebar
+    │   └── (NotesSidebar | EpubChapterSidebar | placeholder)
+    └── ContentArea
+        └── ReaderPanel
+            ├── PaginatedText
+            ├── PageNavigation
+            └── TranslationToggle
 ```
 
 ## Interaction Summary
@@ -250,7 +249,6 @@ ReaderPage
 | Action | Result |
 |---|---|
 | Click sidebar toggle | Opens or closes the sidebar panel |
-| Click backdrop (narrow screen) | Closes the sidebar overlay |
 | Select a note in sidebar | Loads that note in the reader |
 | Select a chapter in sidebar | Loads that chapter in the reader |
 | Click "New Note" | Creates a blank note, switches to edit tab |
