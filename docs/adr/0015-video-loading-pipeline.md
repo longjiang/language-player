@@ -36,7 +36,7 @@ watch page (page.tsx)
       → subs_l1 (CSV) is DEPRECATED — no longer stored; always empty
     → parseCSVSubtitles(item.subs_l2) → SubtitleLine[]  (L2: original language)
     → parseCSVSubtitles(item.subs_l1 ?? '') → []       (L1: deprecated, always empty)
-    → syncLines([], l2Lines) → SyncedLine[]             (paired with empty L1)
+    → syncLines([], l2Lines) → SyncedLine[]             (wraps L2 lines; L1 always empty)
     → return { video, lines: syncedLines }              (lines have no L1 translations)
 ```
 
@@ -44,8 +44,8 @@ watch page (page.tsx)
 
 - **Directus is the source of truth for L2 subtitles.** `subs_l2` (original language) is stored as a CSV string in the `youtube_videos_{suffix}` table, uploaded during video ingestion.
 - **`subs_l1` (pre-translated subtitles) is deprecated.** It is no longer stored in Directus. The `parseCSVSubtitles` call always returns an empty array for L1. Translations are now computed on-the-fly via `/translate_array` (see Pipeline 4).
-- **`syncLines` pairs by timestamp** using greedy nearest-neighbor. Since L1 is always empty, every line gets `l1Line: ''`.
-- **YouTube fallback:** if Directus has no subtitles (`l2Lines.length === 0`), the API falls back to Python endpoints `/get_best_l2_subs` and `/get_best_l1_subs` which fetch YouTube's auto-captions. These endpoints may not exist in the current Python server — videos without Directus subs may show no subtitles.
+- **`syncLines` is effectively obsolete.** Since L1 is always empty, it simply wraps each L2 line in a `SyncedLine` struct with `l1Line: ''`. The greedy-nearest-neighbor pairing logic never executes.
+- **YouTube fallback for L2 only.** If Directus has no L2 subtitles, the API falls back to `/get_best_l2_subs` (YouTube auto-captions). `/get_best_l1_subs` is no longer called — L1 translations are always live-translated (see Pipeline 4).
 - **Watch page receives `data.lines`** (paired L2 + empty L1, since `subs_l1` is deprecated) and passes them as `initialLines` to `SubtitleDisplay`.
 
 ### Files
@@ -53,8 +53,8 @@ watch page (page.tsx)
 | File | Role |
 |---|---|
 | `apps/web/src/app/api/videos/[videoId]/route.ts` | Next.js API route — fetches from Directus, parses CSV, pairs lines |
-| `apps/web/src/lib/subtitle-csv.ts` | `parseCSVSubtitles()` (CSV → `SubtitleLine[]`), `syncLines()` (pair L1+L2) |
-| `apps/web/src/lib/video-service.ts` | `fetchYouTubeL1Captions()`, `fetchYouTubeL2Captions()` — YouTube fallback |
+| `apps/web/src/lib/subtitle-csv.ts` | `parseCSVSubtitles()` (CSV → `SubtitleLine[]`), `syncLines()` (structurally wraps L2; pairing logic is dead code) |
+| `apps/web/src/lib/video-service.ts` | `fetchYouTubeL2Captions()` — YouTube fallback for L2 captions only |
 | `apps/web/src/app/[l1]/[l2]/watch/[videoId]/page.tsx` | Watch page — fetches from API, stores in `subtitleLines` state |
 
 ---
@@ -148,7 +148,7 @@ TokenizedText (after tokens load)
 
 ### Flow
 
-Since `subs_l1` is deprecated (no pre-translated subtitles in Directus), translations are computed on-the-fly:
+Since `subs_l1` is deprecated (no pre-translated subtitles in Directus), all L1 translations come from one of two sources:
 
 ```
 SubtitleDisplay
@@ -156,13 +156,16 @@ SubtitleDisplay
   → useSubtitleTranslation(l2Lines, l1, l2, enabled)
     → calls /translate_array in chunks of 5 (sequential)
       → Python: app_translator_chatgpt.chatgpt_translate_text_array()
+        → checks server-side translation cache first
+        → cache MISS → ChatGPT API → stores in cache
+        → cache HIT → returns cached translation instantly
   → syncLines(translatedLines, l2Lines) → paired output
 ```
 
 ### Key facts
 
-- **Translations are computed on-the-fly per video.** There is no server-side cache for `/translate_array` — every call goes to ChatGPT. For a 300-line transcript, this means 60 sequential API calls (300 ÷ 5 per chunk).
-- **Chunk size of 5 is intentional** — it shows progressive results to the user (translations appear chunk by chunk) at the cost of more API calls.
+- **Server-side translation cache exists.** The Python `/translate_array` endpoint caches translations per (text, l1, l2) tuple. Repeated views of the same video reuse cached translations without additional ChatGPT calls.
+- **Chunk size of 5 is intentional** — it shows progressive results to the user (translations appear chunk by chunk). With a warm cache, each chunk returns near-instantly.
 - **`useSubtitleTranslation` is enabled/disabled by `display.translation` setting.** When disabled, no translation calls are made.
 - **In subtitles mode**, translation only affects the single visible line overlay band (one `TokenizedText` per active line).
 - **In transcript mode**, all 300 lines are in the DOM. Translation chunks run sequentially and update `translatedLines` state progressively, causing `syncedLines` to re-sync with each chunk, and all rendered lines to update.
@@ -265,7 +268,7 @@ User opens video
 |---|---|
 | `/lemmatize-video-normalized` | Server-side disk cache via `utils_video_lemma.py`. Lemmatized once, served from cache on subsequent requests. |
 | `/dictionary/lookup-batch` | LLM results cached in `cache/dictionary_llm/{l1}/{l2}-{hash}.json`. CSV dictionaries are in-memory SQLite. |
-| `/translate_array` | No server-side cache. Every call goes to ChatGPT. Chunk size of 5 lines means 60 calls per 300-line video. |
+| `/translate_array` | Server-side translation cache per (text, l1, l2). Cold: calls ChatGPT. Warm: instant. |
 
 ---
 
@@ -273,5 +276,5 @@ User opens video
 
 | Risk | Status |
 |---|---|
-| YouTube fallback (`/get_best_l1_subs`, `/get_best_l2_subs`) may not exist in current Python server | ⚠️ Unverified — videos without Directus subs might show no subtitles |
-| `/translate_array` has no server-side cache — every video view re-translates from scratch | Expected behavior; ChatGPT API cost scales with watch time |
+| YouTube L2 fallback (`/get_best_l2_subs`) may not exist in current Python server | ⚠️ Unverified — videos without Directus L2 subs might show no subtitles |
+| YouTube L1 fallback (`/get_best_l1_subs`) no longer used | ✅ All L1 translations are live-translated via `/translate_array` with server cache |
