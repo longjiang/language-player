@@ -8,7 +8,7 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { useSettingsContext } from '@/providers/settings-provider';
-import { useProgress } from '@/hooks/use-progress';
+import { useProgressLevel } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { bulkLookupWords } from '@/lib/dictionary-cache';
 import { isPhoneticsEligible } from '@langplayer/utils';
@@ -74,7 +74,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
-  const { level: userLevel } = useProgress(l2Code);
+  const userLevel = useProgressLevel(l2Code);
 
   // Resolve effective font size:
   //   - textScale explicitly provided → use as absolute rem value
