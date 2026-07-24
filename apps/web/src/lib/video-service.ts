@@ -159,6 +159,10 @@ export async function fetchYouTubeL2Captions(
 /**
  * Fetch the best L1 (native language / translation) captions for a YouTube video
  * from the Python backend. Returns parsed SubtitleLine[].
+ *
+ * @deprecated L1 subtitles are no longer fetched from YouTube. All L1 translations
+ *   are now live-translated via `/translate_array` with server-side cache.
+ *   This function is retained for reference but has no active callers.
  */
 export async function fetchYouTubeL1Captions(
   youtubeId: string,

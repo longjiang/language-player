@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { YouTubeVideo } from '@langplayer/shared';
-import { parseCSVSubtitles, syncLines } from '@/lib/subtitle-csv';
+import type { SyncedLine } from '@/lib/subtitle-csv';
+import { parseCSVSubtitles } from '@/lib/subtitle-csv';
 import {
   fetchYouTubeL2Captions,
-  fetchYouTubeL1Captions,
   fetchYouTubeMetadata,
 } from '@/lib/video-service';
 
@@ -66,16 +66,19 @@ export async function GET(
     const item = json?.data?.[0] ?? json?.data ?? json?.[0] ?? null;
 
     if (!item) {
-      // Video not in Directus — fetch captions + metadata from YouTube via Python backend
-      const l1 = searchParams.get('l1') ?? 'en';
-
-      const [metadata, l2Lines, l1Lines] = await Promise.all([
+      // Video not in Directus — fetch captions + metadata from YouTube via Python backend.
+      // Only L2 captions are fetched; L1 translations are live-translated by the frontend.
+      const [metadata, l2Lines] = await Promise.all([
         fetchYouTubeMetadata(params.videoId),
         fetchYouTubeL2Captions(params.videoId, l2),
-        fetchYouTubeL1Captions(params.videoId, l1, l2),
       ]);
 
-      const syncedLines = syncLines(l1Lines, l2Lines);
+      const syncedLines: SyncedLine[] = l2Lines.map((l) => ({
+        starttime: l.starttime,
+        duration: l.duration,
+        l1Line: '',
+        l2Line: l.line,
+      }));
 
       const video: YouTubeVideo = {
         youtube_id: params.videoId,
@@ -87,7 +90,6 @@ export async function GET(
         likes: metadata?.likes,
         comments: metadata?.comments,
         locale: metadata?.locale,
-        subs_l1: l1Lines,
         subs_l2: l2Lines,
       };
 
@@ -101,25 +103,28 @@ export async function GET(
       );
     }
 
-    // Parse subtitles — fall back to Python/YouTube if Directus has no subs
+    // Parse L2 subtitles from Directus CSV — fall back to YouTube if missing.
+    // L1 subtitles (subs_l1) are deprecated; translations are live-translated.
     let l2Lines = parseCSVSubtitles(item.subs_l2 ?? '');
-    let l1Lines = parseCSVSubtitles(item.subs_l1 ?? '');
 
     // Enrich sparse Directus records with YouTube data
     let youtubeMeta: Partial<YouTubeVideo> | null = null;
     if (l2Lines.length === 0 || !item.title || item.title === 'Untitled') {
-      const l1 = searchParams.get('l1') ?? 'en';
-      const [meta, fetchedL2, fetchedL1] = await Promise.all([
+      const [meta, fetchedL2] = await Promise.all([
         fetchYouTubeMetadata(params.videoId),
         l2Lines.length === 0 ? fetchYouTubeL2Captions(params.videoId, l2) : Promise.resolve(l2Lines),
-        l1Lines.length === 0 ? fetchYouTubeL1Captions(params.videoId, l1, l2) : Promise.resolve(l1Lines),
       ]);
       youtubeMeta = meta;
       l2Lines = fetchedL2;
-      l1Lines = fetchedL1;
     }
 
-    const syncedLines = syncLines(l1Lines, l2Lines);
+    // Wrap L2 lines as SyncedLine with empty L1 (translations come later via /translate_array)
+    const syncedLines: SyncedLine[] = l2Lines.map((l) => ({
+      starttime: l.starttime,
+      duration: l.duration,
+      l1Line: '',
+      l2Line: l.line,
+    }));
 
     // Build video object — enrich sparse Directus fields with YouTube metadata
     const video: YouTubeVideo = {
@@ -138,7 +143,6 @@ export async function GET(
       category: item.category ? String(item.category) : undefined,
       talk: item.talk ? String(item.talk) : undefined,
       channel_id: item.channel_id ?? youtubeMeta?.channel_id,
-      subs_l1: l1Lines,
       subs_l2: l2Lines,
     };
 

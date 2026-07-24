@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { parseCSVSubtitles, syncLines } from '@/lib/subtitle-csv';
+import type { SyncedLine } from '@/lib/subtitle-csv';
+import { parseCSVSubtitles } from '@/lib/subtitle-csv';
 import {
   fetchYouTubeL2Captions,
-  fetchYouTubeL1Captions,
 } from '@/lib/video-service';
 
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'https://directusvps.zerotohero.ca/zerotohero';
@@ -57,20 +57,21 @@ export async function GET(
     const json = await directusRes.json();
     const record = json?.data?.[0] ?? json?.data;
 
-    // subs_l2 and subs_l1 are CSV strings, not JSON arrays
+    // subs_l2 is a CSV string; subs_l1 is deprecated (always empty).
+    // L1 translations are live-translated by the frontend.
     let l2Lines = parseCSVSubtitles(record?.subs_l2 ?? '');
-    let l1Lines = parseCSVSubtitles(record?.subs_l1 ?? '');
 
     // If Directus has no subtitles, fall back to YouTube via Python backend
     if (l2Lines.length === 0) {
-      const l1 = searchParams.get('l1') ?? 'en';
-      [l2Lines, l1Lines] = await Promise.all([
-        fetchYouTubeL2Captions(params.videoId, l2),
-        fetchYouTubeL1Captions(params.videoId, l1, l2),
-      ]);
+      l2Lines = await fetchYouTubeL2Captions(params.videoId, l2);
     }
 
-    const lines = syncLines(l1Lines, l2Lines);
+    const lines: SyncedLine[] = l2Lines.map((l) => ({
+      starttime: l.starttime,
+      duration: l.duration,
+      l1Line: '',
+      l2Line: l.line,
+    }));
 
     return NextResponse.json({ lines });
   } catch (err) {

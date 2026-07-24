@@ -33,20 +33,19 @@ watch page (page.tsx)
   → fetch(`/api/videos/${youtubeId}?l2=ja&l1=en`)
     → Directus: GET /items/youtube_videos_{suffix}?filter[youtube_id][eq]=...
       → response includes subs_l2 (CSV)
-      → subs_l1 (CSV) is DEPRECATED — no longer stored; always empty
+      → subs_l1 (CSV) is DEPRECATED — no longer read or stored
     → parseCSVSubtitles(item.subs_l2) → SubtitleLine[]  (L2: original language)
-    → parseCSVSubtitles(item.subs_l1 ?? '') → []       (L1: deprecated, always empty)
-    → syncLines([], l2Lines) → SyncedLine[]             (wraps L2 lines; L1 always empty)
+    → l2Lines.map(...) → SyncedLine[]                   (wrapped with empty l1Line)
     → return { video, lines: syncedLines }              (lines have no L1 translations)
 ```
 
 ### Key facts
 
 - **Directus is the source of truth for L2 subtitles.** `subs_l2` (original language) is stored as a CSV string in the `youtube_videos_{suffix}` table, uploaded during video ingestion.
-- **`subs_l1` (pre-translated subtitles) is deprecated.** It is no longer stored in Directus. The `parseCSVSubtitles` call always returns an empty array for L1. Live translations from `/translate_array` are stored in `SubtitleDisplay`'s local component state — they are **never** written back to `video.subs_l1`. The field is always empty at runtime and only kept for backward compatibility with cached API response types.
-- **`syncLines` is effectively obsolete.** Since L1 is always empty, it simply wraps each L2 line in a `SyncedLine` struct with `l1Line: ''`. The greedy-nearest-neighbor pairing logic never executes.
-- **YouTube fallback for L2 only.** If Directus has no L2 subtitles, the API falls back to `/get_best_l2_subs` (YouTube auto-captions). `/get_best_l1_subs` is no longer called — L1 translations are always live-translated (see Pipeline 4).
-- **Watch page receives `data.lines`** (paired L2 + empty L1, since `subs_l1` is deprecated) and passes them as `initialLines` to `SubtitleDisplay`.
+- **`subs_l1` is deprecated and no longer read.** The API route no longer parses `subs_l1` from Directus and does not set `video.subs_l1`. The field remains in the `YouTubeVideo` type only for backward compatibility with cached API responses.
+- **No `syncLines` call in the API.** Each L2 line is directly mapped to a `SyncedLine` struct with `l1Line: ''`. Translations are applied later by `SubtitleDisplay` via `/translate_array`.
+- **YouTube fallback for L2 only.** If Directus has no L2 subtitles, the API calls `/get_best_l2_subs` (YouTube auto-captions). L1 subtitles are never fetched from YouTube — all translations come from `/translate_array` (see Pipeline 4).
+- **Watch page receives `data.lines`** (L2 with empty L1 placeholders) and passes them as `initialLines` to `SubtitleDisplay`.
 
 ### Files
 
