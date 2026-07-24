@@ -137,7 +137,8 @@ export function ReaderPanel({
     const contentWidth = containerRef.current?.clientWidth;
     container.style.width = contentWidth ? contentWidth + 'px' : '100%';
     // Ensure measuring div has the same height as the viewport
-    container.style.height = (containerRef.current?.clientHeight || window.innerHeight - 160) + 'px';
+    const viewportH = containerRef.current?.clientHeight;
+    container.style.height = (viewportH && viewportH > 100 ? viewportH : window.innerHeight - 200) + 'px';
 
     // Double rAF to ensure layout is complete
     requestAnimationFrame(() => {
@@ -145,7 +146,7 @@ export function ReaderPanel({
         const children = Array.from(container.children) as HTMLElement[];
         if (children.length === 0) { setPageBreaks([]); setPage(0); setHasMeasured(true); return; }
 
-        const maxHeight = container.clientHeight || window.innerHeight - 160;
+        const maxHeight = container.clientHeight || window.innerHeight - 200;
         const breaks: number[] = [];
         let accumulated = 0;
 
@@ -211,11 +212,9 @@ export function ReaderPanel({
 
   // ── Load tokens for the current page (lazy, per-page) ──
   useEffect(() => {
-    if (!hasMeasured || !blocks || pageBreaks.length === 0 || !onLemmatize) return;
+    if (!hasMeasured || !blocks || !onLemmatize) return;
 
-    const start = page === 0 ? 0 : pageBreaks[page - 1]!;
-    const end = page < pageBreaks.length ? pageBreaks[page]! : blocks.length;
-    const pageBlocks = blocks.slice(start, end);
+    const pageBlocks = visibleBlocks ?? blocks;
     const textBlocks = pageBlocks.filter((b): b is TextBlock => b.kind === 'text');
 
     const missing: { textBlockIndex: number; text: string }[] = [];
@@ -246,7 +245,7 @@ export function ReaderPanel({
       if (tokenLoadGenRef.current !== gen) return;
       setLoadingTokens(false);
     });
-  }, [hasMeasured, page, blocks, pageBreaks, onLemmatize, tokenCache]);
+  }, [hasMeasured, page, blocks, pageBreaks, onLemmatize, tokenCache, visibleBlocks]);
 
   // Seek to initialAnchor on first blocks load
   const initialAnchorSeen = useRef(false);
@@ -359,18 +358,17 @@ export function ReaderPanel({
                   [&_hr]:border-border [&_hr]:my-6"
                   lang={l2.code} dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'}
                 >
-                  {/* State 1: measuring or loading tokens — raw markdown */}
-                  {(!hasMeasured || loadingTokens) && blocks && (
-                    <>
-                      {loadingTokens && (
-                        <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-                          <Loader2 className="h-3 w-3 animate-spin" /> {t('msg.making_words_interactive')}
-                        </div>
-                      )}
-                      <div>
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-                      </div>
-                    </>
+                  {/* State 1: measuring — loading indicator, no raw text flash */}
+                  {!hasMeasured && blocks && (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                  {/* State 1b: loading tokens — show spinner above paginated content */}
+                  {hasMeasured && loadingTokens && blocks && (
+                    <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
+                      <Loader2 className="h-3 w-3 animate-spin" /> {t('msg.making_words_interactive')}
+                    </div>
                   )}
                   {/* State 2: ready — paginated with tokens */}
                   {hasMeasured && allTokensReady && visibleBlocks && blocks && (
