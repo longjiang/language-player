@@ -185,9 +185,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 
   // ── Common class for the outer clickable wrapper ──
   const karaokeClass = isKaraokeSpoken === false && !isSelected && !isHighlighted && !isQuizBlanking
-    ? 'text-muted-foreground/50'
+    ? 'opacity-40'
     : '';
-  const wrapperClass = `cursor-pointer rounded transition-colors ${karaokeClass} ${
+  const wrapperClass = `cursor-pointer rounded transition-opacity ${karaokeClass} ${
     isSelected
       ? 'bg-primary/20 text-primary'
       : isHighlighted

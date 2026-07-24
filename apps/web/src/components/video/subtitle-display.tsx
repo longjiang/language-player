@@ -242,8 +242,9 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
           // Compute karaoke progress for the active line
           let karaokeProgress: number | undefined;
           if (isActive && playback.karaokeMode) {
+            // Duration chain: explicit subtitle duration → next-line gap → 5s fallback for last line
             const lineDuration = line.duration
-              ?? (syncedLines[i + 1] ? syncedLines[i + 1]!.starttime - line.starttime : 3);
+              ?? (syncedLines[i + 1] ? syncedLines[i + 1]!.starttime - line.starttime : 5);
             karaokeProgress = lineDuration > 0
               ? Math.min(1, Math.max(0, (currentTime - line.starttime) / lineDuration))
               : 0;

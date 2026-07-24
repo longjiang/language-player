@@ -332,19 +332,26 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   return (
     <span ref={containerRef} className={fontClass}>
       <span className="leading-relaxed" style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
-        {tokens.map((token, i) => {
+        {/* Precompute karaoke word count once, outside the per-token loop */}
+        {(() => {
+          let wordCount = 0;
+          let spokenWordCount = 0;
+          if (karaokeProgress !== undefined) {
+            wordCount = tokens.filter(t => t.lemmas.length > 0).length;
+            // Use Math.floor so a word doesn't light until its time has elapsed
+            spokenWordCount = Math.floor(karaokeProgress * wordCount);
+          }
+          let wordIndexSoFar = 0;
+          return tokens.map((token, i) => {
           const l2Settings = getL2(l2Code);
           const phoneticsShow = isPhoneticsEligible(l2Code)
             ? l2Settings.tokenSpan.phonetics.show
             : false;
-          // In karaoke mode, determine if this token has been spoken
+          // In karaoke mode, determine if this token has been spoken using a O(n) counter
           let isKaraokeSpoken: boolean | undefined;
           if (karaokeProgress !== undefined) {
-            const wordTokens = tokens.filter(t => t.lemmas.length > 0);
-            const wordCount = wordTokens.length;
-            const spokenWordCount = Math.floor(karaokeProgress * wordCount);
-            const wordTokensSoFar = tokens.slice(0, i + 1).filter(t => t.lemmas.length > 0).length;
-            isKaraokeSpoken = wordTokensSoFar <= spokenWordCount;
+            if (token.lemmas.length > 0) wordIndexSoFar++;
+            isKaraokeSpoken = wordIndexSoFar <= spokenWordCount;
           }
           return (
             <TokenSpan
@@ -369,7 +376,8 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
               isKaraokeSpoken={isKaraokeSpoken}
             />
           );
-        })}
+        });
+      })()}
       </span>
 
       {/* Dictionary popup */}
