@@ -101,8 +101,11 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   );
 
   const syncedLines = useMemo(() => {
-    if (translatedLines.length > 0) {
-      return syncLines(translatedLines, l2Lines);
+    // translatedLines is a sparse array from the lazy translation hook —
+    // untranslated positions are undefined. Filter before passing to syncLines.
+    const validTranslated = translatedLines.filter((l): l is SubtitleLine => l != null);
+    if (validTranslated.length > 0) {
+      return syncLines(validTranslated, l2Lines);
     }
     return l2Lines.map((l) => ({ starttime: l.starttime, duration: l.duration, l1Line: '', l2Line: l.line }));
   }, [l2Lines, translatedLines]);
