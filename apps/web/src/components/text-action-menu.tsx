@@ -11,7 +11,7 @@ import { useStreamingExplanation } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { toast } from 'sonner';
 import {
-  MoreHorizontal, Copy, Volume2, Square, Sparkles, Languages, Loader2,
+  MoreVertical, Copy, Volume2, Square, Sparkles, Languages, Loader2,
 } from 'lucide-react';
 
 interface TextActionMenuProps {
@@ -175,11 +175,9 @@ export function TextActionMenu({
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         aria-haspopup="true"
         aria-expanded={open}
-        className={`z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground ${
-          alwaysShow || open ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-        }`}
+        className="z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100"
       >
-        <MoreHorizontal className="h-4 w-4" />
+        <MoreVertical className="h-4 w-4" />
       </button>
 
       {/* Dropdown menu */}
