@@ -78,7 +78,17 @@ export function useVideos({ l2, level, pageSize = 24, cache, defer, endpoint = '
         const newVideos = data.videos ?? [];
 
         setVideos((prev) => {
-          const updated = append ? [...prev, ...newVideos] : newVideos;
+          const combined = append ? [...prev, ...newVideos] : newVideos;
+          // Deduplicate by youtube_id — API pagination may return overlapping
+          // results, and race conditions between StrictMode double-invoke and
+          // cache restoration can produce duplicate entries.
+          const seen = new Set<string>();
+          const updated = combined.filter((v) => {
+            const id = v.youtube_id;
+            if (!id || seen.has(id)) return false;
+            seen.add(id);
+            return true;
+          });
           // Update cache so navigating back restores instantly
           if (cache) {
             cache.set(key, { videos: updated, hasMore: data.hasMore, error: null });
