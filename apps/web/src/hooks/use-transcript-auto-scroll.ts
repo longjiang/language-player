@@ -22,12 +22,12 @@ const DEBUG = '[smoothScroll]';
 /** Minimum interval (ms) between consecutive auto-scrolls when smoothScroll is on. */
 const THROTTLE_MS = 2000;
 /** Duration (ms) of the ease-out scroll animation. */
-const ANIMATION_DURATION_MS = 800;
+const ANIMATION_DURATION_MS = 3000;
 /**
  * Fraction of the viewport height used as the "edge zone."
  * When the active line enters this zone (top or bottom), scrolling is triggered.
  */
-const EDGE_MARGIN = 0.25;
+const EDGE_MARGIN = 0.1;
 /**
  * Fraction of the viewport height used as the "critical zone."
  * When the line is this close to the edge of being fully invisible,

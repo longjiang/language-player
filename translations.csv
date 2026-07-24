@@ -75,6 +75,7 @@ review.complete_desc,You reviewed {count} cards. Great job!,,,,,,,,,,,,,,,,,,,,,
 review.progress,{done} done · {remaining} remaining,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 sort.alphabetical,Alphabetical,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 sort.newest,Newest,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+title.info,Info,信息,資訊,Inligting,معلومات,Informació,Info,Πληροφορίες,Información,Tiedot,Infos,Eolas,जानकारी,Informacije,Infó,Info,Info,情報,정보,Info,Info,Informacje,Informações,Informații,Информация,Инфо,Info,Maelezo,ข้อมูล,Bilgi,Thông tin
 "Κείμενο: {text},Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:"
 "Κείμενο: {text},Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:"
 "Текст: {text},Pruži jasnu analizu sledećeg teksta na {l2Code}. Uključi:"

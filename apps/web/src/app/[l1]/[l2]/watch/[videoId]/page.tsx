@@ -311,38 +311,49 @@ export default function WatchPage() {
   }
 
   // ── Transcript Mode: Narrow ──
+  // The viewport is split into two regions:
+  //   1. Player + controls (shrink-0) — always visible
+  //   2. Tabbed panel (flex-1 min-h-0) — transcript / queue / info tabs, scrolls internally
   if (!isWide) {
+    const videoInfo = (
+      <div className="space-y-4">
+        <VideoMeta video={v} />
+        {v.channel_id && <YouTubeChannelCard channelId={v.channel_id!} />}
+      </div>
+    );
+
     return (
-      <div className="mx-auto max-w-7xl px-4 py-6">
-        <div className="flex flex-col gap-6">
-          <div className="sticky top-[3.5rem] z-10 bg-background">
-            <div ref={videoWrapperRef} className="pb-2">
-              {playerElement}
-            </div>
-            <div className="flex justify-end pb-3">
-              <VideoControlBar
-                reduced
-                playerRef={playerRef}
-                currentTime={currentTime}
-                duration={duration}
-                paused={paused}
-                onPauseToggle={handlePauseToggle}
-                onPreviousLine={handlePreviousLine}
-                onNextLine={handleNextLine}
-                onPreviousVideo={playPrevious}
-                onNextVideo={playNext}
-                onTogglePanel={handleTogglePanel}
-                hasPreviousVideo={hasPrevious}
-                hasNextVideo={hasNext}
-              />
-            </div>
+      <div className="mx-auto max-w-7xl h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
+        {/* Player + controls — fixed at top */}
+        <div className="shrink-0 px-4 pt-4">
+          <div ref={videoWrapperRef} className="pb-2">
+            {playerElement}
           </div>
-          <VideoMeta video={v} />
-          {v.channel_id && <YouTubeChannelCard channelId={v.channel_id!} />}
+          <div className="flex justify-end pb-2">
+            <VideoControlBar
+              reduced
+              playerRef={playerRef}
+              currentTime={currentTime}
+              duration={duration}
+              paused={paused}
+              onPauseToggle={handlePauseToggle}
+              onPreviousLine={handlePreviousLine}
+              onNextLine={handleNextLine}
+              onPreviousVideo={playPrevious}
+              onNextVideo={playNext}
+              onTogglePanel={handleTogglePanel}
+              hasPreviousVideo={hasPrevious}
+              hasNextVideo={hasNext}
+            />
+          </div>
+        </div>
+        {/* Tabbed panel — fills remaining space, scrolls internally */}
+        <div className="flex-1 min-h-0 px-4 pb-4">
           <TranscriptQueuePanel
             contentRef={transcriptScrollRef}
             transcript={<SubtitleDisplay youtubeId={v.youtube_id} videoTitle={v.title} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} currentTime={currentTime} onLinesLoaded={setSubtitleStartTimes} onSeekToLine={handleSeekToLine} scrollContainerRef={transcriptScrollRef} initialLines={subtitleLines.length > 0 ? subtitleLines : undefined} />}
             queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
+            info={videoInfo}
           />
         </div>
       </div>
