@@ -124,8 +124,8 @@ export default function EpubPage() {
             {epub.chapterTitle || epub.fileName || t('title.epub_reader')}
           </h1>
         </div>
-        {/* Close EPUB */}
-        {epub.toc.length > 0 && (
+        {/* Close EPUB — always visible when a file is loaded */}
+        {epub.fileName && (
           <button
             onClick={epub.close}
             className="flex-shrink-0 rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1"
