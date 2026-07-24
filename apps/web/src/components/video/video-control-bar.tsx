@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Gauge,
   PanelRightOpen,
+  PanelRightClose,
   Clock,
   ChevronLeft,
   ChevronRight,
@@ -144,7 +145,7 @@ export function VideoControlBar({
             onClick={onTogglePanel}
             title={t('a11y.video_info')}
           >
-            <PanelRightOpen className="h-3.5 w-3.5" />
+            <PanelRightClose className="h-3.5 w-3.5" />
           </Button>
         )}
       </div>
