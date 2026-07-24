@@ -49,6 +49,8 @@ export interface TokenSpanProps {
   isHighlighted: boolean;
   /** `normal` = show all words; `quiz` = blank out saved words for self-testing. */
   mode: 'normal' | 'quiz';
+  /** ko: show hanja alongside hangul. vi: show hán tự alongside quốc ngữ. Ignored otherwise. */
+  byeonggi: boolean;
   onClick: () => void;
 }
 
@@ -68,10 +70,16 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   isSaved,
   isHighlighted,
   mode,
+  byeonggi,
   onClick,
 }) => {
   // ── Quiz mode: toggle blank reveal per-word ──
   const [quizRevealed, setQuizRevealed] = useState(false);
+
+  // ── Quiz blanking state — computed early since byeonggiNode, wrapperClass, etc. depend on it ──
+  const isQuizBlanking = mode === 'quiz' && isSaved && !quizRevealed;
+
+  const base = l2Code.split('-')[0]!;
 
   // ── First cached entry's first definition — shared by quick gloss and interlinear ──
   const firstDef = useMemo(() => {
@@ -92,6 +100,32 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const quickGlossDef = (isSaved && quickGloss) ? firstDef : null;
   // ── Interlinear definition: for all words (when enabled) ──
   const interlinearDef = showDefinition ? firstDef : null;
+
+  // ── Byeonggi: hanja (ko) / hán tự (vi) from first cached dictionary entry ──
+  const byeonggiText = useMemo(() => {
+    if (!byeonggi) return null;
+    // Only for Korean and Vietnamese
+    const isKo = base === 'ko';
+    const isVi = base === 'vi';
+    if (!isKo && !isVi) return null;
+    for (const lemma of token.lemmas) {
+      const entries = getCachedEntries(l2Code, lemma.lemma);
+      if (!entries) continue;
+      for (const entry of entries) {
+        if (!entry.han_script) continue;
+        if (isKo && entry.han_script.hanja) return entry.han_script.hanja;
+        if (isVi && entry.han_script.han) return entry.han_script.han;
+      }
+    }
+    return null;
+  }, [byeonggi, base, l2Code, token.lemmas]);
+
+  // ── Byeonggi node: small muted text, same size as furigana <rt>, no brackets ──
+  const byeonggiNode = (byeonggiText && !isQuizBlanking) ? (
+    <span className="text-[0.55em] text-muted-foreground/70 font-normal select-none">
+      {byeonggiText}
+    </span>
+  ) : null;
 
   // ── "Hard words only" filter: suppress phonetics for easy words ──
   const showPhonetics = useMemo(() => {
@@ -114,12 +148,8 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     return <>{token.text}</>;
   }
 
-  const base = l2Code.split('-')[0]!;
   const isJapanese = base === 'ja';
   const hasKanji = isJapanese && /[一-龯]/.test(token.text);
-
-  // ── Quiz mode: blank out saved words for self-testing ──
-  const isQuizBlanking = mode === 'quiz' && isSaved && !quizRevealed;
 
   // ── Common class for the outer clickable wrapper ──
   const wrapperClass = `cursor-pointer rounded transition-colors ${
@@ -182,12 +212,20 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     onClick();
   };
 
+  // ── Wrapper that combines wordContent + byeonggi for both layout variants ──
+  const annotatedWord = (
+    <>
+      {wordContent}
+      {byeonggiNode}
+    </>
+  );
+
   // ── Interlinear definition: word stacked above definition, centered ──
   if (interlinearDef && !isQuizBlanking) {
     return (
       <span onClick={(e) => { e.stopPropagation(); handleClick(); }} className={wrapperClass} title={title}>
         <span className="inline-flex flex-col items-center">
-          {wordContent}
+          {annotatedWord}
           <span className="text-[0.55em] text-muted-foreground/60 font-normal select-none leading-none">
             {interlinearDef}
           </span>
@@ -196,10 +234,10 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     );
   }
 
-  // ── Inline layout: word with optional quick gloss alongside ──
+  // ── Inline layout: word with optional byeonggi + quick gloss alongside ──
   return (
     <span onClick={(e) => { e.stopPropagation(); handleClick(); }} className={wrapperClass} title={title}>
-      {wordContent}
+      {annotatedWord}
       {quickGlossDef && !isQuizBlanking && <QuickGloss def={quickGlossDef} />}
     </span>
   );
