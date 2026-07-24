@@ -286,7 +286,12 @@ export default function ReviewPage() {
     // Reset currentIndex so the undone card reappears at the top
     setCurrentIndex(0);
     undoRef.current = null;
-  }, [l2Code, updateCard]);
+
+    toast(t('action.undo'), {
+      duration: 2000,
+      className: '!bg-card !text-foreground !border-border',
+    });
+  }, [l2Code, updateCard, t]);
 
   const handleReveal = useCallback(() => {
     setShowDefinition(true);
@@ -397,6 +402,20 @@ export default function ReviewPage() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [cards.length, handleRemove]);
+
+  // ── Keyboard shortcut: Ctrl/Cmd+Z to undo the last rating ──
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault();
+        handleUndo();
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleUndo]);
 
   // ── Anki-style card counts (new / again / review) ──
   // Must be BEFORE any conditional returns (React hooks rule).
