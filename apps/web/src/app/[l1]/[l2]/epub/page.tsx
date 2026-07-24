@@ -133,14 +133,16 @@ export default function EpubPage() {
             {t('action.close')}
           </button>
         )}
-        {/* Collapse toggle — top right */}
-        <button
-          onClick={() => setSidebarOpen(o => !o)}
-          className="flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
-        >
-          {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
-        </button>
+        {/* Collapse toggle — top right, only when EPUB loaded */}
+        {epub.toc.length > 0 && (
+          <button
+            onClick={() => setSidebarOpen(o => !o)}
+            className="flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
+          >
+            {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
+          </button>
+        )}
       </div>
 
       {/* ── Content row: reader panel first, then sidebar ── */}
@@ -180,6 +182,7 @@ export default function EpubPage() {
               translating={false}
               blocks={blocks}
               ctx={ctx}
+              showTabs={false}
               onTextChange={() => {}}
               onTabChange={() => {}}
               onTokenize={() => {}}
