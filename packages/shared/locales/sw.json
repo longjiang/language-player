@@ -687,7 +687,6 @@
         "save_more_words": "Hifadhi maneno zaidi ili kuendelea kujifunza.",
         "save_words_to_build_deck": "Hifadhi maneno unapotazama video ili kujenga staha yako ya kukagua. Gusa neno lolote kwenye manukuu ili kulihifadhi.",
         "saved_from_context": "ulihifadhiwa kutoka:",
-        "saved_words_count": "{count, plural, one {# neno} other {# maneno}} katika {l1} → {l2}",
         "saved_words_desc": "{count} maneno yamehifadhiwa katika {l2}",
         "search_videos_desc": "Tafuta kwa kichwa au bandika kiungo cha YouTube kutazama video katika {l2}.",
         "search_videos_empty": "Tafuta video kwa kichwa au bandika kiungo cha YouTube kuanza kutazama katika {l2}.",

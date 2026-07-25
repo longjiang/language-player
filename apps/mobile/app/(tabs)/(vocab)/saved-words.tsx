@@ -122,7 +122,7 @@ export default function SavedWordsScreen() {
         <View className="flex-1">
           <Text className="text-2xl font-bold text-foreground">{t('title.saved_words')}</Text>
           <Text className="mt-1 text-sm text-muted-foreground">
-            {t('msg.saved_words_count', { count: allWords.length, l1: l1Lang.name, l2: l2Lang.name })}
+            {t('msg.saved_words_desc', { count: allWords.length, l2: l2Lang.name })}
           </Text>
         </View>
         <View className="flex-row gap-2">

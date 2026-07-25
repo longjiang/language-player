@@ -687,7 +687,6 @@
         "save_more_words": "Sla meer woorden op om verder te leren.",
         "save_words_to_build_deck": "Sla woorden op tijdens het kijken van video's om uw beoordelingsset op te bouwen. Tik op een woord in de ondertiteling om het op te slaan.",
         "saved_from_context": "opgeslagen van:",
-        "saved_words_count": "{count, plural, one {# woord} other {# woorden}} in {l1} → {l2}",
         "saved_words_desc": "{count} woorden opgeslagen in {l2}",
         "search_videos_desc": "Zoek op titel of plak een YouTube-link om video's in het {l2} te bekijken.",
         "search_videos_empty": "Zoek video's op titel of plak een YouTube-link om te beginnen met kijken in het {l2}.",

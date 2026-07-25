@@ -687,7 +687,6 @@
         "save_more_words": "Spara fler ord för att fortsätta lära dig.",
         "save_words_to_build_deck": "Spara ord medan du tittar på videor för att bygga din repetitionsstapel. Tryck på valfritt ord i undertexterna för att spara det.",
         "saved_from_context": "sparat från:",
-        "saved_words_count": "{count, plural, one {# ord} other {# ord}} i {l1} → {l2}",
         "saved_words_desc": "{count} ord sparade i {l2}",
         "search_videos_desc": "Sök efter titel eller klistra in en YouTube-länk för att titta på videor på {l2}.",
         "search_videos_empty": "Sök efter videor efter titel eller klistra in en YouTube-länk för att börja titta på {l2}.",

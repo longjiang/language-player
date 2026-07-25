@@ -687,7 +687,6 @@
         "save_more_words": "Lagre flere ord for å fortsette å lære.",
         "save_words_to_build_deck": "Lagre ord mens du ser på videoer for å bygge gjennomgangsstokken din. Trykk på et ord i undertekstene for å lagre det.",
         "saved_from_context": "lagret fra:",
-        "saved_words_count": "{count, plural, one {# ord} other {# ord}} i {l1} → {l2}",
         "saved_words_desc": "{count} ord lagret i {l2}",
         "search_videos_desc": "Søk etter tittel eller lim inn en YouTube-lenke for å se videoer på {l2}.",
         "search_videos_empty": "Søk etter videoer etter tittel eller lim inn en YouTube-lenke for å begynne å se på {l2}.",

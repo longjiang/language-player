@@ -687,7 +687,6 @@
         "save_more_words": "학습을 계속하려면 더 많은 단어를 저장하세요.",
         "save_words_to_build_deck": "동영상을 시청하는 동안 단어를 저장하여 복습 덱을 만드세요. 자막에서 단어를 탭하여 저장하세요.",
         "saved_from_context": "저장된 위치:",
-        "saved_words_count": "{l1} → {l2}에 단어 {count}개",
         "saved_words_desc": "{count}개의 단어가 {l2}에 저장됨",
         "search_videos_desc": "제목으로 검색하거나 YouTube 링크를 붙여넣어 {l2} 동영상을 시청하세요.",
         "search_videos_empty": "제목으로 동영상을 검색하거나 YouTube 링크를 붙여넣어 {l2}(으)로 시청을 시작하세요.",

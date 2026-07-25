@@ -687,7 +687,6 @@
         "save_more_words": "Sauvegardez plus de mots pour continuer à apprendre.",
         "save_words_to_build_deck": "Sauvegardez des mots en regardant des vidéos pour constituer votre liste de révision. Appuyez sur n'importe quel mot dans les sous-titres pour le sauvegarder.",
         "saved_from_context": "enregistré depuis :",
-        "saved_words_count": "{count, plural, one {# mot} other {# mots}} dans {l1} → {l2}",
         "saved_words_desc": "{count} mots sauvegardés dans {l2}",
         "search_videos_desc": "Recherchez par titre ou collez un lien YouTube pour regarder des vidéos en {l2}.",
         "search_videos_empty": "Recherchez des vidéos par titre ou collez un lien YouTube pour commencer à regarder en {l2}.",
