@@ -1,164 +1,194 @@
-// @/app/search.tsx
-// @/app/search.tsx
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, FlatList, Pressable, ActivityIndicator, TextInput } from 'react-native';
+import { router } from 'expo-router';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
-import { StyleSheet, View } from "react-native";
-import { ThemedButton, ThemedScreen, ThemedInput, ThemedText } from "@/components";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { router } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ActivityIndicator } from 'react-native';
-import { useThemeColor } from "@/hooks";
-import { YouTubeVideo } from "@/types/videoTypes";
-import { getVideosByL2Code } from "@/src/api/directus/youtube-video";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useVideoPlayer } from "@/contexts/VideoPlayerContext";
-import { YouTubeVideoList } from "@/components/YouTubeVideoList";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useVideos, apiClient } from '@langplayer/api-client';
+import { VideoCard } from '@/components/video/VideoCard';
+import { Search, AlertCircle, Film, Tag } from 'lucide-react-native';
+import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
+import type { YouTubeVideo } from '@langplayer/shared';
 
-const SearchScreen = () => {
-  const [items, setItems] = useState<YouTubeVideo[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const primaryBrandColor = useThemeColor({}, "primaryBrand");
+interface VideoTag {
+  tag: string;
+  video_count: number;
+}
+
+const YOUTUBE_URL_RE = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+
+export default function SearchScreen() {
+  const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
-  const { l2Lang } = useLanguage();
-  const { setVideoAndQueue } = useVideoPlayer();
-  const insets = useSafeAreaInsets();
+  const videosApi = useVideos();
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<YouTubeVideo[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [tags, setTags] = useState<VideoTag[]>([]);
+  const [tagsLoading, setTagsLoading] = useState(true);
+  const [tagsExpanded, setTagsExpanded] = useState(false);
 
-  if (!l2Lang) return null;
+  const INITIAL_TAG_COUNT = 15;
 
-  const extractYouTubeID = useCallback((url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-  }, []);
+  // Fetch popular tags
+  useEffect(() => {
+    let cancelled = false;
+    setTagsLoading(true);
+    apiClient.get<VideoTag[]>('/video-tags', {
+      params: { l2: l2Lang.code, limit: 50, min_count: 2 },
+    }).then((data) => {
+      if (!cancelled) { setTags(data); setTagsLoading(false); }
+    }).catch(() => {
+      if (!cancelled) setTagsLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [l2Lang.code]);
 
-  const handleInputChange = useCallback((text: string) => {
-    setSearchQuery(text);
-    const youtubeId = extractYouTubeID(text);
+  const extractYouTubeID = (url: string): string | null => {
+    const match = url.match(YOUTUBE_URL_RE);
+    return (match && match[2]?.length === 11) ? match[2] : null;
+  };
+
+  const doSearch = useCallback(async (term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed) return;
+
+    const youtubeId = extractYouTubeID(trimmed);
     if (youtubeId) {
-      setVideoAndQueue({ youtube_id: youtubeId }, []);
+      router.push(`/(tabs)/(media)/watch/${youtubeId}` as any);
+      return;
     }
-  }, [setVideoAndQueue, extractYouTubeID]);
 
-  const loadItems = useCallback(async () => {
-    setItems([]);
-    setIsLoading(true);
+    setLoading(true);
+    setError(null);
+    setResults(null);
+    setHasSearched(true);
+
     try {
-      const data = await getVideosByL2Code(l2Lang, false, {
-        filter: { title: { contains: searchQuery } },
-      });
-      if (data) setItems(data);
-    } catch (error) {
-      console.error("Failed to load items:", error);
+      const res = await videosApi.searchByTitle({ q: trimmed, l2: l2Lang.code, limit: 50 });
+      setResults(Array.isArray(res) ? res : []);
+    } catch (err: any) {
+      setError(err?.message ?? t('error.something_went_wrong'));
+    } finally {
+      setLoading(false);
     }
-    setIsLoading(false);
-  }, [l2Lang, searchQuery]);
+  }, [videosApi, l2Lang.code, t]);
 
-  const handleSearch = useCallback(() => {
-    if (searchQuery) {
-      loadItems();
-    }
-  }, [searchQuery, loadItems]);
+  const handleTagClick = (tag: string) => {
+    setQuery(tag);
+    doSearch(tag);
+  };
 
-  const l2Name = useMemo(() => t('lang.' + l2Lang.code), [t, l2Lang]);
-
-  const ListHeader = useMemo(() => {
-    return () => (
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <ThemedButton
-            type="ghost"
-            size="medium"
-            trailingIcon={<Icon name="chevron-left" />}
-            onPress={() => router.navigate("/(tabs)/(media)")}
-          />
-          <ThemedInput
-            placeholder={t('placeholder.search_all_content', { language: l2Name })}
-            style={{ flex: 1 }}
-            size="small"
-            icon="magnify"
-            onChangeText={handleInputChange}
-            onSubmitEditing={handleSearch}
-            value={searchQuery}
-          />
-        </View>
-      </View>
-    );
-  }, []);
+  const visibleTags = tagsExpanded ? tags : tags.slice(0, INITIAL_TAG_COUNT);
+  const hasResults = results && results.length > 0;
 
   return (
-    <View style={{ flex: 1 }}>
-      {items.length === 0 && (
-        <ThemedScreen
-          title={t('title.search')}
-          onBackPress={() => router.back()}
-          showFlag={true}
-        >
-          <View style={styles.searchContainer}>
-            <ThemedInput
-              placeholder={t('placeholder.search_all_content', { language: l2Name })}
-              style={{ flex: 1 }}
-              icon="magnify"
-              onChangeText={handleInputChange}
-              onSubmitEditing={handleSearch}
-              value={searchQuery}
-            />
-          </View>
-          <ThemedText type="default" variant="secondary">
-            {t('msg.paste_youtube_url')}
-          </ThemedText>
-          {isLoading && (
-            <View style={styles.spinnerContainer}>
-              <ActivityIndicator size="large" color="#a772d0" />
-            </View>
-          )}
-        </ThemedScreen>
-      )}
-      {items.length > 0 && (
-        <View style={{ flex: 1, marginTop: insets.top }}>
-          <YouTubeVideoList
-            videos={items}
-            header={<ListHeader />}
-            style={{ paddingHorizontal: 26 }}
-            queueType="search"
-            searchTerm={searchQuery}
+    <View className="flex-1 bg-background">
+      <View className="px-4 py-5">
+        <Text className="text-xl font-bold text-foreground">{t('title.search')}</Text>
+      </View>
+
+      {/* Search bar */}
+      <View className="flex-row items-center gap-2 border-b border-border px-4 pb-2">
+        <View className="flex-1 flex-row items-center rounded-lg border border-border bg-card px-3">
+          <Search size={16} color={ICON_MUTED} />
+          <TextInput
+            className="flex-1 py-2.5 pl-2 pr-0 text-sm text-foreground"
+            placeholder={t('placeholder.search_dots')}
+            placeholderTextColor={PLACEHOLDER_COLOR}
+            value={query}
+            onChangeText={setQuery}
+            onSubmitEditing={() => doSearch(query)}
+            returnKeyType="search"
+            autoCapitalize="none"
+            autoFocus
           />
-          {isLoading && (
-            <View style={styles.spinnerContainer}>
-              <ActivityIndicator size="large" color={primaryBrandColor} />
+        </View>
+        <Pressable
+          onPress={() => doSearch(query)}
+          disabled={loading || !query.trim()}
+          className="rounded-lg bg-primary px-4 py-2 active:bg-primary/80"
+        >
+          <Text className="text-sm font-bold text-primary-foreground">{t('action.search')}</Text>
+        </Pressable>
+      </View>
+
+      {/* YouTube URL hint */}
+      {!hasSearched && !hasResults && (
+        <Text className="mt-4 px-4 text-sm text-muted-foreground">{t('msg.paste_youtube_url')}</Text>
+      )}
+
+      {/* Tag cloud */}
+      {!hasSearched && !hasResults && (
+        <View className="mt-4 px-4">
+          {tagsLoading ? (
+            <ActivityIndicator size="small" className="text-primary" />
+          ) : tags.length > 0 ? (
+            <>
+              <View className="mb-2 flex-row items-center gap-1">
+                <Tag size={16} color={ICON_MUTED} className="text-muted-foreground" />
+                <Text className="text-sm text-muted-foreground">{t('title.tags')}</Text>
+              </View>
+              <View className="flex-row flex-wrap gap-1.5">
+                {visibleTags.map((item) => (
+                  <Pressable
+                    key={item.tag}
+                    onPress={() => handleTagClick(item.tag)}
+                    className="rounded-full border border-border bg-muted/50 px-3 py-1 active:bg-primary/10"
+                  >
+                    <Text className="text-xs text-muted-foreground">#{item.tag}</Text>
+                  </Pressable>
+                ))}
+              </View>
+              {tags.length > INITIAL_TAG_COUNT && (
+                <Pressable onPress={() => setTagsExpanded(!tagsExpanded)} className="mt-2">
+                  <Text className="text-xs text-muted-foreground">
+                    {tagsExpanded ? t('action.show_less') : t('action.show_more')}
+                  </Text>
+                </Pressable>
+              )}
+            </>
+          ) : null}
+        </View>
+      )}
+
+      {/* Loading */}
+      {loading && <ActivityIndicator size="large" className="text-primary mt-8" />}
+
+      {/* Error */}
+      {error && (
+        <View className="mx-4 mt-4 flex-row items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+          <AlertCircle size={16} color={ICON_DESTRUCTIVE} className="text-destructive" />
+          <Text className="text-sm text-destructive">{error}</Text>
+        </View>
+      )}
+
+      {/* No results */}
+      {hasSearched && !hasResults && !loading && !error && (
+        <View className="mt-12 items-center px-8">
+          <Film size={48} color={ICON_MUTED} className="mb-4 text-muted-foreground/40" />
+          <Text className="text-center text-muted-foreground">{t('msg.no_videos_found')}</Text>
+        </View>
+      )}
+
+      {/* Results */}
+      {hasResults && (
+        <FlatList
+          data={results!}
+          keyExtractor={(item) => item.youtube_id}
+          ListHeaderComponent={
+            <Text className="mb-2 px-4 text-sm text-muted-foreground">
+              {t('msg.result_count', { count: results!.length })} {t('msg.for_term', { term: query })}
+            </Text>
+          }
+          renderItem={({ item }) => (
+            <View className="px-4 pt-2">
+              <VideoCard video={item} layout="list" />
             </View>
           )}
-        </View>
+        />
       )}
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  header: {
-    flexDirection: "row",
-    marginBottom: 20,
-    marginLeft: -15,
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-  },
-  spinnerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 100,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-});
-
-export default SearchScreen;
+}

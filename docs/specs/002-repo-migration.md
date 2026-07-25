@@ -15,7 +15,7 @@ We have three legacy repositories that must be consolidated into the monorepo wi
 | Migration Step | Legacy Repo | Target Path | ROADMAP Phase | Trigger |
 |---------------|-------------|-------------|---------------|---------|
 | Step A | `zerotohero-python` | `apps/api/` | **Phase 7** — Backend Consolidation | Web app is feature-rich and we need atomic API+client changes |
-| Step B | `language-player-3` | `apps/mobile/` | **Phase 8** — Mobile Integration | Web app is near feature parity; ready to work on mobile again |
+| Step B | `language-player-3` | `apps/mobile-go-legacy/` | **Phase 8** — Mobile Integration | Web app is near feature parity; ready to work on mobile again |
 | Step C | `zerotohero-nuxt` | `apps/classic/` | **Phase 9** — Sunset Classic | Web app fully replaces Classic; archival only |
 
 ## Current State (ROADMAP Phase 1)
@@ -69,8 +69,8 @@ git remote remove python-backend
 git remote add mobile ../language-player-3
 git fetch mobile
 git merge --allow-unrelated-histories -s ours mobile/main
-git read-tree --prefix=apps/mobile/ -u mobile/main
-git commit -m "chore: merge language-player-3 history into apps/mobile/"
+git read-tree --prefix=apps/mobile-go-legacy/ -u mobile/main
+git commit -m "chore: merge language-player-3 history into apps/mobile-go-legacy/"
 git remote remove mobile
 ```
 
@@ -79,7 +79,7 @@ git remote remove mobile
 2. Wire `apps/mobile` to import from `@langplayer/*` packages
 3. Replace direct Axios calls with `@langplayer/api-client`
 4. Archive old `language-player-3` GitHub repo (read-only)
-5. Verify `git log --follow apps/mobile/app.json` shows original history
+5. Verify `git log --follow apps/mobile-go-legacy/app.json` shows original history
 
 ## Step C: Merge Classic — Archival (ROADMAP Phase 9)
 

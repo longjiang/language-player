@@ -1,188 +1,84 @@
-// @/app/(tabs)/(media)/index.tsx
-
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text } from 'react-native';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
-import { SafeAreaView, Dimensions, View, Image, TouchableOpacity, ActivityIndicator, Button } from "react-native";
-import { ThemedButton } from "@/components/ThemedButton";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { VideoHero } from "@/components/VideoHero";
-import { ThemedText } from '@/components/ThemedText';
-import CountryFlag from "react-native-country-flag";
-import { router } from "expo-router";
-import { YouTubeVideoList } from "@/components/YouTubeVideoList";
-import { YouTubeVideo } from '@/types';
-import { recommendVideos } from "@/src/api/python/video";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useUserData } from "@/contexts/UserDataContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useTVShows } from "@/contexts/TVShowsContext";
-import { mediaHomeScreenStyles as styles } from "@/src/styles";
-import { useThemeColor } from "@/hooks/useThemeColor";
+import { useVideos } from '@langplayer/api-client';
+import { useProgress } from '@/hooks/use-progress';
+import { VideoGrid } from '@/components/video/VideoGrid';
+import { LevelFilter } from '@/components/video/LevelFilter';
+import type { YouTubeVideo } from '@langplayer/shared';
 
-const MediaHomeScreen = () => {
+export default function ExploreScreen() {
+  const { l2Lang } = useLanguage();
+  const { user } = useAuth();
   const t = useT();
-  const { languages, l2Lang } = useLanguage();
-  const { progress, lastSignificantChange } = useUserData();
-  const { getStoredUserInfo } = useAuth();
-  const { shows, isLoading: isLoadingShows } = useTVShows();
-  const [items, setItems] = useState<YouTubeVideo[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
+  const { level: savedLevel, loaded: progressLoaded } = useProgress(l2Lang.code);
+  const { getRecommendations } = useVideos();
+
+  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [level, setLevel] = useState<number | undefined>(undefined);
   const [hasMore, setHasMore] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-  const semanticSuccessColor = useThemeColor({}, 'semanticSuccess');
+  const seededRef = useRef(false);
 
-  const loadItems = async (pageToLoad: number) => {
-    if (isLoading || !hasMore || loadError) return;
-    setIsLoading(true);
-    setLoadError(false);
+  useEffect(() => {
+    if (!seededRef.current && progressLoaded && savedLevel !== undefined) {
+      seededRef.current = true;
+      setLevel(savedLevel);
+    }
+  }, [progressLoaded, savedLevel]);
+
+  const fetchVideos = async (append: boolean) => {
     try {
-      const userInfo = await getStoredUserInfo();
-      if (!userInfo) throw new Error(t('error.user_info_not_found'));
-
-      const userId = Number(userInfo.id);
-      const langCode = l2Lang.code;
-      const l2Progress = progress[langCode];
-      const level = l2Progress?.level ? Number(l2Progress.level) : undefined;
-      const preferredCategories = [];
-      const excludeIds = items.map(item => item.id);
-      const madeForKids = 0;
-      const limit = 20;
-
-      const fetchedItems = await recommendVideos(
-        userId,
-        langCode,
-        level,
-        preferredCategories,
-        excludeIds,
-        madeForKids,
-        limit
-      );
-
-      if (fetchedItems.length === 0) {
-        setHasMore(false);
-      } else {
-        setItems(prevItems => [...prevItems, ...fetchedItems]);
-        setPage(pageToLoad);
-      }
-    } catch (error) {
-      console.error(t('error.failed_to_load_items'), error);
-      setLoadError(true);
+      const res = await getRecommendations({ l2: l2Lang.code, level, limit: 24, userId: user?.id });
+      const newVideos = Array.isArray(res) ? res : (res as any)?.videos ?? (res as any)?.data ?? [];
+      setVideos((prev) => (append ? [...prev, ...newVideos] : newVideos));
+      setHasMore(newVideos.length >= 24);
+      setError(null);
+    } catch (err) {
+      console.warn('[explore] Fetch failed:', err);
+      if (videos.length === 0) setError('msg.no_videos_found');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-    setIsLoading(false);
   };
 
-  const handleLoadMore = useCallback(() => {
-    if (!isLoading && hasMore && !loadError) {
-      loadItems(page + 1);
-    }
-  }, [isLoading, hasMore, loadError, page]);
+  useEffect(() => {
+    if (!progressLoaded) return;
+    setLoading(true);
+    fetchVideos(false);
+  }, [l2Lang.code, level, progressLoaded]);
 
-  const retryLoading = () => {
-    setLoadError(false);
-    loadItems(page);
+  const handleLoadMore = () => {
+    if (loading || !hasMore) return;
+    fetchVideos(false);
   };
 
-
-  const videoHeight = 300;
-  const padding = 26;
-  const videoWidth = videoHeight * 1.777777777777778;
-  const screenWidth = Dimensions.get('window').width;
-  const headerWidth = screenWidth - padding * 2;
-  const country = l2Lang ? languages?.getCountry(l2Lang) : null;
-
-  const randomShow = useMemo(() => {
-    if (shows.length > 0) {
-      const randomIndex = Math.floor(Math.random() * shows.length);
-      return shows[randomIndex];
-    }
-    return null;
-  }, [shows]);
-
-  const headerComponent = (
-    <View>
-      <View
-        style={{
-          width: videoWidth,
-          alignSelf: "center",
-          height: videoHeight,
-          marginTop: -50,
-          marginBottom: 26
-        }}
-      >
-        {randomShow && (
-          <VideoHero
-            youtubeId={randomShow.youtube_id}
-            title={randomShow.title || ''}
-            height={videoHeight}
-          />
-        )}
-      </View>
-      <SafeAreaView style={[styles.header, { width: headerWidth }]}>
-        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-          <Image
-            source={require('@/assets/images/language-player-logo-64.png')}
-            style={styles.logo}
-          />
-          <ThemedText style={{...styles.headerTitle, color: 'white', width: 100, lineHeight: 20 }} type="defaultBold">Language Player GO</ThemedText>
-        </View>
-        <View style={styles.iconsContainer}>
-          <ThemedButton type="ghost" size="large" leadingIcon={<Icon name="magnify" />} onPress={ () => { router.navigate('/search') }} />
-          <TouchableOpacity onPress={() => { router.navigate('/select-l2') }}>
-            {(country && <CountryFlag isoCode={country.alpha2Code} size={16} style={{ marginLeft: 10, borderRadius: 3 }} />)}
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-      <View style={styles.container}>
-        <ThemedButton
-          title={t('action.tv_shows')}
-          size="medium"
-          type="neutral"
-          leadingIcon={<Icon name="youtube-tv" />}
-          trailingIcon={<Icon name="chevron-right" />}
-          style={{ justifyContent: "space-between", marginBottom: 20 }}
-          onPress={() => {
-            router.navigate('/tv-shows')
-          }}
-        />
-      </View>
-    </View>
-  );
-
-  const footerComponent = () => {
-    if (isLoading) {
-      return <View style={{ margin: 26 }}><ActivityIndicator size="large" color={semanticSuccessColor} /></View>;
-    }
-    if (loadError) {
-      return (
-        <View style={{ margin: 26, flexDirection: 'column', alignItems: 'center' }}>
-          <ThemedText type="large" style={{marginBottom: 26}}>{t('error.loading_failed')}</ThemedText>
-          <ThemedButton type="neutral" size="medium" title={t('action.load_more')} onPress={retryLoading} />
-        </View>
-      );
-    }
-    if (!hasMore) {
-      return <View style={{ margin: 26, flexDirection: 'column', alignItems: 'center' }}><ThemedText type="large">{t('msg.no_more_videos')}</ThemedText></View>;
-    }
-    return null;
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchVideos(false);
   };
-
-  if (isLoadingShows) {
-    return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={semanticSuccessColor} /></View>;
-  }
-
 
   return (
-    <YouTubeVideoList
-      videos={items}
-      header={headerComponent}
-      style={{ marginHorizontal: 26, marginBottom: 26 }}
-      onEndReached={handleLoadMore}
-      onEndReachedThreshold={0.1}
-      ListFooterComponent={footerComponent}
-      queueType="recommended"
-    />
+    <View className="flex-1 bg-background">
+      <LevelFilter level={level} onSelect={setLevel} l2Code={l2Lang.code} />
+      {error && videos.length === 0 && (
+        <View className="mx-4 mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
+          <Text className="text-sm text-destructive">{t(error as any)}</Text>
+        </View>
+      )}
+      <VideoGrid
+        videos={videos}
+        loading={loading}
+        hasMore={hasMore}
+        onLoadMore={handleLoadMore}
+        onRefresh={handleRefresh}
+        refreshing={refreshing}
+      />
+    </View>
   );
-};
-
-export default MediaHomeScreen;
+}

@@ -1,39 +1,40 @@
 {
   "expo": {
     "name": "Language Player",
-    "slug": "language-player-go",
+    "slug": "language-player",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "lpg",
+    "icon": "./assets/icon.png",
+    "scheme": "languageplayer",
     "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0B0D18"
+      "backgroundColor": "#1b1e3c"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "ca.zerotohero.go"
+      "bundleIdentifier": "ca.zerotohero.languageplayer"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1b1e3c"
       },
-      "package": "ca.zerotohero.go"
+      "package": "ca.zerotohero.languageplayer"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
       "expo-font",
       "expo-localization",
-      "expo-secure-store",
-      "expo-splash-screen"
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

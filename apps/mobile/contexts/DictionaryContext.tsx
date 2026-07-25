@@ -1,113 +1,178 @@
-// @/contexts/DictionaryContext.tsx
-
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Dictionary } from '@/src/dictionary';
-import { TokenizerService } from '@/src/tokenizer';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  type ReactNode,
+} from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useT } from '@/hooks/use-t';
-import { DictionaryLoadingModal } from '@/components/DictionaryLoadingModal';
-import { Converter } from 'opencc-js';
-import { useSettings } from '@/contexts/SettingsContext';
-import TranslationManager from '@/src/translation-manager';
+import { useDictionary } from '@langplayer/api-client';
+import type { DictionaryEntry } from '@langplayer/shared';
 
-interface DictionaryContextProps {
-  dictionary: Dictionary | null;
-  tokenizer: TokenizerService | null;
-  convert: ((text: string) => string) | null;
-  translationManager: TranslationManager;
+// ── Sidebar / wordlist types ────────────────
+
+export type SidebarSource =
+  | { kind: 'saved' }
+  | { kind: 'results'; items: DictionaryEntry[] }
+  | { kind: 'wordlist'; items: { head: string; dictionaryId: string; entryId: string; id: string; pronunciation?: string; definition?: string }[]; currentId: string };
+
+// ── Context shape ───────────────────────────
+
+interface DictionaryContextValue {
+  query: string;
+  setQuery: (v: string) => void;
+  results: DictionaryEntry[] | null;
+  loading: boolean;
+  error: string | null;
+  message: string | null;
+  searchedText: string;
+
+  doSearch: (term: string) => Promise<void>;
+  clearSearch: () => void;
+
+  recentSearches: string[];
+  clearRecent: () => void;
+
+  cameFromSearch: boolean;
+  setCameFromSearch: (v: boolean) => void;
+
+  sidebarSource: SidebarSource;
+  setSidebarSource: (s: SidebarSource) => void;
+  detailHead: string | null;
+  setDetailHead: (v: string | null) => void;
 }
 
-export const DictionaryContext = createContext<DictionaryContextProps>({
-  dictionary: null,
-  tokenizer: null,
-  convert: null,
-  translationManager: TranslationManager.getInstance(),
-});
+const DictionaryContext = createContext<DictionaryContextValue | null>(null);
 
-export const DictionaryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [dictionary, setDictionary] = useState<Dictionary | null>(null);
-  const [tokenizer, setTokenizer] = useState<TokenizerService | null>(null);
-  const [convert, setConvert] = useState<((text: string) => string) | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [logs, setLogs] = useState<string[]>([]);
-  const t = useT();
-  const { l2Lang } = useLanguage();
-  const { settings } = useSettings();
-  const translationManager = TranslationManager.getInstance();
+import * as SecureStore from 'expo-secure-store';
 
+// ── Provider ────────────────────────────────
+
+const RECENT_STORAGE_KEY = 'zthRecentSearches';
+const MAX_RECENT = 10;
+
+// In-memory fallback — SecureStore can be unavailable on iOS simulators
+const memoryStore: Record<string, string> = {};
+
+async function storageGet(key: string): Promise<string | null> {
+  try { return await SecureStore.getItemAsync(key); } catch {}
+  return memoryStore[key] ?? null;
+}
+async function storageSet(key: string, value: string) {
+  try { await SecureStore.setItemAsync(key, value); } catch { memoryStore[key] = value; }
+}
+async function storageRemove(key: string) {
+  try { await SecureStore.deleteItemAsync(key); } catch { delete memoryStore[key]; }
+}
+
+async function loadRecent(l2Code: string): Promise<string[]> {
+  try {
+    const raw = await storageGet(`${RECENT_STORAGE_KEY}:${l2Code}`);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch { return []; }
+}
+
+async function saveRecent(l2Code: string, term: string) {
+  try {
+    const prev = await loadRecent(l2Code);
+    const filtered = prev.filter((t) => t !== term);
+    filtered.unshift(term);
+    const items = filtered.slice(0, MAX_RECENT);
+    console.log('[Dict] saveRecent — l2:', l2Code, 'term:', term, 'items:', items.length);
+    await storageSet(`${RECENT_STORAGE_KEY}:${l2Code}`, JSON.stringify(items));
+  } catch (e) { console.log('[Dict] saveRecent failed:', e); }
+}
+
+export function DictionaryProvider({ children }: { children: ReactNode }) {
+  const { l1Lang, l2Lang } = useLanguage();
+  const dict = useDictionary();
+  const l2Code = l2Lang.code;
+
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<DictionaryEntry[] | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchedText, setSearchedText] = useState('');
+
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [cameFromSearch, setCameFromSearch] = useState(false);
+  const [sidebarSource, setSidebarSource] = useState<SidebarSource>({ kind: 'saved' });
+  const [detailHead, setDetailHead] = useState<string | null>(null);
+
+  // Load recent on mount and when L2 changes
   useEffect(() => {
-    if (!l2Lang) return;
+    loadRecent(l2Code).then(setRecentSearches);
+    // Reset state on language change
+    setQuery('');
+    setResults(null);
+    setMessage(null);
+    setError(null);
+    setSearchedText('');
+    setCameFromSearch(false);
+  }, [l2Code]);
 
-    let aborted = false;
+  const doSearch = useCallback(async (term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed) return;
 
-    const addLog = (message: string) => {
-      if (aborted) return;
-      setLogs((prevLogs) => [...prevLogs, message]);
-      console.log(message);
-    };
+    setQuery(trimmed);
+    setLoading(true);
+    setError(null);
+    setMessage(null);
+    setSearchedText(trimmed);
 
-    // Initialize tokenizer IMMEDIATELY — don't wait for dictionary to load.
-    // The tokenizer uses remote endpoints for most languages and doesn't need
-    // the dictionary wordset for basic tokenization.
-    const tokenizerInstance = TokenizerService.getInstance(new Set<string>());
-    setTokenizer(tokenizerInstance);
-
-    const initDictionary = async () => {
-      setIsLoading(true);
-      const newDictionary = new Dictionary(l2Lang, t);
-
-      addLog(t('log.loading_dictionary'));
-
-      try {
-        await newDictionary.loadData(false, addLog);
-        if (aborted) return;
-
-        setDictionary(newDictionary);
-
-        // Optionally update tokenizer's wordset after dictionary loads
-        // (for continua languages that use the local tokenizer)
-        try {
-          const wordSet = await newDictionary.getWordSet();
-          if (!aborted) {
-            // Re-initialize with the real wordset for better local tokenization
-            const updatedTokenizer = TokenizerService.getInstance(wordSet);
-            setTokenizer(updatedTokenizer);
-          }
-        } catch (tokenizerError) {
-          console.error('Failed to update tokenizer wordset:', tokenizerError);
-        }
-
-        addLog(t('log.dictionary_ready'));
-      } catch (error) {
-        console.error('Failed to load dictionary:', error);
-        addLog(t('log.failed_load_dictionary', { error }));
-      } finally {
-        if (!aborted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    initDictionary();
-
-    return () => {
-      aborted = true;
-    };
-  }, [l2Lang, t]);
-
-  useEffect(() => {
-    if (l2Lang?.han) {
-      const converterFunction = Converter(settings.useTraditional ? { from: 'cn', to: 'tw'} : { from: 'tw', to: 'cn'});
-      setConvert(() => converterFunction);
+    try {
+      const res = await dict.lookup(trimmed, l2Code, l1Lang.code);
+      // DEBUG: Confirms search completed and how many results returned.
+      // If this logs but handleEntryPress never does, the tap isn't reaching the card's Pressable.
+      console.log('[Dict] doSearch results — query:', trimmed, '— count:', res.results?.length ?? 0, '— timestamp:', Date.now());
+      setResults(res.results ?? []);
+      setMessage(res.message ?? null);
+      await saveRecent(l2Code, trimmed);
+      setRecentSearches(await loadRecent(l2Code));
+    } catch (e: any) {
+      setError(e?.message ?? 'Dictionary lookup failed');
+      setResults(null);
+    } finally {
+      setLoading(false);
     }
-  }, [l2Lang, settings.useTraditional]);
+  }, [dict, l2Code]);
+
+  const clearSearch = useCallback(() => {
+    setQuery('');
+    setResults(null);
+    setMessage(null);
+    setError(null);
+    setSearchedText('');
+    setCameFromSearch(false);
+  }, []);
+
+  const clearRecent = useCallback(async () => {
+    try {
+      await storageRemove(`${RECENT_STORAGE_KEY}:${l2Code}`);
+      setRecentSearches([]);
+    } catch { /* ignore */ }
+  }, [l2Code]);
 
   return (
-    <DictionaryContext.Provider value={{ dictionary, tokenizer, convert, translationManager }}>
-      {isLoading && l2Lang && <DictionaryLoadingModal logs={logs} l2Code={l2Lang.code} />}
+    <DictionaryContext.Provider
+      value={{
+        query, setQuery, results, loading, error, message, searchedText,
+        doSearch, clearSearch,
+        recentSearches, clearRecent,
+        cameFromSearch, setCameFromSearch,
+        sidebarSource, setSidebarSource, detailHead, setDetailHead,
+      }}
+    >
       {children}
     </DictionaryContext.Provider>
   );
-};
+}
 
-export const useDictionary = (): DictionaryContextProps => useContext(DictionaryContext);
+export function useDictionaryContext() {
+  const ctx = useContext(DictionaryContext);
+  if (!ctx) throw new Error('useDictionaryContext must be used within <DictionaryProvider>');
+  return ctx;
+}

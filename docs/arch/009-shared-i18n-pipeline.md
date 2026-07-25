@@ -7,7 +7,7 @@
 
 ## Context
 
-ADR-0009 migrated the GO mobile app from `i18n-js` to `react-intl`, aligning both apps on ICU MessageFormat `{key}` syntax and a shared locale directory. Since then, we've discovered that the sync script (`sync-translations.mjs`) defaulted its output to `apps/web/messages/` — a directory that no app actually imports from. Both `apps/web` and `apps/mobile-v2` read from `packages/shared/locales/`. This doc documents the corrected pipeline and the full workflow for managing translations.
+ADR-0009 migrated the GO mobile app from `i18n-js` to `react-intl`, aligning both apps on ICU MessageFormat `{key}` syntax and a shared locale directory. Since then, we've discovered that the sync script (`sync-translations.mjs`) defaulted its output to `apps/web/messages/` — a directory that no app actually imports from. Both `apps/web` and `apps/mobile` read from `packages/shared/locales/`. This doc documents the corrected pipeline and the full workflow for managing translations.
 
 ## Single Source of Truth
 
@@ -22,7 +22,7 @@ packages/shared/locales/*.json      ← 31 nested locale JSONs
         │
    ┌────┴────┐
    ▼         ▼
-apps/web   apps/mobile-v2           ← Both apps import from here
+apps/web   apps/mobile              ← Both apps import from here
 ```
 
 ### Why a single CSV?
@@ -43,14 +43,14 @@ The sync script writes nested locale JSONs to `packages/shared/locales/` by defa
 | App | Library | Import mechanism |
 |---|---|---|
 | **Web** (`apps/web`) | `next-intl` (ICU MessageFormat) | `apps/web/src/i18n.ts` — `import from '../../../../packages/shared/locales/${locale}.json'` |
-| **Mobile-v2** (`apps/mobile-v2`) | `react-intl` (ICU MessageFormat) | `IntlProvider.tsx` — static `import from '@langplayer/shared/locales/${locale}.json'` |
+| **Mobile** (`apps/mobile`) | `react-intl` (ICU MessageFormat) | `IntlProvider.tsx` — static `import from '@langplayer/shared/locales/${locale}.json'` |
 | **Legacy mobile** (`apps/mobile`) | `react-intl` | `load-messages.ts` — `require('../../../../packages/shared/locales/${locale}.json')` |
 
 The deprecated `apps/web/messages/` directory is no longer used and should not be relied upon.
 
 ### JSON format: Nested
 
-Both apps use nested JSON (`{ "action": { "cancel": "Cancel" } }`). `next-intl` resolves dot-paths natively. `react-intl` expects flat keys, so `mobile-v2` bridges this with a `resolveNested()` helper in its `useT()` hook (see ADR-0009 § Architecture).
+Both apps use nested JSON (`{ "action": { "cancel": "Cancel" } }`). `next-intl` resolves dot-paths natively. `react-intl` expects flat keys, so the mobile app bridges this with a `resolveNested()` helper in its `useT()` hook (see ADR-0009 § Architecture).
 
 ### Commands
 
@@ -125,7 +125,7 @@ const t = useT();
 | Platform | Implementation | Library |
 |---|---|---|
 | **Web** | `apps/web/src/hooks/use-t.ts` | Wraps `useTranslations()` from `next-intl` |
-| **Mobile-v2** | `apps/mobile-v2/hooks/use-t.ts` | `resolveNested()` bridge over `useIntl()` from `react-intl` |
+| **Mobile** | `apps/mobile/hooks/use-t.ts` | `resolveNested()` bridge over `useIntl()` from `react-intl` |
 
 Components never know which i18n library is underneath. The hook handles:
 - Dot-path resolution (`action.cancel` → nested object traversal)
@@ -176,6 +176,6 @@ Priority order for discovery: `en`, `zh-Hans`, `zh-Hant`, then alphabetical.
 ## Consequences
 
 - **Single output directory**: `sync-translations.mjs` now defaults to `packages/shared/locales/`. The old `apps/web/messages/` directory is vestigial. No `--out` flag needed for normal workflow.
-- **All apps consume from one place**: Adding a translation key and running `csv-to-json` makes it available to web, mobile-v2, and legacy mobile simultaneously.
+- **All apps consume from one place**: Adding a translation key and running `csv-to-json` makes it available to web, mobile, and legacy mobile simultaneously.
 - **No per-app translation copies**: Eliminates the risk of one app having stale translations.
 - **The pipeline is the documentation**: The scripts themselves are the source of truth for the workflow. This doc captures the "why" and the architecture; the scripts capture the "how."

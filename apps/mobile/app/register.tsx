@@ -1,107 +1,79 @@
-// @/app/register.tsx
-
-import React, { useState } from 'react';
-import { useT } from '@/hooks/use-t';
-import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { ThemedScreen } from '@/components/ThemedScreen';
-import { ThemedInput } from '@/components/ThemedInput';
-import { ThemedButton } from '@/components/ThemedButton';
-import { ThemedText } from '@/components/ThemedText';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { Link } from 'expo-router';
+import { useState } from 'react';
+import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import { registerUser } from '@/src/api/directus/user';
-import { sendVerificationEmail } from '@/src/api/python/verify-email';
-import { useLanguage } from "@/contexts/LanguageContext"; 
-import { registerScreenStyles as styles } from '@/src/styles';
-import { storageManager } from "@/src/StorageManager";
+import { useAuth } from '@/contexts/AuthContext';
+import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
+import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
+import { useT } from '@/hooks/use-t';
 
-const RegisterScreen = () => {
-    const t = useT();
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [loading, setLoading] = useState(false);
+export default function RegisterScreen() {
+  const t = useT();
+  const { register } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    const handleRegister = async () => {
-      if (password !== confirmPassword) {
-          Alert.alert('Error', t('error.passwords_do_not_match'));
-          return;
-      }
+  const handleRegister = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await register(email.trim(), password);
+      router.replace('/select-l1');
+    } catch (e: any) {
+      setError(e.message || t('error.register'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      setLoading(true);
-      try {
-          await registerUser(firstName, lastName, email, password);
-          await sendVerificationEmail(email);
-          
-          // Store the password temporarily
-          await storageManager.setTempPassword(password);
-          
-          router.push({ pathname: '/verify-email', params: { email } });
-      } catch (error) {
-          Alert.alert('Error', t('error.registration_failed'));
-      } finally {
-          setLoading(false);
-      }
-    };
+  return (
+    <View className="flex-1 justify-center bg-background p-6">
+      <Text className="text-3xl font-bold text-foreground mb-8 text-center">
+        {t('title.create_account')}
+      </Text>
 
-    return (
-        <ThemedScreen
-          title={t('title.register')}
-          onBackPress={() => router.navigate("/")}
-          imageHeight={150}
-        >
-            <View style={styles.row}>
-                <ThemedInput
-                    style={{...styles.input, flex: 1}}
-                    onChangeText={setFirstName}
-                    value={firstName}
-                    placeholder={t('placeholder.first_name')}
-                />
-                <ThemedInput
-                    style={{...styles.input, flex: 1}}
-                    onChangeText={setLastName}
-                    value={lastName}
-                    placeholder={t('placeholder.last_name')}
-                    icon="account"
-                />
-            </View>
-            <ThemedInput
-                style={styles.input}
-                onChangeText={setEmail}
-                value={email}
-                placeholder={t('placeholder.email')}
-                icon="email"
-                keyboardType="email-address"
-                autoCapitalize="none"
-            />
-            <ThemedInput
-                style={styles.input}
-                onChangeText={setPassword}
-                value={password}
-                placeholder={t('placeholder.password')}
-                secureTextEntry
-                icon="lock"
-            />
-            <ThemedInput
-                style={styles.input}
-                onChangeText={setConfirmPassword}
-                value={confirmPassword}
-                placeholder={t('placeholder.confirm_password')}
-                secureTextEntry
-                icon="lock"
-            />
+      {error && (
+        <Text className="text-destructive text-sm mb-4 text-center">{error}</Text>
+      )}
 
-            <ThemedButton title={t('action.register')} onPress={handleRegister} disabled={loading} />
+      <TextInput
+        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
+        placeholder={t('placeholder.email')}
+        placeholderTextColor={PLACEHOLDER_COLOR}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-6"
+        placeholder={t('placeholder.password')}
+        placeholderTextColor={PLACEHOLDER_COLOR}
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
 
-            <TouchableOpacity style={styles.textButton}>
-                <ThemedText type="subtitle">{t('msg.already_have_account')} <Link href='/login' style={{ color: useThemeColor({}, 'primaryLink'), fontWeight: 'bold' }}>{t('action.login')}</Link></ThemedText>
-            </TouchableOpacity>
-        </ThemedScreen>
-    );
-};
+      <Pressable
+        className="bg-primary py-3 rounded-lg items-center mb-3"
+        onPress={handleRegister}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color={ICON_ON_PRIMARY} />
+        ) : (
+          <Text className="text-primary-foreground font-bold text-base">
+            {t('action.register')}
+          </Text>
+        )}
+      </Pressable>
 
-export default RegisterScreen;
+      <Pressable onPress={() => router.back()}>
+        <Text className="text-primary text-center text-sm">
+          {t('msg.already_have_account')}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}

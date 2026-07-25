@@ -1,136 +1,139 @@
-// @/contexts/AuthContext.tsx
+import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import { createApiClient } from '@langplayer/api-client';
+import { PYTHON_API_URL, DIRECTUS_URL } from '@/lib/api-url';
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { useT } from '@/hooks/use-t';
-import { verifyEmailCode } from "@/src/api/python/verify-email";
-import {
-  login as apiLogin,
-  checkToken as apiCheckToken,
-  fetchUserInfo,
-  registerUser as apiRegisterUser,
-  User,
-} from "@/src/api/directus/user";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { storageManager } from "@/src/StorageManager";
+// ── API Client Singleton ────────────────────
 
-type AuthContextType = {
-  isAuthenticated: boolean;
-  loading: boolean;
-  userInfo: User | null;
-  handleLogin: (email: string, password: string) => Promise<string | void>;
-  handleLogout: () => Promise<void>;
-  handleRegister: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
-  handleVerify: (email: string, code: string) => Promise<void>;
-  getStoredUserInfo: () => Promise<User | null>;
-  getStoredAuthToken: () => Promise<string | null>;
+let initialized = false;
+
+export function initApiClient() {
+  if (initialized) return;
+  initialized = true;
+
+  createApiClient({
+    baseURL: PYTHON_API_URL,
+    getAccessToken: () => SecureStore.getItemAsync('authToken'),
+  });
 }
 
-const AuthContext = createContext<AuthContextType>({
-  isAuthenticated: false,
-  loading: true,
-  userInfo: null,
-  handleLogin: async () => { },
-  handleLogout: async () => { },
-  handleRegister: async () => { },
-  getStoredUserInfo: async () => null,
-  getStoredAuthToken: async () => null,
-  handleVerify: async () => { },
-});
+// ── Auth Context ────────────────────────────
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [userInfo, setUserInfo] = useState<User | null>(null);
-    const t = useT();
+interface User {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+}
 
-    useEffect(() => {
-        const initializeAuth = async () => {
-            await storageManager.initialize();
-            const token = storageManager.getAuthToken();
-            if (token) {
-                const isValid = await apiCheckToken(token);
-                if (isValid) {
-                    setIsAuthenticated(true);
-                    setUserInfo(storageManager.getUserInfo());
-                } else {
-                    await storageManager.clearAll();
-                }
-            }
-            setLoading(false);
-        };
+interface AuthContextValue {
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
+  logout: () => Promise<void>;
+}
 
-        initializeAuth();
-    }, []);
+const AuthContext = createContext<AuthContextValue | null>(null);
 
-    const handleLogin = async (email: string, password: string) => {
-        setLoading(true);
-        try {
-            const token = await apiLogin(email, password);
-            await storageManager.setAuthToken(token);
-            const userData = await fetchUserInfo(token);
-            await storageManager.setUserInfo(userData);
-            setUserInfo(userData);
-            setIsAuthenticated(true);
-            return token;
-        } catch (error) {
-            throw error;
-        } finally {
-            setLoading(false);
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within <AuthProvider>');
+  return ctx;
+}
+
+// ── Directus Auth Helpers ───────────────────
+
+async function directusAuth(email: string, password: string): Promise<{ token: string; user: User }> {
+  const res = await fetch(`${DIRECTUS_URL}/auth/authenticate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.errors?.[0]?.message || 'auth.error.login');
+  }
+  const { data } = await res.json();
+  return {
+    token: data.token,
+    user: { id: data.user.id, email: data.user.email, firstName: data.user.first_name, lastName: data.user.last_name },
+  };
+}
+
+async function directusRegister(email: string, password: string, firstName?: string, lastName?: string): Promise<User> {
+  const res = await fetch(`${DIRECTUS_URL}/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, first_name: firstName, last_name: lastName, role: '2', status: 'active' }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.errors?.[0]?.message || 'auth.error.register');
+  }
+  const { data } = await res.json();
+  return { id: data.id, email: data.email, firstName: data.first_name, lastName: data.last_name };
+}
+
+// ── Provider ────────────────────────────────
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // API client must be initialized synchronously — useEffect runs after
+  // the first render, but child components (like WatchScreen) may call
+  // apiClient.get() during their first render. initApiClient() is
+  // idempotent (module-level `initialized` flag).
+  initApiClient();
+
+  // Restore session on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const storedToken = await SecureStore.getItemAsync('authToken');
+        const storedUser = await SecureStore.getItemAsync('userInfo');
+        if (storedToken && storedUser) {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
         }
-    };
+      } catch { /* ignore */ }
+      setLoading(false);
+    })();
+  }, []);
 
-    const handleLogout = async () => {
-        await storageManager.clearAll();
-        setUserInfo(null);
-        setIsAuthenticated(false);
-        return true;
-    };
+  const login = useCallback(async (email: string, password: string) => {
+    const { token, user } = await directusAuth(email, password);
+    await SecureStore.setItemAsync('authToken', token);
+    await SecureStore.setItemAsync('userInfo', JSON.stringify(user));
+    setToken(token);
+    setUser(user);
+    initApiClient();
+  }, []);
 
-    const handleVerify = async (email: string, code: string) => {
-      await verifyEmailCode(email, code);
-      const password = await storageManager.getTempPassword();
-      if (!password) throw new Error(t('error.failed_retrieve_password'));
-      const token = await handleLogin(email, password);
-      await storageManager.clearTempPassword();
-      return token;
-    }
+  const register = useCallback(async (email: string, password: string, firstName?: string, lastName?: string) => {
+    const user = await directusRegister(email, password, firstName, lastName);
+    // After registration, log in to get token
+    const auth = await directusAuth(email, password);
+    await SecureStore.setItemAsync('authToken', auth.token);
+    await SecureStore.setItemAsync('userInfo', JSON.stringify(user));
+    setToken(auth.token);
+    setUser(user);
+    initApiClient();
+  }, []);
 
-    const handleRegister = async (firstName: string, lastName: string, email: string, password: string) => {
-        setLoading(true);
-        try {
-            const token = await apiRegisterUser(firstName, lastName, email, password);
-            
-            if (token) {
-                await storageManager.setAuthToken(token);
-                const userData = await fetchUserInfo(token);
-                await storageManager.setUserInfo(userData);
-                setUserInfo(userData);
-                setIsAuthenticated(true);
-                return token;
-            } else {
-                throw new Error("Failed to obtain token after registration");
-            }
-        } catch (error) {
-            console.error("Registration failed: ", error);
-            throw error;
-        } finally {
-            setLoading(false);
-        }
-    };
+  const logout = useCallback(async () => {
+    await SecureStore.deleteItemAsync('authToken');
+    await SecureStore.deleteItemAsync('userInfo');
+    setToken(null);
+    setUser(null);
+  }, []);
 
-    const getStoredUserInfo = async (): Promise<User | null> => {
-        return storageManager.getUserInfo();
-    };
-
-    const getStoredAuthToken = async (): Promise<string | null> => {
-        return storageManager.getAuthToken();
-    }
-
-    return (
-        <AuthContext.Provider value={{ isAuthenticated, loading, userInfo, handleLogin, handleLogout, handleRegister, handleVerify, getStoredUserInfo, getStoredAuthToken }}>
-            {children}
-        </AuthContext.Provider>
-    );
-};
-
-export const useAuth = (): AuthContextType => useContext(AuthContext);
+  return (
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
