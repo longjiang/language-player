@@ -90,7 +90,7 @@
 |---|---|---|---|---|
 | Dictionary Search | `(tabs)/(vocab)/index.tsx` | ✅ | `[l1]/[l2]/dictionary/page.tsx` | Search + recent searches + results cards |
 | Saved Words | `(tabs)/(vocab)/saved-words.tsx` | ✅ | `[l1]/[l2]/saved-words/page.tsx` | Filter + sort + remove + export all work. Exports all saved words as JSON via native share sheet. |
-| SRS Review | `(tabs)/(vocab)/review.tsx` | 🟡 | `[l1]/[l2]/review/page.tsx` | Flashcard UI works. **⚠️ No actual SRS scheduling** — no SM-2 algorithm, no due card computation, only 2 ratings (again/good) vs web's 4 (again/hard/good/easy), no undo, no daily new card limit, no "no cards due" state |
+| SRS Review | `(tabs)/(vocab)/review.tsx` | ✅ | `[l1]/[l2]/review/page.tsx` | Full SM-2 algorithm, due card computation, 4 ratings (again/hard/good/easy), undo, daily new card limit, "no cards due" & "all done" states, entry preloading |
 | Word Detail | `(tabs)/(vocab)/word/[entryId].tsx` | ✅ | `dictionary/entry/...` | Definitions, examples, inflections, AI explanation |
 
 ### Dictionary Components
@@ -111,10 +111,10 @@
 |---|---|---|---|---|
 | Profile / Me | `(tabs)/(me)/index.tsx` | 🟡 | — | Menu list. **⚠️ Uses hardcoded hex colors** — violates semantic design tokens rule |
 | Profile Detail | `(tabs)/(me)/profile.tsx` | 🟡 | `[l1]/[l2]/profile/page.tsx` | Info + previews. **⚠️ Uses hardcoded hex colors throughout**. **Missing**: subscription management (pro status, cancel auto-renew, expire dates, lifetime upsell), language level selector |
-| Settings | `(tabs)/(me)/settings.tsx` | 🟡 | `[l1]/[l2]/settings/page.tsx` | 4 tabs (Display/Playback/Speech/Review). Speech tab uses hardcoded language map instead of locale JSON |
-| About | `(tabs)/(me)/about.tsx` | ✅ | — | Basic app info |
-| Docs / Help | `(tabs)/(me)/docs.tsx` | 🟡 | `[l1]/[l2]/docs/` | Searchable doc listing. **Missing**: proper markdown rendering in detail view (web uses ReactMarkdown + GFM + heading anchors; mobile strips to plain text), "On this page" heading TOC sidebar |
 | Go Pro | `(tabs)/(me)/go-pro.tsx` | 🟡 | `[l1]/[l2]/go-pro/page.tsx` | Shows pricing. **⚠️ No payment flow** — no Stripe credit card checkout, no WeChat Pay, no Alipay, no PayPal, no plan selection interaction, no checkout session creation |
+| Settings | `(tabs)/(me)/settings.tsx` | 🟡 | `[l1]/[l2]/settings/page.tsx` | 4 tabs (Display/Playback/Speech/Review). Speech tab uses hardcoded language map instead of locale JSON |
+| About | `(tabs)/(me)/about.tsx` | ✅ | 🟡 | Basic app info |
+| Docs / Help | `(tabs)/(me)/docs.tsx` | 🟡 | `[l1]/[l2]/docs/` | Searchable doc listing. **Missing**: proper markdown rendering in detail view (web uses ReactMarkdown + GFM + heading anchors; mobile strips to plain text), "On this page" heading TOC sidebar |
 | Tokenizer Debug | `(tabs)/(me)/tokenizer.tsx` | ✅ | `[l1]/[l2]/tokenizer/page.tsx` | Dev tool |
 
 ### Layout Components
@@ -148,7 +148,7 @@
 | `useT()` / i18n | `hooks/use-t.ts` | ✅ | react-intl with ICU, dot-path resolution |
 | Settings | `hooks/use-settings.ts` | ✅ | SecureStore + cloud sync, `updateDisplay/Playback/TokenizedText/Review/L2` |
 | Saved Words | `hooks/use-saved-words.ts` | ✅ | CRUD per L2, SecureStore + cloud, auto-enrichment |
-| SRS | `hooks/use-srs.ts` | ✅ | Card store with SecureStore + cloud. **⚠️ Not wired into ReviewScreen** |
+| SRS | `hooks/use-srs.ts` | ✅ | Card store with SecureStore + cloud. Full SM-2 scheduling wired into ReviewScreen (due card computation, 4 ratings, undo, daily new limit) |
 | Progress | `hooks/use-progress.ts` | ✅ | Per-L2 level + time tracking |
 | EPUB | `hooks/use-epub.ts` | ✅ | Full JSZip/OPF/NCX parsing |
 | Reader Notes | `hooks/use-reader-notes.ts` | ✅ | CRUD via API |
@@ -182,13 +182,8 @@
 | # | Issue | Severity | Affects |
 |---|---|---|---|
 | 1 | **YouTube playback broken on iOS** — declarative `play` prop in `react-native-youtube-iframe` doesn't start playback; fragile key-remount bridge workaround | 🔴 High | Video Player |
-| 2 | **ReviewScreen doesn't use SRS scheduling** — `useSrs().updateCard` exists but never called; cards always show in order with no spaced repetition algorithm | 🔴 High | Review |
-| 3 | **Go Pro has no payment flow** — pricing displayed but no Stripe/PayPal purchase integration | 🔴 High | Go Pro |
-| 4 | **Hardcoded hex colors** in `profile.tsx` and `me/index.tsx` — violates AGENTS.md semantic design tokens rule | 🟡 Medium | Me tab |
-| 5 | ~~**Export button in SavedWords is UI-only**~~ ✅ Fixed | 🟡 Medium | Saved Words |
-| 6 | ~~**Select L1/L2 screens show raw codes**~~ ✅ Fixed | 🟡 Medium | Auth flow |
-| 7 | ~~**No "Forgot password?" link on login screen**~~ ✅ Fixed | 🟢 Low | Login |
-| 8 | ~~**TV Shows has no episode listing or show detail screen**~~ ✅ Fixed | 🟢 Low | Media tab |
+| 2 | **Go Pro has no payment flow** — pricing displayed but no Stripe/PayPal purchase integration | 🔴 High | Go Pro |
+| 3 | **Hardcoded hex colors** in `profile.tsx` and `me/index.tsx` — violates AGENTS.md semantic design tokens rule | 🟡 Medium | Me tab |
 
 ---
 
