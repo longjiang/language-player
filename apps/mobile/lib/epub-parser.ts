@@ -11,6 +11,12 @@ export interface EpubMetadata {
   opfDir: string;
 }
 
+/** Strip fragment identifier (#...) from a URI. */
+function stripFragment(href: string): string {
+  const idx = href.indexOf('#');
+  return idx === -1 ? href : href.slice(0, idx);
+}
+
 /** Extract one XML attribute value, e.g. extractAttr(attrs, 'id') → "c1" */
 function extractAttr(attrsStr: string, name: string): string | undefined {
   const m = attrsStr.match(new RegExp(`${name}="([^"]+)"`));
@@ -21,12 +27,14 @@ function extractAttr(attrsStr: string, name: string): string | undefined {
  * Parse OPF file to extract manifest, spine, cover, and TOC.
  * All attribute extraction is order-independent.
  * Prefers nav document (EPUB 3) > NCX (EPUB 2) > spine fallback.
+ * @param navDir — directory of the EPUB 3 nav document (for resolving its relative hrefs)
  */
 export function parseOPF(
   opfXml: string,
   opfDir: string,
   ncxXml?: string,
   navXml?: string,
+  navDir?: string,
 ): EpubMetadata {
   // Manifest: <item id="X" href="Y" media-type="Z" />
   const manifest = new Map<string, string>();
@@ -74,7 +82,8 @@ export function parseOPF(
   // TOC: prefer nav document (EPUB 3) > NCX (EPUB 2) > spine fallback
   let toc: TocItem[] = [];
   if (navXml) {
-    toc = parseNavDocument(navXml, opfDir);
+    // Resolve nav doc hrefs against the nav doc's own directory, not OPF dir
+    toc = parseNavDocument(navXml, navDir ?? opfDir);
   }
   if (toc.length === 0 && ncxXml) {
     toc = parseNCX(ncxXml, manifest, opfDir);
@@ -88,20 +97,21 @@ export function parseOPF(
 /**
  * Parse EPUB 3 nav document (nav.xhtml) for nested TOC.
  * Looks for <nav epub:type="toc"> and extracts nested <ol>/<li>/<a>.
+ * @param navDir — directory of the nav document itself (for resolving relative hrefs)
  */
-function parseNavDocument(navHtml: string, opfDir: string): TocItem[] {
+function parseNavDocument(navHtml: string, navDir: string): TocItem[] {
   const navMatch = navHtml.match(
     /<nav[^>]*epub:type\s*=\s*["']toc["'][^>]*>([\s\S]*?)<\/nav>/i,
   );
   if (!navMatch) return [];
-  return parseNavList(navMatch[1]!, opfDir);
+  return parseNavList(navMatch[1]!, navDir);
 }
 
 /**
  * Recursively parse <ol>/<li> structure from a nav document fragment.
  * Tracks <li> nesting depth by counting open/close tags.
  */
-function parseNavList(html: string, opfDir: string): TocItem[] {
+function parseNavList(html: string, baseDir: string): TocItem[] {
   const items: TocItem[] = [];
   // Remove wrapping <ol> if present
   let inner = html.trim();
@@ -137,14 +147,14 @@ function parseNavList(html: string, opfDir: string): TocItem[] {
       /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i,
     );
     if (aMatch) {
-      const href = resolvePath(opfDir, aMatch[1]!);
+      const href = resolvePath(baseDir, stripFragment(aMatch[1]!));
       const label = aMatch[2]!.replace(/<[^>]+>/g, '').trim();
       // Check for nested <ol>
       const olContent = liContent.match(
         /<ol\b[^>]*>([\s\S]*?)<\/ol>/i,
       );
       const children = olContent
-        ? parseNavList(olContent[1]!, opfDir)
+        ? parseNavList(olContent[1]!, baseDir)
         : undefined;
       items.push({
         label,
@@ -216,8 +226,10 @@ function parseNavPoints(
     );
     const label = labelMatch?.[1]?.trim() ?? 'Untitled';
     const src = srcMatch?.[1] ?? '';
-    const itemId = src.replace('#', '');
-    const href = manifest.get(itemId) ?? resolvePath(opfDir, src);
+    // Strip fragment before manifest lookup — manifest keys never have fragments.
+    const srcNoFrag = stripFragment(src);
+    const itemId = srcNoFrag;
+    const href = manifest.get(itemId) ?? resolvePath(opfDir, srcNoFrag);
 
     // Check for nested navPoints
     const children = parseNavPoints(npContent, manifest, opfDir);
