@@ -198,9 +198,15 @@ export default function SavedWordsScreen() {
             <View className="flex-1">
               <Text className="text-base font-medium text-foreground">
                 {item.head || item.forms?.[0] || item.id}
+                {item.canonicalEntry?.pronunciation ? (
+                  <Text className="text-sm text-muted-foreground">
+                    {' '}[{item.canonicalEntry.pronunciation}]
+                  </Text>
+                ) : null}
               </Text>
               <Text className="mt-0.5 text-xs text-muted-foreground">
-                {item.dictionaryId ? `${item.dictionaryId} • ` : ''}{item.id}
+                {item.canonicalEntry?.definitions?.[0]
+                  ?? (item.dictionaryId ? `${item.dictionaryId} • ` : '') + item.id}
                 {(() => {
                   const ts = item.date ?? new Date(item.savedAt ?? 0).getTime();
                   return ts ? ` • ${new Date(ts).toLocaleDateString()}` : '';
