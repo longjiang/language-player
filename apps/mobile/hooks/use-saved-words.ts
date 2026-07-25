@@ -32,14 +32,16 @@ async function enrichMissingHeads(
   dict: ReturnType<typeof useDictionary>,
 ): Promise<SavedWordsStore> {
   const words = store[l2Code] ?? [];
-  const missing = words.filter((w) => !w.head);
+  // Enrich if missing head OR has head but no cached entry (re-enrich after schema change)
+  const missing = words.filter((w) => !w.head || (!w.canonicalEntry && !w.llmEntry));
   if (missing.length === 0) return store;
   console.log('[savedWords] enrichMissingHeads — lang:', l2Code, 'total:', words.length, 'missing:', missing.length);
 
   const enriched = [...words];
   for (let i = 0; i < enriched.length; i++) {
     const w = enriched[i]!;
-    if (w.head) continue;
+    // Skip if already fully enriched (has head AND a cached entry)
+    if (w.head && (w.canonicalEntry || w.llmEntry)) continue;
     try {
       const decomposed = decomposeWordId(w.id, l2Code);
       if (!decomposed) {
@@ -49,10 +51,10 @@ async function enrichMissingHeads(
       const { dict: dictId, id: scopedId } = decomposed;
       console.log('[savedWords] enrichMissingHeads — fetching entry:', { l2Code, dictId, scopedId });
       const res = await dict.getEntry(l2Code, dictId, scopedId);
-      if (res?.entry) {
+      const entry = (res as any)?.data?.entry as DictionaryEntry | undefined;
+      if (entry) {
         // Store the full DictionaryEntry as canonicalEntry (ADR 0006) for richer display
         // while also keeping the flat `head` for backward compat with the current list UI.
-        const entry = res.entry as DictionaryEntry;
         enriched[i] = {
           ...w,
           head: entry.head,
@@ -111,7 +113,8 @@ export function useSavedWords(activeL2?: string) {
           }
           // Enrich only the active L2's missing heads (the language the user is viewing)
           if (activeL2) {
-            const missingCount = (parsed[activeL2] ?? []).filter((w) => !w.head).length;
+            // Enrich if missing head OR has head but no cached entry (re-enrich after schema change)
+            const missingCount = (parsed[activeL2] ?? []).filter((w) => !w.head || (!w.canonicalEntry && !w.llmEntry)).length;
             console.log('[savedWords] EFFECT 1 — sample raw word (before enrichment):', (parsed[activeL2] ?? []).slice(0, 2));
             if (missingCount > 0) {
               console.log('[savedWords] EFFECT 1 — enriching active L2:', activeL2, 'missing heads:', missingCount);

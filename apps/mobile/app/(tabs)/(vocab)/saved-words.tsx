@@ -184,7 +184,11 @@ export default function SavedWordsScreen() {
             <Text className="text-xs font-medium text-muted-foreground">{section.title}</Text>
           </View>
         )}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => {
+          if (index < 3) {
+            console.log('[SavedWordsScreen] row', index, 'keys:', Object.keys(item), 'hasCanonicalEntry:', !!item.canonicalEntry, 'head:', item.head, 'pronunciation:', item.canonicalEntry?.pronunciation, 'definitions:', item.canonicalEntry?.definitions?.slice(0, 2));
+          }
+          return (
           <Pressable
             onPress={() => handleWordPress(item)}
             className="flex-row items-center border-b border-border px-4 py-3 active:bg-muted"
@@ -214,7 +218,8 @@ export default function SavedWordsScreen() {
               </Text>
             </View>
           </Pressable>
-        )}
+          );
+        }}
       />
     </View>
   );
