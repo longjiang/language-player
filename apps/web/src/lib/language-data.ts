@@ -165,3 +165,39 @@ export function getLanguageGroups(): { label: string; codes: readonly string[] }
     { label: 'All Languages', codes: SUPPORTED_L2S },
   ];
 }
+
+/**
+ * Determine the redirect target after a language switch.
+ * Universal pages (lists, settings, profile) return the page slug
+ * so the user stays on the same page with the new L1/L2.
+ * Content pages (video, dict entry, reader) return null,
+ * which means redirect to /explore.
+ */
+const UNIVERSAL_PAGE_PATTERNS = [
+  /^\/[^/]+\/[^/]+\/explore$/,
+  /^\/[^/]+\/[^/]+\/live-tv$/,
+  /^\/[^/]+\/[^/]+\/tv-shows$/,
+  /^\/[^/]+\/[^/]+\/music$/,
+  /^\/[^/]+\/[^/]+\/watch-history$/,
+  /^\/[^/]+\/[^/]+\/dictionary$/,
+  /^\/[^/]+\/[^/]+\/saved-words$/,
+  /^\/[^/]+\/[^/]+\/review$/,
+  /^\/[^/]+\/[^/]+\/settings$/,
+  /^\/[^/]+\/[^/]+\/profile$/,
+  /^\/[^/]+\/[^/]+\/search$/,
+  /^\/[^/]+\/[^/]+\/docs/,
+];
+
+/**
+ * Given the current pathname like `/en/zh/explore`, returns the page slug
+ * (`explore`) if it's a universal page, or `null` if it's a content page
+ * (meaning the caller should redirect to /explore).
+ */
+export function pickRedirectTarget(pathname: string): string | null {
+  const isUniversal = UNIVERSAL_PAGE_PATTERNS.some((p) => p.test(pathname));
+  if (isUniversal) {
+    // Extract everything after the L1/L2 segments
+    return pathname.replace(/^\/[^/]+\/[^/]+\//, '');
+  }
+  return null;
+}

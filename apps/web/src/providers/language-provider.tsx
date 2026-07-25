@@ -6,7 +6,7 @@ import { getLanguageMeta, type LanguageMeta } from '@/lib/language-data';
 interface LanguageContextValue {
   l1: LanguageMeta;
   l2: LanguageMeta;
-  setLanguagePair: (l1: string, l2: string) => void;
+  setLanguagePair: (l1: string, l2: string, targetPath?: string) => void;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -31,9 +31,16 @@ export function LanguageProvider({
   const l1 = useMemo(() => getLanguageMeta(l1Code)!, [l1Code]);
   const l2 = useMemo(() => getLanguageMeta(l2Code)!, [l2Code]);
 
-  const setLanguagePair = (newL1: string, newL2: string) => {
-    // Navigate to the new URL — this triggers middleware to set cookies
-    window.location.href = `/${newL1}/${newL2}`;
+  const setLanguagePair = (newL1: string, newL2: string, targetPath?: string) => {
+    // Navigate to the new URL — this triggers middleware to set cookies.
+    // If targetPath is provided (e.g., 'explore', 'settings'), navigate to
+    // that page under the new language pair. Otherwise navigate to root
+    // which middleware will redirect to /language-select or /explore.
+    if (targetPath) {
+      window.location.href = `/${newL1}/${newL2}/${targetPath}`;
+    } else {
+      window.location.href = `/${newL1}/${newL2}`;
+    }
   };
 
   const value = useMemo<LanguageContextValue>(
