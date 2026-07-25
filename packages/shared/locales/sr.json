@@ -687,7 +687,6 @@
         "save_more_words": "Sačuvajte više reči da biste nastavili sa učenjem.",
         "save_words_to_build_deck": "Čuvajte reči dok gledate video snimke kako biste izgradili svoju kolekciju za ponavljanje. Dodirnite bilo koju reč u titlovima da biste je sačuvali.",
         "saved_from_context": "сачувано из:",
-        "saved_words_count": "{count, plural, one {# реч} few {# речи} other {# речи}} у {l1} → {l2}",
         "saved_words_desc": "{count} reči sačuvano u {l2}",
         "search_videos_desc": "Претражите по наслову или налепите YouTube везу за гледање видеа на {l2}.",
         "search_videos_empty": "Претражите видео записе по наслову или налепите YouTube везу за гледање на {l2}.",

@@ -687,7 +687,6 @@
         "save_more_words": "Stoor meer woorde om aan te hou leer.",
         "save_words_to_build_deck": "Stoor woorde terwyl jy video's kyk om jou hersieningstel te bou. Tik op enige woord in die onderskrifte om dit te stoor.",
         "saved_from_context": "gestoor vanaf:",
-        "saved_words_count": "{count, plural, one {# woord} other {# woorde}} in {l1} → {l2}",
         "saved_words_desc": "{count} woorde gestoor in {l2}",
         "search_videos_desc": "Soek per titel of plak 'n YouTube-skakel om video's in {l2} te kyk.",
         "search_videos_empty": "Soek vir video's per titel of plak 'n YouTube-skakel om in {l2} te begin kyk.",

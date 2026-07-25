@@ -687,7 +687,6 @@
         "save_more_words": "Sábháil níos mó focal le leanúint ar aghaidh ag foghlaim.",
         "save_words_to_build_deck": "Sábháil focal agus tú ag féachaint ar fhíseáin chun do phainéal athbhreithnithe a thógáil. Tapáil aon fhocal sna fotheidil chun é a shábháil.",
         "saved_from_context": "sábháladh ó:",
-        "saved_words_count": "{count, plural, one {# focal} other {# focal}} i {l1} → {l2}",
         "saved_words_desc": "{count} focal sábháilte i {l2}",
         "search_videos_desc": "Cuardaigh de réir teidil nó greamaigh nasc YouTube chun físeáin a fheiceáil i {l2}.",
         "search_videos_empty": "Cuardaigh físeáin de réir teidil nó greamaigh nasc YouTube chun tosú ag féachaint i {l2}.",
