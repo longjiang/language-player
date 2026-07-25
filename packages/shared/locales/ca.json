@@ -687,6 +687,7 @@
         "save_more_words": "Desa més paraules per continuar aprenent.",
         "save_words_to_build_deck": "Desa paraules mentre mires vídeos per construir el teu conjunt de revisió. Toca qualsevol paraula dels subtítols per desar-la.",
         "saved_from_context": "desada de:",
+        "saved_words_count": "{count, plural, one {# paraula} other {# paraules}} a {l1} → {l2}",
         "saved_words_desc": "{count} paraules desades a {l2}",
         "search_videos_desc": "Cerca per títol o enganxa un enllaç de YouTube per veure vídeos en {l2}.",
         "search_videos_empty": "Cerca vídeos per títol o enganxa un enllaç de YouTube per començar a veure en {l2}.",
@@ -866,6 +867,7 @@
     "sort": {
         "alphabetical": "Alfabètic",
         "most_viewed": "Més vistos",
+        "newest": "Més nou",
         "title": "Títol",
         "year": "Any"
     },

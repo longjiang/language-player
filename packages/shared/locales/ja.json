@@ -687,6 +687,7 @@
         "save_more_words": "学習を続けるには、さらに単語を保存してください。",
         "save_words_to_build_deck": "動画を見ながら単語を保存して復習デッキを作成しましょう。字幕内の単語をタップして保存できます。",
         "saved_from_context": "保存元:",
+        "saved_words_count": "{l1} → {l2} に {count} 語",
         "saved_words_desc": "{count} 個の単語を {l2} に保存しました",
         "search_videos_desc": "タイトルで検索するか、YouTubeリンクを貼り付けて{l2}の動画を視聴します。",
         "search_videos_empty": "タイトルで動画を検索するか、YouTubeリンクを貼り付けて{l2}で視聴を開始します。",
@@ -866,6 +867,7 @@
     "sort": {
         "alphabetical": "アルファベット順",
         "most_viewed": "最も視聴された",
+        "newest": "最新",
         "title": "タイトル",
         "year": "年"
     },

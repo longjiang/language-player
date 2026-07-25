@@ -687,6 +687,7 @@
         "save_more_words": "Simpan lebih banyak kata untuk melanjutkan belajar.",
         "save_words_to_build_deck": "Simpan kata saat menonton video untuk membangun tumpukan ulasan Anda. Ketuk kata mana pun di subtitle untuk menyimpannya.",
         "saved_from_context": "disimpan dari:",
+        "saved_words_count": "{count} kata dalam {l1} → {l2}",
         "saved_words_desc": "{count} kata tersimpan di {l2}",
         "search_videos_desc": "Cari berdasarkan judul atau tempel tautan YouTube untuk menonton video dalam {l2}.",
         "search_videos_empty": "Cari video berdasarkan judul atau tempel tautan YouTube untuk mulai menonton dalam {l2}.",
@@ -866,6 +867,7 @@
     "sort": {
         "alphabetical": "Abjad",
         "most_viewed": "Paling Banyak Dilihat",
+        "newest": "Terbaru",
         "title": "Judul",
         "year": "Tahun"
     },

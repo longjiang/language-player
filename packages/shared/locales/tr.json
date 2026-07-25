@@ -687,6 +687,7 @@
         "save_more_words": "Öğrenmeye devam etmek için daha fazla kelime kaydedin.",
         "save_words_to_build_deck": "Tekrar destenizi oluşturmak için video izlerken kelimeler kaydedin. Kaydetmek için altyazılardaki herhangi bir kelimeye dokunun.",
         "saved_from_context": "kaydedildiği yer:",
+        "saved_words_count": "{count, plural, one {# kelime} other {# kelime}} {l1} → {l2} içinde",
         "saved_words_desc": "{count} kelime, {l2} içinde kaydedildi",
         "search_videos_desc": "Başlığa göre arayın veya {l2} dilinde video izlemek için YouTube bağlantısı yapıştırın.",
         "search_videos_empty": "Başlığa göre video arayın veya {l2} dilinde izlemeye başlamak için YouTube bağlantısı yapıştırın.",
@@ -866,6 +867,7 @@
     "sort": {
         "alphabetical": "Alfabetik",
         "most_viewed": "En Çok İzlenen",
+        "newest": "En yeni",
         "title": "Başlık",
         "year": "Yıl"
     },

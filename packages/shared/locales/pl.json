@@ -687,6 +687,7 @@
         "save_more_words": "Zapisz więcej słów, aby kontynuować naukę.",
         "save_words_to_build_deck": "Zapisz słowa podczas oglądania filmów, aby zbudować swoją talię powtórek. Dotknij dowolne słowo w napisach, aby je zapisać.",
         "saved_from_context": "zapisane z:",
+        "saved_words_count": "{count, plural, one {# słowo} few {# słowa} many {# słów} other {# słowa}} w {l1} → {l2}",
         "saved_words_desc": "{count} zapisanych słów w {l2}",
         "search_videos_desc": "Szukaj według tytułu lub wklej link YouTube, aby oglądać filmy w {l2}.",
         "search_videos_empty": "Szukaj filmów według tytułu lub wklej link YouTube, aby rozpocząć oglądanie w {l2}.",
@@ -866,6 +867,7 @@
     "sort": {
         "alphabetical": "Alfabetycznie",
         "most_viewed": "Najczęściej oglądane",
+        "newest": "Najnowsze",
         "title": "Tytuł",
         "year": "Rok"
     },

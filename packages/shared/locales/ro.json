@@ -687,6 +687,7 @@
         "save_more_words": "Salvați mai multe cuvinte pentru a continua învățarea.",
         "save_words_to_build_deck": "Salvați cuvinte în timp ce vizionați videoclipuri pentru a vă construi setul de recapitulare. Atingeți orice cuvânt din subtitrări pentru a-l salva.",
         "saved_from_context": "salvat din:",
+        "saved_words_count": "{count, plural, one {# cuvânt} few {# cuvinte} other {# cuvinte}} în {l1} → {l2}",
         "saved_words_desc": "{count} cuvinte salvate în {l2}",
         "search_videos_desc": "Căutați după titlu sau inserați un link YouTube pentru a viziona videoclipuri în {l2}.",
         "search_videos_empty": "Căutați videoclipuri după titlu sau inserați un link YouTube pentru a viziona în {l2}.",
@@ -866,6 +867,7 @@
     "sort": {
         "alphabetical": "Alfabetic",
         "most_viewed": "Cele mai vizionate",
+        "newest": "Cele mai noi",
         "title": "Titlu",
         "year": "An"
     },
