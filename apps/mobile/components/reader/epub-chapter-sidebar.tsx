@@ -15,6 +15,54 @@ interface EpubChapterSidebarProps {
   onClose: () => void;
 }
 
+/** Recursively render TOC items with indentation (matches web's TocTree). */
+function TocTree({
+  items,
+  currentHref,
+  onSelect,
+  depth = 0,
+}: {
+  items: TocItem[];
+  currentHref: string | null;
+  onSelect: (href: string) => void;
+  depth?: number;
+}) {
+  return (
+    <>
+      {items.map((item, i) => (
+        <View key={`${depth}-${i}`}>
+          <Pressable
+            onPress={() => onSelect(item.href)}
+            className={`px-3 py-1.5 active:bg-muted ${
+              currentHref === item.href ? 'bg-primary/10' : ''
+            }`}
+            style={{ paddingLeft: 12 + depth * 16 }}
+          >
+            <Text
+              className={`text-sm truncate ${
+                currentHref === item.href
+                  ? 'font-medium text-primary'
+                  : 'text-foreground'
+              }`}
+              numberOfLines={1}
+            >
+              {item.label}
+            </Text>
+          </Pressable>
+          {item.children && item.children.length > 0 && (
+            <TocTree
+              items={item.children}
+              currentHref={currentHref}
+              onSelect={onSelect}
+              depth={depth + 1}
+            />
+          )}
+        </View>
+      ))}
+    </>
+  );
+}
+
 /** Matches Next.js's epub-chapter-sidebar: togglable panel with TOC + prev/next. */
 export function EpubChapterSidebar({
   toc, chapterHref, prevHref, nextHref,
@@ -36,20 +84,11 @@ export function EpubChapterSidebar({
         </Pressable>
       </View>
       <ScrollView className="flex-1">
-        {toc.map((item, idx) => (
-          <Pressable
-            key={idx}
-            onPress={() => onSelect(item.href)}
-            className={`px-3 py-2 active:bg-muted ${chapterHref === item.href ? 'bg-primary/10' : ''}`}
-          >
-            <Text
-              className={`text-sm truncate ${chapterHref === item.href ? 'font-medium text-primary' : 'text-foreground'}`}
-              numberOfLines={1}
-            >
-              {item.label}
-            </Text>
-          </Pressable>
-        ))}
+        <TocTree
+          items={toc}
+          currentHref={chapterHref}
+          onSelect={onSelect}
+        />
       </ScrollView>
     </View>
   );

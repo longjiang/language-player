@@ -54,8 +54,10 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
   const spineRef = useRef<{ href: string; title: string }[]>([]);
   const cacheRef = useRef<Map<string, string>>(new Map());
   const storedRef = useRef<StoredEpubState | null>(null);
+  const flatTocRef = useRef<TocItem[]>([]);
 
   const flatToc = flattenToc(toc);
+  flatTocRef.current = flatToc;
   const i = chapterHref ? flatToc.findIndex((c) => c.href === chapterHref) : -1;
   const prevHref = i > 0 ? flatToc[i - 1]!.href : null;
   const nextHref = i >= 0 && i < flatToc.length - 1 ? flatToc[i + 1]!.href : null;
@@ -86,9 +88,10 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
         if (st.chapterHref) {
           const text = await loadChapterContent(st.chapterHref);
           setChapterHref(st.chapterHref);
-          setChapterTitle(spineRef.current.find((s) => s.href === st.chapterHref)?.title ?? '');
+          const entry = flatTocRef.current.find((t) => t.href === st.chapterHref);
+          setChapterTitle(entry?.label ?? '');
           setCoverTapped(true);
-          onChapterChange?.(text, spineRef.current.find((s) => s.href === st.chapterHref)?.title ?? '');
+          onChapterChange?.(text, entry?.label ?? '');
         }
       } catch (e: any) { setError(e?.message ?? String(e)); }
       setRestoring(false);
@@ -114,15 +117,41 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     if (!opfFile) throw new Error('OPF not found');
     const opfXml = await opfFile.async('text');
 
-    // Try to load NCX for TOC
-    const ncxMatch = opfXml.match(/<item\b[^>]*id="ncx"[^>]*href="([^"]+)"/);
-    let ncxXml: string | undefined;
-    if (ncxMatch) {
-      const ncxFile = zip.file(resolvePathFn(opfDir, ncxMatch[1]!));
-      if (ncxFile) ncxXml = await ncxFile.async('text');
+    // Build manifest map for nav/NCX lookups
+    const manifestItems = new Map<string, { id: string; href: string; props?: string }>();
+    const itemRegex = /<item\b([^>]*)>/g;
+    let itemMatch: RegExpExecArray | null;
+    while ((itemMatch = itemRegex.exec(opfXml)) !== null) {
+      const a = itemMatch[1]!;
+      const id = a.match(/id="([^"]+)"/)?.[1];
+      const href = a.match(/href="([^"]+)"/)?.[1];
+      const props = a.match(/properties="([^"]+)"/)?.[1];
+      if (id && href) manifestItems.set(id, { id, href, props });
     }
 
-    const meta = parseOPF(opfXml, opfDir, ncxXml);
+    // Try to load EPUB 3 nav document (item with properties="nav")
+    let navXml: string | undefined;
+    for (const [, item] of manifestItems) {
+      if (item.props?.split(/\s+/).includes('nav')) {
+        const navFile = zip.file(resolvePathFn(opfDir, item.href));
+        if (navFile) navXml = await navFile.async('text');
+        break;
+      }
+    }
+
+    // Try to load NCX for TOC (EPUB 2 fallback)
+    let ncxXml: string | undefined;
+    if (!navXml) {
+      const ncxItem = [...manifestItems.values()].find(
+        (item) => item.id === 'ncx' || item.href.endsWith('.ncx'),
+      );
+      if (ncxItem) {
+        const ncxFile = zip.file(resolvePathFn(opfDir, ncxItem.href));
+        if (ncxFile) ncxXml = await ncxFile.async('text');
+      }
+    }
+
+    const meta = parseOPF(opfXml, opfDir, ncxXml, navXml);
     spineRef.current = meta.spine;
 
     // Cover image
@@ -131,7 +160,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       if (cf) setCoverUrl('data:image/jpeg;base64,' + await cf.async('base64'));
     }
 
-    // TOC — prefer NCX, fallback to spine map
+    // TOC — nav doc or NCX already parsed, fallback to spine map
     setToc(meta.toc.length > 0 ? meta.toc : meta.spine.map((s, idx) => ({
       label: s.title || `Chapter ${idx + 1}`, href: s.href,
     })));
@@ -180,8 +209,10 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       const text = await loadChapterContent(first.href);
       setCoverTapped(true);
       setChapterHref(first.href);
-      setChapterTitle(first.title || 'Chapter 1');
-      onChapterChange?.(text, first.title || 'Chapter 1');
+      const entry = flatTocRef.current.find((t) => t.href === first.href);
+      const title = entry?.label || 'Chapter 1';
+      setChapterTitle(title);
+      onChapterChange?.(text, title);
       if (storedRef.current) persist({ ...storedRef.current, chapterHref: first.href });
     } catch (e: any) { setError(e?.message ?? String(e)); }
     finally { setLoading(false); }
@@ -191,11 +222,11 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     setLoading(true);
     try {
       const text = await loadChapterContent(href);
-      const entry = spineRef.current.find((s) => s.href === href);
       setCoverTapped(true);
-      setChapterTitle(entry?.title || '');
+      const entry = flatTocRef.current.find((t) => t.href === href);
+      setChapterTitle(entry?.label ?? '');
       setChapterHref(href);
-      onChapterChange?.(text, entry?.title || '');
+      onChapterChange?.(text, entry?.label ?? '');
       if (storedRef.current) persist({ ...storedRef.current, chapterHref: href });
       return text;
     } finally { setLoading(false); }
