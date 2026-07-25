@@ -26,10 +26,10 @@ const ROOT = resolve(__dirname, '..');
 const CSV_PATH = resolve(ROOT, 'translations.csv');
 
 // Scan all app source directories for t() key usage.
-// The CSV is the single source of truth for the web app + future mobile app.
+// The CSV is the single source of truth for both the web app and mobile app.
 const SRC_DIRS = [
   resolve(ROOT, 'apps', 'web', 'src'),
-  resolve(ROOT, 'language-player-3'),  // GO React Native app (may not exist yet)
+  resolve(ROOT, 'apps', 'mobile-v2'),  // React Native app
 ].filter(d => { try { statSync(d); return true; } catch { return false; } });
 
 // ── Whitelist ───────────────────────────────
@@ -46,12 +46,12 @@ const MUST_BE_ALIVE = [
   'title.explore', 'title.dictionary', 'title.tv_shows', 'title.watch_history',
   'title.reader', 'title.saved_words', 'title.review', 'title.app_name',
   'title.settings', 'title.queue', 'title.transcript',
-  // Common — used in both Web + GO apps
+  // Common — used in both Web + Mobile apps
   'msg.loading', 'msg.no_results', 'action.save_word', 'action.back',
   'action.search', 'label.saved', 'error.entry_not_found',
   'placeholder.filter', 'placeholder.search_languages',
   'sort.most_viewed', 'a11y.next_line', 'a11y.play',
-  // GO app — ContextRow, saved-words, etc.
+  // Mobile app — ContextRow, saved-words, etc.
   'action.cancel', 'action.copy', 'action.speak', 'action.clear_words',
   'msg.options', 'msg.choose_action', 'msg.no_saved_words',
   'title.saved_words',
