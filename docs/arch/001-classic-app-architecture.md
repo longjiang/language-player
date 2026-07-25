@@ -527,7 +527,7 @@ On login, data syncs to Directus `user_data` collection.
 
 ### Settings Architecture
 
-> **⚠️ LEGACY — DO NOT EDIT.** This documents how Classic settings work. The Next.js migration target design is in `specs/007-settings-architecture.md`.
+> **⚠️ LEGACY — DO NOT EDIT.** This documents how Classic settings work. The Next.js migration target design is in `docs/specs/007-settings-architecture.md`.
 
 #### Settings Shape
 

@@ -1,7 +1,7 @@
 # ROADMAP.md — Project Plan
 
 > **Canonical phase numbering.** All specs and ADRs reference phases defined here.
-> See `specs/002-repo-migration.md` for when legacy repos get merged into this monorepo.
+> See `docs/specs/002-repo-migration.md` for when legacy repos get merged into this monorepo.
 
 ## Legend
 - ⬜ Not started
@@ -20,7 +20,7 @@
 - ✅ Landing page, Explore page, Login/Register pages
 - ✅ Dark mode support (next-themes)
 - ✅ Build pipeline verified
-- ✅ Documentation (AGENTS.md, README, ROADMAP, specs/, docs/adr/)
+- ✅ Documentation (AGENTS.md, README, ROADMAP, docs/specs/, docs/adr/, docs/arch/)
 
 ## Phase 2: Auth + Core Navigation ✅
 
@@ -52,7 +52,7 @@
 
 ## Phase 2.5: UI Internationalization ✅
 
-> 📋 **Spec**: `specs/005-phase2.5-i18n.md`
+> 📋 **Spec**: `docs/specs/005-phase2.5-i18n.md`
 
 - ✅ Wire up `next-intl` with App Router (middleware, provider, request config)
 - ✅ Copy 31 locale files from GO (`assets/localizations/` → `apps/web/messages/`)
@@ -90,7 +90,7 @@
 
 ## Phase 7: Backend Consolidation
 
-> 🗄️ **Repo merge**: `zerotohero-python` → `apps/api/` (see specs/002)
+> 🗄️ **Repo merge**: `zerotohero-python` → `apps/api/` (see docs/specs/002)
 
 - ⬜ Merge Python backend into monorepo with full Git history
 - ⬜ Wire `apps/api/` into Turborepo pipeline (`npx turbo dev` starts backend too)
@@ -101,7 +101,7 @@
 
 ## Phase 8: Mobile Integration
 
-> 🗄️ **Repo merge**: `language-player-3` → `apps/mobile/` (see specs/002)
+> 🗄️ **Repo merge**: `language-player-3` → `apps/mobile/` (see docs/specs/002)
 
 
 - ✅ **Step 1: Expo SDK upgrade (51 → 57)** — two-hop strategy (do BEFORE shared package wiring; upgrade against known-working direct API calls):
@@ -125,7 +125,7 @@
 
 ## Phase 9: Sunset Classic
 
-> 🗄️ **Repo merge**: `zerotohero-nuxt` → `apps/classic/` for archival (see specs/002)
+> 🗄️ **Repo merge**: `zerotohero-nuxt` → `apps/classic/` for archival (see docs/specs/002)
 
 - ⬜ Full feature parity audit (web + mobile vs Classic)
 - ⬜ Redirect strategy from classic URLs (`languageplayer.io/en/zh/...` → new URLs)

@@ -360,7 +360,7 @@ The Left/Right Context sorts reveal pronunciation and collocation patterns — e
 
 ## Settings Architecture
 
-> **REFERENCE.** This documents how GO app settings work. The Next.js migration target design is in `specs/007-settings-architecture.md`.
+> **REFERENCE.** This documents how GO app settings work. The Next.js migration target design is in `docs/specs/007-settings-architecture.md`.
 
 ### Settings Shape
 
