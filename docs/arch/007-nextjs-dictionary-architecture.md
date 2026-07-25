@@ -1,9 +1,9 @@
-# ADR: Next.js Dictionary Architecture
+# Next.js Dictionary Architecture
 
 > **Status:** Proposed  
 > **Date:** 2026-07-12  
 > **Replaces:** Classic Nuxt offline CSV dictionary approach  
-> **See also:** `docs/adr/lp-classic-dictionary-architecture.md` (Classic reference)
+> **See also:** [Classic Dictionary Architecture](./006-classic-dictionary-architecture.md)
 
 ---
 
