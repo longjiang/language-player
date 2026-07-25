@@ -15,11 +15,42 @@ export interface ImageBlock {
 
 export type ContentBlock = TextBlock | ImageBlock;
 
+/** Regex matching [IMG:uri] markers injected by use-epub for inline EPUB images. */
+const IMG_MARKER_RE = /\[IMG:([^\]]+)\]/;
+
 /**
- * Parse markdown into blocks for rendering.
- * Uses marked.Lexer for proper parsing — no regex hacks.
+ * Parse text (with optional [IMG:...] markers) into content blocks.
+ * Splits on image markers before markdown parsing, so EPUB-injected images
+ * are preserved as standalone ImageBlock entries in their original positions.
+ * Falls back to standard markdown parsing for non-EPUB content.
  */
 export function parseMarkdownBlocks(md: string): ContentBlock[] {
+  // EPUB image markers: split first, then parse each text segment as markdown
+  if (IMG_MARKER_RE.test(md)) {
+    const parts = md.split(/(\[IMG:[^\]]+\])/);
+    const blocks: ContentBlock[] = [];
+
+    for (const part of parts) {
+      const imgMatch = part.match(IMG_MARKER_RE);
+      if (imgMatch) {
+        blocks.push({ kind: 'image', uri: imgMatch[1]! });
+      } else if (part.trim()) {
+        blocks.push(...parseMarkdownOnly(part));
+      }
+    }
+
+    return blocks;
+  }
+
+  // Standard markdown parsing (handles markdown-native ![alt](url) images)
+  return parseMarkdownOnly(md);
+}
+
+/**
+ * Parse a plain markdown string (no EPUB image markers) into ContentBlock[].
+ * Handles headings, paragraphs, blockquotes, lists, and markdown-native images.
+ */
+function parseMarkdownOnly(md: string): ContentBlock[] {
   const tokens = marked.lexer(md);
   const blocks: ContentBlock[] = [];
 
@@ -35,7 +66,6 @@ export function parseMarkdownBlocks(md: string): ContentBlock[] {
         break;
 
       case 'paragraph':
-        // Check if paragraph contains only an image
         if (isSingleImage(token)) {
           blocks.push({
             kind: 'image',
