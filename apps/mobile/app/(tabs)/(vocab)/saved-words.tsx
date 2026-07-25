@@ -27,8 +27,6 @@ export default function SavedWordsScreen() {
   const [filterText, setFilterText] = useState('');
   const [exporting, setExporting] = useState(false);
 
-  console.log('[SavedWordsScreen] render — loaded:', loaded, 'l2Code:', l2Lang.code);
-
   const allWords = useMemo(
     () => savedWords[l2Lang.code] ?? [],
     [savedWords, l2Lang.code],

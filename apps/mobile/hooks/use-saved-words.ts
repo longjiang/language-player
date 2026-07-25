@@ -35,7 +35,6 @@ async function enrichMissingHeads(
   // Enrich if missing head OR has head but no cached entry (re-enrich after schema change)
   const missing = words.filter((w) => !w.head || (!w.canonicalEntry && !w.llmEntry));
   if (missing.length === 0) return store;
-  console.log('[savedWords] enrichMissingHeads — lang:', l2Code, 'total:', words.length, 'missing:', missing.length);
 
   const enriched = [...words];
   for (let i = 0; i < enriched.length; i++) {
@@ -49,7 +48,6 @@ async function enrichMissingHeads(
         continue;
       }
       const { dict: dictId, id: scopedId } = decomposed;
-      console.log('[savedWords] enrichMissingHeads — fetching entry:', { l2Code, dictId, scopedId });
       const res = await dict.getEntry(l2Code, dictId, scopedId);
       // apiClient.get() already unwraps .then(r => r.data), so res = { entry: DictionaryEntry }
       const entry = (res as any)?.entry as DictionaryEntry | undefined;
@@ -63,7 +61,6 @@ async function enrichMissingHeads(
           entryId: scopedId,
           canonicalEntry: entry,
         };
-        console.log('[savedWords] enrichMissingHeads — stored canonicalEntry for:', w.id);
       } else {
         console.warn('[savedWords] enrichMissingHeads — no entry in response for:', w.id);
       }
@@ -71,7 +68,6 @@ async function enrichMissingHeads(
       console.warn('[savedWords] enrichMissingHeads — error fetching entry for', w.id, ':', err);
     }
   }
-  console.log('[savedWords] enrichMissingHeads — done for lang:', l2Code);
   return { ...store, [l2Code]: enriched };
 }
 
@@ -100,14 +96,11 @@ export function useSavedWords(activeL2?: string) {
   // Enrichment is now lazy (on-demand per visible row, not bulk).
   useEffect(() => {
     let cancelled = false;
-    console.log('[savedWords] EFFECT 1 — starting, activeL2:', activeL2);
     (async () => {
       try {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
-        console.log('[savedWords] EFFECT 1 — SecureStore read, found:', !!raw);
         if (raw) {
           const parsed = JSON.parse(raw) as SavedWordsStore;
-          console.log('[savedWords] EFFECT 1 — parsed keys:', Object.keys(parsed), 'counts:', Object.fromEntries(Object.entries(parsed).map(([k, v]) => [k, v.length])));
           if (!cancelled) {
             setSavedWords(parsed);
             setLoaded(true);
@@ -127,15 +120,12 @@ export function useSavedWords(activeL2?: string) {
 
   // Merge cloud data
   useEffect(() => {
-    console.log('[savedWords] EFFECT 2 — deps:', { hasUser: !!user, loaded, cloudLoaded, hasCloudData: !!cloudData?.saved_words });
     if (!user || !loaded || !cloudLoaded || !cloudData?.saved_words) return;
     try {
       const cloud = JSON.parse(cloudData.saved_words) as SavedWordsStore;
-      console.log('[savedWords] EFFECT 2 — merging cloud data, keys:', Object.keys(cloud));
       setSavedWords((prev) => {
         const merged = mergeSavedWords(prev, cloud);
         if (merged === prev) return prev; // skip no-op
-        console.log('[savedWords] EFFECT 2 — merged, counts:', Object.fromEntries(Object.entries(merged).map(([k, v]) => [k, v.length])));
         SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged));
         return merged;
       });
