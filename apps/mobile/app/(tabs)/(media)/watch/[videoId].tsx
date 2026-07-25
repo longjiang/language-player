@@ -240,6 +240,10 @@ export default function WatchScreen() {
 
   const isSubtitles = playback.transcriptMode === 'subtitles';
 
+  const handleTogglePanel = useCallback(() => {
+    updatePlayback({ transcriptMode: isSubtitles ? 'transcript' : 'subtitles' });
+  }, [updatePlayback, isSubtitles]);
+
   // ── Loading ──
   if (loading) {
     return (
@@ -335,19 +339,24 @@ export default function WatchScreen() {
       {/* Player */}
       <View>{playerElement}</View>
 
-      {/* Reduced control bar */}
-      <View className="flex-row justify-end border-b border-border px-3 py-1.5">
+      {/* Reduced control bar — only LP-specific controls per SPEC-010 */}
+      <View className="flex-row justify-end border-b border-border px-2 py-1">
         <VideoControlBar
+          reduced
           playerRef={playerRef}
           currentTime={currentTime}
           duration={duration}
           paused={paused}
           onPauseToggle={handlePauseToggle}
-          onRewind={handleRewind}
           onPreviousLine={handlePreviousLine}
           onNextLine={handleNextLine}
+          onPreviousVideo={playPrevious}
+          onNextVideo={playNext}
+          onTogglePanel={handleTogglePanel}
           hasPreviousLine={subtitleStartTimes.length > 0}
           hasNextLine={subtitleStartTimes.length > 0}
+          hasPreviousVideo={hasPrevious}
+          hasNextVideo={hasNext}
         />
       </View>
 

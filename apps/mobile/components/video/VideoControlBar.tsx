@@ -2,7 +2,8 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import {
   Play, Pause, SkipBack, SkipForward, RotateCcw,
-  ChevronUp, ChevronDown, Info, Clock,
+  ChevronUp, ChevronDown, ChevronLeft, ChevronRight,
+  Info, Clock, PanelRightOpen,
 } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
@@ -23,10 +24,13 @@ interface VideoControlBarProps {
   onOpenInfo?: () => void;
   onPreviousVideo?: () => void;
   onNextVideo?: () => void;
+  onTogglePanel?: () => void;
   hasPreviousLine?: boolean;
   hasNextLine?: boolean;
   hasPreviousVideo?: boolean;
   hasNextVideo?: boolean;
+  /** When true, only shows LP-specific controls: ⏮ ← → ⏭ ◧. No progress, time, play, rewind, or speed. */
+  reduced?: boolean;
 }
 
 function formatTime(seconds: number): string {
@@ -47,10 +51,12 @@ export function VideoControlBar({
   onOpenInfo,
   onPreviousVideo,
   onNextVideo,
+  onTogglePanel,
   hasPreviousLine = true,
   hasNextLine = true,
   hasPreviousVideo = false,
   hasNextVideo = false,
+  reduced = false,
 }: VideoControlBarProps) {
   const t = useT();
   const [speedIndex, setSpeedIndex] = useState(0);
@@ -72,6 +78,48 @@ export function VideoControlBar({
 
   const progress = duration > 0 ? currentTime / duration : 0;
 
+  // ── Reduced mode: compact inline bar with only LP-specific controls ──
+  if (reduced) {
+    return (
+      <View className="flex-row items-center gap-0.5">
+        <Pressable
+          onPress={onPreviousVideo}
+          disabled={!hasPreviousVideo || !onPreviousVideo}
+          className={`rounded p-1.5 ${!hasPreviousVideo || !onPreviousVideo ? 'opacity-30' : 'active:bg-muted'}`}
+        >
+          <SkipBack size={16} color={ICON_MUTED} />
+        </Pressable>
+        <Pressable
+          onPress={onPreviousLine}
+          disabled={!hasPreviousLine}
+          className={`rounded p-1.5 ${!hasPreviousLine ? 'opacity-30' : 'active:bg-muted'}`}
+        >
+          <ChevronLeft size={18} color={ICON_MUTED} />
+        </Pressable>
+        <Pressable
+          onPress={onNextLine}
+          disabled={!hasNextLine}
+          className={`rounded p-1.5 ${!hasNextLine ? 'opacity-30' : 'active:bg-muted'}`}
+        >
+          <ChevronRight size={18} color={ICON_MUTED} />
+        </Pressable>
+        <Pressable
+          onPress={onNextVideo}
+          disabled={!hasNextVideo || !onNextVideo}
+          className={`rounded p-1.5 ${!hasNextVideo || !onNextVideo ? 'opacity-30' : 'active:bg-muted'}`}
+        >
+          <SkipForward size={16} color={ICON_MUTED} />
+        </Pressable>
+        {onTogglePanel && (
+          <Pressable onPress={onTogglePanel} className="rounded p-1.5 active:bg-muted">
+            <PanelRightOpen size={16} color={ICON_MUTED} />
+          </Pressable>
+        )}
+      </View>
+    );
+  }
+
+  // ── Full mode ──
   return (
     <View className="bg-card px-3 py-2">
       {/* Progress bar */}
