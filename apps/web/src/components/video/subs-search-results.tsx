@@ -10,16 +10,12 @@ import { youtubeThumbnail } from '@/lib/video-service';
 import { YouTubePlayer, type YouTubePlayerHandle, PLAYER_STATES } from './youtube-player';
 import { SubtitleDisplay } from './subtitle-display';
 import { Button } from '@/components/ui/button';
+import { VideoControlBar } from './video-control-bar';
 import type { SubsSearchVideo } from '@langplayer/shared';
 import { parseSubsL2, findMatchLine } from '@langplayer/utils';
 import {
   Loader2,
   Play,
-  Pause,
-  SkipBack,
-  SkipForward,
-  ChevronUp,
-  ChevronDown,
   List,
   X,
   Search,
@@ -81,6 +77,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   // Modal state
   const [listOpen, setListOpen] = useState(false);
@@ -95,6 +92,15 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
     () => term.split(',').map((t) => t.trim()).filter(Boolean),
     [term],
   );
+
+  // Truncated display: "a, b, c" or "a, b, c, and X other forms" (localized)
+  const termDisplay = useMemo(() => {
+    const forms = highlightTerms;
+    if (forms.length <= 3) return forms.join(', ');
+    const shown = forms.slice(0, 3).join(', ');
+    const remaining = forms.length - 3;
+    return `${shown} ${t('msg.and_n_other_forms', { n: remaining })}`;
+  }, [highlightTerms, t]);
 
   // Memoize initialLines for SubtitleDisplay so it doesn't re-trigger on every render
   const subtitleInitialLines = useMemo(
@@ -184,19 +190,11 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
 
   const handleTimeUpdate = useCallback((time: number) => setCurrentTime(time), []);
 
+  const handleDuration = useCallback((d: number) => setDuration(d), []);
+
   const handleStateChange = useCallback((state: number) => {
     setPaused(state === PLAYER_STATES.PAUSED || state === PLAYER_STATES.ENDED);
   }, []);
-
-  const handlePlayPause = useCallback(() => {
-    if (paused) {
-      playerRef.current?.play();
-      setPaused(false);
-    } else {
-      playerRef.current?.pause();
-      setPaused(true);
-    }
-  }, [paused]);
 
   const goToPrevious = useCallback(() => {
     if (currentIndex > 0) setCurrentIndex((i) => i - 1);
@@ -226,6 +224,21 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
         return;
       }
     }
+  }, [currentTime, currentVideo]);
+
+  // Derived: are there lines before/after the current position?
+  const { hasPreviousLine, hasNextLine } = useMemo(() => {
+    if (!currentVideo) return { hasPreviousLine: false, hasNextLine: false };
+    const subs = currentVideo.subs_l2;
+    let prev = false;
+    let next = false;
+    for (let i = subs.length - 1; i >= 0; i--) {
+      if (subs[i]!.starttime < currentTime - 0.3) { prev = true; break; }
+    }
+    for (let i = 0; i < subs.length; i++) {
+      if (subs[i]!.starttime > currentTime + 0.3) { next = true; break; }
+    }
+    return { hasPreviousLine: prev, hasNextLine: next };
   }, [currentTime, currentVideo]);
 
   // ── Modal: filter + sort ─────────────────────
@@ -340,9 +353,9 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
           <div className="h-3 w-1/2 animate-pulse rounded bg-muted/50" />
         </div>
         {/* Controls skeleton */}
-        <div className="flex items-center justify-center gap-1 border-t border-border px-2 py-2">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-8 w-8 animate-pulse rounded bg-muted" />
+        <div className="flex items-center justify-center gap-0.5 border-t border-border px-2 py-1">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-7 w-7 animate-pulse rounded bg-muted" />
           ))}
         </div>
       </div>
@@ -374,16 +387,16 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
                 }`}
                 title={
                   exactMatch
-                    ? `Searching only "${term}" — click to search ${formCount} forms`
-                    : `Searching ${formCount} forms — click for exact match only`
+                    ? t('msg.exact_match_searching_only', { term, n: formCount })
+                    : t('msg.exact_match_searching', { n: formCount })
                 }
               >
-                {exactMatch ? term : `${formCount} forms`}
+                {exactMatch ? term : t('msg.n_forms', { n: formCount })}
               </button>
             )}
             <span className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground/50">
               <Play className="h-3.5 w-3.5" />
-              Watch
+              {t('action.watch')}
             </span>
             <Button
               variant="ghost"
@@ -392,7 +405,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
               disabled
             >
               <List className="h-3.5 w-3.5" />
-              List All
+              {t('action.list_all')}
             </Button>
           </div>
         </div>
@@ -427,11 +440,11 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
               }`}
               title={
                 exactMatch
-                  ? `Searching only "${term}" — click to search ${formCount} forms`
-                  : `Searching ${formCount} forms — click for exact match only`
+                  ? t('msg.exact_match_searching_only', { term, n: formCount })
+                  : t('msg.exact_match_searching', { n: formCount })
               }
             >
-              {exactMatch ? term : `${formCount} forms`}
+              {exactMatch ? term : t('msg.n_forms', { n: formCount })}
             </button>
           )}
           {currentVideo && (
@@ -440,7 +453,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
               className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <Play className="h-3.5 w-3.5" />
-              Watch
+              {t('action.watch')}
             </Link>
           )}
           <Button
@@ -450,7 +463,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
             onClick={() => setListOpen(true)}
           >
             <List className="h-3.5 w-3.5" />
-            List All
+            {t('action.list_all')}
           </Button>
         </div>
       </div>
@@ -464,63 +477,30 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
             autoplay
             startTime={matchLine?.starttime}
             onTimeUpdate={handleTimeUpdate}
+            onDuration={handleDuration}
             onStateChange={handleStateChange}
           />
         )}
       </div>
 
       {/* ── Controls ── */}
-      <div className="flex items-center justify-center gap-1 border-b border-border px-2 py-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={goToPrevious}
-          disabled={currentIndex <= 0}
-          title="Previous video (Shift + ←)"
-        >
-          <SkipBack className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={goToPreviousLine}
-          title="Previous line (←)"
-        >
-          <ChevronUp className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-9 w-9"
-          onClick={handlePlayPause}
-        >
-          {paused ? (
-            <Play className="h-4 w-4" />
-          ) : (
-            <Pause className="h-4 w-4" />
-          )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={goToNextLine}
-          title="Next line (→)"
-        >
-          <ChevronDown className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={goToNext}
-          disabled={currentIndex >= videos.length - 1}
-          title="Next video (Shift + →)"
-        >
-          <SkipForward className="h-4 w-4" />
-        </Button>
+      <div className="flex items-center justify-center border-b border-border px-2 py-1">
+        <VideoControlBar
+          reduced
+          playerRef={playerRef}
+          currentTime={currentTime}
+          duration={duration}
+          paused={paused}
+          onPauseToggle={() => {}}
+          onPreviousLine={goToPreviousLine}
+          onNextLine={goToNextLine}
+          onPreviousVideo={goToPrevious}
+          onNextVideo={goToNext}
+          hasPreviousLine={hasPreviousLine}
+          hasNextLine={hasNextLine}
+          hasPreviousVideo={currentIndex > 0}
+          hasNextVideo={currentIndex < videos.length - 1}
+        />
       </div>
 
       {/* ── Single-line subtitle display (follows playback) ── */}
@@ -549,7 +529,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <h3 className="text-sm font-semibold">
-                Videos matching "{term}"
+                {t('msg.videos_matching', { searchTerm: termDisplay })}
               </h3>
               <Button
                 variant="ghost"
