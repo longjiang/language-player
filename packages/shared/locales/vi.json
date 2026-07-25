@@ -864,6 +864,7 @@
         "word_level_display": "Hiển thị cấp độ từ"
     },
     "sort": {
+        "alphabetical": "Theo bảng chữ cái",
         "most_viewed": "Xem nhiều nhất",
         "title": "Tiêu đề",
         "year": "Năm"

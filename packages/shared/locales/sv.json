@@ -864,6 +864,7 @@
         "word_level_display": "Ordnivåvisning"
     },
     "sort": {
+        "alphabetical": "Alfabetisk",
         "most_viewed": "Mest sedda",
         "title": "Titel",
         "year": "År"

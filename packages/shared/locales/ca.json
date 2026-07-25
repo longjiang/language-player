@@ -864,6 +864,7 @@
         "word_level_display": "Visualització per paraula"
     },
     "sort": {
+        "alphabetical": "Alfabètic",
         "most_viewed": "Més vistos",
         "title": "Títol",
         "year": "Any"

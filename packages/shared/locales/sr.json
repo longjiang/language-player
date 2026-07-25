@@ -864,6 +864,7 @@
         "word_level_display": "Приказ на нивоу речи"
     },
     "sort": {
+        "alphabetical": "Абецедно",
         "most_viewed": "Највише прегледано",
         "title": "Наслов",
         "year": "Година"

@@ -864,6 +864,7 @@
         "word_level_display": "Woordvlak-vertoon"
     },
     "sort": {
+        "alphabetical": "Alfabeties",
         "most_viewed": "Meeste gekyk",
         "title": "Titel",
         "year": "Jaar"

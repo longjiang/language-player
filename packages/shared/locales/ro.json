@@ -864,6 +864,7 @@
         "word_level_display": "Afișare la nivel de cuvânt"
     },
     "sort": {
+        "alphabetical": "Alfabetic",
         "most_viewed": "Cele mai vizionate",
         "title": "Titlu",
         "year": "An"

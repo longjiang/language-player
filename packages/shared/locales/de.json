@@ -864,6 +864,7 @@
         "word_level_display": "Wortebene-Anzeige"
     },
     "sort": {
+        "alphabetical": "Alphabetisch",
         "most_viewed": "Meistgesehen",
         "title": "Titel",
         "year": "Jahr"
