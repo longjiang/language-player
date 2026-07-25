@@ -20,7 +20,7 @@
 | Screen | Mobile File | Status | Web Source | Notes |
 |---|---|---|---|---|
 | Splash / Redirect | `app/index.tsx` | ✅ | — | Auth check → login or tabs |
-| Login | `app/login.tsx` | 🟡 | `login/page.tsx` | **Missing**: "Forgot password?" link on the form |
+| Login | `app/login.tsx` | ✅ | `login/page.tsx` | |
 | Register | `app/register.tsx` | 🟡 | `register/page.tsx` | No name fields, no password confirmation |
 | Forgot Password | `app/forgot-password.tsx` | ✅ | `forgot-password/page.tsx` | |
 | Select L1 | `app/select-l1.tsx` | 🟡 | `language-select/page.tsx` | Shows raw codes instead of `{$lang.xx}` names; no search |
@@ -180,7 +180,7 @@
 | 4 | **Hardcoded hex colors** in `profile.tsx` and `me/index.tsx` — violates AGENTS.md semantic design tokens rule | 🟡 Medium | Me tab |
 | 5 | **Export button in SavedWords is UI-only** — no actual export logic | 🟡 Medium | Saved Words |
 | 6 | **Select L1/L2 screens show raw codes** instead of `{$lang.*}` translation keys | 🟡 Medium | Auth flow |
-| 7 | **No "Forgot password?" link on login screen** — route exists but isn't linked | 🟢 Low | Login |
+| 7 | ~~**No "Forgot password?" link on login screen**~~ ✅ Fixed | 🟢 Low | Login |
 | 8 | **TV Shows has no episode listing or show detail screen** | 🟢 Low | Media tab |
 
 ---
