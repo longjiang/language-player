@@ -51,7 +51,22 @@ async function enrichMissingHeads(
       const { dict: dictId, id: scopedId } = decomposed;
       console.log('[savedWords] enrichMissingHeads — fetching entry:', { l2Code, dictId, scopedId });
       const res = await dict.getEntry(l2Code, dictId, scopedId);
-      const entry = (res as any)?.data?.entry as DictionaryEntry | undefined;
+      // Debug: inspect the raw response shape (first call only)
+      if (!(globalThis as any).__enrichDebugDone) {
+        (globalThis as any).__enrichDebugDone = true;
+        console.log('[savedWords] enrichMissingHeads — RAW RESPONSE:', JSON.stringify({
+          status: (res as any)?.status,
+          headers: typeof (res as any)?.headers,
+          hasData: !!(res as any)?.data,
+          dataKeys: Object.keys((res as any)?.data ?? {}),
+          hasEntry: !!(res as any)?.data?.entry,
+          entryHead: (res as any)?.data?.entry?.head,
+          topLevelKeys: Object.keys(res as any ?? {}),
+        }));
+      }
+      // Axios wraps responses: the body is at res.data; GET /dictionary/entry returns { entry: {...} }
+      const data = (res as any)?.data ?? res;
+      const entry = (data?.entry ?? data?.data?.entry) as DictionaryEntry | undefined;
       if (entry) {
         // Store the full DictionaryEntry as canonicalEntry (ADR 0006) for richer display
         // while also keeping the flat `head` for backward compat with the current list UI.
