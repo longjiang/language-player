@@ -163,9 +163,12 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     const meta = parseOPF(opfXml, opfDir, ncxXml, navXml, navDir);
     spineRef.current = meta.spine;
 
-    // ── Build image cache from manifest — extract all inline images as base64 data URIs ──
+    // ── Build image cache from manifest — write images to temp files (RN Image needs file:// URIs) ──
     const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     imageCacheRef.current.clear();
+    // Also track temp file paths for cleanup
+    let imgIdx = 0;
+    const tempImagePaths: string[] = [];
     for (const [, item] of manifestItems) {
       if (item.mediaType && IMAGE_MIME_TYPES.includes(item.mediaType)) {
         const resolvedPath = resolvePath(opfDir, item.href);
@@ -173,13 +176,21 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
         if (imgFile) {
           try {
             const base64 = await imgFile.async('base64');
-            imageCacheRef.current.set(resolvedPath, `data:${item.mediaType};base64,${base64}`);
+            const ext = ((item.mediaType.split('/')[1] || 'jpg') as string).replace('jpeg', 'jpg');
+            const imgPath = FileSystem.documentDirectory + 'epub_img_' + (imgIdx++) + '.' + ext;
+            await FileSystem.writeAsStringAsync(imgPath, base64, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            imageCacheRef.current.set(resolvedPath, 'file://' + imgPath);
+            tempImagePaths.push(imgPath);
           } catch {
             // skip corrupt images
           }
         }
       }
     }
+    // Store temp paths for cleanup (appended to existing ref in close)
+    (imageCacheRef.current as any)._tempPaths = tempImagePaths;
 
     // ── Cover image — write to temp file (RN Image struggles with long data: URIs) ──
     if (meta.coverBase64) {
@@ -224,7 +235,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     const file = zip.file(cleanHref); if (!file) return '';
     let html: string = await file.async('text');
 
-    // ── Resolve <img> tags into [IMG:dataUri] markers before stripping HTML ──
+    // ── Resolve <img> tags into [IMG:uri] markers before stripping HTML ──
     const contentDir = cleanHref.substring(0, cleanHref.lastIndexOf('/') + 1);
     html = html
       .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
@@ -318,12 +329,18 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
   const nextChapter = useCallback(() => { if (nextHref) loadChapter(nextHref); }, [nextHref, loadChapter]);
 
   const close = useCallback(() => {
-    zipRef.current = null; spineRef.current = []; cacheRef.current.clear(); imageCacheRef.current.clear();
-    setFileName(null); setToc([]); setChapterTitle(null); setChapterHref(null);
+    // Clean up temp image files
+    const tempPaths: string[] = (imageCacheRef.current as any)?._tempPaths ?? [];
+    for (const p of tempPaths) {
+      FileSystem.deleteAsync(p).catch(() => {});
+    }
     // Clean up temp cover file
     if (coverUrl) {
-      FileSystem.deleteAsync(coverUrl).catch(() => {});
+      const coverPath = coverUrl.startsWith('file://') ? coverUrl.slice(7) : coverUrl;
+      FileSystem.deleteAsync(coverPath).catch(() => {});
     }
+    zipRef.current = null; spineRef.current = []; cacheRef.current.clear(); imageCacheRef.current.clear();
+    setFileName(null); setToc([]); setChapterTitle(null); setChapterHref(null);
     setCoverUrl(null); setCoverTapped(false); setError(null);
     persist(null);
   }, [persist, coverUrl]);
