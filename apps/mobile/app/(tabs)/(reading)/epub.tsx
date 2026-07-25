@@ -283,7 +283,7 @@ export default function EpubReaderScreen() {
               </View>
             ) : (
               <Image
-                source={{ uri: epub.coverUrl }}
+                source={{ uri: epub.coverUrl ?? undefined }}
                 style={{ width: '100%', height: windowHeight * 0.6 }}
                 resizeMode="contain"
                 onError={() => setCoverLoadError(true)}

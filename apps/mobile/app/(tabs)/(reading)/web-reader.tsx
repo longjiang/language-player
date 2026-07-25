@@ -7,7 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
-import { parseMarkdownBlocks, type TextBlock } from '@/lib/parse-markdown';
+import { parseMarkdownBlocks, type ContentBlock } from '@/lib/parse-markdown';
 import { TokenizedText } from '@/components/TokenizedText';
 import { Globe } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -21,7 +21,7 @@ export default function WebReaderScreen() {
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [blocks, setBlocks] = useState<TextBlock[] | null>(null);
+  const [blocks, setBlocks] = useState<ContentBlock[] | null>(null);
 
   const handleLoad = useCallback(async (loadUrl?: string) => {
     const targetUrl = loadUrl || url;
@@ -113,7 +113,9 @@ export default function WebReaderScreen() {
         {/* ── Content: parsed blocks — TokenizedText handles its own tokenization ── */}
         {blocks && (
           <View className="px-4 pb-8">
-            {blocks.map((block, bi) => (
+            {blocks.map((block, bi) => {
+              if (block.kind !== 'text') return null;
+              return (
               <View key={bi} className="mb-3">
                 {block.type === 'heading' && (
                   <Text
@@ -150,7 +152,7 @@ export default function WebReaderScreen() {
                   </View>
                 )}
               </View>
-            ))}
+            )})}
           </View>
         )}
 
