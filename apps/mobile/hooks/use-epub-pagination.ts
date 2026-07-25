@@ -135,8 +135,7 @@ export function useEpubPagination({
     if (!initialAnchor || !blocks || !hasMeasured) return;
     if (anchorSeenRef.current) return;
     anchorSeenRef.current = true;
-    console.log('[pagination:seek] initialAnchor:', initialAnchor.slice(0, 40), 'blocks:', blocks.length, 'pages:', pageBreaks.length + 1);
-    if (pageBreaks.length === 0) { console.log('[pagination:seek] no page breaks — single page'); return; }
+    if (pageBreaks.length === 0) return;
     for (let p = 0; p <= pageBreaks.length; p++) {
       const start = p === 0 ? 0 : pageBreaks[p - 1]!;
       const end = p < pageBreaks.length ? pageBreaks[p]! : blocks.length;
@@ -144,7 +143,7 @@ export function useEpubPagination({
       const hasAnchor = pageBlocks.some((b): b is TextBlock =>
         b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item') && b.text.includes(initialAnchor),
       );
-      if (hasAnchor) { console.log('[pagination:seek] found anchor on page', p); setPage(p); break; }
+      if (hasAnchor) { setPage(p); break; }
     }
   }, [initialAnchor, blocks, hasMeasured, pageBreaks]);
 
