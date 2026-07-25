@@ -4,10 +4,18 @@ export interface TocItem {
   children?: TocItem[];
 }
 
+export interface EpubManifestItem {
+  id: string;
+  href: string;
+  mediaType?: string;
+  props?: string;
+}
+
 export interface EpubMetadata {
   spine: { href: string; title: string }[];
   toc: TocItem[];
   coverBase64: string | null;
+  coverItemId: string | null;
   opfDir: string;
 }
 
@@ -17,9 +25,10 @@ function stripFragment(href: string): string {
   return idx === -1 ? href : href.slice(0, idx);
 }
 
-/** Extract one XML attribute value, e.g. extractAttr(attrs, 'id') → "c1" */
+/** Extract one XML attribute value, supporting both double and single quotes. */
 function extractAttr(attrsStr: string, name: string): string | undefined {
-  const m = attrsStr.match(new RegExp(`${name}="([^"]+)"`));
+  const m = attrsStr.match(new RegExp(`${name}\\s*=\\s*"([^"]*)"`)) ??
+           attrsStr.match(new RegExp(`${name}\\s*=\\s*'([^']*)'`));
   return m?.[1];
 }
 
@@ -58,24 +67,44 @@ export function parseOPF(
     if (href) spine.push({ href: resolvePath(opfDir, href), title: '' });
   }
 
-  // Cover image — attribute-order independent
+  // Cover image — try EPUB 3 (<item properties="cover-image">), fall back to EPUB 2 (<meta name="cover">)
   let coverBase64: string | null = null;
-  const metaRegex = /<meta\b([^>]*)>/g;
-  let mm: RegExpExecArray | null;
-  while ((mm = metaRegex.exec(opfXml))) {
-    if (extractAttr(mm[1]!, 'name') === 'cover') {
-      const coverId = extractAttr(mm[1]!, 'content');
-      if (coverId) {
-        const itemRegex = /<item\b([^>]*)>/g;
-        let im: RegExpExecArray | null;
-        while ((im = itemRegex.exec(opfXml))) {
-          if (extractAttr(im[1]!, 'id') === coverId) {
-            coverBase64 = extractAttr(im[1]!, 'href') || null;
-            break;
+  let coverItemId: string | null = null;
+
+  // EPUB 3: look for <item properties="cover-image">
+  const coverItemRegex = /<item\b([^>]*)>/g;
+  let ci: RegExpExecArray | null;
+  while ((ci = coverItemRegex.exec(opfXml))) {
+    const props = extractAttr(ci[1]!, 'properties');
+    if (props && props.split(/\s+/).includes('cover-image')) {
+      coverItemId = extractAttr(ci[1]!, 'id') ?? null;
+      coverBase64 = extractAttr(ci[1]!, 'href') ?? null;
+      break;
+    }
+  }
+
+  // EPUB 2: fall back to <meta name="cover" content="..."> or <meta property="cover">
+  if (!coverBase64) {
+    const metaRegex = /<meta\b([^>]*)>/g;
+    let mm: RegExpExecArray | null;
+    while ((mm = metaRegex.exec(opfXml))) {
+      const metaName = extractAttr(mm[1]!, 'name');
+      const metaProp = extractAttr(mm[1]!, 'property');
+      if (metaName === 'cover' || metaProp === 'cover') {
+        const coverId = extractAttr(mm[1]!, 'content');
+        if (coverId) {
+          coverItemId = coverId;
+          const itemRegex3 = /<item\b([^>]*)>/g;
+          let im3: RegExpExecArray | null;
+          while ((im3 = itemRegex3.exec(opfXml))) {
+            if (extractAttr(im3[1]!, 'id') === coverId) {
+              coverBase64 = extractAttr(im3[1]!, 'href') || null;
+              break;
+            }
           }
         }
+        break;
       }
-      break;
     }
   }
 
@@ -89,7 +118,7 @@ export function parseOPF(
     toc = parseNCX(ncxXml, manifest, opfDir);
   }
 
-  return { spine, toc, coverBase64, opfDir };
+  return { spine, toc, coverBase64, coverItemId, opfDir };
 }
 
 // ── EPUB 3 nav document parser ──
@@ -245,8 +274,24 @@ function parseNavPoints(
   return items;
 }
 
-/** Resolve a relative path against the OPF directory. */
+/**
+ * Resolve a relative path against a base directory, normalizing `../` segments.
+ * JSZip uses forward-slash paths without leading slash, so we normalize accordingly.
+ */
 export function resolvePath(base: string, href: string): string {
-  if (href.startsWith('/') || href.includes('://')) return href;
-  return base + href;
+  if (href.includes('://')) return href;
+  // For absolute paths, strip the leading slash (zip paths never start with /)
+  if (href.startsWith('/')) return href.slice(1);
+  const combined = base + href;
+  // Normalize ../ and ./ segments
+  const parts = combined.split('/');
+  const result: string[] = [];
+  for (const part of parts) {
+    if (part === '..') {
+      result.pop();
+    } else if (part !== '.' && part !== '') {
+      result.push(part);
+    }
+  }
+  return result.join('/');
 }

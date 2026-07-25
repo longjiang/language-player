@@ -7,7 +7,7 @@ import { useEpub } from '@/hooks/use-epub';
 import { TokenizedText } from '@/components/TokenizedText';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { parseMarkdownBlocks } from '@/lib/parse-markdown';
-import type { TextBlock } from '@/lib/parse-markdown';
+import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { BookOpen, Upload, X, Languages, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
@@ -18,7 +18,7 @@ export default function EpubReaderScreen() {
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
   const [text, setText] = useState('');
-  const [blocks, setBlocks] = useState<TextBlock[] | null>(null);
+  const [blocks, setBlocks] = useState<ContentBlock[] | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [blockTranslations, setBlockTranslations] = useState<Record<number, string>>({});
   const [isTranslating, setIsTranslating] = useState(false);
@@ -34,7 +34,8 @@ export default function EpubReaderScreen() {
   const tokenLoadGenRef = useRef(0);
   const blockHeightsRef = useRef<(number | null)[]>([]);
 
-  const { height: windowHeight } = useWindowDimensions();
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
+  const contentWidth = windowWidth - 32; // px-4 on measuring view
 
   const onChapterChange = useCallback((chapterText: string, _title: string) => {
     setText(chapterText);
@@ -107,7 +108,7 @@ export default function EpubReaderScreen() {
   // ── Batch lemmatize visible text blocks (per-page) ──
   useEffect(() => {
     if (!hasMeasured || !blocks || !visibleBlocks) return;
-    const textBlocks = visibleBlocks.filter(b => b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item');
+    const textBlocks = visibleBlocks.filter((b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item'));
     if (textBlocks.length === 0) return;
 
     const missing: { idx: number; text: string }[] = [];
@@ -151,7 +152,7 @@ export default function EpubReaderScreen() {
     if (Object.keys(blockTranslations).length > 0) return;
     // Wait for tokens to finish loading first
     if (loadingTokens) return;
-    const textBlocks = visibleBlocks.filter(b => b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item');
+    const textBlocks = visibleBlocks.filter((b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item'));
     if (textBlocks.length === 0) return;
     const gen = ++translateGenRef.current;
     setIsTranslating(true);
@@ -209,8 +210,17 @@ export default function EpubReaderScreen() {
     );
   }
 
-  // ── Loading ──
+  // ── Loading (no file picked yet) ──
   if (epub.loading && !epub.fileName) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator size="large" color={ICON_MUTED} />
+      </View>
+    );
+  }
+
+  // ── Still loading (restoring from storage, cover/content not ready) ──
+  if (epub.loading && epub.fileName && !epub.coverUrl && !epub.coverTapped) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color={ICON_MUTED} />
@@ -300,13 +310,26 @@ export default function EpubReaderScreen() {
                 {visibleBlocks.map((block, bi) => {
                   // Find text-block position among visibleBlocks' text blocks for translation lookup
                   const visibleTextBlocks = visibleBlocks.filter(
-                    b => b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item'
+                    (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item')
                   );
-                  const localIdx = visibleTextBlocks.indexOf(block);
+                  const localIdx = block.kind === 'text' ? visibleTextBlocks.indexOf(block as TextBlock) : -1;
                   const translation = localIdx >= 0 ? blockTranslations[localIdx] : undefined;
                   // Token cache key: global block index
                   const globalIdx = blocks.indexOf(block);
-                  const cachedTokens = tokenCache[globalIdx];
+                  const cachedTokens = block.kind === 'text' ? tokenCache[globalIdx] : undefined;
+
+                  if (block.kind === 'image') {
+                    return (
+                      <View key={bi} className="my-3 items-center">
+                        <Image
+                          source={{ uri: block.uri }}
+                          className="w-full rounded-lg"
+                          style={{ aspectRatio: undefined }}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    );
+                  }
 
                   return (
                     <View key={bi} className="mb-3">
@@ -368,42 +391,55 @@ export default function EpubReaderScreen() {
               pointerEvents="none"
               className="px-4"
             >
-              {blocks.map((block, bi) => (
-                <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height)} className="mb-3">
-                  {block.type === 'heading' && (
-                    <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : 'text-lg'}`}>
-                      {block.text}
-                    </Text>
-                  )}
-                  {block.type === 'paragraph' && (
-                    <View>
-                      {/* Empty tokens array — prevents TokenizedText from auto-fetching for hidden blocks */}
-                      <TokenizedText text={block.text} l2Code={l2Lang.code} tokens={[]} />
-                      {display.translation && (
-                        <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>
-                      )}
+              {blocks.map((block, bi) => {
+                if (block.kind === 'image') {
+                  return (
+                    <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height)} className="mb-3">
+                      <Image
+                        source={{ uri: block.uri }}
+                        style={{ width: contentWidth }}
+                        resizeMode="contain"
+                      />
                     </View>
-                  )}
-                  {block.type === 'blockquote' && (
-                    <View className="border-l-2 border-muted-foreground/30 pl-3">
-                      <TokenizedText text={block.text} l2Code={l2Lang.code} tokens={[]} />
-                      {display.translation && (
-                        <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>
-                      )}
-                    </View>
-                  )}
-                  {block.type === 'list-item' && (
-                    <View>
-                      <View className="flex-row"><Text className="mr-2 text-muted-foreground">•</Text>
-                        <View className="flex-1"><TokenizedText text={block.text} l2Code={l2Lang.code} tokens={[]} /></View>
+                  );
+                }
+                return (
+                  <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height)} className="mb-3">
+                    {block.type === 'heading' && (
+                      <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : 'text-lg'}`}>
+                        {block.text}
+                      </Text>
+                    )}
+                    {block.type === 'paragraph' && (
+                      <View>
+                        {/* Empty tokens array — prevents TokenizedText from auto-fetching for hidden blocks */}
+                        <TokenizedText text={block.text} l2Code={l2Lang.code} tokens={[]} />
+                        {display.translation && (
+                          <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>
+                        )}
                       </View>
-                      {display.translation && (
-                        <Text className="ml-4 mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>
-                      )}
-                    </View>
-                  )}
-                </View>
-              ))}
+                    )}
+                    {block.type === 'blockquote' && (
+                      <View className="border-l-2 border-muted-foreground/30 pl-3">
+                        <TokenizedText text={block.text} l2Code={l2Lang.code} tokens={[]} />
+                        {display.translation && (
+                          <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>
+                        )}
+                      </View>
+                    )}
+                    {block.type === 'list-item' && (
+                      <View>
+                        <View className="flex-row"><Text className="mr-2 text-muted-foreground">•</Text>
+                          <View className="flex-1"><TokenizedText text={block.text} l2Code={l2Lang.code} tokens={[]} /></View>
+                        </View>
+                        {display.translation && (
+                          <Text className="ml-4 mt-1 text-sm leading-relaxed text-muted-foreground">{' '}</Text>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
             </View>
           )}
         </View>
