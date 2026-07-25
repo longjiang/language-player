@@ -7,6 +7,7 @@ import { useT } from '@/hooks/use-t';
 interface VideoCardProps {
   video: YouTubeVideo;
   layout?: 'card' | 'list';
+  isActive?: boolean;
 }
 
 function formatDuration(seconds: number | string | undefined): string {
@@ -29,7 +30,7 @@ function youtubeThumbnail(id: string): string {
   return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
 }
 
-export function VideoCard({ video, layout = 'card' }: VideoCardProps) {
+export function VideoCard({ video, layout = 'card', isActive = false }: VideoCardProps) {
   const t = useT();
   const duration = formatDuration(video.duration);
   const views = formatViews(video.views);
@@ -45,11 +46,11 @@ export function VideoCard({ video, layout = 'card' }: VideoCardProps) {
     return (
       <Pressable
         onPress={handlePress}
-        className="flex-row items-center gap-3 rounded-lg border border-border px-3 py-2 active:bg-muted"
+        className={`flex-row items-center gap-3 rounded-lg border px-3 py-2 active:bg-muted ${isActive ? 'border-primary bg-primary/5' : 'border-border'}`}
       >
         <Image source={{ uri: thumbnail }} className="h-14 w-24 rounded-md" />
         <View className="flex-1">
-          <Text className="text-sm font-medium text-foreground" numberOfLines={2}>
+          <Text className={`text-sm font-medium ${isActive ? 'text-primary' : 'text-foreground'}`} numberOfLines={2}>
             {video.title ?? ''}
           </Text>
           <View className="mt-1 flex-row items-center gap-2">

@@ -41,9 +41,9 @@
 | Watch History | `(tabs)/(media)/watch-history.tsx` | ✅ | `[l1]/[l2]/watch-history/page.tsx` | Date-grouped SectionList, "Clear All" via Directus DELETE |
 | TV Shows | `(tabs)/(media)/tv-shows.tsx` | ✅ | `[l1]/[l2]/tv-shows/page.tsx` | Browse + search + sort + locale filter. Show detail at `/tv-shows/[id]` with full episode listing |
 | Music | `(tabs)/(media)/music.tsx` | ✅ | `[l1]/[l2]/music/page.tsx` | Basic video grid. |
-| Live TV | `(tabs)/(media)/live-tv.tsx` | 🟡 | `[l1]/[l2]/live-tv/page.tsx` | Channel list + player + filters. **Missing**: URL-based channel restore (`tvgID` param). Web also lacks favorites/EPG/"now playing" — not mobile-specific gaps |
-| Local Media | `(tabs)/(media)/local-media.tsx` | 🟡 | `[l1]/[l2]/local-media/page.tsx` | Upload + player works. **Missing**: audio-only mode (web `HTML5Player` adapts when `isAudio=true`; mobile always renders `VideoView`). Subtitle sync offset also missing in web — not a mobile gap |
-| Video Player | `(tabs)/(media)/watch/[videoId].tsx` | 🟡 | `[l1]/[l2]/watch/[videoId]/page.tsx` | **⚠️ YouTube playback broken on iOS**. **Missing**: transcript/queue/info tabs (`TranscriptQueuePanel`), overlay subtitles mode (`SubtitlesModeBand`), video queue (`VideoQueueList`), channel card (`YouTubeChannelCard`), video meta (difficulty/description), watch history recording, position save/restore, token cache |
+| Live TV | `(tabs)/(media)/live-tv.tsx` | ✅ | `[l1]/[l2]/live-tv/page.tsx` | Channel list + player + filters. **Missing**: URL-based channel restore (`tvgID` param). Web also lacks favorites/EPG/"now playing" — not mobile-specific gaps |
+| Local Media | `(tabs)/(media)/local-media.tsx` | ✅ | `[l1]/[l2]/local-media/page.tsx` | Upload + player works. Audio-only mode renders 🎵 card (no VideoView). Subtitle sync offset missing in both web and mobile |
+| Video Player | `(tabs)/(media)/watch/[videoId].tsx` | ✅ | `[l1]/[l2]/watch/[videoId]/page.tsx` | Full split-personality layout: transcript mode (tabs: transcript/queue/info) + subtitles mode (overlay band). VideoMeta, YouTubeChannelCard, VideoQueueList, SubtitlesModeBand, watch history, position save/restore, video token cache. **⚠️ YouTube playback broken on iOS** |
 | Channel Detail | `(tabs)/(media)/channel/[channelId].tsx` | ✅ | `[l1]/[l2]/channel/[channelId]/page.tsx` | Channel header, video grid, pagination. At parity with web — channel description/subscribe/stats also missing from web channel page (subscribe lives on watch page via `YouTubeChannelCard` + `ChannelActionsMenu`) |
 
 ### Video Components
@@ -58,6 +58,11 @@
 | Level Filter | `components/video/LevelFilter.tsx` | ✅ | CEFR/HSK/JLPT pill filter |
 | Live TV Player | `components/video/LiveTVPlayer.tsx` | ✅ | expo-video based, mute toggle, buffering, channel switching |
 | Subs Search Results | `components/video/SubsSearchResults.tsx` | ✅ | Word-in-context results with in-line player |
+| Subtitles Mode Band | `components/video/SubtitlesModeBand.tsx` | ✅ | Overlay/non-overlay band with line nav, TokenizedText, overlay on wide screens |
+| Transcript Queue Panel | `components/video/TranscriptQueuePanel.tsx` | ✅ | Transcript / queue / info tab wrapper |
+| Video Queue List | `components/video/VideoQueueList.tsx` | ✅ | Queue list with TV show episode headers |
+| YouTube Channel Card | `components/video/YouTubeChannelCard.tsx` | ✅ | Channel thumbnail, title, external link, channel page link |
+| Video Meta | `components/video/VideoMeta.tsx` | ✅ | Title, views/likes/comments/date, difficulty badge, locale/category |
 
 ---
 
@@ -149,7 +154,9 @@
 | Reader Notes | `hooks/use-reader-notes.ts` | ✅ | CRUD via API |
 | Speech / TTS | `hooks/use-speech.ts` | ✅ | expo-speech + settings |
 | Subtitle Translation | `hooks/use-subtitle-translation.ts` | ✅ | Chunked /translate_array calls |
-| Video Token Cache | `hooks/use-video-token-cache.ts` | ✅ | Pre-fetches lemmatized video tokens |
+| Video Token Cache | `hooks/use-video-token-cache.ts` | ✅ | Pre-fetches lemmatized video tokens using Directus video ID |
+| Watch History | `hooks/use-watch-history-recorder.ts` | ✅ | Saves position to Python backend every 15s |
+| Difficulty Profile | `hooks/use-difficulty-profile.ts` | ✅ | Module-level cached fetch for difficulty profiles |
 | Local Media | `hooks/use-local-media.ts` | ✅ | File picker, subtitle parsing, position auto-save |
 | Inflected Search Terms | `hooks/use-inflected-search-terms.ts` | ✅ | Head + alternate forms for subs search |
 
