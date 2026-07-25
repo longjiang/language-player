@@ -82,6 +82,8 @@ export function SubtitlesModeBand({
     ? 'absolute bottom-14 left-4 right-4 z-10 bg-black/70 backdrop-blur-sm rounded-t-xl'
     : 'bg-card border-t border-border';
 
+  console.log('[SubtitlesModeBand] render:', { overlay, containerClass, subtitleLinesLen: subtitleLines.length, activeIndex });
+
   const btnColorClass = overlay
     ? 'text-white/80 hover:text-white hover:bg-white/10'
     : 'text-muted-foreground hover:text-foreground';
