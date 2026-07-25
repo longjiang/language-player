@@ -708,6 +708,7 @@
         "supported_media_formats": "Inasaidia MP4, WebM, MKV, MP3, WAV, na zaidi",
         "swap_languages": "Badilisha lugha",
         "tap_any_word_to_lookup": "Gusa neno lolote ili kulitafuta",
+        "tap_to_open": "Gonga kufungua",
         "time_spent_learning": "Muda uliotumika kujifunza {language} katika Language Player",
         "today": "Leo",
         "tokenizer_desc": "Uteuzi wa tokeni + uchambuzi wa sarufi kwa {l2}. Tazama jinsi maandishi yanavyogawanyika katika maneno binafsi na maumbo yao ya msingi.",

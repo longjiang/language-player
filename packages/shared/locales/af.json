@@ -708,6 +708,7 @@
         "supported_media_formats": "Ondersteun MP4, WebM, MKV, MP3, WAV, en meer",
         "swap_languages": "Ruil tale om",
         "tap_any_word_to_lookup": "Tik op enige woord om dit na te slaan",
+        "tap_to_open": "Tik om oop te maak",
         "time_spent_learning": "Tyd spandeer aan die leer van {language} in Language Player",
         "today": "Vandag",
         "tokenizer_desc": "Tokenisasie + lemmatisering vir {l2}. Sien hoe teks in individuele woorde en hul basisvorme opbreek.",

@@ -708,6 +708,7 @@
         "supported_media_formats": "Unterstützt MP4, WebM, MKV, MP3, WAV und mehr",
         "swap_languages": "Sprachen tauschen",
         "tap_any_word_to_lookup": "Tippen Sie auf ein beliebiges Wort, um es nachzuschlagen",
+        "tap_to_open": "Zum Öffnen tippen",
         "time_spent_learning": "Zeit, die mit dem Lernen von {language} in Language Player verbracht wurde",
         "today": "Heute",
         "tokenizer_desc": "Tokenisierung + Lemmatisierung für {l2}. Sehen Sie, wie Text in einzelne Wörter und deren Grundformen zerlegt wird.",

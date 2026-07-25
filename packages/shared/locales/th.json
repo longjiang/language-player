@@ -708,6 +708,7 @@
         "supported_media_formats": "รองรับ MP4, WebM, MKV, MP3, WAV และอื่นๆ",
         "swap_languages": "สลับภาษา",
         "tap_any_word_to_lookup": "แตะที่คำใดก็ได้เพื่อค้นหาความหมาย",
+        "tap_to_open": "แตะเพื่อเปิด",
         "time_spent_learning": "เวลาที่ใช้ในการเรียนรู้ {language} ใน Language Player",
         "today": "วันนี้",
         "tokenizer_desc": "การแบ่งคำศัพท์ + การวิเคราะห์รากศัพท์สำหรับ {l2} ดูว่าข้อความถูกแยกออกเป็นคำแต่ละคำและรูปฐานของคำเหล่านั้นอย่างไร",

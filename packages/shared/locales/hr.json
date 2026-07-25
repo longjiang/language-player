@@ -708,6 +708,7 @@
         "supported_media_formats": "Podržava MP4, WebM, MKV, MP3, WAV i više",
         "swap_languages": "Zamijeni jezike",
         "tap_any_word_to_lookup": "Dodirnite bilo koju riječ da biste je potražili",
+        "tap_to_open": "Dodirnite za otvaranje",
         "time_spent_learning": "Vrijeme provedeno učeći {language} u Language Playeru",
         "today": "Danas",
         "tokenizer_desc": "Tokenizacija + lematizacija za {l2}. Pogledajte kako se tekst raščlanjuje na pojedinačne riječi i njihove osnovne oblike.",

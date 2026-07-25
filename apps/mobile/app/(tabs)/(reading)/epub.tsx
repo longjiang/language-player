@@ -232,7 +232,7 @@ export default function EpubReaderScreen() {
         </View>
         <Pressable onPress={epub.openFromCover} className="flex-1 items-center justify-center px-4">
           <Image source={{ uri: epub.coverUrl }} className="max-h-[70vh] w-full rounded-lg" resizeMode="contain" />
-          <Text className="mt-4 text-xs text-muted-foreground">{t('action.open_file')}</Text>
+          <Text className="mt-4 text-xs text-muted-foreground">{t('msg.tap_to_open')}</Text>
         </Pressable>
       </View>
     );
