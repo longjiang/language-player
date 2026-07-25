@@ -58,7 +58,7 @@ export function LanguageSwitcher() {
           />
 
           {/* Modal content */}
-          <div className="relative z-10 mx-4 w-full max-w-2xl">
+          <div className="relative z-10 mx-4 w-full max-w-2xl rounded-2xl bg-background shadow-2xl p-6">
             <LanguagePicker
               initialL1={l1.code}
               initialL2={l2.code}
