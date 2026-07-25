@@ -79,27 +79,13 @@
 - ✅ Music page
 - ✅ Level system
 - ✅ Documentation / Help
-- ⬜ Learning path (Will Sunset)
-- ⬜ ePub Reader (Will Sunset)
-- ⬜ Phrasebooks (Will Sunset)
 
 ## Phase 6: User Features
 
 - ✅ Watch history
 - ✅ Go Pro / Subscription management
 
-## Phase 7: Backend Consolidation
-
-> 🗄️ **Repo merge**: `zerotohero-python` → `apps/api/` (see docs/specs/002)
-
-- ⬜ Merge Python backend into monorepo with full Git history
-- ⬜ Wire `apps/api/` into Turborepo pipeline (`npx turbo dev` starts backend too)
-- ⬜ Directus 8 → Directus 11 migration plan
-- ⬜ CI/CD pipeline (GitHub Actions)
-- ⬜ Testing infrastructure (unit + E2E)
-- ⬜ Monitoring + error tracking
-
-## Phase 8: Mobile Integration ✅ (pivoted)
+## Phase 7: Mobile Integration ✅ (pivoted)
 
 > 🗄️ **Repo merge**: `language-player-3` → `apps/mobile-go-legacy/` (see docs/specs/002)
 > 🔄 **Pivot**: ADR-0010 — fresh port from Next.js → React Native at `apps/mobile/` (formerly `apps/mobile-v2/`)
@@ -118,7 +104,7 @@
 - 🔄 **Porting** — porting all Next.js pages/components to React Native (see AGENTS.md Mobile Porting Rules)
 - ⬜ **Feature parity** — validate against Classic for completeness
 
-## Phase 9: Sunset Classic
+## Phase 8: Sunset Classic
 
 > 🗄️ **Repo merge**: `zerotohero-nuxt` → `apps/classic/` for archival (see docs/specs/002)
 
@@ -129,10 +115,18 @@
 - ⬜ Archive `zerotohero-nuxt` GitHub repo (read-only)
 - ⬜ Shut down Classic deployment
 
+## Phase 9: Backend Consolidation
+
+> 🗄️ **Repo merge**: `zerotohero-python` → `apps/api/` (see docs/specs/002)
+
+- ⬜ Merge Python backend into monorepo with full Git history
+- ⬜ Wire `apps/api/` into Turborepo pipeline (`npx turbo dev` starts backend too)
+- ⬜ Directus 8 → Directus 11 migration plan
+- ⬜ CI/CD pipeline (GitHub Actions)
+- ⬜ Testing infrastructure (unit + E2E)
+- ⬜ Monitoring + error tracking
+
 ---
 
 ## Currently Working On
-- Phase 4: Dictionary
-
-## Up Next
-- Phase 5: Content Features
+- Phase 7: Mobile Integration — porting all Next.js pages to React Native
