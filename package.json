@@ -28,7 +28,7 @@
   },
   "packageManager": "npm@10.7.0",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "dependencies": {
     "opencc-js": "^1.4.1",
