@@ -25,6 +25,8 @@ export interface UseEpubReturn {
   prevHref: string | null;
   nextHref: string | null;
   error: string | null;
+  epubTitle: string;
+  epubAuthor: string;
   pickFile: () => Promise<void>;
   loadChapter: (href: string) => Promise<string>;
   prevChapter: () => void;
@@ -47,6 +49,8 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
   const [loading, setLoading] = useState(false);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [coverTapped, setCoverTapped] = useState(false);
+  const [epubTitle, setEpubTitle] = useState('');
+  const [epubAuthor, setEpubAuthor] = useState('');
   const [restoring, setRestoring] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -107,6 +111,8 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
     const zip = await JSZip.loadAsync(base64, { base64: true });
     zipRef.current = zip;
+    // Clear stale content from any previously loaded EPUB
+    cacheRef.current.clear();
 
     const containerFile = zip.file('META-INF/container.xml');
     if (!containerFile) throw new Error('Invalid EPUB: no container.xml');
@@ -162,6 +168,8 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
 
     const meta = parseOPF(opfXml, opfDir, ncxXml, navXml, navDir);
     spineRef.current = meta.spine;
+    setEpubTitle(meta.title);
+    setEpubAuthor(meta.author);
 
     // ── Build image cache from manifest — write images to temp files (RN Image needs file:// URIs) ──
     const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -209,17 +217,12 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
           // RN Image needs file:// prefix for local paths
           setCoverUrl('file://' + coverPath);
         } catch {
-          // Cover extraction failed — proceed without cover
-          setCoverTapped(true);
+          // Cover extraction failed — leave coverUrl null for generated fallback
         }
-      } else {
-        // Cover href found in metadata but file missing from zip — skip cover
-        setCoverTapped(true);
       }
-    } else {
-      // No cover metadata — skip cover screen
-      setCoverTapped(true);
+      // Cover href in metadata but file missing — leave coverUrl null for fallback
     }
+    // No cover metadata — leave coverUrl null for fallback
 
     // TOC — nav doc or NCX already parsed, fallback to spine map
     setToc(meta.toc.length > 0 ? meta.toc : meta.spine.map((s, idx) => ({
@@ -342,6 +345,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     zipRef.current = null; spineRef.current = []; cacheRef.current.clear(); imageCacheRef.current.clear();
     setFileName(null); setToc([]); setChapterTitle(null); setChapterHref(null);
     setCoverUrl(null); setCoverTapped(false); setError(null);
+    setEpubTitle(''); setEpubAuthor('');
     persist(null);
   }, [persist, coverUrl]);
 
@@ -352,6 +356,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     loading: loading || restoring,
     coverUrl, coverTapped,
     flatToc, prevHref, nextHref, error,
+    epubTitle, epubAuthor,
     pickFile, loadChapter, prevChapter, nextChapter, close, openFromCover,
   };
 }

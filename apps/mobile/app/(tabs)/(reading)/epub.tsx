@@ -13,6 +13,20 @@ import { BookOpen, Upload, X, Languages, ChevronLeft, ChevronRight, Loader2 } fr
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import type { LemmatizedToken } from '@langplayer/shared';
 
+/** Generate a deterministic dark color from a string (for generated covers). */
+function hashColor(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  // Dark hues: use full hue range, low lightness (15–35%), medium saturation (40–70%)
+  const h = Math.abs(hash % 360);
+  const s = 40 + (Math.abs(hash >> 8) % 31); // 40–70%
+  const l = 15 + (Math.abs(hash >> 16) % 21); // 15–35%
+  return `hsl(${h}, ${s}%, ${l}%)`;
+}
+
 export default function EpubReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
@@ -47,6 +61,19 @@ export default function EpubReaderScreen() {
 
   // ── Reset cover error when cover URL changes ──
   useEffect(() => { setCoverLoadError(false); }, [epub.coverUrl]);
+
+  // ── Clear stale content when a new EPUB file is loaded ──
+  useEffect(() => {
+    setText('');
+    setBlocks(null);
+    setBlockTranslations({});
+    setTokenCache({});
+    setPageBreaks([]);
+    setHasMeasured(false);
+    setMeasuredBlockCount(0);
+    blockHeightsRef.current = [];
+    setPage(0);
+  }, [epub.fileName]);
 
   // Parse markdown for layout — TokenizedText handles its own tokenization
   useEffect(() => {
@@ -223,8 +250,9 @@ export default function EpubReaderScreen() {
     );
   }
 
-  // ── Still loading (restoring from storage, cover/content not ready) ──
-  if (epub.loading && epub.fileName && !epub.coverUrl && !epub.coverTapped) {
+  // ── Cover (real image or generated fallback) ──
+  if (!epub.coverTapped && epub.fileName && !epub.coverUrl && epub.loading) {
+    // Waiting for cover to load — show spinner
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color={ICON_MUTED} />
@@ -232,8 +260,10 @@ export default function EpubReaderScreen() {
     );
   }
 
-  // ── Cover ──
-  if (epub.coverUrl && !epub.coverTapped) {
+  if (!epub.coverTapped && epub.fileName) {
+    const bgColor = hashColor(epub.epubTitle || epub.fileName);
+    const hasCoverImage = !!epub.coverUrl;
+
     return (
       <View className="flex-1 bg-background">
         <View className="px-4 py-5">
@@ -245,18 +275,35 @@ export default function EpubReaderScreen() {
           </View>
         </View>
         <Pressable onPress={epub.openFromCover} className="flex-1 items-center justify-center px-4">
-          {coverLoadError ? (
-            <View className="items-center gap-3">
-              <BookOpen size={48} color={ICON_MUTED} />
-              <Text className="text-sm text-muted-foreground">{t('action.open_file')}</Text>
-            </View>
+          {hasCoverImage ? (
+            coverLoadError ? (
+              <View className="items-center gap-3">
+                <BookOpen size={48} color={ICON_MUTED} />
+                <Text className="text-sm text-muted-foreground">{t('action.open_file')}</Text>
+              </View>
+            ) : (
+              <Image
+                source={{ uri: epub.coverUrl }}
+                style={{ width: '100%', height: windowHeight * 0.6 }}
+                resizeMode="contain"
+                onError={() => setCoverLoadError(true)}
+              />
+            )
           ) : (
-            <Image
-              source={{ uri: epub.coverUrl }}
-              style={{ width: '100%', height: windowHeight * 0.6 }}
-              resizeMode="contain"
-              onError={() => setCoverLoadError(true)}
-            />
+            /* Generated cover: colored background with title + author */
+            <View
+              style={{ width: '100%', height: windowHeight * 0.6, backgroundColor: bgColor }}
+              className="items-center justify-center rounded-lg px-6"
+            >
+              <Text style={{ color: 'white', fontSize: 22, fontWeight: '700', textAlign: 'center', marginBottom: 12 }}>
+                {epub.epubTitle || epub.fileName?.replace(/\.epub$/, '')}
+              </Text>
+              {epub.epubAuthor ? (
+                <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, textAlign: 'center' }}>
+                  {epub.epubAuthor}
+                </Text>
+              ) : null}
+            </View>
           )}
           <Text className="mt-4 text-xs text-muted-foreground">{t('action.open_file')}</Text>
         </Pressable>
