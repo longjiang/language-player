@@ -18,11 +18,23 @@ import { VideoMeta } from '@/components/video/VideoMeta';
 import { YouTubeChannelCard } from '@/components/video/YouTubeChannelCard';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
+import { parseSubtitleCSV } from '@langplayer/utils';
 import { AlertCircle } from 'lucide-react-native';
 import type { YouTubeVideo } from '@langplayer/shared';
 
 const WATCH_POS_PREFIX = 'lp-watch-pos-';
 const SAVE_POS_INTERVAL = 5000;
+
+/** Parse ISO 8601 duration (PT1M25S, PT1H23M45S) into seconds, or return as-is if already a number. */
+function parseDuration(d: any): number | undefined {
+  if (d == null) return undefined;
+  if (typeof d === 'number') return d;
+  if (typeof d === 'string') {
+    const m = d.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/);
+    if (m) return (parseInt(m[1] ?? '0') * 3600) + (parseInt(m[2] ?? '0') * 60) + parseFloat(m[3] ?? '0');
+  }
+  return undefined;
+}
 
 async function getSavedPosition(videoId: string): Promise<number> {
   try {
@@ -115,61 +127,52 @@ export default function WatchScreen() {
 
     (async () => {
       try {
-        // 1. Fetch YouTube metadata via /check-youtube (title, channelId, thumbnails, etc.)
-        const ytRes = await fetch(
-          `${PYTHON_API_URL}/check-youtube?youtube_ids=${encodeURIComponent(videoId)}`,
-          { signal: AbortSignal.timeout(10000) },
+        // Single endpoint: queries Directus, falls back to YouTube
+        const res = await fetch(
+          `${PYTHON_API_URL}/videos?youtube_id=${encodeURIComponent(videoId)}&subs_l2=1&l2=${l2Lang.code}`,
+          { signal: AbortSignal.timeout(15000) },
         );
-        let ytData: any = null;
-        if (ytRes.ok) {
-          const ytArr = await ytRes.json();
-          ytData = Array.isArray(ytArr) ? ytArr[0] : null;
-        }
+        if (!res.ok) throw new Error(t('msg.video_unavailable'));
 
-        const snippet = ytData?.snippet;
-        const contentDetails = ytData?.contentDetails;
+        const data = await res.json();
+        const rawVideo = data?.video ?? data;
 
-        // Parse ISO 8601 duration (PT3M34S → 214)
-        let durationSecs = 0;
-        if (contentDetails?.duration) {
-          const match = contentDetails.duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-          if (match) {
-            durationSecs = (parseInt(match[1] ?? '0', 10) * 3600)
-              + (parseInt(match[2] ?? '0', 10) * 60)
-              + parseInt(match[3] ?? '0', 10);
-          }
-        }
+        if (!rawVideo) throw new Error(t('msg.video_unavailable'));
 
+        // Map to YouTubeVideo shape
         const v: YouTubeVideo = {
-          youtube_id: videoId,
-          title: snippet?.title ?? snippet?.localized?.title,
-          channel_id: snippet?.channelId,
-          duration: durationSecs,
-          date: snippet?.publishedAt ? new Date(snippet.publishedAt) : undefined,
-          // Directus-only fields (difficulty, views, etc.) are not available
-          // from /check-youtube — left undefined. They will populate when the
-          // video is in Directus and a /videos?youtube_id endpoint is added.
+          id: rawVideo.id != null ? String(rawVideo.id) : undefined,
+          youtube_id: rawVideo.youtube_id ?? videoId,
+          title: rawVideo.title,
+          views: rawVideo.views,
+          likes: rawVideo.likes,
+          comments: rawVideo.comments,
+          duration: parseDuration(rawVideo.duration),
+          date: rawVideo.date,
+          difficulty: rawVideo.difficulty,
+          locale: rawVideo.locale,
+          category: rawVideo.category,
+          channel_id: rawVideo.channel_id,
+          tv_show: rawVideo.tv_show,
+          tags: rawVideo.tags,
         };
         setVideo(v);
         setDuration(v.duration ?? 0);
 
-        // 2. Fetch subtitles via YouTube transcript API
+        // Parse subtitles
         let lines: { line: string; starttime: number }[] = [];
-        try {
-          const subRes = await fetch(
-            `${PYTHON_API_URL}/get_best_l2_subs?v=${encodeURIComponent(videoId)}&l2=${l2Lang.code}`,
-            { signal: AbortSignal.timeout(10000) },
-          );
-          if (subRes.ok) {
-            const subData = await subRes.json();
-            if (Array.isArray(subData)) {
-              lines = subData.map((item: any) => ({
-                line: item.text ?? '',
-                starttime: item.start ?? 0,
-              }));
-            }
-          }
-        } catch { /* subs unavailable — continue without */ }
+
+        // If video was in Directus, subs_l2 is a raw CSV string
+        if (rawVideo.subs_l2 && typeof rawVideo.subs_l2 === 'string' && rawVideo.subs_l2.length > 100) {
+          lines = parseSubtitleCSV(rawVideo.subs_l2);
+        }
+        // If video was from YouTube fallback, lines are in data.lines
+        else if (data.lines && Array.isArray(data.lines)) {
+          lines = data.lines.map((l: any) => ({
+            line: l.line ?? l.text ?? '',
+            starttime: l.starttime ?? l.start ?? 0,
+          }));
+        }
 
         if (lines.length > 0) {
           const synced: SyncedLine[] = lines.map((l) => ({
