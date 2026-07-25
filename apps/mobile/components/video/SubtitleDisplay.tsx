@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -114,22 +114,26 @@ export function SubtitleDisplay({
     })();
   }, [youtubeId, initialLines]);
 
-  // Find active line by current video time
-  useEffect(() => {
-    if (l2Lines.length === 0) return;
+  // Find active line by current video time — synchronous, no feedback loop
+  const computedActiveIdx = useMemo(() => {
+    if (l2Lines.length === 0) return -1;
     let idx = -1;
     for (let i = 0; i < l2Lines.length; i++) {
       if (l2Lines[i]!.starttime <= currentTime) idx = i;
       else break;
     }
-    if (idx !== activeIdx) {
-      setActiveIdx(idx);
-      // Auto-scroll to active line
-      if (idx >= 0 && scrollRef.current) {
-        scrollRef.current.scrollTo({ y: idx * 48, animated: true });
+    return idx;
+  }, [currentTime, l2Lines]);
+
+  // Keep state in sync with computed value; scroll when it changes
+  useEffect(() => {
+    if (computedActiveIdx !== activeIdx) {
+      setActiveIdx(computedActiveIdx);
+      if (computedActiveIdx >= 0 && scrollRef.current) {
+        scrollRef.current.scrollTo({ y: computedActiveIdx * 48, animated: true });
       }
     }
-  }, [currentTime, l2Lines, activeIdx]);
+  }, [computedActiveIdx]);
 
   if (loadingSubs) {
     return (
