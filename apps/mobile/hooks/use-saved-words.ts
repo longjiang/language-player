@@ -30,6 +30,7 @@ async function enrichMissingHeads(
   const words = store[l2Code] ?? [];
   const missing = words.filter((w) => !w.head);
   if (missing.length === 0) return store;
+  console.log('[savedWords] enrichMissingHeads — lang:', l2Code, 'total:', words.length, 'missing:', missing.length);
 
   const enriched = [...words];
   for (let i = 0; i < enriched.length; i++) {
@@ -37,14 +38,24 @@ async function enrichMissingHeads(
     if (w.head) continue;
     try {
       const decomposed = decomposeWordId(w.id, l2Code);
-      if (!decomposed) continue;
+      if (!decomposed) {
+        console.warn('[savedWords] enrichMissingHeads — could not decompose word id:', w.id);
+        continue;
+      }
       const { dict: dictId, id: scopedId } = decomposed;
+      console.log('[savedWords] enrichMissingHeads — fetching entry:', { l2Code, dictId, scopedId });
       const res = await dict.getEntry(l2Code, dictId, scopedId);
       if (res?.entry?.head) {
         enriched[i] = { ...w, head: res.entry.head };
+        console.log('[savedWords] enrichMissingHeads — enriched head for:', w.id, '->', res.entry.head);
+      } else {
+        console.warn('[savedWords] enrichMissingHeads — no head in response for:', w.id);
       }
-    } catch { /* skip failed lookups */ }
+    } catch (err) {
+      console.warn('[savedWords] enrichMissingHeads — error fetching entry for', w.id, ':', err);
+    }
   }
+  console.log('[savedWords] enrichMissingHeads — done for lang:', l2Code);
   return { ...store, [l2Code]: enriched };
 }
 
@@ -69,44 +80,72 @@ export function useSavedWords() {
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
 
-  // Load from SecureStore
+  // Load from SecureStore — set loaded=true immediately so the UI renders,
+  // then enrich missing heads in the background.
   useEffect(() => {
-    if (loaded) return;
+    let cancelled = false;
+    console.log('[savedWords] EFFECT 1 — starting');
     (async () => {
       try {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
+        console.log('[savedWords] EFFECT 1 — SecureStore read, found:', !!raw);
         if (raw) {
-          let parsed = JSON.parse(raw) as SavedWordsStore;
-          // Enrich old records missing head words + persist
+          const parsed = JSON.parse(raw) as SavedWordsStore;
+          console.log('[savedWords] EFFECT 1 — parsed keys:', Object.keys(parsed), 'counts:', Object.fromEntries(Object.entries(parsed).map(([k, v]) => [k, v.length])));
+          if (!cancelled) {
+            setSavedWords(parsed);
+            setLoaded(true);
+          }
+          // Enrich missing heads in the background (don't block UI)
           let enriched = false;
+          let enrichedStore = parsed;
           for (const lang of Object.keys(parsed)) {
+            if (cancelled) return;
+            const missingCount = parsed[lang].filter((w) => !w.head).length;
+            if (missingCount === 0) continue;
+            console.log('[savedWords] EFFECT 1 — enriching lang:', lang, 'missing heads:', missingCount);
             const result = await enrichMissingHeads(parsed, lang, dict);
-            if (result[lang] !== parsed[lang]) {
-              parsed = result;
+            if (result[lang] !== enrichedStore[lang]) {
+              enrichedStore = result;
               enriched = true;
+              console.log('[savedWords] EFFECT 1 — enriched heads for lang:', lang);
             }
           }
-          if (enriched) {
-            SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(parsed));
+          if (enriched && !cancelled) {
+            console.log('[savedWords] EFFECT 1 — persisting enriched store');
+            SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(enrichedStore));
+            setSavedWords(enrichedStore);
           }
-          setSavedWords(parsed);
+        } else {
+          if (!cancelled) {
+            setLoaded(true);
+          }
         }
-      } catch {}
-      setLoaded(true);
+      } catch (err) {
+        console.warn('[savedWords] EFFECT 1 — error loading from SecureStore:', err);
+        if (!cancelled) setLoaded(true);
+      }
     })();
-  }, [loaded]);
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Merge cloud data
   useEffect(() => {
+    console.log('[savedWords] EFFECT 2 — deps:', { hasUser: !!user, loaded, cloudLoaded, hasCloudData: !!cloudData?.saved_words });
     if (!user || !loaded || !cloudLoaded || !cloudData?.saved_words) return;
     try {
       const cloud = JSON.parse(cloudData.saved_words) as SavedWordsStore;
+      console.log('[savedWords] EFFECT 2 — merging cloud data, keys:', Object.keys(cloud));
       setSavedWords((prev) => {
         const merged = mergeSavedWords(prev, cloud);
+        if (merged === prev) return prev; // skip no-op
+        console.log('[savedWords] EFFECT 2 — merged, counts:', Object.fromEntries(Object.entries(merged).map(([k, v]) => [k, v.length])));
         SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(merged));
         return merged;
       });
-    } catch {}
+    } catch (err) {
+      console.warn('[savedWords] EFFECT 2 — error parsing cloud data:', err);
+    }
   }, [user, loaded, cloudLoaded, cloudData]);
 
   const scheduleSync = useCallback((words: SavedWordsStore) => {
