@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react';
-import { View, Text, Pressable, TextInput, SectionList, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, TextInput, SectionList, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
@@ -23,6 +25,7 @@ export default function SavedWordsScreen() {
 
   const [sortMode, setSortMode] = useState<SortMode>('newest');
   const [filterText, setFilterText] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   console.log('[SavedWordsScreen] render — loaded:', loaded, 'l2Code:', l2Lang.code);
 
@@ -91,6 +94,33 @@ export default function SavedWordsScreen() {
     clearAll(l2Lang.code);
   }, [l2Lang.code, clearAll]);
 
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    try {
+      const json = JSON.stringify(savedWords, null, 2);
+      const fileName = `saved-words-${l2Lang.code}.json`;
+      const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+      await FileSystem.writeAsStringAsync(fileUri, json, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        // Sharing not available (e.g., on simulator) — skip silently
+        return;
+      }
+      await Sharing.shareAsync(fileUri, {
+        mimeType: 'application/json',
+        dialogTitle: t('action.export'),
+        UTI: 'public.json',
+      });
+    } catch (err) {
+      console.warn('[SavedWords] export failed:', err);
+      Alert.alert(t('error.general'), t('error.something_went_wrong'));
+    } finally {
+      setExporting(false);
+    }
+  }, [savedWords, l2Lang.code, t]);
+
   // ── Lazy enrichment: only fetch dictionary entries for rows visible on screen ──
   const enrichedRef = useRef<Set<string>>(new Set());
 
@@ -149,8 +179,16 @@ export default function SavedWordsScreen() {
           </Text>
         </View>
         <View className="flex-row gap-2">
-          <Pressable className="flex-row items-center gap-1 rounded-md border border-border px-2.5 py-1.5">
-            <Download size={14} color={ICON_MUTED} />
+          <Pressable
+            onPress={handleExport}
+            disabled={exporting || allWords.length === 0}
+            className="flex-row items-center gap-1 rounded-md border border-border px-2.5 py-1.5"
+          >
+            {exporting ? (
+              <ActivityIndicator size="small" color={ICON_MUTED} />
+            ) : (
+              <Download size={14} color={ICON_MUTED} />
+            )}
             <Text className="text-xs text-muted-foreground">{t('action.export')}</Text>
           </Pressable>
           <Pressable onPress={handleClearAll} className="flex-row items-center gap-1 rounded-md border border-border px-2.5 py-1.5">
