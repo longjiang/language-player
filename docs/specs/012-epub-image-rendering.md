@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-012
 - **Feature**: Render inline images from EPUB content documents on mobile
-- **Status**: draft
+- **Status**: in-progress (inline images: implemented; cover image: unresolved — 4 attempts, see Implementation Attempts)
 - **Created**: 2025-07-25
 - **ROADMAP Phase**: Phase 4 (Reading)
 - **See also**: [EPUB Reader Architecture](../arch/013-epub-reader-architecture.md)
@@ -279,8 +279,94 @@ if (coverHref) {
 - ARCH-013 (EPUB Reader Architecture) — this spec extends the existing architecture
 - No new npm packages required
 
-## Open Questions
+## Implementation Attempts
 
-1. **SVG support** — Should we skip SVGs entirely, or add a server-side rasterization endpoint? Decision: skip for v1.
-2. **Max image width** — Should it be the full content width, or capped (e.g., 80%)? Decision: full width with `resizeMode="contain"` for v1.
-3. **Image captions** — Some EPUBs use `<figure>/<figcaption>`. Should we extract captions? Decision: not in v1; captions will be lost during HTML stripping.
+**Status: UNRESOLVED** — as of 2025-07-25, four separate implementation attempts have been made. None have succeeded in displaying the cover image when an EPUB opens. The feature remains unimplemented.
+
+### Attempt 1 — Agent 1 (branch `a`, commit `5c2a85b8`)
+
+**Changes:**
+- `epub-parser.ts`: Added `EpubManifestItem` with `mediaType`; added `coverItemId` to `EpubMetadata`
+- `use-epub.ts`: Built `imageCacheRef` in `loadFromUri`; injected `[IMG:dataUri]` markers in `loadChapterContent`; moved `setRestoring(false)` after `loadFromUri`
+- `parse-markdown.ts`: Added `ImageBlock` + `ContentBlock` union; split on `[IMG:...]` markers
+- `epub.tsx`: Rendered `ImageBlock` in measuring + visible views; added restore loading guard
+
+**Bugs:**
+- `openFromCover` referenced `loadChapter` before its `const` declaration (TDZ reference error at runtime)
+- Hardcoded `image/jpeg` MIME type for cover — broken for PNG covers
+- `resolvePathFn` didn't normalize `../` paths — `zip.file()` missed files
+- `loadChapterContent` resolved img paths via `contentDir + src` concatenation, which didn't normalize `../` segments — cache lookups never matched
+- No EPUB 3 `properties="cover-image"` cover detection
+
+**Outcome:** Cover not showing. Committed to branch `a`.
+
+### Attempt 2 — Agent 2 (branch `b`, commit `7451726a`)
+
+**Changes over Attempt 1:**
+- Re-parsed `<item>` elements from OPF XML in `loadFromUri` to build image cache (separate from `parseOPF`)
+- Sourced cover from `imageCacheRef` first, with direct zip fallback
+- Used shared `resolvePath` from `epub-parser.ts` for nav doc and NCX lookups
+- Added `resolveImagePath()` helper for content-doc-relative img resolution
+
+**Bugs:**
+- Same `loadChapterContent` `contentDir + src` bug — img paths with `../` still never matched cache keys
+- Same hardcoded `image/jpeg` fallback for cover MIME type
+- `parseMarkdownBlocks` split regex may have left edge cases with some marker formats
+
+**Outcome:** Cover not showing. Committed to branch `b`.
+
+### Attempt 3 — Agent 3 (branch `c`, commit `ed5beb08`)
+
+**Changes over Attempt 2:**
+- Added EPUB 3 `properties="cover-image"` detection in `parseOPF`
+- `resolvePathFn` now normalizes `../` segments (split/join with stack)
+- `extractAttr` supports single-quoted XML attributes
+- `restoredRef` guard to prevent double-execution of restore effect
+- `openFromCover` moved after `loadChapter` to fix TDZ
+- EPUB 2 fallback also checks `<meta property="cover">`
+
+**Bugs:**
+- Same `loadChapterContent` `contentDir + src` bug still present — `resolvePathFn` was available but not used for img `src` resolution in `loadChapterContent`
+- `extractAttr` regex pattern `name="([^"]+)"` used `+` quantifier (one or more), which would fail on empty attribute values like `alt=""`
+
+**Outcome:** Cover not showing. Committed to branch `c`.
+
+### Attempt 4 — Agent 4 (branch `d`, commit `24ab0209`)
+
+**Changes over Attempt 3:**
+- **Root cause fix:** `loadChapterContent` now uses `resolvePath(contentDir, src)` for img path resolution — this normalizes `../` segments so cache keys actually match
+- `extractAttr` updated to `*` quantifier (zero or more) — handles empty attribute values and supports both double and single quotes via two regex attempts
+- EPUB 2 cover detection handles both `name="cover"` and `property="cover"`
+- `resolvePath` (exported from `epub-parser.ts`) now normalizes `../` and handles absolute paths by stripping leading `/`
+- `index.tsx` and `web-reader.tsx` also updated to `ContentBlock` with `kind`-based narrowing
+- `epub.tsx` uses `if (block.kind === 'image') return ...` early-return pattern for proper TypeScript discriminated union narrowing
+- `contentWidth` computed from `useWindowDimensions` for image measurement
+
+**Remaining issues (cover still not showing):**
+- Possible causes not yet ruled out:
+  - The cover image item may use a MIME type not in `IMAGE_MIME_TYPES` (e.g., `image/svg+xml`, `image/bmp`, `image/tiff`)
+  - The cover may be referenced via `<guide><reference type="cover">` (EPUB 2) rather than `<meta>` or `properties="cover-image"`
+  - The cover image may be in a nested zip directory structure where `opfDir` derivation from `container.xml` yields a path different from the actual zip entries
+  - The EPUB may have no explicit cover metadata at all — the cover is simply the first page of the first spine item
+  - `zip.file()` may return null if the path uses a different slash convention or encoding than expected
+  - The restore flow may still have a race condition where `coverTapped` is set to `true` before `coverUrl` is available
+
+**Recommended next debugging steps:**
+1. Add `console.log` in `loadFromUri` to dump `meta.coverBase64`, `meta.coverItemId`, and the resolved zip path
+2. Log all manifest items with image MIME types to verify the cover is being identified
+3. Log `coverItem?.mediaType` to check if it's in `IMAGE_MIME_TYPES`
+4. Try with a known-simple EPUB 2 file that uses `<meta name="cover">` to isolate EPUB 3 vs EPUB 2 issues
+5. Check if the `restoredRef` guard might be preventing `loadFromUri` from running at all in some scenarios
+
+**Outcome:** Cover not showing. Committed to branch `d`.
+
+### Summary
+
+| Attempt | Branch | Commit | Key contribution | Cover works? |
+|---|---|---|---|---|
+| 1 | `a` | `5c2a85b8` | Initial `ImageBlock` type, `[IMG:]` marker system, image cache | No |
+| 2 | `b` | `7451726a` | `resolveImagePath()` helper, cover-from-cache pattern | No |
+| 3 | `c` | `ed5beb08` | EPUB 3 `cover-image` detection, `../` normalization in `resolvePathFn`, single-quote attr support | No |
+| 4 | `d` | `24ab0209` | Fixed `../` in img resolution, `*` quantifier in `extractAttr`, `property="cover"` support, `ContentBlock` narrowing in all readers | No |
+
+**Inline image rendering** (images within chapter content) was implemented successfully across all attempts — the `[IMG:dataUri]` marker → `ImageBlock` → `<Image>` pipeline is structurally sound. The **cover image** specifically remains the unresolved piece, likely due to EPUB metadata detection or zip path resolution rather than the rendering pipeline itself.
