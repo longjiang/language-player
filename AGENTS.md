@@ -365,3 +365,27 @@ npx expo run:ios --no-install
 | `searchParams.get('key')` | `useLocalSearchParams<{ key: string }>()` |
 
 **GOLDEN RULE**: Port, don't invent. Every time you think "I'll simplify this" or "I'll skip this for now" or "this is too complex for mobile" — STOP. You're wrong. Port it exactly. If something crashes (like NativeWind interop), use inline styles as fallback, but KEEP the feature.
+
+#### API Client Precautions for Mobile Porting
+
+The `@langplayer/api-client` package is shared between web and mobile. Its `apiClient` wrapper **already unwraps Axios `.data`** — every method (`get`, `post`, `put`, `delete`) does `.then(r => r.data)`. See `packages/api-client/src/client.ts` (65 lines, read it once).
+
+**Critical rules when calling `@langplayer/api-client` methods from mobile:**
+
+1. **Never use `as any` on apiClient responses.** The return types are fully typed. `dict.getEntry()` returns `Promise<{ entry: DictionaryEntry }>`, so `res.entry` is type-checked. Using `as any` and accessing `res.data.entry` is a double-unwrap bug that TypeScript would catch if you kept the types.
+
+2. **Read the return type of the method you're calling.** Open the source in `packages/api-client/src/` — it tells you the exact response shape. `apiClient.get<T>(url)` returns `Promise<T>`, not `Promise<AxiosResponse<T>>`.
+
+3. **When a response looks wrong, log the actual shape before changing access paths.** One `console.log(Object.keys(res), JSON.stringify(res).slice(0, 200))` beats multiple wrong commits. Never guess whether it's `res.entry`, `res.data.entry`, or `res.data.data.entry` — log it.
+
+4. **Check if the web app has the same API call pattern.** Search `apps/web/src` for the same hook or apiClient method. If the web app uses it, the response shape is identical — copy the access pattern exactly. If the web app doesn't have an equivalent (e.g., saved-words enrichment is mobile-only), add a comment noting that so future readers don't waste time looking for a web reference.
+
+5. **Validate new API integrations with a throwaway one-liner before building UI around them:**
+
+   ```ts
+   // Confirm response shape before wiring up state/UI
+   const res = await dict.getEntry('zh', 'cedict', '1');
+   console.log('keys:', Object.keys(res)); // → ['entry']
+   ```
+
+6. **Use the shared types from `@langplayer/shared`.** `DictionaryEntry`, `LlmGeneratedEntry`, `LemmatizeResponse`, etc. are already imported in most mobile hooks. Annotate variables with these types instead of relying on inference through `as any` casts.
