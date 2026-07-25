@@ -74,7 +74,7 @@ export default function TvShowsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <Pressable
-            onPress={() => item.youtube_id ? router.push(`/(tabs)/(media)/watch/${item.youtube_id}` as any) : null}
+            onPress={() => router.push(`/(tabs)/(media)/tv-shows/${item.id}` as any)}
             className="flex-row items-center gap-3 border-b border-border px-4 py-3"
           >
             <Image source={{ uri: item.poster ?? `https://img.youtube.com/vi/${item.youtube_id}/default.jpg` }} className="h-16 w-12 rounded" />

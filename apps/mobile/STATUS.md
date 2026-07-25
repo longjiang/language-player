@@ -39,7 +39,7 @@
 | Explore | `(tabs)/(media)/index.tsx` | ✅ | `[l1]/[l2]/explore/page.tsx` | Level filter, pagination, pull-to-refresh. No category/genre tabs like web has |
 | Search | `(tabs)/(media)/search.tsx` | ✅ | `[l1]/[l2]/search/page.tsx` | Tag cloud, YouTube URL extraction, text search |
 | Watch History | `(tabs)/(media)/watch-history.tsx` | ✅ | `[l1]/[l2]/watch-history/page.tsx` | Date-grouped SectionList, "Clear All" via Directus DELETE |
-| TV Shows | `(tabs)/(media)/tv-shows.tsx` | 🟡 | `[l1]/[l2]/tv-shows/page.tsx` | Browse + search + sort works. **Missing**: show detail page, episode listing |
+| TV Shows | `(tabs)/(media)/tv-shows.tsx` | ✅ | `[l1]/[l2]/tv-shows/page.tsx` | Browse + search + sort + locale filter. Show detail at `/tv-shows/[id]` with full episode listing |
 | Music | `(tabs)/(media)/music.tsx` | ✅ | `[l1]/[l2]/music/page.tsx` | Basic video grid. |
 | Live TV | `(tabs)/(media)/live-tv.tsx` | 🟡 | `[l1]/[l2]/live-tv/page.tsx` | Channel list + player + filters. **Missing**: favorites, program guide/EPG, "now playing" |
 | Local Media | `(tabs)/(media)/local-media.tsx` | 🟡 | `[l1]/[l2]/local-media/page.tsx` | Upload + player works. **Missing**: subtitle sync offset, audio-only mode |
@@ -181,7 +181,7 @@
 | 5 | **Export button in SavedWords is UI-only** — no actual export logic | 🟡 Medium | Saved Words |
 | 6 | ~~**Select L1/L2 screens show raw codes**~~ ✅ Fixed | 🟡 Medium | Auth flow |
 | 7 | ~~**No "Forgot password?" link on login screen**~~ ✅ Fixed | 🟢 Low | Login |
-| 8 | **TV Shows has no episode listing or show detail screen** | 🟢 Low | Media tab |
+| 8 | ~~**TV Shows has no episode listing or show detail screen**~~ ✅ Fixed | 🟢 Low | Media tab |
 
 ---
 
@@ -191,7 +191,7 @@ These exist in the Next.js web app but have **no mobile equivalent yet**:
 
 | Feature | Web Route | Priority | Notes |
 |---|---|---|---|
-| TV Show Detail | `tv-shows/[id]/` | Medium | Episode list, metadata, seasons |
+| TV Show Detail | `tv-shows/[id]/` | ~~Medium~~ ✅ Ported | Episode list, metadata, seasons |
 | Dictionary Entry Detail | `dictionary/entry/.../` | Low | Deep link target — word detail exists but full entry page missing |
 | Password Reset (token) | `/password-reset` | Low | Complete after email link click |
 | Verify Email | `/verify-email` | Low | Email verification landing |
