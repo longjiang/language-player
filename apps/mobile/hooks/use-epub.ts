@@ -210,34 +210,49 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
 
   const openFromCover = useCallback(async () => {
     if (spineRef.current.length === 0) return;
-    const first = spineRef.current[0]!;
-    setLoading(true);
-    try {
-      const text = await loadChapterContent(first.href);
-      setCoverTapped(true);
-      setChapterHref(first.href);
-      const entry = flatTocRef.current.find((t) => t.href === first.href);
-      const title = entry?.label || 'Chapter 1';
-      setChapterTitle(title);
-      onChapterChange?.(text, title);
-      if (storedRef.current) persist({ ...storedRef.current, chapterHref: first.href });
-    } catch (e: any) { setError(e?.message ?? String(e)); }
-    finally { setLoading(false); }
-  }, [loadChapterContent, onChapterChange, persist]);
+    // Use loadChapter for spine concatenation (covers, frontmatter → first chapter)
+    await loadChapter(spineRef.current[0]!.href);
+  }, [loadChapter]);
 
   const loadChapter = useCallback(async (href: string): Promise<string> => {
     setLoading(true);
     try {
-      const text = await loadChapterContent(href);
-      setCoverTapped(true);
-      // Strip fragment for matching — TOC items have fragments removed during parsing
       const cleanHref = href.includes('#') ? href.split('#')[0]! : href;
-      const entry = flatTocRef.current.find((t) => t.href === cleanHref);
+      const spine = spineRef.current;
+      const toc = flatTocRef.current;
+
+      // Build a set of TOC hrefs (fragment-stripped) — these are chapter boundaries
+      const tocHrefs = new Set(
+        toc.map(t => (t.href.includes('#') ? t.href.split('#')[0]! : t.href)),
+      );
+
+      // Find where this TOC chapter starts in the spine
+      const startIdx = spine.findIndex(s => s.href === cleanHref);
+
+      // Find where the NEXT TOC chapter starts in the spine (end boundary)
+      let endIdx = spine.findIndex(
+        (s, i) => i > startIdx && tocHrefs.has(s.href),
+      );
+      if (endIdx === -1) endIdx = spine.length;
+
+      // Concatenate all spine items belonging to this logical chapter
+      let combinedText = '';
+      for (let i = startIdx; i < endIdx; i++) {
+        const text = await loadChapterContent(spine[i]!.href);
+        if (text) combinedText += (combinedText ? '\n\n' : '') + text;
+      }
+
+      setCoverTapped(true);
+      // Match TOC entry by comparing fragment-stripped hrefs
+      const entry = toc.find(t => {
+        const tHref = t.href.includes('#') ? t.href.split('#')[0]! : t.href;
+        return tHref === cleanHref;
+      });
       setChapterTitle(entry?.label ?? '');
       setChapterHref(cleanHref);
-      onChapterChange?.(text, entry?.label ?? '');
+      onChapterChange?.(combinedText, entry?.label ?? '');
       if (storedRef.current) persist({ ...storedRef.current, chapterHref: cleanHref });
-      return text;
+      return combinedText;
     } finally { setLoading(false); }
   }, [loadChapterContent, onChapterChange, persist]);
 
