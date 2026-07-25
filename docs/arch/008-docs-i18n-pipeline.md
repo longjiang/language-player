@@ -1,4 +1,4 @@
-# ADR-0012: Documentation i18n Pipeline
+# Documentation i18n Pipeline
 
 **Date**: 2026-07-23
 **Status**: accepted

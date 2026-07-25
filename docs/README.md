@@ -35,6 +35,7 @@ docs/
 | 007 | [Settings Architecture](specs/007-settings-architecture.md) | 4 | ✅ Complete |
 | 008 | [Metro Debugging Process](specs/008-metro-debugging-process.md) | 8 | ✅ Complete |
 | 009 | [Reader Layout System](specs/009-reader-layout.md) | 5 | ✅ Complete |
+| 010 | [Subtitles Mode — Dual-View Watch Page](specs/010-subtitles-mode.md) | 4 | ✅ Complete |
 
 ## ADRs
 
@@ -51,10 +52,6 @@ docs/
 | 0009 | [GO app i18n migration to react-intl](adr/0009-go-i18n-migration-react-intl.md) | proposed | 2026-07-21 |
 | 0010 | [Port Next.js web app to React Native — fresh start](adr/0010-port-web-to-mobile-fresh-start.md) | proposed | 2026-07-22 |
 | 0011 | [Shared design tokens — CSS variables (web) + StyleSheet values (mobile)](adr/0011-shared-design-tokens.md) | proposed | 2026-07-22 |
-| 0012 | [Docs i18n pipeline](adr/0012-docs-i18n-pipeline.md) | proposed | 2026-07-22 |
-| 0013 | [Subtitles mode](adr/0013-subtitles-mode.md) | implemented | 2026-07-23 |
-| 0014 | [Shared i18n pipeline](adr/0014-shared-i18n-pipeline.md) | proposed | 2026-07-23 |
-| 0015 | [Video loading pipeline](adr/0015-video-loading-pipeline.md) | accepted | 2026-07-24 |
 
 ## Architecture Docs
 
@@ -67,6 +64,9 @@ docs/
 | 005 | [Translation Keys Reference](arch/005-translation-keys-reference.md) | Reference for all i18n translation keys and their usage |
 | 006 | [Classic Dictionary Architecture](arch/006-classic-dictionary-architecture.md) | Dictionary system architecture in the Classic Nuxt app |
 | 007 | [Next.js Dictionary Architecture](arch/007-nextjs-dictionary-architecture.md) | Dictionary system architecture in the Next.js app |
+| 008 | [Docs i18n Pipeline](arch/008-docs-i18n-pipeline.md) | Build pipeline for translating documentation to 31 locales |
+| 009 | [Shared i18n Pipeline](arch/009-shared-i18n-pipeline.md) | Single-source-of-truth i18n workflow for web + mobile |
+| 010 | [Video Loading Pipeline](arch/010-video-loading-pipeline.md) | End-to-end data flow: subtitles → lemmatization → translation → dictionary |
 
 ## Quick Reference
 
