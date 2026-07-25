@@ -1,7 +1,7 @@
-# Feature Specification: Settings Architecture
+# Settings Architecture
 
 ## Metadata
-- **Spec ID**: SPEC-007
+- **Arch ID**: ARCH-011
 - **Feature**: Settings storage, mutation, and synchronization
 - **Status**: draft
 - **Created**: 2026-07-17

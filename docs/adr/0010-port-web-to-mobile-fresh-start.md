@@ -241,7 +241,7 @@ This is how most mobile apps work: Instagram's `instagram://post/123` doesn't in
 4. **`blockList` filtering** — must NOT exclude the `packages/` directory from Metro's transpiler (shared packages ship raw TypeScript).
 5. **NativeWind** — `withNativeWind(config, { input: './global.css' })` wraps the config last.
 
-The full annotated config is documented in `docs/specs/008-metro-debugging-process.md` → "Monorepo Metro Configuration".
+The full annotated config is documented in `docs/arch/012-metro-debugging-process.md` → "Monorepo Metro Configuration".
 
 ### Build target: Start from `apps/mobile-v2/`
 **Decision**: Build in a new directory to avoid disrupting the existing app. Once feature parity is reached, archive `apps/mobile/` and rename. The legacy `language-player-3/` at the workspace root remains read-only reference (per AGENTS.md).

@@ -32,8 +32,6 @@ docs/
 | 004 | [Phase 3 — Explore + Video Player](specs/004-phase3-explore-video.md) | 3 | ✅ Complete |
 | 005 | [Phase 2.5 — UI Internationalization (i18n)](specs/005-phase2.5-i18n.md) | 2.5 | ✅ Complete |
 | 006 | [Translation](specs/006-translation.md) | 3 | ✅ Complete |
-| 007 | [Settings Architecture](specs/007-settings-architecture.md) | 4 | ✅ Complete |
-| 008 | [Metro Debugging Process](specs/008-metro-debugging-process.md) | 8 | ✅ Complete |
 | 009 | [Reader Layout System](specs/009-reader-layout.md) | 5 | ✅ Complete |
 | 010 | [Subtitles Mode — Dual-View Watch Page](specs/010-subtitles-mode.md) | 4 | ✅ Complete |
 
@@ -67,6 +65,8 @@ docs/
 | 008 | [Docs i18n Pipeline](arch/008-docs-i18n-pipeline.md) | Build pipeline for translating documentation to 31 locales |
 | 009 | [Shared i18n Pipeline](arch/009-shared-i18n-pipeline.md) | Single-source-of-truth i18n workflow for web + mobile |
 | 010 | [Video Loading Pipeline](arch/010-video-loading-pipeline.md) | End-to-end data flow: subtitles → lemmatization → translation → dictionary |
+| 011 | [Settings Architecture](arch/011-settings-architecture.md) | Cross-app settings analysis: storage, mutation, sync patterns |
+| 012 | [Metro Debugging Process](arch/012-metro-debugging-process.md) | Mobile debugging workflow: Metro, idb, iOS Simulator |
 
 ## Quick Reference
 
