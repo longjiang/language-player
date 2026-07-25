@@ -305,7 +305,7 @@ export default function EpubReaderScreen() {
               ) : null}
             </View>
           )}
-          <Text className="mt-4 text-xs text-muted-foreground">{t('action.open_file')}</Text>
+          <Text className="mt-4 text-xs text-muted-foreground">{t('msg.tap_to_open')}</Text>
         </Pressable>
       </View>
     );
