@@ -48,13 +48,22 @@ export default function LoginScreen() {
         onChangeText={setEmail}
       />
       <TextInput
-        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-6"
+        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
         placeholder={t('placeholder.password')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
+
+      <Pressable
+        className="mb-6 self-end"
+        onPress={() => router.push('/forgot-password')}
+      >
+        <Text className="text-primary text-sm">
+          {t('action.forgot_password')}
+        </Text>
+      </Pressable>
 
       <Pressable
         className="bg-primary py-3 rounded-lg items-center mb-3"
