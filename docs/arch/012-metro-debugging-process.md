@@ -9,7 +9,7 @@
 
 ## Overview
 
-This document standardizes the debugging workflow for the React Native mobile app (`apps/mobile/`). It covers server startup, log monitoring, idb usage for iOS Simulator interaction, and troubleshooting patterns.
+This document standardizes the debugging workflow for the React Native mobile app (`apps/mobile-v2/`). It covers server startup, log monitoring, idb usage for iOS Simulator interaction, and troubleshooting patterns.
 
 ---
 
@@ -51,7 +51,7 @@ It does NOT print `* Running on http://0.0.0.0:5001` in debug mode. The server I
 ### Start Metro + iOS Simulator
 
 ```bash
-cd apps/mobile && source ~/.nvm/nvm.sh && nvm use 22 && npx expo start --ios
+cd apps/mobile-v2 && source ~/.nvm/nvm.sh && nvm use 22 && npx expo start --ios
 ```
 
 Run in **async mode**. The `--ios` flag auto-opens the iOS Simulator and launches Expo Go.

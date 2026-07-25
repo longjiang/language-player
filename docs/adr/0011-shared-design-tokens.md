@@ -9,7 +9,7 @@
 
 The web and mobile apps initially defined their design tokens independently:
 
-| | Web (Next.js + Tailwind) | Mobile (original GO app) |
+| | Web (Next.js + Tailwind) | Mobile (React Native) |
 |---|---|---|
 | **Color format** | HSL: `228 74% 59%` | Hex: `#7d2fba` |
 | **Color structure** | Semantic: `--primary`, `--background`, `--foreground`, `--muted`, `--border` | Raw scales: `Swatches.primary[400]`, `Swatches.neutral[200]` |

@@ -19,7 +19,7 @@ We have a web app (Next.js/React DOM) and a mobile app (React Native/Expo). The 
 - **Cons**: Significant setup complexity, subtle rendering differences, limited to Tamagui's component set, hard to integrate with shadcn/ui on web, performance overhead on mobile
 
 ### Option C: Expo Web
-- **Pros**: Use the existing GO app for web too
+- **Pros**: Use the existing React Native app for web too
 - **Cons**: Expo Web is not production-grade for SEO-heavy content sites, no SSR, poor Lighthouse scores, limited web-specific features
 
 ## Decision
