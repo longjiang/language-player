@@ -39,13 +39,12 @@ The **active development** happens in:
 
 ### Before Implementing Any Feature
 
-1. Read the relevant Nuxt Classic implementation in `zerotohero-nuxt/`
-   See `docs/arch/001-classic-app-architecture.md` for a full analysis of its pages, components, and patterns.
-2. Read `docs/arch/002-go-app-architecture.md` for the GO app's equivalent screens and components
-3. Check if `@langplayer/shared` already has the types you need
-4. Check if `@langplayer/api-client` already has the endpoint you need
-5. Read `docs/specs/` for existing feature specifications
-6. Read `docs/adr/` for relevant architecture decisions
+1. Check if `@langplayer/shared` already has the types you need
+3. Read `docs/specs/` for existing feature specifications
+4. Read `docs/adr/` for relevant architecture decisions
+5. Read `docs/arch/` for relevant as-built architectural description
+6. Check if the Flask server already has the endpoint you need in `zerotohero-python/routes`
+6. If Working on `apps/web`, also check if `@langplayer/api-client` already has the Next.js endpoint you need. Note that `@langplayer/api-client` is largely a wrapper around the Flask server
 
 ### File Naming & Organization
 
