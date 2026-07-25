@@ -34,7 +34,8 @@
       "expo-secure-store",
       "expo-font",
       "expo-localization",
-      "expo-video"
+      "expo-video",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true

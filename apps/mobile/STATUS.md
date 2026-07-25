@@ -89,7 +89,7 @@
 | Screen | File | Status | Web Source | Notes |
 |---|---|---|---|---|
 | Dictionary Search | `(tabs)/(vocab)/index.tsx` | ✅ | `[l1]/[l2]/dictionary/page.tsx` | Search + recent searches + results cards |
-| Saved Words | `(tabs)/(vocab)/saved-words.tsx` | 🟡 | `[l1]/[l2]/saved-words/page.tsx` | Filter + sort + remove works. **Missing**: export (UI button only, no logic). |
+| Saved Words | `(tabs)/(vocab)/saved-words.tsx` | ✅ | `[l1]/[l2]/saved-words/page.tsx` | Filter + sort + remove + export all work. Exports all saved words as JSON via native share sheet. |
 | SRS Review | `(tabs)/(vocab)/review.tsx` | 🟡 | `[l1]/[l2]/review/page.tsx` | Flashcard UI works. **⚠️ No actual SRS scheduling** — no SM-2 algorithm, no due card computation, only 2 ratings (again/good) vs web's 4 (again/hard/good/easy), no undo, no daily new card limit, no "no cards due" state |
 | Word Detail | `(tabs)/(vocab)/word/[entryId].tsx` | ✅ | `dictionary/entry/...` | Definitions, examples, inflections, AI explanation |
 
@@ -185,7 +185,7 @@
 | 2 | **ReviewScreen doesn't use SRS scheduling** — `useSrs().updateCard` exists but never called; cards always show in order with no spaced repetition algorithm | 🔴 High | Review |
 | 3 | **Go Pro has no payment flow** — pricing displayed but no Stripe/PayPal purchase integration | 🔴 High | Go Pro |
 | 4 | **Hardcoded hex colors** in `profile.tsx` and `me/index.tsx` — violates AGENTS.md semantic design tokens rule | 🟡 Medium | Me tab |
-| 5 | **Export button in SavedWords is UI-only** — no actual export logic | 🟡 Medium | Saved Words |
+| 5 | ~~**Export button in SavedWords is UI-only**~~ ✅ Fixed | 🟡 Medium | Saved Words |
 | 6 | ~~**Select L1/L2 screens show raw codes**~~ ✅ Fixed | 🟡 Medium | Auth flow |
 | 7 | ~~**No "Forgot password?" link on login screen**~~ ✅ Fixed | 🟢 Low | Login |
 | 8 | ~~**TV Shows has no episode listing or show detail screen**~~ ✅ Fixed | 🟢 Low | Media tab |
