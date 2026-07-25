@@ -2,8 +2,8 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import JSZip from 'jszip';
-import { parseOPF } from '@/lib/epub-parser';
-import type { TocItem } from '@/lib/epub-parser';
+import { parseOPF, resolvePath } from '@/lib/epub-parser';
+import type { TocItem, EpubManifestItem } from '@/lib/epub-parser';
 
 const STORAGE_PATH = FileSystem.documentDirectory + 'epub_state.json';
 
@@ -53,6 +53,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
   const zipRef = useRef<any>(null);
   const spineRef = useRef<{ href: string; title: string }[]>([]);
   const cacheRef = useRef<Map<string, string>>(new Map());
+  const imageCacheRef = useRef<Map<string, string>>(new Map());
   const storedRef = useRef<StoredEpubState | null>(null);
   const flatTocRef = useRef<TocItem[]>([]);
 
@@ -70,8 +71,11 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     } catch {}
   }, []);
 
-  // Restore
+  // Restore — runs exactly once on mount
+  const restoredRef = useRef(false);
   useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
     (async () => {
       try {
         const info = await FileSystem.getInfoAsync(STORAGE_PATH);
@@ -83,7 +87,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
 
         storedRef.current = st;
         setFileName(st.fileName);
-        setRestoring(false);
+        // Don't set restoring false yet — wait until loadFromUri has set coverUrl
         await loadFromUri(st.fileUri);
         if (st.chapterHref) {
           const text = await loadChapterContent(st.chapterHref);
@@ -96,7 +100,6 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       } catch (e: any) { setError(e?.message ?? String(e)); }
       setRestoring(false);
     })();
-    return () => setRestoring(false);
   }, []);
 
   // Core: load EPUB from URI
@@ -117,16 +120,17 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     if (!opfFile) throw new Error('OPF not found');
     const opfXml = await opfFile.async('text');
 
-    // Build manifest map for nav/NCX lookups
-    const manifestItems = new Map<string, { id: string; href: string; props?: string }>();
+    // Build manifest map for nav/NCX lookups + image extraction
+    const manifestItems = new Map<string, EpubManifestItem>();
     const itemRegex = /<item\b([^>]*)>/g;
     let itemMatch: RegExpExecArray | null;
     while ((itemMatch = itemRegex.exec(opfXml)) !== null) {
       const a = itemMatch[1]!;
       const id = a.match(/id="([^"]+)"/)?.[1];
       const href = a.match(/href="([^"]+)"/)?.[1];
+      const mediaType = a.match(/media-type="([^"]+)"/)?.[1];
       const props = a.match(/properties="([^"]+)"/)?.[1];
-      if (id && href) manifestItems.set(id, { id, href, props });
+      if (id && href) manifestItems.set(id, { id, href, mediaType, props });
     }
 
     // Try to load EPUB 3 nav document (item with properties="nav")
@@ -134,7 +138,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     let navDir: string | undefined;
     for (const [, item] of manifestItems) {
       if (item.props?.split(/\s+/).includes('nav')) {
-        const navFile = zip.file(resolvePathFn(opfDir, item.href));
+        const navFile = zip.file(resolvePath(opfDir, item.href));
         if (navFile) {
           navXml = await navFile.async('text');
           // Compute directory of the nav doc so relative hrefs resolve correctly
@@ -151,7 +155,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
         (item) => item.id === 'ncx' || item.href.endsWith('.ncx'),
       );
       if (ncxItem) {
-        const ncxFile = zip.file(resolvePathFn(opfDir, ncxItem.href));
+        const ncxFile = zip.file(resolvePath(opfDir, ncxItem.href));
         if (ncxFile) ncxXml = await ncxFile.async('text');
       }
     }
@@ -159,10 +163,33 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     const meta = parseOPF(opfXml, opfDir, ncxXml, navXml, navDir);
     spineRef.current = meta.spine;
 
-    // Cover image
+    // ── Build image cache from manifest — extract all inline images as base64 data URIs ──
+    const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    imageCacheRef.current.clear();
+    for (const [, item] of manifestItems) {
+      if (item.mediaType && IMAGE_MIME_TYPES.includes(item.mediaType)) {
+        const resolvedPath = resolvePath(opfDir, item.href);
+        const imgFile = zip.file(resolvedPath);
+        if (imgFile) {
+          try {
+            const base64 = await imgFile.async('base64');
+            imageCacheRef.current.set(resolvedPath, `data:${item.mediaType};base64,${base64}`);
+          } catch {
+            // skip corrupt images
+          }
+        }
+      }
+    }
+
+    // ── Cover image — use actual media type from manifest (not hardcoded image/jpeg) ──
     if (meta.coverBase64) {
-      const cf = zip.file(resolvePathFn(opfDir, meta.coverBase64));
-      if (cf) setCoverUrl('data:image/jpeg;base64,' + await cf.async('base64'));
+      const resolvedPath = resolvePath(opfDir, meta.coverBase64);
+      const cf = zip.file(resolvedPath);
+      if (cf) {
+        const coverItem = meta.coverItemId ? manifestItems.get(meta.coverItemId) : undefined;
+        const mimeType = coverItem?.mediaType ?? 'image/jpeg';
+        setCoverUrl(`data:${mimeType};base64,${await cf.async('base64')}`);
+      }
     }
 
     // TOC — nav doc or NCX already parsed, fallback to spine map
@@ -177,10 +204,24 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     if (cacheRef.current.has(cleanHref)) return cacheRef.current.get(cleanHref)!;
     const zip = zipRef.current; if (!zip) return '';
     const file = zip.file(cleanHref); if (!file) return '';
-    const html: string = await file.async('text');
-    const text = html
-      .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '').replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    let html: string = await file.async('text');
+
+    // ── Resolve <img> tags into [IMG:dataUri] markers before stripping HTML ──
+    const contentDir = cleanHref.substring(0, cleanHref.lastIndexOf('/') + 1);
+    html = html
+      .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<img\b[^>]*\bsrc\s*=\s*(["'])([^"']+)\1[^>]*\/?>/gi, (_match, _quote: string, src: string) => {
+        // Skip external URLs
+        if (src.includes('://')) return '';
+        // Resolve src relative to content doc directory, normalizing ../ segments
+        const resolvedPath = resolvePath(contentDir, src);
+        const dataUri = imageCacheRef.current.get(resolvedPath);
+        return dataUri ? `[IMG:${dataUri}]` : '';
+      });
+
+    const text = html
       .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<\/h[1-6]>/gi, '\n\n')
       .replace(/<\/div>/gi, '\n').replace(/<\/li>/gi, '\n').replace(/<[^>]+>/g, '')
       .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
@@ -207,12 +248,6 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     } catch (e: any) { setError(e?.message ?? String(e)); }
     finally { setLoading(false); }
   }, [loadFromUri, persist]);
-
-  const openFromCover = useCallback(async () => {
-    if (spineRef.current.length === 0) return;
-    // Use loadChapter for spine concatenation (covers, frontmatter → first chapter)
-    await loadChapter(spineRef.current[0]!.href);
-  }, [loadChapter]);
 
   const loadChapter = useCallback(async (href: string): Promise<string> => {
     setLoading(true);
@@ -256,11 +291,16 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     } finally { setLoading(false); }
   }, [loadChapterContent, onChapterChange, persist]);
 
+  const openFromCover = useCallback(async () => {
+    if (spineRef.current.length === 0) return;
+    await loadChapter(spineRef.current[0]!.href);
+  }, [loadChapter]);
+
   const prevChapter = useCallback(() => { if (prevHref) loadChapter(prevHref); }, [prevHref, loadChapter]);
   const nextChapter = useCallback(() => { if (nextHref) loadChapter(nextHref); }, [nextHref, loadChapter]);
 
   const close = useCallback(() => {
-    zipRef.current = null; spineRef.current = []; cacheRef.current.clear();
+    zipRef.current = null; spineRef.current = []; cacheRef.current.clear(); imageCacheRef.current.clear();
     setFileName(null); setToc([]); setChapterTitle(null); setChapterHref(null);
     setCoverUrl(null); setCoverTapped(false); setError(null);
     persist(null);
@@ -277,7 +317,4 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
   };
 }
 
-function resolvePathFn(base: string, href: string): string {
-  if (href.startsWith('/') || href.includes('://')) return href;
-  return base + href;
-}
+
