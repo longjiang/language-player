@@ -23,8 +23,8 @@
 | Login | `app/login.tsx` | ✅ | `login/page.tsx` | |
 | Register | `app/register.tsx` | ✅ | `register/page.tsx` | Name fields, email, password + confirmation, client-side validation |
 | Forgot Password | `app/forgot-password.tsx` | ✅ | `forgot-password/page.tsx` | |
-| Select L1 | `app/select-l1.tsx` | 🟡 | `language-select/page.tsx` | Shows raw codes instead of `{$lang.xx}` names; no search |
-| Select L2 | `app/select-l2.tsx` | 🟡 | `language-select/page.tsx` | Shows raw codes instead of `{$lang.xx}` names; no search |
+| Select L1 | `app/select-l1.tsx` | ✅ | `language-select/page.tsx` | Localized names via `lang.xx` keys, search, popular/all grouping |
+| Select L2 | `app/select-l2.tsx` | ✅ | `language-select/page.tsx` | Localized names via `lang.xx` keys, search, popular/all grouping |
 | Go Pro — Error | `app/go-pro-error.tsx` | ✅ | `go-pro-error/page.tsx` | |
 | Go Pro — Success | `app/go-pro-success.tsx` | ✅ | `go-pro-success/page.tsx` | |
 
@@ -179,7 +179,7 @@
 | 3 | **Go Pro has no payment flow** — pricing displayed but no Stripe/PayPal purchase integration | 🔴 High | Go Pro |
 | 4 | **Hardcoded hex colors** in `profile.tsx` and `me/index.tsx` — violates AGENTS.md semantic design tokens rule | 🟡 Medium | Me tab |
 | 5 | **Export button in SavedWords is UI-only** — no actual export logic | 🟡 Medium | Saved Words |
-| 6 | **Select L1/L2 screens show raw codes** instead of `{$lang.*}` translation keys | 🟡 Medium | Auth flow |
+| 6 | ~~**Select L1/L2 screens show raw codes**~~ ✅ Fixed | 🟡 Medium | Auth flow |
 | 7 | ~~**No "Forgot password?" link on login screen**~~ ✅ Fixed | 🟢 Low | Login |
 | 8 | **TV Shows has no episode listing or show detail screen** | 🟢 Low | Media tab |
 
