@@ -40,7 +40,7 @@ export function useVideoTokenCache(videoId: string, l2Code: string) {
         console.warn('[VideoTokenCache] Failed to load:', err);
         setLoaded(true);
       });
-  }, [youtubeId, l2Code]);
+  }, [videoId, l2Code]);
 
   return useMemo(() => ({ cache: cache.current, loaded }), [loaded]);
 }
