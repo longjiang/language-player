@@ -3,12 +3,11 @@ import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, Alert 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
+import { useEpubPagination } from '@/hooks/use-epub-pagination';
+import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import type { NoteListItem } from '@langplayer/shared';
 import { BookOpen, PenLine, Plus, Trash2, StickyNote } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { TokenizedText } from '@/components/TokenizedText';
-import { parseMarkdownBlocks } from '@/lib/parse-markdown';
-import type { ContentBlock } from '@/lib/parse-markdown';
 
 export default function ReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -17,7 +16,6 @@ export default function ReaderScreen() {
 
   const [text, setText] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('edit');
-  const [blocks, setBlocks] = useState<ContentBlock[] | null>(null);
   const [saving, setSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [renameId, setRenameId] = useState<number | null>(null);
@@ -32,15 +30,13 @@ export default function ReaderScreen() {
     }
   }, [notes.currentNoteId]);
 
-  // ── Parse markdown for layout (TokenizedText handles its own tokenization) ──
-  useEffect(() => {
-    if (!text.trim()) { setBlocks(null); return; }
-    try {
-      setBlocks(parseMarkdownBlocks(text));
-    } catch {
-      setBlocks([{ kind: 'text', type: 'paragraph', text }]);
-    }
-  }, [text]);
+  const pagination = useEpubPagination({
+    text,
+    l1Code: l1Lang.code,
+    l2Code: l2Lang.code,
+    showTranslation: false, // notes reader doesn't show translation inline
+    resetKey: notes.currentNoteId !== null ? String(notes.currentNoteId) : null,
+  });
 
   // Auto-save with 2s debounce
   const autoSave = useCallback((newText: string) => {
@@ -128,54 +124,33 @@ export default function ReaderScreen() {
             />
           )}
 
-          {/* Read tab: parsed blocks — TokenizedText handles its own tokenization */}
-          {activeTab === 'read' && blocks && (
-            <ScrollView className="flex-1 p-4">
-              {blocks.map((block, bi) => {
-                if (block.kind !== 'text') return null;
-                return (
-                  <View key={bi} className="mb-3">
-                    {block.type === 'heading' && (
-                      <Text className={`mb-2 font-bold text-foreground ${block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'}`}>
-                        {block.text}
-                      </Text>
-                    )}
-                    {block.type === 'paragraph' && (
-                      <TokenizedText
-                        text={block.text}
-                        l2Code={l2Lang.code}
-                      />
-                    )}
-                    {block.type === 'blockquote' && (
-                      <View className="border-l-2 border-muted-foreground/30 pl-3">
-                        <TokenizedText
-                          text={block.text}
-                          l2Code={l2Lang.code}
-                        />
-                      </View>
-                    )}
-                    {block.type === 'list-item' && (
-                      <View className="flex-row">
-                        <Text className="mr-2 text-muted-foreground">•</Text>
-                        <View className="flex-1">
-                          <TokenizedText
-                            text={block.text}
-                            l2Code={l2Lang.code}
-                          />
-                        </View>
-                      </View>
-                    )}
-                  </View>
-                );
-              })}
-            </ScrollView>
+          {/* Read tab: paginated reader */}
+          {activeTab === 'read' && text.trim() && (
+            <PaginatedReader
+              blocks={pagination.blocks}
+              visibleBlocks={pagination.visibleBlocks}
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              hasMeasured={pagination.hasMeasured}
+              loadingTokens={pagination.loadingTokens}
+              tokenCache={pagination.tokenCache}
+              blockTranslations={pagination.blockTranslations}
+              prevPage={pagination.prevPage}
+              nextPage={pagination.nextPage}
+              handleMeasureBlock={pagination.handleMeasureBlock}
+              contentWidth={pagination.contentWidth}
+              l2Code={l2Lang.code}
+              showTranslation={false}
+              t={t}
+            />
           )}
 
-          {/* Read tab: plain text fallback (no blocks parsed) */}
-          {activeTab === 'read' && !blocks && (
-            <ScrollView className="flex-1 p-4">
-              <TokenizedText text={text} l2Code={l2Lang.code} />
-            </ScrollView>
+          {/* Read tab: empty state */}
+          {activeTab === 'read' && !text.trim() && (
+            <View className="flex-1 items-center justify-center">
+              <BookOpen size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
+              <Text className="text-sm text-muted-foreground">{t('msg.reader_empty_state', { l2: l2Lang.name })}</Text>
+            </View>
           )}
         </View>
 
