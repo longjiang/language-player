@@ -8,6 +8,7 @@ export interface EpubMetadata {
   spine: { href: string; title: string }[];
   toc: TocItem[];
   coverBase64: string | null;
+  title: string | null;
   opfDir: string;
 }
 
@@ -79,6 +80,10 @@ export function parseOPF(
     }
   }
 
+  // Book title from <dc:title>
+  const titleMatch = opfXml.match(/<dc:title[^>]*>([^<]+)<\/dc:title>/);
+  const title = titleMatch?.[1]?.trim() ?? null;
+
   // TOC: prefer nav document (EPUB 3) > NCX (EPUB 2) > spine fallback
   let toc: TocItem[] = [];
   if (navXml) {
@@ -89,7 +94,7 @@ export function parseOPF(
     toc = parseNCX(ncxXml, manifest, opfDir);
   }
 
-  return { spine, toc, coverBase64, opfDir };
+  return { spine, toc, coverBase64, title, opfDir };
 }
 
 // ── EPUB 3 nav document parser ──
