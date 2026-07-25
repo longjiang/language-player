@@ -88,26 +88,31 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     restoredRef.current = true;
     (async () => {
       try {
+        console.log('[epub:restore] checking', STORAGE_PATH);
         const info = await FileSystem.getInfoAsync(STORAGE_PATH);
-        if (!info.exists) { setRestoring(false); return; }
+        if (!info.exists) { console.log('[epub:restore] no persisted state'); setRestoring(false); return; }
         const json = await FileSystem.readAsStringAsync(STORAGE_PATH);
         const st: StoredEpubState = JSON.parse(json);
+        console.log('[epub:restore] stored state:', JSON.stringify(st));
         const fileInfo = await FileSystem.getInfoAsync(st.fileUri);
-        if (!fileInfo.exists) { setRestoring(false); return; }
+        if (!fileInfo.exists) { console.log('[epub:restore] file gone:', st.fileUri); setRestoring(false); return; }
 
         storedRef.current = st;
         setFileName(st.fileName);
         // Don't set restoring false yet — wait until loadFromUri has set coverUrl
         await loadFromUri(st.fileUri);
         if (st.chapterHref) {
+          console.log('[epub:restore] loading last chapter:', st.chapterHref);
           const text = await loadChapterContent(st.chapterHref);
           setChapterHref(st.chapterHref);
           const entry = flatTocRef.current.find((t) => t.href === st.chapterHref);
           setChapterTitle(entry?.label ?? '');
           setCoverTapped(true);
           onChapterChange?.(text, entry?.label ?? '');
+        } else {
+          console.log('[epub:restore] no chapterHref — showing cover');
         }
-      } catch (e: any) { setError(e?.message ?? String(e)); }
+      } catch (e: any) { console.log('[epub:restore] error:', e?.message); setError(e?.message ?? String(e)); }
       setRestoring(false);
     })();
   }, []);
@@ -326,7 +331,13 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       setChapterTitle(entry?.label ?? '');
       setChapterHref(cleanHref);
       onChapterChange?.(combinedText, entry?.label ?? '');
-      if (storedRef.current) persist({ ...storedRef.current, chapterHref: cleanHref });
+      if (storedRef.current) {
+        // Update both storedRef and persist — storedRef is the live object
+        // that saveAnchor reads from, so it must stay in sync with the file.
+        storedRef.current = { ...storedRef.current, chapterHref: cleanHref };
+        console.log('[epub:loadChapter] persist chapterHref:', cleanHref, 'storedRef:', JSON.stringify(storedRef.current));
+        persist(storedRef.current);
+      }
       return combinedText;
     } finally { setLoading(false); }
   }, [loadChapterContent, onChapterChange, persist]);
@@ -363,6 +374,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     if (!storedRef.current) return;
     const updated = { ...storedRef.current, lastAnchor: anchor };
     storedRef.current = updated;
+    console.log('[epub:saveAnchor] anchor:', anchor.slice(0, 40), 'storedRef:', JSON.stringify(storedRef.current));
     await persist(updated);
   }, [persist]);
 
