@@ -4,7 +4,7 @@ How the "Examples" tab on dictionary entry pages finds and displays video subtit
 
 ## Overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                        USER INTERFACE                           │
 │  Dictionary Entry Page → Examples tab → SubsSearchResults      │
@@ -23,7 +23,7 @@ How the "Examples" tab on dictionary entry pages finds and displays video subtit
 
 The `SubsSearchResults` component renders as a self-contained card with a mini video player. Below is the visual structure with the two display states annotated.
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │  Nav Bar                                              border-b  │
 │  ┌─────────────────────────────────────────────────────────────┐│
@@ -65,7 +65,7 @@ The `SubsSearchResults` component renders as a self-contained card with a mini v
 
 ### Component Tree
 
-```
+```text
 SubsSearchResults
 ├── <div> card container (rounded-xl border shadow-sm)
 │   ├── Nav bar
