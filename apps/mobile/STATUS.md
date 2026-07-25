@@ -41,10 +41,10 @@
 | Watch History | `(tabs)/(media)/watch-history.tsx` | ✅ | `[l1]/[l2]/watch-history/page.tsx` | Date-grouped SectionList, "Clear All" via Directus DELETE |
 | TV Shows | `(tabs)/(media)/tv-shows.tsx` | ✅ | `[l1]/[l2]/tv-shows/page.tsx` | Browse + search + sort + locale filter. Show detail at `/tv-shows/[id]` with full episode listing |
 | Music | `(tabs)/(media)/music.tsx` | ✅ | `[l1]/[l2]/music/page.tsx` | Basic video grid. |
-| Live TV | `(tabs)/(media)/live-tv.tsx` | 🟡 | `[l1]/[l2]/live-tv/page.tsx` | Channel list + player + filters. **Missing**: favorites, program guide/EPG, "now playing" |
-| Local Media | `(tabs)/(media)/local-media.tsx` | 🟡 | `[l1]/[l2]/local-media/page.tsx` | Upload + player works. **Missing**: subtitle sync offset, audio-only mode |
-| Video Player | `(tabs)/(media)/watch/[videoId].tsx` | 🟡 | `[l1]/[l2]/watch/[videoId]/page.tsx` | **⚠️ YouTube playback broken on iOS** — key-remount bridge workaround is fragile |
-| Channel Detail | `(tabs)/(media)/channel/[channelId].tsx` | 🟡 | `[l1]/[l2]/channel/[channelId]/page.tsx` | **Missing**: channel description, subscribe button, stats |
+| Live TV | `(tabs)/(media)/live-tv.tsx` | 🟡 | `[l1]/[l2]/live-tv/page.tsx` | Channel list + player + filters. **Missing**: URL-based channel restore (`tvgID` param). Web also lacks favorites/EPG/"now playing" — not mobile-specific gaps |
+| Local Media | `(tabs)/(media)/local-media.tsx` | 🟡 | `[l1]/[l2]/local-media/page.tsx` | Upload + player works. **Missing**: audio-only mode (web `HTML5Player` adapts when `isAudio=true`; mobile always renders `VideoView`). Subtitle sync offset also missing in web — not a mobile gap |
+| Video Player | `(tabs)/(media)/watch/[videoId].tsx` | 🟡 | `[l1]/[l2]/watch/[videoId]/page.tsx` | **⚠️ YouTube playback broken on iOS**. **Missing**: transcript/queue/info tabs (`TranscriptQueuePanel`), overlay subtitles mode (`SubtitlesModeBand`), video queue (`VideoQueueList`), channel card (`YouTubeChannelCard`), video meta (difficulty/description), watch history recording, position save/restore, token cache |
+| Channel Detail | `(tabs)/(media)/channel/[channelId].tsx` | ✅ | `[l1]/[l2]/channel/[channelId]/page.tsx` | Channel header, video grid, pagination. At parity with web — channel description/subscribe/stats also missing from web channel page (subscribe lives on watch page via `YouTubeChannelCard` + `ChannelActionsMenu`) |
 
 ### Video Components
 
@@ -66,8 +66,8 @@
 | Screen | File | Status | Web Source | Notes |
 |---|---|---|---|---|
 | Notes / Reader | `(tabs)/(reading)/index.tsx` | ✅ | `[l1]/[l2]/reader/page.tsx` | Markdown editor, CRUD notes, TokenizedText, auto-save |
-| Web Reader | `(tabs)/(reading)/web-reader.tsx` | 🟡 | `[l1]/[l2]/web-reader/page.tsx` | URL fetch + tokenization works. **Missing**: bookmarking, offline reading, font/theme customization |
-| EPUB Reader | `(tabs)/(reading)/epub.tsx` | 🟡 | `[l1]/[l2]/epub/page.tsx` | Upload + parse + read works. **Missing**: font customization, bookmarks/highlights, search, reading progress |
+| Web Reader | `(tabs)/(reading)/web-reader.tsx` | 🟡 | `[l1]/[l2]/web-reader/page.tsx` | URL fetch + tokenization works. **Missing**: notes sidebar (`ReaderSidebar`), page translation. Web also lacks bookmarking/offline reading/font customization — not mobile-specific gaps |
+| EPUB Reader | `(tabs)/(reading)/epub.tsx` | 🟡 | `[l1]/[l2]/epub/page.tsx` | Upload + parse + read works. **Missing**: page translation, position/anchor save. Web also lacks font customization/bookmarks/search/reading progress — not mobile-specific gaps |
 
 ### Reader Components
 
@@ -84,8 +84,8 @@
 | Screen | File | Status | Web Source | Notes |
 |---|---|---|---|---|
 | Dictionary Search | `(tabs)/(vocab)/index.tsx` | ✅ | `[l1]/[l2]/dictionary/page.tsx` | Search + recent searches + results cards |
-| Saved Words | `(tabs)/(vocab)/saved-words.tsx` | 🟡 | `[l1]/[l2]/saved-words/page.tsx` | Filter + sort + remove works. **Missing**: export (UI button only, no logic) |
-| SRS Review | `(tabs)/(vocab)/review.tsx` | 🟡 | `[l1]/[l2]/review/page.tsx` | Flashcard UI works. **⚠️ No actual SRS scheduling** — `useSrs().updateCard` exists but ReviewScreen never calls it |
+| Saved Words | `(tabs)/(vocab)/saved-words.tsx` | 🟡 | `[l1]/[l2]/saved-words/page.tsx` | Filter + sort + remove works. **Missing**: export (UI button only, no logic), SRS status dots on word rows, word list navigation context |
+| SRS Review | `(tabs)/(vocab)/review.tsx` | 🟡 | `[l1]/[l2]/review/page.tsx` | Flashcard UI works. **⚠️ No actual SRS scheduling** — no SM-2 algorithm, no due card computation, only 2 ratings (again/good) vs web's 4 (again/hard/good/easy), no undo, no daily new card limit, no "no cards due" state |
 | Word Detail | `(tabs)/(vocab)/word/[entryId].tsx` | ✅ | `dictionary/entry/...` | Definitions, examples, inflections, AI explanation |
 
 ### Dictionary Components
@@ -105,11 +105,11 @@
 | Screen | File | Status | Web Source | Notes |
 |---|---|---|---|---|
 | Profile / Me | `(tabs)/(me)/index.tsx` | 🟡 | — | Menu list. **⚠️ Uses hardcoded hex colors** — violates semantic design tokens rule |
-| Profile Detail | `(tabs)/(me)/profile.tsx` | 🟡 | `[l1]/[l2]/profile/page.tsx` | Info + previews. **⚠️ Uses hardcoded hex colors throughout** |
+| Profile Detail | `(tabs)/(me)/profile.tsx` | 🟡 | `[l1]/[l2]/profile/page.tsx` | Info + previews. **⚠️ Uses hardcoded hex colors throughout**. **Missing**: subscription management (pro status, cancel auto-renew, expire dates, lifetime upsell), language level selector |
 | Settings | `(tabs)/(me)/settings.tsx` | 🟡 | `[l1]/[l2]/settings/page.tsx` | 4 tabs (Display/Playback/Speech/Review). Speech tab uses hardcoded language map instead of locale JSON |
 | About | `(tabs)/(me)/about.tsx` | ✅ | — | Basic app info |
-| Docs / Help | `(tabs)/(me)/docs.tsx` | 🟡 | `[l1]/[l2]/docs/` | Searchable doc listing. **Missing**: proper markdown rendering in detail view |
-| Go Pro | `(tabs)/(me)/go-pro.tsx` | 🟡 | `[l1]/[l2]/go-pro/page.tsx` | Shows pricing. **⚠️ No payment flow** — no Stripe/PayPal integration |
+| Docs / Help | `(tabs)/(me)/docs.tsx` | 🟡 | `[l1]/[l2]/docs/` | Searchable doc listing. **Missing**: proper markdown rendering in detail view (web uses ReactMarkdown + GFM + heading anchors; mobile strips to plain text), "On this page" heading TOC sidebar |
+| Go Pro | `(tabs)/(me)/go-pro.tsx` | 🟡 | `[l1]/[l2]/go-pro/page.tsx` | Shows pricing. **⚠️ No payment flow** — no Stripe credit card checkout, no WeChat Pay, no Alipay, no PayPal, no plan selection interaction, no checkout session creation |
 | Tokenizer Debug | `(tabs)/(me)/tokenizer.tsx` | ✅ | `[l1]/[l2]/tokenizer/page.tsx` | Dev tool |
 
 ### Layout Components
