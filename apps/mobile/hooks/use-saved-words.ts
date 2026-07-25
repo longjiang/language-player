@@ -51,22 +51,8 @@ async function enrichMissingHeads(
       const { dict: dictId, id: scopedId } = decomposed;
       console.log('[savedWords] enrichMissingHeads — fetching entry:', { l2Code, dictId, scopedId });
       const res = await dict.getEntry(l2Code, dictId, scopedId);
-      // Debug: inspect the raw response shape (first call only)
-      if (!(globalThis as any).__enrichDebugDone) {
-        (globalThis as any).__enrichDebugDone = true;
-        console.log('[savedWords] enrichMissingHeads — RAW RESPONSE:', JSON.stringify({
-          status: (res as any)?.status,
-          headers: typeof (res as any)?.headers,
-          hasData: !!(res as any)?.data,
-          dataKeys: Object.keys((res as any)?.data ?? {}),
-          hasEntry: !!(res as any)?.data?.entry,
-          entryHead: (res as any)?.data?.entry?.head,
-          topLevelKeys: Object.keys(res as any ?? {}),
-        }));
-      }
-      // Axios wraps responses: the body is at res.data; GET /dictionary/entry returns { entry: {...} }
-      const data = (res as any)?.data ?? res;
-      const entry = (data?.entry ?? data?.data?.entry) as DictionaryEntry | undefined;
+      // apiClient.get() already unwraps .then(r => r.data), so res = { entry: DictionaryEntry }
+      const entry = (res as any)?.entry as DictionaryEntry | undefined;
       if (entry) {
         // Store the full DictionaryEntry as canonicalEntry (ADR 0006) for richer display
         // while also keeping the flat `head` for backward compat with the current list UI.
@@ -77,7 +63,7 @@ async function enrichMissingHeads(
           entryId: scopedId,
           canonicalEntry: entry,
         };
-        console.log('[savedWords] enrichMissingHeads — stored canonicalEntry for:', w.id, '-> head:', entry.head);
+        console.log('[savedWords] enrichMissingHeads — stored canonicalEntry for:', w.id);
       } else {
         console.warn('[savedWords] enrichMissingHeads — no entry in response for:', w.id);
       }
@@ -110,8 +96,8 @@ export function useSavedWords(activeL2?: string) {
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
 
-  // Load from SecureStore — set loaded=true immediately so the UI renders,
-  // then enrich missing heads in the background for only the active L2.
+  // Load from SecureStore — set loaded=true immediately so the UI renders.
+  // Enrichment is now lazy (on-demand per visible row, not bulk).
   useEffect(() => {
     let cancelled = false;
     console.log('[savedWords] EFFECT 1 — starting, activeL2:', activeL2);
@@ -125,35 +111,6 @@ export function useSavedWords(activeL2?: string) {
           if (!cancelled) {
             setSavedWords(parsed);
             setLoaded(true);
-          }
-          // Enrich only the active L2's missing heads (the language the user is viewing)
-          if (activeL2) {
-            // Enrich if missing head OR has head but no cached entry (re-enrich after schema change)
-            const missingCount = (parsed[activeL2] ?? []).filter((w) => !w.head || (!w.canonicalEntry && !w.llmEntry)).length;
-            console.log('[savedWords] EFFECT 1 — sample raw word (before enrichment):', (parsed[activeL2] ?? []).slice(0, 2));
-            if (missingCount > 0) {
-              console.log('[savedWords] EFFECT 1 — enriching active L2:', activeL2, 'missing heads:', missingCount);
-              const result = await enrichMissingHeads(parsed, activeL2, dict);
-              if (result[activeL2] !== parsed[activeL2] && !cancelled) {
-                console.log('[savedWords] EFFECT 1 — enriched heads for:', activeL2);
-                console.log('[savedWords] EFFECT 1 — sample enriched word:', JSON.stringify(
-                  result[activeL2]!.slice(0, 3).map(w => ({
-                    id: w.id,
-                    head: w.head,
-                    definitions: w.canonicalEntry?.definitions?.slice(0, 2),
-                    pos: w.canonicalEntry?.part_of_speech,
-                    levels: w.canonicalEntry?.levels,
-                    pronunciation: w.canonicalEntry?.pronunciation,
-                    hasCanonicalEntry: !!w.canonicalEntry,
-                  })),
-                  null, 2,
-                ));
-                SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(result));
-                setSavedWords(result);
-              }
-            } else {
-              console.log('[savedWords] EFFECT 1 — no missing heads for activeL2:', activeL2);
-            }
           }
         } else {
           if (!cancelled) {
@@ -244,5 +201,34 @@ export function useSavedWords(activeL2?: string) {
     });
   }, [scheduleSync]);
 
-  return { savedWords, loaded, saveWord, removeWord, hasWord, clearAll };
+  // ── Lazy enrichment: fetch a single entry on demand (called when row becomes visible) ──
+  const refreshEntry = useCallback(async (l2Code: string, wordId: string) => {
+    // Check if already enriched
+    const words = savedWords[l2Code] ?? [];
+    const existing = words.find((w) => w.id === wordId);
+    if (!existing || (existing.head && (existing.canonicalEntry || existing.llmEntry))) return;
+
+    try {
+      const decomposed = decomposeWordId(wordId, l2Code);
+      if (!decomposed) return;
+      const { dict: dictId, id: scopedId } = decomposed;
+      const res = await dict.getEntry(l2Code, dictId, scopedId);
+      const entry = (res as any)?.entry as DictionaryEntry | undefined;
+      if (!entry) return;
+
+      setSavedWords((prev) => {
+        const updated = { ...prev };
+        const langWords = (prev[l2Code] ?? []).map((w) =>
+          w.id === wordId
+            ? { ...w, head: entry.head, dictionaryId: dictId, entryId: scopedId, canonicalEntry: entry }
+            : w,
+        );
+        updated[l2Code] = langWords;
+        SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+    } catch { /* skip */ }
+  }, [savedWords, dict]);
+
+  return { savedWords, loaded, saveWord, removeWord, hasWord, clearAll, refreshEntry };
 }
