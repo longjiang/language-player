@@ -64,8 +64,8 @@ export function PaginatedReader({
         </View>
       )}
 
-      {/* Hidden measuring view */}
-      {blocks && (
+      {/* Hidden measuring view — only needed during measurement phase */}
+      {blocks && !hasMeasured && (
         <View style={{ position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 }} pointerEvents="none" className="px-4">
           {blocks.map((block, bi) =>
             renderMeasuringBlock(block, bi, handleMeasureBlock, showTranslation, l2Code, contentWidth),
