@@ -31,7 +31,7 @@ export interface UseEpubReturn {
   loadChapter: (href: string) => Promise<string>;
   prevChapter: () => void;
   nextChapter: () => void;
-  close: () => void;
+  close: () => Promise<void>;
   openFromCover: () => void;
 }
 
@@ -275,7 +275,9 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       await FileSystem.copyAsync({ from: asset.uri, to: permUri });
       await loadFromUri(permUri);
       setFileName(asset.name);
-      await persist({ fileName: asset.name, fileUri: permUri, chapterHref: null });
+      const st: StoredEpubState = { fileName: asset.name, fileUri: permUri, chapterHref: null };
+      storedRef.current = st;
+      await persist(st);
       // Don't auto-load — show cover first (matches Next.js)
     } catch (e: any) { setError(e?.message ?? String(e)); }
     finally { setLoading(false); }
@@ -331,7 +333,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
   const prevChapter = useCallback(() => { if (prevHref) loadChapter(prevHref); }, [prevHref, loadChapter]);
   const nextChapter = useCallback(() => { if (nextHref) loadChapter(nextHref); }, [nextHref, loadChapter]);
 
-  const close = useCallback(() => {
+  const close = useCallback(async () => {
     // Clean up temp image files
     const tempPaths: string[] = (imageCacheRef.current as any)?._tempPaths ?? [];
     for (const p of tempPaths) {
@@ -343,10 +345,11 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       FileSystem.deleteAsync(coverPath).catch(() => {});
     }
     zipRef.current = null; spineRef.current = []; cacheRef.current.clear(); imageCacheRef.current.clear();
+    storedRef.current = null;
     setFileName(null); setToc([]); setChapterTitle(null); setChapterHref(null);
     setCoverUrl(null); setCoverTapped(false); setError(null);
     setEpubTitle(''); setEpubAuthor('');
-    persist(null);
+    await persist(null);
   }, [persist, coverUrl]);
 
   return {
