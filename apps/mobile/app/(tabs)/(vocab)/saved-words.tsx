@@ -12,7 +12,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 type SortMode = 'newest' | 'alpha';
 
 export default function SavedWordsScreen() {
-  const { l1Lang, l2Lang } = useLanguage();
+  const { l2Lang } = useLanguage();
   const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
   const { savedWords, removeWord, clearAll, loaded } = useSavedWords(l2Lang.code);
   const router = useRouter();

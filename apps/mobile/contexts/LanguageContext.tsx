@@ -14,11 +14,11 @@ export interface LanguageMeta {
 // Language names are resolved from the locale JSON via the IntlProvider.
 // For now, use the code as fallback — full lang.* resolution will be added
 // in Phase 2 when we integrate language-name lookups into the useT() hook.
-function getLanguageName(code: string): string {
-  // Resolve from locale JSON lang.* keys (e.g., lang.zh-Hans → "Chinese (Simplified)")
+function getLanguageName(code: string, locale: string = 'en'): string {
+  // Resolve from locale JSON lang.* keys (e.g., lang.ja → "Japanese" in en, "日语" in zh-Hans)
   try {
     const { getLocaleMessages } = require('@/contexts/IntlProvider');
-    const msgs = getLocaleMessages('en') as Record<string, unknown>;
+    const msgs = getLocaleMessages(locale) as Record<string, unknown>;
     const lang = (msgs as any)?.lang;
     if (lang && typeof lang === 'object' && code in lang) {
       return (lang as Record<string, string>)[code]!;
@@ -33,10 +33,10 @@ const RTL_CODES = new Set(['ar', 'he', 'fa', 'ur', 'ps', 'sd', 'yi', 'ku']);
 // Han (Chinese character) languages
 const HAN_CODES = new Set(['zh', 'yue', 'lzh', 'nan', 'hak', 'wuu', 'hsn', 'cjy', 'cpx', 'gan', 'mnp']);
 
-function buildLanguageMeta(code: string): LanguageMeta {
+function buildLanguageMeta(code: string, locale?: string): LanguageMeta {
   return {
     code,
-    name: getLanguageName(code),
+    name: getLanguageName(code, locale),
     direction: RTL_CODES.has(code) ? 'rtl' : 'ltr',
     han: HAN_CODES.has(code),
   };
@@ -106,8 +106,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, [l1Code, l2Code]);
 
   const value = useMemo<LanguageContextValue>(() => ({
-    l1Lang: buildLanguageMeta(l1Code),
-    l2Lang: buildLanguageMeta(l2Code),
+    l1Lang: buildLanguageMeta(l1Code, l1Code),
+    l2Lang: buildLanguageMeta(l2Code, l1Code),
     setL1Lang,
     setL2Lang,
     swapLanguages,
