@@ -28,6 +28,7 @@ export default function EpubReaderScreen() {
   const [page, setPage] = useState(0);
   const [pageBreaks, setPageBreaks] = useState<number[]>([]);
   const [hasMeasured, setHasMeasured] = useState(false);
+  const [measuredBlockCount, setMeasuredBlockCount] = useState(0);
   const [tokenCache, setTokenCache] = useState<Record<number, LemmatizedToken[]>>({});
   const [loadingTokens, setLoadingTokens] = useState(false);
   const tokenLoadGenRef = useRef(0);
@@ -52,6 +53,7 @@ export default function EpubReaderScreen() {
   useEffect(() => {
     setPageBreaks([]);
     setHasMeasured(false);
+    setMeasuredBlockCount(0);
     setTokenCache({});
     blockHeightsRef.current = [];
     setPage(0);
@@ -70,7 +72,11 @@ export default function EpubReaderScreen() {
 
   // ── Block height measurement ──
   const handleMeasureBlock = useCallback((index: number, height: number) => {
+    const wasUnmeasured = blockHeightsRef.current[index] == null;
     blockHeightsRef.current[index] = height;
+    if (wasUnmeasured) {
+      setMeasuredBlockCount(c => c + 1);
+    }
   }, []);
 
   // ── Compute page breaks when all blocks have been measured ──
@@ -96,7 +102,7 @@ export default function EpubReaderScreen() {
     setPageBreaks(breaks);
     setPage(0);
     setHasMeasured(true);
-  }, [blocks, windowHeight]);
+  }, [blocks, windowHeight, measuredBlockCount]);
 
   // ── Batch lemmatize visible text blocks (per-page) ──
   useEffect(() => {

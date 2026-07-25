@@ -131,10 +131,15 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
 
     // Try to load EPUB 3 nav document (item with properties="nav")
     let navXml: string | undefined;
+    let navDir: string | undefined;
     for (const [, item] of manifestItems) {
       if (item.props?.split(/\s+/).includes('nav')) {
         const navFile = zip.file(resolvePathFn(opfDir, item.href));
-        if (navFile) navXml = await navFile.async('text');
+        if (navFile) {
+          navXml = await navFile.async('text');
+          // Compute directory of the nav doc so relative hrefs resolve correctly
+          navDir = opfDir + item.href.substring(0, item.href.lastIndexOf('/') + 1);
+        }
         break;
       }
     }
@@ -151,7 +156,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       }
     }
 
-    const meta = parseOPF(opfXml, opfDir, ncxXml, navXml);
+    const meta = parseOPF(opfXml, opfDir, ncxXml, navXml, navDir);
     spineRef.current = meta.spine;
 
     // Cover image
@@ -167,9 +172,11 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
   }, []);
 
   const loadChapterContent = useCallback(async (href: string): Promise<string> => {
-    if (cacheRef.current.has(href)) return cacheRef.current.get(href)!;
+    // Strip fragment — zip entries never include #fragment
+    const cleanHref = href.includes('#') ? href.split('#')[0]! : href;
+    if (cacheRef.current.has(cleanHref)) return cacheRef.current.get(cleanHref)!;
     const zip = zipRef.current; if (!zip) return '';
-    const file = zip.file(href); if (!file) return '';
+    const file = zip.file(cleanHref); if (!file) return '';
     const html: string = await file.async('text');
     const text = html
       .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '').replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
@@ -178,7 +185,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       .replace(/<\/div>/gi, '\n').replace(/<\/li>/gi, '\n').replace(/<[^>]+>/g, '')
       .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\n{3,}/g, '\n\n').trim();
-    cacheRef.current.set(href, text);
+    cacheRef.current.set(cleanHref, text);
     return text;
   }, []);
 
@@ -223,11 +230,13 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     try {
       const text = await loadChapterContent(href);
       setCoverTapped(true);
-      const entry = flatTocRef.current.find((t) => t.href === href);
+      // Strip fragment for matching — TOC items have fragments removed during parsing
+      const cleanHref = href.includes('#') ? href.split('#')[0]! : href;
+      const entry = flatTocRef.current.find((t) => t.href === cleanHref);
       setChapterTitle(entry?.label ?? '');
-      setChapterHref(href);
+      setChapterHref(cleanHref);
       onChapterChange?.(text, entry?.label ?? '');
-      if (storedRef.current) persist({ ...storedRef.current, chapterHref: href });
+      if (storedRef.current) persist({ ...storedRef.current, chapterHref: cleanHref });
       return text;
     } finally { setLoading(false); }
   }, [loadChapterContent, onChapterChange, persist]);
