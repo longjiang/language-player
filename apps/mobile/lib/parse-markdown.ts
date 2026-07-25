@@ -47,7 +47,7 @@ export function parseMarkdownBlocks(md: string): TextBlock[] {
       case 'list':
         for (const item of token.items) {
           const liText = (item.tokens ?? [])
-            .map((t) => plainText(t))
+            .map((t: any) => plainText(t))
             .join(' ');
           if (liText.trim()) {
             blocks.push({ kind: 'text', type: 'list-item', text: liText });
@@ -66,4 +66,5 @@ function plainText(token: any): string {
   if (token.tokens) return token.tokens.map((t: any) => plainText(t)).join('');
   if (token.type === 'text') return token.text ?? '';
   if (token.type === 'codespan') return token.text ?? '';
+  return '';
 }

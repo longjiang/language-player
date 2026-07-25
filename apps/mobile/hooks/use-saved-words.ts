@@ -76,7 +76,7 @@ export function useSavedWords() {
       try {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
         if (raw) {
-          const parsed = JSON.parse(raw) as SavedWordsStore;
+          let parsed = JSON.parse(raw) as SavedWordsStore;
           // Enrich old records missing head words + persist
           let enriched = false;
           for (const lang of Object.keys(parsed)) {

@@ -49,7 +49,7 @@ const NAV_GROUPS: NavGroup[] = [
 ];
 
 // Icons matching Next.js NAV_ICONS (apps/web/src/components/layout/header.tsx)
-const NAV_ICONS: Record<string, React.ReactNode> = {
+const NAV_ICONS: Record<string, React.JSX.Element> = {
   '(media)': <Compass size={16} color={ICON_COLOR} />,
   '(reading)': <FileText size={16} color={ICON_COLOR} />,
   '(vocab)': <BookMarked size={16} color={ICON_COLOR} />,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { View, Text, Platform } from 'react-native';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import type { TokenCache } from '@langplayer/utils';
+import type { TokenCache } from '@langplayer/shared';
 import { buildRuby } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';

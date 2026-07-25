@@ -47,7 +47,7 @@ export function TabbedPanel({ tabs, defaultTab, children }: TabbedPanelProps) {
       {childrenArray.map((child, i) => {
         const tabKey = tabs[i]?.key;
         if (!tabKey || tabKey !== activeTab) return null;
-        return <View key={tabKey} className="flex-1">{child}</View>;
+        return <View key={tabKey} className="flex-1">{child as any}</View>;
       })}
     </View>
   );

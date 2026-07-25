@@ -208,12 +208,6 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     finally { setLoading(false); }
   }, [loadFromUri, persist]);
 
-  const openFromCover = useCallback(async () => {
-    if (spineRef.current.length === 0) return;
-    // Use loadChapter for spine concatenation (covers, frontmatter → first chapter)
-    await loadChapter(spineRef.current[0]!.href);
-  }, [loadChapter]);
-
   const loadChapter = useCallback(async (href: string): Promise<string> => {
     setLoading(true);
     try {
@@ -255,6 +249,11 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       return combinedText;
     } finally { setLoading(false); }
   }, [loadChapterContent, onChapterChange, persist]);
+
+  const openFromCover = useCallback(async () => {
+    if (spineRef.current.length === 0) return;
+    await loadChapter(spineRef.current[0]!.href);
+  }, [loadChapter]);
 
   const prevChapter = useCallback(() => { if (prevHref) loadChapter(prevHref); }, [prevHref, loadChapter]);
   const nextChapter = useCallback(() => { if (nextHref) loadChapter(nextHref); }, [nextHref, loadChapter]);

@@ -139,8 +139,6 @@ export function SubtitlesModeBand({
                 text={activeLine.l2Line}
                 l2Code={l2Lang.code}
                 tokenCache={tokenCache}
-                tokenCacheLoaded={tokenCacheLoaded}
-                context={videoTitle ? { videoTitle } : undefined}
               />
             </View>
             {showTranslation && activeLine.l1Line ? (
