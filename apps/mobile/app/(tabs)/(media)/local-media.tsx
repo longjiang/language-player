@@ -4,7 +4,7 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { useT } from '@/hooks/use-t';
 import { useLocalMedia } from '@/hooks/use-local-media';
 import type { SubtitleLine } from '@langplayer/shared';
-import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
+import { ICON_ON_PRIMARY, ICON_MUTED } from '@/lib/theme-colors';
 import { Play, Pause, SkipBack, SkipForward, Upload, FileText, X, FileVideo, FileAudio } from 'lucide-react-native';
 
 export default function LocalMediaScreen() {
@@ -136,18 +136,34 @@ export default function LocalMediaScreen() {
   // ── Player ──
   const PlayerSection = () => (
     <View>
-      <View className="relative w-full bg-black" style={{ height: videoHeight }}>
-        <VideoView
-          player={player}
-          style={{ width: '100%', height: '100%' }}
-          nativeControls={false}
-        />
-        {buffering && (
-          <View className="absolute inset-0 items-center justify-center bg-black/50">
-            <ActivityIndicator size="large" color={ICON_ON_PRIMARY} />
-          </View>
-        )}
-      </View>
+      {/* Video mode: full VideoView */}
+      {!localMedia.isAudio && (
+        <View className="relative w-full bg-black" style={{ height: videoHeight }}>
+          <VideoView
+            player={player}
+            style={{ width: '100%', height: '100%' }}
+            nativeControls={false}
+          />
+          {buffering && (
+            <View className="absolute inset-0 items-center justify-center bg-black/50">
+              <ActivityIndicator size="large" color={ICON_ON_PRIMARY} />
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Audio mode: styled card matching web's HTML5Player audio UI */}
+      {localMedia.isAudio && (
+        <View className="mx-4 items-center justify-center rounded-xl border border-border bg-card px-4 py-10">
+          <Text className="mb-3 text-5xl">🎵</Text>
+          <Text className="mb-3 text-sm font-medium text-muted-foreground" numberOfLines={1}>
+            {localMedia.fileName ?? t('label.untitled_video')}
+          </Text>
+          {buffering && (
+            <ActivityIndicator size="small" color={ICON_MUTED} />
+          )}
+        </View>
+      )}
 
       {/* Progress bar */}
       <Pressable
