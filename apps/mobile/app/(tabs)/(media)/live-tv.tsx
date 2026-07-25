@@ -1,17 +1,105 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, FlatList, Pressable, ActivityIndicator, Image, TextInput } from 'react-native';
+import { View, Text, FlatList, Pressable, ActivityIndicator, Image, TextInput, ScrollView, Modal, Platform, ActionSheetIOS } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
+import { PLACEHOLDER_COLOR, ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { LiveTVPlayer } from '@/components/video/LiveTVPlayer';
-import { Search, Wifi, WifiHigh, WifiLow, Tv, SlidersHorizontal } from 'lucide-react-native';
+import { Search, Wifi, WifiHigh, WifiLow, Tv, SlidersHorizontal, ChevronDown } from 'lucide-react-native';
 import type { LiveTVChannel } from '@langplayer/shared';
 
 type SortKey = 'latency' | 'name' | 'random';
 
+/** Resolve country code to localized name using Intl.DisplayNames. */
+function countryName(code: string, locale: string): string {
+  try {
+    const names = new Intl.DisplayNames([locale], { type: 'region' });
+    return names.of(code.toUpperCase()) || code;
+  } catch {
+    return code;
+  }
+}
+
+/** Dropdown picker — native ActionSheet on iOS, safe-area-aware modal on Android. */
+function DropdownPicker<T extends string>({
+  value,
+  options,
+  getLabel,
+  onChange,
+}: {
+  value: T;
+  options: T[];
+  getLabel: (opt: T) => string;
+  onChange: (opt: T) => void;
+}) {
+  const insets = useSafeAreaInsets();
+  const [open, setOpen] = useState(false);
+
+  const handlePress = () => {
+    if (Platform.OS === 'ios') {
+      const labels = options.map(getLabel);
+      const cancelIndex = options.length;
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [...labels, 'Cancel'],
+          cancelButtonIndex: cancelIndex,
+        },
+        (index) => {
+          if (index !== cancelIndex) onChange(options[index]);
+        },
+      );
+    } else {
+      setOpen(true);
+    }
+  };
+
+  return (
+    <View>
+      <Pressable
+        onPress={handlePress}
+        className="flex-row items-center gap-1 rounded-lg border border-border bg-card px-3 py-2"
+      >
+        <Text className="text-sm text-foreground flex-1" numberOfLines={1}>
+          {getLabel(value)}
+        </Text>
+        <ChevronDown size={14} color={ICON_MUTED} />
+      </Pressable>
+
+      {open && Platform.OS !== 'ios' && (
+        <Modal transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+          <Pressable className="flex-1 bg-black/30" onPress={() => setOpen(false)}>
+            <View style={{ height: insets.top + 8 }} />
+            <View className="mx-4 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+              <ScrollView className="max-h-64">
+                {options.map((opt) => (
+                  <Pressable
+                    key={opt}
+                    onPress={() => { onChange(opt); setOpen(false); }}
+                    className={`px-4 py-3 border-b border-border active:bg-muted ${
+                      opt === value ? 'bg-primary/10' : ''
+                    }`}
+                  >
+                    <Text
+                      className={`text-sm ${
+                        opt === value ? 'text-primary font-medium' : 'text-foreground'
+                      }`}
+                    >
+                      {getLabel(opt)}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          </Pressable>
+        </Modal>
+      )}
+    </View>
+  );
+}
+
 export default function LiveTvScreen() {
-  const { l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const [channels, setChannels] = useState<LiveTVChannel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -134,69 +222,38 @@ export default function LiveTvScreen() {
         </Pressable>
       </View>
 
-      {/* Filter pills */}
+      {/* Filter dropdowns — Countries + Categories side by side */}
       {showFilters && (
-        <View className="border-b border-border px-3 py-2">
-          {/* Sort */}
-          <View className="mb-2 flex-row items-center gap-2">
-            <Text className="text-xs text-muted-foreground">Sort:</Text>
-            {(['latency', 'name', 'random'] as SortKey[]).map((key) => (
-              <Pressable
-                key={key}
-                onPress={() => setSortBy(key)}
-                className={`rounded-full px-2.5 py-0.5 ${sortBy === key ? 'bg-primary' : 'bg-muted'}`}
-              >
-                <Text className={`text-xs ${sortBy === key ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
-                  {key === 'latency' ? 'Speed' : key === 'name' ? 'A-Z' : 'Random'}
-                </Text>
-              </Pressable>
-            ))}
+        <View className="flex-row gap-2 border-b border-border px-4 py-3">
+          <View className="flex-1">
+            <DropdownPicker
+              value={country ?? '__all__'}
+              options={['__all__' as any, ...countries]}
+              getLabel={(co) =>
+                co === '__all__'
+                  ? t('title.all_countries')
+                  : countryName(co, l1Lang?.code ?? 'en')
+              }
+              onChange={(co) => setCountry(co === '__all__' ? null : co)}
+            />
           </View>
-          {/* Categories */}
-          <View className="mb-2 flex-row flex-wrap gap-1">
-            <Pressable
-              onPress={() => setCategory(null)}
-              className={`rounded-full px-2.5 py-0.5 ${!category ? 'bg-primary' : 'bg-muted'}`}
-            >
-              <Text className={`text-xs ${!category ? 'text-primary-foreground' : 'text-muted-foreground'}`}>All</Text>
-            </Pressable>
-            {categories.map((cat) => (
-              <Pressable
-                key={cat}
-                onPress={() => setCategory(cat)}
-                className={`rounded-full px-2.5 py-0.5 ${category === cat ? 'bg-primary' : 'bg-muted'}`}
-              >
-                <Text className={`text-xs ${category === cat ? 'text-primary-foreground' : 'text-muted-foreground'}`}>{cat}</Text>
-              </Pressable>
-            ))}
+          <View className="flex-1">
+            <DropdownPicker
+              value={category ?? '__all__'}
+              options={['__all__' as any, ...categories]}
+              getLabel={(cat) =>
+                cat === '__all__' ? t('title.all_categories') : cat
+              }
+              onChange={(cat) => setCategory(cat === '__all__' ? null : cat)}
+            />
           </View>
-          {/* Countries */}
-          {countries.length > 1 && (
-            <View className="flex-row flex-wrap gap-1">
-              <Pressable
-                onPress={() => setCountry(null)}
-                className={`rounded-full px-2.5 py-0.5 ${!country ? 'bg-primary' : 'bg-muted'}`}
-              >
-                <Text className={`text-xs ${!country ? 'text-primary-foreground' : 'text-muted-foreground'}`}>All Countries</Text>
-              </Pressable>
-              {countries.slice(0, 15).map((co) => (
-                <Pressable
-                  key={co}
-                  onPress={() => setCountry(co)}
-                  className={`rounded-full px-2.5 py-0.5 ${country === co ? 'bg-primary' : 'bg-muted'}`}
-                >
-                  <Text className={`text-xs ${country === co ? 'text-primary-foreground' : 'text-muted-foreground'}`}>{co}</Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
         </View>
       )}
 
       {/* Channel count */}
       <View className="flex-row items-center justify-between px-4 py-2">
         <Text className="text-xs text-muted-foreground">
-          {filtered.length} channels
+          {filtered.length} {t('msg.channels')}
         </Text>
       </View>
 
@@ -224,7 +281,11 @@ export default function LiveTvScreen() {
               </Text>
               <View className="flex-row items-center gap-2">
                 <Text className="text-xs text-muted-foreground">{item.category}</Text>
-                {item.countries ? <Text className="text-xs text-muted-foreground">· {item.countries}</Text> : null}
+                {item.countries ? (
+                  <Text className="text-xs text-muted-foreground">
+                    · {item.countries.split(',').map((c) => countryName(c.trim(), l1Lang?.code ?? 'en')).join(', ')}
+                  </Text>
+                ) : null}
               </View>
             </View>
             {/* Signal */}
@@ -236,7 +297,7 @@ export default function LiveTvScreen() {
                 ) : null}
               </View>
               {!item.alive && (
-                <Text className="text-xs text-muted-foreground">Offline</Text>
+                <Text className="text-xs text-muted-foreground">{t('label.offline')}</Text>
               )}
             </View>
           </Pressable>
