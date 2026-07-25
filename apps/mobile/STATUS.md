@@ -72,7 +72,7 @@
 |---|---|---|---|---|
 | Notes / Reader | `(tabs)/(reading)/index.tsx` | ✅ | `[l1]/[l2]/reader/page.tsx` | Markdown editor, CRUD notes, TokenizedText, auto-save |
 | Web Reader | `(tabs)/(reading)/web-reader.tsx` | ✅ | `[l1]/[l2]/web-reader/page.tsx` | URL fetch + tokenization works. **Missing**: notes sidebar (`ReaderSidebar`), page translation.  |
-| EPUB Reader | `(tabs)/(reading)/epub.tsx` | 🟡 | `[l1]/[l2]/epub/page.tsx` | Upload + parse + read works. **Missing**: position/anchor save. |
+| EPUB Reader | `(tabs)/(reading)/epub.tsx` | ✅ | `[l1]/[l2]/epub/page.tsx` | Upload + parse + read works. Position/anchor save. |
 
 ### Reader Components
 
@@ -89,7 +89,7 @@
 | Screen | File | Status | Web Source | Notes |
 |---|---|---|---|---|
 | Dictionary Search | `(tabs)/(vocab)/index.tsx` | ✅ | `[l1]/[l2]/dictionary/page.tsx` | Search + recent searches + results cards |
-| Saved Words | `(tabs)/(vocab)/saved-words.tsx` | 🟡 | `[l1]/[l2]/saved-words/page.tsx` | Filter + sort + remove works. **Missing**: export (UI button only, no logic), SRS status dots on word rows, word list navigation context |
+| Saved Words | `(tabs)/(vocab)/saved-words.tsx` | 🟡 | `[l1]/[l2]/saved-words/page.tsx` | Filter + sort + remove works. **Missing**: export (UI button only, no logic). |
 | SRS Review | `(tabs)/(vocab)/review.tsx` | 🟡 | `[l1]/[l2]/review/page.tsx` | Flashcard UI works. **⚠️ No actual SRS scheduling** — no SM-2 algorithm, no due card computation, only 2 ratings (again/good) vs web's 4 (again/hard/good/easy), no undo, no daily new card limit, no "no cards due" state |
 | Word Detail | `(tabs)/(vocab)/word/[entryId].tsx` | ✅ | `dictionary/entry/...` | Definitions, examples, inflections, AI explanation |
 
