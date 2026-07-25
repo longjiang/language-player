@@ -17,18 +17,21 @@ class TokenCache {
 /**
  * Fetches pre-computed token cache for a video to avoid per-line API calls.
  * Ported from apps/web/src/hooks/use-video-token-cache.ts.
+ *
+ * @param videoId — Directus video ID (NOT the YouTube ID). Pass an empty string
+ *   to skip the fetch (e.g., while the video metadata is still loading).
  */
-export function useVideoTokenCache(youtubeId: string, l2Code: string) {
+export function useVideoTokenCache(videoId: string, l2Code: string) {
   const { getVideoTokenCache } = useVideos();
   const cache = useRef(new TokenCache());
   const [loaded, setLoaded] = useState(false);
   const fetching = useRef(false);
 
   useEffect(() => {
-    if (!youtubeId || !l2Code || fetching.current) return;
+    if (!videoId || !l2Code || fetching.current) return;
     fetching.current = true;
 
-    getVideoTokenCache(youtubeId, l2Code)
+    getVideoTokenCache(videoId, l2Code)
       .then((data) => {
         if (data && typeof data === 'object') cache.current.load(data);
         setLoaded(true);

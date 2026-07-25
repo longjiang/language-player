@@ -1,0 +1,93 @@
+import React from 'react';
+import { View, Text } from 'react-native';
+import { Eye, ThumbsUp, MessageCircle, Calendar } from 'lucide-react-native';
+import type { YouTubeVideo } from '@langplayer/shared';
+import { getLevelFromDifficulty, formatNumericLevel, primaryScale } from '@langplayer/shared';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useT } from '@/hooks/use-t';
+import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
+import { ICON_MUTED } from '@/lib/theme-colors';
+
+interface VideoMetaProps {
+  video: YouTubeVideo;
+}
+
+function formatNumber(n: number | undefined): string {
+  if (!n) return '';
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+function formatDate(date: Date | string | undefined): string {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const month = d.toLocaleString('en-US', { month: 'short' });
+  const day = d.getDate();
+  const year = d.getFullYear();
+  return `${month} ${day}, ${year}`;
+}
+
+export function VideoMeta({ video }: VideoMetaProps) {
+  const { l1Lang, l2Lang } = useLanguage();
+  const t = useT();
+  const profiles = useDifficultyProfile();
+  const level = getLevelFromDifficulty(video.difficulty, profiles?.[l2Lang.code]);
+
+  return (
+    <View>
+      <Text className="text-xl font-bold leading-tight text-foreground">
+        {video.title ?? t('label.untitled_video_full')}
+      </Text>
+
+      <View className="mt-3 flex-row flex-wrap items-center gap-3">
+        {video.views != null && (
+          <View className="flex-row items-center gap-1">
+            <Eye size={14} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">
+              {t('label.views_count', { count: formatNumber(video.views) })}
+            </Text>
+          </View>
+        )}
+        {video.likes != null && (
+          <View className="flex-row items-center gap-1">
+            <ThumbsUp size={14} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">{formatNumber(video.likes)}</Text>
+          </View>
+        )}
+        {video.comments != null && (
+          <View className="flex-row items-center gap-1">
+            <MessageCircle size={14} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">{formatNumber(video.comments)}</Text>
+          </View>
+        )}
+        {video.date && (
+          <View className="flex-row items-center gap-1">
+            <Calendar size={14} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">{formatDate(video.date)}</Text>
+          </View>
+        )}
+      </View>
+
+      <View className="mt-3 flex-row flex-wrap items-center gap-2">
+        {level != null && (
+          <View className="rounded-full bg-primary/10 px-3 py-1">
+            <Text className="text-xs font-bold text-primary">
+              {formatNumericLevel(level, primaryScale(l2Lang.code)).short}
+            </Text>
+          </View>
+        )}
+        {video.locale && (
+          <View className="rounded-full bg-muted px-3 py-1">
+            <Text className="text-xs text-muted-foreground">{video.locale}</Text>
+          </View>
+        )}
+        {video.category && (
+          <View className="rounded-full bg-muted px-3 py-1">
+            <Text className="text-xs text-muted-foreground">{video.category}</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
