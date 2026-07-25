@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { View, Text, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
-import { useVideos } from '@langplayer/api-client';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
@@ -19,9 +18,8 @@ import { VideoMeta } from '@/components/video/VideoMeta';
 import { YouTubeChannelCard } from '@/components/video/YouTubeChannelCard';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
-import { parseSubtitleCSV } from '@langplayer/utils';
 import { AlertCircle } from 'lucide-react-native';
-import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
+import type { YouTubeVideo } from '@langplayer/shared';
 
 const WATCH_POS_PREFIX = 'lp-watch-pos-';
 const SAVE_POS_INTERVAL = 5000;
@@ -53,9 +51,8 @@ interface SyncedLine {
 
 export default function WatchScreen() {
   const { videoId } = useLocalSearchParams<{ videoId: string }>();
-  const { l1Lang, l2Lang } = useLanguage();
+  const { l2Lang } = useLanguage();
   const t = useT();
-  const { getById } = useVideos();
   const { playNext, playPrevious, hasNext, hasPrevious } = useVideoPlayer();
   const { playback, updatePlayback } = useSettingsContext();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -118,13 +115,62 @@ export default function WatchScreen() {
 
     (async () => {
       try {
-        // Fetch video metadata
-        const v = await getById(videoId);
-        setVideo(v as YouTubeVideo);
+        // 1. Fetch YouTube metadata via /check-youtube (title, channelId, thumbnails, etc.)
+        const ytRes = await fetch(
+          `${PYTHON_API_URL}/check-youtube?youtube_ids=${encodeURIComponent(videoId)}`,
+          { signal: AbortSignal.timeout(10000) },
+        );
+        let ytData: any = null;
+        if (ytRes.ok) {
+          const ytArr = await ytRes.json();
+          ytData = Array.isArray(ytArr) ? ytArr[0] : null;
+        }
+
+        const snippet = ytData?.snippet;
+        const contentDetails = ytData?.contentDetails;
+
+        // Parse ISO 8601 duration (PT3M34S → 214)
+        let durationSecs = 0;
+        if (contentDetails?.duration) {
+          const match = contentDetails.duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+          if (match) {
+            durationSecs = (parseInt(match[1] ?? '0', 10) * 3600)
+              + (parseInt(match[2] ?? '0', 10) * 60)
+              + parseInt(match[3] ?? '0', 10);
+          }
+        }
+
+        const v: YouTubeVideo = {
+          youtube_id: videoId,
+          title: snippet?.title ?? snippet?.localized?.title,
+          channel_id: snippet?.channelId,
+          duration: durationSecs,
+          date: snippet?.publishedAt ? new Date(snippet.publishedAt) : undefined,
+          // Directus-only fields (difficulty, views, etc.) are not available
+          // from /check-youtube — left undefined. They will populate when the
+          // video is in Directus and a /videos?youtube_id endpoint is added.
+        };
+        setVideo(v);
         setDuration(v.duration ?? 0);
 
-        // Fetch subtitles
-        const lines = await fetchSubtitleLines(videoId, l2Lang.code);
+        // 2. Fetch subtitles via YouTube transcript API
+        let lines: { line: string; starttime: number }[] = [];
+        try {
+          const subRes = await fetch(
+            `${PYTHON_API_URL}/get_best_l2_subs?v=${encodeURIComponent(videoId)}&l2=${l2Lang.code}`,
+            { signal: AbortSignal.timeout(10000) },
+          );
+          if (subRes.ok) {
+            const subData = await subRes.json();
+            if (Array.isArray(subData)) {
+              lines = subData.map((item: any) => ({
+                line: item.text ?? '',
+                starttime: item.start ?? 0,
+              }));
+            }
+          }
+        } catch { /* subs unavailable — continue without */ }
+
         if (lines.length > 0) {
           const synced: SyncedLine[] = lines.map((l) => ({
             starttime: l.starttime,
@@ -323,44 +369,4 @@ export default function WatchScreen() {
       </View>
     </View>
   );
-}
-
-/** Fetch subtitle lines from Python backend. Mirrors SubtitleDisplay's internal fetch logic. */
-async function fetchSubtitleLines(
-  youtubeId: string,
-  l2Code: string,
-): Promise<SubtitleLine[]> {
-  // 1. Try Directus first
-  try {
-    const dr = await fetch(
-      `${PYTHON_API_URL}/videos?youtube_id=${encodeURIComponent(youtubeId)}&subs_l2=1&l2=${l2Code}`,
-      { signal: AbortSignal.timeout(10000) },
-    );
-    if (dr.ok) {
-      const dj = await dr.json();
-      const video = Array.isArray(dj) ? dj[0] : dj?.data?.[0] ?? dj;
-      if (video?.subs_l2 && typeof video.subs_l2 === 'string' && video.subs_l2.length > 100) {
-        return parseSubtitleCSV(video.subs_l2);
-      }
-    }
-  } catch { /* fall through */ }
-
-  // 2. Fall back to YouTube transcript API
-  try {
-    const yr = await fetch(
-      `${PYTHON_API_URL}/get_best_l2_subs?v=${encodeURIComponent(youtubeId)}&l2=${l2Code}`,
-      { signal: AbortSignal.timeout(10000) },
-    );
-    if (yr.ok) {
-      const yd = await yr.json();
-      if (Array.isArray(yd)) {
-        return yd.map((item: any) => ({
-          line: item.text ?? '',
-          starttime: item.start ?? 0,
-        }));
-      }
-    }
-  } catch { /* fall through */ }
-
-  return [];
 }
