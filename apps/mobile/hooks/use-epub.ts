@@ -103,12 +103,9 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
         await loadFromUri(st.fileUri);
         if (st.chapterHref) {
           console.log('[epub:restore] loading last chapter:', st.chapterHref);
-          const text = await loadChapterContent(st.chapterHref);
-          setChapterHref(st.chapterHref);
-          const entry = flatTocRef.current.find((t) => t.href === st.chapterHref);
-          setChapterTitle(entry?.label ?? '');
-          setCoverTapped(true);
-          onChapterChange?.(text, entry?.label ?? '');
+          // Use loadChapter (not loadChapterContent) so spine concatenation
+          // merges all content docs belonging to this logical chapter.
+          await loadChapter(st.chapterHref);
         } else {
           console.log('[epub:restore] no chapterHref — showing cover');
         }
