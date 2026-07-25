@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useRef } from 'react';
 import { View, Text, Pressable, TextInput, SectionList, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -11,17 +11,20 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 
 type SortMode = 'newest' | 'alpha';
 
+/** Lazy enrichment: only fetch dictionary entries for rows visible on screen. */
+const ENRICH_BUFFER = 20; // enrich visible + this many extra rows below
+
 export default function SavedWordsScreen() {
   const { l2Lang } = useLanguage();
   const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
-  const { savedWords, removeWord, clearAll, loaded } = useSavedWords(l2Lang.code);
+  const { savedWords, removeWord, clearAll, loaded, refreshEntry } = useSavedWords(l2Lang.code);
   const router = useRouter();
   const t = useT();
 
   const [sortMode, setSortMode] = useState<SortMode>('newest');
   const [filterText, setFilterText] = useState('');
 
-  console.log('[SavedWordsScreen] render — loaded:', loaded, 'l2Code:', l2Lang.code, 'savedWords keys:', Object.keys(savedWords));
+  console.log('[SavedWordsScreen] render — loaded:', loaded, 'l2Code:', l2Lang.code);
 
   const allWords = useMemo(
     () => savedWords[l2Lang.code] ?? [],
@@ -88,8 +91,29 @@ export default function SavedWordsScreen() {
     clearAll(l2Lang.code);
   }, [l2Lang.code, clearAll]);
 
+  // ── Lazy enrichment: only fetch dictionary entries for rows visible on screen ──
+  const enrichedRef = useRef<Set<string>>(new Set());
+
+  const handleViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: Array<{ item: typeof words[number]; index: number | null }> }) => {
+      const toEnrich = viewableItems.slice(0, ENRICH_BUFFER);
+      for (const vi of toEnrich) {
+        const w = vi.item;
+        if (w.head && (w.canonicalEntry || w.llmEntry)) continue; // already enriched
+        if (enrichedRef.current.has(w.id)) continue; // already requested
+        enrichedRef.current.add(w.id);
+        refreshEntry(l2Lang.code, w.id);
+      }
+    },
+    [l2Lang.code, refreshEntry, words],
+  );
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 10,
+    minimumViewTime: 200,
+  }).current;
+
   if (!loaded) {
-    console.log('[SavedWordsScreen] rendering SPINNER — loaded=false, l2Code:', l2Lang.code);
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color={ICON_MUTED} />
@@ -99,7 +123,6 @@ export default function SavedWordsScreen() {
 
   // ── Empty state ──
   if (allWords.length === 0) {
-    console.log('[SavedWordsScreen] rendering EMPTY — loaded=true, no words for l2:', l2Lang.code);
     return (
       <View className="flex-1 items-center justify-center bg-background px-8">
         <View className="w-full max-w-sm rounded-xl border border-dashed border-border p-12 items-center">
@@ -179,16 +202,14 @@ export default function SavedWordsScreen() {
         sections={sections}
         keyExtractor={(item) => item.id}
         stickySectionHeadersEnabled={false}
+        onViewableItemsChanged={handleViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
         renderSectionHeader={({ section }) => (
           <View className="bg-muted/50 px-4 py-1.5">
             <Text className="text-xs font-medium text-muted-foreground">{section.title}</Text>
           </View>
         )}
-        renderItem={({ item, index }) => {
-          if (index < 3) {
-            console.log('[SavedWordsScreen] row', index, 'keys:', Object.keys(item), 'hasCanonicalEntry:', !!item.canonicalEntry, 'head:', item.head, 'pronunciation:', item.canonicalEntry?.pronunciation, 'definitions:', item.canonicalEntry?.definitions?.slice(0, 2));
-          }
-          return (
+        renderItem={({ item }) => (
           <Pressable
             onPress={() => handleWordPress(item)}
             className="flex-row items-center border-b border-border px-4 py-3 active:bg-muted"
@@ -218,8 +239,7 @@ export default function SavedWordsScreen() {
               </Text>
             </View>
           </Pressable>
-          );
-        }}
+        )}
       />
     </View>
   );
