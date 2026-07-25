@@ -49,7 +49,7 @@ export function MarkdownText({ children }: MarkdownTextProps) {
     </Text>
   );
 
-  function renderInline(tokens: Token[]): React.ReactNode {
+  function renderInline(tokens: Token[]) {
     return tokens.map((tok, i) => {
       if (tok.type === 'strong' && hasTokens(tok)) {
         return <Text key={i} className="font-bold">{renderInline(tok.tokens)}</Text>;

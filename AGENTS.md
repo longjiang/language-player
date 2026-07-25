@@ -90,7 +90,13 @@ npm run build:check -w apps/web  # Safe build check (uses isolated .next-check/,
 
 **⚠️ Build vs dev**: `npx turbo build` and `npm run build` both run `rm -rf .next` which kills the dev server. Use `npm run build:check -w apps/web` instead — it builds into an isolated `.next-check/` directory (created and cleaned up automatically).
 
-**⚠️ Always use `npx turbo` from the repo root** — it handles working directories automatically. If you must run a package script directly (e.g., `npx next build`, `npx tsc --noEmit`), `cd` into that package's directory first. Running `npx next build apps/web` from the root will fail with misleading CSS/webpack errors because Next.js interprets the path argument as the project root, not a subdirectory.
+**⚠️ Always use `npx turbo` from the repo root** — it handles working directories automatically. If you must run a package script directly (e.g., `npx next build`), `cd` into that package's directory first. Running `npx next build apps/web` from the root will fail with misleading CSS/webpack errors because Next.js interprets the path argument as the project root, not a subdirectory.
+
+**⚠️ Never use `npx tsc` in the sandboxed VS Code terminal.** `npx` fails silently (exit code 255, no output), making it look like typecheck passed when it didn't. Always invoke the local TypeScript binary directly:
+```bash
+cd apps/mobile && ./node_modules/.bin/tsc --noEmit
+cd apps/web && ./node_modules/.bin/tsc --noEmit
+```
 
 ### Test Credentials
 
