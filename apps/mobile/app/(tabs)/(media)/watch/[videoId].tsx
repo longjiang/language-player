@@ -270,7 +270,6 @@ export default function WatchScreen() {
     <YouTubePlayer
       ref={playerRef}
       youtubeId={v.youtube_id}
-      autoplay
       startTime={startTime}
       onTimeUpdate={handleTimeUpdate}
       onDuration={handleDuration}

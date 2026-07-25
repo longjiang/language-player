@@ -50,7 +50,7 @@
 
 | Component | File | Status | Notes |
 |---|---|---|---|
-| YouTube Player | `components/video/YouTubePlayer.tsx` | 🟡 | **⚠️ Broken on iOS** — declarative `play` prop doesn't work |
+| YouTube Player | `components/video/YouTubePlayer.tsx` | ✅ | Users tap the YouTube iframe directly to play/pause (programmatic `play` prop was broken on iOS — removed; `seekTo`/`getCurrentTime` work on both platforms) |
 | Video Control Bar | `components/video/VideoControlBar.tsx` | ✅ | Play/pause, line nav, speed toggle, progress, queue nav |
 | Subtitle Display | `components/video/SubtitleDisplay.tsx` | ✅ | Dual-line L2 + L1, active highlighting, auto-scroll, TokenizedText |
 | Video Card | `components/video/VideoCard.tsx` | ✅ | Thumbnail, title, duration, views, difficulty badge |
