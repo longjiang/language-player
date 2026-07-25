@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserData, useDictionary } from '@langplayer/api-client';
-import { decomposeWordId } from '@langplayer/shared';
+import { decomposeWordId, type DictionaryEntry, type LlmGeneratedEntry } from '@langplayer/shared';
 import { useCloudUserData } from '@/contexts/UserDataContext';
 
 const STORAGE_KEY = 'zthSavedWords';
@@ -17,6 +17,10 @@ interface SavedWordMeta {
   forms?: string[];       // Classic/Nuxt format
   date?: number;          // Classic/Nuxt format (millis)
   context?: Record<string, unknown>; // Classic/Nuxt format
+  /** Cached curated dictionary entry from GET /dictionary/entry (ADR 0006). */
+  canonicalEntry?: DictionaryEntry;
+  /** Cached LLM-generated entry from GET /dictionary/llm (ADR 0006). */
+  llmEntry?: LlmGeneratedEntry;
 }
 
 type SavedWordsStore = Record<string, SavedWordMeta[]>; // keyed by L2 code
@@ -45,11 +49,20 @@ async function enrichMissingHeads(
       const { dict: dictId, id: scopedId } = decomposed;
       console.log('[savedWords] enrichMissingHeads — fetching entry:', { l2Code, dictId, scopedId });
       const res = await dict.getEntry(l2Code, dictId, scopedId);
-      if (res?.entry?.head) {
-        enriched[i] = { ...w, head: res.entry.head };
-        console.log('[savedWords] enrichMissingHeads — enriched head for:', w.id, '->', res.entry.head);
+      if (res?.entry) {
+        // Store the full DictionaryEntry as canonicalEntry (ADR 0006) for richer display
+        // while also keeping the flat `head` for backward compat with the current list UI.
+        const entry = res.entry as DictionaryEntry;
+        enriched[i] = {
+          ...w,
+          head: entry.head,
+          dictionaryId: dictId,
+          entryId: scopedId,
+          canonicalEntry: entry,
+        };
+        console.log('[savedWords] enrichMissingHeads — stored canonicalEntry for:', w.id, '-> head:', entry.head);
       } else {
-        console.warn('[savedWords] enrichMissingHeads — no head in response for:', w.id);
+        console.warn('[savedWords] enrichMissingHeads — no entry in response for:', w.id);
       }
     } catch (err) {
       console.warn('[savedWords] enrichMissingHeads — error fetching entry for', w.id, ':', err);
@@ -99,11 +112,24 @@ export function useSavedWords(activeL2?: string) {
           // Enrich only the active L2's missing heads (the language the user is viewing)
           if (activeL2) {
             const missingCount = (parsed[activeL2] ?? []).filter((w) => !w.head).length;
+            console.log('[savedWords] EFFECT 1 — sample raw word (before enrichment):', (parsed[activeL2] ?? []).slice(0, 2));
             if (missingCount > 0) {
               console.log('[savedWords] EFFECT 1 — enriching active L2:', activeL2, 'missing heads:', missingCount);
               const result = await enrichMissingHeads(parsed, activeL2, dict);
               if (result[activeL2] !== parsed[activeL2] && !cancelled) {
                 console.log('[savedWords] EFFECT 1 — enriched heads for:', activeL2);
+                console.log('[savedWords] EFFECT 1 — sample enriched word:', JSON.stringify(
+                  result[activeL2]!.slice(0, 3).map(w => ({
+                    id: w.id,
+                    head: w.head,
+                    definitions: w.canonicalEntry?.definitions?.slice(0, 2),
+                    pos: w.canonicalEntry?.part_of_speech,
+                    levels: w.canonicalEntry?.levels,
+                    pronunciation: w.canonicalEntry?.pronunciation,
+                    hasCanonicalEntry: !!w.canonicalEntry,
+                  })),
+                  null, 2,
+                ));
                 SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(result));
                 setSavedWords(result);
               }
