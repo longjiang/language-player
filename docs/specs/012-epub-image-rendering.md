@@ -194,6 +194,76 @@ For the visible (non-measuring) view, render `ImageBlock`s identically:
 | `apps/mobile/lib/parse-markdown.ts` | Add `ImageBlock` type; export `ContentBlock = TextBlock \| ImageBlock`; split on `[IMG:...]` markers |
 | `apps/mobile/app/(tabs)/(reading)/epub.tsx` | Render `ImageBlock`s in measuring + visible views; update block type references from `TextBlock` to `ContentBlock` |
 
+## Cover Image Flow
+
+Building the image cache during `loadFromUri` also unifies cover image loading with inline image loading. This lets the mobile reader match the web app's EPUB open flow exactly:
+
+### Current web flow (apps/web)
+
+```
+User opens EPUB
+  → epubjs parses file, extracts cover
+  → Cover is displayed centered in the reader layout
+  → User taps cover → coverTapped = true → loadChapter(firstChapterHref)
+  → Reading pane replaces cover
+```
+
+### Current mobile flow (apps/mobile)
+
+```
+User opens EPUB
+  → parseOPF extracts coverBase64 from manifest metadata
+  → Cover is loaded separately from the zip (special-case code path)
+  → Cover shown full-screen with "Tap to open" label
+  → User taps → openFromCover() → loadChapter(firstSpineItem)
+  → Reading pane replaces cover
+```
+
+The logic is functionally equivalent, but the cover loading uses a separate code path from inline images.
+
+### Unified flow (after this spec)
+
+```
+User opens EPUB
+  → loadFromUri builds imageCache (all manifest images)
+  → Cover image is looked up from imageCache (same mechanism as inline images)
+  → Cover displayed centered in reader layout
+  → User taps cover → coverTapped = true → loadChapter(firstSpineItem)
+  → Reading pane replaces cover
+```
+
+**What changes in the code:**
+
+1. **Remove the special-case cover extraction** — Currently `loadFromUri` has a dedicated block (lines 163–165) that reads the cover file from the zip, encodes it to base64, and constructs a `data:image/jpeg;base64,...` URI. After this spec, the cover is already in `imageCacheRef` — just look it up by its manifest href.
+
+2. **Unify the cover rendering** — Instead of a separate full-screen cover state with `<Image source={{ uri: epub.coverUrl }}>`, render the cover as a standard `ImageBlock` at the start of the first chapter's content blocks. The cover then naturally flows into the reading pane — it appears on page 1 before the chapter text begins.
+
+3. **Match web behavior exactly** — The web app uses epubjs's `b.coverUrl()` which returns the cover as a blob URL, then renders it in the reader layout. After this spec, mobile does the same thing: the cover is just another image block in the content stream, rendered by the same `<Image>` component.
+
+**Implementation sketch:**
+
+```typescript
+// In use-epub.ts — loadFromUri, after building imageCache:
+const coverHref = meta.coverBase64; // manifest href of cover image
+if (coverHref) {
+  const coverResolvedPath = resolvePathFn(opfDir, coverHref);
+  const coverDataUri = imageCacheRef.current.get(coverResolvedPath);
+  if (coverDataUri) {
+    setCoverUrl(coverDataUri); // same state, now from unified cache
+  }
+}
+```
+
+```typescript
+// In epub.tsx — split cover state into CoverBlock rendering:
+// Instead of a separate full-screen cover return path, prepend a synthetic
+// ImageBlock to the first chapter's blocks when coverTapped is false.
+// When the user taps the cover ImageBlock, set coverTapped = true and
+// the cover block is removed, revealing the chapter text behind it.
+```
+
+**Simpler alternative:** Keep the separate cover state as-is, but source the `coverUrl` from `imageCacheRef` instead of a dedicated zip extraction. This is a minimal change (delete ~4 lines, add ~3 lines) that still unifies the cover loading path without changing the UX.
+
 ## Edge Cases
 
 - **SVG images** — React Native doesn't render SVG natively. Skip SVG items in the image cache or convert to PNG via a server endpoint (future enhancement).
