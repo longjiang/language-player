@@ -451,8 +451,8 @@ To avoid unnecessary API calls, only the visible page's text blocks are sent for
 |---|---|---|
 | **Storage** | IndexedDB (`lp-epub-store`, store `epubs`, key `"current"`) | `FileSystem.documentDirectory/epub_state.json` |
 | **What's stored** | Full EPUB binary (ArrayBuffer) + metadata | File URI + metadata (binary stays in app cache) |
-| **Position** | Last chapter href + scroll anchor (text snippet) | Last chapter href only |
-| **Restore behavior** | On mount: reload binary from IndexedDB → navigate to last chapter | On mount: check if file still exists → load from URI → navigate to last chapter |
+| **Position** | Last chapter href + text anchor (~40 chars of first visible text block) | Last chapter href + text anchor (~40 chars of first visible text block) |
+| **Restore behavior** | On mount: reload binary from IndexedDB → navigate to last chapter → seek to anchor page | On mount: check if file still exists → load from URI → navigate to last chapter → seek to anchor page |
 
 ### Reading Mode
 
@@ -537,7 +537,7 @@ src/types.ts                              ← LemmatizedToken, Lemma interfaces
 1. **No image support on mobile** — Images in EPUB content are not rendered. The regex-based HTML-to-text extraction strips all tags including `<img>`.
 2. **No RTL support on mobile** — The web app detects `page-progression-direction="rtl"` from OPF metadata; mobile does not.
 3. **No ruby preservation** — Both platforms strip furigana/ruby annotations. This is intentional for language learning (user sees only base text, not pronunciation helpers), but means annotated Japanese texts lose furigana.
-4. **No scroll position restore on mobile** — The web app saves a text "anchor" (text snippet at scroll position) to IndexedDB; mobile only restores chapter href.
+4. **Position restore matches web** — On re-opening an EPUB, the mobile app now restores both the last chapter and the last-read page within that chapter (via a ~40-char text anchor), matching the web app behavior.
 5. **Single EPUB at a time** — Both platforms store only one EPUB. Opening a new one replaces the old.
 6. **No embedded font support** — EPUBs with embedded fonts for CJK characters won't render correctly.
 7. **No CSS/formatting preservation** — Rich formatting (bold, italic, colors, alignment) is lost. The reader renders everything as plain text with markdown-level structure (headings, paragraphs, lists, blockquotes).

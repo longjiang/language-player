@@ -12,6 +12,10 @@ interface UseEpubPaginationOptions {
   showTranslation: boolean;
   /** Resets all state when changed (e.g., file name changes) */
   resetKey: string | null;
+  /** If set, seek to the page containing this text snippet after measurement. */
+  initialAnchor?: string | null;
+  /** Called with the first ~40 chars of the first text block on the current page. */
+  onAnchorChange?: (anchor: string) => void;
 }
 
 interface UseEpubPaginationReturn {
@@ -32,6 +36,7 @@ interface UseEpubPaginationReturn {
 
 export function useEpubPagination({
   text, l1Code, l2Code, showTranslation, resetKey,
+  initialAnchor, onAnchorChange,
 }: UseEpubPaginationOptions): UseEpubPaginationReturn {
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const contentWidth = windowWidth - 32;
@@ -49,6 +54,8 @@ export function useEpubPagination({
   const blockHeightsRef = useRef<(number | null)[]>([]);
   const tokenLoadGenRef = useRef(0);
   const translateGenRef = useRef(0);
+  const anchorSeenRef = useRef(false);
+  const prevPageRef = useRef(0);
 
   // ── Reset all state when resetKey changes ──
   useEffect(() => {
@@ -60,6 +67,8 @@ export function useEpubPagination({
     setBlockTranslations({});
     blockHeightsRef.current = [];
     setPage(0);
+    anchorSeenRef.current = false;
+    prevPageRef.current = 0;
   }, [resetKey]);
 
   // ── Parse markdown when text changes ──
@@ -120,6 +129,23 @@ export function useEpubPagination({
     setPage(0);
     setHasMeasured(true);
   }, [blocks, windowHeight, measuredBlockCount]);
+
+  // ── Seek to initialAnchor after measurement completes ──
+  useEffect(() => {
+    if (!initialAnchor || !blocks || !hasMeasured) return;
+    if (anchorSeenRef.current) return;
+    anchorSeenRef.current = true;
+    if (pageBreaks.length === 0) return;
+    for (let p = 0; p <= pageBreaks.length; p++) {
+      const start = p === 0 ? 0 : pageBreaks[p - 1]!;
+      const end = p < pageBreaks.length ? pageBreaks[p]! : blocks.length;
+      const pageBlocks = blocks.slice(start, end);
+      const hasAnchor = pageBlocks.some((b): b is TextBlock =>
+        b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item') && b.text.includes(initialAnchor),
+      );
+      if (hasAnchor) { setPage(p); break; }
+    }
+  }, [initialAnchor, blocks, hasMeasured, pageBreaks]);
 
   // ── Batch lemmatize visible text blocks (per-page) ──
   useEffect(() => {
@@ -199,6 +225,16 @@ export function useEpubPagination({
     setPage(p => p + 1);
     setBlockTranslations({});
   }, [page, totalPages]);
+
+  // ── Report anchor on page change (matches web ReaderPanel) ──
+  useEffect(() => {
+    if (prevPageRef.current === page || !onAnchorChange) return;
+    prevPageRef.current = page;
+    const first = visibleBlocks?.find(
+      (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item'),
+    );
+    if (first) onAnchorChange(first.text.slice(0, 40));
+  }, [page, visibleBlocks, onAnchorChange]);
 
   return {
     blocks, visibleBlocks, page, totalPages, hasMeasured,
