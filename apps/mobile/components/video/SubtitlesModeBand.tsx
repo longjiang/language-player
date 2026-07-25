@@ -84,7 +84,7 @@ export function SubtitlesModeBand({
   const separatorColor = overlay ? 'border-white/20' : 'border-border';
 
   return (
-    <View className={`${containerBg} min-h-[6rem] ${overlay ? 'absolute bottom-0 left-0 right-0 z-10 rounded-t-xl' : ''}`}>
+    <View className={`${containerBg} ${overlay ? 'min-h-[6rem] absolute bottom-0 left-0 right-0 z-10 rounded-t-xl' : 'flex-1'}`}>
       {/* Control row */}
       <View className="flex-row items-center gap-0.5 px-2 py-1">
         <Pressable
@@ -134,7 +134,7 @@ export function SubtitlesModeBand({
       >
         {activeLine ? (
           <>
-            <Text className={`text-center ${textColor}`}>
+            <View className="items-center">
               <TokenizedText
                 text={activeLine.l2Line}
                 l2Code={l2Lang.code}
@@ -142,7 +142,7 @@ export function SubtitlesModeBand({
                 tokenCacheLoaded={tokenCacheLoaded}
                 context={videoTitle ? { videoTitle } : undefined}
               />
-            </Text>
+            </View>
             {showTranslation && activeLine.l1Line ? (
               <Text className={`text-sm text-center mt-0.5 ${transColor}`}>
                 {activeLine.l1Line}
