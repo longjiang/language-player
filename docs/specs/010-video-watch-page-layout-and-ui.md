@@ -1,4 +1,4 @@
-# Subtitles Mode — Dual-View Watch Page (Transcript Mode + Immersive Subtitles Mode)
+# Video Watch Page Layout and UI
 
 > **Status:** Proposed
 > **Date:** 2026-07-23 (revised)
@@ -58,8 +58,8 @@ The watch page renders one of two completely different layouts based on `playbac
 | **Subtitle display** | `SubtitleDisplay` multiline in tab panel | Overlay band, current line only |
 | **Video meta** | Below player | ❌ Hidden |
 | **Channel card** | Below meta | ❌ Hidden |
-| **Transcript** | Tab in right sidebar (wide) / collapsible panel (narrow) | ❌ (switch mode to see) |
-| **Queue** | Tab in right sidebar (wide) / collapsible panel (narrow) | ❌ (switch mode to see) |
+| **Transcript** | Tab in right sidebar (w:h > 1) / collapsible panel (w:h ≤ 1) | ❌ (switch mode to see) |
+| **Queue** | Tab in right sidebar (w:h > 1) / collapsible panel (w:h ≤ 1) | ❌ (switch mode to see) |
 | **Side panel** | Open by default; `◧` toggles collapse | N/A — `◧` switches to transcript mode |
 
 - **Pros**: Each mode is purpose-built; no compromised UX in either mode; clean separation of concerns; immersive mode feels like Netflix.
@@ -83,7 +83,7 @@ The mode can be toggled via:
 - Settings page (persistent preference)
 - ◧ button in either mode
 
-### Layout: Wide Screen (≥1024px)
+### Layout: Wide Screen (aspect ratio w:h > 1)
 
 #### Transcript Mode (reduced control bar, side panel open)
 
@@ -138,7 +138,7 @@ The mode can be toggled via:
 - `bg-black/70 backdrop-blur-sm rounded-t-xl`, `min-h-[6rem]`
 - No `VideoControlBar`, `VideoMeta`, `YouTubeChannelCard`, or `TranscriptQueuePanel`.
 
-### Layout: Narrow Screen (<1024px)
+### Layout: Narrow Screen (aspect ratio w:h ≤ 1)
 
 #### Transcript Mode (controls sticky below video)
 
@@ -185,7 +185,7 @@ The mode can be toggled via:
 └──────────────────────────────────────┘
 ```
 
-- **Not overlaid** on narrow screens — fixed-height block below the player. Two rows:
+- **Not overlaid** when w:h ≤ 1 — fixed-height block below the player. Two rows:
   - **Control row**: `[⏮ ← → ⏭ ◧]` as a huddled button group, left-aligned.
   - **Subtitle row**: L2 text + L1 translation, centered.
   - No TTS button.
@@ -226,12 +226,12 @@ Two-row layout: controls on top, subtitle text below.
 **Rewind**: tapping any empty space in the subtitle row seeks to the start of the current line. `R` key has the same effect. No visual button.
 
 **Positioning:**
-- **Wide**: `absolute bottom-14 left-4 right-4 z-10` — overlays the video.
-- **Narrow**: Fixed-height block below the player (not absolute).
+- **Wide (w:h > 1)**: `absolute bottom-14 left-4 right-4 z-10` — overlays the video.
+- **Narrow (w:h ≤ 1)**: Fixed-height block below the player (not absolute).
 
 **Styling:**
-- Wide: `bg-black/70 backdrop-blur-sm rounded-t-xl`, `min-h-[6rem]`
-- Narrow: `bg-card border-t border-border`, `min-h-[6rem]`
+- Wide (w:h > 1): `bg-black/70 backdrop-blur-sm rounded-t-xl`, `min-h-[6rem]`
+- Narrow (w:h ≤ 1): `bg-card border-t border-border`, `min-h-[6rem]`
 
 ---
 
@@ -262,12 +262,12 @@ For **local media** (`HTML5Player` on `/local-media`), we'll need to render over
    - **Reduce `VideoControlBar`** — remove progress bar, play/pause, time display, speed toggle, rewind. Keep only: `⏮` `←` `→` `⏭` `◧` as a huddled button group.
    - When `'subtitles'`:
      - Don't render `VideoMeta`, `YouTubeChannelCard`, `TranscriptQueuePanel`
-     - Render `SubtitlesModeBand` as overlay (wide) or below-player block (narrow)
-     - Container: `h-[calc(100vh-3.5rem)]` on wide
-   - When `'transcript'`:
-     - Side panel open by default (both wide and narrow). `◧` toggles collapse.
-     - Wide: Mini control bar in title flex row. Tab header: `📄` `📋` only.
-     - Narrow: Panel fills remaining space below player + info. Tabs switch transcript/queue.
+- Render `SubtitlesModeBand` as overlay (w:h > 1) or below-player block (w:h ≤ 1)
+    - Container: `h-[calc(100vh-3.5rem)]` when w:h > 1
+  - When `'transcript'`:
+    - Side panel open by default (regardless of aspect ratio). `◧` toggles collapse.
+    - When w:h > 1: Mini control bar in title flex row. Tab header: `📄` `📋` only.
+    - When w:h ≤ 1: Panel fills remaining space below player + info. Tabs switch transcript/queue.
 
 3. **Ensure YouTube native controls are visible**
    - `YouTubePlayer` already has `playerVars` without `controls: 0` — native controls show by default
@@ -285,7 +285,7 @@ For **local media** (`HTML5Player` on `/local-media`), we'll need to render over
 
 | Risk | Mitigation |
 |---|---|
-| Iframe blocks pointer events on overlay band (wide) | Band is narrow and positioned above YouTube controls area; most of the player remains clickable. On narrow screens, band is not overlaid at all. |
+| Iframe blocks pointer events on overlay band (w:h > 1) | Band is narrow and positioned above YouTube controls area; most of the player remains clickable. When w:h ≤ 1, band is not overlaid at all. |
 | Subtitle lines with extreme length | `line-clamp-2` on L2 text; band has `min-h` not fixed `h` so it can grow to 2 lines. |
 | Users don't discover how to switch to transcript mode | `◧` button uses the familiar `PanelRightOpen` icon suggesting "open side panel." Tooltip reads "Show transcript & queue." |
 | Queue navigation lost in subtitles mode | Users must exit to transcript mode to browse the queue. This is intentional — subtitles mode is for focused watching of a single video. |
