@@ -1,12 +1,17 @@
-// app/(tabs)/(media)/_layout.tsx
 import { Stack } from 'expo-router';
 
 export default function MediaLayout() {
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="search" options={{ headerShown: false }} />
-      <Stack.Screen name="tv-shows" options={{ headerShown: false }} />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="music" />
+      <Stack.Screen name="live-tv" />
+      <Stack.Screen name="tv-shows" />
+      <Stack.Screen name="watch-history" />
+      <Stack.Screen name="local-media" />
+      <Stack.Screen name="search" />
+      <Stack.Screen name="watch/[videoId]" />
+      <Stack.Screen name="channel/[channelId]" />
     </Stack>
   );
 }

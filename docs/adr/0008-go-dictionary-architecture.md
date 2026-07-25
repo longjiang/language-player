@@ -2,7 +2,7 @@
 
 > **Status:** Proposed
 > **Date:** 2026-07-21
-> **Replaces:** Current mobile offline CSV-based dictionary (`apps/mobile/src/dictionary.ts`, `apps/mobile/src/dictionary-db.ts`, `apps/mobile/src/dictionary-profile.ts`)
+> **Replaces:** Current mobile offline CSV-based dictionary (`apps/mobile-go-legacy/src/dictionary.ts`, `apps/mobile-go-legacy/src/dictionary-db.ts`, `apps/mobile-go-legacy/src/dictionary-profile.ts`)
 > **See also:**
 > - `docs/adr/lp-nextjs-dictionary-architecture.md` — Next.js server-side dictionary
 > - `docs/adr/lp-classic-dictionary-architecture.md` — Classic Nuxt reference
@@ -13,7 +13,7 @@
 
 ## Context
 
-The mobile app (`apps/mobile/`) currently downloads raw CSV dictionary files (10–50 MB each) from a legacy CZH server, parses and normalizes them client-side, and loads them into a local SQLite database. This has four problems:
+The mobile app (`apps/mobile-go-legacy/`, the legacy GO app) currently downloads raw CSV dictionary files (10–50 MB each) from a legacy CZH server, parses and normalizes them client-side, and loads them into a local SQLite database. This has four problems:
 
 1. **App-freezing load** — Parsing and normalizing 117K+ entries blocks the main thread for 10–30 seconds.
 2. **English-only definitions** — No L1 translation, unlike the Next.js web app which uses LLM-powered translation.
@@ -331,7 +331,7 @@ async function loadEntries(entries: DictionaryEntry[], onProgress: (pct: number)
 ## Migration Path
 
 ### Phase 1: Online Lookup
-1. Add `dictionaryLookup(text, l2, l1)` to `apps/mobile/src/api/python/` (wraps `POST /dictionary/lookup`)
+1. Add `dictionaryLookup(text, l2, l1)` to `apps/mobile-go-legacy/src/api/python/` (wraps `POST /dictionary/lookup`)
 2. Wire into `DictionaryContext` as primary lookup path
 3. Add memory cache (`Map<string, DictionaryEntry[]>`) for session reuse
 4. Add `llm_cache` SQLite table for `match_type: 'llm'` results
@@ -356,13 +356,13 @@ async function loadEntries(entries: DictionaryEntry[], onProgress: (pct: number)
 
 | File | Change |
 |---|---|
-| `apps/mobile/src/dictionary.ts` | Simplify: online lookup + offline IndexedDB fallback |
-| `apps/mobile/src/dictionary-db.ts` | Replace with IndexedDB store + `llm_cache` SQLite table |
-| `apps/mobile/src/dictionary-profile.ts` | Keep for download params; sunset `normalizeEntry` usage |
-| `apps/mobile/src/dictionary-types.ts` | Adopt shared `DictionaryEntry`; remove `RawEntry` |
-| `apps/mobile/src/api/python/` | Add `dictionaryLookup()` and `dictionaryDownload()` |
-| `apps/mobile/contexts/DictionaryContext.tsx` | Add online/offline modes, download state, progress |
-| New: `apps/mobile/components/DictionaryDownload.tsx` | Download UI with language selector and progress bar |
+| `apps/mobile-go-legacy/src/dictionary.ts` | Simplify: online lookup + offline IndexedDB fallback |
+| `apps/mobile-go-legacy/src/dictionary-db.ts` | Replace with IndexedDB store + `llm_cache` SQLite table |
+| `apps/mobile-go-legacy/src/dictionary-profile.ts` | Keep for download params; sunset `normalizeEntry` usage |
+| `apps/mobile-go-legacy/src/dictionary-types.ts` | Adopt shared `DictionaryEntry`; remove `RawEntry` |
+| `apps/mobile-go-legacy/src/api/python/` | Add `dictionaryLookup()` and `dictionaryDownload()` |
+| `apps/mobile-go-legacy/contexts/DictionaryContext.tsx` | Add online/offline modes, download state, progress |
+| New: `apps/mobile-go-legacy/components/DictionaryDownload.tsx` | Download UI with language selector and progress bar |
 | `translations.csv` | Add ~15 new keys for download UI (see [i18n Keys](#i18n-keys)) |
 
 ---

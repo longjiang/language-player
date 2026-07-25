@@ -1,52 +1,59 @@
-// @/hooks/use-t.ts
-// Thin wrapper around react-intl's useIntl().formatMessage.
-// Same call signature as i18n-js's t() — mechanical drop-in replacement.
-//
-// Resolves dot-path keys (e.g., 'action.cancel') against nested JSON,
-// then delegates to react-intl for ICU MessageFormat processing.
-//
-// Usage:
-//   const t = useT();
-//   t('action.cancel')           → "Cancel"
-//   t('msg.saved_count', { count: 5 }) → "5 words saved"
-
-import { useCallback, useMemo } from 'react';
 import { useIntl } from 'react-intl';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { loadLocaleMessages } from '@/src/i18n/load-messages';
+import { getLocaleMessages } from '@/contexts/IntlProvider';
 
-/** Walk a nested object by dot-separated key path. */
+/**
+ * Resolve a dot-path key against a nested messages object.
+ * e.g., resolveNested(messages, 'action.cancel') → messages.action.cancel
+ */
 function resolveNested(
   messages: Record<string, unknown>,
-  id: string
+  id: string,
 ): string | undefined {
   let current: unknown = messages;
   for (const part of id.split('.')) {
-    if (typeof current !== 'object' || current === null) return undefined;
+    if (current == null || typeof current !== 'object') return undefined;
     current = (current as Record<string, unknown>)[part];
   }
-  return typeof current === 'string' ? current : undefined;
+  return typeof current === 'string' ? (current as string) : undefined;
 }
 
+/**
+ * Translation hook with ICU MessageFormat support via react-intl.
+ *
+ * Usage: const t = useT(); → <Text>{t('action.cancel')}</Text>
+ *
+ * Resolves dot-path keys against nested locale JSON (same format as web's next-intl).
+ * Falls back to the key name if the message is not found.
+ *
+ * Resolves from the static import map (getLocaleMessages), NOT from IntlProvider's
+ * messages prop. IntlProvider receives empty messages to suppress react-intl's
+ * flat-key validation. For simple {key} placeholders we do string replacement
+ * directly; only complex ICU (plural, select) goes through intl.formatMessage().
+ */
 export function useT() {
   const intl = useIntl();
   const { l1Lang } = useLanguage();
   const locale = l1Lang?.code ?? 'en';
 
-  // useMemo ensures messages reference is stable across renders —
-  // critical for useCallback stability in useEffect dependency arrays.
-  const messages = useMemo(() => loadLocaleMessages(locale), [locale]);
-
-  // useCallback ensures stable reference — critical for components that
-  // include t() in useEffect dependency arrays (e.g., DictionaryContext).
-  return useCallback(
-    (id: string, values?: Record<string, string | number>) => {
-      const message = resolveNested(messages, id);
-      if (!message) return id; // fallback to showing the key name
-
-      // react-intl handles ICU formatting ({count, plural, ...})
-      return intl.formatMessage({ id, defaultMessage: message }, values);
-    },
-    [intl, messages],
-  );
+  return (id: string, values?: Record<string, string | number>) => {
+    // Resolve from the static import map, not intl.messages (which is empty)
+    const messages = getLocaleMessages(locale);
+    const message = resolveNested(messages, id);
+    if (!message) return id; // fallback to key name (visible in dev, easy to spot)
+    // No values → return resolved string directly (avoids flat-key validation)
+    if (!values) return message;
+    // Simple {key} placeholders (no ICU plural/select) → string replace directly
+    // This avoids react-intl's MISSING_TRANSLATION error for nested keys.
+    // ICU keywords to detect: plural, select, selectordinal, number, date, time
+    if (!/\{(?:plural|select|selectordinal|number|date|time)\b/.test(message)) {
+      let result = message;
+      for (const [k, v] of Object.entries(values)) {
+        result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+      }
+      return result;
+    }
+    // Complex ICU (plural, select, etc.) → use intl.formatMessage for proper formatting
+    return intl.formatMessage({ id, defaultMessage: message }, values);
+  };
 }

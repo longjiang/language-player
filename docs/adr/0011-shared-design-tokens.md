@@ -54,11 +54,11 @@ Web imports HSL values → generates CSS custom properties + Tailwind config. Mo
 
 **Both platforms use the same mechanism: CSS custom properties with `hsl(var(--xxx))` references.**
 
-The mobile-v2 app adopted **NativeWind** (Option B) for its Tailwind utility class support, but the initial implementation used hardcoded HSL values in `tailwind.config.js` (dark-only). This meant the light/dark theme toggle had no visual effect — the Tailwind config had only dark colors, and no mechanism existed to swap them at runtime.
+The mobile app adopted **NativeWind** (Option B) for its Tailwind utility class support, but the initial implementation used hardcoded HSL values in `tailwind.config.js` (dark-only). This meant the light/dark theme toggle had no visual effect — the Tailwind config had only dark colors, and no mechanism existed to swap them at runtime.
 
 The final architecture bridges the gap:
 
-| Layer | Web (`apps/web/`) | Mobile (`apps/mobile-v2/`) | Mechanism |
+| Layer | Web (`apps/web/`) | Mobile (`apps/mobile/`) | Mechanism |
 |---|---|---|---|
 | **Token source** | `packages/shared/src/tokens.ts` | Same file | `lightSemantic` + `darkSemantic` |
 | **CSS variables** | `globals.css` `:root` / `.dark` blocks | `global.css` `@layer base { :root / .dark:root }` | CSS custom properties with raw HSL channels |
@@ -108,8 +108,8 @@ scripts/build-tokens.mts             ← generator
         ├──▶ apps/web/src/app/globals.css        (hand-maintained, matches tokens)
         │    apps/web/tailwind.config.ts          (hand-maintained, hsl(var(--xxx)))
         │
-        └──▶ apps/mobile-v2/global.css           (GENERATED — :root + .dark:root)
-             apps/mobile-v2/tailwind.config.js    (GENERATED — hsl(var(--xxx) / <alpha-value>))
+        └──▶ apps/mobile/global.css           (GENERATED — :root + .dark:root)
+             apps/mobile/tailwind.config.js    (GENERATED — hsl(var(--xxx) / <alpha-value>))
 ```
 
 ### CSS Custom Property Pattern (Both Platforms)
@@ -156,9 +156,9 @@ colors: {
 
 The generator reads `lightSemantic` and `darkSemantic` from `packages/shared/src/tokens.ts` and writes two files:
 
-1. **`apps/mobile-v2/global.css`** — `@tailwind` directives + `@layer base { :root { ... } .dark:root { ... } }` with all 23 semantic colors as CSS custom properties. Raw HSL channels only (no `hsl()` wrapper — the wrapper lives in the Tailwind config).
+1. **`apps/mobile/global.css`** — `@tailwind` directives + `@layer base { :root { ... } .dark:root { ... } }` with all 23 semantic colors as CSS custom properties. Raw HSL channels only (no `hsl()` wrapper — the wrapper lives in the Tailwind config).
 
-2. **`apps/mobile-v2/tailwind.config.js`** — NativeWind preset + `darkMode: 'class'` + colors referencing `hsl(var(--xxx) / <alpha-value>)`. The `<alpha-value>` placeholder preserves Tailwind opacity modifier support (`bg-primary/20`).
+2. **`apps/mobile/tailwind.config.js`** — NativeWind preset + `darkMode: 'class'` + colors referencing `hsl(var(--xxx) / <alpha-value>)`. The `<alpha-value>` placeholder preserves Tailwind opacity modifier support (`bg-primary/20`).
 
 Run after updating tokens: `npx tsx scripts/build-tokens.mts`
 
@@ -203,7 +203,7 @@ Option A: Share raw tokens in `packages/shared/tokens.ts`. Mobile uses `hslToHex
 
 ### Revision 1 (2026-07-23) — accepted (revised)
 
-The mobile-v2 team adopted **NativeWind** (Option B) for Tailwind utility class support on React Native. The initial implementation used hardcoded dark HSL values in `tailwind.config.js`, which meant the light/dark theme toggle had no visual effect.
+The mobile team adopted **NativeWind** (Option B) for Tailwind utility class support on React Native. The initial implementation used hardcoded dark HSL values in `tailwind.config.js`, which meant the light/dark theme toggle had no visual effect.
 
 After investigating NativeWind's runtime CSS variable support (confirmed in v4.2.6's test suite), the mobile approach was aligned with the web: CSS custom properties in `global.css` with `:root` / `.dark:root` blocks, referenced via `hsl(var(--xxx) / <alpha-value>)` in the Tailwind config.
 

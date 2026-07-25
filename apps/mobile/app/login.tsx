@@ -1,111 +1,80 @@
-// @/app/login.tsx
-
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert, Linking } from 'react-native';
-import { ThemedText, ThemedButton, ThemedInput, ThemedScreen } from '@/components';
+import { useState } from 'react';
+import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Link } from 'expo-router';
-import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserData } from '@/contexts/UserDataContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
-import { useSettings } from '@/contexts/SettingsContext';
+import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 
-const LoginScreen = () => {
-    const { handleLogin, isAuthenticated, loading } = useAuth();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const { userData } = useUserData();
-    const t = useT();
-    const { settings } = useSettings();
+export default function LoginScreen() {
+  const t = useT();
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (isAuthenticated && userData) {
-            router.navigate('/account');
-        }
-    }, [isAuthenticated]);
+  const handleLogin = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await login(email.trim(), password);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.replace('/(tabs)' as any);
+    } catch (e: any) {
+      setError(e.message || t('error.login'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const translateError = (error: string): string => {
-        // Convert error message to a translation key
-        const key = `error.${error.toLowerCase().replace(/ /g, '_')}`;
-        // Attempt to translate, fall back to original message if no translation found
-        return t(key, error);
-    };
+  return (
+    <View className="flex-1 justify-center bg-background p-6">
+      <Text className="text-3xl font-bold text-foreground mb-8 text-center">
+        Language Player
+      </Text>
 
-    const onLoginPress = async () => {
-        try {
-            const token = await handleLogin(email, password);
-            if (token) {
-              if (!settings.l1LangCode || !settings.l2LangCode) {
-                router.push("/select-l2");
-              } else {
-                router.push("/(tabs)/(media)");
-              }
-            }
-        } catch (error: any) {
-            const errorMessage = translateError(error.message);
-            Alert.alert(t('error.login'), errorMessage);
-        }
-    };
+      {error && (
+        <Text className="text-destructive text-sm mb-4 text-center">{error}</Text>
+      )}
 
-    const handleForgotPassword = async () => {
-        const url = 'https://languageplayer.io/forgot-password/';
-        const supported = await Linking.canOpenURL(url);
+      <TextInput
+        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
+        placeholder={t('placeholder.email')}
+        placeholderTextColor={PLACEHOLDER_COLOR}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-6"
+        placeholder={t('placeholder.password')}
+        placeholderTextColor={PLACEHOLDER_COLOR}
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
 
-        if (supported) {
-            await Linking.openURL(url);
-        } else {
-            Alert.alert(t('error.general'), t('error.cannot_open_url'));
-        }
-    };
+      <Pressable
+        className="bg-primary py-3 rounded-lg items-center mb-3"
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color={ICON_ON_PRIMARY} />
+        ) : (
+          <Text className="text-primary-foreground font-bold text-base">
+            {t('action.login')}
+          </Text>
+        )}
+      </Pressable>
 
-    return (
-        <ThemedScreen
-            title={t('title.login')}
-            onBackPress={() => router.navigate('/')}
-            imageHeight={150}
-        >
-            <ThemedInput
-                style={styles.input}
-                onChangeText={setEmail}
-                value={email}
-                placeholder={t('title.email')}
-                icon="email"
-                keyboardType="email-address"
-                autoCapitalize="none"
-            />
-            <ThemedInput
-                style={styles.input}
-                onChangeText={setPassword}
-                value={password}
-                placeholder={t('title.password')}
-                secureTextEntry
-                icon="lock"
-            />
-
-            <ThemedButton title={t('title.login')} onPress={onLoginPress} disabled={loading} />
-
-            <TouchableOpacity style={styles.textButton} onPress={handleForgotPassword}>
-                <ThemedText>{t('msg.forgot_password')}</ThemedText>
-            </TouchableOpacity>
-
-            <ThemedText style={{ textAlign: 'left', marginTop: 26 }} type="subtitle">
-                {t('msg.dont_have_an_account')} <Link href='/register' style={{ color: useThemeColor({}, 'primaryLink'), fontWeight: 'bold' }}>{t('title.register')}</Link>
-            </ThemedText>
-        </ThemedScreen>
-    );
-};
-
-const styles = StyleSheet.create({
-    input: {
-        marginBottom: 10,
-    },
-    textButton: {
-        marginTop: 10,
-        alignSelf: 'flex-start',
-    },
-});
-
-export default LoginScreen;
+      <Pressable onPress={() => router.push('/register')}>
+        <Text className="text-primary text-center text-sm">
+          {t('msg.no_account_yet')}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}

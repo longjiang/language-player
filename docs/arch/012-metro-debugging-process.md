@@ -9,7 +9,7 @@
 
 ## Overview
 
-This document standardizes the debugging workflow for the React Native mobile app (`apps/mobile-v2/`). It covers server startup, log monitoring, idb usage for iOS Simulator interaction, and troubleshooting patterns.
+This document standardizes the debugging workflow for the React Native mobile app (`apps/mobile/`). It covers server startup, log monitoring, idb usage for iOS Simulator interaction, and troubleshooting patterns.
 
 ---
 
@@ -51,7 +51,7 @@ It does NOT print `* Running on http://0.0.0.0:5001` in debug mode. The server I
 ### Start Metro + iOS Simulator
 
 ```bash
-cd apps/mobile-v2 && source ~/.nvm/nvm.sh && nvm use 22 && npx expo start --ios
+cd apps/mobile && source ~/.nvm/nvm.sh && nvm use 22 && npx expo start --ios
 ```
 
 Run in **async mode**. The `--ios` flag auto-opens the iOS Simulator and launches Expo Go.
@@ -79,10 +79,10 @@ The `run_in_terminal` tool strips `cd` from the beginning of commands. This mean
 
 ```bash
 # ❌ BROKEN — cd is stripped, runs in monorepo root
-cd apps/mobile-v2 && npx expo start --ios
+cd apps/mobile && npx expo start --ios
 
 # ✅ CORRECT — use subshell to preserve directory change
-(cd apps/mobile-v2 && npx expo start --ios)
+(cd apps/mobile && npx expo start --ios)
 ```
 
 When Metro starts in the wrong directory, it tries to bundle from the monorepo root and fails with `Unable to resolve "../../App" from "node_modules/expo/AppEntry.js"`.
@@ -187,9 +187,9 @@ The standard approach for understanding app state:
 
 ---
 
-## Monorepo Metro Configuration (apps/mobile-v2)
+## Monorepo Metro Configuration (apps/mobile)
 
-The `apps/mobile-v2/` Metro config requires specific additions for npm workspace hoisting. See **ADR-0010 → Monorepo Metro Configuration** for the architectural decision and rationale. The full working config is reproduced below for reference.
+The `apps/mobile/` Metro config requires specific additions for npm workspace hoisting. See **ADR-0010 → Monorepo Metro Configuration** for the architectural decision and rationale. The full working config is reproduced below for reference.
 
 ### Required metro.config.js additions
 
@@ -241,7 +241,7 @@ module.exports = withNativeWind(config, { input: './global.css' });
 
 ### Why the resolveRequest hook is needed
 
-In npm workspaces, `node_modules` is hoisted to the monorepo root. `expo/AppEntry.js` lives at `{root}/node_modules/expo/AppEntry.js` and does `import App from '../../App'`. From that path, `../../` resolves to the **monorepo root**, not `apps/mobile-v2/`. The `resolveRequest` hook intercepts this and redirects to the correct `App.js`.
+In npm workspaces, `node_modules` is hoisted to the monorepo root. `expo/AppEntry.js` lives at `{root}/node_modules/expo/AppEntry.js` and does `import App from '../../App'`. From that path, `../../` resolves to the **monorepo root**, not `apps/mobile/`. The `resolveRequest` hook intercepts this and redirects to the correct `App.js`.
 
 Without this fix: `Unable to resolve "../../App" from "node_modules/expo/AppEntry.js"`.
 
@@ -276,7 +276,7 @@ The NativeWind Metro plugin loads `tailwind.config.js` via Node's `require()`, w
 When code changes are made during debugging, reload the app in the simulator:
 
 - **Fast reload**: Press `r` in the Metro terminal (reloads JS bundle, ~1 second). Reloads component code and hooks, but does NOT re-evaluate module-level constants (e.g., `const API_URL = '...'`). For changes to module-level values or imported config files, a full restart is required.
-- **Full restart**: Kill Metro, `rm -rf apps/mobile-v2/.expo`, and restart WITHOUT `--clear`. Necessary for: module-level constant changes, new dependencies, NativeWind/Tailwind config changes, metro.config.js changes.
+- **Full restart**: Kill Metro, `rm -rf apps/mobile/.expo`, and restart WITHOUT `--clear`. Necessary for: module-level constant changes, new dependencies, NativeWind/Tailwind config changes, metro.config.js changes.
 
 To send `r` to Metro programmatically:
 
@@ -287,7 +287,7 @@ send_to_terminal(id=<metro-uuid>, command="r")
 **Never use `--clear`** unless proven necessary — it wipes the bundle cache and forces a full rebuild of 2000+ modules. **Note:** In monorepo setups, `--clear` has been observed to NOT fully clear the transform cache, causing stale module errors to persist across restarts. When changes aren't picked up, the reliable approach is:
 
 1. Kill Metro (`lsof -ti:8081 | xargs kill -9`)
-2. Delete `.expo/` directory (`rm -rf apps/mobile-v2/.expo`)
+2. Delete `.expo/` directory (`rm -rf apps/mobile/.expo`)
 3. Restart Metro WITHOUT `--clear`
 
 ---
@@ -311,7 +311,7 @@ send_to_terminal(id=<metro-uuid>, command="r")
 
 ### Monorepo: "Unable to resolve ../../App from node_modules/expo/AppEntry.js"
 **Cause**: npm workspace hoists `expo` to root `node_modules`. `expo/AppEntry.js` resolves `../../App` to the monorepo root, not the app directory.
-**Fix**: Add a `resolveRequest` hook in `metro.config.js` (see [Monorepo Metro Configuration](#monorepo-metro-configuration-appsmobile-v2)).
+**Fix**: Add a `resolveRequest` hook in `metro.config.js` (see [Monorepo Metro Configuration](#monorepo-metro-configuration-appsmobile)).
 
 ### Monorepo: "Invalid call at line N: require(\`...\${variable}...\`)"
 **Cause**: Metro does not allow dynamic `require()` or template literals in import paths. All `require()` and `import` paths must be static strings.
@@ -327,11 +327,11 @@ send_to_terminal(id=<metro-uuid>, command="r")
 
 ### Stale bundle after code changes (--clear not working)
 **Cause**: `--clear` flag sometimes fails to fully purge the Metro transform cache in monorepo setups. Old module transforms persist and cause errors that reference code you've already changed.
-**Fix**: Kill Metro, `rm -rf apps/mobile-v2/.expo`, restart WITHOUT `--clear`. The `.expo` directory contains the transform cache; manual deletion is reliable.
+**Fix**: Kill Metro, `rm -rf apps/mobile/.expo`, restart WITHOUT `--clear`. The `.expo` directory contains the transform cache; manual deletion is reliable.
 
 ### Hot reload doesn't pick up module-level constant changes
 **Cause**: Metro's HMR (Hot Module Replacement) patches function/component changes but does NOT re-evaluate module-level constants. If you change `const API_URL = 'http://old:5000'` to `'http://new:5001'` in a file that's been imported, the old value persists until a full restart.
-**Fix**: Kill Metro, `rm -rf apps/mobile-v2/.expo`, restart WITHOUT `--clear`. Module-level changes require a cold start.
+**Fix**: Kill Metro, `rm -rf apps/mobile/.expo`, restart WITHOUT `--clear`. Module-level changes require a cold start.
 
 ### Simulator Networking: 127.0.0.1 vs host IP
 **Cause**: The iOS Simulator shares the host Mac's network but has its own loopback interface. `127.0.0.1` (and `localhost`) from the simulator point to the **simulator itself**, not the Mac. For the simulator to reach services running on the Mac (Flask, etc.), you must use the Mac's LAN IP address (e.g., `192.168.1.130`).
@@ -346,7 +346,7 @@ send_to_terminal(id=<metro-uuid>, command="r")
 
 ### 403 Forbidden from mobile app but curl returns 200
 **Cause**: Usually a stale Metro bundle — the app is sending requests to the wrong URL (old cached value). Module-level constants like `PYTHON_API_URL` are baked into the bundle at build time and don't update via hot reload. The old URL may point to a port/service that returns 403.
-**Fix**: Full clean restart: kill Metro → `rm -rf apps/mobile-v2/.expo` → restart WITHOUT `--clear`. Also verify the URL is reachable from the simulator's network perspective (use host IP, not 127.0.0.1).
+**Fix**: Full clean restart: kill Metro → `rm -rf apps/mobile/.expo` → restart WITHOUT `--clear`. Also verify the URL is reachable from the simulator's network perspective (use host IP, not 127.0.0.1).
 **Debug**: Test the endpoint with `curl http://<host-ip>:5001/recommend-videos?l2=ja&limit=2`. If curl returns 200 but the app returns 403, the bundle is stale.
 
 ### Flask startup takes 10–15 seconds
@@ -413,8 +413,8 @@ Then verify with `lsof -ti:5001` — should print nothing. If a process still ho
 
 ### Metro log file as alternative to terminal output
 **Cause**: When the AI agent doesn't own the Metro terminal (user started it manually), `get_terminal_output()` is unavailable.
-**Fix**: Metro writes structured JSON logs to `apps/mobile-v2/.expo/dev/logs/start.log`. Read them directly:
+**Fix**: Metro writes structured JSON logs to `apps/mobile/.expo/dev/logs/start.log`. Read them directly:
 ```bash
-cat apps/mobile-v2/.expo/dev/logs/start.log | grep 'client_log' | tail -20
+cat apps/mobile/.expo/dev/logs/start.log | grep 'client_log' | tail -20
 ```
 Log entries use the format `{"_e":"metro:client_log","_t":<timestamp>,"level":"<error|warn>","data":[...]}`. The `_t` field is an epoch timestamp in milliseconds.

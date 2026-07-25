@@ -1,38 +1,46 @@
-// @/contexts/ThemeContext
+import React, { useEffect, useMemo } from 'react';
+import { useColorScheme } from 'nativewind';
+import { useSettingsContext } from '@/contexts/SettingsContext';
+import { StatusBar } from 'expo-status-bar';
+import { Platform } from 'react-native';
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { useSettings } from '@/contexts/SettingsContext';
-
-// Simple theme objects (replaces @react-navigation/native DarkTheme/DefaultTheme)
-const DarkTheme = { dark: true, colors: {} };
-const DefaultTheme = { dark: false, colors: {} };
-
-type ThemeType = typeof DarkTheme | typeof DefaultTheme;
-interface ThemeContextType {
-  theme: ThemeType;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const { settings } = useSettings();
-  const [theme, setTheme] = useState<ThemeType>(settings.darkMode ? DarkTheme : DefaultTheme);
+/**
+ * Reads display.theme from settings and applies the color scheme
+ * via NativeWind's useColorScheme. Also updates StatusBar style.
+ *
+ * Colors are defined as CSS custom properties in global.css:
+ *   :root        → light semantic tokens
+ *   .dark:root   → dark semantic tokens
+ *
+ * NativeWind resolves hsl(var(--xxx)) at runtime based on the
+ * active color scheme, matching the web app's next-themes pattern.
+ * No per-component dark: overrides needed.
+ */
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const { display, loaded } = useSettingsContext();
+  const { setColorScheme } = useColorScheme();
 
   useEffect(() => {
-    setTheme(settings.darkMode ? DarkTheme : DefaultTheme);
-  }, [settings.darkMode]);
+    if (!loaded) return;
+    const theme = display.theme;
+    if (theme === 'light') {
+      setColorScheme('light');
+    } else if (theme === 'dark') {
+      setColorScheme('dark');
+    } else {
+      setColorScheme('system');
+    }
+  }, [display.theme, loaded, setColorScheme]);
+
+  const isDark = useMemo(() => {
+    if (!loaded) return true; // default dark while loading
+    return display.theme !== 'light';
+  }, [display.theme, loaded]);
 
   return (
-    <ThemeContext.Provider value={{ theme }}>
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       {children}
-    </ThemeContext.Provider>
+    </>
   );
-};
-
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-};
+}

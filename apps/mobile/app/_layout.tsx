@@ -1,81 +1,75 @@
-// @/app/_layout.tsx
-import { useFonts, Nunito_400Regular, Nunito_800ExtraBold } from '@expo-google-fonts/nunito';
-import { Stack } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { VideoPlayerProvider } from "@/contexts/VideoPlayerContext";
-import { DictionaryProvider } from "@/contexts/DictionaryContext";
-import { LanguageProvider } from "@/contexts/LanguageContext";
-import { IntlProviderWrapper } from "@/contexts/IntlProvider";
+import React from 'react';
+import { Stack } from 'expo-router';
+import { View, Text, ScrollView } from 'react-native';
+import { LanguageProvider } from '@/contexts/LanguageContext';
+import { IntlProviderWrapper } from '@/contexts/IntlProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { SettingsProvider } from '@/contexts/SettingsContext';
-import { ThemeProvider } from "@/contexts/ThemeContext";
 import { UserDataProvider } from '@/contexts/UserDataContext';
-import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
-import { TVShowsProvider } from "@/contexts/TVShowsContext";
-import { StatusBar } from 'expo-status-bar';
+import { SettingsProvider } from '@/contexts/SettingsContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { DictionaryProvider } from '@/contexts/DictionaryContext';
+import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
+import '../global.css';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+// ── Error Boundary to surface full stack traces to Metro ──
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    Nunito_400Regular, Nunito_800ExtraBold
-  });
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null };
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
+  static getDerivedStateFromError(error: Error) {
+    return { error };
   }
 
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('[ROOT ERROR BOUNDARY]', error.message, '\n', error.stack, '\nComponent stack:', info.componentStack);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <View className="flex-1 items-center justify-center bg-background p-4">
+          <Text className="mb-2 text-lg font-bold text-destructive">App Error</Text>
+          <ScrollView className="max-h-80 w-full rounded-lg border border-border bg-card p-3">
+            <Text className="text-xs text-foreground font-mono">{this.state.error.message}</Text>
+            <Text className="mt-2 text-xs text-muted-foreground font-mono">{this.state.error.stack}</Text>
+          </ScrollView>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function RootLayout() {
+
   return (
+    <ErrorBoundary>
     <LanguageProvider>
       <IntlProviderWrapper>
         <AuthProvider>
-          <SubscriptionProvider>
-            <UserDataProvider>
-              <SettingsProvider>
+          <UserDataProvider>
+            <SettingsProvider>
+              <ThemeProvider>
                 <DictionaryProvider>
-                  <ThemeProvider>
-                    <TVShowsProvider>
-                      <VideoPlayerProvider>
-                        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-                        <Stack>
-                          <Stack.Screen name="index" options={{ headerShown: false }} />
-                          <Stack.Screen name="login" options={{ headerShown: false }} />
-                          <Stack.Screen name="register" options={{ headerShown: false }} />
-                          <Stack.Screen name="verify-email" options={{ headerShown: false }} />
-                          <Stack.Screen
-                            name="acquisition-survey"
-                            options={{ headerShown: false }}
-                          />
-                          <Stack.Screen name="select-l2" options={{ headerShown: false }} />
-                          <Stack.Screen name="select-l1" options={{ headerShown: false }} />
-                          <Stack.Screen name="select-level" options={{ headerShown: false }} />
-                          <Stack.Screen name="account" options={{ headerShown: false }} />
-                          <Stack.Screen name="go-pro" options={{ headerShown: false }} />
-                          <Stack.Screen name="delete-account" options={{ headerShown: false }} />
-                          <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
-                          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                          <Stack.Screen name="+not-found" />
-                          <Stack.Screen name="settings" options={{ headerShown: false, presentation: "modal" }} />
-                        </Stack>
-                      </VideoPlayerProvider>
-                    </TVShowsProvider>
-                  </ThemeProvider>
+                  <VideoPlayerProvider>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name="index" />
+                      <Stack.Screen name="(tabs)" />
+                      <Stack.Screen name="login" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="register" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="select-l1" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="select-l2" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="go-pro-error" />
+                      <Stack.Screen name="go-pro-success" />
+                    </Stack>
+                  </VideoPlayerProvider>
                 </DictionaryProvider>
-              </SettingsProvider>
-            </UserDataProvider>
-          </SubscriptionProvider>
+              </ThemeProvider>
+            </SettingsProvider>
+          </UserDataProvider>
         </AuthProvider>
       </IntlProviderWrapper>
     </LanguageProvider>
+    </ErrorBoundary>
   );
 }

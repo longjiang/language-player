@@ -11,7 +11,7 @@ Language Player helps users learn 60+ languages through authentic video content 
 | Name | Tech | Status |
 |------|------|--------|
 | `zerotohero-nuxt` | Vue 2 / Nuxt 2 | **Classic** — full-featured, production. Being phased out. |
-| `language-player-3` | React Native / Expo 51 | **GO** — mobile-only, subset of features. Being moved into monorepo. |
+| `language-player-3` | React Native / Expo 51 | **GO** — original mobile app. Archived at `apps/mobile-go-legacy/`. Superseded by fresh port. |
 | `zerotohero-python` | Flask | **Backend** — payments, LLM, lemmatization, YouTube data. Active. |
 
 ### Monorepo Structure
@@ -19,15 +19,14 @@ Language Player helps users learn 60+ languages through authentic video content 
 ```
 language-player/
 ├── apps/
-│   ├── web/          ← Next.js 14 (App Router) — NEW, replacing zerotohero-nuxt
-│   ├── mobile/       ← language-player-3 (to be moved here)
-│   └── api/          ← zerotohero-python (to be moved here)
+│   ├── web/                  ← Next.js 14 (App Router) — replaces Classic
+│   ├── mobile/               ← React Native/Expo 57 — fresh port from Next.js (ADR-0010)
+│   └── mobile-go-legacy/     ← language-player-3 (archived GO app)
 ├── packages/
 │   ├── shared/       ← @langplayer/shared — TypeScript types & constants
 │   ├── api-client/   ← @langplayer/api-client — typed Axios API client
 │   └── utils/        ← @langplayer/utils — shared utility functions
-├── specs/            ← feature specifications
-├── docs/             ← architecture decisions, guides
+├── docs/             ← specs, ADRs, architecture docs (see docs/README.md)
 ├── turbo.json        ← Turborepo build pipeline
 └── package.json      ← npm workspaces root
 ```
@@ -35,7 +34,7 @@ language-player/
 ### Tech Stack
 
 - **Web**: Next.js 14 (App Router), React 18, Tailwind CSS, shadcn/ui, next-themes
-- **Mobile**: React Native, Expo 51, Expo Router (to be integrated)
+- **Mobile**: React Native, Expo 57, Expo Router, NativeWind
 - **Backend**: Python, Flask, Directus 8 (headless CMS — upgrade planned)
 - **Database**: MySQL via Directus
 - **Shared**: TypeScript, Axios, Turborepo, npm workspaces

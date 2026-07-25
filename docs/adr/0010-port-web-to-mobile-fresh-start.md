@@ -6,7 +6,7 @@
 
 ## Context
 
-The current mobile app (`apps/mobile/`, formerly `language-player-3/`) was merged into the monorepo at Phase 8 Step 3. While functional, it has significant architectural gaps compared to the Next.js web app (`apps/web/`):
+The current mobile app (`apps/mobile-go-legacy/`, formerly `language-player-3/`) was merged into the monorepo at Phase 8 Step 3. While functional, it has significant architectural gaps compared to the Next.js web app (`apps/web/`):
 
 | Concern | GO Mobile | Next.js Web |
 |---|---|---|
@@ -26,7 +26,7 @@ The Next.js app has evolved faster and accumulated better architectural patterns
 
 ## Options Considered
 
-### Option A: Incrementally fix `apps/mobile/` (keep GO app base)
+### Option A: Incrementally fix the GO app (keep legacy base)
 
 - **Pros**: No greenfield risk, existing users keep their app, gradual improvements
 - **Cons**: GO's architectural flaws are deep (flat settings, local SQLite, scattered API calls). Fixing them in-place means rewriting most of the app anyway. The 10-context dependency chain makes incremental refactoring fragile. Worse, the two codebases would diverge architecturally, requiring developers to context-switch between the web app's clean patterns and the mobile app's legacy patterns.
@@ -60,7 +60,7 @@ Rationale:
 ## Implementation Plan
 
 ### Phase 1: Scaffold & Foundation
-- Create new Expo SDK 57 app at `apps/mobile-v2/`
+- Create new Expo SDK 57 app at `apps/mobile/`
 - Install NativeWind (Metro plugin, Babel plugin, Tailwind config)
 - Generate shared `tailwind.config.ts` from `packages/shared/tokens.ts` (ADR-0011) — colors, typography, spacing, border radius flow from tokens to both apps' Tailwind configs
 - Wire `@langplayer/shared`, `@langplayer/api-client`, `@langplayer/utils`
@@ -233,7 +233,7 @@ This is how most mobile apps work: Instagram's `instagram://post/123` doesn't in
 **Decision**: Evaluate during Phase 3. `expo-video` is the modern choice for general video; `react-native-youtube-iframe` may be needed for YouTube-specific features (captions, quality selection).
 
 ### Monorepo Metro Configuration
-**Decision**: The `apps/mobile-v2/` Metro config requires several additions beyond the default `create-expo-app` output to function in an npm workspace with hoisted `node_modules`:
+**Decision**: The `apps/mobile/` Metro config requires several additions beyond the default `create-expo-app` output to function in an npm workspace with hoisted `node_modules`:
 
 1. **`resolveRequest` hook** — `expo/AppEntry.js` in the hoisted `node_modules` resolves `../../App` to the monorepo root instead of the app directory. The hook intercepts this and redirects to the correct `App.js`.
 2. **`nodeModulesPaths`** — must include both the app's local `node_modules` and the workspace root's `node_modules` so Metro can find all dependencies.
@@ -243,12 +243,12 @@ This is how most mobile apps work: Instagram's `instagram://post/123` doesn't in
 
 The full annotated config is documented in `docs/arch/012-metro-debugging-process.md` → "Monorepo Metro Configuration".
 
-### Build target: Start from `apps/mobile-v2/`
-**Decision**: Build in a new directory to avoid disrupting the existing app. Once feature parity is reached, archive `apps/mobile/` and rename. The legacy `language-player-3/` at the workspace root remains read-only reference (per AGENTS.md).
+### Build target: Start from `apps/mobile/`
+**Decision**: Build in a new directory to avoid disrupting the existing app. Once feature parity is reached, archive the legacy GO app and rename. The legacy `language-player-3/` at the workspace root remains read-only reference (per AGENTS.md).
 
 ## Consequences
 
-- **New codebase**: `apps/mobile-v2/` with fresh Expo SDK 57 setup, Expo Router, and shared package dependencies
+- **New codebase**: `apps/mobile/` with fresh Expo SDK 57 setup, Expo Router, and shared package dependencies
 - **No client-side CSV normalization**: Removes the GO app's main-thread-freezing CSV parsing. All normalization happens on the Python server (both online lookup and offline download endpoints). Offline dictionary is pre-normalized JSON.
 - **Offline dictionary support**: Mobile users can download frequency-filtered dictionaries per language (~10-15 MB each). Definitions are English-only offline; L1 translations accumulate lazily. Online lookups use the same `POST /dictionary/lookup` endpoint as the web app.
 - **Single settings architecture**: Both apps use `SettingsV2` with cloud sync. Settings roam across devices (same as web).

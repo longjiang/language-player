@@ -9,7 +9,7 @@
 ### What This Project Is
 A monorepo consolidating three legacy codebases:
 1. `zerotohero-nuxt/` (Vue 2/Nuxt 2) — **Classic** full-featured web app. REFERENCE ONLY. Do not edit.
-2. `language-player-3/` (React Native/Expo 51) — **GO** mobile app. REFERENCE ONLY. Merged into `apps/mobile/` (Phase 8 Step 3).
+2. `language-player-3/` (React Native/Expo 51) — **GO** mobile app. REFERENCE ONLY. Archived into `apps/mobile-go-legacy/` (Phase 8). Superseded by the fresh React Native port at `apps/mobile/` (see ADR-0010).
    See `docs/arch/002-go-app-architecture.md` for a full analysis of its screens, components, and patterns.
 3. `zerotohero-python-server/` or `zerotohero-python/` (Flask) — Backend. REFERENCE + eventual migration source.
    See `docs/arch/003-python-backend-architecture.md` for a full analysis of its routes, utilities, and patterns.
@@ -18,7 +18,7 @@ Note that the above three directories are **independent Git repositories**. They
 
 The **active development** happens in:
 - `apps/web/` — Next.js 14 (replaces Classic)
-- `apps/mobile/` — React Native/Expo 57 (replaces legacy `language-player-3/`)
+- `apps/mobile/` — React Native/Expo 57, fresh port from Next.js per ADR-0010 (replaces legacy GO app at `apps/mobile-go-legacy/`)
 - `packages/shared/` — Shared types & constants
 - `packages/api-client/` — Shared API client
 - `packages/utils/` — Shared utilities
@@ -286,7 +286,7 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
 - Update `docs/specs/` if you implement a new feature or change behavior
 - Update `ROADMAP.md` if you complete a planned task
 - Add ADRs in `docs/adr/` for significant architectural decisions
-- Never edit files in `zerotohero-nuxt/` or `language-player-3/` — they are reference-only
+- Never edit files in `zerotohero-nuxt/`, `language-player-3/`, or `apps/mobile-go-legacy/` — they are reference-only
 - Always do a type check with `npx turbo typecheck` and build check with `npm run build:check -w apps/web` before committing. Never push.
 
 ### Terminal & Server Start Conventions
@@ -315,9 +315,9 @@ EXPO_NO_POD_INSTALL=1 npx expo prebuild --platform ios && \
 /usr/bin/ruby -S pod install --project-directory=ios && \
 npx expo run:ios --no-install
 
-### Mobile-V2 Porting Rules
+### Mobile Porting Rules
 
-**What "port" means**: Take the Next.js source file, translate EVERY line, EVERY component, EVERY toggle, EVERY control to React Native. Nothing skipped. Nothing simplified. Nothing "deferred." If Next.js has a feature, mobile-v2 must have it too.
+**What "port" means**: Take the Next.js source file, translate EVERY line, EVERY component, EVERY toggle, EVERY control to React Native. Nothing skipped. Nothing simplified. Nothing "deferred." If Next.js has a feature, the mobile app must have it too.
 
 **Porting Checklist (follow in order):**
 1. Read the Next.js file completely first
@@ -331,7 +331,7 @@ npx expo run:ios --no-install
 
 **Component Mapping Table:**
 
-| Next.js | Mobile-v2 |
+| Next.js | Mobile |
 |---|---|
 | `<div className="...">` | `<View className="...">` |
 | `<span>`, `<p>`, `<h1>` | `<Text>` |
