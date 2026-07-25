@@ -81,11 +81,14 @@ apps/web/src/
 nvm use 22                    # Required Node version
 npm install                   # Install all workspace deps
 npx turbo dev                 # Start all dev servers
-npx turbo build               # Build all apps
-npx turbo build --filter=@langplayer/web  # Build only web
+npx turbo build               # Build all apps (⚠️ deletes .next, conflicts with dev)
+npx turbo build --filter=@langplayer/web  # Build only web (⚠️ same, conflicts with dev)
 npx turbo lint                # Lint all
-npx turbo typecheck           # Type-check all
+npx turbo typecheck           # Type-check all (safe with dev running)
+npm run build:check -w apps/web  # Safe build check (uses isolated .next-check/, safe with dev running)
 ```
+
+**⚠️ Build vs dev**: `npx turbo build` and `npm run build` both run `rm -rf .next` which kills the dev server. Use `npm run build:check -w apps/web` instead — it builds into an isolated `.next-check/` directory (created and cleaned up automatically).
 
 **⚠️ Always use `npx turbo` from the repo root** — it handles working directories automatically. If you must run a package script directly (e.g., `npx next build`, `npx tsc --noEmit`), `cd` into that package's directory first. Running `npx next build apps/web` from the root will fail with misleading CSS/webpack errors because Next.js interprets the path argument as the project root, not a subdirectory.
 
