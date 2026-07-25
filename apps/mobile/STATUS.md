@@ -38,9 +38,9 @@
 |---|---|---|---|---|
 | Explore | `(tabs)/(media)/index.tsx` | ✅ | `[l1]/[l2]/explore/page.tsx` | Level filter, pagination, pull-to-refresh. No category/genre tabs like web has |
 | Search | `(tabs)/(media)/search.tsx` | ✅ | `[l1]/[l2]/search/page.tsx` | Tag cloud, YouTube URL extraction, text search |
-| Watch History | `(tabs)/(media)/watch-history.tsx` | 🟡 | `[l1]/[l2]/watch-history/page.tsx` | **Missing**: "Clear all" button, date grouping |
+| Watch History | `(tabs)/(media)/watch-history.tsx` | ✅ | `[l1]/[l2]/watch-history/page.tsx` | Date-grouped SectionList, "Clear All" via Directus DELETE |
 | TV Shows | `(tabs)/(media)/tv-shows.tsx` | 🟡 | `[l1]/[l2]/tv-shows/page.tsx` | Browse + search + sort works. **Missing**: show detail page, episode listing |
-| Music | `(tabs)/(media)/music.tsx` | 🟡 | `[l1]/[l2]/music/page.tsx` | Basic video grid. **Missing**: music-specific filtering, genre/artist browsing |
+| Music | `(tabs)/(media)/music.tsx` | ✅ | `[l1]/[l2]/music/page.tsx` | Basic video grid. |
 | Live TV | `(tabs)/(media)/live-tv.tsx` | 🟡 | `[l1]/[l2]/live-tv/page.tsx` | Channel list + player + filters. **Missing**: favorites, program guide/EPG, "now playing" |
 | Local Media | `(tabs)/(media)/local-media.tsx` | 🟡 | `[l1]/[l2]/local-media/page.tsx` | Upload + player works. **Missing**: subtitle sync offset, audio-only mode |
 | Video Player | `(tabs)/(media)/watch/[videoId].tsx` | 🟡 | `[l1]/[l2]/watch/[videoId]/page.tsx` | **⚠️ YouTube playback broken on iOS** — key-remount bridge workaround is fragile |
