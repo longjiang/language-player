@@ -286,6 +286,15 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     finally { setLoading(false); }
   }, [loadFromUri, persist]);
 
+  /** Persist chapter href to stored state (used by both normal and empty-chapter paths). */
+  const persistedChapterRef = useCallback((href: string) => {
+    storedRef.current = { ...storedRef.current!, chapterHref: href };
+    persist(storedRef.current);
+  }, [persist]);
+
+  /** Load a chapter by TOC href. All chapter-loading paths converge here:
+   *  - cover tap (openFromCover), position restore, TOC sidebar tap, prev/next.
+   *  Concatenates all spine items belonging to the logical chapter. */
   const loadChapter = useCallback(async (href: string): Promise<string> => {
     setLoading(true);
     try {
@@ -293,13 +302,30 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       const spine = spineRef.current;
       const toc = flatTocRef.current;
 
+      // Match TOC entry by comparing fragment-stripped hrefs
+      const entry = toc.find(t => {
+        const tHref = t.href.includes('#') ? t.href.split('#')[0]! : t.href;
+        return tHref === cleanHref;
+      });
+
+      // Find where this TOC chapter starts in the spine
+      const startIdx = spine.findIndex(s => s.href === cleanHref);
+
+      // Guard: href not in spine (e.g. TOC references a file not in the spine).
+      // Treat as an empty chapter rather than crashing.
+      if (startIdx === -1) {
+        setCoverTapped(true);
+        setChapterTitle(entry?.label ?? '');
+        setChapterHref(cleanHref);
+        onChapterChange?.('', entry?.label ?? '');
+        if (storedRef.current) persistedChapterRef(cleanHref);
+        return '';
+      }
+
       // Build a set of TOC hrefs (fragment-stripped) — these are chapter boundaries
       const tocHrefs = new Set(
         toc.map(t => (t.href.includes('#') ? t.href.split('#')[0]! : t.href)),
       );
-
-      // Find where this TOC chapter starts in the spine
-      const startIdx = spine.findIndex(s => s.href === cleanHref);
 
       // Find where the NEXT TOC chapter starts in the spine (end boundary)
       let endIdx = spine.findIndex(
@@ -315,20 +341,10 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       }
 
       setCoverTapped(true);
-      // Match TOC entry by comparing fragment-stripped hrefs
-      const entry = toc.find(t => {
-        const tHref = t.href.includes('#') ? t.href.split('#')[0]! : t.href;
-        return tHref === cleanHref;
-      });
       setChapterTitle(entry?.label ?? '');
       setChapterHref(cleanHref);
       onChapterChange?.(combinedText, entry?.label ?? '');
-      if (storedRef.current) {
-        // Update both storedRef and persist — storedRef is the live object
-        // that saveAnchor reads from, so it must stay in sync with the file.
-        storedRef.current = { ...storedRef.current, chapterHref: cleanHref };
-        persist(storedRef.current);
-      }
+      if (storedRef.current) persistedChapterRef(cleanHref);
       return combinedText;
     } finally { setLoading(false); }
   }, [loadChapterContent, onChapterChange, persist]);
