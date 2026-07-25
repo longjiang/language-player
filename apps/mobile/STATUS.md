@@ -71,8 +71,8 @@
 | Screen | File | Status | Web Source | Notes |
 |---|---|---|---|---|
 | Notes / Reader | `(tabs)/(reading)/index.tsx` | ✅ | `[l1]/[l2]/reader/page.tsx` | Markdown editor, CRUD notes, TokenizedText, auto-save |
-| Web Reader | `(tabs)/(reading)/web-reader.tsx` | 🟡 | `[l1]/[l2]/web-reader/page.tsx` | URL fetch + tokenization works. **Missing**: notes sidebar (`ReaderSidebar`), page translation. Web also lacks bookmarking/offline reading/font customization — not mobile-specific gaps |
-| EPUB Reader | `(tabs)/(reading)/epub.tsx` | 🟡 | `[l1]/[l2]/epub/page.tsx` | Upload + parse + read works. **Missing**: page translation, position/anchor save. Web also lacks font customization/bookmarks/search/reading progress — not mobile-specific gaps |
+| Web Reader | `(tabs)/(reading)/web-reader.tsx` | ✅ | `[l1]/[l2]/web-reader/page.tsx` | URL fetch + tokenization works. **Missing**: notes sidebar (`ReaderSidebar`), page translation.  |
+| EPUB Reader | `(tabs)/(reading)/epub.tsx` | 🟡 | `[l1]/[l2]/epub/page.tsx` | Upload + parse + read works. **Missing**: position/anchor save. |
 
 ### Reader Components
 
