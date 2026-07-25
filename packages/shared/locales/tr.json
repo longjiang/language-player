@@ -708,6 +708,7 @@
         "supported_media_formats": "MP4, WebM, MKV, MP3, WAV ve daha fazlasını destekler",
         "swap_languages": "Dilleri değiştir",
         "tap_any_word_to_lookup": "Bir sözcüğe bakmak için üzerine dokunun",
+        "tap_to_open": "Açmak için dokunun",
         "time_spent_learning": "Language Player'da {language} öğrenmeye harcanan süre",
         "today": "Bugün",
         "tokenizer_desc": "{l2} için tokenleştirme + lemmatizasyon. Metnin tek tek sözcüklere ve temel biçimlerine nasıl ayrıldığını görün.",

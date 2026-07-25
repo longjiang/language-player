@@ -708,6 +708,7 @@
         "supported_media_formats": "Υποστηρίζει MP4, WebM, MKV, MP3, WAV και άλλα",
         "swap_languages": "Εναλλαγή γλωσσών",
         "tap_any_word_to_lookup": "Πατήστε οποιαδήποτε λέξη για αναζήτηση",
+        "tap_to_open": "Πατήστε για άνοιγμα",
         "time_spent_learning": "Ξοδεύτηκε χρόνος εκμάθησης {language} στο Language Player",
         "today": "Σήμερα",
         "tokenizer_desc": "Τμηματοποίηση + λημματοποίηση για {l2}. Δείτε πώς το κείμενο αναλύεται σε μεμονωμένες λέξεις και τις βασικές τους μορφές.",

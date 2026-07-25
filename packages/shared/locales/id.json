@@ -708,6 +708,7 @@
         "supported_media_formats": "Mendukung MP4, WebM, MKV, MP3, WAV, dan lainnya",
         "swap_languages": "Tukar bahasa",
         "tap_any_word_to_lookup": "Ketuk kata apa pun untuk melihat artinya",
+        "tap_to_open": "Ketuk untuk membuka",
         "time_spent_learning": "Waktu yang dihabiskan belajar {language} di Language Player",
         "today": "Hari ini",
         "tokenizer_desc": "Tokenisasi + lematisasi untuk {l2}. Lihat bagaimana teks dipecah menjadi kata-kata individual dan bentuk dasarnya.",

@@ -708,6 +708,7 @@
         "supported_media_formats": "Támogatott: MP4, WebM, MKV, MP3, WAV és mások",
         "swap_languages": "Nyelvek felcserélése",
         "tap_any_word_to_lookup": "Koppints bármely szóra a kereséshez",
+        "tap_to_open": "Koppintson a megnyitáshoz",
         "time_spent_learning": "Nyelvtanulásra fordított idő a Language Player-ben {language}",
         "today": "Ma",
         "tokenizer_desc": "Tokenizáció és lemmatizáció a következőhöz: {l2}. Lásd, hogyan bomlik le a szöveg egyes szavakra és azok alapformáira.",

@@ -705,6 +705,7 @@
         "supported_media_formats": "支援 MP4、WebM、MKV、MP3、WAV 等格式",
         "swap_languages": "交換語言",
         "tap_any_word_to_lookup": "點擊任何單字即可查詢",
+        "tap_to_open": "點擊打開",
         "time_spent_learning": "在Language Player學習{language}的時間",
         "today": "今天",
         "tokenizer_desc": "{l2} 的分詞與詞形還原。查看文字如何分解為個別單字及其基本形式。",

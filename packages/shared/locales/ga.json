@@ -708,6 +708,7 @@
         "supported_media_formats": "Tacaíonn MP4, WebM, MKV, MP3, WAV, agus níos mó",
         "swap_languages": "Malartaigh teangacha",
         "tap_any_word_to_lookup": "Tapáil aon fhocal chun é a chuardach",
+        "tap_to_open": "Tapáil le hoscailt",
         "time_spent_learning": "Am caite ag foghlaim {language} in Language Player",
         "today": "Inniu",
         "tokenizer_desc": "Tocsainiú + léamú don {l2}. Féach conas a bhriseann téacs síos ina fhocail aonair agus ina bhfoirmeacha bunúsacha.",
