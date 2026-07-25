@@ -98,12 +98,18 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
 
   // Memoize initialLines for SubtitleDisplay so it doesn't re-trigger on every render
   const subtitleInitialLines = useMemo(
-    () =>
-      currentVideo?.subs_l2.map((l) => ({
+    () => {
+      const lines = currentVideo?.subs_l2.map((l) => ({
         starttime: l.starttime,
         l1Line: '',
         l2Line: l.line,
-      })) ?? [],
+      })) ?? [];
+      // Sort by starttime ascending — SubtitleDisplay's activeIndex logic
+      // iterates sequentially and breaks on the first line > currentTime,
+      // so lines MUST be in chronological order.
+      lines.sort((a, b) => a.starttime - b.starttime);
+      return lines;
+    },
     [currentVideo?.id, currentVideo?.subs_l2],
   );
 
@@ -140,8 +146,6 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
             };
           })
           .filter((v) =>
-            // Only keep videos where at least one subtitle line actually
-            // contains one of the inflected/script-variant search forms
             v.subs_l2.some((l) =>
               searchForms.some((f) => l.line.toLowerCase().includes(f)),
             ),
@@ -163,6 +167,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
   }, [term, l2.code]);
 
   // ── Seek to match when video changes ─────────
+  // startTime is also passed to YouTubePlayer for reliable seeking during onReady.
 
   useEffect(() => {
     if (currentVideo && playerRef.current) {
@@ -457,6 +462,7 @@ export function SubsSearchResults({ term, embedded = false, exactMatch = false, 
             ref={playerRef}
             youtubeId={currentVideo.youtube_id}
             autoplay
+            startTime={matchLine?.starttime}
             onTimeUpdate={handleTimeUpdate}
             onStateChange={handleStateChange}
           />
