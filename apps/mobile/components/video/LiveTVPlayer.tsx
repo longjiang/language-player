@@ -2,6 +2,7 @@ import React, { useCallback, useRef, useImperativeHandle, forwardRef, useState, 
 import { View, Text, ActivityIndicator, Pressable, useWindowDimensions } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react-native';
+import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import type { LiveTVChannel } from '@langplayer/shared';
 
 interface LiveTVPlayerProps {
