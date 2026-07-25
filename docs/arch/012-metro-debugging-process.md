@@ -1,8 +1,8 @@
-# SPEC-008: Metro Debugging Process
+# Metro Debugging Process
 
 ## Metadata
-- **Spec ID**: SPEC-008
-- **Feature**: Mobile app debugging workflow with Metro + idb + iOS Simulator
+- **Arch ID**: ARCH-012
+- **Topic**: Mobile app debugging workflow with Metro + idb + iOS Simulator
 - **Status**: draft
 - **Created**: 2026-07-22
 - **ROADMAP Phase**: Cross-cutting (all phases)
