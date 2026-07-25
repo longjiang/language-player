@@ -106,7 +106,6 @@ export default function WatchPage() {
       const h = window.innerHeight;
       const ratio = w / h;
       const wide = ratio > 1;
-      console.log('[watch] isWide check:', { w, h, ratio, wide, prevIsWide: isWideRef.current });
       setIsWide(wide);
     };
     check();
@@ -186,17 +185,6 @@ export default function WatchPage() {
   }, [currentTime, duration, subtitleStartTimes]);
 
   const isSubtitles = playback.transcriptMode === 'subtitles';
-
-  // Debug: log which render branch will be taken
-  console.log('[watch] render decision:', {
-    isSubtitles,
-    isWide,
-    transcriptMode: playback.transcriptMode,
-    branch: isSubtitles && isWide ? 'subtitles-wide'
-      : isSubtitles ? 'subtitles-narrow'
-      : !isWide ? 'transcript-narrow'
-      : 'transcript-wide',
-  });
 
   const handleSeekBarClick = useCallback(
     (fraction: number) => { playerRef.current?.seekTo(fraction * duration); },
@@ -290,9 +278,8 @@ export default function WatchPage() {
 
   // ── Subtitles Mode: Wide ──
   if (isSubtitles && isWide) {
-    console.log('[watch] RENDERING subtitles-wide. Container: h-[calc(100vh-3.5rem)], Band: overlay bottom-14');
     return (
-      <div className="debug-subtitles-wide mx-auto h-[calc(100vh-3.5rem)] overflow-hidden">
+      <div className="mx-auto h-[calc(100vh-3.5rem)] overflow-hidden">
         <div className="relative h-full">
           <div className="h-full">{playerElement}</div>
           <SubtitlesModeBand
@@ -316,9 +303,8 @@ export default function WatchPage() {
 
   // ── Subtitles Mode: Narrow ──
   if (isSubtitles) {
-    console.log('[watch] RENDERING subtitles-narrow. Container: max-w-7xl px-4 py-6, Band: overlay=false');
     return (
-      <div className="debug-subtitles-narrow mx-auto max-w-7xl px-4 py-6">
+      <div className="mx-auto max-w-7xl px-4 py-6">
         <div ref={videoWrapperRef} className="bg-background pb-2">
           {playerElement}
         </div>
@@ -353,7 +339,7 @@ export default function WatchPage() {
     );
 
     return (
-      <div className="debug-transcript-narrow mx-auto max-w-7xl h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
+      <div className="mx-auto max-w-7xl h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
         {/* Player + controls — fixed at top */}
         <div className="shrink-0 px-4 pt-4">
           <div ref={videoWrapperRef} className="pb-2">
@@ -393,7 +379,7 @@ export default function WatchPage() {
 
   // ── Transcript Mode: Wide ──
   return (
-    <div className="debug-transcript-wide mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-5rem)] overflow-hidden">
+    <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-5rem)] overflow-hidden">
       <div className="grid h-full overflow-hidden grid-cols-[1fr_320px] gap-6">
         <div className="flex-1 space-y-4 overflow-y-auto">
           <div ref={videoWrapperRef} className="pb-2">
