@@ -6,7 +6,7 @@
 - **Status**: in-progress
 - **Created**: 2026-07-23
 - **ROADMAP Phase**: Phase 4 (Reading)
-- **See also**: ADR-0014 (i18n pipeline)
+- **See also**: [Shared i18n pipeline](../arch/009-shared-i18n-pipeline.md)
 
 ## Overview
 

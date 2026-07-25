@@ -1,4 +1,4 @@
-# ADR 0013: Subtitles Mode — Dual-View Watch Page (Transcript Mode + Immersive Subtitles Mode)
+# Subtitles Mode — Dual-View Watch Page (Transcript Mode + Immersive Subtitles Mode)
 
 > **Status:** Proposed
 > **Date:** 2026-07-23 (revised)

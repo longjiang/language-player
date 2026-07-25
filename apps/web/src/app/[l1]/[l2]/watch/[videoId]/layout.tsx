@@ -9,7 +9,7 @@ import type { Metadata } from 'next';
  * /api/videos response arrives.
  *
  * Social crawlers see "Watch Video" as the title and a YouTube thumbnail
- * as the OG image. See ADR 0015 for the full rationale.
+ * as the OG image. See docs/arch/010-video-loading-pipeline.md for the full rationale.
  */
 export async function generateMetadata({
   params,

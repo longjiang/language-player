@@ -1,4 +1,4 @@
-# ADR 0015: Video Loading Pipeline — Subtitle, Lemmatization, Translation, Dictionary
+# Video Loading Pipeline — Subtitle, Lemmatization, Translation, Dictionary
 
 > **Status:** Documented (as-built)
 > **Date:** 2026-07-24

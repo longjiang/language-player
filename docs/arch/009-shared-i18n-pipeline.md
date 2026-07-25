@@ -1,13 +1,13 @@
-# ADR-0014: Shared i18n Pipeline — Single Source of Truth
+# Shared i18n Pipeline — Single Source of Truth
 
 **Date**: 2026-07-23
 **Status**: accepted
-**Supersedes**: [ADR-0009](./0009-go-i18n-migration-react-intl.md) (implementation complete; this ADR documents the ongoing pipeline)
-**See also**: [ADR-0010](./0010-port-web-to-mobile-fresh-start.md), [ADR-0011](./0011-shared-design-tokens.md)
+**Supersedes**: [ADR-0009](../adr/0009-go-i18n-migration-react-intl.md) (implementation complete; this doc documents the ongoing pipeline)
+**See also**: [ADR-0010](../adr/0010-port-web-to-mobile-fresh-start.md), [ADR-0011](../adr/0011-shared-design-tokens.md)
 
 ## Context
 
-ADR-0009 migrated the GO mobile app from `i18n-js` to `react-intl`, aligning both apps on ICU MessageFormat `{key}` syntax and a shared locale directory. Since then, we've discovered that the sync script (`sync-translations.mjs`) defaulted its output to `apps/web/messages/` — a directory that no app actually imports from. Both `apps/web` and `apps/mobile-v2` read from `packages/shared/locales/`. This ADR documents the corrected pipeline and the full workflow for managing translations.
+ADR-0009 migrated the GO mobile app from `i18n-js` to `react-intl`, aligning both apps on ICU MessageFormat `{key}` syntax and a shared locale directory. Since then, we've discovered that the sync script (`sync-translations.mjs`) defaulted its output to `apps/web/messages/` — a directory that no app actually imports from. Both `apps/web` and `apps/mobile-v2` read from `packages/shared/locales/`. This doc documents the corrected pipeline and the full workflow for managing translations.
 
 ## Single Source of Truth
 
@@ -178,4 +178,4 @@ Priority order for discovery: `en`, `zh-Hans`, `zh-Hant`, then alphabetical.
 - **Single output directory**: `sync-translations.mjs` now defaults to `packages/shared/locales/`. The old `apps/web/messages/` directory is vestigial. No `--out` flag needed for normal workflow.
 - **All apps consume from one place**: Adding a translation key and running `csv-to-json` makes it available to web, mobile-v2, and legacy mobile simultaneously.
 - **No per-app translation copies**: Eliminates the risk of one app having stale translations.
-- **The pipeline is the documentation**: The scripts themselves are the source of truth for the workflow. This ADR captures the "why" and the architecture; the scripts capture the "how."
+- **The pipeline is the documentation**: The scripts themselves are the source of truth for the workflow. This doc captures the "why" and the architecture; the scripts capture the "how."
