@@ -15,6 +15,7 @@ interface StoredEpubState {
 
 export interface UseEpubReturn {
   fileName: string | null;
+  bookTitle: string | null;
   toc: TocItem[];
   chapterTitle: string | null;
   chapterHref: string | null;
@@ -41,6 +42,7 @@ function flattenToc(items: TocItem[]): TocItem[] {
 
 export function useEpub(onChapterChange?: (text: string, title: string) => void): UseEpubReturn {
   const [fileName, setFileName] = useState<string | null>(null);
+  const [bookTitle, setBookTitle] = useState<string | null>(null);
   const [toc, setToc] = useState<TocItem[]>([]);
   const [chapterTitle, setChapterTitle] = useState<string | null>(null);
   const [chapterHref, setChapterHref] = useState<string | null>(null);
@@ -159,6 +161,9 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     const meta = parseOPF(opfXml, opfDir, ncxXml, navXml, navDir);
     spineRef.current = meta.spine;
 
+    // Book title
+    setBookTitle(meta.title);
+
     // Cover image
     if (meta.coverBase64) {
       const cf = zip.file(resolvePathFn(opfDir, meta.coverBase64));
@@ -208,12 +213,6 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     finally { setLoading(false); }
   }, [loadFromUri, persist]);
 
-  const openFromCover = useCallback(async () => {
-    if (spineRef.current.length === 0) return;
-    // Use loadChapter for spine concatenation (covers, frontmatter → first chapter)
-    await loadChapter(spineRef.current[0]!.href);
-  }, [loadChapter]);
-
   const loadChapter = useCallback(async (href: string): Promise<string> => {
     setLoading(true);
     try {
@@ -256,18 +255,25 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     } finally { setLoading(false); }
   }, [loadChapterContent, onChapterChange, persist]);
 
+  const openFromCover = useCallback(async () => {
+    if (spineRef.current.length === 0) return;
+    // Use loadChapter for spine concatenation (covers, frontmatter → first chapter)
+    await loadChapter(spineRef.current[0]!.href);
+  }, [loadChapter]);
+
   const prevChapter = useCallback(() => { if (prevHref) loadChapter(prevHref); }, [prevHref, loadChapter]);
   const nextChapter = useCallback(() => { if (nextHref) loadChapter(nextHref); }, [nextHref, loadChapter]);
 
   const close = useCallback(() => {
     zipRef.current = null; spineRef.current = []; cacheRef.current.clear();
-    setFileName(null); setToc([]); setChapterTitle(null); setChapterHref(null);
+    setFileName(null); setBookTitle(null); setToc([]); setChapterTitle(null); setChapterHref(null);
     setCoverUrl(null); setCoverTapped(false); setError(null);
     persist(null);
   }, [persist]);
 
   return {
     fileName: restoring && storedRef.current ? storedRef.current.fileName : fileName,
+    bookTitle,
     toc, chapterTitle,
     chapterHref: restoring && storedRef.current ? storedRef.current.chapterHref : chapterHref,
     loading: loading || restoring,

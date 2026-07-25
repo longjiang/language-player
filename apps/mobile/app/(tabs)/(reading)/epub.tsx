@@ -218,8 +218,37 @@ export default function EpubReaderScreen() {
     );
   }
 
-  // ── Cover ──
-  if (epub.coverUrl && !epub.coverTapped) {
+  // ── Cover (image or placeholder) ──
+  if (!epub.coverTapped) {
+    // Show placeholder cover with book title if no cover image is available
+    if (!epub.coverUrl) {
+      return (
+        <View className="flex-1 bg-background">
+          <View className="px-4 py-5">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-xl font-bold text-foreground" numberOfLines={1}>{epub.fileName}</Text>
+              <Pressable onPress={epub.close} className="rounded p-1 active:bg-muted">
+                <X size={18} color={ICON_MUTED} />
+              </Pressable>
+            </View>
+          </View>
+          <Pressable onPress={epub.openFromCover} className="flex-1 items-center justify-center px-4">
+            <View className="w-full max-w-xs items-center rounded-xl border-2 border-border bg-card px-8 py-12">
+              <BookOpen size={56} color={ICON_MUTED} style={{ marginBottom: 20 }} />
+              <Text className="text-center text-lg font-semibold text-foreground" numberOfLines={4}>
+                {epub.bookTitle || epub.fileName || t('title.epub_reader')}
+              </Text>
+              {epub.bookTitle && (
+                <Text className="mt-2 text-xs text-muted-foreground" numberOfLines={1}>{epub.fileName}</Text>
+              )}
+            </View>
+            <Text className="mt-6 text-xs text-muted-foreground">{t('action.open_file')}</Text>
+          </Pressable>
+        </View>
+      );
+    }
+
+    // Cover image is available
     return (
       <View className="flex-1 bg-background">
         <View className="px-4 py-5">
