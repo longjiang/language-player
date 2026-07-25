@@ -29,6 +29,8 @@ export default function EpubReaderScreen() {
     l2Code: l2Lang.code,
     showTranslation: display.translation,
     resetKey: epub.fileName,
+    initialAnchor: epub.initialAnchor,
+    onAnchorChange: epub.saveAnchor,
   });
 
   const { height: windowHeight } = useWindowDimensions();

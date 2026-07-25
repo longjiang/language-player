@@ -11,6 +11,8 @@ interface StoredEpubState {
   fileName: string;
   fileUri: string;
   chapterHref: string | null;
+  /** First ~40 chars of the first text block on the last-read page. */
+  lastAnchor: string | null;
 }
 
 export interface UseEpubReturn {
@@ -33,6 +35,10 @@ export interface UseEpubReturn {
   nextChapter: () => void;
   close: () => Promise<void>;
   openFromCover: () => void;
+  /** First ~40 chars of the first text block on the last-read page (for position restore). */
+  initialAnchor: string | null;
+  /** Call when the user turns a page to persist their reading position. */
+  saveAnchor: (anchor: string) => Promise<void>;
 }
 
 function flattenToc(items: TocItem[]): TocItem[] {
@@ -275,7 +281,7 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
       await FileSystem.copyAsync({ from: asset.uri, to: permUri });
       await loadFromUri(permUri);
       setFileName(asset.name);
-      const st: StoredEpubState = { fileName: asset.name, fileUri: permUri, chapterHref: null };
+      const st: StoredEpubState = { fileName: asset.name, fileUri: permUri, chapterHref: null, lastAnchor: null };
       storedRef.current = st;
       await persist(st);
       // Don't auto-load — show cover first (matches Next.js)
@@ -352,6 +358,14 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     await persist(null);
   }, [persist, coverUrl]);
 
+  // ── Anchor: persist reading position within a chapter ──
+  const saveAnchor = useCallback(async (anchor: string) => {
+    if (!storedRef.current) return;
+    const updated = { ...storedRef.current, lastAnchor: anchor };
+    storedRef.current = updated;
+    await persist(updated);
+  }, [persist]);
+
   return {
     fileName: restoring && storedRef.current ? storedRef.current.fileName : fileName,
     toc, chapterTitle,
@@ -360,6 +374,8 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
     coverUrl, coverTapped,
     flatToc, prevHref, nextHref, error,
     epubTitle, epubAuthor,
+    initialAnchor: storedRef.current?.lastAnchor ?? null,
+    saveAnchor,
     pickFile, loadChapter, prevChapter, nextChapter, close, openFromCover,
   };
 }
