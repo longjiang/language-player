@@ -335,7 +335,12 @@ export function useEpub(onChapterChange?: (text: string, title: string) => void)
 
   const openFromCover = useCallback(async () => {
     if (spineRef.current.length === 0) return;
-    await loadChapter(spineRef.current[0]!.href);
+    // Start from the first TOC chapter, not the first spine item.
+    // The first spine item is often a cover/title page with no extractable text
+    // (e.g. only images), which produces an empty chapter on mobile.
+    const toc = flatTocRef.current;
+    const href = toc.length > 0 ? toc[0]!.href : spineRef.current[0]!.href;
+    await loadChapter(href);
   }, [loadChapter]);
 
   const prevChapter = useCallback(() => { if (prevHref) loadChapter(prevHref); }, [prevHref, loadChapter]);

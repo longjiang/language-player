@@ -16,7 +16,7 @@ export default function EpubReaderScreen() {
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
   const [text, setText] = React.useState('');
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const onChapterChange = useCallback((chapterText: string, _title: string) => {
     setText(chapterText);
