@@ -70,7 +70,7 @@ function mergeSavedWords(local: SavedWordsStore, cloud: SavedWordsStore): SavedW
   return merged;
 }
 
-export function useSavedWords() {
+export function useSavedWords(activeL2?: string) {
   const { user } = useAuth();
   const { getUserData } = useUserData();
   const { data: cloudData, loaded: cloudLoaded } = useCloudUserData();
@@ -81,10 +81,10 @@ export function useSavedWords() {
   const isSyncing = useRef(false);
 
   // Load from SecureStore — set loaded=true immediately so the UI renders,
-  // then enrich missing heads in the background.
+  // then enrich missing heads in the background for only the active L2.
   useEffect(() => {
     let cancelled = false;
-    console.log('[savedWords] EFFECT 1 — starting');
+    console.log('[savedWords] EFFECT 1 — starting, activeL2:', activeL2);
     (async () => {
       try {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
@@ -96,25 +96,20 @@ export function useSavedWords() {
             setSavedWords(parsed);
             setLoaded(true);
           }
-          // Enrich missing heads in the background (don't block UI)
-          let enriched = false;
-          let enrichedStore = parsed;
-          for (const lang of Object.keys(parsed)) {
-            if (cancelled) return;
-            const missingCount = parsed[lang].filter((w) => !w.head).length;
-            if (missingCount === 0) continue;
-            console.log('[savedWords] EFFECT 1 — enriching lang:', lang, 'missing heads:', missingCount);
-            const result = await enrichMissingHeads(parsed, lang, dict);
-            if (result[lang] !== enrichedStore[lang]) {
-              enrichedStore = result;
-              enriched = true;
-              console.log('[savedWords] EFFECT 1 — enriched heads for lang:', lang);
+          // Enrich only the active L2's missing heads (the language the user is viewing)
+          if (activeL2) {
+            const missingCount = (parsed[activeL2] ?? []).filter((w) => !w.head).length;
+            if (missingCount > 0) {
+              console.log('[savedWords] EFFECT 1 — enriching active L2:', activeL2, 'missing heads:', missingCount);
+              const result = await enrichMissingHeads(parsed, activeL2, dict);
+              if (result[activeL2] !== parsed[activeL2] && !cancelled) {
+                console.log('[savedWords] EFFECT 1 — enriched heads for:', activeL2);
+                SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(result));
+                setSavedWords(result);
+              }
+            } else {
+              console.log('[savedWords] EFFECT 1 — no missing heads for activeL2:', activeL2);
             }
-          }
-          if (enriched && !cancelled) {
-            console.log('[savedWords] EFFECT 1 — persisting enriched store');
-            SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(enrichedStore));
-            setSavedWords(enrichedStore);
           }
         } else {
           if (!cancelled) {
@@ -127,7 +122,7 @@ export function useSavedWords() {
       }
     })();
     return () => { cancelled = true; };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeL2]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Merge cloud data
   useEffect(() => {
