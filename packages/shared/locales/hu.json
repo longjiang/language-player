@@ -864,6 +864,7 @@
         "word_level_display": "Szószintű megjelenítés"
     },
     "sort": {
+        "alphabetical": "Ábécérend",
         "most_viewed": "Legnézettebb",
         "title": "Cím",
         "year": "Év"

@@ -864,6 +864,7 @@
         "word_level_display": "Weergave op woordniveau"
     },
     "sort": {
+        "alphabetical": "Alfabetisch",
         "most_viewed": "Meest bekeken",
         "title": "Titel",
         "year": "Jaar"

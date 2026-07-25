@@ -65,8 +65,8 @@ export default function SavedWordsScreen() {
       if (d >= startOfToday) today.push(w); else earlier.push(w);
     }
     const result: { title: string; data: typeof words }[] = [];
-    if (today.length > 0) result.push({ title: 'Today', data: today });
-    if (earlier.length > 0) result.push({ title: 'Earlier', data: earlier });
+    if (today.length > 0) result.push({ title: t('msg.today'), data: today });
+    if (earlier.length > 0) result.push({ title: t('msg.earlier'), data: earlier });
     return result;
   }, [words]);
 

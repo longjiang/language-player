@@ -864,6 +864,7 @@
         "word_level_display": "Prikaz na razini riječi"
     },
     "sort": {
+        "alphabetical": "Abecedno",
         "most_viewed": "Najgledanije",
         "title": "Naslov",
         "year": "Godina"

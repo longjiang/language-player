@@ -864,6 +864,7 @@
         "word_level_display": "단어 수준 표시"
     },
     "sort": {
+        "alphabetical": "알파벳순",
         "most_viewed": "가장 많이 본",
         "title": "제목",
         "year": "연도"

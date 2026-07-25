@@ -836,6 +836,7 @@
         "word_level_display": "單字級顯示"
     },
     "sort": {
+        "alphabetical": "按字母順序",
         "most_viewed": "最多觀看",
         "title": "標題",
         "year": "年份"

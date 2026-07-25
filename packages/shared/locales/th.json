@@ -864,6 +864,7 @@
         "word_level_display": "การแสดงผลระดับคำ"
     },
     "sort": {
+        "alphabetical": "ตามตัวอักษร",
         "most_viewed": "ดูมากที่สุด",
         "title": "ชื่อเรื่อง",
         "year": "ปี"

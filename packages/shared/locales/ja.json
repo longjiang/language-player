@@ -864,6 +864,7 @@
         "word_level_display": "単語レベルの表示"
     },
     "sort": {
+        "alphabetical": "アルファベット順",
         "most_viewed": "最も視聴された",
         "title": "タイトル",
         "year": "年"

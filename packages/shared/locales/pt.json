@@ -864,6 +864,7 @@
         "word_level_display": "Exibição por palavra"
     },
     "sort": {
+        "alphabetical": "Alfabético",
         "most_viewed": "Mais vistos",
         "title": "Título",
         "year": "Ano"

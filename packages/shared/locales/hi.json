@@ -864,6 +864,7 @@
         "word_level_display": "शब्द-स्तरीय प्रदर्शन"
     },
     "sort": {
+        "alphabetical": "वर्णमाला क्रम",
         "most_viewed": "सबसे अधिक देखा गया",
         "title": "शीर्षक",
         "year": "वर्ष"

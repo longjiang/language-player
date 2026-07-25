@@ -864,6 +864,7 @@
         "word_level_display": "عرض على مستوى الكلمة"
     },
     "sort": {
+        "alphabetical": "أبجدي",
         "most_viewed": "الأكثر مشاهدة",
         "title": "العنوان",
         "year": "السنة"

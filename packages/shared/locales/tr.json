@@ -864,6 +864,7 @@
         "word_level_display": "Kelime Düzeyinde Görüntüleme"
     },
     "sort": {
+        "alphabetical": "Alfabetik",
         "most_viewed": "En Çok İzlenen",
         "title": "Başlık",
         "year": "Yıl"

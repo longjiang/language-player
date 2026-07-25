@@ -864,6 +864,7 @@
         "word_level_display": "Tampilan per kata"
     },
     "sort": {
+        "alphabetical": "Abjad",
         "most_viewed": "Paling Banyak Dilihat",
         "title": "Judul",
         "year": "Tahun"

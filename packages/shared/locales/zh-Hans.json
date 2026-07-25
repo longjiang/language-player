@@ -864,6 +864,7 @@
         "word_level_display": "单词级显示"
     },
     "sort": {
+        "alphabetical": "按字母顺序",
         "most_viewed": "最多观看",
         "title": "标题",
         "year": "年份"

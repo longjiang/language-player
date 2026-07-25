@@ -864,6 +864,7 @@
         "word_level_display": "Sanatason näyttö"
     },
     "sort": {
+        "alphabetical": "Aakkosjärjestys",
         "most_viewed": "Katsotuimmat",
         "title": "Otsikko",
         "year": "Vuosi"
