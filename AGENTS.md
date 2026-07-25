@@ -10,9 +10,9 @@
 A monorepo consolidating three legacy codebases:
 1. `zerotohero-nuxt/` (Vue 2/Nuxt 2) — **Classic** full-featured web app. REFERENCE ONLY. Do not edit.
 2. `language-player-3/` (React Native/Expo 51) — **GO** mobile app. REFERENCE ONLY. Merged into `apps/mobile/` (Phase 8 Step 3).
-   See `docs/lp-go-app-architecture.md` for a full analysis of its screens, components, and patterns.
+   See `docs/arch/002-go-app-architecture.md` for a full analysis of its screens, components, and patterns.
 3. `zerotohero-python-server/` or `zerotohero-python/` (Flask) — Backend. REFERENCE + eventual migration source.
-   See `docs/lp-python-backend-architecture.md` for a full analysis of its routes, utilities, and patterns.
+   See `docs/arch/003-python-backend-architecture.md` for a full analysis of its routes, utilities, and patterns.
 
 Note that the above three directories are **independent Git repositories**. They are listed in `.gitignore` so the monorepo does not track them yet. If need to commit changes to them, first `cd` into the directory and commit there. Never commit the monorepo unless the these are ignored in `.gitignore`, and never register them as submodules, or Netlify deploy will fail.
 
@@ -40,11 +40,11 @@ The **active development** happens in:
 ### Before Implementing Any Feature
 
 1. Read the relevant Nuxt Classic implementation in `zerotohero-nuxt/`
-   See `docs/lp-classic-app-architecture.md` for a full analysis of its pages, components, and patterns.
-2. Read `docs/lp-go-app-architecture.md` for the GO app's equivalent screens and components
+   See `docs/arch/001-classic-app-architecture.md` for a full analysis of its pages, components, and patterns.
+2. Read `docs/arch/002-go-app-architecture.md` for the GO app's equivalent screens and components
 3. Check if `@langplayer/shared` already has the types you need
 4. Check if `@langplayer/api-client` already has the endpoint you need
-5. Read `specs/` for existing feature specifications
+5. Read `docs/specs/` for existing feature specifications
 6. Read `docs/adr/` for relevant architecture decisions
 
 ### File Naming & Organization
@@ -283,7 +283,7 @@ Sidebar category names (Media, Reading, Vocab, etc.) are translated via `title.{
 
 ### When You Make Changes
 
-- Update `specs/` if you implement a new feature or change behavior
+- Update `docs/specs/` if you implement a new feature or change behavior
 - Update `ROADMAP.md` if you complete a planned task
 - Add ADRs in `docs/adr/` for significant architectural decisions
 - Never edit files in `zerotohero-nuxt/` or `language-player-3/` — they are reference-only

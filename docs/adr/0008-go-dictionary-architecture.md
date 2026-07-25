@@ -151,7 +151,7 @@ The `/dictionary/download` endpoint returns English-definition entries ordered b
 | `limit` | number | 30000 | Max entries to return (top by frequency) |
 
 **Server-side flow:**
-1. Query `dictionaries.db` SQLite directly — data is already normalized (see `docs/python-dictionary-db-schema.md`)
+1. Query `dictionaries.db` SQLite directly — data is already normalized (see `docs/arch/004-python-dictionary-db-schema.md`)
    - Dedicated dicts: `SELECT * FROM {cedict|edict|kengdic|cccanto|klingonska} ORDER BY frequency DESC LIMIT ?` (frequency is a column in each dict table)
    - Wiktionary: `SELECT * FROM wiktionary WHERE lang_code = ? ORDER BY frequency DESC LIMIT ?` (~800 languages, one table)
 2. Definitions are always returned in English — no batch LLM translation at download time. L1 definitions are accumulated lazily via online lookups (see [L1 Translation Strategy](#l1-translation-strategy)).

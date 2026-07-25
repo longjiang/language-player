@@ -80,8 +80,8 @@ This document analyzes how settings are stored, mutated, and synced across all t
 
 ## Classic & GO Implementation Reference
 
-> **Classic app settings details** have been moved to `docs/lp-classic-app-architecture.md` → "Settings Architecture" section.
-> **GO app settings details** have been moved to `docs/lp-go-app-architecture.md` → "Settings Architecture" section.
+> **Classic app settings details** have been moved to `docs/arch/001-classic-app-architecture.md` → "Settings Architecture" section.
+> **GO app settings details** have been moved to `docs/arch/002-go-app-architecture.md` → "Settings Architecture" section.
 >
 > Key differences at a glance:
 > - **Classic**: Vuex store, `zthSettings` key, per-L2 via `l2Settings[l2Code]`, synced to Directus `user_data.settings`, server-wins conflict resolution

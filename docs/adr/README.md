@@ -26,3 +26,7 @@ NNNN-title-with-dashes.md
 | 0009 | GO app i18n migration to react-intl | proposed | 2026-07-21 |
 | 0010 | Port Next.js web app to React Native — fresh start | proposed | 2026-07-22 |
 | 0011 | Shared design tokens — CSS variables (web) + StyleSheet values (mobile) | proposed | 2026-07-22 |
+| 0012 | Docs i18n pipeline | proposed | 2026-07-22 |
+| 0013 | Subtitles mode | implemented | 2026-07-23 |
+| 0014 | Shared i18n pipeline | proposed | 2026-07-23 |
+| 0015 | Video loading pipeline | accepted | 2026-07-24 |

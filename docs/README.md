@@ -1,0 +1,80 @@
+# Language Player — Developer Documentation
+
+Master index of all project documentation. All docs live under `docs/` with a consistent numbering system.
+
+## Directory Structure
+
+```
+docs/
+├── README.md                  ← this file
+├── specs/                     ← feature specifications (3-digit: 001–999)
+├── adr/                       ← architecture decision records (4-digit: 0001–9999)
+└── arch/                      ← architecture analyses & references (3-digit: 001–999)
+```
+
+## Numbering Conventions
+
+| Doc Type | Dir | Prefix | Range | Purpose |
+|---|---|---|---|---|
+| **Specs** | `specs/` | `NNN` (3-digit) | 001–999 | Feature/phase implementation plans |
+| **ADRs** | `adr/` | `NNNN` (4-digit) | 0001–9999 | Architecture decisions with context, options, consequences |
+| **Arch docs** | `arch/` | `NNN` (3-digit) | 001–999 | Codebase analysis, reference maps, database schemas |
+
+---
+
+## Specs
+
+| ID | Title | Phase | Status |
+|----|-------|-------|--------|
+| 001 | [Language Selection & Routing](specs/001-language-selection.md) | 1 | ✅ Complete |
+| 002 | [Repository Migration Strategy](specs/002-repo-migration.md) | 1–9 | 🔄 In progress |
+| 003 | [Phase 2 — Auth + Core Navigation](specs/003-phase2-auth-navigation.md) | 2 | ✅ Complete |
+| 004 | [Phase 3 — Explore + Video Player](specs/004-phase3-explore-video.md) | 3 | ✅ Complete |
+| 005 | [Phase 2.5 — UI Internationalization (i18n)](specs/005-phase2.5-i18n.md) | 2.5 | ✅ Complete |
+| 006 | [Translation](specs/006-translation.md) | 3 | ✅ Complete |
+| 007 | [Settings Architecture](specs/007-settings-architecture.md) | 4 | ✅ Complete |
+| 008 | [Metro Debugging Process](specs/008-metro-debugging-process.md) | 8 | ✅ Complete |
+| 009 | [Reader Layout System](specs/009-reader-layout.md) | 5 | ✅ Complete |
+
+## ADRs
+
+| ID | Title | Status | Date |
+|----|-------|--------|------|
+| 0001 | [Use Turborepo + npm workspaces for monorepo](adr/0001-monorepo-tooling.md) | accepted | 2026-07-12 |
+| 0002 | [Use Next.js App Router (not Pages Router)](adr/0002-nextjs-app-router.md) | accepted | 2026-07-12 |
+| 0003 | [Do not share UI components between web and mobile](adr/0003-no-shared-ui.md) | accepted | 2026-07-12 |
+| 0004 | [Directus user data token strategy](adr/0004-directus-user-data-token-strategy.md) | accepted | 2026-07-14 |
+| 0005 | [Payment methods plan support](adr/0005-payment-methods-plan-support.md) | proposed | 2026-07-14 |
+| 0006 | [Consolidated lexical data types](adr/0006-consolidated-lexical-data-types.md) | accepted | 2026-07-14 |
+| 0007 | [Dictionary Hub UX — persistent search bar & panel layout](adr/0007-dictionary-hub-ux.md) | proposed | 2026-07-19 |
+| 0008 | [GO app dictionary architecture — online lookup + offline download](adr/0008-go-dictionary-architecture.md) | proposed | 2026-07-21 |
+| 0009 | [GO app i18n migration to react-intl](adr/0009-go-i18n-migration-react-intl.md) | proposed | 2026-07-21 |
+| 0010 | [Port Next.js web app to React Native — fresh start](adr/0010-port-web-to-mobile-fresh-start.md) | proposed | 2026-07-22 |
+| 0011 | [Shared design tokens — CSS variables (web) + StyleSheet values (mobile)](adr/0011-shared-design-tokens.md) | proposed | 2026-07-22 |
+| 0012 | [Docs i18n pipeline](adr/0012-docs-i18n-pipeline.md) | proposed | 2026-07-22 |
+| 0013 | [Subtitles mode](adr/0013-subtitles-mode.md) | implemented | 2026-07-23 |
+| 0014 | [Shared i18n pipeline](adr/0014-shared-i18n-pipeline.md) | proposed | 2026-07-23 |
+| 0015 | [Video loading pipeline](adr/0015-video-loading-pipeline.md) | accepted | 2026-07-24 |
+
+## Architecture Docs
+
+| ID | Title | Description |
+|----|-------|-------------|
+| 001 | [Classic App Architecture](arch/001-classic-app-architecture.md) | Full analysis of Nuxt 2 Classic web app — pages, components, stores, patterns |
+| 002 | [GO App Architecture](arch/002-go-app-architecture.md) | Full analysis of React Native GO mobile app — screens, components, patterns |
+| 003 | [Python Backend Architecture](arch/003-python-backend-architecture.md) | Full analysis of Flask backend — routes, utilities, patterns |
+| 004 | [Python Dictionary DB Schema](arch/004-python-dictionary-db-schema.md) | Database schema for the dictionary system |
+| 005 | [Translation Keys Reference](arch/005-translation-keys-reference.md) | Reference for all i18n translation keys and their usage |
+| 006 | [Classic Dictionary Architecture](arch/006-classic-dictionary-architecture.md) | Dictionary system architecture in the Classic Nuxt app |
+| 007 | [Next.js Dictionary Architecture](arch/007-nextjs-dictionary-architecture.md) | Dictionary system architecture in the Next.js app |
+
+## Quick Reference
+
+- **Adding a new spec**: copy `specs/_template.md`, use next available `NNN` number
+- **Adding a new ADR**: see `adr/README.md` for format; use next available `NNNN` number
+- **Adding a new arch doc**: use next available `NNN` number, prefix with `NNN-`
+
+## See Also
+
+- [`ROADMAP.md`](../ROADMAP.md) — project plan with phase tracking
+- [`AGENTS.md`](../AGENTS.md) — instructions for AI coding agents
