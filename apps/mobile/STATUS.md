@@ -21,7 +21,7 @@
 |---|---|---|---|---|
 | Splash / Redirect | `app/index.tsx` | ✅ | — | Auth check → login or tabs |
 | Login | `app/login.tsx` | ✅ | `login/page.tsx` | |
-| Register | `app/register.tsx` | 🟡 | `register/page.tsx` | No name fields, no password confirmation |
+| Register | `app/register.tsx` | ✅ | `register/page.tsx` | Name fields, email, password + confirmation, client-side validation |
 | Forgot Password | `app/forgot-password.tsx` | ✅ | `forgot-password/page.tsx` | |
 | Select L1 | `app/select-l1.tsx` | 🟡 | `language-select/page.tsx` | Shows raw codes instead of `{$lang.xx}` names; no search |
 | Select L2 | `app/select-l2.tsx` | 🟡 | `language-select/page.tsx` | Shows raw codes instead of `{$lang.xx}` names; no search |
