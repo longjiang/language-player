@@ -687,6 +687,7 @@
         "save_more_words": "Guarda más palabras para continuar aprendiendo.",
         "save_words_to_build_deck": "Guarda palabras mientras ves videos para construir tu mazo de repaso. Toca cualquier palabra en los subtítulos para guardarla.",
         "saved_from_context": "guardado desde:",
+        "saved_words_count": "{count, plural, one {# palabra} other {# palabras}} en {l1} → {l2}",
         "saved_words_desc": "{count} palabras guardadas en {l2}",
         "search_videos_desc": "Busca por título o pega un enlace de YouTube para ver vídeos en {l2}.",
         "search_videos_empty": "Busca videos por título o pega un enlace de YouTube para empezar a ver en {l2}.",
@@ -866,6 +867,7 @@
     "sort": {
         "alphabetical": "Alfabético",
         "most_viewed": "Más vistos",
+        "newest": "Más reciente",
         "title": "Título",
         "year": "Año"
     },

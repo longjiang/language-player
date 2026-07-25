@@ -689,6 +689,7 @@
         "result_count": "{count, plural, other {# 个结果}}",
         "save_more_words": "收藏更多单词以继续学习。",
         "save_words_to_build_deck": "观看视频时收藏单词以建立复习卡组。点击字幕中的任意单词即可查询并收藏。",
+        "saved_words_count": "{count} 个单词在 {l1} → {l2}",
         "saved_words_desc": "已在{l2}中收藏 {count} 个单词",
         "search_videos_desc": "按标题搜索或粘贴 YouTube 链接以观看{l2}视频。",
         "search_videos_empty": "按标题搜索视频或粘贴 YouTube 链接开始观看{l2}视频。",
@@ -866,6 +867,7 @@
     "sort": {
         "alphabetical": "按字母顺序",
         "most_viewed": "最多观看",
+        "newest": "最新",
         "title": "标题",
         "year": "年份"
     },

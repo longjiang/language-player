@@ -687,6 +687,7 @@
         "save_more_words": "Lưu thêm từ để tiếp tục học.",
         "save_words_to_build_deck": "Lưu từ khi xem video để xây dựng bộ thẻ ôn tập của bạn. Chạm vào bất kỳ từ nào trong phụ đề để lưu từ đó.",
         "saved_from_context": "đã lưu từ:",
+        "saved_words_count": "{count} từ trong {l1} → {l2}",
         "saved_words_desc": "{count} từ đã lưu trong {l2}",
         "search_videos_desc": "Tìm kiếm theo tiêu đề hoặc dán liên kết YouTube để xem video bằng {l2}.",
         "search_videos_empty": "Tìm kiếm video theo tiêu đề hoặc dán liên kết YouTube để bắt đầu xem bằng {l2}.",
@@ -866,6 +867,7 @@
     "sort": {
         "alphabetical": "Theo bảng chữ cái",
         "most_viewed": "Xem nhiều nhất",
+        "newest": "Mới nhất",
         "title": "Tiêu đề",
         "year": "Năm"
     },

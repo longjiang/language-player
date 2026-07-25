@@ -687,6 +687,7 @@
         "save_more_words": "Salve mais palavras para continuar aprendendo.",
         "save_words_to_build_deck": "Salve palavras enquanto assiste a vídeos para criar seu baralho de revisão. Toque em qualquer palavra nas legendas para salvá-la.",
         "saved_from_context": "salva de:",
+        "saved_words_count": "{count, plural, one {# palavra} other {# palavras}} em {l1} → {l2}",
         "saved_words_desc": "{count} palavras salvas em {l2}",
         "search_videos_desc": "Pesquise por título ou cole um link do YouTube para ver vídeos em {l2}.",
         "search_videos_empty": "Pesquise vídeos por título ou cole um link do YouTube para começar a assistir em {l2}.",
@@ -866,6 +867,7 @@
     "sort": {
         "alphabetical": "Alfabético",
         "most_viewed": "Mais vistos",
+        "newest": "Mais recente",
         "title": "Título",
         "year": "Ano"
     },

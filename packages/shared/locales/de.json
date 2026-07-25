@@ -687,6 +687,7 @@
         "save_more_words": "Speichern Sie mehr Wörter, um weiterzulernen.",
         "save_words_to_build_deck": "Speichern Sie Wörter beim Ansehen von Videos, um Ihren Wiederholungsstapel aufzubauen. Tippen Sie auf ein beliebiges Wort in den Untertiteln, um es zu speichern.",
         "saved_from_context": "gespeichert von:",
+        "saved_words_count": "{count, plural, one {# Wort} other {# Wörter}} in {l1} → {l2}",
         "saved_words_desc": "{count} Wörter gespeichert in {l2}",
         "search_videos_desc": "Nach Titel suchen oder YouTube-Link einfügen, um Videos auf {l2} anzusehen.",
         "search_videos_empty": "Suche nach Videos nach Titel oder füge einen YouTube-Link ein, um auf {l2} zu schauen.",
@@ -866,6 +867,7 @@
     "sort": {
         "alphabetical": "Alphabetisch",
         "most_viewed": "Meistgesehen",
+        "newest": "Neueste",
         "title": "Titel",
         "year": "Jahr"
     },

@@ -684,6 +684,7 @@
         "result_count": "{count, plural, other {# 筆結果}}",
         "save_more_words": "儲存更多單字以繼續學習。",
         "save_words_to_build_deck": "觀看影片時儲存單字以建立複習牌組。點擊字幕中的任何單字即可儲存。",
+        "saved_words_count": "{count} 個單詞在 {l1} → {l2}",
         "saved_words_desc": "已在 {l2} 儲存 {count} 個單字",
         "search_videos_desc": "按標題搜索或粘貼 YouTube 鏈接以觀看{l2}視頻。",
         "search_videos_empty": "按標題搜索視頻或粘貼 YouTube 鏈接開始觀看{l2}視頻。",
@@ -838,6 +839,7 @@
     "sort": {
         "alphabetical": "按字母順序",
         "most_viewed": "最多觀看",
+        "newest": "最新",
         "title": "標題",
         "year": "年份"
     },
