@@ -21,7 +21,7 @@ export function TabbedPanel({ tabs, defaultTab, children }: TabbedPanelProps) {
   const childrenArray = React.Children.toArray(children);
 
   return (
-    <View>
+    <View className="flex-1">
       {/* Tab bar */}
       <View className="flex-row border-b border-border">
         {tabs.map((tab) => (
@@ -47,7 +47,7 @@ export function TabbedPanel({ tabs, defaultTab, children }: TabbedPanelProps) {
       {childrenArray.map((child, i) => {
         const tabKey = tabs[i]?.key;
         if (!tabKey || tabKey !== activeTab) return null;
-        return <View key={tabKey}>{child}</View>;
+        return <View key={tabKey} className="flex-1">{child}</View>;
       })}
     </View>
   );
