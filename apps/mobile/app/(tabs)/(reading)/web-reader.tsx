@@ -78,7 +78,7 @@ export default function WebReaderScreen() {
                 className="flex-1 py-2 pr-3 text-sm text-foreground"
                 value={url}
                 onChangeText={setUrl}
-                placeholder={t('placeholder.paste_url', { l2: l2Lang.name })}
+                placeholder={t('placeholder.paste_url', { l2: t(`lang.${l2Lang.code}`) })}
                 placeholderTextColor={ICON_MUTED}
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -169,7 +169,7 @@ export default function WebReaderScreen() {
               {t('title.web_reader')}
             </Text>
             <Text className="mt-1 max-w-md text-center text-sm text-muted-foreground">
-              {t('msg.web_reader_empty_state', { l2: l2Lang.name })}
+              {t('msg.web_reader_empty_state', { l2: t(`lang.${l2Lang.code}`) })}
             </Text>
           </View>
         )}
