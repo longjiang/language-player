@@ -13,7 +13,7 @@ import { Globe } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 export default function WebReaderScreen() {
-  const { l1Lang, l2Lang } = useLanguage();
+  const { l2Lang } = useLanguage();
   const t = useT();
 
   const [url, setUrl] = useState('');
@@ -63,9 +63,6 @@ export default function WebReaderScreen() {
           <View className="flex-1 min-w-0">
             <Text className="text-xl font-bold text-foreground" numberOfLines={1}>
               {title || t('title.web_reader')}
-            </Text>
-            <Text className="text-xs text-muted-foreground">
-              {l2Lang.name} → {l1Lang.name}
             </Text>
           </View>
         </View>
