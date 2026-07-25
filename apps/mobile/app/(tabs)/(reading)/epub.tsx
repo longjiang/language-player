@@ -339,8 +339,7 @@ export default function EpubReaderScreen() {
                       <View key={bi} className="my-3 items-center">
                         <Image
                           source={{ uri: block.uri }}
-                          className="w-full rounded-lg"
-                          style={{ aspectRatio: undefined }}
+                          style={{ width: '100%', height: contentWidth * 0.6 }}
                           resizeMode="contain"
                         />
                       </View>
@@ -413,7 +412,7 @@ export default function EpubReaderScreen() {
                     <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height)} className="mb-3">
                       <Image
                         source={{ uri: block.uri }}
-                        style={{ width: contentWidth }}
+                        style={{ width: contentWidth, height: contentWidth * 0.6 }}
                         resizeMode="contain"
                       />
                     </View>
