@@ -87,6 +87,17 @@ export function useSrs() {
     });
   }, [scheduleSync]);
 
+  const removeCard = useCallback((lang: string, wordId: string) => {
+    setStore((prev) => {
+      const langCards = { ...(prev.cards[lang] ?? {}) };
+      delete langCards[wordId];
+      const next = { ...prev, cards: { ...prev.cards, [lang]: langCards } };
+      SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(next));
+      scheduleSync(next);
+      return next;
+    });
+  }, [scheduleSync]);
+
   const setDailyLimit = useCallback((limit: number) => {
     setStore((prev) => {
       const next = { ...prev, settings: { ...prev.settings, dailyNewLimit: limit } };
@@ -96,5 +107,7 @@ export function useSrs() {
     });
   }, [scheduleSync]);
 
-  return { store, loaded, updateCard, setDailyLimit };
+  const dailyNewLimit = store.settings.dailyNewLimit;
+
+  return { store, loaded, updateCard, removeCard, setDailyLimit, dailyNewLimit };
 }
