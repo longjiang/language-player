@@ -21,6 +21,8 @@ export default function SavedWordsScreen() {
   const [sortMode, setSortMode] = useState<SortMode>('newest');
   const [filterText, setFilterText] = useState('');
 
+  console.log('[SavedWordsScreen] render — loaded:', loaded, 'l2Code:', l2Lang.code, 'savedWords keys:', Object.keys(savedWords));
+
   const allWords = useMemo(
     () => savedWords[l2Lang.code] ?? [],
     [savedWords, l2Lang.code],
@@ -87,6 +89,7 @@ export default function SavedWordsScreen() {
   }, [l2Lang.code, clearAll]);
 
   if (!loaded) {
+    console.log('[SavedWordsScreen] rendering SPINNER — loaded=false, l2Code:', l2Lang.code);
     return (
       <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator size="large" color={ICON_MUTED} />
@@ -96,6 +99,7 @@ export default function SavedWordsScreen() {
 
   // ── Empty state ──
   if (allWords.length === 0) {
+    console.log('[SavedWordsScreen] rendering EMPTY — loaded=true, no words for l2:', l2Lang.code);
     return (
       <View className="flex-1 items-center justify-center bg-background px-8">
         <View className="w-full max-w-sm rounded-xl border border-dashed border-border p-12 items-center">
