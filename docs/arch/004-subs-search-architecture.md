@@ -18,6 +18,100 @@ How the "Examples" tab on dictionary entry pages finds and displays video subtit
 └─────────────────────────────────────────────────────────────────┘
         │ fetch(PYTHON_API_URL/subs-search?terms=…&l2=ja&context=3)
         ▼
+
+## UI Layout
+
+The `SubsSearchResults` component renders as a self-contained card with a mini video player. Below is the visual structure with the two display states annotated.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Nav Bar                                              border-b  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ "第 1 个视频（共 89 个）"    [30 forms]  [▶ Watch] [☰ List] ││
+│  │  ↑ video counter              ↑ exact-    ↑ links to   ↑ opens │
+│  │                               match      /watch page   modal  │
+│  └─────────────────────────────────────────────────────────────┘│
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│              ┌─────────────────────────────────┐               │
+│              │                                 │               │
+│              │    YouTube Embedded Player      │  aspect-video │
+│              │    (autoplay, seeks to match)    │               │
+│              │                                 │               │
+│              └─────────────────────────────────┘               │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│  Playback Controls                                   border-b  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │     [⏮]   [▲]   [▶/⏸]   [▼]   [⏭]                        ││
+│  │   prev vid  prev  play/  next  next vid                     ││
+│  │             line  pause  line                               ││
+│  └─────────────────────────────────────────────────────────────┘│
+├─────────────────────────────────────────────────────────────────┤
+│  Subtitle Display (singleline mode)                             │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                                                             ││
+│  │    記述した戦記軍談の類たぐいでない                          ││
+│  │    所に東洋人の血を大きく搏うつ                   ← L2 text  ││
+│  │                                                             ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                 │
+│  OR (when YouTube player hasn't reported time yet):             │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │           Subtitles are not available for this video yet.    ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Component Tree
+
+```
+SubsSearchResults
+├── <div> card container (rounded-xl border shadow-sm)
+│   ├── Nav bar
+│   │   ├── <span> video counter (t('msg.video_n_of_total'))
+│   │   ├── <button> exact-match toggle (only when formCount > 1)
+│   │   ├── <Link> "Watch" → /[l1]/[l2]/watch/[youtubeId]
+│   │   └── <Button> "List All" → opens modal
+│   ├── YouTubePlayer (ref={playerRef}, startTime, autoplay)
+│   ├── Playback controls
+│   │   ├── <Button> SkipBack (prev video, disabled at index 0)
+│   │   ├── <Button> ChevronUp (previous subtitle line)
+│   │   ├── <Button> Play/Pause toggle
+│   │   ├── <Button> ChevronDown (next subtitle line)
+│   │   └── <Button> SkipForward (next video, disabled at last)
+│   └── SubtitleDisplay (mode="singleline", initialLines, highlightTerms)
+│
+└── Result List Modal (conditional, fixed overlay)
+    ├── Backdrop (bg-black/50, click to close)
+    ├── Sheet (max-h-[80vh], rounded-2xl)
+    │   ├── Header ("Videos matching '{term}'" + X close button)
+    │   ├── Toolbar (search filter input + sort <select>)
+    │   └── Scrollable list
+    │       └── per-item <button>
+    │           ├── Thumbnail (<img> youtubeThumbnail + time badge)
+    │           ├── Title (truncate)
+    │           └── Context lines (prev line, match line highlighted, next line)
+    └── (closes on backdrop click or X button)
+```
+
+### States
+
+| State | Condition | Rendered |
+|---|---|---|
+| **Loading** | `loading === true` | Skeleton: pulsing placeholders for nav bar, player area, subtitle line, controls |
+| **Error** | `error !== null` | `<p>` with error message |
+| **Empty** | `videos.length === 0` after fetch | Nav bar preserved (toggle still accessible), player placeholder with Search icon + "No results" |
+| **Active** | `videos.length > 0` | Full player UI as diagrammed above |
+
+### Subtitle Display States (Singleline Mode)
+
+| State | Condition | Rendered |
+|---|---|---|
+| **No lines** | `l2Lines.length === 0` | "Subtitles are not available for this video yet." |
+| **No active line** | `activeIndex < 0` (player hasn't reported time yet) | "Subtitles are not available for this video yet." |
+| **Active** | `activeIndex >= 0` | `TokenizedText` with highlighted search forms, text scale 1.5 |
+
 ┌─────────────────────────────────────────────────────────────────┐
 │                     PYTHON BACKEND                              │
 │  app_subs_search.py                                             │
