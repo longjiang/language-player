@@ -7,6 +7,7 @@ import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
+import { configureDialogAnimation } from '@/lib/animations';
 
 // ── Shared in-memory lemmatize cache ──────────────────
 // All TokenizedText instances share this Map, so if two components
@@ -209,7 +210,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                       <Text
                         style={[textStyle, { lineHeight: baseLeading }]}
                         className={isHighlighted ? 'font-bold text-primary' : 'text-foreground'}
-                        onPress={popupEnabled ? () => setSelectedWord(word) : undefined}
+                        onPress={popupEnabled ? () => { configureDialogAnimation(); setSelectedWord(word); } : undefined}
                       >
                         {seg.text}
                       </Text>
@@ -231,7 +232,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               return (
                 <Text
                   key={i}
-                  onPress={popupEnabled && isWord(token) ? () => setSelectedWord(word) : undefined}
+                  onPress={popupEnabled && isWord(token) ? () => { configureDialogAnimation(); setSelectedWord(word); } : undefined}
                   className={isHighlighted ? 'font-bold text-primary' : ''}
                 >
                   {displayText}
@@ -245,7 +246,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
           <DictionaryPopup
             visible={!!selectedWord}
             word={selectedWord ?? ''}
-            onClose={() => setSelectedWord(null)}
+            onClose={() => { configureDialogAnimation(); setSelectedWord(null); }}
           />
         )}
       </>

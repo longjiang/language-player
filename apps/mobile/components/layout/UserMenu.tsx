@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
 import * as Dialog from '@/components/ui/dialog';
+import { useDialogOpen } from '@/lib/animations';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
   const t = useT();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useDialogOpen();
 
   const initial = user?.email?.charAt(0)?.toUpperCase() ?? '?';
 

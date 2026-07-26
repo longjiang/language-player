@@ -35,3 +35,18 @@ export function useDialogOpen(initial = false) {
 
   return [open, animatedSetOpen] as const;
 }
+
+/**
+ * Call before any state change that shows/hides a dialog.
+ * For cases where `useDialogOpen()` doesn't fit (e.g., string | null state).
+ *
+ * @example
+ * configureDialogAnimation();
+ * setSelectedWord(word); // dialog opens with animation
+ * // ...
+ * configureDialogAnimation();
+ * setSelectedWord(null); // dialog closes with animation
+ */
+export function configureDialogAnimation() {
+  LayoutAnimation.configureNext(dialogAnimation);
+}
