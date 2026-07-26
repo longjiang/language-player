@@ -197,6 +197,12 @@ export async function bulkInsertEntries(
 
   console.log('[DictDB] bulkInsertEntries — l2:', l2, 'entries:', entries.length, 'chunks:', totalChunks);
 
+  // Log WAL size before insert — if pages > 0, checkpoint didn't run
+  try {
+    const wal = await db.getFirstAsync<{ page_count: number }>('PRAGMA wal_checkpoint');
+    console.log('[DictDB] 📊 WAL before insert — checkpoint pages:', wal?.page_count ?? '?');
+  } catch {}
+
   for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
     const chunk = entries.slice(i, i + CHUNK_SIZE);
     const chunkNum = Math.floor(i / CHUNK_SIZE) + 1;
@@ -232,7 +238,9 @@ export async function bulkInsertEntries(
   console.log('[DictDB] bulkInsertEntries complete — l2:', l2, '— total time:', ((Date.now() - startTime) / 1000).toFixed(1), 's');
 
   // Flush WAL to keep future inserts fast
+  console.log('[DictDB] 🧹 WAL checkpoint after bulk insert — l2:', l2);
   try { await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
+  console.log('[DictDB] ✅ WAL checkpoint done — l2:', l2);
 }
 
 // ── Dictionary metadata ───────────────────────
@@ -298,7 +306,9 @@ export async function deleteDictionary(
   try {
     await db.execAsync(`DROP TABLE IF EXISTS ${table}`);
     // Flush WAL to recover space and prevent slowdown on re-download
+    console.log('[DictDB] 🧹 WAL checkpoint after DROP — l2:', l2);
     await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)');
+    console.log('[DictDB] ✅ WAL checkpoint done — l2:', l2);
   } catch {
     // Table may not exist — that's fine
   }
@@ -327,7 +337,9 @@ export async function deleteAllDictionaries(
   await db.execAsync('DELETE FROM llm_cache');
   await db.execAsync('DELETE FROM dict_meta');
   // Flush WAL to recover space
+  console.log('[DictDB] 🧹 WAL checkpoint after delete-all');
   try { await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
+  console.log('[DictDB] ✅ WAL checkpoint done');
 }
 
 // ── Storage usage ─────────────────────────────
