@@ -153,7 +153,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
 No JavaScript breakpoint needed — pure CSS. Next.js layouts automatically wrap all nested routes, so detail pages render as `children` with no component changes.
 
-**Mobile — iPad split view (deferred):** On screens ≥ 600pt, conditionally render side-by-side instead of using the Stack navigator:
+**Mobile — iPad split view (immediate):** On screens ≥ 600pt, conditionally render side-by-side instead of using the Stack navigator:
 
 ```tsx
 const { width } = useWindowDimensions();
@@ -278,11 +278,9 @@ const filteredSections = useMemo(() => {
 
 | Phase | Platform | What |
 |---|---|---|
-| **Now** (Phase 7) | Mobile | Migrate from monolithic tabbed `settings.tsx` to `settings/` directory with list→detail + search |
+| **Now** (Phase 7) | Mobile | Migrate from monolithic tabbed `settings.tsx` to `settings/` directory with list→detail + search + iPad split view |
 | **Now** (Phase 7) | Shared | Extract `SETTINGS_SEARCH_KEYS` to `packages/shared/src/settings-search-keys.ts` |
-| **Next** (Phase 8) | Web | Migrate `settings/page.tsx` from `<TabbedPanel>` to `settings/` directory with list→detail + search |
-| **Later** | Web | Two-column wide-screen layout (CSS Grid in `layout.tsx`) |
-| **Later** | Mobile | iPad split view |
+| **Next** (Phase 8) | Web | Migrate `settings/page.tsx` from `<TabbedPanel>` to `settings/` directory with list→detail + search + two-column layout |
 
 Mobile goes first because it has the more urgent layout constraints (5 tabs don't fit). Web follows for cross-platform consistency.
 
@@ -296,7 +294,7 @@ Mobile goes first because it has the more urgent layout constraints (5 tabs don'
 - Each category is its own focused file (separation of concerns)
 - Web and mobile share the same architecture, same file naming, same search logic
 - Search keys live in `packages/shared/` — one source of truth for both apps
-- iPad/wide-screen split view is a natural extension, not a rewrite
+- iPad/wide-screen split view is built in from the start — no follow-up needed
 
 ### Negative
 - More files (5–6 detail screens + root list + shared components per platform) vs 1–2 monolithic files
