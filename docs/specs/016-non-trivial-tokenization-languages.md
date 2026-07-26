@@ -222,67 +222,67 @@ These languages use spaces between words (or other reliable delimiters) for toke
 
 Pre-computed `{surface: [lemma]}` TSV files already exist on the server at `data/lemmatization-lists/lemmatization-{code}.txt`. These are the highest-quality lemma sources.
 
-| Code | Language | JS Library | Notes |
-|---|---|---|---|
-| `ca` | Catalan | — | |
-| `cs` | Czech | — | Rich case system (7 cases) |
-| `cy` | Welsh | — | Simplemma excluded — apostrophe issues |
-| `de` | German | `snowball-stemmers` | Case + gender + plural umlaut |
-| `en` | English | `snowball-stemmers` | Irregular past/participles + plurals |
-| `es` | Spanish | `snowball-stemmers` | Extensive verb conjugation |
-| `fr` | French | `snowball-stemmers` | Verb conjugation; Simplemma excluded (bad verb lemmas) |
-| `ga` | Irish | `snowball-stemmers` | Initial mutations (séimhiú, urú) |
-| `gl` | Galician | — | |
-| `gv` | Manx | — | |
-| `hu` | Hungarian | **`snowball-stemmers`** ✅ | Uralic, 18+ cases, vowel harmony |
-| `it` | Italian | `snowball-stemmers` | Verb conjugation |
-| `pt` | Portuguese | `snowball-stemmers` | Verb conjugation |
-| `ro` | Romanian | `snowball-stemmers` | |
-| `sk` | Slovak | — | |
-| `sl` | Slovenian | — | Dual number! |
-| `sv` | Swedish | `snowball-stemmers` | |
-| `uk` | Ukrainian | — | Case system |
+| Code | Language | Strategy | JS Library | Notes |
+|---|---|---|---|---|
+| `ca` | Catalan | LemmatizationList table | — | |
+| `cs` | Czech | LemmatizationList table | — | Rich case system (7 cases) |
+| `cy` | Welsh | LemmatizationList table | — | Simplemma excluded — apostrophe issues |
+| `de` | German | LemmatizationList table + Snowball | `snowball-stemmers` | Case + gender + plural umlaut |
+| `en` | English | LemmatizationList table + Snowball | `snowball-stemmers` | Irregular past/participles + plurals |
+| `es` | Spanish | LemmatizationList table + Snowball | `snowball-stemmers` | Extensive verb conjugation |
+| `fr` | French | LemmatizationList table + Snowball | `snowball-stemmers` | Verb conjugation; Simplemma excluded |
+| `ga` | Irish | LemmatizationList table + Snowball | `snowball-stemmers` | Initial mutations (séimhiú, urú) |
+| `gl` | Galician | LemmatizationList table | — | |
+| `gv` | Manx | LemmatizationList table | — | |
+| `hu` | Hungarian | LemmatizationList table + Snowball | `snowball-stemmers` ✅ | Uralic, 18+ cases, vowel harmony |
+| `it` | Italian | LemmatizationList table + Snowball | `snowball-stemmers` | Verb conjugation |
+| `pt` | Portuguese | LemmatizationList table + Snowball | `snowball-stemmers` | Verb conjugation |
+| `ro` | Romanian | LemmatizationList table + Snowball | `snowball-stemmers` | |
+| `sk` | Slovak | LemmatizationList table | — | |
+| `sl` | Slovenian | LemmatizationList table | — | Dual number! |
+| `sv` | Swedish | LemmatizationList table + Snowball | `snowball-stemmers` | |
+| `uk` | Ukrainian | LemmatizationList table | — | Case system |
 
 ### C2 — Simplemma Available (18 languages)
 
 Dictionary-based lemmatizer data available from the Simplemma Python package. Can be exported to JSON/SQLite.
 
-| Code | Language | JS Library | Notes |
-|---|---|---|---|
-| `bg` | Bulgarian | — | |
-| `da` | Danish | `snowball-stemmers` | |
-| `el` | Greek | — | |
-| `et` | Estonian | ⚠️ Snowball upstream, npm uncertain | Uralic, 14 cases, lost vowel harmony |
-| `fi` | Finnish | **`snowball-stemmers`** ✅ | Uralic, 15 cases, consonant gradation |
-| `hy` | Armenian | `snowball-stemmers` | |
-| `id` | Indonesian | — | **Analytic, not agglutinative.** Derivational prefixes only; surface-as-lemma works. |
-| `is` | Icelandic | — | Complex inflection preserved from Old Norse |
-| `ka` | Georgian | **Nothing** ❌ | Kartvelian (not Uralic!). Polypersonal verbs, screeve system. Pre-built Simplemma table only. |
-| `la` | Latin | — | 5 declensions, 4 conjugations |
-| `lv` | Latvian | — | |
-| `lt` | Lithuanian | — | Complex case system, pitch accent |
-| `nb` | Norwegian Bokmål | `snowball-stemmers` | |
-| `nn` | Norwegian Nynorsk | — | |
-| `nl` | Dutch | `snowball-stemmers` | |
-| `pl` | Polish | — | 7 cases, 3 genders |
-| `sq` | Albanian | — | |
-| `sw` | Swahili | **Nothing** ❌ | Bantu. Noun class prefixes. Pre-built Simplemma table + optional prefix-stripper fallback. |
+| Code | Language | Strategy | JS Library | Notes |
+|---|---|---|---|---|
+| `bg` | Bulgarian | Simplemma table | — | |
+| `da` | Danish | Simplemma table + Snowball | `snowball-stemmers` | |
+| `el` | Greek | Simplemma table | — | |
+| `et` | Estonian | Simplemma table | ⚠️ Snowball upstream, npm uncertain | Uralic, 14 cases, lost vowel harmony |
+| `fi` | Finnish | Simplemma table + Snowball | `snowball-stemmers` ✅ | Uralic, 15 cases, consonant gradation |
+| `hy` | Armenian | Simplemma table + Snowball | `snowball-stemmers` | |
+| `id` | Indonesian | — (in Category E now) | — | **Moved to Category E.** Analytic; surface-as-lemma works. |
+| `is` | Icelandic | Simplemma table | — | Complex inflection preserved from Old Norse |
+| `ka` | Georgian | Simplemma table only | **Nothing** ❌ | Kartvelian. Polypersonal verbs, screeve system. |
+| `la` | Latin | Simplemma table | — | 5 declensions, 4 conjugations |
+| `lv` | Latvian | Simplemma table | — | |
+| `lt` | Lithuanian | Simplemma table | — | Complex case system, pitch accent |
+| `nb` | Norwegian Bokmål | Simplemma table + Snowball | `snowball-stemmers` | |
+| `nn` | Norwegian Nynorsk | Simplemma table | — | |
+| `nl` | Dutch | Simplemma table + Snowball | `snowball-stemmers` | |
+| `pl` | Polish | Simplemma table | — | 7 cases, 3 genders |
+| `sq` | Albanian | Simplemma table | — | |
+| `sw` | Swahili | Simplemma table + prefix stripper | **Nothing** ❌ | Bantu. Noun class prefixes. |
 
 ### C3 — spaCy-Only (1 language)
 
 No LemmatizationList or Simplemma available. spaCy is the only option.
 
-| Code | Language | Notes |
-|---|---|---|
-| `hr` | Croatian | 7 cases; no lighter lemmatizer alternative exists |
+| Code | Language | Strategy | JS Library | Notes |
+|---|---|---|---|---|
+| `hr` | Croatian | spaCy export table | **Nothing** ❌ — spaCy is Python-only | 7 cases; no JS library available. Server spaCy export table (~800 KB gzipped). |
 
 ### C4 — Dedicated Server Engine (1 language)
 
 Rich inflection handled by a specialized server engine. Needs a pre-built lemma table exported from that engine's output.
 
-| Code | Language | Notes | Server Engine |
-|---|---|---|---|
-| `ru` | Russian | 6 cases, 3 genders, verb aspect pairs; highly inflected | pymorphy2 |
+| Code | Language | Strategy | JS Library | Notes | Server Engine |
+|---|---|---|---|---|---|
+| `ru` | Russian | pymorphy2 export table | `snowball-stemmers` (Snowball Russian is available as fallback) | 6 cases, 3 genders, verb aspect pairs; highly inflected | pymorphy2 |
 
 ### Agglutinative Languages in Category C
 
