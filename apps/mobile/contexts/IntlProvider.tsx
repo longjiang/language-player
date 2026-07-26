@@ -59,12 +59,21 @@ export function IntlProviderWrapper({ children }: { children: ReactNode }) {
   // gracefully when the flat key isn't found in empty messages.
   const emptyMessages = useMemo(() => ({} as Record<string, string>), []);
 
+  // Suppress MISSING_TRANSLATION errors — useT() resolves messages from the
+  // static import map via resolveNested() and only routes ICU plurals through
+  // intl.formatMessage({ id, defaultMessage }), which triggers a harmless
+  // MISSING_TRANSLATION lookup before falling back to defaultMessage.
+  const handleError = useMemo(() => (err: any) => {
+    if (err?.code === 'MISSING_TRANSLATION') return;
+    console.error(err);
+  }, []);
+
   // react-intl's IntlProvider has a React 19 type incompatibility
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const Provider = IntlProvider as any;
 
   return (
-    <Provider locale={locale} messages={emptyMessages} defaultLocale="en">
+    <Provider locale={locale} messages={emptyMessages} defaultLocale="en" onError={handleError}>
       {children}
     </Provider>
   );
