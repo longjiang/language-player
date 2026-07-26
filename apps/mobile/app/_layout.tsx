@@ -1,3 +1,6 @@
+// Intl polyfills for Hermes (Intl.PluralRules) — MUST be first
+import '@/lib/intl-polyfills';
+
 import React from 'react';
 import { Stack } from 'expo-router';
 import { View, Text, ScrollView } from 'react-native';
