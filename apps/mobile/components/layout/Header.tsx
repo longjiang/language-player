@@ -8,7 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { HamburgerDrawer } from './HamburgerDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
-import { useDialogOpen } from '@/lib/animations';
+import { useAnimatedBoolean } from '@/lib/animations';
 
 /** Matches Next.js sm: breakpoint (640px). */
 const SM_BREAKPOINT = 640;
@@ -17,7 +17,7 @@ export function Header() {
   const t = useT();
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
-  const [drawerOpen, setDrawerOpen] = useDialogOpen();
+  const [drawerOpen, setDrawerOpen] = useAnimatedBoolean();
 
   const showAppName = screenWidth >= SM_BREAKPOINT;
 
