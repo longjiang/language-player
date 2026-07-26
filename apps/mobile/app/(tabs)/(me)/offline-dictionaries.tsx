@@ -384,33 +384,37 @@ export default function OfflineDictionariesScreen() {
       )}
 
       {/* Available section */}
-      {availableFiltered.length > 0 && (
-        <View className="mt-5 px-4">
-          <Text className="text-xs font-bold text-muted-foreground uppercase tracking-wide border-b border-border pb-2 mb-2">
-            {t('label.available')}
-          </Text>
+      <View className="mt-5 px-4">
+        <Text className="text-xs font-bold text-muted-foreground uppercase tracking-wide border-b border-border pb-2 mb-2">
+          {t('label.available')}
+        </Text>
 
-          {/* Search bar */}
-          <View className="mb-3 flex-row items-center rounded-lg border border-border bg-muted px-3 py-2">
-            <Search size={16} color={ICON_MUTED} />
-            <TextInput
-              className="flex-1 ml-2 text-sm text-foreground"
-              placeholder={t('placeholder.search_languages')}
-              placeholderTextColor={ICON_MUTED}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCorrect={false}
-            />
-            {searchQuery.length > 0 && (
-              <Pressable onPress={() => setSearchQuery('')}>
-                <Text className="text-xs text-primary">{t('action.close')}</Text>
-              </Pressable>
-            )}
-          </View>
-
-          {availableFiltered.map((l2) => renderLanguageRow(l2, false))}
+        {/* Search bar */}
+        <View className="mb-3 flex-row items-center rounded-lg border border-border bg-muted px-3 py-2">
+          <Search size={16} color={ICON_MUTED} />
+          <TextInput
+            className="flex-1 ml-2 text-sm text-foreground"
+            placeholder={t('placeholder.search_languages')}
+            placeholderTextColor={ICON_MUTED}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCorrect={false}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery('')}>
+              <Text className="text-xs text-primary">{t('action.close')}</Text>
+            </Pressable>
+          )}
         </View>
-      )}
+
+        {availableFiltered.length > 0 ? (
+          availableFiltered.map((l2) => renderLanguageRow(l2, false))
+        ) : (
+          <Text className="text-xs text-muted-foreground text-center py-4">
+            {searchQuery.trim() ? 'No languages match your search.' : 'All languages downloaded.'}
+          </Text>
+        )}
+      </View>
 
       {/* Delete All footer */}
       {downloadedList.length > 0 && (
