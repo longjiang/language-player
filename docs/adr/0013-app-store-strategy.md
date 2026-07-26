@@ -10,7 +10,8 @@ We have two iOS apps live on the App Store, both offering essentially the same p
 | App | Store Name | Bundle ID | Tech | App Store Link |
 |---|---|---|---|---|
 | **Classic Nuxt** | Language Player 2 | `ca.zerotohero.app` | Ionic/Capacitor wrapper around Nuxt web app | [App Store](https://apps.apple.com/ca/app/language-player-2/id1623985525) |
-| **GO Legacy** | Language Player GO | `ca.zerotohero.app.go` | React Native (Expo SDK ~51) | [App Store](https://apps.apple.com/ca/app/language-player-go/id6520385296) |
+| **GO Legacy** | Language Player GO | `ca.zerotohero.go` | React Native (Expo SDK ~51) | [App Store](https://apps.apple.com/ca/app/language-player-go/id6520385296) |
+| **New app (dev)** | Language Player | `ca.zerotohero.languageplayer` | React Native (Expo SDK 57) — not yet submitted | — |
 
 We have **no app in the Google Play Store** — our account was deleted after we neglected to renew our business information.
 
@@ -137,13 +138,18 @@ Replace the Nuxt binary with the new app (as in Option B). Keep the GO app on th
 
 The critical dependency for Options B and C is IAP. The new app needs a working IAP implementation before it can replace the Nuxt binary (otherwise existing users lose the ability to purchase the lifetime subscription in-app on iOS).
 
-The Nuxt/Capacitor app and the GO app both have their own IAP products, but they share the same backend validation endpoint (`POST /in_app_purchase_success`). The Python backend checks the receipt against Apple's `verifyReceipt` endpoint and grants a lifetime subscription regardless of which product ID or bundle ID was used.
+The Nuxt/Capacitor app and the GO app each have their own IAP products with separate bundle IDs (`ca.zerotohero.app` and `ca.zerotohero.go`), but they share the same backend validation endpoint (`POST /in_app_purchase_success`). The Python backend checks the receipt against Apple's `verifyReceipt` endpoint and grants a lifetime subscription regardless of which bundle ID was used.
 
-**Key constraint**: Apple uses `bundle_id` in receipt validation. If we change the bundle ID (Option D), receipts from the old apps would not validate against the new app. But since both existing apps use the same backend endpoint (not client-side receipt validation), and the Python backend accepts any valid Apple receipt, users who purchased on either legacy app would still get subscription credit if they log in with the same account on the new app — as long as the new app can obtain and send the receipt from their previous purchase.
+**Key constraint**: Apple's `restoreCompletedTransactions` only restores purchases for the current app's bundle ID. The Nuxt app uses `ca.zerotohero.app`, while the new app currently uses `ca.zerotohero.languageplayer` in its Expo config.
 
-In practice, Apple's `restorePurchases()` API restores all non-consumable purchases on the same Apple ID, regardless of bundle ID... actually, that's not true. `restoreCompletedTransactions` only restores for the current bundle ID. So if we change the bundle ID, previous purchases cannot be restored.
+**For Option C** (replace Nuxt binary), we would change the new app's bundle ID from `ca.zerotohero.languageplayer` to `ca.zerotohero.app` for the App Store release build. This preserves:
+- The existing app listing and reviews
+- Existing IAP — `restorePurchases()` works because the bundle ID matches
+- Users who purchased via the Nuxt app see their lifetime subscription carry over
 
-**Options B/C preserve the bundle ID** (`ca.zerotohero.app`), meaning `restorePurchases()` would work. This is a strong argument for those options.
+The `ca.zerotohero.languageplayer` bundle ID can remain for development/testing builds (side-loaded via Expo Go or TestFlight).
+
+**Options B/C preserve the Nuxt bundle ID** (`ca.zerotohero.app`), meaning `restorePurchases()` from the existing app works. This is a strong argument for those options.
 
 ---
 
