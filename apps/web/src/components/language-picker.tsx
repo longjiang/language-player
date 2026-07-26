@@ -14,7 +14,7 @@ import {
   languageName,
   isRTL,
 } from '@/lib/language-data';
-import { setUseTraditional } from '@/lib/settings';
+import { useSettingsContext } from '@/providers/settings-provider';
 
 export interface LanguagePickerProps {
   /** Initial L1 code. Defaults to 'en'. */
@@ -46,6 +46,7 @@ export function LanguagePicker({
   const [selectedL1, setSelectedL1] = useState(initialL1);
   const [selectedL2, setSelectedL2] = useState(initialL2);
   const [useTraditional, setUseTraditionalState] = useState(false);
+  const { updateL2, getL2 } = useSettingsContext();
 
   const filteredL1 = useMemo(() => {
     const q = l1Search.toLowerCase();
@@ -88,7 +89,8 @@ export function LanguagePicker({
   function handleConfirm() {
     if (!canConfirm) return;
     if (selectedL2 === 'zh') {
-      setUseTraditional(useTraditional);
+      const current = getL2('zh');
+      updateL2('zh', { display: { ...current.display, traditional: useTraditional } });
     }
     onConfirm(selectedL1, selectedL2);
   }

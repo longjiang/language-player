@@ -83,16 +83,28 @@ export function useSettings() {
     try {
       const newSettings = createSettingsV2();
 
-      // lp_show_translation → tokenizedText (already defaults to true, but respect old pref)
+      // lp_show_translation → display.translation
       const oldTranslation = localStorage.getItem('lp_show_translation');
       if (oldTranslation !== null) {
-        try { newSettings.tokenizedText = { ...newSettings.tokenizedText }; } catch {}
+        try {
+          newSettings.display.translation = JSON.parse(oldTranslation) as boolean;
+        } catch {}
       }
 
-      // lp_show_phonetics → l2 tokenSpan phonetics (migrate to current L2 only)
+      // lp_show_phonetics → l2 tokenSpan phonetics (per-L2, stash for later)
       const oldPhonetics = localStorage.getItem('lp_show_phonetics');
       if (oldPhonetics !== null) {
-        // We don't know the current L2 code here, so we'll handle this lazily
+        try {
+          (newSettings as any).__migratedPhonetics = JSON.parse(oldPhonetics) as boolean;
+        } catch {}
+      }
+
+      // lp_use_traditional → l2 display.traditional (per-L2, stash for later)
+      const oldTraditional = localStorage.getItem('lp_use_traditional');
+      if (oldTraditional !== null) {
+        try {
+          (newSettings as any).__migratedTraditional = JSON.parse(oldTraditional) as boolean;
+        } catch {}
       }
 
       // zthSrsProgress.settings.dailyNewLimit → review.dailyNewLimit
