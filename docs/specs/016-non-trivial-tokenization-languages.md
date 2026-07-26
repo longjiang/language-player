@@ -33,15 +33,35 @@ These languages cannot be split by spaces AND have inflectional morphology.
 
 | Code | Language | Segmentation Strategy | Lemmatization Strategy | Server Engine |
 |---|---|---|---|---|
-| `ja` | Japanese | Intl.Segmenter, kuromoji, or tiny-segmenter | Pre-built lemma table（動詞・形容詞・形容動詞の活用形→基本形） | MeCab |
+| `ja` | Japanese | **kuromoji** (pure JS, same IPADIC dict as MeCab) | **kuromoji** — `basic_form` gives lemma directly（食べた→食べる, 美味しかった→美味しい） | MeCab |
 | `ko` | Korean | Spaces exist ✅ but agglutinative | Pre-built stem table (Okt export: `먹어요→먹다`) | Okt (konlpy) |
 | `ar` | Arabic | Spaces exist ✅ but root-based morphology | Pre-built lemma table (Qalsadi export: `السلام→سلام`) | Qalsadi + Mishkal |
 | `fa` | Persian | Spaces exist ✅ but verb-heavy inflection | Pre-built lemma table (Hazm export: `دارد→داشتن`) | Hazm + PersianG2p |
 | `tr` | Turkish | Spaces exist ✅ but highly agglutinative | Suffix-stripping rules + lemma table (Zeyrek export: `gördüm→görmek`) | Zeyrek |
 
-**Japanese deserves special attention.** Contrary to common belief, Japanese is NOT "words are their own lemmas." Verbs have rich conjugation:
+**Japanese: kuromoji is the recommended approach.** kuromoji is a pure-JavaScript port of the same IPADIC dictionary that MeCab uses on the server. A single library call handles both segmentation and lemmatization:
 
-| Form | Surface | Lemma |
+```js
+import kuromoji from 'kuromoji';
+
+const tokenizer = await new Promise((resolve, reject) => {
+  kuromoji.builder({ dicPath: 'dict/' }).build((err, t) => {
+    err ? reject(err) : resolve(t);
+  });
+});
+
+const tokens = tokenizer.tokenize('食べたくなかった');
+// [
+//   { surface_form: '食べ',   basic_form: '食べる',  pos: '動詞', ... },
+//   { surface_form: 'たく',   basic_form: 'たい',    pos: '助動詞', ... },
+//   { surface_form: 'なかっ', basic_form: 'ない',    pos: '助動詞', ... },
+//   { surface_form: 'た',     basic_form: 'た',      pos: '助動詞', ... },
+// ]
+```
+
+Japanese verbs have rich conjugation:
+
+| Form | Surface | Lemma (kuromoji `basic_form`) |
 |---|---|---|
 | Dictionary form | 食べる | 食べる |
 | Past | 食べた | 食べる |
@@ -54,14 +74,14 @@ These languages cannot be split by spaces AND have inflectional morphology.
 
 Adjectives also inflect:
 
-| Form | Surface | Lemma |
+| Form | Surface | Lemma (kuromoji `basic_form`) |
 |---|---|---|
 | Dictionary | 美味しい | 美味しい |
 | Past | 美味しかった | 美味しい |
 | Te-form | 美味しくて | 美味しい |
 | Negative | 美味しくない | 美味しい |
 
-MeCab on the server handles all of these. A local pre-built lemma table (surface→lemma) exported from MeCab's output would cover the most common inflected forms. Japanese has approximately 2,000–3,000 commonly inflected verb/adjective surface forms (from ~500 base verbs/adjectives × ~5 common conjugations each).
+**Dictionary size tradeoff**: Full IPADIC is ~15 MB. Pruned to top 30K frequency-ranked entries → ~3 MB. Recommend downloading on demand (like SPEC-013 offline dictionaries) rather than bundling for all users. kuromoji requires no native modules — it works in React Native as pure JavaScript.
 
 ---
 
