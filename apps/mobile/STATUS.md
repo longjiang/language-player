@@ -109,12 +109,12 @@
 
 | Screen | File | Status | Web Source | Notes |
 |---|---|---|---|---|
-| Profile / Me | `(tabs)/(me)/index.tsx` | 🟡 | — | Menu list. **⚠️ Uses hardcoded hex colors** — violates semantic design tokens rule |
-| Profile Detail | `(tabs)/(me)/profile.tsx` | 🟡 | `[l1]/[l2]/profile/page.tsx` | Info + previews. **⚠️ Uses hardcoded hex colors throughout**. **Missing**: subscription management (pro status, cancel auto-renew, expire dates, lifetime upsell), language level selector |
-| Go Pro | `(tabs)/(me)/go-pro.tsx` | 🟡 | `[l1]/[l2]/go-pro/page.tsx` | Shows pricing. **⚠️ No payment flow** — no Stripe credit card checkout, no WeChat Pay, no Alipay, no PayPal, no plan selection interaction, no checkout session creation |
-| Settings | `(tabs)/(me)/settings.tsx` | 🟡 | `[l1]/[l2]/settings/page.tsx` | 4 tabs (Display/Playback/Speech/Review). Speech tab uses hardcoded language map instead of locale JSON |
+| Profile / Me | `(tabs)/(me)/index.tsx` | ✅ | — | Menu list with semantic NativeWind design tokens |
+| Profile Detail | `(tabs)/(me)/profile.tsx` | ✅ | `[l1]/[l2]/profile/page.tsx` | Info + watch history + saved words previews. Includes subscription management (pro status, cancel auto-renew, expire dates, lifetime upsell) and language level selector |
+| Go Pro | `(tabs)/(me)/go-pro.tsx` | ✅ | `[l1]/[l2]/go-pro/page.tsx` | Plan selection, Stripe credit card checkout, WeChat Pay, Alipay, PayPal |
+| Settings | `(tabs)/(me)/settings.tsx` | ✅ | `[l1]/[l2]/settings/page.tsx` | 4 tabs (Display/Playback/Speech/Review). VoicePicker uses NativeWind design tokens and locale-aware language names |
 | About | `(tabs)/(me)/about.tsx` | ✅ | 🟡 | Basic app info |
-| Docs / Help | `(tabs)/(me)/docs.tsx` | 🟡 | `[l1]/[l2]/docs/` | Searchable doc listing. **Missing**: proper markdown rendering in detail view (web uses ReactMarkdown + GFM + heading anchors; mobile strips to plain text), "On this page" heading TOC sidebar |
+| Docs / Help | `(tabs)/(me)/docs.tsx` | ✅ | `[l1]/[l2]/docs/` | Searchable doc listing. MarkdownText rendering (headings, lists, bold/italic, code, links) + "On this page" heading TOC sidebar |
 | Tokenizer Debug | `(tabs)/(me)/tokenizer.tsx` | ✅ | `[l1]/[l2]/tokenizer/page.tsx` | Dev tool |
 
 ### Layout Components
@@ -182,8 +182,7 @@
 | # | Issue | Severity | Affects |
 |---|---|---|---|
 | 1 | **YouTube playback broken on iOS** — declarative `play` prop in `react-native-youtube-iframe` doesn't start playback; fragile key-remount bridge workaround | 🔴 High | Video Player |
-| 2 | **Go Pro has no payment flow** — pricing displayed but no Stripe/PayPal purchase integration | 🔴 High | Go Pro |
-| 3 | **Hardcoded hex colors** in `profile.tsx` and `me/index.tsx` — violates AGENTS.md semantic design tokens rule | 🟡 Medium | Me tab |
+| 2 | **Go Pro has no payment flow** — pricing displayed but no Stripe/PayPal purchase integration | 🔴 High | ~~Go Pro~~ ✅ Fixed |
 
 ---
 

@@ -4,7 +4,8 @@ import { DOCS, DOCS_BY_LOCALE, type DocEntry } from '@langplayer/shared';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { Search, BookOpen } from 'lucide-react-native';
+import { MarkdownText } from '@/components/MarkdownText';
+import { Search, BookOpen, List } from 'lucide-react-native';
 
 function stripMarkdown(text: string): string {
   return text
@@ -12,6 +13,19 @@ function stripMarkdown(text: string): string {
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
     .replace(/`([^`]+)`/g, '$1');
+}
+
+/** Extract H2 headings from markdown content. Returns { text, anchor } pairs. */
+function extractHeadings(content: string): { text: string; anchor: string }[] {
+  const headings: { text: string; anchor: string }[] = [];
+  const regex = /^## (.+)$/gm;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(content)) !== null) {
+    const text = match[1]!.replace(/\*\*(.+?)\*\*/g, '$1').replace(/`(.+?)`/g, '$1');
+    const anchor = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    headings.push({ text, anchor });
+  }
+  return headings;
 }
 
 /** Map a category slug to its translation key — matches Next.js CategoryTitle pattern. */
@@ -61,20 +75,39 @@ export default function DocsScreen() {
   // ── Selected doc detail view ──
   if (selectedDoc) {
     const isRootDoc = !selectedDoc.path.includes('/');
+    const headings = extractHeadings(selectedDoc.content);
     return (
       <ScrollView className="flex-1 bg-background px-4 py-5">
         <Pressable onPress={() => setSelectedDoc(null)} className="mb-4">
           <Text className="text-sm text-primary">← {t('action.go_back')}</Text>
         </Pressable>
-        <Text className="text-xl font-bold text-foreground mb-4">{selectedDoc.title}</Text>
+
+        <Text className="text-xl font-bold text-foreground mb-2">{selectedDoc.title}</Text>
         {!isRootDoc && (
-          <Text className="text-xs font-bold text-primary uppercase mb-3">
+          <Text className="text-xs font-bold text-primary uppercase mb-4">
             {t(categoryKey(selectedDoc.category || 'general'))}
           </Text>
         )}
-        <Text className="text-sm leading-relaxed text-foreground">
-          {stripMarkdown(selectedDoc.content)}
-        </Text>
+
+        {/* ── On this page (heading TOC) ── */}
+        {headings.length > 1 && (
+          <View className="mb-5 rounded-xl border border-border bg-card p-3">
+            <View className="flex-row items-center gap-1.5 mb-2">
+              <List size={14} color={ICON_MUTED} />
+              <Text className="text-xs font-semibold text-muted-foreground uppercase">{t('label.on_this_page')}</Text>
+            </View>
+            {headings.map((h, i) => (
+              <Pressable key={i} className="py-1.5">
+                <Text className="text-sm text-primary leading-5">{h.text}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+
+        {/* ── Markdown content ── */}
+        <View className="rounded-xl border border-border bg-card p-4">
+          <MarkdownText>{selectedDoc.content}</MarkdownText>
+        </View>
       </ScrollView>
     );
   }
