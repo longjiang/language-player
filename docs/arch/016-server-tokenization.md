@@ -1,4 +1,4 @@
-# ARCH-015 — Server-Side Tokenization Pipeline
+# ARCH-016 — Server-Side Tokenization Pipeline
 
 > **Source files**: `zerotohero-python-server/lemmatize_*.py`, `routes/text_routes.py`, `utils_nlp.py`, `utils_cache.py`, `romanize.py`, `app_directus.py`
 > **Last updated**: 2026-07-26
@@ -802,6 +802,91 @@ For a comprehensive per-language mapping, see `lemmatize_unified.py:LEMMATIZER_R
 
 ---
 
+## Preferred Tokenizer by Language (ADR-0018)
+
+Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), the canonical preference order is **LemmatizationList > Simplemma > spaCy > BaseTokenizer**. The table below shows which tokenizer each language SHOULD use once this preference is applied. This has been the de facto behavior of the Classic Nuxt frontend for years.
+
+### Dedicated tokenizers (unchanged)
+
+These 8 languages use dedicated engines — the preference rule does not apply:
+
+| Language | ISO 639-3 | Tokenizer |
+|---|---|---|
+| Arabic | `ara` | Qalsadi + Mishkal |
+| Burmese | `mya` | pyidaungsu |
+| Chinese | `zho` | jieba + pypinyin |
+| Japanese | `jpn` | MeCab |
+| Korean | `kor` | Okt (konlpy) |
+| Persian | `fas` | Hazm + PersianG2p |
+| Russian | `rus` | pymorphy2 |
+| Turkish | `tur` | Zeyrek |
+
+### General-purpose languages (preference applied)
+
+These 19 spaCy languages are re-evaluated under the LemmatizationList > Simplemma > spaCy rule:
+
+| # | Language | ISO 639-3 | spaCy | Simplemma | Lemm. List | **Preferred** | spaCy Still Needed? |
+|---|---|---|---|---|---|---|---|
+| 1 | Catalan | `cat` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+| 2 | Danish | `dan` | ✅ | ✅ | ❌ | **Simplemma** | No |
+| 3 | German | `deu` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+| 4 | Greek | `ell` | ✅ | ✅ | ❌ | **Simplemma** | No |
+| 5 | English | `eng` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+| 6 | Spanish | `spa` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+| 7 | Finnish | `fin` | ✅ | ✅ | ❌ | **Simplemma** | No |
+| 8 | French | `fra` | ✅ | ~~excluded~~ | ✅ | **LemmatizationList** | No |
+| 9 | **Croatian** | `hrv` | ✅ | ❌ | ❌ | **spaCy** | ⚠️ **Yes** |
+| 10 | Italian | `ita` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+| 11 | Lithuanian | `lit` | ✅ | ✅ | ❌ | **Simplemma** | No |
+| 12 | Macedonian | `mkd` | ✅ | ✅ | ❌ | **Simplemma** | No |
+| 13 | Norwegian Bokmål | `nob` | ✅ | ✅ | ❌ | **Simplemma** | No |
+| 14 | Dutch | `nld` | ✅ | ✅ | ❌ | **Simplemma** | No |
+| 15 | Polish | `pol` | ✅ | ✅ | ❌ | **Simplemma** | No |
+| 16 | Portuguese | `por` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+| 17 | Romanian | `ron` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+| 18 | Swedish | `swe` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+| 19 | Ukrainian | `ukr` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
+
+**Simplemma exclusions** (from Classic Nuxt `tokenizer-factory.js`, carried forward by ADR-0018):
+
+| Code | Language | Reason | Fallback |
+|---|---|---|---|
+| `cym` | Welsh | Apostrophe handling broken in Simplemma | LemmatizationList |
+| `hin` | Hindi | Simplemma breaks too many words | spaCy or BaseTokenizer |
+| `fra` | French | Simplemma fails to lemmatize verbs | LemmatizationList |
+
+Of the 19 spaCy languages, **only Croatian (`hrv`) still requires spaCy** — it has no Simplemma or LemmatizationList coverage. For the other 18, spaCy could be removed as the primary tokenizer without losing lemmatization.
+
+### Simplemma-only languages (unchanged)
+
+These 21 languages only have Simplemma available among the general-purpose tokenizers:
+
+`ast`, `bul`, `ces`, `est`, `gle`, `glg`, `glv`, `hun`, `hye`, `ind`, `isl`, `kat`, `lat`, `lav`, `msa`, `nno`, `slk`, `slv`, `sqi`, `swa`, `tgl`
+
+---
+
+## Legacy Video Endpoint: Cached spaCy Results
+
+> ⚠️ **Important**: The legacy `/lemmatize-video` endpoint (`lemmatize_video_endpoint` in `text_routes.py`) dispatches through `utils_nlp.lemmatizer_by_lang()`, NOT through `lemmatize_unified.LEMMATIZER_REGISTRY`. The legacy dispatcher was built before the unified pipeline existed and routes languages directly to spaCy where a spaCy model is available.
+
+This means that **cached video subtitles** for languages like Danish, German, English, Finnish, French, Italian, etc. were originally tokenized with **spaCy**, even though the unified pipeline now prefers Simplemma or LemmatizationList for these same languages.
+
+### Why this matters
+
+When a client requests `/lemmatize-video-normalized`, it gets cached data that was produced by the legacy pipeline. The `normalize_by_lang()` function in `lemmatize_unified.py` converts the raw cached output to the unified schema, but **it normalizes from whatever tokenizer originally produced the data** — which for many languages was spaCy.
+
+The `serverCacheTokenizers` registry in the Classic Nuxt `tokenizer-factory.js` exists specifically to track which tokenizer originally produced the cached data for each language, so the client can parse it correctly. It lists spaCy for all 19 languages, even though the client's own dispatch only uses spaCy for Spanish.
+
+### Migration path
+
+If the server's `LEMMATIZER_REGISTRY` is updated to match ADR-0018 (preferring Simplemma/LemmatizationList), then:
+
+- **New `/lemmatize-normalized` requests** will use the preferred tokenizer immediately — no migration needed.
+- **Cached `/lemmatize-video` data** will remain spaCy-tokenized until the cache is invalidated and rebuilt. The `serverCacheTokenizers` registry on the client must continue to track the actual tokenizer used at cache time.
+- **`/lemmatize-video-normalized`** will normalize from whatever the cache contains — if rebuilt, it will use the new preferred tokenizer automatically.
+
+---
+
 ## Dependencies
 
 | Tokenizer | Python Package | Notes |
@@ -823,5 +908,6 @@ For a comprehensive per-language mapping, see `lemmatize_unified.py:LEMMATIZER_R
 ## Relevant Documents
 
 - **ADR-0008**: Online/offline hybrid dictionary (tokenization feeds dictionary lookups)
+- **ADR-0018**: Tokenizer selection — prefer Simplemma/LemmatizationList over spaCy
 - **ARCH-004**: Python dictionary database schema (dictionary lookups consume tokenized text)
 - **SPEC-013**: Mobile offline dictionary (mobile app consumes server tokenization)
