@@ -174,36 +174,39 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
         </View>
       </View>
 
-      {/* Search */}
-      <View className="px-6 pb-2">
-        <View className="flex-row items-center bg-card border border-border rounded-lg px-3 py-2">
-          <Search size={16} color={ICON_MUTED} />
-          <TextInput
-            className="flex-1 ml-2 text-foreground text-sm"
-            placeholder={t('placeholder.search_languages')}
-            placeholderTextColor={PLACEHOLDER_COLOR}
-            value={search}
-            onChangeText={setSearch}
-            autoCapitalize="none"
-            autoFocus={false}
-          />
+      {/* Bordered panel: search + language list */}
+      <View className="mx-6 mb-3 rounded-xl border border-border bg-card">
+        {/* Search */}
+        <View className="px-3 pt-3 pb-1">
+          <View className="flex-row items-center bg-background border border-border rounded-lg px-3 py-2">
+            <Search size={16} color={ICON_MUTED} />
+            <TextInput
+              className="flex-1 ml-2 text-foreground text-sm"
+              placeholder={t('placeholder.search_languages')}
+              placeholderTextColor={PLACEHOLDER_COLOR}
+              value={search}
+              onChangeText={setSearch}
+              autoCapitalize="none"
+              autoFocus={false}
+            />
+          </View>
         </View>
+
+        {/* Language list */}
+        <SectionList
+          className="px-3 pb-3 max-h-96"
+          sections={sections}
+          keyExtractor={(item) => item}
+          renderItem={renderLanguageItem}
+          renderSectionHeader={renderSectionHeader}
+          stickySectionHeadersEnabled={false}
+          keyboardShouldPersistTaps="handled"
+        />
       </View>
 
-      {/* Language list */}
-      <SectionList
-        className="flex-1 px-6"
-        sections={sections}
-        keyExtractor={(item) => item}
-        renderItem={renderLanguageItem}
-        renderSectionHeader={renderSectionHeader}
-        stickySectionHeadersEnabled={false}
-        keyboardShouldPersistTaps="handled"
-      />
-
-      {/* Summary bar */}
+      {/* Summary bar (bordered panel) */}
       {(selectedL1 || selectedL2) && (
-        <View className="border-t border-border bg-card px-6 py-3">
+        <View className="mx-6 mb-4 rounded-xl border border-border bg-card px-4 py-3">
           {/* Script toggle for Chinese */}
           {selectedL2 === 'zh' && (
             <View className="flex-row rounded-lg border border-border bg-muted p-0.5 mb-2">
