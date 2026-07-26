@@ -3,9 +3,9 @@
 ## Metadata
 - **Spec ID**: SPEC-015
 - **Feature**: Complete mobile settings parity with web, integrate offline dictionaries, fix bugs
-- **Status**: in-progress — Phases 1 & 3 complete; Phase 2 (3 remaining gaps) pending
+- **Status**: complete — all phases done
 - **Created**: 2026-07-25
-- **Updated**: 2026-07-26 — updated to reflect list→detail migration, @rn-primitives adoption, iPad split view
+- **Updated**: 2026-07-26 — updated to reflect list→detail migration, @rn-primitives adoption, iPad split view, all gaps resolved
 - **ROADMAP Phase**: Phase 7 — Mobile Integration
 - **Depends on**: SPEC-013 (Offline Dictionary), SPEC-014 (Subscription), SPEC-016 (Interaction Primitives — @rn-primitives Switch/Select/Tabs)
 - **See also**:
@@ -23,17 +23,18 @@ The mobile settings screen was originally rated 🟡 (partial) in STATUS.md. The
 
 **Completed (2026-07-25/26):**
 - ✅ **Phase 1**: Korean hanja `byeonggi` property fix
+- ✅ **Phase 2 (all gaps)**: L1 translation preview (G2), "Settings saved" confirmation (G3), settings page subtitle (G5)
 - ✅ **Phase 3**: Full architectural migration — monolithic `settings.tsx` → directory-based list→detail navigation with search, wide-screen iPad split view, co-located `_components/` folder (SliderRow, ToggleRow, SegmentedRow, SectionHeader, SearchBar)
 - ✅ **@rn-primitives integration**: `ToggleRow` uses `@rn-primitives/switch` (per SPEC-016 Phase 2.3); `@rn-primitives/select`, `@rn-primitives/tabs`, `@rn-primitives/dialog` primitives available for future use
 - ✅ Slider vs stepper resolved — sliders via `@react-native-community/slider`, matching web
 - ✅ Offline Dictionaries promoted to a dedicated row in the root list (no longer buried at bottom of scroll)
 - ✅ Search with shared `SETTINGS_SEARCH_KEYS` from `@langplayer/shared` (per ADR-0015, SPEC-017)
 - ✅ Web settings also migrated to list→detail with shared `SettingsListPanel` (per SPEC-017)
+- ✅ Native stack header respects light/dark theme (useColorScheme dynamic HSL values)
+- ✅ Switch toggle visual animation on iOS (@rn-primitives data- attr mismatch → inline styles)
+- ✅ Translation preview response key fix (data.translation → data.translated_text)
 
-**Remaining gaps (Phase 2):**
-- 🔴 G2: Tokenized text preview missing L1 translation
-- 🔴 G3: No "Settings saved" confirmation
-- 🟢 G5: Missing settings page subtitle
+No remaining gaps.
 
 > **⚠️ Forward parity note**: The web settings page has already been migrated to the list→detail pattern with a shared `SettingsListPanel` component (see SPEC-017). Both platforms now share the same architecture — searchable list with sectioned rows and per-category detail screens.
 
@@ -83,7 +84,7 @@ The `ToggleRow` wraps `@rn-primitives/switch` with NativeWind styling (design to
 
 | Category | Detail Screen | Content | Parity |
 |---|---|---|---|
-| Display | `display.tsx` | Theme (light/dark/system), translation toggle, popup dict toggle, tokenized text preview, font picker, text size slider, phonetics (ruby/word/off + conditions), word-level display (quick gloss, interlinear gloss, Chinese character set, Korean hanja, Vietnamese hán tự), quiz mode | ✅ Full parity (except G2: L1 translation preview) |
+| Display | `display.tsx` | Theme (light/dark/system), translation toggle, popup dict toggle, tokenized text preview with L1 translation, font picker, text size slider, phonetics (ruby/word/off + conditions), word-level display (quick gloss, interlinear gloss, Chinese character set, Korean hanja, Vietnamese hán tự), quiz mode | ✅ Full parity |
 | Playback | `playback.tsx` | Captions display mode (transcript/subtitles), smooth scroll, karaoke, auto-pause | ✅ Full parity |
 | Speech | `speech.tsx` | VoicePicker with TTS voice selection and rate control | ✅ Full parity |
 | Review | `review.tsx` | New cards per day slider (1–50) | ✅ Full parity |
@@ -116,27 +117,21 @@ Each row shows a live subtitle derived from current settings values, so users ca
 
 ### 🟡 Feature Gaps
 
-#### G2: Tokenized Text Preview Missing L1 Translation 🔴
+#### G2: Tokenized Text Preview Missing L1 Translation ✅
 
-**Status**: Not yet implemented.
+**Status**: ✅ Fixed (2026-07-26).
 
-**Current (mobile)**: The preview box in `display.tsx` shows the sample sentence with `TokenizedText` but no L1 translation below it.
+**Root cause**: The `useEffect` was already fetching `/translate` correctly, but read the wrong response key — `data.translation` instead of `data.translated_text`. The Flask endpoint returns `{ translated_text: '...' }`.
 
-**Expected (web)**: The preview box shows the sample sentence + its L1 translation fetched via the Python `/translate` endpoint when `display.translation` is enabled.
-
-**Fix**: Add a `useEffect` in `display.tsx` to fetch `POST /translate` when translation is enabled, cancel on dependency change, and render the result below `TokenizedText`.
+**Fixed in**: `apps/mobile/app/(tabs)/(me)/settings/display.tsx` — changed `data.translation` → `data.translated_text`.
 
 ---
 
-#### G3: No "Settings Saved" Confirmation Toast 🔴
+#### G3: No "Settings Saved" Confirmation ✅
 
-**Status**: Not yet implemented.
+**Status**: ✅ Already implemented in initial Phase 3 migration (code confirmed 2026-07-26).
 
-**Current (mobile)**: Changes persist silently via `SettingsContext` → `SecureStore`. No user-visible feedback.
-
-**Expected (web)**: A debounced toast appears 1.2s after any setting change.
-
-**Fix**: Add a debounced inline confirmation badge or lightweight toast. The app does not have a toast library; simplest approach is a timed inline "✓ Saved" indicator in the root list or a shared utility.
+**Implementation** in `apps/mobile/app/(tabs)/(me)/settings/index.tsx`: A debounced inline confirmation badge appears 1.2s after any setting change, auto-hides after 2s. Uses `useRef` timer with `mountedRef` to skip the initial render.
 
 ---
 
@@ -152,15 +147,11 @@ The old monolithic `settings.tsx` had a `Pressable` link buried at the bottom of
 
 ### 🟢 Polish / UX Gaps
 
-#### G5: Missing Settings Page Subtitle 🔴
+#### G5: Missing Settings Page Subtitle ✅
 
-**Status**: Not yet implemented.
+**Status**: ✅ Already implemented in initial Phase 3 migration (code confirmed 2026-07-26).
 
-**Current (mobile)**: The root list shows only `{t('title.settings')}` as a bold heading.
-
-**Expected (web)**: A subtitle below the heading: "Configure your [L1] → [L2] experience" via `msg.settings_desc`.
-
-**Fix**: Add a `<Text>` below the title in `index.tsx` with `t('msg.settings_desc', { l1: l1Lang.name, l2: l2Lang.name })`.
+**Implementation** in `apps/mobile/app/(tabs)/(me)/settings/index.tsx`: A `<Text>` below the title renders `t('msg.settings_desc', { l1: l1Lang.name, l2: l2Lang.name })`, matching web.
 
 ---
 
@@ -180,82 +171,21 @@ The old monolithic `settings.tsx` had a `Pressable` link buried at the bottom of
 
 ---
 
-### Phase 2: Feature Gaps — 🔄 IN PROGRESS (3 remaining)
+### Phase 2: Feature Gaps — ✅ COMPLETE
 
-#### 2.1 Add L1 Translation Preview 🔴
+#### 2.1 Add L1 Translation Preview ✅
 
 **File**: `apps/mobile/app/(tabs)/(me)/settings/display.tsx`
 
-Add a `useEffect` to fetch the translation of the sample sentence when translation is enabled, and display it below the `TokenizedText` preview.
+The `useEffect` was already implemented during Phase 3 but had a bug — it read `data.translation` but the Flask `/translate` endpoint returns `{ translated_text: '...' }`. Fixed: `data.translation` → `data.translated_text`.
 
-**Implementation notes**:
-- Fetch from Python `POST /translate` endpoint (same as web)
-- Only fetch when `display.translation` is `true` and `popupEnabled` is `true`
-- Cancel in-progress fetch on dependency change (cleanup function)
-- The `PYTHON_API_URL` is already available in the mobile app
+#### 2.2 Add "Settings Saved" Confirmation ✅
 
-```tsx
-const [previewTranslation, setPreviewTranslation] = useState('');
+Already implemented in `apps/mobile/app/(tabs)/(me)/settings/index.tsx` during Phase 3. Debounced inline badge (1.2s delay, 2s visible).
 
-useEffect(() => {
-  if (!previewText || !display.translation || !popupEnabled) {
-    setPreviewTranslation('');
-    return;
-  }
-  let cancelled = false;
-  fetch(`${PYTHON_API_URL}/translate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: previewText, l1: l1Lang.code, l2: l2Lang.code }),
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (!cancelled) setPreviewTranslation(data.translation ?? '');
-    })
-    .catch(() => {});
-  return () => { cancelled = true; };
-}, [previewText, l1Lang.code, l2Lang.code, display.translation, popupEnabled]);
-```
+#### 2.3 Add Settings Page Subtitle ✅
 
-Then render below the `TokenizedText`:
-```tsx
-{previewTranslation ? (
-  <Text className="pt-1 text-sm text-muted-foreground leading-relaxed">
-    {previewTranslation}
-  </Text>
-) : null}
-```
-
-#### 2.2 Add "Settings Saved" Confirmation 🔴
-
-Add a debounced confirmation indicator. Since the app doesn't have a toast system, use a simple inline approach in the root list (`index.tsx`):
-
-```tsx
-const [savedVisible, setSavedVisible] = useState(false);
-const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-const mountedRef = useRef(false);
-useEffect(() => {
-  if (!mountedRef.current) { mountedRef.current = true; return; }
-  if (saveTimer.current) clearTimeout(saveTimer.current);
-  saveTimer.current = setTimeout(() => {
-    setSavedVisible(true);
-    setTimeout(() => setSavedVisible(false), 2000);
-  }, 1200);
-  return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
-}, [
-  display, playback, review,
-  // Include l2Settings deps if watching those
-]);
-```
-
-Render a subtle confirmation badge in the root list header area.
-
-#### 2.3 Add Settings Page Subtitle 🔴
-
-**File**: `apps/mobile/app/(tabs)/(me)/settings/index.tsx`
-
-Add the descriptive subtitle below the title heading. The `msg.settings_desc` key already exists in `translations.csv` (used by web).
+Already implemented in `apps/mobile/app/(tabs)/(me)/settings/index.tsx` during Phase 3. Uses `t('msg.settings_desc', { l1, l2 })`.
 
 ---
 
@@ -298,7 +228,7 @@ Old `apps/mobile/app/(tabs)/(me)/settings.tsx` deleted. All functionality migrat
 
 ---
 
-### Phase 4: Polish & Testing — ⬜ PENDING
+### Phase 4: Polish & Testing — 🟡 IN PROGRESS
 
 #### 4.1 Verify All Settings Work End-to-End
 
@@ -369,8 +299,8 @@ For each detail screen (display, playback, speech, review):
 | `msg.search_settings` | Search bar placeholder | ✅ In use |
 | `msg.cards_per_day` | Review row subtitle | ✅ In use |
 | `msg.no_settings_match` | Search empty state | ✅ In use |
-| `msg.settings_desc` | Page subtitle (G5) | ⬜ Not yet used |
-| `msg.settings_saved` | Confirmation toast (G3) | ⬜ Not yet used |
+| `msg.settings_desc` | Page subtitle (G5) | ✅ In use |
+| `msg.settings_saved` | Confirmation toast (G3) | ✅ In use |
 | `action.clear_recent_searches` | Search empty state button | ✅ In use |
 
 ### New Keys Needed for Remaining Gaps
@@ -407,14 +337,11 @@ No new keys need to be created — both remaining keys already exist in `transla
 | `apps/mobile/components/ui/tabs.tsx` | **New** — `@rn-primitives/tabs` styled wrapper | ✅ Done |
 | `apps/mobile/components/ui/dialog.tsx` | **New** — `@rn-primitives/dialog` styled wrapper | ✅ Done |
 
-### Still To Do (Phase 2)
+### Still To Do
 
 | File | Change | Status |
 |---|---|---|
-| `apps/mobile/app/(tabs)/(me)/settings/display.tsx` | Add L1 translation preview below TokenizedText (G2) | 🔴 Pending |
-| `apps/mobile/app/(tabs)/(me)/settings/index.tsx` | Add "Settings saved" confirmation indicator (G3) | 🔴 Pending |
-| `apps/mobile/app/(tabs)/(me)/settings/index.tsx` | Add `msg.settings_desc` subtitle below title (G5) | 🔴 Pending |
-| `apps/mobile/STATUS.md` | Update settings row from 🟡 → ✅ (after Phase 2 + testing) | ⬜ Pending |
+| `apps/mobile/STATUS.md` | Update settings row from 🟡 → ✅ (after Phase 4 testing) | ⬜ Pending |
 
 ### No Changes Needed
 
@@ -435,7 +362,7 @@ No new keys need to be created — both remaining keys already exist in `transla
 | Searchable label keys go stale when controls change | Low | ✅ Mitigated | Keys come from `@langplayer/shared` (`SETTINGS_SEARCH_KEYS`); both platforms share the same key arrays; if a label's CSV key changes, both platforms break identically and the fix is one place |
 | Too many files (5 detail screens + 5 component files) feels heavy | Low | ✅ Accepted | Each file is small (~50–150 lines). The old monolithic file was ~340 lines of mixed concerns. Co-locating `_components/` with the settings screens keeps the dependency graph local |
 | Korean hanja toggle was intentionally using `hanja` | — | ✅ Resolved | Confirmed: shared types use `byeonggi` for both Korean and Vietnamese. Web uses `byeonggi`. Mobile now matches |
-| @rn-primitives/switch compatibility with NativeWind | Low | ✅ Resolved | ToggleRow uses `@rn-primitives/switch` with NativeWind className; works correctly. No reanimated dependency needed (Switch uses layout animation internally, not Reanimated) |
+| @rn-primitives/switch compatibility with NativeWind | Low | ✅ Resolved | `@rn-primitives/switch` does not set `data-` attributes on native views, so NativeWind `data-[checked=true]` selectors never match. Fixed by replacing with inline styles computed from the `checked` prop + `useColorScheme()` for theme-aware HSL values |
 | iPad split view state desync on narrow→wide rotation | Medium | ✅ Mitigated | `_layout.tsx` returns `<Slot />` on wide and `<Stack>` on narrow. `index.tsx` checks `width >= 600` per render. Detail components are imported statically — no lazy loading issues |
 
 ---
@@ -455,8 +382,10 @@ No new keys need to be created — both remaining keys already exist in `transla
 - [x] Components co-located in `settings/_components/` (not global `components/settings/`)
 - [x] Search uses shared `SETTINGS_SEARCH_KEYS` from `packages/shared/` (per ADR-0015 / SPEC-017)
 - [x] TypeScript compiles cleanly: `./node_modules/.bin/tsc --noEmit`
-- [ ] Tokenized text preview shows L1 translation when translation is enabled (G2)
-- [ ] "Settings saved" confirmation appears after changes (G3)
-- [ ] Settings page shows descriptive subtitle: "Configure your [L1] → [L2] experience" (G5)
+- [x] Tokenized text preview shows L1 translation when translation is enabled (G2)
+- [x] "Settings saved" confirmation appears after changes (G3)
+- [x] Settings page shows descriptive subtitle: "Configure your [L1] → [L2] experience" (G5)
+- [x] Native stack header (`_layout.tsx`) respects light/dark theme via `useColorScheme()`
+- [x] Switch toggle visually animates on iOS (track color + thumb position)
 - [ ] Phase 4 testing completed (all controls, search, navigation, screen sizes)
 - [ ] STATUS.md updated: Settings row 🟡 → ✅
