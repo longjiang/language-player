@@ -52,7 +52,6 @@ export function DictionaryPopup({
   return (
     <Dialog.Root open={visible} onOpenChange={(v) => { if (!v) onClose(); }}>
       <Dialog.Portal>
-        <Dialog.Overlay closeOnPress />
         <Dialog.SheetContent>
           {/* Header */}
           <View className="mb-3 flex-row items-center justify-between">

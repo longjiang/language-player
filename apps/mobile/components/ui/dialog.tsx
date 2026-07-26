@@ -22,12 +22,20 @@ export function Trigger({ children, className, ...props }: TriggerProps) {
   );
 }
 
-// ── Portal ──
+// ── Portal (always includes an overlay unless opt-out) ──
 
-type PortalProps = DialogPrimitive.PortalProps;
+type PortalProps = DialogPrimitive.PortalProps & {
+  /** Set to false if the dialog provides its own overlay (e.g., HamburgerDrawer). */
+  overlay?: boolean;
+};
 
-export function Portal({ children, ...props }: PortalProps) {
-  return <DialogPrimitive.Portal {...props}>{children}</DialogPrimitive.Portal>;
+export function Portal({ children, overlay = true, ...props }: PortalProps) {
+  return (
+    <DialogPrimitive.Portal {...props}>
+      {overlay && <Overlay closeOnPress />}
+      {children}
+    </DialogPrimitive.Portal>
+  );
 }
 
 // ── Overlay (fade in on mount) ──
