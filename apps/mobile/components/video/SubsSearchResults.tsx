@@ -8,6 +8,7 @@ import { useVideos } from '@langplayer/api-client';
 import { parseSubsL2, findMatchLine } from '@langplayer/utils';
 import type { SubsSearchVideo, SubtitleLine } from '@langplayer/shared';
 import { YouTubePlayer, type YouTubePlayerHandle } from './YouTubePlayer';
+import { useDialogOpen } from '@/lib/animations';
 import { SubtitleDisplay } from './SubtitleDisplay';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { List, X, Play, Pause, SkipBack, SkipForward, ChevronUp, ChevronDown } from 'lucide-react-native';
@@ -44,7 +45,7 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [listOpen, setListOpen] = useState(false);
+  const [listOpen, setListOpen] = useDialogOpen();
 
   const currentVideo = videos[currentIndex] ?? null;
   const matchLine = currentVideo?.subs_l2[currentVideo.matchLineIndex] ?? null;
