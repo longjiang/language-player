@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, Pressable, TextInput, ScrollView } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
@@ -60,11 +61,17 @@ function LanguageOption({ code, onSelect }: { code: string; onSelect: (c: string
 
 export function LanguageSwitcher() {
   const { l1Lang, l2Lang, setL1Lang, setL2Lang, swapLanguages } = useLanguage();
+  const { isOfflineAvailable } = useDictionaryContext();
   const t = useT();
   const [open, setOpen] = useState<'l1' | 'l2' | null>(null);
   const [search, setSearch] = useState('');
+  const [hasOfflineDict, setHasOfflineDict] = useState(false);
 
   const canSwap = (SUPPORTED_L1S as readonly string[]).includes(l2Lang.code);
+
+  useEffect(() => {
+    isOfflineAvailable(l2Lang.code).then(setHasOfflineDict).catch(() => setHasOfflineDict(false));
+  }, [l2Lang.code]);
 
   const l1List = useLanguageList(SUPPORTED_L1S, open === 'l1' ? search : '');
   const l2List = useLanguageList(SUPPORTED_L2S, open === 'l2' ? search : '');
@@ -126,6 +133,10 @@ export function LanguageSwitcher() {
       >
         <Text className="text-xs font-bold text-accent" numberOfLines={1}>{getLanguageCode(l2Lang.code)}</Text>
       </Pressable>
+
+      {hasOfflineDict && (
+        <View className="w-1.5 h-1.5 rounded-full bg-green-500 -ml-0.5" />
+      )}
 
       {open && (
         <>
