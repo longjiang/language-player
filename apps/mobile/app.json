@@ -36,7 +36,9 @@
       "expo-localization",
       "expo-video",
       "expo-sharing",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-splash-screen",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

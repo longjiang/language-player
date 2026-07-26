@@ -9,7 +9,6 @@ import {
   FileText, BookMarked, Bookmark, RotateCcw, Globe, BookOpen,
 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { drawerEnter, drawerExit } from '@/lib/animations';
 
 const ICON_COLOR = ICON_MUTED;
 
