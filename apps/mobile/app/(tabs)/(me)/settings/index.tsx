@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Monitor, Play, Volume2, RotateCcw, Download, ChevronRight } from 'lucide-react-native';
@@ -41,9 +41,28 @@ function SettingsList({
 }) {
   const t = useT();
   const { display, playback, review, getL2, loaded } = useSettingsContext();
-  const { l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const [query, setQuery] = useState('');
   const [localizedLabels, setLocalizedLabels] = useState<Record<string, string[]>>({});
+
+  // G3: Debounced "Settings saved" confirmation
+  const [savedVisible, setSavedVisible] = useState(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      setSavedVisible(true);
+      setTimeout(() => setSavedVisible(false), 2000);
+    }, 1200);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [display, playback, review]);
 
   // Pre-resolve search keys on locale change
   useEffect(() => {
@@ -147,9 +166,22 @@ function SettingsList({
   return (
     <View className="flex-1 bg-background">
       {/* Header */}
-      <Text className="text-3xl font-bold text-foreground px-4 pt-6 pb-3">
+      <Text className="text-3xl font-bold text-foreground px-4 pt-6 pb-1">
         {t('title.settings')}
       </Text>
+      {/* G5: Descriptive subtitle */}
+      <Text className="text-sm text-muted-foreground px-4 pb-3">
+        {t('msg.settings_desc', { l1: l1Lang.name, l2: l2Lang.name })}
+      </Text>
+
+      {/* G3: Saved confirmation badge */}
+      {savedVisible && (
+        <View className="absolute top-4 right-4 bg-primary/90 px-3 py-1.5 rounded-full z-10">
+          <Text className="text-xs font-medium text-primary-foreground">
+            ✓ {t('msg.settings_saved')}
+          </Text>
+        </View>
+      )}
 
       {/* Search bar */}
       <View className="px-4 pb-3">
