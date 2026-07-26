@@ -12,7 +12,7 @@
   - [Web settings page](../../apps/web/src/app/[l1]/[l2]/settings/page.tsx) — reference implementation
   - [Mobile settings screen](../../apps/mobile/app/(tabs)/(me)/settings.tsx) — current implementation
   - [Mobile TabbedPanel](../../apps/mobile/components/TabbedPanel.tsx) — shared tab component
-  - [ADR-0011: Settings Search i18n](../../docs/adr/0011-settings-search-i18n.md) — locale-agnostic search index design
+  - [ADR-0015: Mobile Settings Architecture](../adr/0015-settings-architecture.md) — layout, navigation & search design
 ---
 
 ## Overview
@@ -347,7 +347,7 @@ The search bar filters rows by three tiers:
 
 1. **Title match** — row title contains query (case-insensitive). Already localized via `t()`.
 2. **Subtitle match** — subtitle text contains query. Already localized.
-3. **Control label match** — per [ADR-0011](../../docs/adr/0011-settings-search-i18n.md), searchable control labels are stored as **i18n translation keys** (not hardcoded English strings). Keys are pre-resolved once on locale change and cached, so search works in all 31 locales without per-locale maintenance.
+3. **Control label match** — per [ADR-0015](../../docs/adr/0015-settings-architecture.md), searchable control labels are stored as **i18n translation keys** (not hardcoded English strings). Keys are pre-resolved once on locale change and cached, so search works in all 31 locales without per-locale maintenance.
 
 ```tsx
 const [query, setQuery] = useState('');
@@ -709,7 +709,7 @@ export default function SettingsIndexScreen() {
     },
   ];
 
-  // Pre-resolve search labels once on locale change (see ADR-0011)
+  // Pre-resolve search labels once on locale change (see ADR-0015)
   const [localizedLabels, setLocalizedLabels] = useState<Record<string, string[]>>({});
   useEffect(() => {
     const result: Record<string, string[]> = {};
@@ -953,7 +953,7 @@ No changes needed to:
 |---|---|---|
 | `translateText` not available on mobile | Medium | Use direct `fetch()` to Python `/translate` endpoint instead |
 | expo-router file-based routing conflicts with old `settings.tsx` | Medium | Delete old file before creating `settings/` directory. `_layout.tsx` in the directory handles the Stack. |
-| Searchable label keys go stale when controls change | Low | Keys are colocated with row definitions in `index.tsx`. If a control label's CSV key changes, the key array must be updated — but this is the same key the UI uses, so breakage is visible immediately. See ADR-0011. |
+| Searchable label keys go stale when controls change | Low | Keys are colocated with row definitions in `index.tsx`. If a control label's CSV key changes, the key array must be updated — but this is the same key the UI uses, so breakage is visible immediately. See ADR-0015. |
 | Too many files (5 detail screens + 4 component files) feels heavy | Low | Each file is small (~50–150 lines). The old monolithic file was ~340 lines of mixed concerns. This is cleaner — one purpose per file. |
 | Korean hanja toggle was intentionally using `hanja` for some reason | Low | The shared types use `byeonggi` for both Korean and Vietnamese. Web uses `byeonggi`. The mobile `hanja` was likely a porting mistake from the GO legacy app. |
 
