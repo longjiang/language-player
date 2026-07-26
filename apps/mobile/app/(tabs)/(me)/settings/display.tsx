@@ -51,7 +51,7 @@ export function DisplaySettings() {
     })
       .then((r) => r.json())
       .then((data) => {
-        if (!cancelled) setPreviewTranslation(data.translation ?? '');
+        if (!cancelled) setPreviewTranslation(data.translated_text ?? '');
       })
       .catch(() => {});
     return () => {
