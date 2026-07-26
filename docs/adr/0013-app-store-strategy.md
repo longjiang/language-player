@@ -1,7 +1,7 @@
 # ADR-0013: App Store Strategy & Product Naming
 
 **Date**: 2026-07-25
-**Status**: draft
+**Status**: accepted
 
 ## Context
 
@@ -37,6 +37,12 @@ The new React Native/Expo app at `apps/mobile/` (Expo SDK 57) is now the active 
 - Feature parity with `apps/web`
 - Offline tokenization for most supported L2s
 - Offline dictionary downloads for English L1
+
+---
+
+## Decision
+
+**Option B** is selected: remove the GO app from the store, replace the Nuxt app's binary with the new `apps/mobile` build under the existing bundle ID `ca.zerotohero.app`, and rename the listing to "Language Player 3". See the full evaluation below.
 
 ---
 
@@ -119,7 +125,7 @@ Create a brand-new app listing with a distinct name (not "Language Player X") an
 | Ratings/reviews preserved | 🟢 All | 🟡 Half | 🔴 None |
 | User trust (fresh start) | 🟡 OK | 🟡 OK | 🟢 Clean |
 
-**Option B** appears to be the strongest: replace the Nuxt app binary with the new `apps/mobile` build under the existing bundle ID and rename to "Language Player 3". This:
+**Option B** is selected: replace the Nuxt app binary with the new `apps/mobile` build under the existing bundle ID and rename to "Language Player 3". This:
 
 1. Preserves the existing IAP product and bundle ID — users who purchased get restoration
 2. Keeps a single app on the store — no confusion
