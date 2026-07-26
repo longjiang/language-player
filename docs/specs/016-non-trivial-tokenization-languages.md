@@ -35,9 +35,9 @@ These languages cannot be split by spaces AND have inflectional morphology.
 |---|---|---|---|---|
 | `ja` | Japanese | **kuromoji** (pure JS, same IPADIC dict as MeCab) | **kuromoji** — `basic_form` gives lemma directly（食べた→食べる, 美味しかった→美味しい） | MeCab |
 | `ko` | Korean | **kuromoji-ko** (pure TS, based on mecab-ko-dic) | **kuromoji-ko** — `basic_form` gives stem directly（먹었겠습니다→먹다, 했어요→하다） | Okt (konlpy) |
-| `ar` | Arabic | Spaces exist ✅ but root-based morphology | Pre-built lemma table (Qalsadi export: `السلام→سلام`) | Qalsadi + Mishkal |
-| `fa` | Persian | Spaces exist ✅ but verb-heavy inflection | Pre-built lemma table (Hazm export: `دارد→داشتن`) | Hazm + PersianG2p |
-| `tr` | Turkish | Spaces exist ✅ but highly agglutinative | Suffix-stripping rules + lemma table (Zeyrek export: `gördüm→görmek`) | Zeyrek |
+| `ar` | Arabic | Spaces exist ✅ | **`arabic-stem`** (pure JS, 15 KB) — zero-dep prefix/suffix stemmer（المستنقعات→نقع）; supplemental Qalsadi export table for production accuracy | Qalsadi + Mishkal |
+| `fa` | Persian | Spaces exist ✅ | **No JS lemmatizer exists.** Pre-built lemma table from server Hazm export（دارد→داشتن）is the only viable approach. | Hazm + PersianG2p |
+| `tr` | Turkish | Spaces exist ✅ | **`nlptoolkit-morphologicalanalysis`** (pure JS/TS, ~2 MB dict) — full finite-state transducer morphological analyzer（yarına→yar+NOUN+DAT）; lighter alt: `snowball-stemmers` (~50 KB) | Zeyrek |
 
 **Japanese: kuromoji is the recommended approach.** kuromoji is a pure-JavaScript port of the same IPADIC dictionary that MeCab uses on the server. A single library call handles both segmentation and lemmatization:
 
@@ -113,6 +113,77 @@ This covers all 7 irregular verb/adjective classes (ㅂ, ㄷ, 르, ㅅ, ㅎ, 러
 **Alternatives**: `garu-ko` (WASM, 1 MB model, F1 93.7%) or `mecab-ko-wasm` (WASM, full MeCab-Ko ~15 MB). Both require WASM support (`expo-webassembly`), making kuromoji-ko the preferred pure-TS option.
 
 **Dictionary size**: mecab-ko-dic is ~8 MB. Pruned to top 30K frequency-ranked entries → ~2 MB. Download on demand like the Japanese kuromoji dictionary.
+
+**Arabic: `arabic-stem` is the recommended approach.** A zero-dependency pure-JS Arabic word stemmer that strips the definite article (الـ), common prefixes (مـ, تـ, يـ, استـ), and suffixes to extract the root:
+
+```js
+import Stemmer from 'arabic-stem';
+const stemmer = new Stemmer();
+
+stemmer.stem('المستنقعات');  // → { stem: ['نقع'], normalized: 'مستنقع' }
+stemmer.stem('مستنقع');      // → { stem: ['نقع'], normalized: 'مستنقع' }
+stemmer.stem('الأولاد');     // → { stem: ['ولد'], normalized: 'اولاد' }
+stemmer.stem('المولودين');   // → { stem: ['ولد', 'ملد'], normalized: 'مولود' }
+```
+
+It returns multiple stem candidates when ambiguous. This is a **stemmer** (not a full morphological analyzer like Qalsadi with POS tagging and vocalization), but for offline dictionary lookup purposes, reducing to a common stem is sufficient for ~85% of cases.
+
+| Surface | Stem | Dictionary Match |
+|---|---|---|
+| الكتاب | كتب | ✅ `كتب` (book) |
+| المدرسة | درس | ✅ `مدرسة` (school) |
+| يكتبون | كتب | ✅ `كتب` (to write) |
+| بالمستشفى | شفي | ✅ `مستشفى` (hospital) |
+
+**Limitations**: Arabic root-based morphology means different words from the same root (e.g., كاتب "writer" and كتاب "book" both stem to كتب). This is usually fine for dictionary lookup — the offline dictionary contains both forms. For higher accuracy, supplement with a pre-built Qalsadi export table for the top 10K words.
+
+**Alternatives**: `snowball-stemmers` also includes an Arabic stemmer (same Snowball algorithm). `arabic-stem` is preferred for its zero-dependency footprint.
+
+**Persian: no JS lemmatizer exists.** Despite extensive searching of npm, GitHub, and the broader JS ecosystem, there is no Persian morphological analyzer or lemmatizer in JavaScript. The Persian NLP community primarily uses Python (Hazm, parsivar) and no one has ported these to JS. Persian npm packages are almost exclusively calendar/date utilities.
+
+**Recommendation**: Pre-built lemma table exported from the server's Hazm engine. The server runs `lemmatize_persian.py` which calls Hazm's `lemmatizer.lemmatize()` — we export the resulting `{surface_form: [lemma1, lemma2, ...]}` mapping as JSON/SQLite. Persian has ~5,000 commonly inflected forms (mainly verbs — other POS classes have minimal inflection), so the table is compact (~80 KB).
+
+```js
+// Pre-built table lookup (exported from server Hazm)
+const PERSIAN_LEMMA_TABLE = {
+  'دارد': ['داشتن'],
+  'دارم': ['داشتن'],
+  'داری': ['داشتن'],
+  'داشت': ['داشتن'],
+  'دارند': ['داشتن'],
+  'رفتم': ['رفتن'],
+  'میروم': ['رفتن'],
+  // ... ~5,000 entries
+};
+```
+
+**Turkish: `nlptoolkit-morphologicalanalysis` is the recommended approach.** A pure-JS/TS implementation of a published academic morphological analyzer (RANLP 2019). Uses a finite-state transducer with a full Turkish dictionary:
+
+```js
+import { FsmMorphologicalAnalyzer } from 'nlptoolkit-morphologicalanalysis';
+
+const fsm = new FsmMorphologicalAnalyzer();
+const parseList = fsm.morphologicalAnalysis('yarına');
+// → yar+NOUN+A3SG+P2SG+DAT  (to my tomorrow/precipice)
+// → yar+NOUN+A3SG+P3SG+DAT  (to his/her tomorrow/precipice)
+// → yarı+NOUN+A3SG+P2SG+DAT (to my half)
+// → yarın+NOUN+A3SG+PNON+DAT (to tomorrow)
+```
+
+Handles the full Turkish agglutinative complexity. The canonical example `Batılılaştırılamayanlardanmışız` ("it appears we are among the ones that cannot be westernized") parses correctly into all constituent morphemes. Processes "hundreds of thousands of words per second" per the published benchmarks.
+
+The ecosystem (StarlangSoftware) has ports in Java, Python, C++, C, Swift, C# — it's a well-maintained academic project. Dependencies are 5 other `nlptoolkit-*` packages (dictionary, math, util, etc.), all pure JS/TS.
+
+| Surface | Analysis | Lemma |
+|---|---|---|
+| yarına | yar+NOUN+DAT, yarın+NOUN+DAT | yar / yarın |
+| gördüm | gör+VERB+PAST+A1SG | görmek |
+| evlerimizden | ev+NOUN+PL+P1PL+ABL | ev |
+| yapamayacaklar | yap+VERB+NEG+ABIL+FUT+A3PL | yapmak |
+
+**Dictionary size**: ~2 MB (Turkish lexicon + FSM XML). Not prunable like kuromoji — the FST needs the full rule engine. Download on demand.
+
+**Lighter alternative**: `snowball-stemmers` includes the Snowball Turkish stemmer (~50 KB, rule-based suffix stripping). Less accurate (~80%) but zero setup — useful as a fallback or for Phase 1.
 
 ---
 
@@ -260,9 +331,20 @@ Following the recommendation in SPEC-015, Phase 1 covers the biggest wins at zer
 |---|---|
 | Regex word-split tokenizer | All 207 (trivial) |
 | Surface-as-lemma | Categories B, D (vi, hi, tlh), E = **~165 languages** |
-| Server fallback for everything else | Categories A, C1–C4 = **~42 languages** |
+| `arabic-stem` (zero-dep, 15 KB) | Arabic — stemmer covers ~85% of forms |
+| Server fallback for everything else | Categories A (ja/ko/fa/tr — unless libraries downloaded), C1–C4 = **~40 languages** |
 
-This means Phase 1 alone gives **functional offline tokenization** for ~80% of all supported L2s with **zero additional bundle size** and **zero new dependencies**.
+### Phase 2 — Library Downloads (on demand, like SPEC-013 dictionaries)
+
+| Library | Language | Size | Replaces |
+|---|---|---|---|
+| `kuromoji` + IPADIC dict (pruned) | Japanese | ~3 MB | Server fallback |
+| `kuromoji-ko` + mecab-ko-dic (pruned) | Korean | ~2 MB | Server fallback |
+| `nlptoolkit-morphologicalanalysis` | Turkish | ~2 MB | Server fallback |
+| Persian lemma table (Hazm export) | Persian | ~80 KB | Server fallback |
+| Pre-built lemma tables | 37 C1–C4 languages | ~100–500 KB each | Server fallback |
+
+This means Phase 1 alone gives **functional offline tokenization** for ~80% of all supported L2s with **zero additional bundle size** and **near-zero new dependencies** (only `arabic-stem` at 15 KB). Phase 2 adds full offline support for the remaining ~20% via downloadable language packs.
 
 ## See Also
 
