@@ -52,7 +52,7 @@ export function OfflineBanner() {
             {t('title.offline_dictionaries')}
           </Text>
           <Text className="mt-0.5 text-xs text-muted-foreground">
-            Download dictionaries to look up words without an internet connection.
+            {t('msg.offline_dictionaries_desc')}
           </Text>
           <Pressable
             onPress={() => router.push('/(tabs)/(me)/offline-dictionaries' as any)}
