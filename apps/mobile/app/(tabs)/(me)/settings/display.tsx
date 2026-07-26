@@ -1,17 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { getSampleSentence } from '@langplayer/shared';
 import { TokenizedText } from '@/components/TokenizedText';
+import { PYTHON_API_URL } from '@/lib/api-url';
 import { SectionHeader } from './_components/SectionHeader';
 import { ToggleRow } from './_components/ToggleRow';
 import { SliderRow } from './_components/SliderRow';
 import { SegmentedRow } from './_components/SegmentedRow';
 
 export function DisplaySettings() {
-  const { l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const {
     tokenizedText,
     updateTokenizedText,
@@ -34,6 +35,29 @@ export function DisplaySettings() {
   const isChinese = l2Lang.code === 'zh';
   const isKorean = l2Lang.code === 'ko';
   const isVietnamese = l2Lang.code === 'vi';
+
+  // G2: Fetch L1 translation of the sample sentence when translation is enabled
+  const [previewTranslation, setPreviewTranslation] = useState('');
+  useEffect(() => {
+    if (!previewText || !display.translation || !popupEnabled) {
+      setPreviewTranslation('');
+      return;
+    }
+    let cancelled = false;
+    fetch(`${PYTHON_API_URL}/translate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: previewText, l1: l1Lang.code, l2: l2Lang.code }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled) setPreviewTranslation(data.translation ?? '');
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [previewText, l1Lang.code, l2Lang.code, display.translation, popupEnabled]);
 
   if (!loaded) return null;
 
@@ -76,6 +100,11 @@ export function DisplaySettings() {
             <SectionHeader title={t('label.tokenized_text_preview')} />
             <View className="rounded-lg border border-border bg-muted p-3">
               <TokenizedText text={previewText} l2Code={l2Lang.code} />
+              {previewTranslation ? (
+                <Text className="pt-1 text-sm text-muted-foreground leading-relaxed">
+                  {previewTranslation}
+                </Text>
+              ) : null}
             </View>
           </View>
         )}
