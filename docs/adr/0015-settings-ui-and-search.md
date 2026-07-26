@@ -21,7 +21,7 @@ We need to:
 3. Plan for future settings categories without layout breakage
 4. Keep web and mobile on the same architecture to reduce maintenance drift
 
-This ADR covers three interdependent architectural decisions that apply to **both platforms**: **layout pattern**, **wide-screen adaptation**, and **search design**.
+This ADR covers two interdependent architectural decisions that apply to **both platforms**: **layout pattern** and **search design**.
 
 ### Current State
 
@@ -131,13 +131,11 @@ Both platforms extract the same sub-components from their old monolithic files. 
 | `SectionHeader` | `<h3>` with border | `<Text>` with border |
 | `SearchBar` | `<input type="search">` | `<TextInput>` |
 
----
+### Wide-Screen Adaptation
 
-## Decision 2: Wide-Screen Adaptation (Platform-Specific)
+The same list→detail pattern adapts to wider screens by replacing stack navigation with a persistent sidebar. The detail screens themselves are unchanged — only the layout wrapper differs.
 
-### Web — Two-Column Layout (Immediate)
-
-On viewports ≥ 768px, the root list renders as a persistent sidebar (~240px) with the selected detail in the main area. This is achievable with CSS Grid via a Next.js layout — no JavaScript breakpoint needed:
+**Web — two-column layout (immediate):** On viewports ≥ 768px, render the root list as a sidebar (~240px) with the selected detail in the main area via CSS Grid in a Next.js layout:
 
 ```tsx
 // settings/layout.tsx (web)
@@ -153,36 +151,27 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 }
 ```
 
-**Priority**: Immediate — easy to implement as part of the web migration since Next.js layouts wrap all nested routes automatically. No component changes needed; detail pages render as `children`.
+No JavaScript breakpoint needed — pure CSS. Next.js layouts automatically wrap all nested routes, so detail pages render as `children` with no component changes.
 
-### Mobile — iPad Split View (Deferred)
-
-On screens ≥ 600pt, render a two-column layout using `useWindowDimensions()`. Detail screens are conditionally rendered (not stack-navigated):
+**Mobile — iPad split view (deferred):** On screens ≥ 600pt, conditionally render side-by-side instead of using the Stack navigator:
 
 ```tsx
 const { width } = useWindowDimensions();
 if (width >= 600) {
   return (
     <View className="flex-row flex-1">
-      <View className="w-64 border-r border-border">
-        <SettingsList />
-      </View>
-      <View className="flex-1">
-        {selectedKey === 'display' && <DisplaySettings />}
-      </View>
+      <View className="w-64 border-r border-border"><SettingsList /></View>
+      <View className="flex-1">{selectedKey === 'display' && <DisplaySettings />}</View>
     </View>
   );
 }
 return <Stack />;
 ```
 
-**Key design constraint**: Detail screens must NOT depend on navigation state. They receive settings via `useSettingsContext()` (global) — no prop drilling. The same `<DisplaySettings />` works in stack navigation (phone) and conditional rendering (iPad) without changes.
+**Key constraint**: Detail screens receive settings via `useSettingsContext()` (global) — no prop drilling. The same `<DisplaySettings />` works in stack navigation (phone) and conditional rendering (iPad/wide web) without changes. Split view is a pure layout wrapper.
 
-**Priority**: Deferred. Phone UX is the Phase 7 priority. Split view is a pure layout wrapper — zero changes to detail screens.
 
----
-
-## Decision 3: Search — Locale-Agnostic via i18n Key Arrays (Both Platforms)
+## Decision 2: Search — Locale-Agnostic via i18n Key Arrays (Both Platforms)
 
 ### The Problem
 
