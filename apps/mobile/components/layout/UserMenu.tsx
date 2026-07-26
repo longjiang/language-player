@@ -37,7 +37,7 @@ export function UserMenu() {
         <Dialog.Overlay closeOnPress />
         {/* Dropdown positioned below header, right-aligned */}
         <View
-          className="absolute right-2 w-56 rounded-xl border border-border bg-card shadow-lg p-1 z-50"
+          className="absolute right-2 min-w-56 rounded-xl border border-border bg-card shadow-lg p-1 z-50"
           style={{ top: insets.top + 52 }}
         >
           {user ? (
