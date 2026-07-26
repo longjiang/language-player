@@ -36,6 +36,9 @@ export async function openDictionaryDB(): Promise<SQLite.SQLiteDatabase> {
   _dbPromise = (async () => {
     _db = await SQLite.openDatabaseAsync(DB_NAME);
 
+    // Enable WAL mode for better concurrent read/write performance
+    await _db.execAsync('PRAGMA journal_mode=WAL');
+
     // ── Shared tables (created once) ──
     await _db.execAsync(`
       CREATE TABLE IF NOT EXISTS llm_cache (
@@ -197,12 +200,14 @@ export async function bulkInsertEntries(
 
   console.log('[DictDB] bulkInsertEntries — l2:', l2, 'entries:', entries.length, 'chunks:', totalChunks);
 
-  // Log WAL size before insert — if log > 0, checkpoint didn't flush
+  // Log WAL/journal status before insert
   try {
-    const wal = await db.getFirstAsync<{ busy: number; log: number; checkpointed: number }>(
+    const jm = await db.getFirstAsync<{ journal_mode: string }>('PRAGMA journal_mode');
+    const wc = await db.getFirstAsync<{ busy: number; log: number; checkpointed: number }>(
       'PRAGMA wal_checkpoint'
     );
-    console.log('[DictDB] 📊 WAL before insert — log pages:', wal?.log ?? '?', 'checkpointed:', wal?.checkpointed ?? '?');
+    console.log('[DictDB] 📊 journal:', jm?.journal_mode ?? '?',
+      'WAL pages — log:', wc?.log ?? '?', 'checkpointed:', wc?.checkpointed ?? '?');
   } catch {}
 
   for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
