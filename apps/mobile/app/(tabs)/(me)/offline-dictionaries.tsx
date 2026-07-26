@@ -172,8 +172,9 @@ export default function OfflineDictionariesScreen() {
       // Move from available → downloaded immediately on success
       setDownloaded((prev) => new Set(prev).add(l2));
       console.log('[OfflineDict] ✅ handleDownload finished + moved to downloaded — l2:', l2);
-    } catch {
-      console.log('[OfflineDict] ❌ handleDownload failed — l2:', l2);
+    } catch (e: any) {
+      const wasCancelled = e?.message === 'Download cancelled';
+      console.log('[OfflineDict]', wasCancelled ? '🛑 cancelled' : '❌ failed', '— l2:', l2, wasCancelled ? '' : `error: ${e?.message ?? e}`);
     } finally {
       downloadingRef.current.delete(l2);
       setTick((t) => t + 1);
