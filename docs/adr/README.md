@@ -26,3 +26,6 @@ NNNN-title-with-dashes.md
 | 0009 | GO app i18n migration to react-intl | proposed | 2026-07-21 |
 | 0010 | Port Next.js web app to React Native — fresh start | proposed | 2026-07-22 |
 | 0011 | Shared design tokens — CSS variables (web) + StyleSheet values (mobile) | proposed | 2026-07-22 |
+| 0012 | Custom EPUB parser for mobile | proposed | 2026-07-24 |
+| 0013 | App Store strategy | proposed | 2026-07-25 |
+| 0014 | Use @rn-primitives for mobile interaction primitives | proposed | 2026-07-25 |
