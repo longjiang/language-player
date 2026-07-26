@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, Switch } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -8,7 +9,7 @@ import { getSampleSentence } from '@langplayer/shared';
 import { VoicePicker } from '@/components/VoicePicker';
 import { TokenizedText } from '@/components/TokenizedText';
 import { Download } from 'lucide-react-native';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
 // ── Reusable sub-components ──────────────────
 
@@ -67,44 +68,58 @@ function ToggleRow({ label, desc, value, onValueChange }: ToggleProps) {
   );
 }
 
-function StepperRow({
+function SliderRow({
   label,
   desc,
   value,
   min,
   max,
-  onIncrement,
-  onDecrement,
+  step = 1,
+  onValueChange,
+  valueDisplay,
+  leftLabel,
+  rightLabel,
+  centerLabel,
 }: {
   label: string;
   desc?: string;
   value: number;
   min: number;
   max: number;
-  onIncrement: () => void;
-  onDecrement: () => void;
+  step?: number;
+  onValueChange: (v: number) => void;
+  valueDisplay?: string;
+  leftLabel?: string;
+  rightLabel?: string;
+  centerLabel?: string;
 }) {
   return (
-    <View className="flex-row items-center justify-between py-2.5">
-      <View className="flex-1">
+    <View className="py-2.5">
+      <View className="flex-row items-center justify-between mb-2">
         <Text className="text-sm font-medium text-foreground">{label}</Text>
-        {desc && <Text className="text-xs text-muted-foreground mt-0.5">{desc}</Text>}
+        <Text className="text-base font-semibold text-foreground tabular-nums">
+          {valueDisplay ?? value}
+        </Text>
       </View>
-      <Pressable
-        onPress={onDecrement}
-        disabled={value <= min}
-        className="w-8 h-8 rounded-full bg-muted items-center justify-center"
-      >
-        <Text className={`text-lg ${value <= min ? 'text-muted-foreground/40' : 'text-foreground'}`}>−</Text>
-      </Pressable>
-      <Text className="w-10 text-center text-base font-semibold text-foreground">{value}</Text>
-      <Pressable
-        onPress={onIncrement}
-        disabled={value >= max}
-        className="w-8 h-8 rounded-full bg-muted items-center justify-center"
-      >
-        <Text className={`text-lg ${value >= max ? 'text-muted-foreground/40' : 'text-foreground'}`}>+</Text>
-      </Pressable>
+      {desc ? <Text className="text-xs text-muted-foreground mb-2">{desc}</Text> : null}
+      <Slider
+        style={{ width: '100%', height: 40 }}
+        minimumValue={min}
+        maximumValue={max}
+        step={step}
+        value={value}
+        onValueChange={onValueChange}
+        minimumTrackTintColor={ICON_PRIMARY}
+        maximumTrackTintColor={ICON_MUTED}
+        thumbTintColor={ICON_PRIMARY}
+      />
+      <View className="flex-row justify-between -mt-1">
+        <Text className="text-xs text-muted-foreground">{leftLabel ?? String(min)}</Text>
+        {centerLabel ? (
+          <Text className="text-xs text-muted-foreground">{centerLabel}</Text>
+        ) : null}
+        <Text className="text-xs text-muted-foreground">{rightLabel ?? String(max)}</Text>
+      </View>
     </View>
   );
 }
@@ -196,13 +211,16 @@ export default function SettingsScreen() {
                   onChange={(v) => updateTokenizedText({ typeFace: v })}
                   renderLabel={(v) => t(`setting.font_${v === 'default' ? 'default' : v === 'serif' ? 'serif' : 'sans_serif'}`)}
                 />
-                <StepperRow
+                <SliderRow
                   label={t('label.text_size')}
                   value={tokenizedText.zoom}
                   min={0}
                   max={7}
-                  onDecrement={() => updateTokenizedText({ zoom: Math.max(0, tokenizedText.zoom - 1) })}
-                  onIncrement={() => updateTokenizedText({ zoom: Math.min(7, tokenizedText.zoom + 1) })}
+                  onValueChange={(v) => updateTokenizedText({ zoom: v })}
+                  valueDisplay={`${Math.round(([1, 1.125, 1.25, 1.375, 1.5, 1.75, 2, 2.25] as const)[tokenizedText.zoom] * 16)}px`}
+                  leftLabel={t('setting.smaller')}
+                  rightLabel={t('setting.bigger')}
+                  centerLabel={`${Math.round(1 * 16)}–${Math.round(2.25 * 16)}px`}
                 />
               </View>
 
@@ -258,8 +276,8 @@ export default function SettingsScreen() {
                     </View>
                   </>
                 )}
-                {isKorean && <ToggleRow label={t('label.show_hanja')} value={(l2Settings.display as any).hanja !== false} onValueChange={(v) => updateL2(l2Lang.code, { display: { ...l2Settings.display, hanja: v } } as any)} />}
-                {isVietnamese && <ToggleRow label={t('label.show_hantu')} value={(l2Settings.display as any).byeonggi !== false} onValueChange={(v) => updateL2(l2Lang.code, { display: { ...l2Settings.display, byeonggi: v } } as any)} />}
+                {isKorean && <ToggleRow label={t('label.show_hanja')} value={l2Settings.display.byeonggi !== false} onValueChange={(v) => updateL2(l2Lang.code, { display: { ...l2Settings.display, byeonggi: v } })} />}
+                {isVietnamese && <ToggleRow label={t('label.show_hantu')} value={l2Settings.display.byeonggi !== false} onValueChange={(v) => updateL2(l2Lang.code, { display: { ...l2Settings.display, byeonggi: v } })} />}
               </View>
 
               <View className="mb-5 px-4">
@@ -303,17 +321,18 @@ export default function SettingsScreen() {
         </View>
       )}
 
-      {/* ── Review tab ── */}
       {tab === 'review' && (
         <View className="px-4">
-          <StepperRow
+          <SliderRow
             label={t('label.new_cards_per_day')}
             desc={t('msg.new_cards_per_day_desc')}
             value={review.dailyNewLimit}
             min={1}
             max={50}
-            onDecrement={() => updateReview({ dailyNewLimit: Math.max(1, review.dailyNewLimit - 1) })}
-            onIncrement={() => updateReview({ dailyNewLimit: Math.min(50, review.dailyNewLimit + 1) })}
+            onValueChange={(v) => updateReview({ dailyNewLimit: v })}
+            leftLabel="1"
+            centerLabel={t('msg.default_value', { n: 20 })}
+            rightLabel="50"
           />
         </View>
       )}
