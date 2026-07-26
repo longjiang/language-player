@@ -197,10 +197,12 @@ export async function bulkInsertEntries(
 
   console.log('[DictDB] bulkInsertEntries — l2:', l2, 'entries:', entries.length, 'chunks:', totalChunks);
 
-  // Log WAL size before insert — if pages > 0, checkpoint didn't run
+  // Log WAL size before insert — if log > 0, checkpoint didn't flush
   try {
-    const wal = await db.getFirstAsync<{ page_count: number }>('PRAGMA wal_checkpoint');
-    console.log('[DictDB] 📊 WAL before insert — checkpoint pages:', wal?.page_count ?? '?');
+    const wal = await db.getFirstAsync<{ busy: number; log: number; checkpointed: number }>(
+      'PRAGMA wal_checkpoint'
+    );
+    console.log('[DictDB] 📊 WAL before insert — log pages:', wal?.log ?? '?', 'checkpointed:', wal?.checkpointed ?? '?');
   } catch {}
 
   for (let i = 0; i < entries.length; i += CHUNK_SIZE) {

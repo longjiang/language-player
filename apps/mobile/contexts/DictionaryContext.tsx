@@ -304,7 +304,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         console.log('[DictContext] 🛑 Cancelled before insert — l2:', l2);
         stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
         setDownloadStatesVersion((v) => v + 1);
-        return;
+        throw new Error('Download cancelled');
       }
 
       console.log('[DictContext] 💾 bulkInsertEntries starting — l2:', l2, 'count:', entries.length);
@@ -331,7 +331,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         await deleteDictDB(db, l2);
         stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
         setDownloadStatesVersion((v) => v + 1);
-        return;
+        throw new Error('Download cancelled');
       }
 
       // Save metadata
