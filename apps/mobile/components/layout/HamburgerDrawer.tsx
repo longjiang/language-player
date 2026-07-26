@@ -103,7 +103,7 @@ export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawer
 
   return (
     <Dialog.Root open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <Dialog.Portal>
+      <Dialog.Portal forceMount>
         {/* Overlay — fades in/out, covers full screen */}
         <Animated.View
           className="absolute inset-0 z-40"

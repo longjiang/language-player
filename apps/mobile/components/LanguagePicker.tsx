@@ -74,6 +74,8 @@ export function LanguagePicker({
     supportedL1s: SUPPORTED_L1S,
     supportedL2s: SUPPORTED_L2S,
     popularLanguages: POPULAR_LANGUAGES,
+    popularTitle: t('msg.popular_languages'),
+    allTitle: t('msg.all_languages'),
   });
 
   // Sync useTraditional from SettingsContext on mount or when L2 changes to zh

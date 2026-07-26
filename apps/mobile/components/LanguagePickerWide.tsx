@@ -89,6 +89,7 @@ function LanguagePanel({
       <FlatList
         data={allItems}
         keyExtractor={(item) => item}
+        className="h-80"
         renderItem={({ item }) => {
           const isSelected = item === selectedCode;
           const isL1 = accentColor === 'primary';
