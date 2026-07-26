@@ -185,6 +185,7 @@ Per ADR-0014, adopt `@rn-primitives` headless primitives wrapped with NativeWind
 ```bash
 cd apps/mobile
 npx expo install @rn-primitives/dialog @rn-primitives/select @rn-primitives/switch @rn-primitives/tabs
+npx expo install react-native-reanimated  # promote to direct dependency (currently transitive via Expo)
 ```
 
 Create shared animation presets:
@@ -237,9 +238,13 @@ function DialogContent({ children, className, ...props }: DialogPrimitive.Conten
 - `apps/mobile/components/layout/UserMenu.tsx` — inline dropdown → `<Dialog>...`
 - `apps/mobile/components/video/SubsSearchResults.tsx` — raw `Modal` → `<Dialog>...`
 
-#### 2.2 Select (settings dropdowns, future voice picker)
+**Accessibility verification** (after LanguageSwitcher migration): Verify with VoiceOver (iOS) and TalkBack (Android) that focus is trapped inside the dialog and the backdrop dismiss gesture works. React Native's accessibility model differs materially from web ARIA.
+
+#### 2.2 Select (settings dropdowns)
 
 **Component**: Settings dropdowns that currently use inline `Pressable` lists
+
+**Validation checkpoint**: Before committing to `@rn-primitives/select`, verify it can handle the LanguageSwitcher's full UX: text input for search, `ScrollView` with `keyboardShouldPersistTaps="handled"`, and popular/all categorized sections. If `@rn-primitives/select` cannot compose with these elements, use the Dialog primitive instead — render a Dialog containing the same searchable list. Select may not need a dedicated primitive.
 
 **Files created**:
 - `apps/mobile/components/ui/select.tsx` — styled Select wrapper
@@ -261,21 +266,19 @@ function DialogContent({ children, className, ...props }: DialogPrimitive.Conten
 
 **Component to replace**: `TabbedPanel`
 
+**Motivation**: Structural improvements — focus management, keyboard navigation, and ARIA `tablist`/`tabpanel` roles. Note: the `as any` type casts in the current `TabbedPanel` (from the 2026-07-25 tsc fix commit) are about `React.Children.toArray` typing and will not be resolved by `@rn-primitives/tabs` unless the child-passing structure is also refactored. The tsc fixes are a separate concern.
+
 **Files created**:
 - `apps/mobile/components/ui/tabs.tsx` — styled Tabs wrapper
 
 **Files refactored**:
-- `apps/mobile/components/TabbedPanel.tsx` — refactor to use `@rn-primitives/tabs` internally. Remove the `as any` type casts from the 2026-07-25 commit.
+- `apps/mobile/components/TabbedPanel.tsx` — refactor to use `@rn-primitives/tabs` internally
 
 #### 2.5 Drawer (hamburger menu)
 
 **Component to replace**: `HamburgerDrawer`
 
-**Evaluation needed**: `@rn-primitives` doesn't have a dedicated Drawer primitive. Options:
-- Use `@rn-primitives/dialog` with a slide-from-left animation (simplest)
-- Evaluate `zeego/drawer` or similar native drawer library (more native feel)
-
-Decision deferred to implementation — start with Dialog-based drawer, evaluate native alternatives if the feel isn't right.
+**Evaluation**: `@rn-primitives` does not have a dedicated Drawer primitive. Default approach: use `@rn-primitives/dialog` configured with a slide-from-left animation and full-height content. If the feel isn't native enough, evaluate a dedicated drawer library (e.g., `zeego/drawer`) as a follow-up. The drawer is lower priority than the other primitives because its current hand-rolled implementation (slide-in panel + backdrop `Pressable`) has fewer structural bugs than inline dropdowns.
 
 ---
 

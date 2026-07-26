@@ -96,14 +96,14 @@ Rationale:
 - `@rn-primitives/select` — dropdown selects, language pickers
 - `@rn-primitives/switch` — toggle switches
 - `@rn-primitives/tabs` — tabbed panels (Settings, Word Detail)
-- `react-native-reanimated` — already a transitive dependency via Expo; may need explicit version pin for animation presets
+- `react-native-reanimated` — **promoted to direct dependency** with explicit version pin. Currently a transitive dependency via Expo, but `apps/mobile/lib/animations.ts` will import from it directly. Transitive deps can vanish when upstream trees change; a direct dependency guarantees availability.
 
 **New mobile files created:**
-- `apps/mobile/components/ui/dialog.tsx` — styled Dialog wrapper (NativeWind + design tokens)
-- `apps/mobile/components/ui/select.tsx` — styled Select wrapper
-- `apps/mobile/components/ui/switch.tsx` — styled Switch wrapper
-- `apps/mobile/components/ui/tabs.tsx` — styled Tabs wrapper
-- `apps/mobile/lib/animations.ts` — shared reanimated animation presets
+- `apps/mobile/components/ui/dialog.tsx` — styled Dialog wrapper (NativeWind + design tokens). Estimated ~60–80 lines (comparable to web's `dialog.tsx` at ~100 lines, which includes overlay, close button, portal wiring, and enter/exit animation classes).
+- `apps/mobile/components/ui/select.tsx` — styled Select wrapper (~50–70 lines)
+- `apps/mobile/components/ui/switch.tsx` — styled Switch wrapper (~30–40 lines)
+- `apps/mobile/components/ui/tabs.tsx` — styled Tabs wrapper (~50–70 lines)
+- `apps/mobile/lib/animations.ts` — shared reanimated spring-based animation presets (~30–50 lines)
 
 **New shared files (potentially):**
 - `packages/shared/animation-tokens.ts` — if we want animation durations/curves as shared tokens. Likely not needed initially; start with mobile-only presets.
@@ -113,9 +113,11 @@ Rationale:
 
 **Migration strategy:**
 1. Install `@rn-primitives/dialog` first, build the styled wrapper, and replace the `LanguageSwitcher` dropdown (the simplest and most directly comparable to the web migration in commit `28ceadfda1`).
-2. Replace `DictionaryPopup` with the Dialog wrapper (currently uses RN `Modal` directly).
-3. Evaluate `@rn-primitives/select` for the Settings screen's dropdowns (🟡 status in STATUS.md, known gaps).
-4. Evaluate `@rn-primitives/switch` for Settings toggles.
-5. Evaluate `@rn-primitives/tabs` for `TabbedPanel` (currently has `as any` type casts from the 2026-07-25 commit fixing 17 tsc errors).
+2. **Accessibility verification checkpoint**: After migrating LanguageSwitcher, verify with VoiceOver (iOS) and TalkBack (Android) that focus is trapped inside the dialog and that the backdrop dismiss gesture works. React Native's accessibility model differs materially from web ARIA — this must be validated, not assumed.
+3. Replace `DictionaryPopup` with the Dialog wrapper (currently uses RN `Modal` directly).
+4. **Select validation checkpoint**: Before committing to `@rn-primitives/select`, verify it can handle the LanguageSwitcher's full UX: text input for search, `ScrollView` with `keyboardShouldPersistTaps="handled"`, and popular/all categorized sections. If `@rn-primitives/select` cannot compose with these elements, the Dialog primitive alone is the better tool — render a Dialog containing the same searchable list. Select may not need a dedicated primitive at all.
+5. Evaluate `@rn-primitives/switch` for Settings toggles.
+6. Evaluate `@rn-primitives/tabs` for `TabbedPanel`. Note: the `as any` type casts in the current `TabbedPanel` (from the 2026-07-25 tsc fix commit) are about `React.Children.toArray` typing and will not be resolved by `@rn-primitives/tabs` unless the child-passing structure is also refactored. The motivation for Tabs is structural: focus management, keyboard navigation, and ARIA `tablist`/`tabpanel` roles — not the type casts.
+7. **HamburgerDrawer**: `@rn-primitives` does not have a dedicated Drawer primitive. Default approach: use `@rn-primitives/dialog` configured with a slide-from-left animation. If the feel isn't native enough, evaluate a dedicated drawer library (e.g., `zeego/drawer`) as a follow-up. The drawer is lower priority than the other primitives because its current hand-rolled implementation (slide-in panel + backdrop `Pressable`) has fewer structural bugs than inline dropdowns.
 
 **Risk:** `@rn-primitives` is a community project (not a large organization). Mitigation: the primitives are thin wrappers around React Native's built-in `Modal`, `Pressable`, and accessibility APIs — they add correctness logic, not novel rendering. If a primitive becomes unmaintained, we can vendor its source (it's designed to be copied, like shadcn/ui).
