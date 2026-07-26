@@ -31,7 +31,7 @@ export default function SettingsLayout() {
         headerShadowVisible: false,
       }}
     >
-      <Stack.Screen name="index" />
+      <Stack.Screen name="index" options={{ title: t('title.settings') }} />
       <Stack.Screen
         name="display"
         options={{ headerShown: true, title: t('title.display') }}
