@@ -42,15 +42,18 @@ export function UserMenu() {
         >
           {user ? (
             <>
-              {/* User info header */}
-              <View className="border-b border-border px-3 py-2.5">
+              {/* User info header — tap to go to profile */}
+              <Pressable
+                className="border-b border-border px-3 py-2.5 active:bg-muted"
+                onPress={() => { setOpen(false); router.push('/(tabs)/(me)/profile' as any); }}
+              >
                 <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>
                   {displayName}
                 </Text>
                 <Text className="text-xs text-muted-foreground mt-0.5" numberOfLines={1}>
                   {user.email}
                 </Text>
-              </View>
+              </Pressable>
               <Pressable
                 className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-muted"
                 onPress={() => { setOpen(false); router.push('/settings' as any); }}
