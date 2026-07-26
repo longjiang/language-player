@@ -3,9 +3,9 @@
 ## Metadata
 - **Spec ID**: SPEC-015
 - **Feature**: Complete mobile settings parity with web, integrate offline dictionaries, fix bugs
-- **Status**: complete — all phases done
+- **Status**: complete ✅
 - **Created**: 2026-07-25
-- **Updated**: 2026-07-26 — updated to reflect list→detail migration, @rn-primitives adoption, iPad split view, all gaps resolved
+- **Updated**: 2026-07-26 — all phases complete, STATUS.md updated
 - **ROADMAP Phase**: Phase 7 — Mobile Integration
 - **Depends on**: SPEC-013 (Offline Dictionary), SPEC-014 (Subscription), SPEC-016 (Interaction Primitives — @rn-primitives Switch/Select/Tabs)
 - **See also**:
@@ -228,7 +228,7 @@ Old `apps/mobile/app/(tabs)/(me)/settings.tsx` deleted. All functionality migrat
 
 ---
 
-### Phase 4: Polish & Testing — 🟡 IN PROGRESS
+### Phase 4: Polish & Testing — ✅ COMPLETE
 
 #### 4.1 Verify All Settings Work End-to-End
 
@@ -339,9 +339,7 @@ No new keys need to be created — both remaining keys already exist in `transla
 
 ### Still To Do
 
-| File | Change | Status |
-|---|---|---|
-| `apps/mobile/STATUS.md` | Update settings row from 🟡 → ✅ (after Phase 4 testing) | ⬜ Pending |
+*(None — all tasks complete.)*
 
 ### No Changes Needed
 
@@ -387,5 +385,5 @@ No new keys need to be created — both remaining keys already exist in `transla
 - [x] Settings page shows descriptive subtitle: "Configure your [L1] → [L2] experience" (G5)
 - [x] Native stack header (`_layout.tsx`) respects light/dark theme via `useColorScheme()`
 - [x] Switch toggle visually animates on iOS (track color + thumb position)
-- [ ] Phase 4 testing completed (all controls, search, navigation, screen sizes)
-- [ ] STATUS.md updated: Settings row 🟡 → ✅
+- [x] Phase 4 testing completed (all controls, search, navigation, screen sizes)
+- [x] STATUS.md updated: Settings row 🟡 → ✅
