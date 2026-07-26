@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "Vodiči, reference i često postavljana pitanja",
+        "no_docs_yet": "Документација још увек није доступна.",
         "no_results": "Nema rezultata",
         "on_this_page": "Na ovoj stranici",
         "search_placeholder": "Pretraži dokumente…",

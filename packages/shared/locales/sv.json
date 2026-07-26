@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "Guider, referens och vanliga frågor",
+        "no_docs_yet": "Ingen dokumentation tillgänglig än.",
         "no_results": "Inga resultat",
         "on_this_page": "På denna sida",
         "search_placeholder": "Sök i dokument…",

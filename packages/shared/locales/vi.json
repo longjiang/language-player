@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "Hướng dẫn, tham khảo và câu hỏi thường gặp",
+        "no_docs_yet": "Chưa có tài liệu hướng dẫn.",
         "no_results": "Không có kết quả",
         "on_this_page": "Trên trang này",
         "search_placeholder": "Tìm kiếm tài liệu…",

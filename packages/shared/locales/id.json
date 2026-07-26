@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "Panduan, referensi, dan pertanyaan umum",
+        "no_docs_yet": "Belum ada dokumentasi yang tersedia.",
         "no_results": "Tidak ada hasil",
         "on_this_page": "Di halaman ini",
         "search_placeholder": "Cari dokumen…",
