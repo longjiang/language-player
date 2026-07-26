@@ -13,7 +13,7 @@ import { sm2, newCard, remainingNewCardsToday } from '@langplayer/utils';
 import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import { baseCode } from '@/lib/language-data';
-import { getShowTranslation } from '@/lib/settings';
+import { useSettingsContext } from '@/providers/settings-provider';
 import { buildEntryRoute } from '@/lib/entry-route';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
@@ -70,6 +70,7 @@ export default function ReviewPage() {
   const { store, loaded: srsLoaded, updateCard, removeCard, dailyNewLimit: dailyLimit } = useSrs();
   const { loaded: cloudLoaded } = useCloudUserData();
   const { speak } = useSpeech();
+  const { display } = useSettingsContext();
   const t = useT();
   const router = useRouter();
   const RATING_LABELS = useRatingLabels();
@@ -449,7 +450,7 @@ export default function ReviewPage() {
 
   // ── Auto-translate context text when back is revealed (if no saved translation) ──
   useEffect(() => {
-    if (!showDefinition || !getShowTranslation()) return;
+    if (!showDefinition || !display.translation) return;
 
     const ctxText = currentCard?.word.context?.text;
     const savedTranslation = currentCard?.word.context?.translation;
@@ -673,7 +674,7 @@ export default function ReviewPage() {
             <div className="text-xs text-muted-foreground/70 mt-1">
               <SavedWordSource context={wordCtx} date={currentCard.word.date} />
             </div>
-            {showDefinition && getShowTranslation() && (wordCtx.translation || contextTranslation) && (
+            {showDefinition && display.translation && (wordCtx.translation || contextTranslation) && (
               <p className="text-sm mt-2 italic text-muted-foreground border-t border-border pt-2">
                 {wordCtx.translation || contextTranslation}
               </p>

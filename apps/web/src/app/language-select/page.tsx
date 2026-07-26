@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { LanguagePicker } from '@/components/language-picker';
+import { SettingsProvider } from '@/providers/settings-provider';
 
 export default function LanguageSelectPage() {
   const router = useRouter();
@@ -11,11 +12,13 @@ export default function LanguageSelectPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-8">
-      <LanguagePicker
-        onConfirm={handleConfirm}
-        showTitle
-      />
-    </main>
+    <SettingsProvider>
+      <main className="flex min-h-screen items-center justify-center px-4 py-8">
+        <LanguagePicker
+          onConfirm={handleConfirm}
+          showTitle
+        />
+      </main>
+    </SettingsProvider>
   );
 }
