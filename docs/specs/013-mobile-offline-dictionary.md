@@ -487,8 +487,7 @@ Add a session-level `Map<string, DictionaryEntry[]>` to `DictionaryContext` that
 | `/dictionary/lookup` | POST | ✅ Exists | Online word lookup with LLM fallback + L1 translation |
 | `/dictionary/lookup-batch` | POST | ✅ Exists | Batch lookup for multiple words |
 | `/dictionary/entry` | GET | ✅ Exists | Fetch single entry by dict ID + scoped entry ID |
-| `/dictionary/download` | GET | ⬜ **NEW** | Bulk-export frequency-ordered entries as JSON |
-| `/dictionary/download/status` | GET | ⬜ **NEW (optional)** | Check if download is available for a given L2 (returns word count, size estimate, version) without downloading |
+| `/dictionary/download` | GET | ⬜ **NEW** | Bulk-export entries using two-tier selection: frequency-ranked first, then by definition length, capped at 125,000 |
 
 ---
 
