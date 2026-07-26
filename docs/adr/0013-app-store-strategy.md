@@ -15,6 +15,16 @@ We have two iOS apps live on the App Store, both offering essentially the same p
 
 We have **no app in the Google Play Store** — our account was deleted after we neglected to renew our business information.
 
+### Naming Constraint
+
+The plain name "Language Player" is already taken by another developer on the App Store. Attempting to use it as an app name produces Apple's error:
+
+> English (U.S.) Name couldn't be saved because the app name you entered is already being used. If you have trademark rights to this name and would like it released for your use, [submit a claim](https://www.apple.com/legal/internet-services/itunes/appnamenotices/).
+
+We could potentially register a trademark for "Language Player" and file a dispute to claim the name, but this would require legal action and is unlikely to be worth the effort for a descriptive name used by multiple apps. This option is not explored further in this ADR.
+
+This is why the existing apps are named "Language Player 2" and "Language Player GO" — the "2" suffix was the original disambiguator for the Nuxt app.
+
 ### IAP Situation
 
 Both apps have their own separate (but functionally identical) non-consumable IAP product at USD $169 for a lifetime subscription. The Python backend validates both via `app_in_app_purchase.py` and grants the same lifetime subscription regardless of which app the purchase was made in. The single source of truth for pricing is the Python backend's `/stripe-prices` endpoint (see ARCH-015).
