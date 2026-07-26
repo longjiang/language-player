@@ -230,6 +230,9 @@ export async function bulkInsertEntries(
   }
 
   console.log('[DictDB] bulkInsertEntries complete — l2:', l2, '— total time:', ((Date.now() - startTime) / 1000).toFixed(1), 's');
+
+  // Flush WAL to keep future inserts fast
+  try { await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
 }
 
 // ── Dictionary metadata ───────────────────────
@@ -294,6 +297,8 @@ export async function deleteDictionary(
   const table = dictTableName(l2);
   try {
     await db.execAsync(`DROP TABLE IF EXISTS ${table}`);
+    // Flush WAL to recover space and prevent slowdown on re-download
+    await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)');
   } catch {
     // Table may not exist — that's fine
   }
@@ -321,6 +326,8 @@ export async function deleteAllDictionaries(
   // Clear shared tables
   await db.execAsync('DELETE FROM llm_cache');
   await db.execAsync('DELETE FROM dict_meta');
+  // Flush WAL to recover space
+  try { await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
 }
 
 // ── Storage usage ─────────────────────────────
