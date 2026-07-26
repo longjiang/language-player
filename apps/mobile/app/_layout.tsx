@@ -61,8 +61,7 @@ export default function RootLayout() {
                       <Stack.Screen name="(tabs)" />
                       <Stack.Screen name="login" options={{ presentation: 'modal' }} />
                       <Stack.Screen name="register" options={{ presentation: 'modal' }} />
-                      <Stack.Screen name="select-l1" options={{ presentation: 'modal' }} />
-                      <Stack.Screen name="select-l2" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="select-language" options={{ presentation: 'modal' }} />
                       <Stack.Screen name="go-pro-error" />
                       <Stack.Screen name="go-pro-success" />
                     </Stack>

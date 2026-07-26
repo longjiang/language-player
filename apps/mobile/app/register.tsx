@@ -28,7 +28,7 @@ export default function RegisterScreen() {
     setLoading(true);
     try {
       await register(email.trim(), password, firstName.trim(), lastName.trim());
-      router.replace('/select-l1');
+      router.replace('/select-language');
     } catch (e: any) {
       setError(e.message || t('error.registration_failed'));
     } finally {
