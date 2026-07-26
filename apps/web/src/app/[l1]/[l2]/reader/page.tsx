@@ -9,8 +9,6 @@ import type { LemmatizedToken, SavedWordContext, NoteListItem, Note } from '@lan
 import { apiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
-import { useSettingsContext } from '@/providers/settings-provider';
-import { toTraditional } from '@/lib/chinese-script';
 import {
   Loader2, BookOpen, PenLine,
   PanelRightClose, PanelRight,
@@ -75,12 +73,6 @@ export default function ReaderPage() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
-  const [convertedText, setConvertedText] = useState(text);
-
-  const { getL2 } = useSettingsContext();
-  const l2Settings = getL2(l2.code);
-  const isChinese = l2.code === 'zh' || l2.code.startsWith('zh-');
-  const useTraditional = isChinese ? l2Settings.display.traditional : false;
 
   // ── Notes ──
   const { data: session } = useSession();
@@ -196,20 +188,13 @@ export default function ReaderPage() {
 
   const handleTokenize = useCallback(async () => { await saveNow(); setActiveTab('read'); }, [saveNow]);
 
-  // Script conversion
+  // Parse markdown — Chinese script conversion is handled per-token
+  // by TokenSpan (ADR-0019), so we parse the original text directly.
   useEffect(() => {
-    if (!isChinese || !text.trim() || !useTraditional) { setConvertedText(text); return; }
-    let cancelled = false;
-    toTraditional(text).then(r => { if (!cancelled) setConvertedText(r); });
-    return () => { cancelled = true; };
-  }, [text, isChinese, useTraditional]);
-
-  // Parse markdown
-  useEffect(() => {
-    if (!convertedText.trim()) { setBlocks(null); return; }
-    try { setBlocks(parseMarkdown(convertedText)); }
+    if (!text.trim()) { setBlocks(null); return; }
+    try { setBlocks(parseMarkdown(text)); }
     catch { setBlocks(null); }
-  }, [convertedText]);
+  }, [text]);
 
   // Load from localStorage / URL params
   const loadUrl = useCallback(async (url: string, isMarkdown: boolean) => {
