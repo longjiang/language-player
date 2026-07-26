@@ -43,7 +43,7 @@
 | Music | `(tabs)/(media)/music.tsx` | ✅ | `[l1]/[l2]/music/page.tsx` | Basic video grid. |
 | Live TV | `(tabs)/(media)/live-tv.tsx` | ✅ | `[l1]/[l2]/live-tv/page.tsx` | Channel list + player + filters. **Missing**: URL-based channel restore (`tvgID` param). Web also lacks favorites/EPG/"now playing" — not mobile-specific gaps |
 | Local Media | `(tabs)/(media)/local-media.tsx` | ✅ | `[l1]/[l2]/local-media/page.tsx` | Upload + player works. Audio-only mode renders 🎵 card (no VideoView). Subtitle sync offset missing in both web and mobile |
-| Video Player | `(tabs)/(media)/watch/[videoId].tsx` | ✅ | `[l1]/[l2]/watch/[videoId]/page.tsx` | Full split-personality layout: transcript mode (tabs: transcript/queue/info) + subtitles mode (overlay band). VideoMeta, YouTubeChannelCard, VideoQueueList, SubtitlesModeBand, watch history, position save/restore, video token cache. **⚠️ YouTube playback broken on iOS** |
+| Video Player | `(tabs)/(media)/watch/[videoId].tsx` | ✅ | `[l1]/[l2]/watch/[videoId]/page.tsx` | Full split-personality layout: transcript mode (tabs: transcript/queue/info) + subtitles mode (overlay band). VideoMeta, YouTubeChannelCard, VideoQueueList, SubtitlesModeBand, watch history, position save/restore, video token cache. **Known**: programmatic play (iOS) not available — users tap iframe directly |
 | Channel Detail | `(tabs)/(media)/channel/[channelId].tsx` | ✅ | `[l1]/[l2]/channel/[channelId]/page.tsx` | Channel header, video grid, pagination. At parity with web — channel description/subscribe/stats also missing from web channel page (subscribe lives on watch page via `YouTubeChannelCard` + `ChannelActionsMenu`) |
 
 ### Video Components
@@ -111,7 +111,7 @@
 |---|---|---|---|---|
 | Profile / Me | `(tabs)/(me)/index.tsx` | ✅ | — | Menu list with semantic NativeWind design tokens |
 | Profile Detail | `(tabs)/(me)/profile.tsx` | ✅ | `[l1]/[l2]/profile/page.tsx` | Info + watch history + saved words previews. Includes subscription management (pro status, cancel auto-renew, expire dates, lifetime upsell) and language level selector |
-| Go Pro | `(tabs)/(me)/go-pro.tsx` | ✅ | `[l1]/[l2]/go-pro/page.tsx` | Plan selection, Stripe credit card checkout, WeChat Pay, Alipay, PayPal |
+| Go Pro | `(tabs)/(me)/go-pro.tsx` | ✅ | `[l1]/[l2]/go-pro/page.tsx` | Plan selection, Stripe credit card checkout, WeChat Pay, Alipay, PayPal (lifetime). **No IAP** (Apple/Google in-app purchase not implemented anywhere in the codebase — not in Nuxt, Python, or mobile) |
 | Settings | `(tabs)/(me)/settings.tsx` | 🟡 | `[l1]/[l2]/settings/page.tsx` | 4 tabs (Display/Playback/Speech/Review). VoicePicker uses NativeWind design tokens and locale-aware language names. **Missing**: Offline Dictionaries entry point, full tab parity with web (tokenized text, review, etc.) |
 | About | `(tabs)/(me)/about.tsx` | ✅ | ✅ | Basic app info |
 | Docs / Help | `(tabs)/(me)/docs.tsx` | ✅ | `[l1]/[l2]/docs/` | Searchable doc listing. MarkdownText rendering (headings, lists, bold/italic, code, links) + "On this page" heading TOC sidebar |
@@ -181,8 +181,8 @@
 
 | # | Issue | Severity | Affects |
 |---|---|---|---|
-| 1 | **YouTube programmatic play broken on iOS** — `react-native-youtube-iframe` `play` prop doesn't start playback on iOS. **Mitigated**: `play` prop removed; users tap the iframe directly to play/pause. `seekTo`, `getCurrentTime`, and `setPlaybackRate` work on both platforms. | 🟡 Low | Video Player |
-| 2 | **Go Pro has no payment flow** — pricing displayed but no Stripe/PayPal purchase integration | 🔴 High | ~~Go Pro~~ ✅ Fixed |
+| 1 | **YouTube programmatic play broken on iOS** — `react-native-youtube-iframe` `play` prop doesn't start playback on iOS. **Mitigated**: `play` prop removed; users tap the iframe directly to play/pause. `seekTo`, `getCurrentTime`, and `setPlaybackRate` work on both platforms. | ✅ Fixed | Video Player |
+| 2 | — | — | — |
 
 ---
 
@@ -195,6 +195,7 @@ These exist in the Next.js web app but have **no mobile equivalent yet**:
 | TV Show Detail | `tv-shows/[id]/` | ~~Medium~~ ✅ Ported | Episode list, metadata, seasons |
 | Dictionary Entry Detail | `dictionary/entry/.../` | Low | Deep link target — word detail exists but full entry page missing |
 | Local Tokenizer | — | ⬜ | `api/tokenize` | Offline tokenization via local model/WebAssembly. Currently all tokenization requires a round-trip to the Python backend (`POST /dictionary/tokenize`). A local tokenizer would enable offline reading and faster tokenization without network dependency. |
+| In-App Purchase (IAP) | — | ⬜ | Apple App Store / Google Play Store via RevenueCat or direct. Neither the Nuxt classic app, Python backend, nor mobile app have any IAP implementation. Stripe web checkout serves as the only payment method. |
 | Password Reset (token) | `/password-reset` | Low | Complete after email link click |
 | Verify Email | `/verify-email` | Low | Email verification landing |
 | Delete Account | `/delete-account` | Low | |
@@ -204,5 +205,5 @@ These exist in the Next.js web app but have **no mobile equivalent yet**:
 
 ## Current Focus
 
-- 🔄 **Phase 7**: Mobile Integration — resolving critical issues (YouTube iOS, SRS scheduling, Go Pro payment)
-- Up next: finish remaining Partial screens, then full feature parity audit against Classic
+- 🔄 **Phase 7**: Mobile Integration — Settings parity with web, local tokenizer, IAP evaluation
+- Up next: finish remaining 🟡 screens, then full feature parity audit against Classic
