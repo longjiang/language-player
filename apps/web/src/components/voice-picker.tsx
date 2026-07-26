@@ -18,9 +18,6 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
   const t = useT();
   const { getAllVoices, voiceURI, setVoiceURI, rate, setRate, speak, stop, isSpeaking } = useSpeech();
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     // Voices may load asynchronously
@@ -36,12 +33,6 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
   const l2Voices = l2 ? voices.filter(v => v.lang.startsWith(`${l2.code}-`) || v.lang === l2.code) : [];
   const allLangVoices = l2 ? voices.filter(v => !v.lang.startsWith(`${l2.code}-`)) : voices;
 
-  const selectedName = !mounted
-    ? t('label.auto_best_for', { l2: l2?.code?.toUpperCase() ?? 'L2' })
-    : voiceURI
-      ? voices.find(v => v.voiceURI === voiceURI)?.name ?? t('label.custom_voice')
-      : t('label.auto_best_for', { l2: l2?.code?.toUpperCase() ?? 'L2' });
-
   const autoValue = '__auto__';
 
   return (
@@ -54,7 +45,7 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
           onValueChange={(v) => setVoiceURI(v === autoValue ? undefined : v ?? undefined)}
         >
           <SelectTrigger className="w-full">
-            <SelectValue>{selectedName}</SelectValue>
+            <SelectValue placeholder={t('label.auto_best_for', { l2: l2?.code?.toUpperCase() ?? 'L2' })} />
           </SelectTrigger>
           <SelectContent>
             {/* Auto option */}
