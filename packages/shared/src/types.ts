@@ -186,6 +186,37 @@ export interface DictionaryLookupResponse {
   message?: string;
 }
 
+/** Response from GET /dictionary/download — bulk-export of frequency-ordered entries. */
+export interface DictionaryDownloadResponse {
+  entries: DictionaryEntry[];
+  /** Total entries with frequency data available for the language. */
+  total: number;
+  /** Number of entries actually returned (min of total and limit). */
+  downloaded: number;
+  /** MD5 hash of the entries array — changes when the dictionary DB is rebuilt. */
+  version: string;
+}
+
+/** Response from GET /dictionary/download/status — lightweight availability check. */
+export interface DictionaryDownloadStatus {
+  available: boolean;
+  /** Number of entries with frequency data. Only present when available=true. */
+  wordCount?: number;
+  /** Estimated JSON payload size in bytes. Only present when available=true. */
+  estimatedSizeBytes?: number;
+  /** Version hash for update detection. Only present when available=true. */
+  version?: string;
+}
+
+/** Per-language metadata stored client-side in SQLite after a successful download. */
+export interface DictMeta {
+  l2: string;
+  downloaded_at: string;
+  entry_count: number;
+  size_bytes: number;
+  version: string;
+}
+
 /** Common base for all lexical lookup results — both curated dictionary entries
  *  and AI-generated ones. (ADR 0006) */
 export interface LexicalEntry {
