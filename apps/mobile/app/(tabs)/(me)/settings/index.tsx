@@ -204,7 +204,7 @@ function SettingsList({
             </Text>
             <Pressable onPress={() => setQuery('')} className="mt-3">
               <Text className="text-sm font-semibold text-primary">
-                {t('action.clear')}
+                {t('action.clear_recent_searches')}
               </Text>
             </Pressable>
           </View>
