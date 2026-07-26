@@ -1,13 +1,16 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, Text, Platform } from 'react-native';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { TokenCache } from '@langplayer/shared';
+import type { DictionaryEntry } from '@langplayer/shared';
 import { buildRuby } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { configureLayoutAnimation } from '@/lib/animations';
+import { bulkLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
 
 // ── Shared in-memory lemmatize cache ──────────────────
 // All TokenizedText instances share this Map, so if two components
@@ -46,6 +49,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const loadingRef = useRef(false);
   const lastTextRef = useRef(text);
 
+  const { l1Lang } = useLanguage();
+
   // ── Settings (matches Next.js) ──
   const { getL2, tokenizedText: tokenSettings } = useSettingsContext();
   const l2Settings = getL2(l2Code);
@@ -80,6 +85,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   // Quiz mode: track which tokens have been revealed
   const [revealedTokens, setRevealedTokens] = useState<Set<number>>(new Set());
+
+  // Batch dictionary lookup layer (matches web's tokenized-text.tsx)
+  const [cacheVersion, setCacheVersion] = useState(0);
 
   // ── Computed text styles from zoom + typeFace settings ──
   const textStyle = useMemo(() => {
@@ -199,7 +207,62 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     };
   }, []);
 
-  // ── Render server tokens ──
+  // ── Batch dictionary lookup after tokens are loaded ──
+  // Gathers all unique lemmas and fetches dictionary entries in one request,
+  // populating the shared cache for instant popups + byeonggi/gloss data.
+  useEffect(() => {
+    if (!tokens.length || loading) return;
+
+    const uniqueLemmas = new Map<string, string>();
+    for (const token of tokens) {
+      for (const lemma of token.lemmas) {
+        const t = lemma.lemma?.trim();
+        if (!t || t.length === 0) continue;
+        if (!uniqueLemmas.has(t)) {
+          uniqueLemmas.set(t, lemma.part_of_speech ?? '');
+        }
+      }
+      // Also include surface form if different from lemmas
+      const surface = token.text.trim();
+      if (surface && surface.length > 0 && !uniqueLemmas.has(surface)) {
+        uniqueLemmas.set(surface, '');
+      }
+    }
+
+    if (uniqueLemmas.size === 0) return;
+
+    const words = Array.from(uniqueLemmas.keys()).map((text) => ({
+      text,
+      l2Code: l2Code,
+      l1Code: l1Lang?.code ?? 'en',
+    }));
+
+    bulkLookupWords(words).then(() => setCacheVersion(v => v + 1));
+  }, [tokens, loading, l2Code, l1Lang?.code]);
+
+  // ── Per-token data from dictionary cache (byeonggi, gloss, levels) ──
+  const getTokenEntryData = useCallback((token: LemmatizedToken) => {
+    if (!token.lemmas.length) return { byeonggiText: null as string | null, firstDef: null as string | null };
+    const firstLemma = token.lemmas[0]!.lemma;
+    const entries = getCachedEntries(l2Code, firstLemma);
+    if (!entries || entries.length === 0) {
+      // Try surface form if lemma didn't match
+      const surfaceEntries = getCachedEntries(l2Code, token.text);
+      if (surfaceEntries && surfaceEntries.length > 0) {
+        const e = surfaceEntries[0]!;
+        return {
+          byeonggiText: e.han_script?.hanja ?? e.han_script?.hantu ?? null,
+          firstDef: e.definitions?.[0] ?? null,
+        };
+      }
+      return { byeonggiText: null, firstDef: null };
+    }
+    const firstEntry = entries[0]!;
+    return {
+      byeonggiText: firstEntry.han_script?.hanja ?? firstEntry.han_script?.hantu ?? null,
+      firstDef: firstEntry.definitions?.[0] ?? null,
+    };
+  }, [l2Code, cacheVersion]);
   if (tokens.length > 0) {
     const isWord = (t: LemmatizedToken) => t.lemmas.length > 0;
     const readingSize = Math.max(8, Math.round(textStyle.fontSize! * 0.55));
@@ -225,6 +288,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isBlanked = quizMode && !isRevealed;
               const firstLemma = token.lemmas[0]?.lemma;
               const showGloss = showDefinition && firstLemma && firstLemma !== word;
+              const { byeonggiText, firstDef } = getTokenEntryData(token);
+              const showByeonggi = byeonggiEnabled && !!byeonggiText;
+              const showQuickGloss = quickGlossEnabled && !!firstDef;
 
               const hasRuby = token.pronunciation && token.pronunciation !== token.text;
               const rubySegs: RubySegment[] = hasRuby
@@ -248,6 +314,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                     <View key={j} className="items-center mx-px">
                       {seg.reading && (
                         <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
+                      )}
+                      {showByeonggi && j === 0 && (
+                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{byeonggiText}</Text>
                       )}
                       <Text
                         style={[textStyle, { lineHeight: baseLeading }]}
@@ -278,6 +347,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isBlanked = quizMode && !isRevealed;
               const firstLemma = token.lemmas[0]?.lemma;
               const showGloss = showDefinition && firstLemma && firstLemma !== word;
+              const { byeonggiText, firstDef } = getTokenEntryData(token);
+              const showByeonggi = byeonggiEnabled && !!byeonggiText;
+              const showQuickGloss = quickGlossEnabled && !!firstDef;
 
               const handlePress = () => {
                 if (quizMode) {
@@ -296,6 +368,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   onPress={handlePress}
                   className={isHighlighted ? 'font-bold text-primary' : ''}
                 >
+                  {showByeonggi ? `${byeonggiText} ` : ''}
                   {isBlanked ? '▯' : displayText}
                   {showGloss ? ` ·${firstLemma}` : ''}
                 </Text>
