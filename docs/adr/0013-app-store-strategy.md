@@ -79,7 +79,7 @@ Remove the GO app from the store. Replace the release binary of the Classic Nuxt
 - Loses the GO app's ratings/reviews (which are separate from the Nuxt app's listing)
 - Renaming to "Language Player 3" still signals version churn
 
-### Option D: Single App — Brand New Name
+### Option C: Single App — Brand New Name
 
 Create a brand-new app listing with a distinct name (not "Language Player X") and phase out both legacy apps over time. E.g., "Zero to Hero" (matching the domain name).
 
