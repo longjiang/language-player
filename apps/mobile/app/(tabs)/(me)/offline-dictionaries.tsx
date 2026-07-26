@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, Alert, TextInput, Platform, ActionSheetIOS } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -7,14 +7,14 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { SUPPORTED_L2S } from '@langplayer/shared';
 import enLocale from '@langplayer/shared/locales/en.json';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { Download, Trash2, CheckCircle2, AlertTriangle, RefreshCw, HardDrive, Search } from 'lucide-react-native';
+import { Download, Trash2, CheckCircle2, AlertTriangle, RefreshCw, Search, MoreVertical } from 'lucide-react-native';
 
 // ── Language name lookup ─────────────────────
 
 const enLangNames = (enLocale as any)?.lang ?? {};
 
-function getLanguageName(code: string): string {
-  return enLangNames[code] ?? code.toUpperCase();
+function getLanguageName(code: string, localeNames?: Record<string, string>): string {
+  return localeNames?.[code] ?? enLangNames[code] ?? code.toUpperCase();
 }
 
 // ── Native language names ────────────────────
@@ -54,7 +54,11 @@ interface LangStatus {
   checked: boolean;
 }
 
-// ── Helpers ──────────────────────────────────
+// ── Popular languages (same as language picker) ──
+const POPULAR_LANGUAGES = [
+  'en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
+  'ar', 'hi', 'tr', 'nl', 'pl', 'sv', 'th', 'vi', 'id',
+];
 
 function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
@@ -201,8 +205,8 @@ export default function OfflineDictionariesScreen() {
   const handleDelete = (l2: string) => {
     console.log('[OfflineDict] 🗑 handleDelete prompt — l2:', l2);
     Alert.alert(
-      `${t('action.delete')} ${getLanguageName(l2)}`,
-      t('msg.confirm_delete_dictionary', { lang: getLanguageName(l2) }),
+      `${t('action.delete')} ${getLanguageName(l2, localeLangNames)}`,
+      t('msg.confirm_delete_dictionary', { lang: getLanguageName(l2, localeLangNames) }),
       [
         { text: t('action.cancel'), style: 'cancel' },
         {
@@ -248,7 +252,7 @@ export default function OfflineDictionariesScreen() {
     const status = statuses.get(l2);
     const isDownloading = state.status === 'downloading';
     const isFailed = state.status === 'failed';
-    const name = getLanguageName(l2);
+    const name = getLanguageName(l2, localeLangNames);
 
     return (
       <View key={l2} className="mb-2 rounded-lg border border-border bg-card p-3">
@@ -296,7 +300,7 @@ export default function OfflineDictionariesScreen() {
           <View className="mt-1 flex-row items-center gap-1">
             <CheckCircle2 size={12} color={ICON_MUTED} />
             <Text className="text-xs text-muted-foreground">
-              {t('label.saved')} · {t('label.words', { count: downloadedCounts.get(l2) ?? 0 })}
+              {t('label.downloaded')} · {t('label.words', { count: downloadedCounts.get(l2) ?? 0 })}
             </Text>
           </View>
         )}
@@ -343,97 +347,128 @@ export default function OfflineDictionariesScreen() {
   // ── Group + sort languages ──
   const downloadedList = SUPPORTED_L2S.filter((l2) => downloaded.has(l2));
 
-  // Available: not downloaded. Filter by search. Put current L2 first.
-  const availableFiltered = useMemo(() => {
+  // Filter downloaded list by search
+  const filteredDownloaded = useMemo(() => {
+    const q = searchQuery.trim();
+    if (q.length === 0) return downloadedList;
+    return downloadedList.filter((l2) => langMatchesSearch(l2, q, localeLangNames));
+  }, [downloadedList, searchQuery, localeLangNames]);
+
+  // Available: not downloaded. Filter by search. Popular first, then rest.
+  const { availablePopular, availableRest, isSearching } = useMemo(() => {
     let list = SUPPORTED_L2S.filter((l2) => !downloaded.has(l2));
-    if (searchQuery.trim()) {
+    const searching = searchQuery.trim().length > 0;
+    if (searching) {
       const q = searchQuery.trim();
       list = list.filter((l2) => langMatchesSearch(l2, q, localeLangNames));
     }
     // Sort: current L2 first, then alphabetical by English name
-    list = [...list].sort((a, b) => {
+    const sorted = [...list].sort((a, b) => {
       if (a === currentL2) return -1;
       if (b === currentL2) return 1;
       return (enLangNames[a] ?? a).localeCompare(enLangNames[b] ?? b);
     });
-    return list;
+    // Split into popular + rest
+    const popularSet = new Set(POPULAR_LANGUAGES);
+    const popular = sorted.filter((l2) => popularSet.has(l2));
+    const rest = sorted.filter((l2) => !popularSet.has(l2));
+    return { availablePopular: popular, availableRest: rest, isSearching: searching };
   }, [downloaded, searchQuery, currentL2, localeLangNames]);
 
   return (
     <ScrollView className="flex-1 bg-background">
       {/* Header */}
-      <View className="px-4 pt-6 pb-1">
-        <Text className="text-3xl font-bold text-foreground">{t('title.offline_dictionaries')}</Text>
-        <Text className="mt-1 text-sm text-muted-foreground">
-          {t('msg.offline_dictionaries_desc')}
-        </Text>
+      <View className="flex-row items-start justify-between px-4 pt-6 pb-1">
+        <View className="flex-1">
+          <Text className="text-3xl font-bold text-foreground">{t('title.offline_dictionaries')}</Text>
+          <Text className="mt-1 text-sm text-muted-foreground">
+            {t('msg.offline_dictionaries_desc')}
+          </Text>
+        </View>
+        {downloadedList.length > 0 && (
+          <Pressable
+            onPress={() => {
+              if (Platform.OS === 'ios') {
+                ActionSheetIOS.showActionSheetWithOptions(
+                  {
+                    options: [t('action.delete_all'), t('action.cancel')],
+                    cancelButtonIndex: 1,
+                    destructiveButtonIndex: 0,
+                  },
+                  (index) => {
+                    if (index === 0) handleDeleteAll();
+                  },
+                );
+              } else {
+                Alert.alert(
+                  t('action.delete_all'),
+                  t('msg.confirm_delete_all_dictionaries'),
+                  [
+                    { text: t('action.cancel'), style: 'cancel' },
+                    { text: t('action.delete_all'), style: 'destructive', onPress: handleDeleteAll },
+                  ],
+                );
+              }
+            }}
+            className="rounded-lg p-2 -mt-1"
+          >
+            <MoreVertical size={20} color={ICON_MUTED} />
+          </Pressable>
+        )}
       </View>
 
       {/* L1≠en callout */}
       {!l1IsEn && (
-        <View className="mx-4 mt-4 rounded-lg border border-border bg-card p-3">
-          <View className="flex-row items-center gap-2">
-            <AlertTriangle size={16} color={ICON_MUTED} />
-            <Text className="text-sm font-medium text-foreground">{t('msg.offline_definitions_english')}</Text>
-          </View>
-          <Text className="mt-1 text-xs text-muted-foreground">
-            {t('msg.offline_definitions_english_desc', { l1: l1Lang.name })}
+        <View className="mx-4 mt-4">
+          <Text className="text-s text-warning">
+            <Text className="font-semibold">⚠ {t('msg.offline_definitions_english')}</Text>
+            {' '}{t('msg.offline_definitions_english_desc', { l1: l1Lang.name })}
           </Text>
         </View>
       )}
 
-      {/* Downloaded section */}
-      {downloadedList.length > 0 && (
-        <View className="mt-5 px-4">
-          <Text className="text-xs font-bold text-muted-foreground uppercase tracking-wide border-b border-border pb-2 mb-2">
-            {t('label.downloaded')}
-          </Text>
-          {downloadedList.map((l2) => renderLanguageRow(l2, true))}
+      {/* Search bar */}
+      <View className="mx-4 mt-4 flex-row items-center rounded-lg border border-border bg-muted px-3 py-2">
+        <Search size={16} color={ICON_MUTED} />
+        <TextInput
+          className="flex-1 ml-2 text-sm text-foreground"
+          placeholder={t('placeholder.search_languages')}
+          placeholderTextColor={ICON_MUTED}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCorrect={false}
+        />
+        {searchQuery.length > 0 && (
+          <Pressable onPress={() => setSearchQuery('')}>
+            <Text className="text-xs text-primary">{t('action.close')}</Text>
+          </Pressable>
+        )}
+      </View>
 
-          {/* Delete All */}
-          <View className="mt-4 pt-3 border-t border-border">
-            <View className="flex-row items-center gap-2 mb-3">
-              <HardDrive size={14} color={ICON_MUTED} />
-              <Text className="text-xs text-muted-foreground">
-                {t('msg.storage_usage', { used: String(downloadedList.length) })}
-              </Text>
-            </View>
-            <Pressable
-              onPress={handleDeleteAll}
-              className="rounded-lg bg-destructive/10 py-3 items-center"
-            >
-              <Text className="text-sm font-medium text-destructive">{t('action.delete_all')}</Text>
-            </Pressable>
-          </View>
+      {/* Downloaded section */}
+      {filteredDownloaded.length > 0 && (
+        <View className="mt-5 px-4">
+          {filteredDownloaded.map((l2) => renderLanguageRow(l2, true))}
         </View>
       )}
 
       {/* Available section */}
-      <View className="mt-5 px-4">
-        <Text className="text-xs font-bold text-muted-foreground uppercase tracking-wide border-b border-border pb-2 mb-2">
-          {t('label.available')}
-        </Text>
-
-        {/* Search bar */}
-        <View className="mb-3 flex-row items-center rounded-lg border border-border bg-muted px-3 py-2">
-          <Search size={16} color={ICON_MUTED} />
-          <TextInput
-            className="flex-1 ml-2 text-sm text-foreground"
-            placeholder={t('placeholder.search_languages')}
-            placeholderTextColor={ICON_MUTED}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoCorrect={false}
-          />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')}>
-              <Text className="text-xs text-primary">{t('action.close')}</Text>
-            </Pressable>
-          )}
-        </View>
-
-        {availableFiltered.length > 0 ? (
-          availableFiltered.map((l2) => renderLanguageRow(l2, false))
+      <View className="mt-2 px-4">
+        {availablePopular.length > 0 || availableRest.length > 0 ? (
+          <>
+            {!isSearching && availablePopular.length > 0 && (
+              <View className="mb-1">
+                <Text className="text-s mb-2 font-semibold text-muted-foreground uppercase tracking-wide">{t('msg.popular_languages')}</Text>
+              </View>
+            )}
+            {availablePopular.map((l2) => renderLanguageRow(l2, false))}
+            {!isSearching && availableRest.length > 0 && availablePopular.length > 0 && (
+              <View className="my-2">
+                <Text className="text-s font-semibold text-muted-foreground mb-2">{t('msg.all_languages')}</Text>
+              </View>
+            )}
+            {availableRest.map((l2) => renderLanguageRow(l2, false))}
+          </>
         ) : (
           <Text className="text-xs text-muted-foreground text-center py-4">
             {searchQuery.trim() ? t('msg.no_languages_match') : t('msg.all_languages_downloaded')}
