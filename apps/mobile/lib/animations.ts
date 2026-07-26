@@ -9,44 +9,43 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-/** Fade + slide-up animation preset for dialog open/close. */
-const dialogAnimation = LayoutAnimation.create(
+/** Shared animation preset: 200ms fade with ease-in-out. */
+const fadeAnimation = LayoutAnimation.create(
   200,
   LayoutAnimation.Types.easeInEaseOut,
   LayoutAnimation.Properties.opacity,
 );
 
 /**
- * Drop-in replacement for `useState(false)` for dialog open state.
+ * Drop-in replacement for `useState(false)` for boolean show/hide state.
  * Calls `LayoutAnimation.configureNext()` before every state change
- * so the dialog fades in/out smoothly.
+ * so the transition animates smoothly.
  *
  * @example
- * const [open, setOpen] = useDialogOpen();
- * // use exactly like useState — setOpen(true) animates in, setOpen(false) animates out
+ * const [open, setOpen] = useAnimatedBoolean();
+ * // use exactly like useState — setOpen(true) fades in, setOpen(false) fades out
  */
-export function useDialogOpen(initial = false) {
-  const [open, setOpen] = useState(initial);
+export function useAnimatedBoolean(initial = false) {
+  const [value, setValue] = useState(initial);
 
-  const animatedSetOpen = useCallback((value: boolean) => {
-    LayoutAnimation.configureNext(dialogAnimation);
-    setOpen(value);
+  const animatedSetValue = useCallback((next: boolean) => {
+    LayoutAnimation.configureNext(fadeAnimation);
+    setValue(next);
   }, []);
 
-  return [open, animatedSetOpen] as const;
+  return [value, animatedSetValue] as const;
 }
 
 /**
- * Call before any state change that shows/hides a dialog.
- * For cases where `useDialogOpen()` doesn't fit (e.g., string | null state).
+ * Call before any state change that triggers a layout transition.
+ * For cases where `useAnimatedBoolean()` doesn't fit (e.g., string | null state).
  *
  * @example
- * configureDialogAnimation();
- * setSelectedWord(word); // dialog opens with animation
- * // ...
- * configureDialogAnimation();
- * setSelectedWord(null); // dialog closes with animation
+ * configureLayoutAnimation();
+ * setSelectedWord(word); // opens with animation
+ * configureLayoutAnimation();
+ * setSelectedWord(null); // closes with animation
  */
-export function configureDialogAnimation() {
-  LayoutAnimation.configureNext(dialogAnimation);
+export function configureLayoutAnimation() {
+  LayoutAnimation.configureNext(fadeAnimation);
 }

@@ -4,12 +4,12 @@ import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
 import * as Dialog from '@/components/ui/dialog';
-import { useDialogOpen } from '@/lib/animations';
+import { useAnimatedBoolean } from '@/lib/animations';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
   const t = useT();
-  const [open, setOpen] = useDialogOpen();
+  const [open, setOpen] = useAnimatedBoolean();
 
   const initial = user?.email?.charAt(0)?.toUpperCase() ?? '?';
 
