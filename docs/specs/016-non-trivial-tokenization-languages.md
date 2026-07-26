@@ -214,7 +214,7 @@ These languages have no spaces between words, but words **do not inflect** — t
 
 ---
 
-## Category C: Lemmatization-Only (37 languages)
+## Category C: Lemmatization-Only (36 languages)
 
 These languages use spaces between words (or other reliable delimiters) for tokenization, but words **do inflect** and need lemma reduction.
 
@@ -222,51 +222,51 @@ These languages use spaces between words (or other reliable delimiters) for toke
 
 Pre-computed `{surface: [lemma]}` TSV files already exist on the server at `data/lemmatization-lists/lemmatization-{code}.txt`. These are the highest-quality lemma sources.
 
-| Code | Language | Notes |
-|---|---|---|
-| `ca` | Catalan | |
-| `cs` | Czech | Rich case system (7 cases) |
-| `cy` | Welsh | Simplemma excluded — apostrophe issues |
-| `de` | German | Case + gender + plural umlaut |
-| `en` | English | Irregular past/participles + plurals |
-| `es` | Spanish | Extensive verb conjugation |
-| `fr` | French | Verb conjugation; Simplemma excluded (bad verb lemmas) |
-| `ga` | Irish | Initial mutations (séimhiú, urú) |
-| `gl` | Galician | |
-| `gv` | Manx | |
-| `hu` | Hungarian | Agglutinative (18+ cases) |
-| `it` | Italian | Verb conjugation |
-| `pt` | Portuguese | Verb conjugation |
-| `ro` | Romanian | |
-| `sk` | Slovak | |
-| `sl` | Slovenian | Dual number! |
-| `sv` | Swedish | |
-| `uk` | Ukrainian | Case system |
+| Code | Language | JS Library | Notes |
+|---|---|---|---|
+| `ca` | Catalan | — | |
+| `cs` | Czech | — | Rich case system (7 cases) |
+| `cy` | Welsh | — | Simplemma excluded — apostrophe issues |
+| `de` | German | `snowball-stemmers` | Case + gender + plural umlaut |
+| `en` | English | `snowball-stemmers` | Irregular past/participles + plurals |
+| `es` | Spanish | `snowball-stemmers` | Extensive verb conjugation |
+| `fr` | French | `snowball-stemmers` | Verb conjugation; Simplemma excluded (bad verb lemmas) |
+| `ga` | Irish | `snowball-stemmers` | Initial mutations (séimhiú, urú) |
+| `gl` | Galician | — | |
+| `gv` | Manx | — | |
+| `hu` | Hungarian | **`snowball-stemmers`** ✅ | Uralic, 18+ cases, vowel harmony |
+| `it` | Italian | `snowball-stemmers` | Verb conjugation |
+| `pt` | Portuguese | `snowball-stemmers` | Verb conjugation |
+| `ro` | Romanian | `snowball-stemmers` | |
+| `sk` | Slovak | — | |
+| `sl` | Slovenian | — | Dual number! |
+| `sv` | Swedish | `snowball-stemmers` | |
+| `uk` | Ukrainian | — | Case system |
 
 ### C2 — Simplemma Available (18 languages)
 
 Dictionary-based lemmatizer data available from the Simplemma Python package. Can be exported to JSON/SQLite.
 
-| Code | Language | Notes |
-|---|---|---|
-| `bg` | Bulgarian | |
-| `da` | Danish | |
-| `el` | Greek | |
-| `et` | Estonian | Agglutinative (14 cases) |
-| `fi` | Finnish | Highly agglutinative (15 cases) |
-| `hy` | Armenian | |
-| `id` | Indonesian | Limited inflection (mostly prefix/suffix) |
-| `is` | Icelandic | Complex inflection preserved from Old Norse |
-| `ka` | Georgian | Agglutinative, complex verb system |
-| `la` | Latin | 5 declensions, 4 conjugations |
-| `lv` | Latvian | |
-| `lt` | Lithuanian | Complex case system, pitch accent |
-| `nb` | Norwegian Bokmål | |
-| `nn` | Norwegian Nynorsk | |
-| `nl` | Dutch | |
-| `pl` | Polish | 7 cases, 3 genders |
-| `sq` | Albanian | |
-| `sw` | Swahili | Noun class prefixes (m-/wa-, ki-/vi-, etc.) |
+| Code | Language | JS Library | Notes |
+|---|---|---|---|
+| `bg` | Bulgarian | — | |
+| `da` | Danish | `snowball-stemmers` | |
+| `el` | Greek | — | |
+| `et` | Estonian | ⚠️ Snowball upstream, npm uncertain | Uralic, 14 cases, lost vowel harmony |
+| `fi` | Finnish | **`snowball-stemmers`** ✅ | Uralic, 15 cases, consonant gradation |
+| `hy` | Armenian | `snowball-stemmers` | |
+| `id` | Indonesian | — | **Analytic, not agglutinative.** Derivational prefixes only; surface-as-lemma works. |
+| `is` | Icelandic | — | Complex inflection preserved from Old Norse |
+| `ka` | Georgian | **Nothing** ❌ | Kartvelian (not Uralic!). Polypersonal verbs, screeve system. Pre-built Simplemma table only. |
+| `la` | Latin | — | 5 declensions, 4 conjugations |
+| `lv` | Latvian | — | |
+| `lt` | Lithuanian | — | Complex case system, pitch accent |
+| `nb` | Norwegian Bokmål | `snowball-stemmers` | |
+| `nn` | Norwegian Nynorsk | — | |
+| `nl` | Dutch | `snowball-stemmers` | |
+| `pl` | Polish | — | 7 cases, 3 genders |
+| `sq` | Albanian | — | |
+| `sw` | Swahili | **Nothing** ❌ | Bantu. Noun class prefixes. Pre-built Simplemma table + optional prefix-stripper fallback. |
 
 ### C3 — spaCy-Only (1 language)
 
@@ -283,6 +283,20 @@ Rich inflection handled by a specialized server engine. Needs a pre-built lemma 
 | Code | Language | Notes | Server Engine |
 |---|---|---|---|
 | `ru` | Russian | 6 cases, 3 genders, verb aspect pairs; highly inflected | pymorphy2 |
+
+### Agglutinative Languages in Category C
+
+These languages have high surface-form-to-lemma ratios (thousands of inflected forms per lemma). Pre-built lemma tables are essential — rule-based stemmers like Snowball provide a baseline but won't match dedicated morphological analyzer accuracy:
+
+| Code | Language | Family | Cases/Features | Local Option |
+|---|---|---|---|---|
+| `hu` | Hungarian | Uralic (Ugric) | 18+ cases, possessive suffixes | `snowball-stemmers` ✅ (~80%) + LemmatizationList table |
+| `fi` | Finnish | Uralic (Finnic) | 15 cases, consonant gradation | `snowball-stemmers` ✅ (~80%) + Simplemma table |
+| `et` | Estonian | Uralic (Finnic) | 14 cases, lost vowel harmony | ⚠️ Snowball upstream exists; npm uncertain. Simplemma table. |
+| `ka` | Georgian | Kartvelian | Polypersonal verb agreement, screeves | **Nothing.** Pre-built Simplemma table only. |
+| `sw` | Swahili | Bantu (Niger-Congo) | Noun class prefixes (8+ classes) | **Nothing.** Pre-built Simplemma table + prefix-stripper fallback. |
+
+**Note**: Indonesian (`id`) is **not agglutinative** — it's analytic/isolating with derivational prefixes only. Surface-as-lemma works for Indonesian. It has been moved to Category E (regex-only).
 
 ---
 
@@ -314,11 +328,11 @@ A sampling: `af`, `am`, `az`, `bn`, `eo`, `eu`, `fo`, `fy`, `gd`, `gu`, `ha`, `h
 | **A** — Both | 5 (`ja`, `ko`, `ar`, `fa`, `tr`) | Complex | Complex | ~200–500 KB |
 | **B** — Segmentation-Only | 16 (11 Chinese varieties + `th`, `km`, `lo`, `my`, `bo`) | Complex | None | 0 KB (Intl.Segmenter) |
 | **C1** — LemmatizationList | 18 | Trivial (spaces) | Pre-built TSV table | ~100–300 KB |
-| **C2** — Simplemma | 18 | Trivial (spaces) | Pre-built dict table | ~50–200 KB |
+| **C2** — Simplemma | 17 | Trivial (spaces) | Pre-built dict table | ~50–200 KB |
 | **C3** — spaCy-Only | 1 (`hr`) | Trivial (spaces) | spaCy or server fallback | Server-dependent |
 | **C4** — Dedicated Engine | 1 (`ru`) | Trivial (spaces) | pymorphy2 export table | ~300–500 KB |
 | **D** — Special | 4 (`vi`, `hi`, `ast`, `tlh`) | Trivial-ish | Varies | Minimal |
-| **E** — Regex-Only | ~145 | Trivial (spaces) | None | 0 KB |
+| **E** — Regex-Only | ~146 | Trivial (spaces) | None | 0 KB |
 | **Total** | **207** | | | |
 
 ---
@@ -330,7 +344,7 @@ Following the recommendation in SPEC-015, Phase 1 covers the biggest wins at zer
 | What | Languages Covered |
 |---|---|
 | Regex word-split tokenizer | All 207 (trivial) |
-| Surface-as-lemma | Categories B, D (vi, hi, tlh), E = **~165 languages** |
+| Surface-as-lemma | Categories B, D (vi, hi, tlh, id), E = **~166 languages** |
 | `arabic-stem` (zero-dep, 15 KB) | Arabic — stemmer covers ~85% of forms |
 | Server fallback for everything else | Categories A (ja/ko/fa/tr — unless libraries downloaded), C1–C4 = **~40 languages** |
 
@@ -342,7 +356,9 @@ Following the recommendation in SPEC-015, Phase 1 covers the biggest wins at zer
 | `kuromoji-ko` + mecab-ko-dic (pruned) | Korean | ~2 MB | Server fallback |
 | `nlptoolkit-morphologicalanalysis` | Turkish | ~2 MB | Server fallback |
 | Persian lemma table (Hazm export) | Persian | ~80 KB | Server fallback |
-| Pre-built lemma tables | 37 C1–C4 languages | ~100–500 KB each | Server fallback |
+| `snowball-stemmers` (per-lang rules) | C1/C2 langs with Snowball support (de, en, es, fr, ga, it, pt, ro, sv, da, nb, nl, hu, fi, hy) | ~30 KB each | Server fallback |
+| Pre-built lemma tables | Remaining C1–C4 + C2 langs without JS libraries (ca, cs, cy, gl, gv, sk, sl, uk, bg, el, et, is, la, lv, lt, nn, pl, sq, hr, ru, ka, sw) | ~100–500 KB each | Server fallback |
+| `nlptoolkit-morphologicalanalysis` | Turkish | ~2 MB | Server fallback |
 
 This means Phase 1 alone gives **functional offline tokenization** for ~80% of all supported L2s with **zero additional bundle size** and **near-zero new dependencies** (only `arabic-stem` at 15 KB). Phase 2 adds full offline support for the remaining ~20% via downloadable language packs.
 
