@@ -11,9 +11,12 @@
  * In production, this points to the production server.
  */
 
-const LOCAL_DEFAULT = 'http://Jons-M1-Mac-mini.local:5001';
+const LOCAL_DEFAULT = 'http://localhost:5001';
 
-/** The base URL of the Python/Flask backend. */
+/** The base URL of the Python/Flask backend.
+ *  Uses EXPO_PUBLIC_API_URL env var in production, localhost in dev.
+ *  iOS Simulator shares the Mac's network stack so localhost works.
+ *  For physical devices, set EXPO_PUBLIC_API_URL to your Mac's LAN IP. */
 export const PYTHON_API_URL: string =
   (typeof process !== 'undefined' && (process.env as any).EXPO_PUBLIC_API_URL) ||
   LOCAL_DEFAULT;

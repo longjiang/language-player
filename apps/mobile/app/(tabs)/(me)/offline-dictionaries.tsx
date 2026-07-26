@@ -118,8 +118,13 @@ export default function OfflineDictionariesScreen() {
   }, []);
 
   // ── Check server availability for non-downloaded languages ──
+  // Uses a ref to avoid re-creating the callback when statuses change,
+  // which would cause duplicate requests in the batch-check effect.
+  const statusesRef = useRef(statuses);
+  statusesRef.current = statuses;
+
   const checkAvailability = useCallback(async (l2: string) => {
-    if (statuses.has(l2)) return;
+    if (statusesRef.current.has(l2)) return;
     const fetchStart = Date.now();
     console.log('[OfflineDict] 🌐 GET /dictionary/download/status — l2:', l2);
     try {
@@ -144,10 +149,14 @@ export default function OfflineDictionariesScreen() {
         return next;
       });
     }
-  }, [statuses]);
+  }, []); // stable — uses ref, never recreates
 
-  // Check availability for all undownloaded languages on mount (batched)
+  // Check availability for all undownloaded languages on mount (batched, once)
+  const batchStartedRef = useRef(false);
   useEffect(() => {
+    if (batchStartedRef.current) return;
+    batchStartedRef.current = true;
+
     const toCheck = SUPPORTED_L2S.filter((l2) => !downloaded.has(l2));
     if (toCheck.length === 0) return;
     console.log('[OfflineDict] 🌐 starting batch availability check —', toCheck.length, 'languages, batch size 8');
@@ -166,7 +175,7 @@ export default function OfflineDictionariesScreen() {
       });
     };
     next();
-  }, [downloaded]);
+  }, []); // run once on mount only
 
   // ── Poll download progress ──
   useEffect(() => {
