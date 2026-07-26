@@ -20,10 +20,8 @@ export function UserMenu() {
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger asChild>
-        <Pressable className="h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-          <Text className="text-sm font-bold text-primary">{initial}</Text>
-        </Pressable>
+      <Dialog.Trigger className="h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+        <Text className="text-sm font-bold text-primary">{initial}</Text>
       </Dialog.Trigger>
 
       <Dialog.Portal>

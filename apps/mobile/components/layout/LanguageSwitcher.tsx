@@ -151,12 +151,10 @@ export function LanguageSwitcher() {
     <View className="flex-row items-center gap-1">
       {/* L1 language picker */}
       <Dialog.Root open={l1Open} onOpenChange={handleL1OpenChange}>
-        <Dialog.Trigger asChild>
-          <Pressable className="rounded-full bg-primary/10 px-2.5 py-1">
-            <Text className="text-xs font-bold text-primary" numberOfLines={1}>
-              {getLanguageCode(l1Lang.code)}
-            </Text>
-          </Pressable>
+        <Dialog.Trigger className="rounded-full bg-primary/10 px-2.5 py-1">
+          <Text className="text-xs font-bold text-primary" numberOfLines={1}>
+            {getLanguageCode(l1Lang.code)}
+          </Text>
         </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay closeOnPress />
@@ -180,12 +178,10 @@ export function LanguageSwitcher() {
 
       {/* L2 language picker */}
       <Dialog.Root open={l2Open} onOpenChange={handleL2OpenChange}>
-        <Dialog.Trigger asChild>
-          <Pressable className="rounded-full bg-accent/10 px-2.5 py-1">
-            <Text className="text-xs font-bold text-accent" numberOfLines={1}>
-              {getLanguageCode(l2Lang.code)}
-            </Text>
-          </Pressable>
+        <Dialog.Trigger className="rounded-full bg-accent/10 px-2.5 py-1">
+          <Text className="text-xs font-bold text-accent" numberOfLines={1}>
+            {getLanguageCode(l2Lang.code)}
+          </Text>
         </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay closeOnPress />
