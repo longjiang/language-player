@@ -192,7 +192,7 @@ export default function OfflineDictionariesScreen() {
     console.log('[OfflineDict] 🗑 handleDelete prompt — l2:', l2);
     Alert.alert(
       `${t('action.delete')} ${getLanguageName(l2)}`,
-      'Delete offline dictionary? You\'ll need internet to look up words.',
+      t('msg.confirm_delete_dictionary', { lang: getLanguageName(l2) }),
       [
         { text: t('action.cancel'), style: 'cancel' },
         {
@@ -214,11 +214,11 @@ export default function OfflineDictionariesScreen() {
   const handleDeleteAll = () => {
     Alert.alert(
       t('action.delete_all'),
-      'Delete all offline dictionaries? You\'ll need internet to look up words.',
+      t('msg.confirm_delete_all_dictionaries'),
       [
         { text: t('action.cancel'), style: 'cancel' },
         {
-          text: 'Delete All',
+          text: t('action.delete_all'),
           style: 'destructive',
           onPress: async () => {
             for (const l2 of downloaded) {
@@ -289,16 +289,16 @@ export default function OfflineDictionariesScreen() {
           </View>
         )}
         {!isDownloaded && status?.checked && status.available && (
-          <Text className="mt-1 text-xs text-muted-foreground">
-            {status.wordCount?.toLocaleString() ?? '?'} words
-            {status.estimatedSizeBytes ? ` · ~${formatSize(status.estimatedSizeBytes)}` : ''}
-          </Text>
+        <Text className="mt-1 text-xs text-muted-foreground">
+          {t('label.words', { count: status.wordCount ?? 0 })}
+          {status.estimatedSizeBytes ? ` · ~${formatSize(status.estimatedSizeBytes)}` : ''}
+        </Text>
         )}
         {!isDownloaded && status?.checked && !status.available && (
-          <Text className="mt-1 text-xs text-muted-foreground">No frequency data available</Text>
+          <Text className="mt-1 text-xs text-muted-foreground">{t('msg.no_frequency_data')}</Text>
         )}
         {!isDownloaded && !status?.checked && (
-          <Text className="mt-1 text-xs text-muted-foreground">Checking…</Text>
+          <Text className="mt-1 text-xs text-muted-foreground">{t('msg.checking')}</Text>
         )}
 
         {/* Progress bar */}
@@ -311,7 +311,7 @@ export default function OfflineDictionariesScreen() {
               />
             </View>
             <Text className="mt-0.5 text-xs text-muted-foreground">
-              {state.downloaded.toLocaleString()} / {state.total.toLocaleString()} words · {state.progress}%
+              {t('label.download_progress', { downloaded: String(state.downloaded), total: String(state.total) })}
             </Text>
           </View>
         )}
@@ -322,7 +322,7 @@ export default function OfflineDictionariesScreen() {
             <AlertTriangle size={12} color={ICON_MUTED} />
             <Pressable onPress={() => handleDownload(l2)}>
               <Text className="text-xs text-destructive">
-                {state.error ?? 'Download failed — tap to retry'}
+                {state.error ?? t('msg.download_failed')}
               </Text>
             </Pressable>
           </View>
@@ -356,7 +356,7 @@ export default function OfflineDictionariesScreen() {
       <View className="px-4 pt-6 pb-1">
         <Text className="text-3xl font-bold text-foreground">{t('title.offline_dictionaries')}</Text>
         <Text className="mt-1 text-sm text-muted-foreground">
-          Download dictionaries to look up words without an internet connection.
+          {t('msg.offline_dictionaries_desc')}
         </Text>
       </View>
 
@@ -365,10 +365,10 @@ export default function OfflineDictionariesScreen() {
         <View className="mx-4 mt-4 rounded-lg border border-border bg-card p-3">
           <View className="flex-row items-center gap-2">
             <AlertTriangle size={16} color={ICON_MUTED} />
-            <Text className="text-sm font-medium text-foreground">Definitions are in English</Text>
+            <Text className="text-sm font-medium text-foreground">{t('msg.offline_definitions_english')}</Text>
           </View>
           <Text className="mt-1 text-xs text-muted-foreground">
-            Offline dictionaries store English definitions. {l1Lang.name} translations are added as you look up words online.
+            {t('msg.offline_definitions_english_desc', { l1: l1Lang.name })}
           </Text>
         </View>
       )}
@@ -395,7 +395,7 @@ export default function OfflineDictionariesScreen() {
             <Search size={16} color={ICON_MUTED} />
             <TextInput
               className="flex-1 ml-2 text-sm text-foreground"
-              placeholder="Search languages…"
+              placeholder={t('placeholder.search_languages')}
               placeholderTextColor={ICON_MUTED}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -419,7 +419,7 @@ export default function OfflineDictionariesScreen() {
             <View className="flex-row items-center gap-2">
               <HardDrive size={14} color={ICON_MUTED} />
               <Text className="text-xs text-muted-foreground">
-                Storage: {downloadedList.length} language{downloadedList.length > 1 ? 's' : ''} downloaded
+                {t('msg.storage_usage', { used: String(downloadedList.length) })}
               </Text>
             </View>
           </View>
