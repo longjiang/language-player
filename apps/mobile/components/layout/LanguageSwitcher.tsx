@@ -1,21 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
+import { ChevronDown } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useT } from '@/hooks/use-t';
 import * as Dialog from '@/components/ui/dialog';
 import { LanguagePicker } from '@/components/LanguagePicker';
-
-/** Short code for the pill display (e.g. 'zh-Hans' → 'ZH', 'en' → 'EN'). */
-function getLanguageCode(code: string): string {
-  return code.split('-')[0]!.toUpperCase();
-}
+import { ICON_MUTED } from '@/lib/theme-colors';
 
 export function LanguageSwitcher() {
-  const { l1Lang, l2Lang, setL1Lang, setL2Lang } = useLanguage();
-  const t = useT();
+  const { l2Lang, setL1Lang, setL2Lang } = useLanguage();
   const [open, setOpen] = useState(false);
-  const [pickerInitialL1, setPickerInitialL1] = useState(l1Lang.code);
-  const [pickerInitialL2, setPickerInitialL2] = useState(l2Lang.code);
+  const [pickerInitialL1, setPickerInitialL1] = useState(l2Lang.code);
 
   async function handleConfirm(l1: string, l2: string) {
     await setL1Lang(l1);
@@ -24,28 +18,18 @@ export function LanguageSwitcher() {
   }
 
   function handleOpen() {
-    setPickerInitialL1(l1Lang.code);
-    setPickerInitialL2(l2Lang.code);
+    setPickerInitialL1(l2Lang.code);
     setOpen(true);
   }
 
   return (
-    <View className="flex-row items-center gap-1">
-      {/* L1 pill */}
-      <Pressable onPress={handleOpen} className="rounded-full bg-primary/10 px-2.5 py-1">
-        <Text className="text-xs font-bold text-primary" numberOfLines={1}>
-          {getLanguageCode(l1Lang.code)}
+    <View>
+      {/* Plain language name + chevron */}
+      <Pressable onPress={handleOpen} className="flex-row items-center gap-1 px-2.5 py-1">
+        <Text className="text-sm text-foreground" numberOfLines={1}>
+          {l2Lang.name}
         </Text>
-      </Pressable>
-
-      {/* Arrow */}
-      <Text className="text-xs text-muted-foreground">→</Text>
-
-      {/* L2 pill */}
-      <Pressable onPress={handleOpen} className="rounded-full bg-accent/10 px-2.5 py-1">
-        <Text className="text-xs font-bold text-accent" numberOfLines={1}>
-          {getLanguageCode(l2Lang.code)}
-        </Text>
+        <ChevronDown size={12} color={ICON_MUTED} />
       </Pressable>
 
       {/* Single dialog — same LanguagePicker as onboarding */}
@@ -55,7 +39,6 @@ export function LanguageSwitcher() {
           <Dialog.SheetContent>
             <LanguagePicker
               initialL1={pickerInitialL1}
-              initialL2={pickerInitialL2}
               onConfirm={handleConfirm}
               onDismiss={() => setOpen(false)}
               showClose

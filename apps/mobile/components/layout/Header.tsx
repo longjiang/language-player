@@ -26,7 +26,7 @@ export function Header() {
         style={{ paddingTop: insets.top + 8 }}
         onLayout={(e: LayoutChangeEvent) => setHeaderHeight(e.nativeEvent.layout.height)}
       >
-        <View className="flex-row items-center gap-3">
+        <View className="flex-row items-center gap-1.5">
           {/* Logo — matches Next.js header.tsx */}
           <Pressable
             onPress={() => router.push('/(tabs)/(media)' as any)}
@@ -48,7 +48,7 @@ export function Header() {
           {/* Search icon */}
           <Pressable
             onPress={() => router.push('/(tabs)/(media)/search' as any)}
-            className="rounded-lg p-2 active:bg-muted"
+            className="rounded-lg p-1 active:bg-muted"
           >
             <Search size={20} color={ICON_MUTED} />
           </Pressable>

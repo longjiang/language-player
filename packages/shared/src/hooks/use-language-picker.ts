@@ -25,6 +25,10 @@ export interface UseLanguagePickerOptions {
   supportedL2s: readonly string[];
   /** Languages to show in the "popular" section. */
   popularLanguages: readonly string[];
+  /** Label for the popular section (localized). Defaults to 'Popular'. */
+  popularTitle?: string;
+  /** Label for the all-languages section (localized). Defaults to 'All'. */
+  allTitle?: string;
 }
 
 export interface LanguageSection {
@@ -108,6 +112,8 @@ export function useLanguagePicker(options: UseLanguagePickerOptions): UseLanguag
     supportedL1s,
     supportedL2s,
     popularLanguages,
+    popularTitle = 'Popular',
+    allTitle = 'All',
     initialL1 = 'en',
     initialL2,
   } = options;
@@ -128,10 +134,10 @@ export function useLanguagePicker(options: UseLanguagePickerOptions): UseLanguag
         popularLanguages,
         searchL1,
         getName,
-        'Popular',
-        'All',
+        popularTitle,
+        allTitle,
       ),
-    [supportedL1s, popularLanguages, searchL1, getName],
+    [supportedL1s, popularLanguages, searchL1, getName, popularTitle, allTitle],
   );
 
   const filteredL2 = useMemo(
@@ -141,10 +147,10 @@ export function useLanguagePicker(options: UseLanguagePickerOptions): UseLanguag
         popularLanguages,
         searchL2,
         getName,
-        'Popular',
-        'All',
+        popularTitle,
+        allTitle,
       ),
-    [supportedL2s, popularLanguages, searchL2, getName],
+    [supportedL2s, popularLanguages, searchL2, getName, popularTitle, allTitle],
   );
 
   // ── Derived ──

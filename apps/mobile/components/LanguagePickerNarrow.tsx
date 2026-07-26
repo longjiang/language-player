@@ -42,6 +42,11 @@ interface LanguagePickerNarrowProps extends UseLanguagePickerReturn {
 
 const TABS = ['l1', 'l2'] as const;
 
+/** Short code for compact display (e.g. 'zh-Hans' → 'ZH', 'en' → 'EN'). */
+function shortCode(code: string): string {
+  return code.split('-')[0]!.toUpperCase();
+}
+
 // ── Component ─────────────────────────────────
 
 export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
@@ -93,13 +98,13 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
 
     return (
       <Pressable
-        className={`border border-border rounded-lg px-4 py-3 mb-2 flex-row items-center justify-between ${
+        className={`border border-border rounded-lg px-3 py-2 mb-1.5 flex-row items-center justify-between ${
           isSelected ? accentBg : 'bg-card'
         }`}
         onPress={() => handleSelect(item)}
       >
         <Text
-          className={`text-base ${isSelected ? accentText : 'text-foreground'}`}
+          className={`text-sm ${isSelected ? accentText : 'text-foreground'}`}
         >
           {getName(item)}
         </Text>
@@ -194,7 +199,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
 
         {/* Language list */}
         <SectionList
-          className="px-3 pb-3 max-h-96"
+          className="px-3 pb-3 h-96"
           sections={sections}
           keyExtractor={(item) => item}
           renderItem={renderLanguageItem}
@@ -204,69 +209,81 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
         />
       </View>
 
-      {/* Summary bar (bordered panel) */}
-      {(selectedL1 || selectedL2) && (
-        <View className="mx-6 mb-4 rounded-xl border border-border bg-card px-4 py-3">
-          {/* Script toggle for Chinese */}
-          {selectedL2 === 'zh' && (
-            <View className="flex-row rounded-lg border border-border bg-muted p-0.5 mb-2">
-              <Pressable
-                onPress={() => setUseTraditional(false)}
-                className={`flex-1 py-1.5 items-center rounded-md ${
-                  !useTraditional ? 'bg-card' : ''
+      {/* Summary bar (bordered panel) — always visible */}
+      <View className="mx-6 mb-4 rounded-xl border border-border bg-card px-4 py-3">
+        {/* Script toggle for Chinese */}
+        {selectedL2 === 'zh' && (
+          <View className="flex-row rounded-lg border border-border bg-muted p-0.5 mb-2">
+            <Pressable
+              onPress={() => setUseTraditional(false)}
+              className={`flex-1 py-1.5 items-center rounded-md ${
+                !useTraditional ? 'bg-card' : ''
+              }`}
+            >
+              <Text
+                className={`text-xs font-semibold ${
+                  !useTraditional
+                    ? 'text-foreground'
+                    : 'text-muted-foreground'
                 }`}
               >
-                <Text
-                  className={`text-xs font-semibold ${
-                    !useTraditional
-                      ? 'text-foreground'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {t('setting.simplified')}
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setUseTraditional(true)}
-                className={`flex-1 py-1.5 items-center rounded-md ${
-                  useTraditional ? 'bg-card' : ''
+                {t('setting.simplified')}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setUseTraditional(true)}
+              className={`flex-1 py-1.5 items-center rounded-md ${
+                useTraditional ? 'bg-card' : ''
+              }`}
+            >
+              <Text
+                className={`text-xs font-semibold ${
+                  useTraditional ? 'text-foreground' : 'text-muted-foreground'
                 }`}
               >
-                <Text
-                  className={`text-xs font-semibold ${
-                    useTraditional ? 'text-foreground' : 'text-muted-foreground'
-                  }`}
-                >
-                  {t('setting.traditional')}
-                </Text>
-              </Pressable>
-            </View>
+                {t('setting.traditional')}
+              </Text>
+            </Pressable>
+          </View>
+        )}
+
+        {/* Selection + Next/Confirm */}
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-1.5">
+            <Text className="text-sm text-foreground font-medium">
+              {shortCode(selectedL1 || 'en')}
+            </Text>
+            <Text className="text-sm text-muted-foreground">→</Text>
+            <Text className="text-sm text-foreground font-medium">
+              {selectedL2 ? shortCode(selectedL2) : ''}
+            </Text>
+          </View>
+
+          {/* On L1 tab: "Next" switches to L2 tab */}
+          {activeTab === 'l1' && (
+            <Pressable
+              onPress={() => setActiveTab('l2')}
+              className="bg-primary px-4 py-2 rounded-lg"
+            >
+              <Text className="text-primary-foreground font-bold text-sm">
+                {t('action.next')}
+              </Text>
+            </Pressable>
           )}
 
-          {/* Selection + confirm */}
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-1.5">
-              <Text className="text-sm text-foreground font-medium">
-                {selectedL1 ? getName(selectedL1) : '?'}
+          {/* On L2 tab with L2 picked: orange "Confirm" */}
+          {activeTab === 'l2' && selectedL2 && (
+            <Pressable
+              onPress={onConfirm}
+              className="bg-accent px-4 py-2 rounded-lg"
+            >
+              <Text className="text-accent-foreground font-bold text-sm">
+                {t('action.confirm')}
               </Text>
-              <Text className="text-sm text-muted-foreground">→</Text>
-              <Text className="text-sm text-foreground font-medium">
-                {selectedL2 ? getName(selectedL2) : '?'}
-              </Text>
-            </View>
-            {isReady && (
-              <Pressable
-                onPress={onConfirm}
-                className="bg-primary px-4 py-2 rounded-lg"
-              >
-                <Text className="text-primary-foreground font-bold text-sm">
-                  {t('action.continue')}
-                </Text>
-              </Pressable>
-            )}
-          </View>
+            </Pressable>
+          )}
         </View>
-      )}
+      </View>
     </View>
   );
 }
