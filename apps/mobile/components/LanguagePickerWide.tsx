@@ -73,7 +73,7 @@ function LanguagePanel({
       </View>
 
       {/* Search */}
-      <View className="flex-row items-center bg-card border border-border rounded-lg px-3 py-2 mb-3">
+      <View className="flex-row items-center bg-background border border-border rounded-lg px-3 py-2 mb-3">
         <Search size={16} color={ICON_MUTED} />
         <TextInput
           className="flex-1 ml-2 text-foreground text-sm"
@@ -167,36 +167,38 @@ export function LanguagePickerWide(props: LanguagePickerWideProps) {
         </View>
       )}
 
-      {/* Two-panel layout */}
-      <View className="flex-1 flex-row px-8 gap-6">
-        {/* L1 panel */}
-        <LanguagePanel
-          title={t('title.i_speak')}
-          search={searchL1}
-          onSearchChange={setSearchL1}
-          sections={filteredL1}
-          selectedCode={selectedL1}
-          onSelect={setSelectedL1}
-          accentColor="primary"
-          getName={getName}
-        />
+      {/* Bordered panel: two-column layout */}
+      <View className="mx-8 mb-3 flex-1 rounded-xl border border-border bg-card p-4">
+        <View className="flex-1 flex-row gap-4">
+          {/* L1 panel */}
+          <LanguagePanel
+            title={t('title.i_speak')}
+            search={searchL1}
+            onSearchChange={setSearchL1}
+            sections={filteredL1}
+            selectedCode={selectedL1}
+            onSelect={setSelectedL1}
+            accentColor="primary"
+            getName={getName}
+          />
 
-        {/* L2 panel */}
-        <LanguagePanel
-          title={t('title.i_learning')}
-          search={searchL2}
-          onSearchChange={setSearchL2}
-          sections={filteredL2}
-          selectedCode={selectedL2}
-          onSelect={setSelectedL2}
-          accentColor="accent"
-          getName={getName}
-        />
+          {/* L2 panel */}
+          <LanguagePanel
+            title={t('title.i_learning')}
+            search={searchL2}
+            onSearchChange={setSearchL2}
+            sections={filteredL2}
+            selectedCode={selectedL2}
+            onSelect={setSelectedL2}
+            accentColor="accent"
+            getName={getName}
+          />
+        </View>
       </View>
 
-      {/* Summary bar */}
+      {/* Summary bar (bordered panel) */}
       {(selectedL1 || selectedL2) && (
-        <View className="border-t border-border bg-card px-8 py-3 flex-row items-center justify-center gap-3">
+        <View className="mx-8 mb-4 rounded-xl border border-border bg-card px-4 py-3 flex-row items-center justify-center gap-3">
           {/* Selection pills */}
           <View className="rounded-full border border-border bg-muted px-4 py-1.5">
             <Text className="text-sm text-foreground">
