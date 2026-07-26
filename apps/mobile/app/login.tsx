@@ -81,7 +81,7 @@ export default function LoginScreen() {
 
       <Pressable onPress={() => router.push('/register')}>
         <Text className="text-primary text-center text-sm">
-          {t('msg.no_account_yet')}
+          {t('msg.dont_have_account')}
         </Text>
       </Pressable>
     </View>
