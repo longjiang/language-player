@@ -78,7 +78,7 @@ export async function openDictionaryDB(): Promise<SQLite.SQLiteDatabase> {
 async function _cleanupOrphanedDicts(db: SQLite.SQLiteDatabase): Promise<void> {
   try {
     const tables = await db.getAllAsync<{ name: string }>(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'dict_%'"
+      "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'dict_%' AND name != 'dict_meta'"
     );
     if (tables.length === 0) return;
 
@@ -352,7 +352,11 @@ export async function deleteDictionary(
   } catch {
     // Table may not exist — that's fine
   }
-  await db.runAsync('DELETE FROM dict_meta WHERE l2 = ?', [l2]);
+  try {
+    await db.runAsync('DELETE FROM dict_meta WHERE l2 = ?', [l2]);
+  } catch {
+    // dict_meta may not exist if orphan cleanup dropped it
+  }
 }
 
 /**
