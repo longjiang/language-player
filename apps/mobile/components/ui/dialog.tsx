@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, Pressable, Animated } from 'react-native';
 import * as DialogPrimitive from '@rn-primitives/dialog';
 
 // ── Root ──
@@ -30,16 +30,28 @@ export function Portal({ children, ...props }: PortalProps) {
   return <DialogPrimitive.Portal {...props}>{children}</DialogPrimitive.Portal>;
 }
 
-// ── Overlay ──
+// ── Overlay (fade in on mount) ──
 
 type OverlayProps = DialogPrimitive.OverlayProps;
 
 export function Overlay({ className, ...props }: OverlayProps) {
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [opacity]);
+
   return (
-    <DialogPrimitive.Overlay
-      className={`absolute inset-0 bg-black/40 ${className ?? ''}`}
-      {...props}
-    />
+    <Animated.View style={{ opacity }}>
+      <DialogPrimitive.Overlay
+        className={`absolute inset-0 bg-black/40 ${className ?? ''}`}
+        {...props}
+      />
+    </Animated.View>
   );
 }
 
@@ -62,22 +74,43 @@ export function Content({ children, className, ...props }: ContentProps) {
   );
 }
 
-// ── Sheet Content (bottom sheet style, full-width) ──
+// ── Sheet Content (bottom sheet style, full-width, slides up on mount) ──
 
 type SheetContentProps = DialogPrimitive.ContentProps & {
   className?: string;
 };
 
 export function SheetContent({ children, className, ...props }: SheetContentProps) {
+  const translateY = useRef(new Animated.Value(300)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [translateY, opacity]);
+
   return (
-    <View className="absolute bottom-0 left-0 right-0">
+    <Animated.View
+      className="absolute bottom-0 left-0 right-0"
+      style={{ transform: [{ translateY }], opacity }}
+    >
       <DialogPrimitive.Content
         className={`rounded-t-xl border-t border-border bg-background px-4 pb-8 pt-4 max-h-[75%] ${className ?? ''}`}
         {...props}
       >
         {children}
       </DialogPrimitive.Content>
-    </View>
+    </Animated.View>
   );
 }
 
