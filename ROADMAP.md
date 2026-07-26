@@ -101,7 +101,8 @@
 ### Fresh Port (Active) — `apps/mobile/`
 
 - ✅ **Scaffold** — new Expo SDK 57 app, NativeWind, shared packages, i18n pipeline
-- 🔄 **Porting** — porting all Next.js pages/components to React Native (see AGENTS.md Mobile Porting Rules)
+- ✅ **Porting** — porting all Next.js pages/components to React Native (see AGENTS.md Mobile Porting Rules)
+- ⬜ **Interaction primitives** — adopt `@rn-primitives` (Dialog, Select, Switch, Tabs, Drawer) for headless interaction behavior, wrapped with NativeWind + design tokens. See [ADR-0014](./docs/adr/0014-rn-primitives-interaction-primitives.md).
 - ⬜ **Feature parity** — validate against Classic for completeness
 
 ## Phase 8: Sunset Classic
