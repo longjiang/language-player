@@ -1,7 +1,6 @@
-import React from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, Pressable, ScrollView, Animated, Easing } from 'react-native';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '@/hooks/use-t';
 import * as Dialog from '@/components/ui/dialog';
 import {
@@ -77,22 +76,53 @@ function iconKey(href: string): string {
 interface HamburgerDrawerProps {
   open: boolean;
   onClose: () => void;
+  /** Measured height of the header bar — drawer panel starts right below it. */
+  headerHeight: number;
 }
 
-export function HamburgerDrawer({ open, onClose }: HamburgerDrawerProps) {
+export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawerProps) {
   const t = useT();
-  const insets = useSafeAreaInsets();
+  const slideAnim = useRef(new Animated.Value(256)).current;
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: open ? 0 : 256,
+        duration: 200,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(overlayOpacity, {
+        toValue: open ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [open, slideAnim, overlayOpacity]);
 
   return (
     <Dialog.Root open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
       <Dialog.Portal>
-        <Dialog.Overlay closeOnPress />
-        {/* Drawer panel slides in from the right */}
-        <View
-          className="absolute right-0 top-0 bottom-0 z-50 w-64 border-l border-border bg-background shadow-lg"
-          style={{ paddingTop: insets.top + 8 }}
+        {/* Overlay — fades in/out, covers full screen */}
+        <Animated.View
+          className="absolute inset-0 z-40"
+          style={{ opacity: overlayOpacity }}
+          pointerEvents={open ? 'auto' : 'none'}
         >
-          <ScrollView className="px-4">
+          <Pressable className="absolute inset-0 bg-black/20" onPress={onClose} />
+        </Animated.View>
+
+        {/* Drawer panel — slides in from the right */}
+        <Animated.View
+          className="absolute right-0 z-50 w-64 border-l border-border bg-background p-4 shadow-lg"
+          style={{
+            top: headerHeight,
+            bottom: 0,
+            transform: [{ translateX: slideAnim }],
+          }}
+        >
+          <ScrollView className="flex-1">
             {NAV_GROUPS.map((group) => (
               <View key={group.label} className="mb-4">
                 <Text className="mb-1 px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -114,7 +144,7 @@ export function HamburgerDrawer({ open, onClose }: HamburgerDrawerProps) {
               </View>
             ))}
           </ScrollView>
-        </View>
+        </Animated.View>
       </Dialog.Portal>
     </Dialog.Root>
   );
