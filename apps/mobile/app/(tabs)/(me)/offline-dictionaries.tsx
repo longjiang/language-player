@@ -153,24 +153,10 @@ export default function OfflineDictionariesScreen() {
     })();
   }, []);
 
-  // ── Poll download progress ──
+  // ── Tick poll: triggers re-renders for progress bars during download ──
   useEffect(() => {
     const interval = setInterval(() => {
-      let hasActive = false;
-      for (const l2 of downloadingRef.current) {
-        const state = getDownloadState(l2);
-        if (state.status === 'downloading') hasActive = true;
-        if (state.status === 'completed' || state.status === 'failed') {
-          console.log('[OfflineDict] 📡 poll status change — l2:', l2, '→ status:', state.status,
-            state.status === 'failed' ? `error: ${state.error}` : '');
-          downloadingRef.current.delete(l2);
-          if (state.status === 'completed') {
-            setDownloaded((prev) => new Set(prev).add(l2));
-          }
-        }
-      }
-      if (hasActive) setTick((t) => t + 1);
-      if (downloadingRef.current.size === 0) clearInterval(interval);
+      if (downloadingRef.current.size > 0) setTick((t) => t + 1);
     }, 200);
     return () => clearInterval(interval);
   }, []);
@@ -181,8 +167,17 @@ export default function OfflineDictionariesScreen() {
     console.log('[OfflineDict] 🚀 handleDownload — l2:', l2, '— timestamp:', Date.now());
     downloadingRef.current.add(l2);
     setTick((t) => t + 1);
-    await startDownload(l2);
-    console.log('[OfflineDict] ✅ handleDownload finished — l2:', l2);
+    try {
+      await startDownload(l2);
+      // Move from available → downloaded immediately on success
+      setDownloaded((prev) => new Set(prev).add(l2));
+      console.log('[OfflineDict] ✅ handleDownload finished + moved to downloaded — l2:', l2);
+    } catch {
+      console.log('[OfflineDict] ❌ handleDownload failed — l2:', l2);
+    } finally {
+      downloadingRef.current.delete(l2);
+      setTick((t) => t + 1);
+    }
   };
 
   const handleCancel = (l2: string) => {
