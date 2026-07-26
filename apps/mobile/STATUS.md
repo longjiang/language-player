@@ -181,7 +181,7 @@
 
 | # | Issue | Severity | Affects |
 |---|---|---|---|
-| 1 | **YouTube playback broken on iOS** — declarative `play` prop in `react-native-youtube-iframe` doesn't start playback; fragile key-remount bridge workaround | 🔴 High | Video Player |
+| 1 | **YouTube programmatic play broken on iOS** — `react-native-youtube-iframe` `play` prop doesn't start playback on iOS. **Mitigated**: `play` prop removed; users tap the iframe directly to play/pause. `seekTo`, `getCurrentTime`, and `setPlaybackRate` work on both platforms. | 🟡 Low | Video Player |
 | 2 | **Go Pro has no payment flow** — pricing displayed but no Stripe/PayPal purchase integration | 🔴 High | ~~Go Pro~~ ✅ Fixed |
 
 ---
