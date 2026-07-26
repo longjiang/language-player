@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, Pressable, Image, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,7 @@ import { useT } from '@/hooks/use-t';
 import { HamburgerDrawer } from './HamburgerDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
+import { useDialogOpen } from '@/lib/animations';
 
 /** Matches Next.js sm: breakpoint (640px). */
 const SM_BREAKPOINT = 640;
@@ -16,7 +17,7 @@ export function Header() {
   const t = useT();
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useDialogOpen();
 
   const showAppName = screenWidth >= SM_BREAKPOINT;
 
