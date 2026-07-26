@@ -112,7 +112,7 @@
 | Profile / Me | `(tabs)/(me)/index.tsx` | ✅ | — | Menu list with semantic NativeWind design tokens |
 | Profile Detail | `(tabs)/(me)/profile.tsx` | ✅ | `[l1]/[l2]/profile/page.tsx` | Info + watch history + saved words previews. Includes subscription management (pro status, cancel auto-renew, expire dates, lifetime upsell) and language level selector |
 | Go Pro | `(tabs)/(me)/go-pro.tsx` | ✅ | `[l1]/[l2]/go-pro/page.tsx` | Plan selection, Stripe credit card checkout, WeChat Pay, Alipay, PayPal (lifetime). **IAP not ported** — Nuxt had `@ionic-native/in-app-purchase-2`; GO legacy had `react-native-iap` (stubbed for SDK 57); Python validates Apple receipts; mobile needs its own IAP solution |
-| Settings | `(tabs)/(me)/settings.tsx` | 🟡 | `[l1]/[l2]/settings/page.tsx` | 4 tabs (Display/Playback/Speech/Review). VoicePicker uses NativeWind design tokens and locale-aware language names. **Missing**: Offline Dictionaries entry point, full settings tab rather than button. Settings parity with web (tokenized text, review, etc.). See [SPEC-015](../../docs/specs/015-mobile-settings-completion.md) for gap analysis and implementation plan. |
+| Settings | `(tabs)/(me)/settings/` | ✅ | `[l1]/[l2]/settings/page.tsx` | List→detail navigation with search (Display/Playback/Speech/Review + Offline Dictionaries). Full parity with web: theme, translation preview, popup dictionary, font/text size, phonetics, word-level display, Chinese/Korean/Vietnamese options, quiz mode, captions/karaoke/auto-pause, voice picker, new cards/day. iPad split view. Settings saved confirmation badge. Native stack header respects light/dark theme. See [SPEC-015](../../docs/specs/015-mobile-settings-completion.md). |
 | About | `(tabs)/(me)/about.tsx` | ✅ | ✅ | Basic app info |
 | Docs / Help | `(tabs)/(me)/docs.tsx` | ✅ | `[l1]/[l2]/docs/` | Searchable doc listing. MarkdownText rendering (headings, lists, bold/italic, code, links) + "On this page" heading TOC sidebar |
 | Tokenizer Debug | `(tabs)/(me)/tokenizer.tsx` | ✅ | `[l1]/[l2]/tokenizer/page.tsx` | Dev tool |
@@ -208,5 +208,5 @@ These exist in the Next.js web app but have **no mobile equivalent yet**:
 
 ## Current Focus
 
-- 🔄 **Phase 7**: Mobile Integration — Settings parity with web, local tokenizer, IAP evaluation, interaction primitives migration (`@rn-primitives` per ADR-0014)
+- 🔄 **Phase 7**: Mobile Integration — ✅ Settings parity with web complete (SPEC-015). Next: local tokenizer, IAP evaluation, interaction primitives migration (`@rn-primitives` per ADR-0014)
 - Up next: finish remaining 🟡 screens, then full feature parity audit against Classic
