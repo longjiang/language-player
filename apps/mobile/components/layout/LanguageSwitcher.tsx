@@ -5,6 +5,7 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { SUPPORTED_L1S, SUPPORTED_L2S } from '@langplayer/shared';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import * as Dialog from '@/components/ui/dialog';
 import enLocale from '@langplayer/shared/locales/en.json';
 
 const enLangNames = (enLocale as any)?.lang ?? {};
@@ -59,13 +60,68 @@ function LanguageOption({ code, onSelect }: { code: string; onSelect: (c: string
   );
 }
 
+function LanguagePickerContent({
+  allCodes,
+  search,
+  onSearchChange,
+  onSelect,
+}: {
+  allCodes: readonly string[];
+  search: string;
+  onSearchChange: (s: string) => void;
+  onSelect: (code: string) => void;
+}) {
+  const t = useT();
+  const list = useLanguageList(allCodes, search);
+
+  return (
+    <Dialog.SheetContent>
+      <TextInput
+        className="mb-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+        placeholder={t('placeholder.search_dots')}
+        placeholderTextColor={PLACEHOLDER_COLOR}
+        value={search}
+        onChangeText={onSearchChange}
+        autoFocus
+      />
+      <ScrollView className="max-h-80" keyboardShouldPersistTaps="handled">
+        {list.popular.length > 0 && (
+          <>
+            {!search && list.rest.length > 0 && (
+              <Text className="mb-0.5 mt-1 text-xs font-semibold text-muted-foreground">
+                {t('msg.popular_languages')}
+              </Text>
+            )}
+            {list.popular.map((code) => (
+              <LanguageOption key={code} code={code} onSelect={onSelect} />
+            ))}
+          </>
+        )}
+        {list.rest.length > 0 && (
+          <>
+            <View className="my-1 border-t border-border" />
+            <Text className="mb-0.5 text-xs font-semibold text-muted-foreground">
+              {t('msg.all_languages')}
+            </Text>
+            {list.rest.map((code) => (
+              <LanguageOption key={code} code={code} onSelect={onSelect} />
+            ))}
+          </>
+        )}
+      </ScrollView>
+    </Dialog.SheetContent>
+  );
+}
+
 export function LanguageSwitcher() {
   const { l1Lang, l2Lang, setL1Lang, setL2Lang, swapLanguages } = useLanguage();
   const { isOfflineAvailable } = useDictionaryContext();
   const t = useT();
-  const [open, setOpen] = useState<'l1' | 'l2' | null>(null);
+  const [l1Open, setL1Open] = useState(false);
+  const [l2Open, setL2Open] = useState(false);
   const [search, setSearch] = useState('');
   const [hasOfflineDict, setHasOfflineDict] = useState(false);
+  const [activePicker, setActivePicker] = useState<'l1' | 'l2' | null>(null);
 
   const canSwap = (SUPPORTED_L1S as readonly string[]).includes(l2Lang.code);
 
@@ -73,52 +129,47 @@ export function LanguageSwitcher() {
     isOfflineAvailable(l2Lang.code).then(setHasOfflineDict).catch(() => setHasOfflineDict(false));
   }, [l2Lang.code]);
 
-  const l1List = useLanguageList(SUPPORTED_L1S, open === 'l1' ? search : '');
-  const l2List = useLanguageList(SUPPORTED_L2S, open === 'l2' ? search : '');
-
   const handleSelect = (code: string) => {
-    if (open === 'l1') setL1Lang(code);
+    if (activePicker === 'l1') setL1Lang(code);
     else setL2Lang(code);
-    setOpen(null);
+    setSearch('');
+    if (activePicker === 'l1') setL1Open(false);
+    else setL2Open(false);
   };
 
-  const renderLanguageList = (list: LanguageList) => (
-    <>
-      {list.popular.length > 0 && (
-        <>
-          {!search && list.rest.length > 0 && (
-            <Text className="mb-0.5 mt-1 text-xs font-semibold text-muted-foreground">
-              {t('msg.popular_languages')}
-            </Text>
-          )}
-          {list.popular.map((code) => (
-            <LanguageOption key={code} code={code} onSelect={handleSelect} />
-          ))}
-        </>
-      )}
-      {list.rest.length > 0 && (
-        <>
-          <View className="my-1 border-t border-border" />
-          <Text className="mb-0.5 text-xs font-semibold text-muted-foreground">
-            {t('msg.all_languages')}
-          </Text>
-          {list.rest.map((code) => (
-            <LanguageOption key={code} code={code} onSelect={handleSelect} />
-          ))}
-        </>
-      )}
-    </>
-  );
+  const handleL1OpenChange = (open: boolean) => {
+    setL1Open(open);
+    if (open) { setActivePicker('l1'); setSearch(''); }
+  };
+
+  const handleL2OpenChange = (open: boolean) => {
+    setL2Open(open);
+    if (open) { setActivePicker('l2'); setSearch(''); }
+  };
 
   return (
     <View className="flex-row items-center gap-1">
-      <Pressable
-        onPress={() => { setOpen(open === 'l1' ? null : 'l1'); setSearch(''); }}
-        className="rounded-full bg-primary/10 px-2.5 py-1"
-      >
-        <Text className="text-xs font-bold text-primary" numberOfLines={1}>{getLanguageCode(l1Lang.code)}</Text>
-      </Pressable>
+      {/* L1 language picker */}
+      <Dialog.Root open={l1Open} onOpenChange={handleL1OpenChange}>
+        <Dialog.Trigger asChild>
+          <Pressable className="rounded-full bg-primary/10 px-2.5 py-1">
+            <Text className="text-xs font-bold text-primary" numberOfLines={1}>
+              {getLanguageCode(l1Lang.code)}
+            </Text>
+          </Pressable>
+        </Dialog.Trigger>
+        <Dialog.Portal>
+          <Dialog.Overlay closeOnPress />
+          <LanguagePickerContent
+            allCodes={SUPPORTED_L1S}
+            search={search}
+            onSearchChange={setSearch}
+            onSelect={handleSelect}
+          />
+        </Dialog.Portal>
+      </Dialog.Root>
 
+      {/* Swap button */}
       <Pressable
         onPress={() => { if (canSwap) swapLanguages(); }}
         className="rounded-full p-0.5"
@@ -127,34 +178,28 @@ export function LanguageSwitcher() {
         <Text className={`text-xs ${canSwap ? 'text-foreground' : 'text-muted-foreground'}`}>⇄</Text>
       </Pressable>
 
-      <Pressable
-        onPress={() => { setOpen(open === 'l2' ? null : 'l2'); setSearch(''); }}
-        className="rounded-full bg-accent/10 px-2.5 py-1"
-      >
-        <Text className="text-xs font-bold text-accent" numberOfLines={1}>{getLanguageCode(l2Lang.code)}</Text>
-      </Pressable>
+      {/* L2 language picker */}
+      <Dialog.Root open={l2Open} onOpenChange={handleL2OpenChange}>
+        <Dialog.Trigger asChild>
+          <Pressable className="rounded-full bg-accent/10 px-2.5 py-1">
+            <Text className="text-xs font-bold text-accent" numberOfLines={1}>
+              {getLanguageCode(l2Lang.code)}
+            </Text>
+          </Pressable>
+        </Dialog.Trigger>
+        <Dialog.Portal>
+          <Dialog.Overlay closeOnPress />
+          <LanguagePickerContent
+            allCodes={SUPPORTED_L2S}
+            search={search}
+            onSearchChange={setSearch}
+            onSelect={handleSelect}
+          />
+        </Dialog.Portal>
+      </Dialog.Root>
 
       {hasOfflineDict && (
-        <View className="w-1.5 h-1.5 rounded-full bg-green-500 -ml-0.5" />
-      )}
-
-      {open && (
-        <>
-          <Pressable className="absolute inset-0 z-40" onPress={() => setOpen(null)} />
-          <View className="absolute left-0 top-full z-50 mt-1 w-48 rounded-lg border border-border bg-card p-2 shadow-lg">
-            <TextInput
-              className="mb-1 rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground"
-              placeholder={t('placeholder.search_dots')}
-              placeholderTextColor={PLACEHOLDER_COLOR}
-              value={search}
-              onChangeText={setSearch}
-              autoFocus
-            />
-            <ScrollView className="max-h-64" keyboardShouldPersistTaps="handled">
-              {open === 'l1' ? renderLanguageList(l1List) : renderLanguageList(l2List)}
-            </ScrollView>
-          </View>
-        </>
+        <View className="h-1.5 w-1.5 rounded-full bg-green-500 -ml-0.5" />
       )}
     </View>
   );

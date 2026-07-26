@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { View, Text, Image, Pressable, Modal, FlatList, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { View, Text, Image, Pressable, FlatList, ActivityIndicator, useWindowDimensions } from 'react-native';
+import * as Dialog from '@/components/ui/dialog';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
@@ -260,73 +261,75 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
         </Pressable>
       )}
 
-      {/* ── Video List Modal ── */}
-      <Modal visible={listOpen} animationType="slide" presentationStyle="pageSheet">
-        <View className="flex-1 bg-background">
-          {/* Modal header */}
-          <View className="flex-row items-center justify-between border-b border-border px-4 py-3">
-            <Text className="text-base font-semibold text-foreground">
-              {videos.length} videos
-            </Text>
-            <Pressable onPress={() => setListOpen(false)} className="rounded-full bg-muted p-2">
-              <X size={18} color={ICON_MUTED} />
-            </Pressable>
-          </View>
-
-          {/* Video list */}
-          <FlatList
-            data={videos}
-            keyExtractor={(v) => String(v.id)}
-            contentContainerStyle={{ padding: 16 }}
-            renderItem={({ item, index }) => {
-              const ml = item.subs_l2[item.matchLineIndex];
-              const isActive = index === currentIndex;
-              return (
-                <Pressable
-                  onPress={() => selectFromList(index)}
-                  className={`mb-2 flex-row gap-3 rounded-lg p-2 ${isActive ? 'bg-primary/5' : ''}`}
-                >
-                  {/* Thumbnail */}
-                  <View className="h-12 w-20 overflow-hidden rounded bg-muted">
-                    <Image
-                      source={{ uri: youtubeThumbnail(item.youtube_id) }}
-                      className="h-full w-full"
-                      resizeMode="cover"
-                    />
-                    {ml && (
-                      <View className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1">
-                        <Text className="text-[10px] text-white">{formatTime(ml.starttime)}</Text>
-                      </View>
-                    )}
-                  </View>
-
-                  {/* Info */}
-                  <View className="flex-1">
-                    <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
-                      {item.title}
-                    </Text>
-                    {item.matchLineIndex > 0 && (
-                      <Text className="text-[11px] text-muted-foreground/50" numberOfLines={1}>
-                        {item.subs_l2[item.matchLineIndex - 1]?.line}
-                      </Text>
-                    )}
-                    {ml && (
-                      <Text className="text-xs text-foreground" numberOfLines={2}>
-                        {ml.line}
-                      </Text>
-                    )}
-                    {item.matchLineIndex < item.subs_l2.length - 1 && (
-                      <Text className="text-[11px] text-muted-foreground/50" numberOfLines={1}>
-                        {item.subs_l2[item.matchLineIndex + 1]?.line}
-                      </Text>
-                    )}
-                  </View>
+      {/* ── Video List Dialog ── */}
+      <Dialog.Root open={listOpen} onOpenChange={setListOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay closeOnPress />
+          <Dialog.SheetContent className="max-h-[85%]">
+            {/* Dialog header */}
+            <View className="flex-row items-center justify-between border-b border-border pb-3 mb-2">
+              <Dialog.Title>{videos.length} videos</Dialog.Title>
+              <Dialog.Close asChild>
+                <Pressable className="rounded-full bg-muted p-2">
+                  <X size={18} color={ICON_MUTED} />
                 </Pressable>
-              );
-            }}
-          />
-        </View>
-      </Modal>
+              </Dialog.Close>
+            </View>
+
+            {/* Video list */}
+            <FlatList
+              data={videos}
+              keyExtractor={(v) => String(v.id)}
+              renderItem={({ item, index }) => {
+                const ml = item.subs_l2[item.matchLineIndex];
+                const isActive = index === currentIndex;
+                return (
+                  <Pressable
+                    onPress={() => selectFromList(index)}
+                    className={`mb-2 flex-row gap-3 rounded-lg p-2 ${isActive ? 'bg-primary/5' : ''}`}
+                  >
+                    {/* Thumbnail */}
+                    <View className="h-12 w-20 overflow-hidden rounded bg-muted">
+                      <Image
+                        source={{ uri: youtubeThumbnail(item.youtube_id) }}
+                        className="h-full w-full"
+                        resizeMode="cover"
+                      />
+                      {ml && (
+                        <View className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1">
+                          <Text className="text-[10px] text-white">{formatTime(ml.starttime)}</Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Info */}
+                    <View className="flex-1">
+                      <Text className="text-xs font-medium text-foreground" numberOfLines={1}>
+                        {item.title}
+                      </Text>
+                      {item.matchLineIndex > 0 && (
+                        <Text className="text-[11px] text-muted-foreground/50" numberOfLines={1}>
+                          {item.subs_l2[item.matchLineIndex - 1]?.line}
+                        </Text>
+                      )}
+                      {ml && (
+                        <Text className="text-xs text-foreground" numberOfLines={2}>
+                          {ml.line}
+                        </Text>
+                      )}
+                      {item.matchLineIndex < item.subs_l2.length - 1 && (
+                        <Text className="text-[11px] text-muted-foreground/50" numberOfLines={1}>
+                          {item.subs_l2[item.matchLineIndex + 1]?.line}
+                        </Text>
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              }}
+            />
+          </Dialog.SheetContent>
+        </Dialog.Portal>
+      </Dialog.Root>
     </View>
   );
 }

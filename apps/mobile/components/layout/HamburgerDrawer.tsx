@@ -1,13 +1,15 @@
 import React from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '@/hooks/use-t';
+import * as Dialog from '@/components/ui/dialog';
 import {
   Compass, Music, Tv, Clapperboard, History, Upload,
   FileText, BookMarked, Bookmark, RotateCcw, Globe, BookOpen,
 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { drawerEnter, drawerExit } from '@/lib/animations';
 
 const ICON_COLOR = ICON_MUTED;
 
@@ -82,44 +84,39 @@ export function HamburgerDrawer({ open, onClose }: HamburgerDrawerProps) {
   const t = useT();
   const insets = useSafeAreaInsets();
 
-  if (!open) return null;
-
   return (
-    <>
-      {/* Backdrop */}
-      <Pressable
-        style={StyleSheet.absoluteFill}
-        className="z-40 bg-black/20"
-        onPress={onClose}
-      />
-      {/* Drawer */}
-      <View
-        className="absolute right-0 z-50 h-full w-64 border-l border-border bg-background shadow-lg"
-        style={{ paddingTop: insets.top + 8 }}
-      >
-        <ScrollView className="px-4">
-          {NAV_GROUPS.map((group) => (
-            <View key={group.label} className="mb-4">
-              <Text className="mb-1 px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {t(`nav.${group.label.toLowerCase()}` as any)}
-              </Text>
-              {group.links.map((link) => (
-                <Pressable
-                  key={link.href}
-                  className="flex-row items-center gap-3 rounded-lg px-3 py-2 active:bg-muted"
-                  onPress={() => {
-                    onClose();
-                    router.push(link.href as any);
-                  }}
-                >
-                  <View className="opacity-100">{NAV_ICONS[iconKey(link.href)]}</View>
-                  <Text className="text-sm text-foreground">{t(link.key)}</Text>
-                </Pressable>
-              ))}
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    </>
+    <Dialog.Root open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay closeOnPress />
+        {/* Drawer panel slides in from the right */}
+        <View
+          className="absolute right-0 top-0 bottom-0 z-50 w-64 border-l border-border bg-background shadow-lg"
+          style={{ paddingTop: insets.top + 8 }}
+        >
+          <ScrollView className="px-4">
+            {NAV_GROUPS.map((group) => (
+              <View key={group.label} className="mb-4">
+                <Text className="mb-1 px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  {t(`nav.${group.label.toLowerCase()}` as any)}
+                </Text>
+                {group.links.map((link) => (
+                  <Pressable
+                    key={link.href}
+                    className="flex-row items-center gap-3 rounded-lg px-3 py-2 active:bg-muted"
+                    onPress={() => {
+                      onClose();
+                      router.push(link.href as any);
+                    }}
+                  >
+                    <View className="opacity-100">{NAV_ICONS[iconKey(link.href)]}</View>
+                    <Text className="text-sm text-foreground">{t(link.key)}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
