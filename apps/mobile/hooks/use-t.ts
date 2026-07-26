@@ -54,8 +54,9 @@ export function useT() {
       }
       return result;
     }
-    // Complex ICU (plural, select, etc.) → use intl.formatMessage for proper formatting
-    // Omit 'id' to avoid MISSING_TRANSLATION lookup in empty IntlProvider messages.
-    return intl.formatMessage({ defaultMessage: message }, values);
+    // Complex ICU (plural, select, etc.) → use intl.formatMessage for proper formatting.
+    // An id is required by @formatjs/intl even though lookup fails (empty messages);
+    // MISSING_TRANSLATION errors are suppressed via IntlProvider's onError.
+    return intl.formatMessage({ id, defaultMessage: message }, values);
   };
 }
