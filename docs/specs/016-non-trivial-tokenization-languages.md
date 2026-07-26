@@ -242,6 +242,7 @@ Pre-computed `{surface: [lemma]}` TSV files already exist on the server at `data
 | `sl` | Slovenian | LemmatizationList table | — | Dual number! |
 | `sv` | Swedish | LemmatizationList table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | |
 | `uk` | Ukrainian | LemmatizationList table | — | Case system |
+| `ast` | Asturian | LemmatizationList table | — | 108K rows — larger than many C1 langs. Romance; dialectal variation doesn't affect lemmatization. |
 
 ### C2 — Simplemma Available (17 languages)
 
@@ -302,7 +303,7 @@ These languages have high surface-form-to-lemma ratios (thousands of inflected f
 
 ---
 
-## Category D: Special Cases (4 languages)
+## Category D: Special Cases (3 languages)
 
 Languages that don't fit cleanly into the above categories.
 
@@ -310,7 +311,6 @@ Languages that don't fit cleanly into the above categories.
 |---|---|---|---|
 | `vi` | Vietnamese | Spaces between **syllables**, not words. Compounds like `trường đại học` (university) should be joined. No inflection. | Space-split is acceptable for tokenization; pyvi-style compound joining is a nice-to-have. Surface = lemma. |
 | `hi` | Hindi | Spaces exist but postpositions can blur word boundaries. Simplemma excluded (breaks too many words). No equivalent of Devanagari spaCy model available locally. | Space-split + surface-as-lemma for now. Server fallback for better results. |
-| `ast` | Asturian | Both LemmatizationList and Simplemma available (covers it well). Listed as special only because it's a small Romance language with dialectal variation. | LemmatizationList table. |
 | `tlh` | Klingon | Apostrophes are part of words (`puqbe'pu'`). Regex tokenizer must treat `'` as a word character. | Regex `[\w']+` handles it correctly. |
 
 ---
@@ -329,11 +329,11 @@ A sampling: `af`, `am`, `az`, `bn`, `eo`, `eu`, `fo`, `fy`, `gd`, `gu`, `ha`, `h
 |---|---|---|---|---|
 | **A** — Both | 5 (`ja`, `ko`, `ar`, `fa`, `tr`) | Complex | Complex | ~200–500 KB |
 | **B** — Segmentation-Only | 16 (11 Chinese varieties + `th`, `km`, `lo`, `my`, `bo`) | Complex | None | 0 KB (Intl.Segmenter) |
-| **C1** — LemmatizationList | 18 | Trivial (spaces) | Pre-built TSV table | ~100–300 KB |
+| **C1** — LemmatizationList | 19 | Trivial (spaces) | Pre-built TSV table | ~100–300 KB |
 | **C2** — Simplemma | 17 | Trivial (spaces) | Pre-built dict table | ~50–200 KB |
 | **C3** — spaCy-Only | 1 (`hr`) | Trivial (spaces) | spaCy or server fallback | Server-dependent |
 | **C4** — Dedicated Engine | 1 (`ru`) | Trivial (spaces) | pymorphy2 export table | ~300–500 KB |
-| **D** — Special | 4 (`vi`, `hi`, `ast`, `tlh`) | Trivial-ish | Varies | Minimal |
+| **D** — Special | 3 (`vi`, `hi`, `tlh`) | Trivial-ish | Varies | Minimal |
 | **E** — Regex-Only | ~146 | Trivial (spaces) | None | 0 KB |
 | **Total** | **207** | | | |
 
