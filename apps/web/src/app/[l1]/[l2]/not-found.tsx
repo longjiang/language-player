@@ -16,16 +16,16 @@ export default function LanguageNotFound() {
       </p>
       <div className="mt-6 flex gap-3">
         <Link
-          href={`/${params.l1}/${params.l2}/explore`}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          {t('title.explore')}
-        </Link>
-        <Link
           href="/language-select"
           className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted"
         >
           {t('action.change_language')}
+        </Link>
+        <Link
+          href={`/${params.l1}/${params.l2}/explore`}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          {t('action.go_home')}
         </Link>
       </div>
     </div>
