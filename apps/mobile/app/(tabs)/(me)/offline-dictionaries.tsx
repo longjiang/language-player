@@ -46,10 +46,11 @@ function langMatchesSearch(code: string, query: string, localeLangNames: Record<
 // ── Types ────────────────────────────────────
 
 interface LangStatus {
-  available: boolean;
-  wordCount?: number;
-  estimatedSizeBytes?: number;
-  version?: string;
+  totalEntries: number;
+  freqCount: number;
+  downloaded: number;
+  capped: boolean;
+  version: string;
   checked: boolean;
 }
 
@@ -72,6 +73,7 @@ export default function OfflineDictionariesScreen() {
     cancelDownload,
     deleteDictionary,
     isOfflineAvailable,
+    getDownloadedCount,
   } = useDictionaryContext();
 
   const l1IsEn = l1Lang.code === 'en';
@@ -95,6 +97,7 @@ export default function OfflineDictionariesScreen() {
   const [statuses, setStatuses] = useState<Map<string, LangStatus>>(new Map());
   // Downloaded languages (checked on mount)
   const [downloaded, setDownloaded] = useState<Set<string>>(new Set());
+  const [downloadedCounts, setDownloadedCounts] = useState<Map<string, number>>(new Map());
   // Force re-render for progress bars
   const [, setTick] = useState(0);
 
@@ -105,15 +108,18 @@ export default function OfflineDictionariesScreen() {
     (async () => {
       console.log('[OfflineDict] 🔍 checking already-downloaded dicts...');
       const dl = new Set<string>();
+      const counts = new Map<string, number>();
       for (const l2 of SUPPORTED_L2S) {
         try {
           if (await isOfflineAvailable(l2)) {
             dl.add(l2);
+            counts.set(l2, await getDownloadedCount(l2));
           }
         } catch {}
       }
       console.log('[OfflineDict] 📋 downloaded dicts found:', dl.size, '—', [...dl].join(', ') || '(none)');
       setDownloaded(dl);
+      setDownloadedCounts(counts);
     })();
   }, []);
 
@@ -126,24 +132,26 @@ export default function OfflineDictionariesScreen() {
         const baseUrl = require('@/lib/api-url').PYTHON_API_URL;
         const res = await fetch(`${baseUrl}/dictionary/download/languages`);
         const data = await res.json();
-        const langs = (data.languages ?? {}) as Record<string, { wordCount: number }>;
+        const langs = (data.languages ?? {}) as Record<string, { totalEntries: number; freqCount: number; downloaded: number; capped: boolean; version: string }>;
         const count = Object.keys(langs).length;
-        console.log('[OfflineDict] ✅ batch response —', count, 'languages with frequency data — took', Date.now() - fetchStart, 'ms');
+        console.log('[OfflineDict] ✅ batch response —', count, 'languages — took', Date.now() - fetchStart, 'ms');
         console.log('[OfflineDict] 📋 available:', Object.keys(langs).sort().join(', '));
 
         const next = new Map<string, LangStatus>();
         for (const [l2, info] of Object.entries(langs)) {
           next.set(l2, {
-            available: true,
-            wordCount: info.wordCount,
-            estimatedSizeBytes: info.wordCount * 500, // rough estimate
+            totalEntries: info.totalEntries,
+            freqCount: info.freqCount,
+            downloaded: info.downloaded,
+            capped: info.capped,
+            version: info.version,
             checked: true,
           });
         }
         // Mark remaining SUPPORTED_L2S as unavailable
         for (const l2 of SUPPORTED_L2S) {
           if (!next.has(l2)) {
-            next.set(l2, { available: false, checked: true });
+            next.set(l2, { totalEntries: 0, freqCount: 0, downloaded: 0, capped: false, version: '', checked: true });
           }
         }
         setStatuses(next);
@@ -171,7 +179,9 @@ export default function OfflineDictionariesScreen() {
       await startDownload(l2);
       // Move from available → downloaded immediately on success
       setDownloaded((prev) => new Set(prev).add(l2));
-      console.log('[OfflineDict] ✅ handleDownload finished + moved to downloaded — l2:', l2);
+      const count = await getDownloadedCount(l2);
+      setDownloadedCounts((prev) => new Map(prev).set(l2, count));
+      console.log('[OfflineDict] ✅ handleDownload finished — l2:', l2, 'count:', count);
     } catch (e: any) {
       const wasCancelled = e?.message === 'Download cancelled';
       console.log('[OfflineDict]', wasCancelled ? '🛑 cancelled' : '❌ failed', '— l2:', l2, wasCancelled ? '' : `error: ${e?.message ?? e}`);
@@ -281,21 +291,20 @@ export default function OfflineDictionariesScreen() {
           )}
         </View>
 
-        {/* Word count / size */}
+        {/* Word count / saved status */}
         {isDownloaded && (
           <View className="mt-1 flex-row items-center gap-1">
             <CheckCircle2 size={12} color={ICON_MUTED} />
-            <Text className="text-xs text-muted-foreground">{t('label.saved')}</Text>
+            <Text className="text-xs text-muted-foreground">
+              {t('label.saved')} · {t('label.words', { count: downloadedCounts.get(l2) ?? 0 })}
+            </Text>
           </View>
         )}
-        {!isDownloaded && status?.checked && status.available && (
+        {!isDownloaded && status?.checked && status.totalEntries > 0 && (
         <Text className="mt-1 text-xs text-muted-foreground">
-          {t('label.words', { count: status.wordCount ?? 0 })}
-          {status.estimatedSizeBytes ? ` · ~${formatSize(status.estimatedSizeBytes)}` : ''}
+          {t('label.words', { count: status.downloaded })}
+          {status.capped ? ` · ~${formatSize(status.downloaded * 80)}` : ` · ~${formatSize(status.totalEntries * 80)}`}
         </Text>
-        )}
-        {!isDownloaded && status?.checked && !status.available && (
-          <Text className="mt-1 text-xs text-muted-foreground">{t('msg.no_frequency_data')}</Text>
         )}
         {!isDownloaded && !status?.checked && (
           <Text className="mt-1 text-xs text-muted-foreground">{t('msg.checking')}</Text>
