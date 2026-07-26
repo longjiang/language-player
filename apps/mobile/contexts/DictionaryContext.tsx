@@ -4,11 +4,23 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useRef,
   type ReactNode,
 } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionary } from '@langplayer/api-client';
-import type { DictionaryEntry } from '@langplayer/shared';
+import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
+import {
+  openDictionaryDB,
+  lookupOffline,
+  lookupLLMCache,
+  storeLLMCacheEntry,
+  bulkInsertEntries,
+  deleteDictionary as deleteDictDB,
+  hasOfflineDictionary,
+  saveDictMeta,
+} from '@/lib/dictionary-db';
+import type { SQLiteDatabase } from 'expo-sqlite';
 
 // ── Sidebar / wordlist types ────────────────
 
@@ -16,6 +28,16 @@ export type SidebarSource =
   | { kind: 'saved' }
   | { kind: 'results'; items: DictionaryEntry[] }
   | { kind: 'wordlist'; items: { head: string; dictionaryId: string; entryId: string; id: string; pronunciation?: string; definition?: string }[]; currentId: string };
+
+// ── Download state ──────────────────────────
+
+export interface DownloadState {
+  status: 'idle' | 'downloading' | 'completed' | 'failed';
+  progress: number; // 0–100
+  downloaded: number;
+  total: number;
+  error?: string;
+}
 
 // ── Context shape ───────────────────────────
 
@@ -41,11 +63,28 @@ interface DictionaryContextValue {
   setSidebarSource: (s: SidebarSource) => void;
   detailHead: string | null;
   setDetailHead: (v: string | null) => void;
+
+  /** Offline / download */
+  startDownload: (l2: string) => Promise<void>;
+  cancelDownload: (l2: string) => void;
+  deleteDictionary: (l2: string) => Promise<void>;
+  getDownloadState: (l2: string) => DownloadState;
+  isOfflineAvailable: (l2: string) => Promise<boolean>;
 }
 
 const DictionaryContext = createContext<DictionaryContextValue | null>(null);
 
 import * as SecureStore from 'expo-secure-store';
+
+// ── Session memory cache ────────────────────
+// Caches online lookup results in memory to avoid redundant network
+// calls within a session. Cleared when L2 changes.
+const sessionCache = new Map<string, DictionaryEntry[]>();
+
+/** Check whether any entry in the results is LLM-generated. */
+function hasLlmEntry(entries: DictionaryEntry[]): boolean {
+  return entries.some((e) => (e as any).kind === 'llm' || (e as any).match_type === 'llm');
+}
 
 // ── Provider ────────────────────────────────
 
@@ -101,7 +140,18 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const [sidebarSource, setSidebarSource] = useState<SidebarSource>({ kind: 'saved' });
   const [detailHead, setDetailHead] = useState<string | null>(null);
 
-  // Load recent on mount and when L2 changes
+  // ── Offline / download state ──
+  const dbRef = useRef<SQLiteDatabase | null>(null);
+  const downloadStatesRef = useRef<Map<string, DownloadState>>(new Map());
+  const [downloadStatesVersion, setDownloadStatesVersion] = useState(0); // bump to trigger re-renders
+  const cancelRef = useRef<Map<string, boolean>>(new Map());
+
+  // Init DB on mount
+  useEffect(() => {
+    openDictionaryDB().then((db) => { dbRef.current = db; });
+  }, []);
+
+  // Load recent on mount and when L2 changes; clear session cache
   useEffect(() => {
     loadRecent(l2Code).then(setRecentSearches);
     // Reset state on language change
@@ -111,7 +161,11 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     setError(null);
     setSearchedText('');
     setCameFromSearch(false);
+    // Clear session memory cache on L2 switch
+    sessionCache.clear();
   }, [l2Code]);
+
+  // ── 4-tier lookup ──────────────────────────
 
   const doSearch = useCallback(async (term: string) => {
     const trimmed = term.trim();
@@ -123,12 +177,62 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     setMessage(null);
     setSearchedText(trimmed);
 
+    const cacheKey = `${l2Code}:${trimmed}`;
+
     try {
+      // ── Tier 1: Memory cache ──
+      const cached = sessionCache.get(cacheKey);
+      if (cached) {
+        console.log('[Dict] memory cache hit —', trimmed);
+        setResults(cached);
+        setLoading(false);
+        await saveRecent(l2Code, trimmed);
+        setRecentSearches(await loadRecent(l2Code));
+        return;
+      }
+
+      // ── Tier 2: Offline SQLite ──
+      if (dbRef.current) {
+        const offline = await lookupOffline(dbRef.current, trimmed, l2Code);
+        if (offline && offline.length > 0) {
+          console.log('[Dict] offline hit —', trimmed, `(${offline.length} entries)`);
+          sessionCache.set(cacheKey, offline);
+          setResults(offline);
+          setLoading(false);
+          await saveRecent(l2Code, trimmed);
+          setRecentSearches(await loadRecent(l2Code));
+          return;
+        }
+      }
+
+      // ── Tier 3: LLM cache ──
+      if (dbRef.current) {
+        const llmCached = await lookupLLMCache(dbRef.current, trimmed, l1Lang.code, l2Code);
+        if (llmCached && llmCached.length > 0) {
+          console.log('[Dict] LLM cache hit —', trimmed);
+          sessionCache.set(cacheKey, llmCached);
+          setResults(llmCached);
+          setLoading(false);
+          await saveRecent(l2Code, trimmed);
+          setRecentSearches(await loadRecent(l2Code));
+          return;
+        }
+      }
+
+      // ── Tier 4: Online lookup ──
       const res = await dict.lookup(trimmed, l2Code, l1Lang.code);
-      // DEBUG: Confirms search completed and how many results returned.
-      // If this logs but handleEntryPress never does, the tap isn't reaching the card's Pressable.
-      console.log('[Dict] doSearch results — query:', trimmed, '— count:', res.results?.length ?? 0, '— timestamp:', Date.now());
-      setResults(res.results ?? []);
+      const entries = res.results ?? [];
+      console.log('[Dict] online lookup —', trimmed, `(${entries.length} entries)`);
+
+      // Cache in memory
+      sessionCache.set(cacheKey, entries);
+
+      // Auto-store LLM-generated entries in persistent cache
+      if (entries.length > 0 && hasLlmEntry(entries) && dbRef.current) {
+        storeLLMCacheEntry(dbRef.current, trimmed, l1Lang.code, l2Code, entries).catch(() => {});
+      }
+
+      setResults(entries);
       setMessage(res.message ?? null);
       await saveRecent(l2Code, trimmed);
       setRecentSearches(await loadRecent(l2Code));
@@ -138,7 +242,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [dict, l2Code]);
+  }, [dict, l2Code, l1Lang.code]);
 
   const clearSearch = useCallback(() => {
     setQuery('');
@@ -156,6 +260,111 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     } catch { /* ignore */ }
   }, [l2Code]);
 
+  // ── Download management ────────────────────
+
+  const getDownloadState = useCallback((l2: string): DownloadState => {
+    return downloadStatesRef.current.get(l2) ?? { status: 'idle', progress: 0, downloaded: 0, total: 0 };
+  }, []);
+
+  const isOfflineAvailable = useCallback(async (l2: string): Promise<boolean> => {
+    if (!dbRef.current) return false;
+    return hasOfflineDictionary(dbRef.current, l2);
+  }, []);
+
+  const startDownload = useCallback(async (l2: string) => {
+    if (!dbRef.current) {
+      try { dbRef.current = await openDictionaryDB(); } catch { return; }
+    }
+
+    const db = dbRef.current;
+    const stateMap = downloadStatesRef.current;
+    const cancelMap = cancelRef.current;
+
+    // Reset cancel flag
+    cancelMap.set(l2, false);
+
+    // Set initial state
+    stateMap.set(l2, { status: 'downloading', progress: 0, downloaded: 0, total: 0 });
+    setDownloadStatesVersion((v) => v + 1);
+
+    try {
+      const res = await dict.downloadDictionary(l2, l1Lang.code);
+      const { entries, total, version } = res;
+
+      // Check cancellation before starting insert
+      if (cancelMap.get(l2)) {
+        stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
+        setDownloadStatesVersion((v) => v + 1);
+        return;
+      }
+
+      await bulkInsertEntries(db, l2, entries, (pct) => {
+        // Check cancellation between chunks
+        if (cancelMap.get(l2)) return;
+        const downloaded = Math.round((pct / 100) * entries.length);
+        stateMap.set(l2, {
+          status: 'downloading',
+          progress: pct,
+          downloaded,
+          total: entries.length,
+        });
+        setDownloadStatesVersion((v) => v + 1);
+      });
+
+      // Check cancellation after insert
+      if (cancelMap.get(l2)) {
+        // Clean up partial data
+        await deleteDictDB(db, l2);
+        stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
+        setDownloadStatesVersion((v) => v + 1);
+        return;
+      }
+
+      // Save metadata
+      const now = new Date().toISOString();
+      const meta: DictMeta = {
+        l2,
+        downloaded_at: now,
+        entry_count: entries.length,
+        size_bytes: JSON.stringify(entries).length,
+        version,
+      };
+      await saveDictMeta(db, meta);
+
+      stateMap.set(l2, {
+        status: 'completed',
+        progress: 100,
+        downloaded: entries.length,
+        total: entries.length,
+      });
+      setDownloadStatesVersion((v) => v + 1);
+
+    } catch (e: any) {
+      // Clean up partial data on failure
+      try { await deleteDictDB(db, l2); } catch {}
+
+      stateMap.set(l2, {
+        status: 'failed',
+        progress: 0,
+        downloaded: 0,
+        total: 0,
+        error: e?.message ?? 'Download failed',
+      });
+      setDownloadStatesVersion((v) => v + 1);
+    }
+  }, [dict, l1Lang.code]);
+
+  const cancelDownload = useCallback((l2: string) => {
+    cancelRef.current.set(l2, true);
+  }, []);
+
+  const deleteDictionary = useCallback(async (l2: string) => {
+    if (!dbRef.current) return;
+    await deleteDictDB(dbRef.current, l2);
+    downloadStatesRef.current.delete(l2);
+    setDownloadStatesVersion((v) => v + 1);
+  }, []);
+
   return (
     <DictionaryContext.Provider
       value={{
@@ -164,6 +373,8 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         recentSearches, clearRecent,
         cameFromSearch, setCameFromSearch,
         sidebarSource, setSidebarSource, detailHead, setDetailHead,
+        startDownload, cancelDownload, deleteDictionary,
+        getDownloadState, isOfflineAvailable,
       }}
     >
       {children}
