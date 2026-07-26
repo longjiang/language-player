@@ -404,7 +404,15 @@ This is the primary download management interface. The screen lists every L2 lan
 │                                      │
 │  ── {label.available} ──            │
 │                                      │
-│  {$lang.de}  German                  │
+│  ┌──────────────────────────────────┐│
+│  │ 🔍 Search languages…      [✕]   ││  ← Filters by English name, native
+│  └──────────────────────────────────┘│     name, ISO code, locale name
+│                                      │
+│  {$lang.ja}  Japanese  ★ Current    │  ← Current L2 always first
+│  ├─ 22,252 {label.words}  ~11 MB    │
+│  └─ [{action.download}]             │
+│                                      │
+│  {$lang.de}  German                  │  ← Remaining languages alpha-sorted
 │  ├─ 17,686 {label.words}  ~9 MB     │
 │  └─ [{action.download}]             │
 │                                      │
@@ -422,6 +430,8 @@ This is the primary download management interface. The screen lists every L2 lan
 |---|---|
 | **L1≠en callout** | Shown at top when user's L1 is not English. Dismissible; stored in AsyncStorage so it doesn't reappear. |
 | **Language rows** | Grouped: "Downloaded" then "Available". Each row shows word count, estimated download size, and current status. |
+| **Search bar** | Filters the Available list by English name, native name (e.g., "français"), ISO code, and localized name (e.g., "フランス語" in Japanese locale). Shown only in the Available section. |
+| **Current L2 priority** | The user's current L2 language always appears first in the Available list (if not already downloaded), marked with a subtle "Current" badge. |
 | **Download button** | Initiates download. Transforms into a progress bar during download. On completion, becomes a checkmark with date. |
 | **Progress bar** | Updates per chunk (every 500 entries stored). Shows percentage + "{downloaded} of {total} words" below the bar. |
 | **Delete button** | Removes the dict table for that language. Confirmation dialog before deleting. |
