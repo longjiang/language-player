@@ -24,11 +24,9 @@ Both apps have their own separate (but functionally identical) non-consumable IA
 The new React Native/Expo app at `apps/mobile/` (Expo SDK 57) is now the active development target. It has:
 - Stripe credit card, WeChat Pay, Alipay, and PayPal payment flows
 - **No IAP yet** (the GO legacy's `react-native-iap` was removed for SDK 57 compatibility)
-- Subtitle-based video player with transcript
-- EPUB reader, web reader, markdown notes
-- Offline dictionary downloads
-- SRS review, saved words
-- All features from the Legacy GO app + many more
+- Feature parity with `apps/web`
+- Offline tokenization for most supported L2s
+- Offline dictionary downloads for English L1
 
 ---
 
@@ -81,25 +79,6 @@ Remove the GO app from the store. Replace the release binary of the Classic Nuxt
 - Loses the GO app's ratings/reviews (which are separate from the Nuxt app's listing)
 - Renaming to "Language Player 3" still signals version churn
 
-### Option C: Replace Nuxt Binary, Remove GO, Keep the Name
-
-Same as Option B, but keep the app named "Language Player 2" rather than incrementing to "3". The version number in the App Store listing can be updated without changing the display name.
-
-| App | Action |
-|---|---|
-| Classic Nuxt | Replace binary with apps/mobile build, keep name as "Language Player 2" |
-| GO Legacy | Remove from App Store |
-
-**Pros:**
-All the pros of Option B, plus:
-- No name confusion with versions/numbers
-- Existing users search for "Language Player 2" and find the updated app
-- The "2" suffix becomes just a disambiguator (vs the competitor's "Language Player")
-
-**Cons:**
-- The name "Language Player 2" is technically inaccurate for the new codebase (it's not Nuxt anymore)
-- Minor — most users don't care about the tech behind the name
-
 ### Option D: Single App — Brand New Name
 
 Create a brand-new app listing with a distinct name (not "Language Player X") and phase out both legacy apps over time. E.g., "Zero to Hero" (matching the domain name).
@@ -118,58 +97,50 @@ Create a brand-new app listing with a distinct name (not "Language Player X") an
 - App Store review from scratch
 - Brand recognition loss — "Language Player" is descriptive and searchable
 
-### Option E: Replace Nuxt Binary, Keep GO for IAP, Remove GO Later
-
-Replace the Nuxt binary with the new app (as in Option B). Keep the GO app on the store temporarily as the "IAP bridge" — new app users who need IAP are redirected to download GO, purchase there, then come back. Remove GO once the new app has its own IAP.
-
-**Pros:**
-- Allows the new app to launch without IAP, which is the current blocker
-- Legacy IAP remains available through GO
-
-**Cons:**
-- Terrible user experience: "Buy in the other app, then come back"
-- Users will be confused and frustrated
-- Two apps still on the store
-- Prolongs the migration
-
 ---
 
-## IAP Migration Considerations
+## Recommendations
 
-The critical dependency for Options B and C is IAP. The new app needs a working IAP implementation before it can replace the Nuxt binary (otherwise existing users lose the ability to purchase the lifetime subscription in-app on iOS).
+| Criteria | A (3 apps) | B (Replace+rename) | D (New name) |
+|---|---|---|---|
+| User confusion | 🔴 High | 🟢 Low | 🟢 Low |
+| Existing IAP carry-over | 🟢 Seamless | 🟢 Seamless | 🔴 Broken |
+| Dev maintenance | 🔴 3 apps | 🟢 1 app | 🟢 1 app |
+| Ratings/reviews preserved | 🟢 All | 🟡 Half | 🔴 None |
+| User trust (fresh start) | 🟡 OK | 🟡 OK | 🟢 Clean |
+
+**Option B** appears to be the strongest: replace the Nuxt app binary with the new `apps/mobile` build under the existing bundle ID and rename to "Language Player 3". This:
+
+1. Preserves the existing IAP product and bundle ID — users who purchased get restoration
+2. Keeps a single app on the store — no confusion
+3. Retains the Nuxt app's ratings and reviews
+4. Drops the GO app which is the older codebase
+
+**Prerequisites before executing Option B:**
+1. Implement IAP in `apps/mobile` using RevenueCat or `expo-in-app-purchases`
+2. Verify receipt validation against the existing `ca.zerotohero.app` bundle ID
+3. Test `restorePurchases()` with an account that has the legacy IAP product
+4. Remove the GO app from the store
+5. Push the update as a new version of "Language Player 3"
+
+## Consequences
+
+The critical dependency for Options B is IAP. The new app needs a working IAP implementation before it can replace the Nuxt binary (otherwise existing users lose the ability to purchase the lifetime subscription in-app on iOS).
 
 The Nuxt/Capacitor app and the GO app each have their own IAP products with separate bundle IDs (`ca.zerotohero.app` and `ca.zerotohero.go`), but they share the same backend validation endpoint (`POST /in_app_purchase_success`). The Python backend checks the receipt against Apple's `verifyReceipt` endpoint and grants a lifetime subscription regardless of which bundle ID was used.
 
 **Key constraint**: Apple's `restoreCompletedTransactions` only restores purchases for the current app's bundle ID. The Nuxt app uses `ca.zerotohero.app`, while the new app currently uses `ca.zerotohero.languageplayer` in its Expo config.
 
-**For Option C** (replace Nuxt binary), we would change the new app's bundle ID from `ca.zerotohero.languageplayer` to `ca.zerotohero.app` for the App Store release build. This preserves:
+**For Option B** (replace Nuxt binary), we would change the new app's bundle ID from `ca.zerotohero.languageplayer` to `ca.zerotohero.app` for the App Store release build. This preserves:
 - The existing app listing and reviews
 - Existing IAP — `restorePurchases()` works because the bundle ID matches
 - Users who purchased via the Nuxt app see their lifetime subscription carry over
 
 The `ca.zerotohero.languageplayer` bundle ID can remain for development/testing builds (side-loaded via Expo Go or TestFlight).
 
-**Options B/C preserve the Nuxt bundle ID** (`ca.zerotohero.app`), meaning `restorePurchases()` from the existing app works. This is a strong argument for those options.
+**Option B preserves the Nuxt bundle ID** (`ca.zerotohero.app`), meaning `restorePurchases()` from the existing app works. This is a strong argument for this option.
 
 ---
-
-## Recommendations
-
-| Criteria | A (3 apps) | B (Replace+rename) | C (Replace+keep name) | D (New name) | E (Hybrid) |
-|---|---|---|---|---|---|
-| User confusion | 🔴 High | 🟢 Low | 🟢 Low | 🟢 Low | 🔴 High |
-| Existing IAP carry-over | 🟢 Seamless | 🟢 Seamless | 🟢 Seamless | 🔴 Broken | 🟢 Seamless |
-| Dev maintenance | 🔴 3 apps | 🟢 1 app | 🟢 1 app | 🟢 1 app | 🟡 2 apps |
-| Ratings/reviews preserved | 🟢 All | 🟡 Half | 🟡 Half | 🔴 None | 🟡 Half |
-| User trust (fresh start) | 🟡 OK | 🟡 OK | 🟡 OK | 🟢 Clean | 🟡 OK |
-
-**Option C** appears to be the strongest: replace the Nuxt app binary with the new `apps/mobile` build under the existing bundle ID and display name "Language Player 2". This:
-
-1. Preserves the existing IAP product and bundle ID — users who purchased restoration works
-2. Keeps a single app on the store — no confusion
-3. Retains ratings and reviews
-4. Avoids the "3" version churn problem
-5. Differentiates from the competitor's "Language Player" via the "2" suffix
 
 **Prerequisites before executing Option C:**
 1. Implement IAP in `apps/mobile` using RevenueCat or `expo-in-app-purchases`
