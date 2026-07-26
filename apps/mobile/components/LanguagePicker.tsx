@@ -17,9 +17,7 @@ import { SUPPORTED_L1S, SUPPORTED_L2S, POPULAR_LANGUAGES } from '@langplayer/sha
 import { useLanguagePicker, type UseLanguagePickerReturn } from '@langplayer/shared';
 import { LanguagePickerNarrow } from './LanguagePickerNarrow';
 import { LanguagePickerWide } from './LanguagePickerWide';
-
-/** Matches Next.js sm: breakpoint (640px). */
-const SM_BREAKPOINT = 640;
+import { SM_BREAKPOINT } from '@/lib/constants';
 
 // ── Props ─────────────────────────────────────
 
