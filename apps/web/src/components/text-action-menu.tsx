@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
+import { useState, useCallback, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useLanguage } from '@/providers/language-provider';
@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import {
   MoreVertical, Copy, Volume2, Square, Sparkles, Languages, Loader2,
 } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 interface TextActionMenuProps {
   /** Plain text of the block/line. */
@@ -52,42 +53,11 @@ export function TextActionMenu({
   const t = useT();
   const { speak: speakTts, stop: stopTts, isSpeaking } = useSpeech();
   const { text: explainText, error: explainError, loading: explainLoading, stream: streamExplain, reset: resetExplain } = useStreamingExplanation();
-  const [open, setOpen] = useState(false);
   const [activeAction, setActiveAction] = useState<ActionKind | null>(null);
   const [translateText, setTranslateText] = useState<string | null>(null);
   const [translateError, setTranslateError] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const btnRef = useRef<HTMLButtonElement>(null);
-
-  // Close on click outside the dropdown popup — use capture phase so we can
-  // stop propagation before the click reaches any underlying element (e.g.,
-  // review card onClick). We check dropdownRef (just the popup), not menuRef
-  // (the whole component), so clicking the text content also dismisses safely.
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        e.stopPropagation();
-        setOpen(false);
-      }
-    };
-    document.addEventListener('click', handler, true);
-    return () => document.removeEventListener('click', handler, true);
-  }, [open]);
-
-  // Close on Escape
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setOpen(false); btnRef.current?.focus(); }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [open]);
 
   const close = useCallback(() => {
-    setOpen(false);
     setActiveAction(null);
   }, []);
 
@@ -153,7 +123,7 @@ export function TextActionMenu({
   ];
 
   return (
-    <div ref={menuRef} className="group relative flex items-start gap-3 mb-4">
+    <div className="group relative flex items-start gap-3 mb-4">
       {/* Content + inline translation */}
       <div className="flex-1 min-w-0 flex flex-col gap-y-1 xl:flex-row xl:gap-4 xl:items-center">
         <div className="flex-[3] min-w-0">
@@ -174,22 +144,12 @@ export function TextActionMenu({
         )}
       </div>
 
-      {/* Trigger button */}
-      <button
-        ref={btnRef}
-        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-        aria-haspopup="true"
-        aria-expanded={open}
-        className="z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100"
-      >
-        <MoreVertical className="h-4 w-4" />
-      </button>
-
-      {/* Dropdown menu */}
-      {open && (
-        <div ref={dropdownRef}
-          className="absolute right-0 top-full z-50 mt-1 min-w-[180px] rounded-lg border border-border bg-card p-1 shadow-lg animate-in fade-in zoom-in-95"
-          onClick={(e) => e.stopPropagation()}>
+      {/* Action menu dropdown */}
+      <Popover>
+        <PopoverTrigger className="z-10 mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all hover:bg-muted hover:text-foreground opacity-100" aria-label={t('action.more')}>
+          <MoreVertical className="h-4 w-4" />
+        </PopoverTrigger>
+        <PopoverContent side="bottom" align="end" sideOffset={4} className="min-w-[180px] p-1">
           {menuItems.map((item) => (
             <button
               key={item.kind}
@@ -205,8 +165,8 @@ export function TextActionMenu({
               {item.label}
             </button>
           ))}
-        </div>
-      )}
+        </PopoverContent>
+      </Popover>
 
       {/* Explain modal */}
       {activeAction === 'explain' && (explainText || explainError || explainLoading) && (

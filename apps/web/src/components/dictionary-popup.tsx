@@ -17,6 +17,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { getCachedEntries, setCachedEntries } from '@/lib/dictionary-cache';
 import { WordList } from '@/components/dictionary/word-list';
 import { buildEntryRoute } from '@/lib/entry-route';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface DictionaryPopupProps {
   token: LemmatizedToken;
@@ -160,15 +161,11 @@ export function DictionaryPopup({
   };
 
   return (
-    <div onClick={(e) => e.stopPropagation()}>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-black/20"
-        onClick={onClose}
-      />
-
-      {/* Popover */}
-      <div className="fixed left-1/2 top-1/3 z-50 w-[28rem] max-w-[90vw] -translate-x-1/2 rounded-xl border bg-popover p-4 shadow-xl">
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent
+        showCloseButton={false}
+        className="w-[28rem] max-w-[90vw] sm:max-w-[28rem] p-4"
+      >
         {/* Header */}
         <div className="mb-3 flex items-center justify-between">
           <div>
@@ -277,7 +274,7 @@ export function DictionaryPopup({
             ))}
           </WordList>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

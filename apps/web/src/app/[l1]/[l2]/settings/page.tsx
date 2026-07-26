@@ -12,6 +12,7 @@ import { getSampleSentence } from '@langplayer/shared';
 import { TokenizedText } from '@/components/tokenized-text';
 import { VoicePicker } from '@/components/voice-picker';
 import { TabbedPanel } from '@/components/tabbed-panel';
+import { Switch } from '@/components/ui/switch';
 
 export default function SettingsPage() {
   const { l1, l2 } = useLanguage();
@@ -46,9 +47,8 @@ export default function SettingsPage() {
           <span className="text-sm font-medium">{label}</span>
           {desc && <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>}
         </div>
-        <span className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
-          <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="sr-only peer" />
-          <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-primary/20 after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-background after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+        <span className="shrink-0 ml-4">
+          <Switch checked={checked} onCheckedChange={onChange} />
         </span>
       </label>
     </div>
