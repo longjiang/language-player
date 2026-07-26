@@ -56,6 +56,28 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const quizMode = tokenSettings.mode === 'quiz';
   const showDefinition = l2Settings.tokenSpan.definition.show;
 
+  // ── Settings read but not yet fully implemented (see SPEC-015 Phase 5B) ──
+  // TODO(G7): quickGloss — show dictionary snippet below saved words.
+  //   Needs useSavedWords() context + dictionary definition data per token.
+  //   Web: token-span.tsx:121 checks isSaved && quickGloss → renders firstDef.
+  const quickGlossEnabled = tokenSettings.quickGloss;
+
+  // TODO(G9): phonetics.conditions — filter by hard/easy words.
+  //   Needs user proficiency level + per-token dictionary CEFR/HSK lookup.
+  //   Currently always shows phonetics when enabled (same as 'always').
+  //   Web: token-span.tsx:158 checks conditions === 'hardWords' → compares levels.
+  const phoneticsConditions = phonetics.conditions;
+
+  // TODO(G11): display.traditional — simplified ↔ traditional character switch.
+  //   Needs character conversion utility (OpenCC or equivalent shared module).
+  //   Currently renders text as-is regardless of the setting.
+  const useTraditional = l2Settings.display.traditional;
+
+  // TODO(G12): display.byeonggi — hanja / hán tự lookup.
+  //   Needs dictionary cache lookup per token for hanja/hán tự characters.
+  //   Web: token-span.tsx:126-148 uses useMemo with dict cache per lemma.
+  const byeonggiEnabled = l2Settings.display.byeonggi !== false;
+
   // Quiz mode: track which tokens have been revealed
   const [revealedTokens, setRevealedTokens] = useState<Set<number>>(new Set());
 
