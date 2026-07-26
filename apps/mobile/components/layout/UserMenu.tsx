@@ -5,11 +5,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
 import * as Dialog from '@/components/ui/dialog';
 import { useAnimatedBoolean } from '@/lib/animations';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
   const t = useT();
   const [open, setOpen] = useAnimatedBoolean();
+  const insets = useSafeAreaInsets();
 
   const initial = user?.email?.charAt(0)?.toUpperCase() ?? '?';
 
@@ -26,8 +28,13 @@ export function UserMenu() {
       </Dialog.Trigger>
 
       <Dialog.Portal>
+        {/* Overlay for dismiss on outside tap */}
         <Dialog.Overlay closeOnPress />
-        <Dialog.Content className="w-64 p-1">
+        {/* Dropdown positioned below header, right-aligned */}
+        <View
+          className="absolute right-2 w-56 rounded-xl border border-border bg-card shadow-lg p-1 z-50"
+          style={{ top: insets.top + 52 }}
+        >
           {user ? (
             <>
               {/* User info header */}
@@ -83,7 +90,7 @@ export function UserMenu() {
               </Pressable>
             </>
           )}
-        </Dialog.Content>
+        </View>
       </Dialog.Portal>
     </Dialog.Root>
   );
