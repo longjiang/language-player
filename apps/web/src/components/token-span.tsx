@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { getCachedEntries } from '@/lib/dictionary-cache';
+import { useSettingsContext } from '@/providers/settings-provider';
+import { baseCode } from '@/lib/language-data';
 
 /** Word difficulty result from the local dictionary cache.
  *
@@ -100,6 +102,27 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   const isQuizBlanking = mode === 'quiz' && isSaved && !quizRevealed;
 
   const base = l2Code.split('-')[0]!;
+
+  // ── Chinese script conversion: simplified ↔ traditional (ADR-0019) ──
+  const { getL2 } = useSettingsContext();
+  const l2Settings = getL2(l2Code);
+  const isChinese = baseCode(l2Code) === 'zh';
+  const useTraditional = isChinese && l2Settings.display.traditional;
+
+  // Per-token OpenCC conversion (lazy-loaded once at module level).
+  // cn→twp is idempotent on already-traditional text and preserves
+  // 1:1 character mapping, so ruby alignment with pinyin is safe.
+  const [displayText, setDisplayText] = useState(token.text);
+  useEffect(() => {
+    if (!useTraditional) { setDisplayText(token.text); return; }
+    let cancelled = false;
+    (async () => {
+      const { toTraditional } = await import('@/lib/chinese-script');
+      const result = await toTraditional(token.text);
+      if (!cancelled) setDisplayText(result);
+    })();
+    return () => { cancelled = true; };
+  }, [token.text, useTraditional]);
 
   // ── First cached entry's first definition — shared by quick gloss and interlinear ──
   const firstDef = useMemo(() => {
@@ -222,7 +245,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     // ── Ruby text ──
     const hasPhonetics = !isHighlighted && !isQuizBlanking && showPhonetics && phoneticsMode === 'ruby' && token.pronunciation && token.pronunciation !== token.text;
     const rubySegments: RubySegment[] | null = hasPhonetics
-      ? buildRuby(token.text, token.pronunciation!, l2Code)
+      ? buildRuby(displayText, token.pronunciation!, l2Code)
       : null;
 
     wordContent = (
@@ -233,7 +256,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
                 ? <ruby key={j}>{seg.text}<rt>{seg.reading}</rt></ruby>
                 : <React.Fragment key={j}>{seg.text}</React.Fragment>
             )
-          : token.text}
+          : displayText}
       </span>
     );
   }

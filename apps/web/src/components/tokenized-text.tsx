@@ -89,14 +89,12 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const [loading, setLoading] = useState(!preloadedTokens);
   const [error, setError] = useState<string | null>(null);
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
-  const [convertedText, setConvertedText] = useState(text);
-  const [converting, setConverting] = useState(false);
   const [hasBeenVisible, setHasBeenVisible] = useState(false);
   const [cacheVersion, setCacheVersion] = useState(0);
   const containerRef = useRef<HTMLSpanElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false); // prevent concurrent fetches
-  const lastTextRef = useRef(text); // avoid redundant convert+tokenize
+  const lastTextRef = useRef(text); // avoid redundant tokenize re-triggers
   const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
   tokenCacheRef.current = tokenCache;
 
@@ -121,37 +119,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
     return () => observer.disconnect();
   }, [hasBeenVisible]);
 
-  // Convert text to traditional if user prefers traditional and L2 is Chinese.
-  // OpenCC is lazy-loaded only when needed. Conversion is idempotent so
-  // already-traditional text (e.g. from the reader page) is a no-op.
-  useEffect(() => {
-    // Skip if text hasn't changed (prevents re-triggering on parent re-renders)
-    if (text === lastTextRef.current) return;
-    lastTextRef.current = text;
-
-    let cancelled = false;
-
-    async function convert() {
-      const l2Settings = getL2(l2Code);
-      const isChinese = baseCode(l2Code) === 'zh';
-      if (!isChinese || !l2Settings.display.traditional) {
-        setConvertedText(text);
-        return;
-      }
-
-      setConverting(true);
-      const { toTraditional } = await import('@/lib/chinese-script');
-      const result = await toTraditional(text);
-      if (!cancelled) {
-        setConvertedText(result);
-        setConverting(false);
-      }
-    }
-
-    convert();
-    return () => { cancelled = true; };
-  }, [text, l2Code]);
-
+  // ── Tokenization: fetch lemmatized tokens when visible ──
+  // Chinese script conversion (simplified ↔ traditional) is handled
+  // per-token by TokenSpan — TokenizedText always sends original text
+  // to the lemmatizer for best Jieba quality (per ADR-0019).
   useEffect(() => {
     // Skip API call if tokens were pre-loaded
     if (preloadedTokens) {
@@ -160,13 +131,10 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       return;
     }
 
-    // Wait for script conversion to finish
-    if (converting) return;
-
     // Lazy tokenization: don't fetch until visible
     if (!hasBeenVisible) return;
 
-    const effectiveText = convertedText;
+    const effectiveText = text;
 
     // If a video-level token cache is provided but hasn't finished loading yet,
     // show plain text and wait — don't fall back to per-line API calls.
@@ -266,7 +234,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       controller.abort();
       loadingRef.current = false;
     };
-  }, [convertedText, converting, l2Code, preloadedTokens, tokenCacheLoaded, hasBeenVisible]);
+  }, [text, l2Code, preloadedTokens, tokenCacheLoaded, hasBeenVisible]);
 
   // ── Bulk dictionary lookup: pre-fetch entries for all unique lemmas ──
   useEffect(() => {
@@ -324,15 +292,15 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   if (!hasBeenVisible && !preloadedTokens) {
     return (
       <span ref={containerRef} className={`text-muted-foreground/80 ${fontClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
-        {convertedText}
+        {text}
       </span>
     );
   }
 
-  if (loading || converting) {
+  if (loading) {
     return (
       <span ref={containerRef} className={`text-muted-foreground animate-pulse ${fontClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
-        {convertedText}
+        {text}
       </span>
     );
   }
@@ -340,7 +308,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   if (error && tokens.length <= 1) {
     return (
       <span ref={containerRef} className={`text-muted-foreground ${fontClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
-        {convertedText}
+        {text}
       </span>
     );
   }
@@ -404,7 +372,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
           l2Code={l2Code}
           context={{
             form: selectedToken.text,
-            text: convertedText,
+            text: text,
             ...externalContext,
           }}
           onClose={() => setSelectedToken(null)}
