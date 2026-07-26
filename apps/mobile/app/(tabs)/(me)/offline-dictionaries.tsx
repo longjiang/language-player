@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
@@ -117,65 +117,41 @@ export default function OfflineDictionariesScreen() {
     })();
   }, []);
 
-  // ── Check server availability for non-downloaded languages ──
-  // Uses a ref to avoid re-creating the callback when statuses change,
-  // which would cause duplicate requests in the batch-check effect.
-  const statusesRef = useRef(statuses);
-  statusesRef.current = statuses;
-
-  const checkAvailability = useCallback(async (l2: string) => {
-    if (statusesRef.current.has(l2)) return;
-    const fetchStart = Date.now();
-    console.log('[OfflineDict] 🌐 GET /dictionary/download/status — l2:', l2);
-    try {
-      const baseUrl = require('@/lib/api-url').PYTHON_API_URL;
-      const url = `${baseUrl}/dictionary/download/status?l2=${encodeURIComponent(l2)}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      console.log('[OfflineDict] ✅ status response — l2:', l2,
-        'available:', data.available,
-        data.available ? `words: ${data.wordCount}, size: ${data.estimatedSizeBytes}` : '',
-        `(${Date.now() - fetchStart}ms)`);
-      setStatuses((prev) => {
-        const next = new Map(prev);
-        next.set(l2, { ...data, checked: true });
-        return next;
-      });
-    } catch (e: any) {
-      console.log('[OfflineDict] ❌ status check failed — l2:', l2, 'error:', e?.message ?? e, `(${Date.now() - fetchStart}ms)`);
-      setStatuses((prev) => {
-        const next = new Map(prev);
-        next.set(l2, { available: false, checked: true });
-        return next;
-      });
-    }
-  }, []); // stable — uses ref, never recreates
-
-  // Check availability for all undownloaded languages on mount (batched, once)
-  const batchStartedRef = useRef(false);
+  // ── Load server availability in ONE request (instead of 210) ──
   useEffect(() => {
-    if (batchStartedRef.current) return;
-    batchStartedRef.current = true;
+    (async () => {
+      const fetchStart = Date.now();
+      console.log('[OfflineDict] 🌐 GET /dictionary/download/languages (batch)');
+      try {
+        const baseUrl = require('@/lib/api-url').PYTHON_API_URL;
+        const res = await fetch(`${baseUrl}/dictionary/download/languages`);
+        const data = await res.json();
+        const langs = (data.languages ?? {}) as Record<string, { wordCount: number }>;
+        const count = Object.keys(langs).length;
+        console.log('[OfflineDict] ✅ batch response —', count, 'languages with frequency data — took', Date.now() - fetchStart, 'ms');
+        console.log('[OfflineDict] 📋 available:', Object.keys(langs).sort().join(', '));
 
-    const toCheck = SUPPORTED_L2S.filter((l2) => !downloaded.has(l2));
-    if (toCheck.length === 0) return;
-    console.log('[OfflineDict] 🌐 starting batch availability check —', toCheck.length, 'languages, batch size 8');
-    const batchStart = Date.now();
-    const batchSize = 8;
-    let i = 0;
-    const next = () => {
-      const batch = toCheck.slice(i, i + batchSize);
-      i += batchSize;
-      Promise.all(batch.map(checkAvailability)).then(() => {
-        if (i < toCheck.length) {
-          setTimeout(next, 100);
-        } else {
-          console.log('[OfflineDict] ✅ batch check complete —', toCheck.length, 'languages, took', Date.now() - batchStart, 'ms');
+        const next = new Map<string, LangStatus>();
+        for (const [l2, info] of Object.entries(langs)) {
+          next.set(l2, {
+            available: true,
+            wordCount: info.wordCount,
+            estimatedSizeBytes: info.wordCount * 500, // rough estimate
+            checked: true,
+          });
         }
-      });
-    };
-    next();
-  }, []); // run once on mount only
+        // Mark remaining SUPPORTED_L2S as unavailable
+        for (const l2 of SUPPORTED_L2S) {
+          if (!next.has(l2)) {
+            next.set(l2, { available: false, checked: true });
+          }
+        }
+        setStatuses(next);
+      } catch (e: any) {
+        console.log('[OfflineDict] ❌ batch request failed:', e?.message ?? e);
+      }
+    })();
+  }, []);
 
   // ── Poll download progress ──
   useEffect(() => {
