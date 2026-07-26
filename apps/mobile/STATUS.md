@@ -112,7 +112,7 @@
 | Profile / Me | `(tabs)/(me)/index.tsx` | ✅ | — | Menu list with semantic NativeWind design tokens |
 | Profile Detail | `(tabs)/(me)/profile.tsx` | ✅ | `[l1]/[l2]/profile/page.tsx` | Info + watch history + saved words previews. Includes subscription management (pro status, cancel auto-renew, expire dates, lifetime upsell) and language level selector |
 | Go Pro | `(tabs)/(me)/go-pro.tsx` | ✅ | `[l1]/[l2]/go-pro/page.tsx` | Plan selection, Stripe credit card checkout, WeChat Pay, Alipay, PayPal |
-| Settings | `(tabs)/(me)/settings.tsx` | ✅ | `[l1]/[l2]/settings/page.tsx` | 4 tabs (Display/Playback/Speech/Review). VoicePicker uses NativeWind design tokens and locale-aware language names |
+| Settings | `(tabs)/(me)/settings.tsx` | 🟡 | `[l1]/[l2]/settings/page.tsx` | 4 tabs (Display/Playback/Speech/Review). VoicePicker uses NativeWind design tokens and locale-aware language names. **Missing**: Offline Dictionaries entry point, full tab parity with web (tokenized text, review, etc.) |
 | About | `(tabs)/(me)/about.tsx` | ✅ | ✅ | Basic app info |
 | Docs / Help | `(tabs)/(me)/docs.tsx` | ✅ | `[l1]/[l2]/docs/` | Searchable doc listing. MarkdownText rendering (headings, lists, bold/italic, code, links) + "On this page" heading TOC sidebar |
 | Tokenizer Debug | `(tabs)/(me)/tokenizer.tsx` | ✅ | `[l1]/[l2]/tokenizer/page.tsx` | Dev tool |
@@ -194,6 +194,7 @@ These exist in the Next.js web app but have **no mobile equivalent yet**:
 |---|---|---|---|
 | TV Show Detail | `tv-shows/[id]/` | ~~Medium~~ ✅ Ported | Episode list, metadata, seasons |
 | Dictionary Entry Detail | `dictionary/entry/.../` | Low | Deep link target — word detail exists but full entry page missing |
+| Local Tokenizer | — | ⬜ | `api/tokenize` | Offline tokenization via local model/WebAssembly. Currently all tokenization requires a round-trip to the Python backend (`POST /dictionary/tokenize`). A local tokenizer would enable offline reading and faster tokenization without network dependency. |
 | Password Reset (token) | `/password-reset` | Low | Complete after email link click |
 | Verify Email | `/verify-email` | Low | Email verification landing |
 | Delete Account | `/delete-account` | Low | |
