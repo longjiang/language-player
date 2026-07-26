@@ -19,6 +19,7 @@ import {
   deleteDictionary as deleteDictDB,
   hasOfflineDictionary,
   saveDictMeta,
+  getDictMeta,
 } from '@/lib/dictionary-db';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
@@ -70,6 +71,7 @@ interface DictionaryContextValue {
   deleteDictionary: (l2: string) => Promise<void>;
   getDownloadState: (l2: string) => DownloadState;
   isOfflineAvailable: (l2: string) => Promise<boolean>;
+  getDownloadedCount: (l2: string) => Promise<number>;
 }
 
 const DictionaryContext = createContext<DictionaryContextValue | null>(null);
@@ -271,6 +273,12 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     return hasOfflineDictionary(dbRef.current, l2);
   }, []);
 
+  const getDownloadedCount = useCallback(async (l2: string): Promise<number> => {
+    if (!dbRef.current) return 0;
+    const meta = await getDictMeta(dbRef.current, l2);
+    return meta?.entry_count ?? 0;
+  }, []);
+
   const startDownload = useCallback(async (l2: string) => {
     console.log('[DictContext] 📥 startDownload — l2:', l2, '— timestamp:', Date.now());
 
@@ -391,7 +399,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         cameFromSearch, setCameFromSearch,
         sidebarSource, setSidebarSource, detailHead, setDetailHead,
         startDownload, cancelDownload, deleteDictionary,
-        getDownloadState, isOfflineAvailable,
+        getDownloadState, isOfflineAvailable, getDownloadedCount,
       }}
     >
       {children}
