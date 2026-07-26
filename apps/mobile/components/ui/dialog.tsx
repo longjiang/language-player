@@ -46,7 +46,7 @@ export function Overlay({ className, ...props }: OverlayProps) {
   }, [opacity]);
 
   return (
-    <Animated.View style={{ opacity }}>
+    <Animated.View pointerEvents="box-none" style={{ opacity }}>
       <DialogPrimitive.Overlay
         className={`absolute inset-0 bg-black/40 ${className ?? ''}`}
         {...props}
@@ -101,6 +101,7 @@ export function SheetContent({ children, className, ...props }: SheetContentProp
 
   return (
     <Animated.View
+      pointerEvents="box-none"
       className="absolute bottom-0 left-0 right-0"
       style={{ transform: [{ translateY }], opacity }}
     >
