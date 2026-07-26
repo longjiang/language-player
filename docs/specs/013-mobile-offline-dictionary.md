@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-013
 - **Feature**: Offline dictionary download + hybrid online/offline lookup for the mobile app
-- **Status**: draft
+- **Status**: completed
 - **Created**: 2026-07-25
 - **ROADMAP Phase**: Phase 7+ — Mobile Integration / Dictionary Enhancement
 - **Based on**: [ADR-0008: Mobile App Dictionary Architecture — Online Lookup + Offline Download](../adr/0008-go-dictionary-architecture.md)
