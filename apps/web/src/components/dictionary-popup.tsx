@@ -44,6 +44,7 @@ export function DictionaryPopup({
   const [error, setError] = useState<string | null>(null);
 
   const { savedWords, removeSavedWord } = useSavedWordsContext();
+  const [dialogOpen, setDialogOpen] = useState(true);
 
   const lookupWord = useCallback(async (text: string, signal: AbortSignal) => {
     try {
@@ -161,7 +162,7 @@ export function DictionaryPopup({
   };
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog open={dialogOpen} onOpenChange={(o) => { if (!o) { setDialogOpen(false); setTimeout(onClose, 150); } }}>
       <DialogContent
         showCloseButton={false}
         className="w-[28rem] max-w-[90vw] sm:max-w-[28rem] p-4"
