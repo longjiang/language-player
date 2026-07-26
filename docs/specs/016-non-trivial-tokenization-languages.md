@@ -227,46 +227,48 @@ Pre-computed `{surface: [lemma]}` TSV files already exist on the server at `data
 | `ca` | Catalan | LemmatizationList table | — | |
 | `cs` | Czech | LemmatizationList table | — | Rich case system (7 cases) |
 | `cy` | Welsh | LemmatizationList table | — | Simplemma excluded — apostrophe issues |
-| `de` | German | LemmatizationList table + Snowball | `snowball-stemmers` | Case + gender + plural umlaut |
-| `en` | English | LemmatizationList table + Snowball | `snowball-stemmers` | Irregular past/participles + plurals |
-| `es` | Spanish | LemmatizationList table + Snowball | `snowball-stemmers` | Extensive verb conjugation |
-| `fr` | French | LemmatizationList table + Snowball | `snowball-stemmers` | Verb conjugation; Simplemma excluded |
-| `ga` | Irish | LemmatizationList table + Snowball | `snowball-stemmers` | Initial mutations (séimhiú, urú) |
+| `de` | German | LemmatizationList table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | Case + gender + plural umlaut |
+| `en` | English | LemmatizationList table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | Irregular past/participles + plurals |
+| `es` | Spanish | LemmatizationList table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | Extensive verb conjugation |
+| `fr` | French | LemmatizationList table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | Verb conjugation; Simplemma excluded |
+| `ga` | Irish | LemmatizationList table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | Initial mutations (séimhiú, urú) |
 | `gl` | Galician | LemmatizationList table | — | |
 | `gv` | Manx | LemmatizationList table | — | |
-| `hu` | Hungarian | LemmatizationList table + Snowball | `snowball-stemmers` ✅ | Uralic, 18+ cases, vowel harmony |
-| `it` | Italian | LemmatizationList table + Snowball | `snowball-stemmers` | Verb conjugation |
-| `pt` | Portuguese | LemmatizationList table + Snowball | `snowball-stemmers` | Verb conjugation |
-| `ro` | Romanian | LemmatizationList table + Snowball | `snowball-stemmers` | |
+| `hu` | Hungarian | LemmatizationList table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | Uralic, 18+ cases, vowel harmony |
+| `it` | Italian | LemmatizationList table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | Verb conjugation |
+| `pt` | Portuguese | LemmatizationList table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | Verb conjugation |
+| `ro` | Romanian | LemmatizationList table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | |
 | `sk` | Slovak | LemmatizationList table | — | |
 | `sl` | Slovenian | LemmatizationList table | — | Dual number! |
-| `sv` | Swedish | LemmatizationList table + Snowball | `snowball-stemmers` | |
+| `sv` | Swedish | LemmatizationList table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | |
 | `uk` | Ukrainian | LemmatizationList table | — | Case system |
 
-### C2 — Simplemma Available (18 languages)
+### C2 — Simplemma Available (17 languages)
 
 Dictionary-based lemmatizer data available from the Simplemma Python package. Can be exported to JSON/SQLite.
 
 | Code | Language | Strategy | JS Library | Notes |
 |---|---|---|---|---|
 | `bg` | Bulgarian | Simplemma table | — | |
-| `da` | Danish | Simplemma table + Snowball | `snowball-stemmers` | |
+| `da` | Danish | Simplemma table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | |
 | `el` | Greek | Simplemma table | — | |
 | `et` | Estonian | Simplemma table | ⚠️ Snowball upstream, npm uncertain | Uralic, 14 cases, lost vowel harmony |
-| `fi` | Finnish | Simplemma table + Snowball | `snowball-stemmers` ✅ | Uralic, 15 cases, consonant gradation |
-| `hy` | Armenian | Simplemma table + Snowball | `snowball-stemmers` | |
+| `fi` | Finnish | Simplemma table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | Uralic, 15 cases, consonant gradation |
+| `hy` | Armenian | Simplemma table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | |
 | `id` | Indonesian | — (in Category E now) | — | **Moved to Category E.** Analytic; surface-as-lemma works. |
 | `is` | Icelandic | Simplemma table | — | Complex inflection preserved from Old Norse |
 | `ka` | Georgian | Simplemma table only | **Nothing** ❌ | Kartvelian. Polypersonal verbs, screeve system. |
 | `la` | Latin | Simplemma table | — | 5 declensions, 4 conjugations |
 | `lv` | Latvian | Simplemma table | — | |
 | `lt` | Lithuanian | Simplemma table | — | Complex case system, pitch accent |
-| `nb` | Norwegian Bokmål | Simplemma table + Snowball | `snowball-stemmers` | |
+| `nb` | Norwegian Bokmål | Simplemma table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | |
 | `nn` | Norwegian Nynorsk | Simplemma table | — | |
-| `nl` | Dutch | Simplemma table + Snowball | `snowball-stemmers` | |
+| `nl` | Dutch | Simplemma table (+ Snowball stemmer fallback) | `snowball-stemmers` (stemmer) | |
 | `pl` | Polish | Simplemma table | — | 7 cases, 3 genders |
 | `sq` | Albanian | Simplemma table | — | |
 | `sw` | Swahili | Simplemma table + prefix stripper | **Nothing** ❌ | Bantu. Noun class prefixes. |
+
+> ⚠️ **Snowball is a stemmer, not a lemmatizer.** It algorithmically strips known suffixes but has no dictionary — it can't resolve irregular forms (e.g., English `went`→`go`, German `besser`→`gut`). For agglutinative languages (hu, fi) the stem often equals the nominative singular lemma, making Snowball a useful fallback for forms not in the lookup table. For fusional languages (en, de, es, fr, it, pt) with irregular inflection, Snowball alone is inadequate — the pre-built table is the primary lemmatizer.
 
 ### C3 — spaCy-Only (1 language)
 
@@ -356,7 +358,7 @@ Following the recommendation in SPEC-015, Phase 1 covers the biggest wins at zer
 | `kuromoji-ko` + mecab-ko-dic (pruned) | Korean | ~2 MB | Server fallback |
 | `nlptoolkit-morphologicalanalysis` | Turkish | ~2 MB | Server fallback |
 | Persian lemma table (Hazm export) | Persian | ~80 KB | Server fallback |
-| `snowball-stemmers` (per-lang rules) | C1/C2 langs with Snowball support (de, en, es, fr, ga, it, pt, ro, sv, da, nb, nl, hu, fi, hy) | ~30 KB each | Server fallback |
+| `snowball-stemmers` (stemmer fallback) | C1/C2 langs with Snowball support (de, en, es, fr, ga, it, pt, ro, sv, da, nb, nl, hu, fi, hy) | ~30 KB each | Catches forms not in lemma table |
 | Pre-built lemma tables | Remaining C1–C4 + C2 langs without JS libraries (ca, cs, cy, gl, gv, sk, sl, uk, bg, el, et, is, la, lv, lt, nn, pl, sq, hr, ru, ka, sw) | ~100–500 KB each | Server fallback |
 | `nlptoolkit-morphologicalanalysis` | Turkish | ~2 MB | Server fallback |
 
