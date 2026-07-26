@@ -2,12 +2,15 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
 import { SETTINGS_SEARCH_KEYS } from '@langplayer/shared';
 import { SearchBar } from './_components/SearchBar';
-import { Palette, Play, Mic, Repeat, ChevronRight } from 'lucide-react';
+import { Palette, Play, Mic, Repeat, ChevronRight, Loader2 } from 'lucide-react';
+
+const LG_BREAKPOINT = 1024;
 
 interface SettingsRow {
   key: string;
@@ -26,8 +29,35 @@ export default function SettingsListPage() {
   const { l1, l2 } = useLanguage();
   const { display, playback, review } = useSettingsContext();
   const t = useT();
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [localizedLabels, setLocalizedLabels] = useState<Record<string, string[]>>({});
+  const [isWide, setIsWide] = useState<boolean | null>(null);
+
+  // Detect wide screen — on mount, redirect to Display detail (first tab)
+  useEffect(() => {
+    const mql = window.matchMedia(`(min-width: ${LG_BREAKPOINT}px)`);
+    const check = () => setIsWide(mql.matches);
+    check();
+    mql.addEventListener('change', check);
+    return () => mql.removeEventListener('change', check);
+  }, []);
+
+  // Redirect to Display detail on wide screens (sidebar shows the list)
+  useEffect(() => {
+    if (isWide) {
+      router.replace(`/${l1.code}/${l2.code}/settings/display`);
+    }
+  }, [isWide, l1.code, l2.code, router]);
+
+  // Don't render the list while checking width or redirecting on wide screens
+  if (isWide === null || isWide) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   // Pre-resolve search keys on locale change
   useEffect(() => {
