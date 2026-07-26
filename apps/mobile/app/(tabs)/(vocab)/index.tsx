@@ -5,6 +5,7 @@ import { useT } from '@/hooks/use-t';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { SearchBar } from '@/components/dictionary/SearchBar';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
+import { OfflineBanner } from '@/components/dictionary/OfflineBanner';
 import { Search, BookOpen, Clock } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
@@ -66,6 +67,8 @@ export default function DictionaryScreen() {
           <Text className="text-sm text-destructive">{error}</Text>
         </View>
       )}
+
+      <OfflineBanner />
 
       {loading && (
         <ActivityIndicator size="large" color={ICON_MUTED} style={{ marginTop: 40 }} />
