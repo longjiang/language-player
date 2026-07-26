@@ -2,17 +2,19 @@ import React from 'react';
 import { Stack, Slot } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useWindowDimensions } from 'react-native';
-
-const HEADER_STYLE = {
-  backgroundColor: 'hsl(240 10% 3.9%)', // bg-background in dark
-};
-
-const HEADER_TINT = 'hsl(0 0% 98%)'; // text-foreground in dark (near-white)
+import { useColorScheme } from 'nativewind';
 
 export default function SettingsLayout() {
   const t = useT();
   const { width } = useWindowDimensions();
+  const { colorScheme } = useColorScheme();
   const isWide = width >= 600;
+
+  const isDark = colorScheme === 'dark';
+  const headerStyle = {
+    backgroundColor: isDark ? 'hsl(230 30% 8%)' : 'hsl(0 0% 100%)',
+  };
+  const headerTintColor = isDark ? 'hsl(0 0% 95%)' : 'hsl(222 47% 11%)';
 
   // On wide screens (iPad split view), don't use Stack navigation.
   // The index.tsx handles split-view layout directly by rendering
@@ -25,8 +27,8 @@ export default function SettingsLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        headerStyle: HEADER_STYLE,
-        headerTintColor: HEADER_TINT,
+        headerStyle,
+        headerTintColor,
         headerTitleStyle: { fontWeight: '600' },
         headerShadowVisible: false,
       }}
