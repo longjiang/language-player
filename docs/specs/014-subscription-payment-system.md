@@ -465,7 +465,14 @@ All existing Python endpoints are production-tested and unchanged:
 1. **Apple App Store**: No changes needed to App Store Connect. The existing IAP product `"pro"` (non-consumable) under the existing bundle ID `ca.zerotohero.app` is already live. When ADR-0013 Option B is executed (replace Nuxt binary), the new app binary inherits the same bundle ID and product listing automatically.
 2. **IAP Dependency**: Install `expo-in-app-purchases` in `apps/mobile` — Expo SDK 57 compatible, replaces `react-native-iap` used by the GO legacy.
 3. **PayPal Dependency**: Install `@paypal/react-paypal-js` in `apps/web` (optional — can use link-to-classic approach).
-4. **Google Play**: No Google Play listing exists (developer account was deleted after failure to renew business info). If Android is desired, a new developer account is needed before Play Billing IAP can be set up. Android IAP is out of scope for this spec.
+4. **Google Play**: No Google Play listing exists (developer account was deleted after failure to renew business info). Before Google Play Billing can work, the following chain is needed:
+   - Create a new Google Play Developer account ($25 fee)
+   - Create the app in Play Console (complete store listing, content rating, etc.)
+   - Configure IAP product IDs in Play Console (e.g. `"pro"` — these must match what the code uses)
+   - Build the AAB with `expo-in-app-purchases` referencing the configured IDs
+   - Upload the AAB to an internal test track and add testers
+   
+   Until that chain is complete, Google Play Billing is blocked at the Play Console setup step. Android IAP is out of scope for this spec — focus on iOS IAP first.
 5. **Env variables** (already in `zerotohero-python-server/.env`, gitignored — values not listed here to avoid committing secrets):
    - `APPLE_SHARED_SECRET`
    - `STRIPE_TEST_KEY`, `STRIPE_LIVE_KEY`
