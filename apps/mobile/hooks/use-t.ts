@@ -45,8 +45,9 @@ export function useT() {
     if (!values) return message;
     // Simple {key} placeholders (no ICU plural/select) → string replace directly
     // This avoids react-intl's MISSING_TRANSLATION error for nested keys.
-    // ICU keywords to detect: plural, select, selectordinal, number, date, time
-    if (!/\{(?:plural|select|selectordinal|number|date|time)\b/.test(message)) {
+    // ICU MessageFormat syntax: {varName, plural, ...} or {varName, select, ...}
+    // The keyword follows a variable name and comma, not the opening brace.
+    if (!/\{[^}]*,\s*(?:plural|select|selectordinal)\s*,/.test(message)) {
       let result = message;
       for (const [k, v] of Object.entries(values)) {
         result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
