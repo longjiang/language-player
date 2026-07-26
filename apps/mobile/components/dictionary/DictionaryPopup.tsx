@@ -59,10 +59,8 @@ export function DictionaryPopup({
             <Text className="text-lg font-bold text-foreground" numberOfLines={1}>
               {word}
             </Text>
-            <Dialog.Close asChild>
-              <Pressable className="rounded-full bg-muted p-1.5">
-                <Text className="text-base text-muted-foreground">✕</Text>
-              </Pressable>
+            <Dialog.Close className="rounded-full bg-muted p-1.5">
+              <Text className="text-base text-muted-foreground">✕</Text>
             </Dialog.Close>
           </View>
 

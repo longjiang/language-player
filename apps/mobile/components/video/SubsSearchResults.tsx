@@ -269,10 +269,8 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
             {/* Dialog header */}
             <View className="flex-row items-center justify-between border-b border-border pb-3 mb-2">
               <Dialog.Title>{videos.length} videos</Dialog.Title>
-              <Dialog.Close asChild>
-                <Pressable className="rounded-full bg-muted p-2">
-                  <X size={18} color={ICON_MUTED} />
-                </Pressable>
+              <Dialog.Close className="rounded-full bg-muted p-2">
+                <X size={18} color={ICON_MUTED} />
               </Dialog.Close>
             </View>
 

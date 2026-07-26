@@ -37,7 +37,7 @@ type OverlayProps = DialogPrimitive.OverlayProps;
 export function Overlay({ className, ...props }: OverlayProps) {
   return (
     <DialogPrimitive.Overlay
-      className={`bg-black/40 ${className ?? ''}`}
+      className={`absolute inset-0 bg-black/40 ${className ?? ''}`}
       {...props}
     />
   );
@@ -51,12 +51,14 @@ type ContentProps = DialogPrimitive.ContentProps & {
 
 export function Content({ children, className, ...props }: ContentProps) {
   return (
-    <DialogPrimitive.Content
-      className={`w-[90%] max-w-md rounded-xl bg-card p-4 border border-border shadow-lg ${className ?? ''}`}
-      {...props}
-    >
-      {children}
-    </DialogPrimitive.Content>
+    <View className="absolute inset-0 flex items-center justify-center">
+      <DialogPrimitive.Content
+        className={`w-[90%] max-w-md rounded-xl bg-card p-4 border border-border shadow-lg ${className ?? ''}`}
+        {...props}
+      >
+        {children}
+      </DialogPrimitive.Content>
+    </View>
   );
 }
 
@@ -68,12 +70,14 @@ type SheetContentProps = DialogPrimitive.ContentProps & {
 
 export function SheetContent({ children, className, ...props }: SheetContentProps) {
   return (
-    <DialogPrimitive.Content
-      className={`rounded-t-xl border-t border-border bg-background px-4 pb-8 pt-4 max-h-[75%] ${className ?? ''}`}
-      {...props}
-    >
-      {children}
-    </DialogPrimitive.Content>
+    <View className="absolute bottom-0 left-0 right-0">
+      <DialogPrimitive.Content
+        className={`rounded-t-xl border-t border-border bg-background px-4 pb-8 pt-4 max-h-[75%] ${className ?? ''}`}
+        {...props}
+      >
+        {children}
+      </DialogPrimitive.Content>
+    </View>
   );
 }
 
