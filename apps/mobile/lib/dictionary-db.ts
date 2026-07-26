@@ -20,6 +20,17 @@ import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
 const DB_NAME = 'dictionary.db';
 const CHUNK_SIZE = 500;
 
+/** Escape a string for safe inclusion in a SQL string literal. */
+function esc(s: string): string {
+  return s.replace(/'/g, "''");
+}
+
+/** Escape a string or return NULL. */
+function escOrNull(s: string | null): string {
+  if (s === null || s === undefined) return 'NULL';
+  return `'${esc(s)}'`;
+}
+
 // ── Singleton ─────────────────────────────────
 
 let _db: SQLite.SQLiteDatabase | null = null;
@@ -258,15 +269,16 @@ export async function bulkInsertEntries(
     }));
     const serializeMs = Date.now() - serializedStart;
 
+    // Build multi-row INSERT to minimize JS↔native bridge roundtrips.
+    // Each roundtrip costs 1-4ms; 500 individual runAsync calls = ~2000ms.
+    // A single execAsync with all 500 rows = 1 roundtrip.
     const txStart = Date.now();
-    await db.withTransactionAsync(async () => {
-      for (const row of rows) {
-        await db.runAsync(
-          `INSERT OR REPLACE INTO ${table} (id, head, pronunciation, entry_json) VALUES (?, ?, ?, ?)`,
-          [row.id, row.head, row.pronunciation, row.entry_json],
-        );
-      }
-    });
+    const values = rows
+      .map((r) => `('${esc(r.id)}','${esc(r.head)}',${escOrNull(r.pronunciation)},'${esc(r.entry_json)}')`)
+      .join(',');
+    await db.execAsync(
+      `INSERT OR REPLACE INTO ${table} (id, head, pronunciation, entry_json) VALUES ${values}`
+    );
     const txMs = Date.now() - txStart;
 
     const chunkMs = Date.now() - chunkStart;
