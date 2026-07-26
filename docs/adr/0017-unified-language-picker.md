@@ -23,6 +23,36 @@ Critically, the mobile header language switcher (`apps/mobile/components/layout/
 
 This ADR evaluates three approaches to unify the language picker **everywhere** — onboarding and header — across both platforms and all screen sizes.
 
+### Platform Boundary (ADR-0003 Compliance)
+
+Per [ADR-0003](./0003-no-shared-ui.md), UI components are **not** shared between web (React DOM) and mobile (React Native). The rendering models are fundamentally different — a `<div>` with CSS grid is not a `<View>` with NativeWind.
+
+This ADR defines a **shared logic layer** — a hook (`useLanguagePicker`) that owns search, filtering, selection state, and script toggle logic. Both platforms get their own leaf components that consume the same hook:
+
+```
+packages/shared/src/hooks/use-language-picker.ts   ← shared hook (pure logic, no JSX)
+apps/web/src/components/language-picker/
+├── language-picker-narrow.tsx    ← tab-based (web narrow, <640px)
+├── language-picker-wide.tsx      ← bi-panel (web wide, ≥640px)
+└── language-picker.tsx           ← responsive wrapper (CSS media query)
+apps/mobile/components/
+├── LanguagePickerNarrow.tsx      ← tab-based (mobile narrow + dialogs)
+├── LanguagePickerWide.tsx        ← bi-panel (mobile wide/iPad)
+└── LanguagePicker.tsx            ← responsive wrapper (useWindowDimensions)
+```
+
+The hook returns the same data shape on both platforms. The leaf components render platform-native primitives. This matches the ADR-0015 (settings) pattern: shared logic in `packages/shared/`, separate platform renderers.
+
+**Language names** use `languageName(code, locale)` consistently — the same localized lookup used by the web app today. This fixes the mobile header's current bug where language names are hardcoded in English (`enLangNames`) while onboarding uses `t('lang.xx')`.
+
+**`POPULAR_LANGUAGES`** is currently duplicated inline in three places (select-l1, select-l2, LanguageSwitcher). The shared hook imports it from a single source in `packages/shared/`, eliminating all three duplicates.
+
+**Chinese script toggle** — the web already has `setUseTraditional()` in `lib/settings.ts`. Mobile needs an equivalent in its SettingsContext before the unified picker can ship. The script toggle is a first-class part of the shared hook's state (`useTraditional: boolean`), consumed by both platform renderers.
+
+**Swap languages** — the mobile header's swap button (↔) is removed. It makes no sense: swapping a language pair doesn't help the user learn either language, and no other language-learning platform offers this.
+
+**Offline dictionary indicator** — the green dot on L2 languages in the mobile header is removed. Its purpose is unclear to users and it adds visual noise to the language list.
+
 ## Options Considered
 
 ### Option A: Web's Current Approach (Bi-panel, Stacks on Narrow)
@@ -208,29 +238,32 @@ The narrow layout is a strict improvement over both existing approaches:
 - Over Option A (web's stack): the user doesn't scroll past 31 L1s to reach L2. Tabs make it clear what they're picking.
 - Over Option B (mobile's two screens): the user saves one navigation step. The auto-advance on L1 selection is one tap vs two.
 
-The wide layout is identical to the web's current bi-panel UX, which is already tested and working. The same component serves both platforms.
+The wide layout is identical to the web's current bi-panel UX, which is already tested and working. Both platforms share the same logic layer (hook) with platform-specific leaf components that render the same UX.
 
 ## Consequences
 
 ### Positive
 
-- **Single component** shared between mobile and web (same props, same responsive logic)
+- **Shared logic layer** — one hook (`useLanguagePicker`) for search, filtering, selection state, and script toggle. Both platforms consume the same logic with no duplication.
 - **Phone-optimized** — tabs + auto-advance is faster than scrolling or two-step navigation
 - **iPad-native** — bi-panel layout makes full use of screen real estate
 - **Same UX on both platforms** — users switching between web and mobile get a consistent onboarding experience
-- **Chinese script toggle** now works on mobile too
+- **Chinese script toggle** now works on mobile too (requires mobile SettingsContext prerequisite)
 - **Step clarity** — tabs make it obvious what the user is selecting
+- **`POPULAR_LANGUAGES` deduplicated** — single source in `packages/shared/`, eliminates three inline duplicates
+- **Language names consistent** — `languageName(code, locale)` everywhere, fixing the mobile header's English-only bug
 
 ### Negative
 
-- **More complex component** — must handle two layouts, tab state, auto-advance, summary bar, script toggle
+- **Two leaf components per platform** — narrow (tab-based) and wide (bi-panel) are separate renderers. The shared hook keeps them consistent, but each layout must be maintained independently.
 - **Mobile needs `useWindowDimensions()`** to switch layout — must re-render on orientation change
 - **Web needs CSS media queries** for the breakpoint — the existing `md:grid-cols-2` pattern works but needs the step-indicator variant for narrow
-- **Two code paths to maintain** inside one component — the render logic for narrow vs wide is quite different even though the data flow is the same
+- **Mobile needs Chinese script toggle prerequisite** — `setUseTraditional()` equivalent must be added to SettingsContext before the unified picker can ship
+- **Confirmation step is new for mobile header** — the old header applied language changes immediately; the new flow requires explicit confirmation via `onConfirm`. This is intentional (consistency with onboarding) but a UX change for existing mobile users.
 
 ### Component API
 
-The `LanguagePicker` component is shared between onboarding (full-screen) and header (dialog). Its props:
+The `LanguagePicker` wrapper component accepts the same props on both platforms. It delegates to the shared `useLanguagePicker` hook and renders the appropriate leaf component (narrow or wide) based on screen width:
 
 ```tsx
 interface LanguagePickerProps {
@@ -246,8 +279,21 @@ interface LanguagePickerProps {
   showTitle?: boolean;
   /** Show a close/dismiss button (for dialog/header usage). */
   showClose?: boolean;
+  /**
+   * Rendering context.
+   *
+   * `'fullscreen'` — onboarding. Responsive: tabs on narrow (<640px),
+   *   bi-panel on wide. Full height available.
+   * `'dialog'` — header language switcher. Always single-column with tabs
+   *   regardless of screen width (dialogs don't have room for bi-panel).
+   *
+   * Defaults to `'fullscreen'`.
+   */
+  variant?: 'fullscreen' | 'dialog';
 }
 ```
+
+**Breakpoint**: 640px on both platforms. This matches Tailwind's `sm:` breakpoint and the existing `SM_BREAKPOINT = 640` in `apps/mobile/components/layout/Header.tsx`. ADR-0015 uses 600pt for settings — the language picker needs slightly more horizontal space for two search bars + two language lists, so 640px is chosen deliberately.
 
 **Usage across both platforms:**
 
@@ -290,20 +336,58 @@ interface LanguagePickerProps {
 </Dialog>
 ```
 
-The component is self-contained: it receives initial values and a callback when the user commits. It does not know whether it's in a full-screen or dialog context — the shell handles that.
+The `variant` prop tells the component how to adapt: `'fullscreen'` uses responsive layout (tabs or bi-panel depending on width), while `'dialog'` always uses the narrow tab-based layout since dialogs lack the horizontal space for bi-panel.
 
-This matches the web's current architecture exactly. The mobile header is the only place that needs refactoring (swap its inline `LanguagePickerContent` for the shared `LanguagePicker`).
+Both onboarding and header use the same confirmation flow (`onConfirm`). This is a deliberate change for the mobile header — the old behavior applied language changes immediately without confirmation. Requiring explicit confirmation makes the header consistent with onboarding and gives users a chance to review their selection before committing.
+
+The web's architecture already works this way. The mobile header is the only place that needs refactoring (swap its inline `LanguagePickerContent` for the shared `LanguagePicker`).
 
 ### Files to Create/Modify
 
-- `apps/mobile/app/select-language.tsx` — new, replaces `select-l1.tsx` and `select-l2.tsx`
-- `apps/mobile/app/_layout.tsx` — register new route, remove old routes
+**Shared logic:**
+- `packages/shared/src/hooks/use-language-picker.ts` — new shared hook (search, filter, selection state, script toggle)
+- `packages/shared/src/language-data.ts` — extract `POPULAR_LANGUAGES` constant from its three inline duplicates (select-l1, select-l2, LanguageSwitcher)
+
+**Mobile:**
+- `apps/mobile/components/LanguagePicker.tsx` — new wrapper (delegates to `useLanguagePicker`, renders `LanguagePickerNarrow` or `LanguagePickerWide` based on `useWindowDimensions`)
+- `apps/mobile/components/LanguagePickerNarrow.tsx` — new leaf (tab-based, for narrow screens + dialogs)
+- `apps/mobile/components/LanguagePickerWide.tsx` — new leaf (bi-panel, for wide/iPad screens)
+- `apps/mobile/app/select-language.tsx` — new route, replaces `select-l1.tsx` + `select-l2.tsx` (registered as `presentation: 'modal'`)
+- `apps/mobile/app/_layout.tsx` — register `select-language`, remove `select-l1` and `select-l2`
 - `apps/mobile/app/register.tsx` — redirect to `/select-language` instead of `/select-l1`
-- `apps/mobile/components/layout/LanguageSwitcher.tsx` — replace inline `LanguagePickerContent` with shared `LanguagePicker` in a dialog
-- `apps/web/src/components/language-picker.tsx` — add narrow step-indicator layout alongside existing bi-panel
+- `apps/mobile/components/layout/LanguageSwitcher.tsx` — replace inline `LanguagePickerContent` with `<LanguagePicker variant="dialog" ... />`
+- `apps/mobile/contexts/SettingsContext.tsx` — add `setUseTraditional(boolean)` method (prerequisite for Chinese script toggle)
 - `apps/mobile/app/select-l1.tsx` — delete
 - `apps/mobile/app/select-l2.tsx` — delete
 
-### Revisiting
+**Web:**
+- `apps/web/src/components/language-picker/language-picker.tsx` — refactor: extract shared logic into hook, delegate to narrow/wide leaf components
+- `apps/web/src/components/language-picker/language-picker-narrow.tsx` — new leaf (tab-based, for narrow screens, <640px)
+- `apps/web/src/components/language-picker/language-picker-wide.tsx` — extract existing bi-panel layout from current `language-picker.tsx`
 
-If the responsive component grows too complex (narrow vs wide are essentially different UIs sharing data logic), split into two leaf components with a shared hook for search/filter logic. The ADR principle of a single route + responsive layout should remain, but the internal implementation can be factored.
+### Implementation Architecture
+
+The narrow and wide layouts are fundamentally different UIs — tabs + auto-advance vs bi-panel + simultaneous selection — so they are implemented as separate leaf components from the start, not a single monolithic component. The shared `useLanguagePicker` hook owns all state and logic:
+
+```tsx
+// Shared hook — pure logic, no JSX
+function useLanguagePicker(options: {
+  initialL1?: string;
+  initialL2?: string;
+  onConfirm: (l1: string, l2: string) => void;
+}) {
+  // Returns:
+  //   selectedL1, selectedL2, setL1, setL2
+  //   searchL1, searchL2, setSearchL1, setSearchL2
+  //   filteredL1s, filteredL2s (with Popular/All grouping)
+  //   useTraditional, setUseTraditional
+  //   isReady (both L1 and L2 selected)
+  //   handleConfirm()
+}
+```
+
+Each platform wrapper (`LanguagePicker.tsx`) detects screen width and renders the appropriate leaf:
+- **Web**: CSS media query (`md:` breakpoint at 640px)
+- **Mobile**: `useWindowDimensions().width >= SM_BREAKPOINT` (640)
+
+The `variant` prop overrides this: `'dialog'` always renders the narrow layout regardless of width.
