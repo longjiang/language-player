@@ -54,7 +54,11 @@ export function Overlay({ className, ...props }: OverlayProps) {
   }, [opacity]);
 
   return (
-    <Animated.View pointerEvents="box-none" style={{ opacity }}>
+    <Animated.View
+      pointerEvents="box-none"
+      className="absolute inset-0"
+      style={{ opacity }}
+    >
       <DialogPrimitive.Overlay
         className={`absolute inset-0 bg-black/40 ${className ?? ''}`}
         {...props}
