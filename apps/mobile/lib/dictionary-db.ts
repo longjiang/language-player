@@ -59,10 +59,43 @@ export async function openDictionaryDB(): Promise<SQLite.SQLiteDatabase> {
       );
     `);
 
+    // ── Clean up orphaned dict tables from crashed downloads ──
+    await _cleanupOrphanedDicts(_db);
+
     return _db;
   })();
 
   return _dbPromise;
+}
+
+/**
+ * Drop any dict_{l2} tables that have no corresponding dict_meta entry.
+ * These are left behind when the app crashes or reloads mid-download —
+ * partial data that was never completed. Without cleanup, they waste
+ * storage and cause hasOfflineDictionary to return false anyway
+ * (since it checks dict_meta, not table existence).
+ */
+async function _cleanupOrphanedDicts(db: SQLite.SQLiteDatabase): Promise<void> {
+  try {
+    const tables = await db.getAllAsync<{ name: string }>(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'dict_%'"
+    );
+    if (tables.length === 0) return;
+
+    const metas = await db.getAllAsync<{ l2: string }>('SELECT l2 FROM dict_meta');
+    const validL2s = new Set(metas.map((m) => m.l2));
+
+    for (const t of tables) {
+      // Extract l2 from table name: dict_ja → ja
+      const l2 = t.name.slice(5);
+      if (!validL2s.has(l2)) {
+        console.log('[DictDB] 🧹 cleaning up orphaned table:', t.name, '(no dict_meta entry — likely crashed mid-download)');
+        await db.execAsync(`DROP TABLE IF EXISTS ${t.name}`);
+      }
+    }
+  } catch {
+    // Best-effort cleanup
+  }
 }
 
 /**
