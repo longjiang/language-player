@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { LEVELS } from '@/lib/level-mapping';
 import { primaryScale } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
-import { ChevronDown } from 'lucide-react';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 interface LanguageLevelSelectProps {
   l2Code: string;
@@ -51,26 +51,28 @@ export function LanguageLevelSelect({ l2Code, value, onChange }: LanguageLevelSe
     });
   }, [key, l2Code, t]);
 
+  const currentLabel = options.find((o) => o.value === value)?.label;
+
   return (
-    <div className="relative">
-      <select
-        value={value ?? ''}
-        onChange={(e) => {
-          const v = Number(e.target.value);
-          if (v >= 1 && v <= 7) onChange(v);
-        }}
-        className="w-full appearance-none rounded-lg border border-border bg-card px-3 py-2 pr-8 text-sm text-foreground transition-colors hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-      >
-        <option value="" disabled>
-          Select your level...
-        </option>
+    <Select
+      value={value != null ? String(value) : undefined}
+      onValueChange={(v) => {
+        const num = Number(v);
+        if (num >= 1 && num <= 7) onChange(num);
+      }}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select your level...">
+          {currentLabel}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
+          <SelectItem key={opt.value} value={String(opt.value)}>
             {opt.label}
-          </option>
+          </SelectItem>
         ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-    </div>
+      </SelectContent>
+    </Select>
   );
 }

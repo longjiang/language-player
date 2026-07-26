@@ -5,7 +5,8 @@ import { useSpeech } from '@/hooks/use-speech';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { languageName } from '@/lib/language-data';
-import { ChevronDown, Volume2, Square } from 'lucide-react';
+import { Volume2, Square } from 'lucide-react';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel } from '@/components/ui/select';
 
 interface VoicePickerProps {
   className?: string;
@@ -17,7 +18,6 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
   const t = useT();
   const { getAllVoices, voiceURI, setVoiceURI, rate, setRate, speak, stop, isSpeaking } = useSpeech();
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
@@ -36,79 +36,62 @@ export function VoicePicker({ className = '' }: VoicePickerProps) {
   const l2Voices = l2 ? voices.filter(v => v.lang.startsWith(`${l2.code}-`) || v.lang === l2.code) : [];
   const allLangVoices = l2 ? voices.filter(v => !v.lang.startsWith(`${l2.code}-`)) : voices;
 
+  const selectedName = !mounted
+    ? t('label.auto_best_for', { l2: l2?.code?.toUpperCase() ?? 'L2' })
+    : voiceURI
+      ? voices.find(v => v.voiceURI === voiceURI)?.name ?? t('label.custom_voice')
+      : t('label.auto_best_for', { l2: l2?.code?.toUpperCase() ?? 'L2' });
+
+  const autoValue = '__auto__';
+
   return (
     <div className={`space-y-3 ${className}`}>
       {/* Voice selector */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-muted-foreground">{t('label.pronunciation_voice')}</label>
-        <div className="relative">
-          <button
-            onClick={() => setOpen(!open)}
-            className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-sm hover:border-primary/50"
-          >
-            <span className="truncate">
-              {!mounted
-                ? t('label.auto_best_for', { l2: l2?.code?.toUpperCase() ?? 'L2' })
-                : voiceURI
-                  ? voices.find(v => v.voiceURI === voiceURI)?.name ?? t('label.custom_voice')
-                  : t('label.auto_best_for', { l2: l2?.code?.toUpperCase() ?? 'L2' })}
-            </span>
-            <ChevronDown className="ml-2 h-4 w-4 flex-shrink-0 text-muted-foreground" />
-          </button>
+        <Select
+          value={voiceURI ?? autoValue}
+          onValueChange={(v) => setVoiceURI(v === autoValue ? undefined : v ?? undefined)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue>{selectedName}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {/* Auto option */}
+            <SelectItem value={autoValue}>
+              <Volume2 className="h-4 w-4" />
+              {t('label.auto_best_available')}
+            </SelectItem>
 
-          {open && (
-            <div className="absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-border bg-popover shadow-lg">
-              {/* Auto option */}
-              <button
-                onClick={() => { setVoiceURI(undefined); setOpen(false); }}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted ${!voiceURI ? 'bg-primary/10 text-primary font-medium' : ''}`}
-              >
-                <Volume2 className="h-4 w-4" />
-                {t('label.auto_best_available')}
-              </button>
+            {/* L2 voices */}
+            {l2Voices.length > 0 && (
+              <SelectGroup>
+                <SelectLabel>{t('label.l2_voices', { l2: l2?.code?.toUpperCase() })}</SelectLabel>
+                {l2Voices.map(v => (
+                  <SelectItem key={v.voiceURI} value={v.voiceURI}>
+                    <Volume2 className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">{v.name}</span>
+                    <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">{v.lang}</span>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            )}
 
-              {/* L2 voices */}
-              {l2Voices.length > 0 && (
-                <>
-                  <div className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase border-t">
-                    {t('label.l2_voices', { l2: l2?.code?.toUpperCase() })}
-                  </div>
-                  {l2Voices.map(v => (
-                    <button
-                      key={v.voiceURI}
-                      onClick={() => { setVoiceURI(v.voiceURI); setOpen(false); }}
-                      className={`flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted ${voiceURI === v.voiceURI ? 'bg-primary/10 text-primary font-medium' : ''}`}
-                    >
-                      <Volume2 className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{v.name}</span>
-                      <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">{v.lang}</span>
-                    </button>
-                  ))}
-                </>
-              )}
-
-              {/* All other voices */}
-              {allLangVoices.length > 0 && (
-                <>
-                  <div className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase border-t">
-                    {t('label.all_voices')}
-                  </div>
-                  {allLangVoices.map(v => (
-                    <button
-                      key={v.voiceURI}
-                      onClick={() => { setVoiceURI(v.voiceURI); setOpen(false); }}
-                      className={`flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted ${voiceURI === v.voiceURI ? 'bg-primary/10 text-primary font-medium' : ''}`}
-                    >
-                      <Volume2 className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{v.name}</span>
-                      <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">{v.lang}</span>
-                    </button>
-                  ))}
-                </>
-              )}
-            </div>
-          )}
-        </div>
+            {/* All other voices */}
+            {allLangVoices.length > 0 && (
+              <SelectGroup>
+                <SelectLabel>{t('label.all_voices')}</SelectLabel>
+                {allLangVoices.map(v => (
+                  <SelectItem key={v.voiceURI} value={v.voiceURI}>
+                    <Volume2 className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">{v.name}</span>
+                    <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">{v.lang}</span>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            )}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Rate slider */}

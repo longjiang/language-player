@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 export interface TabDef<T extends string = string> {
   key: T;
@@ -48,29 +49,20 @@ export function TabbedPanel<T extends string = string>({
 }: TabbedPanelProps<T>) {
   return (
     <div className={cn('flex flex-col rounded-xl border border-border bg-card', className)}>
-      {/* Tab bar */}
-      <div className="flex shrink-0 border-b border-border">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => onTabClick ? onTabClick(tab.key) : onTabChange(tab.key)}
-            className={cn(
-              'flex flex-1 items-center justify-center gap-1.5 min-w-0 px-4 py-2.5 text-sm font-medium transition-colors max-sm:px-2',
-              activeTab === tab.key
-                ? 'border-b-2 border-primary -mb-px text-primary'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {tab.icon && <span className="flex-shrink-0">{tab.icon}</span>}
-            <span className="truncate">{tab.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
-      <div className={cn('min-h-0 flex-1 flex flex-col overflow-hidden', contentClassName)}>
-        {children}
-      </div>
+      {/* Tab bar — uses @base-ui/react/tabs for keyboard nav and ARIA roles */}
+      <Tabs value={activeTab} onValueChange={(v) => onTabClick ? onTabClick(v as T) : onTabChange(v as T)}>
+        <TabsList className="border-b border-border w-full">
+          {tabs.map((tab) => (
+            <TabsTrigger key={tab.key} value={tab.key} className="flex-1">
+              {tab.icon && <span className="flex-shrink-0">{tab.icon}</span>}
+              <span className="truncate">{tab.label}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <TabsContent value={activeTab} className={contentClassName}>
+          {children}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
