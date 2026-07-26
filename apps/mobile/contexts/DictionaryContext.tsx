@@ -272,8 +272,14 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const startDownload = useCallback(async (l2: string) => {
+    console.log('[DictContext] 📥 startDownload — l2:', l2, '— timestamp:', Date.now());
+
     if (!dbRef.current) {
-      try { dbRef.current = await openDictionaryDB(); } catch { return; }
+      console.log('[DictContext] DB not open, opening...');
+      try { dbRef.current = await openDictionaryDB(); } catch (e) {
+        console.log('[DictContext] ❌ Failed to open DB:', e);
+        return;
+      }
     }
 
     const db = dbRef.current;
@@ -288,15 +294,21 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     setDownloadStatesVersion((v) => v + 1);
 
     try {
+      console.log('[DictContext] 🌐 GET /dictionary/download — l2:', l2, 'l1:', l1Lang.code);
       const res = await dict.downloadDictionary(l2, l1Lang.code);
       const { entries, total, version } = res;
+      console.log('[DictContext] ✅ download response — entries:', entries.length, 'total:', total, 'version:', version.slice(0, 12));
 
       // Check cancellation before starting insert
       if (cancelMap.get(l2)) {
+        console.log('[DictContext] 🛑 Cancelled before insert — l2:', l2);
         stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
         setDownloadStatesVersion((v) => v + 1);
         return;
       }
+
+      console.log('[DictContext] 💾 bulkInsertEntries starting — l2:', l2, 'count:', entries.length);
+      const insertStart = Date.now();
 
       await bulkInsertEntries(db, l2, entries, (pct) => {
         // Check cancellation between chunks
@@ -311,9 +323,11 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         setDownloadStatesVersion((v) => v + 1);
       });
 
+      console.log('[DictContext] 💾 bulkInsertEntries done — l2:', l2, '— took', Date.now() - insertStart, 'ms');
+
       // Check cancellation after insert
       if (cancelMap.get(l2)) {
-        // Clean up partial data
+        console.log('[DictContext] 🛑 Cancelled after insert, cleaning up — l2:', l2);
         await deleteDictDB(db, l2);
         stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
         setDownloadStatesVersion((v) => v + 1);
@@ -330,6 +344,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         version,
       };
       await saveDictMeta(db, meta);
+      console.log('[DictContext] 💾 dict_meta saved — l2:', l2, 'meta:', JSON.stringify(meta).slice(0, 120));
 
       stateMap.set(l2, {
         status: 'completed',
@@ -338,8 +353,10 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         total: entries.length,
       });
       setDownloadStatesVersion((v) => v + 1);
+      console.log('[DictContext] 🎉 download complete — l2:', l2, 'total entries:', entries.length);
 
     } catch (e: any) {
+      console.log('[DictContext] ❌ download failed — l2:', l2, 'error:', e?.message ?? e);
       // Clean up partial data on failure
       try { await deleteDictDB(db, l2); } catch {}
 

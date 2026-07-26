@@ -190,11 +190,16 @@ export async function bulkInsertEntries(
   entries: DictionaryEntry[],
   onProgress?: (pct: number) => void,
 ): Promise<void> {
+  const startTime = Date.now();
   await ensureDictTable(db, l2);
   const table = dictTableName(l2);
+  const totalChunks = Math.ceil(entries.length / CHUNK_SIZE);
+
+  console.log('[DictDB] bulkInsertEntries — l2:', l2, 'entries:', entries.length, 'chunks:', totalChunks);
 
   for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
     const chunk = entries.slice(i, i + CHUNK_SIZE);
+    const chunkNum = Math.floor(i / CHUNK_SIZE) + 1;
 
     await db.withTransactionAsync(async () => {
       for (const entry of chunk) {
@@ -210,13 +215,21 @@ export async function bulkInsertEntries(
       }
     });
 
+    const pct = Math.min(100, Math.round(((i + CHUNK_SIZE) / entries.length) * 100));
+    if (chunkNum % 20 === 0 || chunkNum === totalChunks) {
+      console.log('[DictDB] chunk', chunkNum, '/', totalChunks, `(${pct}%)`,
+        '—', ((Date.now() - startTime) / 1000).toFixed(1), 's elapsed');
+    }
+
     if (onProgress) {
-      onProgress(Math.min(100, Math.round(((i + CHUNK_SIZE) / entries.length) * 100)));
+      onProgress(pct);
     }
 
     // Yield to the main thread to prevent UI freezes
     await new Promise((resolve) => setTimeout(resolve, 0));
   }
+
+  console.log('[DictDB] bulkInsertEntries complete — l2:', l2, '— total time:', ((Date.now() - startTime) / 1000).toFixed(1), 's');
 }
 
 // ── Dictionary metadata ───────────────────────

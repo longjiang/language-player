@@ -103,6 +103,7 @@ export default function OfflineDictionariesScreen() {
   // ── Load downloaded status on mount ──
   useEffect(() => {
     (async () => {
+      console.log('[OfflineDict] 🔍 checking already-downloaded dicts...');
       const dl = new Set<string>();
       for (const l2 of SUPPORTED_L2S) {
         try {
@@ -111,6 +112,7 @@ export default function OfflineDictionariesScreen() {
           }
         } catch {}
       }
+      console.log('[OfflineDict] 📋 downloaded dicts found:', dl.size, '—', [...dl].join(', ') || '(none)');
       setDownloaded(dl);
     })();
   }, []);
@@ -118,16 +120,24 @@ export default function OfflineDictionariesScreen() {
   // ── Check server availability for non-downloaded languages ──
   const checkAvailability = useCallback(async (l2: string) => {
     if (statuses.has(l2)) return;
+    const fetchStart = Date.now();
+    console.log('[OfflineDict] 🌐 GET /dictionary/download/status — l2:', l2);
     try {
       const baseUrl = require('@/lib/api-url').PYTHON_API_URL;
-      const res = await fetch(`${baseUrl}/dictionary/download/status?l2=${encodeURIComponent(l2)}`);
+      const url = `${baseUrl}/dictionary/download/status?l2=${encodeURIComponent(l2)}`;
+      const res = await fetch(url);
       const data = await res.json();
+      console.log('[OfflineDict] ✅ status response — l2:', l2,
+        'available:', data.available,
+        data.available ? `words: ${data.wordCount}, size: ${data.estimatedSizeBytes}` : '',
+        `(${Date.now() - fetchStart}ms)`);
       setStatuses((prev) => {
         const next = new Map(prev);
         next.set(l2, { ...data, checked: true });
         return next;
       });
-    } catch {
+    } catch (e: any) {
+      console.log('[OfflineDict] ❌ status check failed — l2:', l2, 'error:', e?.message ?? e, `(${Date.now() - fetchStart}ms)`);
       setStatuses((prev) => {
         const next = new Map(prev);
         next.set(l2, { available: false, checked: true });
@@ -139,16 +149,23 @@ export default function OfflineDictionariesScreen() {
   // Check availability for all undownloaded languages on mount (batched)
   useEffect(() => {
     const toCheck = SUPPORTED_L2S.filter((l2) => !downloaded.has(l2));
+    if (toCheck.length === 0) return;
+    console.log('[OfflineDict] 🌐 starting batch availability check —', toCheck.length, 'languages, batch size 8');
+    const batchStart = Date.now();
     const batchSize = 8;
     let i = 0;
     const next = () => {
       const batch = toCheck.slice(i, i + batchSize);
       i += batchSize;
       Promise.all(batch.map(checkAvailability)).then(() => {
-        if (i < toCheck.length) setTimeout(next, 100);
+        if (i < toCheck.length) {
+          setTimeout(next, 100);
+        } else {
+          console.log('[OfflineDict] ✅ batch check complete —', toCheck.length, 'languages, took', Date.now() - batchStart, 'ms');
+        }
       });
     };
-    if (toCheck.length > 0) next();
+    next();
   }, [downloaded]);
 
   // ── Poll download progress ──
@@ -159,6 +176,8 @@ export default function OfflineDictionariesScreen() {
         const state = getDownloadState(l2);
         if (state.status === 'downloading') hasActive = true;
         if (state.status === 'completed' || state.status === 'failed') {
+          console.log('[OfflineDict] 📡 poll status change — l2:', l2, '→ status:', state.status,
+            state.status === 'failed' ? `error: ${state.error}` : '');
           downloadingRef.current.delete(l2);
           if (state.status === 'completed') {
             setDownloaded((prev) => new Set(prev).add(l2));
@@ -174,18 +193,22 @@ export default function OfflineDictionariesScreen() {
   // ── Actions ──
 
   const handleDownload = async (l2: string) => {
+    console.log('[OfflineDict] 🚀 handleDownload — l2:', l2, '— timestamp:', Date.now());
     downloadingRef.current.add(l2);
     setTick((t) => t + 1);
     await startDownload(l2);
+    console.log('[OfflineDict] ✅ handleDownload finished — l2:', l2);
   };
 
   const handleCancel = (l2: string) => {
+    console.log('[OfflineDict] 🛑 handleCancel — l2:', l2);
     cancelDownload(l2);
     downloadingRef.current.delete(l2);
     setTick((t) => t + 1);
   };
 
   const handleDelete = (l2: string) => {
+    console.log('[OfflineDict] 🗑 handleDelete prompt — l2:', l2);
     Alert.alert(
       `${t('action.delete')} ${getLanguageName(l2)}`,
       'Delete offline dictionary? You\'ll need internet to look up words.',
