@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Pressable, Image, useWindowDimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Pressable, Image, useWindowDimensions, LayoutChangeEvent } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Menu, X } from 'lucide-react-native';
@@ -8,7 +8,6 @@ import { useT } from '@/hooks/use-t';
 import { HamburgerDrawer } from './HamburgerDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
-import { useAnimatedBoolean } from '@/lib/animations';
 
 /** Matches Next.js sm: breakpoint (640px). */
 const SM_BREAKPOINT = 640;
@@ -17,7 +16,8 @@ export function Header() {
   const t = useT();
   const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
-  const [drawerOpen, setDrawerOpen] = useAnimatedBoolean();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const showAppName = screenWidth >= SM_BREAKPOINT;
 
@@ -26,6 +26,7 @@ export function Header() {
       <View
         className="z-50 border-b border-border bg-background px-4 pb-2"
         style={{ paddingTop: insets.top + 8 }}
+        onLayout={(e: LayoutChangeEvent) => setHeaderHeight(e.nativeEvent.layout.height)}
       >
         <View className="flex-row items-center gap-3">
           {/* Logo — matches Next.js header.tsx */}
@@ -70,8 +71,8 @@ export function Header() {
         </View>
       </View>
 
-      {/* Hamburger drawer */}
-      <HamburgerDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      {/* Hamburger drawer — positioned below the header (matches web's top-14 behavior) */}
+      <HamburgerDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} headerHeight={headerHeight} />
     </>
   );
 }
