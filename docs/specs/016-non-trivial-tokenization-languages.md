@@ -34,7 +34,7 @@ These languages cannot be split by spaces AND have inflectional morphology.
 | Code | Language | Segmentation Strategy | Lemmatization Strategy | Server Engine |
 |---|---|---|---|---|
 | `ja` | Japanese | **kuromoji** (pure JS, same IPADIC dict as MeCab) | **kuromoji** — `basic_form` gives lemma directly（食べた→食べる, 美味しかった→美味しい） | MeCab |
-| `ko` | Korean | Spaces exist ✅ but agglutinative | Pre-built stem table (Okt export: `먹어요→먹다`) | Okt (konlpy) |
+| `ko` | Korean | **kuromoji-ko** (pure TS, based on mecab-ko-dic) | **kuromoji-ko** — `basic_form` gives stem directly（먹었겠습니다→먹다, 했어요→하다） | Okt (konlpy) |
 | `ar` | Arabic | Spaces exist ✅ but root-based morphology | Pre-built lemma table (Qalsadi export: `السلام→سلام`) | Qalsadi + Mishkal |
 | `fa` | Persian | Spaces exist ✅ but verb-heavy inflection | Pre-built lemma table (Hazm export: `دارد→داشتن`) | Hazm + PersianG2p |
 | `tr` | Turkish | Spaces exist ✅ but highly agglutinative | Suffix-stripping rules + lemma table (Zeyrek export: `gördüm→görmek`) | Zeyrek |
@@ -82,6 +82,37 @@ Adjectives also inflect:
 | Negative | 美味しくない | 美味しい |
 
 **Dictionary size tradeoff**: Full IPADIC is ~15 MB. Pruned to top 30K frequency-ranked entries → ~3 MB. Recommend downloading on demand (like SPEC-013 offline dictionaries) rather than bundling for all users. kuromoji requires no native modules — it works in React Native as pure JavaScript.
+
+**Korean: kuromoji-ko is the recommended approach.** `kuromoji-ko` is a pure-TypeScript port of kuromoji.js adapted for mecab-ko-dic, the same dictionary format the server uses via konlpy/Okt. Like its Japanese counterpart, a single library call handles both segmentation and lemmatization:
+
+```js
+import kuromoji from 'kuromoji-ko';
+
+const tokenizer = await kuromoji.builder({ dicPath: 'dict/' }).build();
+const tokens = tokenizer.tokenize('먹었겠습니다');
+// → surface: '먹', basic_form: '먹다', pos: 'VV', with full morpheme breakdown
+```
+
+Korean verbs/adjectives have rich agglutinative conjugation. kuromoji-ko resolves all of these via `basic_form`:
+
+| Form | Surface | Lemma (kuromoji-ko `basic_form`) |
+|---|---|---|
+| Dictionary | 먹다 | 먹다 |
+| Past | 먹었다 | 먹다 |
+| Future conjecture | 먹겠다 | 먹다 |
+| Formal past conjecture | 먹었겠습니다 | 먹다 |
+| Honorific | 드시다 | 들다 |
+| Polite present | 해요 | 하다 |
+| Past polite | 했어요 | 하다 |
+| ㅂ-irregular | 추워요 | 춥다 |
+| ㄷ-irregular | 들어요 | 듣다 |
+| 르-irregular | 빨라요 | 빠르다 |
+
+This covers all 7 irregular verb/adjective classes (ㅂ, ㄷ, 르, ㅅ, ㅎ, 러, 으) — no separate exception tables needed.
+
+**Alternatives**: `garu-ko` (WASM, 1 MB model, F1 93.7%) or `mecab-ko-wasm` (WASM, full MeCab-Ko ~15 MB). Both require WASM support (`expo-webassembly`), making kuromoji-ko the preferred pure-TS option.
+
+**Dictionary size**: mecab-ko-dic is ~8 MB. Pruned to top 30K frequency-ranked entries → ~2 MB. Download on demand like the Japanese kuromoji dictionary.
 
 ---
 
