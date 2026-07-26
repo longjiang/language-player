@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, Switch } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
+import * as Switch from '@/components/ui/switch';
 import Slider from '@react-native-community/slider';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -63,7 +64,7 @@ function ToggleRow({ label, desc, value, onValueChange }: ToggleProps) {
         <Text className="text-sm font-medium text-foreground">{label}</Text>
         {desc && <Text className="text-xs text-muted-foreground mt-0.5">{desc}</Text>}
       </View>
-      <Switch value={value} onValueChange={onValueChange} />
+      <Switch.Root checked={value} onCheckedChange={onValueChange} />
     </View>
   );
 }

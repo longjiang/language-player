@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
+import * as Tabs from '@/components/ui/tabs';
 
 export interface TabDef {
   key: string;
@@ -13,7 +14,8 @@ interface TabbedPanelProps {
 }
 
 /**
- * Simple tabbed panel matching Next.js's TabbedPanel pattern.
+ * Tabbed panel using @rn-primitives/tabs for proper ARIA roles,
+ * keyboard navigation, and focus management.
  * Renders a row of tab buttons and only the active tab's content.
  */
 export function TabbedPanel({ tabs, defaultTab, children }: TabbedPanelProps) {
@@ -21,9 +23,8 @@ export function TabbedPanel({ tabs, defaultTab, children }: TabbedPanelProps) {
   const childrenArray = React.Children.toArray(children);
 
   return (
-    <View className="flex-1">
-      {/* Tab bar */}
-      <View className="flex-row border-b border-border">
+    <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
+      <Tabs.List>
         {tabs.map((tab) => (
           <Pressable
             key={tab.key}
@@ -41,14 +42,14 @@ export function TabbedPanel({ tabs, defaultTab, children }: TabbedPanelProps) {
             </Text>
           </Pressable>
         ))}
-      </View>
+      </Tabs.List>
 
-      {/* Active tab content */}
-      {childrenArray.map((child, i) => {
-        const tabKey = tabs[i]?.key;
-        if (!tabKey || tabKey !== activeTab) return null;
-        return <View key={tabKey} className="flex-1">{child as any}</View>;
-      })}
-    </View>
+      {/* Tab content panels */}
+      {tabs.map((tab, i) => (
+        <Tabs.Content key={tab.key} value={tab.key}>
+          {childrenArray[i] as any}
+        </Tabs.Content>
+      ))}
+    </Tabs.Root>
   );
 }
