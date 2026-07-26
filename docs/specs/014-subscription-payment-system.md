@@ -17,6 +17,8 @@
   - `zerotohero-python/app_in_app_purchase.py` — Apple IAP receipt validation
   - `zerotohero-python/utils_subscription.py` — Directus subscription CRUD
   - `zerotohero-python/data/prices.csv` — Single source of truth for pricing
+  - `zerotohero-nuxt/components/PurchaseiOS.vue` — Reference IAP UI + flow
+  - `zerotohero-nuxt/plugins/ios-in-app-purchase.js` — Reference IAP plugin setup
 
 ---
 
@@ -78,6 +80,70 @@ App mount → fetch /stripe-prices
 
 ---
 
+---
+
+## IAP Configuration (Concrete Values)
+
+### Product IDs
+
+| Codebase | Product ID | Type | Status |
+|---|---|---|---|
+| Nuxt Classic (`zerotohero-nuxt/`) | `"pro"` | Non-consumable | ✅ Live on App Store since 2023 |
+| GO Legacy (`language-player-3/`) | `"pro_go"` | Non-consumable | ❌ Never implemented (`IOSPaymentMethods.tsx` returns null) |
+| New mobile (`apps/mobile/`) | `"pro"` | Non-consumable | ⬜ Use same ID as Nuxt (Phase 5) |
+
+### Bundle IDs
+
+| Build | Bundle ID | Used By |
+|---|---|---|
+| Nuxt/Capacitor production | `ca.zerotohero.app` | App Store listing "Language Player 2" |
+| GO legacy production | `ca.zerotohero.go` | App Store listing "Language Player GO" |
+| New mobile (all builds) | `ca.zerotohero.app` | `apps/mobile/app.json` — dev, Expo Go, TestFlight, production (same as Nuxt) |
+
+### Apple Shared Secret
+
+The shared secret is stored in the environment variable `APPLE_SHARED_SECRET` in `zerotohero-python-server/.env`. It is **account-level** (not app-specific). It works for all bundle IDs under this developer account.
+
+### Python Backend Receipt Validation (`app_in_app_purchase.py`)
+
+- Uses `inapppy`'s `AppStoreValidator`
+- Hardcodes `bundle_id = 'ca.zerotohero.app'` — this is the bundle ID expected in the receipt
+- Auto-retries on wrong environment (sandbox vs production) via `auto_retry_wrong_env_request = True`
+- Always grants **lifetime** subscription (the only IAP product type)
+- Strips receipt data to just `transaction_id` for storage in Directus
+- Endpoint: `POST /in_app_purchase_success` with `{ user_id, receipt }`
+- Returns `{ type: 'success', message, user_id, receipt, validation_result }` on success
+
+### Nuxt IAP Flow (Reference for Mobile Port)
+
+Source: `zerotohero-nuxt/components/PurchaseiOS.vue`
+
+1. **Register**: `$inAppPurchase2.register([{ id: "pro", type: NON_CONSUMABLE }])`
+2. **Refresh**: `$inAppPurchase2.refresh()` — loads product info + restores past purchases
+3. **Purchase**: `$inAppPurchase2.order("pro")` → shows Apple payment sheet
+4. **Approve**: `.approved()` handler calls `product.verify()` (server-side receipt check)
+5. **Verified**: `.verified()` handler extracts `product.transaction.appStoreReceipt`
+6. **Elevate**: `POST /in_app_purchase_success` with `{ user_id, receipt }`
+7. **Redirect**: On success → `/go-pro-success`
+8. **Finish**: `product.finish()` — marks transaction as complete
+
+For mobile port, map:
+- `$inAppPurchase2.register()` → `InAppPurchases.connectAsync()`
+- `$inAppPurchase2.order()` → `InAppPurchases.purchaseItemAsync()`
+- `product.transaction.appStoreReceipt` → result from `purchaseItemAsync`
+- The receipt POST endpoint and payload shape are identical
+
+### GO Legacy IAP (Failed Attempt — Learn From)
+
+The GO legacy app at `apps/mobile-go-legacy/` removed `react-native-iap` during SDK 57 migration. The stubbed `IOSPaymentMethods.tsx` returns `null`. The git history (`git show b6fe809^`) shows the original used `react-native-iap` with product ID `'pro_go'` — a **different** product from the Nuxt app's `"pro"`. This means:
+- Users who purchased via the GO app would need a separate receipt validation
+- The Python backend would validate it fine (shared secret is account-level)
+- But ADR-0013 drops the GO app anyway, so this is moot
+
+**Lesson**: Use the **same** product ID (`"pro"`) as the Nuxt app, not a new one. This lets existing users restore their purchase.
+
+---
+
 ## Current State Audit
 
 ### What Works Across All Frontends
@@ -89,6 +155,7 @@ App mount → fetch /stripe-prices
 | Alipay (CNY) | ✅ | ✅ (stub) | ✅ | ✅ |
 | PayPal | ✅ Lifetime only | ❌ | 🟡 Link to classic | 🟡 Link to classic |
 | iOS IAP | ✅ Lifetime only | ❌ Stubbed | N/A | ❌ Missing |
+| Google Play Billing | ❌ No Play listing | ❌ No Play listing | N/A | ❌ Missing |
 | Subscription status check | ✅ Vuex store | ✅ SubscriptionContext | ✅ useSubscription hook | ❌ Missing |
 | Auto-renew check | ✅ | ✅ | ✅ | ❌ Missing |
 | Cancel subscription | ✅ | ✅ | ✅ | ❌ Missing |
@@ -223,32 +290,57 @@ Key behaviors:
 
 **New file**: `apps/mobile/lib/iap.ts`
 
-Use `expo-in-app-purchases` (Expo SDK 57 supports this natively).
+Use `expo-in-app-purchases` (Expo SDK 57 supports this natively via `expo-in-app-purchases` package — the same package that replaced `react-native-iap` post-SDK-51).
 
 ```typescript
-interface IapConfig {
-  /** Product ID configured in App Store Connect. Must match the existing non-consumable "pro" used by the Nuxt app. */
-  iosProductId: string; // "pro"
-  /** Product ID configured in Google Play Console. We have no Google Play listing yet — stub or skip Android. */
-  androidProductId: string; // "pro"
+/** Product ID must match App Store Connect. Use "pro" — the same ID the Nuxt app has been using since 2023. */
+const IOS_IAP_PRODUCT_ID = "pro";
+const NON_CONSUMABLE = "non-consumable"; // or use expo-in-app-purchases constant
+
+interface PurchaseResult {
+  /** Base64-encoded App Store receipt (same as `product.transaction.appStoreReceipt` in Nuxt) */
+  receipt: string;
+  transactionId: string;
 }
 
-async function purchaseLifetime(): Promise<void>;
+async function purchaseLifetime(): Promise<PurchaseResult>;
 async function restorePurchases(): Promise<boolean>;
 ```
 
-**Flow**:
-1. User taps "Pay $169" on lifetime plan
-2. `purchaseLifetime()` → `InAppPurchases.connectAsync()` → `InAppPurchures.purchaseItemAsync("pro")`
-3. Apple shows payment sheet → user approves → `purchaseItemAsync` resolves with receipt
-4. POST `/in_app_purchase_success` with `{ user_id, receipt }`
-5. Python backend validates via `app_in_app_purchase.py` → creates subscription
-6. Refresh subscription state via `fetchSubscription()`
-7. Show success UI
+**Purchase flow** (mapped from Nuxt `PurchaseiOS.vue`):
 
-**Restore**: Add a "Restore Purchases" button in Go Pro screen or Settings. Calls `InAppPurchases.getPurchaseHistoryAsync()`, finds the "pro" purchase, re-validates via backend.
+| Nuxt (`@ionic-native/in-app-purchase-2`) | Mobile (`expo-in-app-purchases`) |
+|---|---|
+| `register([{ id: "pro", type: NON_CONSUMABLE }])` | Connect on mount: `InAppPurchases.connectAsync()` |
+| `order("pro")` | `InAppPurchases.purchaseItemAsync("pro")` |
+| `.approved()` → `product.verify()` | (Handled by StoreKit automatically) |
+| `.verified()` → `product.transaction.appStoreReceipt` | Result contains receipt data |
+| `POST /in_app_purchase_success { user_id, receipt }` | **Same endpoint, same payload shape** |
+| `/go-pro-success` redirect | Navigate to success screen |
+| `product.finish()` | `InAppPurchases.finishTransactionAsync()` |
 
-**Important**: The bundle ID for the production app must be `ca.zerotohero.app` (not `ca.zerotohero.languageplayer`) for `verifyReceipt` to match the existing IAP product. See ADR-0013.
+**Full flow**:
+1. On mount: `connectAsync()` to set up the payment queue
+2. User taps "Pay $169" on lifetime plan → `purchaseItemAsync("pro")`
+3. Apple shows payment sheet → user approves → resolves with receipt + transaction data
+4. POST `{ user_id, receipt }` to `PYTHON_API_URL + "/in_app_purchase_success"`
+5. Python backend validates via `AppStoreValidator` with `bundle_id = 'ca.zerotohero.app'`
+6. On success (`res.data.type === "success"`): call `finishTransactionAsync()` and navigate to success
+7. Refresh subscription state via `fetchSubscription()`
+
+**Restore purchases**:
+- Add a "Restore Purchases" button below payment options
+- Calls `InAppPurchases.getPurchaseHistoryAsync()` (iOS 15+, falls back to StoreKit receipt refresh)
+- Finds the "pro" purchase, extracts receipt
+- POST the receipt to `/in_app_purchase_success` (same endpoint — idempotent, skips if already granted)
+- On success: refresh subscription state, show "Restore complete" toast
+- If no purchase found: show "No purchases to restore" message
+
+**Important**: The bundle ID is now `ca.zerotohero.app` for all builds (dev, Expo Go, TestFlight, production) — matching the Nuxt app's bundle ID. This means Apple's `verifyReceipt` works identically across both apps, and `restorePurchases()` from either app will find the existing IAP product. See ADR-0013.
+
+**Important**: The Python backend hardcodes `bundle_id = 'ca.zerotohero.app'` in `app_in_app_purchase.py`. This must match the production app's bundle ID. No change needed — it already does.
+
+**Important**: Since `expo-in-app-purchases` uses the same StoreKit framework, the receipt format is identical to what the Nuxt app sends. The Python backend cannot distinguish between a purchase from the old app and the new app — which is the desired behavior for Option B.
 
 ### Phase 6: Mobile — Go Pro Screen Refinements
 
@@ -370,7 +462,47 @@ All existing Python endpoints are production-tested and unchanged:
 
 ## Prerequisites
 
-1. **Apple App Store**: Add the new app's bundle ID (`ca.zerotohero.app` for production) to the existing IAP product in App Store Connect (or verify the existing product works with the new app)
-2. **IAP Dependency**: Install `expo-in-app-purchases` in `apps/mobile`
-3. **PayPal Dependency**: Install `@paypal/react-paypal-js` in `apps/web` (optional — can use link-to-classic approach)
-4. **Google Play**: If Android is desired, a new developer account is needed before Play Billing IAP
+1. **Apple App Store**: No changes needed to App Store Connect. The existing IAP product `"pro"` (non-consumable) under the existing bundle ID `ca.zerotohero.app` is already live. When ADR-0013 Option B is executed (replace Nuxt binary), the new app binary inherits the same bundle ID and product listing automatically.
+2. **IAP Dependency**: Install `expo-in-app-purchases` in `apps/mobile` — Expo SDK 57 compatible, replaces `react-native-iap` used by the GO legacy.
+3. **PayPal Dependency**: Install `@paypal/react-paypal-js` in `apps/web` (optional — can use link-to-classic approach).
+4. **Google Play**: No Google Play listing exists (developer account was deleted after failure to renew business info). If Android is desired, a new developer account is needed before Play Billing IAP can be set up. Android IAP is out of scope for this spec.
+5. **Env variables** (already in `zerotohero-python-server/.env`, gitignored — values not listed here to avoid committing secrets):
+   - `APPLE_SHARED_SECRET`
+   - `STRIPE_TEST_KEY`, `STRIPE_LIVE_KEY`
+   - `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`
+   - `DIRECTUS_TOKEN`
+
+## Pricing Reference
+
+Single source of truth: `zerotohero-python-server/data/prices.csv`
+
+### Current Regular Prices
+
+| Plan | USD | CNY | Mode |
+|---|---|---|---|
+| Monthly | $10 | ¥73 | Subscription |
+| Annual | $90 | ¥653 | Subscription |
+| Lifetime | $169 | ¥1,227 | One-time payment |
+
+### Sale Prices (when `SALE` flag is active)
+
+| Plan | USD | CNY |
+|---|---|---|
+| Lifetime (sale) | $84.50 (50% off) | ¥608 |
+
+### Legacy Prices (grandfathered, `status=legacy`)
+
+| Plan | USD |
+|---|---|
+| Monthly (legacy) | $6 |
+| Annual (legacy) | $59 |
+
+Sale detection logic (from `zerotohero-nuxt/lib/utils/variables.js`):
+
+```typescript
+const SALE_START_DATE = new Date('2024-07-01');  // Placeholder — check actual dates
+const SALE_END_DATE = new Date('2024-08-01');
+const SALE = SALE_START_DATE && SALE_END_DATE && new Date() >= SALE_START_DATE && new Date() <= SALE_END_DATE;
+```
+
+Actual sale dates should be verified from the Classic app or `prices.csv` metadata before implementing Phase 9.
