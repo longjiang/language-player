@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, Pressable, Animated } from 'react-native';
 import { ChevronDown } from 'lucide-react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import * as Dialog from '@/components/ui/dialog';
@@ -10,6 +10,20 @@ export function LanguageSwitcher() {
   const { l2Lang, setL1Lang, setL2Lang } = useLanguage();
   const [open, setOpen] = useState(false);
   const [pickerInitialL1, setPickerInitialL1] = useState(l2Lang.code);
+  const spinAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(spinAnim, {
+      toValue: open ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [open, spinAnim]);
+
+  const spin = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
 
   async function handleConfirm(l1: string, l2: string) {
     await setL1Lang(l1);
@@ -29,7 +43,9 @@ export function LanguageSwitcher() {
         <Text className="text-sm text-foreground" numberOfLines={1}>
           {l2Lang.name}
         </Text>
-        <ChevronDown size={12} color={ICON_MUTED} />
+        <Animated.View style={{ transform: [{ rotate: spin }] }}>
+          <ChevronDown size={12} color={ICON_MUTED} />
+        </Animated.View>
       </Pressable>
 
       {/* Single dialog — same LanguagePicker as onboarding */}
