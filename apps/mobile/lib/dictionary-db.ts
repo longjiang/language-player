@@ -246,24 +246,37 @@ export async function bulkInsertEntries(
   for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
     const chunk = entries.slice(i, i + CHUNK_SIZE);
     const chunkNum = Math.floor(i / CHUNK_SIZE) + 1;
+    const chunkStart = Date.now();
 
+    // Pre-serialize entries to JSON outside the transaction
+    const serializedStart = Date.now();
+    const rows = chunk.map((entry) => ({
+      id: entry.id,
+      head: entry.head,
+      pronunciation: entry.pronunciation ?? null,
+      entry_json: JSON.stringify(entry),
+    }));
+    const serializeMs = Date.now() - serializedStart;
+
+    const txStart = Date.now();
     await db.withTransactionAsync(async () => {
-      for (const entry of chunk) {
+      for (const row of rows) {
         await db.runAsync(
           `INSERT OR REPLACE INTO ${table} (id, head, pronunciation, entry_json) VALUES (?, ?, ?, ?)`,
-          [
-            entry.id,
-            entry.head,
-            entry.pronunciation ?? null,
-            JSON.stringify(entry),
-          ],
+          [row.id, row.head, row.pronunciation, row.entry_json],
         );
       }
     });
+    const txMs = Date.now() - txStart;
 
+    const chunkMs = Date.now() - chunkStart;
     const pct = Math.min(100, Math.round(((i + CHUNK_SIZE) / entries.length) * 100));
-    if (chunkNum % 20 === 0 || chunkNum === totalChunks) {
+
+    // Log every chunk for first 10, then every 10th, then every 20th
+    const shouldLog = chunkNum <= 10 || chunkNum % 10 === 0 || chunkNum === totalChunks;
+    if (shouldLog) {
       console.log('[DictDB] chunk', chunkNum, '/', totalChunks, `(${pct}%)`,
+        '— json:', serializeMs, 'ms tx:', txMs, 'ms total:', chunkMs, 'ms',
         '—', ((Date.now() - startTime) / 1000).toFixed(1), 's elapsed');
     }
 
