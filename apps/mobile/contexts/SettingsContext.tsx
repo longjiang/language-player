@@ -25,6 +25,8 @@ interface SettingsContextValue {
   getL2: (code: string) => L2Settings;
   updateL2: (code: string, patch: Partial<L2Settings>) => void;
   ensureL2: (code: string) => void;
+  /** Convenience: toggle Chinese script variant for the given L2 code. */
+  setUseTraditional: (l2Code: string, value: boolean) => void;
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -36,6 +38,15 @@ export function useSettingsContext(): SettingsContextValue {
 }
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const value = useSettings();
+  const settings = useSettings();
+  const value: SettingsContextValue = {
+    ...settings,
+    setUseTraditional: (l2Code: string, value: boolean) => {
+      const current = settings.getL2(l2Code);
+      settings.updateL2(l2Code, {
+        display: { ...current.display, traditional: value },
+      });
+    },
+  };
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
