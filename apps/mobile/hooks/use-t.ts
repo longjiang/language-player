@@ -1,3 +1,4 @@
+import { useIntl } from 'react-intl';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getLocaleMessages } from '@/contexts/IntlProvider';
 
@@ -18,67 +19,6 @@ function resolveNested(
 }
 
 /**
- * Resolve a simple ICU plural message like:
- *   "{count, plural, one {# word} other {# words}}"
- * or (Chinese-style, no singular):
- *   "{count, plural, other {# 个词}}"
- *
- * Returns the formatted string without needing Intl.PluralRules.
- * Falls back to the raw string if parsing fails.
- */
-function resolvePlural(message: string, values: Record<string, string | number>): string {
-  // Match: {varName, plural, one {...} other {...}} or just {varName, plural, other {...}}
-  // Supports optional =0, =1 exact matches and the standard "one", "other" keywords
-  const match = message.match(
-    /^\s*\{\s*(\w+)\s*,\s*plural\s*,\s*(.+?)\s*\}\s*$/,
-  );
-  if (!match) return message; // not a simple plural, return as-is
-
-  const varName = match[1];
-  const rawValue = values[varName];
-  const n = typeof rawValue === 'number' ? rawValue : Number(rawValue);
-  if (isNaN(n)) {
-    // Replace {varName} and return
-    let result = message;
-    for (const [k, v] of Object.entries(values)) {
-      result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
-    }
-    return result;
-  }
-
-  const body = match[2];
-
-  // Parse categories: "one {# word} other {# words}"
-  // Support: =0, =1, zero, one, two, few, many, other
-  const catRegex = /\s*(=\d+|zero|one|two|few|many|other)\s*\{\s*(.*?)\s*\}\s*/g;
-  let catMatch: RegExpExecArray | null;
-  const categories: Record<string, string> = {};
-
-  while ((catMatch = catRegex.exec(body)) !== null) {
-    categories[catMatch[1]] = catMatch[2];
-  }
-
-  // Pick the right category
-  let template: string | undefined;
-
-  // Exact match (=0, =1, etc.)
-  template = categories[`=${n}`];
-  // English-style: one for 1, other for rest
-  if (!template) {
-    if (n === 1) {
-      template = categories['one'] ?? categories['other'];
-    } else {
-      template = categories['other'] ?? categories['one'];
-    }
-  }
-
-  if (!template) return message; // shouldn't happen
-
-  // Replace # with the number
-  return template.replace(/#/g, String(n));
-}
-
-/**
  * Translation hook with ICU MessageFormat support via react-intl.
  *
  * Usage: const t = useT(); → <Text>{t('action.cancel')}</Text>
@@ -89,10 +29,10 @@ function resolvePlural(message: string, values: Record<string, string | number>)
  * Resolves from the static import map (getLocaleMessages), NOT from IntlProvider's
  * messages prop. IntlProvider receives empty messages to suppress react-intl's
  * flat-key validation. For simple {key} placeholders we do string replacement
- * directly. For ICU plural we use a custom resolver that doesn't need
- * Intl.PluralRules (unavailable in Hermes).
+ * directly; only complex ICU (plural, select) goes through intl.formatMessage().
  */
 export function useT() {
+  const intl = useIntl();
   const { l1Lang } = useLanguage();
   const locale = l1Lang?.code ?? 'en';
 
@@ -103,16 +43,18 @@ export function useT() {
     if (!message) return id; // fallback to key name (visible in dev, easy to spot)
     // No values → return resolved string directly (avoids flat-key validation)
     if (!values) return message;
-    // ICU plural → use custom resolver (avoids Intl.PluralRules dependency)
-    // ICU MessageFormat syntax: {varName, plural, ...}
-    if (/^\s*\{\s*\w+\s*,\s*plural\s*,/.test(message)) {
-      return resolvePlural(message, values);
+    // Simple {key} placeholders (no ICU plural/select) → string replace directly
+    // This avoids react-intl's MISSING_TRANSLATION error for nested keys.
+    // ICU MessageFormat syntax: {varName, plural, ...} or {varName, select, ...}
+    // The keyword follows a variable name and comma, not the opening brace.
+    if (!/\{[^}]*,\s*(?:plural|select|selectordinal)\s*,/.test(message)) {
+      let result = message;
+      for (const [k, v] of Object.entries(values)) {
+        result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+      }
+      return result;
     }
-    // Simple {key} placeholders → string replace directly
-    let result = message;
-    for (const [k, v] of Object.entries(values)) {
-      result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
-    }
-    return result;
+    // Complex ICU (plural, select, etc.) → use intl.formatMessage for proper formatting
+    return intl.formatMessage({ id, defaultMessage: message }, values);
   };
 }

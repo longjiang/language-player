@@ -113,7 +113,7 @@
 | Profile Detail | `(tabs)/(me)/profile.tsx` | ✅ | `[l1]/[l2]/profile/page.tsx` | Info + watch history + saved words previews. Includes subscription management (pro status, cancel auto-renew, expire dates, lifetime upsell) and language level selector |
 | Go Pro | `(tabs)/(me)/go-pro.tsx` | ✅ | `[l1]/[l2]/go-pro/page.tsx` | Plan selection, Stripe credit card checkout, WeChat Pay, Alipay, PayPal |
 | Settings | `(tabs)/(me)/settings.tsx` | ✅ | `[l1]/[l2]/settings/page.tsx` | 4 tabs (Display/Playback/Speech/Review). VoicePicker uses NativeWind design tokens and locale-aware language names |
-| About | `(tabs)/(me)/about.tsx` | ✅ | 🟡 | Basic app info |
+| About | `(tabs)/(me)/about.tsx` | ✅ | ✅ | Basic app info |
 | Docs / Help | `(tabs)/(me)/docs.tsx` | ✅ | `[l1]/[l2]/docs/` | Searchable doc listing. MarkdownText rendering (headings, lists, bold/italic, code, links) + "On this page" heading TOC sidebar |
 | Tokenizer Debug | `(tabs)/(me)/tokenizer.tsx` | ✅ | `[l1]/[l2]/tokenizer/page.tsx` | Dev tool |
 
