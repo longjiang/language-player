@@ -4,6 +4,7 @@ import '@/lib/intl-polyfills';
 import React from 'react';
 import { Stack } from 'expo-router';
 import { View, Text, ScrollView } from 'react-native';
+import { PortalHost } from '@rn-primitives/portal';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { IntlProviderWrapper } from '@/contexts/IntlProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -65,6 +66,7 @@ export default function RootLayout() {
                       <Stack.Screen name="go-pro-error" />
                       <Stack.Screen name="go-pro-success" />
                     </Stack>
+                    <PortalHost />
                   </VideoPlayerProvider>
                 </DictionaryProvider>
               </ThemeProvider>
