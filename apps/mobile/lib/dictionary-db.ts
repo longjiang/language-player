@@ -123,17 +123,17 @@ export async function closeDictionaryDB(): Promise<void> {
 // ── Table helpers ─────────────────────────────
 
 /**
- * Sanitize an L2 language code for use in a table name.
- * Only allows lowercase ASCII letters (ISO 639-1 codes).
+ * Validate an L2 language code for use in a table name.
+ * Allows lowercase alphanumeric codes with optional hyphens
+ * (e.g., "ja", "zh-Hans", "fsl").
  */
 function sanitizeL2(l2: string): string {
-  // ISO 639-1 codes are exactly 2 lowercase letters
-  if (/^[a-z]{2}$/.test(l2)) return l2;
-  throw new Error(`Invalid L2 code: "${l2}". Expected 2-letter ISO 639-1 code.`);
+  if (/^[a-z][a-zA-Z0-9-]*$/.test(l2)) return l2;
+  throw new Error(`Invalid L2 code: "${l2}". Expected lowercase alphanumeric code.`);
 }
 
 function dictTableName(l2: string): string {
-  return `dict_${sanitizeL2(l2)}`;
+  return `dict_${sanitizeL2(l2).replace(/-/g, '_')}`;
 }
 
 /**
