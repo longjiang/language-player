@@ -34,7 +34,9 @@ export default function SettingsListPage() {
   const [localizedLabels, setLocalizedLabels] = useState<Record<string, string[]>>({});
   const [isWide, setIsWide] = useState<boolean | null>(null);
 
-  // Detect wide screen — on mount, redirect to Display detail (first tab)
+  // ── ALL hooks unconditionally, before any early return ──
+
+  // Detect wide screen
   useEffect(() => {
     const mql = window.matchMedia(`(min-width: ${LG_BREAKPOINT}px)`);
     const check = () => setIsWide(mql.matches);
@@ -43,21 +45,12 @@ export default function SettingsListPage() {
     return () => mql.removeEventListener('change', check);
   }, []);
 
-  // Redirect to Display detail on wide screens (sidebar shows the list)
+  // Redirect to Display detail on wide screens
   useEffect(() => {
     if (isWide) {
       router.replace(`/${l1.code}/${l2.code}/settings/display`);
     }
   }, [isWide, l1.code, l2.code, router]);
-
-  // Don't render the list while checking width or redirecting on wide screens
-  if (isWide === null || isWide) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
 
   // Pre-resolve search keys on locale change
   useEffect(() => {
@@ -127,6 +120,16 @@ export default function SettingsListPage() {
   }, [query, sections, localizedLabels]);
 
   const hasResults = filteredSections.some(s => s.rows.length > 0);
+
+  // ── Early return (no hooks below this point) ──
+
+  if (isWide === null || isWide) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-lg py-12">
