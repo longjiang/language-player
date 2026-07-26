@@ -1,8 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import * as DialogPrimitive from '@rn-primitives/dialog';
-import Animated from 'react-native-reanimated';
-import { overlayEnter, overlayExit, dialogEnter, dialogExit } from '@/lib/animations';
 
 // ── Root ──
 
@@ -38,17 +36,14 @@ type OverlayProps = DialogPrimitive.OverlayProps;
 
 export function Overlay({ className, ...props }: OverlayProps) {
   return (
-    <DialogPrimitive.Overlay {...props}>
-      <Animated.View
-        className={`absolute inset-0 bg-black/40 ${className ?? ''}`}
-        entering={overlayEnter}
-        exiting={overlayExit}
-      />
-    </DialogPrimitive.Overlay>
+    <DialogPrimitive.Overlay
+      className={`bg-black/40 ${className ?? ''}`}
+      {...props}
+    />
   );
 }
 
-// ── Content ──
+// ── Content (centered popover style) ──
 
 type ContentProps = DialogPrimitive.ContentProps & {
   className?: string;
@@ -56,18 +51,12 @@ type ContentProps = DialogPrimitive.ContentProps & {
 
 export function Content({ children, className, ...props }: ContentProps) {
   return (
-    <Animated.View
-      entering={dialogEnter}
-      exiting={dialogExit}
-      className="absolute inset-0 flex items-center justify-center"
+    <DialogPrimitive.Content
+      className={`w-[90%] max-w-md rounded-xl bg-card p-4 border border-border shadow-lg ${className ?? ''}`}
+      {...props}
     >
-      <DialogPrimitive.Content
-        className={`w-[90%] max-w-md rounded-xl bg-card p-4 border border-border shadow-lg ${className ?? ''}`}
-        {...props}
-      >
-        {children}
-      </DialogPrimitive.Content>
-    </Animated.View>
+      {children}
+    </DialogPrimitive.Content>
   );
 }
 
@@ -79,18 +68,12 @@ type SheetContentProps = DialogPrimitive.ContentProps & {
 
 export function SheetContent({ children, className, ...props }: SheetContentProps) {
   return (
-    <Animated.View
-      entering={dialogEnter}
-      exiting={dialogExit}
-      className="absolute bottom-0 left-0 right-0"
+    <DialogPrimitive.Content
+      className={`rounded-t-xl border-t border-border bg-background px-4 pb-8 pt-4 max-h-[75%] ${className ?? ''}`}
+      {...props}
     >
-      <DialogPrimitive.Content
-        className={`rounded-t-xl border-t border-border bg-background px-4 pb-8 pt-4 max-h-[75%] ${className ?? ''}`}
-        {...props}
-      >
-        {children}
-      </DialogPrimitive.Content>
-    </Animated.View>
+      {children}
+    </DialogPrimitive.Content>
   );
 }
 
@@ -127,28 +110,5 @@ export function Description({ children, className, ...props }: DescriptionProps)
     <DialogPrimitive.Description className={`text-sm text-muted-foreground ${className ?? ''}`} {...props}>
       {children}
     </DialogPrimitive.Description>
-  );
-}
-
-// ── Drawer Content (full-height, slide from left) ──
-
-type DrawerContentProps = DialogPrimitive.ContentProps & {
-  className?: string;
-};
-
-export function DrawerContent({ children, className, ...props }: DrawerContentProps) {
-  return (
-    <Animated.View
-      entering={dialogEnter}
-      exiting={dialogExit}
-      className="absolute left-0 top-0 bottom-0"
-    >
-      <DialogPrimitive.Content
-        className={`h-full w-64 border-r border-border bg-background shadow-lg ${className ?? ''}`}
-        {...props}
-      >
-        {children}
-      </DialogPrimitive.Content>
-    </Animated.View>
   );
 }
