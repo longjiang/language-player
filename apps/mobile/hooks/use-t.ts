@@ -55,6 +55,7 @@ export function useT() {
       return result;
     }
     // Complex ICU (plural, select, etc.) → use intl.formatMessage for proper formatting
-    return intl.formatMessage({ id, defaultMessage: message }, values);
+    // Omit 'id' to avoid MISSING_TRANSLATION lookup in empty IntlProvider messages.
+    return intl.formatMessage({ defaultMessage: message }, values);
   };
 }
