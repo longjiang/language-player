@@ -3,7 +3,6 @@ import type {
   DictionaryLookupResponse,
   DictionaryEntry,
   DictionaryDownloadResponse,
-  DictionaryDownloadStatus,
   Token,
   LemmatizeResponse,
 } from '@langplayer/shared';
@@ -47,13 +46,7 @@ export function useDictionary() {
     /** Download offline dictionary data. GET /dictionary/download */
     downloadDictionary: (l2: string, l1?: string, limit?: number) =>
       apiClient.get<DictionaryDownloadResponse>('/dictionary/download', {
-        params: { l2, l1: l1 ?? 'en', limit: limit ?? 30000 },
-      }),
-
-    /** Check if offline dictionary is available for a language. GET /dictionary/download/status */
-    getDownloadStatus: (l2: string) =>
-      apiClient.get<DictionaryDownloadStatus>('/dictionary/download/status', {
-        params: { l2 },
+        params: { l2, l1: l1 ?? 'en', limit: limit ?? 125000 },
       }),
   };
 }

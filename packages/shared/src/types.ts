@@ -186,26 +186,19 @@ export interface DictionaryLookupResponse {
   message?: string;
 }
 
-/** Response from GET /dictionary/download — bulk-export of frequency-ordered entries. */
+/** Response from GET /dictionary/download — two-tier bulk export. */
 export interface DictionaryDownloadResponse {
   entries: DictionaryEntry[];
-  /** Total entries with frequency data available for the language. */
+  /** Total entries available for the language (all entries, not just freq). */
   total: number;
+  /** Number of entries with Zipf frequency data (Tier 1). */
+  freq_count: number;
   /** Number of entries actually returned (min of total and limit). */
   downloaded: number;
+  /** Whether total > downloaded (i.e., entries were trimmed to the cap). */
+  capped: boolean;
   /** MD5 hash of the entries array — changes when the dictionary DB is rebuilt. */
   version: string;
-}
-
-/** Response from GET /dictionary/download/status — lightweight availability check. */
-export interface DictionaryDownloadStatus {
-  available: boolean;
-  /** Number of entries with frequency data. Only present when available=true. */
-  wordCount?: number;
-  /** Estimated JSON payload size in bytes. Only present when available=true. */
-  estimatedSizeBytes?: number;
-  /** Version hash for update detection. Only present when available=true. */
-  version?: string;
 }
 
 /** Per-language metadata stored client-side in SQLite after a successful download. */
