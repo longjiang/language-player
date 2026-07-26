@@ -14,7 +14,7 @@
 
 ## Overview
 
-Of the 207 supported L2 languages in `packages/shared/src/constants.ts:SUPPORTED_L2S`, approximately **145** can be tokenized with a simple regex word-split (`/[\w']+|[^\w\s']+/g`) and need no lemmatization (surface form = lemma). This spec documents the **~62 languages that need more**.
+Of the 207 supported L2 languages in `packages/shared/src/constants.ts:SUPPORTED_L2S`, approximately **146** can be tokenized with a simple regex word-split (`/[\w']+|[^\w\s']+/g`) and need no lemmatization (surface form = lemma). This spec documents the **~61 languages that need more**.
 
 There are two independent dimensions:
 
@@ -24,6 +24,19 @@ There are two independent dimensions:
 | **Lemmatization** | Reducing inflected words to base form | All inflected languages (verbs, plurals, cases, etc.) |
 
 A language may need zero, one, or both.
+
+### Priority: Server First, Local as Fallback
+
+Local tokenization exists for **graceful offline degradation** (airplane mode, tunnels, poor connectivity). The server always wins when reachable:
+
+```
+1. POST /lemmatize-normalized  →  Server (best accuracy, always preferred)
+2. Local JS library             →  kuromoji, arabic-stem, nlptoolkit, snowball-stemmers, etc.
+3. Downloaded lemma table       →  Language pack stored in SQLite (SPEC-013 pattern)
+4. Regex word-split + surface   →  Last resort (~146 languages, zero cost)
+```
+
+Tokenizers and lemma tables are **downloadable on demand**, following the same UX pattern as offline dictionaries (see [SPEC-013](../specs/013-mobile-offline-dictionary.md)): the user selects a language, downloads its tokenizer/lemma pack, and it's stored locally in SQLite. No tokenizers are bundled with the app — everything is opt-in.
 
 ---
 
@@ -348,24 +361,28 @@ Following the recommendation in SPEC-015, Phase 1 covers the biggest wins at zer
 | Regex word-split tokenizer | All 207 (trivial) |
 | Surface-as-lemma | Categories B, D (vi, hi, tlh, id), E = **~166 languages** |
 | `arabic-stem` (zero-dep, 15 KB) | Arabic — stemmer covers ~85% of forms |
-| Server fallback for everything else | Categories A (ja/ko/fa/tr — unless libraries downloaded), C1–C4 = **~40 languages** |
+| Server fallback (`POST /lemmatize-normalized`) | Everything else when offline packs aren't downloaded |
 
-### Phase 2 — Library Downloads (on demand, like SPEC-013 dictionaries)
+### Phase 2 — Downloadable Language Packs (on demand, same UX as SPEC-013 offline dictionaries)
 
-| Library | Language | Size | Replaces |
+Users download tokenizer/lemma packs per language. Nothing is bundled — everything is opt-in and stored in SQLite.
+
+| Downloadable Pack | Language(s) | Size | Offline Fallback When |
 |---|---|---|---|
-| `kuromoji` + IPADIC dict (pruned) | Japanese | ~3 MB | Server fallback |
-| `kuromoji-ko` + mecab-ko-dic (pruned) | Korean | ~2 MB | Server fallback |
-| `nlptoolkit-morphologicalanalysis` | Turkish | ~2 MB | Server fallback |
-| Persian lemma table (Hazm export) | Persian | ~80 KB | Server fallback |
-| `snowball-stemmers` (stemmer fallback) | C1/C2 langs with Snowball support (de, en, es, fr, ga, it, pt, ro, sv, da, nb, nl, hu, fi, hy) | ~30 KB each | Catches forms not in lemma table |
-| Pre-built lemma tables | Remaining C1–C4 + C2 langs without JS libraries (ca, cs, cy, gl, gv, sk, sl, uk, bg, el, et, is, la, lv, lt, nn, pl, sq, hr, ru, ka, sw) | ~100–500 KB each | Server fallback |
-| `nlptoolkit-morphologicalanalysis` | Turkish | ~2 MB | Server fallback |
+| `kuromoji` + IPADIC dict (pruned top 30K) | Japanese | ~3 MB | Server unreachable |
+| `kuromoji-ko` + mecab-ko-dic (pruned) | Korean | ~2 MB | Server unreachable |
+| `nlptoolkit-morphologicalanalysis` | Turkish | ~2 MB | Server unreachable |
+| Persian lemma table (Hazm export) | Persian | ~80 KB | Server unreachable |
+| `snowball-stemmers` (stemmer fallback) | de, en, es, fr, ga, it, pt, ro, sv, da, nb, nl, hu, fi, hy | ~30 KB each | Server unreachable; catches forms not in lemma table |
+| Pre-built lemma tables | ca, cs, cy, gl, gv, sk, sl, uk, bg, el, et, is, la, lv, lt, nn, pl, sq, hr, ru, ka, sw, ast | ~100–500 KB each | Server unreachable; primary offline lemmatizer for these langs |
 
-This means Phase 1 alone gives **functional offline tokenization** for ~80% of all supported L2s with **zero additional bundle size** and **near-zero new dependencies** (only `arabic-stem` at 15 KB). Phase 2 adds full offline support for the remaining ~20% via downloadable language packs.
+**Server always wins when reachable.** Local tokenization is strictly a fallback for offline use (airplane mode, tunnels, poor connectivity). The download UX follows SPEC-013 exactly: Settings → Offline Dictionaries → pick language → download tokenizer/lemma pack.
+
+This means Phase 1 alone gives **functional offline tokenization** for ~80% of all supported L2s with **zero additional bundle size** and **near-zero new dependencies** (only `arabic-stem` at 15 KB). Phase 2 adds downloadable packs for the remaining ~20%.
 
 ## See Also
 
 - [SPEC-015: Local Tokenization & Lemmatization for Mobile](../specs/015-local-tokenization-mobile.md) — detailed strategies and gotchas
+- [SPEC-013: Mobile Offline Dictionary](../specs/013-mobile-offline-dictionary.md) — download UX pattern this spec follows
 - [ARCH-016: Server-Side Tokenization Pipeline](../arch/016-server-tokenization.md) — server tokenizer inventory
 - [ADR-0018: Tokenizer Selection](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md) — preference order
