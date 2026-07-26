@@ -30,7 +30,7 @@ export default function RegisterScreen() {
       await register(email.trim(), password, firstName.trim(), lastName.trim());
       router.replace('/select-l1');
     } catch (e: any) {
-      setError(e.message || t('error.register'));
+      setError(e.message || t('error.registration_failed'));
     } finally {
       setLoading(false);
     }

@@ -53,7 +53,7 @@ async function directusAuth(email: string, password: string): Promise<{ token: s
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.errors?.[0]?.message || 'auth.error.login');
+    throw new Error(err?.errors?.[0]?.message || '');
   }
   const { data } = await res.json();
   return {
@@ -70,7 +70,7 @@ async function directusRegister(email: string, password: string, firstName?: str
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.errors?.[0]?.message || 'auth.error.register');
+    throw new Error(err?.errors?.[0]?.message || '');
   }
   const { data } = await res.json();
   return { id: data.id, email: data.email, firstName: data.first_name, lastName: data.last_name };
