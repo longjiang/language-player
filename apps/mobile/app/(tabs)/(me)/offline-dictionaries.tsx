@@ -380,6 +380,22 @@ export default function OfflineDictionariesScreen() {
             {t('label.downloaded')}
           </Text>
           {downloadedList.map((l2) => renderLanguageRow(l2, true))}
+
+          {/* Delete All */}
+          <View className="mt-4 pt-3 border-t border-border">
+            <View className="flex-row items-center gap-2 mb-3">
+              <HardDrive size={14} color={ICON_MUTED} />
+              <Text className="text-xs text-muted-foreground">
+                {t('msg.storage_usage', { used: String(downloadedList.length) })}
+              </Text>
+            </View>
+            <Pressable
+              onPress={handleDeleteAll}
+              className="rounded-lg bg-destructive/10 py-3 items-center"
+            >
+              <Text className="text-sm font-medium text-destructive">{t('action.delete_all')}</Text>
+            </Pressable>
+          </View>
         </View>
       )}
 
@@ -411,30 +427,12 @@ export default function OfflineDictionariesScreen() {
           availableFiltered.map((l2) => renderLanguageRow(l2, false))
         ) : (
           <Text className="text-xs text-muted-foreground text-center py-4">
-            {searchQuery.trim() ? 'No languages match your search.' : 'All languages downloaded.'}
+            {searchQuery.trim() ? t('msg.no_languages_match') : t('msg.all_languages_downloaded')}
           </Text>
         )}
       </View>
 
-      {/* Delete All footer */}
-      {downloadedList.length > 0 && (
-        <View className="mx-4 mt-5 mb-8">
-          <View className="border-t border-border pt-3 mb-3">
-            <View className="flex-row items-center gap-2">
-              <HardDrive size={14} color={ICON_MUTED} />
-              <Text className="text-xs text-muted-foreground">
-                {t('msg.storage_usage', { used: String(downloadedList.length) })}
-              </Text>
-            </View>
-          </View>
-          <Pressable
-            onPress={handleDeleteAll}
-            className="rounded-lg bg-destructive/10 py-3 items-center"
-          >
-            <Text className="text-sm font-medium text-destructive">{t('action.delete_all')}</Text>
-          </Pressable>
-        </View>
-      )}
+
     </ScrollView>
   );
 }
