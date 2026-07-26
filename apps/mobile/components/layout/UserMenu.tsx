@@ -7,7 +7,7 @@ import * as Dialog from '@/components/ui/dialog';
 import { useAnimatedBoolean } from '@/lib/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Settings, BookOpen, Info, LogOut, LogIn } from 'lucide-react-native';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
@@ -76,7 +76,7 @@ export function UserMenu() {
                 className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-destructive/10"
                 onPress={handleLogout}
               >
-                <LogOut size={16} color={ICON_MUTED} />
+                <LogOut size={16} color={ICON_DESTRUCTIVE} />
                 <Text className="text-sm text-destructive">{t('action.log_out')}</Text>
               </Pressable>
             </>
