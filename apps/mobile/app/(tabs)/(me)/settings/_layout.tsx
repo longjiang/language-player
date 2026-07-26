@@ -9,7 +9,7 @@ export default function SettingsLayout() {
   const t = useT();
   const { width } = useWindowDimensions();
   const { colorScheme } = useColorScheme();
-  const { display, playback, review } = useSettingsContext();
+  const { settings } = useSettingsContext();
   const isWide = width >= 600;
 
   const isDark = colorScheme === 'dark';
@@ -35,7 +35,7 @@ export default function SettingsLayout() {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [display, playback, review]);
+  }, [settings]);
 
   // On wide screens (iPad split view), don't use Stack navigation.
   // The index.tsx handles split-view layout directly by rendering
