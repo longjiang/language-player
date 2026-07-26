@@ -10,6 +10,7 @@ export default function MeLayout() {
       <Stack.Screen name="tokenizer" />
       <Stack.Screen name="docs" />
       <Stack.Screen name="go-pro" />
+      <Stack.Screen name="offline-dictionaries" />
     </Stack>
   );
 }
