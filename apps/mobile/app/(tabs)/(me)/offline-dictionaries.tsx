@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, Alert } from 'react-native';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { View, Text, ScrollView, Pressable, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -7,7 +7,7 @@ import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { SUPPORTED_L2S } from '@langplayer/shared';
 import enLocale from '@langplayer/shared/locales/en.json';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { Download, Trash2, CheckCircle2, AlertTriangle, RefreshCw, HardDrive } from 'lucide-react-native';
+import { Download, Trash2, CheckCircle2, AlertTriangle, RefreshCw, HardDrive, Search } from 'lucide-react-native';
 
 // ── Language name lookup ─────────────────────
 
@@ -15,6 +15,32 @@ const enLangNames = (enLocale as any)?.lang ?? {};
 
 function getLanguageName(code: string): string {
   return enLangNames[code] ?? code.toUpperCase();
+}
+
+// ── Native language names ────────────────────
+// Used for search matching (e.g., "français" for fr, "日本語" for ja).
+// Covers the most commonly learned languages.
+const NATIVE_LANG_NAMES: Record<string, string> = {
+  af: 'Afrikaans', ar: 'العربية', ca: 'Català', de: 'Deutsch',
+  el: 'Ελληνικά', en: 'English', es: 'Español', fi: 'Suomi',
+  fr: 'Français', ga: 'Gaeilge', hi: 'हिन्दी', hr: 'Hrvatski',
+  hu: 'Magyar', id: 'Bahasa Indonesia', it: 'Italiano',
+  ja: '日本語', ko: '한국어', nl: 'Nederlands', no: 'Norsk',
+  pl: 'Polski', pt: 'Português', ro: 'Română', ru: 'Русский',
+  sr: 'Српски', sv: 'Svenska', sw: 'Kiswahili', th: 'ไทย',
+  tr: 'Türkçe', vi: 'Tiếng Việt',
+  'zh-Hans': '简体中文', 'zh-Hant': '繁體中文', zh: '中文',
+};
+
+/** Check if a language code matches a search query.
+ *  Matches against English name, native name, ISO code, and locale name. */
+function langMatchesSearch(code: string, query: string, localeLangNames: Record<string, string>): boolean {
+  const q = query.toLowerCase();
+  if (code.toLowerCase().includes(q)) return true;
+  if ((enLangNames[code] ?? '').toLowerCase().includes(q)) return true;
+  if ((NATIVE_LANG_NAMES[code] ?? '').toLowerCase().includes(q)) return true;
+  if ((localeLangNames[code] ?? '').toLowerCase().includes(q)) return true;
+  return false;
 }
 
 // ── Types ────────────────────────────────────
@@ -39,7 +65,7 @@ function formatSize(bytes: number): string {
 export default function OfflineDictionariesScreen() {
   const t = useT();
   const router = useRouter();
-  const { l1Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const {
     getDownloadState,
     startDownload,
@@ -49,6 +75,21 @@ export default function OfflineDictionariesScreen() {
   } = useDictionaryContext();
 
   const l1IsEn = l1Lang.code === 'en';
+  const currentL2 = l2Lang.code;
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Get locale language names for search matching
+  const localeLangNames = useMemo(() => {
+    try {
+      const { getLocaleMessages } = require('@/contexts/IntlProvider');
+      const msgs = getLocaleMessages(l1Lang.code);
+      return (msgs?.lang ?? {}) as Record<string, string>;
+    } catch {
+      return {} as Record<string, string>;
+    }
+  }, [l1Lang.code]);
 
   // Server-side availability statuses
   const [statuses, setStatuses] = useState<Map<string, LangStatus>>(new Map());
@@ -286,9 +327,24 @@ export default function OfflineDictionariesScreen() {
     );
   };
 
-  // ── Group languages ──
+  // ── Group + sort languages ──
   const downloadedList = SUPPORTED_L2S.filter((l2) => downloaded.has(l2));
-  const availableList = SUPPORTED_L2S.filter((l2) => !downloaded.has(l2));
+
+  // Available: not downloaded. Filter by search. Put current L2 first.
+  const availableFiltered = useMemo(() => {
+    let list = SUPPORTED_L2S.filter((l2) => !downloaded.has(l2));
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim();
+      list = list.filter((l2) => langMatchesSearch(l2, q, localeLangNames));
+    }
+    // Sort: current L2 first, then alphabetical by English name
+    list = [...list].sort((a, b) => {
+      if (a === currentL2) return -1;
+      if (b === currentL2) return 1;
+      return (enLangNames[a] ?? a).localeCompare(enLangNames[b] ?? b);
+    });
+    return list;
+  }, [downloaded, searchQuery, currentL2, localeLangNames]);
 
   return (
     <ScrollView className="flex-1 bg-background">
@@ -324,17 +380,31 @@ export default function OfflineDictionariesScreen() {
       )}
 
       {/* Available section */}
-      {availableList.length > 0 && (
+      {availableFiltered.length > 0 && (
         <View className="mt-5 px-4">
           <Text className="text-xs font-bold text-muted-foreground uppercase tracking-wide border-b border-border pb-2 mb-2">
             {t('label.available')}
           </Text>
-          {availableList.slice(0, 40).map((l2) => renderLanguageRow(l2, false))}
-          {availableList.length > 40 && (
-            <Text className="text-xs text-muted-foreground text-center py-2">
-              +{availableList.length - 40} more languages
-            </Text>
-          )}
+
+          {/* Search bar */}
+          <View className="mb-3 flex-row items-center rounded-lg border border-border bg-muted px-3 py-2">
+            <Search size={16} color={ICON_MUTED} />
+            <TextInput
+              className="flex-1 ml-2 text-sm text-foreground"
+              placeholder="Search languages…"
+              placeholderTextColor={ICON_MUTED}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCorrect={false}
+            />
+            {searchQuery.length > 0 && (
+              <Pressable onPress={() => setSearchQuery('')}>
+                <Text className="text-xs text-primary">{t('action.close')}</Text>
+              </Pressable>
+            )}
+          </View>
+
+          {availableFiltered.map((l2) => renderLanguageRow(l2, false))}
         </View>
       )}
 
