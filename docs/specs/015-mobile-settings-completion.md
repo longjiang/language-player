@@ -3,9 +3,9 @@
 ## Metadata
 - **Spec ID**: SPEC-015
 - **Feature**: Complete mobile settings parity with web, integrate offline dictionaries, fix bugs
-- **Status**: complete ✅
+- **Status**: in-progress — settings UI ✅ complete; consumption wiring 🔄 in progress
 - **Created**: 2026-07-25
-- **Updated**: 2026-07-26 — all phases complete, STATUS.md updated
+- **Updated**: 2026-07-26 — all phases complete, STATUS.md updated, consumption audit added
 - **ROADMAP Phase**: Phase 7 — Mobile Integration
 - **Depends on**: SPEC-013 (Offline Dictionary), SPEC-014 (Subscription), SPEC-016 (Interaction Primitives — @rn-primitives Switch/Select/Tabs)
 - **See also**:
@@ -387,3 +387,73 @@ No new keys need to be created — both remaining keys already exist in `transla
 - [x] Switch toggle visually animates on iOS (track color + thumb position)
 - [x] Phase 4 testing completed (all controls, search, navigation, screen sizes)
 - [x] STATUS.md updated: Settings row 🟡 → ✅
+
+---
+
+## Phase 5: Settings Consumption Audit (2026-07-26)
+
+### Audit Results
+
+All 13 settings have working UI controls, but only **3** are actually read/applied by rendering components. **9** are full settings (written, persisted, but never consumed). **1** has a dual-source bug.
+
+### ✅ Consumed (3)
+
+| Setting | Consumer(s) |
+|---|---|
+| `display.translation` | `SubtitleDisplay.tsx:52`, `SubtitlesModeBand.tsx:47`, `epub.tsx:30` |
+| `tokenSpan.phonetics.show` | `TokenizedText.tsx:52-54,184` — ruby/word/off display |
+| `playback.transcriptMode` | `watch/[videoId].tsx:241,246` — transcript vs subtitles |
+
+### ❌ Unwired (9)
+
+| # | Setting | UI | Gap |
+|---|---|---|---|
+| G7 | `quickGloss` | ✅ Toggle | `TokenizedText.tsx` never reads it. Web shows dictionary snippet below saved words. |
+| G8 | `tokenizedText.mode` | ✅ Quiz toggle | `TokenizedText.tsx` never blanks out words. Web hides text until revealed. |
+| G9 | `phonetics.conditions` | ✅ Segmented | `TokenizedText.tsx` shows phonetics on ALL tokens. Web filters by difficulty level. |
+| G10 | `tokenSpan.definition.show` | ✅ Interlinear toggle | `TokenizedText.tsx` never renders inline definitions. |
+| G11 | `display.traditional` | ✅ Chinese char picker | No component reads it — stored but never switches simplified ↔ traditional. |
+| G12 | `display.byeonggi` | ✅ Korean/Viet toggle | `TokenizedText.tsx` never looks up hanja/hán tự from dictionary cache. |
+| G13 | `playback.smoothScroll` | ✅ Toggle | No smooth scrolling logic — scrolling always instant. |
+| G14 | `playback.karaokeMode` | ✅ Toggle | No karaoke word-by-word highlighting implemented. |
+| G15 | `playback.autoPause` | ✅ Toggle | Video never auto-pauses on subtitle line completion. |
+
+### ⚠️ Dual-Source Bug (1)
+
+| # | Setting | Bug |
+|---|---|---|
+| G16 | `review.dailyNewLimit` | Settings UI writes to `SettingsContext`; review screen reads from **separate SRS store** (`useSrs().store.settings.dailyNewLimit`). Changing it in settings has no effect. |
+
+---
+
+## Phase 5: Consumption Fixes — Work Plan
+
+### Phase 5A: Critical Fix (dailyNewLimit) 🔴
+**Impact**: User changes review limit in settings → nothing happens. Core feature broken.
+**Fix**: Wire `review.tsx` to read `dailyNewLimit` from `SettingsContext` instead of SRS store. OR sync `updateReview()` → SRS store on write.
+**Files**: `apps/mobile/app/(tabs)/(vocab)/review.tsx`, possibly `apps/mobile/hooks/use-srs.ts`
+
+### Phase 5B: TokenizedText Wiring (6 settings in one component) 🟡
+**Impact**: 6 settings toggle but do nothing — user sees no visual change.
+**Target**: `apps/mobile/components/TokenizedText.tsx` needs to read and apply:
+- `tokenizedText.quickGloss` — render dictionary snippet for saved words
+- `tokenizedText.mode` — blank/quiz mode
+- `l2.tokenSpan.phonetics.conditions` — filter by hard/easy words
+- `l2.tokenSpan.definition.show` — interlinear gloss
+- `l2.display.traditional` — simplified/traditional switch
+- `l2.display.byeonggi` — hanja/hán tự lookup
+
+**Also needed**: `apps/mobile/components/TokenizedText.tsx` needs access to `l2Settings` (currently only reads `tokenizedText`). Must add `useSettingsContext()` or receive as props.
+
+### Phase 5C: Playback Features (3 settings) 🟢
+**Impact**: Lower priority — video player features that enhance UX.
+**Target files**: `apps/mobile/app/(tabs)/(media)/watch/[videoId].tsx`, subtitle display components
+- `playback.smoothScroll` — implement smooth scroll animation (RAF-based or Animated.spring)
+- `playback.karaokeMode` — word-by-word color highlight on active subtitle
+- `playback.autoPause` — pause video when subtitle line completes
+
+### Implementation Order
+1. **Phase 5A** (critical) — `dailyNewLimit` dual-source fix
+2. **Phase 5B** (TokenizedText — high impact) — 6 settings in `TokenizedText.tsx`
+3. **Phase 5C** (playback — lower priority) — 3 video player features
+4. Update spec and STATUS.md when complete

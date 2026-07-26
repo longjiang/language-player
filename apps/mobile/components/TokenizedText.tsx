@@ -53,6 +53,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const showPhonetics = phonetics.show !== false;
   const replaceWithPhonetics = phonetics.show === 'word';
   const popupEnabled = tokenSettings.enabled;
+  const quizMode = tokenSettings.mode === 'quiz';
+  const showDefinition = l2Settings.tokenSpan.definition.show;
+
+  // Quiz mode: track which tokens have been revealed
+  const [revealedTokens, setRevealedTokens] = useState<Set<number>>(new Set());
 
   // ── Computed text styles from zoom + typeFace settings ──
   const textStyle = useMemo(() => {
@@ -194,11 +199,26 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
               const word = token.text;
               const isHighlighted = highlightTerms?.some((t) => t === word);
+              const isRevealed = revealedTokens.has(i);
+              const isBlanked = quizMode && !isRevealed;
+              const firstLemma = token.lemmas[0]?.lemma;
+              const showGloss = showDefinition && firstLemma && firstLemma !== word;
 
               const hasRuby = token.pronunciation && token.pronunciation !== token.text;
               const rubySegs: RubySegment[] = hasRuby
                 ? buildRuby(token.text, token.pronunciation!, l2Code)
                 : [{ text: token.text }];
+
+              const handlePress = () => {
+                if (quizMode) {
+                  setRevealedTokens(prev => new Set(prev).add(i));
+                  return;
+                }
+                if (popupEnabled) {
+                  configureLayoutAnimation();
+                  setSelectedWord(word);
+                }
+              };
 
               return (
                 <React.Fragment key={i}>
@@ -210,10 +230,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                       <Text
                         style={[textStyle, { lineHeight: baseLeading }]}
                         className={isHighlighted ? 'font-bold text-primary' : 'text-foreground'}
-                        onPress={popupEnabled ? () => { configureLayoutAnimation(); setSelectedWord(word); } : undefined}
+                        onPress={handlePress}
                       >
-                        {seg.text}
+                        {isBlanked ? '▯' : seg.text}
                       </Text>
+                      {showGloss && j === rubySegs.length - 1 && (
+                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{firstLemma}</Text>
+                      )}
                     </View>
                   ))}
                 </React.Fragment>
@@ -229,13 +252,30 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 : token.text;
               const word = token.text;
               const isHighlighted = highlightTerms?.some((t) => t === word);
+              const isRevealed = revealedTokens.has(i);
+              const isBlanked = quizMode && !isRevealed;
+              const firstLemma = token.lemmas[0]?.lemma;
+              const showGloss = showDefinition && firstLemma && firstLemma !== word;
+
+              const handlePress = () => {
+                if (quizMode) {
+                  setRevealedTokens(prev => new Set(prev).add(i));
+                  return;
+                }
+                if (popupEnabled && isWord(token)) {
+                  configureLayoutAnimation();
+                  setSelectedWord(word);
+                }
+              };
+
               return (
                 <Text
                   key={i}
-                  onPress={popupEnabled && isWord(token) ? () => { configureLayoutAnimation(); setSelectedWord(word); } : undefined}
+                  onPress={handlePress}
                   className={isHighlighted ? 'font-bold text-primary' : ''}
                 >
-                  {displayText}
+                  {isBlanked ? '▯' : displayText}
+                  {showGloss ? ` ·${firstLemma}` : ''}
                 </Text>
               );
             })}

@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { View, Text, Pressable, ActivityIndicator, ScrollView } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useSrs } from '@/hooks/use-srs';
 import { useDictionary } from '@langplayer/api-client';
@@ -58,7 +59,9 @@ export default function ReviewScreen() {
   const t = useT();
 
   const { savedWords, loaded: wordsLoaded, removeWord } = useSavedWords();
-  const { store, loaded: srsLoaded, updateCard, removeCard, dailyNewLimit } = useSrs();
+  const { store, loaded: srsLoaded, updateCard, removeCard } = useSrs();
+  const { review } = useSettingsContext();
+  const dailyNewLimit = review.dailyNewLimit;
   const dict = useDictionary();
 
   const RATING_LABELS = useRatingLabels();
