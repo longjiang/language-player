@@ -12,7 +12,7 @@
   - [Web settings page](../../apps/web/src/app/[l1]/[l2]/settings/page.tsx) — reference implementation
   - [Mobile settings screen](../../apps/mobile/app/(tabs)/(me)/settings.tsx) — current implementation
   - [Mobile TabbedPanel](../../apps/mobile/components/TabbedPanel.tsx) — shared tab component
-  - [ADR-0015: Mobile Settings Architecture](../adr/0015-settings-architecture.md) — layout, navigation & search design
+  - [ADR-0015: Settings UI and Search](../adr/0015-settings-ui-and-search.md) — list→detail layout, wide-screen, search design for web & mobile
 ---
 
 ## Overview
@@ -347,7 +347,7 @@ The search bar filters rows by three tiers:
 
 1. **Title match** — row title contains query (case-insensitive). Already localized via `t()`.
 2. **Subtitle match** — subtitle text contains query. Already localized.
-3. **Control label match** — per [ADR-0015](../../docs/adr/0015-settings-architecture.md), searchable control labels are stored as **i18n translation keys** (not hardcoded English strings). Keys are pre-resolved once on locale change and cached, so search works in all 31 locales without per-locale maintenance.
+3. **Control label match** — per [ADR-0015](../../docs/adr/0015-settings-ui-and-search.md), searchable control labels are stored as **i18n translation keys** (not hardcoded English strings). Keys are pre-resolved once on locale change and cached, so search works in all 31 locales without per-locale maintenance.
 
 ```tsx
 const [query, setQuery] = useState('');
