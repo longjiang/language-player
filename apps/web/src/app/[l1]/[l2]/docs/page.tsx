@@ -6,6 +6,7 @@ import { FileText } from 'lucide-react';
 import { DocSearch } from './doc-search';
 import { CategoryTitle } from './category-title';
 import { DocPageHeading } from './doc-page-heading';
+import { DocEmptyState } from './doc-empty-state';
 
 export const metadata: Metadata = {
   title: 'Documentation',
@@ -200,7 +201,7 @@ export default function DocsPage({ params }: Props) {
 
         {/* Search + Doc list */}
         {docs.length === 0 ? (
-          <p className="text-center text-sm text-muted-foreground">No documentation available yet.</p>
+          <DocEmptyState />
         ) : (
           <DocSearch docs={searchIndex} l1={l1} l2={l2}>
             <DocList docs={docs} l1={l1} l2={l2} />

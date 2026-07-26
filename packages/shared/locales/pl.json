@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "Przewodniki, materiały referencyjne i często zadawane pytania",
+        "no_docs_yet": "Brak jeszcze dostępnej dokumentacji.",
         "no_results": "Brak wyników",
         "on_this_page": "Na tej stronie",
         "search_placeholder": "Szukaj w dokumentach…",

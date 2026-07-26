@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "Handleidingen, naslag en veelgestelde vragen",
+        "no_docs_yet": "Nog geen documentatie beschikbaar.",
         "no_results": "Geen resultaten",
         "on_this_page": "Op deze pagina",
         "search_placeholder": "Documenten doorzoeken…",

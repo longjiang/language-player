@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "Veiledninger, referanse og vanlige spørsmål",
+        "no_docs_yet": "Ingen dokumentasjon tilgjengelig ennå.",
         "no_results": "Ingen resultater",
         "on_this_page": "På denne siden",
         "search_placeholder": "Søk i dokumenter…",

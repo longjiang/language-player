@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "Oppaat, viitteet ja usein kysytyt kysymykset",
+        "no_docs_yet": "Dokumentaatiota ei ole vielä saatavilla.",
         "no_results": "Ei tuloksia",
         "on_this_page": "Tällä sivulla",
         "search_placeholder": "Etsi dokumenteista…",

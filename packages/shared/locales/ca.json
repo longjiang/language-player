@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "Guies, referència i preguntes freqüents",
+        "no_docs_yet": "Encara no hi ha documentació disponible.",
         "no_results": "Sense resultats",
         "on_this_page": "En aquesta pàgina",
         "search_placeholder": "Cercar documents…",

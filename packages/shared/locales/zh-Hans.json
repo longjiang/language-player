@@ -124,6 +124,7 @@
     },
     "docs": {
         "guides_reference": "指南、参考和常见问题解答",
+        "no_docs_yet": "暂无文档。",
         "no_results": "无结果",
         "on_this_page": "本页内容",
         "search_placeholder": "搜索文档…",

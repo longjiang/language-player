@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "Útmutatók, referencia és gyakori kérdések",
+        "no_docs_yet": "Még nem áll rendelkezésre dokumentáció.",
         "no_results": "Nincs találat",
         "on_this_page": "Ezen az oldalon",
         "search_placeholder": "Dokumentumok keresése…",

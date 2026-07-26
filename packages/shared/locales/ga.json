@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "Treoracha, tagairt agus ceisteanna coitianta",
+        "no_docs_yet": "Níl aon doiciméadú ar fáil go fóill.",
         "no_results": "Gan torthaí",
         "on_this_page": "Ar an leathanach seo",
         "search_placeholder": "Cuardaigh doiciméid…",

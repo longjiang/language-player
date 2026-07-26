@@ -121,6 +121,7 @@
     },
     "docs": {
         "guides_reference": "ガイド、リファレンス、よくある質問",
+        "no_docs_yet": "まだドキュメントはありません。",
         "no_results": "結果なし",
         "on_this_page": "このページ内",
         "search_placeholder": "ドキュメントを検索…",
