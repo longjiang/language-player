@@ -308,7 +308,7 @@ Each migrated component must handle:
 ## Dependencies
 
 - **Web**: `@base-ui/react` (already installed), `shadcn` CLI (already installed), `tw-animate-css` (already installed)
-- **Mobile**: `@rn-primitives/dialog`, `@rn-primitives/select`, `@rn-primitives/switch`, `@rn-primitives/tabs` (new), `react-native-reanimated` (already a transitive dependency via Expo)
+- **Mobile**: `@rn-primitives/dialog`, `@rn-primitives/select`, `@rn-primitives/switch`, `@rn-primitives/tabs` (new), `react-native-reanimated` (promoted to direct dependency; currently transitive via Expo)
 - **Both**: `packages/shared/tokens.ts` (ADR-0011) for design tokens used in styled wrappers
 
 ---
@@ -338,7 +338,7 @@ Each migrated component must handle:
 
 1. **Web Phase 1.1** — Popover (high impact: UserMenu on every page)
 2. **Mobile Phase 2.1** — Dialog (highest bug count: LanguageSwitcher + UserMenu + SubsSearch)
-3. **Mobile Phase 2.4** — Tabs (removes `as any` type casts from TabbedPanel)
+3. **Mobile Phase 2.4** — Tabs (focus management + keyboard nav for TabbedPanel)
 4. **Web Phase 1.3** — Tabs (parallel to mobile)
 5. **Web Phase 1.2** — Select (VoicePicker, LanguageLevelSelect)
 6. **Web Phase 1.5** — Switch (settings toggles)
