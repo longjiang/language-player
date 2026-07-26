@@ -111,7 +111,7 @@
 |---|---|---|---|---|
 | Profile / Me | `(tabs)/(me)/index.tsx` | ✅ | — | Menu list with semantic NativeWind design tokens |
 | Profile Detail | `(tabs)/(me)/profile.tsx` | ✅ | `[l1]/[l2]/profile/page.tsx` | Info + watch history + saved words previews. Includes subscription management (pro status, cancel auto-renew, expire dates, lifetime upsell) and language level selector |
-| Go Pro | `(tabs)/(me)/go-pro.tsx` | ✅ | `[l1]/[l2]/go-pro/page.tsx` | Plan selection, Stripe credit card checkout, WeChat Pay, Alipay, PayPal (lifetime). **IAP not ported** — Nuxt had `@ionic-native/in-app-purchase-2` for Apple StoreKit; Python backend validates receipts via `app_in_app_purchase.py`. Mobile needs React Native equivalent (RevenueCat or `expo-in-app-purchases`) |
+| Go Pro | `(tabs)/(me)/go-pro.tsx` | ✅ | `[l1]/[l2]/go-pro/page.tsx` | Plan selection, Stripe credit card checkout, WeChat Pay, Alipay, PayPal (lifetime). **IAP not ported** — Nuxt had `@ionic-native/in-app-purchase-2`; GO legacy had `react-native-iap` (stubbed for SDK 57); Python validates Apple receipts; mobile needs its own IAP solution |
 | Settings | `(tabs)/(me)/settings.tsx` | 🟡 | `[l1]/[l2]/settings/page.tsx` | 4 tabs (Display/Playback/Speech/Review). VoicePicker uses NativeWind design tokens and locale-aware language names. **Missing**: Offline Dictionaries entry point, full tab parity with web (tokenized text, review, etc.) |
 | About | `(tabs)/(me)/about.tsx` | ✅ | ✅ | Basic app info |
 | Docs / Help | `(tabs)/(me)/docs.tsx` | ✅ | `[l1]/[l2]/docs/` | Searchable doc listing. MarkdownText rendering (headings, lists, bold/italic, code, links) + "On this page" heading TOC sidebar |
@@ -195,7 +195,7 @@ These exist in the Next.js web app but have **no mobile equivalent yet**:
 | TV Show Detail | `tv-shows/[id]/` | ~~Medium~~ ✅ Ported | Episode list, metadata, seasons |
 | Dictionary Entry Detail | `dictionary/entry/.../` | Low | Deep link target — word detail exists but full entry page missing |
 | Local Tokenizer | — | ⬜ | `api/tokenize` | Offline tokenization via local model/WebAssembly. Currently all tokenization requires a round-trip to the Python backend (`POST /dictionary/tokenize`). A local tokenizer would enable offline reading and faster tokenization without network dependency. |
-| In-App Purchase (IAP) | — | ⬜ | Apple App Store / Google Play Store. **Nuxt classic had it** (`@ionic-native/in-app-purchase-2` + Capacitor). **Python backend has Apple receipt validation** (`app_in_app_purchase.py` via `inapppy.AppStoreValidator`). **Mobile app is the gap** — needs RevenueCat or `expo-in-app-purchases` to replace Cordova IAP with React Native equivalent. |
+| In-App Purchase (IAP) | — | ⬜ | Apple App Store / Google Play Store. **Nuxt classic had it** (`@ionic-native/in-app-purchase-2` + Capacitor). **GO legacy had it but removed** — `IOSPaymentMethods.tsx` is a stub (`react-native-iap` removed for SDK 57 compatibility); falls back to `OnlyLifetimePlan` for iOS non-lifetime. **Python backend validates Apple receipts** (`app_in_app_purchase.py` via `inapppy.AppStoreValidator`). **Mobile app needs IAP** — needs RevenueCat or `expo-in-app-purchases`. |
 | Password Reset (token) | `/password-reset` | Low | Complete after email link click |
 | Verify Email | `/verify-email` | Low | Email verification landing |
 | Delete Account | `/delete-account` | Low | |
