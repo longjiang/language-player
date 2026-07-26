@@ -29,8 +29,15 @@ export default function MeScreen() {
           <User size={32} color={ICON_MUTED} />
         </View>
         <Text className="text-lg font-bold text-foreground">
-          {user?.email ?? t('label.guest')}
+          {user
+            ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
+            : t('label.guest')}
         </Text>
+        {user?.email && (
+          <Text className="text-sm text-muted-foreground mt-0.5">
+            {user.email}
+          </Text>
+        )}
         <Text className="mt-0.5 text-sm text-muted-foreground">
           {l1Lang.name} → {l2Lang.name}
         </Text>
