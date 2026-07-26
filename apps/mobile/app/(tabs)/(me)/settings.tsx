@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, Switch } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { getSampleSentence } from '@langplayer/shared';
 import { VoicePicker } from '@/components/VoicePicker';
 import { TokenizedText } from '@/components/TokenizedText';
+import { Download } from 'lucide-react-native';
+import { ICON_MUTED } from '@/lib/theme-colors';
 
 // ── Reusable sub-components ──────────────────
 
@@ -112,6 +115,7 @@ export default function SettingsScreen() {
   const { l2Lang } = useLanguage();
   const { tokenizedText, updateTokenizedText, display, updateDisplay, playback, updatePlayback, review, updateReview, getL2, updateL2, ensureL2, loaded } = useSettingsContext();
   const t = useT();
+  const router = useRouter();
   const [tab, setTab] = useState<'display' | 'playback' | 'speech' | 'review'>('display');
 
   useEffect(() => { if (loaded) ensureL2(l2Lang.code); }, [l2Lang.code, loaded]);
@@ -313,6 +317,20 @@ export default function SettingsScreen() {
           />
         </View>
       )}
+
+      {/* ── Offline Dictionaries ── */}
+      <View className="mx-4 mt-5 mb-5 border-t border-border pt-4">
+        <Pressable
+          onPress={() => router.push('/(tabs)/(me)/offline-dictionaries' as any)}
+          className="flex-row items-center gap-3 rounded-lg bg-card border border-border px-4 py-3"
+        >
+          <Download size={20} color={ICON_MUTED} />
+          <Text className="flex-1 text-sm font-medium text-foreground">
+            {t('title.offline_dictionaries')}
+          </Text>
+          <Text className="text-xs text-muted-foreground">›</Text>
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }

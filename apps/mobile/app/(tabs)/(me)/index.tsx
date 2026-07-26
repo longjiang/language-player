@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
-import { Settings, User, LogOut, Star, CreditCard } from 'lucide-react-native';
+import { Settings, User, LogOut, Star, CreditCard, Download } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 export default function MeScreen() {
@@ -16,6 +16,7 @@ export default function MeScreen() {
   const menuItems = [
     { icon: Settings, label: t('title.settings'), route: '/(tabs)/(me)/settings' },
     { icon: Star, label: t('title.saved_words'), route: '/(tabs)/(vocab)/saved-words' },
+    { icon: Download, label: t('title.offline_dictionaries'), route: '/(tabs)/(me)/offline-dictionaries' },
     { icon: CreditCard, label: t('action.go_pro'), route: null },
     { icon: LogOut, label: t('action.logout'), route: null, action: logout },
   ];
