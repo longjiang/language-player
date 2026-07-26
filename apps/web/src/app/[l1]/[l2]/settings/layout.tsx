@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SettingsSidebar } from './_components/SettingsSidebar';
 
 export const metadata: Metadata = {
   title: 'Settings',
@@ -13,5 +14,12 @@ export const metadata: Metadata = {
 };
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-12 lg:grid lg:grid-cols-[220px_1fr] lg:gap-10 lg:px-0">
+      <aside className="hidden lg:block">
+        <SettingsSidebar />
+      </aside>
+      <main>{children}</main>
+    </div>
+  );
 }

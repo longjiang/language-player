@@ -1,331 +1,156 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useTheme } from 'next-themes';
-import { toast } from 'sonner';
+import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useLanguage } from '@/providers/language-provider';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { useT } from '@/hooks/use-t';
-import { languageName } from '@/lib/language-data';
-import { translateText } from '@/lib/translate';
-import { getSampleSentence } from '@langplayer/shared';
-import { TokenizedText } from '@/components/tokenized-text';
-import { VoicePicker } from '@/components/voice-picker';
-import { TabbedPanel } from '@/components/tabbed-panel';
-import { Switch } from '@/components/ui/switch';
+import { SETTINGS_SEARCH_KEYS } from '@langplayer/shared';
+import { SearchBar } from './_components/SearchBar';
+import { Palette, Play, Mic, Repeat, ChevronRight } from 'lucide-react';
 
-export default function SettingsPage() {
+interface SettingsRow {
+  key: string;
+  icon: typeof Palette;
+  title: string;
+  subtitle: string;
+  href: string;
+}
+
+interface SettingsSection {
+  title: string;
+  rows: SettingsRow[];
+}
+
+export default function SettingsListPage() {
   const { l1, l2 } = useLanguage();
-  const {
-    tokenizedText, updateTokenizedText,
-    display, updateDisplay,
-    playback, updatePlayback,
-    review, updateReview,
-    getL2, updateL2, ensureL2,
-    loaded,
-  } = useSettingsContext();
-  const { setTheme } = useTheme();
+  const { display, playback, review } = useSettingsContext();
   const t = useT();
+  const [query, setQuery] = useState('');
+  const [localizedLabels, setLocalizedLabels] = useState<Record<string, string[]>>({});
 
-  const [tab, setTab] = useState<'display' | 'playback' | 'speech' | 'review'>('display');
-  const isChinese = l2.code === 'zh';
-  const isKorean = l2.code === 'ko';
-  const isVietnamese = l2.code === 'vi';
-
-  useEffect(() => { if (loaded) ensureL2(l2.code); }, [l2.code, loaded, ensureL2]);
-
-  const l2Settings = getL2(l2.code);
-  const phoneticsEnabled = l2Settings.tokenSpan.phonetics.show !== false;
-  const popupEnabled = tokenizedText.enabled;
-
-  // ── Reusable components ──
-
-  const Toggle = ({ label, desc, checked, onChange }: { label: string; desc?: string; checked: boolean; onChange: (v: boolean) => void }) => (
-    <div>
-      <label className="flex items-center justify-between cursor-pointer">
-        <div>
-          <span className="text-sm font-medium">{label}</span>
-          {desc && <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>}
-        </div>
-        <span className="shrink-0 ml-4">
-          <Switch checked={checked} onCheckedChange={onChange} />
-        </span>
-      </label>
-    </div>
-  );
-
-  const Segmented = <T extends string | boolean>({ label, options, value, onChange }: {
-    label: string; options: { value: T; label: string }[]; value: T; onChange: (v: T) => void;
-  }) => (
-    <div>
-      <label className="block text-sm font-medium mb-2">{label}</label>
-      <div className="inline-flex rounded-lg border border-border bg-muted p-1">
-        {options.map(opt => (
-          <button key={String(opt.value)} onClick={() => onChange(opt.value)}
-            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              value === opt.value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-            }`}>
-            {opt.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
-  const Slider = ({ label, desc, min, max, step, value, onChange, leftLabel, rightLabel, centerLabel, valueDisplay }: {
-    label: string; desc?: string; min: number; max: number; step: number; value: number;
-    onChange: (v: number) => void; leftLabel?: string; rightLabel?: string; centerLabel?: string; valueDisplay?: string;
-  }) => (
-    <div>
-      <label className="block text-sm font-medium mb-1">{label}</label>
-      {desc && <p className="text-xs text-muted-foreground mb-3">{desc}</p>}
-      <div className="flex items-center gap-4">
-        <input type="range" min={min} max={max} step={step} value={value}
-          onChange={e => onChange(Number(e.target.value))}
-          className="flex-1 h-2 rounded-full appearance-none bg-muted cursor-pointer
-            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer" />
-        <span className="w-10 text-center text-lg font-semibold tabular-nums">{valueDisplay ?? value}</span>
-      </div>
-      <div className="flex justify-between mt-1">
-        <span className="text-xs text-muted-foreground">{leftLabel ?? min}</span>
-        {centerLabel && <span className="text-xs text-muted-foreground">{centerLabel}</span>}
-        <span className="text-xs text-muted-foreground">{rightLabel ?? max}</span>
-      </div>
-    </div>
-  );
-
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="space-y-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border pb-2">{title}</h3>
-      {children}
-    </div>
-  );
-
-  const previewText = getSampleSentence(l2.code);
-  const [previewTranslation, setPreviewTranslation] = useState('');
-
-  // Map zoom (0-7) to meaningful rem values: 1rem (16px) base, ~2-3px per step
-  const ZOOM_TO_REM = [1, 1.125, 1.25, 1.375, 1.5, 1.75, 2, 2.25] as const;
-  const zoomRem = ZOOM_TO_REM[tokenizedText.zoom] ?? 1;
-
-  // Fetch L1 translation for the preview box
+  // Pre-resolve search keys on locale change
   useEffect(() => {
-    if (!previewText || !display.translation) {
-      setPreviewTranslation('');
-      return;
+    const result: Record<string, string[]> = {};
+    for (const [category, keys] of Object.entries(SETTINGS_SEARCH_KEYS)) {
+      result[category] = keys.map(key => t(key).toLowerCase());
     }
-    let cancelled = false;
-    translateText(previewText, l1.code, l2.code).then(result => {
-      if (!cancelled) setPreviewTranslation(result);
-    });
-    return () => { cancelled = true; };
-  }, [previewText, l1.code, l2.code, display.translation]);
+    setLocalizedLabels(result);
+  }, [l1.code, t]);
 
-  // Debounced toast when settings change (skip initial mount)
-  const mountedRef = useRef(false);
-  useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true;
-      return;
-    }
-    const timer = setTimeout(() => {
-      toast.success(t('msg.settings_saved'));
-    }, 1200);
-    return () => clearTimeout(timer);
-  }, [
-    tokenizedText, display, playback, review,
-    l2Settings.tokenSpan.phonetics.show,
-    l2Settings.tokenSpan.phonetics.conditions,
-    l2Settings.tokenSpan.definition.show,
-    l2Settings.display.traditional,
-    l2Settings.display.byeonggi,
-    t,
-  ]);
+  const sections: SettingsSection[] = useMemo(() => [
+    {
+      title: t('setting.appearance'),
+      rows: [
+        {
+          key: 'display',
+          icon: Palette,
+          title: t('title.display'),
+          subtitle: t(`setting.${display.theme}`),
+          href: `/${l1.code}/${l2.code}/settings/display`,
+        },
+        {
+          key: 'playback',
+          icon: Play,
+          title: t('title.playback'),
+          subtitle: t(playback.transcriptMode === 'transcript' ? 'title.transcript' : 'label.subtitles'),
+          href: `/${l1.code}/${l2.code}/settings/playback`,
+        },
+        {
+          key: 'speech',
+          icon: Mic,
+          title: t('title.speech'),
+          subtitle: t('setting.speech_rate', { rate: playback.speed.toFixed(1) }),
+          href: `/${l1.code}/${l2.code}/settings/speech`,
+        },
+      ],
+    },
+    {
+      title: t('setting.learning'),
+      rows: [
+        {
+          key: 'review',
+          icon: Repeat,
+          title: t('title.review'),
+          subtitle: t('msg.cards_per_day', { n: review.dailyNewLimit }),
+          href: `/${l1.code}/${l2.code}/settings/review`,
+        },
+      ],
+    },
+  ], [l1.code, l2.code, display.theme, playback.transcriptMode, playback.speed, review.dailyNewLimit, t]);
 
-  if (!loaded) {
-    return <div className="mx-auto max-w-lg px-4 py-12 text-center text-muted-foreground">{t('msg.loading')}</div>;
-  }
+  const filteredSections = useMemo(() => {
+    if (!query.trim()) return sections;
+    const q = query.toLowerCase();
+    return sections
+      .map(s => ({
+        ...s,
+        rows: s.rows.filter(row => {
+          if (row.title.toLowerCase().includes(q)) return true;
+          if (row.subtitle?.toLowerCase().includes(q)) return true;
+          const labels = localizedLabels[row.key];
+          if (labels?.some(label => label.includes(q))) return true;
+          return false;
+        }),
+      }))
+      .filter(s => s.rows.length > 0);
+  }, [query, sections, localizedLabels]);
+
+  const hasResults = filteredSections.some(s => s.rows.length > 0);
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-12">
-      <h1 className="text-3xl font-bold">{t('title.settings')}</h1>
-      <p className="mt-2 text-muted-foreground">
-        {t('msg.settings_desc', { l1: languageName(l1.code), l2: languageName(l2.code, l1.code) })}
-      </p>
+    <div className="mx-auto max-w-lg py-12">
+      <h1 className="text-3xl font-bold mb-1">{t('title.settings')}</h1>
 
-      <TabbedPanel
-        tabs={(['display', 'playback', 'speech', 'review'] as const).map(tabKey => ({
-          key: tabKey,
-          label: t(`setting.${tabKey}`),
-        }))}
-        activeTab={tab}
-        onTabChange={setTab}
-        className="mt-8"
-        contentClassName="p-5"
-      >
-        {/* ═══ DISPLAY ═══ */}
-        {tab === 'display' && (
-          <div className="space-y-6">
+      <div className="mt-6 mb-8">
+        <SearchBar
+          value={query}
+          onChange={setQuery}
+          placeholder={t('msg.search_settings')}
+        />
+      </div>
 
-          <Section title={t('setting.theme')}>
-            <Segmented label={t('label.theme')} value={display.theme}
-              onChange={(v: string) => {
-                const theme = v as 'light' | 'dark' | 'system';
-                updateDisplay({ theme });
-                setTheme(theme);
-              }}
-              options={[
-                { value: 'light', label: '☀️ ' + t('setting.light') },
-                { value: 'dark', label: '🌙 ' + t('setting.dark') },
-                { value: 'system', label: '💻 ' + t('setting.system') },
-              ]} />
-          </Section>
-
-          <Section title={t('label.tokenized_text_preview')}>
-            <div className="rounded-lg border border-border bg-muted/50 p-4">
-              <TokenizedText text={previewText} l2Code={l2.code} typeFace={tokenizedText.typeFace} />
-              {previewTranslation && (
-                <p className="pt-1 text-sm text-muted-foreground leading-relaxed">
-                  {previewTranslation}
-                </p>
-              )}
+      {!hasResults ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <p>{t('msg.no_settings_match', { query })}</p>
+          <button
+            onClick={() => setQuery('')}
+            className="mt-2 text-sm text-primary underline underline-offset-2 hover:no-underline"
+          >
+            {t('msg.clear_search')}
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {filteredSections.map(section => (
+            <div key={section.title}>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                {section.title}
+              </h2>
+              <div className="rounded-lg border border-border overflow-hidden">
+                {section.rows.map((row, i) => {
+                  const Icon = row.icon;
+                  return (
+                    <Link
+                      key={row.key}
+                      href={row.href}
+                      className={`flex items-center gap-3 px-4 py-3.5 hover:bg-muted/50 transition-colors
+                        ${i < section.rows.length - 1 ? 'border-b border-border' : ''}`}
+                    >
+                      <Icon className="w-5 h-5 text-muted-foreground shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{row.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">{row.subtitle}</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-          </Section>
-
-          <Section title="">
-            <Toggle label={t('label.show_translation')} desc={t('msg.show_translation_desc')}
-              checked={display.translation} onChange={v => updateDisplay({ translation: v })} />
-            <Toggle label={t('label.enable_popup_dictionary')} desc={t('msg.enable_popup_dictionary_desc')}
-              checked={tokenizedText.enabled} onChange={v => updateTokenizedText({ enabled: v })} />
-          </Section>
-
-          {popupEnabled && (<>
-            <Section title={t('setting.text_appearance')}>
-              <Segmented label={t('label.font')} value={tokenizedText.typeFace}
-                onChange={(v: string) => updateTokenizedText({ typeFace: v as 'default' | 'serif' | 'sans-serif' })}
-                options={[
-                  { value: 'default', label: t('setting.font_default') },
-                  { value: 'serif', label: t('setting.font_serif') },
-                  { value: 'sans-serif', label: t('setting.font_sans_serif') },
-                ]} />
-              <Slider label={t('label.text_size')} min={0} max={7} step={1} value={tokenizedText.zoom}
-                onChange={v => updateTokenizedText({ zoom: v })}
-                valueDisplay={`${Math.round(zoomRem * 16)}px`}
-                leftLabel={t('setting.smaller')} rightLabel={t('setting.bigger')}
-                centerLabel={`${Math.round(ZOOM_TO_REM[0] * 16)}–${Math.round(ZOOM_TO_REM[7] * 16)}px`} />
-            </Section>
-
-            <Section title={t('setting.phonetics')}>
-              <Segmented label={t('label.show_phonetics')}
-                value={l2Settings.tokenSpan.phonetics.show === false ? 'off' : l2Settings.tokenSpan.phonetics.show}
-                onChange={(v: string) => {
-                  const ts = l2Settings.tokenSpan;
-                  const show = v === 'off' ? false : v as 'ruby' | 'word';
-                  // When replacing words, conditions must be 'always'
-                  const conditions = show === 'word' ? 'always' : ts.phonetics.conditions;
-                  updateL2(l2.code, { tokenSpan: { ...ts, phonetics: { ...ts.phonetics, show, conditions } } });
-                }}
-                options={[
-                  { value: 'ruby', label: t('setting.phonetics_on_top') },
-                  { value: 'word', label: t('setting.phonetics_replace') },
-                  { value: 'off', label: t('setting.off') },
-                ]} />
-              {l2Settings.tokenSpan.phonetics.show === 'ruby' && (
-                <Segmented label={t('label.phonetics_conditions')} value={l2Settings.tokenSpan.phonetics.conditions}
-                  onChange={(v: string) => {
-                    const ts = l2Settings.tokenSpan;
-                    updateL2(l2.code, { tokenSpan: { ...ts, phonetics: { ...ts.phonetics, conditions: v as 'always' | 'hardWords' } } });
-                  }}
-                  options={[
-                    { value: 'always', label: t('setting.all_words') },
-                    { value: 'hardWords', label: t('setting.hard_words_only') },
-                  ]} />
-              )}
-            </Section>
-
-            <Section title={t('setting.word_level_display')}>
-              <Toggle label={t('label.show_gloss_saved')} desc={t('msg.show_gloss_saved_desc')}
-                checked={tokenizedText.quickGloss} onChange={v => updateTokenizedText({ quickGloss: v })} />
-              <Toggle label={t('label.show_interlinear_gloss')} desc={t('msg.show_definition_desc')}
-                checked={l2Settings.tokenSpan.definition.show}
-                onChange={v => {
-                  const ts = l2Settings.tokenSpan;
-                  updateL2(l2.code, { tokenSpan: { ...ts, definition: { show: v } } });
-                }} />
-              {isChinese && (
-                <Segmented label={t('label.character_set')} value={l2Settings.display.traditional}
-                  onChange={(v: boolean) => updateL2(l2.code, { display: { ...l2Settings.display, traditional: v } })}
-                  options={[
-                    { value: false, label: '简 ' + t('setting.simplified') },
-                    { value: true, label: '繁 ' + t('setting.traditional') },
-                  ]} />
-              )}
-              {isKorean && (
-                <Toggle label={t('label.show_hanja')}
-                  checked={l2Settings.display.byeonggi}
-                  onChange={v => updateL2(l2.code, { display: { ...l2Settings.display, byeonggi: v } })} />
-              )}
-              {isVietnamese && (
-                <Toggle label={t('label.show_hantu')}
-                  checked={l2Settings.display.byeonggi}
-                  onChange={v => updateL2(l2.code, { display: { ...l2Settings.display, byeonggi: v } })} />
-              )}
-            </Section>
-
-            <Section title={t('setting.interaction')}>
-              <Toggle label={t('setting.quiz_mode')} desc={t('msg.quiz_mode_desc')}
-                checked={tokenizedText.mode === 'quiz'}
-                onChange={v => updateTokenizedText({ mode: v ? 'quiz' : 'normal' })} />
-            </Section>
-          </>)}
+          ))}
         </div>
       )}
-
-      {/* ═══ PLAYBACK ═══ */}
-      {tab === 'playback' && (
-        <div className="space-y-6">
-
-          <Section title={t('setting.captions')}>
-            <Segmented<string>
-              label={t('label.captions_display_as')}
-              value={playback.transcriptMode}
-              onChange={v => updatePlayback({ transcriptMode: v as 'subtitles' | 'transcript' })}
-              options={[
-                { value: 'transcript', label: t('title.transcript') },
-                { value: 'subtitles', label: t('label.subtitles') },
-              ]} />
-            <p className="text-xs text-muted-foreground mt-1.5">{t('msg.captions_display_as_desc', { transcriptLabel: t('title.transcript'), subtitlesLabel: t('label.subtitles') })}</p>
-            {playback.transcriptMode === 'transcript' && (
-              <Toggle label={t('label.smooth_scroll')} checked={playback.smoothScroll}
-                onChange={v => updatePlayback({ smoothScroll: v })} />
-            )}
-            <Toggle label={t('label.karaoke')} checked={playback.karaokeMode}
-              onChange={v => updatePlayback({ karaokeMode: v })} />
-          </Section>
-
-          <Section title={t('setting.playback')}>
-            <Toggle label={t('label.auto_pause')} checked={playback.autoPause}
-              onChange={v => updatePlayback({ autoPause: v })} />
-          </Section>
-        </div>
-      )}
-
-      {/* ═══ SPEECH ═══ */}
-      {tab === 'speech' && (
-        <VoicePicker />
-      )}
-
-      {/* ═══ REVIEW ═══ */}
-      {tab === 'review' && (
-        <div className="space-y-6">
-          <Slider label={t('label.new_cards_per_day')} desc={t('msg.new_cards_per_day_desc')}
-            min={1} max={50} step={1} value={review.dailyNewLimit}
-            onChange={v => updateReview({ dailyNewLimit: v })}
-            leftLabel="1" centerLabel={t('msg.default_value', { n: 20 })} rightLabel="50" />
-        </div>
-      )}
-      </TabbedPanel>
     </div>
   );
 }
