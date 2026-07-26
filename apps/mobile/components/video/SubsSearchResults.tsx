@@ -265,7 +265,6 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
       {/* ── Video List Dialog ── */}
       <Dialog.Root open={listOpen} onOpenChange={setListOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay closeOnPress />
           <Dialog.SheetContent className="max-h-[85%]">
             {/* Dialog header */}
             <View className="flex-row items-center justify-between border-b border-border pb-3 mb-2">

@@ -33,8 +33,6 @@ export function UserMenu() {
       </Dialog.Trigger>
 
       <Dialog.Portal>
-        {/* Overlay for dismiss on outside tap */}
-        <Dialog.Overlay closeOnPress />
         {/* Dropdown positioned below header, right-aligned */}
         <View
           className="absolute right-2 min-w-56 rounded-xl border border-border bg-card shadow-lg p-1 z-50"

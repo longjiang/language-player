@@ -51,7 +51,6 @@ export function LanguageSwitcher() {
       {/* Single dialog — same LanguagePicker as onboarding */}
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay closeOnPress />
           <Dialog.SheetContent>
             <LanguagePicker
               initialL1={pickerInitialL1}
