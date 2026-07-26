@@ -94,20 +94,50 @@ Mobile uses expo-router file-based routing. The Stack navigator provides native 
 
 #### Shared Architecture
 
+**Narrow screens (phone, <600pt)** — stack navigation: root list → detail screen:
+
 ```
-Root list (both platforms):           Detail screen (both platforms):
-┌──────────────────────────────┐      ┌──────────────────────────────┐
-│ Settings                     │      │ ← Display                    │
-│ 🔍 Search settings...        │      │ ── THEME ──                  │
-│ ── APPEARANCE ──             │      │ Theme   Light·Dark·System    │
-│ 🎨  Display           Dark › │      │ ── TEXT ──                   │
-│ ▶   Playback    Transcript › │      │ Font    Default·Serif·Sans   │
-│ 🔊  Speech   Voice & speed › │      │ Size    ────●──── 20px      │
-│ ── LEARNING ──               │      │ ...                          │
-│ 🔁  Review    20 cards/day › │      └──────────────────────────────┘
-│ ── DATA ──                   │
-│ 📥  Offline Dicts 3 langs ›  │
-└──────────────────────────────┘
+┌──────────────────────────────────┐   ┌──────────────────────────────────┐
+│ Settings                         │   │ Display                          │
+│                                  │   │                                  │
+│ 🔍 Search settings...            │   │ ── THEME ──                      │
+│                                  │   │ Theme      Light · Dark · System│
+│ ── APPEARANCE ──                 │   │                                  │
+│ Display                     ›    │   │ ── TEXT ──                       │
+│ Playback                    ›    │   │ Font       Default · Serif · …  │
+│ Speech                      ›    │   │ Text size  ──────●────── 20px   │
+│                                  │   │                                  │
+│ ── LEARNING ──                   │   │ ── PHONETICS ──                  │
+│ Review                      ›    │   │ Show       On Top · Replace · Off│
+│                                  │   │ ...                              │
+│ ── DATA ──                       │   │                                  │
+│ Offline Dictionaries        ›    │   │                                  │
+│   日本語 · 22K words · 11 MB     │   │                                  │
+└──────────────────────────────────┘   └──────────────────────────────────┘
+       Root list (phone)                   Detail screen (phone)
+```
+
+**Wide screens (iPad / desktop ≥ 600pt)** — split view: persistent sidebar + selected detail:
+
+```
+┌────────────────────┬─────────────────────────────────────────────┐
+│ Settings           │ Display                                     │
+│                    │                                             │
+│ 🔍 Search...       │ ── THEME ──                                 │
+│                    │ Theme                 Light · Dark · System │
+│ ── APPEARANCE ──   │                                             │
+│ Display       ●    │ ── TEXT ──                                  │
+│ Playback           │ Font                  Default · Serif · …  │
+│ Speech             │ Text size             ──────●────── 20px   │
+│                    │                                             │
+│ ── LEARNING ──     │ ── PHONETICS ──                             │
+│ Review             │ Show                  On Top · Replace · Off│
+│                    │ ...                                         │
+│ ── DATA ──         │                                             │
+│ Offline Dicts      │                                             │
+│  日本語 · 22K words│                                             │
+└────────────────────┴─────────────────────────────────────────────┘
+       iPad (split view — persistent sidebar + selected detail)
 ```
 
 **Why this wins for both platforms:**
@@ -118,6 +148,18 @@ Root list (both platforms):           Detail screen (both platforms):
 4. **Focused files** — each category is its own file (~50–150 lines) with its own state
 5. **Same architecture on both platforms** — web and mobile use the same pattern, same file naming, same row/subtitle/search logic. Only the UI primitives differ (React DOM vs React Native per ADR-0003)
 6. **Familiar** — iOS, macOS, Android, and Windows all use this pattern for settings
+
+**Key design decisions:**
+
+| Aspect | Decision |
+|---|---|
+| **Root screen** | Scrollable list of rows grouped under section headers |
+| **Each row** | Navigates to a dedicated detail screen (one screen per settings category) |
+| **Search** | Text input at the top filters rows by label + searches control labels within each category |
+| **Subtitle on rows** | Shows current value summary (e.g., "Dark" under Display, "20 cards/day" under Review) |
+| **Offline dictionaries row** | Shows download status: language count + storage used (or "Not downloaded") |
+| **iPad / wide screens** | Split view: list persists as sidebar; selected detail in main pane |
+| **Deep linking** | Each category has its own route: `/(tabs)/(me)/settings/display`, `/settings/playback`, etc. |
 
 ### Shared Sub-Components
 
