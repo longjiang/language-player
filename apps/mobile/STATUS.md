@@ -198,6 +198,7 @@ These exist in the Next.js web app but have **no mobile equivalent yet**:
 | In-App Purchase (IAP) | — | ⬜ | Apple App Store / Google Play Store. **Nuxt classic had it** (`@ionic-native/in-app-purchase-2` + Capacitor). **GO legacy had it but removed** — `IOSPaymentMethods.tsx` is a stub (`react-native-iap` removed for SDK 57 compatibility); falls back to `OnlyLifetimePlan` for iOS non-lifetime. **Python backend validates Apple receipts** (`app_in_app_purchase.py` via `inapppy.AppStoreValidator`). **Mobile app needs IAP** — needs `expo-in-app-purchases`. See SPEC-014 Phase 5. |
 | Subscription State (Context) | — | ⬜ | Unified subscription state management across web & mobile. Requires `SubscriptionContext` in `apps/mobile/contexts/`. Fetches `/user-subscription`, exposes `isPro`/`planType`/`willAutoRenew`/`cancelSubscription()`. See SPEC-014 Phase 4. |
 | Sale Pricing | — | ⬜ | Show sale banner + discounted prices when `type: 'sale'` prices are active in `prices.csv`. Sale detection logic from Classic app. See SPEC-014 Phase 9. |
+| Interaction Primitives (@rn-primitives) | — | ⬜ | Adopt `@rn-primitives` (Dialog, Select, Switch, Tabs, Drawer) for headless interaction behavior — portal rendering, focus trapping, overlay touch capture. Wrapped with NativeWind + shared design tokens. Mirrors web's `@base-ui/react` adoption (commit `28ceadfda1`). See [ADR-0014](../../docs/adr/0014-rn-primitives-interaction-primitives.md). |
 | Password Reset (token) | `/password-reset` | Low | Complete after email link click |
 | Verify Email | `/verify-email` | Low | Email verification landing |
 | Delete Account | `/delete-account` | Low | |
@@ -207,5 +208,5 @@ These exist in the Next.js web app but have **no mobile equivalent yet**:
 
 ## Current Focus
 
-- 🔄 **Phase 7**: Mobile Integration — Settings parity with web, local tokenizer, IAP evaluation
+- 🔄 **Phase 7**: Mobile Integration — Settings parity with web, local tokenizer, IAP evaluation, interaction primitives migration (`@rn-primitives` per ADR-0014)
 - Up next: finish remaining 🟡 screens, then full feature parity audit against Classic
