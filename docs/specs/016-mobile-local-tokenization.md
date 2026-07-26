@@ -1,12 +1,13 @@
-# SPEC-016: Non-Trivial Tokenization Languages
+# SPEC-016: Mobile Local Tokenization
 
 ## Metadata
 - **Spec ID**: SPEC-016
-- **Feature**: Enumeration of all L2 languages requiring more than regex word-split for local tokenization/lemmatization
+- **Feature**: On-device tokenization & lemmatization fallback for offline use, with downloadable language packs
 - **Status**: draft
 - **Created**: 2026-07-26
 - **See also**:
   - [SPEC-015: Local Tokenization & Lemmatization for Mobile](../specs/015-local-tokenization-mobile.md)
+  - [SPEC-013: Mobile Offline Dictionary](../specs/013-mobile-offline-dictionary.md)
   - [ARCH-016: Server-Side Tokenization Pipeline](../arch/016-server-tokenization.md)
   - [ADR-0018: Tokenizer Selection](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md)
 
@@ -376,9 +377,153 @@ Users download tokenizer/lemma packs per language. Nothing is bundled — everyt
 | `snowball-stemmers` (stemmer fallback) | de, en, es, fr, ga, it, pt, ro, sv, da, nb, nl, hu, fi, hy | ~30 KB each | Server unreachable; catches forms not in lemma table |
 | Pre-built lemma tables | ca, cs, cy, gl, gv, sk, sl, uk, bg, el, et, is, la, lv, lt, nn, pl, sq, hr, ru, ka, sw, ast | ~100–500 KB each | Server unreachable; primary offline lemmatizer for these langs |
 
-**Server always wins when reachable.** Local tokenization is strictly a fallback for offline use (airplane mode, tunnels, poor connectivity). The download UX follows SPEC-013 exactly: Settings → Offline Dictionaries → pick language → download tokenizer/lemma pack.
+**Server always wins when reachable.** Local tokenization is strictly a fallback for offline use (airplane mode, tunnels, poor connectivity).
 
 This means Phase 1 alone gives **functional offline tokenization** for ~80% of all supported L2s with **zero additional bundle size** and **near-zero new dependencies** (only `arabic-stem` at 15 KB). Phase 2 adds downloadable packs for the remaining ~20%.
+
+---
+
+## UI: Offline Tokenizers Settings Screen
+
+### New Tab: "Offline Tokenizers"
+
+A new tab in **Settings → Offline Tokenizers**, sibling to the existing "Offline Dictionaries" (SPEC-013). Same download UX pattern, different data.
+
+### Tokenizer Categories per Language
+
+Each language gets a row showing what tokenizer it uses and whether a download is available:
+
+| Category | What It Means | UI Treatment |
+|---|---|---|
+| **Built-in (free)** | Regex word-split. Works offline with zero download. ~146 languages. | Shows ✅ "Built-in" with green check. No download button. |
+| **Downloadable library** | kuromoji, kuromoji-ko, nlptoolkit, etc. Must download to use offline. | Shows download button with size. Progress bar during download. |
+| **Downloadable table** | Pre-built lemma table (LemmatizationList, Simplemma, spaCy export). | Shows download button with size. Progress bar during download. |
+| **Server-only** | No local option exists yet. Server fallback is the only path. | Shows "Online only" with cloud icon. |
+
+### Screen Layout
+
+```
+┌──────────────────────────────────────┐
+│  ← {title.offline_tokenizers}        │
+│                                      │
+│  {msg.offline_tokenizers_desc}       │
+│                                      │
+│  ── {label.downloaded} ──           │
+│                                      │
+│  {$lang.en}  English                 │
+│  ├─ ✅ Built-in — regex word-split   │  ← Free, always "downloaded"
+│  └─ {label.words} tokenized offline  │
+│                                      │
+│  {$lang.ja}  Japanese                │
+│  ├─ 📦 kuromoji · ~3 MB              │  ← Downloadable library
+│  ├─ ████████████░░░░  78%           │  ← Progress during download
+│  └─ [{action.cancel}]               │
+│                                      │
+│  {$lang.es}  Spanish                 │
+│  ├─ 📋 Lemma table · ~200 KB         │  ← Downloadable table
+│  └─ [{action.download}]             │
+│                                      │
+│  {$lang.zh}  Chinese                 │
+│  ├─ ✅ Built-in — Intl.Segmenter     │  ← Segmentation is free via
+│  └─ {label.words} segmented offline  │     Intl.Segmenter (built-in API)
+│                                      │
+│  ── {label.available} ──            │
+│                                      │
+│  {$lang.ko}  Korean                  │
+│  ├─ 📦 kuromoji-ko · ~2 MB          │
+│  └─ [{action.download}]             │
+│                                      │
+│  {$lang.tr}  Turkish                 │
+│  ├─ 📦 nlptoolkit · ~2 MB           │
+│  └─ [{action.download}]             │
+│                                      │
+│  {$lang.de}  German                  │
+│  ├─ 📋 Lemma table · ~300 KB        │
+│  └─ [{action.download}]             │
+│                                      │
+│  {$lang.ar}  Arabic                  │
+│  ├─ 📦 arabic-stem · 15 KB          │  ← Tiny — auto-downloaded
+│  ├─ 📋 Lemma table · ~250 KB        │     in Phase 1
+│  └─ [{action.download}]             │
+│                                      │
+│  {$lang.hr}  Croatian                │
+│  ├─ ☁️ Online only                  │  ← No local option; server only
+│  └─ No offline tokenizer available   │
+│                                      │
+│  ──────────────────────────────────  │
+│  {msg.storage_usage}                 │
+│                                      │
+│  [{action.delete_all}]               │
+└──────────────────────────────────────┘
+```
+
+### Row States
+
+Each language row has one of these states:
+
+| State | Icon | Subtext | Action Button |
+|---|---|---|---|
+| **Built-in** (regex) | ✅ | "Regex word-split — always available" | None |
+| **Built-in** (Intl.Segmenter) | ✅ | "Uses built-in text segmentation" | None |
+| **Not downloaded** | 📦 or 📋 | "kuromoji · ~3 MB" or "Lemma table · ~200 KB" | `[{action.download}]` |
+| **Downloading** | ↓ | Progress bar + "{downloaded}/{total}" | `[{action.cancel}]` |
+| **Downloaded** | ✅ | "Saved · Jul 15" | `[{action.delete}]` |
+| **Online only** | ☁️ | "No offline tokenizer available" | None |
+| **Download failed** | ⚠️ | "Tap to retry" | `[{action.download}]` |
+
+### "Built-in" Languages (no download needed)
+
+These always show as downloaded with a green check:
+
+| Tokenizer Type | Languages | Label |
+|---|---|---|
+| Regex word-split | ~146 Category E + B languages | "Regex word-split — always available" |
+| Intl.Segmenter (built-in API) | `zh`, `ja`, `th`, `km`, `lo`, `my`, `bo` (when Intl.Segmenter is available on device) | "Uses built-in text segmentation" |
+| `arabic-stem` | `ar` | "arabic-stem · 15 KB — included" (auto-downloaded in Phase 1) |
+
+> **Intl.Segmenter availability**: On iOS (JavaScriptCore), Intl.Segmenter is native and supports zh/ja/ko/th/lo/km/my word segmentation. On Android (Hermes), the `@formatjs/intl-segmenter` polyfill (~30 KB) provides the same. The UI reflects actual device capability — if polyfill not yet loaded, the row shows as downloadable instead of built-in.
+
+### Current L2 Priority
+
+The user's current L2 always appears first in the Available list (if not already downloaded), marked with a subtle "★ Current" badge — same pattern as SPEC-013's offline dictionaries screen.
+
+### Storage Summary
+
+Footer shows total offline tokenizer storage used vs. available, identical to SPEC-013:
+
+> `{msg.storage_usage}`: "Storage: 8.2 MB used of 12.1 GB free"
+
+### i18n Keys Required (~15 new keys)
+
+| Key | English Text | Used In |
+|---|---|---|
+| `title.offline_tokenizers` | Offline Tokenizers | Settings tab title |
+| `msg.offline_tokenizers_desc` | Download tokenizers to process text without an internet connection. Built-in tokenizers work offline automatically. | Page subtitle |
+| `label.built_in` | Built-in | Row status for regex/Intl.Segmenter |
+| `label.lemma_table` | Lemma table | Downloadable pack type label |
+| `msg.tokenizer_built_in_regex` | Regex word-split — always available | Built-in row subtext |
+| `msg.tokenizer_built_in_segmenter` | Uses built-in text segmentation | Intl.Segmenter row subtext |
+| `msg.tokenizer_online_only` | No offline tokenizer available | Online-only row subtext |
+| `label.tokenizer_size` | {type} · {size} | Row subtext for downloadable packs |
+| `msg.confirm_delete_tokenizer` | Delete offline tokenizer for {lang}? You'll need internet to tokenize text. | Delete confirmation |
+| `msg.tokenizer_ready` | {lang} tokenizer ready | Completion toast |
+| `action.download` | Download | (reused from SPEC-013) |
+| `action.cancel` | Cancel | (reused) |
+| `action.delete` | Delete | (reused) |
+| `action.delete_all` | Delete All Offline Data | (reused) |
+| `msg.storage_usage` | Storage: {used} used of {free} free | (reused) |
+
+### Files to Touch
+
+| File | Change |
+|---|---|
+| `apps/mobile/app/(tabs)/(me)/offline-tokenizers.tsx` | **NEW** — Tokenizer download management screen |
+| `apps/mobile/app/(tabs)/(me)/settings.tsx` | Add "Offline Tokenizers" tab |
+| `apps/mobile/lib/tokenizer-db.ts` | **NEW** — SQLite table for downloaded tokenizer/lemma packs, lookup functions |
+| `apps/mobile/contexts/DictionaryContext.tsx` | Add `tokenizeOffline()` fallback chain (server → local library → lemma table → regex) |
+| `packages/shared/src/constants.ts` | Add `TOKENIZER_CONFIG` map: language → tokenizer type + size + download URL |
+
+---
 
 ## See Also
 
