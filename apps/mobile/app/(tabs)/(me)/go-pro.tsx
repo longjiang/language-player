@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
@@ -9,7 +9,7 @@ import { IAP_AVAILABLE, initiatePurchase, finishPurchaseTransaction, restorePurc
 import { isSaleActive, getSaleDiscount, findUsdPrice, findCnyPrice } from '@langplayer/shared';
 import type { StripePrice } from '@langplayer/shared';
 import { Crown, Check, ArrowRight, CreditCard, AlertCircle, Apple, RefreshCw } from 'lucide-react-native';
-import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 
 // ── Plan Definitions ──
 
@@ -69,8 +69,8 @@ function salePrice(prices: StripePrice[], planKey: string): string | null {
   return `$${sale.amount}`;
 }
 
-/** Check if a plan is restricted to lifetime-only on iOS. */
-function isIOSRestricted(planKey: string): boolean {
+/** Check if a non-lifetime plan is gated on iOS (only lifetime is available via IAP). */
+function isIOSGatedPlan(planKey: string): boolean {
   return Platform.OS === 'ios' && planKey !== 'lifetime';
 }
 
@@ -116,20 +116,26 @@ export default function GoProScreen() {
   }, [t]);
 
   // ── IAP Purchase Listener ──
+  const mountedRef = useRef(true);
   useEffect(() => {
+    mountedRef.current = true;
     if (!IAP_AVAILABLE) return;
     connectIap().then(() => {
+      if (!mountedRef.current) return;
       setPurchaseHandler(
         (result) => {
           // Purchase received from listener — set state to process it
-          setIapResult(result);
+          if (mountedRef.current) setIapResult(result);
         },
         (errorCode) => {
-          setIapErrorCode(errorCode !== undefined ? String(errorCode) : 'unknown');
-          setIapProcessing(false);
+          if (mountedRef.current) {
+            setIapErrorCode(errorCode !== undefined ? String(errorCode) : 'unknown');
+            setIapProcessing(false);
+          }
         },
       );
     });
+    return () => { mountedRef.current = false; };
   }, []);
 
   // Process IAP result: validate receipt on backend, then finish transaction
@@ -325,7 +331,7 @@ export default function GoProScreen() {
       {subLoaded && isPro && (
         <View className="mt-6 rounded-xl border border-border bg-card p-4">
           <View className="flex-row items-center gap-2">
-            <Crown size={18} color="#f59e0b" />
+            <Crown size={18} color={ICON_WARNING} />
             <Text className="text-base font-semibold text-foreground">{t('title.subscription')}</Text>
           </View>
           <View className="mt-2 flex-row flex-wrap items-center gap-2">
@@ -367,7 +373,7 @@ export default function GoProScreen() {
           PLANS.map((plan, i) => {
             const isSelected = selectedPlan === plan.planKey;
             const isCurrent = isCurrentPlan(plan.planKey, planType);
-            const restrictedOnIOS = isIOSRestricted(plan.planKey);
+            const restrictedOnIOS = isIOSGatedPlan(plan.planKey);
             const planDisplayPrice = displayPrice(prices, plan.planKey, plan.defaultPrice);
             const planSalePrice = saleActive ? salePrice(prices, plan.planKey) : null;
 
@@ -434,7 +440,7 @@ export default function GoProScreen() {
       </View>
 
       {/* ── Payment Methods ── */}
-      {selectedPlan && selectedPlanData && !isIOSRestricted(selectedPlan) && (
+      {selectedPlan && selectedPlanData && !isIOSGatedPlan(selectedPlan) && (
         <View className="mt-8 rounded-xl border border-border bg-card p-4">
           <View className="flex-row items-center gap-2 mb-4">
             <CreditCard size={20} color={ICON_PRIMARY} />
@@ -450,17 +456,17 @@ export default function GoProScreen() {
                 className="flex-row items-center justify-between rounded-lg bg-primary px-4 py-3"
               >
                 <View className="flex-row items-center gap-2">
-                  <CreditCard size={18} color="#fff" />
+                  <CreditCard size={18} color={ICON_ON_PRIMARY} />
                   <Text className="text-sm font-semibold text-primary-foreground">{t('payment.credit_card')}</Text>
                 </View>
                 {checkingOut ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color={ICON_ON_PRIMARY} />
                 ) : (
                   <View className="flex-row items-center gap-1">
                     <Text className="text-xs text-primary-foreground/70">
                       {displayPrice(prices, selectedPlan, selectedPlanData.defaultPrice)} {selectedPlanData.interval}
                     </Text>
-                    <ArrowRight size={14} color="#fff" />
+                    <ArrowRight size={14} color={ICON_ON_PRIMARY} />
                   </View>
                 )}
               </Pressable>
@@ -474,17 +480,17 @@ export default function GoProScreen() {
                 className="flex-row items-center justify-between rounded-lg bg-black dark:bg-gray-800 px-4 py-3"
               >
                 <View className="flex-row items-center gap-2">
-                  <Apple size={18} color="#fff" />
+                  <Apple size={18} color={ICON_ON_PRIMARY} />
                   <Text className="text-sm font-semibold text-white">{t('payment.apple_pay')}</Text>
                 </View>
                 {iapProcessing ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color={ICON_ON_PRIMARY} />
                 ) : (
                   <View className="flex-row items-center gap-1">
                     <Text className="text-xs text-white/70">
                       {lifetimeSalePrice ?? displayPrice(prices, 'lifetime', '$169')}
                     </Text>
-                    <ArrowRight size={14} color="#fff" />
+                    <ArrowRight size={14} color={ICON_ON_PRIMARY} />
                   </View>
                 )}
               </Pressable>
@@ -502,7 +508,7 @@ export default function GoProScreen() {
                 </View>
                 <View className="flex-row items-center gap-1">
                   <Text className="text-xs text-white/80">¥{cnyPriceObj?.amount}</Text>
-                  <ArrowRight size={14} color="#fff" />
+                  <ArrowRight size={14} color={ICON_ON_PRIMARY} />
                 </View>
               </Pressable>
             )}
@@ -519,7 +525,7 @@ export default function GoProScreen() {
                 </View>
                 <View className="flex-row items-center gap-1">
                   <Text className="text-xs text-white/80">¥{cnyPriceObj?.amount}</Text>
-                  <ArrowRight size={14} color="#fff" />
+                  <ArrowRight size={14} color={ICON_ON_PRIMARY} />
                 </View>
               </Pressable>
             )}
