@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-015
 - **Feature**: Complete mobile settings parity with web, integrate offline dictionaries, fix bugs
-- **Status**: complete ✅ — all 13 settings wired; 10 fully functional, 3 playback deferred to Phase 5C
+- **Status**: complete ✅ — all 13 settings wired and consumed; all 3 Phase 5C playback features implemented
 - **Created**: 2026-07-25
 - **Updated**: 2026-07-26 — all phases complete, STATUS.md updated, consumption audit added
 - **ROADMAP Phase**: Phase 7 — Mobile Integration
@@ -472,15 +472,18 @@ All 6 TokenizedText settings now fully wired and rendered:
 - Video token cache wired through to subtitle TokenizedText instances
 - FlatList virtualization for lazy subtitle rendering (replaces IntersectionObserver)
 
-### Phase 5C: Playback Features (3 settings) 🟢
+### Phase 5C: Playback Features (3 settings) ✅ COMPLETE
 **Impact**: Lower priority — video player features that enhance UX.
 **Target files**: `apps/mobile/app/(tabs)/(media)/watch/[videoId].tsx`, subtitle display components
-- `playback.smoothScroll` — implement smooth scroll animation (RAF-based or Animated.spring)
-- `playback.karaokeMode` — word-by-word color highlight on active subtitle
-- `playback.autoPause` — pause video when subtitle line completes
+
+| Feature | Implementation | Files Changed |
+|---|---|---|
+| `playback.smoothScroll` | ✅ SubtitleDisplay scroll respects `playback.smoothScroll`: ON → animated spring + 2s throttle (via `useRef` cooldown). OFF → instant jump (`animated: false`). Matches web's ON=custom RAF+throttle / OFF=native smooth pattern. | `SubtitleDisplay.tsx` |
+| `playback.karaokeMode` | ✅ `karaokeProgress` prop added to `TokenizedText`. Computes `spokenWordCount = floor(karaokeProgress * wordCount)`. Non-spoken words render at `opacity: 0.4` in both ruby and plain-text rendering paths. `SubtitleDisplay` and `SubtitlesModeBand` compute progress from active line's duration (explicit, next-line gap, or 5s fallback). | `TokenizedText.tsx`, `SubtitleDisplay.tsx`, `SubtitlesModeBand.tsx` |
+| `playback.autoPause` | ✅ Watch screen computes `activeLineIndex` from `currentTime` + `subtitleStartTimes`. When the active line's duration elapses, calls `playerRef.current?.pause()`. Uses `autoPausedLineRef` to avoid re-pausing the same line. Note: programmatic pause is a no-op on iOS (see YouTubePlayer.tsx), but works on Android and future player implementations. | `[videoId].tsx` |
 
 ### Implementation Order
 1. ~~**Phase 5A** (critical) — `dailyNewLimit` dual-source fix~~ ✅
 2. ~~**Phase 5B** (TokenizedText — high impact) — 6 settings in `TokenizedText.tsx`~~ ✅
-3. **Phase 5C** (playback — lower priority) — 3 video player features ⬜
-4. Update spec and STATUS.md when complete
+3. **Phase 5C** (playback — lower priority) — 3 video player features ✅
+3. ~~Update spec and STATUS.md when complete~~ ✅ Updated
