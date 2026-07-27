@@ -558,7 +558,415 @@ lemmatizeText(text, l2)
 | `packages/shared/src/constants.ts` | Add `TOKENIZER_CONFIG` map: language → subphase + data pack URL + size |
 | `zerotohero-python-server/` | New endpoint: `GET /lemmatization/export?l2=X&format=json`; host dict zip archives |
 
-#### Deferred
+---
+
+### Phase 3 — Hardening & Polish
+
+**Goal**: Close the remaining gaps identified during implementation review. Includes server-side data pack hosting, cache hygiene, silent error handling, batch endpoint offline fallback, and two architecture-level items from the offline chain that were deferred during earlier phases.
+
+#### Phase 3a: Server Data Pack Hosting (`/lemmatization/download`)
+
+**Why**: The mobile app's `downloadKuromojiData()` calls `${apiUrl}/lemmatization/download?l2=ja` (and `?l2=ko`) to fetch IPADIC/mecab-ko-dic zip archives, but **this endpoint does not exist**. The `/lemmatization/export` endpoint for lemma tables is implemented, but the zip-serving download endpoint was never wired.
+
+**Step 1**: Create the Flask endpoint in `zerotohero-python-server/routes/text_routes.py`:
+
+```python
+@text_bp.route('/lemmatization/download')
+def lemmatization_download_endpoint():
+    """Download a tokenizer data pack zip archive for offline mobile use.
+
+    GET /lemmatization/download?l2=ja
+
+    Serves pre-built zip archives containing binary dictionary files
+    (.dat.gz) for kuromoji (Japanese) and kuromoji-ko (Korean) tokenizers.
+    The zip is extracted on the device by downloadKuromojiData() in
+    apps/mobile/lib/tokenizer-db.ts.
+
+    Query Parameters:
+        l2 — Language code ('ja' or 'ko')
+
+    Response: zip archive (application/zip) with .dat.gz files inside.
+
+    Returns 404 if no data pack is available for the language.
+    """
+    l2 = request.args.get('l2', '')
+    if not l2:
+        return jsonify({"error": "Missing required parameter: l2"}), 400
+
+    # Map language code to zip file path
+    ZIP_PATHS = {
+        'ja': 'data/tokenizer-packs/kuromoji-ipadic.zip',
+        'ko': 'data/tokenizer-packs/mecab-ko-dic.zip',
+    }
+    zip_path = ZIP_PATHS.get(l2)
+    if not zip_path or not os.path.exists(zip_path):
+        return jsonify({"error": f"No tokenizer data pack available for language: {l2}"}), 404
+
+    from flask import send_file
+    return send_file(zip_path, mimetype='application/zip',
+                     as_attachment=True,
+                     download_name=f'tokenizer-{l2}.zip')
+```
+
+**Step 2**: Build and place the IPADIC zip for Japanese.
+
+The kuromoji npm package ships IPADIC dictionary files in `node_modules/kuromoji/dict/`. These are the `.dat.gz` files (base.dat.gz, check.dat.gz, tid.dat.gz, etc.) that the mobile loader reads. Create the zip:
+
+```bash
+cd /tmp
+mkdir kuromoji-ipadic
+# Copy dictionary files from a fresh kuromoji install
+cp -r node_modules/kuromoji/dict/*.dat.gz kuromoji-ipadic/
+cd kuromoji-ipadic && zip -r ../kuromoji-ipadic.zip .
+cp kuromoji-ipadic.zip /path/to/zerotohero-python-server/data/tokenizer-packs/
+```
+
+**Step 3**: Build and place the mecab-ko-dic zip for Korean.
+
+kuromoji-ko requires building the dictionary from mecab-ko-dic source files. The spec references a build command:
+
+```bash
+cd apps/mobile
+# mecab-ko-dic source is bundled with kuromoji-ko
+npx kuromoji-ko-build-dict --src ./node_modules/kuromoji-ko/dict/mecab-ko-dic --dst ./build/ko-dict
+cd build/ko-dict && zip -r ../../mecab-ko-dic.zip .
+cp mecab-ko-dic.zip /path/to/zerotohero-python-server/data/tokenizer-packs/
+```
+
+Verify both archives contain the expected files (base.dat.gz, check.dat.gz, tid.dat.gz, tid_pos.dat.gz, tid_map.dat.gz, cc.dat.gz, unk.dat.gz, unk_pos.dat.gz, unk_map.dat.gz, unk_char.dat.gz, unk_compat.dat.gz, unk_invoke.dat.gz).
+
+**Step 4**: Verify end-to-end:
+
+```bash
+# Start the Flask server
+cd zerotohero-python-server && python3.10 app.py &
+
+# Download JA pack
+curl -o /tmp/test-ja.zip "http://127.0.0.1:5001/lemmatization/download?l2=ja"
+unzip -l /tmp/test-ja.zip  # Should show .dat.gz files
+
+# Download KO pack
+curl -o /tmp/test-ko.zip "http://127.0.0.1:5001/lemmatization/download?l2=ko"
+unzip -l /tmp/test-ko.zip  # Should show .dat.gz files
+
+# Unavailable language returns 404
+curl -w "%{http_code}" "http://127.0.0.1:5001/lemmatization/download?l2=de"  # → 404
+```
+
+**Files touched**:
+
+| File | Change |
+|---|---|
+| `zerotohero-python-server/routes/text_routes.py` | Add `/lemmatization/download` endpoint |
+| `zerotohero-python-server/data/tokenizer-packs/` | **NEW** — directory for zip archives |
+| `zerotohero-python-server/data/tokenizer-packs/kuromoji-ipadic.zip` | **NEW** — IPADIC dictionary zip |
+| `zerotohero-python-server/data/tokenizer-packs/mecab-ko-dic.zip` | **NEW** — mecab-ko-dic zip |
+
+---
+
+#### Phase 3b: Pre-Built Lemma Tables (Level 1 — Bundled Assets)
+
+**Why**: The architecture diagram (Offline Fallback Chains → Lemmatization Level 1) describes "Top 10 languages bundled as assets" providing instant offline lemmatization on first launch, before any dictionary download. Currently all lemma tables are Level 2 (downloaded on demand), so the first-offline-launch experience for inflected languages falls straight to snowball stems or surface-as-lemma.
+
+**Which 10 languages**: The top 10 by user base (estimated from SUPPORTED_L2 popularity):
+`en`, `es`, `fr`, `de`, `pt`, `it`, `ru`, `ja`, `ko`, `zh`
+
+Of these:
+- `en`, `es`, `fr`, `de`, `pt`, `it`, `ru` have Snowball + Lemma Table data
+- `ja`, `ko` have kuromoji (data pack, not bundled — already handled by Phase 3a)
+- `zh` has dict-based segmentation (no lemma table needed — surface = lemma)
+
+So bundled lemma tables are needed for: **en, es, fr, de, pt, it, ru** (7 languages, ~150 KB gzipped each ≈ ~1 MB total)
+
+**Step 1**: Generate lemma table JSON files server-side and save as app assets.
+
+```bash
+# Generate lemma tables for each language using the /lemmatization/export endpoint
+cd zerotohero-python-server && python3.10 -c "
+from lemmatize_export import export_table
+import json, gzip
+
+LANGS = ['en', 'es', 'fr', 'de', 'pt', 'it', 'ru']
+for l2 in LANGS:
+    result = export_table(l2)
+    compressed = gzip.compress(json.dumps(result['table'], ensure_ascii=False).encode('utf-8'))
+    path = f'exported-lemma-tables/lemmas-{l2}.json.gz'
+    with open(path, 'wb') as f:
+        f.write(compressed)
+    print(f'{l2}: {len(result[\"table\"])} entries, {len(compressed)} bytes gzipped')
+"
+```
+
+**Step 2**: Add the generated gzipped JSON files to the mobile app as bundled assets.
+
+```bash
+mkdir -p apps/mobile/assets/lemma-tables/
+cp zerotohero-python-server/exported-lemma-tables/lemmas-*.json.gz apps/mobile/assets/lemma-tables/
+```
+
+**Step 3**: Update `loadDictWordSet` pattern — add a `loadBundledLemmaTable()` function in `tokenizer.ts` or `tokenizer-db.ts` that reads from bundled assets first before attempting a server download:
+
+```typescript
+import * as FileSystem from 'expo-file-system';
+import { Asset } from 'expo-asset';
+
+/**
+ * Check if a bundled lemma table exists for the language.
+ * The top 7 inflected languages (en, es, fr, de, pt, it, ru) have
+ * pre-built tables shipped with the app (~1 MB total).
+ */
+async function hasBundledLemmaTable(l2: string): Promise<boolean> {
+  try {
+    const asset = Asset.fromModule(
+      require(`../assets/lemma-tables/lemmas-${l2}.json.gz`)
+    );
+    await asset.downloadAsync(); // Copies from .app bundle to cache if needed
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Load a bundled lemma table from app assets into the SQLite lemma table.
+ * Called on first launch for the top 7 inflected languages.
+ * Once loaded, subsequent lookups use the SQLite path (same as downloaded).
+ */
+async function loadBundledLemmaTable(l2: string): Promise<boolean> {
+  try {
+    const asset = Asset.fromModule(
+      require(`../assets/lemma-tables/lemmas-${l2}.json.gz`)
+    );
+    await asset.downloadAsync();
+
+    // Read the gzipped JSON from the local asset URI
+    const base64 = await FileSystem.readAsStringAsync(asset.localUri!, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    const binaryStr = atob(base64);
+    const compressed = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      compressed[i] = binaryStr.charCodeAt(i);
+    }
+
+    // Decompress gzip
+    const pako = await import('pako');
+    const decompressed = pako.ungzip(compressed, { to: 'string' }) as string;
+    const table = JSON.parse(decompressed) as Record<string, string[]>;
+
+    // Store in SQLite (reuses the same storeLemmaTable path as downloaded tables)
+    const { storeLemmaTable } = await import('@/lib/tokenizer-db');
+    const entries: Array<[string, string[]]> = Object.entries(table);
+    await storeLemmaTable(l2, entries);
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+```
+
+**Step 4**: Integrate `loadBundledLemmaTable()` into the tokenizer initialization. Call it once on first `lemmatizeText()` invocation for supported languages, before checking `hasLemmaTable()`:
+
+```typescript
+// In lemmatizeLocal(), before checking tableReady:
+if (!tableReady && config?.hasLemmaTable && !lemmaBootstrapAttempted.has(l2)) {
+  lemmaBootstrapAttempted.add(l2);
+  // Fire-and-forget — doesn't block the current call
+  loadBundledLemmaTable(l2).catch(() => {});
+}
+```
+
+**Step 5**: Add `expo-asset` to `apps/mobile/package.json` if not already present:
+
+```bash
+cd apps/mobile && npm install expo-asset
+```
+
+**Files touched**:
+
+| File | Change |
+|---|---|
+| `apps/mobile/assets/lemma-tables/lemmas-*.json.gz` | **NEW** — 7 gzipped JSON files |
+| `apps/mobile/lib/tokenizer.ts` | Add `hasBundledLemmaTable()`, `loadBundledLemmaTable()`, bootstrap integration |
+| `apps/mobile/package.json` | Add `expo-asset` |
+
+---
+
+#### Phase 3c: Cache Eviction & Memory Hygiene
+
+**Why**: Several in-memory caches in `tokenizer.ts` have no eviction policy:
+
+| Cache | Type | Size per entry | Risk |
+|---|---|---|---|
+| `lemmatizeCache` | `Map<string, LemmatizedToken[]>` | ~1–5 KB (sentence of tokens) | Low — 500 entries ≈ 1–2.5 MB |
+| `dictWordSets` | `Map<string, Set<string>>` | ~1–2 MB (entire dictionary headword list) | **High** — 5 downloaded CJK languages ≈ 5–10 MB |
+| `lemmatizeInflight` | `Map<string, Promise<...>>` | ~100 bytes each, transient | None — entries self-delete after resolution |
+| `snowballStemmers` | `Map<string, function>` | ~30 KB each, max 15 | None — fixed ceiling |
+| `dictMaxWordLen` | `Map<string, number>` | 8 bytes each | None — trivial |
+
+**Review finding (2026-07-27)**: `lemmatizeCache` entries are tiny — 500 entries ≈ 1–2.5 MB, negligible on modern phones. The real unbounded memory risk is `dictWordSets`, which loads every headword from the offline dictionary SQLite into a `Set<string>`. A single Chinese dictionary (cedict, 30K entries) costs ~1–2 MB; 5 downloaded CJK languages cost 5–10 MB with no eviction. This was not addressed in the original plan.
+
+**Step 1**: Add LRU eviction to `lemmatizeCache` (belt-and-suspenders, low priority):
+
+```typescript
+const MAX_LEMMATIZE_CACHE = 2000;  // ~2–10 MB worst case, large enough to be useful
+
+function cacheSet(key: string, value: LemmatizedToken[]): void {
+  if (lemmatizeCache.size >= MAX_LEMMATIZE_CACHE) {
+    const firstKey = lemmatizeCache.keys().next().value;
+    if (firstKey !== undefined) lemmatizeCache.delete(firstKey);
+  }
+  lemmatizeCache.set(key, value);
+}
+
+function cacheGet(key: string): LemmatizedToken[] | undefined {
+  const value = lemmatizeCache.get(key);
+  if (value !== undefined) {
+    // Re-insert to promote to most-recent (LRU via Map insertion order)
+    lemmatizeCache.delete(key);
+    lemmatizeCache.set(key, value);
+  }
+  return value;
+}
+```
+
+**Step 2**: Replace all `lemmatizeCache.set()`/`.get()` calls with `cacheSet()`/`cacheGet()` (5 call sites).
+
+**Step 3**: **(Higher priority)** Add LRU eviction to `dictWordSets` — keep only the last 3 languages:
+
+```typescript
+const MAX_DICT_WORD_SETS = 3;  // ~3–6 MB max
+
+async function loadDictWordSet(l2: string): Promise<{ wordSet: Set<string>; maxWordLen: number } | null> {
+  // ... existing code ...
+
+  // Evict oldest language if at capacity (before inserting new one)
+  if (dictWordSets.size >= MAX_DICT_WORD_SETS) {
+    const firstKey = dictWordSets.keys().next().value;
+    if (firstKey !== undefined) {
+      dictWordSets.delete(firstKey);
+      dictMaxWordLen.delete(firstKey);
+    }
+  }
+
+  dictWordSets.set(l2, wordSet);
+  dictMaxWordLen.set(l2, maxWordLen);
+  return { wordSet, maxWordLen };
+}
+```
+
+**Files touched**:
+
+| File | Change |
+|---|---|
+| `apps/mobile/lib/tokenizer.ts` | Add `cacheSet()`/`cacheGet()` for lemmatizeCache; add dictWordSets eviction (max 3 langs) |
+
+---
+
+#### Phase 3d: Silent Error Handling
+
+**Why**: The spec's Error Handling Strategy says "Server errors are silent — no toast, no console noise for offline scenarios." But the kuromoji loader logs `console.warn` on init errors and tokenize errors. In airplane mode or during data pack download failures, these warnings are expected behavior and should not pollute the console.
+
+**Review finding (2026-07-27)**: Deleting the warnings outright makes debugging harder — when kuromoji silently fails in development, there's no clue why. Gate with `__DEV__` instead so warnings are visible during development but suppressed in production builds.
+
+**Step 1**: Gate `console.warn` calls with `__DEV__` in `tokenizer.ts` (3 locations):
+
+```typescript
+// Line 471 — kuromoji init error:
+if (__DEV__) console.warn(`[Tokenizer] kuromoji (${l2}) init error:`, e);
+
+// Line 538 — kuromoji tokenize error:
+if (__DEV__) console.warn('[Tokenizer] kuromoji tokenize error:', e);
+
+// Line 607 — kuromoji-ko tokenize error:
+if (__DEV__) console.warn('[Tokenizer] kuromoji-ko tokenize error:', e);
+```
+
+`__DEV__` is a global boolean set by Metro/Expo — `true` in dev builds, `false` in release builds. No import needed.
+
+**Files touched**:
+
+| File | Change |
+|---|---|
+| `apps/mobile/lib/tokenizer.ts` | Add `__DEV__` guard to 3 `console.warn` lines in kuromoji error handlers |
+
+---
+
+#### Phase 3e: Batch Endpoint Offline Fallback
+
+**Why**: `apps/mobile/hooks/use-epub-pagination.ts` calls `POST /lemmatize-normalized/batch` directly via `fetch()`. When offline, this request fails silently and tokens aren't cached — the reader chapter text appears without interactive tokenization. Unlike `lemmatizeText()`, this batch path has no offline fallback chain.
+
+**Review finding (2026-07-27) — Pagination order is correct**: The original spec asked to verify whether tokenization happens before pagination. It does NOT. The execution order is: parse text → measure all blocks → compute page breaks (`pageBreaks[]`) → set `hasMeasured = true` → batch-tokenize ONLY `visibleBlocks` (current page). The `visibleBlocks` useMemo depends on `pageBreaks` and `page`, so it always returns the correctly sliced page. The batch-lemmatize effect guards on `hasMeasured`, which is set in the same render as `pageBreaks`. There is no race condition.
+
+The actual gap is simply that when offline, `.catch(() => {})` swallows the error and no tokens are populated. The fix is simpler than adding a new `lemmatizeTextBatch()` function — just call `lemmatizeText()` in the existing `.catch()` handler. `lemmatizeText()` already has the full server-first-then-local-fallback chain, and `lemmatizeInflight` deduplication handles concurrent calls for identical text.
+
+**Step 1**: Update the `.catch()` handler in `use-epub-pagination.ts` to fall back to per-text `lemmatizeText()`:
+
+```typescript
+// In use-epub-pagination.ts, the batch-lemmatize useEffect (~line 167).
+// Replace the bare .catch(() => {}) with an offline fallback:
+
+fetch(`${PYTHON_API_URL}/lemmatize-normalized/batch`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ texts: missing.map(m => m.text), l2: l2Code }),
+})
+  .then(res => res.json())
+  .then(data => {
+    if (tokenLoadGenRef.current !== gen) return;
+    const results: LemmatizedToken[][] = data?.results ?? [];
+    setTokenCache(prev => {
+      const next = { ...prev };
+      missing.forEach((m, i) => { if (results[i]) next[m.idx] = results[i]!; });
+      return next;
+    });
+  })
+  .catch(async () => {
+    // Offline fallback: lemmatizeText() has server-first-then-local chain.
+    // lemmatizeInflight dedup handles concurrent calls for identical text.
+    if (tokenLoadGenRef.current !== gen) return;
+    const { lemmatizeText } = await import('@/lib/tokenizer');
+    const results = await Promise.all(
+      missing.map(m => lemmatizeText(m.text, l2Code))
+    );
+    if (tokenLoadGenRef.current !== gen) return;
+    setTokenCache(prev => {
+      const next = { ...prev };
+      missing.forEach((m, i) => { if (results[i]) next[m.idx] = results[i]!; });
+      return next;
+    });
+  })
+  .finally(() => {
+    if (tokenLoadGenRef.current === gen) setLoadingTokens(false);
+  });
+```
+
+> **Why not `lemmatizeTextBatch()`?** A dedicated batch function would add ~65 lines to `tokenizer.ts` for logic that already exists in `lemmatizeText()`. The batch endpoint's value is reducing N HTTP round-trips to 1 — but in the offline fallback path there's no server to talk to, so `Promise.all` of N local calls is effectively free. The `lemmatizeInflight` dedup map already prevents duplicate work when blocks share identical text.
+
+**Files touched**:
+
+| File | Change |
+|---|---|
+| `apps/mobile/hooks/use-epub-pagination.ts` | Replace `.catch(() => {})` with offline fallback calling `lemmatizeText()` per-text |
+
+---
+
+#### Phase 3 Summary
+
+| Subphase | What | Why | Effort |
+|---|---|---|---|
+| **3a** ✅ | Server data pack hosting (`/lemmatization/download`) | JA/KO tokenizer packs can't download — endpoint + zips missing | Medium |
+| **3b** | Pre-built bundled lemma tables (Level 1) | Top 7 langs get instant offline lemmatization without any download | Medium |
+| **3c** | Cache eviction: `lemmatizeCache` (LRU, max 2000) + **`dictWordSets` (LRU, max 3)** | Prevents unbounded memory growth; `dictWordSets` is the higher risk (1–2 MB per language) | Small |
+| **3d** | Silent error handling | Gate 3 `console.warn` with `__DEV__` in kuromoji error paths | Trivial |
+| **3e** | Batch endpoint offline fallback | Add `.catch()` fallback calling `lemmatizeText()` in `use-epub-pagination.ts` | Trivial |
+
+**Total new files**: 0 (all modifications to existing files)
+**Total modified files**: 3 (`tokenizer.ts`, `use-epub-pagination.ts`, `package.json`; `text_routes.py` already done in 3a ✅)
+**New server assets**: 2 zip archives ✅ + 7 gzipped JSON files
+
+#### Deferred (unchanged)
 
 - **Intl.Segmenter** with `@formatjs/intl-segmenter` polyfill — evaluate after dict max-matching accuracy is measured
 - **WASM tokenizers** (`jieba-js`, etc.) — evaluate if max-matching accuracy proves insufficient
