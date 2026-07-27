@@ -1503,50 +1503,50 @@ export const DOCS_BY_LOCALE: Record<string, DocEntry[]> = {
   'af': [
     { path: 'account/login', title: 'Aanteken', category: 'account', content: `# Aanteken
 
-Teken in by jou rekening, stel 'n vergeet wagwoord terug, en teken uit wanneer jy klaar is.
+Teken in by jou rekening, stel 'n vergete wagwoord terug, en teken uit wanneer jy klaar is.
 
-## Hoe om aan te Teken
+## Hoe om Aan te Teken
 
 1. Gaan na die **[aanmeldbladsy](/login)** deur op die gebruikersikoon in die regter boonste hoek te klik en **Meld aan** te kies
 2. Voer jou **E-pos** en **Wagwoord** in
 3. Klik op **Meld aan**
 
-Indien jou geloofsbriewe korrek is, sal jy na die taalkeuse-bladsy herlei word (of terug na die bladsy waarop jy was voor aanmelding).
+As jou bewysstukke korrek is, sal jy na die taalverkiezingsbladsy herlei word (of terug na die bladsy waar jy was voor jy aangeteken het).
 
-As jy die verkeerde e-pos of wagwoord invoer, verskyn 'n foutboodskap — gaan beide velde na en probeer weer.
+As jy die verkeerde e-pos of wagwoord intik, verskyn 'n foutboodskap — kontroleer beide velde en probeer weer.
 
-## Het jy nie 'n Rekening nie?
+## Het Jy Nie 'n Rekening Nie?
 
-Klik op **Teken aan** onder die aanmeldvorm om 'n nuwe rekening te skep. Sien [Registrasie](/docs/account/registration) vir die volledige aanmeldingstap-vir-stap.
+Klik op **Teken aan** onder die aanmeldvorm om 'n nuwe rekening te skep. Sien [Registrasie](/docs/account/registration) vir die volledige registrasieproses.
 
-## Het jy jou Wagwoord vergeet?
+## Het Jy Jou Wagwoord Vergeet?
 
 As jy nie jou wagwoord kan onthou nie:
 
-1. Klik op die aanmeldbladsy op **Wagwoord vergeet?**
+1. Op die aanmeldbladsy, klik op **Wagwoord vergeet?**
 2. Voer jou e-posadres in en klik op **Stuur terugstelskakel**
-3. Gaan jou inkassie na vir 'n wagwoordherstel-e-pos
-4. Volg die skakel in die e-pos om 'n nuwe wagwoord in te stel
+3. Kyk jou posbus vir 'n wagwoordterugstellings-e-pos
+4. Volg die skakel in die e-pos om 'n nuwe wagwoord te stel
 
-Vir veiligheid wys die bladsy altyd 'n suksesboodskap nadat jy dit ingedien het — selfs al is die e-pos nie geregistreer nie. Dit verhoed dat enigiemand kan kyk of 'n spesifieke e-pos 'n rekening het.
+Vir veiligheid wys die bladsy altyd 'n suksesboodskap nadat jy dit ingedien het — selfs as die e-pos nie geregistreer is nie. Dit verhoed dat iemand kan kyk of 'n spesifieke e-pos 'n rekening het.
 
-> **Nota:** Die wagwoordherstelskakel kom van our server, ons identiteitsverskaffer. As jy nie die e-pos binne 'n paar minute sien nie, gaan jou strooiposmap na.
+> **Let wel:** Die wagwoordterugstellingskakel kom van ons bediener. As jy nie die e-pos binne 'n paar minute sien nie, kyk jou gemorsposlêer.
 
-## Hoe om uit te Teken
+## Hoe om Uit te Teken
 
-Klik op die gebruikersikoon in die regter boonste hoek (dit wys jou voorletter), en klik dan op **Meld af** onderaan die kieslys. Jy sal uitgeteken word en na die tuisblad herlei word.
+Klik op die gebruikersikoon in die regter boonste hoek (dit wys jou voorletter), en klik dan op **Meld af** onderaan die kieslys. Jy sal uitgeteken wees en na die tuisblad herlei word.
 
-Uitteken maak jou plaaslike sessie skoon, maar jou gestoorde woorde, kykgeskiedenis en instellings word bewaar — hulle sal herstel word die volgende keer wat jy aanmeld.
+Uitteken verwyder jou plaaslike sessie, maar jou gestoorde woorde, kykgeskiedenis en instellings word bewaar — hulle sal herstel word die volgende keer wat jy aanteken.
 
-## Om van Rekening te Verwissel
+## Skakeling Tussen Rekeninge
 
-Om na 'n ander rekening oor te skakel, teken eers uit, en teken dan in met die ander e-posadres. Daar is geen rekeningwisselaar nie — elke blaaier-sessie gebruik een rekening op 'n tyd.
+Om na 'n ander rekening oor te skakel, teken eers uit, en teken dan in met die ander e-posadres. Daar is geen rekeningwisselaar nie — elke blaaier-sessie gebruik een rekening op 'n slag.
 
 ## Wenke
 
-- Jou aanmeldsessie duur voort selfs nadat jy die blaaier herbegin — jy hoef nie elke keer aan te meld wanneer jy besoek nie
+- Jou aanmeldsessie hou aan oor blaaier-herbegin — jy hoef nie elke keer wat jy besoek aan te teken nie
 - As jy op 'n gedeelde toestel is, teken altyd uit wanneer jy klaar is
-- Die vergeet-wagwoord-proses werk selfs al het jy met dieselfde e-pos geregistreer — dit stuur in elk geval 'n herstelskakel
+- Die vergete-wagwoord-proses werk selfs as jy met dieselfde e-pos geregistreer het — dit stuur in elk geval 'n terugstellingskakel
 - Jy kan jou rekeningbesonderhede bestuur vanaf jou **[Profiel](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Profiel', category: 'account', content: `# Profiel
 
@@ -2969,50 +2969,50 @@ Skakel **Presiese Ooreenstemming** aan om resultate tot slegs die woordeboekhoof
   'ar': [
     { path: 'account/login', title: 'تسجيل الدخول', category: 'account', content: `# تسجيل الدخول
 
-قم بتسجيل الدخول إلى حسابك، أو إعادة تعيين كلمة مرور منسية، أو تسجيل الخروج عند الانتهاء.
+قم بتسجيل الدخول إلى حسابك، وإعادة تعيين كلمة المرور المفقودة، وتسجيل الخروج عند الانتهاء.
 
 ## كيفية تسجيل الدخول
 
-1. اذهب إلى **[صفحة تسجيل الدخول](/login)** عن طريق النقر على أيقونة المستخدم في الزاوية العلوية اليمنى واختيار **تسجيل الدخول**
+1. انتقل إلى **[صفحة تسجيل الدخول](/login)** بالنقر على أيقونة المستخدم في الزاوية العلوية اليمنى واختيار **تسجيل الدخول**
 2. أدخل **البريد الإلكتروني** و **كلمة المرور**
 3. انقر على **تسجيل الدخول**
 
-إذا كانت بيانات الدخول صحيحة، سيتم إعادة توجيهك إلى صفحة اختيار اللغة (أو العودة إلى الصفحة التي كنت عليها قبل تسجيل الدخول).
+إذا كانت بيانات اعتمادك صحيحة، سيتم إعادة توجيهك إلى صفحة اختيار اللغة (أو العودة إلى الصفحة التي كنت فيها قبل تسجيل الدخول).
 
-إذا أدخلت بريدًا إلكترونيًا أو كلمة مرور خاطئة، ستظهر رسالة خطأ — تحقق من الحقلين وحاول مرة أخرى.
+إذا أدخلت بريدًا إلكترونيًا أو كلمة مرور خاطئة، ستظهر رسالة خطأ — تحقق من كلا الحقلين وحاول مرة أخرى.
 
 ## ليس لديك حساب؟
 
-انقر على **التسجيل** أسفل نموذج تسجيل الدخول لإنشاء حساب جديد. راجع [التسجيل](/docs/account/registration) للحصول على الشرح الكامل للتسجيل.
+انقر على **التسجيل** أسفل نموذج تسجيل الدخول لإنشاء حساب جديد. راجع [التسجيل](/docs/account/registration) للحصول على دليل كامل للتسجيل.
 
 ## هل نسيت كلمة المرور؟
 
-إذا كنت لا تتذكر كلمة المرور:
+إذا كنت لا تتذكر كلمة المرور الخاصة بك:
 
 1. في صفحة تسجيل الدخول، انقر على **نسيت كلمة المرور؟**
 2. أدخل عنوان بريدك الإلكتروني وانقر على **إرسال رابط إعادة التعيين**
-3. تحقق من صندوق الوارد لرسالة إعادة تعيين كلمة المرور
+3. تحقق من صندوق الوارد لديك لرسالة إعادة تعيين كلمة المرور
 4. اتبع الرابط في البريد الإلكتروني لتعيين كلمة مرور جديدة
 
-لأسباب أمنية، تعرض الصفحة دائمًا رسالة نجاح بعد الإرسال — حتى لو لم يكن البريد الإلكتروني مسجلاً. هذا يمنع أي شخص من التحقق مما إذا كان بريد إلكتروني معين له حساب.
+لأغراض أمنية، تعرض الصفحة دائمًا رسالة نجاح بعد الإرسال — حتى إذا لم يكن البريد الإلكتروني مسجلاً. يمنع هذا أي شخص من التحقق مما إذا كان لبريد إلكتروني معين حساب.
 
-> **ملاحظة:** رابط إعادة تعيين كلمة المرور يأتي من our server، مزود الهوية لدينا. إذا لم ترَ البريد الإلكتروني خلال دقائق، تحقق من مجلد البريد العشوائي.
+> **ملاحظة:** يأتي رابط إعادة تعيين كلمة المرور من خادمنا. إذا لم ترَ البريد الإلكتروني خلال بضع دقائق، تحقق من مجلد البريد العشوائي.
 
 ## كيفية تسجيل الخروج
 
-انقر على أيقونة المستخدم في الزاوية العلوية اليمنى (تظهر حرفك الأول)، ثم انقر على **تسجيل الخروج** في أسفل القائمة. سيتم تسجيل خروجك وإعادة توجيهك إلى الصفحة الرئيسية.
+انقر على أيقونة المستخدم في الزاوية العلوية اليمنى (تظهر الحرف الأول من اسمك)، ثم انقر على **تسجيل الخروج** في أسفل القائمة. سيتم تسجيل خروجك وإعادة توجيهك إلى الصفحة الرئيسية.
 
-تسجيل الخروج يمسح جلستك المحلية، لكن كلماتك المحفوظة وسجل المشاهدة والإعدادات تبقى محفوظة — سيتم استعادتها في المرة القادمة التي تسجل فيها الدخول.
+تسجيل الخروج يمسح جلستك المحلية، لكن كلماتك المحفوظة وسجل المشاهدة والإعدادات تبقى محفوظة — سيتم استعادتها عند تسجيل الدخول مرة أخرى.
 
 ## تبديل الحسابات
 
-لتبديل الحساب، قم بتسجيل الخروج أولاً، ثم سجل الدخول باستخدام البريد الإلكتروني الآخر. لا يوجد مبدل حسابات — كل جلسة متصفح تستخدم حسابًا واحدًا في كل مرة.
+لتبديل الحساب، سجل الخروج أولاً، ثم سجل الدخول باستخدام عنوان البريد الإلكتروني الآخر. لا يوجد مبدّل حسابات — كل جلسة متصفح تستخدم حسابًا واحدًا في كل مرة.
 
 ## نصائح
 
-- جلستك تستمر عبر إعادة تشغيل المتصفح — لن تحتاج لتسجيل الدخول في كل مرة تزور فيها الموقع
-- إذا كنت على جهاز مشترك، قم دائمًا بتسجيل الخروج عند الانتهاء
-- عملية استعادة كلمة المرور تعمل حتى لو سجلت بنفس البريد الإلكتروني — ترسل رابط إعادة تعيين بغض النظر
+- جلستك في تسجيل الدخول تستمر عبر إعادة تشغيل المتصفح — لن تحتاج لتسجيل الدخول في كل مرة تزور فيها
+- إذا كنت تستخدم جهازًا مشتركًا، سجل الخروج دائمًا عند الانتهاء
+- عملية نسيت كلمة المرور تعمل حتى إذا سجلت بنفس البريد الإلكتروني — ترسل رابط إعادة تعيين بغض النظر
 - يمكنك إدارة تفاصيل حسابك من **[الملف الشخصي](/docs/account/profile)**` },
     { path: 'account/profile', title: 'الملف الشخصي', category: 'account', content: `# الملف الشخصي
 
@@ -4435,7 +4435,7 @@ _كيف أسحب موافقتي؟_
   'ca': [
     { path: 'account/login', title: 'Inici de sessió', category: 'account', content: `# Inici de sessió
 
-Inicia la sessió al teu compte, restableix una contrasenya oblidada i tanca la sessió quan hagis acabat.
+Accedeix al teu compte, restableix una contrasenya oblidada i tanca la sessió quan hagis acabat.
 
 ## Com iniciar sessió
 
@@ -4443,13 +4443,13 @@ Inicia la sessió al teu compte, restableix una contrasenya oblidada i tanca la 
 2. Introdueix el teu **Correu electrònic** i la teva **Contrasenya**
 3. Fes clic a **Iniciar sessió**
 
-Si les teves credencials són correctes, se't redirigirà a la pàgina de selecció d'idioma (o de tornada a la pàgina on eres abans d'iniciar sessió).
+Si les teves credencials són correctes, seràs redirigit a la pàgina de selecció d'idioma (o de tornada a la pàgina on eres abans d'iniciar sessió).
 
-Si introdueixes un correu electrònic o una contrasenya incorrectes, apareixerà un missatge d'error: revisa tots dos camps i torna-ho a intentar.
+Si introdueixes el correu electrònic o la contrasenya equivocats, apareix un missatge d'error: revisa ambdós camps i torna-ho a provar.
 
-## No tens un compte?
+## No tens compte?
 
-Fes clic a **Registrar-se** sota el formulari d'inici de sessió per crear un compte nou. Consulta [Registre](/docs/account/registration) per veure la guia completa de registre.
+Fes clic a **Registrar-se** a sota del formulari d'inici de sessió per crear un compte nou. Consulta [Registre](/docs/account/registration) per veure el tutorial complet de registre.
 
 ## Has oblidat la contrasenya?
 
@@ -4457,28 +4457,28 @@ Si no recordes la teva contrasenya:
 
 1. A la pàgina d'inici de sessió, fes clic a **Has oblidat la contrasenya?**
 2. Introdueix la teva adreça de correu electrònic i fes clic a **Enviar enllaç de restabliment**
-3. Revisa la teva safata d'entrada per trobar un correu de restabliment de contrasenya
-4. Segueix l'enllaç del correu per establir una contrasenya nova
+3. Comprova la safata d'entrada per trobar un correu de restabliment de contrasenya
+4. Segueix l'enllaç del correu per establir una nova contrasenya
 
-Per seguretat, la pàgina sempre mostra un missatge d'èxit després d'enviar-ho, fins i tot si el correu electrònic no està registrat. Això evita que algú pugui comprovar si un correu concret té un compte.
+Per seguretat, la pàgina sempre mostra un missatge d'èxit després d'enviar-ho — fins i tot si el correu electrònic no està registrat. Això evita que algú pugui comprovar si un correu concret té un compte.
 
-> **Nota:** L'enllaç de restabliment de contrasenya prové de our server, el nostre proveïdor d'identitat. Si no veus el correu en uns minuts, comprova la carpeta de correu brossa.
+> **Nota:** L'enllaç de restabliment de contrasenya prové del nostre servidor. Si no veus el correu en uns minuts, comprova la safata de correu brossa.
 
 ## Com tancar la sessió
 
-Fes clic a la icona d'usuari a la cantonada superior dreta (mostra la teva inicial) i, després, fes clic a **Tancar sessió** a la part inferior del menú. Se tancarà la teva sessió i se't redirigirà a la pàgina d'inici.
+Fes clic a la icona d'usuari a la cantonada superior dreta (mostra la teva inicial) i després fes clic a **Tancar sessió** a la part inferior del menú. Se tancarà la sessió i seràs redirigit a la pàgina d'inici.
 
-Tancar la sessió esborra la teva sessió local, però les paraules guardades, l'historial de visualització i la configuració es conserven: es restauraran la propera vegada que iniciïs sessió.
+Tancar la sessió esborra la sessió local, però les teves paraules desades, l'historial de visualització i la configuració es conserven: es restauraran la propera vegada que iniciïs sessió.
 
 ## Canviar de compte
 
-Per canviar a un compte diferent, tanca la sessió primer i, després, inicia sessió amb l'altra adreça de correu electrònic. No hi ha cap commutador de compte: cada sessió del navegador utilitza un compte alhora.
+Per canviar a un compte diferent, tanca la sessió primer i després inicia sessió amb l'altra adreça de correu electrònic. No hi ha un commutador de comptes: cada sessió del navegador utilitza un compte alhora.
 
 ## Consells
 
-- La teva sessió d'inici de sessió es manté fins i tot després de reiniciar el navegador: no hauràs d'iniciar sessió cada vegada que hi accedeixis
-- Si utilitzes un dispositiu compartit, tanca sempre la sessió quan hagis acabat
-- El procés de contrasenya oblidada funciona encara que t'hagis registrat amb el mateix correu electrònic: s'envia un enllaç de restabliment independentment
+- La teva sessió d'inici de sessió es manté fins i tot després de reiniciar el navegador: no hauràs d'iniciar sessió cada vegada que visitis
+- Si estàs en un dispositiu compartit, tanca sempre la sessió quan hagis acabat
+- El procés de contrasenya oblidada funciona encara que t'hagis registrat amb el mateix correu electrònic: envia un enllaç de restabliment independentment
 - Pots gestionar els detalls del teu compte des del teu **[Perfil](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Perfil', category: 'account', content: `# Perfil
 
@@ -5899,53 +5899,53 @@ Activa **Exact Match** per restringir els resultats només a l'entrada principal
 - Utilitza la vista Llistar tot per comparar com s'utilitza una paraula en desenes de vídeos d'un cop d'ull` }
   ],
   'de': [
-    { path: 'account/login', title: 'Einloggen', category: 'account', content: `# Anmelden
+    { path: 'account/login', title: 'Anmelden', category: 'account', content: `# Anmelden
 
 Melden Sie sich bei Ihrem Konto an, setzen Sie ein vergessenes Passwort zurück und melden Sie sich ab, wenn Sie fertig sind.
 
 ## So melden Sie sich an
 
-1. Gehen Sie zur **[Anmeldeseite](/login)**, indem Sie auf das Benutzersymbol oben rechts klicken und **Anmelden** auswählen
+1. Gehen Sie zur **[Anmeldeseite](/login)**, indem Sie oben rechts auf das Benutzersymbol klicken und **Anmelden** auswählen
 2. Geben Sie Ihre **E-Mail** und **Passwort** ein
 3. Klicken Sie auf **Anmelden**
 
-Wenn Ihre Anmeldedaten korrekt sind, werden Sie zur Sprachauswahlseite weitergeleitet (oder zurück zu der Seite, auf der Sie vor der Anmeldung waren).
+Wenn Ihre Anmeldedaten korrekt sind, werden Sie zur Sprachauswahlseite weitergeleitet (oder zurück zur Seite, auf der Sie vor der Anmeldung waren).
 
 Wenn Sie die falsche E-Mail oder das falsche Passwort eingeben, erscheint eine Fehlermeldung – überprüfen Sie beide Felder und versuchen Sie es erneut.
 
-## Haben Sie noch kein Konto?
+## Noch kein Konto?
 
-Klicken Sie auf **Registrieren** unterhalb des Anmeldeformulars, um ein neues Konto zu erstellen. Lesen Sie [Registrierung](/docs/account/registration) für die vollständige Anleitung zur Kontoerstellung.
+Klicken Sie auf **Registrieren** unter dem Anmeldeformular, um ein neues Konto zu erstellen. Weitere Informationen finden Sie in der vollständigen Registrierungsanleitung unter [Registrierung](/docs/account/registration).
 
 ## Passwort vergessen?
 
-Wenn Sie sich nicht an Ihr Passwort erinnern können:
+Wenn Sie Ihr Passwort nicht mehr wissen:
 
 1. Klicken Sie auf der Anmeldeseite auf **Passwort vergessen?**
 2. Geben Sie Ihre E-Mail-Adresse ein und klicken Sie auf **Reset-Link senden**
 3. Überprüfen Sie Ihren Posteingang auf eine E-Mail zum Zurücksetzen des Passworts
 4. Folgen Sie dem Link in der E-Mail, um ein neues Passwort festzulegen
 
-Aus Sicherheitsgründen wird nach dem Absenden immer eine Erfolgsmeldung angezeigt – auch wenn die E-Mail nicht registriert ist. Dies verhindert, dass jemand überprüfen kann, ob eine bestimmte E-Mail-Adresse ein Konto hat.
+Aus Sicherheitsgründen zeigt die Seite nach dem Absenden immer eine Erfolgsmeldung an – auch wenn die E-Mail nicht registriert ist. Dadurch kann niemand überprüfen, ob eine bestimmte E-Mail-Adresse ein Konto hat.
 
-> **Hinweis:** Der Link zum Zurücksetzen des Passworts stammt von our server, unserem Identitätsanbieter. Wenn Sie die E-Mail nicht innerhalb weniger Minuten sehen, überprüfen Sie Ihren Spam-Ordner.
+> **Hinweis:** Der Link zum Zurücksetzen des Passworts kommt von unserem Server. Wenn Sie die E-Mail nicht innerhalb weniger Minuten sehen, überprüfen Sie Ihren Spam-Ordner.
 
 ## So melden Sie sich ab
 
-Klicken Sie auf das Benutzersymbol oben rechts (es zeigt Ihren Anfangsbuchstaben), dann klicken Sie am unteren Ende des Menüs auf **Abmelden**. Sie werden abgemeldet und zur Startseite weitergeleitet.
+Klicken Sie oben rechts auf das Benutzersymbol (es zeigt Ihren Anfangsbuchstaben) und dann am unteren Rand des Menüs auf **Abmelden**. Sie werden abgemeldet und zur Startseite weitergeleitet.
 
-Durch das Abmelden wird Ihre lokale Sitzung gelöscht, aber Ihre gespeicherten Wörter, der Verlauf und die Einstellungen bleiben erhalten – sie werden wiederhergestellt, wenn Sie sich das nächste Mal anmelden.
+Durch das Abmelden wird Ihre lokale Sitzung gelöscht, aber Ihre gespeicherten Wörter, Ihr Verlauf und Ihre Einstellungen bleiben erhalten – sie werden beim nächsten Anmelden wiederhergestellt.
 
 ## Konten wechseln
 
-Um zu einem anderen Konto zu wechseln, melden Sie sich zuerst ab und dann mit der anderen E-Mail-Adresse an. Es gibt keine Kontenumschaltfunktion – jede Browsersitzung verwendet jeweils ein Konto.
+Um zu einem anderen Konto zu wechseln, melden Sie sich zuerst ab und dann mit der anderen E-Mail-Adresse an. Es gibt keinen Kontowechsler – jede Browsersitzung verwendet jeweils ein Konto.
 
 ## Tipps
 
-- Ihre Anmeldesitzung bleibt auch nach einem Browserneustart bestehen – Sie müssen sich nicht jedes Mal anmelden, wenn Sie die Seite besuchen
-- Wenn Sie ein gemeinsames Gerät verwenden, melden Sie sich immer ab, wenn Sie fertig sind
-- Der Vorgang zum Zurücksetzen des Passworts funktioniert auch, wenn Sie sich mit derselben E-Mail registriert haben – es wird unabhängig davon ein Link zum Zurücksetzen gesendet
-- Sie können Ihre Kontodaten über Ihr **[Profil](/docs/account/profile)** verwalten` },
+- Ihre Anmeldesitzung bleibt über Browser-Neustarts hinweg bestehen – Sie müssen sich nicht jedes Mal anmelden, wenn Sie die Seite besuchen
+- Wenn Sie ein gemeinsam genutztes Gerät verwenden, melden Sie sich immer ab, wenn Sie fertig sind
+- Der Ablauf zum Zurücksetzen des Passworts funktioniert auch, wenn Sie sich mit derselben E-Mail registriert haben – es wird in jedem Fall ein Link zum Zurücksetzen gesendet
+- Sie können Ihre Kontodaten in Ihrem **[Profil](/docs/account/profile)** verwalten` },
     { path: 'account/profile', title: 'Profil', category: 'account', content: `# Profil
 
 Ihre Profilseite zeigt Kontoinformationen, Sprachniveau, Abonnementstatus, Wiedergabeverlauf und gespeicherte Wörter – alles an einem Ort.
@@ -7367,50 +7367,50 @@ Schalten Sie **Exakte Übereinstimmung** um, um die Ergebnisse nur auf das Wört
   'el': [
     { path: 'account/login', title: 'Σύνδεση', category: 'account', content: `# Σύνδεση
 
-Συνδεθείτε στον λογαριασμό σας, επαναφέρετε έναν κωδικό πρόσβασης που ξεχάσατε και αποσυνδεθείτε όταν τελειώσετε.
+Συνδεθείτε στον λογαριασμό σας, επαναφέρετε έναν ξεχασμένο κωδικό πρόσβασης και αποσυνδεθείτε όταν τελειώσετε.
 
 ## Πώς να Συνδεθείτε
 
 1. Μεταβείτε στη **[σελίδα σύνδεσης](/login)** κάνοντας κλικ στο εικονίδιο χρήστη στην επάνω δεξιά γωνία και επιλέγοντας **Σύνδεση**
-2. Εισάγετε το **Ηλεκτρονικό ταχυδρομείο** και τον **Κωδικός πρόσβασης**
+2. Εισαγάγετε το **Ηλεκτρονικό ταχυδρομείο** και τον **Κωδικός πρόσβασης**
 3. Κάντε κλικ στο **Σύνδεση**
 
-Εάν τα διαπιστευτήριά σας είναι σωστά, θα ανακατευθυνθείτε στη σελίδα επιλογής γλώσσας (ή πίσω στη σελίδα που βρισκόσασταν πριν συνδεθείτε).
+Εάν τα διαπιστευτήριά σας είναι σωστά, θα μεταφερθείτε στη σελίδα επιλογής γλώσσας (ή πίσω στη σελίδα που βρισκόσασταν πριν συνδεθείτε).
 
-Εάν εισάγετε λάθος email ή κωδικό πρόσβασης, εμφανίζεται ένα μήνυμα σφάλματος — ελέγξτε ξανά και τα δύο πεδία και δοκιμάστε ξανά.
+Εάν εισαγάγετε λάθος email ή κωδικό πρόσβασης, εμφανίζεται ένα μήνυμα σφάλματος — ελέγξτε ξανά και τα δύο πεδία και δοκιμάστε ξανά.
 
 ## Δεν Έχετε Λογαριασμό;
 
-Κάντε κλικ στο **Εγγραφή** κάτω από τη φόρμα σύνδεσης για να δημιουργήσετε έναν νέο λογαριασμό. Δείτε την [Εγγραφή](/docs/account/registration) για τον πλήρη οδηγό δημιουργίας λογαριασμού.
+Κάντε κλικ στο **Εγγραφή** κάτω από τη φόρμα σύνδεσης για να δημιουργήσετε έναν νέο λογαριασμό. Δείτε την [Εγγραφή](/docs/account/registration) για τον πλήρη οδηγό εγγραφής.
 
-## Ξεχάσατε τον Κωδικό Πρόσβασής σας;
+## Ξεχάσατε τον Κωδικό Πρόσβασης;
 
 Εάν δεν θυμάστε τον κωδικό πρόσβασής σας:
 
 1. Στη σελίδα σύνδεσης, κάντε κλικ στο **Ξεχάσατε τον κωδικό;**
-2. Εισάγετε τη διεύθυνση email σας και κάντε κλικ στο **Αποστολή συνδέσμου επαναφοράς**
+2. Εισαγάγετε τη διεύθυνση email σας και κάντε κλικ στο **Αποστολή συνδέσμου επαναφοράς**
 3. Ελέγξτε τα εισερχόμενά σας για ένα email επαναφοράς κωδικού πρόσβασης
 4. Ακολουθήστε τον σύνδεσμο στο email για να ορίσετε έναν νέο κωδικό πρόσβασης
 
-Για λόγους ασφαλείας, η σελίδα εμφανίζει πάντα ένα μήνυμα επιτυχίας μετά την υποβολή — ακόμα κι αν το email δεν είναι καταχωρημένο. Αυτό αποτρέπει οποιονδήποτε από το να ελέγξει εάν ένα συγκεκριμένο email έχει λογαριασμό.
+Για λόγους ασφαλείας, η σελίδα εμφανίζει πάντα ένα μήνυμα επιτυχίας μετά την υποβολή — ακόμα κι αν το email δεν είναι εγγεγραμμένο. Αυτό αποτρέπει τον έλεγχο για το αν ένα συγκεκριμένο email έχει λογαριασμό.
 
-> **Σημείωση:** Ο σύνδεσμος επαναφοράς κωδικού πρόσβασης προέρχεται από το our server, τον πάροχο ταυτότητάς μας. Εάν δεν δείτε το email μέσα σε λίγα λεπτά, ελέγξτε τον φάκελο ανεπιθύμητων.
+> **Σημείωση:** Ο σύνδεσμος επαναφοράς κωδικού πρόσβασης προέρχεται από τον διακομιστή μας. Εάν δεν δείτε το email μέσα σε λίγα λεπτά, ελέγξτε τον φάκελο ανεπιθύμητης αλληλογραφίας σας.
 
 ## Πώς να Αποσυνδεθείτε
 
-Κάντε κλικ στο εικονίδιο χρήστη στην επάνω δεξιά γωνία (εμφανίζει το αρχικό σας γράμμα) και στη συνέχεια κάντε κλικ στο **Αποσύνδεση** στο κάτω μέρος του μενού. Θα αποσυνδεθείτε και θα ανακατευθυνθείτε στην αρχική σελίδα.
+Κάντε κλικ στο εικονίδιο χρήστη στην επάνω δεξιά γωνία (εμφανίζει το αρχικό σας γράμμα) και στη συνέχεια κάντε κλικ στο **Αποσύνδεση** στο κάτω μέρος του μενού. Θα αποσυνδεθείτε και θα μεταφερθείτε στην αρχική σελίδα.
 
-Η αποσύνδεση καθαρίζει την τοπική σας συνεδρία, αλλά οι αποθηκευμένες λέξεις, το ιστορικό παρακολούθησης και οι ρυθμίσεις σας διατηρούνται — θα επαναφερθούν την επόμενη φορά που θα συνδεθείτε.
+Η αποσύνδεση καθαρίζει την τοπική σας συνεδρία, αλλά οι αποθηκευμένες λέξεις σας, το ιστορικό παρακολούθησης και οι ρυθμίσεις σας διατηρούνται — θα αποκατασταθούν την επόμενη φορά που θα συνδεθείτε.
 
 ## Εναλλαγή Λογαριασμών
 
-Για να αλλάξετε σε διαφορετικό λογαριασμό, αποσυνδεθείτε πρώτα και στη συνέχεια συνδεθείτε με την άλλη διεύθυνση email. Δεν υπάρχει εναλλάκτης λογαριασμών — κάθε συνεδρία προγράμματος περιήγησης χρησιμοποιεί έναν λογαριασμό τη φορά.
+Για να αλλάξετε σε διαφορετικό λογαριασμό, αποσυνδεθείτε πρώτα και στη συνέχεια συνδεθείτε με την άλλη διεύθυνση email. Δεν υπάρχει διακόπτης λογαριασμών — κάθε συνεδρία προγράμματος περιήγησης χρησιμοποιεί έναν λογαριασμό κάθε φορά.
 
 ## Συμβουλές
 
-- Η συνεδρία σύνδεσής σας παραμένει ενεργή ακόμα κι αν κάνετε επανεκκίνηση του προγράμματος περιήγησης — δεν θα χρειαστεί να συνδεθείτε κάθε φορά που επισκέπτεστε
+- Η συνεδρία σύνδεσής σας παραμένει ενεργή ακόμα και μετά από επανεκκίνηση του προγράμματος περιήγησης — δεν θα χρειαστεί να συνδεθείτε κάθε φορά που επισκέπτεστε τον ιστότοπο
 - Εάν βρίσκεστε σε κοινόχρηστη συσκευή, αποσυνδεθείτε πάντα όταν τελειώνετε
-- Η διαδικασία επαναφοράς κωδικού πρόσβασης λειτουργεί ακόμα κι αν έχετε εγγραφεί με το ίδιο email — στέλνει έναν σύνδεσμο επαναφοράς ανεξάρτητα
+- Η διαδικασία ξεχασμένου κωδικού πρόσβασης λειτουργεί ακόμα κι αν έχετε εγγραφεί με το ίδιο email — στέλνει έναν σύνδεσμο επαναφοράς ανεξάρτητα
 - Μπορείτε να διαχειριστείτε τα στοιχεία του λογαριασμού σας από το **[Προφίλ](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Προφίλ', category: 'account', content: `# Προφίλ
 
@@ -10432,7 +10432,7 @@ Si ingresas un correo electrónico o contraseña incorrectos, aparecerá un mens
 
 ## ¿No tienes una cuenta?
 
-Haz clic en **Registrarse** debajo del formulario de inicio de sesión para crear una cuenta nueva. Consulta [Registro](/docs/account/registration) para obtener la guía completa de registro.
+Haz clic en **Registrarse** debajo del formulario de inicio de sesión para crear una cuenta nueva. Consulta [Registro](/docs/account/registration) para ver el tutorial completo de registro.
 
 ## ¿Olvidaste tu contraseña?
 
@@ -10443,15 +10443,15 @@ Si no recuerdas tu contraseña:
 3. Revisa tu bandeja de entrada para ver un correo de restablecimiento de contraseña
 4. Sigue el enlace en el correo para establecer una nueva contraseña
 
-Por seguridad, la página siempre muestra un mensaje de éxito después de enviar el formulario, incluso si el correo electrónico no está registrado. Esto evita que alguien pueda verificar si un correo electrónico en particular tiene una cuenta.
+Por seguridad, la página siempre muestra un mensaje de éxito después de enviar el formulario, incluso si el correo no está registrado. Esto evita que alguien pueda verificar si un correo electrónico en particular tiene una cuenta.
 
-> **Nota:** El enlace de restablecimiento de contraseña proviene de our server, nuestro proveedor de identidad. Si no ves el correo en unos minutos, revisa tu carpeta de spam.
+> **Nota:** El enlace de restablecimiento de contraseña proviene de nuestro servidor. Si no ves el correo en unos minutos, revisa tu carpeta de spam.
 
 ## Cómo cerrar sesión
 
-Haz clic en el icono de usuario en la esquina superior derecha (muestra tu inicial) y luego haz clic en **Cerrar sesión** al final del menú. Se cerrará tu sesión y serás redirigido a la página de inicio.
+Haz clic en el icono de usuario en la esquina superior derecha (muestra tu inicial) y luego haz clic en **Cerrar sesión** en la parte inferior del menú. Se cerrará tu sesión y serás redirigido a la página de inicio.
 
-Cerrar sesión borra tu sesión local, pero tus palabras guardadas, historial de visualización y configuraciones se conservan; se restaurarán la próxima vez que inicies sesión.
+Cerrar sesión elimina tu sesión local, pero tus palabras guardadas, historial de visualización y configuraciones se conservan; se restaurarán la próxima vez que inicies sesión.
 
 ## Cambiar de cuenta
 
@@ -10459,8 +10459,8 @@ Para cambiar a una cuenta diferente, primero cierra sesión y luego inicia sesi�
 
 ## Consejos
 
-- Tu sesión de inicio de sesión persiste incluso si reinicias el navegador: no necesitarás iniciar sesión cada vez que visites
-- Si estás en un dispositivo compartido, cierra siempre la sesión cuando termines
+- Tu sesión de inicio de sesión persiste al reiniciar el navegador; no necesitarás iniciar sesión cada vez que visites
+- Si estás en un dispositivo compartido, siempre cierra sesión cuando termines
 - El proceso de contraseña olvidada funciona incluso si te registraste con el mismo correo electrónico: envía un enlace de restablecimiento sin importar qué
 - Puedes gestionar los detalles de tu cuenta desde tu **[Perfil](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Perfil', category: 'account', content: `# Perfil
@@ -11884,51 +11884,51 @@ Activa **Coincidencia exacta** para restringir los resultados solo a la entrada 
   'fi': [
     { path: 'account/login', title: 'Kirjautuminen sisään', category: 'account', content: `# Kirjautuminen
 
-Kirjaudu tilillesi, palauta unohtunut salasana ja kirjaudu ulos, kun olet valmis.
+Kirjaudu tilillesi, nollaa unohtunut salasana ja kirjaudu ulos, kun olet valmis.
 
 ## Kuinka kirjautua sisään
 
-1. Siirry **[kirjautumissivulle](/login)** napsauttamalla käyttäjäkuvaketta oikeassa yläkulmassa ja valitsemalla **Kirjaudu sisään**
+1. Mene **[kirjautumissivulle](/login)** klikkaamalla käyttäjäkuvaketta oikeassa yläkulmassa ja valitsemalla **Kirjaudu sisään**
 2. Syötä **Sähköposti** ja **Salasana**
-3. Napsauta **Kirjaudu sisään**
+3. Klikkaa **Kirjaudu sisään**
 
-Jos tunnistetietosi ovat oikein, sinut ohjataan kielenvalintasivulle (tai takaisin sivulle, jolla olit ennen kirjautumista).
+Jos tunnuksesi ovat oikein, sinut ohjataan kielivalintasivulle (tai takaisin sivulle, jolla olit ennen kirjautumista).
 
-Jos syötät väärän sähköpostiosoitteen tai salasanan, näkyviin tulee virheilmoitus — tarkista molemmat kentät ja yritä uudelleen.
+Jos syötät väärän sähköpostiosoitteen tai salasanan, ilmestyy virheilmoitus — tarkista molemmat kentät ja yritä uudelleen.
 
 ## Eikö sinulla ole tiliä?
 
-Napsauta **Rekisteröidy** kirjautumislomakkeen alla luodaksesi uuden tilin. Katso [Rekisteröinti](/docs/account/registration) -sivulta koko rekisteröitymisohje.
+Klikkaa **Rekisteröidy** kirjautumislomakkeen alla luodaksesi uuden tilin. Katso [Rekisteröinti](/docs/account/registration) -sivulta koko rekisteröitymisohje.
 
 ## Unohditko salasanasi?
 
 Jos et muista salasanaasi:
 
-1. Napsauta kirjautumissivulla **Unohditko salasanan?**
-2. Syötä sähköpostiosoitteesi ja napsauta **Lähetä palautuslinkki**
+1. Klikkaa kirjautumissivulla **Unohditko salasanan?**
+2. Syötä sähköpostiosoitteesi ja klikkaa **Lähetä palautuslinkki**
 3. Tarkista sähköpostisi salasanan palautusviestin varalta
 4. Seuraa sähköpostissa olevaa linkkiä asettaaksesi uuden salasanan
 
-Turvallisuussyistä sivu näyttää aina onnistumisviestin lähetyksen jälkeen — vaikka sähköposti ei olisi rekisteröity. Tämä estää ketään tarkistamasta, onko tietyllä sähköpostiosoitteella tiliä.
+Turvallisuussyistä sivu näyttää aina onnistumisviestin lähetyksen jälkeen — vaikka sähköpostiosoite ei olisi rekisteröity. Tämä estää muita tarkistamasta, onko tietyllä sähköpostiosoitteella tiliä.
 
-> **Huomautus:** Salasanan palautuslinkki tulee Directukselta, identiteetintarjoajaltamme. Jos et näe sähköpostia muutaman minuutin kuluessa, tarkista roskapostikansio.
+> **Huomautus:** Salasanan palautuslinkki tulee palvelimeltamme. Jos et näe sähköpostia muutaman minuutin kuluessa, tarkista roskapostikansiosi.
 
 ## Kuinka kirjautua ulos
 
-Napsauta käyttäjäkuvaketta oikeassa yläkulmassa (siinä näkyy nimikirjaimesi) ja napsauta sitten **Kirjaudu ulos** valikon alareunassa. Sinut kirjataan ulos ja ohjataan etusivulle.
+Klikkaa käyttäjäkuvaketta oikeassa yläkulmassa (se näyttää nimikirjaimesi), klikkaa sitten **Kirjaudu ulos** valikon alaosassa. Sinut kirjataan ulos ja ohjataan etusivulle.
 
-Uloskirjautuminen tyhjentää paikallisen istuntosi, mutta tallennetut sanasi, katseluhistoriasi ja asetuksesi säilyvät — ne palautetaan, kun kirjaudut seuraavan kerran sisään.
+Kirjautuminen ulos tyhjentää paikallisen istuntosi, mutta tallennetut sanasi, katseluhistoriasi ja asetuksesi säilyvät — ne palautetaan seuraavan kirjautumisen yhteydessä.
 
 ## Tilien vaihtaminen
 
-Vaihtaaksesi toiseen tiliin, kirjaudu ensin ulos ja kirjaudu sitten sisään toisella sähköpostiosoitteella. Tilinvaihtotoimintoa ei ole — jokainen selainistunto käyttää yhtä tiliä kerrallaan.
+Vaihtaaksesi toiseen tiliin, kirjaudu ensin ulos, kirjaudu sitten sisään toisella sähköpostiosoitteella. Tilinvaihtotoimintoa ei ole — jokainen selainistunto käyttää yhtä tiliä kerrallaan.
 
 ## Vinkkejä
 
-- Kirjautumisistuntosi säilyy selaimen uudelleenkäynnistyksistä huolimatta — sinun ei tarvitse kirjautua joka kerta vieraillessasi
+- Kirjautumisistuntosi säilyy selaimen uudelleenkäynnistysten yli — sinun ei tarvitse kirjautua joka kerta vieraillessasi
 - Jos käytät jaettua laitetta, kirjaudu aina ulos, kun olet valmis
-- Salasanan palautus toimii, vaikka olisit rekisteröitynyt samalla sähköpostiosoitteella — se lähettää palautuslinkin joka tapauksessa
-- Voit hallinnoida tilitietojasi **[Profiili](/docs/account/profile)** -sivulta` },
+- Salasanan palautus toimii, vaikka olisit rekisteröitynyt samalla sähköpostiosoitteella — se lähettää palautuslinkin riippumatta
+- Voit hallinnoida tilisi tietoja **[Profiili](/docs/account/profile)** -sivultasi` },
     { path: 'account/profile', title: 'Profiili', category: 'account', content: `# Profiili
 
 Profiilisivullasi näkyvät tilin tiedot, kielitaso, tilauksen tila, katseluhistoria ja tallennetut sanat – kaikki yhdessä paikassa.
@@ -13355,16 +13355,16 @@ Connectez-vous à votre compte, réinitialisez un mot de passe oublié et décon
 ## Comment se connecter
 
 1. Accédez à la **[page de connexion](/login)** en cliquant sur l'icône utilisateur dans le coin supérieur droit et en sélectionnant **Se connecter**
-2. Saisissez votre **Email** et **Mot de passe**
+2. Saisissez votre **Email** et votre **Mot de passe**
 3. Cliquez sur **Se connecter**
 
-Si vos identifiants sont corrects, vous serez redirigé vers la page de sélection de la langue (ou vers la page sur laquelle vous étiez avant de vous connecter).
+Si vos identifiants sont corrects, vous serez redirigé vers la page de sélection de la langue (ou vers la page où vous étiez avant de vous connecter).
 
 Si vous saisissez une adresse e-mail ou un mot de passe incorrect, un message d'erreur apparaît — vérifiez les deux champs et réessayez.
 
 ## Vous n'avez pas de compte ?
 
-Cliquez sur **S'inscrire** sous le formulaire de connexion pour créer un nouveau compte. Consultez la section [Inscription](/docs/account/registration) pour obtenir le guide complet d'inscription.
+Cliquez sur **S'inscrire** en dessous du formulaire de connexion pour créer un nouveau compte. Consultez la [page d'inscription](/docs/account/registration) pour le tutoriel complet.
 
 ## Mot de passe oublié ?
 
@@ -13372,28 +13372,28 @@ Si vous ne vous souvenez pas de votre mot de passe :
 
 1. Sur la page de connexion, cliquez sur **Mot de passe oublié ?**
 2. Saisissez votre adresse e-mail et cliquez sur **Envoyer le lien de réinitialisation**
-3. Vérifiez votre boîte de réception pour un e-mail de réinitialisation de mot de passe
+3. Vérifiez votre boîte de réception pour un e-mail de réinitialisation du mot de passe
 4. Suivez le lien dans l'e-mail pour définir un nouveau mot de passe
 
-Pour des raisons de sécurité, la page affiche toujours un message de succès après votre envoi — même si l'adresse e-mail n'est pas enregistrée. Cela empêche quiconque de vérifier si une adresse e-mail particulière possède un compte.
+Pour des raisons de sécurité, la page affiche toujours un message de réussite après soumission — même si l'adresse e-mail n'est pas enregistrée. Cela empêche quiconque de vérifier si une adresse e-mail particulière est associée à un compte.
 
-> **Remarque :** Le lien de réinitialisation du mot de passe provient de our server, notre fournisseur d'identité. Si vous ne voyez pas l'e-mail en quelques minutes, vérifiez votre dossier de spam.
+> **Remarque :** Le lien de réinitialisation du mot de passe provient de notre serveur. Si vous ne voyez pas l'e-mail dans les minutes qui suivent, vérifiez votre dossier de courrier indésirable.
 
 ## Comment se déconnecter
 
 Cliquez sur l'icône utilisateur dans le coin supérieur droit (elle affiche votre initiale), puis cliquez sur **Se déconnecter** en bas du menu. Vous serez déconnecté et redirigé vers la page d'accueil.
 
-La déconnexion efface votre session locale, mais vos mots enregistrés, votre historique de visionnage et vos paramètres sont conservés — ils seront restaurés lors de votre prochaine connexion.
+La déconnexion efface votre session locale, mais vos mots sauvegardés, votre historique de visionnage et vos paramètres sont conservés — ils seront restaurés lors de votre prochaine connexion.
 
 ## Changer de compte
 
-Pour passer à un compte différent, déconnectez-vous d'abord, puis connectez-vous avec l'autre adresse e-mail. Il n'y a pas de commutateur de compte — chaque session de navigateur utilise un compte à la fois.
+Pour passer à un autre compte, déconnectez-vous d'abord, puis connectez-vous avec l'autre adresse e-mail. Il n'existe pas de commutateur de compte — chaque session de navigateur utilise un compte à la fois.
 
 ## Conseils
 
-- Votre session de connexion persiste après un redémarrage du navigateur — vous n'aurez pas besoin de vous connecter à chaque visite
+- Votre session de connexion persiste même après le redémarrage du navigateur — vous n'aurez pas besoin de vous connecter à chaque visite
 - Si vous êtes sur un appareil partagé, déconnectez-vous toujours lorsque vous avez terminé
-- La procédure de mot de passe oublié fonctionne même si vous vous êtes inscrit avec la même adresse e-mail — elle envoie un lien de réinitialisation quel que soit le cas
+- Le processus de mot de passe oublié fonctionne même si vous vous êtes inscrit avec la même adresse e-mail — il envoie un lien de réinitialisation dans tous les cas
 - Vous pouvez gérer les détails de votre compte depuis votre **[Profil](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Profil', category: 'account', content: `# Profil
 
@@ -14816,7 +14816,7 @@ Activez **Correspondance Exacte** pour restreindre les résultats au seul mot ve
   'ga': [
     { path: 'account/login', title: 'Logáil Isteach', category: 'account', content: `# Logáil Isteach
 
-Sínigh isteach i do chuntas, athshocraigh pasfhocal dearmadta, agus sínigh amach nuair atá tú réidh.
+Sínigh isteach i do chuntas, athshocraigh pasfhocal dearmadta, agus sínigh amach nuair a bheidh tú críochnaithe.
 
 ## Conas Logáil Isteach
 
@@ -14824,13 +14824,13 @@ Sínigh isteach i do chuntas, athshocraigh pasfhocal dearmadta, agus sínigh ama
 2. Iontráil do **Ríomhphost** agus **Pasfhocal**
 3. Cliceáil **Logáil isteach**
 
-Má tá do chuid dintiúr ceart, atreorófar tú go dtí an leathanach roghnaithe teanga (nó ar ais go dtí an leathanach a raibh tú air sular logáil tú isteach).
+Má tá do dhintiúir ceart, atreorófar tú go dtí an leathanach roghnaithe teanga (nó ar ais go dtí an leathanach a bhí tú air sular logáil tú isteach).
 
-Má iontrálann tú an ríomhphost nó an pasfhocal mícheart, beidh teachtaireacht earráide le feiceáil — seiceáil an dá réimse arís agus déan iarracht eile.
+Má iontrálann tú an seoladh ríomhphoist nó an pasfhocal mícheart, feicfear teachtaireacht earráide — seiceáil an dá réimse agus bain triail eile as.
 
-## Nach Bhfuil Cuntas Agat?
+## Gan Cuntas Agat?
 
-Cliceáil **Cláraigh** faoi bhun an fhoirm logála isteach chun cuntas nua a chruthú. Féach ar [Clárú](/docs/account/registration) le haghaidh an tsiúil iomláin clárúcháin.
+Cliceáil **Cláraigh** faoi bhun an fhoirm logála isteach chun cuntas nua a chruthú. Féach ar [Clárúchán](/docs/account/registration) le haghaidh an treoir iomlán um chlárú.
 
 ## Dearmad Déanta ar Do Phasfhocal?
 
@@ -14841,26 +14841,26 @@ Mura cuimhin leat do phasfhocal:
 3. Seiceáil do bhosca isteach le haghaidh ríomhphost athshocraithe pasfhocail
 4. Lean an nasc sa ríomhphost chun pasfhocal nua a shocrú
 
-Ar mhaithe le slándáil, taispeánann an leathanach teachtaireacht rathúil i gcónaí tar éis duit é a sheoladh — fiú mura bhfuil an ríomhphost cláraithe. Coscann sé seo ar dhuine ar bith a sheiceáil an bhfuil cuntas ag ríomhphost ar leith.
+Ar chúiseanna slándála, taispeánann an leathanach teachtaireacht ratha i gcónaí tar éis duit é a chur isteach — fiú mura bhfuil an seoladh ríomhphoist cláraithe. Cuireann sé seo cosc ar dhuine ar bith seiceáil an bhfuil cuntas ag seoladh ríomhphoist ar leith.
 
-> **Nóta:** Tagann an nasc athshocraithe pasfhocail ó our server, ár soláthraí céannachta. Mura bhfeiceann tú an ríomhphost laistigh de chúpla nóiméad, seiceáil d'fhillteán turscair.
+> **Nóta:** Tagann an nasc athshocraithe pasfhocail ónár bhfreastalaí. Mura bhfeiceann tú an ríomhphost laistigh de chúpla nóiméad, seiceáil d'fhillteán truflais.
 
 ## Conas Logáil Amach
 
-Cliceáil ar dheilbhín an úsáideora sa chúinne uachtarach ar dheis (taispeánann sé do chéad litir), ansin cliceáil **Logáil amach** ag bun an roghchláir. Sínfear amach thú agus atreorófar go dtí an leathanach baile thú.
+Cliceáil ar dheilbhín an úsáideora sa chúinne uachtarach ar dheis (taispeánann sé do cheannlitir), ansin cliceáil **Logáil amach** ag bun an roghchláir. Síneoidh tú amach agus atreorófar tú go dtí an leathanach baile.
 
-Glanann logáil amach do sheisiún áitiúil, ach coimeádtar do chuid focal sábháilte, stair faire, agus socruithe — cuirfear ar ais iad an chéad uair eile a shínfidh tú isteach.
+Nuair a logálann tú amach, glantar do sheisiún áitiúil, ach coimeádtar do chuid focal sábháilte, stair féachana, agus socruithe — cuirfear ar ais iad an chéad uair eile a shíníonn tú isteach.
 
 ## Cuntais a Athrú
 
-Chun athrú go cuntas eile, logáil amach ar dtús, ansin logáil isteach leis an seoladh ríomhphoist eile. Níl aon athróir cuntas ann — úsáideann gach seisiún brabhsálaí cuntas amháin ag an am.
+Chun aistriú go cuntas eile, logáil amach ar dtús, ansin logáil isteach leis an seoladh ríomhphoist eile. Níl aon athróir cuntais ann — úsáideann gach seisiún brabhsálaí cuntas amháin ag an am.
 
 ## Leideanna
 
 - Maireann do sheisiún logála isteach tar éis atosú brabhsálaí — ní bheidh ort logáil isteach gach uair a thugann tú cuairt
-- Má tá tú ar ghléas comhroinnte, logáil amach i gcónaí nuair atá tú réidh
-- Oibríonn sreabhadh an phasfhocail dhearmadta fiú má chláraigh tú leis an ríomhphost céanna — seolann sé nasc athshocraithe pé scéal é
-- Is féidir leat do shonraí cuntais a bhainistiú ó do **[Próifíl](/docs/account/profile)**` },
+- Má tá tú ar ghléas comhroinnte, logáil amach i gcónaí nuair a bheidh tú críochnaithe
+- Oibríonn an próiseas pasfhocail dearmadta fiú má chláraigh tú leis an ríomhphost céanna — seolann sé nasc athshocraithe beag beann ar
+- Is féidir leat do chuid sonraí cuntais a bhainistiú ó do **[Próifíl](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Próifíl', category: 'account', content: `# Próifíl
 
 Taispeánann do leathanach próifíle eolas cuntais, leibhéal teanga, stádas síntiúis, stair féachana, agus focail shábháilte — ar fad in áit amháin.
@@ -16286,36 +16286,36 @@ Cuir **Meaitseáil Chruinn** air chun torthaí a theorannú d'fhocal ceann an fh
 
 ## लॉग इन कैसे करें
 
-1. ऊपरी-दाएँ कोने में उपयोगकर्ता आइकन पर क्लिक करके और **लॉग इन करें** चुनकर **[लॉगिन पेज](/login)** पर जाएँ
+1. ऊपरी-दाएं कोने में उपयोगकर्ता आइकन पर क्लिक करके और **लॉग इन करें** चुनकर **[लॉगिन पेज](/login)** पर जाएं
 2. अपना **ईमेल** और **पासवर्ड** दर्ज करें
 3. **लॉग इन करें** पर क्लिक करें
 
-यदि आपकी साख सही है, तो आपको भाषा चयन पृष्ठ पर (या लॉग इन करने से पहले आप जिस पृष्ठ पर थे, उस पर) पुनर्निर्देशित किया जाएगा।
+यदि आपकी साख सही हैं, तो आपको भाषा चयन पृष्ठ पर (या लॉग इन करने से पहले आप जिस पृष्ठ पर थे, उस पर) पुनर्निर्देशित कर दिया जाएगा।
 
-यदि आप गलत ईमेल या पासवर्ड दर्ज करते हैं, तो एक त्रुटि संदेश दिखाई देता है — दोनों फ़ील्ड दोबारा जाँचें और पुनः प्रयास करें।
+यदि आप गलत ईमेल या पासवर्ड दर्ज करते हैं, तो एक त्रुटि संदेश दिखाई देता है — दोनों फ़ील्ड को दोबारा जांचें और पुनः प्रयास करें।
 
 ## क्या आपके पास खाता नहीं है?
 
-नया खाता बनाने के लिए लॉगिन फ़ॉर्म के नीचे **साइन अप करें** पर क्लिक करें। पूर्ण साइन-अप प्रक्रिया के लिए [पंजीकरण](/docs/account/registration) देखें।
+नया खाता बनाने के लिए लॉगिन फॉर्म के नीचे **साइन अप करें** पर क्लिक करें। पूर्ण साइन-अप प्रक्रिया के लिए [पंजीकरण](/docs/account/registration) देखें।
 
 ## क्या आप अपना पासवर्ड भूल गए हैं?
 
-यदि आप अपना पासवर्ड याद नहीं रख सकते:
+यदि आपको अपना पासवर्ड याद नहीं है:
 
 1. लॉगिन पृष्ठ पर, **पासवर्ड भूल गए?** पर क्लिक करें
 2. अपना ईमेल पता दर्ज करें और **रीसेट लिंक भेजें** पर क्लिक करें
-3. पासवर्ड रीसेट ईमेल के लिए अपना इनबॉक्स जाँचें
+3. पासवर्ड रीसेट ईमेल के लिए अपना इनबॉक्स जांचें
 4. नया पासवर्ड सेट करने के लिए ईमेल में दिए गए लिंक का अनुसरण करें
 
-सुरक्षा के लिए, सबमिट करने के बाद पृष्ठ हमेशा एक सफलता संदेश दिखाता है — भले ही ईमेल पंजीकृत न हो। यह किसी को यह जाँचने से रोकता है कि किसी विशेष ईमेल का खाता है या नहीं।
+सुरक्षा के लिए, पेज हमेशा सबमिट करने के बाद एक सफलता संदेश दिखाता है — भले ही ईमेल पंजीकृत न हो। यह किसी को यह जांचने से रोकता है कि किसी विशेष ईमेल से कोई खाता जुड़ा है या नहीं।
 
-> **नोट:** पासवर्ड रीसेट लिंक हमारी पहचान प्रदाता our server से आता है। यदि आपको कुछ मिनटों में ईमेल नहीं दिखता है, तो अपना स्पैम फ़ोल्डर जाँचें।
+> **नोट:** पासवर्ड रीसेट लिंक हमारे सर्वर से आता है। यदि आपको कुछ मिनटों के भीतर ईमेल दिखाई नहीं देता है, तो अपना स्पैम फ़ोल्डर जांचें।
 
 ## लॉग आउट कैसे करें
 
-ऊपरी-दाएँ कोने में उपयोगकर्ता आइकन (यह आपका प्रारंभिक अक्षर दिखाता है) पर क्लिक करें, फिर मेनू के नीचे **लॉग आउट करें** पर क्लिक करें। आप साइन आउट हो जाएँगे और होम पेज पर पुनर्निर्देशित हो जाएँगे।
+ऊपरी-दाएं कोने में उपयोगकर्ता आइकन (आपका प्रारंभिक अक्षर दिखाता है) पर क्लिक करें, फिर मेनू के नीचे **लॉग आउट करें** पर क्लिक करें। आप साइन आउट हो जाएंगे और होम पेज पर पुनर्निर्देशित हो जाएंगे।
 
-लॉग आउट करने से आपका स्थानीय सत्र साफ़ हो जाता है, लेकिन आपके सहेजे गए शब्द, देखने का इतिहास और सेटिंग्स संरक्षित रहती हैं — अगली बार साइन इन करने पर वे बहाल हो जाएँगी।
+लॉग आउट करने से आपका स्थानीय सत्र साफ हो जाता है, लेकिन आपके सहेजे गए शब्द, देखने का इतिहास और सेटिंग्स संरक्षित रहती हैं — वे अगली बार साइन इन करने पर पुनर्स्थापित हो जाएंगी।
 
 ## खाते बदलना
 
@@ -16323,10 +16323,10 @@ Cuir **Meaitseáil Chruinn** air chun torthaí a theorannú d'fhocal ceann an fh
 
 ## सुझाव
 
-- आपका लॉगिन सत्र ब्राउज़र रीस्टार्ट करने पर भी बना रहता है — हर बार विज़िट करने पर आपको लॉग इन करने की आवश्यकता नहीं होगी
+- आपका लॉगिन सत्र ब्राउज़र पुनरारंभ होने पर भी बना रहता है — हर बार विज़िट करने पर आपको लॉग इन करने की आवश्यकता नहीं होगी
 - यदि आप साझा डिवाइस पर हैं, तो काम पूरा होने पर हमेशा लॉग आउट करें
-- भूला हुआ पासवर्ड प्रक्रिया तब भी काम करती है जब आपने उसी ईमेल से पंजीकरण किया हो — यह बिना शर्त रीसेट लिंक भेजता है
-- आप अपने **[प्रोफ़ाइल](/docs/account/profile)** से अपने खाते का विवरण प्रबंधित कर सकते हैं` },
+- पासवर्ड भूलने की प्रक्रिया तब भी काम करती है जब आपने उसी ईमेल से पंजीकरण किया हो — यह बिना किसी शर्त के रीसेट लिंक भेजता है
+- आप अपने **[प्रोफ़ाइल](/docs/account/profile)** से अपने खाता विवरण प्रबंधित कर सकते हैं` },
     { path: 'account/profile', title: 'प्रोफ़ाइल', category: 'account', content: `# प्रोफ़ाइल
 
 आपका प्रोफ़ाइल पेज खाता जानकारी, भाषा स्तर, सदस्यता स्थिति, देखने का इतिहास और सहेजे गए शब्द — सब कुछ एक ही जगह दिखाता है।
@@ -17746,53 +17746,53 @@ _मैं अपनी सहमति कैसे वापस ले सक�
 - एक नज़र में दर्जनों वीडियो में एक शब्द का उपयोग कैसे किया जाता है, इसकी तुलना करने के लिए सभी सूचीबद्ध करें दृश्य का उपयोग करें` }
   ],
   'hr': [
-    { path: 'account/login', title: 'Prijava', category: 'account', content: `# Prijava
+    { path: 'account/login', title: 'Prijava', category: 'account', content: `# Prijavljivanje
 
 Prijavite se na svoj račun, resetirajte zaboravljenu lozinku i odjavite se kada završite.
 
 ## Kako se prijaviti
 
-1. Idite na **[stranicu za prijavu](/login)** klikom na ikonu korisnika u gornjem desnom kutu i odabirom **Prijavi se**
+1. Idite na **[stranicu za prijavu](/login)** klikom na korisničku ikonu u gornjem desnom kutu i odabirom **Prijavi se**
 2. Unesite svoj **E-mail** i **Lozinka**
 3. Kliknite **Prijavi se**
 
-Ako su vaše vjerodajnice točne, bit ćete preusmjereni na stranicu za odabir jezika (ili natrag na stranicu na kojoj ste bili prije prijave).
+Ako su vaše vjerodajnice ispravne, bit ćete preusmjereni na stranicu za odabir jezika (ili natrag na stranicu na kojoj ste bili prije prijave).
 
-Ako unesete pogrešnu e-mail adresu ili lozinku, pojavit će se poruka o pogrešci — provjerite oba polja i pokušajte ponovno.
+Ako unesete pogrešnu e-adresu ili lozinku, pojavit će se poruka o pogrešci — provjerite oba polja i pokušajte ponovno.
 
 ## Nemate račun?
 
-Kliknite **Registriraj se** ispod obrasca za prijavu kako biste stvorili novi račun. Pogledajte [Registracija](/docs/account/registration) za cjeloviti vodič kroz registraciju.
+Kliknite **Registriraj se** ispod obrasca za prijavu kako biste stvorili novi račun. Pogledajte [Registracija](/docs/account/registration) za cjelovit vodič kroz registraciju.
 
 ## Zaboravili ste lozinku?
 
 Ako se ne možete sjetiti svoje lozinke:
 
 1. Na stranici za prijavu kliknite **Zaboravili ste lozinku?**
-2. Unesite svoju e-mail adresu i kliknite **Pošalji poveznicu za resetiranje**
-3. Provjerite svoju pristiglu poštu za e-mail za resetiranje lozinke
-4. Slijedite poveznicu u e-mailu kako biste postavili novu lozinku
+2. Unesite svoju e-adresu i kliknite **Pošalji poveznicu za resetiranje**
+3. Provjerite svoju pristiglu poštu radi e-pošte za resetiranje lozinke
+4. Slijedite poveznicu u e-poruci kako biste postavili novu lozinku
 
-Iz sigurnosnih razloga, stranica uvijek prikazuje poruku o uspjehu nakon što pošaljete — čak i ako e-mail nije registriran. Ovo sprječava bilo koga da provjeri ima li određena e-mail adresa račun.
+Iz sigurnosnih razloga, stranica uvijek prikazuje poruku o uspjehu nakon što pošaljete obrazac — čak i ako e-adresa nije registrirana. Time se sprječava provjera ima li određena e-adresa račun.
 
-> **Napomena:** Poveznica za resetiranje lozinke dolazi od our servera, našeg davatelja identiteta. Ako ne vidite e-mail u roku od nekoliko minuta, provjerite mapu neželjene pošte.
+> **Napomena:** Poveznica za resetiranje lozinke stiže s našeg poslužitelja. Ako ne vidite e-poruku unutar nekoliko minuta, provjerite mapu neželjene pošte.
 
 ## Kako se odjaviti
 
-Kliknite ikonu korisnika u gornjem desnom kutu (prikazuje vaš inicijal), zatim kliknite **Odjavi se** na dnu izbornika. Bit ćete odjavljeni i preusmjereni na početnu stranicu.
+Kliknite korisničku ikonu u gornjem desnom kutu (prikazuje vaš inicijal), zatim kliknite **Odjavi se** na dnu izbornika. Bit ćete odjavljeni i preusmjereni na početnu stranicu.
 
-Odjavom se briše vaša lokalna sesija, ali vaše spremljene riječi, povijest gledanja i postavke ostaju sačuvani — bit će vraćeni sljedeći put kada se prijavite.
+Odjava briše vašu lokalnu sesiju, ali vaše spremljene riječi, povijest gledanja i postavke ostaju sačuvani — bit će vraćeni sljedeći put kada se prijavite.
 
 ## Promjena računa
 
-Za prebacivanje na drugi račun, prvo se odjavite, a zatim se prijavite s drugom e-mail adresom. Ne postoji prebacivač računa — svaka sesija preglednika koristi jedan račun istovremeno.
+Da biste se prebacili na drugi račun, prvo se odjavite, a zatim se prijavite s drugom e-adresom. Ne postoji preklopnik računa — svaka sesija preglednika koristi jedan račun odjednom.
 
 ## Savjeti
 
 - Vaša sesija prijave traje i nakon ponovnog pokretanja preglednika — nećete se morati prijavljivati svaki put kada posjetite
-- Ako ste na zajedničkom uređaju, uvijek se odjavite kada završite
-- Postupak zaboravljene lozinke funkcionira čak i ako ste se registrirali s istom e-mail adresom — šalje poveznicu za resetiranje bez obzira na to
-- Svoje podatke o računu možete upravljati sa **[Profil](/docs/account/profile)**` },
+- Ako koristite zajednički uređaj, uvijek se odjavite kada završite
+- Postupak zaboravljene lozinke funkcionira čak i ako ste se registrirali s istom e-adresom — šalje poveznicu za resetiranje bez obzira na to
+- Svoje podatke o računu možete upravljati sa stranice **[Profil](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Profil', category: 'account', content: `# Profil
 
 Vaša stranica profila prikazuje podatke o računu, razinu jezika, status pretplate, povijest gledanja i spremljene riječi — sve na jednom mjestu.
@@ -19214,51 +19214,51 @@ Uključite **Točno podudaranje** kako biste rezultate ograničili samo na glavn
   'hu': [
     { path: 'account/login', title: 'Bejelentkezés', category: 'account', content: `# Bejelentkezés
 
-Jelentkezz be a fiókodba, állítsd vissza az elfelejtett jelszavadat, és jelentkezz ki, ha végeztél.
+Jelentkezz be a fiókodba, állítsd vissza az elfelejtett jelszót, és jelentkezz ki, ha végeztél.
 
-## Hogyan Jelentkezz Be
+## Hogyan jelentkezz be
 
-1. Menj a **[bejelentkezési oldalra](/login)** a jobb felső sarokban található felhasználói ikonra kattintva, majd válaszd a **Bejelentkezés** lehetőséget
-2. Add meg a **E-mail** és **Jelszó** adataidat
+1. Menj a **[bejelentkezési oldalra](/login)** a jobb felső sarokban lévő felhasználói ikonra kattintva, majd válaszd a **Bejelentkezés** lehetőséget
+2. Add meg a **E-mail** és a **Jelszó** adatokat
 3. Kattints a **Bejelentkezés** gombra
 
-Ha a megadott adatok helyesek, a rendszer átirányít a nyelvválasztó oldalra (vagy vissza arra az oldalra, ahol a bejelentkezés előtt jártál).
+Ha a megadott adatok helyesek, átirányításra kerülsz a nyelvválasztó oldalra (vagy vissza arra az oldalra, ahol a bejelentkezés előtt voltál).
 
-Ha hibás e-mail címet vagy jelszót adsz meg, egy hibaüzenet jelenik meg – ellenőrizd mindkét mezőt, és próbáld újra.
+Ha rossz e-mail címet vagy jelszót adsz meg, hibaüzenet jelenik meg – ellenőrizd mindkét mezőt, és próbáld újra.
 
-## Nincs még Fiókod?
+## Nincs még fiókod?
 
-Kattints a **Regisztráció** gombra a bejelentkezési űrlap alatt egy új fiók létrehozásához. A teljes regisztrációs útmutatót lásd a [Regisztráció](/docs/account/registration) oldalon.
+Kattints a **Regisztráció** gombra a bejelentkezési űrlap alatt egy új fiók létrehozásához. Lásd a [Regisztráció](/docs/account/registration) oldalt a teljes regisztrációs útmutatóért.
 
-## Elfelejtetted a Jelszavad?
+## Elfelejtetted a jelszavad?
 
 Ha nem emlékszel a jelszavadra:
 
 1. A bejelentkezési oldalon kattints a **Elfelejtette jelszavát?** gombra
-2. Add meg az e-mail címedet, és kattints a **Visszaállítási link küldése** gombra
-3. Ellenőrizd a postaládádat a jelszó-visszaállítási e-mailért
-4. Kövesd az e-mailben található linket az új jelszó beállításához
+2. Add meg az e-mail címedet, majd kattints a **Visszaállítási link küldése** gombra
+3. Ellenőrizd a bejövő leveleidet a jelszó-visszaállító e-mailért
+4. Kövesd az e-mailben lévő linket az új jelszó beállításához
 
 Biztonsági okokból az oldal mindig sikeres üzenetet jelenít meg a beküldés után – még akkor is, ha az e-mail nincs regisztrálva. Ez megakadályozza, hogy bárki ellenőrizhesse, hogy egy adott e-mail címhez tartozik-e fiók.
 
-> **Megjegyzés:** A jelszó-visszaállítási link a our servertól, az azonosítási szolgáltatónktól érkezik. Ha néhány percen belül nem látod az e-mailt, ellenőrizd a spam mappát.
+> **Megjegyzés:** A jelszó-visszaállító link a szerverünkről érkezik. Ha néhány percen belül nem látod az e-mailt, ellenőrizd a spam mappát.
 
-## Hogyan Jelentkezz Ki
+## Hogyan jelentkezz ki
 
-Kattints a jobb felső sarokban található felhasználói ikonra (amely a kezdőbetűdet mutatja), majd kattints a **Kijelentkezés** gombra a menü alján. Ekkor kijelentkezel, és átirányítunk a kezdőlapra.
+Kattints a jobb felső sarokban lévő felhasználói ikonra (amely a kezdőbetűdet mutatja), majd kattints a **Kijelentkezés** gombra a menü alján. Kijelentkeztetésre kerülsz, és átirányítunk a kezdőlapra.
 
 A kijelentkezés törli a helyi munkamenetedet, de a mentett szavaid, nézési előzményeid és beállításaid megmaradnak – ezek visszaállnak, amikor legközelebb bejelentkezel.
 
-## Fiókok Váltása
+## Fiókok váltása
 
-Egy másik fiókra váltáshoz először jelentkezz ki, majd jelentkezz be a másik e-mail címmel. Nincs fiókváltó funkció – minden böngésző-munkamenet egyszerre csak egy fiókot használ.
+Másik fiókra való váltáshoz először jelentkezz ki, majd jelentkezz be a másik e-mail címmel. Nincs fiókváltó funkció – minden böngésző-munkamenet egyszerre egy fiókot használ.
 
 ## Tippek
 
-- A bejelentkezési munkameneted a böngésző újraindításai között is megmarad – nem kell minden látogatáskor bejelentkezned
+- A bejelentkezési munkamenet a böngésző újraindításán is átível – nem kell minden alkalommal bejelentkezned, amikor ellátogatsz
 - Ha megosztott eszközt használsz, mindig jelentkezz ki, ha végeztél
-- Az elfelejtett jelszó funkció akkor is működik, ha ugyanazzal az e-mail címmel regisztráltál – minden esetben küld egy visszaállítási linket
-- Fiókadataidat a **[Profil](/docs/account/profile)** oldalon kezelheted` },
+- Az elfelejtett jelszó funkció akkor is működik, ha ugyanazzal az e-mail címmel regisztráltál – minden esetben küld egy visszaállító linket
+- A fiók adataidat a **[Profil](/docs/account/profile)** oldalon kezelheted` },
     { path: 'account/profile', title: 'Profil', category: 'account', content: `# Profil
 
 A profiloldalon egy helyen láthatók a fiókadatok, a nyelvi szint, az előfizetés állapota, a nézési előzmények és a mentett szavak.
@@ -20678,53 +20678,53 @@ Kapcsold be a **Pontos egyezés** funkciót, hogy az eredményeket csak a szót�
 - Használd a Összes listázása nézetet, hogy egy pillantással összehasonlíthasd, hogyan használják egy szót több tucat videóban` }
   ],
   'id': [
-    { path: 'account/login', title: 'Memasuki', category: 'account', content: `# Masuk
+    { path: 'account/login', title: 'Masuk', category: 'account', content: `# Masuk
 
 Masuk ke akun Anda, atur ulang kata sandi yang terlupa, dan keluar saat selesai.
 
 ## Cara Masuk
 
-1. Buka **[halaman masuk](/login)** dengan mengklik ikon pengguna di pojok kanan atas dan memilih **Masuk**
-2. Masukkan **Email** dan **Kata Sandi**
+1. Buka **[halaman masuk](/login)** dengan mengklik ikon pengguna di sudut kanan atas dan memilih **Masuk**
+2. Masukkan **Email** dan **Kata Sandi** Anda
 3. Klik **Masuk**
 
-Jika kredensial Anda benar, Anda akan diarahkan ke halaman pemilihan bahasa (atau kembali ke halaman yang Anda buka sebelum masuk).
+Jika kredensial Anda benar, Anda akan dialihkan ke halaman pemilihan bahasa (atau kembali ke halaman yang Anda buka sebelum masuk).
 
-Jika Anda memasukkan email atau kata sandi yang salah, pesan kesalahan akan muncul — periksa kembali kedua kolom dan coba lagi.
+Jika Anda memasukkan email atau kata sandi yang salah, akan muncul pesan kesalahan — periksa kembali kedua kolom tersebut dan coba lagi.
 
 ## Belum Punya Akun?
 
-Klik **Daftar** di bawah formulir masuk untuk membuat akun baru. Lihat [Pendaftaran](/docs/account/registration) untuk panduan pendaftaran lengkap.
+Klik **Daftar** di bawah formulir masuk untuk membuat akun baru. Lihat [Registrasi](/docs/account/registration) untuk panduan pendaftaran lengkap.
 
 ## Lupa Kata Sandi?
 
-Jika Anda tidak dapat mengingat kata sandi:
+Jika Anda tidak dapat mengingat kata sandi Anda:
 
-1. Di halaman masuk, klik **Lupa kata sandi?**
+1. Pada halaman masuk, klik **Lupa kata sandi?**
 2. Masukkan alamat email Anda dan klik **Kirim Tautan Reset**
 3. Periksa kotak masuk Anda untuk email pengaturan ulang kata sandi
-4. Ikuti tautan di email untuk menetapkan kata sandi baru
+4. Ikuti tautan dalam email untuk menetapkan kata sandi baru
 
 Demi keamanan, halaman selalu menampilkan pesan sukses setelah Anda mengirimkan — bahkan jika email tidak terdaftar. Ini mencegah siapa pun memeriksa apakah email tertentu memiliki akun.
 
-> **Catatan:** Tautan pengaturan ulang kata sandi berasal dari our server, penyedia identitas kami. Jika Anda tidak melihat email dalam beberapa menit, periksa folder spam Anda.
+> **Catatan:** Tautan pengaturan ulang kata sandi berasal dari server kami. Jika Anda tidak melihat email dalam beberapa menit, periksa folder spam Anda.
 
 ## Cara Keluar
 
-Klik ikon pengguna di pojok kanan atas (menampilkan inisial Anda), lalu klik **Keluar** di bagian bawah menu. Anda akan keluar dan diarahkan ke halaman beranda.
+Klik ikon pengguna di sudut kanan atas (menampilkan inisial Anda), lalu klik **Keluar** di bagian bawah menu. Anda akan keluar dan dialihkan ke halaman utama.
 
-Keluar akan menghapus sesi lokal Anda, tetapi kata-kata yang disimpan, riwayat tontonan, dan pengaturan Anda tetap tersimpan — semuanya akan dipulihkan saat Anda masuk lain kali.
+Keluar akan membersihkan sesi lokal Anda, tetapi kata-kata yang disimpan, riwayat tontonan, dan pengaturan Anda tetap tersimpan — semuanya akan dipulihkan saat Anda masuk lagi nanti.
 
-## Beralih Akun
+## Mengganti Akun
 
-Untuk beralih ke akun lain, keluar terlebih dahulu, lalu masuk dengan alamat email lainnya. Tidak ada pengalih akun — setiap sesi browser hanya menggunakan satu akun dalam satu waktu.
+Untuk mengganti ke akun lain, keluar terlebih dahulu, lalu masuk dengan alamat email lainnya. Tidak ada pengganti akun — setiap sesi browser hanya menggunakan satu akun dalam satu waktu.
 
 ## Tips
 
-- Sesi masuk Anda bertahan meskipun browser di-restart — Anda tidak perlu masuk setiap kali berkunjung
+- Sesi masuk Anda tetap berjalan meskipun browser dimulai ulang — Anda tidak perlu masuk setiap kali berkunjung
 - Jika Anda menggunakan perangkat bersama, selalu keluar setelah selesai
-- Alur lupa kata sandi tetap berfungsi meskipun Anda mendaftar dengan email yang sama — tautan pengaturan ulang akan tetap dikirim
-- Anda dapat mengelola detail akun dari **[Profil](/docs/account/profile)**` },
+- Proses lupa kata sandi tetap berfungsi meskipun Anda mendaftar dengan email yang sama — tautan pengaturan ulang tetap dikirim
+- Anda dapat mengelola detail akun dari **[Profil](/docs/account/profile)** Anda` },
     { path: 'account/profile', title: 'Profil', category: 'account', content: `# Profil
 
 Halaman profil Anda menampilkan info akun, tingkat bahasa, status langganan, riwayat tontonan, dan kata-kata tersimpan — semuanya dalam satu tempat.
@@ -22150,47 +22150,47 @@ Accedi al tuo account, reimposta una password dimenticata ed esci quando hai fin
 
 ## Come Accedere
 
-1. Vai alla **[pagina di login](/login)** cliccando sull'icona utente nell'angolo in alto a destra e selezionando **Accedi**
+1. Vai alla **[pagina di login](/login)** cliccando sull'icona utente in alto a destra e selezionando **Accedi**
 2. Inserisci la tua **Email** e la tua **Password**
 3. Clicca su **Accedi**
 
-Se le tue credenziali sono corrette, verrai reindirizzato alla pagina di selezione della lingua (o alla pagina in cui ti trovavi prima del login).
+Se le tue credenziali sono corrette, verrai reindirizzato alla pagina di selezione della lingua (o alla pagina in cui ti trovavi prima di accedere).
 
-Se inserisci email o password errate, appare un messaggio di errore: ricontrolla entrambi i campi e riprova.
+Se inserisci email o password errate, appare un messaggio di errore — controlla entrambi i campi e riprova.
 
 ## Non Hai un Account?
 
-Clicca su **Registrati** sotto il modulo di login per creare un nuovo account. Consulta [Registrazione](/docs/account/registration) per la procedura completa di iscrizione.
+Clicca su **Registrati** sotto il modulo di login per creare un nuovo account. Vedi [Registrazione](/docs/account/registration) per la procedura completa di iscrizione.
 
-## Password Dimenticata?
+## Hai Dimenticato la Password?
 
 Se non ricordi la tua password:
 
 1. Nella pagina di login, clicca su **Password dimenticata?**
 2. Inserisci il tuo indirizzo email e clicca su **Invia link di ripristino**
-3. Controlla la tua casella di posta per un'email di reset password
+3. Controlla la tua casella di posta per un'email di reset della password
 4. Segui il link nell'email per impostare una nuova password
 
-Per motivi di sicurezza, la pagina mostra sempre un messaggio di successo dopo l'invio, anche se l'email non è registrata. Questo impedisce a chiunque di verificare se una determinata email ha un account.
+Per sicurezza, la pagina mostra sempre un messaggio di successo dopo l'invio — anche se l'email non è registrata. Questo impedisce a chiunque di verificare se una determinata email ha un account.
 
-> **Nota:** Il link per il reset della password proviene da our server, il nostro provider di identità. Se non vedi l'email entro pochi minuti, controlla la cartella spam.
+> **Nota:** Il link per il reset della password proviene dal nostro server. Se non vedi l'email entro pochi minuti, controlla la cartella spam.
 
 ## Come Uscire
 
-Clicca sull'icona utente nell'angolo in alto a destra (mostra la tua iniziale), poi clicca su **Esci** in fondo al menu. Verrai disconnesso e reindirizzato alla home page.
+Clicca sull'icona utente in alto a destra (mostra la tua iniziale), poi clicca su **Esci** in fondo al menu. Verrai disconnesso e reindirizzato alla home page.
 
-Uscire cancella la sessione locale, ma le parole salvate, la cronologia di visione e le impostazioni vengono conservate: verranno ripristinate al prossimo accesso.
+Uscire cancella la sessione locale, ma le tue parole salvate, la cronologia di visione e le impostazioni vengono conservate — verranno ripristinate al prossimo accesso.
 
 ## Cambiare Account
 
-Per passare a un account diverso, esci prima, poi accedi con l'altro indirizzo email. Non esiste un commutatore di account: ogni sessione del browser utilizza un account alla volta.
+Per passare a un account diverso, esci prima, poi accedi con l'altro indirizzo email. Non c'è un cambio account rapido — ogni sessione del browser utilizza un account alla volta.
 
-## Suggerimenti
+## Consigli
 
-- La tua sessione di login persiste anche dopo aver chiuso e riaperto il browser: non dovrai accedere ogni volta che visiti il sito
+- La tua sessione di accesso persiste anche dopo aver chiuso e riaperto il browser — non dovrai accedere ogni volta che visiti il sito
 - Se sei su un dispositivo condiviso, esci sempre quando hai finito
-- La procedura per password dimenticata funziona anche se ti sei registrato con la stessa email: invia comunque un link di reset
-- Puoi gestire i dettagli del tuo account dal tuo **[Profilo](/docs/account/profile)**` },
+- La procedura di password dimenticata funziona anche se ti sei registrato con la stessa email — invia comunque un link di reset
+- Puoi gestire i dettagli del tuo account dalla tua **[Profilo](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Profilo', category: 'account', content: `# Profilo
 
 La tua pagina del profilo mostra informazioni sull'account, livello linguistico, stato dell'abbonamento, cronologia di visione e parole salvate — tutto in un unico posto.
@@ -23612,7 +23612,7 @@ Attiva **Corrispondenza Esatta** per limitare i risultati alla sola forma base d
   'ja': [
     { path: 'account/login', title: 'ログイン中', category: 'account', content: `# ログイン
 
-アカウントにサインインしたり、忘れたパスワードをリセットしたり、終了時にサインアウトしたりできます。
+アカウントにサインインする、忘れたパスワードをリセットする、そして終了したらサインアウトする方法を説明します。
 
 ## ログイン方法
 
@@ -23620,43 +23620,43 @@ Attiva **Corrispondenza Esatta** per limitare i risultati alla sola forma base d
 2. **メール** と **パスワード** を入力します
 3. **ログイン** をクリックします
 
-認証情報が正しければ、言語選択ページ（またはログイン前にいたページ）にリダイレクトされます。
+認証情報が正しければ、言語選択ページ（またはログイン前に表示していたページ）にリダイレクトされます。
 
-間違ったメールアドレスやパスワードを入力すると、エラーメッセージが表示されます — 両方のフィールドを再確認して、もう一度お試しください。
+メールアドレスまたはパスワードを間違えて入力すると、エラーメッセージが表示されます。両方のフィールドを確認し、もう一度お試しください。
 
 ## アカウントをお持ちでない場合
 
-ログインフォームの下にある **登録** をクリックして、新しいアカウントを作成します。詳細なサインアップ手順は[登録](/docs/account/registration)をご覧ください。
+ログインフォームの下にある **登録** をクリックして、新しいアカウントを作成します。詳しいサインアップ手順は [登録](/docs/account/registration) をご覧ください。
 
 ## パスワードをお忘れの場合
 
-パスワードを思い出せない場合：
+パスワードが思い出せない場合は：
 
 1. ログインページで **パスワードをお忘れですか？** をクリックします
 2. メールアドレスを入力し、**リセットリンクを送信** をクリックします
-3. パスワードリセットメールを受信トレイで確認します
-4. メール内のリンクに従って新しいパスワードを設定します
+3. 受信トレイでパスワードリセットメールを確認します
+4. メール内のリンクをクリックして新しいパスワードを設定します
 
-セキュリティのため、送信後はメールが登録されていない場合でも、常に成功メッセージが表示されます。これにより、特定のメールアドレスにアカウントがあるかどうかを誰かが確認することを防ぎます。
+セキュリティのため、メールアドレスが登録されていない場合でも、送信後は常に成功メッセージが表示されます。これにより、特定のメールにアカウントがあるかどうかを他人が確認できなくなります。
 
-> **注:** パスワードリセットリンクは、当社のIDプロバイダーであるour serverから送信されます。数分経ってもメールが届かない場合は、スパムフォルダをご確認ください。
+> **注記：** パスワードリセットリンクはサーバーから送信されます。数分経ってもメールが届かない場合は、スパムフォルダをご確認ください。
 
 ## ログアウト方法
 
-右上隅のユーザーアイコン（イニシャルが表示されます）をクリックし、メニュー下部の **ログアウト** をクリックします。サインアウトされ、ホームページにリダイレクトされます。
+右上隅のユーザーアイコン（イニシャルが表示されています）をクリックし、メニューの下部にある **ログアウト** をクリックします。サインアウトされ、ホームページにリダイレクトされます。
 
 ログアウトするとローカルセッションはクリアされますが、保存した単語、視聴履歴、設定は保持され、次回サインイン時に復元されます。
 
 ## アカウントの切り替え
 
-別のアカウントに切り替えるには、まずログアウトしてから、別のメールアドレスでログインします。アカウント切り替え機能はありません — 各ブラウザセッションでは一度に1つのアカウントのみ使用できます。
+別のアカウントに切り替えるには、最初にログアウトし、次に別のメールアドレスでログインします。アカウント切り替え機能はありません。各ブラウザセッションでは一度に1つのアカウントのみ使用できます。
 
 ## ヒント
 
-- ログインセッションはブラウザを再起動しても維持されます — アクセスするたびにログインする必要はありません
+- ログインセッションはブラウザを再起動しても持続します。アクセスのたびにログインする必要はありません
 - 共有デバイスを使用している場合は、終了時に必ずログアウトしてください
-- パスワード忘れのフローは、同じメールアドレスで登録した場合でも機能します — リセットリンクが常に送信されます
-- アカウント詳細は **[プロフィール](/docs/account/profile)** から管理できます` },
+- パスワードをお忘れのフローは、同じメールアドレスで登録した場合でも機能します。リセットリンクが送信されます
+- アカウントの詳細は **[プロフィール](/docs/account/profile)** から管理できます` },
     { path: 'account/profile', title: 'プロフィール', category: 'account', content: `# プロフィール
 
 プロフィールページでは、アカウント情報、言語レベル、サブスクリプション状況、視聴履歴、保存した単語をすべて一箇所で確認できます。
@@ -25086,9 +25086,9 @@ Language Playerは、オープンデータから厳選・バージョン管理�
 2. **이메일**과 **비밀번호**를 입력합니다.
 3. **로그인**을 클릭합니다.
 
-자격 증명이 올바르면 언어 선택 페이지(또는 로그인 전에 있던 페이지)로 리디렉션됩니다.
+자격 증명이 올바르면 언어 선택 페이지로 리디렉션되거나 로그인 전에 있던 페이지로 돌아갑니다.
 
-잘못된 이메일 또는 비밀번호를 입력하면 오류 메시지가 나타납니다. 두 필드를 다시 확인한 후 다시 시도하세요.
+잘못된 이메일이나 비밀번호를 입력하면 오류 메시지가 나타납니다. 두 필드를 다시 확인하고 다시 시도하세요.
 
 ## 계정이 없으신가요?
 
@@ -25103,15 +25103,15 @@ Language Playerは、オープンデータから厳選・バージョン管理�
 3. 받은 편지함에서 비밀번호 재설정 이메일을 확인합니다.
 4. 이메일의 링크를 따라 새 비밀번호를 설정합니다.
 
-보안상의 이유로, 이메일이 등록되지 않은 경우에도 페이지는 항상 제출 완료 메시지를 표시합니다. 이는 특정 이메일이 계정을 가지고 있는지 확인하는 것을 방지합니다.
+보안을 위해, 이메일이 등록되지 않았더라도 제출 후 항상 성공 메시지가 표시됩니다. 이를 통해 특정 이메일에 계정이 있는지 확인할 수 없습니다.
 
-> **참고:** 비밀번호 재설정 링크는 당사의 ID 제공업체인 our server에서 발송됩니다. 몇 분 내에 이메일이 보이지 않으면 스팸 폴더를 확인하세요.
+> **참고:** 비밀번호 재설정 링크는 서버에서 전송됩니다. 몇 분 안에 이메일이 보이지 않으면 스팸 폴더를 확인하세요.
 
 ## 로그아웃 방법
 
-오른쪽 상단의 사용자 아이콘(이니셜이 표시됨)을 클릭한 다음 메뉴 하단의 **로그아웃**을 클릭합니다. 로그아웃되면 홈 페이지로 리디렉션됩니다.
+오른쪽 상단의 사용자 아이콘(이니셜이 표시됨)을 클릭한 후 메뉴 하단의 **로그아웃**을 클릭하세요. 로그아웃되고 홈 페이지로 리디렉션됩니다.
 
-로그아웃하면 로컬 세션이 지워지지만 저장된 단어, 시청 기록 및 설정은 유지되며 다음에 로그인할 때 복원됩니다.
+로그아웃하면 로컬 세션이 지워지지만 저장된 단어, 시청 기록 및 설정은 유지되며 다음 로그인 시 복원됩니다.
 
 ## 계정 전환
 
@@ -25121,8 +25121,8 @@ Language Playerは、オープンデータから厳選・バージョン管理�
 
 - 로그인 세션은 브라우저를 다시 시작해도 유지되므로 방문할 때마다 로그인할 필요가 없습니다.
 - 공유 기기를 사용하는 경우 작업이 끝나면 항상 로그아웃하세요.
-- 비밀번호 찾기 기능은 동일한 이메일로 등록한 경우에도 작동합니다. 재설정 링크를 항상 발송합니다.
-- **[프로필](/docs/account/profile)**에서 계정 세부 정보를 관리할 수 있습니다.` },
+- 비밀번호 찾기 기능은 동일한 이메일로 등록한 경우에도 작동하며, 재설정 링크를 전송합니다.
+- **[프로필](/docs/account/profile)**에서 계정 정보를 관리할 수 있습니다.` },
     { path: 'account/profile', title: '프로필', category: 'account', content: `# 프로필
 
 프로필 페이지에서는 계정 정보, 언어 레벨, 구독 상태, 시청 기록 및 저장된 단어를 한곳에서 확인할 수 있습니다.
@@ -26544,51 +26544,51 @@ Language Player는 오픈 데이터를 기반으로 선별되고 버전 관리�
   'nl': [
     { path: 'account/login', title: 'Inloggen', category: 'account', content: `# Inloggen
 
-Meld u aan bij uw account, reset een vergeten wachtwoord en meld u af wanneer u klaar bent.
+Log in op je account, stel een vergeten wachtwoord opnieuw in en log uit wanneer je klaar bent.
 
-## Hoe u inlogt
+## Hoe in te loggen
 
-1. Ga naar de **[inlogpagina](/login)** door op het gebruikerspictogram in de rechterbovenhoek te klikken en **Inloggen** te selecteren
-2. Voer uw **E-mail** en **Wachtwoord** in
+1. Ga naar de **[inlogpagina](/login)** door op het gebruikerspictogram rechtsboven te klikken en **Inloggen** te selecteren
+2. Voer je **E-mail** en **Wachtwoord** in
 3. Klik op **Inloggen**
 
-Als uw inloggegevens correct zijn, wordt u doorgestuurd naar de pagina voor taalselectie (of terug naar de pagina waar u was voordat u inlogde).
+Als je inloggegevens correct zijn, word je doorgestuurd naar de taalselectiepagina (of terug naar de pagina waar je was vóór het inloggen).
 
-Als u het verkeerde e-mailadres of wachtwoord invoert, verschijnt er een foutmelding — controleer beide velden en probeer het opnieuw.
+Als je het verkeerde e-mailadres of wachtwoord invoert, verschijnt er een foutmelding — controleer beide velden nogmaals en probeer het opnieuw.
 
 ## Geen account?
 
-Klik op **Registreren** onder het inlogformulier om een nieuw account aan te maken. Zie [Registratie](/docs/account/registration) voor de volledige registratierondleiding.
+Klik op **Registreren** onder het inlogformulier om een nieuw account aan te maken. Zie [Registratie](/docs/account/registration) voor de volledige aanmeldingsprocedure.
 
 ## Wachtwoord vergeten?
 
-Als u uw wachtwoord niet meer weet:
+Als je je wachtwoord niet meer weet:
 
 1. Klik op de inlogpagina op **Wachtwoord vergeten?**
-2. Voer uw e-mailadres in en klik op **Resetlink versturen**
-3. Controleer uw inbox voor een e-mail voor het resetten van uw wachtwoord
+2. Voer je e-mailadres in en klik op **Resetlink versturen**
+3. Controleer je inbox voor een e-mail om het wachtwoord opnieuw in te stellen
 4. Volg de link in de e-mail om een nieuw wachtwoord in te stellen
 
-Uit veiligheidsoverwegingen toont de pagina altijd een succesbericht nadat u het formulier hebt verzonden — zelfs als het e-mailadres niet geregistreerd is. Dit voorkomt dat iemand kan controleren of een bepaald e-mailadres een account heeft.
+Om veiligheidsredenen toont de pagina altijd een succesmelding nadat je het formulier hebt verzonden — zelfs als het e-mailadres niet geregistreerd is. Dit voorkomt dat iemand kan controleren of een bepaald e-mailadres een account heeft.
 
-> **Opmerking:** De link voor het resetten van het wachtwoord komt van our server, onze identiteitsprovider. Als u de e-mail niet binnen een paar minuten ziet, controleer dan uw spammap.
+> **Opmerking:** De link voor het opnieuw instellen van het wachtwoord komt van onze server. Als je de e-mail niet binnen een paar minuten ziet, controleer dan je spam-map.
 
-## Hoe u uitlogt
+## Hoe uit te loggen
 
-Klik op het gebruikerspictogram in de rechterbovenhoek (toont uw initiaal) en klik vervolgens op **Uitloggen** onderaan het menu. U wordt uitgelogd en doorgestuurd naar de startpagina.
+Klik op het gebruikerspictogram rechtsboven (dit toont je initiaal) en klik vervolgens op **Uitloggen** onderaan het menu. Je wordt uitgelogd en doorgestuurd naar de startpagina.
 
-Uitloggen wist uw lokale sessie, maar uw opgeslagen woorden, kijkgeschiedenis en instellingen blijven behouden — deze worden hersteld wanneer u de volgende keer inlogt.
+Uitloggen wist je lokale sessie, maar je opgeslagen woorden, kijkgeschiedenis en instellingen blijven bewaard — ze worden hersteld wanneer je de volgende keer inlogt.
 
-## Van account wisselen
+## Accounts wisselen
 
-Om naar een ander account over te schakelen, logt u eerst uit en logt u vervolgens in met het andere e-mailadres. Er is geen accountwisselaar — elke browsersessie gebruikt één account tegelijk.
+Om naar een ander account te wisselen, log je eerst uit en log je vervolgens in met het andere e-mailadres. Er is geen accountwisselaar — elke browsersessie gebruikt één account tegelijk.
 
 ## Tips
 
-- Uw inlogsessie blijft behouden bij het herstarten van de browser — u hoeft niet elke keer dat u de site bezoekt opnieuw in te loggen
-- Als u een gedeeld apparaat gebruikt, log dan altijd uit als u klaar bent
-- De procedure voor vergeten wachtwoord werkt zelfs als u met hetzelfde e-mailadres bent geregistreerd — er wordt altijd een resetlink verzonden
-- U kunt uw accountgegevens beheren via uw **[Profiel](/docs/account/profile)**` },
+- Je inlogsessie blijft behouden bij het herstarten van de browser — je hoeft niet elke keer in te loggen als je de site bezoekt
+- Als je een gedeeld apparaat gebruikt, log dan altijd uit als je klaar bent
+- De wachtwoord vergeten-procedure werkt ook als je je met hetzelfde e-mailadres hebt geregistreerd — er wordt altijd een resetlink verzonden
+- Je kunt je accountgegevens beheren via je **[Profiel](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Profiel', category: 'account', content: `# Profiel
 
 Uw profielpagina toont accountgegevens, taalniveau, abonnementsstatus, kijkgeschiedenis en opgeslagen woorden — allemaal op één plek.
@@ -28016,36 +28016,36 @@ Logg inn på kontoen din, tilbakestill et glemt passord, og logg ut når du er f
 
 1. Gå til **[innloggingssiden](/login)** ved å klikke på brukerikonet øverst til høyre og velge **Logg inn**
 2. Skriv inn **E-post** og **Passord**
-3. Klikk på **Logg inn**
+3. Klikk **Logg inn**
 
-Hvis påloggingsinformasjonen din er korrekt, blir du omdirigert til språkvalgsiden (eller tilbake til siden du var på før du logget inn).
+Hvis påloggingsinformasjonen din er riktig, blir du omdirigert til språkvalgsiden (eller tilbake til siden du var på før du logget inn).
 
 Hvis du skriver inn feil e-post eller passord, vises en feilmelding — dobbeltsjekk begge feltene og prøv igjen.
 
 ## Har du ikke en konto?
 
-Klikk på **Registrer deg** under innloggingsskjemaet for å opprette en ny konto. Se [Registrering](/docs/account/registration) for en fullstendig gjennomgang av registreringsprosessen.
+Klikk **Registrer deg** under innloggingsskjemaet for å opprette en ny konto. Se [Registrering](/docs/account/registration) for fullstendig gjennomgang av registreringsprosessen.
 
-## Har du glemt passordet ditt?
+## Glemt passordet?
 
 Hvis du ikke husker passordet ditt:
 
-1. På innloggingssiden klikker du på **Glemt passord?**
-2. Skriv inn e-postadressen din og klikk på **Send tilbakestillingslenke**
+1. På innloggingssiden klikker du **Glemt passord?**
+2. Skriv inn e-postadressen din og klikk **Send tilbakestillingslenke**
 3. Sjekk innboksen din for en e-post for tilbakestilling av passord
 4. Følg lenken i e-posten for å angi et nytt passord
 
-Av sikkerhetshensyn viser siden alltid en suksessmelding etter at du har sendt inn — selv om e-posten ikke er registrert. Dette forhindrer at noen kan sjekke om en bestemt e-postadresse har en konto.
+Av sikkerhetsgrunner viser siden alltid en suksessmelding etter at du har sendt inn — selv om e-posten ikke er registrert. Dette hindrer noen i å sjekke om en bestemt e-post har en konto.
 
-> **Merk:** Lenken for tilbakestilling av passord kommer fra our server, vår identitetsleverandør. Hvis du ikke ser e-posten innen noen få minutter, sjekk søppelpostmappen din.
+> **Merk:** Lenken for tilbakestilling av passord kommer fra serveren vår. Hvis du ikke ser e-posten innen noen få minutter, sjekk søppelpostmappen din.
 
 ## Slik logger du ut
 
-Klikk på brukerikonet øverst til høyre (det viser initialen din), og klikk deretter på **Logg ut** nederst i menyen. Du blir logget ut og omdirigert til startsiden.
+Klikk på brukerikonet øverst til høyre (det viser initialen din), og klikk deretter **Logg ut** nederst i menyen. Du blir logget ut og omdirigert til startsiden.
 
-Å logge ut sletter den lokale økten din, men dine lagrede ord, visningshistorikk og innstillinger blir bevart — de vil bli gjenopprettet neste gang du logger inn.
+Når du logger ut, fjernes den lokale økten din, men lagrede ord, visningshistorikk og innstillinger beholdes — de gjenopprettes neste gang du logger inn.
 
-## Bytte kontoer
+## Bytting av kontoer
 
 For å bytte til en annen konto, logg ut først, og logg deretter inn med den andre e-postadressen. Det finnes ingen kontobytter — hver nettleserøkt bruker én konto om gangen.
 
@@ -29485,13 +29485,13 @@ Zaloguj się na swoje konto, zresetuj zapomniane hasło i wyloguj się, gdy sko�
 2. Wprowadź swój **E-mail** i **Hasło**
 3. Kliknij **Zaloguj się**
 
-Jeśli Twoje dane logowania są poprawne, zostaniesz przekierowany do strony wyboru języka (lub z powrotem do strony, na której byłeś przed zalogowaniem).
+Jeśli Twoje dane logowania są prawidłowe, zostaniesz przekierowany do strony wyboru języka (lub z powrotem do strony, na której byłeś przed zalogowaniem).
 
-Jeśli wprowadzisz nieprawidłowy adres e-mail lub hasło, pojawi się komunikat o błędzie — sprawdź dokładnie oba pola i spróbuj ponownie.
+Jeśli wpiszesz nieprawidłowy adres e-mail lub hasło, pojawi się komunikat o błędzie — sprawdź dokładnie oba pola i spróbuj ponownie.
 
 ## Nie masz konta?
 
-Kliknij **Zarejestruj się** poniżej formularza logowania, aby utworzyć nowe konto. Zobacz [Rejestracja](/docs/account/registration), aby przejść pełny proces rejestracji.
+Kliknij **Zarejestruj się** poniżej formularza logowania, aby utworzyć nowe konto. Zobacz [Rejestracja](/docs/account/registration), aby zapoznać się z pełnym przewodnikiem rejestracji.
 
 ## Zapomniałeś hasła?
 
@@ -29502,26 +29502,26 @@ Jeśli nie pamiętasz swojego hasła:
 3. Sprawdź swoją skrzynkę odbiorczą w poszukiwaniu e-maila do resetowania hasła
 4. Kliknij link w e-mailu, aby ustawić nowe hasło
 
-Ze względów bezpieczeństwa strona zawsze wyświetla komunikat o powodzeniu po wysłaniu formularza — nawet jeśli adres e-mail nie jest zarejestrowany. Zapobiega to sprawdzeniu, czy dany adres e-mail ma konto.
+Ze względów bezpieczeństwa strona zawsze wyświetla komunikat o powodzeniu po wysłaniu — nawet jeśli adres e-mail nie jest zarejestrowany. Zapobiega to sprawdzaniu, czy dany adres e-mail ma konto.
 
-> **Uwaga:** Link do resetowania hasła pochodzi z our server, naszego dostawcy tożsamości. Jeśli nie widzisz e-maila w ciągu kilku minut, sprawdź folder spam.
+> **Uwaga:** Link do resetowania hasła pochodzi z naszego serwera. Jeśli nie widzisz e-maila w ciągu kilku minut, sprawdź folder ze spamem.
 
 ## Jak się wylogować
 
 Kliknij ikonę użytkownika w prawym górnym rogu (pokazuje Twoją inicjał), a następnie kliknij **Wyloguj się** na dole menu. Zostaniesz wylogowany i przekierowany na stronę główną.
 
-Wylogowanie czyści lokalną sesję, ale Twoje zapisane słowa, historia oglądania i ustawienia są zachowane — zostaną przywrócone przy następnym logowaniu.
+Wylogowanie czyści lokalną sesję, ale zapisane słowa, historia oglądania i ustawienia zostają zachowane — zostaną przywrócone przy następnym logowaniu.
 
 ## Przełączanie kont
 
-Aby przełączyć się na inne konto, najpierw się wyloguj, a następnie zaloguj przy użyciu innego adresu e-mail. Nie ma przełącznika kont — każda sesja przeglądarki korzysta z jednego konta jednocześnie.
+Aby przełączyć się na inne konto, najpierw się wyloguj, a następnie zaloguj przy użyciu innego adresu e-mail. Nie ma przełącznika kont — każda sesja przeglądarki korzysta z jednego konta na raz.
 
 ## Wskazówki
 
-- Sesja logowania pozostaje aktywna po ponownym uruchomieniu przeglądarki — nie będziesz musiał logować się za każdym razem, gdy odwiedzasz stronę
-- Jeśli korzystasz ze współdzielonego urządzenia, zawsze wylogowuj się po zakończeniu
-- Proces resetowania hasła działa nawet jeśli zarejestrowałeś się przy użyciu tego samego adresu e-mail — wysyła link resetujący niezależnie
-- Możesz zarządzać szczegółami swojego konta ze swojego **[Profil](/docs/account/profile)**` },
+- Sesja logowania utrzymuje się po ponownym uruchomieniu przeglądarki — nie będziesz musiał logować się za każdym razem, gdy odwiedzasz stronę
+- Jeśli korzystasz z udostępnionego urządzenia, zawsze wyloguj się po zakończeniu
+- Proces resetowania hasła działa nawet jeśli zarejestrowałeś się przy użyciu tego samego adresu e-mail — wysyła link resetujący niezależnie od tego
+- Możesz zarządzać szczegółami swojego konta w swoim **[Profil](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Profil', category: 'account', content: `# Profil
 
 Twoja strona profilu pokazuje informacje o koncie, poziom językowy, status subskrypcji, historię oglądania oraz zapisane słowa – wszystko w jednym miejscu.
@@ -30941,53 +30941,53 @@ Przełącz **Dokładne dopasowanie**, aby ograniczyć wyniki tylko do hasła sł
 - Użyj widoku Wyświetl wszystko, aby na pierwszy rzut oka porównać, jak słowo jest używane w dziesiątkach filmów` }
   ],
   'pt': [
-    { path: 'account/login', title: 'Fazendo Login', category: 'account', content: `# Fazer Login
+    { path: 'account/login', title: 'Fazendo Login', category: 'account', content: `# Iniciar Sessão
 
-Entre na sua conta, redefina uma senha esquecida e saia quando terminar.
+Aceda à sua conta, recupere uma palavra-passe esquecida e termine a sessão quando terminar.
 
-## Como Fazer Login
+## Como Iniciar Sessão
 
-1. Acesse a **[página de login](/login)** clicando no ícone do usuário no canto superior direito e selecionando **Entrar**
-2. Insira seu **E-mail** e **Senha**
+1. Aceda à **[página de início de sessão](/login)** clicando no ícone do utilizador no canto superior direito e selecionando **Entrar**
+2. Introduza o seu **E-mail** e **Senha**
 3. Clique em **Entrar**
 
-Se suas credenciais estiverem corretas, você será redirecionado para a página de seleção de idioma (ou de volta para a página em que estava antes de fazer login).
+Se as suas credenciais estiverem corretas, será redirecionado para a página de seleção de idioma (ou de volta à página onde estava antes de iniciar sessão).
 
-Se você inserir o e-mail ou a senha errados, uma mensagem de erro aparecerá — verifique ambos os campos e tente novamente.
+Se introduzir o email ou palavra-passe errados, aparecerá uma mensagem de erro — verifique ambos os campos e tente novamente.
 
-## Não Tem uma Conta?
+## Não Tem Conta?
 
-Clique em **Cadastrar** abaixo do formulário de login para criar uma nova conta. Consulte [Registro](/docs/account/registration) para o passo a passo completo de cadastro.
+Clique em **Cadastrar** abaixo do formulário de início de sessão para criar uma nova conta. Consulte [Registo](/docs/account/registration) para o tutorial completo de registo.
 
-## Esqueceu Sua Senha?
+## Esqueceu-se da Sua Palavra-passe?
 
-Se você não lembra da sua senha:
+Se não se lembrar da sua palavra-passe:
 
-1. Na página de login, clique em **Esqueceu a senha?**
-2. Insira seu endereço de e-mail e clique em **Enviar link de redefinição**
-3. Verifique sua caixa de entrada em busca de um e-mail de redefinição de senha
-4. Siga o link no e-mail para definir uma nova senha
+1. Na página de início de sessão, clique em **Esqueceu a senha?**
+2. Introduza o seu endereço de email e clique em **Enviar link de redefinição**
+3. Verifique a sua caixa de entrada para um email de redefinição de palavra-passe
+4. Siga o link no email para definir uma nova palavra-passe
 
-Por segurança, a página sempre exibe uma mensagem de sucesso após o envio — mesmo que o e-mail não esteja registrado. Isso impede que alguém verifique se um determinado e-mail possui uma conta.
+Por segurança, a página mostra sempre uma mensagem de sucesso após submeter — mesmo que o email não esteja registado. Isto impede que alguém verifique se um determinado email tem conta associada.
 
-> **Nota:** O link de redefinição de senha vem do our server, nosso provedor de identidade. Se você não vir o e-mail em alguns minutos, verifique sua pasta de spam.
+> **Nota:** O link de redefinição de palavra-passe vem do nosso servidor. Se não vir o email dentro de alguns minutos, verifique a sua pasta de spam.
 
-## Como Sair
+## Como Terminar Sessão
 
-Clique no ícone do usuário no canto superior direito (mostra sua inicial) e depois clique em **Sair** na parte inferior do menu. Você será desconectado e redirecionado para a página inicial.
+Clique no ícone do utilizador no canto superior direito (mostra a sua inicial) e depois clique em **Sair** no fundo do menu. A sua sessão será terminada e será redirecionado para a página inicial.
 
-Sair limpa sua sessão local, mas suas palavras salvas, histórico de visualização e configurações são preservados — eles serão restaurados na próxima vez que você fizer login.
+Terminar sessão limpa a sua sessão local, mas as suas palavras guardadas, histórico de visualização e definições são preservados — serão restaurados na próxima vez que iniciar sessão.
 
-## Alternando Contas
+## Mudar de Conta
 
-Para alternar para uma conta diferente, saia primeiro e depois faça login com o outro endereço de e-mail. Não há alternador de contas — cada sessão do navegador usa uma conta por vez.
+Para mudar para uma conta diferente, termine sessão primeiro e depois inicie sessão com o outro endereço de email. Não existe um alternador de contas — cada sessão do navegador utiliza uma conta de cada vez.
 
 ## Dicas
 
-- Sua sessão de login persiste mesmo após reiniciar o navegador — você não precisará fazer login toda vez que visitar
-- Se estiver em um dispositivo compartilhado, sempre saia quando terminar
-- O fluxo de senha esquecida funciona mesmo se você se registrou com o mesmo e-mail — ele envia um link de redefinição independentemente
-- Você pode gerenciar os detalhes da sua conta em seu **[Perfil](/docs/account/profile)**` },
+- A sua sessão de início de sessão persiste mesmo após reiniciar o navegador — não precisará de iniciar sessão sempre que visitar
+- Se estiver num dispositivo partilhado, termine sempre a sessão quando terminar
+- O processo de palavra-passe esquecida funciona mesmo que se tenha registado com o mesmo email — envia um link de redefinição independentemente
+- Pode gerir os detalhes da sua conta a partir do seu **[Perfil](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Perfil', category: 'account', content: `# Perfil
 
 Sua página de perfil mostra informações da conta, nível de idioma, status da assinatura, histórico de visualizações e palavras salvas — tudo em um só lugar.
@@ -32407,53 +32407,53 @@ Ative **Correspondência Exata** para restringir os resultados apenas à palavra
 - Use a visualização em Listar Todos para comparar como uma palavra é usada em dezenas de vídeos de uma só vez` }
   ],
   'ro': [
-    { path: 'account/login', title: 'Autentificare', category: 'account', content: `# Conectare
+    { path: 'account/login', title: 'Autentificare', category: 'account', content: `# Autentificare
 
-Conectați-vă la cont, resetați o parolă uitată și deconectați-vă când ați terminat.
+Conectați-vă la contul dvs., resetați o parolă uitată și deconectați-vă când ați terminat.
 
-## Cum să vă conectați
+## Cum să vă autentificați
 
-1. Accesați **[pagina de conectare](/login)** făcând clic pe pictograma utilizator din colțul din dreapta sus și selectând **Autentificare**
+1. Accesați **[pagina de autentificare](/login)** făcând clic pe pictograma utilizatorului din colțul din dreapta sus și selectând **Autentificare**
 2. Introduceți **Email** și **Parolă**
 3. Faceți clic pe **Autentificare**
 
-Dacă datele de autentificare sunt corecte, veți fi redirecționat către pagina de selecție a limbii (sau înapoi la pagina pe care o accesați înainte de conectare).
+Dacă datele dvs. de autentificare sunt corecte, veți fi redirecționat către pagina de selectare a limbii (sau înapoi la pagina pe care o accesați înainte de autentificare).
 
 Dacă introduceți un email sau o parolă greșită, apare un mesaj de eroare — verificați ambele câmpuri și încercați din nou.
 
 ## Nu aveți un cont?
 
-Faceți clic pe **Înregistrare** sub formularul de conectare pentru a crea un cont nou. Consultați [Înregistrare](/docs/account/registration) pentru ghidul complet de înscriere.
+Faceți clic pe **Înregistrare** sub formularul de autentificare pentru a crea un cont nou. Consultați [Înregistrare](/docs/account/registration) pentru instrucțiunile complete de înregistrare.
 
 ## Ați uitat parola?
 
 Dacă nu vă amintiți parola:
 
-1. Pe pagina de conectare, faceți clic pe **Ai uitat parola?**
-2. Introduceți adresa de email și faceți clic pe **Trimite linkul de resetare**
-3. Verificați inbox-ul pentru un email de resetare a parolei
+1. Pe pagina de autentificare, faceți clic pe **Ai uitat parola?**
+2. Introduceți adresa dvs. de email și faceți clic pe **Trimite linkul de resetare**
+3. Verificați căsuța poștală pentru un email de resetare a parolei
 4. Urmați linkul din email pentru a seta o parolă nouă
 
-Din motive de securitate, pagina afișează întotdeauna un mesaj de succes după trimitere — chiar dacă emailul nu este înregistrat. Acest lucru împiedică pe oricine să verifice dacă un anumit email are un cont.
+Din motive de securitate, pagina afișează întotdeauna un mesaj de succes după ce trimiteți — chiar dacă emailul nu este înregistrat. Acest lucru împiedică pe cineva să verifice dacă un anumit email are un cont.
 
-> **Notă:** Linkul de resetare a parolei provine de la our server, furnizorul nostru de identitate. Dacă nu vedeți emailul în câteva minute, verificați folderul de spam.
+> **Notă:** Linkul de resetare a parolei vine de la serverul nostru. Dacă nu vedeți emailul în câteva minute, verificați dosarul de spam.
 
 ## Cum să vă deconectați
 
-Faceți clic pe pictograma utilizator din colțul din dreapta sus (arată inițiala dvs.), apoi faceți clic pe **Deconectare** în partea de jos a meniului. Veți fi deconectat și redirecționat către pagina principală.
+Faceți clic pe pictograma utilizatorului din colțul din dreapta sus (arată inițiala dvs.), apoi faceți clic pe **Deconectare** în partea de jos a meniului. Veți fi deconectat și redirecționat către pagina principală.
 
-Deconectarea șterge sesiunea locală, dar cuvintele salvate, istoricul de vizionare și setările sunt păstrate — acestea vor fi restaurate data viitoare când vă conectați.
+Deconectarea șterge sesiunea locală, dar cuvintele salvate, istoricul de vizionare și setările sunt păstrate — vor fi restaurate data viitoare când vă autentificați.
 
 ## Schimbarea conturilor
 
-Pentru a trece la un alt cont, deconectați-vă mai întâi, apoi conectați-vă cu cealaltă adresă de email. Nu există un comutator de conturi — fiecare sesiune de browser utilizează un singur cont odată.
+Pentru a trece la un alt cont, deconectați-vă mai întâi, apoi autentificați-vă cu cealaltă adresă de email. Nu există un comutator de conturi — fiecare sesiune de browser folosește un singur cont la un moment dat.
 
 ## Sfaturi
 
-- Sesiunea de conectare persistă după repornirea browserului — nu va trebui să vă conectați de fiecare dată când vizitați
-- Dacă sunteți pe un dispozitiv partajat, deconectați-vă întotdeauna când ați terminat
+- Sesinea dvs. de autentificare persistă chiar dacă reporniți browserul — nu va trebui să vă autentificați de fiecare dată când vizitați
+- Dacă folosiți un dispozitiv partajat, deconectați-vă întotdeauna când ați terminat
 - Procesul de parolă uitată funcționează chiar dacă v-ați înregistrat cu același email — trimite un link de resetare indiferent
-- Puteți gestiona detaliile contului din **[Profil](/docs/account/profile)**` },
+- Puteți gestiona detaliile contului dvs. din **[Profil](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Profil', category: 'account', content: `# Profil
 
 Pagina ta de profil afișează informațiile contului, nivelul de limbă, starea abonamentului, istoricul vizionărilor și cuvintele salvate — toate într-un singur loc.
@@ -33875,7 +33875,7 @@ Activează **Exact Match** pentru a restrânge rezultatele doar la cuvântul-tit
   'ru': [
     { path: 'account/login', title: 'Вход в систему', category: 'account', content: `# Вход в систему
 
-Войдите в свою учётную запись, восстановите забытый пароль и выйдите из системы, когда закончите.
+Войдите в свою учётную запись, сбросьте забытый пароль и выйдите из системы, когда закончите.
 
 ## Как войти
 
@@ -33883,43 +33883,43 @@ Activează **Exact Match** pentru a restrânge rezultatele doar la cuvântul-tit
 2. Введите свой **Электронная почта** и **Пароль**
 3. Нажмите **Войти**
 
-Если ваши учётные данные верны, вы будете перенаправлены на страницу выбора языка (или обратно на страницу, где находились до входа).
+Если ваши учётные данные верны, вы будете перенаправлены на страницу выбора языка (или обратно на страницу, где вы были до входа).
 
-Если вы ввели неправильный email или пароль, появится сообщение об ошибке — проверьте оба поля и попробуйте снова.
+Если вы ввели неверный email или пароль, появится сообщение об ошибке — проверьте оба поля и попробуйте снова.
 
 ## Нет учётной записи?
 
-Нажмите **Регистрация** под формой входа, чтобы создать новую учётную запись. Полное руководство по регистрации см. в разделе [Регистрация](/docs/account/registration).
+Нажмите **Регистрация** под формой входа, чтобы создать новую учётную запись. См. [Регистрация](/docs/account/registration) для полного руководства по регистрации.
 
 ## Забыли пароль?
 
-Если вы не можете вспомнить свой пароль:
+Если вы не помните свой пароль:
 
 1. На странице входа нажмите **Забыли пароль?**
 2. Введите свой адрес электронной почты и нажмите **Отправить ссылку для сброса**
 3. Проверьте свой почтовый ящик на наличие письма для сброса пароля
 4. Перейдите по ссылке в письме, чтобы установить новый пароль
 
-В целях безопасности страница всегда показывает сообщение об успехе после отправки — даже если email не зарегистрирован. Это prevents возможность проверки того, есть ли у конкретного email учётная запись.
+В целях безопасности страница всегда показывает сообщение об успехе после отправки — даже если email не зарегистрирован. Это предотвращает возможность проверки, привязана ли учётная запись к конкретному email.
 
-> **Примечание:** Ссылка для сброса пароля приходит от our server, нашего поставщика идентификации. Если вы не видите письмо в течение нескольких минут, проверьте папку со спамом.
+> **Примечание:** Ссылка для сброса пароля приходит с нашего сервера. Если вы не видите письмо в течение нескольких минут, проверьте папку «Спам».
 
 ## Как выйти
 
-Нажмите на иконку пользователя в правом верхнем углу (отображается ваша инициал), затем нажмите **Выйти** в нижней части меню. Вы будете выведены из системы и перенаправлены на домашнюю страницу.
+Нажмите на иконку пользователя в правом верхнем углу (отображается ваша инициалка), затем нажмите **Выйти** внизу меню. Вы выйдете из системы и будете перенаправлены на главную страницу.
 
-Выход из системы очищает локальную сессию, но ваши сохранённые слова, история просмотров и настройки сохраняются — они будут восстановлены при следующем входе.
+Выход из системы очищает локальную сессию, но сохранённые слова, история просмотров и настройки сохраняются — они будут восстановлены при следующем входе.
 
-## Переключение учётных записей
+## Переключение между учётными записями
 
 Чтобы переключиться на другую учётную запись, сначала выйдите из системы, затем войдите с другим адресом электронной почты. Переключателя учётных записей нет — каждая сессия браузера использует одну учётную запись за раз.
 
 ## Советы
 
-- Ваша сессия входа сохраняется при перезапуске браузера — вам не нужно будет входить каждый раз при посещении
-- Если вы на общем устройстве, всегда выходите из системы, когда закончите
-- Процедура восстановления пароля работает, даже если вы зарегистрировались с тем же email — она отправляет ссылку для сброса в любом случае
-- Вы можете управлять данными своей учётной записи в своём **[Профиль](/docs/account/profile)**` },
+- Ваша сессия входа сохраняется после перезапуска браузера — вам не нужно входить каждый раз при посещении
+- Если вы используете общее устройство, всегда выходите из системы после завершения работы
+- Процедура восстановления пароля работает, даже если вы зарегистрировались с тем же email — она в любом случае отправляет ссылку для сброса
+- Вы можете управлять данными своей учётной записи из своего **[Профиль](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Профиль', category: 'account', content: `# Профиль
 
 Ваша страница профиля содержит информацию об аккаунте, уровень владения языком, статус подписки, историю просмотров и сохранённые слова — всё в одном месте.
@@ -35346,8 +35346,8 @@ Prijavite se na svoj nalog, resetujte zaboravljenu lozinku i odjavite se kada za
 ## Kako se prijaviti
 
 1. Idite na **[stranicu za prijavu](/login)** klikom na ikonu korisnika u gornjem desnom uglu i izborom **Пријави се**
-2. Unesite svoje **E-pošta** i **Lozinka**
-3. Kliknite na **Пријави се**
+2. Unesite svoj **E-pošta** i **Lozinka**
+3. Kliknite **Пријави се**
 
 Ako su vaši podaci tačni, bićete preusmereni na stranicu za izbor jezika (ili nazad na stranicu na kojoj ste bili pre prijavljivanja).
 
@@ -35355,36 +35355,36 @@ Ako unesete pogrešnu e-adresu ili lozinku, pojavljuje se poruka o grešci — p
 
 ## Nemate nalog?
 
-Kliknite na **Региструј се** ispod obrasca za prijavu da kreirate novi nalog. Pogledajte [Registracija](/docs/account/registration) za potpuno uputstvo za prijavu.
+Kliknite **Региструј се** ispod obrasca za prijavu da biste kreirali novi nalog. Pogledajte [Registracija](/docs/account/registration) za potpuni vodič za registraciju.
 
 ## Zaboravili ste lozinku?
 
-Ako ne možete da se setite svoje lozinke:
+Ako se ne sećate svoje lozinke:
 
-1. Na stranici za prijavu kliknite na **Заборавили сте лозинку?**
-2. Unesite svoju e-adresu i kliknite na **Пошаљи линк за ресетовање**
+1. Na stranici za prijavu kliknite **Заборавили сте лозинку?**
+2. Unesite svoju e-adresu i kliknite **Пошаљи линк за ресетовање**
 3. Proverite prijemno sanduče za e-poruku za resetovanje lozinke
-4. Pratite link u e-poruci da postavite novu lozinku
+4. Pratite link u e-poruci da biste postavili novu lozinku
 
-Iz sigurnosnih razloga, stranica uvek prikazuje poruku o uspehu nakon što pošaljete — čak i ako e-adresa nije registrovana. Ovo sprečava bilo koga da proveri da li određena e-adresa ima nalog.
+Iz bezbednosnih razloga, stranica uvek prikazuje poruku o uspehu nakon što pošaljete obrazac — čak i ako e-adresa nije registrovana. Ovo sprečava bilo koga da proveri da li određena e-adresa ima nalog.
 
-> **Napomena:** Link za resetovanje lozinke dolazi od our server-a, našeg provajdera identiteta. Ako ne vidite e-poruku u roku od nekoliko minuta, proverite fasciklu za neželjenu poštu.
+> **Napomena:** Link za resetovanje lozinke dolazi sa našeg servera. Ako ne vidite e-poruku u roku od nekoliko minuta, proverite fasciklu za neželjenu poštu.
 
 ## Kako se odjaviti
 
-Kliknite na ikonu korisnika u gornjem desnom uglu (prikazuje vaš inicijal), zatim kliknite na **Одјави се** na dnu menija. Bićete odjavljeni i preusmereni na početnu stranicu.
+Kliknite na ikonu korisnika u gornjem desnom uglu (prikazuje vaš inicijal), zatim kliknite **Одјави се** na dnu menija. Bićete odjavljeni i preusmereni na početnu stranicu.
 
-Odjavljivanje briše vašu lokalnu sesiju, ali vaše sačuvane reči, istorija gledanja i podešavanja se čuvaju — biće vraćeni sledeći put kada se prijavite.
+Odjavljivanjem se briše lokalna sesija, ali vaše sačuvane reči, istorija gledanja i podešavanja ostaju sačuvani — biće vraćeni sledeći put kada se prijavite.
 
-## Zamena naloga
+## Promena naloga
 
 Da biste se prebacili na drugi nalog, prvo se odjavite, a zatim se prijavite sa drugom e-adresom. Ne postoji prekidač za naloge — svaka sesija pregledača koristi jedan nalog istovremeno.
 
 ## Saveti
 
-- Vaša sesija prijave traje i nakon ponovnog pokretanja pregledača — nećete morati da se prijavljujete svaki put kada posetite
+- Vaša sesija prijave traje i posle ponovnog pokretanja pregledača — nećete morati da se prijavljujete svaki put kada posetite
 - Ako koristite deljeni uređaj, uvek se odjavite kada završite
-- Proces za zaboravljenu lozinku funkcioniše čak i ako ste se registrovali sa istom e-adresom — šalje link za resetovanje bez obzira na to
+- Postupak za zaboravljenu lozinku funkcioniše čak i ako ste se registrovali sa istom e-adresom — šalje link za resetovanje bez obzira na to
 - Možete upravljati detaljima svog naloga sa **[Профил](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Профил', category: 'account', content: `# Профил
 
@@ -36813,45 +36813,45 @@ Logga in på ditt konto, återställ ett glömt lösenord och logga ut när du �
 ## Så här loggar du in
 
 1. Gå till **[inloggningssidan](/login)** genom att klicka på användarikonen i det övre högra hörnet och välja **Logga in**
-2. Ange din **E-post** och **Lösenord**
+2. Ange dina **E-post** och **Lösenord**
 3. Klicka på **Logga in**
 
-Om dina inloggningsuppgifter är korrekta omdirigeras du till språkvalsidan (eller tillbaka till sidan du var på innan du loggade in).
+Om dina uppgifter är korrekta omdirigeras du till språkvalsidan (eller tillbaka till sidan du var på innan inloggningen).
 
-Om du anger fel e-postadress eller lösenord visas ett felmeddelande — kontrollera båda fälten och försök igen.
+Om du anger fel e-postadress eller lösenord visas ett felmeddelande – dubbelkolla båda fälten och försök igen.
 
 ## Har du inget konto?
 
-Klicka på **Registrera dig** nedanför inloggningsformuläret för att skapa ett nytt konto. Se [Registrering](/docs/account/registration) för en fullständig registreringsgenomgång.
+Klicka på **Registrera dig** under inloggningsformuläret för att skapa ett nytt konto. Se [Registrering](/docs/account/registration) för en fullständig registreringsguide.
 
 ## Glömt ditt lösenord?
 
 Om du inte kommer ihåg ditt lösenord:
 
-1. På inloggningssidan klickar du på **Glömt lösenord?**
+1. Klicka på **Glömt lösenord?** på inloggningssidan
 2. Ange din e-postadress och klicka på **Skicka återställningslänk**
 3. Kontrollera din inkorg för ett e-postmeddelande om lösenordsåterställning
 4. Följ länken i e-postmeddelandet för att ange ett nytt lösenord
 
-Av säkerhetsskäl visar sidan alltid ett bekräftelsemeddelande efter att du skickat — även om e-postadressen inte är registrerad. Detta förhindrar att någon kan kontrollera om en viss e-postadress har ett konto.
+Av säkerhetsskäl visar sidan alltid ett lyckat meddelande efter att du skickat – även om e-postadressen inte är registrerad. Detta förhindrar att någon kan kontrollera om en viss e-postadress har ett konto.
 
-> **Obs:** Länken för lösenordsåterställning kommer från our server, vår identitetsleverantör. Om du inte ser e-postmeddelandet inom några minuter, kontrollera din skräppostmapp.
+> **Obs:** Länken för lösenordsåterställning kommer från vår server. Om du inte ser e-postmeddelandet inom några minuter, kontrollera din skräppostmapp.
 
 ## Så här loggar du ut
 
-Klicka på användarikonen i det övre högra hörnet (den visar din initial), klicka sedan på **Logga ut** längst ner i menyn. Du loggas ut och omdirigeras till startsidan.
+Klicka på användarikonen i det övre högra hörnet (den visar din initial), klicka sedan på **Logga ut** längst ner i menyn. Du kommer att loggas ut och omdirigeras till startsidan.
 
-Att logga ut rensar din lokala session, men dina sparade ord, visningshistorik och inställningar bevaras — de återställs nästa gång du loggar in.
+Utloggning rensar din lokala session, men dina sparade ord, visningshistorik och inställningar bevaras – de återställs nästa gång du loggar in.
 
-## Byta konto
+## Växla konton
 
-För att byta till ett annat konto, logga ut först och logga sedan in med den andra e-postadressen. Det finns ingen kontoväxlare — varje webbläsarsession använder ett konto i taget.
+För att byta till ett annat konto, logga ut först och logga sedan in med den andra e-postadressen. Det finns ingen kontoväxlare – varje webbläsarsession använder ett konto åt gången.
 
 ## Tips
 
-- Din inloggningssession varar över omstarter av webbläsaren — du behöver inte logga in varje gång du besöker sidan
+- Din inloggningssession fortsätter även efter omstart av webbläsaren – du behöver inte logga in varje gång du besöker sidan
 - Om du använder en delad enhet, logga alltid ut när du är klar
-- Flödet för glömt lösenord fungerar även om du registrerat dig med samma e-postadress — det skickar en återställningslänk oavsett
+- Flödet för glömt lösenord fungerar även om du registrerat dig med samma e-postadress – det skickar en återställningslänk oavsett
 - Du kan hantera dina kontouppgifter från din **[Profil](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Profil', category: 'account', content: `# Profil
 
@@ -38272,52 +38272,52 @@ Växla **Exakt träff** för att begränsa resultaten till endast ordbokens grun
 - Använd vyn Lista alla för att snabbt jämföra hur ett ord används i dussintals videor` }
   ],
   'sw': [
-    { path: 'account/login', title: 'Kuingia', category: 'account', content: `# Kuingia
+    { path: 'account/login', title: 'Kuingia', category: 'account', content: `# Kuingia Katika Akaunti
 
-Ingia kwenye akaunti yako, weka upya nenosiri ulilosahau, na utoke nje ukishamaliza.
+Ingia katika akaunti yako, weka upya nywila uliyosahau, na utoke nje ukimaliza.
 
 ## Jinsi ya Kuingia
 
-1. Nenda kwenye **[ukurasa wa kuingia](/login)** kwa kubofya ikoni ya mtumiaji kwenye kona ya juu kulia na kuchagua **Ingia**
+1. Nenda kwenye **[ukurasa wa kuingia](/login)** kwa kubofya aikoni ya mtumiaji kwenye kona ya juu kulia na kuchagua **Ingia**
 2. Weka **Barua pepe** na **Nenosiri** zako
 3. Bofya **Ingia**
 
-Ikiwa siri zako ni sahihi, utaelekezwa kwenye ukurasa wa kuchagua lugha (au kurudi kwenye ukurasa uliokuwa ukiondoka ulipoingia).
+Ikiwa hati zako ni sahihi, utaelekezwa kwenye ukurasa wa kuchagua lugha (au kurudi kwenye ukurasa uliokuwa kabla ya kuingia).
 
-Ikiwa utaingiza barua pepe au nenosiri lisilo sahihi, ujumbe wa hitilafu utaonekana — kagua sehemu zote mbili na ujaribu tena.
+Ukiingiza barua pepe au nywila isiyo sahihi, ujumbe wa makosa unaonekana — angalia mara mbili sehemu zote mbili na ujaribu tena.
 
 ## Huna Akaunti?
 
-Bofya **Jiandikishe** chini ya fomu ya kuingia ili kuunda akaunti mpya. Tazama [Usajili](/docs/account/registration) kwa mwongozo kamili wa kujiandikisha.
+Bofya **Jiandikishe** chini ya fomu ya kuingia ili kuunda akaunti mpya. Tazama [Usajili](/docs/account/registration) kwa maelezo kamili ya usajili.
 
-## Umesahau Nenosiri Lako?
+## Umesahau Nywila Yako?
 
-Ikiwa huwezi kukumbuka nenosiri lako:
+Ikiwa huwezi kukumbuka nywila yako:
 
 1. Kwenye ukurasa wa kuingia, bofya **Umesahau nenosiri?**
 2. Weka anwani yako ya barua pepe na bofya **Tuma kiungo cha kuweka upya**
-3. Angalia kikasha chako cha barua pepe kwa ujumbe wa kuweka upya nenosiri
-4. Fuata kiungo kilicho kwenye barua pepe ili kuweka nenosiri jipya
+3. Angalia kikasha chako cha barua pepe kwa barua pepe ya kuweka upya nywila
+4. Fuata kiungo kilicho kwenye barua pepe ili kuweka nywila mpya
 
 Kwa usalama, ukurasa huwa unaonyesha ujumbe wa mafanikio baada ya kuwasilisha — hata kama barua pepe haijasajiliwa. Hii inazuia mtu yeyote kuangalia kama barua pepe fulani ina akaunti.
 
-> **Kumbuka:** Kiungo cha kuweka upya nenosiri kinatoka kwa our server, mtoa huduma wetu wa utambulisho. Ikiwa huoni barua pepe ndani ya dakika chache, angalia folda yako ya spam.
+> **Kumbuka:** Kiungo cha kuweka upya nywila kinatoka kwa seva yetu. Ikiwa huoni barua pepe ndani ya dakika chache, angalia folda yako ya taka.
 
 ## Jinsi ya Kutoka Nje
 
-Bofya ikoni ya mtumiaji kwenye kona ya juu kulia (inaonyesha herufi yako ya kwanza), kisha bofya **Toka** chini ya menyu. Utatolewa nje na kuelekezwa kwenye ukurasa wa mwanzo.
+Bofya aikoni ya mtumiaji kwenye kona ya juu kulia (inaonyesha herufi yako ya kwanza), kisha bofya **Toka** chini ya menyu. Utatoka nje na uelekezwe kwenye ukurasa wa nyumbani.
 
-Kutoka nje kunafuta kipindi chako cha ndani, lakini maneno yako yaliyohifadhiwa, historia ya kutazama, na mipangilio yako vimehifadhiwa — vitarejeshwa utakapoingia tena.
+Kutoka nje kunafuta kikao chako cha ndani, lakini maneno yako yaliyohifadhiwa, historia ya kutazama, na mipangilio yako inahifadhiwa — vitarejeshwa mara utakapoingia tena.
 
 ## Kubadilisha Akaunti
 
-Ili kubadili akaunti tofauti, toka nje kwanza, kisha ingia kwa anwani nyingine ya barua pepe. Hakuna kibadilisha akaunti — kila kipindi cha kivinjari kinatumia akaunti moja kwa wakati mmoja.
+Ili kubadili akaunti tofauti, toka nje kwanza, kisha ingia kwa anwani nyingine ya barua pepe. Hakuna kibadilisha akaunti — kila kikao cha kivinjari kinatumia akaunti moja kwa wakati mmoja.
 
 ## Vidokezo
 
-- Kipindi chako cha kuingia kinaendelea hata ukianza upya kivinjari — hautahitaji kuingia kila wakati unapotembelea
-- Ikiwa unatumia kifaa cha pamoja, toka nje kila wakati ukishamaliza
-- Mchakato wa nenosiri lililosahaulika unafanya kazi hata kama ulijisajili kwa barua pepe sawa — inatuma kiungo cha kuweka upya bila kujali
+- Kikao chako cha kuingia kinadumu hata ukianza upya kivinjari — hautahitaji kuingia kila unapotembelea
+- Ikiwa uko kwenye kifaa kinachotumiwa na wengine, toka nje ukimaliza
+- Mchakato wa nywila iliyosahauliwa unafanya kazi hata kama ulijiandikisha kwa barua pepe sawa — inatuma kiungo cha kuweka upya bila kujali
 - Unaweza kudhibiti maelezo ya akaunti yako kutoka kwenye **[Wasifu yako](/docs/account/profile)**` },
     { path: 'account/profile', title: 'Wasifu', category: 'account', content: `# Wasifu
 
@@ -39741,50 +39741,50 @@ Washa **Ulinganifu Kamili** ili kupunguza matokeo kwa neno kuu la kamusi pekee. 
   'th': [
     { path: 'account/login', title: 'กำลังเข้าสู่ระบบ', category: 'account', content: `# การเข้าสู่ระบบ
 
-ลงชื่อเข้าใช้บัญชีของคุณ รีเซ็ตรหัสผ่านที่ลืม และออกจากระบบเมื่อคุณทำเสร็จแล้ว
+ลงชื่อเข้าใช้บัญชีของคุณ รีเซ็ตรหัสผ่านที่ลืม และออกจากระบบเมื่อคุณใช้งานเสร็จ
 
 ## วิธีการเข้าสู่ระบบ
 
-1. ไปที่ **[หน้าเข้าสู่ระบบ](/login)** โดยคลิกที่ไอคอนผู้ใช้ที่มุมขวาบน และเลือก **เข้าสู่ระบบ**
+1. ไปที่ **[หน้าเข้าสู่ระบบ](/login)** โดยคลิกที่ไอคอนผู้ใช้ที่มุมขวาบนและเลือก **เข้าสู่ระบบ**
 2. กรอก **อีเมล** และ **รหัสผ่าน** ของคุณ
 3. คลิก **เข้าสู่ระบบ**
 
-หากข้อมูลประจำตัวของคุณถูกต้อง คุณจะถูกเปลี่ยนเส้นทางไปยังหน้าเลือกภาษา (หรือกลับไปยังหน้าที่คุณอยู่ก่อนเข้าสู่ระบบ)
+หากข้อมูลรับรองของคุณถูกต้อง คุณจะถูกนำไปยังหน้าเลือกภาษา (หรือกลับไปยังหน้าที่คุณอยู่ก่อนเข้าสู่ระบบ)
 
-หากคุณป้อนอีเมลหรือรหัสผ่านผิด ข้อความแสดงข้อผิดพลาดจะปรากฏขึ้น — ให้ตรวจสอบทั้งสองช่องอีกครั้งแล้วลองใหม่
+หากคุณป้อนอีเมลหรือรหัสผ่านผิด ข้อความแสดงข้อผิดพลาดจะปรากฏขึ้น — โปรดตรวจสอบทั้งสองช่องอีกครั้งและลองใหม่
 
-## ยังไม่มีบัญชีใช่ไหม?
+## ยังไม่มีบัญชีใช่หรือไม่
 
-คลิก **สมัครสมาชิก** ด้านล่างแบบฟอร์มเข้าสู่ระบบเพื่อสร้างบัญชีใหม่ ดู [การลงทะเบียน](/docs/account/registration) สำหรับขั้นตอนการสมัครสมาชิกทั้งหมด
+คลิก **สมัครสมาชิก** ด้านล่างแบบฟอร์มเข้าสู่ระบบเพื่อสร้างบัญชีใหม่ ดู [การลงทะเบียน](/docs/account/registration) สำหรับคำแนะนำการสมัครสมาชิกแบบเต็ม
 
-## ลืมรหัสผ่านใช่ไหม?
+## ลืมรหัสผ่านใช่หรือไม่
 
 หากคุณจำรหัสผ่านไม่ได้:
 
 1. บนหน้าเข้าสู่ระบบ ให้คลิก **ลืมรหัสผ่าน?**
-2. ป้อนที่อยู่อีเมลของคุณแล้วคลิก **ส่งลิงก์รีเซ็ต**
-3. ตรวจสอบกล่องจดหมายของคุณสำหรับอีเมลรีเซ็ตรหัสผ่าน
-4. ทำตามลิงก์ในอีเมลเพื่อตั้งรหัสผ่านใหม่
+2. ป้อนที่อยู่อีเมลของคุณและคลิก **ส่งลิงก์รีเซ็ต**
+3. ตรวจสอบกล่องจดหมายของคุณเพื่อหาอีเมลรีเซ็ตรหัสผ่าน
+4. ตามลิงก์ในอีเมลเพื่อตั้งรหัสผ่านใหม่
 
-เพื่อความปลอดภัย หน้าจะแสดงข้อความสำเร็จเสมอหลังจากที่คุณส่งข้อมูล — แม้ว่าอีเมลจะไม่ได้ลงทะเบียนก็ตาม วิธีนี้ป้องกันไม่ให้ใครตรวจสอบว่าอีเมลใดมีบัญชีอยู่หรือไม่
+เพื่อความปลอดภัย หน้าจะแสดงข้อความสำเร็จหลังจากที่คุณส่งเสมอ — แม้ว่าอีเมลนั้นจะไม่ได้ลงทะเบียนก็ตาม ซึ่งป้องกันไม่ให้ใครตรวจสอบว่าอีเมลใดมีบัญชีอยู่หรือไม่
 
-> **หมายเหตุ:** ลิงก์รีเซ็ตรหัสผ่านมาจาก our server ซึ่งเป็นผู้ให้บริการระบุตัวตนของเรา หากคุณไม่เห็นอีเมลภายในไม่กี่นาที ให้ตรวจสอบโฟลเดอร์สแปมของคุณ
+> **หมายเหตุ:** ลิงก์รีเซ็ตรหัสผ่านมาจากเซิร์ฟเวอร์ของเรา หากคุณไม่เห็นอีเมลภายในไม่กี่นาที โปรดตรวจสอบโฟลเดอร์สแปมของคุณ
 
 ## วิธีการออกจากระบบ
 
-คลิกที่ไอคอนผู้ใช้ที่มุมขวาบน (แสดงอักษรตัวแรกของคุณ) จากนั้นคลิก **ออกจากระบบ** ที่ด้านล่างของเมนู คุณจะถูกออกจากระบบและเปลี่ยนเส้นทางไปยังหน้าแรก
+คลิกไอคอนผู้ใช้ที่มุมขวาบน (จะแสดงอักษรย่อของคุณ) จากนั้นคลิก **ออกจากระบบ** ที่ด้านล่างของเมนู คุณจะออกจากระบบและถูกนำไปยังหน้าแรก
 
-การออกจากระบบจะล้างเซสชันภายในเครื่องของคุณ แต่คำศัพท์ที่บันทึกไว้ ประวัติการรับชม และการตั้งค่าต่างๆ จะถูกเก็บไว้ — และจะถูกเรียกคืนเมื่อคุณลงชื่อเข้าใช้ครั้งต่อไป
+การออกจากระบบจะล้างเซสชันในเครื่องของคุณ แต่คำศัพท์ที่บันทึกไว้ ประวัติการดู และการตั้งค่าต่างๆ จะถูกเก็บไว้ — จะถูกกู้คืนเมื่อคุณลงชื่อเข้าใช้ครั้งต่อไป
 
 ## การสลับบัญชี
 
-หากต้องการสลับไปยังบัญชีอื่น ให้ออกจากระบบก่อน จากนั้นจึงเข้าสู่ระบบด้วยที่อยู่อีเมลอื่น ไม่มีฟังก์ชันสลับบัญชี — แต่ละเซสชันของเบราว์เซอร์จะใช้บัญชีเดียวในแต่ละครั้ง
+หากต้องการสลับไปยังบัญชีอื่น ให้ออกจากระบบก่อน จากนั้นเข้าสู่ระบบด้วยที่อยู่อีเมลอื่น ไม่มีฟังก์ชันสลับบัญชี — แต่ละเซสชันของเบราว์เซอร์ใช้บัญชีเดียวในแต่ละครั้ง
 
 ## เคล็ดลับ
 
-- เซสชันการเข้าสู่ระบบของคุณจะยังคงอยู่แม้คุณปิดเบราว์เซอร์แล้วเปิดใหม่ — คุณไม่จำเป็นต้องเข้าสู่ระบบทุกครั้งที่เข้ามา
-- หากคุณใช้อุปกรณ์ร่วมกับผู้อื่น ควรออกจากระบบทุกครั้งเมื่อใช้งานเสร็จ
-- ขั้นตอนการลืมรหัสผ่านยังใช้งานได้แม้ว่าคุณจะลงทะเบียนด้วยอีเมลเดียวกัน — ระบบจะส่งลิงก์รีเซ็ตให้เสมอ
+- เซสชันการเข้าสู่ระบบของคุณจะคงอยู่แม้ปิดเบราว์เซอร์ใหม่ — คุณไม่จำเป็นต้องเข้าสู่ระบบทุกครั้งที่เข้ามา
+- หากคุณใช้อุปกรณ์ร่วมกัน ควรออกจากระบบทุกครั้งเมื่อใช้งานเสร็จ
+- กระบวนการลืมรหัสผ่านทำงานได้แม้ว่าคุณจะลงทะเบียนด้วยอีเมลเดียวกัน — จะส่งลิงก์รีเซ็ตเสมอ
 - คุณสามารถจัดการรายละเอียดบัญชีของคุณได้จาก **[โปรไฟล์](/docs/account/profile)**` },
     { path: 'account/profile', title: 'โปรไฟล์', category: 'account', content: `# โปรไฟล์
 
@@ -41207,50 +41207,50 @@ Language Player ใช้พจนานุกรมที่คัดสรร�
   'tr': [
     { path: 'account/login', title: 'Giriş Yapılıyor', category: 'account', content: `# Oturum Açma
 
-Hesabınıza giriş yapın, unuttuğunuz parolayı sıfırlayın ve işiniz bittiğinde çıkış yapın.
+Hesabınıza giriş yapın, unuttuğunuz şifrenizi sıfırlayın ve işiniz bittiğinde çıkış yapın.
 
 ## Nasıl Giriş Yapılır
 
 1. Sağ üst köşedeki kullanıcı simgesine tıklayıp **Giriş Yap** seçerek **[giriş sayfasına](/login)** gidin
 2. **E-posta** ve **Şifre** bilgilerinizi girin
-3. **Giriş Yap** düğmesine tıklayın
+3. **Giriş Yap**'a tıklayın
 
 Kimlik bilgileriniz doğruysa, dil seçimi sayfasına (veya giriş yapmadan önce bulunduğunuz sayfaya) yönlendirilirsiniz.
 
-Yanlış e-posta veya parola girerseniz, bir hata mesajı görünür — her iki alanı da kontrol edip tekrar deneyin.
+Yanlış e-posta veya şifre girerseniz bir hata mesajı görüntülenir — her iki alanı da kontrol edip tekrar deneyin.
 
 ## Hesabınız Yok mu?
 
-Yeni bir hesap oluşturmak için giriş formunun altındaki **Kaydol** düğmesine tıklayın. Kayıt adımlarının tamamı için [Kayıt](/docs/account/registration) bölümüne bakın.
+Giriş formunun altındaki **Kaydol**'a tıklayarak yeni bir hesap oluşturun. Tam kayıt adımları için [Kayıt](/docs/account/registration) bölümüne bakın.
 
-## Parolanızı Unuttunuz mu?
+## Şifrenizi mi Unuttunuz?
 
-Parolanızı hatırlamıyorsanız:
+Şifrenizi hatırlamıyorsanız:
 
-1. Giriş sayfasında **Şifrenizi mi unuttunuz?** düğmesine tıklayın
-2. E-posta adresinizi girin ve **Sıfırlama Bağlantısı Gönder** düğmesine tıklayın
-3. Parola sıfırlama e-postası için gelen kutunuzu kontrol edin
-4. Yeni bir parola belirlemek için e-postadaki bağlantıyı takip edin
+1. Giriş sayfasında **Şifrenizi mi unuttunuz?**'a tıklayın
+2. E-posta adresinizi girin ve **Sıfırlama Bağlantısı Gönder**'ya tıklayın
+3. Gelen kutunuzda şifre sıfırlama e-postasını kontrol edin
+4. E-postadaki bağlantıyı takip ederek yeni bir şifre belirleyin
 
-Güvenlik nedeniyle, sayfa her zaman başarılı bir mesaj gösterir — e-posta kayıtlı olmasa bile. Bu, herhangi birinin belirli bir e-postanın hesabı olup olmadığını kontrol etmesini engeller.
+Güvenlik nedeniyle, e-posta kayıtlı olmasa bile sayfa her zaman bir başarı mesajı gösterir. Bu, belirli bir e-postanın hesabı olup olmadığını kimsenin kontrol etmesini engeller.
 
-> **Not:** Parola sıfırlama bağlantısı, kimlik sağlayıcımız our server'tan gelir. E-postayı birkaç dakika içinde görmezseniz, spam klasörünüzü kontrol edin.
+> **Not:** Şifre sıfırlama bağlantısı sunucumuzdan gelir. E-postayı birkaç dakika içinde görmezseniz spam klasörünüzü kontrol edin.
 
 ## Nasıl Çıkış Yapılır
 
-Sağ üst köşedeki kullanıcı simgesine (baş harfinizi gösterir) tıklayın, ardından menünün altındaki **Çıkış Yap** düğmesine tıklayın. Oturumunuz kapatılır ve ana sayfaya yönlendirilirsiniz.
+Sağ üst köşedeki kullanıcı simgesine (baş harfinizi gösterir) tıklayın, ardından menünün altındaki **Çıkış Yap**'a tıklayın. Oturumunuz kapatılır ve ana sayfaya yönlendirilirsiniz.
 
-Oturumu kapatmak yerel oturumunuzu temizler, ancak kaydettiğiniz kelimeler, izleme geçmişiniz ve ayarlarınız korunur — bir sonraki giriş yaptığınızda geri yüklenir.
+Çıkış yapmak yerel oturumunuzu temizler, ancak kaydedilen kelimeleriniz, izleme geçmişiniz ve ayarlarınız korunur — bir sonraki girişinizde geri yüklenir.
 
-## Hesaplar Arasında Geçiş Yapma
+## Hesap Değiştirme
 
-Farklı bir hesaba geçmek için önce çıkış yapın, ardından diğer e-posta adresiyle giriş yapın. Hesap geçiş aracı yoktur — her tarayıcı oturumu aynı anda yalnızca bir hesap kullanır.
+Farklı bir hesaba geçmek için önce çıkış yapın, ardından diğer e-posta adresiyle giriş yapın. Hesap değiştirici yoktur — her tarayıcı oturumu aynı anda yalnızca bir hesap kullanır.
 
 ## İpuçları
 
-- Oturumunuz tarayıcıyı yeniden başlattığınızda da devam eder — her ziyaretinizde giriş yapmanız gerekmez
-- Ortak bir cihaz kullanıyorsanız, işiniz bittiğinde mutlaka çıkış yapın
-- Parola sıfırlama işlemi, aynı e-posta ile kayıt olmuş olsanız bile çalışır — her durumda bir sıfırlama bağlantısı gönderir
+- Oturumunuz tarayıcıyı yeniden başlatsanız bile devam eder — her ziyaretinizde giriş yapmanız gerekmez
+- Paylaşılan bir cihaz kullanıyorsanız, işiniz bittiğinde her zaman çıkış yapın
+- Aynı e-posta ile kaydolmuş olsanız bile şifre sıfırlama işlemi çalışır — her durumda bir sıfırlama bağlantısı gönderir
 - Hesap bilgilerinizi **[Profil](/docs/account/profile)** sayfasından yönetebilirsiniz` },
     { path: 'account/profile', title: 'Profil', category: 'account', content: `# Profil
 
@@ -42681,13 +42681,13 @@ Varsayılan olarak, arama kelimeyi tüm biçimlerinde arar — çekimler, fiil k
 2. Nhập **Email** và **Mật khẩu** của bạn
 3. Nhấp vào **Đăng nhập**
 
-Nếu thông tin đăng nhập của bạn đúng, bạn sẽ được chuyển hướng đến trang chọn ngôn ngữ (hoặc quay lại trang bạn đã xem trước khi đăng nhập).
+Nếu thông tin đăng nhập của bạn chính xác, bạn sẽ được chuyển hướng đến trang chọn ngôn ngữ (hoặc quay lại trang bạn đang xem trước khi đăng nhập).
 
 Nếu bạn nhập sai email hoặc mật khẩu, một thông báo lỗi sẽ xuất hiện — hãy kiểm tra lại cả hai trường và thử lại.
 
 ## Chưa có tài khoản?
 
-Nhấp vào **Đăng ký** bên dưới biểu mẫu đăng nhập để tạo tài khoản mới. Xem [Đăng ký](/docs/account/registration) để biết hướng dẫn đăng ký chi tiết.
+Nhấp vào **Đăng ký** bên dưới biểu mẫu đăng nhập để tạo tài khoản mới. Xem [Đăng ký](/docs/account/registration) để biết hướng dẫn đăng ký đầy đủ.
 
 ## Quên mật khẩu?
 
@@ -42698,9 +42698,9 @@ Nếu bạn không nhớ mật khẩu của mình:
 3. Kiểm tra hộp thư đến của bạn để tìm email đặt lại mật khẩu
 4. Làm theo liên kết trong email để đặt mật khẩu mới
 
-Vì lý do bảo mật, trang luôn hiển thị thông báo thành công sau khi bạn gửi — ngay cả khi email chưa được đăng ký. Điều này ngăn ngừa ai đó kiểm tra xem một email cụ thể có tài khoản hay không.
+Vì lý do bảo mật, trang luôn hiển thị thông báo thành công sau khi bạn gửi — ngay cả khi email chưa được đăng ký. Điều này ngăn không cho bất kỳ ai kiểm tra xem một email cụ thể có tài khoản hay không.
 
-> **Lưu ý:** Liên kết đặt lại mật khẩu đến từ our server, nhà cung cấp danh tính của chúng tôi. Nếu bạn không thấy email trong vòng vài phút, hãy kiểm tra thư mục spam của bạn.
+> **Lưu ý:** Liên kết đặt lại mật khẩu được gửi từ máy chủ của chúng tôi. Nếu bạn không thấy email trong vòng vài phút, hãy kiểm tra thư mục spam của bạn.
 
 ## Cách đăng xuất
 
@@ -42710,7 +42710,7 @@ Nhấp vào biểu tượng người dùng ở góc trên bên phải (hiển th
 
 ## Chuyển đổi tài khoản
 
-Để chuyển sang tài khoản khác, hãy đăng xuất trước, sau đó đăng nhập bằng địa chỉ email khác. Không có công cụ chuyển đổi tài khoản — mỗi phiên trình duyệt chỉ sử dụng một tài khoản tại một thời điểm.
+Để chuyển sang tài khoản khác, hãy đăng xuất trước, sau đó đăng nhập bằng địa chỉ email khác. Không có tính năng chuyển đổi tài khoản — mỗi phiên trình duyệt chỉ sử dụng một tài khoản tại một thời điểm.
 
 ## Mẹo
 
@@ -44138,53 +44138,53 @@ Chuyển đổi **Khớp Chính Xác** để giới hạn kết quả chỉ ở 
 - Sử dụng chế độ xem Liệt kê tất cả để so sánh cách một từ được sử dụng trong hàng chục video cùng một lúc` }
   ],
   'zh-Hans': [
-    { path: 'account/login', title: '登录', category: 'account', content: `# 登录
+    { path: 'account/login', title: '正在登录', category: 'account', content: `# 登录
 
-登录您的账户，重置忘记的密码，并在完成后退出登录。
+登录您的账户，重置忘记的密码，并在操作完成后退出登录。
 
 ## 如何登录
 
-1. 点击右上角的用户图标，选择 **登录** 进入 **[登录页面](/login)**
+1. 点击右上角的用户图标，然后选择 **登录**，前往 **[登录页面](/login)**
 2. 输入您的 **电子邮箱** 和 **密码**
 3. 点击 **登录**
 
-如果您的凭据正确，您将被重定向到语言选择页面（或返回到登录前所在的页面）。
+如果您的凭据正确，您将被重定向到语言选择页面（或返回登录前所在的页面）。
 
-如果您输入错误的邮箱或密码，会显示错误提示信息——请仔细检查这两个字段，然后重试。
+如果您输入了错误的邮箱或密码，会出现错误提示——请仔细检查这两个字段，然后重试。
 
 ## 没有账户？
 
-点击登录表单下方的 **注册** 创建一个新账户。请参阅 [注册](/docs/account/registration) 了解完整的注册流程。
+点击登录表单下方的 **注册** 创建新账户。请参阅[注册](/docs/account/registration)了解完整的注册流程。
 
 ## 忘记密码？
 
-如果您记不住密码：
+如果您不记得密码：
 
 1. 在登录页面，点击 **忘记密码？**
 2. 输入您的邮箱地址，然后点击 **发送重置链接**
-3. 在收件箱中查找密码重置邮件
+3. 查看收件箱中的密码重置邮件
 4. 点击邮件中的链接设置新密码
 
-出于安全考虑，提交后页面始终会显示成功提示——即使该邮箱未注册。这可以防止他人检查特定邮箱是否已有账户。
+出于安全考虑，提交后页面始终显示成功消息——即使该邮箱未注册。这可以防止任何人检查某个邮箱是否拥有账户。
 
-> **注意：** 密码重置链接来自我们的身份提供商 our server。如果几分钟后仍未收到邮件，请检查您的垃圾邮件文件夹。
+> **注意：** 密码重置链接来自我们的服务器。如果您在几分钟内未收到邮件，请检查垃圾邮件文件夹。
 
 ## 如何退出登录
 
-点击右上角的用户图标（显示您的首字母），然后点击菜单底部的 **退出登录**。您将被退出登录并重定向到首页。
+点击右上角的用户图标（显示您的姓名首字母），然后点击菜单底部的 **退出登录**。您将被退出登录并重定向到首页。
 
-退出登录会清除您的本地会话，但您保存的单词、观看历史记录和设置将被保留——下次登录时会自动恢复。
+退出登录会清除您的本地会话，但已保存的单词、观看历史记录和设置会保留——下次登录时会恢复。
 
 ## 切换账户
 
-要切换到其他账户，请先退出登录，然后使用其他邮箱地址重新登录。没有账户切换功能——每个浏览器会话一次只能使用一个账户。
+要切换到其他账户，请先退出登录，然后使用另一个邮箱地址登录。没有账户切换器——每个浏览器会话一次只能使用一个账户。
 
 ## 提示
 
-- 您的登录会话在浏览器重启后仍然有效——无需每次访问都重新登录
-- 如果您使用共享设备，使用完毕后请务必退出登录
-- 忘记密码流程即使您使用同一邮箱注册也能正常工作——系统会发送重置链接
-- 您可以在 **[个人资料](/docs/account/profile)** 管理您的账户详情` },
+- 您的登录会话在浏览器重启后仍然有效——无需每次访问都登录
+- 如果您在使用共享设备，操作完成后务必退出登录
+- 即使您是用同一邮箱注册的，忘记密码流程也能正常使用——它都会发送重置链接
+- 您可以从您的 **[个人资料](/docs/account/profile)** 管理账户详情` },
     { path: 'account/profile', title: '个人资料', category: 'account', content: `# 个人资料
 
 您的个人资料页面集中显示账户信息、语言水平、订阅状态、观看历史和已保存单词——所有内容一目了然。
@@ -45606,50 +45606,50 @@ Language Player使用经过整理和版本管理的词典，数据来源于开�
   'zh-Hant': [
     { path: 'account/login', title: '登入中', category: 'account', content: `# 登入
 
-登入您的帳戶、重設忘記的密碼，並在完成後登出。
+登入您的帳戶、重設忘記的密碼，並在使用完畢後登出。
 
 ## 如何登入
 
-1. 點擊右上角的使用者圖示，選取 **登入**，前往 **[登入頁面](/login)**
+1. 點擊右上角的用戶圖示，然後選擇 **登入**，前往 **[登入頁面](/login)**
 2. 輸入您的 **電子信箱** 與 **密碼**
 3. 點擊 **登入**
 
-若您的憑證正確，系統會將您重新導向至語言選擇頁面（或返回登入前所在的頁面）。
+如果您的憑證正確，系統會將您重新導向至語言選擇頁面（或是返回登入前所在的頁面）。
 
-若您輸入錯誤的電子郵件或密碼，會出現錯誤訊息——請仔細檢查這兩個欄位後再試一次。
+如果您輸入的電子郵件或密碼錯誤，就會出現錯誤訊息——請重新檢查這兩個欄位後再試一次。
 
-## 沒有帳戶嗎？
+## 還沒有帳戶？
 
-點擊登入表單下方的 **註冊** 來建立新帳戶。請參閱[註冊](/docs/account/registration)以取得完整的註冊操作說明。
+點擊登入表單下方的 **註冊** 來建立新帳戶。請參閱 [註冊](/docs/account/registration) 取得完整的註冊說明。
 
 ## 忘記密碼？
 
-如果您不記得密碼：
+如果您想不起密碼：
 
 1. 在登入頁面上，點擊 **忘記密碼？**
 2. 輸入您的電子郵件地址，然後點擊 **傳送重設連結**
-3. 檢查收件匣中是否有密碼重設郵件
+3. 檢查您的收件匣，尋找密碼重設郵件
 4. 依照郵件中的連結設定新密碼
 
-為安全起見，提交後頁面一律顯示成功訊息——即使該電子郵件並未註冊。這樣可防止任何人檢查特定電子郵件是否擁有帳戶。
+為安全起見，送出後頁面一律會顯示成功訊息——即使該電子郵件尚未註冊也一樣。這樣可以防止任何人查詢特定電子郵件是否已有帳戶。
 
-> **注意：** 密碼重設連結來自我們的身份驗證提供商 our server。若您在數分鐘內未收到郵件，請檢查您的垃圾郵件資料夾。
+> **注意：** 密碼重設連結來自我們的伺服器。如果幾分鐘內未收到郵件，請檢查您的垃圾郵件資料夾。
 
 ## 如何登出
 
-點擊右上角的使用者圖示（會顯示您的姓名縮寫），然後點擊選單底部的 **登出**。您將會登出並重新導向至首頁。
+點擊右上角的用戶圖示（會顯示您的名字縮寫），然後點擊選單底部的 **登出**。您將會登出並被重新導向至首頁。
 
-登出會清除您本機的工作階段，但您儲存的單字、觀看記錄和設定都會保留——下次登入時會恢復。
+登出會清除您在本機的作業階段，但您儲存的單字、觀看記錄與設定都會保留——下次登入時就會恢復。
 
 ## 切換帳戶
 
-若要切換至不同的帳戶，請先登出，再使用另一個電子郵件地址登入。沒有帳戶切換器——每個瀏覽器工作階段一次只能使用一個帳戶。
+若要切換到其他帳戶，請先登出，再使用另一個電子郵件地址登入。沒有帳戶切換功能——每個瀏覽器作業階段一次只能使用一個帳戶。
 
 ## 提示
 
-- 您的登入工作階段在瀏覽器重新啟動後仍會持續——您無需每次造訪都重新登入
-- 若您使用共用裝置，完成後請務必登出
-- 即使您使用相同電子郵件註冊，忘記密碼流程同樣有效——系統仍會寄送重設連結
+- 您的登入作業階段會在瀏覽器重新啟動後持續保留——您無需每次造訪都重新登入
+- 如果您使用的是共用裝置，使用完畢後請務必登出
+- 即使您使用相同的電子郵件註冊，忘記密碼流程仍可使用——系統會一律寄送重設連結
 - 您可以從您的 **[個人資料](/docs/account/profile)** 管理帳戶詳細資料` },
     { path: 'account/profile', title: '個人資料', category: 'account', content: `# 個人資料
 
