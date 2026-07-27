@@ -170,3 +170,89 @@ export function getLevelFromDifficulty(
   }
   return profile.length;
 }
+
+// ── Local Tokenization Config (SPEC-018) ─────────────────────────────
+
+/**
+ * Per-language configuration for local (offline) tokenization and lemmatization.
+ *
+ * - `snowballCode`: snowball-stemmers language identifier, or null if not supported.
+ *   snowball-stemmers is a pure-JS algorithmic stemmer (~25 KB per language, bundled).
+ * - `hasLemmaTable`: whether a `{surface: [lemma, ...]}` table is available for
+ *   download from the server via GET /lemmatization/export.
+ * - `lemmaTableSize`: estimated download size in bytes (gzipped JSON).
+ *
+ * See ARCH-018 and SPEC-018 for the full per-language taxonomy.
+ */
+export interface TokenizerConfig {
+  /** snowball-stemmers language code (lowercase English name), or null */
+  snowballCode: string | null;
+  /** Whether the server can export a lemma table for this language */
+  hasLemmaTable: boolean;
+  /** Estimated download size in bytes for the lemma table */
+  lemmaTableSize: number;
+}
+
+/**
+ * Per-language offline tokenization configuration.
+ *
+ * Only languages that have at least one offline lemmatization strategy
+ * (snowball stemmer or downloadable lemma table) are listed.
+ * All other languages default to regex word-split + surface-as-lemma.
+ *
+ * Size estimates are rough upper bounds; actual gzipped JSON is typically
+ * 40–60% smaller. Numbers based on existing LemmatizationList TSV files
+ * and Simplemma dictionary sizes from the Python server.
+ */
+export const TOKENIZER_CONFIG: Record<string, TokenizerConfig> = {
+  // ── Snowball + Lemma Table (both available, 13 languages) ──
+  ca: { snowballCode: 'catalan', hasLemmaTable: true, lemmaTableSize: 200_000 },
+  cs: { snowballCode: 'czech', hasLemmaTable: true, lemmaTableSize: 300_000 },
+  da: { snowballCode: 'danish', hasLemmaTable: true, lemmaTableSize: 150_000 },
+  de: { snowballCode: 'german', hasLemmaTable: true, lemmaTableSize: 300_000 },
+  en: { snowballCode: 'english', hasLemmaTable: true, lemmaTableSize: 200_000 },
+  es: { snowballCode: 'spanish', hasLemmaTable: true, lemmaTableSize: 280_000 },
+  fi: { snowballCode: 'finnish', hasLemmaTable: true, lemmaTableSize: 250_000 },
+  fr: { snowballCode: 'french', hasLemmaTable: true, lemmaTableSize: 250_000 },
+  ga: { snowballCode: 'irish', hasLemmaTable: true, lemmaTableSize: 120_000 },
+  hu: { snowballCode: 'hungarian', hasLemmaTable: true, lemmaTableSize: 300_000 },
+  it: { snowballCode: 'italian', hasLemmaTable: true, lemmaTableSize: 250_000 },
+  nl: { snowballCode: 'dutch', hasLemmaTable: true, lemmaTableSize: 200_000 },
+  pt: { snowballCode: 'portuguese', hasLemmaTable: true, lemmaTableSize: 250_000 },
+  ro: { snowballCode: 'romanian', hasLemmaTable: true, lemmaTableSize: 200_000 },
+  ru: { snowballCode: 'russian', hasLemmaTable: true, lemmaTableSize: 350_000 },
+  sl: { snowballCode: 'slovene', hasLemmaTable: true, lemmaTableSize: 180_000 },
+  sv: { snowballCode: 'swedish', hasLemmaTable: true, lemmaTableSize: 200_000 },
+  tr: { snowballCode: 'turkish', hasLemmaTable: true, lemmaTableSize: 200_000 },
+
+  // ── Snowball only (no lemma table, 5 languages) ──
+  eu: { snowballCode: 'basque', hasLemmaTable: false, lemmaTableSize: 0 },
+  hy: { snowballCode: 'armenian', hasLemmaTable: false, lemmaTableSize: 0 },
+  nb: { snowballCode: 'norwegian', hasLemmaTable: false, lemmaTableSize: 0 },
+  no: { snowballCode: 'norwegian', hasLemmaTable: false, lemmaTableSize: 0 },
+  ta: { snowballCode: 'tamil', hasLemmaTable: false, lemmaTableSize: 0 },
+
+  // ── Lemma Table only (no snowball, 22 languages) ──
+  ast: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 180_000 },
+  bg: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 200_000 },
+  cy: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 80_000 },
+  el: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
+  et: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
+  fa: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 100_000 },
+  gd: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 60_000 },
+  gl: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
+  gv: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 40_000 },
+  hr: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 300_000 },
+  is: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 120_000 },
+  ka: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
+  la: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
+  lt: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
+  lv: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 150_000 },
+  mk: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 120_000 },
+  nn: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 100_000 },
+  pl: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 250_000 },
+  sk: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 200_000 },
+  sq: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 100_000 },
+  sw: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 80_000 },
+  uk: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 250_000 },
+};
