@@ -23,8 +23,7 @@
 | Login | `app/login.tsx` | ✅ | `login/page.tsx` | |
 | Register | `app/register.tsx` | ✅ | `register/page.tsx` | Name fields, email, password + confirmation, client-side validation |
 | Forgot Password | `app/forgot-password.tsx` | ✅ | `forgot-password/page.tsx` | |
-| Select L1 | `app/select-l1.tsx` | ✅ | `language-select/page.tsx` | Localized names via `lang.xx` keys, search, popular/all grouping |
-| Select L2 | `app/select-l2.tsx` | ✅ | `language-select/page.tsx` | Localized names via `lang.xx` keys, search, popular/all grouping |
+| Select Language | `app/select-language.tsx` | ✅ | `language-select/page.tsx` | Unified L1+L2 selection (replaces two-screen flow). Localized names via `lang.xx` keys, search, popular/all grouping |
 | Go Pro — Error | `app/go-pro-error.tsx` | ✅ | `go-pro-error/page.tsx` | |
 | Go Pro — Success | `app/go-pro-success.tsx` | ✅ | `go-pro-success/page.tsx` | |
 
@@ -81,6 +80,8 @@
 | TokenizedText | `components/TokenizedText.tsx` | ✅ | Core — tappable word tokens, lemmatization, dictionary popup |
 | TabbedPanel | `components/TabbedPanel.tsx` | ✅ | Reusable tab bar + content switcher |
 | EPUB Chapter Sidebar | `components/reader/epub-chapter-sidebar.tsx` | ✅ | Chapter TOC with prev/next nav |
+| EPUB Cover | `components/reader/EpubCover.tsx` | ✅ | EPUB cover image rendering |
+| Paginated Reader | `components/reader/PaginatedReader.tsx` | ✅ | Shared paginated content renderer (EPUB + notes reader) |
 
 ---
 
@@ -102,6 +103,8 @@
 | Save Button | `components/dictionary/SaveButton.tsx` | ✅ | Bookmark save/unsave toggle |
 | Search Bar | `components/dictionary/SearchBar.tsx` | ✅ | With clear + loading spinner |
 | Word List | `components/dictionary/WordList.tsx` | ✅ | Reusable FlatList for saved words |
+| Lookup Source Indicator | `components/dictionary/LookupSourceIndicator.tsx` | ✅ | Shows which dictionary source provided the entry |
+| Offline Banner | `components/dictionary/OfflineBanner.tsx` | ✅ | Offline availability status banner |
 
 ---
 
@@ -111,11 +114,22 @@
 |---|---|---|---|---|
 | Profile / Me | `(tabs)/(me)/index.tsx` | ✅ | — | Menu list with semantic NativeWind design tokens |
 | Profile Detail | `(tabs)/(me)/profile.tsx` | ✅ | `[l1]/[l2]/profile/page.tsx` | Info + watch history + saved words previews. Includes subscription management (pro status, cancel auto-renew, expire dates, lifetime upsell) and language level selector |
-| Go Pro | `(tabs)/(me)/go-pro.tsx` | ✅ | `[l1]/[l2]/go-pro/page.tsx` | Plan selection, Stripe credit card checkout, WeChat Pay, Alipay, PayPal (lifetime). **IAP not ported** — Nuxt had `@ionic-native/in-app-purchase-2`; GO legacy had `react-native-iap` (stubbed for SDK 57); Python validates Apple receipts; mobile needs its own IAP solution |
+| Go Pro | `(tabs)/(me)/go-pro.tsx` | ✅ | `[l1]/[l2]/go-pro/page.tsx` | Plan selection, Stripe credit card checkout, WeChat Pay, Alipay, PayPal (lifetime). **IAP not ported** — see [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 5. |
 | Settings | `(tabs)/(me)/settings/` | ✅ | `[l1]/[l2]/settings/page.tsx` | List→detail navigation with search (Display/Playback/Speech/Review + Offline Dictionaries). Full parity with web: theme, translation preview, popup dictionary, font/text size, phonetics, word-level display, Chinese/Korean/Vietnamese options, quiz mode, captions/karaoke/auto-pause, voice picker, new cards/day. iPad split view. Settings saved confirmation badge. Native stack header respects light/dark theme. See [SPEC-015](../../docs/specs/015-mobile-settings-completion.md). |
 | About | `(tabs)/(me)/about.tsx` | ✅ | ✅ | Basic app info |
 | Docs / Help | `(tabs)/(me)/docs.tsx` | ✅ | `[l1]/[l2]/docs/` | Searchable doc listing. MarkdownText rendering (headings, lists, bold/italic, code, links) + "On this page" heading TOC sidebar |
 | Tokenizer Debug | `(tabs)/(me)/tokenizer.tsx` | ✅ | `[l1]/[l2]/tokenizer/page.tsx` | Dev tool |
+| Offline Dictionaries | `(tabs)/(me)/offline-dictionaries.tsx` | ✅ | — | Manage downloaded offline dictionaries |
+
+### Settings Sub-Components
+
+| Component | File | Status | Notes |
+|---|---|---|---|
+| Search Bar | `(tabs)/(me)/settings/_components/SearchBar.tsx` | ✅ | Settings search/filter |
+| Section Header | `(tabs)/(me)/settings/_components/SectionHeader.tsx` | ✅ | Grouped settings section title |
+| Segmented Row | `(tabs)/(me)/settings/_components/SegmentedRow.tsx` | ✅ | Multi-option segmented control row |
+| Slider Row | `(tabs)/(me)/settings/_components/SliderRow.tsx` | ✅ | Slider input row |
+| Toggle Row | `(tabs)/(me)/settings/_components/ToggleRow.tsx` | ✅ | Switch toggle row |
 
 ### Layout Components
 
@@ -138,6 +152,18 @@
 | Inflection Table | `components/InflectionTable.tsx` | ✅ | Multi-language inflection support |
 | MarkdownText | `components/MarkdownText.tsx` | ✅ | Basic markdown rendering |
 | VoicePicker | `components/VoicePicker.tsx` | ✅ | TTS voice selector with rate control |
+| Language Picker | `components/LanguagePicker.tsx` | ✅ | Language selection (L1/L2) |
+| Language Picker Narrow | `components/LanguagePickerNarrow.tsx` | ✅ | Narrow layout variant |
+| Language Picker Wide | `components/LanguagePickerWide.tsx` | ✅ | Wide layout variant |
+
+### UI Primitives
+
+| Component | File | Status | Notes |
+|---|---|---|---|
+| Dialog | `components/ui/dialog.tsx` | ✅ | Modal dialog primitive |
+| Select | `components/ui/select.tsx` | ✅ | Select/dropdown primitive |
+| Switch | `components/ui/switch.tsx` | ✅ | Toggle switch primitive |
+| Tabs | `components/ui/tabs.tsx` | ✅ | Tab bar primitive |
 
 ---
 
@@ -159,6 +185,10 @@
 | Difficulty Profile | `hooks/use-difficulty-profile.ts` | ✅ | Module-level cached fetch for difficulty profiles |
 | Local Media | `hooks/use-local-media.ts` | ✅ | File picker, subtitle parsing, position auto-save |
 | Inflected Search Terms | `hooks/use-inflected-search-terms.ts` | ✅ | Head + alternate forms for subs search |
+| Active Line Index | `hooks/use-active-line-index.ts` | ✅ | Current active subtitle line tracking |
+| EPUB Pagination | `hooks/use-epub-pagination.ts` | ✅ | Paginated EPUB content rendering |
+| Progress Level | `hooks/use-progress-level.ts` | ✅ | Per-L2 proficiency level tracking |
+| Transcript Auto-Scroll | `hooks/use-transcript-auto-scroll.ts` | ✅ | Auto-scroll transcript to active line |
 
 ---
 
@@ -188,25 +218,121 @@
 
 ## 📋 Features Not Yet Ported at All
 
+> **Priority key:** 🔴 High (revenue/blocker) · 🟠 Medium (UX gap) · 🔵 Low (nice-to-have) · ⚪ Polish (auth) · ◻️ N/A
+
 These exist in the Next.js web app but have **no mobile equivalent yet**:
 
-| Feature | Web Route | Priority | Notes |
+| Feature | Web Source | Priority | Notes |
 |---|---|---|---|
-| TV Show Detail | `tv-shows/[id]/` | ~~Medium~~ ✅ Ported | Episode list, metadata, seasons |
-| Dictionary Entry Detail | `dictionary/entry/.../` | Low | Deep link target — word detail exists but full entry page missing |
-| Local Tokenizer | — | ⬜ | `api/tokenize` | Offline tokenization via local model/WebAssembly. Currently all tokenization requires a round-trip to the Python backend (`POST /dictionary/tokenize`). A local tokenizer would enable offline reading and faster tokenization without network dependency. |
-| In-App Purchase (IAP) | — | ⬜ | Apple App Store / Google Play Store. **Nuxt classic had it** (`@ionic-native/in-app-purchase-2` + Capacitor). **GO legacy had it but removed** — `IOSPaymentMethods.tsx` is a stub (`react-native-iap` removed for SDK 57 compatibility); falls back to `OnlyLifetimePlan` for iOS non-lifetime. **Python backend validates Apple receipts** (`app_in_app_purchase.py` via `inapppy.AppStoreValidator`). **Mobile app needs IAP** — needs `expo-in-app-purchases`. See SPEC-014 Phase 5. |
-| Subscription State (Context) | — | ⬜ | Unified subscription state management across web & mobile. Requires `SubscriptionContext` in `apps/mobile/contexts/`. Fetches `/user-subscription`, exposes `isPro`/`planType`/`willAutoRenew`/`cancelSubscription()`. See SPEC-014 Phase 4. |
-| Sale Pricing | — | ⬜ | Show sale banner + discounted prices when `type: 'sale'` prices are active in `prices.csv`. Sale detection logic from Classic app. See SPEC-014 Phase 9. |
-| Interaction Primitives (@rn-primitives) | — | ⬜ | Adopt `@rn-primitives` (Dialog, Select, Switch, Tabs, Drawer) for headless interaction behavior — portal rendering, focus trapping, overlay touch capture. Wrapped with NativeWind + shared design tokens. Mirrors web's `@base-ui/react` adoption (commit `28ceadfda1`). See [ADR-0014](../../docs/adr/0014-rn-primitives-interaction-primitives.md). |
-| Password Reset (token) | `/password-reset` | Low | Complete after email link click |
-| Verify Email | `/verify-email` | Low | Email verification landing |
-| Delete Account | `/delete-account` | Low | |
-| API routes | `api/` | N/A | Not applicable to mobile — uses Python backend directly |
+| In-App Purchase (IAP) | — | 🔴 High | Apple App Store / Google Play Store. See [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 5. |
+| Subscription State (Context) | `use-subscription.ts` | 🔴 High | Unified subscription state management across web & mobile. Requires `SubscriptionContext` in `apps/mobile/contexts/`. See [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 4. |
+| Sale Pricing | — | 🟠 Medium | Show sale banner + discounted prices when `type: 'sale'` prices are active in `prices.csv`. See [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 9. |
+| Channel Subscribe/Actions | `channel-actions-menu.tsx` + `use-channel-preference.ts` | 🟠 Medium | Subscribe, unsubscribe, "not interested" per-channel preferences. Reusable menu component used on watch page and channel cards. |
+| Inline Word Definitions | `inline-definition.tsx` | 🟠 Medium | Saved-words page shows definitions inline with module-level cache (no popup needed). Mobile requires tapping each word to open DictionaryPopup. |
+| Text Action Menu | `text-action-menu.tsx` | 🟠 Medium | Select text in reader → floating menu (speak, copy, AI explain, translate, save). Mobile handles word taps via DictionaryPopup but missing multi-action selection menu. |
+| Notes Sidebar (Web Reader) | `notes-sidebar.tsx` | 🟠 Medium | List of notes with rename/delete in web reader. Mobile web-reader currently has no notes panel. |
+| Saved Word Source | `saved-word-source.tsx` | 🟠 Medium | Shows which video/article a saved word came from. |
+| Dictionary Entry Detail | `dictionary/entry/[dictionaryId]/[entryId]/page.tsx` | 🔵 Low | Deep link target — word detail exists but full entry page missing |
+| Local Tokenizer | — | 🔵 Low | Offline tokenization via local model/WebAssembly. Currently all tokenization requires a round-trip to the Python backend (`POST /dictionary/tokenize`). See [SPEC-016](../../docs/specs/016-mobile-local-tokenization.md). |
+| Interaction Primitives (@rn-primitives) | — | 🔵 Low | Adopt `@rn-primitives` (Dialog, Select, Switch, Tabs, Drawer) for headless interaction behavior. See [ADR-0014](../../docs/adr/0014-rn-primitives-interaction-primitives.md). |
+| Pitch Accent Display | `pitch-accent.tsx` | 🔵 Low | Japanese kana with pitch accent markings (morae splitting + accent kernel). Critical for JP learners. |
+| Script Preference | `use-script-preference.ts` | 🔵 Low | Shows alternate script form next to headwords (simplified↔traditional Chinese, chữ Hán for VI, hanja for KO). |
+| Password Reset (token) | `/password-reset` | ⚪ Polish | Complete after email link click |
+| Verify Email | `/verify-email` | ⚪ Polish | Email verification landing |
+| Delete Account | `/delete-account` | ⚪ Polish | |
+| API routes | `api/` | ◻️ N/A | Not applicable to mobile — uses Python backend directly |
 
 ---
 
-## Current Focus
+## 📅 Phased Implementation Plan
 
-- 🔄 **Phase 7**: Mobile Integration — ✅ Settings parity with web complete (SPEC-015). Next: local tokenizer, IAP evaluation, interaction primitives migration (`@rn-primitives` per ADR-0014)
-- Up next: finish remaining 🟡 screens, then full feature parity audit against Classic
+> Ordered by priority: revenue → core UX → learner-specific → infrastructure → auth polish.
+
+### Phase 1: Monetization 🔴
+
+| # | Feature | Effort | Dependencies | Spec |
+|---|---|---|---|---|
+| 1.1 | Subscription State Context | S | None | [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 4 |
+| 1.2 | In-App Purchase (IAP) | L | 1.1 (needs context for feature gating) | [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 5 |
+| 1.3 | Sale Pricing | M | 1.1 | [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 9 |
+
+**Goal:** App Store submission readiness. IAP is a hard requirement for iOS App Store; SubscriptionContext is a prerequisite for both IAP and sale pricing.
+
+---
+
+### Phase 2: Saved Words UX 🟠
+
+| # | Feature | Effort | Dependencies | Notes |
+|---|---|---|---|---|
+| 2.1 | Inline Word Definitions | M | None | Module-level cache + IntersectionObserver-style lazy load. Eliminates tap-to-open-popup friction on saved-words screen. |
+| 2.2 | Saved Word Source | S | None | Shows originating video/article for each saved word. |
+
+**Goal:** Bring saved-words browsing to parity with web. Currently mobile requires tapping every word individually to see its definition — the #1 UX gap for daily vocab review.
+
+---
+
+### Phase 3: Reader Experience 🟡
+
+| # | Feature | Effort | Dependencies | Notes |
+|---|---|---|---|---|
+| 3.1 | Text Action Menu | M | None | Floating menu on text selection: speak, copy, AI explain, translate, save. Web uses portal-based positioning; mobile needs a bottom sheet or contextual overlay. |
+| 3.2 | Notes Sidebar (Web Reader) | M | None | Note list with rename/delete in web reader. Requires `useReaderNotes` integration into the web-reader screen. |
+
+**Goal:** Complete the reader experience. Text selection actions are expected by users coming from web; notes sidebar is already noted as missing in the web-reader STATUS entry.
+
+---
+
+### Phase 4: Content Discovery 🟡
+
+| # | Feature | Effort | Dependencies | Notes |
+|---|---|---|---|---|
+| 4.1 | Channel Subscribe/Actions | M | `use-channel-preference` hook | Subscribe, unsubscribe, "not interested" per channel. Affects video recommendations. Reusable component — appears on watch page and channel cards. |
+
+**Goal:** Channel preferences influence content recommendations and let users curate their feed.
+
+---
+
+### Phase 5: CJK Language Support 🟢
+
+| # | Feature | Effort | Dependencies | Notes |
+|---|---|---|---|---|
+| 5.1 | Script Preference | S | None | Simplified↔traditional Chinese, chữ Hán (VI), hanja (KO). Pure display logic — reads existing settings, shows alternate script beside headwords. |
+| 5.2 | Pitch Accent Display | S | None | Japanese kana with pitch accent markings. `@langplayer/utils` already exports `splitIntoMoras` + `applyPitchAccent`. |
+
+**Goal:** Critical display features for Chinese, Japanese, Korean, and Vietnamese learners. Both are small, self-contained components.
+
+---
+
+### Phase 6: Infrastructure & Polish 🔵
+
+| # | Feature | Effort | Dependencies | Notes |
+|---|---|---|---|---|
+| 6.1 | Interaction Primitives (@rn-primitives) | L | None (incremental adoption) | Replace current UI primitives with headless interaction behavior. See [ADR-0014](../../docs/adr/0014-rn-primitives-interaction-primitives.md). |
+| 6.2 | Local Tokenizer | XL | Offline dictionary downloads (SPEC-013) | Offline tokenization via local model/WebAssembly. See [SPEC-016](../../docs/specs/016-mobile-local-tokenization.md). |
+| 6.3 | Dictionary Entry Detail (full page) | M | None | Full entry page at `word/[entryId]` for deep linking. Current mobile word detail covers ~80% of the web page. |
+
+**Goal:** Architecture improvements and deep linking support. Local tokenizer is the largest remaining feature — enables fully offline reading.
+
+---
+
+### Phase 7: Auth Completion ⚪
+
+| # | Feature | Effort | Dependencies | Notes |
+|---|---|---|---|---|
+| 7.1 | Password Reset | S | Backend email config | Complete flow after email link click. |
+| 7.2 | Verify Email | S | Backend email config | Email verification landing page. |
+| 7.3 | Delete Account | S | None | Account deletion confirmation flow. |
+
+**Goal:** Complete auth lifecycle. Web already handles these — mobile needs them for standalone app store distribution.
+
+---
+
+### Effort Legend
+
+| Label | Meaning |
+|---|---|
+| S | Small — ~1–2 days |
+| M | Medium — ~3–5 days |
+| L | Large — ~1–2 weeks |
+| XL | Extra Large — multi-sprint |
+
