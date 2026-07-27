@@ -179,3 +179,146 @@ export async function downloadLemmaTable(
     return false;
   }
 }
+
+// ── Phase 2c: kuromoji data pack ────────────────────────────────────
+// Downloaded IPADIC dictionary files (.dat.gz) stored on the device
+// filesystem for kuromoji's Japanese morphological analysis.
+// Hosted as a zip archive at GET /lemmatization/download?l2=ja.
+
+import * as FileSystem from 'expo-file-system/legacy';
+
+const TOKENIZER_DIR = `${FileSystem.documentDirectory}tokenizers/`;
+
+/**
+ * Files that make up the kuromoji IPADIC dictionary data pack.
+ * Same file list as kuromoji's DictionaryLoader.load() expects.
+ */
+const KROMOJI_DICT_FILES = [
+  'base.dat.gz',
+  'check.dat.gz',
+  'tid.dat.gz',
+  'tid_pos.dat.gz',
+  'tid_map.dat.gz',
+  'cc.dat.gz',
+  'unk.dat.gz',
+  'unk_pos.dat.gz',
+  'unk_map.dat.gz',
+  'unk_char.dat.gz',
+  'unk_compat.dat.gz',
+  'unk_invoke.dat.gz',
+];
+
+/**
+ * Check if the kuromoji data pack has been downloaded for a language.
+ *
+ * @param l2 - Language code (e.g., 'ja')
+ * @returns true if all required dictionary files exist on disk
+ */
+export async function hasKuromojiData(l2: string): Promise<boolean> {
+  const dir = `${TOKENIZER_DIR}${l2}/`;
+  try {
+    const results = await Promise.all(
+      KROMOJI_DICT_FILES.map((f) =>
+        FileSystem.getInfoAsync(`${dir}${f}`).then((r) => r.exists),
+      ),
+    );
+    return results.every(Boolean);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Get the local filesystem path for a language's kuromoji data directory.
+ *
+ * @param l2 - Language code
+ * @returns Absolute path ending with '/' where .dat.gz files are stored
+ */
+export function getKuromojiDataPath(l2: string): string {
+  return `${TOKENIZER_DIR}${l2}/`;
+}
+
+/**
+ * Download the kuromoji IPADIC data pack for a language and extract it
+ * to the device filesystem.
+ *
+ * The server hosts a zip archive at GET /lemmatization/download?l2=ja
+ * containing all .dat.gz files. We download the zip, extract each file,
+ * and store them individually in {TOKENIZER_DIR}{l2}/.
+ *
+ * Returns true if download and extraction succeeded, false on any error
+ * (network error, server unavailable, corrupt zip, etc.).
+ */
+export async function downloadKuromojiData(
+  l2: string,
+  apiUrl: string,
+): Promise<boolean> {
+  const dir = `${TOKENIZER_DIR}${l2}/`;
+  const zipPath = `${TOKENIZER_DIR}${l2}.zip`;
+
+  try {
+    // Ensure the target directory exists
+    await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+
+    // Download the zip archive from the server
+    const downloadResult = await FileSystem.downloadAsync(
+      `${apiUrl}/lemmatization/download?l2=${encodeURIComponent(l2)}`,
+      zipPath,
+    );
+    // Verify the download produced a file
+    if (!downloadResult.uri) return false;
+
+    // Read the zip file as base64
+    const zipBase64 = await FileSystem.readAsStringAsync(downloadResult.uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    // Convert base64 → Uint8Array for fflate
+    const binaryStr = atob(zipBase64);
+    const zipData = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      zipData[i] = binaryStr.charCodeAt(i);
+    }
+
+    // Decompress zip using fflate (pure JS, no native deps, already installed)
+    const { unzipSync } = await import('fflate');
+    const unzipped = unzipSync(zipData);
+
+    // Write each extracted file to the tokenizer directory
+    for (const [filePath, content] of Object.entries(unzipped)) {
+      // Only extract known .dat.gz files (ignore metadata/readme)
+      if (!KROMOJI_DICT_FILES.includes(filePath)) continue;
+
+      const fullPath = `${dir}${filePath}`;
+      // Convert Uint8Array → base64 for expo-file-system write
+      let binary = '';
+      for (let i = 0; i < content.length; i++) {
+        binary += String.fromCharCode(content[i]);
+      }
+      await FileSystem.writeAsStringAsync(fullPath, btoa(binary), {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+    }
+
+    // Clean up the zip file
+    await FileSystem.deleteAsync(downloadResult.uri, { idempotent: true });
+
+    return true;
+  } catch {
+    // Silent failure — non-fatal, falls back to regex + surface-as-lemma
+    return false;
+  }
+}
+
+/**
+ * Delete kuromoji data pack files for a language from the device.
+ *
+ * @param l2 - Language code
+ */
+export async function deleteKuromojiData(l2: string): Promise<void> {
+  const dir = `${TOKENIZER_DIR}${l2}/`;
+  await FileSystem.deleteAsync(dir, { idempotent: true });
+  // Also clean up any leftover zip
+  const zipPath = `${TOKENIZER_DIR}${l2}.zip`;
+  await FileSystem.deleteAsync(zipPath, { idempotent: true });
+}

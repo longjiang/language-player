@@ -439,45 +439,41 @@ function maxMatchSegment(text: string, wordSet: Set<string>, maxWordLen: number)
 
 ---
 
-#### Phase 2c: Japanese (kuromoji)
+#### Phase 2c: Japanese (kuromoji) ✅ IMPLEMENTED
 
 **Goal**: Full morphological analysis (segmentation + lemmatization) for Japanese using kuromoji with a downloaded IPADIC dictionary. This is the highest-complexity subphase — it requires a custom RN file loader.
 
+**Implementation date**: 2026-07-27
+
+**How it works**: Instead of monkey-patching kuromoji's internal loader, we bypass the builder entirely. The custom loader module (`kuromoji-loader.ts`) reads the 17 `.dat.gz` files from the device filesystem, decompresses them with `pako`, populates kuromoji's `DynamicDictionaries` directly, and creates a `Tokenizer` instance. This avoids all CJS/ESM compatibility issues with kuromoji's internal module resolution.
+
 **npm dependency** (bundled at build time, ~200 KB engine):
 ```bash
-cd apps/mobile && npm install kuromoji
+cd apps/mobile && npm install kuromoji      # Engine
+cd apps/mobile && npm install fflate         # Zip extraction for data pack
+# pako is already available as a transitive dependency
 ```
 
-**Downloaded data**: 12 IPADIC `.dat.gz` files from `node_modules/kuromoji/dict/`, pruned to top 30K entries (~3 MB). Hosted at `GET /lemmatization/download?l2=ja`. See [ARCH-018](../arch/018-local-tokenization-strategy.md#japanese-kuromoji) for the full file inventory.
+**Custom RN loader**: Defined in `apps/mobile/lib/kuromoji-loader.ts`. The `loadKuromoji(dicPath)` function:
+1. Reads `.dat.gz` files via `expo-file-system` (base64 encoding)
+2. Converts base64 → Uint8Array → decompresses with `pako.ungzip()`
+3. Creates `DynamicDictionaries` and loads all data (trie, token info, connection costs, unknown dict)
+4. Returns a configured `Tokenizer` instance
 
-**Custom loader**: kuromoji's browser build uses `XMLHttpRequest` to fetch `.dat.gz` files. In React Native, we provide a custom `loader` object that reads from device storage via `expo-file-system` and decompresses with the browser build's built-in inflate (pako):
+**Integration**: `tokenizer.ts` has `getJaTokenizer()` (lazy singleton) and `tokenizeJapanese()` in the local fallback chain. When `l2 === 'ja'` and the data pack is downloaded, kuromoji is tried before the generic `segmentText + lemmatizeLocal` path.
 
-```typescript
-import kuromoji from 'kuromoji';
-
-const jaTokenizer = await new Promise((resolve, reject) => {
-  kuromoji.builder({
-    dicPath: '/data/tokenizers/ja/',
-    // Custom loader for RN: read .dat.gz from local filesystem, not XHR
-    loader: createRNLoader(),  // uses expo-file-system + pako inflate
-  }).build((err, t) => {
-    err ? reject(err) : resolve(t);
-  });
-});
-
-const tokens = jaTokenizer.tokenize('食べたくなかった');
-// tokens[0].surface_form = '食べ', tokens[0].basic_form = '食べる'
-```
+**Download flow**: When the user downloads the Japanese offline dictionary, `DictionaryContext` checks `TOKENIZER_CONFIG.ja.needsKuromoji` and fires `downloadKuromojiData('ja', apiUrl)` which downloads a zip archive from `GET /lemmatization/download?l2=ja`, extracts `.dat.gz` files with `fflate`, and stores them in `{documentDirectory}/tokenizers/ja/`.
 
 **Files touched**:
 
 | File | Change |
 |---|---|
-| `apps/mobile/package.json` | Add `kuromoji` |
-| `apps/mobile/lib/tokenizer.ts` | Add `getJaTokenizer()`, custom RN loader, integrate into fallback chain |
-| `apps/mobile/lib/tokenizer-db.ts` | **NEW** — track downloaded dict data, provide path to engine |
-| `apps/mobile/contexts/DictionaryContext.tsx` | After JP dict download, download IPADIC data pack |
-| `packages/shared/src/constants.ts` | Add JP entry to `TOKENIZER_CONFIG` |
+| `apps/mobile/package.json` | Add `kuromoji`, `fflate` |
+| `apps/mobile/lib/kuromoji-loader.ts` | **NEW** — custom RN dictionary loader (reads `.dat.gz` via expo-file-system + pako, populates DynamicDictionaries) |
+| `apps/mobile/lib/tokenizer.ts` | Add `getJaTokenizer()`, `resetJaTokenizer()`, `tokenizeJapanese()`; integrate into fallback chain for `l2 === 'ja'` |
+| `apps/mobile/lib/tokenizer-db.ts` | Add `hasKuromojiData()`, `getKuromojiDataPath()`, `downloadKuromojiData()`, `deleteKuromojiData()` |
+| `apps/mobile/contexts/DictionaryContext.tsx` | After JP dict download, download IPADIC data pack; clean up on dict delete |
+| `packages/shared/src/constants.ts` | Add `needsKuromoji` + `tokenizerDataSize` to `TokenizerConfig`; add `ja` entry to `TOKENIZER_CONFIG` |
 
 ---
 

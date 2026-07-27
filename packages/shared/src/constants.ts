@@ -203,6 +203,18 @@ export interface TokenizerConfig {
    * Falls back to regex word-split if the dictionary is not available.
    */
   needsDictSegmentation?: boolean;
+  /**
+   * Use kuromoji (pure JS, bundled) for full morphological analysis.
+   * Handles both segmentation and lemmatization. Requires downloaded
+   * IPADIC dictionary data pack (~3 MB) hosted at the server.
+   * Currently only used for Japanese (ja).
+   */
+  needsKuromoji?: boolean;
+  /**
+   * Estimated download size in bytes for the tokenizer data pack.
+   * Used for progress tracking during download.
+   */
+  tokenizerDataSize?: number;
 }
 
 /**
@@ -217,6 +229,11 @@ export interface TokenizerConfig {
  * and Simplemma dictionary sizes from the Python server.
  */
 export const TOKENIZER_CONFIG: Record<string, TokenizerConfig> = {
+  // ── Phase 2c: kuromoji (full morphological analysis) ──
+  // Japanese: requires IPADIC dictionary data pack download (~3 MB)
+  ja: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsKuromoji: true, tokenizerDataSize: 3_000_000 },
+
+  // ── Snowball + Lemma Table (both available, 13 languages) ──
   // ── Snowball + Lemma Table (both available, 13 languages) ──
   ca: { snowballCode: 'catalan', hasLemmaTable: true, lemmaTableSize: 200_000 },
   cs: { snowballCode: 'czech', hasLemmaTable: true, lemmaTableSize: 300_000 },
