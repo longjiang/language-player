@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { createApiClient } from '@langplayer/api-client';
-import { PYTHON_API_URL, DIRECTUS_URL } from '@/lib/api-url';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 // ── API Client Singleton ────────────────────
 
@@ -43,10 +43,10 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
-// ── Directus Auth Helpers ───────────────────
+// ── Flask Auth Helpers ──────────────────────
 
-async function directusAuth(email: string, password: string): Promise<{ token: string; user: User }> {
-  const res = await fetch(`${DIRECTUS_URL}/auth/authenticate`, {
+async function flaskAuthLogin(email: string, password: string): Promise<{ token: string; user: User }> {
+  const res = await fetch(`${PYTHON_API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -55,25 +55,25 @@ async function directusAuth(email: string, password: string): Promise<{ token: s
     const err = await res.json().catch(() => ({}));
     throw new Error(err?.errors?.[0]?.message || '');
   }
-  const { data } = await res.json();
+  const json = await res.json();
   return {
-    token: data.token,
-    user: { id: data.user.id, email: data.user.email, firstName: data.user.first_name, lastName: data.user.last_name },
+    token: json.token,
+    user: json.user,
   };
 }
 
-async function directusRegister(email: string, password: string, firstName?: string, lastName?: string): Promise<User> {
-  const res = await fetch(`${DIRECTUS_URL}/users`, {
+async function flaskAuthRegister(email: string, password: string, firstName?: string, lastName?: string): Promise<User> {
+  const res = await fetch(`${PYTHON_API_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, first_name: firstName, last_name: lastName, role: '2', status: 'active' }),
+    body: JSON.stringify({ email, password, firstName, lastName }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err?.errors?.[0]?.message || '');
   }
-  const { data } = await res.json();
-  return { id: data.id, email: data.email, firstName: data.first_name, lastName: data.last_name };
+  const json = await res.json();
+  return json.user;
 }
 
 // ── Provider ────────────────────────────────
@@ -105,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { token, user } = await directusAuth(email, password);
+    const { token, user } = await flaskAuthLogin(email, password);
     await SecureStore.setItemAsync('authToken', token);
     await SecureStore.setItemAsync('userInfo', JSON.stringify(user));
     setToken(token);
@@ -114,9 +114,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (email: string, password: string, firstName?: string, lastName?: string) => {
-    const user = await directusRegister(email, password, firstName, lastName);
+    const user = await flaskAuthRegister(email, password, firstName, lastName);
     // After registration, log in to get token
-    const auth = await directusAuth(email, password);
+    const auth = await flaskAuthLogin(email, password);
     await SecureStore.setItemAsync('authToken', auth.token);
     await SecureStore.setItemAsync('userInfo', JSON.stringify(user));
     setToken(auth.token);

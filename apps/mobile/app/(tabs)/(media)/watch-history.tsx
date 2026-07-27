@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
-import { PYTHON_API_URL, DIRECTUS_URL } from '@/lib/api-url';
+import { PYTHON_API_URL } from '@/lib/api-url';
 import { Clock, AlertCircle, Play, Trash2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { YouTubeVideo } from '@langplayer/shared';
@@ -170,14 +170,15 @@ export default function WatchHistoryScreen() {
           onPress: async () => {
             setClearing(true);
             try {
-              // Delete items one by one via Directus API (matching Nuxt pattern)
+              // Delete items one by one via Flask proxy
               for (const item of items) {
-                await fetch(`${DIRECTUS_URL}/items/user_watch_history/${item.id}`, {
+                await fetch(`${PYTHON_API_URL}/watch-history/delete`, {
                   method: 'DELETE',
                   headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                   },
+                  body: JSON.stringify({ entryId: item.id }),
                 });
               }
               setItems([]);

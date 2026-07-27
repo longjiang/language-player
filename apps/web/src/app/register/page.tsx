@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { PYTHON_API_URL } from '@/lib/api-url';
 
-const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'https://languageplayer.io';
-
 type Step = 'form' | 'verify' | 'complete';
 
 export default function RegisterPage() {
@@ -31,22 +29,20 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${DIRECTUS_URL}/zerotohero/users`, {
+      const res = await fetch(`${PYTHON_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          first_name: firstName,
-          last_name: lastName,
+          firstName,
+          lastName,
           email,
           password,
-          role: 2,
-          status: 'draft',
         }),
       });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
-        if (errData?.error?.message?.includes('unique')) {
+        if (errData?.errors?.[0]?.message?.includes('unique')) {
           throw new Error(t('error.email_exists'));
         }
         throw new Error(t('error.create_account_failed'));

@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-nativ
 import { router, useLocalSearchParams } from 'expo-router';
 import { PLACEHOLDER_COLOR, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
-import { DIRECTUS_URL } from '@/lib/api-url';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 export default function PasswordResetScreen() {
   const t = useT();
@@ -40,7 +40,7 @@ export default function PasswordResetScreen() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${DIRECTUS_URL}/auth/password/reset`, {
+      const res = await fetch(`${PYTHON_API_URL}/auth/password-reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: token.trim(), password }),

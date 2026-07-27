@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
-import { DIRECTUS_URL } from '@/lib/api-url';
+import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 
 type DeleteState = 'confirm' | 'deleting' | 'success' | 'error';
@@ -26,17 +26,17 @@ export default function DeleteAccountScreen() {
         throw new Error(t('error.login_required') || 'Not authenticated');
       }
 
-      // Try Directus API to delete the user
-      const res = await fetch(`${DIRECTUS_URL}/users/${user.id}`, {
+      // Delete account via Flask proxy (uses admin token server-side)
+      const res = await fetch(`${PYTHON_API_URL}/auth/delete-account`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${authToken}`,
         },
+        body: JSON.stringify({ userId: user.id }),
       });
 
       if (!res.ok) {
-        // Directus may not allow self-deletion — show a fallback message
         const err = await res.json().catch(() => ({}));
         throw new Error(
           err?.errors?.[0]?.message ||

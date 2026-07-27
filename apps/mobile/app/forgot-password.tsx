@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
-import { DIRECTUS_URL } from '@/lib/api-url';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 export default function ForgotPasswordScreen() {
   const t = useT();
@@ -17,7 +17,7 @@ export default function ForgotPasswordScreen() {
     setError(null);
     setLoading(true);
     try {
-      await fetch(`${DIRECTUS_URL}/auth/password/request`, {
+      await fetch(`${PYTHON_API_URL}/auth/password-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),

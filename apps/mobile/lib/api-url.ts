@@ -21,7 +21,5 @@ export const PYTHON_API_URL: string =
   (typeof process !== 'undefined' && (process.env as any).EXPO_PUBLIC_API_URL) ||
   LOCAL_DEFAULT;
 
-/** Directus 8 URL for authentication (includes /zerotohero project prefix). */
-export const DIRECTUS_URL: string =
-  (typeof process !== 'undefined' && (process.env as any).EXPO_PUBLIC_DIRECTUS_URL) ||
-  'https://directusvps.zerotohero.ca/zerotohero';
+// DIRECTUS_URL removed per SPEC-024 — all Directus calls go through Flask backend.
+// The Flask server uses DIRECTUS_TOKEN (admin token) internally.

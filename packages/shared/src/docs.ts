@@ -30,7 +30,7 @@ If you can't remember your password:
 
 For security, the page always shows a success message after you submit — even if the email isn't registered. This prevents anyone from checking whether a particular email has an account.
 
-> **Note:** The password reset link comes from Directus, our identity provider. If you don't see the email within a few minutes, check your spam folder.
+> **Note:** The password reset link comes from our server. If you don't see the email within a few minutes, check your spam folder.
 
 ## How to Log Out
 
@@ -1530,7 +1530,7 @@ As jy nie jou wagwoord kan onthou nie:
 
 Vir veiligheid wys die bladsy altyd 'n suksesboodskap nadat jy dit ingedien het — selfs al is die e-pos nie geregistreer nie. Dit verhoed dat enigiemand kan kyk of 'n spesifieke e-pos 'n rekening het.
 
-> **Nota:** Die wagwoordherstelskakel kom van Directus, ons identiteitsverskaffer. As jy nie die e-pos binne 'n paar minute sien nie, gaan jou strooiposmap na.
+> **Nota:** Die wagwoordherstelskakel kom van our server, ons identiteitsverskaffer. As jy nie die e-pos binne 'n paar minute sien nie, gaan jou strooiposmap na.
 
 ## Hoe om uit te Teken
 
@@ -2996,7 +2996,7 @@ Skakel **Presiese Ooreenstemming** aan om resultate tot slegs die woordeboekhoof
 
 لأسباب أمنية، تعرض الصفحة دائمًا رسالة نجاح بعد الإرسال — حتى لو لم يكن البريد الإلكتروني مسجلاً. هذا يمنع أي شخص من التحقق مما إذا كان بريد إلكتروني معين له حساب.
 
-> **ملاحظة:** رابط إعادة تعيين كلمة المرور يأتي من Directus، مزود الهوية لدينا. إذا لم ترَ البريد الإلكتروني خلال دقائق، تحقق من مجلد البريد العشوائي.
+> **ملاحظة:** رابط إعادة تعيين كلمة المرور يأتي من our server، مزود الهوية لدينا. إذا لم ترَ البريد الإلكتروني خلال دقائق، تحقق من مجلد البريد العشوائي.
 
 ## كيفية تسجيل الخروج
 
@@ -4462,7 +4462,7 @@ Si no recordes la teva contrasenya:
 
 Per seguretat, la pàgina sempre mostra un missatge d'èxit després d'enviar-ho, fins i tot si el correu electrònic no està registrat. Això evita que algú pugui comprovar si un correu concret té un compte.
 
-> **Nota:** L'enllaç de restabliment de contrasenya prové de Directus, el nostre proveïdor d'identitat. Si no veus el correu en uns minuts, comprova la carpeta de correu brossa.
+> **Nota:** L'enllaç de restabliment de contrasenya prové de our server, el nostre proveïdor d'identitat. Si no veus el correu en uns minuts, comprova la carpeta de correu brossa.
 
 ## Com tancar la sessió
 
@@ -5928,7 +5928,7 @@ Wenn Sie sich nicht an Ihr Passwort erinnern können:
 
 Aus Sicherheitsgründen wird nach dem Absenden immer eine Erfolgsmeldung angezeigt – auch wenn die E-Mail nicht registriert ist. Dies verhindert, dass jemand überprüfen kann, ob eine bestimmte E-Mail-Adresse ein Konto hat.
 
-> **Hinweis:** Der Link zum Zurücksetzen des Passworts stammt von Directus, unserem Identitätsanbieter. Wenn Sie die E-Mail nicht innerhalb weniger Minuten sehen, überprüfen Sie Ihren Spam-Ordner.
+> **Hinweis:** Der Link zum Zurücksetzen des Passworts stammt von our server, unserem Identitätsanbieter. Wenn Sie die E-Mail nicht innerhalb weniger Minuten sehen, überprüfen Sie Ihren Spam-Ordner.
 
 ## So melden Sie sich ab
 
@@ -7394,7 +7394,7 @@ Schalten Sie **Exakte Übereinstimmung** um, um die Ergebnisse nur auf das Wört
 
 Για λόγους ασφαλείας, η σελίδα εμφανίζει πάντα ένα μήνυμα επιτυχίας μετά την υποβολή — ακόμα κι αν το email δεν είναι καταχωρημένο. Αυτό αποτρέπει οποιονδήποτε από το να ελέγξει εάν ένα συγκεκριμένο email έχει λογαριασμό.
 
-> **Σημείωση:** Ο σύνδεσμος επαναφοράς κωδικού πρόσβασης προέρχεται από το Directus, τον πάροχο ταυτότητάς μας. Εάν δεν δείτε το email μέσα σε λίγα λεπτά, ελέγξτε τον φάκελο ανεπιθύμητων.
+> **Σημείωση:** Ο σύνδεσμος επαναφοράς κωδικού πρόσβασης προέρχεται από το our server, τον πάροχο ταυτότητάς μας. Εάν δεν δείτε το email μέσα σε λίγα λεπτά, ελέγξτε τον φάκελο ανεπιθύμητων.
 
 ## Πώς να Αποσυνδεθείτε
 
@@ -8861,7 +8861,7 @@ If you can't remember your password:
 
 For security, the page always shows a success message after you submit — even if the email isn't registered. This prevents anyone from checking whether a particular email has an account.
 
-> **Note:** The password reset link comes from Directus, our identity provider. If you don't see the email within a few minutes, check your spam folder.
+> **Note:** The password reset link comes from our server. If you don't see the email within a few minutes, check your spam folder.
 
 ## How to Log Out
 
@@ -10445,7 +10445,7 @@ Si no recuerdas tu contraseña:
 
 Por seguridad, la página siempre muestra un mensaje de éxito después de enviar el formulario, incluso si el correo electrónico no está registrado. Esto evita que alguien pueda verificar si un correo electrónico en particular tiene una cuenta.
 
-> **Nota:** El enlace de restablecimiento de contraseña proviene de Directus, nuestro proveedor de identidad. Si no ves el correo en unos minutos, revisa tu carpeta de spam.
+> **Nota:** El enlace de restablecimiento de contraseña proviene de our server, nuestro proveedor de identidad. Si no ves el correo en unos minutos, revisa tu carpeta de spam.
 
 ## Cómo cerrar sesión
 
@@ -13377,7 +13377,7 @@ Si vous ne vous souvenez pas de votre mot de passe :
 
 Pour des raisons de sécurité, la page affiche toujours un message de succès après votre envoi — même si l'adresse e-mail n'est pas enregistrée. Cela empêche quiconque de vérifier si une adresse e-mail particulière possède un compte.
 
-> **Remarque :** Le lien de réinitialisation du mot de passe provient de Directus, notre fournisseur d'identité. Si vous ne voyez pas l'e-mail en quelques minutes, vérifiez votre dossier de spam.
+> **Remarque :** Le lien de réinitialisation du mot de passe provient de our server, notre fournisseur d'identité. Si vous ne voyez pas l'e-mail en quelques minutes, vérifiez votre dossier de spam.
 
 ## Comment se déconnecter
 
@@ -14843,7 +14843,7 @@ Mura cuimhin leat do phasfhocal:
 
 Ar mhaithe le slándáil, taispeánann an leathanach teachtaireacht rathúil i gcónaí tar éis duit é a sheoladh — fiú mura bhfuil an ríomhphost cláraithe. Coscann sé seo ar dhuine ar bith a sheiceáil an bhfuil cuntas ag ríomhphost ar leith.
 
-> **Nóta:** Tagann an nasc athshocraithe pasfhocail ó Directus, ár soláthraí céannachta. Mura bhfeiceann tú an ríomhphost laistigh de chúpla nóiméad, seiceáil d'fhillteán turscair.
+> **Nóta:** Tagann an nasc athshocraithe pasfhocail ó our server, ár soláthraí céannachta. Mura bhfeiceann tú an ríomhphost laistigh de chúpla nóiméad, seiceáil d'fhillteán turscair.
 
 ## Conas Logáil Amach
 
@@ -16309,7 +16309,7 @@ Cuir **Meaitseáil Chruinn** air chun torthaí a theorannú d'fhocal ceann an fh
 
 सुरक्षा के लिए, सबमिट करने के बाद पृष्ठ हमेशा एक सफलता संदेश दिखाता है — भले ही ईमेल पंजीकृत न हो। यह किसी को यह जाँचने से रोकता है कि किसी विशेष ईमेल का खाता है या नहीं।
 
-> **नोट:** पासवर्ड रीसेट लिंक हमारी पहचान प्रदाता Directus से आता है। यदि आपको कुछ मिनटों में ईमेल नहीं दिखता है, तो अपना स्पैम फ़ोल्डर जाँचें।
+> **नोट:** पासवर्ड रीसेट लिंक हमारी पहचान प्रदाता our server से आता है। यदि आपको कुछ मिनटों में ईमेल नहीं दिखता है, तो अपना स्पैम फ़ोल्डर जाँचें।
 
 ## लॉग आउट कैसे करें
 
@@ -17775,7 +17775,7 @@ Ako se ne možete sjetiti svoje lozinke:
 
 Iz sigurnosnih razloga, stranica uvijek prikazuje poruku o uspjehu nakon što pošaljete — čak i ako e-mail nije registriran. Ovo sprječava bilo koga da provjeri ima li određena e-mail adresa račun.
 
-> **Napomena:** Poveznica za resetiranje lozinke dolazi od Directusa, našeg davatelja identiteta. Ako ne vidite e-mail u roku od nekoliko minuta, provjerite mapu neželjene pošte.
+> **Napomena:** Poveznica za resetiranje lozinke dolazi od our servera, našeg davatelja identiteta. Ako ne vidite e-mail u roku od nekoliko minuta, provjerite mapu neželjene pošte.
 
 ## Kako se odjaviti
 
@@ -19241,7 +19241,7 @@ Ha nem emlékszel a jelszavadra:
 
 Biztonsági okokból az oldal mindig sikeres üzenetet jelenít meg a beküldés után – még akkor is, ha az e-mail nincs regisztrálva. Ez megakadályozza, hogy bárki ellenőrizhesse, hogy egy adott e-mail címhez tartozik-e fiók.
 
-> **Megjegyzés:** A jelszó-visszaállítási link a Directustól, az azonosítási szolgáltatónktól érkezik. Ha néhány percen belül nem látod az e-mailt, ellenőrizd a spam mappát.
+> **Megjegyzés:** A jelszó-visszaállítási link a our servertól, az azonosítási szolgáltatónktól érkezik. Ha néhány percen belül nem látod az e-mailt, ellenőrizd a spam mappát.
 
 ## Hogyan Jelentkezz Ki
 
@@ -20707,7 +20707,7 @@ Jika Anda tidak dapat mengingat kata sandi:
 
 Demi keamanan, halaman selalu menampilkan pesan sukses setelah Anda mengirimkan — bahkan jika email tidak terdaftar. Ini mencegah siapa pun memeriksa apakah email tertentu memiliki akun.
 
-> **Catatan:** Tautan pengaturan ulang kata sandi berasal dari Directus, penyedia identitas kami. Jika Anda tidak melihat email dalam beberapa menit, periksa folder spam Anda.
+> **Catatan:** Tautan pengaturan ulang kata sandi berasal dari our server, penyedia identitas kami. Jika Anda tidak melihat email dalam beberapa menit, periksa folder spam Anda.
 
 ## Cara Keluar
 
@@ -22173,7 +22173,7 @@ Se non ricordi la tua password:
 
 Per motivi di sicurezza, la pagina mostra sempre un messaggio di successo dopo l'invio, anche se l'email non è registrata. Questo impedisce a chiunque di verificare se una determinata email ha un account.
 
-> **Nota:** Il link per il reset della password proviene da Directus, il nostro provider di identità. Se non vedi l'email entro pochi minuti, controlla la cartella spam.
+> **Nota:** Il link per il reset della password proviene da our server, il nostro provider di identità. Se non vedi l'email entro pochi minuti, controlla la cartella spam.
 
 ## Come Uscire
 
@@ -23639,7 +23639,7 @@ Attiva **Corrispondenza Esatta** per limitare i risultati alla sola forma base d
 
 セキュリティのため、送信後はメールが登録されていない場合でも、常に成功メッセージが表示されます。これにより、特定のメールアドレスにアカウントがあるかどうかを誰かが確認することを防ぎます。
 
-> **注:** パスワードリセットリンクは、当社のIDプロバイダーであるDirectusから送信されます。数分経ってもメールが届かない場合は、スパムフォルダをご確認ください。
+> **注:** パスワードリセットリンクは、当社のIDプロバイダーであるour serverから送信されます。数分経ってもメールが届かない場合は、スパムフォルダをご確認ください。
 
 ## ログアウト方法
 
@@ -25105,7 +25105,7 @@ Language Playerは、オープンデータから厳選・バージョン管理�
 
 보안상의 이유로, 이메일이 등록되지 않은 경우에도 페이지는 항상 제출 완료 메시지를 표시합니다. 이는 특정 이메일이 계정을 가지고 있는지 확인하는 것을 방지합니다.
 
-> **참고:** 비밀번호 재설정 링크는 당사의 ID 제공업체인 Directus에서 발송됩니다. 몇 분 내에 이메일이 보이지 않으면 스팸 폴더를 확인하세요.
+> **참고:** 비밀번호 재설정 링크는 당사의 ID 제공업체인 our server에서 발송됩니다. 몇 분 내에 이메일이 보이지 않으면 스팸 폴더를 확인하세요.
 
 ## 로그아웃 방법
 
@@ -26571,7 +26571,7 @@ Als u uw wachtwoord niet meer weet:
 
 Uit veiligheidsoverwegingen toont de pagina altijd een succesbericht nadat u het formulier hebt verzonden — zelfs als het e-mailadres niet geregistreerd is. Dit voorkomt dat iemand kan controleren of een bepaald e-mailadres een account heeft.
 
-> **Opmerking:** De link voor het resetten van het wachtwoord komt van Directus, onze identiteitsprovider. Als u de e-mail niet binnen een paar minuten ziet, controleer dan uw spammap.
+> **Opmerking:** De link voor het resetten van het wachtwoord komt van our server, onze identiteitsprovider. Als u de e-mail niet binnen een paar minuten ziet, controleer dan uw spammap.
 
 ## Hoe u uitlogt
 
@@ -28037,7 +28037,7 @@ Hvis du ikke husker passordet ditt:
 
 Av sikkerhetshensyn viser siden alltid en suksessmelding etter at du har sendt inn — selv om e-posten ikke er registrert. Dette forhindrer at noen kan sjekke om en bestemt e-postadresse har en konto.
 
-> **Merk:** Lenken for tilbakestilling av passord kommer fra Directus, vår identitetsleverandør. Hvis du ikke ser e-posten innen noen få minutter, sjekk søppelpostmappen din.
+> **Merk:** Lenken for tilbakestilling av passord kommer fra our server, vår identitetsleverandør. Hvis du ikke ser e-posten innen noen få minutter, sjekk søppelpostmappen din.
 
 ## Slik logger du ut
 
@@ -29504,7 +29504,7 @@ Jeśli nie pamiętasz swojego hasła:
 
 Ze względów bezpieczeństwa strona zawsze wyświetla komunikat o powodzeniu po wysłaniu formularza — nawet jeśli adres e-mail nie jest zarejestrowany. Zapobiega to sprawdzeniu, czy dany adres e-mail ma konto.
 
-> **Uwaga:** Link do resetowania hasła pochodzi z Directus, naszego dostawcy tożsamości. Jeśli nie widzisz e-maila w ciągu kilku minut, sprawdź folder spam.
+> **Uwaga:** Link do resetowania hasła pochodzi z our server, naszego dostawcy tożsamości. Jeśli nie widzisz e-maila w ciągu kilku minut, sprawdź folder spam.
 
 ## Jak się wylogować
 
@@ -30970,7 +30970,7 @@ Se você não lembra da sua senha:
 
 Por segurança, a página sempre exibe uma mensagem de sucesso após o envio — mesmo que o e-mail não esteja registrado. Isso impede que alguém verifique se um determinado e-mail possui uma conta.
 
-> **Nota:** O link de redefinição de senha vem do Directus, nosso provedor de identidade. Se você não vir o e-mail em alguns minutos, verifique sua pasta de spam.
+> **Nota:** O link de redefinição de senha vem do our server, nosso provedor de identidade. Se você não vir o e-mail em alguns minutos, verifique sua pasta de spam.
 
 ## Como Sair
 
@@ -32436,7 +32436,7 @@ Dacă nu vă amintiți parola:
 
 Din motive de securitate, pagina afișează întotdeauna un mesaj de succes după trimitere — chiar dacă emailul nu este înregistrat. Acest lucru împiedică pe oricine să verifice dacă un anumit email are un cont.
 
-> **Notă:** Linkul de resetare a parolei provine de la Directus, furnizorul nostru de identitate. Dacă nu vedeți emailul în câteva minute, verificați folderul de spam.
+> **Notă:** Linkul de resetare a parolei provine de la our server, furnizorul nostru de identitate. Dacă nu vedeți emailul în câteva minute, verificați folderul de spam.
 
 ## Cum să vă deconectați
 
@@ -33902,7 +33902,7 @@ Activează **Exact Match** pentru a restrânge rezultatele doar la cuvântul-tit
 
 В целях безопасности страница всегда показывает сообщение об успехе после отправки — даже если email не зарегистрирован. Это prevents возможность проверки того, есть ли у конкретного email учётная запись.
 
-> **Примечание:** Ссылка для сброса пароля приходит от Directus, нашего поставщика идентификации. Если вы не видите письмо в течение нескольких минут, проверьте папку со спамом.
+> **Примечание:** Ссылка для сброса пароля приходит от our server, нашего поставщика идентификации. Если вы не видите письмо в течение нескольких минут, проверьте папку со спамом.
 
 ## Как выйти
 
@@ -35368,7 +35368,7 @@ Ako ne možete da se setite svoje lozinke:
 
 Iz sigurnosnih razloga, stranica uvek prikazuje poruku o uspehu nakon što pošaljete — čak i ako e-adresa nije registrovana. Ovo sprečava bilo koga da proveri da li određena e-adresa ima nalog.
 
-> **Napomena:** Link za resetovanje lozinke dolazi od Directus-a, našeg provajdera identiteta. Ako ne vidite e-poruku u roku od nekoliko minuta, proverite fasciklu za neželjenu poštu.
+> **Napomena:** Link za resetovanje lozinke dolazi od our server-a, našeg provajdera identiteta. Ako ne vidite e-poruku u roku od nekoliko minuta, proverite fasciklu za neželjenu poštu.
 
 ## Kako se odjaviti
 
@@ -36835,7 +36835,7 @@ Om du inte kommer ihåg ditt lösenord:
 
 Av säkerhetsskäl visar sidan alltid ett bekräftelsemeddelande efter att du skickat — även om e-postadressen inte är registrerad. Detta förhindrar att någon kan kontrollera om en viss e-postadress har ett konto.
 
-> **Obs:** Länken för lösenordsåterställning kommer från Directus, vår identitetsleverantör. Om du inte ser e-postmeddelandet inom några minuter, kontrollera din skräppostmapp.
+> **Obs:** Länken för lösenordsåterställning kommer från our server, vår identitetsleverantör. Om du inte ser e-postmeddelandet inom några minuter, kontrollera din skräppostmapp.
 
 ## Så här loggar du ut
 
@@ -38301,7 +38301,7 @@ Ikiwa huwezi kukumbuka nenosiri lako:
 
 Kwa usalama, ukurasa huwa unaonyesha ujumbe wa mafanikio baada ya kuwasilisha — hata kama barua pepe haijasajiliwa. Hii inazuia mtu yeyote kuangalia kama barua pepe fulani ina akaunti.
 
-> **Kumbuka:** Kiungo cha kuweka upya nenosiri kinatoka kwa Directus, mtoa huduma wetu wa utambulisho. Ikiwa huoni barua pepe ndani ya dakika chache, angalia folda yako ya spam.
+> **Kumbuka:** Kiungo cha kuweka upya nenosiri kinatoka kwa our server, mtoa huduma wetu wa utambulisho. Ikiwa huoni barua pepe ndani ya dakika chache, angalia folda yako ya spam.
 
 ## Jinsi ya Kutoka Nje
 
@@ -39768,7 +39768,7 @@ Washa **Ulinganifu Kamili** ili kupunguza matokeo kwa neno kuu la kamusi pekee. 
 
 เพื่อความปลอดภัย หน้าจะแสดงข้อความสำเร็จเสมอหลังจากที่คุณส่งข้อมูล — แม้ว่าอีเมลจะไม่ได้ลงทะเบียนก็ตาม วิธีนี้ป้องกันไม่ให้ใครตรวจสอบว่าอีเมลใดมีบัญชีอยู่หรือไม่
 
-> **หมายเหตุ:** ลิงก์รีเซ็ตรหัสผ่านมาจาก Directus ซึ่งเป็นผู้ให้บริการระบุตัวตนของเรา หากคุณไม่เห็นอีเมลภายในไม่กี่นาที ให้ตรวจสอบโฟลเดอร์สแปมของคุณ
+> **หมายเหตุ:** ลิงก์รีเซ็ตรหัสผ่านมาจาก our server ซึ่งเป็นผู้ให้บริการระบุตัวตนของเรา หากคุณไม่เห็นอีเมลภายในไม่กี่นาที ให้ตรวจสอบโฟลเดอร์สแปมของคุณ
 
 ## วิธีการออกจากระบบ
 
@@ -41234,7 +41234,7 @@ Parolanızı hatırlamıyorsanız:
 
 Güvenlik nedeniyle, sayfa her zaman başarılı bir mesaj gösterir — e-posta kayıtlı olmasa bile. Bu, herhangi birinin belirli bir e-postanın hesabı olup olmadığını kontrol etmesini engeller.
 
-> **Not:** Parola sıfırlama bağlantısı, kimlik sağlayıcımız Directus'tan gelir. E-postayı birkaç dakika içinde görmezseniz, spam klasörünüzü kontrol edin.
+> **Not:** Parola sıfırlama bağlantısı, kimlik sağlayıcımız our server'tan gelir. E-postayı birkaç dakika içinde görmezseniz, spam klasörünüzü kontrol edin.
 
 ## Nasıl Çıkış Yapılır
 
@@ -42700,7 +42700,7 @@ Nếu bạn không nhớ mật khẩu của mình:
 
 Vì lý do bảo mật, trang luôn hiển thị thông báo thành công sau khi bạn gửi — ngay cả khi email chưa được đăng ký. Điều này ngăn ngừa ai đó kiểm tra xem một email cụ thể có tài khoản hay không.
 
-> **Lưu ý:** Liên kết đặt lại mật khẩu đến từ Directus, nhà cung cấp danh tính của chúng tôi. Nếu bạn không thấy email trong vòng vài phút, hãy kiểm tra thư mục spam của bạn.
+> **Lưu ý:** Liên kết đặt lại mật khẩu đến từ our server, nhà cung cấp danh tính của chúng tôi. Nếu bạn không thấy email trong vòng vài phút, hãy kiểm tra thư mục spam của bạn.
 
 ## Cách đăng xuất
 
@@ -44167,7 +44167,7 @@ Chuyển đổi **Khớp Chính Xác** để giới hạn kết quả chỉ ở 
 
 出于安全考虑，提交后页面始终会显示成功提示——即使该邮箱未注册。这可以防止他人检查特定邮箱是否已有账户。
 
-> **注意：** 密码重置链接来自我们的身份提供商 Directus。如果几分钟后仍未收到邮件，请检查您的垃圾邮件文件夹。
+> **注意：** 密码重置链接来自我们的身份提供商 our server。如果几分钟后仍未收到邮件，请检查您的垃圾邮件文件夹。
 
 ## 如何退出登录
 
@@ -45633,7 +45633,7 @@ Language Player使用经过整理和版本管理的词典，数据来源于开�
 
 為安全起見，提交後頁面一律顯示成功訊息——即使該電子郵件並未註冊。這樣可防止任何人檢查特定電子郵件是否擁有帳戶。
 
-> **注意：** 密碼重設連結來自我們的身份驗證提供商 Directus。若您在數分鐘內未收到郵件，請檢查您的垃圾郵件資料夾。
+> **注意：** 密碼重設連結來自我們的身份驗證提供商 our server。若您在數分鐘內未收到郵件，請檢查您的垃圾郵件資料夾。
 
 ## 如何登出
 

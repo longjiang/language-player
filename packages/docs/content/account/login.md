@@ -27,7 +27,7 @@ If you can't remember your password:
 
 For security, the page always shows a success message after you submit — even if the email isn't registered. This prevents anyone from checking whether a particular email has an account.
 
-> **Note:** The password reset link comes from Directus, our identity provider. If you don't see the email within a few minutes, check your spam folder.
+> **Note:** The password reset link comes from our server. If you don't see the email within a few minutes, check your spam folder.
 
 ## How to Log Out
 
