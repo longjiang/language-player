@@ -5,8 +5,10 @@
 - **Feature**: Lemmatization, dictionary batch lookup, and request optimization strategies
 - **Status**: draft
 - **Created**: 2026-07-26
+- **Updated**: 2026-07-26 — mobile gaps extracted to SPEC-019
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Web (Next.js), Mobile (React Native/Expo), Python (Flask)
+- **See also**: [SPEC-019: Mobile Tokenization & Batch Lookup Completion](../specs/019-mobile-tokenization-batch-lookup-completion.md) — mobile gap closure plan
 
 ---
 
@@ -419,6 +421,8 @@ Watch page
 
 **Bug:** The mobile watch page fetches `tokenCache` and `tokenCacheLoaded` from `useVideoTokenCache()` but does not pass them to `SubtitleDisplay` → `TokenizedText`. This means every subtitle line triggers a separate `POST /lemmatize-normalized` call (mitigated somewhat by the shared in-memory lemmatize cache after the first line is tokenized, but still wasteful for the initial pass).
 
+**Fix plan:** See [SPEC-019 Phase 1](../specs/019-mobile-tokenization-batch-lookup-completion.md#phase-1-quick-wins-o1--critical-bug).
+
 ### TokenCache Class (Shared)
 
 **File:** `packages/utils/src/token-cache.ts`
@@ -474,19 +478,21 @@ For a video transcript with 500 subtitle lines, unique 200 lemmas:
 |---|---|---|
 | **Naive** (no caching) | 500 tokenize + 500 dict lookup = 1,000 | Per-line, per-word |
 | **Web optimized** | 1 video cache + 0 tokenize + 1 batch dict = 2 | IntersectionObserver prevents off-screen lines from even trying |
-| **Mobile current** | 1 video cache + 500 tokenize + 1 batch dict = 502 | Video cache fetched but not wired through; in-memory cache mitigates after first line |
-| **Mobile fixed** (wire tokenCache) | 1 video cache + 0 tokenize + 1 batch dict = 2 | Same as web |
+| **Mobile current** | 1 video cache + 500 tokenize + 1 batch dict = 502 | Video cache fetched but not wired through; in-memory cache mitigates after first line. See [SPEC-019](../specs/019-mobile-tokenization-batch-lookup-completion.md) for fix plan. |
+| **Mobile Phase 1** (planned) | 1 video cache + 0 tokenize + 1 batch dict = 2 | Same as web after wiring video cache + in-flight dedup |
 
 ### Known Gaps (Mobile)
 
-| # | Gap | Impact | Fix |
-|---|---|---|---|
-| 1 | Video token cache not passed to SubtitleDisplay → TokenizedText | 500 tokenize calls per video (cached after first line, but still wasteful) | Pass `tokenCache` + `tokenCacheLoaded` props through |
-| 2 | No in-flight lemmatize dedup | Concurrent TokenizedText instances for same text launch separate API calls | Add `lemmatizeInflight` Map (same pattern as web) |
-| 3 | No IntersectionObserver lazy loading | All subtitle lines tokenized immediately on mount, even off-screen | Implement via `onLayout` + scroll position tracking or FlatList viewability |
-| 4 | hardWords filtering | Phonetics shown for all words regardless of difficulty | Implement `getWordDifficulty()` using dictionary cache levels |
-| 5 | Chinese script conversion | No per-token conversion in mobile TokenizedText (web moved to TokenSpan per ADR-0019) | Port OpenCC per-token pattern to mobile TokenizedText |
-| 6 | quickGloss rendering | Dictionary definitions available in cache but not rendered for saved words | Integrate `useSavedWords()` context into TokenizedText |
+The mobile implementation has several gaps compared to web. These are tracked and planned in [SPEC-019: Mobile Tokenization & Batch Lookup Completion](../specs/019-mobile-tokenization-batch-lookup-completion.md). Key areas:
+
+| # | Gap | Spec Ref |
+|---|---|---|
+| 1 | Video token cache not passed to SubtitleDisplay → TokenizedText | SPEC-019 Phase 1 |
+| 2 | No in-flight lemmatize dedup | SPEC-019 Phase 1 (O1) |
+| 3 | No lazy loading (IntersectionObserver not available in RN) | SPEC-019 Phase 4 (O2) |
+| 4 | `hardWords` phonetics filter not implemented | SPEC-019 Phase 2 (F1) |
+| 5 | Chinese script conversion not ported | SPEC-019 Phase 3 (F3) |
+| 6 | `quickGloss` not rendered | SPEC-019 Phase 2 (F2) |
 
 ---
 
