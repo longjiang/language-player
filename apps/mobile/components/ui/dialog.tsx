@@ -45,29 +45,20 @@ type OverlayProps = DialogPrimitive.OverlayProps & {
   open?: boolean;
 };
 
-export function Overlay({ className, open, ...props }: OverlayProps) {
+export function Overlay({ className, open, forceMount, ...props }: OverlayProps) {
   const opacity = useRef(new Animated.Value(open ? 1 : 0)).current;
   const isControlled = open !== undefined;
+  // When open is provided (bidirectional mode), the inner primitive needs
+  // forceMount to stay mounted during the exit animation.
+  const effectiveForceMount = forceMount ?? (isControlled ? true : undefined);
 
   useEffect(() => {
-    if (!isControlled) {
-      // Mount-only: fade in once
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [isControlled, opacity]);
-
-  useEffect(() => {
-    if (isControlled) {
-      Animated.timing(opacity, {
-        toValue: open ? 1 : 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    }
+    const toValue = isControlled ? (open ? 1 : 0) : 1;
+    Animated.timing(opacity, {
+      toValue,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   }, [open, isControlled, opacity]);
 
   return (
@@ -77,7 +68,8 @@ export function Overlay({ className, open, ...props }: OverlayProps) {
       style={{ opacity }}
     >
       <DialogPrimitive.Overlay
-        className={`absolute inset-0 bg-black/40 ${className ?? ''}`}
+        forceMount={effectiveForceMount}
+        className={className ? `absolute inset-0 ${className}` : 'absolute inset-0 bg-black/40'}
         {...props}
       />
     </Animated.View>
@@ -156,30 +148,21 @@ type DrawerContentProps = DialogPrimitive.ContentProps & {
   drawerWidth?: number;
 };
 
-export function DrawerContent({ children, className, topOffset = 0, open, drawerWidth = 256, ...props }: DrawerContentProps) {
-  const translateX = useRef(new Animated.Value(open ? 0 : 300)).current;
+export function DrawerContent({ children, className, topOffset = 0, open, drawerWidth = 256, forceMount, ...props }: DrawerContentProps) {
+  const translateX = useRef(new Animated.Value(open ? 0 : drawerWidth + 44)).current;
   const isControlled = open !== undefined;
+  // When open is provided (bidirectional mode), the inner primitive needs
+  // forceMount to stay mounted during the exit animation.
+  const effectiveForceMount = forceMount ?? (isControlled ? true : undefined);
 
   useEffect(() => {
-    if (!isControlled) {
-      // Mount-only: slide in once
-      Animated.timing(translateX, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [isControlled, translateX]);
-
-  useEffect(() => {
-    if (isControlled) {
-      Animated.timing(translateX, {
-        toValue: open ? 0 : 300,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [open, isControlled, translateX]);
+    const toValue = isControlled ? (open ? 0 : drawerWidth + 44) : 0;
+    Animated.timing(translateX, {
+      toValue,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [open, isControlled, translateX, drawerWidth]);
 
   return (
     <Animated.View
@@ -193,6 +176,7 @@ export function DrawerContent({ children, className, topOffset = 0, open, drawer
       }}
     >
       <DialogPrimitive.Content
+        forceMount={effectiveForceMount}
         className={`border-l border-border bg-background p-4 shadow-lg ${className ?? ''}`}
         style={{ width: drawerWidth }}
         {...props}
