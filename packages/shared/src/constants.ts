@@ -181,6 +181,11 @@ export function getLevelFromDifficulty(
  * - `hasLemmaTable`: whether a `{surface: [lemma, ...]}` table is available for
  *   download from the server via GET /lemmatization/export.
  * - `lemmaTableSize`: estimated download size in bytes (gzipped JSON).
+ * - `needsDictSegmentation` (Phase 2b): use dictionary-based max-matching for
+ *   word segmentation instead of regex split. Required for CJK, Thai, Khmer,
+ *   Burmese, Lao, and Tibetan where words are not space-separated. Requires
+ *   the offline dictionary (SPEC-013) to be downloaded for this language.
+ *   Falls back to regex split if the dictionary is not available.
  *
  * See ARCH-018 and SPEC-018 for the full per-language taxonomy.
  */
@@ -191,13 +196,20 @@ export interface TokenizerConfig {
   hasLemmaTable: boolean;
   /** Estimated download size in bytes for the lemma table */
   lemmaTableSize: number;
+  /**
+   * Use dictionary-based maximum matching for word segmentation.
+   * Required for CJK, Thai, Khmer, Burmese, Lao, Tibetan where words
+   * are not space-separated. Requires offline dictionary download.
+   * Falls back to regex word-split if the dictionary is not available.
+   */
+  needsDictSegmentation?: boolean;
 }
 
 /**
  * Per-language offline tokenization configuration.
  *
- * Only languages that have at least one offline lemmatization strategy
- * (snowball stemmer or downloadable lemma table) are listed.
+ * Languages with at least one offline strategy (snowball stemmer,
+ * downloadable lemma table, or dict-based segmentation) are listed.
  * All other languages default to regex word-split + surface-as-lemma.
  *
  * Size estimates are rough upper bounds; actual gzipped JSON is typically
@@ -255,4 +267,24 @@ export const TOKENIZER_CONFIG: Record<string, TokenizerConfig> = {
   sq: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 100_000 },
   sw: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 80_000 },
   uk: { snowballCode: null, hasLemmaTable: true, lemmaTableSize: 250_000 },
+
+  // ── Dict-based segmentation only (Phase 2b, 16 languages) ──
+  // Chinese varieties: need word segmentation; surface = lemma (no inflection)
+  zh: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  cmn: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  nan: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  hak: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  lzh: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  gan: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  hsn: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  wuu: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  cjy: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  cpx: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  yue: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  // SEA scriptio continua: Thai, Khmer, Burmese, Lao, Tibetan
+  th: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  km: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  lo: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  my: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
+  bo: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsDictSegmentation: true },
 };
