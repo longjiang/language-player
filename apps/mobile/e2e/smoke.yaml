@@ -39,7 +39,10 @@ env:
     text: ".*Vocab.*"
     regex: true
 
-# Close drawer by tapping the overlay
+# Close drawer by tapping the overlay.
+# NOTE: 10%,50% assumes the drawer ≤ 10% of screen width. On iPad
+# (Min(256, width*0.6)), 10% may land inside the drawer. If this
+# flakes, add a testID to the drawer overlay instead.
 - tapOn:
     point: "10%,50%"
 

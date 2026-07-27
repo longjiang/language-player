@@ -3,6 +3,15 @@ env:
   EMAIL: ${FREE_EMAIL}
   PASS: ${FREE_PASS}
 ---
+# ── Preflight: ensure we're on the login screen ──
+# If a previous test left the app logged in (iOS Keychain survives
+# app deletion), log out before running auth tests.
+- runFlow:
+    file: flows/logout.yaml
+    when:
+      notVisible:
+        id: "login-email-input"
+
 # ── A1: Login — happy path (already covered by smoke)
 # ── A2: Login — invalid credentials ────────────────────────────────
 - tapOn:
@@ -47,6 +56,9 @@ env:
     optional: true
 
 # ── A6: Register — weak password ───────────────────────────────────
+# NOTE: eraseText may not work reliably with React Native TextInput
+# under Fabric (New Architecture). If this flakes, use longPressOn +
+# backspace instead.
 - tapOn:
     id: "register-password-input"
 - eraseText

@@ -4,6 +4,8 @@ interface PageContainerProps {
   children: React.ReactNode;
   /** Set to true for pages that benefit from full width (video, reader, EPUB). */
   fullWidth?: boolean;
+  /** E2E test identifier forwarded to the outer native View. */
+  testID?: string;
 }
 
 /**
@@ -18,12 +20,12 @@ interface PageContainerProps {
  * For ScrollView-based screens, use a `<ScrollView className="flex-1">`
  * as a child — it fills the inner wrapper and scrolls independently.
  */
-export function PageContainer({ children, fullWidth = false }: PageContainerProps) {
+export function PageContainer({ children, fullWidth = false, testID }: PageContainerProps) {
   if (fullWidth) {
-    return <View className="flex-1 bg-background">{children}</View>;
+    return <View className="flex-1 bg-background" testID={testID}>{children}</View>;
   }
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-background" testID={testID}>
       <View className="flex-1 w-full max-w-3xl self-center">
         {children}
       </View>
