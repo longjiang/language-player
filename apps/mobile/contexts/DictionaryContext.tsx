@@ -372,18 +372,18 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       // ── SPEC-018 Phase 2c/2d: Download kuromoji/kuromoji-ko data pack ──
       // Japanese (ja): kuromoji + IPADIC dict, Korean (ko): kuromoji-ko + mecab-ko-dic
       if (tokenConfig?.needsKuromoji) {
-        console.log('[DictContext] 📥 downloading kuromoji data pack — l2:', l2, 'size:', tokenConfig.tokenizerDataSize);
+        if (__DEV__) console.log('[DictContext] 📥 downloading kuromoji data pack — l2:', l2, 'size:', tokenConfig.tokenizerDataSize);
         try {
           const { downloadKuromojiData } = await import('@/lib/tokenizer-db');
           const ok = await downloadKuromojiData(l2, PYTHON_API_URL);
-          console.log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' kuromoji data — l2:', l2, ok ? 'downloaded' : 'unavailable');
+          if (__DEV__) console.log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' kuromoji data — l2:', l2, ok ? 'downloaded' : 'unavailable');
           if (ok) {
             // Reset the tokenizer singleton so next lemmatizeText() reloads
             const { resetTokenizer } = await import('@/lib/tokenizer');
             resetTokenizer(l2);
           }
         } catch (e: any) {
-          console.log('[DictContext] ⚠️ kuromoji data download failed (non-fatal) — l2:', l2, e?.message ?? e);
+          if (__DEV__) console.log('[DictContext] ⚠️ kuromoji data download failed (non-fatal) — l2:', l2, e?.message ?? e);
         }
       }
 

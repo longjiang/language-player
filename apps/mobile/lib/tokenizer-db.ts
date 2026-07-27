@@ -49,14 +49,15 @@ async function ensureLemmaMeta(db: SQLite.SQLiteDatabase): Promise<void> {
  * Create the lemma_{l2} table for a language if it doesn't exist.
  */
 async function ensureLemmaTable(db: SQLite.SQLiteDatabase, l2: string): Promise<void> {
+  const safeL2 = l2.replace(/-/g, '_');
   await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS lemma_${l2} (
+    CREATE TABLE IF NOT EXISTS lemma_${safeL2} (
       surface TEXT PRIMARY KEY,
       lemmas TEXT NOT NULL
     );
   `);
   // Index for fast lookups
-  await db.execAsync(`CREATE INDEX IF NOT EXISTS idx_lemma_${l2}_surface ON lemma_${l2}(surface);`);
+  await db.execAsync(`CREATE INDEX IF NOT EXISTS idx_lemma_${safeL2}_surface ON lemma_${safeL2}(surface);`);
 }
 
 // ── Public API ───────────────────────────────
@@ -99,8 +100,9 @@ export async function lookupLemma(
 ): Promise<string[] | null> {
   try {
     const db = await openDictionaryDB();
+    const safeL2 = l2.replace(/-/g, '_');
     const row = await db.getFirstAsync<{ lemmas: string }>(
-      `SELECT lemmas FROM lemma_${l2} WHERE surface = ?`,
+      `SELECT lemmas FROM lemma_${safeL2} WHERE surface = ?`,
       [surface],
     );
     if (!row) return null;
@@ -127,8 +129,10 @@ export async function storeLemmaTable(
   await ensureLemmaMeta(db);
   await ensureLemmaTable(db, l2);
 
+  const safeL2 = l2.replace(/-/g, '_');
+
   // Delete existing data (re-download scenario)
-  await db.execAsync(`DELETE FROM lemma_${l2}`);
+  await db.execAsync(`DELETE FROM lemma_${safeL2}`);
 
   // Bulk insert in chunks
   for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
@@ -136,7 +140,7 @@ export async function storeLemmaTable(
     const values = chunk
       .map(([surface, lemmas]) => `('${esc(surface)}', '${esc(JSON.stringify(lemmas))}')`)
       .join(', ');
-    await db.execAsync(`INSERT OR REPLACE INTO lemma_${l2} (surface, lemmas) VALUES ${values}`);
+    await db.execAsync(`INSERT OR REPLACE INTO lemma_${safeL2} (surface, lemmas) VALUES ${values}`);
   }
 
   // Store metadata
@@ -151,7 +155,8 @@ export async function storeLemmaTable(
  */
 export async function deleteLemmaTable(l2: string): Promise<void> {
   const db = await openDictionaryDB();
-  await db.execAsync(`DROP TABLE IF EXISTS lemma_${l2}`);
+  const safeL2 = l2.replace(/-/g, '_');
+  await db.execAsync(`DROP TABLE IF EXISTS lemma_${safeL2}`);
   await db.runAsync('DELETE FROM lemma_meta WHERE l2 = ?', [l2]);
 }
 

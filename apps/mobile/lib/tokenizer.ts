@@ -325,9 +325,14 @@ async function lemmatizeLocal(
   // Pre-warm lemma table lookups if available (batch for efficiency)
   let lemmaMap: Map<string, string[]> | null = null;
   if (tableReady) {
+    const results = await Promise.all(
+      words.map(async (word) => {
+        const lemmas = await tryLemmaTable(l2, word);
+        return { word, lemmas };
+      }),
+    );
     lemmaMap = new Map();
-    for (const word of words) {
-      const lemmas = await tryLemmaTable(l2, word);
+    for (const { word, lemmas } of results) {
       if (lemmas) lemmaMap.set(word, lemmas);
     }
   }
@@ -369,16 +374,24 @@ async function lemmatizeLocal(
   });
 }
 
-// Track which languages we've already attempted background download for
-const lemmaDownloadAttempted = new Set<string>();
+// Track which languages we've already attempted background download for,
+// plus the timestamp of the last attempt (for retry on failure).
+const lemmaDownloadState = new Map<string, number>();
+
+/** Retry failed lemma table downloads after this many ms. */
+const LEMMA_DOWNLOAD_RETRY_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Fire-and-forget background download of lemma table.
  * Called on first local fallback invocation for a language.
+ * Retries after LEMMA_DOWNLOAD_RETRY_MS on previous failure.
  */
 function backgroundDownloadLemmaTable(l2: string, apiUrl: string): void {
-  if (lemmaDownloadAttempted.has(l2)) return;
-  lemmaDownloadAttempted.add(l2);
+  const lastAttempt = lemmaDownloadState.get(l2);
+  if (lastAttempt !== undefined && Date.now() - lastAttempt < LEMMA_DOWNLOAD_RETRY_MS) {
+    return;
+  }
+  lemmaDownloadState.set(l2, Date.now());
 
   // Don't await — fire and forget
   import('@/lib/tokenizer-db').then(({ downloadLemmaTable }) => {

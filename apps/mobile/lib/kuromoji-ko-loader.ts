@@ -667,7 +667,13 @@ async function readAndDecompress(dicPath: string, filename: string): Promise<Arr
   }
 
   // Gzip decompression using pako (pure JS, works in RN)
-  return pako.ungzip(compressed).buffer as ArrayBuffer;
+  // Safe slice: pako's Uint8Array may be a view over a larger buffer,
+  // and TypedArray constructors (Int32Array, etc.) use the full .buffer.
+  const decompressed = pako.ungzip(compressed);
+  return decompressed.buffer.slice(
+    decompressed.byteOffset,
+    decompressed.byteOffset + decompressed.byteLength,
+  );
 }
 
 // ── Public API ──────────────────────────────────────────────────────

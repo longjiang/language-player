@@ -237,8 +237,7 @@ export const TOKENIZER_CONFIG: Record<string, TokenizerConfig> = {
   // Korean: requires mecab-ko-dic data pack download (~2 MB pruned)
   ko: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsKuromoji: true, tokenizerDataSize: 2_000_000 },
 
-  // ── Snowball + Lemma Table (both available, 13 languages) ──
-  // ── Snowball + Lemma Table (both available, 13 languages) ──
+  // ── Snowball + Lemma Table (both available, 18 languages) ──
   ca: { snowballCode: 'catalan', hasLemmaTable: true, lemmaTableSize: 200_000 },
   cs: { snowballCode: 'czech', hasLemmaTable: true, lemmaTableSize: 300_000 },
   da: { snowballCode: 'danish', hasLemmaTable: true, lemmaTableSize: 150_000 },
