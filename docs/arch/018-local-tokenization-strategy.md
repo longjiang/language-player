@@ -334,7 +334,9 @@ A sampling: `af`, `am`, `az`, `bn`, `eo`, `eu`, `fo`, `fy`, `gd`, `gu`, `ha`, `h
 
 ### Summary Matrix
 
-| Category | Count | Segmentation | Lemmatization | Bundle Cost per Lang |
+> **Downloadable Data** = data files downloaded per language alongside the offline dictionary (dictionary files, lemma tables). JS engines (~1 MB total for kuromoji, kuromoji-ko, nlptoolkit, snowball-stemmers) are bundled with the app at build time as npm dependencies. See [SPEC-018](../specs/018-local-tokenization-mobile.md) for the distribution model.
+
+| Category | Count | Segmentation | Lemmatization | Downloadable Data per Lang |
 |---|---|---|---|---|
 | **A** — Both | 5 (`ja`, `ko`, `ar`, `fa`, `tr`) | Complex | Complex | ~200–500 KB |
 | **B** — Segmentation-Only | 16 (11 Chinese varieties + `th`, `km`, `lo`, `my`, `bo`) | Complex | None | 0 KB (Intl.Segmenter) |
@@ -543,34 +545,34 @@ Rule-based suffix-stripping stemmers available for 15 languages via the `snowbal
 
 ## Per-Language Strategy Assignment
 
-| Language Group | Tokenization | Lemmatization | Bundle Cost |
+| Language Group | Tokenization | Lemmatization | Downloadable Data |
 |---|---|---|---|
 | **Chinese** | Intl.Segmenter or dict max-match | Surface = lemma (none needed) | 0 KB |
-| **Japanese** | Intl.Segmenter or kuromoji | kuromoji `basic_form` | ~3 MB (kuromoji dict) |
-| **Korean** | Space split + kuromoji-ko | kuromoji-ko `basic_form` | ~2 MB (kuromoji-ko dict) |
+| **Japanese** | Intl.Segmenter or kuromoji | kuromoji `basic_form` | ~3 MB (IPADIC dict) |
+| **Korean** | Space split + kuromoji-ko | kuromoji-ko `basic_form` | ~2 MB (mecab-ko-dic) |
 | **Thai, Khmer, Burmese, Lao** | Intl.Segmenter or dict max-match | Surface = lemma (none needed) | 0 KB |
-| **Arabic** | Space split (spaces exist) | arabic-stem + Qalsadi table | 15 KB + ~250 KB |
+| **Arabic** | Space split (spaces exist) | arabic-stem + Qalsadi table | ~250 KB (Qalsadi table) |
 | **Persian** | Space split | Pre-built lemma table (Hazm export) | ~80 KB |
-| **Turkish** | Space split | nlptoolkit or Snowball + lemma table | ~2 MB or ~50 KB |
+| **Turkish** | Space split | nlptoolkit or Snowball + lemma table | ~2 MB (FSM lexicon) or 0 KB (Snowball-only) |
 | **Russian** | Space split | Pre-built lemma table (pymorphy2 export) | ~500 KB |
-| **19 LemmatizationList langs** | Space split | Pre-built lemma table (already exists!) | ~150 KB each |
+| **19 LemmatizationList langs** | Space split | Pre-built lemma table | ~150 KB each |
 | **17 Simplemma langs** | Space split | Pre-built lemma table (Simplemma export) | ~100 KB each |
 | **~160 fallback langs** | Regex split | Surface = lemma | 0 KB |
 
-### Bundle Impact Analysis
+### Bundle & Download Impact
 
-**Option A — Bundle top 10 languages only**:
-- Lemma tables for en, es, fr, de, zh, ja, ko, pt, it, ru
-- Tokenizers: Intl.Segmenter (built-in) + regex (built-in)
-- **Total: ~3 MB** (gzipped ~1.5 MB)
+**JS engines (bundled with app at build time as npm dependencies)**:
+- kuromoji (~200 KB) + kuromoji-ko (~200 KB) + nlptoolkit (~100 KB) + snowball-stemmers (~450 KB for 15 languages) + arabic-stem (15 KB, already in Phase 1)
+- **Total bundled: ~1 MB**. These are npm packages — React Native cannot dynamically load arbitrary JS at runtime.
 
-**Option B — Bundle nothing, download on demand** (selected):
-- Lemma tables downloaded like offline dictionaries (SPEC-013)
-- Tokenizers: Intl.Segmenter (built-in) + regex (built-in)
-- **Total: 0 KB bundled**, ~100–500 KB per downloaded language
+**Data files (downloaded on demand, triggered by SPEC-013 dictionary download)**:
 
-**Option C — Bundle top 20 + download rest**:
-- **Total: ~5 MB** (gzipped ~2.5 MB)
+| Strategy | Per-Language Download |
+|---|---|
+| **Download on demand** (selected) | 0 KB preloaded, ~100 KB–3 MB per language when user downloads the offline dictionary |
+| Bundle all data | ~10 MB total (not recommended — forces all users to pay for all languages) |
+
+> **Recommendation**: Bundle the ~1 MB of JS engines with the app. Download data files on demand alongside offline dictionaries. This keeps the app small for casual users while giving power users full offline capability for their chosen languages.
 
 ---
 
