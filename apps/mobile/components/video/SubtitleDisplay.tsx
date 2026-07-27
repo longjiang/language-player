@@ -194,6 +194,16 @@ export function SubtitleDisplay({
         const isActive = i === activeIdx;
         const translation = translatedLines[i];
 
+        // ── Karaoke: compute progress for active line only ──
+        let karaokeProgress: number | undefined;
+        if (isActive && playback.karaokeMode) {
+          const lineDuration = line.duration
+            ?? (l2Lines[i + 1] ? l2Lines[i + 1]!.starttime - line.starttime : 5);
+          karaokeProgress = lineDuration > 0
+            ? Math.min(1, Math.max(0, (currentTime - line.starttime) / lineDuration))
+            : 0;
+        }
+
         return (
           <Pressable
             onPress={() => onSeekToLine?.(line.starttime)}
@@ -205,6 +215,7 @@ export function SubtitleDisplay({
               highlightTerms={highlightTerms}
               tokenCache={tokenCache}
               tokenCacheLoaded={tokenCacheLoaded}
+              karaokeProgress={karaokeProgress}
             />
             {translation && showTranslation && (
               <Text className="mt-1 text-sm text-muted-foreground">

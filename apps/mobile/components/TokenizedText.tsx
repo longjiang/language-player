@@ -69,6 +69,9 @@ export interface TokenizedTextProps {
   /** Whether the token cache has finished loading. When false and tokenCache
    *  is provided, the component shows plain text without calling the API. */
   tokenCacheLoaded?: boolean;
+  /** Karaoke progress for the active subtitle line: 0 (start) to 1 (end).
+   *  When undefined, karaoke is off. */
+  karaokeProgress?: number;
 }
 
 /**
@@ -85,7 +88,7 @@ export interface TokenizedTextProps {
  *
  * While loading or on error, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -377,12 +380,22 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     const readingSize = Math.max(8, Math.round(textStyle.fontSize! * 0.55));
     const baseLeading = textStyle.fontSize! + 6;
 
+    // ── Karaoke: precompute spoken word count ──
+    let wordCount = 0;
+    let spokenWordCount = 0;
+    if (karaokeProgress !== undefined) {
+      wordCount = tokens.filter(t => isWord(t)).length;
+      spokenWordCount = Math.floor(karaokeProgress * wordCount);
+    }
+
     return (
       <>
         {/* Ruby mode: View-based flex row for readings-above-characters layout */}
         {showPhonetics && phonetics.show === 'ruby' ? (
           <View className="flex-row flex-wrap items-end">
-            {tokens.map((token, i) => {
+            {(() => {
+              let wordIndexSoFar = 0;
+              return tokens.map((token, i) => {
               if (!isWord(token)) {
                 return (
                   <View key={i} className="items-center mx-px">
@@ -390,6 +403,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   </View>
                 );
               }
+
+              // Karaoke dimming for non-spoken words
+              wordIndexSoFar++;
+              const isKaraokeSpoken = karaokeProgress !== undefined ? wordIndexSoFar <= spokenWordCount : undefined;
+              const isKaraokeDimmed = isKaraokeSpoken === false;
 
               const word = token.text;
               const displayText = useTraditional ? (convertedTexts.get(word) ?? word) : word;
@@ -423,7 +441,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               return (
                 <React.Fragment key={i}>
                   {rubySegs.map((seg, j) => (
-                    <View key={j} className="items-center mx-px">
+                    <View key={j} className="items-center mx-px" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
                       {seg.reading && (
                         <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
                       )}
@@ -447,15 +465,22 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   ))}
                 </React.Fragment>
               );
-            })}
+            })()}
           </View>
         ) : (
           /* Word-replace or no-phonetics mode: plain inline Text */
           <Text style={textStyle} className="text-foreground">
-            {tokens.map((token, i) => {
+            {(() => {
+              let wordIndexSoFar = 0;
+              return tokens.map((token, i) => {
+              const isWordToken = isWord(token);
+              if (isWordToken) wordIndexSoFar++;
+              const isKaraokeSpoken = karaokeProgress !== undefined ? wordIndexSoFar <= spokenWordCount : undefined;
+              const isKaraokeDimmed = isKaraokeSpoken === false;
+
               const word = token.text;
               const tokenDisplayText = useTraditional ? (convertedTexts.get(word) ?? word) : word;
-              const displayText = replaceWithPhonetics && isWord(token) && shouldShowPhonetics(token) && token.pronunciation
+              const displayText = replaceWithPhonetics && isWordToken && shouldShowPhonetics(token) && token.pronunciation
                 ? token.pronunciation
                 : tokenDisplayText;
               const isHighlighted = highlightTerms?.some((t) => t === word);
@@ -473,7 +498,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   setRevealedTokens(prev => new Set(prev).add(i));
                   return;
                 }
-                if (popupEnabled && isWord(token)) {
+                if (popupEnabled && isWordToken) {
                   configureLayoutAnimation();
                   setSelectedWord(word);
                 }
@@ -484,6 +509,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   key={i}
                   onPress={handlePress}
                   className={isHighlighted ? 'font-bold text-primary' : ''}
+                  style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}
                 >
                   {showByeonggi ? `${byeonggiText} ` : ''}
                   {isBlanked ? '▯' : displayText}
@@ -491,7 +517,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   {showQuickGloss ? ` ${firstDef}` : ''}
                 </Text>
               );
-            })}
+            })()}
           </Text>
         )}
 
