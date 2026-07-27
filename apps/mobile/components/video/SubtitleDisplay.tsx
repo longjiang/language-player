@@ -155,10 +155,17 @@ export function SubtitleDisplay({
     <FlatList
       ref={scrollRef}
       data={l2Lines}
-      keyExtractor={(_, i) => String(i)}
+      keyExtractor={(line) => String(line.starttime)}
       initialNumToRender={10}
       windowSize={5}
       maxToRenderPerBatch={10}
+      getItemLayout={(_, index) => ({
+        // Estimated item height (py-2 + mb-1 + text-base + optional translation).
+        // Variable-height lines cause occasional onScrollToIndexFailed (handled below).
+        length: 48,
+        offset: 48 * index,
+        index,
+      })}
       contentContainerStyle={{ paddingHorizontal: 12 }}
       onScrollToIndexFailed={() => {
         // Fallback: approximate scroll by offset (lines may be variable height)
