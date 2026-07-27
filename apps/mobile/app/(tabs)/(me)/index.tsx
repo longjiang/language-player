@@ -5,8 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useT } from '@/hooks/use-t';
-import { Settings, User, LogOut, Star, CreditCard, Download, Crown } from 'lucide-react-native';
-import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING } from '@/lib/theme-colors';
+import { Settings, User, LogOut, Star, CreditCard, Download, Crown, Trash2 } from 'lucide-react-native';
+import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
 export default function MeScreen() {
   const { user, logout } = useAuth();
@@ -70,6 +70,17 @@ export default function MeScreen() {
             <Text className="flex-1 text-sm text-foreground">{item.label}</Text>
           </Pressable>
         ))}
+      </View>
+
+      {/* Delete account */}
+      <View className="mt-6 rounded-xl border border-border bg-card">
+        <Pressable
+          onPress={() => router.push('/delete-account' as any)}
+          className="flex-row items-center gap-3 px-4 py-3"
+        >
+          <Trash2 size={20} color={ICON_DESTRUCTIVE} />
+          <Text className="flex-1 text-sm text-destructive">{t('title.delete_account')}</Text>
+        </Pressable>
       </View>
     </ScrollView>
   );
