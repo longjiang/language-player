@@ -43,7 +43,7 @@ export function SubtitlesModeBand({
   overlay = true,
 }: SubtitlesModeBandProps) {
   const { l2Lang } = useLanguage();
-  const { display } = useSettingsContext();
+  const { display, playback } = useSettingsContext();
   const showTranslation = display.translation;
 
   const activeIndex = useMemo(() => {
@@ -135,12 +135,28 @@ export function SubtitlesModeBand({
         {activeLine ? (
           <>
             <View className="items-center">
-              <TokenizedText
-                text={activeLine.l2Line}
-                l2Code={l2Lang.code}
-                tokenCache={tokenCache}
-                tokenCacheLoaded={tokenCacheLoaded}
-              />
+              {(() => {
+                // ── Karaoke: compute progress for active line ──
+                let karaokeProgress: number | undefined;
+                if (playback.karaokeMode && activeIndex >= 0) {
+                  const nextLine = subtitleLines[activeIndex + 1];
+                  const lineDuration = nextLine
+                    ? nextLine.starttime - activeLine.starttime
+                    : 5;
+                  karaokeProgress = lineDuration > 0
+                    ? Math.min(1, Math.max(0, (currentTime - activeLine.starttime) / lineDuration))
+                    : 0;
+                }
+                return (
+                  <TokenizedText
+                    text={activeLine.l2Line}
+                    l2Code={l2Lang.code}
+                    tokenCache={tokenCache}
+                    tokenCacheLoaded={tokenCacheLoaded}
+                    karaokeProgress={karaokeProgress}
+                  />
+                );
+              })()}
             </View>
             {showTranslation && activeLine.l1Line ? (
               <Text className={`text-sm text-center mt-0.5 ${transColor}`}>
