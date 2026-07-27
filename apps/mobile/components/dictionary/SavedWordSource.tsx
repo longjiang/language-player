@@ -37,14 +37,14 @@ export function SavedWordSource({ context, date }: SavedWordSourceProps) {
       {hasVideoContext ? (
         <>
           <Video size={12} color={ICON_MUTED} />
-          <Text className="max-w-[65%] text-xs text-muted-foreground/70" numberOfLines={1}>
+          <Text className="flex-1 text-xs text-muted-foreground/70" numberOfLines={1}>
             {context.videoTitle}
           </Text>
         </>
       ) : (
         <>
           <BookOpen size={12} color={ICON_MUTED} />
-          <Text className="max-w-[65%] text-xs text-muted-foreground/70" numberOfLines={1}>
+          <Text className="flex-1 text-xs text-muted-foreground/70" numberOfLines={1}>
             {context.textTitle}
           </Text>
         </>
