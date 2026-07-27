@@ -164,11 +164,11 @@ interface DictionaryEntry {
 TokenizedText (container)
 ├── IntersectionObserver ← lazy loading
 ├── Lemmatize cache + in-flight dedup
-├── Traditional Chinese conversion (OpenCC)
 ├── Batch dictionary lookup (bulkLookupWords)
 ├── Saved words context (isSaved per token)
 └── TokenSpan × N (individual tokens)
     ├── Ruby text (<ruby> + <rt>)
+    ├── Chinese script conversion (OpenCC per-token, ADR-0019)
     ├── Byeonggi (hanja/hán tự from dict cache)
     ├── Quiz blanking (blank → tap → reveal)
     ├── QuickGloss (first definition for saved words)
@@ -271,20 +271,44 @@ function getWordDifficulty(l2Code: string, lemmas: Lemma[]): WordDifficulty {
 - `classified` with `value >= userLevel` → show phonetics (word is difficult)
 - `classified` with `value < userLevel` → don't show phonetics (word is easy)
 
-### Traditional Chinese Conversion (Web)
+### Chinese Script Conversion (Web, ADR-0019)
 
-When `l2Code` is Chinese and `l2Settings.display.traditional` is true:
+Per [ADR-0019](../adr/0019-chinese-script-conversion-at-render-layer.md), Chinese script conversion was moved from `TokenizedText` (pre-tokenization) to `TokenSpan` (per-token render layer).
 
-```typescript
-const { toTraditional } = await import('@/lib/chinese-script');
-const result = await toTraditional(text);
+**Rationale:**
+1. **Better tokenization**: Tokenizing the original text gives Jieba the script it's optimized for (simplified). Traditional learners no longer send traditional text to a simp-optimized tokenizer.
+2. **Unified video token cache**: One cache entry per subtitle line regardless of learner's script preference — simplified and traditional learners share the same `GET /lemmatize-video-normalized` cache.
+3. **Consistent architecture**: Chinese script conversion joins Korean hanja and Vietnamese hán tự as per-token rendering concerns in `TokenSpan`.
+4. **Server-side improvement**: Python backend loads `jieba.set_dictionary('dict.txt.big')` for equal-quality segmentation on both scripts.
+
+**Before (removed):**
+```
+text → [OpenCC cn→twp] → POST /lemmatize-normalized → tokens → TokenSpan (no conversion)
 ```
 
-- **File:** `apps/web/src/lib/chinese-script.ts`
-- Uses `opencc-js` (lazy-loaded, ~250KB gzipped)
-- Converts Simplified → Traditional via `cn → twp`
-- The conversion happens before tokenization — `TokenizedText` tokenizes the converted text
-- Has its own `converting` state — tokenization waits for conversion to complete
+**After (current):**
+```typescript
+// apps/web/src/components/token-span.tsx (lines 106–125)
+const isChinese = base === 'zh';
+const useTraditional = isChinese && l2Settings.display.traditional;
+
+const [displayText, setDisplayText] = useState(token.text);
+useEffect(() => {
+  if (!useTraditional) { setDisplayText(token.text); return; }
+  let cancelled = false;
+  import('@/lib/chinese-script').then(({ toTraditional }) => {
+    toTraditional(token.text).then(result => {
+      if (!cancelled) setDisplayText(result);
+    });
+  });
+  return () => { cancelled = true; };
+}, [token.text, useTraditional]);
+```
+
+- OpenCC `cn→twp` is idempotent on already-traditional text — no-op for traditional source content
+- Lazy-loaded per `TokenSpan` instance, stays in memory
+- No new props — `TokenSpan` reads `display.traditional` directly from `useSettingsContext()`
+- `TokenizedText` no longer has any conversion logic (~25 lines removed)
 
 ---
 
@@ -313,7 +337,7 @@ TokenizedText (single file, ~360 lines)
 |---|---|---|---|
 | **Lazy loading** | IntersectionObserver 200px margin | Not implemented | ⬜ Gap — mobile fetches all tokens immediately |
 | **In-flight dedup** | `lemmatizeInflight` Map | Only `loadingRef.current` guard | ⬜ Gap — can have duplicate requests |
-| **Traditional Chinese** | OpenCC auto-conversion | TODO (G11) | ⬜ Feature gap |
+| **Traditional Chinese** | OpenCC per-token in TokenSpan (ADR-0019) | TODO (G11) | ⬜ Feature gap — needs TokenSpan port |
 | **hardWords filter** | `getWordDifficulty()` | TODO (G9) | ⬜ Feature gap |
 | **quickGloss** | `QuickGloss` for saved words | TODO (G7) | ⬜ Feature gap |
 | **byeonggi** | Per-token `useMemo` from cache | ✅ `getTokenEntryData()` | ✅ Done |
@@ -461,7 +485,7 @@ For a video transcript with 500 subtitle lines, unique 200 lemmas:
 | 2 | No in-flight lemmatize dedup | Concurrent TokenizedText instances for same text launch separate API calls | Add `lemmatizeInflight` Map (same pattern as web) |
 | 3 | No IntersectionObserver lazy loading | All subtitle lines tokenized immediately on mount, even off-screen | Implement via `onLayout` + scroll position tracking or FlatList viewability |
 | 4 | hardWords filtering | Phonetics shown for all words regardless of difficulty | Implement `getWordDifficulty()` using dictionary cache levels |
-| 5 | Traditional Chinese conversion | No character conversion for Chinese script variant | Port OpenCC or use server-side conversion |
+| 5 | Chinese script conversion | No per-token conversion in mobile TokenizedText (web moved to TokenSpan per ADR-0019) | Port OpenCC per-token pattern to mobile TokenizedText |
 | 6 | quickGloss rendering | Dictionary definitions available in cache but not rendered for saved words | Integrate `useSavedWords()` context into TokenizedText |
 
 ---
@@ -474,8 +498,8 @@ For a video transcript with 500 subtitle lines, unique 200 lemmas:
 | `packages/utils/src/token-cache.ts` | Shared | 48 | `TokenCache` class (md5-keyed) |
 | `zerotohero-python-server/routes/text_routes.py` | Backend | ~200 | `/lemmatize-normalized`, `/lemmatize-video-normalized` endpoints |
 | `zerotohero-python-server/routes/dictionary.py` | Backend | ~200 | `/dictionary/lookup-batch` endpoint |
-| `apps/web/src/components/tokenized-text.tsx` | Web | 418 | Container: lazy loading, caching, batch lookup, conversion |
-| `apps/web/src/components/token-span.tsx` | Web | 260 | Individual token: ruby, byeonggi, quiz, gloss, hardWords, karaoke |
+| `apps/web/src/components/tokenized-text.tsx` | Web | ~375 | Container: lazy loading, caching, batch lookup (conversion moved to TokenSpan per ADR-0019) |
+| `apps/web/src/components/token-span.tsx` | Web | ~290 | Individual token: ruby, Chinese script conversion, byeonggi, quiz, gloss, hardWords, karaoke |
 | `apps/web/src/lib/dictionary-cache.ts` | Web | 83 | Client-side dict cache + `bulkLookupWords()` |
 | `apps/web/src/hooks/use-subtitle-translation.ts` | Web | 209 | Chunked L1 translation for video subtitles |
 | `apps/web/src/hooks/use-video-token-cache.ts` | Web | ~30 | Fetch + populate TokenCache from /lemmatize-video-normalized |
