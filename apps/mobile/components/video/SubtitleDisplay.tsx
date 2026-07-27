@@ -174,6 +174,8 @@ export function SubtitleDisplay({
               text={line.line}
               l2Code={l2Lang.code}
               highlightTerms={highlightTerms}
+              tokenCache={tokenCache}
+              tokenCacheLoaded={tokenCacheLoaded}
             />
             {translation && showTranslation && (
               <Text className="mt-1 text-sm text-muted-foreground">
