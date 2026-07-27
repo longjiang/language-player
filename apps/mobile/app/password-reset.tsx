@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
-import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
+import { PLACEHOLDER_COLOR, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { DIRECTUS_URL } from '@/lib/api-url';
 

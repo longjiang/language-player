@@ -127,12 +127,16 @@ export function DictionaryDefinitionsPanel({
       )}
 
       {/* ── Classifiers (measure words, gender, noun class) ── */}
-      {entry.classifier && entry.classifier.length > 0 && (
+      {entry.classifier && entry.classifier.length > 0 && (() => {
+        const firstKind = entry.classifier[0].kind;
+        const classifierTitle =
+          firstKind === 'gender' ? t('title.gender') :
+          firstKind === 'measure_word' ? t('title.measure_words') :
+          t('title.classifiers');
+        return (
         <View className="mb-4">
           <Text className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {entry.classifier[0]!.kind === 'gender' ? t('title.gender') :
-             entry.classifier[0]!.kind === 'measure_word' ? t('title.measure_words') :
-             t('title.classifiers')}
+            {classifierTitle}
           </Text>
           <View className="flex-row flex-wrap gap-2">
             {entry.classifier.map((cl, i) => (
@@ -151,10 +155,13 @@ export function DictionaryDefinitionsPanel({
             ))}
           </View>
         </View>
-      )}
+        );
+      })()}
 
       {/* ── Study material coverage ── */}
-      {entry.studyMaterials && entry.studyMaterials.length > 0 && (
+      {entry.studyMaterials && entry.studyMaterials.length > 0 && (() => {
+        const materials = entry.studyMaterials;
+        return (
         <View className="mb-4 rounded-lg bg-blue-50/50 p-4 dark:bg-blue-950/20">
           <Text className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             {t('title.textbook_appearances')}
@@ -182,13 +189,14 @@ export function DictionaryDefinitionsPanel({
                   {m.exampleTranslation}
                 </Text>
               )}
-              {i < entry.studyMaterials!.length - 1 && (
+              {i < materials.length - 1 && (
                 <View className="my-2 h-px bg-border" />
               )}
             </View>
           ))}
         </View>
-      )}
+        );
+      })()}
 
       {/* ── Han script detail ── */}
       {entry.han_script && (entry.han_script.traditional || entry.han_script.simplified) && (
@@ -237,8 +245,8 @@ export function DictionaryDefinitionsPanel({
             </Text>
           </Pressable>
           {entry.match_type && entry.match_type !== 'exact' && (
-            <View className="rounded bg-amber-100 px-1.5 py-0.5 dark:bg-amber-900/30">
-              <Text className="text-xs text-amber-700 dark:text-amber-400">
+            <View className="rounded bg-warning/10 px-1.5 py-0.5">
+              <Text className="text-xs text-warning">
                 {entry.match_type}
               </Text>
             </View>
