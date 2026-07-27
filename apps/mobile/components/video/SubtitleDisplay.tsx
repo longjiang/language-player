@@ -5,6 +5,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
+import { useActiveLineIndex } from '@/hooks/use-active-line-index';
+import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -115,38 +117,24 @@ export function SubtitleDisplay({
   }, [youtubeId, initialLines]);
 
   // Find active line by current video time — synchronous, no feedback loop
-  const computedActiveIdx = useMemo(() => {
-    if (l2Lines.length === 0) return -1;
-    let idx = -1;
-    for (let i = 0; i < l2Lines.length; i++) {
-      if (l2Lines[i]!.starttime <= currentTime) idx = i;
-      else break;
-    }
-    return idx;
-  }, [currentTime, l2Lines]);
+  const startTimes = useMemo(() => l2Lines.map(l => l.starttime), [l2Lines]);
+  const computedActiveIdx = useActiveLineIndex(startTimes, currentTime);
 
-  // ── Scroll throttle for smoothScroll mode ──
-  const lastScrollTime = useRef(0);
-  const THROTTLE_MS = 2000;
+  // ── Auto-scroll: visibility-gated, throttled, seek-aware ──
+  const {
+    onViewableItemsChanged,
+    viewabilityConfig,
+    onScrollBeginDrag,
+  } = useTranscriptAutoScroll({
+    activeIndex: computedActiveIdx,
+    flatListRef: scrollRef,
+    smoothScrollEnabled: playback.smoothScroll,
+  });
 
-  // Keep state in sync with computed value; scroll when it changes
+  // Keep state in sync with computed value (scroll is handled by useTranscriptAutoScroll)
   useEffect(() => {
-    if (computedActiveIdx !== activeIdx) {
-      setActiveIdx(computedActiveIdx);
-      if (computedActiveIdx >= 0 && scrollRef.current) {
-        const now = Date.now();
-        const isThrottled = playback.smoothScroll && (now - lastScrollTime.current < THROTTLE_MS);
-        if (!isThrottled) {
-          lastScrollTime.current = now;
-          scrollRef.current.scrollToIndex({
-            index: computedActiveIdx,
-            animated: playback.smoothScroll,
-            viewPosition: 0.5,
-          });
-        }
-      }
-    }
-  }, [computedActiveIdx, playback.smoothScroll]);
+    setActiveIdx(computedActiveIdx);
+  }, [computedActiveIdx]);
 
   if (loadingSubs) {
     return (
@@ -180,6 +168,9 @@ export function SubtitleDisplay({
         index,
       })}
       contentContainerStyle={{ paddingHorizontal: 12 }}
+      onViewableItemsChanged={onViewableItemsChanged}
+      viewabilityConfig={viewabilityConfig}
+      onScrollBeginDrag={onScrollBeginDrag}
       onScrollToIndexFailed={() => {
         // Fallback: approximate scroll by offset (lines may be variable height)
       }}

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -8,6 +8,7 @@ import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
 import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
+import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { YouTubePlayer, type YouTubePlayerHandle } from '@/components/video/YouTubePlayer';
 import { VideoControlBar } from '@/components/video/VideoControlBar';
 import { SubtitleDisplay } from '@/components/video/SubtitleDisplay';
@@ -201,15 +202,7 @@ export default function WatchScreen() {
   const autoPausedLineRef = useRef<number>(-1);
 
   // Reset paused-line tracker when the active line changes
-  const activeLineIndex = useMemo(() => {
-    if (subtitleStartTimes.length === 0) return -1;
-    let idx = -1;
-    for (let i = 0; i < subtitleStartTimes.length; i++) {
-      if (subtitleStartTimes[i]! <= currentTime) idx = i;
-      else break;
-    }
-    return idx;
-  }, [currentTime, subtitleStartTimes]);
+  const activeLineIndex = useActiveLineIndex(subtitleStartTimes, currentTime);
 
   useEffect(() => {
     autoPausedLineRef.current = -1;
