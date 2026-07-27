@@ -121,9 +121,9 @@ export default function GoProScreen() {
   useEffect(() => {
     mountedRef.current = true;
     if (!IAP_AVAILABLE) return;
-    connectIap().then(() => {
+    connectIap().then(async () => {
       if (!mountedRef.current) return;
-      setPurchaseHandler(
+      await setPurchaseHandler(
         (result) => {
           // Purchase received from listener — set state to process it
           if (mountedRef.current) setIapResult(result);

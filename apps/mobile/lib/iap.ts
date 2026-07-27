@@ -15,9 +15,32 @@
 //   7. On success → finishTransactionAsync(purchase, false)
 //
 // See docs/specs/014-subscription-payment-system.md Phase 5 for full spec.
+//
+// NOTE: expo-in-app-purchases is loaded lazily (dynamic import) because the
+// native module is NOT available in Expo Go. A static top-level import would
+// crash immediately with "Cannot find native module 'ExpoInAppPurchases'".
 
-import * as InAppPurchases from 'expo-in-app-purchases';
 import { Platform } from 'react-native';
+import type { InAppPurchase, IAPErrorCode, IAPQueryResponse, IAPResponseCode } from 'expo-in-app-purchases';
+
+// ── Lazy module loader ──
+
+type IapModule = typeof import('expo-in-app-purchases');
+
+let _module: IapModule | null = null;
+let _moduleLoadError: Error | null = null;
+
+async function iap(): Promise<IapModule> {
+  if (_module) return _module;
+  if (_moduleLoadError) throw _moduleLoadError;
+  try {
+    _module = await import('expo-in-app-purchases');
+    return _module;
+  } catch (err: any) {
+    _moduleLoadError = new Error(`Failed to load IAP module: ${err?.message ?? err}`);
+    throw _moduleLoadError;
+  }
+}
 
 /** Product ID — must match App Store Connect.
  *  Same ID ("pro") the Nuxt app has been using since 2023.
@@ -28,7 +51,7 @@ const IOS_IAP_PRODUCT_ID = 'pro';
 
 export interface PurchaseResult {
   /** The InAppPurchase object from the App Store. */
-  purchase: InAppPurchases.InAppPurchase;
+  purchase: InAppPurchase;
   /** Base64-encoded App Store receipt. */
   receipt: string;
 }
@@ -55,7 +78,8 @@ export async function connectIap(): Promise<void> {
   if (!IAP_AVAILABLE || _connectionState === 'connected') return;
   _connectionState = 'connecting';
   try {
-    await InAppPurchases.connectAsync();
+    const m = await iap();
+    await m.connectAsync();
     _connectionState = 'connected';
   } catch (err) {
     console.warn('[IAP] connect failed:', err);
@@ -68,7 +92,8 @@ export async function connectIap(): Promise<void> {
 export async function disconnectIap(): Promise<void> {
   if (!IAP_AVAILABLE || _connectionState === 'disconnected') return;
   try {
-    await InAppPurchases.disconnectAsync();
+    const m = await iap();
+    await m.disconnectAsync();
   } finally {
     _connectionState = 'disconnected';
   }
@@ -77,23 +102,24 @@ export async function disconnectIap(): Promise<void> {
 // ── Purchase Listener ──
 
 type PurchaseCallback = (result: PurchaseResult) => void;
-type ErrorCallback = (errorCode: InAppPurchases.IAPErrorCode | undefined) => void;
+type ErrorCallback = (errorCode: IAPErrorCode | undefined) => void;
 
 let _purchaseCallback: PurchaseCallback | null = null;
 let _errorCallback: ErrorCallback | null = null;
 
 /** Set the global purchase listener.
  *  Must be called once after connectAsync, before any purchase. */
-export function setPurchaseHandler(
+export async function setPurchaseHandler(
   onPurchase: PurchaseCallback,
   onError?: ErrorCallback,
-): void {
+): Promise<void> {
   _purchaseCallback = onPurchase;
   _errorCallback = onError ?? null;
 
-  InAppPurchases.setPurchaseListener(
-    ({ responseCode, results, errorCode }: InAppPurchases.IAPQueryResponse<InAppPurchases.InAppPurchase>) => {
-      if (responseCode === InAppPurchases.IAPResponseCode.OK && results) {
+  const m = await iap();
+  m.setPurchaseListener(
+    ({ responseCode, results, errorCode }: IAPQueryResponse<InAppPurchase>) => {
+      if (responseCode === m.IAPResponseCode.OK && results) {
         for (const purchase of results) {
           if (purchase.productId === IOS_IAP_PRODUCT_ID && !purchase.acknowledged) {
             const receipt = purchase.transactionReceipt;
@@ -103,8 +129,8 @@ export function setPurchaseHandler(
           }
         }
       } else if (
-        responseCode === InAppPurchases.IAPResponseCode.ERROR ||
-        responseCode === InAppPurchases.IAPResponseCode.USER_CANCELED
+        responseCode === m.IAPResponseCode.ERROR ||
+        responseCode === m.IAPResponseCode.USER_CANCELED
       ) {
         _errorCallback?.(errorCode);
       }
@@ -121,7 +147,8 @@ export async function initiatePurchase(): Promise<void> {
     throw new Error('IAP is not available on this platform');
   }
   await connectIap();
-  await InAppPurchases.purchaseItemAsync(IOS_IAP_PRODUCT_ID);
+  const m = await iap();
+  await m.purchaseItemAsync(IOS_IAP_PRODUCT_ID);
 }
 
 // ── Finish Transaction ──
@@ -129,11 +156,12 @@ export async function initiatePurchase(): Promise<void> {
 /** Finish a completed purchase transaction.
  *  Must be called AFTER the backend has confirmed receipt validation. */
 export async function finishPurchaseTransaction(
-  purchase: InAppPurchases.InAppPurchase,
+  purchase: InAppPurchase,
 ): Promise<void> {
   if (!IAP_AVAILABLE) return;
   try {
-    await InAppPurchases.finishTransactionAsync(purchase, false);
+    const m = await iap();
+    await m.finishTransactionAsync(purchase, false);
   } catch (err) {
     console.warn('[IAP] finishTransactionAsync failed:', err);
   }
@@ -150,16 +178,17 @@ export async function restorePurchases(): Promise<PurchaseResult[]> {
   await connectIap();
 
   try {
+    const m = await iap();
     const { responseCode, results } =
-      await InAppPurchases.getPurchaseHistoryAsync();
+      await m.getPurchaseHistoryAsync();
 
-    if (responseCode !== InAppPurchases.IAPResponseCode.OK || !results) {
+    if (responseCode !== m.IAPResponseCode.OK || !results) {
       return [];
     }
 
     // Find all "pro" purchases with receipts
     return results
-      .filter((p): p is InAppPurchases.InAppPurchase =>
+      .filter((p): p is InAppPurchase =>
         p.productId === IOS_IAP_PRODUCT_ID && !!p.transactionReceipt,
       )
       .map((p) => ({
