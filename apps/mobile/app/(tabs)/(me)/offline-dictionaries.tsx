@@ -1,13 +1,15 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, TextInput, Platform, ActionSheetIOS } from 'react-native';
+import { View, Text, ScrollView, Pressable, Alert, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { SUPPORTED_L2S } from '@langplayer/shared';
 import enLocale from '@langplayer/shared/locales/en.json';
+import { ContextMenu } from '@/components/ui/context-menu';
+import type { ContextMenuItem } from '@/components/ui/context-menu';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { Download, Trash2, CheckCircle2, AlertTriangle, RefreshCw, Search, MoreVertical } from 'lucide-react-native';
+import { Download, Trash2, CheckCircle2, AlertTriangle, RefreshCw, Search } from 'lucide-react-native';
 
 // ── Language name lookup ─────────────────────
 
@@ -386,34 +388,19 @@ export default function OfflineDictionariesScreen() {
           </Text>
         </View>
         {downloadedList.length > 0 && (
-          <Pressable
-            onPress={() => {
-              if (Platform.OS === 'ios') {
-                ActionSheetIOS.showActionSheetWithOptions(
-                  {
-                    options: [t('action.delete_all'), t('action.cancel')],
-                    cancelButtonIndex: 1,
-                    destructiveButtonIndex: 0,
-                  },
-                  (index) => {
-                    if (index === 0) handleDeleteAll();
-                  },
-                );
-              } else {
-                Alert.alert(
-                  t('action.delete_all'),
-                  t('msg.confirm_delete_all_dictionaries'),
-                  [
-                    { text: t('action.cancel'), style: 'cancel' },
-                    { text: t('action.delete_all'), style: 'destructive', onPress: handleDeleteAll },
-                  ],
-                );
-              }
-            }}
-            className="rounded-lg p-2 -mt-1"
-          >
-            <MoreVertical size={20} color={ICON_MUTED} />
-          </Pressable>
+          <ContextMenu
+            items={[
+              {
+                key: 'delete-all',
+                icon: Trash2,
+                label: t('action.delete_all'),
+                destructive: true,
+                onPress: handleDeleteAll,
+              },
+            ]}
+            triggerClassName="rounded-lg p-2 -mt-1"
+            triggerSize={20}
+          />
         )}
       </View>
 

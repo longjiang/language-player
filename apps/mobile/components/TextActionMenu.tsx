@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, Pressable, Modal, ScrollView, ActivityIndicator, Alert, TouchableOpacity,
+  View, Text, Pressable, Modal, ScrollView, ActivityIndicator, Alert,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -10,9 +10,11 @@ import { useStreamingExplanation } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { MarkdownText } from '@/components/MarkdownText';
 import { TokenizedText } from '@/components/TokenizedText';
-import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { ContextMenu } from '@/components/ui/context-menu';
+import type { ContextMenuItem } from '@/components/ui/context-menu';
+import { ICON_MUTED } from '@/lib/theme-colors';
 import {
-  MoreVertical, Copy, Volume2, Square, Sparkles, Languages, X,
+  Copy, Volume2, Square, Sparkles, Languages, X,
 } from 'lucide-react-native';
 
 interface TextActionMenuProps {
@@ -27,15 +29,14 @@ interface TextActionMenuProps {
   children: React.ReactNode;
 }
 
-type ActionKind = 'copy' | 'speak' | 'explain' | 'translate';
+type ActionKind = 'explain' | 'translate';
 
 /**
  * Action menu for text blocks — copy, speak (TTS), AI explain, translate.
  *
- * Renders a ⋮ button beside the content. On press, opens a bottom sheet
- * with the available actions. Each action provides platform-appropriate
- * feedback (clipboard copy toast, TTS audio, modal explanation, inline
- * translation text).
+ * Renders children (text content) with a ⋮ button beside them. On press,
+ * opens a bottom sheet (via ContextMenu) with the available actions.
+ * AI explain and translate open their own result modals.
  */
 export function TextActionMenu(props: TextActionMenuProps) {
   const { text, l2Code, l1Code, context, children } = props;
@@ -57,10 +58,6 @@ export function TextActionMenu(props: TextActionMenuProps) {
   const [translateLoading, setTranslateLoading] = useState(false);
   const [translateError, setTranslateError] = useState<string | null>(null);
 
-  const closeMenu = useCallback(() => {
-    setMenuOpen(false);
-  }, []);
-
   const closeAction = useCallback(() => {
     setActiveAction(null);
     setTranslateResult(null);
@@ -68,11 +65,12 @@ export function TextActionMenu(props: TextActionMenuProps) {
     resetExplain();
   }, [resetExplain]);
 
+  // ── Menu actions ──
+
   const handleCopy = useCallback(async () => {
     await Clipboard.setStringAsync(text);
     Alert.alert(t('msg.copy_success'));
-    closeMenu();
-  }, [text, t, closeMenu]);
+  }, [text, t]);
 
   const handleSpeak = useCallback(() => {
     if (isSpeaking) {
@@ -80,12 +78,10 @@ export function TextActionMenu(props: TextActionMenuProps) {
     } else {
       speakTts(text, l2Code);
     }
-    closeMenu();
-  }, [text, l2Code, speakTts, stopTts, isSpeaking, closeMenu]);
+  }, [text, l2Code, speakTts, stopTts, isSpeaking]);
 
   const handleExplain = useCallback(() => {
     setActiveAction('explain');
-    setMenuOpen(false);
     const l1Name = l1Lang.name;
     const header = t('prompt.explain_block_header', { l2Code });
     const item1 = t('prompt.explain_block_item1', { l1Name });
@@ -102,7 +98,6 @@ export function TextActionMenu(props: TextActionMenuProps) {
 
   const handleTranslate = useCallback(async () => {
     setActiveAction('translate');
-    setMenuOpen(false);
     setTranslateLoading(true);
     setTranslateResult(null);
     setTranslateError(null);
@@ -122,29 +117,30 @@ export function TextActionMenu(props: TextActionMenuProps) {
     }
   }, [text, l2Code, effectiveL1, t]);
 
-  const menuItems: {
-    kind: ActionKind;
-    icon: React.ComponentType<{ size: number; color: string }>;
-    label: string;
-    onPress: () => void;
-    loading?: boolean;
-  }[] = [
-    { kind: 'copy', icon: Copy, label: t('action.copy'), onPress: handleCopy },
+  // ── Build ContextMenu items ──
+
+  const menuItems: ContextMenuItem[] = [
     {
-      kind: 'speak',
+      key: 'copy',
+      icon: Copy,
+      label: t('action.copy'),
+      onPress: handleCopy,
+    },
+    {
+      key: 'speak',
       icon: isSpeaking ? Square : Volume2,
       label: isSpeaking ? t('action.stop') : t('action.speak'),
       onPress: handleSpeak,
     },
     {
-      kind: 'explain',
+      key: 'explain',
       icon: Sparkles,
       label: t('action.let_ai_explain'),
       onPress: handleExplain,
       loading: activeAction === 'explain' && explainLoading,
     },
     {
-      kind: 'translate',
+      key: 'translate',
       icon: Languages,
       label: t('action.translation'),
       onPress: handleTranslate,
@@ -159,52 +155,14 @@ export function TextActionMenu(props: TextActionMenuProps) {
         <View className="flex-1 min-w-0">
           {children as any}
         </View>
-        <Pressable
-          onPress={() => setMenuOpen(true)}
-          className="mt-1 h-7 w-7 items-center justify-center rounded-md active:bg-muted"
-          hitSlop={6}
-        >
-          <MoreVertical size={16} color={ICON_MUTED} />
-        </Pressable>
+        <ContextMenu
+          items={menuItems}
+          open={menuOpen}
+          onOpenChange={setMenuOpen}
+          triggerClassName="mt-1 h-7 w-7 items-center justify-center rounded-md active:bg-muted"
+          triggerSize={16}
+        />
       </View>
-
-      {/* ── Action Menu Bottom Sheet ── */}
-      <Modal
-        visible={menuOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={closeMenu}
-      >
-        <Pressable className="flex-1 bg-black/40 justify-end" onPress={closeMenu}>
-          <Pressable
-            onPress={() => {}}
-            className="rounded-t-2xl bg-card px-4 pb-8 pt-2"
-          >
-            {/* Handle bar */}
-            <View className="mb-4 items-center">
-              <View className="h-1 w-10 rounded-full bg-muted-foreground/30" />
-            </View>
-
-            {menuItems.map((item) => (
-              <Pressable
-                key={item.kind}
-                onPress={item.onPress}
-                disabled={item.loading}
-                className="flex-row items-center gap-3 rounded-lg px-4 py-3.5 active:bg-muted"
-              >
-                <View className="h-8 w-8 items-center justify-center rounded-full bg-muted">
-                  {item.loading ? (
-                    <ActivityIndicator size="small" color={ICON_MUTED} />
-                  ) : (
-                    <item.icon size={16} color={ICON_PRIMARY} />
-                  )}
-                </View>
-                <Text className="text-base text-foreground">{item.label}</Text>
-              </Pressable>
-            ))}
-          </Pressable>
-        </Pressable>
-      </Modal>
 
       {/* ── AI Explain Modal ── */}
       <Modal

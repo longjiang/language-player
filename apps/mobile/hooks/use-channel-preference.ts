@@ -11,7 +11,7 @@ export type ChannelPref = 'subscribed' | 'not_interested' | 'neutral';
 // POST requests when N video cards each render the hook.
 
 type CacheEntry = {
-  promise: Promise<any[]>;
+  promise: Promise<any[]> | null;
   data: any[] | null;
   ts: number;
 };
@@ -44,7 +44,7 @@ async function _fetchPreferences(userId: string, l2: string): Promise<any[]> {
   })
     .then((res) => (res.ok ? res.json() : []))
     .then((data: any[]) => {
-      _cache.set(key, { promise: null as any, data, ts: Date.now() });
+      _cache.set(key, { promise: null, data, ts: Date.now() });
       return data;
     })
     .catch(() => {

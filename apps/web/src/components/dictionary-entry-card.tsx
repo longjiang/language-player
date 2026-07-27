@@ -78,7 +78,7 @@ export function DictionaryEntryCard({
     ? pronunciation
     : formatPronunciation(entry, l2Code ?? '');
 
-  const displayAlternate = getAlternateScript(entry);
+  const displayAlternate = getAlternateScript({ ...entry, head, alternate });
 
   const studyMaterials = entry.studyMaterials;
 

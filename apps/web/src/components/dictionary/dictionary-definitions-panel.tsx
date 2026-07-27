@@ -55,7 +55,7 @@ export function DictionaryDefinitionsPanel({
     ? pronunciation
     : formatPronunciation(entry, l2Code ?? '');
 
-  const displayAlternate = getAlternateScript(entry);
+  const displayAlternate = getAlternateScript({ ...entry, head, alternate });
 
   const sourceName = entry.dictionary?.name ?? entry.source;
   const displaySource = sourceName === 'AI-Generated' || sourceName === 'LLM'
