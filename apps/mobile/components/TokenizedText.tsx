@@ -17,6 +17,10 @@ import { bulkLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictio
 // render the same text, only one API call is made.
 const lemmatizeCache = new Map<string, LemmatizedToken[]>();
 
+// In-flight request deduplication — prevents thundering herd when many
+// TokenizedText instances mount simultaneously and all hit the fallback.
+const lemmatizeInflight = new Map<string, Promise<LemmatizedToken[]>>();
+
 export interface TokenizedTextProps {
   text: string;
   l2Code: string;
@@ -25,6 +29,9 @@ export interface TokenizedTextProps {
   tokens?: LemmatizedToken[];
   /** Video-level token cache from /lemmatize-video-normalized (optional optimization). */
   tokenCache?: TokenCache;
+  /** Whether the token cache has finished loading. When false and tokenCache
+   *  is provided, the component shows plain text without calling the API. */
+  tokenCacheLoaded?: boolean;
 }
 
 /**
@@ -41,13 +48,15 @@ export interface TokenizedTextProps {
  *
  * While loading or on error, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false);
   const lastTextRef = useRef(text);
+  const tokenCacheRef = useRef(tokenCache); // stable access without deps churn
+  tokenCacheRef.current = tokenCache;
 
   const { l1Lang } = useLanguage();
 
@@ -129,11 +138,22 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     if (effectiveText === lastTextRef.current && tokens.length > 0) return;
     lastTextRef.current = effectiveText;
 
+    // If a video-level token cache is provided but hasn't finished loading yet,
+    // show plain text and wait — don't fall back to per-line API calls.
+    // When tokenCacheLoaded flips to true, this effect re-fires and tries the
+    // now-populated cache.
+    if (tokenCacheRef.current && tokenCacheLoaded === false) {
+      setTokens([{ text: effectiveText, lemmas: [] }]);
+      setLoading(false);
+      return;
+    }
+
     const cacheKey = `${l2Code}:${effectiveText}`;
 
-    // 1. Check video token cache
-    if (tokenCache) {
-      const cached = tokenCache.get(effectiveText);
+    // 1. Check video token cache (via stable ref to avoid dep churn)
+    const tc = tokenCacheRef.current;
+    if (tc) {
+      const cached = tc.get(effectiveText);
       if (cached && cached.length > 0) {
         lemmatizeCache.set(cacheKey, cached);
         setTokens(cached);
@@ -150,7 +170,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       return;
     }
 
-    // Prevent concurrent fetches for the same text
+    // Prevent concurrent fetches for the same text within this instance
     if (loadingRef.current) return;
     loadingRef.current = true;
 
@@ -164,19 +184,31 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
     const fetchTokens = async () => {
       try {
-        const response = await fetch(`${PYTHON_API_URL}/lemmatize-normalized`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: effectiveText, l2: l2Code }),
-          signal: controller.signal,
-        });
+        // 3. Fall back to per-line API call — with in-flight deduplication
+        //    so that concurrent TokenizedText instances for the same text
+        //    share a single request instead of each launching their own.
+        let inflight = lemmatizeInflight.get(cacheKey);
+        if (!inflight) {
+          inflight = fetch(`${PYTHON_API_URL}/lemmatize-normalized`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: effectiveText, l2: l2Code }),
+            signal: controller.signal,
+          }).then(async (response) => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            const serverTokens = data.tokens ?? [];
+            lemmatizeCache.set(cacheKey, serverTokens);
+            return serverTokens;
+          }).finally(() => {
+            lemmatizeInflight.delete(cacheKey);
+          });
+          lemmatizeInflight.set(cacheKey, inflight);
+        }
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
+        const serverTokens = await inflight;
 
         if (!cancelled) {
-          const serverTokens = data.tokens ?? [];
-          lemmatizeCache.set(cacheKey, serverTokens);
           setTokens(serverTokens);
           setLoading(false);
           loadingRef.current = false;
@@ -198,7 +230,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       controller.abort();
       loadingRef.current = false;
     };
-  }, [text, l2Code, preloadedTokens, tokenCache]);
+  }, [text, l2Code, preloadedTokens, tokenCacheLoaded]);
 
   // ── Abort on unmount ──
   useEffect(() => {
