@@ -1,0 +1,11 @@
+appId: ca.zerotohero.app
+env:
+  FREE_EMAIL: e2e.free@zerotohero.ca
+  FREE_PASS: "${E2E_FREE_PASS}"
+  PRO_EMAIL: e2e.pro@zerotohero.ca
+  PRO_PASS: "${E2E_PRO_PASS}"
+  UNVERIFIED_EMAIL: e2e.unverified@zerotohero.ca
+  NEW_EMAIL: e2e.new@zerotohero.ca
+  NEW_PASS: "${E2E_NEW_PASS}"
+  FLASK_URL: http://127.0.0.1:5001
+  TIMEOUT: 15000

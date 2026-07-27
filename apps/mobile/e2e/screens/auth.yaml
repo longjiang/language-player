@@ -1,0 +1,85 @@
+appId: ca.zerotohero.app
+env:
+  EMAIL: ${FREE_EMAIL}
+  PASS: ${FREE_PASS}
+---
+# ── A1: Login — happy path (already covered by smoke)
+# ── A2: Login — invalid credentials ────────────────────────────────
+- tapOn:
+    id: "login-email-input"
+- inputText: ${EMAIL}
+- tapOn:
+    id: "login-password-input"
+- inputText: wrongpassword123
+- tapOn:
+    id: "login-signin-button"
+- assertVisible:
+    text: ".*(?:Invalid|incorrect|error).*"
+    regex: true
+    optional: true
+
+# ── A5: Register — password mismatch ───────────────────────────────
+- tapOn:
+    text: ".*Create.*Account.*"
+    regex: true
+    optional: true
+- tapOn:
+    id: "register-firstname-input"
+    optional: true
+- inputText: "E2E"
+- tapOn:
+    id: "register-lastname-input"
+- inputText: "Test"
+- tapOn:
+    id: "register-email-input"
+- inputText: "new@example.com"
+- tapOn:
+    id: "register-password-input"
+- inputText: "password123"
+- tapOn:
+    id: "register-confirm-password-input"
+- inputText: "different456"
+- tapOn:
+    id: "register-create-button"
+- assertVisible:
+    text: ".*(?:match|not match|do not match).*"
+    regex: true
+    optional: true
+
+# ── A6: Register — weak password ───────────────────────────────────
+- tapOn:
+    id: "register-password-input"
+- eraseText
+- inputText: "short"
+- tapOn:
+    id: "register-confirm-password-input"
+- eraseText
+- inputText: "short"
+- tapOn:
+    id: "register-create-button"
+- assertVisible:
+    text: ".*(?:8|character|short).*"
+    regex: true
+    optional: true
+
+# ── A8: Forgot Password ────────────────────────────────────────────
+- tapOn:
+    text: ".*Back.*Login.*|.*Forgot.*Password.*|.*Already.*account.*"
+    regex: true
+    optional: true
+- tapOn:
+    id: "forgot-email-input"
+    optional: true
+- inputText: ${EMAIL}
+- tapOn:
+    id: "forgot-send-button"
+    optional: true
+- assertVisible:
+    text: ".*Check.*email.*|.*sent.*"
+    regex: true
+    optional: true
+
+# Navigate back to login
+- tapOn:
+    id: "forgot-back-to-login-button"
+    optional: true

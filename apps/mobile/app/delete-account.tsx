@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
+import { e2e } from '@/lib/e2e';
 
 type DeleteState = 'confirm' | 'deleting' | 'success' | 'error';
 
@@ -68,6 +69,7 @@ export default function DeleteAccountScreen() {
           <Pressable
             className="mt-6 bg-primary px-6 py-3 rounded-lg"
             onPress={() => router.replace('/login')}
+            {...e2e('delete-account-back-button')}
           >
             <Text className="text-primary-foreground font-medium text-sm">
               {t('action.back_to_login')}
@@ -100,6 +102,7 @@ export default function DeleteAccountScreen() {
             <Pressable
               className="bg-destructive py-3 rounded-lg items-center mb-3"
               onPress={handleDelete}
+              {...e2e('delete-account-confirm-button')}
             >
               <Text className="text-destructive-foreground font-bold text-base">
                 {t('action.confirm_deletion')}
@@ -109,6 +112,7 @@ export default function DeleteAccountScreen() {
             <Pressable
               className="border border-border py-3 rounded-lg items-center"
               onPress={() => router.back()}
+              {...e2e('delete-account-cancel-button')}
             >
               <Text className="text-foreground font-medium text-sm">
                 {t('action.cancel')}

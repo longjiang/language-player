@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
+import { e2e } from '@/lib/e2e';
 
 export default function LoginScreen() {
   const t = useT();
@@ -46,6 +47,7 @@ export default function LoginScreen() {
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
+        {...e2e('login-email-input')}
       />
       <TextInput
         className="bg-card border border-border rounded-lg px-4 py-3 text-foreground mb-3"
@@ -54,6 +56,7 @@ export default function LoginScreen() {
         secureTextEntry
         value={password}
         onChangeText={setPassword}
+        {...e2e('login-password-input')}
       />
 
       <Pressable
@@ -69,6 +72,7 @@ export default function LoginScreen() {
         className="bg-primary py-3 rounded-lg items-center mb-3"
         onPress={handleLogin}
         disabled={loading}
+        {...e2e('login-signin-button')}
       >
         {loading ? (
           <ActivityIndicator color={ICON_ON_PRIMARY} />

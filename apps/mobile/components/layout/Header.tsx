@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Menu, X } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import { e2e } from '@/lib/e2e';
 import { HamburgerDrawer } from './HamburgerDrawer';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { UserMenu } from './UserMenu';
@@ -31,6 +32,7 @@ export function Header() {
           <Pressable
             onPress={() => router.push('/(tabs)/(media)' as any)}
             className="flex-row items-center gap-2"
+            {...e2e('header-logo')}
           >
             <Image
               source={require('@/assets/logo.png')}
@@ -49,6 +51,7 @@ export function Header() {
           <Pressable
             onPress={() => router.push('/(tabs)/(media)/search' as any)}
             className="rounded-lg p-1 active:bg-muted"
+            {...e2e('header-search-button')}
           >
             <Search size={20} color={ICON_MUTED} />
           </Pressable>
@@ -63,6 +66,7 @@ export function Header() {
           <Pressable
             onPress={() => setDrawerOpen(!drawerOpen)}
             className="rounded-lg p-1.5 active:bg-muted"
+            {...e2e('header-hamburger-button')}
           >
             {drawerOpen ? <X size={22} color={ICON_MUTED} /> : <Menu size={22} color={ICON_MUTED} />}
           </Pressable>

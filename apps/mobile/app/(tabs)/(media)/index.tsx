@@ -3,6 +3,7 @@ import { View, Text } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
+import { e2e } from '@/lib/e2e';
 import { useVideos } from '@langplayer/api-client';
 import { useProgress } from '@/hooks/use-progress';
 import { VideoGrid } from '@/components/video/VideoGrid';
@@ -65,7 +66,7 @@ export default function ExploreScreen() {
   };
 
   return (
-    <PageContainer>
+    <PageContainer {...e2e('explore-screen')}>
       <LevelFilter level={level} onSelect={setLevel} l2Code={l2Lang.code} />
         {error && videos.length === 0 && (
           <View className="mx-4 mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">

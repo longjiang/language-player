@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { PLACEHOLDER_COLOR, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { e2e } from '@/lib/e2e';
 
 export default function PasswordResetScreen() {
   const t = useT();
@@ -73,6 +74,7 @@ export default function PasswordResetScreen() {
           <Pressable
             className="mt-6 bg-primary px-6 py-3 rounded-lg"
             onPress={() => router.replace('/login')}
+            {...e2e('reset-back-to-login-button')}
           >
             <Text className="text-primary-foreground font-medium text-sm">
               {t('action.back_to_login')}
@@ -103,6 +105,7 @@ export default function PasswordResetScreen() {
         secureTextEntry
         value={password}
         onChangeText={setPassword}
+        {...e2e('reset-password-input')}
       />
 
       <TextInput
@@ -112,12 +115,14 @@ export default function PasswordResetScreen() {
         secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
+        {...e2e('reset-confirm-password-input')}
       />
 
       <Pressable
         className="bg-primary py-3 rounded-lg items-center mb-3"
         onPress={handleReset}
         disabled={loading || !token}
+        {...e2e('reset-confirm-button')}
       >
         {loading ? (
           <ActivityIndicator color={ICON_ON_PRIMARY} />

@@ -3,6 +3,7 @@ import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { e2e } from '@/lib/e2e';
 
 type VerifyState = 'verifying' | 'success' | 'error';
 
@@ -72,6 +73,7 @@ export default function VerifyEmailScreen() {
           <Pressable
             className="mt-6 border border-border rounded-lg px-6 py-3"
             onPress={() => router.replace('/login')}
+            {...e2e('verify-back-to-login-button')}
           >
             <Text className="text-foreground font-medium text-sm">
               {t('action.back_to_login')}
@@ -95,6 +97,7 @@ export default function VerifyEmailScreen() {
         <Pressable
           className="mt-6 bg-primary px-6 py-3 rounded-lg"
           onPress={() => router.replace('/login')}
+          {...e2e('verify-back-to-login-button')}
         >
           <Text className="text-primary-foreground font-medium text-sm">
             {t('action.back_to_login')}
