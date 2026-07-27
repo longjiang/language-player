@@ -35,4 +35,3 @@ export { QueueManager, getGlobalQueueManager } from './queue-manager';
 export type { QueueState, QueueType } from './queue-manager';
 export { stripMarkdown } from './strip-markdown';
 export { parseSubtitleCSV, parseSubsL2, _parseCSVRow, stripTimestampPrefix, findMatchLine } from './subs-csv';
-export { toTraditional, toSimplified } from './chinese-conversion';
