@@ -362,7 +362,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       if (tokenConfig?.hasLemmaTable) {
         console.log('[DictContext] 📥 downloading lemma table — l2:', l2, 'size:', tokenConfig.lemmaTableSize);
         try {
-          const ok = await downloadLemmaTable(l2, PYTHON_API_URL);
+          const ok = await downloadLemmaTable(l2, PYTHON_API_URL, 50000);
           console.log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' lemma table — l2:', l2, ok ? 'downloaded' : 'unavailable');
         } catch (e: any) {
           console.log('[DictContext] ⚠️ lemma table download failed (non-fatal) — l2:', l2, e?.message ?? e);

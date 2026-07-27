@@ -163,15 +163,21 @@ export async function deleteLemmaTable(l2: string): Promise<void> {
 /**
  * Download a lemma table from the server and store it in SQLite.
  *
+ * @param l2 - Language code (ISO 639-1 or 639-3)
+ * @param apiUrl - Python server base URL
+ * @param limit - Max unique surface forms to download (default 50000, per SPEC-018)
+ *
  * Returns true if download succeeded, false if it failed (network error,
  * server doesn't have data for this language, etc.).
  */
 export async function downloadLemmaTable(
   l2: string,
   apiUrl: string,
+  limit: number = 50000,
 ): Promise<boolean> {
   try {
-    const response = await fetch(`${apiUrl}/lemmatization/export?l2=${encodeURIComponent(l2)}&format=json`);
+    const url = `${apiUrl}/lemmatization/export?l2=${encodeURIComponent(l2)}&format=json&limit=${limit}`;
+    const response = await fetch(url);
     if (!response.ok) return false;
 
     const data = await response.json() as { table: Record<string, string[]> };

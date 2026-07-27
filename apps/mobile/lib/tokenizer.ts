@@ -395,7 +395,7 @@ function backgroundDownloadLemmaTable(l2: string, apiUrl: string): void {
 
   // Don't await — fire and forget
   import('@/lib/tokenizer-db').then(({ downloadLemmaTable }) => {
-    downloadLemmaTable(l2, apiUrl).catch(() => { /* silent */ });
+    downloadLemmaTable(l2, apiUrl, 50000).catch(() => { /* silent */ });
   });
 }
 
