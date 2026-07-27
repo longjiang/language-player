@@ -140,7 +140,7 @@
 | Component | File | Status | Notes |
 |---|---|---|---|
 | Header | `components/layout/Header.tsx` | ✅ | Logo, search, language switcher, user menu, drawer |
-| Hamburger Drawer | `components/layout/HamburgerDrawer.tsx` | ✅ | NAV_GROUPS slide-in drawer |
+| Hamburger Drawer | `components/layout/HamburgerDrawer.tsx` | ✅ | NAV_GROUPS slide-in drawer (uses `Dialog.Overlay` + `Dialog.DrawerContent`) |
 | Language Switcher | `components/layout/LanguageSwitcher.tsx` | ✅ | L1/L2 dropdown with search + locale name resolution |
 | User Menu | `components/layout/UserMenu.tsx` | ✅ | Avatar → dropdown |
 
@@ -165,10 +165,11 @@
 
 | Component | File | Status | Notes |
 |---|---|---|---|
-| Dialog | `components/ui/dialog.tsx` | ✅ | Modal dialog primitive |
-| Select | `components/ui/select.tsx` | ✅ | Select/dropdown primitive |
-| Switch | `components/ui/switch.tsx` | ✅ | Toggle switch primitive |
-| Tabs | `components/ui/tabs.tsx` | ✅ | Tab bar primitive |
+| Dialog | `components/ui/dialog.tsx` | ✅ | Modal dialog primitive (wraps `@rn-primitives/dialog`) |
+| Portal | `app/_layout.tsx` | ✅ | Portal host for overlays (wraps `@rn-primitives/portal`) |
+| Select | `components/ui/select.tsx` | ✅ | Select/dropdown primitive (wraps `@rn-primitives/select`) |
+| Switch | `components/ui/switch.tsx` | ✅ | Toggle switch primitive (wraps `@rn-primitives/switch`) |
+| Tabs | `components/ui/tabs.tsx` | ✅ | Tab bar primitive (wraps `@rn-primitives/tabs`) |
 
 ---
 
@@ -284,7 +285,7 @@
 
 | # | Feature | Web Source | Effort | Dependencies | Notes |
 |---|---|---|---|---|---|
-| 6.1 | Interaction Primitives (@rn-primitives) | — | L | None (incremental adoption) | Replace current UI primitives with headless interaction behavior (Dialog, Select, Switch, Tabs, Drawer). Wrapped with NativeWind + shared design tokens. Mirrors web's `@base-ui/react` adoption. See [ADR-0014](../../docs/adr/0014-rn-primitives-interaction-primitives.md). |
+| 6.1 | Interaction Primitives (@rn-primitives) | — | L | None (incremental adoption) | ✅ Dialog, Select, Switch, Tabs, Portal, Drawer all wrapped in `components/ui/` with NativeWind + shared design tokens. `HamburgerDrawer` now uses `Dialog.Overlay` + `Dialog.DrawerContent` (slide-from-right). Mirrors web's `@base-ui/react` adoption. See [ADR-0014](../../docs/adr/0014-rn-primitives-interaction-primitives.md). |
 | 6.2 | Local Tokenizer | — | XL | Offline dictionary downloads (SPEC-013) | Offline tokenization via local model/WebAssembly. Currently all tokenization requires a round-trip to the Python backend (`POST /dictionary/tokenize`). See [SPEC-016](../../docs/specs/016-mobile-local-tokenization.md). |
 | 6.3 | Dictionary Entry Detail (full page) | `dictionary/entry/[dictionaryId]/[entryId]/page.tsx` | M | None | Deep link target — current mobile word detail covers ~80% of the web page. Full entry page at `word/[entryId]`. |
 

@@ -25,7 +25,7 @@ export function Trigger({ children, className, ...props }: TriggerProps) {
 // ── Portal (always includes an overlay unless opt-out) ──
 
 type PortalProps = DialogPrimitive.PortalProps & {
-  /** Set to false if the dialog provides its own overlay (e.g., HamburgerDrawer). */
+  /** Set to false if the dialog provides its own overlay. */
   overlay?: boolean;
 };
 
@@ -38,24 +38,41 @@ export function Portal({ children, overlay = true, ...props }: PortalProps) {
   );
 }
 
-// ── Overlay (fade in on mount) ──
+// ── Overlay (fade in on mount, or bidirectional when `open` is provided) ──
 
-type OverlayProps = DialogPrimitive.OverlayProps;
+type OverlayProps = DialogPrimitive.OverlayProps & {
+  /** When provided (forceMount scenarios), animates opacity in both directions. */
+  open?: boolean;
+};
 
-export function Overlay({ className, ...props }: OverlayProps) {
-  const opacity = useRef(new Animated.Value(0)).current;
+export function Overlay({ className, open, ...props }: OverlayProps) {
+  const opacity = useRef(new Animated.Value(open ? 1 : 0)).current;
+  const isControlled = open !== undefined;
 
   useEffect(() => {
-    Animated.timing(opacity, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  }, [opacity]);
+    if (!isControlled) {
+      // Mount-only: fade in once
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isControlled, opacity]);
+
+  useEffect(() => {
+    if (isControlled) {
+      Animated.timing(opacity, {
+        toValue: open ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [open, isControlled, opacity]);
 
   return (
     <Animated.View
-      pointerEvents="box-none"
+      pointerEvents={isControlled ? (open ? 'auto' : 'none') : 'box-none'}
       className="absolute inset-0"
       style={{ opacity }}
     >
@@ -119,6 +136,61 @@ export function SheetContent({ children, className, ...props }: SheetContentProp
     >
       <DialogPrimitive.Content
         className={`rounded-t-xl border-t border-border bg-background px-4 pb-8 pt-4 max-h-[75%] ${className ?? ''}`}
+        {...props}
+      >
+        {children}
+      </DialogPrimitive.Content>
+    </Animated.View>
+  );
+}
+
+// ── Drawer Content (slides in from the right, positioned below a top offset) ──
+
+type DrawerContentProps = DialogPrimitive.ContentProps & {
+  className?: string;
+  /** Distance from the top of the screen (e.g., below the header bar). Default 0. */
+  topOffset?: number;
+  /** When provided (forceMount scenarios), animates slide in both directions. */
+  open?: boolean;
+};
+
+export function DrawerContent({ children, className, topOffset = 0, open, ...props }: DrawerContentProps) {
+  const translateX = useRef(new Animated.Value(open ? 0 : 300)).current;
+  const isControlled = open !== undefined;
+
+  useEffect(() => {
+    if (!isControlled) {
+      // Mount-only: slide in once
+      Animated.timing(translateX, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isControlled, translateX]);
+
+  useEffect(() => {
+    if (isControlled) {
+      Animated.timing(translateX, {
+        toValue: open ? 0 : 300,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [open, isControlled, translateX]);
+
+  return (
+    <Animated.View
+      pointerEvents="box-none"
+      className="absolute right-0"
+      style={{
+        top: topOffset,
+        bottom: 0,
+        transform: [{ translateX }],
+      }}
+    >
+      <DialogPrimitive.Content
+        className={`w-64 border-l border-border bg-background p-4 shadow-lg ${className ?? ''}`}
         {...props}
       >
         {children}
