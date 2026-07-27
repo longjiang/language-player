@@ -33,6 +33,13 @@
  *   - Custom RN loader reads .dat.gz from device filesystem via expo-file-system
  *   - Falls back to regex + surface-as-lemma if data pack not downloaded
  *   - npm dependency: kuromoji (engine), fflate (zip extraction), pako (gzip)
+ *
+ * Phase 2d — kuromoji-ko (Korean, full morphological analysis):
+ *   - Pure TS bundled engine (~200 KB), downloaded mecab-ko-dic data pack (~2 MB)
+ *   - Same custom RN loader pattern as Phase 2c
+ *   - Inline shim classes for DynamicDictionaries internals (kuromoji-ko is tsup-bundled)
+ *   - Token lemma extracted from kuromoji-ko's expression field (e.g., '먹/VV+었/EP+다/EF')
+ *   - npm dependency: kuromoji-ko (engine), doublearray (trie), pako (gzip)
  */
 
 import Stemmer from 'arabic-stem';
@@ -405,56 +412,95 @@ function anySignal(...signals: AbortSignal[]): AbortSignal {
   return controller.signal;
 }
 
-// ── Phase 2c: kuromoji (Japanese) ───────────────────────────────────
+// ── Phase 2c/2d: kuromoji/kuromoji-ko (Japanese & Korean) ──────────
 // Full morphological analysis: handles both segmentation and lemmatization
-// in one call. Requires downloaded IPADIC dictionary data pack on the
-// device filesystem. Falls back to regex word-split + surface-as-lemma
-// if the data pack is not available.
+// in one call. Requires downloaded dictionary data pack on the device
+// filesystem. Falls back to regex word-split + surface-as-lemma if the
+// data pack is not available.
 //
 // Architecture:
-//   getJaTokenizer() — singleton, lazily loads on first call
-//   resetJaTokenizer() — resets singleton (called after data pack download)
-//   tokenizeJapanese() — wraps kuromoji tokenization into LemmatizedToken[]
-
-/** Singleton promise for the kuromoji tokenizer (lazily initialized). */
-let jaTokenizerPromise: Promise<any | null> | null = null;
+//   getKuromojiTokenizer(l2) — singleton per language, lazily loads
+//   resetTokenizer(l2) — resets singleton (called after data pack download)
+//   tokenizeJapanese() / tokenizeKorean() — wraps engine output into
+//     LemmatizedToken[] shape
+//
+// Languages:
+//   ja — kuromoji, IPADIC dict (~3 MB), npm: kuromoji (Phase 2c)
+//   ko — kuromoji-ko, mecab-ko-dic (~2 MB pruned), npm: kuromoji-ko (Phase 2d)
 
 /**
- * Get (or create) the kuromoji Japanese tokenizer singleton.
+ * Singleton promises for kuromoji-based tokenizers, keyed by language code.
+ * Lazily initialized on first access.
+ */
+const kuromojiTokenizers = new Map<string, Promise<any | null>>();
+
+/**
+ * Get (or create) a kuromoji-based tokenizer singleton for a language.
  *
- * Lazily loads the IPADIC dictionary from the device filesystem on
+ * Lazily loads the dictionary data pack from the device filesystem on
  * first call. Returns null if the data pack has not been downloaded.
  * Subsequent calls reuse the cached instance.
+ *
+ * Currently supports:
+ *   - 'ja' → kuromoji (IPADIC)
+ *   - 'ko' → kuromoji-ko (mecab-ko-dic)
+ *
+ * @param l2 - Language code ('ja' or 'ko')
  */
-async function getJaTokenizer(): Promise<any | null> {
-  if (jaTokenizerPromise) return jaTokenizerPromise;
+async function getKuromojiTokenizer(l2: string): Promise<any | null> {
+  const existing = kuromojiTokenizers.get(l2);
+  if (existing) return existing;
 
-  jaTokenizerPromise = (async () => {
+  const promise = (async () => {
     try {
       const { hasKuromojiData, getKuromojiDataPath } = await import('@/lib/tokenizer-db');
-      const hasData = await hasKuromojiData('ja');
+      const hasData = await hasKuromojiData(l2);
       if (!hasData) return null;
 
-      const dicPath = getKuromojiDataPath('ja');
+      const dicPath = getKuromojiDataPath(l2);
+
+      if (l2 === 'ko') {
+        const { loadKuromojiKo } = await import('@/lib/kuromoji-ko-loader');
+        return await loadKuromojiKo(dicPath);
+      }
+
+      // Default to kuromoji (Japanese)
       const { loadKuromoji } = await import('@/lib/kuromoji-loader');
       return await loadKuromoji(dicPath);
     } catch (e) {
-      console.warn('[Tokenizer] kuromoji init error:', e);
+      console.warn(`[Tokenizer] kuromoji (${l2}) init error:`, e);
       return null;
     }
   })();
 
-  return jaTokenizerPromise;
+  kuromojiTokenizers.set(l2, promise);
+  return promise;
 }
 
 /**
- * Reset the ja tokenizer singleton.
+ * Reset a kuromoji-based tokenizer singleton for a language.
  *
- * Called after the kuromoji data pack finishes downloading so the next
- * lemmatizeText() call for Japanese will load the fresh dictionary files.
+ * Called after the data pack finishes downloading so the next
+ * lemmatizeText() call will load the fresh dictionary files.
+ *
+ * @param l2 - Language code ('ja', 'ko', etc.)
+ */
+export function resetTokenizer(l2: string): void {
+  kuromojiTokenizers.delete(l2);
+}
+
+/**
+ * Backward-compatible alias for resetTokenizer('ja').
  */
 export function resetJaTokenizer(): void {
-  jaTokenizerPromise = null;
+  resetTokenizer('ja');
+}
+
+/**
+ * Backward-compatible alias for resetTokenizer('ko').
+ */
+export function resetKoTokenizer(): void {
+  resetTokenizer('ko');
 }
 
 /**
@@ -469,7 +515,7 @@ export function resetJaTokenizer(): void {
  *   kuromoji is not available (data pack not downloaded / error)
  */
 async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null> {
-  const tokenizer = await getJaTokenizer();
+  const tokenizer = await getKuromojiTokenizer('ja');
   if (!tokenizer) return null;
 
   try {
@@ -490,6 +536,75 @@ async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null>
     }));
   } catch (e) {
     console.warn('[Tokenizer] kuromoji tokenize error:', e);
+    return null;
+  }
+}
+
+/**
+ * Tokenize and lemmatize Korean text using kuromoji-ko.
+ *
+ * kuromoji-ko performs morphological analysis: segmentation + POS tagging +
+ * lemmatization. Korean verbs and adjectives inflect heavily. kuromoji-ko
+ * returns tokens with an `expression` field containing the decomposed form
+ * (e.g., '먹었습니다' → expression: '먹/VV+었/EP+습니다/EF'). The lemma
+ * (dictionary form) is the root verb/adjective + '다' suffix.
+ *
+ * For simple tokens (nouns, particles), the surface form is the lemma.
+ *
+ * @param text - Korean text to analyze
+ * @returns LemmatizedToken[] with kuromoji-ko's results, or null if
+ *   kuromoji-ko is not available (data pack not downloaded / error)
+ */
+async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
+  const tokenizer = await getKuromojiTokenizer('ko');
+  if (!tokenizer) return null;
+
+  try {
+    const tokens = tokenizer.tokenize(text) as Array<{
+      surface_form: string;
+      expression?: string;
+      pos?: string;
+      reading?: string;
+      type?: string;
+      word_type?: string;
+    }>;
+
+    return tokens.map((t) => {
+      // For verb/adjective inflections, extract the root from expression
+      // Expression format: '먹/VV+었/EP+습니다/EF' → root is '먹' (lemma: '먹다')
+      // For compound words: expression contains '+' separated parts
+      // For simple tokens: surface form is the lemma
+      let lemma = t.surface_form;
+
+      if (t.expression && t.expression !== '*' && t.expression !== t.surface_form) {
+        // Extract the first verb/adjective root from the expression
+        // e.g., '먹/VV+었/EP+습니다/EF' → first part '먹/VV'
+        const firstPart = t.expression.split('+')[0];
+        if (firstPart) {
+          const [root, pos] = firstPart.split('/');
+          if (root && pos) {
+            // VV = verb, VA = adjective, VX = auxiliary verb
+            if (pos === 'VV' || pos === 'VA' || pos === 'VX') {
+              // Korean dictionary form is root + '다'
+              lemma = root + '다';
+            } else {
+              lemma = root;
+            }
+          } else {
+            lemma = root ?? t.surface_form;
+          }
+        }
+      }
+
+      return {
+        text: t.surface_form,
+        lemmas: [{ lemma }],
+        // Include reading if available
+        ...(t.reading && t.reading !== '*' ? { pronunciation: t.reading } : {}),
+      };
+    });
+  } catch (e) {
+    console.warn('[Tokenizer] kuromoji-ko tokenize error:', e);
     return null;
   }
 }
@@ -545,22 +660,26 @@ export async function lemmatizeText(
           backgroundDownloadLemmaTable(l2, PYTHON_API_URL);
         }
 
-        // Phase 2c: kuromoji for Japanese (handles both segmentation
-        // and lemmatization in one call, best offline accuracy)
-        if (config?.needsKuromoji && l2 === 'ja') {
-          return tokenizeJapanese(text).then((kuromojiTokens) => {
-            if (kuromojiTokens) {
-              lemmatizeCache.set(cacheKey, kuromojiTokens);
-              return kuromojiTokens;
-            }
-            // kuromoji data not available — fall through to generic path
-            return segmentText(text, l2, config).then((words) =>
-              lemmatizeLocal(words, l2, config),
-            ).then((tokens) => {
-              lemmatizeCache.set(cacheKey, tokens);
-              return tokens;
+        // Phase 2c/2d: kuromoji/kuromoji-ko (Japanese & Korean).
+        // Full morphological analysis — handles both segmentation and
+        // lemmatization in one call with best offline accuracy.
+        if (config?.needsKuromoji) {
+          const tokenizeFn = l2 === 'ko' ? tokenizeKorean : l2 === 'ja' ? tokenizeJapanese : null;
+          if (tokenizeFn) {
+            return tokenizeFn(text).then((kuromojiTokens) => {
+              if (kuromojiTokens) {
+                lemmatizeCache.set(cacheKey, kuromojiTokens);
+                return kuromojiTokens;
+              }
+              // Data pack not available — fall through to generic path
+              return segmentText(text, l2, config).then((words) =>
+                lemmatizeLocal(words, l2, config),
+              ).then((tokens) => {
+                lemmatizeCache.set(cacheKey, tokens);
+                return tokens;
+              });
             });
-          });
+          }
         }
 
         // Phase 2b: Use dict-based segmentation for CJK/SEA languages
