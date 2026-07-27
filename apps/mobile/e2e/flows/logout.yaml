@@ -1,0 +1,6 @@
+appId: ca.zerotohero.app
+---
+- tapOn:
+    id: "me-logout-button"
+- assertVisible:
+    id: "login-email-input"

@@ -1,0 +1,16 @@
+appId: ca.zerotohero.app
+---
+- assertVisible:
+    id: "login-email-input"
+- tapOn:
+    id: "login-email-input"
+- inputText: ${EMAIL}
+- tapOn:
+    id: "login-password-input"
+- inputText: ${PASS}
+- tapOn:
+    id: "login-signin-button"
+- waitFor:
+    notVisible:
+      id: "login-signin-button"
+    timeout: ${TIMEOUT}

@@ -97,6 +97,10 @@ for entry in "${ACCOUNTS[@]}"; do
 done
 
 # ── 3. Seed data for pro user ────────────────────────────────────────
+# TODO: /user/saved-words and /user/srs-cards endpoints need to be
+# implemented on the Flask backend before this section will work.
+# Currently these endpoints don't exist and return 404.
+# See SPEC-023 § Test Data Strategy.
 
 echo ""
 echo "🌱 Seeding initial data for e2e.pro user..."
@@ -142,14 +146,18 @@ fi
 echo ""
 echo "📖 Checking dictionary data availability..."
 
+# Use /dictionary/lookup (POST) which auto-selects the right dict
+# per l2 via the server's get_loader() — no need to hardcode dict IDs.
 for lang in en zh ja ko fr; do
   echo -n "   $lang ... "
   code=$(curl -s -o /dev/null -w "%{http_code}" \
-    -X GET "$FLASK_URL/dictionary/entry?l2=$lang&dict=cedict&word=hello" 2>/dev/null || echo "000")
+    -X POST "$FLASK_URL/dictionary/lookup" \
+    -H 'Content-Type: application/json' \
+    -d "{\"text\":\"hello\",\"l2\":\"$lang\",\"l1\":\"en\"}" 2>/dev/null || echo "000")
   if [ "$code" = "200" ]; then
     echo "✅"
   else
-    echo "⚠️  HTTP $code (may be fine if $lang isn't CEDICT)"
+    echo "⚠️  HTTP $code"
   fi
 done
 

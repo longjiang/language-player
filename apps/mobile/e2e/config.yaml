@@ -1,4 +1,7 @@
 appId: ca.zerotohero.app
+# NOTE: FLASK_URL is for the setup-e2e-env.sh script only — Maestro does
+# not call the Flask server. The app reads EXPO_PUBLIC_API_URL at build
+# time for its backend connection.
 env:
   FREE_EMAIL: e2e.free@zerotohero.ca
   FREE_PASS: "${E2E_FREE_PASS}"
