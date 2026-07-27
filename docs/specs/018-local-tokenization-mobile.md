@@ -51,21 +51,6 @@ Tokenizers and lemma tables are **downloadable on demand**, following the same U
 
 ---
 
-## Tokenization ≠ Lemmatization
-
-These are two distinct problems that need different solutions:
-
-| | Tokenization | Lemmatization |
-|---|---|---|
-| **What** | Split text into word tokens | Reduce each word to its base form |
-| **Hard for** | CJK, Thai, Khmer, Burmese, Arabic | All inflected languages |
-| **Easy for** | Space-separated Latin-script languages | Chinese (words are already lemmas) |
-| **Example** | `"你好世界"` → `["你好", "世界"]` | `"cats"`, `"running"` → `"cat"`, `"run"` |
-
-For Chinese, tokenization is the only hard part — words are already their own lemmas. For English, tokenization is trivial (split on spaces) but lemmatization needs work. For Turkish, both are challenging.
-
----
-
 ## Language Classification: Categories A–E
 
 All 207 languages fall into one of five categories depending on whether they need segmentation support, lemmatization support, both, or neither.
@@ -335,20 +320,6 @@ Rich inflection handled by a specialized server engine. Needs a pre-built lemma 
 |---|---|---|---|---|---|
 | `ru` | Russian | pymorphy2 export table | `snowball-stemmers` (Snowball Russian is available as fallback) | 6 cases, 3 genders, verb aspect pairs; highly inflected | pymorphy2 |
 
-#### Agglutinative Languages in Category C
-
-These languages have high surface-form-to-lemma ratios (thousands of inflected forms per lemma). Pre-built lemma tables are essential — rule-based stemmers like Snowball provide a baseline but won't match dedicated morphological analyzer accuracy:
-
-| Code | Language | Family | Cases/Features | Local Option |
-|---|---|---|---|---|
-| `hu` | Hungarian | Uralic (Ugric) | 18+ cases, possessive suffixes | `snowball-stemmers` ✅ (~80%) + LemmatizationList table |
-| `fi` | Finnish | Uralic (Finnic) | 15 cases, consonant gradation | `snowball-stemmers` ✅ (~80%) + Simplemma table |
-| `et` | Estonian | Uralic (Finnic) | 14 cases, lost vowel harmony | ⚠️ Snowball upstream exists; npm uncertain. Simplemma table. |
-| `ka` | Georgian | Kartvelian | Polypersonal verb agreement, screeves | **Nothing.** Pre-built Simplemma table only. |
-| `sw` | Swahili | Bantu (Niger-Congo) | Noun class prefixes (8+ classes) | **Nothing.** Pre-built Simplemma table + prefix-stripper fallback. |
-
-**Note**: Indonesian (`id`) is **not agglutinative** — it's analytic/isolating with derivational prefixes only. Surface-as-lemma works for Indonesian. It has been moved to Category E (regex-only).
-
 ---
 
 ### Category D: Special Cases (3 languages)
@@ -500,32 +471,9 @@ function lemmatizeLocal(word: string, lang: string): string[] {
 }
 ```
 
-### Bundle Size Estimate
-
-| Coverage | Entries per lang | JSON size (gzipped) | SQLite size |
-|---|---|---|---|
-| Top 10K words | 10,000 | ~150 KB | ~200 KB |
-| Top 30K words | 30,000 | ~400 KB | ~500 KB |
-| Top 100K words | 100,000 | ~1.2 MB | ~1.5 MB |
-| All 45 Simplemma langs × 30K | 1,350,000 | ~18 MB | ~22 MB |
-
-Bundling ALL languages would be ~20 MB. A better approach: bundle only the top 10 languages as assets, and let users download lemma tables for other languages on demand (like the dictionary download).
-
 ---
 
 ## Strategy 3: Third-Party JS/TS Libraries
-
-### Libraries That Work in React Native (Pure JS or WASM)
-
-| Library | Languages | Size | Accuracy | Notes |
-|---|---|---|---|---|
-| **kuromoji** | Japanese | Dict ~15 MB (can be reduced) | High | Pure JS. Dictionary can be pruned to top 30K words → ~3 MB |
-| **tiny-segmenter** | Japanese | ~100 KB | Medium | Pure JS. No lemmatization, tokenization only. Good for basic use. |
-| **jieba-js** (WASM) | Chinese | ~3 MB (WASM + dict) | High | WASM build of jieba. Includes POS tagging. Compatible with Hermes via `expo-webassembly`. |
-| **compromise** | English | ~200 KB | Medium | Pure JS. Does tokenization + lemmatization + POS. English only. |
-| **wink-nlp** | English | ~2 MB (model) | High | Pure JS NLP. English only. |
-| **thai-segmenter** | Thai | ~50 KB | Medium | Pure JS. Dictionary-based max matching. |
-| **Intl.Segmenter** (built-in) | zh, ja, ko, th, lo, km, my, etc. | 0 KB (built-in!) | Varies | See section below. |
 
 ### Intl.Segmenter — The Built-In Solution
 
@@ -617,27 +565,6 @@ Similar to Khmer but with even more stacking complexity:
 - **pyidaungsu** on the server handles this well; no equivalent JS library exists
 
 **Recommendation**: `Intl.Segmenter` with Burmese locale. Dictionary-based max matching as supplement.
-
-### Korean — Spaces Exist, Morphology is the Problem
-
-Korean DOES use spaces between words (unlike Chinese/Japanese). The challenge is:
-
-- **Agglutinative morphology**: `먹었겠습니다` = 먹 (eat) + 었 (past) + 겠 (conjecture) + 습니다 (formal). All one "word" in Korean spacing.
-- **Stemming is the hard part**: Okt on the server does morphological analysis to extract stems.
-- **Hangul decomposition**: Can be done purely algorithmically (no dictionary needed) since Hangul is a featural alphabet.
-
-**Recommendation**: 
-1. Tokenization: space split + `Intl.Segmenter` (easy — spaces exist)
-2. Lemmatization: Ship a pre-built stem lookup table from the server (like the lemmatization list approach). For unknown words, Hangul decomposition can provide pronunciation (Revised Romanization) algorithmically.
-
-### Arabic — RTL + Optional Diacritics
-
-- **Right-to-left** text: RN handles this natively via Unicode Bidi
-- **Optional short vowels**: `كتب` could be `kataba` (he wrote), `kutiba` (it was written), or `kutub` (books) — same letters, different diacritics. Diacritics are usually omitted in modern text.
-- **Connected letters**: Characters change shape based on position (initial/medial/final/isolated)
-- **Root-based morphology**: k-t-b (writing) → kataba, kitaab, maktab, etc.
-
-**Recommendation**: Pre-built token→lemma table from the server's Qalsadi output. Ship as SQLite. Arabic tokenization (word splitting) is trivial — spaces exist. Lemmatization needs the lookup table.
 
 ### Devanagari (Hindi, Nepali, Marathi)
 
@@ -808,10 +735,6 @@ Users download tokenizer/lemma packs per language on demand (same UX as SPEC-013
 | Persian lemma table (Hazm export) | Persian | ~80 KB | Server unreachable |
 | `snowball-stemmers` (stemmer fallback) | de, en, es, fr, ga, it, pt, ro, sv, da, nb, nl, hu, fi, hy | ~30 KB each | Server unreachable; catches forms not in lemma table |
 | Pre-built lemma tables | ca, cs, cy, gl, gv, sk, sl, uk, bg, el, et, is, la, lv, lt, nn, pl, sq, hr, ru, ka, sw, ast | ~100–500 KB each | Server unreachable; primary offline lemmatizer for these langs |
-
-**Server always wins when reachable.** Local tokenization is strictly a fallback for offline use (airplane mode, tunnels, poor connectivity).
-
-Phase 1 alone gives **functional offline tokenization** for ~80% of all supported L2s with **zero additional bundle size** and **near-zero new dependencies** (only `arabic-stem` at 15 KB). Phase 2 adds downloadable packs for the remaining ~20%.
 
 ## Phase 3 — Advanced Tokenization (higher effort)
 
