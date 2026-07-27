@@ -355,7 +355,7 @@ No new keys need to be created — both remaining keys already exist in `transla
 
 | Risk | Likelihood | Status | Mitigation |
 |---|---|---|---|
-| `translateText` not available on mobile | Medium | 🔴 Open | Use direct `fetch()` to Python `/translate` endpoint instead |
+| `translateText` not available on mobile | Medium | ✅ Resolved | The web app has a `translateText()` utility wrapping `GET /translate?text=&l1=&l2=` with Next.js cache. Mobile does direct `fetch()` to `POST /translate` with JSON body (`{ text, l1, l2 }`). The Flask server supports both GET and POST. Fix in `display.tsx` reads `data.translated_text` from the response to show the L1 preview. |
 | expo-router file-based routing conflicts with old `settings.tsx` | — | ✅ Resolved | Old file deleted before creating `settings/` directory |
 | Searchable label keys go stale when controls change | Low | ✅ Mitigated | Keys come from `@langplayer/shared` (`SETTINGS_SEARCH_KEYS`); both platforms share the same key arrays; if a label's CSV key changes, both platforms break identically and the fix is one place |
 | Too many files (5 detail screens + 5 component files) feels heavy | Low | ✅ Accepted | Each file is small (~50–150 lines). The old monolithic file was ~340 lines of mixed concerns. Co-locating `_components/` with the settings screens keeps the dependency graph local |
@@ -428,10 +428,30 @@ All 13 settings have working UI controls, but only **3** are actually read/appli
 
 ## Phase 5: Consumption Fixes — Work Plan
 
-### Phase 5A: Critical Fix (dailyNewLimit) 🔴
-**Impact**: User changes review limit in settings → nothing happens. Core feature broken.
-**Fix**: Wire `review.tsx` to read `dailyNewLimit` from `SettingsContext` instead of SRS store. OR sync `updateReview()` → SRS store on write.
-**Files**: `apps/mobile/app/(tabs)/(vocab)/review.tsx`, possibly `apps/mobile/hooks/use-srs.ts`
+### Phase 5A: Critical Fix (dailyNewLimit) — ✅ COMPLETE
+
+**Root cause**: Two independent stores held copies of `dailyNewLimit`:
+- **SettingsContext** (V2 unified store): written by the settings UI via `updateReview({ dailyNewLimit })`, persisted to SecureStore, cloud-synced
+- **SRS store** (`useSrs()`): read by the review screen for `remainingNewCardsToday()`, persisted separately to SecureStore under key `zthSrsProgress` (legacy from web's pre-V2 architecture)
+
+When the user changed the slider in Settings → Review, the value was written to SettingsContext. But the review screen ignored SettingsContext and read from the SRS store instead. The SRS store's copy was never updated, so the change had no effect. This was a classic dual-source-of-truth bug — two stores that should agree on the same value but don't.
+
+**Fix** (commit `0bd6ea2`): Changed `review.tsx` to read `dailyNewLimit` from `useSettingsContext().review.dailyNewLimit` instead of `useSrs().dailyNewLimit`. The SRS store continues to manage cards (`updateCard`, `removeCard`, SRS intervals), but the settings UI and review screen now agree on the same source for the daily limit.
+
+**Before:**
+```
+Settings → updateReview({ dailyNewLimit: 30 })  →  SettingsContext.dailyNewLimit = 30
+                                                       (ignored by review screen)
+Review screen reads dailyNewLimit from SRS store    →  SRS store = 20 (default)
+Result: user sets 30, review shows 20
+```
+
+**After:**
+```
+Settings → updateReview({ dailyNewLimit: 30 })  →  SettingsContext.dailyNewLimit = 30
+Review screen reads dailyNewLimit from SettingsContext  →  30
+Result: user sets 30, review shows 30 ✅
+```
 
 ### Phase 5B: TokenizedText Wiring — ✅ COMPLETE
 
