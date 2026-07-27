@@ -34,7 +34,7 @@ Local tokenization exists for **graceful offline degradation**. The server alway
 
 ```
 1. POST /lemmatize-normalized  →  Server (best accuracy, always preferred)
-2. Local JS library             →  kuromoji, arabic-stem, nlptoolkit, snowball-stemmers, etc.
+2. Local JS library             →  kuromoji, arabic-stem, snowball-stemmers, etc.
 3. Downloaded lemma table       →  Language pack stored in SQLite
 4. Regex word-split + surface   →  Last resort (~146 languages, zero cost)
 ```
@@ -55,7 +55,7 @@ These languages cannot be split by spaces AND have inflectional morphology.
 | `ko` | Korean | **kuromoji-ko** (pure TS, based on mecab-ko-dic) | **kuromoji-ko** — `basic_form` gives stem directly（먹었겠습니다→먹다, 했어요→하다） | Okt (konlpy) |
 | `ar` | Arabic | Spaces exist ✅ | **`arabic-stem`** (pure JS, 15 KB) — zero-dep prefix/suffix stemmer（المستنقعات→نقع）; supplemental Qalsadi export table for production accuracy | Qalsadi + Mishkal |
 | `fa` | Persian | Spaces exist ✅ | **No JS lemmatizer exists.** Pre-built lemma table from server Hazm export（دارد→داشتن）is the only viable approach. | Hazm + PersianG2p |
-| `tr` | Turkish | Spaces exist ✅ | **`nlptoolkit-morphologicalanalysis`** (pure JS/TS, ~2 MB dict) — full finite-state transducer morphological analyzer（yarına→yar+NOUN+DAT）; lighter alt: `snowball-stemmers` (~50 KB) | Zeyrek |
+| `tr` | Turkish | Spaces exist ✅ | **`snowball-stemmers`** (Turkish Snowball, ~50 KB, pure JS) — rule-based suffix stripping; ~80% accuracy. Primary lemmatizer for Turkish. **nlptoolkit dropped** — Node-only (`fs` dependency, no browser/RN build). | Zeyrek |
 
 #### Japanese: kuromoji
 
@@ -180,33 +180,20 @@ const PERSIAN_LEMMA_TABLE = {
 };
 ```
 
-#### Turkish: nlptoolkit-morphologicalanalysis
+#### Turkish: snowball-stemmers (nlptoolkit dropped)
 
-A pure-JS/TS implementation of a published academic morphological analyzer (RANLP 2019). Uses a finite-state transducer with a full Turkish dictionary:
+**nlptoolkit-morphologicalanalysis is dropped** — it uses Node `fs` internally with no browser or React Native build. Only Node.js is listed as a requirement. No workaround exists for RN without shimming the entire `fs` module.
 
-```js
-import { FsmMorphologicalAnalyzer } from 'nlptoolkit-morphologicalanalysis';
+**Primary lemmatizer**: `snowball-stemmers` Turkish stemmer (~50 KB, pure JS, rule-based suffix stripping). ~80% accuracy vs nlptoolkit's ~95%, but works natively in React Native with zero data files.
 
-const fsm = new FsmMorphologicalAnalyzer();
-const parseList = fsm.morphologicalAnalysis('yarına');
-// → yar+NOUN+A3SG+P2SG+DAT  (to my tomorrow/precipice)
-// → yar+NOUN+A3SG+P3SG+DAT  (to his/her tomorrow/precipice)
-// → yarı+NOUN+A3SG+P2SG+DAT (to my half)
-// → yarın+NOUN+A3SG+PNON+DAT (to tomorrow)
-```
+**Server fallback**: When the server is reachable, `POST /lemmatize-normalized` uses Zeyrek (full morphological analyzer) which provides best accuracy. The Snowball stemmer is the offline-only fallback.
 
-Handles the full Turkish agglutinative complexity. The canonical example `Batılılaştırılamayanlardanmışız` ("it appears we are among the ones that cannot be westernized") parses correctly.
-
-| Surface | Analysis | Lemma |
-|---|---|---|
-| yarına | yar+NOUN+DAT, yarın+NOUN+DAT | yar / yarın |
-| gördüm | gör+VERB+PAST+A1SG | görmek |
-| evlerimizden | ev+NOUN+PL+P1PL+ABL | ev |
-| yapamayacaklar | yap+VERB+NEG+ABIL+FUT+A3PL | yapmak |
-
-**Dictionary size**: ~2 MB (Turkish lexicon + FSM XML). Not prunable like kuromoji — the FST needs the full rule engine. Download on demand.
-
-**Lighter alternative**: `snowball-stemmers` includes the Snowball Turkish stemmer (~50 KB, rule-based suffix stripping). Less accurate (~80%) but zero setup — useful as a fallback or for Phase 1.
+| Surface | Snowball Stem | Expected Lemma | Correct? |
+|---|---|---|---|
+| yarına | yarın | yarın | ✅ |
+| gördüm | gör | görmek | ✅ (stem usable for lookup) |
+| evlerimizden | ev | ev | ✅ |
+| yapamayacaklar | yapam | yapmak | ⚠️ (partial stem) |
 
 ---
 
@@ -334,11 +321,11 @@ A sampling: `af`, `am`, `az`, `bn`, `eo`, `eu`, `fo`, `fy`, `gd`, `gu`, `ha`, `h
 
 ### Summary Matrix
 
-> **Downloadable Data** = data files downloaded per language alongside the offline dictionary (dictionary files, lemma tables). JS engines (~1 MB total for kuromoji, kuromoji-ko, nlptoolkit, snowball-stemmers) are bundled with the app at build time as npm dependencies. See [SPEC-018](../specs/018-local-tokenization-mobile.md) for the distribution model.
+> **Downloadable Data** = data files downloaded per language alongside the offline dictionary (dictionary files, lemma tables). JS engines (~865 KB total for kuromoji, kuromoji-ko, snowball-stemmers) are bundled with the app at build time as npm dependencies. nlptoolkit dropped — Node-only, no browser build. See [SPEC-018](../specs/018-local-tokenization-mobile.md) for the distribution model.
 
 | Category | Count | Segmentation | Lemmatization | Downloadable Data per Lang |
 |---|---|---|---|---|
-| **A** — Both | 5 (`ja`, `ko`, `ar`, `fa`, `tr`) | Complex | Complex | ~200–500 KB |
+| **A** — Both | 5 (`ja`, `ko`, `ar`, `fa`, `tr`) | Complex | Complex | ja: ~3 MB, ko: ~2 MB, ar: ~250 KB, fa: ~80 KB, tr: 0 KB (Snowball) |
 | **B** — Segmentation-Only | 16 (11 Chinese varieties + `th`, `km`, `lo`, `my`, `bo`) | Complex | None | 0 KB (Intl.Segmenter) |
 | **C1** — LemmatizationList | 19 | Trivial (spaces) | Pre-built TSV table | ~100–300 KB |
 | **C2** — Simplemma | 17 | Trivial (spaces) | Pre-built dict table | ~50–200 KB |
@@ -548,12 +535,12 @@ Rule-based suffix-stripping stemmers available for 15 languages via the `snowbal
 | Language Group | Tokenization | Lemmatization | Downloadable Data |
 |---|---|---|---|
 | **Chinese** | Intl.Segmenter or dict max-match | Surface = lemma (none needed) | 0 KB |
-| **Japanese** | Intl.Segmenter or kuromoji | kuromoji `basic_form` | ~3 MB (IPADIC dict) |
-| **Korean** | Space split + kuromoji-ko | kuromoji-ko `basic_form` | ~2 MB (mecab-ko-dic) |
+| **Japanese** | kuromoji (browser build + custom loader) | kuromoji `basic_form` | ~3 MB (IPADIC dict) |
+| **Korean** | kuromoji-ko (browser build + custom loader) | kuromoji-ko `basic_form` | ~2 MB (mecab-ko-dic) |
 | **Thai, Khmer, Burmese, Lao** | Intl.Segmenter or dict max-match | Surface = lemma (none needed) | 0 KB |
 | **Arabic** | Space split (spaces exist) | arabic-stem + Qalsadi table | ~250 KB (Qalsadi table) |
 | **Persian** | Space split | Pre-built lemma table (Hazm export) | ~80 KB |
-| **Turkish** | Space split | nlptoolkit or Snowball + lemma table | ~2 MB (FSM lexicon) or 0 KB (Snowball-only) |
+| **Turkish** | Space split | snowball-stemmers (nlptoolkit dropped — Node-only) | 0 KB (Snowball bundled, no data) |
 | **Russian** | Space split | Pre-built lemma table (pymorphy2 export) | ~500 KB |
 | **19 LemmatizationList langs** | Space split | Pre-built lemma table | ~150 KB each |
 | **17 Simplemma langs** | Space split | Pre-built lemma table (Simplemma export) | ~100 KB each |
@@ -562,8 +549,10 @@ Rule-based suffix-stripping stemmers available for 15 languages via the `snowbal
 ### Bundle & Download Impact
 
 **JS engines (bundled with app at build time as npm dependencies)**:
-- kuromoji (~200 KB) + kuromoji-ko (~200 KB) + nlptoolkit (~100 KB) + snowball-stemmers (~450 KB for 15 languages) + arabic-stem (15 KB, already in Phase 1)
-- **Total bundled: ~1 MB**. These are npm packages — React Native cannot dynamically load arbitrary JS at runtime.
+- kuromoji (~200 KB) + kuromoji-ko (~200 KB) + snowball-stemmers (~450 KB for 15 languages) + arabic-stem (15 KB, already in Phase 1)
+- **Total bundled: ~865 KB**. These are npm packages — React Native cannot dynamically load arbitrary JS at runtime.
+
+> ⚠️ **RN Compatibility**: kuromoji and kuromoji-ko use Node `fs`/`zlib` in their Node builds but ship separate browser-compatible builds (using XHR + JS inflate). We use the browser build with a custom loader function that reads local files via `expo-file-system`. nlptoolkit has NO browser build and is dropped in favor of the snowball Turkish stemmer. See [SPEC-018](../specs/018-local-tokenization-mobile.md) for details.
 
 **Data files (downloaded on demand, triggered by SPEC-013 dictionary download)**:
 
