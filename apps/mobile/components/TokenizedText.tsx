@@ -465,7 +465,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   ))}
                 </React.Fragment>
               );
-            })()}
+            });
+          })()}
           </View>
         ) : (
           /* Word-replace or no-phonetics mode: plain inline Text */
@@ -517,7 +518,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   {showQuickGloss ? ` ${firstDef}` : ''}
                 </Text>
               );
-            })()}
+            });
+          })()}
           </Text>
         )}
 
