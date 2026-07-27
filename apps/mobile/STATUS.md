@@ -70,7 +70,7 @@
 | Screen | File | Status | Web Source | Notes |
 |---|---|---|---|---|
 | Notes / Reader | `(tabs)/(reading)/index.tsx` | ✅ | `[l1]/[l2]/reader/page.tsx` | Markdown editor, CRUD notes, TokenizedText, auto-save |
-| Web Reader | `(tabs)/(reading)/web-reader.tsx` | ✅ | `[l1]/[l2]/web-reader/page.tsx` | URL fetch + tokenization works. **Missing**: notes sidebar (`ReaderSidebar`), page translation.  |
+| Web Reader | `(tabs)/(reading)/web-reader.tsx` | ✅ | `[l1]/[l2]/web-reader/page.tsx` | URL fetch + tokenization works. TextActionMenu (copy/speak/AI explain/translate) on each paragraph. Notes sidebar with create/select/rename/delete. **Still missing**: page translation. |
 | EPUB Reader | `(tabs)/(reading)/epub.tsx` | ✅ | `[l1]/[l2]/epub/page.tsx` | Upload + parse + read works. Position/anchor save. |
 
 ### Reader Components
@@ -78,6 +78,7 @@
 | Component | File | Status | Notes |
 |---|---|---|---|
 | TokenizedText | `components/TokenizedText.tsx` | ✅ | Core — tappable word tokens, lemmatization, dictionary popup |
+| TextActionMenu | `components/TextActionMenu.tsx` | ✅ | Per-block action menu: copy, speak (TTS), AI explain (streaming DeepSeek), translate (POST /translate). Bottom sheet on trigger. |
 | TabbedPanel | `components/TabbedPanel.tsx` | ✅ | Reusable tab bar + content switcher |
 | EPUB Chapter Sidebar | `components/reader/epub-chapter-sidebar.tsx` | ✅ | Chapter TOC with prev/next nav |
 | EPUB Cover | `components/reader/EpubCover.tsx` | ✅ | EPUB cover image rendering |
@@ -245,14 +246,14 @@
 
 ---
 
-### Phase 3: Reader Experience 🟠
+### Phase 3: Reader Experience 🟠 ✅
 
 | # | Feature | Web Source | Effort | Dependencies | Notes |
 |---|---|---|---|---|---|
-| 3.1 | Text Action Menu | `text-action-menu.tsx` | M | None | Select text in reader → floating menu (speak, copy, AI explain, translate, save). Web uses portal-based positioning; mobile needs a bottom sheet or contextual overlay. |
-| 3.2 | Notes Sidebar (Web Reader) | `notes-sidebar.tsx` | M | None | Note list with rename/delete in web reader. Requires `useReaderNotes` integration into the web-reader screen. |
+| 3.1 | Text Action Menu | `text-action-menu.tsx` | M | None | ✅ `TextActionMenu` wraps each paragraph/blockquote/list-item with a ⋮ button. Bottom sheet with Copy (expo-clipboard), Speak (TTS), AI Explain (streaming DeepSeek via `useStreamingExplanation`), Translate (POST `/translate`). Matches web's 4 actions. |
+| 3.2 | Notes Sidebar (Web Reader) | `notes-sidebar.tsx` | M | None | ✅ `useReaderNotes` integrated into web-reader screen. Notes sidebar with create/select (tap)/rename (long-press)/delete matches the notes reader (`index.tsx`) pattern. |
 
-**Goal:** Complete the reader experience. Text selection actions are expected by users coming from web; notes sidebar is noted as missing in the web-reader entry above.
+**Result:** Web reader now has per-block text actions and full notes management, matching the notes reader's sidebar UX.
 
 ---
 
