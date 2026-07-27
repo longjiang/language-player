@@ -31,19 +31,30 @@ This spec covers the full E2E testing strategy: tool selection, test environment
 
 ### Expo Go vs Dev Build
 
-The app uses `newArchEnabled: true` (Fabric renderer + TurboModules). Maestro interacts with the native view hierarchy, and Fabric may expose elements differently to accessibility APIs. **Use an EAS dev build, not Expo Go**, for these reasons:
+The app uses `newArchEnabled: true` (Fabric renderer + TurboModules). Maestro interacts with the native view hierarchy, and Fabric may expose elements differently to accessibility APIs.
+
+Tests always run on an **iOS simulator** — whether using Expo Go or a dev build. Maestro drives the simulator programmatically (taps, scrolls, reads elements) the same way in both cases. The choice is about *which binary* is installed on that simulator. **Use a dev build, not Expo Go**, for these reasons:
 
 1. **`appId` mismatch** — Expo Go runs as `host.exp.Exponent`, not `ca.zerotohero.app`. Maestro identifies the app by `appId`, so targeting `ca.zerotohero.app` won't find your app when running inside Expo Go.
 2. **Native module availability** — Several features used by tests (SQLite, SecureStore, expo-video, expo-speech) require native modules that are already bundled in a dev build.
 3. **New Architecture compatibility** — A dev build uses the exact same build pipeline (Fabric, TurboModules) as the production binary. Expo Go uses its own pre-built RN binary.
-4. **CI reliability** — A pre-built `.app` from EAS can be installed deterministically on the simulator, avoiding the fragile deep-link-into-Expo-Go dance.
+4. **CI reliability** — A pre-built `.app` can be installed deterministically on the simulator, avoiding the fragile deep-link-into-Expo-Go dance.
 
-**Build for CI:**
+**Cost:** Free. No EAS subscription needed. Build locally on the CI runner or on your Mac and cache the `.app` artifact.
+
+**Build locally (once):**
 ```bash
 cd apps/mobile
-eas build --platform ios --profile e2e --non-interactive
-# Download the resulting .app and install on simulator:
-xcrun simctl install booted path/to/app.app
+npx expo run:ios --configuration Release
+# Output: ios/build/Build/Products/Release-iphonesimulator/ZeroToHero.app
+```
+
+**CI: use a cached pre-built `.app`:**
+```bash
+# Build once, upload to GitHub Actions artifact cache, download in CI:
+# .github/actions/cached-app/action.yml handles:
+# - Restore .app from cache (keyed by git hash of apps/mobile/ **/*.tsx)
+# - On cache miss: build with `expo run:ios`, upload result
 ```
 
 
@@ -55,9 +66,9 @@ xcrun simctl install booted path/to/app.app
 |---|---|---|---|
 | **Local dev** | `http://127.0.0.1:5001` (Flask) | Dev backend (Flask → Directus) | Test credentials (Mary/Bob from AGENTS.md) |
 | **Staging** | Staging Flask server | Staging backend | Dedicated test accounts |
-| **CI (GitHub Actions)** | Mock Flask server (or live Flask + staging) | Mock or live | CI-only test accounts |
+| **CI (GitHub Actions)** | Live staging Flask server (or local Flask + staging Directus) | Staging backend | CI-only test accounts |
 
-> **Note:** Per [SPEC-024](./024-consolidate-directus-calls.md), all Directus calls now route through the Flask backend. Neither app ever constructs a Directus URL or knows Directus exists. This means the E2E mock layer only needs one target: `PYTHON_API_URL`.
+> **Note:** Per [SPEC-024](./024-consolidate-directus-calls.md), all Directus calls now route through the Flask backend. E2E tests hit the real staging Flask server — no mock server needed. This means tests verify actual backend behavior but depend on network and test data availability.
 
 ### Test Accounts
 
@@ -316,42 +327,56 @@ jobs:
       - name: Install dependencies
         run: |
           cd apps/mobile && npm ci
-      - name: Build and cache E2E dev build
-        uses: expo/expo-github-action@v8
+
+      - name: Restore cached dev build
+        id: cache
+        uses: actions/cache@v4
         with:
-          eas-version: latest
-          token: ${{ secrets.EAS_TOKEN }}
-      - name: Download or build E2E binary
+          path: apps/mobile/ios/build/Build/Products/Release-iphonesimulator/ZeroToHero.app
+          key: ios-dev-build-${{ hashFiles('apps/mobile/**/*.tsx', 'apps/mobile/**/*.ts', 'apps/mobile/ios/Podfile.lock', 'apps/mobile/package.json') }}
+
+      - name: Build dev build (cache miss)
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           cd apps/mobile
-          eas build --platform ios --profile e2e --non-interactive --wait
+          npx expo run:ios --configuration Release
+
       - name: Pre-clean simulator
         run: |
           xcrun simctl boot "iPhone 15 Pro" 2>/dev/null || true
           xcrun simctl uninstall booted ca.zerotohero.app || true
+
       - name: Install app on simulator
         run: |
-          # Download the latest EAS build artifact and install
-          # (or use a pre-downloaded .app from the build cache)
-          xcrun simctl install booted path/to/app.app
-      - name: Start mock Flask server (for smoke/most tests)
-        run: |
-          # Start a lightweight mock server that returns fixture data
-          # See __E2E_MOCK_NETWORK__ flag
-          node scripts/mock-flask-server.mjs &
-          sleep 2
+          xcrun simctl install booted \
+            apps/mobile/ios/build/Build/Products/Release-iphonesimulator/ZeroToHero.app
+
       - name: Wait for Metro bundler
         run: |
-          npx expo start --ios --no-dev &
+          cd apps/mobile && npx expo start --ios --no-dev &
           # Poll Metro until ready (avoids hardcoded sleep)
           for i in $(seq 1 60); do
             curl -s http://localhost:8081 > /dev/null 2>&1 && break
             sleep 1
           done
+
+      - name: Set EXPO_PUBLIC_API_URL for staging backend
+        run: |
+          echo "EXPO_PUBLIC_API_URL=${{ secrets.STAGING_FLASK_URL }}" >> $GITHUB_ENV
+        run: |
+          cd apps/mobile && npx expo start --ios --no-dev &
+          # Poll Metro until ready (avoids hardcoded sleep)
+          for i in $(seq 1 60); do
+            curl -s http://localhost:8081 > /dev/null 2>&1 && break
+            sleep 1
+          done
+
       - name: Run Maestro smoke tests
         run: maestro test apps/mobile/e2e/smoke.yaml --env-file .env.e2e
+
       - name: Run Maestro full regression
         run: maestro test apps/mobile/e2e/regression.yaml --env-file .env.e2e
+
       - name: Upload test artifacts
         if: failure()
         uses: actions/upload-artifact@v4
@@ -364,10 +389,10 @@ jobs:
 
 | Trigger | Suite | Mode | Environment | Expected Time |
 |---|---|---|---|---|
-| Every PR touching `apps/mobile/` | Smoke (S1-S4) | auto only | CI + mock Flask + EAS dev build | ~2min (incl. app install) |
-| Every PR touching `apps/mobile/` | Tiers 1-3 (auto tests only) | auto only | CI + mock Flask + EAS dev build | ~12min |
-| Nightly | All auto tests (Tiers 1-10) | auto only | CI + mock Flask + EAS dev build | ~35min |
-| Before App Store submission | All auto tests + human-regression checklist | auto + human | EAS Build + Simulator + Device | ~90min |
+| Every PR touching `apps/mobile/` | Smoke (S1-S4) | auto only | CI + staging Flask + pre-built .app | ~2min (incl. app install) |
+| Every PR touching `apps/mobile/` | Tiers 1-3 (auto tests only) | auto only | CI + staging Flask + pre-built .app | ~12min |
+| Nightly | All auto tests (Tiers 1-10) | auto only | CI + staging Flask + pre-built .app | ~35min |
+| Before App Store submission | All auto tests + human-regression checklist | auto + human | Simulator + Device | ~90min |
 | Weekly (scheduled) | Human regression (Tiers 6-8 human tests) | human only | Physical iPad + iPhone | ~30min |
 || | | | |
 
@@ -582,13 +607,11 @@ Before shipping the E2E testing pipeline:
 
 3. **Add `testID` props** (Days 2-4) — Login form fields, tab bar items, main CTA buttons, search bar, save button. ~15-20 testIDs across ~10 files.
 
-4. **Build EAS dev build profile** — Create `eas.json` profile `e2e` that builds with mocked environment (disable analytics, set `EXPO_PUBLIC_API_URL` to mock server).
+4. **Build dev build locally** — One `npx expo run:ios --configuration Release` on your Mac. In CI, cache the resulting `.app` via `actions/cache@v4` (cache key includes `**/*.tsx`, `Podfile.lock`, `package.json`). On cache miss, rebuild on the `macos-14` CI runner (~15-20min first build, ~30s cache restore on subsequent runs).
 
-5. **Build full mock Flask server** (Days 3-5) — Python or Node.js server that returns canned JSON for ALL endpoints (auth, video listing, dictionary, SRS, settings, etc.). No calls to real backend. Fixtures in `scripts/mock-flask-server/fixtures/`.
+5. **Seed test data on the staging backend** (Days 3-5) — Build `scripts/setup-e2e-env.sh` that calls Flask endpoints (`POST /auth/register`, etc.) against the staging server to create test accounts (`e2e.free`, `e2e.pro`, `e2e.unverified`, `e2e.new`) and seed initial data (saved words, SRS cards, watch history for the pro user).
 
-6. **Create `apps/mobile/e2e/` scaffold** — `config.yaml`, `flows/auth.yaml`, `flows/preflight-check.yaml`, `smoke.yaml`. CI workflow with dev build install + mock server + smoke tests.
-
-7. **Create test accounts via Flask** — Run `scripts/setup-e2e-env.sh` which calls `POST /auth/register` against the live or staging Flask backend.
+6. **Create `apps/mobile/e2e/` scaffold** — `config.yaml`, `flows/auth.yaml`, `flows/preflight-check.yaml`, `smoke.yaml`. CI workflow with dev build install + `EXPO_PUBLIC_API_URL` set to staging + smoke tests.
 
 ### Phase 2: Auth + Navigation (Week 3)
 - Write full auth suite (Tier 1: A1-A13)
@@ -658,12 +681,12 @@ Before shipping the E2E testing pipeline:
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | Maestro + New Architecture (Fabric) compatibility | Medium | High | Run compatibility spike before Phase 1; fall back to `accessibilityLabel` if `testID` fails |
-| Network-dependent tests flaky in CI | High | High | Mock Flask server (`__E2E_MOCK_NETWORK__`) for critical flows; integrate mock early in Phase 1 |
+| Network-dependent tests flaky in CI | High | High | **Accepted** — tests hit the real staging backend. Mitigate by: dedicated test accounts with known data, seed validation job, retry logic in Maestro flows, and a weekly human check on test data |
 | Video playback can't be automated | Medium | Medium | Test video meta display and subtitle interaction (outside WebView); skip actual play verification |
 | iOS Keychain persistence breaks test isolation | High | Medium | Preflight uninstall + reinstall before each CI run; preflight-check flow for local runs |
-| Expo dev build cold start in CI | Medium | Medium | Cache EAS build artifact between CI runs; use `macos-14` runner for faster build |
+| Expo dev build cold start in CI | Medium | Medium | Cache `.app` artifact via `actions/cache` (keyed by source hashes); build only on cache miss |
 | Maestro flakes on async rendering | Medium | Medium | Use `waitFor` matchers generously; avoid `tapOn` without visibility checks |
-| Test seed data out of sync with production | Medium | Low | API-based seeding (Flask endpoints); run seed validation as part of setup script |
+| Test data changes break tests (e.g., a test video deleted) | Medium | High | Dedicated staging-only seed data (not production). Seed validation job alerts on data loss. Test accounts are service accounts — no human uses them |
 | iPad sim not available in macOS runner | Low | High | Use `macos-14` runner (supports iPad sim); fall back to manual iPad testing |
 
 ## Open Questions
@@ -672,22 +695,21 @@ Before shipping the E2E testing pipeline:
 
 ## Resolved Decisions
 
-### Mock Strategy: Full Mock on the Python Server
+### Backend Strategy: Real Staging Flask Server (not a mock)
 
-The mock Flask server returns canned JSON for **every** endpoint the app hits — no partial pass-through, no calls to the real backend. This is deterministic, fast, and runs in CI with zero external dependencies. Fixture data lives alongside the mock server in `scripts/mock-flask-server/`:
+Tests hit the real staging Flask backend (`https://staging.zerotohero.ca:5001` or similar). The app is built with `EXPO_PUBLIC_API_URL` set to the staging server, so all API calls go to real endpoints with real data. No canned JSON, no mock server to maintain.
 
+**Implications:**
+- Tests verify actual backend behavior — catches regressions in auth, video serving, dictionary, SRS, and user data endpoints
+- Test data must be stable and version-controlled via `scripts/setup-e2e-env.sh`
+- Network flakiness is accepted — mitigated by dedicated test accounts (not used by humans) and a seed validation CI job
+- Offline tests (O4-O6, L4) still use the `__E2E_NETWORK_OFFLINE__` app flag — the real backend is irrelevant for those since the app gets a network error before reaching it
+
+**Setup in CI:**
+```bash
+# No mock server needed. Just configure which backend to hit:
+echo "EXPO_PUBLIC_API_URL=${{ secrets.STAGING_FLASK_URL }}" >> $GITHUB_ENV
 ```
-scripts/mock-flask-server/
-├── server.mjs           ← Express server, matches Flask endpoints
-├── fixtures/
-│   ├── auth.json        ← Login/register responses
-│   ├── videos.json      ← Video metadata + subtitles
-│   ├── dictionary.json  ← Dictionary search + entry responses
-│   ├── srs.json         ← SRS card data
-│   └── settings.json    ← User settings
-```
-
-The mock server runs on `http://127.0.0.1:5001` (same port as the real Flask server) so no app config changes needed between mock and real runs.
 
 ### Self-Hosted Maestro (not Maestro Cloud)
 
