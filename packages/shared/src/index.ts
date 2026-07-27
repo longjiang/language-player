@@ -8,3 +8,4 @@ export * from './sample-sentences';
 export * from './settings-search-keys';
 export * from './hooks/use-language-picker';
 export * from './language-data';
+export * from './transcript-scroll';
