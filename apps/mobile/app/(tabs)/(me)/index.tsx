@@ -3,13 +3,15 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useT } from '@/hooks/use-t';
-import { Settings, User, LogOut, Star, CreditCard, Download } from 'lucide-react-native';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { Settings, User, LogOut, Star, CreditCard, Download, Crown } from 'lucide-react-native';
+import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 
 export default function MeScreen() {
   const { user, logout } = useAuth();
   const { l1Lang, l2Lang } = useLanguage();
+  const { isPro, isLifetime } = useSubscription();
   const router = useRouter();
   const t = useT();
 
@@ -41,6 +43,14 @@ export default function MeScreen() {
         <Text className="mt-0.5 text-sm text-muted-foreground">
           {l1Lang.name} → {l2Lang.name}
         </Text>
+        {isPro && (
+          <View className="mt-2 flex-row items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900 px-3 py-1">
+            <Crown size={14} color="#f59e0b" />
+            <Text className="text-xs font-semibold text-amber-800 dark:text-amber-200">
+              {isLifetime ? `${t('subscription.lifetime_cap')} 🎉` : t('label.pro')}
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Menu items */}

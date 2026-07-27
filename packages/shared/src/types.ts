@@ -458,10 +458,39 @@ export interface UserPreferences {
   playbackSpeed: number;
 }
 
+/** @deprecated Use SubscriptionRecord + SubscriptionState instead. */
 export interface Subscription {
   plan: 'free' | 'pro' | 'lifetime';
   expiresAt?: Date;
   autoRenew: boolean;
+}
+
+/** Raw subscription record from the Directus `subscriptions` collection.
+ *  Matches the JSON returned by GET /user-subscription. */
+export interface SubscriptionRecord {
+  id: number;
+  owner: number;
+  type: 'monthly' | 'annual' | 'lifetime' | 'trial';
+  expires_on: string | null; // ISO date string, null for lifetime
+  payment_processor: 'stripe' | 'paypal' | 'app-store' | null;
+  payment_customer_id: string | null;
+  payment_id: string | null;
+  payment_date: string | null;
+  payment_email: string | null;
+  status: string;
+  notes: string | null;
+}
+
+/** Computed subscription state resolved by hooks/contexts from SubscriptionRecord. */
+export interface SubscriptionState {
+  sub: SubscriptionRecord | null;
+  loaded: boolean;
+  isPro: boolean; // lifetime = true, or expires_on > now
+  planType: 'monthly' | 'annual' | 'lifetime' | 'trial' | null;
+  isLifetime: boolean;
+  isExpired: boolean;
+  willAutoRenew: boolean;
+  daysUntilExpiry: number | null;
 }
 
 // ── API ───────────────────────────────────────

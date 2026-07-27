@@ -13,6 +13,7 @@ import { SettingsProvider } from '@/contexts/SettingsContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { DictionaryProvider } from '@/contexts/DictionaryContext';
 import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
+import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import '../global.css';
 
 // ── Error Boundary to surface full stack traces to Metro ──
@@ -56,6 +57,7 @@ export default function RootLayout() {
               <ThemeProvider>
                 <DictionaryProvider>
                   <VideoPlayerProvider>
+                    <SubscriptionProvider>
                     <Stack screenOptions={{ headerShown: false }}>
                       <Stack.Screen name="index" />
                       <Stack.Screen name="(tabs)" />
@@ -66,6 +68,7 @@ export default function RootLayout() {
                       <Stack.Screen name="go-pro-success" />
                     </Stack>
                     <PortalHost />
+                    </SubscriptionProvider>
                   </VideoPlayerProvider>
                 </DictionaryProvider>
               </ThemeProvider>
