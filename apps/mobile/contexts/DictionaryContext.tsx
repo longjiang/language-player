@@ -369,6 +369,23 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // ── SPEC-018 Phase 2c: Download kuromoji IPADIC data pack ──
+      if (tokenConfig?.needsKuromoji) {
+        console.log('[DictContext] 📥 downloading kuromoji data pack — l2:', l2, 'size:', tokenConfig.tokenizerDataSize);
+        try {
+          const { downloadKuromojiData } = await import('@/lib/tokenizer-db');
+          const ok = await downloadKuromojiData(l2, PYTHON_API_URL);
+          console.log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' kuromoji data — l2:', l2, ok ? 'downloaded' : 'unavailable');
+          if (ok) {
+            // Reset the ja tokenizer singleton so next lemmatizeText() reloads
+            const { resetJaTokenizer } = await import('@/lib/tokenizer');
+            resetJaTokenizer();
+          }
+        } catch (e: any) {
+          console.log('[DictContext] ⚠️ kuromoji data download failed (non-fatal) — l2:', l2, e?.message ?? e);
+        }
+      }
+
       stateMap.set(l2, {
         status: 'completed',
         progress: 100,
@@ -403,6 +420,16 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     await deleteDictDB(dbRef.current, l2);
     // Also clean up lemma table (SPEC-018 Phase 2a)
     try { await deleteLemmaTable(l2); } catch {}
+    // Also clean up kuromoji data pack (SPEC-018 Phase 2c)
+    if (TOKENIZER_CONFIG[l2]?.needsKuromoji) {
+      try {
+        const { deleteKuromojiData } = await import('@/lib/tokenizer-db');
+        await deleteKuromojiData(l2);
+        // Reset the ja tokenizer singleton
+        const { resetJaTokenizer } = await import('@/lib/tokenizer');
+        resetJaTokenizer();
+      } catch {}
+    }
     downloadStatesRef.current.delete(l2);
     setDownloadStatesVersion((v) => v + 1);
   }, []);

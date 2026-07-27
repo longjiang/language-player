@@ -26,6 +26,13 @@
  *   - ~90% accuracy for Chinese (cedict, 30K entries)
  *   - Falls back to regex word-split if offline dict not downloaded
  *   - No npm dependencies — reuses SPEC-013 offline dictionary SQLite
+ *
+ * Phase 2c — kuromoji (Japanese, full morphological analysis):
+ *   - Pure JS bundled engine (~200 KB), downloaded IPADIC data pack (~3 MB)
+ *   - Handles both segmentation and lemmatization in one call
+ *   - Custom RN loader reads .dat.gz from device filesystem via expo-file-system
+ *   - Falls back to regex + surface-as-lemma if data pack not downloaded
+ *   - npm dependency: kuromoji (engine), fflate (zip extraction), pako (gzip)
  */
 
 import Stemmer from 'arabic-stem';
@@ -398,6 +405,95 @@ function anySignal(...signals: AbortSignal[]): AbortSignal {
   return controller.signal;
 }
 
+// ── Phase 2c: kuromoji (Japanese) ───────────────────────────────────
+// Full morphological analysis: handles both segmentation and lemmatization
+// in one call. Requires downloaded IPADIC dictionary data pack on the
+// device filesystem. Falls back to regex word-split + surface-as-lemma
+// if the data pack is not available.
+//
+// Architecture:
+//   getJaTokenizer() — singleton, lazily loads on first call
+//   resetJaTokenizer() — resets singleton (called after data pack download)
+//   tokenizeJapanese() — wraps kuromoji tokenization into LemmatizedToken[]
+
+/** Singleton promise for the kuromoji tokenizer (lazily initialized). */
+let jaTokenizerPromise: Promise<any | null> | null = null;
+
+/**
+ * Get (or create) the kuromoji Japanese tokenizer singleton.
+ *
+ * Lazily loads the IPADIC dictionary from the device filesystem on
+ * first call. Returns null if the data pack has not been downloaded.
+ * Subsequent calls reuse the cached instance.
+ */
+async function getJaTokenizer(): Promise<any | null> {
+  if (jaTokenizerPromise) return jaTokenizerPromise;
+
+  jaTokenizerPromise = (async () => {
+    try {
+      const { hasKuromojiData, getKuromojiDataPath } = await import('@/lib/tokenizer-db');
+      const hasData = await hasKuromojiData('ja');
+      if (!hasData) return null;
+
+      const dicPath = getKuromojiDataPath('ja');
+      const { loadKuromoji } = await import('@/lib/kuromoji-loader');
+      return await loadKuromoji(dicPath);
+    } catch (e) {
+      console.warn('[Tokenizer] kuromoji init error:', e);
+      return null;
+    }
+  })();
+
+  return jaTokenizerPromise;
+}
+
+/**
+ * Reset the ja tokenizer singleton.
+ *
+ * Called after the kuromoji data pack finishes downloading so the next
+ * lemmatizeText() call for Japanese will load the fresh dictionary files.
+ */
+export function resetJaTokenizer(): void {
+  jaTokenizerPromise = null;
+}
+
+/**
+ * Tokenize and lemmatize Japanese text using kuromoji.
+ *
+ * kuromoji performs morphological analysis: segmentation + POS tagging +
+ * lemmatization (basic_form). Each token's `basic_form` is the dictionary
+ * lemma form (e.g., 食べた → 食べる, 美味しかった → 美味しい).
+ *
+ * @param text - Japanese text to analyze
+ * @returns LemmatizedToken[] with kuromoji's results, or null if
+ *   kuromoji is not available (data pack not downloaded / error)
+ */
+async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null> {
+  const tokenizer = await getJaTokenizer();
+  if (!tokenizer) return null;
+
+  try {
+    const tokens = tokenizer.tokenize(text) as Array<{
+      surface_form: string;
+      basic_form: string;
+      reading?: string;
+      pronunciation?: string;
+      pos?: string;
+    }>;
+
+    return tokens.map((t) => ({
+      text: t.surface_form,
+      lemmas: [{ lemma: t.basic_form || t.surface_form }],
+      // Include reading if available (kuromoji provides this for most
+      // tokens, useful for furigana rendering in the UI)
+      ...(t.reading ? { pronunciation: t.reading } : {}),
+    }));
+  } catch (e) {
+    console.warn('[Tokenizer] kuromoji tokenize error:', e);
+    return null;
+  }
+}
+
 // ── Public API ──────────────────────────────────────────────────────
 
 /**
@@ -437,12 +533,34 @@ export async function lemmatizeText(
           lemmatizeCache.set(cacheKey, serverTokens);
           return serverTokens;
         }
-        // 3. Local fallback — extended chain (Phase 1 + Phase 2a + Phase 2b)
+        // 3. Local fallback — extended chain
+        //    Phase 1: regex split + surface/stem/arabic-stem
+        //    Phase 2a: snowball stemmers + lemma tables
+        //    Phase 2b: dict-based segmentation (CJK/SEA)
+        //    Phase 2c: kuromoji (Japanese, full morphological analysis)
         const config = TOKENIZER_CONFIG[l2];
 
         // Background download for future calls (fire-and-forget)
         if (config?.hasLemmaTable) {
           backgroundDownloadLemmaTable(l2, PYTHON_API_URL);
+        }
+
+        // Phase 2c: kuromoji for Japanese (handles both segmentation
+        // and lemmatization in one call, best offline accuracy)
+        if (config?.needsKuromoji && l2 === 'ja') {
+          return tokenizeJapanese(text).then((kuromojiTokens) => {
+            if (kuromojiTokens) {
+              lemmatizeCache.set(cacheKey, kuromojiTokens);
+              return kuromojiTokens;
+            }
+            // kuromoji data not available — fall through to generic path
+            return segmentText(text, l2, config).then((words) =>
+              lemmatizeLocal(words, l2, config),
+            ).then((tokens) => {
+              lemmatizeCache.set(cacheKey, tokens);
+              return tokens;
+            });
+          });
         }
 
         // Phase 2b: Use dict-based segmentation for CJK/SEA languages
