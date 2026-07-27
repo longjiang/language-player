@@ -65,9 +65,8 @@ export default function ExploreScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      <PageContainer>
-        <LevelFilter level={level} onSelect={setLevel} l2Code={l2Lang.code} />
+    <PageContainer>
+      <LevelFilter level={level} onSelect={setLevel} l2Code={l2Lang.code} />
         {error && videos.length === 0 && (
           <View className="mx-4 mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
             <Text className="text-sm text-destructive">{t(error as any)}</Text>
@@ -81,7 +80,6 @@ export default function ExploreScreen() {
           onRefresh={handleRefresh}
           refreshing={refreshing}
         />
-      </PageContainer>
-    </View>
+    </PageContainer>
   );
 }

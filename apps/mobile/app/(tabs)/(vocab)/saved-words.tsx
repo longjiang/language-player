@@ -170,8 +170,7 @@ export default function SavedWordsScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background">
-      <PageContainer>
+    <PageContainer>
       {/* Header row — title + export + clear */}
       <View className="flex-row items-center justify-between px-4 py-5">
         <View className="flex-1">
@@ -277,6 +276,5 @@ export default function SavedWordsScreen() {
         }}
       />
     </PageContainer>
-    </View>
   );
 }

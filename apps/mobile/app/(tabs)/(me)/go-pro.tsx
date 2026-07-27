@@ -304,8 +304,8 @@ export default function GoProScreen() {
   // ── Render ──
 
   return (
-    <ScrollView className="flex-1 bg-background px-4 py-8">
-      <View className="self-center w-full max-w-3xl">
+    <PageContainer>
+      <ScrollView className="flex-1 px-4 py-8">
       {/* Header */}
       <View className="items-center">
         <Crown size={48} color={ICON_PRIMARY} />
@@ -593,7 +593,7 @@ export default function GoProScreen() {
       <Text className="mt-6 text-center text-xs text-muted-foreground">
         Contact: jon.long@zerotohero.ca
       </Text>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </PageContainer>
   );
 }

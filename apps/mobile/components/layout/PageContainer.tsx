@@ -7,20 +7,26 @@ interface PageContainerProps {
 }
 
 /**
- * Wraps page content in a centered, max-width container.
- * Use as the inner wrapper inside a `<View className="flex-1 bg-background">`.
+ * Wraps page content in a full-screen background container with centered,
+ * max-width content area.
  *
- * On wide screens (iPad full-screen, landscape), content is capped at
- * `max-w-3xl` (768px) and centered, keeping text and grids readable.
- * On narrow screens, it renders as a plain flex container (no effect).
+ * On wide screens (iPad full-screen, landscape), the inner content is capped
+ * at `max-w-3xl` (768px) and centered, keeping text and grids readable.
+ * On narrow screens, `max-w-3xl` and `self-center` have no effect — content
+ * fills the screen naturally.
+ *
+ * For ScrollView-based screens, use a `<ScrollView className="flex-1">`
+ * as a child — it fills the inner wrapper and scrolls independently.
  */
 export function PageContainer({ children, fullWidth = false }: PageContainerProps) {
   if (fullWidth) {
-    return <>{children}</>;
+    return <View className="flex-1 bg-background">{children}</View>;
   }
   return (
-    <View className="flex-1 w-full max-w-3xl self-center">
-      {children}
+    <View className="flex-1 bg-background">
+      <View className="flex-1 w-full max-w-3xl self-center">
+        {children}
+      </View>
     </View>
   );
 }

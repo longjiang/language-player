@@ -78,8 +78,7 @@ export default function WebReaderScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      <PageContainer>
+    <PageContainer>
       {/* Main content row */}
       <View className="flex-1 flex-row">
         <View className="flex-1">
@@ -286,6 +285,5 @@ export default function WebReaderScreen() {
         )}
       </View>
     </PageContainer>
-    </View>
   );
 }

@@ -400,8 +400,7 @@ export default function ReviewScreen() {
   const progress = cards.length > 0 ? (currentIndex + 1) / cards.length : 0;
 
   return (
-    <View className="flex-1 bg-background">
-      <PageContainer>
+    <PageContainer>
       {/* Header with card counts */}
       <View className="flex-row items-center justify-between px-4 py-4">
         <View>
@@ -564,6 +563,5 @@ export default function ReviewScreen() {
         </View>
       )}
     </PageContainer>
-    </View>
   );
 }

@@ -199,50 +199,43 @@ export default function WatchHistoryScreen() {
   // ── Not authenticated ──
   if (!user) {
     return (
-      <View className="flex-1 bg-background">
-        <PageContainer>
+      <PageContainer>
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <AlertCircle size={40} className="mb-3 text-muted-foreground" />
           <Text className="text-center text-muted-foreground">{t('msg.not_authenticated')}</Text>
         </View>
-        </PageContainer>
-      </View>
+      </PageContainer>
     );
   }
 
   // ── Loading ──
   if (loading) {
     return (
-      <View className="flex-1 bg-background">
-        <PageContainer>
+      <PageContainer>
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" className="text-primary" />
         </View>
-        </PageContainer>
-      </View>
+      </PageContainer>
     );
   }
 
   // ── Error ──
   if (error) {
     return (
-      <View className="flex-1 bg-background">
-        <PageContainer>
+      <PageContainer>
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="mx-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
           <Text className="text-sm text-destructive">{error}</Text>
         </View>
-        </PageContainer>
-      </View>
+      </PageContainer>
     );
   }
 
   // ── Empty or list ──
   return (
-    <View className="flex-1 bg-background">
-      <PageContainer>
+    <PageContainer>
       {/* Header row */}
       <View className="flex-row items-center justify-between px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
@@ -334,6 +327,5 @@ export default function WatchHistoryScreen() {
         />
       )}
     </PageContainer>
-    </View>
   );
 }
