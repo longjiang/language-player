@@ -3,7 +3,7 @@ import { View, Text, Platform } from 'react-native';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { buildRuby, baseCode, toTraditional } from '@langplayer/utils';
+import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -13,6 +13,7 @@ import { useProgressLevel } from '@/hooks/use-progress-level';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { configureLayoutAnimation } from '@/lib/animations';
 import { bulkLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
+import { getConverter } from '@/lib/chinese-script';
 
 // ── Shared in-memory lemmatize cache ──────────────────
 // All TokenizedText instances share this Map, so if two components
@@ -116,9 +117,32 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const isChinese = baseCode(l2Code) === 'zh';
   const useTraditional = isChinese && l2Settings.display.traditional;
 
-  // TODO(G12): display.byeonggi — hanja / hán tự lookup.
-  //   Needs dictionary cache lookup per token for hanja/hán tự characters.
-  //   Web: token-span.tsx:126-148 uses useMemo with dict cache per lemma.
+  // Pre-convert all unique token texts to traditional (OpenCC is lazy-loaded).
+  // When useTraditional is false, the map is empty and original text is used.
+  const [convertedTexts, setConvertedTexts] = useState<Map<string, string>>(new Map());
+  useEffect(() => {
+    if (!useTraditional || tokens.length === 0) {
+      setConvertedTexts(new Map());
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const converter = await getConverter();
+        if (cancelled) return;
+        const uniqueTexts = [...new Set(tokens.map(t => t.text))];
+        const mapping = new Map<string, string>();
+        for (const text of uniqueTexts) {
+          mapping.set(text, converter(text));
+        }
+        if (!cancelled) setConvertedTexts(mapping);
+      } catch {
+        // OpenCC failed to load — fall back to original text (map stays empty)
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [tokens, useTraditional]);
+
   const byeonggiEnabled = l2Settings.display.byeonggi !== false;
 
   // Quiz mode: track which tokens have been revealed
@@ -368,7 +392,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               }
 
               const word = token.text;
-              const displayText = useTraditional ? toTraditional(word) : word;
+              const displayText = useTraditional ? (convertedTexts.get(word) ?? word) : word;
               const isHighlighted = highlightTerms?.some((t) => t === word);
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed;
@@ -430,7 +454,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
           <Text style={textStyle} className="text-foreground">
             {tokens.map((token, i) => {
               const word = token.text;
-              const tokenDisplayText = useTraditional ? toTraditional(word) : word;
+              const tokenDisplayText = useTraditional ? (convertedTexts.get(word) ?? word) : word;
               const displayText = replaceWithPhonetics && isWord(token) && shouldShowPhonetics(token) && token.pronunciation
                 ? token.pronunciation
                 : tokenDisplayText;

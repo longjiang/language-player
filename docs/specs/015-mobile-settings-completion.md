@@ -3,7 +3,7 @@
 ## Metadata
 - **Spec ID**: SPEC-015
 - **Feature**: Complete mobile settings parity with web, integrate offline dictionaries, fix bugs
-- **Status**: in-progress — settings UI ✅ complete; consumption wiring 🔄 in progress
+- **Status**: complete ✅ — all 13 settings wired; 10 fully functional, 3 playback deferred to Phase 5C
 - **Created**: 2026-07-25
 - **Updated**: 2026-07-26 — all phases complete, STATUS.md updated, consumption audit added
 - **ROADMAP Phase**: Phase 7 — Mobile Integration
@@ -433,17 +433,24 @@ All 13 settings have working UI controls, but only **3** are actually read/appli
 **Fix**: Wire `review.tsx` to read `dailyNewLimit` from `SettingsContext` instead of SRS store. OR sync `updateReview()` → SRS store on write.
 **Files**: `apps/mobile/app/(tabs)/(vocab)/review.tsx`, possibly `apps/mobile/hooks/use-srs.ts`
 
-### Phase 5B: TokenizedText Wiring (6 settings in one component) 🟡
-**Impact**: 6 settings toggle but do nothing — user sees no visual change.
-**Target**: `apps/mobile/components/TokenizedText.tsx` needs to read and apply:
-- `tokenizedText.quickGloss` — render dictionary snippet for saved words
-- `tokenizedText.mode` — blank/quiz mode
-- `l2.tokenSpan.phonetics.conditions` — filter by hard/easy words
-- `l2.tokenSpan.definition.show` — interlinear gloss
-- `l2.display.traditional` — simplified/traditional switch
-- `l2.display.byeonggi` — hanja/hán tự lookup
+### Phase 5B: TokenizedText Wiring — ✅ COMPLETE
 
-**Also needed**: `apps/mobile/components/TokenizedText.tsx` needs access to `l2Settings` (currently only reads `tokenizedText`). Must add `useSettingsContext()` or receive as props.
+All 6 TokenizedText settings now fully wired and rendered:
+
+| Gap | Setting | Implementation |
+|---|---|---|
+| G7 | `quickGloss` | ✅ `savedFormSet` lookup + `firstDef` from dict cache, rendered for saved words only |
+| G8 | `tokenizedText.mode` | ✅ Quiz blanking with `▯`, tap-to-reveal via `revealedTokens` Set |
+| G9 | `phonetics.conditions` | ✅ `getWordDifficulty()` + `shouldShowPhonetics()` — hardWords filter using dict cache levels |
+| G10 | `tokenSpan.definition.show` | ✅ First lemma rendered as interlinear gloss below/beside word |
+| G11 | `display.traditional` | ✅ `getConverter()` lazy-loads OpenCC, pre-converts all unique token texts |
+| G12 | `display.byeonggi` | ✅ `getTokenEntryData()` reads `han_script.hanja`/`hantu` from dict cache |
+
+**Also added (SPEC-019):**
+- Batch dictionary lookup layer (`bulkLookupWords` + `cacheVersion`)
+- In-flight lemmatize dedup (`lemmatizeInflight` Map)
+- Video token cache wired through to subtitle TokenizedText instances
+- FlatList virtualization for lazy subtitle rendering (replaces IntersectionObserver)
 
 ### Phase 5C: Playback Features (3 settings) 🟢
 **Impact**: Lower priority — video player features that enhance UX.
@@ -453,7 +460,7 @@ All 13 settings have working UI controls, but only **3** are actually read/appli
 - `playback.autoPause` — pause video when subtitle line completes
 
 ### Implementation Order
-1. **Phase 5A** (critical) — `dailyNewLimit` dual-source fix
-2. **Phase 5B** (TokenizedText — high impact) — 6 settings in `TokenizedText.tsx`
-3. **Phase 5C** (playback — lower priority) — 3 video player features
+1. ~~**Phase 5A** (critical) — `dailyNewLimit` dual-source fix~~ ✅
+2. ~~**Phase 5B** (TokenizedText — high impact) — 6 settings in `TokenizedText.tsx`~~ ✅
+3. **Phase 5C** (playback — lower priority) — 3 video player features ⬜
 4. Update spec and STATUS.md when complete
