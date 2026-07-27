@@ -1,0 +1,60 @@
+appId: ca.zerotohero.app
+env:
+  EMAIL: ${FREE_EMAIL}
+  PASS: ${FREE_PASS}
+---
+# ── S1: App launch → login screen visible ──────────────────────────
+- assertVisible:
+    id: "login-email-input"
+- assertVisible:
+    id: "login-password-input"
+- assertVisible:
+    id: "login-signin-button"
+
+# ── S2: Login → see tabs ──────────────────────────────────────────
+- tapOn:
+    id: "login-email-input"
+- inputText: ${EMAIL}
+- tapOn:
+    id: "login-password-input"
+- inputText: ${PASS}
+- tapOn:
+    id: "login-signin-button"
+
+# Wait for tabs to appear (header logo visible means logged in)
+- waitFor:
+    id: "header-logo"
+    timeout: ${TIMEOUT}
+
+# Verify hamburger menu opens
+- tapOn:
+    id: "header-hamburger-button"
+- assertVisible:
+    text: ".*Media.*"
+    regex: true
+- assertVisible:
+    text: ".*Reading.*"
+    regex: true
+- assertVisible:
+    text: ".*Vocab.*"
+    regex: true
+
+# Close drawer by tapping the overlay
+- tapOn:
+    point: "10%,50%"
+
+# ── S3: Navigate to Me tab via hamburger ──────────────────────────
+- tapOn:
+    id: "header-hamburger-button"
+- tapOn:
+    text: ".*Me.*"
+    regex: true
+- waitFor:
+    id: "me-logout-button"
+    timeout: ${TIMEOUT}
+
+# ── S4: Logout ─────────────────────────────────────────────────────
+- tapOn:
+    id: "me-logout-button"
+- assertVisible:
+    id: "login-email-input"

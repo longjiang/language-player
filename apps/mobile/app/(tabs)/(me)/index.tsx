@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useT } from '@/hooks/use-t';
+import { e2e } from '@/lib/e2e';
 import { Settings, User, LogOut, Star, CreditCard, Download, Crown, Trash2 } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
@@ -20,7 +21,7 @@ export default function MeScreen() {
     { icon: Star, label: t('title.saved_words'), route: '/(tabs)/(vocab)/saved-words' },
     { icon: Download, label: t('title.offline_dictionaries'), route: '/(tabs)/(me)/offline-dictionaries' },
     { icon: CreditCard, label: t('action.go_pro'), route: null },
-    { icon: LogOut, label: t('action.logout'), route: null, action: logout },
+    { icon: LogOut, label: t('action.logout'), route: null, action: logout, testID: 'me-logout-button' },
   ];
 
   return (
@@ -65,6 +66,7 @@ export default function MeScreen() {
             className={`flex-row items-center gap-3 px-4 py-3 ${
               i < menuItems.length - 1 ? 'border-b border-border' : ''
             }`}
+            {...(item as any).testID ? { testID: (item as any).testID } : {}}
           >
             <item.icon size={20} color={ICON_MUTED} />
             <Text className="flex-1 text-sm text-foreground">{item.label}</Text>
@@ -77,6 +79,7 @@ export default function MeScreen() {
         <Pressable
           onPress={() => router.push('/delete-account' as any)}
           className="flex-row items-center gap-3 px-4 py-3"
+          {...e2e('me-delete-account-button')}
         >
           <Trash2 size={20} color={ICON_DESTRUCTIVE} />
           <Text className="flex-1 text-sm text-destructive">{t('title.delete_account')}</Text>

@@ -5,6 +5,7 @@ import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { e2e } from '@/lib/e2e';
 
 export default function ForgotPasswordScreen() {
   const t = useT();
@@ -46,6 +47,7 @@ export default function ForgotPasswordScreen() {
           <Pressable
             className="mt-6 border border-border rounded-lg px-6 py-3"
             onPress={() => router.replace('/login')}
+            {...e2e('forgot-back-to-login-button')}
           >
             <Text className="text-foreground font-medium text-sm">
               {t('action.back_to_login')}
@@ -77,12 +79,14 @@ export default function ForgotPasswordScreen() {
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
+        {...e2e('forgot-email-input')}
       />
 
       <Pressable
         className="bg-primary py-3 rounded-lg items-center mb-3"
         onPress={handleRequestReset}
         disabled={loading}
+        {...e2e('forgot-send-button')}
       >
         {loading ? (
           <ActivityIndicator color={ICON_ON_PRIMARY} />

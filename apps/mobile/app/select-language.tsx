@@ -11,6 +11,7 @@ import { View } from 'react-native';
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguagePicker } from '@/components/LanguagePicker';
+import { e2e } from '@/lib/e2e';
 
 export default function SelectLanguageScreen() {
   const { setL1Lang, setL2Lang } = useLanguage();
@@ -22,7 +23,7 @@ export default function SelectLanguageScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-background" {...e2e('select-language-screen')}>
       <LanguagePicker
         onConfirm={handleConfirm}
         showTitle

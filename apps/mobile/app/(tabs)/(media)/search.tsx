@@ -3,6 +3,7 @@ import { View, Text, FlatList, Pressable, ActivityIndicator, TextInput } from 'r
 import { router } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
+import { e2e } from '@/lib/e2e';
 import { useVideos, apiClient } from '@langplayer/api-client';
 import { VideoCard } from '@/components/video/VideoCard';
 import { Search, AlertCircle, Film, Tag } from 'lucide-react-native';
@@ -104,12 +105,14 @@ export default function SearchScreen() {
             returnKeyType="search"
             autoCapitalize="none"
             autoFocus
+            {...e2e('search-input')}
           />
         </View>
         <Pressable
           onPress={() => doSearch(query)}
           disabled={loading || !query.trim()}
           className="rounded-lg bg-primary px-4 py-2 active:bg-primary/80"
+          {...e2e('search-button')}
         >
           <Text className="text-sm font-bold text-primary-foreground">{t('action.search')}</Text>
         </Pressable>

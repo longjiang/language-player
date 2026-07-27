@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
+import { e2e } from '@/lib/e2e';
 
 export default function RegisterScreen() {
   const t = useT();
@@ -57,6 +58,7 @@ export default function RegisterScreen() {
             placeholderTextColor={PLACEHOLDER_COLOR}
             value={firstName}
             onChangeText={setFirstName}
+            {...e2e('register-firstname-input')}
           />
         </View>
         <View className="flex-1">
@@ -66,6 +68,7 @@ export default function RegisterScreen() {
             placeholderTextColor={PLACEHOLDER_COLOR}
             value={lastName}
             onChangeText={setLastName}
+            {...e2e('register-lastname-input')}
           />
         </View>
       </View>
@@ -78,6 +81,7 @@ export default function RegisterScreen() {
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
+        {...e2e('register-email-input')}
       />
 
       <TextInput
@@ -87,6 +91,7 @@ export default function RegisterScreen() {
         secureTextEntry
         value={password}
         onChangeText={setPassword}
+        {...e2e('register-password-input')}
       />
 
       <TextInput
@@ -96,12 +101,14 @@ export default function RegisterScreen() {
         secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
+        {...e2e('register-confirm-password-input')}
       />
 
       <Pressable
         className="bg-primary py-3 rounded-lg items-center mb-3"
         onPress={handleRegister}
         disabled={loading}
+        {...e2e('register-create-button')}
       >
         {loading ? (
           <ActivityIndicator color={ICON_ON_PRIMARY} />

@@ -1,0 +1,19 @@
+appId: ca.zerotohero.app
+---
+# Verify we're on the login screen; if not, navigate to logout first.
+# iOS Keychain tokens survive app relaunch, so this handles the case
+# where a previous test left a logged-in session behind.
+- assertVisible:
+    text: "Language Player"
+    optional: true
+- runFlow:
+    file: flows/auth.yaml
+    when:
+      notVisible: { id: "login-email-input" }
+    env:
+      EMAIL: ${FREE_EMAIL}
+      PASS: ${FREE_PASS}
+- runFlow:
+    file: flows/auth.yaml
+    env:
+      action: logout

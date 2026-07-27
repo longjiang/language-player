@@ -1,0 +1,27 @@
+appId: ca.zerotohero.app
+env:
+  EMAIL: ${FREE_EMAIL}
+  PASS: ${FREE_PASS}
+---
+# ── Smoke (Tier 0) ─────────────────────────────────────────────────
+- runFlow:
+    file: smoke.yaml
+
+# ── Auth (Tier 1) ──────────────────────────────────────────────────
+- runFlow:
+    file: screens/auth.yaml
+    env:
+      EMAIL: ${FREE_EMAIL}
+      PASS: ${FREE_PASS}
+
+# ── Placeholder for future tiers ───────────────────────────────────
+# Tier 2 — Media Tab (when implemented)
+# - runFlow: screens/media.yaml
+# Tier 3 — Dictionary & Vocab (when implemented)
+# - runFlow: screens/dictionary.yaml
+# Tier 4 — SRS Review (when implemented)
+# - runFlow: screens/review.yaml
+# Tier 5 — Reading Tab (when implemented)
+# - runFlow: screens/reading.yaml
+# Tier 6 — Settings & Profile (when implemented)
+# - runFlow: screens/settings.yaml
