@@ -1,7 +1,7 @@
 # ARCH-016 — Server-Side Tokenization Pipeline
 
 > **Source files**: `zerotohero-python-server/lemmatize_*.py`, `routes/text_routes.py`, `utils_nlp.py`, `utils_cache.py`, `romanize.py`, `app_directus.py`
-> **Last updated**: 2026-07-27
+> **Last updated**: 2026-07-26
 
 ---
 
@@ -190,25 +190,25 @@ Maps language codes (ISO 639-1 and ISO 639-3) to `(module, function_name, needs_
 | Persian | `fa`, `fas` | `lemmatize_persian` | Hazm + PersianG2p | No |
 | Turkish | `tr`, `tur` | `lemmatize_turkish` | Zeyrek | No |
 | Burmese | `my`, `mya` | `lemmatize_burmese` | pyidaungsu | No |
-| Catalan | `ca` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
-| Danish | `da` | `lemmatize_simple` | Simplemma | Yes |
-| German | `de` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
-| Greek | `el` | `lemmatize_simple` | Simplemma | Yes |
-| English | `en` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
-| Spanish | `es` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
-| Finnish | `fi` | `lemmatize_simple` | Simplemma | Yes |
-| French | `fr` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
+| Catalan | `ca` | `lemmatize_spacy` | spaCy (`ca_core_news_sm`) | Yes |
+| Danish | `da` | `lemmatize_spacy` | spaCy (`da_core_news_sm`) | Yes |
+| German | `de` | `lemmatize_spacy` | spaCy (`de_core_news_sm`) | Yes |
+| Greek | `el` | `lemmatize_spacy` | spaCy (`el_core_news_sm`) | Yes |
+| English | `en` | `lemmatize_spacy` | spaCy (`en_core_web_sm`) | Yes |
+| Spanish | `es` | `lemmatize_spacy` | spaCy (`es_core_news_sm`) | Yes |
+| Finnish | `fi` | `lemmatize_spacy` | spaCy (`fi_core_news_sm`) | Yes |
+| French | `fr` | `lemmatize_spacy` | spaCy (`fr_core_news_sm`) | Yes |
 | Croatian | `hr` | `lemmatize_spacy` | spaCy (`hr_core_news_sm`) | Yes |
-| Italian | `it` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
-| Lithuanian | `lt` | `lemmatize_simple` | Simplemma | Yes |
-| Macedonian | `mk` | `lemmatize_simple` | Simplemma | Yes |
-| Norwegian Bokmål | `nb` | `lemmatize_simple` | Simplemma | Yes |
-| Dutch | `nl` | `lemmatize_simple` | Simplemma | Yes |
-| Polish | `pl` | `lemmatize_simple` | Simplemma | Yes |
-| Portuguese | `pt` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
-| Romanian | `ro` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
-| Swedish | `sv` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
-| Ukrainian | `uk` | `lemmatize_lemmatization_lists` | LemmatizationList (TSV lookup) | Yes |
+| Italian | `it` | `lemmatize_spacy` | spaCy (`it_core_news_sm`) | Yes |
+| Lithuanian | `lt` | `lemmatize_spacy` | spaCy (`lt_core_news_sm`) | Yes |
+| Macedonian | `mk` | `lemmatize_spacy` | spaCy (`mk_core_news_sm`) | Yes |
+| Norwegian Bokmål | `nb` | `lemmatize_spacy` | spaCy (`nb_core_news_sm`) | Yes |
+| Dutch | `nl` | `lemmatize_spacy` | spaCy (`nl_core_news_sm`) | Yes |
+| Polish | `pl` | `lemmatize_spacy` | spaCy (`pl_core_news_sm`) | Yes |
+| Portuguese | `pt` | `lemmatize_spacy` | spaCy (`pt_core_news_sm`) | Yes |
+| Romanian | `ro` | `lemmatize_spacy` | spaCy (`ro_core_news_sm`) | Yes |
+| Swedish | `sv` | `lemmatize_spacy` | spaCy (`sv_core_news_sm`) | Yes |
+| Ukrainian | `uk` | `lemmatize_spacy` | spaCy (`uk_core_news_sm`) | Yes |
 | Asturian | `ast` | `lemmatize_simple` | Simplemma | Yes |
 | Bulgarian | `bg` | `lemmatize_simple` | Simplemma | Yes |
 | Czech | `cs` | `lemmatize_simple` | Simplemma | Yes |
@@ -417,35 +417,33 @@ These exist in `utils_nlp.py`'s legacy `tokenizers` dictionary and are used by t
 
 ---
 
-### spaCy — `lemmatize_spacy.py` (Last Resort per ADR-0018)
+### spaCy Languages (22 languages) — `lemmatize_spacy.py`
 
 **Engine**: [spaCy](https://spacy.io/) with language-specific models
 
-Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), spaCy is treated as a **last resort** tokenizer. It is the most accurate but also the slowest. In the unified pipeline, only **Croatian (`hrv`)** actively uses spaCy — all other languages previously routed to spaCy now use Simplemma or LemmatizationList.
+**Model mapping**:
 
-**Model mapping** (for reference — only `hr_core_news_sm` is actively dispatched):
-
-| ISO 639-3 | spaCy Model | Language | Unified Pipeline |
-|---|---|---|---|
-| `cat` | `ca_core_news_sm` | Catalan | LemmatizationList |
-| `dan` | `da_core_news_sm` | Danish | Simplemma |
-| `deu` | `de_core_news_sm` | German | LemmatizationList |
-| `ell` | `el_core_news_sm` | Greek | Simplemma |
-| `eng` | `en_core_web_sm` | English | LemmatizationList |
-| `spa` | `es_core_news_sm` | Spanish | LemmatizationList |
-| `fin` | `fi_core_news_sm` | Finnish | Simplemma |
-| `fra` | `fr_core_news_sm` | French | LemmatizationList |
-| `hrv` | `hr_core_news_sm` | Croatian | ⚠️ **spaCy (only active user)** |
-| `ita` | `it_core_news_sm` | Italian | LemmatizationList |
-| `lit` | `lt_core_news_sm` | Lithuanian | Simplemma |
-| `mkd` | `mk_core_news_sm` | Macedonian | Simplemma |
-| `nob` | `nb_core_news_sm` | Norwegian Bokmål | Simplemma |
-| `nld` | `nl_core_news_sm` | Dutch | Simplemma |
-| `pol` | `pl_core_news_sm` | Polish | Simplemma |
-| `por` | `pt_core_news_sm` | Portuguese | LemmatizationList |
-| `ron` | `ro_core_news_sm` | Romanian | LemmatizationList |
-| `swe` | `sv_core_news_sm` | Swedish | LemmatizationList |
-| `ukr` | `uk_core_news_sm` | Ukrainian | LemmatizationList |
+| ISO 639-3 | spaCy Model | Language |
+|---|---|---|
+| `cat` | `ca_core_news_sm` | Catalan |
+| `dan` | `da_core_news_sm` | Danish |
+| `deu` | `de_core_news_sm` | German |
+| `ell` | `el_core_news_sm` | Greek |
+| `eng` | `en_core_web_sm` | English |
+| `spa` | `es_core_news_sm` | Spanish |
+| `fin` | `fi_core_news_sm` | Finnish |
+| `fra` | `fr_core_news_sm` | French |
+| `hrv` | `hr_core_news_sm` | Croatian |
+| `ita` | `it_core_news_sm` | Italian |
+| `lit` | `lt_core_news_sm` | Lithuanian |
+| `mkd` | `mk_core_news_sm` | Macedonian |
+| `nob` | `nb_core_news_sm` | Norwegian Bokmål |
+| `nld` | `nl_core_news_sm` | Dutch |
+| `pol` | `pl_core_news_sm` | Polish |
+| `por` | `pt_core_news_sm` | Portuguese |
+| `ron` | `ro_core_news_sm` | Romanian |
+| `swe` | `sv_core_news_sm` | Swedish |
+| `ukr` | `uk_core_news_sm` | Ukrainian |
 
 **Special mappings**:
 - Norwegian Nynorsk (`nno`) and generic Norwegian (`nor`) → use `nob` (Bokmål model)
@@ -465,8 +463,6 @@ Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), spaCy is t
 5. Cache key: `cache/lemmatization/spacy/{lang}/{md5}`
 
 **POS tags**: spaCy's Universal Dependencies tagset (e.g., `DET`, `NOUN`, `VERB`, `ADJ`, `PROPN`, `PUNCT`).
-
-> **⚠️ Still needed for**: Croatian (`hrv`), which has no Simplemma or LemmatizationList coverage. Also used by the **legacy video cache** — cached subtitle data for 19 languages was tokenized with spaCy before ADR-0018 was applied. See [Legacy vs. Unified Pipeline](#legacy-vs-unified-pipeline).
 
 ---
 
@@ -539,15 +535,13 @@ Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), spaCy is t
 3. Tokens and lemmas are zipped 1:1 (must have same length)
 4. Cache key: `cache/lemmatization/simplemma/{lang}/{md5}`
 
-> **Note**: Simplemma supports 45+ languages internally, but only 27 are registered in `LEMMATIZER_REGISTRY`. The rest serve as a fallback layer. Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), Simplemma is now preferred over spaCy for all languages except Croatian (`hrv`) — the registry entries reflect this ordering.
+> **Note**: Simplemma supports 45+ languages internally, but only 27 are registered in `LEMMATIZER_REGISTRY`. The rest serve as a fallback layer. Some languages (e.g., German `deu`, Danish `dan`, Greek `ell`) are available in both spaCy AND Simplemma — the registry always prefers spaCy for these.
 
 ---
 
 ### Lemmatization Lists (`lemmatize_lemmatization_lists.py`)
 
-Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), LemmatizationList is the **highest-priority** general-purpose tokenizer. It is now integrated into the unified pipeline via `LEMMATIZER_REGISTRY` for languages where lookup tables exist.
-
-Uses pre-computed TSV lookup tables.
+Not in the unified pipeline, but available for legacy video lemmatization. Uses pre-computed TSV lookup tables.
 
 **Source**: `data/lemmatization-lists/lemmatization-{iso639-1}.txt`
 **Format**: `lemma\tsurface_form` (tab-separated, one pair per line)
@@ -696,25 +690,6 @@ The codebase has two parallel tokenization paths:
 | **Used by** | Video pre-caching | On-the-fly text tokenization |
 | **Language coverage** | 70 languages (spaCy + Simplemma + all dedicated) | 70+ languages (registry + fallback) |
 
-### Cached spaCy Results from Legacy Endpoint
-
-> ⚠️ **Important**: The legacy `/lemmatize-video` endpoint dispatches through `utils_nlp.lemmatizer_by_lang()`, NOT through `lemmatize_unified.LEMMATIZER_REGISTRY`. The legacy dispatcher was built before the unified pipeline existed and routes languages directly to spaCy where a spaCy model is available.
-
-This means that **cached video subtitles** for languages like Danish, German, English, Finnish, French, Italian, etc. were originally tokenized with **spaCy**, even though the unified pipeline now uses Simplemma or LemmatizationList for these same languages (per ADR-0018).
-
-When a client requests `/lemmatize-video-normalized`, it normalizes cached data that was produced by the legacy pipeline. The `normalize_by_lang()` function converts the raw cached output to the unified schema, but it normalizes from whatever tokenizer originally produced the data — which for 19 languages was spaCy.
-
-**Cached data is NOT re-tokenized**: The cache stores raw lemmatizer output. Since the cache key is the MD5 of the input text, re-tokenizing would produce a different cache entry under the same key if the tokenizer changed. The cache stores `{md5: raw_output}` so the data is bound to the original tokenizer. To update cached data to use the new tokenizers, the remote PHP cache must be invalidated and rebuilt.
-
-**Migration path**:
-- **New `/lemmatize-normalized` requests** use the ADR-0018-preferred tokenizer immediately (Simplemma/LemmatizationList where available) — no migration needed.
-- **Cached `/lemmatize-video` data** remains spaCy-tokenized until the cache is invalidated and rebuilt.
-- **`/lemmatize-video-normalized`** normalizes from whatever the cache contains — if rebuilt, it uses the new preferred tokenizer automatically.
-
-### `serverCacheTokenizers` in the Client
-
-The Classic Nuxt `tokenizer-factory.js` maintains a `serverCacheTokenizers` registry that tracks which tokenizer originally produced the cached data for each language. It lists spaCy for all 19 languages, even though the client's own dispatch only uses spaCy for Spanish. This registry must continue to reflect the actual tokenizer used at cache time, not the pipeline's current preference.
-
 The legacy pipeline is kept for backward compatibility with cached video data. New code should always use the unified pipeline.
 
 ---
@@ -779,65 +754,59 @@ For a comprehensive per-language mapping, see `lemmatize_unified.py:LEMMATIZER_R
 | 4 | Asturian | `ast` | `ast` | Simplemma | No (Latin script) |
 | 5 | Bulgarian | `bg` | `bul` | Simplemma | Yes (ISO 9 romanization) |
 | 6 | Burmese | `my` | `mya` | pyidaungsu | No |
-| 7 | Catalan | `ca` | `cat` | LemmatizationList | No (Latin script) |
+| 7 | Catalan | `ca` | `cat` | spaCy | No (Latin script) |
 | 8 | Chinese (Simplified) | `zh` | `zho` | jieba + pypinyin | Yes (pinyin) |
 | 9 | Chinese (Traditional) | `zh-Hant` | `zho` | jieba + pypinyin | Yes (pinyin) |
 | 10 | Croatian | `hr` | `hrv` | spaCy | No (Latin script) |
 | 11 | Czech | `cs` | `ces` | Simplemma | No (Latin script) |
-| 12 | Danish | `da` | `dan` | Simplemma | No (Latin script) |
-| 13 | Dutch | `nl` | `nld` | Simplemma | No (Latin script) |
-| 14 | English | `en` | `eng` | LemmatizationList | No (Latin script) |
+| 12 | Danish | `da` | `dan` | spaCy | No (Latin script) |
+| 13 | Dutch | `nl` | `nld` | spaCy | No (Latin script) |
+| 14 | English | `en` | `eng` | spaCy | No (Latin script) |
 | 15 | Estonian | `et` | `est` | Simplemma | No (Latin script) |
-| 16 | Finnish | `fi` | `fin` | Simplemma | No (Latin script) |
-| 17 | French | `fr` | `fra` | LemmatizationList | No (Latin script) |
+| 16 | Finnish | `fi` | `fin` | spaCy | No (Latin script) |
+| 17 | French | `fr` | `fra` | spaCy | No (Latin script) |
 | 18 | Galician | `gl` | `glg` | Simplemma | No (Latin script) |
 | 19 | Georgian | `ka` | `kat` | Simplemma | Yes (ISO 9984 romanization) |
-| 20 | German | `de` | `deu` | LemmatizationList | No (Latin script) |
-| 21 | Greek | `el` | `ell` | Simplemma | Yes (ISO 843 romanization) |
+| 20 | German | `de` | `deu` | spaCy | No (Latin script) |
+| 21 | Greek | `el` | `ell` | spaCy | Yes (ISO 843 romanization) |
 | 22 | Hungarian | `hu` | `hun` | Simplemma | No (Latin script) |
 | 23 | Icelandic | `is` | `isl` | Simplemma | No (Latin script) |
 | 24 | Indonesian | `id` | `ind` | Simplemma | No (Latin script) |
 | 25 | Irish | `ga` | `gle` | Simplemma | No (Latin script) |
-| 26 | Italian | `it` | `ita` | LemmatizationList | No (Latin script) |
+| 26 | Italian | `it` | `ita` | spaCy | No (Latin script) |
 | 27 | Japanese | `ja` | `jpn` | MeCab | Yes (katakana) |
 | 28 | Korean | `ko` | `kor` | Okt (konlpy) | Yes (Revised Romanization) |
 | 29 | Latin | `la` | `lat` | Simplemma | No (Latin script) |
 | 30 | Latvian | `lv` | `lav` | Simplemma | No (Latin script) |
-| 31 | Lithuanian | `lt` | `lit` | Simplemma | No (Latin script) |
-| 32 | Macedonian | `mk` | `mkd` | Simplemma | Yes (ISO 9 romanization) |
+| 31 | Lithuanian | `lt` | `lit` | spaCy | No (Latin script) |
+| 32 | Macedonian | `mk` | `mkd` | spaCy | Yes (ISO 9 romanization) |
 | 33 | Malay | `ms` | `msa` | Simplemma | No (Latin script) |
 | 34 | Manx | `gv` | `glv` | Simplemma | No (Latin script) |
-| 35 | Norwegian Bokmål | `nb` | `nob` | Simplemma | No (Latin script) |
+| 35 | Norwegian Bokmål | `nb` | `nob` | spaCy | No (Latin script) |
 | 36 | Norwegian Nynorsk | `nn` | `nno` | Simplemma | No (Latin script) |
 | 37 | Persian | `fa` | `fas` | Hazm + PersianG2p | Yes (Latin transliteration) |
-| 38 | Polish | `pl` | `pol` | Simplemma | No (Latin script) |
-| 39 | Portuguese | `pt` | `por` | LemmatizationList | No (Latin script) |
-| 40 | Romanian | `ro` | `ron` | LemmatizationList | No (Latin script) |
+| 38 | Polish | `pl` | `pol` | spaCy | No (Latin script) |
+| 39 | Portuguese | `pt` | `por` | spaCy | No (Latin script) |
+| 40 | Romanian | `ro` | `ron` | spaCy | No (Latin script) |
 | 41 | Russian | `ru` | `rus` | pymorphy2 | Yes (ISO 9 romanization) |
 | 42 | Slovak | `sk` | `slk` | Simplemma | No (Latin script) |
 | 43 | Slovenian | `sl` | `slv` | Simplemma | No (Latin script) |
-| 44 | Spanish | `es` | `spa` | LemmatizationList | No (Latin script) |
+| 44 | Spanish | `es` | `spa` | spaCy | No (Latin script) |
 | 45 | Swahili | `sw` | `swa` | Simplemma | No (Latin script) |
-| 46 | Swedish | `sv` | `swe` | LemmatizationList | No (Latin script) |
+| 46 | Swedish | `sv` | `swe` | spaCy | No (Latin script) |
 | 47 | Tagalog | `tl` | `tgl` | Simplemma | No (Latin script) |
 | 48 | Turkish | `tr` | `tur` | Zeyrek | No (Latin script, but has vowel harmony) |
-| 49 | Ukrainian | `uk` | `ukr` | LemmatizationList | Yes (ISO 9 romanization) |
+| 49 | Ukrainian | `uk` | `ukr` | spaCy | Yes (ISO 9 romanization) |
 
 > **Notable omissions from unified pipeline**: Vietnamese (`vi`) uses pyvi but falls through to `_fallback_lemmatize` because it's not registered. Klingon, Hebrew, Hindi, Thai, and ~150 other languages use the `_fallback_lemmatize` regex split.
 
 ---
 
-## ADR-0018: Tokenizer Preference Applied
+## Preferred Tokenizer by Language (ADR-0018)
 
-Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), the canonical preference order is **LemmatizationList > Simplemma > spaCy > BaseTokenizer**. ADR-0018 has been applied to the `LEMMATIZER_REGISTRY` above — the registry now reflects these preferences rather than routing all spaCy-capable languages to spaCy.
+Per [ADR-0018](../adr/0018-tokenizer-prefer-simplemma-over-spacy.md), the canonical preference order is **LemmatizationList > Simplemma > spaCy > BaseTokenizer**. The table below shows which tokenizer each language SHOULD use once this preference is applied. This has been the de facto behavior of the Classic Nuxt frontend for years.
 
-### Preference Rationale
-
-- **Performance**: spaCy's full NLP pipeline (dependency parsing, NER) is unnecessary for simple lemma extraction, adding 10–50× latency.
-- **Proven in production**: The Classic Nuxt app has been using Simplemma/LemmatizationList for 18 of 19 spaCy languages for years without user complaints.
-- **Zero-runtime-cost**: LemmatizationList is a static dictionary lookup after initial load. Simplemma is a lightweight dictionary-based lemmatizer.
-
-### Dedicated tokenizers (unchanged by ADR-0018)
+### Dedicated tokenizers (unchanged)
 
 These 8 languages use dedicated engines — the preference rule does not apply:
 
@@ -854,9 +823,9 @@ These 8 languages use dedicated engines — the preference rule does not apply:
 
 ### General-purpose languages (preference applied)
 
-These 19 languages previously routed to spaCy are now dispatched as follows:
+These 19 spaCy languages are re-evaluated under the LemmatizationList > Simplemma > spaCy rule:
 
-| # | Language | ISO 639-3 | spaCy | Simplemma | Lemm. List | **Currently Used** | spaCy Still Needed? |
+| # | Language | ISO 639-3 | spaCy | Simplemma | Lemm. List | **Preferred** | spaCy Still Needed? |
 |---|---|---|---|---|---|---|---|
 | 1 | Catalan | `cat` | ✅ | ✅ | ✅ | **LemmatizationList** | No |
 | 2 | Danish | `dan` | ✅ | ✅ | ❌ | **Simplemma** | No |
@@ -896,6 +865,28 @@ These 21 languages only have Simplemma available among the general-purpose token
 
 ---
 
+## Legacy Video Endpoint: Cached spaCy Results
+
+> ⚠️ **Important**: The legacy `/lemmatize-video` endpoint (`lemmatize_video_endpoint` in `text_routes.py`) dispatches through `utils_nlp.lemmatizer_by_lang()`, NOT through `lemmatize_unified.LEMMATIZER_REGISTRY`. The legacy dispatcher was built before the unified pipeline existed and routes languages directly to spaCy where a spaCy model is available.
+
+This means that **cached video subtitles** for languages like Danish, German, English, Finnish, French, Italian, etc. were originally tokenized with **spaCy**, even though the unified pipeline now prefers Simplemma or LemmatizationList for these same languages.
+
+### Why this matters
+
+When a client requests `/lemmatize-video-normalized`, it gets cached data that was produced by the legacy pipeline. The `normalize_by_lang()` function in `lemmatize_unified.py` converts the raw cached output to the unified schema, but **it normalizes from whatever tokenizer originally produced the data** — which for many languages was spaCy.
+
+The `serverCacheTokenizers` registry in the Classic Nuxt `tokenizer-factory.js` exists specifically to track which tokenizer originally produced the cached data for each language, so the client can parse it correctly. It lists spaCy for all 19 languages, even though the client's own dispatch only uses spaCy for Spanish.
+
+### Migration path
+
+If the server's `LEMMATIZER_REGISTRY` is updated to match ADR-0018 (preferring Simplemma/LemmatizationList), then:
+
+- **New `/lemmatize-normalized` requests** will use the preferred tokenizer immediately — no migration needed.
+- **Cached `/lemmatize-video` data** will remain spaCy-tokenized until the cache is invalidated and rebuilt. The `serverCacheTokenizers` registry on the client must continue to track the actual tokenizer used at cache time.
+- **`/lemmatize-video-normalized`** will normalize from whatever the cache contains — if rebuilt, it will use the new preferred tokenizer automatically.
+
+---
+
 ## Dependencies
 
 | Tokenizer | Python Package | Notes |
@@ -908,9 +899,8 @@ These 21 languages only have Simplemma available among the general-purpose token
 | Persian | `hazm`, `PersianG2p` | Pure Python |
 | Turkish | `zeyrek` | Pure Python |
 | Burmese | `pyidaungsu` | Pure Python |
-| spaCy (22 langs) | `spacy` + per-lang model packages | GPU-accelerated via `spacy.prefer_gpu()`. Only Croatian (`hrv`) actively dispatched in unified pipeline per ADR-0018. |
-| Simplemma (27 langs) | `simplemma` | Pure Python. Preferred over spaCy per ADR-0018. |
-| LemmatizationList (24 langs) | None (TSV files) | Pre-computed lookup tables at `data/lemmatization-lists/`. Highest-priority general-purpose tokenizer per ADR-0018. |
+| spaCy (22 langs) | `spacy` + per-lang model packages | GPU-accelerated via `spacy.prefer_gpu()` |
+| Simplemma (27 langs) | `simplemma` | Pure Python |
 | Vietnamese | `pyvi` | Pure Python |
 
 ---
