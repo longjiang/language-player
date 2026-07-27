@@ -5,6 +5,7 @@ import { useT } from '@/hooks/use-t';
 import { useVideos } from '@langplayer/api-client';
 import { VideoCard } from '@/components/video/VideoCard';
 import type { YouTubeVideo } from '@langplayer/shared';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function MusicScreen() {
   const { l2Lang } = useLanguage();
@@ -23,6 +24,7 @@ export default function MusicScreen() {
 
   return (
     <View className="flex-1 bg-background px-4">
+      <PageContainer>
       <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.music_and_entertainment')}</Text>
       {loading ? (
         <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" className="text-primary" /></View>
@@ -37,6 +39,7 @@ export default function MusicScreen() {
           renderItem={({ item }) => <VideoCard video={item} />}
         />
       )}
+    </PageContainer>
     </View>
   );
 }

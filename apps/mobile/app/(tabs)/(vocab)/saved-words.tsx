@@ -11,6 +11,7 @@ import { decomposeWordId, type SavedWordContext } from '@langplayer/shared';
 import { BookmarkCheck, BookOpen, Search, ArrowUpDown, Clock, ArrowDownAZ, Trash2, Download } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { InlineDefinition } from '@/components/dictionary/InlineDefinition';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 
 type SortMode = 'newest' | 'alpha';
@@ -170,6 +171,7 @@ export default function SavedWordsScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <PageContainer>
       {/* Header row — title + export + clear */}
       <View className="flex-row items-center justify-between px-4 py-5">
         <View className="flex-1">
@@ -274,6 +276,7 @@ export default function SavedWordsScreen() {
           );
         }}
       />
+    </PageContainer>
     </View>
   );
 }

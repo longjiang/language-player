@@ -10,6 +10,7 @@ import { isSaleActive, getSaleDiscount, findUsdPrice, findCnyPrice } from '@lang
 import type { StripePrice } from '@langplayer/shared';
 import { Crown, Check, ArrowRight, CreditCard, AlertCircle, Apple, RefreshCw } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING, ICON_ON_PRIMARY } from '@/lib/theme-colors';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 // ── Plan Definitions ──
 
@@ -304,6 +305,7 @@ export default function GoProScreen() {
 
   return (
     <ScrollView className="flex-1 bg-background px-4 py-8">
+      <View className="self-center w-full max-w-3xl">
       {/* Header */}
       <View className="items-center">
         <Crown size={48} color={ICON_PRIMARY} />
@@ -591,6 +593,7 @@ export default function GoProScreen() {
       <Text className="mt-6 text-center text-xs text-muted-foreground">
         Contact: jon.long@zerotohero.ca
       </Text>
+      </View>
     </ScrollView>
   );
 }

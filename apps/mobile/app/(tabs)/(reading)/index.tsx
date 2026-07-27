@@ -7,6 +7,7 @@ import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import type { NoteListItem } from '@langplayer/shared';
 import { BookOpen, PenLine, Plus, Trash2, StickyNote } from 'lucide-react-native';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 export default function ReaderScreen() {
@@ -72,6 +73,7 @@ export default function ReaderScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <PageContainer>
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.notes_reader')}</Text>
       </View>
@@ -222,6 +224,7 @@ export default function ReaderScreen() {
           </View>
         )}
       </View>
+    </PageContainer>
     </View>
   );
 }

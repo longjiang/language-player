@@ -152,9 +152,11 @@ type DrawerContentProps = DialogPrimitive.ContentProps & {
   topOffset?: number;
   /** When provided (forceMount scenarios), animates slide in both directions. */
   open?: boolean;
+  /** Drawer width. Default 256. */
+  drawerWidth?: number;
 };
 
-export function DrawerContent({ children, className, topOffset = 0, open, ...props }: DrawerContentProps) {
+export function DrawerContent({ children, className, topOffset = 0, open, drawerWidth = 256, ...props }: DrawerContentProps) {
   const translateX = useRef(new Animated.Value(open ? 0 : 300)).current;
   const isControlled = open !== undefined;
 
@@ -186,11 +188,13 @@ export function DrawerContent({ children, className, topOffset = 0, open, ...pro
       style={{
         top: topOffset,
         bottom: 0,
+        width: drawerWidth,
         transform: [{ translateX }],
       }}
     >
       <DialogPrimitive.Content
-        className={`w-64 border-l border-border bg-background p-4 shadow-lg ${className ?? ''}`}
+        className={`border-l border-border bg-background p-4 shadow-lg ${className ?? ''}`}
+        style={{ width: drawerWidth }}
         {...props}
       >
         {children}

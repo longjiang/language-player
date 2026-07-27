@@ -8,6 +8,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { Tv, AlertCircle, ChevronDown } from 'lucide-react-native';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface ShowWithMeta {
   id: string; title: string; locale: string;
@@ -189,10 +190,12 @@ export default function TvShowsScreen() {
   if (error) {
     return (
       <View className="flex-1 bg-background px-4 py-8">
+        <View className="flex-1 self-center w-full max-w-3xl">
         <Text className="text-2xl font-bold text-foreground mb-4">{t('title.tv_shows')}</Text>
         <View className="flex-row items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
           <AlertCircle size={16} className="text-destructive" />
           <Text className="text-sm text-destructive">{error}</Text>
+        </View>
         </View>
       </View>
     );
@@ -200,6 +203,7 @@ export default function TvShowsScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <PageContainer>
       {/* Header */}
       <View className="px-4 pt-5 pb-2">
         <Text className="text-2xl font-bold text-foreground">{t('title.tv_shows')}</Text>
@@ -307,6 +311,7 @@ export default function TvShowsScreen() {
           }}
         />
       )}
+    </PageContainer>
     </View>
   );
 }

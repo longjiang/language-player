@@ -6,6 +6,7 @@ import { useT } from '@/hooks/use-t';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { MarkdownText } from '@/components/MarkdownText';
 import { Search, BookOpen, List } from 'lucide-react-native';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 function stripMarkdown(text: string): string {
   return text
@@ -78,6 +79,7 @@ export default function DocsScreen() {
     const headings = extractHeadings(selectedDoc.content);
     return (
       <ScrollView className="flex-1 bg-background px-4 py-5">
+        <View className="self-center w-full max-w-3xl">
         <Pressable onPress={() => setSelectedDoc(null)} className="mb-4">
           <Text className="text-sm text-primary">← {t('action.go_back')}</Text>
         </Pressable>
@@ -108,6 +110,7 @@ export default function DocsScreen() {
         <View className="rounded-xl border border-border bg-card p-4">
           <MarkdownText>{selectedDoc.content}</MarkdownText>
         </View>
+        </View>
       </ScrollView>
     );
   }
@@ -115,6 +118,7 @@ export default function DocsScreen() {
   // ── Doc listing view ──
   return (
     <ScrollView className="flex-1 bg-background px-4 py-5">
+      <View className="self-center w-full max-w-3xl">
       <Text className="text-2xl font-bold text-foreground mb-1">{t('title.docs')}</Text>
 
       {/* Search */}
@@ -176,6 +180,7 @@ export default function DocsScreen() {
           ))}
         </>
       )}
+      </View>
     </ScrollView>
   );
 }

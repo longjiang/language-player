@@ -12,6 +12,7 @@ import { parseMarkdownBlocks, type ContentBlock } from '@/lib/parse-markdown';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { Globe, StickyNote, Plus, Trash2, BookOpen } from 'lucide-react-native';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 export default function WebReaderScreen() {
@@ -78,6 +79,7 @@ export default function WebReaderScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <PageContainer>
       {/* Main content row */}
       <View className="flex-1 flex-row">
         <View className="flex-1">
@@ -283,6 +285,7 @@ export default function WebReaderScreen() {
           </View>
         )}
       </View>
+    </PageContainer>
     </View>
   );
 }

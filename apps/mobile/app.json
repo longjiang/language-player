@@ -3,7 +3,7 @@
     "name": "Language Player",
     "slug": "language-player",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "scheme": "languageplayer",
     "userInterfaceStyle": "automatic",

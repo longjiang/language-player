@@ -8,6 +8,7 @@ import { PYTHON_API_URL, DIRECTUS_URL } from '@/lib/api-url';
 import { Clock, AlertCircle, Play, Trash2 } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { YouTubeVideo } from '@langplayer/shared';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface WatchHistoryItem {
   id: number;
@@ -199,11 +200,13 @@ export default function WatchHistoryScreen() {
   if (!user) {
     return (
       <View className="flex-1 bg-background">
+        <PageContainer>
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="flex-1 items-center justify-center px-8">
           <AlertCircle size={40} className="mb-3 text-muted-foreground" />
           <Text className="text-center text-muted-foreground">{t('msg.not_authenticated')}</Text>
         </View>
+        </PageContainer>
       </View>
     );
   }
@@ -212,10 +215,12 @@ export default function WatchHistoryScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-background">
+        <PageContainer>
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" className="text-primary" />
         </View>
+        </PageContainer>
       </View>
     );
   }
@@ -224,10 +229,12 @@ export default function WatchHistoryScreen() {
   if (error) {
     return (
       <View className="flex-1 bg-background">
+        <PageContainer>
         <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
         <View className="mx-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
           <Text className="text-sm text-destructive">{error}</Text>
         </View>
+        </PageContainer>
       </View>
     );
   }
@@ -235,6 +242,7 @@ export default function WatchHistoryScreen() {
   // ── Empty or list ──
   return (
     <View className="flex-1 bg-background">
+      <PageContainer>
       {/* Header row */}
       <View className="flex-row items-center justify-between px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.watch_history')}</Text>
@@ -325,6 +333,7 @@ export default function WatchHistoryScreen() {
           }}
         />
       )}
+    </PageContainer>
     </View>
   );
 }

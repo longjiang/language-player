@@ -8,6 +8,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { LiveTVPlayer } from '@/components/video/LiveTVPlayer';
 import { Search, Wifi, WifiHigh, WifiLow, Tv, SlidersHorizontal, ChevronDown } from 'lucide-react-native';
 import type { LiveTVChannel } from '@langplayer/shared';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 type SortKey = 'latency' | 'name' | 'random';
 
@@ -187,6 +188,7 @@ export default function LiveTvScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <PageContainer>
       <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.live_tv')}</Text>
       {/* Player section */}
       {selectedChannel && (
@@ -303,6 +305,7 @@ export default function LiveTvScreen() {
           </Pressable>
         )}
       />
+    </PageContainer>
     </View>
   );
 }
