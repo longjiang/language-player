@@ -8,6 +8,7 @@
 - **See also**:
   - [SPEC-018: Mobile Local Tokenization & Lemmatization](../specs/018-local-tokenization-mobile.md) — the tokenization pipeline that consumes the downloaded packs
   - [SPEC-013: Mobile Offline Dictionary](../specs/013-mobile-offline-dictionary.md) — the dictionary download UX pattern this spec extends
+  - [ARCH-018: Local Tokenization Strategy](../arch/018-local-tokenization-strategy.md) — per-language taxonomy for downloadable vs regex-only languages
 
 ---
 
@@ -20,6 +21,99 @@ Tokenizers have **no dedicated UI**. They are downloaded automatically as a side
 ## What the User Sees
 
 Nothing. The dictionary download UI is unchanged — the tokenizer is downloaded silently in the background as part of the same HTTP request or immediately after the dictionary asset completes. If the language has no downloadable tokenizer (Category E, or Phase 1 regex fallback), no download occurs.
+
+---
+
+## Offline Dictionary Management — Tokenizer Availability Indicator
+
+In the Offline Dictionaries settings screen (SPEC-013, Phase 5), each language card shows whether the language has a downloadable tokenizer pack. This helps users understand which languages will have fully interactive text (tappable subtitles, lemmatized dictionary lookup) when offline.
+
+### Wireframe — Language with Local Tokenizer (no warning)
+
+Languages in `TOKENIZER_CONFIG` (Categories A, C1–C4, plus dict-based segmentation in Category B) have a downloadable pack. No warning is shown.
+
+```
+┌──────────────────────────────────────────┐
+│  Spanish                         Download │
+│  es                                      │
+│  ─────────────────────────────────────── │
+│  125,000 words · ~3.4 MB                 │
+│                                          │
+│  [===========                    ]  42%   │  ← During download (transient)
+│  52,000 of 125,000 words                 │
+└──────────────────────────────────────────┘
+```
+
+### Wireframe — Language WITHOUT Local Tokenizer (warning shown)
+
+Languages NOT in `TOKENIZER_CONFIG` (Category E, ~146 regex-only languages) have no downloadable pack. A small warning appears below the word count.
+
+```
+┌──────────────────────────────────────────┐
+│  Swahili                         Download │
+│  sw                                      │
+│  ─────────────────────────────────────── │
+│  80,000 words · ~6.4 MB                  │
+│  ⚠ Cannot make text interactive offline  │
+└──────────────────────────────────────────┘
+```
+
+### Wireframe — Downloaded Language (both cases)
+
+After download, the warning persists so the user knows that even though the dictionary works offline, tapping on words in subtitles/reader won't provide interactive lemmatization.
+
+```
+┌──────────────────────────────────────────┐
+│  Swahili                    [↻] [🗑]     │
+│  sw                                      │
+│  ─────────────────────────────────────── │
+│  ✅ Downloaded · 80,000 words            │
+│  ⚠ Cannot make text interactive offline  │
+└──────────────────────────────────────────┘
+```
+
+```
+┌──────────────────────────────────────────┐
+│  Spanish                    [↻] [🗑]     │
+│  es                                      │
+│  ─────────────────────────────────────── │
+│  ✅ Downloaded · 125,000 words           │
+│                                          │  ← No warning (tokenizer available)
+└──────────────────────────────────────────┘
+```
+
+### Implementation Rule
+
+```typescript
+/** A language has a downloadable tokenizer/lemma pack if it has an entry
+ *  in TOKENIZER_CONFIG (packages/shared/src/constants.ts).
+ *  See ARCH-018 for the per-language taxonomy. */
+function hasLocalTokenizer(l2: string): boolean {
+  return l2 in TOKENIZER_CONFIG;
+}
+```
+
+Languages with entries in `TOKENIZER_CONFIG`:
+- **Snowball + Lemma Table**: ca, cs, da, de, en, es, fi, fr, ga, hu, it, nl, pt, ro, ru, sl, sv, tr (18 langs)
+- **Snowball only**: eu, hy, nb, no, ta (5 langs)
+- **Lemma Table only**: ast, bg, cy, el, et, fa, gd, gl, gv, hr, is, ka, la, lt, lv, mk, nn, pl, sk, sq, sw, uk (22 langs)
+- **Dict-based segmentation**: zh, cmn, nan, hak, lzh, gan, hsn, wuu, cjy, cpx, yue, th, km, lo, my, bo (16 langs)
+
+**Total: 61 languages with local tokenizer support.** Remaining ~146 languages show the warning.
+
+### Visual Specs
+
+| Element | Value |
+|---|---|
+| Icon | `AlertTriangle` (lucide-react-native), 11px |
+| Icon color | `ICON_MUTED` |
+| Text | "Cannot make text interactive offline" |
+| Text size | `text-xs` (12px) |
+| Text color | `text-muted-foreground` |
+| Spacing | `mt-1` gap `gap-1` between icon and text |
+| Position | Below the word count/saved row, above the progress bar |
+
+The warning is hidden during download (progress bar visible) and during error state.
 
 ---
 

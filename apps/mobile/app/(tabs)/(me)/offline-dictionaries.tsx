@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
-import { SUPPORTED_L2S } from '@langplayer/shared';
+import { SUPPORTED_L2S, TOKENIZER_CONFIG } from '@langplayer/shared';
 import enLocale from '@langplayer/shared/locales/en.json';
 import { ContextMenu } from '@/components/ui/context-menu';
 import type { ContextMenuItem } from '@/components/ui/context-menu';
@@ -65,6 +65,14 @@ const POPULAR_LANGUAGES = [
 function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Whether a language has a downloadable tokenizer/lemma pack.
+ *  Languages without one (Category E, ~146 langs) fall back to regex
+ *  word-split + surface-as-lemma — text cannot be made interactive offline.
+ *  See ARCH-018 for the per-language taxonomy. */
+function hasLocalTokenizer(l2: string): boolean {
+  return l2 in TOKENIZER_CONFIG;
 }
 
 // ── Main Screen ──────────────────────────────
@@ -314,6 +322,14 @@ export default function OfflineDictionariesScreen() {
         )}
         {!isDownloaded && !status?.checked && (
           <Text className="mt-1 text-xs text-muted-foreground">{t('msg.checking')}</Text>
+        )}
+
+        {/* Tokenizer unavailable warning */}
+        {!isDownloading && !isFailed && !hasLocalTokenizer(l2) && (
+          <View className="mt-1 flex-row items-center gap-1">
+            <AlertTriangle size={11} color={ICON_MUTED} />
+            <Text className="text-xs text-muted-foreground">Cannot make text interactive offline</Text>
+          </View>
         )}
 
         {/* Progress bar */}
