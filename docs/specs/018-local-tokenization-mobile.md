@@ -43,7 +43,7 @@ Local tokenization exists for **graceful offline degradation** (airplane mode, t
 
 ```
 1. POST /lemmatize-normalized  →  Server (best accuracy, always preferred)
-2. Local JS library             →  kuromoji, arabic-stem, nlptoolkit, snowball-stemmers, etc.
+2. Local JS library             →  kuromoji, arabic-stem, snowball-stemmers, etc.
 3. Downloaded lemma table       →  Language pack stored in SQLite (SPEC-013 pattern)
 4. Regex word-split + surface   →  Last resort (~146 languages, zero cost)
 ```
@@ -342,26 +342,40 @@ There are two kinds of assets needed for local tokenization, and they follow fun
 
 | Asset Type | Examples | Distribution | Why |
 |---|---|---|---|
-| **JS engines** | kuromoji.js (~200 KB), kuromoji-ko (~200 KB), nlptoolkit (~100 KB), snowball-stemmers (~450 KB for all 15 languages) | **Bundled at build time** as npm dependencies | React Native cannot dynamically load npm packages at runtime. These are small without their dictionaries. |
-| **Data/dictionary files** | IPADIC dict (~3 MB pruned), mecab-ko-dic (~2 MB pruned), Turkish FSM XML (~2 MB), lemma tables (~100–500 KB each) | **Downloaded at runtime** alongside offline dictionary download, stored in device filesystem or SQLite | These are the bulk of the size. They're pure data — no executable code. |
+| **JS engines** | kuromoji.js, kuromoji-ko, snowball-stemmers (~450 KB for all 15 languages) | **Bundled at build time** as npm dependencies | React Native cannot dynamically load npm packages at runtime. These are small without their dictionaries. |
+| **Data/dictionary files** | IPADIC dict (~3 MB pruned), mecab-ko-dic (~2 MB pruned), lemma tables (~100–500 KB each) | **Downloaded at runtime** alongside offline dictionary download, stored in device filesystem or SQLite | These are the bulk of the size. They're pure data — no executable code. |
 
-**Total engine bundle size**: ~1 MB (kuromoji + kuromoji-ko + nlptoolkit + snowball-stemmers). Downloaded data is incremental per language, triggered by dictionary download.
+**Total engine bundle size**: ~850 KB (kuromoji + kuromoji-ko + snowball-stemmers). Downloaded data is incremental per language.
+
+#### React Native Compatibility ⚠️
+
+These JS NLP libraries were written for Node.js and may use `fs` (file system) or `zlib` (compression) — neither exists in React Native's JavaScript runtime (Hermes/JSC). Each library needs a different strategy:
+
+| Library | Node APIs Used | RN Solution |
+|---|---|---|
+| **kuromoji** | `fs`, `zlib` (Node) — but ships a separate `BrowserDictionaryLoader.js` that uses `XMLHttpRequest` + JS inflate | ✅ **Use the browser build.** Provide a custom `loader` function that reads dict files from device storage via `expo-file-system` instead of XHR. The browser build already includes a pure-JS zlib implementation (pako). |
+| **kuromoji-ko** | Same architecture as kuromoji. Has a documented `loader` option for custom file loading. Browser usage is officially supported (CDN example in README). | ✅ **Use the browser-compatible build with a custom loader.** Same pattern as kuromoji. |
+| **nlptoolkit-morphologicalanalysis** | `fs` via `nlptoolkit-dictionary` to read `turkish_dictionary.txt` and `turkish_finite_state_machine.xml`. No browser build exists. Only Node.js is listed as a requirement. | ❌ **Dropped for Phase 2.** No browser/RN support. Use `snowball-stemmers` (Turkish Snowball, ~50 KB, pure JS) as the primary Turkish lemmatizer instead. |
+| **snowball-stemmers** | None — pure algorithmic code, no file I/O | ✅ **Works natively.** No Node APIs used. |
+| **arabic-stem** | None — pure algorithmic code | ✅ Already working in Phase 1. |
+
+> **Custom loader pattern**: For kuromoji/kuromoji-ko, we provide a loader object that implements `load(path, callback)` using `expo-file-system.readAsStringAsync()` or `fetch()` to read local `.dat.gz` files as `ArrayBuffer`, then decompress with a pure-JS inflate (pako or the browser build's built-in inflate). This is the same pattern the browser build uses except targeting device storage URLs instead of HTTP URLs.
 
 #### Engine npm Dependencies (bundled)
 
 ```bash
-cd apps/mobile && npm install kuromoji kuromoji-ko nlptoolkit-morphologicalanalysis snowball-stemmers
+cd apps/mobile && npm install kuromoji kuromoji-ko snowball-stemmers
 ```
 
-These packages contain only the JS logic — not the large dictionaries. For kuromoji and kuromoji-ko, we use the engine's ability to load dictionary `.dat` files from a local path (the downloaded directory). For snowball-stemmers, each stemmer is pure algorithmic code with no data files.
+These packages contain only the JS logic — not the large dictionaries. For kuromoji and kuromoji-ko, we provide a custom loader that reads dictionary `.dat` files from device storage (see [React Native Compatibility](#react-native-compatibility-) above). For snowball-stemmers, each stemmer is pure algorithmic code with no data files. **nlptoolkit is excluded** — it uses Node `fs` internally with no browser fallback; we use the Turkish Snowball stemmer instead.
 
 #### Downloaded Data (per language, triggered by SPEC-013 dict download)
 
 | Data Pack | Language(s) | Size | JS Engine | Downloaded With |
 |---|---|---|---|---|
-| IPADIC dict (pruned top 30K, `.dat` files) | Japanese | ~3 MB | `kuromoji` | Japanese offline dictionary |
-| mecab-ko-dic (pruned top 30K, `.dat` files) | Korean | ~2 MB | `kuromoji-ko` | Korean offline dictionary |
-| Turkish FSM lexicon XML | Turkish | ~2 MB | `nlptoolkit-morphologicalanalysis` | Turkish offline dictionary |
+| IPADIC dict (pruned top 30K, `.dat.gz` files) | Japanese | ~3 MB | `kuromoji` (browser build + custom loader) | Japanese offline dictionary |
+| mecab-ko-dic (pruned top 30K, `.dat` files) | Korean | ~2 MB | `kuromoji-ko` (browser build + custom loader) | Korean offline dictionary |
+| Turkish Snowball stemmer | Turkish | 0 KB | `snowball-stemmers` (pure JS, no data needed) | Already bundled — no download |
 | Persian lemma table (Hazm export, JSON) | Persian | ~80 KB | `lemmatizeText()` fallback chain (lookup, no engine) | Persian offline dictionary |
 | Pre-built lemma tables (JSON) | ca, cs, cy, gl, gv, sk, sl, uk, bg, el, et, is, la, lv, lt, nn, pl, sq, hr, ru, ka, sw, ast | ~100–500 KB each | `lemmatizeText()` fallback chain (lookup, no engine) | Respective offline dictionary |
 
@@ -404,9 +418,7 @@ This compiles mecab-ko-dic source into binary `.dat` files. Zip the output direc
 
 ---
 
-**nlptoolkit (Turkish)** — two plain text files shipped in the npm package root: `turkish_dictionary.txt` and `turkish_finite_state_machine.xml`. No compilation needed. Copy, zip, host at `GET /lemmatization/download?l2=tr`.
-
-**Wiring**: `new FsmMorphologicalAnalyzer('/data/tokenizers/tr/turkish_finite_state_machine.xml', '/data/tokenizers/tr/turkish_dictionary.txt')`.
+**nlptoolkit (Turkish)** — dropped. Node-only (`fs` dependency, no browser build). Use `snowball-stemmers` Turkish stemmer (~50 KB, pure JS, zero data files) instead. Always available once the npm package is bundled. No download needed.
 
 ---
 
@@ -435,13 +447,11 @@ Each tokenizer engine is initialized lazily on first use (not at app startup). E
 
 import kuromoji from 'kuromoji';
 import kuromojiKo from 'kuromoji-ko';
-import { FsmMorphologicalAnalyzer } from 'nlptoolkit-morphologicalanalysis';
 import Snowball from 'snowball-stemmers';
 
 // Lazy singletons — initialized only when dict data is on disk
 let jaTokenizer: kuromoji.Tokenizer<kuromoji.IpadicFeatures> | null = null;
 let koTokenizer: Awaited<ReturnType<typeof kuromojiKo.builder().build>> | null = null;
-let trAnalyzer: FsmMorphologicalAnalyzer | null = null;
 const snowballStemmers = new Map<string, (word: string) => string>();
 
 // Japanese — kuromoji loads .dat.gz files from a directory path
@@ -462,16 +472,6 @@ async function getKoTokenizer(dictPath: string) {
   return koTokenizer;
 }
 
-// Turkish — nlptoolkit reads two text files from local paths
-function getTrAnalyzer(dictDir: string): FsmMorphologicalAnalyzer {
-  if (trAnalyzer) return trAnalyzer;
-  trAnalyzer = new FsmMorphologicalAnalyzer(
-    `${dictDir}/turkish_finite_state_machine.xml`,
-    `${dictDir}/turkish_dictionary.txt`
-  );
-  return trAnalyzer;
-}
-
 // Snowball stemmers — pure algorithmic, no data files, instant init
 function getSnowballStemmer(lang: string): (word: string) => string {
   if (!snowballStemmers.has(lang)) {
@@ -479,6 +479,9 @@ function getSnowballStemmer(lang: string): (word: string) => string {
   }
   return snowballStemmers.get(lang)!;
 }
+
+// Turkish — Snowball stemmer, no separate engine needed
+// (nlptoolkit dropped: Node-only, uses fs internally, no browser/RN support)
 ```
 
 #### Updated Fallback Chain in `lemmatizeText()`
@@ -494,8 +497,7 @@ lemmatizeText(text, l2)
   ├─ 3. Local fallback (ordered by accuracy):
   │      ├─ kuromoji + downloaded IPADIC dict (ja) ──→ segmented + lemmatized
   │      ├─ kuromoji-ko + downloaded mecab-ko-dic (ko) ──→ segmented + lemmatized
-  │      ├─ nlptoolkit + downloaded Turkish lexicon (tr) ──→ analyzed + lemmatized
-  │      ├─ snowball-stemmers (de, en, es, fr, it, pt, ...) ──→ stemmed
+  │      ├─ snowball-stemmers (tr, de, en, es, fr, it, pt, ...) ──→ stemmed
   │      ├─ downloaded lemma table lookup ──→ lemmatized
   │      ├─ arabic-stem (ar) ──→ stemmed
   │      └─ regex word-split + surface-as-lemma ──→ baseline (always works)
@@ -507,8 +509,8 @@ lemmatizeText(text, l2)
 
 | File | Change |
 |---|---|
-| `apps/mobile/package.json` | Add `kuromoji`, `kuromoji-ko`, `nlptoolkit-morphologicalanalysis`, `snowball-stemmers` dependencies |
-| `apps/mobile/lib/tokenizer.ts` | Add engine initialization, downloaded-data lookup to fallback chain |
+| `apps/mobile/package.json` | Add `kuromoji`, `kuromoji-ko`, `snowball-stemmers` dependencies |
+| `apps/mobile/lib/tokenizer.ts` | Add engine initialization, custom file loaders for kuromoji/kuromoji-ko, downloaded-data lookup to fallback chain |
 | `apps/mobile/lib/tokenizer-db.ts` | **NEW** — check for downloaded data, provide dict paths to engines |
 | `apps/mobile/contexts/DictionaryContext.tsx` | After dict download completes, check `TOKENIZER_CONFIG` and download data pack if available |
 | `packages/shared/src/constants.ts` | Add `TOKENIZER_CONFIG` map: language → data pack URL + size |
