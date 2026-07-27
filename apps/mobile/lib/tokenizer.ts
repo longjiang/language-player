@@ -55,6 +55,30 @@ const arabicStemmer = new Stemmer();
 // only one server call is made. Keyed by `${l2}:${text}`.
 const lemmatizeCache = new Map<string, LemmatizedToken[]>();
 
+/**
+ * LRU-aware cache setter — evicts oldest entry when at capacity.
+ * Re-inserts on get to maintain LRU ordering via Map insertion order.
+ */
+const MAX_LEMMATIZE_CACHE = 2000; // ~2–10 MB worst case
+
+function cacheSet(key: string, value: LemmatizedToken[]): void {
+  if (lemmatizeCache.size >= MAX_LEMMATIZE_CACHE) {
+    const firstKey = lemmatizeCache.keys().next().value;
+    if (firstKey !== undefined) lemmatizeCache.delete(firstKey);
+  }
+  lemmatizeCache.set(key, value);
+}
+
+function cacheGet(key: string): LemmatizedToken[] | undefined {
+  const value = lemmatizeCache.get(key);
+  if (value !== undefined) {
+    // Re-insert to promote to most-recent (LRU via Map insertion order)
+    lemmatizeCache.delete(key);
+    lemmatizeCache.set(key, value);
+  }
+  return value;
+}
+
 // ── In-flight request deduplication ─────────────────────────────────
 // Prevents thundering herd when many components mount simultaneously
 // and all miss the cache for the same text.
@@ -111,6 +135,15 @@ async function loadDictWordSet(l2: string): Promise<{ wordSet: Set<string>; maxW
     for (const row of rows) {
       wordSet.add(row.head);
       if (row.head.length > maxWordLen) maxWordLen = row.head.length;
+    }
+
+    // Evict oldest language if at capacity (keep only last 3 to cap at ~3–6 MB)
+    if (dictWordSets.size >= 3) {
+      const firstKey = dictWordSets.keys().next().value;
+      if (firstKey !== undefined) {
+        dictWordSets.delete(firstKey);
+        dictMaxWordLen.delete(firstKey);
+      }
     }
 
     dictWordSets.set(l2, wordSet);
@@ -635,7 +668,7 @@ export async function lemmatizeText(
   const cacheKey = `${l2}:${text}`;
 
   // 1. In-memory cache
-  const cached = lemmatizeCache.get(cacheKey);
+  const cached = cacheGet(cacheKey);
   if (cached) return cached;
 
   // 2. Server (primary) — with in-flight deduplication so concurrent
@@ -645,7 +678,7 @@ export async function lemmatizeText(
     inflight = lemmatizeFromServer(text, l2, signal)
       .then((serverTokens) => {
         if (serverTokens) {
-          lemmatizeCache.set(cacheKey, serverTokens);
+          cacheSet(cacheKey, serverTokens);
           return serverTokens;
         }
         // 3. Local fallback — extended chain
@@ -668,14 +701,14 @@ export async function lemmatizeText(
           if (tokenizeFn) {
             return tokenizeFn(text).then((kuromojiTokens) => {
               if (kuromojiTokens) {
-                lemmatizeCache.set(cacheKey, kuromojiTokens);
+                cacheSet(cacheKey, kuromojiTokens);
                 return kuromojiTokens;
               }
               // Data pack not available — fall through to generic path
               return segmentText(text, l2, config).then((words) =>
                 lemmatizeLocal(words, l2, config),
               ).then((tokens) => {
-                lemmatizeCache.set(cacheKey, tokens);
+                cacheSet(cacheKey, tokens);
                 return tokens;
               });
             });
@@ -687,7 +720,7 @@ export async function lemmatizeText(
         return segmentText(text, l2, config).then((words) =>
           lemmatizeLocal(words, l2, config),
         ).then((tokens) => {
-          lemmatizeCache.set(cacheKey, tokens);
+          cacheSet(cacheKey, tokens);
           return tokens;
         });
       })
