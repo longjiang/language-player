@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { ExternalLink, Loader2 } from 'lucide-react-native';
+import { ChannelActionsMenu } from './ChannelActionsMenu';
 
 interface ChannelInfo {
   title: string;
@@ -83,6 +84,7 @@ export function YouTubeChannelCard({ channelId }: YouTubeChannelCardProps) {
       >
         <ExternalLink size={16} color={ICON_MUTED} />
       </Pressable>
+      <ChannelActionsMenu channelId={channelId} />
     </View>
   );
 }

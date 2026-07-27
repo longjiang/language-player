@@ -3,6 +3,7 @@ import { View, Text, Pressable, Image } from 'react-native';
 import { router } from 'expo-router';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
+import { ChannelActionsMenu } from './ChannelActionsMenu';
 
 interface VideoCardProps {
   video: YouTubeVideo;
@@ -63,6 +64,7 @@ export function VideoCard({ video, layout = 'card', isActive = false }: VideoCar
             {duration ? <Text className="text-xs text-muted-foreground">{duration}</Text> : null}
           </View>
         </View>
+        {video.channel_id ? <ChannelActionsMenu channelId={video.channel_id} /> : null}
       </Pressable>
     );
   }
@@ -78,9 +80,12 @@ export function VideoCard({ video, layout = 'card', isActive = false }: VideoCar
         ) : null}
       </View>
       <View className="p-2.5">
-        <Text className="text-sm font-medium text-foreground" numberOfLines={2}>
-          {video.title ?? ''}
-        </Text>
+        <View className="flex-row items-start justify-between gap-1">
+          <Text className="flex-1 text-sm font-medium text-foreground" numberOfLines={2}>
+            {video.title ?? ''}
+          </Text>
+          {video.channel_id ? <ChannelActionsMenu channelId={video.channel_id} /> : null}
+        </View>
         <View className="mt-1.5 flex-row items-center gap-2">
           {levelText && (
             <View className="rounded bg-primary/10 px-1.5 py-0.5">
