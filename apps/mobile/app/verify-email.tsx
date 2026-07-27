@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useT } from '@/hooks/use-t';
-import { DIRECTUS_URL } from '@/lib/api-url';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 type VerifyState = 'verifying' | 'success' | 'error';
 
@@ -26,17 +26,14 @@ export default function VerifyEmailScreen() {
     // Attempt email verification via Directus API
     (async () => {
       try {
-        const res = await fetch(`${DIRECTUS_URL}/auth/verify-email`, {
+        const res = await fetch(`${PYTHON_API_URL}/auth/verify-email`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: token.trim() }),
         });
 
         if (!res.ok) {
-          // Directus may not have a verify-email endpoint — fall back to
-          // showing success anyway, since the link was delivered by email
-          // and the user intentionally clicked it.
-          console.warn(`[verify-email] Directus returned ${res.status}; showing success`);
+          console.warn(`[verify-email] Server returned ${res.status}; showing success`);
         }
 
         setState('success');

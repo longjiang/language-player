@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle } from 'lucide-react';
-
-const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL ?? 'https://languageplayer.io';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 export default function ForgotPasswordPage() {
   const t = useT();
@@ -21,7 +20,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${DIRECTUS_URL}/zerotohero/auth/password/request`, {
+      const res = await fetch(`${PYTHON_API_URL}/auth/password-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
