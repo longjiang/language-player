@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Shared logic layer for the unified language picker (ADR-0017).
  *
