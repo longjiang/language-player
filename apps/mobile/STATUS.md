@@ -90,7 +90,7 @@
 | Screen | File | Status | Web Source | Notes |
 |---|---|---|---|---|
 | Dictionary Search | `(tabs)/(vocab)/index.tsx` | ✅ | `[l1]/[l2]/dictionary/page.tsx` | Search + recent searches + results cards |
-| Saved Words | `(tabs)/(vocab)/saved-words.tsx` | ✅ | `[l1]/[l2]/saved-words/page.tsx` | Filter + sort + remove + export all work. Exports all saved words as JSON via native share sheet. |
+| Saved Words | `(tabs)/(vocab)/saved-words.tsx` | ✅ | `[l1]/[l2]/saved-words/page.tsx` | Filter + sort + remove + export all work. Exports all saved words as JSON via native share sheet. Inline definitions (pronunciation + part-of-speech + definition) shown beneath each headword via lazy enrichment. Source attribution (video/article title + date) shown for words saved from context. |
 | SRS Review | `(tabs)/(vocab)/review.tsx` | ✅ | `[l1]/[l2]/review/page.tsx` | Full SM-2 algorithm, due card computation, 4 ratings (again/hard/good/easy), undo, daily new card limit, "no cards due" & "all done" states, entry preloading |
 | Word Detail | `(tabs)/(vocab)/word/[entryId].tsx` | ✅ | `dictionary/entry/...` | Definitions, examples, inflections, AI explanation |
 
@@ -104,6 +104,8 @@
 | Search Bar | `components/dictionary/SearchBar.tsx` | ✅ | With clear + loading spinner |
 | Word List | `components/dictionary/WordList.tsx` | ✅ | Reusable FlatList for saved words |
 | Lookup Source Indicator | `components/dictionary/LookupSourceIndicator.tsx` | ✅ | Shows which dictionary source provided the entry |
+| Inline Definition | `components/dictionary/InlineDefinition.tsx` | ✅ | Inline pronunciation + part-of-speech + first definition from lazily enriched canonicalEntry |
+| Saved Word Source | `components/dictionary/SavedWordSource.tsx` | ✅ | Video/article source attribution with icon + title + date |
 | Offline Banner | `components/dictionary/OfflineBanner.tsx` | ✅ | Offline availability status banner |
 
 ---
@@ -232,14 +234,14 @@
 
 ---
 
-### Phase 2: Saved Words UX 🟠
+### Phase 2: Saved Words UX 🟠 ✅
 
 | # | Feature | Web Source | Effort | Dependencies | Notes |
 |---|---|---|---|---|---|
-| 2.1 | Inline Word Definitions | `inline-definition.tsx` | M | None | Saved-words page shows definitions inline with module-level cache (no popup needed). Eliminates tap-to-open-popup friction — the #1 UX gap for daily vocab review. |
-| 2.2 | Saved Word Source | `saved-word-source.tsx` | S | None | Shows which video/article a saved word came from. |
+| 2.1 | Inline Word Definitions | `inline-definition.tsx` | M | None | ✅ `InlineDefinition` renders pronunciation + part-of-speech + first definition from lazily enriched `canonicalEntry`. No popup needed — the #1 UX gap for daily vocab review is closed. |
+| 2.2 | Saved Word Source | `saved-word-source.tsx` | S | None | ✅ `SavedWordSource` shows video/article source context with icon + title + date. Matches web's `SavedWordSource` component. |
 
-**Goal:** Bring saved-words browsing to parity with web. Currently mobile requires tapping every word individually to see its definition.
+**Result:** Saved-words browsing is now at parity with web. Inline definitions appear automatically as rows scroll into view (existing lazy enrichment mechanism), and source attribution shows where each word was saved from.
 
 ---
 

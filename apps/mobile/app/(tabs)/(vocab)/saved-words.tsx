@@ -7,9 +7,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useT } from '@/hooks/use-t';
-import { decomposeWordId } from '@langplayer/shared';
+import { decomposeWordId, type SavedWordContext } from '@langplayer/shared';
 import { BookmarkCheck, BookOpen, Search, ArrowUpDown, Clock, ArrowDownAZ, Trash2, Download } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { InlineDefinition } from '@/components/dictionary/InlineDefinition';
+import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 
 type SortMode = 'newest' | 'alpha';
 
@@ -245,37 +247,32 @@ export default function SavedWordsScreen() {
             <Text className="text-xs font-medium text-muted-foreground">{section.title}</Text>
           </View>
         )}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => handleWordPress(item)}
-            className="flex-row items-center border-b border-border px-4 py-3 active:bg-muted"
-          >
-            {/* Remove button (bookmark icon like Next.js) */}
-            <Pressable onPress={() => handleRemove(item)} className="mr-3" hitSlop={8}>
-              <BookmarkCheck size={20} color={ICON_MUTED} />
-            </Pressable>
+        renderItem={({ item }) => {
+          const ts = item.date ?? new Date(item.savedAt ?? 0).getTime();
+          return (
+            <Pressable
+              onPress={() => handleWordPress(item)}
+              className="flex-row items-center border-b border-border px-4 py-3 active:bg-muted"
+            >
+              {/* Remove button (bookmark icon like Next.js) */}
+              <Pressable onPress={() => handleRemove(item)} className="mr-3" hitSlop={8}>
+                <BookmarkCheck size={20} color={ICON_MUTED} />
+              </Pressable>
 
-            {/* Content */}
-            <View className="flex-1">
-              <Text className="text-base font-medium text-foreground">
-                {item.head || item.forms?.[0] || item.id}
-                {item.canonicalEntry?.pronunciation ? (
-                  <Text className="text-sm text-muted-foreground">
-                    {' '}[{item.canonicalEntry.pronunciation}]
-                  </Text>
-                ) : null}
-              </Text>
-              <Text className="mt-0.5 text-xs text-muted-foreground">
-                {item.canonicalEntry?.definitions?.[0]
-                  ?? (item.dictionaryId ? `${item.dictionaryId} • ` : '') + item.id}
-                {(() => {
-                  const ts = item.date ?? new Date(item.savedAt ?? 0).getTime();
-                  return ts ? ` • ${new Date(ts).toLocaleDateString()}` : '';
-                })()}
-              </Text>
-            </View>
-          </Pressable>
-        )}
+              {/* Content */}
+              <View className="flex-1">
+                <Text className="text-base font-medium text-foreground">
+                  {item.head || item.forms?.[0] || item.id}
+                </Text>
+                <InlineDefinition entry={item.canonicalEntry} />
+                <SavedWordSource
+                  context={item.context as SavedWordContext | undefined}
+                  date={ts}
+                />
+              </View>
+            </Pressable>
+          );
+        }}
       />
     </View>
   );
