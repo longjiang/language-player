@@ -21,6 +21,9 @@ import {
   saveDictMeta,
   getDictMeta,
 } from '@/lib/dictionary-db';
+import { downloadLemmaTable, deleteLemmaTable } from '@/lib/tokenizer-db';
+import { TOKENIZER_CONFIG } from '@langplayer/shared';
+import { PYTHON_API_URL } from '@/lib/api-url';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 // ── Sidebar / wordlist types ────────────────
@@ -354,6 +357,18 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       await saveDictMeta(db, meta);
       console.log('[DictContext] 💾 dict_meta saved — l2:', l2, 'meta:', JSON.stringify(meta).slice(0, 120));
 
+      // ── SPEC-018 Phase 2a: Download lemma table as sidecar ──
+      const tokenConfig = TOKENIZER_CONFIG[l2];
+      if (tokenConfig?.hasLemmaTable) {
+        console.log('[DictContext] 📥 downloading lemma table — l2:', l2, 'size:', tokenConfig.lemmaTableSize);
+        try {
+          const ok = await downloadLemmaTable(l2, PYTHON_API_URL);
+          console.log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' lemma table — l2:', l2, ok ? 'downloaded' : 'unavailable');
+        } catch (e: any) {
+          console.log('[DictContext] ⚠️ lemma table download failed (non-fatal) — l2:', l2, e?.message ?? e);
+        }
+      }
+
       stateMap.set(l2, {
         status: 'completed',
         progress: 100,
@@ -386,6 +401,8 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   const deleteDictionary = useCallback(async (l2: string) => {
     if (!dbRef.current) return;
     await deleteDictDB(dbRef.current, l2);
+    // Also clean up lemma table (SPEC-018 Phase 2a)
+    try { await deleteLemmaTable(l2); } catch {}
     downloadStatesRef.current.delete(l2);
     setDownloadStatesVersion((v) => v + 1);
   }, []);

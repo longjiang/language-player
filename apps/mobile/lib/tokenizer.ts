@@ -13,11 +13,18 @@
  *   - Surface-as-lemma (~166 languages with no inflections)
  *   - arabic-stem integration (Arabic, ~85% coverage)
  *   - Server POST /lemmatize-normalized as primary (3s timeout)
+ *
+ * Phase 2a — Snowball Stemmers + Lemma Tables:
+ *   - snowball-stemmers (pure JS, ~25 KB per language, bundled)
+ *   - Downloaded lemma tables ({surface → [lemma]} stored in SQLite)
+ *   - Extended fallback: lemma table → snowball → arabic-stem → surface
  */
 
 import Stemmer from 'arabic-stem';
+import Snowball from 'snowball-stemmers';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import type { LemmatizedToken } from '@langplayer/shared';
+import { TOKENIZER_CONFIG } from '@langplayer/shared';
+import type { LemmatizedToken, TokenizerConfig } from '@langplayer/shared';
 
 const arabicStemmer = new Stemmer();
 
@@ -84,7 +91,136 @@ function lemmatizeArabic(words: string[]): LemmatizedToken[] {
   });
 }
 
-// ── Server call ─────────────────────────────────────────────────────
+// ── Snowball stemmer singleton ───────────────────────────────────────
+// Lazily-initialized stemmers, one per language. snowball-stemmers
+// are pure JS (~25 KB each, bundled at build time) — no data files.
+
+const snowballStemmers = new Map<string, (word: string) => string>();
+
+function getSnowballStemmer(snowballCode: string): (word: string) => string {
+  let stemmer = snowballStemmers.get(snowballCode);
+  if (!stemmer) {
+    const instance = Snowball.newStemmer(snowballCode);
+    stemmer = (word: string) => instance.stem(word);
+    snowballStemmers.set(snowballCode, stemmer);
+  }
+  return stemmer;
+}
+
+// ── Local lemmatization (offline fallback) ───────────────────────────
+
+/**
+ * Attempt lemma table lookup for a single surface form.
+ * Returns lemma strings, or null if not found / table not downloaded.
+ */
+async function tryLemmaTable(l2: string, surface: string): Promise<string[] | null> {
+  try {
+    // Dynamic import avoids circular dependency at module load time
+    const { lookupLemma } = await import('@/lib/tokenizer-db');
+    return await lookupLemma(l2, surface);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Apply the full local (offline) lemmatization chain for a batch of words.
+ *
+ * Per-word fallback order:
+ *   1. Lemma table SQLite lookup (if hasLemmaTable and table is downloaded)
+ *   2. Snowball stemmer (if snowballCode is configured)
+ *   3. arabic-stem (if l2 === 'ar')
+ *   4. Surface form as lemma (always available)
+ *
+ * On first call for a language, fires a background download of the lemma
+ * table if one is configured but not yet downloaded. Subsequent calls
+ * benefit from the downloaded table.
+ */
+async function lemmatizeLocal(
+  words: string[],
+  l2: string,
+  config: TokenizerConfig | undefined,
+): Promise<LemmatizedToken[]> {
+  // Fast path: no config at all → surface-as-lemma for everything
+  if (!config) {
+    return surfaceAsLemma(words);
+  }
+
+  // Check if lemma table is downloaded (non-blocking — if it's not ready
+  // yet, we fall through to snowball/surface on this call).
+  let tableReady = false;
+  if (config.hasLemmaTable) {
+    try {
+      const { hasLemmaTable } = await import('@/lib/tokenizer-db');
+      tableReady = await hasLemmaTable(l2);
+    } catch {
+      // DB not open or error — proceed without table
+    }
+  }
+
+  // Pre-warm lemma table lookups if available (batch for efficiency)
+  let lemmaMap: Map<string, string[]> | null = null;
+  if (tableReady) {
+    lemmaMap = new Map();
+    for (const word of words) {
+      const lemmas = await tryLemmaTable(l2, word);
+      if (lemmas) lemmaMap.set(word, lemmas);
+    }
+  }
+
+  // Get snowball stemmer if configured
+  const stemmer = config.snowballCode
+    ? getSnowballStemmer(config.snowballCode)
+    : null;
+
+  // Process each word through the fallback chain
+  return words.map((word) => {
+    // 1. Lemma table
+    if (lemmaMap?.has(word)) {
+      return {
+        text: word,
+        lemmas: lemmaMap.get(word)!.map((l) => ({ lemma: l })),
+      };
+    }
+
+    // 2. Snowball stemmer
+    if (stemmer) {
+      try {
+        const stem = stemmer(word);
+        if (stem && stem !== word) {
+          return { text: word, lemmas: [{ lemma: stem }] };
+        }
+      } catch {
+        // Stemmer error — fall through
+      }
+    }
+
+    // 3. Arabic stemmer (Phase 1)
+    if (l2 === 'ar') {
+      return lemmatizeArabic([word])[0]!;
+    }
+
+    // 4. Surface as lemma
+    return { text: word, lemmas: [{ lemma: word }] };
+  });
+}
+
+// Track which languages we've already attempted background download for
+const lemmaDownloadAttempted = new Set<string>();
+
+/**
+ * Fire-and-forget background download of lemma table.
+ * Called on first local fallback invocation for a language.
+ */
+function backgroundDownloadLemmaTable(l2: string, apiUrl: string): void {
+  if (lemmaDownloadAttempted.has(l2)) return;
+  lemmaDownloadAttempted.add(l2);
+
+  // Don't await — fire and forget
+  import('@/lib/tokenizer-db').then(({ downloadLemmaTable }) => {
+    downloadLemmaTable(l2, apiUrl).catch(() => { /* silent */ });
+  });
+}
 
 /**
  * Fetch tokens from the server with a 3-second timeout.
@@ -184,16 +320,19 @@ export async function lemmatizeText(
           lemmatizeCache.set(cacheKey, serverTokens);
           return serverTokens;
         }
-        // 3. Local fallback
+        // 3. Local fallback — extended chain (Phase 1 + Phase 2a)
         const words = tokenizeWords(text);
-        let tokens: LemmatizedToken[];
-        if (l2 === 'ar') {
-          tokens = lemmatizeArabic(words);
-        } else {
-          tokens = surfaceAsLemma(words);
+        const config = TOKENIZER_CONFIG[l2];
+
+        // Background download for future calls (fire-and-forget)
+        if (config?.hasLemmaTable) {
+          backgroundDownloadLemmaTable(l2, PYTHON_API_URL);
         }
-        lemmatizeCache.set(cacheKey, tokens);
-        return tokens;
+
+        return lemmatizeLocal(words, l2, config).then((tokens) => {
+          lemmatizeCache.set(cacheKey, tokens);
+          return tokens;
+        });
       })
       .finally(() => {
         lemmatizeInflight.delete(cacheKey);
