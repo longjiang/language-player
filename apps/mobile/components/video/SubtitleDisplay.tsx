@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -47,7 +47,7 @@ export function SubtitleDisplay({
   const [l2Lines, setL2Lines] = useState<SubtitleLine[]>([]);
   const [loadingSubs, setLoadingSubs] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<FlatList<SubtitleLine>>(null);
 
   const showTranslation = display.translation;
   const { translatedLines, loading: translating, progress } = useSubtitleTranslation(
@@ -130,7 +130,7 @@ export function SubtitleDisplay({
     if (computedActiveIdx !== activeIdx) {
       setActiveIdx(computedActiveIdx);
       if (computedActiveIdx >= 0 && scrollRef.current) {
-        scrollRef.current.scrollTo({ y: computedActiveIdx * 48, animated: true });
+        scrollRef.current.scrollToIndex({ index: computedActiveIdx, animated: true, viewPosition: 0.5 });
       }
     }
   }, [computedActiveIdx]);
@@ -152,21 +152,30 @@ export function SubtitleDisplay({
   }
 
   return (
-    <ScrollView ref={scrollRef} className="flex-1 px-3">
-      {translating && (
+    <FlatList
+      ref={scrollRef}
+      data={l2Lines}
+      keyExtractor={(_, i) => String(i)}
+      initialNumToRender={10}
+      windowSize={5}
+      maxToRenderPerBatch={10}
+      contentContainerStyle={{ paddingHorizontal: 12 }}
+      onScrollToIndexFailed={() => {
+        // Fallback: approximate scroll by offset (lines may be variable height)
+      }}
+      ListHeaderComponent={translating ? (
         <View className="py-1">
           <Text className="text-xs text-muted-foreground">
             Translating… {progress}/{l2Lines.length}
           </Text>
         </View>
-      )}
-      {l2Lines.map((line, i) => {
+      ) : null}
+      renderItem={({ item: line, index: i }) => {
         const isActive = i === activeIdx;
         const translation = translatedLines[i];
 
         return (
           <Pressable
-            key={i}
             onPress={() => onSeekToLine?.(line.starttime)}
             className={`rounded-lg px-3 py-2 mb-1 ${isActive ? 'bg-primary/10 border border-primary/30' : ''}`}
           >
@@ -184,7 +193,7 @@ export function SubtitleDisplay({
             )}
           </Pressable>
         );
-      })}
-    </ScrollView>
+      }}
+    />
   );
 }
