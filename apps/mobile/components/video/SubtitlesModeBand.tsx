@@ -6,6 +6,7 @@ import { TokenizedText } from '../TokenizedText';
 import { ICON_MUTED, ICON_ON_PRIMARY } from '@/lib/theme-colors';
 import { SkipBack, SkipForward, ChevronLeft, ChevronRight, PanelRightOpen } from 'lucide-react-native';
 import type { TokenCache } from '@langplayer/shared';
+import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 
 interface SubtitleLine {
   starttime: number;
@@ -46,15 +47,9 @@ export function SubtitlesModeBand({
   const { display, playback } = useSettingsContext();
   const showTranslation = display.translation;
 
-  const activeIndex = useMemo(() => {
-    if (subtitleLines.length === 0) return -1;
-    let idx = 0;
-    for (let i = 1; i < subtitleLines.length; i++) {
-      if (subtitleLines[i]!.starttime <= currentTime) idx = i;
-      else break;
-    }
-    return idx;
-  }, [currentTime, subtitleLines]);
+  const startTimes = useMemo(() => subtitleLines.map(l => l.starttime), [subtitleLines]);
+  // defaultIndex=0: in overlay mode, always show the first line even before it starts
+  const activeIndex = useActiveLineIndex(startTimes, currentTime, 0);
 
   const activeLine = activeIndex >= 0 ? subtitleLines[activeIndex] : null;
   const isFirstLine = activeIndex <= 0;
