@@ -216,45 +216,17 @@
 
 ---
 
-## 📋 Features Not Yet Ported at All
+## � Phased Implementation Plan
 
-> **Priority key:** 🔴 High (revenue/blocker) · 🟠 Medium (UX gap) · 🔵 Low (nice-to-have) · ⚪ Polish (auth) · ◻️ N/A
-
-These exist in the Next.js web app but have **no mobile equivalent yet**:
-
-| Feature | Web Source | Priority | Notes |
-|---|---|---|---|
-| In-App Purchase (IAP) | — | 🔴 High | Apple App Store / Google Play Store. See [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 5. |
-| Subscription State (Context) | `use-subscription.ts` | 🔴 High | Unified subscription state management across web & mobile. Requires `SubscriptionContext` in `apps/mobile/contexts/`. See [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 4. |
-| Sale Pricing | — | 🟠 Medium | Show sale banner + discounted prices when `type: 'sale'` prices are active in `prices.csv`. See [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 9. |
-| Channel Subscribe/Actions | `channel-actions-menu.tsx` + `use-channel-preference.ts` | 🟠 Medium | Subscribe, unsubscribe, "not interested" per-channel preferences. Reusable menu component used on watch page and channel cards. |
-| Inline Word Definitions | `inline-definition.tsx` | 🟠 Medium | Saved-words page shows definitions inline with module-level cache (no popup needed). Mobile requires tapping each word to open DictionaryPopup. |
-| Text Action Menu | `text-action-menu.tsx` | 🟠 Medium | Select text in reader → floating menu (speak, copy, AI explain, translate, save). Mobile handles word taps via DictionaryPopup but missing multi-action selection menu. |
-| Notes Sidebar (Web Reader) | `notes-sidebar.tsx` | 🟠 Medium | List of notes with rename/delete in web reader. Mobile web-reader currently has no notes panel. |
-| Saved Word Source | `saved-word-source.tsx` | 🟠 Medium | Shows which video/article a saved word came from. |
-| Dictionary Entry Detail | `dictionary/entry/[dictionaryId]/[entryId]/page.tsx` | 🔵 Low | Deep link target — word detail exists but full entry page missing |
-| Local Tokenizer | — | 🔵 Low | Offline tokenization via local model/WebAssembly. Currently all tokenization requires a round-trip to the Python backend (`POST /dictionary/tokenize`). See [SPEC-016](../../docs/specs/016-mobile-local-tokenization.md). |
-| Interaction Primitives (@rn-primitives) | — | 🔵 Low | Adopt `@rn-primitives` (Dialog, Select, Switch, Tabs, Drawer) for headless interaction behavior. See [ADR-0014](../../docs/adr/0014-rn-primitives-interaction-primitives.md). |
-| Pitch Accent Display | `pitch-accent.tsx` | 🔵 Low | Japanese kana with pitch accent markings (morae splitting + accent kernel). Critical for JP learners. |
-| Script Preference | `use-script-preference.ts` | 🔵 Low | Shows alternate script form next to headwords (simplified↔traditional Chinese, chữ Hán for VI, hanja for KO). |
-| Password Reset (token) | `/password-reset` | ⚪ Polish | Complete after email link click |
-| Verify Email | `/verify-email` | ⚪ Polish | Email verification landing |
-| Delete Account | `/delete-account` | ⚪ Polish | |
-| API routes | `api/` | ◻️ N/A | Not applicable to mobile — uses Python backend directly |
-
----
-
-## 📅 Phased Implementation Plan
-
-> Ordered by priority: revenue → core UX → learner-specific → infrastructure → auth polish.
+> **Priority key:** 🔴 High (revenue/blocker) · 🟠 Medium (UX gap) · 🔵 Low (nice-to-have) · ⚪ Polish (auth)
 
 ### Phase 1: Monetization 🔴
 
-| # | Feature | Effort | Dependencies | Spec |
-|---|---|---|---|---|
-| 1.1 | Subscription State Context | S | None | [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 4 |
-| 1.2 | In-App Purchase (IAP) | L | 1.1 (needs context for feature gating) | [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 5 |
-| 1.3 | Sale Pricing | M | 1.1 | [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 9 |
+| # | Feature | Web Source | Effort | Dependencies | Notes |
+|---|---|---|---|---|---|
+| 1.1 | Subscription State (Context) | `use-subscription.ts` | S | None | Unified subscription state across web & mobile. Requires `SubscriptionContext` in `apps/mobile/contexts/`. Fetches `/user-subscription`, exposes `isPro`/`planType`/`willAutoRenew`/`cancelSubscription()`. See [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 4. |
+| 1.2 | In-App Purchase (IAP) | — | L | 1.1 (needs context for feature gating) | Apple App Store / Google Play Store. **Nuxt classic had it** (`@ionic-native/in-app-purchase-2` + Capacitor). **GO legacy had it but removed** (`react-native-iap` removed for SDK 57 compatibility). **Python backend validates Apple receipts** (`app_in_app_purchase.py` via `inapppy.AppStoreValidator`). See [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 5. |
+| 1.3 | Sale Pricing | — | M | 1.1 | Show sale banner + discounted prices when `type: 'sale'` prices are active in `prices.csv`. Sale detection logic from Classic app. See [SPEC-014](../../docs/specs/014-subscription-payment-system.md) Phase 9. |
 
 **Goal:** App Store submission readiness. IAP is a hard requirement for iOS App Store; SubscriptionContext is a prerequisite for both IAP and sale pricing.
 
@@ -262,42 +234,42 @@ These exist in the Next.js web app but have **no mobile equivalent yet**:
 
 ### Phase 2: Saved Words UX 🟠
 
-| # | Feature | Effort | Dependencies | Notes |
-|---|---|---|---|---|
-| 2.1 | Inline Word Definitions | M | None | Module-level cache + IntersectionObserver-style lazy load. Eliminates tap-to-open-popup friction on saved-words screen. |
-| 2.2 | Saved Word Source | S | None | Shows originating video/article for each saved word. |
+| # | Feature | Web Source | Effort | Dependencies | Notes |
+|---|---|---|---|---|---|
+| 2.1 | Inline Word Definitions | `inline-definition.tsx` | M | None | Saved-words page shows definitions inline with module-level cache (no popup needed). Eliminates tap-to-open-popup friction — the #1 UX gap for daily vocab review. |
+| 2.2 | Saved Word Source | `saved-word-source.tsx` | S | None | Shows which video/article a saved word came from. |
 
-**Goal:** Bring saved-words browsing to parity with web. Currently mobile requires tapping every word individually to see its definition — the #1 UX gap for daily vocab review.
-
----
-
-### Phase 3: Reader Experience 🟡
-
-| # | Feature | Effort | Dependencies | Notes |
-|---|---|---|---|---|
-| 3.1 | Text Action Menu | M | None | Floating menu on text selection: speak, copy, AI explain, translate, save. Web uses portal-based positioning; mobile needs a bottom sheet or contextual overlay. |
-| 3.2 | Notes Sidebar (Web Reader) | M | None | Note list with rename/delete in web reader. Requires `useReaderNotes` integration into the web-reader screen. |
-
-**Goal:** Complete the reader experience. Text selection actions are expected by users coming from web; notes sidebar is already noted as missing in the web-reader STATUS entry.
+**Goal:** Bring saved-words browsing to parity with web. Currently mobile requires tapping every word individually to see its definition.
 
 ---
 
-### Phase 4: Content Discovery 🟡
+### Phase 3: Reader Experience 🟠
 
-| # | Feature | Effort | Dependencies | Notes |
-|---|---|---|---|---|
-| 4.1 | Channel Subscribe/Actions | M | `use-channel-preference` hook | Subscribe, unsubscribe, "not interested" per channel. Affects video recommendations. Reusable component — appears on watch page and channel cards. |
+| # | Feature | Web Source | Effort | Dependencies | Notes |
+|---|---|---|---|---|---|
+| 3.1 | Text Action Menu | `text-action-menu.tsx` | M | None | Select text in reader → floating menu (speak, copy, AI explain, translate, save). Web uses portal-based positioning; mobile needs a bottom sheet or contextual overlay. |
+| 3.2 | Notes Sidebar (Web Reader) | `notes-sidebar.tsx` | M | None | Note list with rename/delete in web reader. Requires `useReaderNotes` integration into the web-reader screen. |
+
+**Goal:** Complete the reader experience. Text selection actions are expected by users coming from web; notes sidebar is noted as missing in the web-reader entry above.
+
+---
+
+### Phase 4: Content Discovery 🟠
+
+| # | Feature | Web Source | Effort | Dependencies | Notes |
+|---|---|---|---|---|---|
+| 4.1 | Channel Subscribe/Actions | `channel-actions-menu.tsx` + `use-channel-preference.ts` | M | `use-channel-preference` hook | Subscribe, unsubscribe, "not interested" per-channel preferences. Reusable menu component — appears on watch page and channel cards. Affects video recommendations. |
 
 **Goal:** Channel preferences influence content recommendations and let users curate their feed.
 
 ---
 
-### Phase 5: CJK Language Support 🟢
+### Phase 5: CJK Language Support 🔵
 
-| # | Feature | Effort | Dependencies | Notes |
-|---|---|---|---|---|
-| 5.1 | Script Preference | S | None | Simplified↔traditional Chinese, chữ Hán (VI), hanja (KO). Pure display logic — reads existing settings, shows alternate script beside headwords. |
-| 5.2 | Pitch Accent Display | S | None | Japanese kana with pitch accent markings. `@langplayer/utils` already exports `splitIntoMoras` + `applyPitchAccent`. |
+| # | Feature | Web Source | Effort | Dependencies | Notes |
+|---|---|---|---|---|---|
+| 5.1 | Script Preference | `use-script-preference.ts` | S | None | Shows alternate script form next to headwords (simplified↔traditional Chinese, chữ Hán for VI, hanja for KO). Pure display logic — reads existing settings. |
+| 5.2 | Pitch Accent Display | `pitch-accent.tsx` | S | None | Japanese kana with pitch accent markings (morae splitting + accent kernel). `@langplayer/utils` already exports `splitIntoMoras` + `applyPitchAccent`. |
 
 **Goal:** Critical display features for Chinese, Japanese, Korean, and Vietnamese learners. Both are small, self-contained components.
 
@@ -305,11 +277,11 @@ These exist in the Next.js web app but have **no mobile equivalent yet**:
 
 ### Phase 6: Infrastructure & Polish 🔵
 
-| # | Feature | Effort | Dependencies | Notes |
-|---|---|---|---|---|
-| 6.1 | Interaction Primitives (@rn-primitives) | L | None (incremental adoption) | Replace current UI primitives with headless interaction behavior. See [ADR-0014](../../docs/adr/0014-rn-primitives-interaction-primitives.md). |
-| 6.2 | Local Tokenizer | XL | Offline dictionary downloads (SPEC-013) | Offline tokenization via local model/WebAssembly. See [SPEC-016](../../docs/specs/016-mobile-local-tokenization.md). |
-| 6.3 | Dictionary Entry Detail (full page) | M | None | Full entry page at `word/[entryId]` for deep linking. Current mobile word detail covers ~80% of the web page. |
+| # | Feature | Web Source | Effort | Dependencies | Notes |
+|---|---|---|---|---|---|
+| 6.1 | Interaction Primitives (@rn-primitives) | — | L | None (incremental adoption) | Replace current UI primitives with headless interaction behavior (Dialog, Select, Switch, Tabs, Drawer). Wrapped with NativeWind + shared design tokens. Mirrors web's `@base-ui/react` adoption. See [ADR-0014](../../docs/adr/0014-rn-primitives-interaction-primitives.md). |
+| 6.2 | Local Tokenizer | — | XL | Offline dictionary downloads (SPEC-013) | Offline tokenization via local model/WebAssembly. Currently all tokenization requires a round-trip to the Python backend (`POST /dictionary/tokenize`). See [SPEC-016](../../docs/specs/016-mobile-local-tokenization.md). |
+| 6.3 | Dictionary Entry Detail (full page) | `dictionary/entry/[dictionaryId]/[entryId]/page.tsx` | M | None | Deep link target — current mobile word detail covers ~80% of the web page. Full entry page at `word/[entryId]`. |
 
 **Goal:** Architecture improvements and deep linking support. Local tokenizer is the largest remaining feature — enables fully offline reading.
 
@@ -317,13 +289,15 @@ These exist in the Next.js web app but have **no mobile equivalent yet**:
 
 ### Phase 7: Auth Completion ⚪
 
-| # | Feature | Effort | Dependencies | Notes |
-|---|---|---|---|---|
-| 7.1 | Password Reset | S | Backend email config | Complete flow after email link click. |
-| 7.2 | Verify Email | S | Backend email config | Email verification landing page. |
-| 7.3 | Delete Account | S | None | Account deletion confirmation flow. |
+| # | Feature | Web Source | Effort | Dependencies | Notes |
+|---|---|---|---|---|---|
+| 7.1 | Password Reset (token) | `/password-reset` | S | Backend email config | Complete flow after email link click. |
+| 7.2 | Verify Email | `/verify-email` | S | Backend email config | Email verification landing page. |
+| 7.3 | Delete Account | `/delete-account` | S | None | Account deletion confirmation flow. |
 
 **Goal:** Complete auth lifecycle. Web already handles these — mobile needs them for standalone app store distribution.
+
+> **Note:** Web API routes (`apps/web/src/app/api/`) are not applicable to mobile — the app calls the Python backend directly.
 
 ---
 
