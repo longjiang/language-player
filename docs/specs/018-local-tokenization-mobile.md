@@ -591,11 +591,13 @@ Similar to Khmer but with even more stacking complexity:
 
 ## Recommended Architecture
 
-### Tiered Approach
+### Offline Fallback Chains
+
+When the server is reachable, `POST /lemmatize-normalized` is always preferred — it handles both tokenization and lemmatization with best accuracy. The chains below apply only when the server is unreachable.
 
 ```
 ┌─────────────────────────────────────────────────┐
-│              Tokenization Pipeline               │
+│         Tokenization (offline chain)             │
 │                                                  │
 │  Level 1: Intl.Segmenter (built-in, 0 KB)       │
 │  ├─ iOS: JSC native support (zh, ja, ko, th,    │
@@ -614,11 +616,8 @@ Similar to Khmer but with even more stacking complexity:
 │  ├─ Pattern: /[\w']+|[^\w\s']+/g                 │
 │  └─ Handles apostrophes, punctuation              │
 │                                                  │
-│  Level 4: Server Fallback (online)               │
-│  └─ POST /lemmatize-normalized                   │
-│                                                  │
 ├─────────────────────────────────────────────────┤
-│             Lemmatization Pipeline               │
+│         Lemmatization (offline chain)            │
 │                                                  │
 │  Level 1: Pre-Built Lemma Tables (bundled)       │
 │  ├─ Top 10 languages bundled as assets           │
@@ -635,9 +634,6 @@ Similar to Khmer but with even more stacking complexity:
 │                                                  │
 │  Level 4: Surface Form as Lemma (Chinese, etc.)  │
 │  └─ No lemmatization needed                      │
-│                                                  │
-│  Level 5: Server Fallback (online)               │
-│  └─ POST /lemmatize-normalized                   │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -647,7 +643,7 @@ Similar to Khmer but with even more stacking complexity:
 |---|---|---|---|
 | **Chinese** | Intl.Segmenter or dict max-match | Surface = lemma (none needed) | 0 KB |
 | **Japanese** | Intl.Segmenter or tiny-segmenter | Surface = lemma (mostly) | 0–100 KB |
-| **Korean** | Space split + Intl.Segmenter | Pre-built stem table or server fallback | ~200 KB (stem table) |
+| **Korean** | Space split + Intl.Segmenter | Pre-built stem table (server primary when reachable) | ~200 KB (stem table) |
 | **Thai, Khmer, Burmese, Lao** | Intl.Segmenter or dict max-match | Surface = lemma (none needed) | 0 KB |
 | **Arabic, Persian** | Space split (spaces exist) | Pre-built lemma table | ~300 KB each |
 | **Turkish** | Space split | Suffix rules + lemma table | ~150 KB |
@@ -721,7 +717,206 @@ Phase 1 covers the biggest wins at zero bundle cost:
 | Regex word-split tokenizer | All 207 (trivial) |
 | Surface-as-lemma | Categories B, D (vi, hi, tlh, id), E = **~166 languages** |
 | `arabic-stem` (zero-dep, 15 KB) | Arabic — stemmer covers ~85% of forms |
-| Server fallback (`POST /lemmatize-normalized`) | Everything else when offline packs aren't downloaded |
+| Server (`POST /lemmatize-normalized`, primary) | Languages without downloaded packs (always preferred when reachable) |
+
+### Architecture: `lemmatizeText()` Entry Point
+
+A single async function in `apps/mobile/lib/tokenizer.ts` implements the server-first, local-fallback pipeline. Every component in the app calls this one function — including `TokenizedText`, the reader, and dictionary search — instead of hitting the server directly.
+
+```
+lemmatizeText(text, l2)
+  │
+  ├─ 1. In-memory cache hit? ────→ return cached tokens (instant)
+  │
+  ├─ 2. POST /lemmatize-normalized (with 3s timeout)
+  │      ├─ success ──────────────→ cache & return server tokens
+  │      └─ timeout / network err ─→ fall through
+  │
+  ├─ 3. Local fallback chain
+  │      ├─ arabic-stem (if l2=ar) ─────→ stemmed tokens
+  │      ├─ regex word-split ───────────→ per-token split
+  │      └─ surface-as-lemma ──────────→ each token is its own lemma
+  │
+  └─ 4. Return result (may be empty array on total failure)
+```
+
+### Server Call with Timeout
+
+The server call wraps `fetch` with a short timeout so offline users don't wait:
+
+```typescript
+async function lemmatizeFromServer(text: string, l2: string, signal?: AbortSignal): Promise<LemmatizedToken[] | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
+
+  try {
+    const response = await fetch(`${PYTHON_API_URL}/lemmatize-normalized`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, l2 }),
+      signal: signal ? anySignal(signal, controller.signal) : controller.signal,
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.tokens as LemmatizedToken[];
+  } catch {
+    return null; // network error or timeout → fall through to local
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+```
+
+The timeout is intentionally short (3 seconds). If the server is reachable, tokenization completes in <500ms. If not, we fail fast and use local fallback rather than hanging the UI.
+
+### Regex Tokenizer
+
+Pure-function, no dependencies, works for all 207 languages at baseline:
+
+```typescript
+function tokenizeWords(text: string): string[] {
+  // Matches word tokens (including apostrophes for contractions like "don't")
+  // and punctuation tokens separately
+  return text.match(/[\w']+|[^\w\s']+/g) ?? [];
+}
+```
+
+### Surface-as-Lemma Wrapper
+
+For the ~166 languages in Categories B, D (vi, hi, tlh, id), and E where surface form = lemma:
+
+```typescript
+function surfaceAsLemma(tokens: string[]): LemmatizedToken[] {
+  return tokens.map((token) => ({
+    text: token,
+    lemmas: [{ lemma: token.toLowerCase(), probability: 1.0 }],
+  }));
+}
+```
+
+Lowercasing is safe for these languages — Chinese characters have no case, and the other languages use scripts without case distinctions.
+
+### Arabic-Stem Integration
+
+For Arabic text, a zero-dependency stemmer gives ~85% accuracy without any downloaded dictionary. When the server is unreachable, Arabic text is first stemmed, then the stem is used as the lemma:
+
+```typescript
+import Stemmer from 'arabic-stem';
+
+const arabicStemmer = new Stemmer();
+
+function lemmatizeArabic(tokens: string[]): LemmatizedToken[] {
+  return tokens.map((token) => {
+    // Only stem word-like tokens (skip punctuation)
+    if (!/^[\w]+$/.test(token)) {
+      return { text: token, lemmas: [{ lemma: token, probability: 1.0 }] };
+    }
+    const result = arabicStemmer.stem(token);
+    // The stemmer returns multiple stem candidates; use the first (most common)
+    const stem = result.stem[0] ?? token;
+    return {
+      text: token,
+      lemmas: [{ lemma: stem, probability: 1.0 }],
+    };
+  });
+}
+```
+
+The stemmer is instantiated once as a module-level singleton — no per-call overhead. At 15 KB bundled, it adds negligible size.
+
+### `lemmatizeText()` — Full Pipeline
+
+```typescript
+// Shared in-memory cache (keyed by `${l2}:${text}`) — deduplicates across
+// all TokenizedText instances for identical text strings.
+const lemmatizeCache = new Map<string, LemmatizedToken[]>();
+
+export async function lemmatizeText(
+  text: string,
+  l2: string,
+  signal?: AbortSignal,
+): Promise<LemmatizedToken[]> {
+  const cacheKey = `${l2}:${text}`;
+
+  // 1. In-memory cache
+  const cached = lemmatizeCache.get(cacheKey);
+  if (cached) return cached;
+
+  // 2. Server (primary — always try first when reachable)
+  const serverTokens = await lemmatizeFromServer(text, l2, signal);
+  if (serverTokens) {
+    lemmatizeCache.set(cacheKey, serverTokens);
+    return serverTokens;
+  }
+
+  // 3. Local fallback
+  const words = tokenizeWords(text);
+  let tokens: LemmatizedToken[];
+
+  if (l2 === 'ar') {
+    tokens = lemmatizeArabic(words);
+  } else {
+    tokens = surfaceAsLemma(words);
+  }
+
+  lemmatizeCache.set(cacheKey, tokens);
+  return tokens;
+}
+```
+
+### Integration into `TokenizedText`
+
+Currently, `TokenizedText` calls `POST /lemmatize-normalized` directly and shows plain text on failure. Phase 1 replaces that direct call with `lemmatizeText()`:
+
+**Before** (current `TokenizedText.tsx`, simplified):
+```typescript
+const response = await fetch(`${PYTHON_API_URL}/lemmatize-normalized`, { ... });
+const data = await response.json();
+const serverTokens = data.tokens ?? [];
+// On error: falls through to empty tokens, renders plain text
+```
+
+**After** (Phase 1):
+```typescript
+import { lemmatizeText } from '@/lib/tokenizer';
+
+const result = await lemmatizeText(text, l2Code, signal);
+// Server tried first (3s timeout). If unreachable, local fallback kicks in.
+// Result always has tokens — never empty on error.
+setTokens(result);
+setLoading(false);
+```
+
+The change is a single import swap + one function call. No downstream effects — `lemmatizeText()` returns the same `LemmatizedToken[]` shape that `POST /lemmatize-normalized` returns.
+
+### Integration into Dictionary Search
+
+Reader and dictionary search also call `/lemmatize-normalized` for lemmatizing query text. These routes switch to `lemmatizeText()` the same way:
+
+| Call Site | Current | Phase 1 |
+|---|---|---|
+| `TokenizedText` (subtitles, reader) | `fetch(POST /lemmatize-normalized)` | `lemmatizeText(text, l2, signal)` |
+| Dictionary search input | `fetch(POST /lemmatize-normalized)` | `lemmatizeText(text, l2, signal)` |
+| Batch lemmatization (reader chapters) | `fetch(POST /lemmatize-normalized/batch)` | Keeps batch endpoint (perf optimization) |
+
+### Error Handling Strategy
+
+| Scenario | Behavior |
+|---|---|
+| Server reachable, returns 200 | Use server result (best accuracy) |
+| Server reachable, returns 4xx/5xx | Fall through to local fallback |
+| Server unreachable (timeout 3s) | Fall through to local fallback |
+| Server unreachable (instant, airplane mode) | `fetch` rejects immediately → local fallback |
+| Local fallback runs | Returns regex-split + surface-as-lemma (lower accuracy, always available) |
+| All paths fail | Returns empty `[]` (caller shows plain text) |
+
+Server errors are silent — no toast, no console noise for offline scenarios. The system degrades gracefully without user awareness.
+
+### Files to Create
+
+| File | Contents |
+|---|---|
+| `apps/mobile/lib/tokenizer.ts` | `lemmatizeText()`, `lemmatizeFromServer()`, `tokenizeWords()`, `surfaceAsLemma()`, `lemmatizeArabic()` |
 
 ## Phase 2 — Downloadable Language Packs
 
@@ -884,6 +1079,8 @@ Footer shows total offline tokenizer storage used vs. available, identical to SP
 
 | File | Change |
 |---|---|
+| `apps/mobile/lib/tokenizer.ts` | **NEW** — `lemmatizeText()` entry point: server-first, local-fallback pipeline (Phase 1) |
+| `apps/mobile/components/TokenizedText.tsx` | Replace direct `fetch(POST /lemmatize-normalized)` with `lemmatizeText()` call |
 | `apps/mobile/app/(tabs)/(me)/offline-tokenizers.tsx` | **NEW** — Tokenizer download management screen |
 | `apps/mobile/app/(tabs)/(me)/settings.tsx` | Add "Offline Tokenizers" tab |
 | `apps/mobile/lib/tokenizer-db.ts` | **NEW** — SQLite table for downloaded tokenizer/lemma packs, lookup functions |
