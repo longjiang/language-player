@@ -18,7 +18,9 @@ export function DictionaryEntryCard({ entry, variant = 'compact', onPress, l2Cod
   const t = useT();
   const { apply, getAlternateScript } = useScriptPreference(l2Code);
   const { head, alternate } = apply(entry.head, entry.alternate);
-  const displayAlternate = getAlternateScript(entry);
+  // Pass the post-swap values so getAlternateScript uses the correct
+  // head↔alternate pairing (e.g., traditional head → simplified alternate).
+  const displayAlternate = getAlternateScript({ ...entry, head, alternate });
 
   const levelTexts = (entry.levels ?? []).map((l) => formatLevel({ scale: l.scale, value: l.value }).short);
   const definitions = entry.definitions?.slice(0, variant === 'compact' ? 2 : undefined) ?? [];
