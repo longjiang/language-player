@@ -499,7 +499,7 @@ export default function ReviewScreen() {
                     {fetchingEntries && !entry ? (
                       <ActivityIndicator size="small" color={ICON_MUTED} />
                     ) : entry ? (
-                      <DictionaryEntryCard entry={entry} variant="full" />
+                      <DictionaryEntryCard entry={entry} variant="full" l2Code={l2Lang.code} />
                     ) : (
                       <Text className="text-center text-sm italic text-muted-foreground">
                         {t('review.no_definition_available')}

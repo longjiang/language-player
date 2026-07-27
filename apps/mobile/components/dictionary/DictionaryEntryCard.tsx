@@ -3,19 +3,32 @@ import { View, Text, Pressable } from 'react-native';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
+import { useScriptPreference } from '@/hooks/use-script-preference';
+import { PitchAccent } from '@/components/PitchAccent';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
   variant?: 'compact' | 'full';
   onPress?: (entry: DictionaryEntry) => void;
+  /** ISO 639-1 code of the target language (for script preference + pitch accent). */
+  l2Code?: string;
 }
 
-export function DictionaryEntryCard({ entry, variant = 'compact', onPress }: DictionaryEntryCardProps) {
+export function DictionaryEntryCard({ entry, variant = 'compact', onPress, l2Code = '' }: DictionaryEntryCardProps) {
   const t = useT();
+  const { apply, getAlternateScript } = useScriptPreference(l2Code);
+  const { head, alternate } = apply(entry.head, entry.alternate);
+  const displayAlternate = getAlternateScript(entry);
 
   const levelTexts = (entry.levels ?? []).map((l) => formatLevel({ scale: l.scale, value: l.value }).short);
   const definitions = entry.definitions?.slice(0, variant === 'compact' ? 2 : undefined) ?? [];
   const isFull = variant === 'full';
+
+  // Pitch accent for Japanese: show next to pronunciation when data is available
+  const hasPitchAccent = l2Code === 'ja'
+    && entry.phonetic_detail?.kana
+    && entry.phonetic_detail?.pitch_accent
+    && entry.phonetic_detail.pitch_accent.length > 0;
 
   // NOTE: Do NOT use web-only pseudo-classes like `active:bg-muted` in React Native.
   // NativeWind in RN does not support `active:` — it silently blocks Pressable touch
@@ -24,15 +37,30 @@ export function DictionaryEntryCard({ entry, variant = 'compact', onPress }: Dic
 
   const content = (
     <View className="rounded-xl border border-border bg-card p-4">
-      {/* Head word + pronunciation */}
-      <View className="flex-row items-baseline gap-2">
+      {/* Head word + alternate script + pronunciation */}
+      <View className="flex-row items-baseline gap-2 flex-wrap">
         <Text className={`font-bold text-foreground ${isFull ? 'text-3xl' : 'text-lg'}`}>
-          {entry.head}
+          {head}
         </Text>
+        {displayAlternate && displayAlternate !== head && (
+          <Text className="text-xs text-muted-foreground" lang={l2Code}>
+            {displayAlternate}
+          </Text>
+        )}
         {entry.pronunciation ? (
           <Text className="text-sm text-muted-foreground">{entry.pronunciation}</Text>
         ) : null}
       </View>
+
+      {/* Pitch accent (Japanese) */}
+      {hasPitchAccent && (
+        <View className="mt-1">
+          <PitchAccent
+            kana={entry.phonetic_detail!.kana!}
+            patterns={entry.phonetic_detail!.pitch_accent!}
+          />
+        </View>
+      )}
 
       {/* Level badges */}
       {levelTexts.length > 0 && (

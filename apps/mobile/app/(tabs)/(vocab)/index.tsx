@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, FlatList, ActivityIndicator, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@/hooks/use-t';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { SearchBar } from '@/components/dictionary/SearchBar';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
@@ -11,6 +12,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
 
 export default function DictionaryScreen() {
+  const { l2Lang } = useLanguage();
   const t = useT();
   const router = useRouter();
   const {
@@ -147,7 +149,7 @@ export default function DictionaryScreen() {
           renderItem={({ item }) => (
             <View className="px-4 py-1"
               onTouchEnd={() => console.log('[Dict] FlatList item touch — id:', item.id, 'head:', item.head)}>
-              <DictionaryEntryCard entry={item} onPress={handleEntryPress} />
+              <DictionaryEntryCard entry={item} onPress={handleEntryPress} l2Code={l2Lang.code} />
             </View>
           )}
           className="mt-2"
