@@ -10,7 +10,7 @@
 
 The mobile app (`apps/mobile/`) has 30+ screens across 4 tabs (Media, Reading, Vocab, Me), 9 React Contexts, 20 hooks, and native modules (SQLite, SecureStore, expo-video, expo-speech, expo-in-app-purchases, etc.). Currently there are **zero E2E tests** and only unit tests exist in `apps/web/` (vitest for shared utils). As the app prepares for App Store submission (replacing the Classic Nuxt binary per ADR-0013), E2E tests are critical to catch regressions in auth flows, language state, offline tokenization, and user flows that unit tests can't cover.
 
-This spec covers the full E2E testing strategy: tool selection, test environment setup, CI integration, and a prioritized test case catalog covering every major user flow.
+This spec covers the full E2E testing strategy: tool selection, test environment setup, and a prioritized test case catalog covering every major user flow.
 
 ## Tool Selection: Maestro
 
@@ -21,7 +21,7 @@ This spec covers the full E2E testing strategy: tool selection, test environment
 | Setup complexity | Low — install CLI, no native config | High — native build config, device registry | High — server setup, driver config |
 | Expo compatibility | ✅ Works with Expo Go + dev builds | ⚠️ Requires dev build + detox-native setup | ⚠️ Works but needs appium-xcuitest-driver |
 | Flow authoring | YAML (human-readable, git-friendly) | JS/TS (Jest + async/await) | JS/TS (WebDriverIO or similar) |
-| CI integration | ✅ Native GitHub Action | ✅ via Detox CLI | ✅ via Appium service |
+| Platform integration | ✅ Native CLI, easy to script | ✅ via Detox CLI | ✅ via Appium service |
 | Wait-for-element | ✅ Built-in, no manual sleep | ✅ Built-in | ✅ But more verbose |
 | Gesture support | Swipe, scroll, tap, long-press | Swipe, scroll, tap | Tap, scroll (via TouchAction) |
 | Run speed | Fast (no instrumentation) | Moderate (compiled binary) | Slow (client-server protocol) |
@@ -38,24 +38,15 @@ Tests always run on an **iOS simulator** — whether using Expo Go or a dev buil
 1. **`appId` mismatch** — Expo Go runs as `host.exp.Exponent`, not `ca.zerotohero.app`. Maestro identifies the app by `appId`, so targeting `ca.zerotohero.app` won't find your app when running inside Expo Go.
 2. **Native module availability** — Several features used by tests (SQLite, SecureStore, expo-video, expo-speech) require native modules that are already bundled in a dev build.
 3. **New Architecture compatibility** — A dev build uses the exact same build pipeline (Fabric, TurboModules) as the production binary. Expo Go uses its own pre-built RN binary.
-4. **CI reliability** — A pre-built `.app` can be installed deterministically on the simulator, avoiding the fragile deep-link-into-Expo-Go dance.
+4. **Deterministic install** — A pre-built `.app` can be installed on the simulator programmatically via `xcrun simctl install`, unlike Expo Go's deep-link dance.
 
-**Cost:** Free. No EAS subscription needed. Build locally on the CI runner or on your Mac and cache the `.app` artifact.
-
-**Build locally (once):**
+**Build locally (one time, ~15-20 min):**
 ```bash
 cd apps/mobile
 npx expo run:ios --configuration Release
 # Output: ios/build/Build/Products/Release-iphonesimulator/ZeroToHero.app
 ```
-
-**CI: use a cached pre-built `.app`:**
-```bash
-# Build once, upload to GitHub Actions artifact cache, download in CI:
-# .github/actions/cached-app/action.yml handles:
-# - Restore .app from cache (keyed by git hash of apps/mobile/ **/*.tsx)
-# - On cache miss: build with `expo run:ios`, upload result
-```
+Rebuild only when dependencies or native code change.
 
 
 ## Test Environment
@@ -66,7 +57,6 @@ npx expo run:ios --configuration Release
 |---|---|---|---|
 | **Local dev** | `http://127.0.0.1:5001` (Flask) | Dev backend (Flask → Directus) | Test credentials (Mary/Bob from AGENTS.md) |
 | **Staging** | Staging Flask server | Staging backend | Dedicated test accounts |
-| **CI (GitHub Actions)** | Live staging Flask server (or local Flask + staging Directus) | Staging backend | CI-only test accounts |
 
 > **Note:** Per [SPEC-024](./024-consolidate-directus-calls.md), all Directus calls now route through the Flask backend. E2E tests hit the real staging Flask server — no mock server needed. This means tests verify actual backend behavior but depend on network and test data availability.
 
@@ -81,7 +71,7 @@ Maintain dedicated E2E test accounts (not Mary/Bob, which are manual test accoun
 | `e2e.unverified@zerotohero.ca` | Unverified email | Test verify-email flow, resend |
 | `e2e.new@zerotohero.ca` | New user, no L2 set | Test onboarding flow |
 
-Passwords stored in GitHub Actions secrets + local `.env.e2e`.
+Passwords stored in local `.env.e2e` (gitignored).
 
 ### Recommended Tooling
 
@@ -133,7 +123,7 @@ env:
   TIMEOUT: 15000
 ```
 
-> **Note:** `DIRECTUS_URL` removed per SPEC-024. All backend calls go through `FLASK_URL`. If using a mocked Flask server, set `EXPO_PUBLIC_API_URL` to the mock server address in the build environment; the app never reads `FLASK_URL` from Maestro config (that's for the setup script).
+> **Note:** `DIRECTUS_URL` removed per SPEC-024. All backend calls go through `FLASK_URL`. Set `EXPO_PUBLIC_API_URL` in your build environment to point to your local Flask server. The app never reads `FLASK_URL` from Maestro config (that's for the setup script).
 
 ## Execution Modes
 
@@ -141,16 +131,16 @@ Every test case is tagged with one of two execution modes:
 
 | Mode | Icon | Description | Who runs it | Frequency |
 |---|---|---|---|---|
-| **auto** | 🤖 | Fully automated via Maestro YAML flow. No human judgement required. Element visibility, text content, and navigation state verified programmatically. | CI (every PR / nightly) | Every PR touching `apps/mobile/` |
-| **human** | 🧑 | Must be performed by a person. Requires: audio verification (TTS), visual layout inspection (iPad split view / karaoke / theme colors), network state simulation (Airplane Mode), or multi-device setup (concurrent sessions). | Developer / QA | Pre-submission or nightly |
+| **auto** | 🤖 | Fully automated via Maestro YAML flow. No human judgement required. Element visibility, text content, and navigation state verified programmatically. | Developer (before every commit) | Every time `apps/mobile/` changes |
+| **human** | 🧑 | Must be performed by a person. Requires: audio verification (TTS), visual layout inspection (iPad split view / karaoke / theme colors), network state simulation (Airplane Mode), or multi-device setup (concurrent sessions). | Developer | Pre-submission or weekly |
 
 The goal is to maximize the **auto** count. See the [Risks and Mitigations](#risks-and-mitigations) section for strategies to convert human tests to auto over time.
 
 ## Test Case Catalog
 
-### Tier 0 — Smoke Test (CI gate, ~30s)
+### Tier 0 — Smoke Test (pre-commit gate, ~30s)
 
-Every commit to `apps/mobile/` runs the smoke suite. It verifies the app launches and core navigation works.
+Run before every commit to `apps/mobile/`. It verifies the app launches and core navigation works.
 
 | # | Mode | Flow | Steps | Assertions |
 |---|---|---|---|---|
@@ -300,101 +290,38 @@ All iPad layout tests are **human** — every assertion is visual (column counts
 | L6 | 🧑 human | Concurrent sessions | Login on two devices → save word on one → sync | Word appears on second device — requires two devices or simulator instances |
 | L7 | 🧑 human | Push notification (if added) | Receive notification → tap | Navigates to correct screen — push notifications not yet implemented |
 
-## CI Integration
+## Test Execution Strategy
 
-### GitHub Actions Workflow
+All tests run on the developer's Mac against the local simulator. There is no cloud CI — every developer runs tests directly.
 
-```yaml
-# .github/workflows/mobile-e2e.yml
-name: Mobile E2E
-on:
-  pull_request:
-    paths:
-      - 'apps/mobile/**'
-      - 'packages/**'
-  workflow_dispatch:
-
-jobs:
-  maestro:
-    runs-on: macos-14  # M1 runner for iOS sim
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - uses: mobile-dev-inc/setup-maestro@v2
-      - name: Install dependencies
-        run: |
-          cd apps/mobile && npm ci
-
-      - name: Restore cached dev build
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: apps/mobile/ios/build/Build/Products/Release-iphonesimulator/ZeroToHero.app
-          key: ios-dev-build-${{ hashFiles('apps/mobile/**/*.tsx', 'apps/mobile/**/*.ts', 'apps/mobile/ios/Podfile.lock', 'apps/mobile/package.json') }}
-
-      - name: Build dev build (cache miss)
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          cd apps/mobile
-          npx expo run:ios --configuration Release
-
-      - name: Pre-clean simulator
-        run: |
-          xcrun simctl boot "iPhone 15 Pro" 2>/dev/null || true
-          xcrun simctl uninstall booted ca.zerotohero.app || true
-
-      - name: Install app on simulator
-        run: |
-          xcrun simctl install booted \
-            apps/mobile/ios/build/Build/Products/Release-iphonesimulator/ZeroToHero.app
-
-      - name: Wait for Metro bundler
-        run: |
-          cd apps/mobile && npx expo start --ios --no-dev &
-          # Poll Metro until ready (avoids hardcoded sleep)
-          for i in $(seq 1 60); do
-            curl -s http://localhost:8081 > /dev/null 2>&1 && break
-            sleep 1
-          done
-
-      - name: Set EXPO_PUBLIC_API_URL for staging backend
-        run: |
-          echo "EXPO_PUBLIC_API_URL=${{ secrets.STAGING_FLASK_URL }}" >> $GITHUB_ENV
-        run: |
-          cd apps/mobile && npx expo start --ios --no-dev &
-          # Poll Metro until ready (avoids hardcoded sleep)
-          for i in $(seq 1 60); do
-            curl -s http://localhost:8081 > /dev/null 2>&1 && break
-            sleep 1
-          done
-
-      - name: Run Maestro smoke tests
-        run: maestro test apps/mobile/e2e/smoke.yaml --env-file .env.e2e
-
-      - name: Run Maestro full regression
-        run: maestro test apps/mobile/e2e/regression.yaml --env-file .env.e2e
-
-      - name: Upload test artifacts
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: maestro-failures
-          path: ~/.maestro/tests/**/*.png
-```
-
-### Test Execution Strategy
-
-| Trigger | Suite | Mode | Environment | Expected Time |
+| When | What to run | Mode | Environment | Expected Time |
 |---|---|---|---|---|
-| Every PR touching `apps/mobile/` | Smoke (S1-S4) | auto only | CI + staging Flask + pre-built .app | ~2min (incl. app install) |
-| Every PR touching `apps/mobile/` | Tiers 1-3 (auto tests only) | auto only | CI + staging Flask + pre-built .app | ~12min |
-| Nightly | All auto tests (Tiers 1-10) | auto only | CI + staging Flask + pre-built .app | ~35min |
-| Before App Store submission | All auto tests + human-regression checklist | auto + human | Simulator + Device | ~90min |
-| Weekly (scheduled) | Human regression (Tiers 6-8 human tests) | human only | Physical iPad + iPhone | ~30min |
-|| | | | |
+| Before every commit touching `apps/mobile/` | Smoke (S1-S4) | auto | Local simulator + local Flask | ~30s |
+| Before every commit | Tiers 1-3 (auto tests only) | auto | Local simulator + local Flask | ~12min |
+| Before App Store submission | Full auto regression (78 tests) + human checklist | auto + human | Simulator + Device | ~50min + ~40min human |
+| Weekly (developer discretion) | Human tests (audio, iPad, offline) | human | Physical iPad + iPhone | ~30min |
+
+### When Tests Fail
+
+Since there's no CI gate, the developer is responsible for interpreting failures. Here's the workflow:
+
+1. **Read the failure screenshot** — Maestro auto-captures the screen at the point of failure (`~/.maestro/tests/`). Start there.
+
+2. **Categorize the failure**:
+   - 🕐 **Timing flake** — element wasn't visible yet. Add `waitFor` or increase timeout.
+   - 🔍 **Element not found** — `testID` missing, wrong, or not forwardable. Check the component's native hierarchy.
+   - 🔑 **Stale state** — Keychain token from a previous run preventing login screen. Uninstall + reinstall.
+   - 🐛 **Actual bug** — the app behaves incorrectly. Fix the code, not the test.
+   - 🌐 **Network** — Flask server down, test data missing. Run `scripts/setup-e2e-env.sh --validate`.
+
+3. **Fix and re-run only the failing test**, not the whole suite:
+   ```bash
+   maestro test apps/mobile/e2e/screens/<failing-file>.yaml
+   ```
+
+4. **After fixing, re-run the full regression** to confirm no cascading breakage.
+
+5. **If a test flakes more than twice in a row**, mark it for Phase 9 review — it may need to be demoted from pre-commit to pre-submission.
 
 ## Test Data Strategy
 
@@ -462,10 +389,10 @@ Maestro's `clearState: true` is **Android-only**. On iOS, there is no way to pro
 
 2. **Teardown per test**: Each test that modifies state (saves a word, rates a card) includes a teardown flow that navigates back to a known baseline (e.g., logout or home screen).
 
-3. **CI preflight**: Before all tests, uninstall and reinstall the app:
+3. **Local preflight**: Before running tests, uninstall and reinstall the app:
 
 ```bash
-# CI preflight script
+# Preflight script
 xcrun simctl shutdown booted 2>/dev/null || true
 xcrun simctl boot "iPhone 15 Pro"
 xcrun simctl uninstall booted ca.zerotohero.app
@@ -542,6 +469,8 @@ Login form fields, tab bar items, and main CTAs get testIDs first. Each subseque
 
 ```tsx
 // Priority elements for testID:
+
+// Core login + navigation
 <TextInput testID="login-email-input" />
 <TextInput testID="login-password-input" />
 <Pressable testID="login-signin-button" />
@@ -549,9 +478,17 @@ Login form fields, tab bar items, and main CTAs get testIDs first. Each subseque
 <TabBar.Item testID="tab-reading" />
 <TabBar.Item testID="tab-vocab" />
 <TabBar.Item testID="tab-me" />
+
+// Main actions
 <Pressable testID="save-word-button" />
 <Pressable testID="search-button" />
 <Pressable testID="settings-display" />
+
+// RN primitives (de-risk Fabric compatibility early)
+<Pressable testID="primitive-pressable" />
+<Switch nativeID="primitive-switch" />
+<Dialog.Content testID="primitive-dialog" />
+<Tabs.Trigger testID="primitive-tab-trigger" />
 ```
 
 Add a testID checklist row to the porting STATUS.md: when a screen reaches ✅ status, it should also have testIDs on its primary interactive elements.
@@ -587,7 +524,7 @@ appId: ca.zerotohero.app
 
 Before shipping the E2E testing pipeline:
 
-1. **Smoke suite passes** on every PR touching `apps/mobile/` (CI gate)
+1. **Smoke suite passes** before every commit touching `apps/mobile/`
 2. **Auth suite passes** covering all 4 test accounts
 3. **Media suite passes** covering explore, search, player, TV shows, live TV
 4. **Dictionary suite passes** covering search, save/unsave, saved words, word detail
@@ -595,58 +532,135 @@ Before shipping the E2E testing pipeline:
 6. **Reader suite passes** covering notes, EPUB, web reader with TextActionMenu
 7. **Settings suite passes** covering themes, toggles, search, iPad layout
 8. **All tests pass on iPad simulator** (landscape, split view, slide over)
-9. **Test failure artifacts** (screenshots + Maestro report) uploaded on CI failure
+9. **Test failure artifacts** (screenshots + Maestro report) saved on failure<br>
+10. **Full regression passes 3x consecutively** with no flaky failures
 
 ## Implementation Phases
 
 ### Phase 1: Foundation (Weeks 1-2)
 
-1. **Maestro + New Architecture spike** (Day 1) — Build a dev build with `newArchEnabled: true`, write one Maestro flow (login + tap 4 tabs), verify element discovery works under Fabric renderer. If elements are missing, budget time to add `accessibilityLabel` as a fallback alongside `testID`.
+1. **Maestro + New Architecture spike** (Day 1) — Build a dev build with `newArchEnabled: true`, write one Maestro flow (login + tap 4 tabs), verify element discovery works under Fabric renderer.
+
+   **Pass/fail criterion**: Maestro can find and tap the email input, password input, sign-in button, and all 4 tab bar items via `testID`. Include one element from each RN primitive type used (Pressable, TextInput, Switch from `@rn-primitives/*`, and a list item) to de-risk primitive compatibility early. If elements are missing, budget time to add `accessibilityLabel` as a fallback alongside `testID`.
 
 2. **Create `lib/e2e.ts` helper** (Day 1) — Reusable `e2e(id)` helper that returns `{ testID: id }` only in `__DEV__`.
 
 3. **Add `testID` props** (Days 2-4) — Login form fields, tab bar items, main CTA buttons, search bar, save button. ~15-20 testIDs across ~10 files.
 
-4. **Build dev build locally** — One `npx expo run:ios --configuration Release` on your Mac. In CI, cache the resulting `.app` via `actions/cache@v4` (cache key includes `**/*.tsx`, `Podfile.lock`, `package.json`). On cache miss, rebuild on the `macos-14` CI runner (~15-20min first build, ~30s cache restore on subsequent runs).
+4. **Build dev build** (one time, ~15-20 min on your Mac):
+   ```bash
+   cd apps/mobile && npx expo run:ios --configuration Release
+   # Result: ios/build/Build/Products/Release-iphonesimulator/ZeroToHero.app
+   ```
+   Rebuild only when native dependencies or Podfile.lock changes.
 
 5. **Seed test data on the staging backend** (Days 3-5) — Build `scripts/setup-e2e-env.sh` that calls Flask endpoints (`POST /auth/register`, etc.) against the staging server to create test accounts (`e2e.free`, `e2e.pro`, `e2e.unverified`, `e2e.new`) and seed initial data (saved words, SRS cards, watch history for the pro user).
 
-6. **Create `apps/mobile/e2e/` scaffold** — `config.yaml`, `flows/auth.yaml`, `flows/preflight-check.yaml`, `smoke.yaml`. CI workflow with dev build install + `EXPO_PUBLIC_API_URL` set to staging + smoke tests.
+6. **Create `apps/mobile/e2e/` scaffold** — `config.yaml`, `flows/auth.yaml`, `flows/preflight-check.yaml`, `smoke.yaml`.
+
+7. **Run smoke test** — Verify the scaffold works against the dev build on the simulator:
+   ```bash
+   maestro test apps/mobile/e2e/smoke.yaml
+   ```
+   Fix any element discovery issues before progressing.
+
+8. **Document the local workflow** — Create `apps/mobile/e2e/README.md` with:
+   - Prerequisites (Maestro installed, dev build built)
+   - Running individual screen tests, full regression, smoke
+   - Preflight checklist before running tests
+   - Troubleshooting common issues
 
 ### Phase 2: Auth + Navigation (Week 3)
-- Write full auth suite (Tier 1: A1-A13)
+
+> ⚠️ **Expect this phase to take longer than estimated.** Phase 2 is when you learn Maestro timing patterns — flaky tests from wrong `waitFor` durations, `testID` forwarding issues on RN primitives, and Keychain state surprises. Velocity improves in later phases.
+
+- Write full auth suite (Tier 1: A1-A13) as Maestro YAML flows
 - Write language selection flow
 - Write session persistence test
-- Add testIDs for auth screens
+- Add testIDs for auth screens (~5-10 elements)
+- **Run each flow locally against the simulator** — for each YAML file:
+  ```bash
+  maestro test apps/mobile/e2e/screens/auth.yaml
+  ```
+  Fix failures (wrong testID, timing, missing elements), hot-reload, re-run
+- **Run full auth suite end-to-end**:
+  ```bash
+  maestro test apps/mobile/e2e/regression.yaml
+  ```
+  All 13 flows pass sequentially from a clean simulator state (~5min)
 
 ### Phase 3: Media Tab (Week 4)
-- Write media suite (Tier 2: M1-M16)
+- Write media suite (Tier 2: M1-M16) as Maestro YAML flows
 - Add testIDs for: video cards, search bar, filter pills, player controls
-- Handle async video loading in tests
+- Handle async video loading in tests (use `waitFor` matchers for thumbnail/duration appearance)
+- **Run each media flow locally** — write → `maestro test` → fix → re-run
+- **Update regression.yaml** to include media flows
+- **Run combined regression** — auth + media suites pass sequentially (~17min)
 
 ### Phase 4: Dictionary + Vocab (Week 5)
-- Write dictionary suite (Tier 3: D1-D17)
-- Write SRS suite (Tier 4: R1-R7)
+- Write dictionary suite (Tier 3: D1-D17) as Maestro YAML flows
+- Write SRS suite (Tier 4: R1-R7) as Maestro YAML flows
 - Add testIDs for: search bar, save button, rating buttons, tab panels
+- **Run each flow locally** — write → `maestro test` → fix → re-run
+- **Update regression.yaml** to include dictionary + SRS flows
+- **Run combined regression** — auth + media + dict + SRS pass (~32min)
 
 ### Phase 5: Reading + Settings (Week 6)
-- Write reader suite (Tier 5: E1-E11)
-- Write settings suite (Tier 6: P1-P9)
+- Write reader suite (Tier 5: E1-E11) as Maestro YAML flows
+- Write settings suite (Tier 6: P1-P9) as Maestro YAML flows
 - Add testIDs for: note list, TextActionMenu buttons, settings rows
+- **Run each flow locally** — write → `maestro test` → fix → re-run
+- **Update regression.yaml** to include reading + settings flows
+- **Run combined regression** — all prior suites + reading + settings pass (~37min)
 
 ### Phase 6: Offline (Week 7)
-- Write offline suite (Tier 7: O1-O6)
+- Write offline suite (Tier 7: O1-O6) as Maestro YAML flows
 - Implement `__E2E_NETWORK_OFFLINE__` app flag to convert O4-O6 from human to auto
+- **Test offline flag in isolation** — verify the flag causes `fetch`/`apiClient` calls to reject with network error
+- **Run each offline flow locally** — write → `maestro test` → fix → re-run
+- **Update regression.yaml** to include offline flows
+- **Run combined regression** — all prior suites + offline pass (~45min)
 
 ### Phase 7: iPad + Deep Links (Week 8)
-- Write iPad suite (Tier 8: IP1-IP7)
-- Write deep link suite (Tier 9: L1-L7)
+- Write auto deep link flows (Tier 9: L1-L4) — word entry, video, password reset, rapid language switch
+- Add testIDs for deep link screens (password-reset, verify-email)
+- **Run each deep link flow locally** — Maestro can trigger deep links via `openLink:` command
+- Note: iPad layout tests (IP1-IP7) are 🧑 human-only — write a human regression checklist instead of Maestro YAML
+- **Update regression.yaml** to include deep link flows
+- **Run combined regression** — all auto tests (78) pass (~50min)
+- **Perform human iPad checklist** manually on iPad simulator
 
 ### Phase 8: Polish + Regression (Week 9)
-- Full regression: all auto tests passing, human regression checklist finalized
-- Test flakiness audit: add retry logic for timing-dependent assertions
-- Document common failure modes and fixes
-- Add `npx turbo e2e` command to root `package.json`
+- **Run full regression locally** — `maestro test apps/mobile/e2e/regression.yaml` — all 78 auto tests pass from clean simulator state
+- **Flakiness audit** — run regression 3x in a row; identify any timing-dependent assertions and add retry logic
+- Document common failure modes and fixes in `apps/mobile/e2e/README.md`
+- Add `npx turbo e2e` command to root `package.json` that runs the full regression suite:
+  ```json
+  {
+    "e2e": "maestro test apps/mobile/e2e/regression.yaml"
+  }
+  ```
+
+### Phase 9: Execution & Refinement (Week 10)
+
+This phase separates "building the tests" from "making the tests trustworthy." By now the full regression suite exists (Phase 2-8) but hasn't been battle-tested.
+
+- **Run full regression 5+ times** — collect every failure, categorize by root cause (timing, test data, element not found, actual bug)
+- **Tune timing** — adjust `waitFor` timeouts, add `optional: true` where appropriate, add retry logic for known-flaky assertions
+- **Measure actual runtime** — record how long the full regression takes on your Mac; adjust time estimates if needed
+- **Decide which tests gate commits** — some tests may be too flaky (or too slow) to run before every commit. Demote them to pre-submission-only if needed
+- **Write troubleshooting guide** — document the 3-5 most common failure patterns and their fixes in `apps/mobile/e2e/README.md`
+- **Establish the "go/no-go" threshold** — define what it means for the regression to "pass" (e.g., no auto-test failures, known human-tests documented)
+
+> **Why separate?** Phases 2-8 are about *authoring* — writing YAML, adding testIDs, making flows work once. Phase 9 is about *running at scale* — making them work reliably, every time, without false positives. These require different debugging techniques and mindsets.
+
+### Phase 10: Cleanup (Week 10, last 1-2 days)
+
+- **Remove debug code** — any temporary `console.log`, `__DEV__` guards, or `__E2E__` flags added during development that shouldn't ship
+- **Verify testID stripping** — confirm the `e2e()` helper (which gates on `__DEV__`) properly strips testIDs from production bundles. Run a build with `NODE_ENV=production` and `__DEV__=false` to confirm no `testID` props leak
+- **Remove test-only dependencies** — check `package.json` for any packages installed solely for E2E testing and ensure they're in `devDependencies`, not `dependencies`
+- **Final README polish** — verify `apps/mobile/e2e/README.md` has the full local workflow from scratch (first-time setup → daily use → troubleshooting)
+- **Commit and tag** — tag the commit with `e2e-v1` so you can roll back cleanly if needed
 
 ## Execution Mode Summary
 
@@ -666,28 +680,26 @@ Before shipping the E2E testing pipeline:
 
 > **Note:** Payment & Pro Gates testing (including IAP, Stripe, WeChat Pay, Alipay, PayPal, subscription management, free-tier gates) has been moved to [SPEC-025](./025-payment-e2e-testing.md). All payment tests are human-only pending a mocked payment backend.
 
-**80% of all test cases run fully unattended in CI.** The remaining 20 human tests cluster into 4 categories, each with a path to convert to auto:
+**80% of all test cases run fully unattended on your local machine.** The remaining 20 human tests cluster into 4 categories, each with a path to convert to auto:
 
 | Human test category | Count | Future automation path |
 |---|---|---|
 | **Audio** (Speak/TTS verification, voice picker) | 3 | Add `__E2E__` flag that logs "TTS played: {text}" to a detectable element |
-| **Visual appearance** (theme toggle, karaoke animation, all iPad layout) | 10 | Add `__E2E__` flag that exposes layout metrics as text overlays; screenshot diffing in CI |
+| **Visual appearance** (theme toggle, karaoke animation, all iPad layout) | 10 | Add `__E2E__` flag that exposes layout metrics as text overlays; screenshot diffing on local machine |
 | **Network simulation** (Airplane Mode offline, sync) | 3 | `__E2E_NETWORK_OFFLINE__` app flag — swaps `fetch`/`apiClient` to reject network calls. No mitmproxy needed. Instant, deterministic, ~20 lines of code. |
-| **Real device / concurrency** (concurrent sessions, push notifications) | 3 | Multi-device CI runner; revisit when push is added |
+| **Real device / concurrency** (concurrent sessions, push notifications) | 3 | Second simulator instance; revisit when push is added |
 | **OS-level UI** (native share sheet) | 1 | Verify the export API call was made instead of checking the sheet UI |
 
 ## Risks and Mitigations
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| Maestro + New Architecture (Fabric) compatibility | Medium | High | Run compatibility spike before Phase 1; fall back to `accessibilityLabel` if `testID` fails |
-| Network-dependent tests flaky in CI | High | High | **Accepted** — tests hit the real staging backend. Mitigate by: dedicated test accounts with known data, seed validation job, retry logic in Maestro flows, and a weekly human check on test data |
+| Maestro + New Architecture (Fabric) compatibility | Medium | High | Run compatibility spike in Phase 1 with one element per primitive type; fall back to `accessibilityLabel` if `testID` fails |
+| Network-dependent tests flaky | Medium | High | **Accepted** — tests hit the real backend. Mitigate by: dedicated test accounts, retry logic in Maestro flows, and a weekly manual seed data check |
 | Video playback can't be automated | Medium | Medium | Test video meta display and subtitle interaction (outside WebView); skip actual play verification |
-| iOS Keychain persistence breaks test isolation | High | Medium | Preflight uninstall + reinstall before each CI run; preflight-check flow for local runs |
-| Expo dev build cold start in CI | Medium | Medium | Cache `.app` artifact via `actions/cache` (keyed by source hashes); build only on cache miss |
+| iOS Keychain persistence breaks test isolation | High | Medium | Preflight uninstall + reinstall with `xcrun simctl uninstall` before each test run; preflight-check flow for test-local runs |
 | Maestro flakes on async rendering | Medium | Medium | Use `waitFor` matchers generously; avoid `tapOn` without visibility checks |
-| Test data changes break tests (e.g., a test video deleted) | Medium | High | Dedicated staging-only seed data (not production). Seed validation job alerts on data loss. Test accounts are service accounts — no human uses them |
-| iPad sim not available in macOS runner | Low | High | Use `macos-14` runner (supports iPad sim); fall back to manual iPad testing |
+| Test data changes break tests (e.g., a test video deleted) | Medium | High | Dedicated staging-only seed data (not production). Run `scripts/setup-e2e-env.sh --validate` before test runs. |
 
 ## Open Questions
 
@@ -702,18 +714,19 @@ Tests hit the real staging Flask backend (`https://staging.zerotohero.ca:5001` o
 **Implications:**
 - Tests verify actual backend behavior — catches regressions in auth, video serving, dictionary, SRS, and user data endpoints
 - Test data must be stable and version-controlled via `scripts/setup-e2e-env.sh`
-- Network flakiness is accepted — mitigated by dedicated test accounts (not used by humans) and a seed validation CI job
+- Network flakiness is accepted — mitigated by dedicated test accounts and a pre-flight validation step
 - Offline tests (O4-O6, L4) still use the `__E2E_NETWORK_OFFLINE__` app flag — the real backend is irrelevant for those since the app gets a network error before reaching it
 
-**Setup in CI:**
+**Setup locally:**
 ```bash
-# No mock server needed. Just configure which backend to hit:
-echo "EXPO_PUBLIC_API_URL=${{ secrets.STAGING_FLASK_URL }}" >> $GITHUB_ENV
+# Build with local Flask URL:
+export EXPO_PUBLIC_API_URL=http://127.0.0.1:5001
+npx expo run:ios --configuration Release
 ```
 
 ### Self-Hosted Maestro (not Maestro Cloud)
 
-Maestro runs as a local CLI on the same macOS runner that hosts the iOS simulator — no cloud service needed. The CI job uses GitHub Actions `macos-14` runner (~$0.08/min, ~$2.80/nightly suite). The same YAML flow files work identically in local dev (`maestro test`) and CI. If flaky test management or multi-device parallel runs become necessary later, switching to Maestro Cloud (`maestro cloud`) requires no flow file changes — just a different CLI command.
+Maestro runs as a local CLI directly on your Mac — no cloud service needed, no per-minute costs. The same YAML flow files work whether run by one developer or many; just run `maestro test`. If flaky test management or multi-device parallel runs become necessary later, switching to Maestro Cloud (`maestro cloud`) requires no flow file changes — just a different CLI command.
 
 ### Offline Test Strategy: `__E2E_NETWORK_OFFLINE__` App Flag
 
@@ -743,31 +756,12 @@ The Maestro flow sets the flag via a simple app entry point env check or by tapp
 
 Since seeds go through Flask API endpoints (per SPEC-024), the person who maintains the Flask server also owns the seed script (`scripts/setup-e2e-env.sh`). This keeps responsibility aligned — the person who changes the backend schema knows to update the seed data.
 
-A **weekly CI validation job** (GitHub Actions `schedule` trigger, Monday 8am UTC) verifies that all E2E test accounts still exist and have expected data:
+Run **manual validation** before each test session:
 
-```yaml
-# .github/workflows/seed-validation.yml (conceptual)
-name: Validate E2E Seed Data
-on:
-  schedule:
-    - cron: '0 8 * * MON'  # Every Monday at 8am UTC
-
-jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check test accounts exist
-        run: |
-          for account in free pro unverified new; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" \
-              -X POST ${{ secrets.STAGING_FLASK_URL }}/auth/login \
-              -d "{\"email\":\"e2e.$account@zerotohero.ca\",\"password\":\"${{ secrets.E2E_PASS }}\"}")
-            if [ "$status" != "200" ]; then
-              echo "FAIL: e2e.$account account check returned $status"
-              exit 1
-            fi
-          done
-          echo "All 4 test accounts verified."
+```bash
+sh scripts/setup-e2e-env.sh --validate
 ```
 
-This catches silently deleted accounts, password changes, or backend migrations that break test data — before anyone discovers it mid-E2E-test-run.
+This checks that all 4 test accounts exist and can authenticate. Run this whenever you suspect backend data may have changed (after a migration, server restart, or data reset).
+
+Without automated CI, there is no cron job — validation is a developer responsibility. To make it harder to forget, consider adding it as a pre-test step in your local workflow (see `apps/mobile/e2e/README.md`).
