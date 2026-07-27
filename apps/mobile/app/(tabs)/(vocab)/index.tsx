@@ -10,6 +10,7 @@ import { OfflineBanner } from '@/components/dictionary/OfflineBanner';
 import { Search, BookOpen, Clock } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function DictionaryScreen() {
   const { l2Lang } = useLanguage();
@@ -50,6 +51,7 @@ export default function DictionaryScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <PageContainer>
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.dictionary')}</Text>
       </View>
@@ -155,6 +157,7 @@ export default function DictionaryScreen() {
           className="mt-2"
         />
       )}
+    </PageContainer>
     </View>
   );
 }

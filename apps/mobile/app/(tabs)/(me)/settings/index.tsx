@@ -247,7 +247,8 @@ export default function SettingsScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const isWide = width >= 600;
+  const sidebarWidth = Math.min(256, width * 0.4);
+  const isWide = width >= 600 && (width - sidebarWidth) >= 320;
 
   const handleSelect = (key: string) => {
     if (isWide) {
@@ -265,7 +266,7 @@ export default function SettingsScreen() {
   if (isWide) {
     return (
       <View className="flex-row flex-1 bg-background">
-        <View className="w-64 border-r border-border">
+        <View style={{ width: sidebarWidth }} className="border-r border-border">
           <SettingsList selectedKey={selectedKey} onSelect={handleSelect} />
         </View>
         <View className="flex-1">

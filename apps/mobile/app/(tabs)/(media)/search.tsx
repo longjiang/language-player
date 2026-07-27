@@ -8,6 +8,7 @@ import { VideoCard } from '@/components/video/VideoCard';
 import { Search, AlertCircle, Film, Tag } from 'lucide-react-native';
 import { PLACEHOLDER_COLOR, ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import type { YouTubeVideo } from '@langplayer/shared';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface VideoTag {
   tag: string;
@@ -85,6 +86,7 @@ export default function SearchScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <PageContainer>
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.search')}</Text>
       </View>
@@ -189,6 +191,7 @@ export default function SearchScreen() {
           )}
         />
       )}
+    </PageContainer>
     </View>
   );
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable, ScrollView, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
 import * as Dialog from '@/components/ui/dialog';
@@ -82,6 +82,8 @@ interface HamburgerDrawerProps {
 
 export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawerProps) {
   const t = useT();
+  const { width: screenWidth } = useWindowDimensions();
+  const drawerWidth = Math.min(256, screenWidth * 0.6);
 
   return (
     <Dialog.Root open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -90,7 +92,7 @@ export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawer
         <Dialog.Overlay open={open} className="bg-black/20" closeOnPress />
 
         {/* Drawer panel — slides in from the right below the header */}
-        <Dialog.DrawerContent open={open} topOffset={headerHeight}>
+        <Dialog.DrawerContent open={open} topOffset={headerHeight} drawerWidth={drawerWidth}>
           <ScrollView className="flex-1">
             {NAV_GROUPS.map((group) => (
               <View key={group.label} className="mb-4">

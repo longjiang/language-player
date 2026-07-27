@@ -18,6 +18,7 @@ import { AlertCircle } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import { baseCode } from '@langplayer/utils';
 import type { YouTubeVideo } from '@langplayer/shared';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface ChannelInfo {
   title: string;
@@ -96,6 +97,7 @@ export default function ChannelPage() {
 
   return (
     <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 32 }}>
+      <View className="self-center w-full max-w-3xl">
       <View className="px-4 py-5">
         {/* Channel header */}
         {channel && (
@@ -191,6 +193,7 @@ export default function ChannelPage() {
           )}
         </>
       )}
+      </View>
     </ScrollView>
   );
 }

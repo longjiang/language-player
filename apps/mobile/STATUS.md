@@ -310,17 +310,17 @@
 
 ---
 
-### Phase 8: iPad & Responsive Layout 🔵
+### Phase 8: iPad & Responsive Layout ✅
 
 | # | Feature | Web Source | Effort | Dependencies | Notes |
 |---|---|---|---|---|---|
-| 8.1 | Unlock Landscape Orientation | — | S | 8.2 (needs responsive grid) | Change `app.json` `"orientation": "portrait"` → `"default": "portrait"` to allow landscape on iPad while keeping portrait default on iPhone. The video player already detects landscape (`isWide`) — the lock just prevents it from activating. |
-| 8.2 | Responsive Video Grid Columns | `explore/page.tsx` | S | None | `VideoGrid` hardcodes `numColumns={2}`. At 1/3 split view (~320px) cards are ~150px wide — unreadable. At full iPad (~820px) only 2 huge columns. Should be: <400px → 1, <700px → 2, <1000px → 3, ≥1000px → 4. |
-| 8.3 | Settings Sidebar Width Cap | `settings/index.tsx` | S | None | Sidebar is `w-64` (256px). At 50/50 split view (~438px per pane) sidebar takes >50%, leaving ~180px for detail. Cap at `Math.min(256, width * 0.4)` or collapse to narrow mode if detail pane < 320px. |
-| 8.4 | Drawer Width Cap | `HamburgerDrawer.tsx` | S | None | Drawer is `w-64` (256px). At 1/3 split view (~320px) it covers 80% of screen. Cap at `Math.min(256, screenWidth * 0.6)`. |
-| 8.5 | Wide-Screen Content Max-Width | Explore, Search, etc. | M | None | Full-width single-column content feels stretched on iPad full-screen (820px+). Add `max-w-3xl self-center` wrapper on explore, search, music, watch-history, saved-words, dictionary screens. |
+| 8.1 | Unlock Landscape Orientation | — | S | None | ✅ `app.json`: `"orientation": "portrait"` → `"default"`. iPhone keeps portrait default; iPad allows all 4 orientations. Video player already handles landscape. |
+| 8.2 | Responsive Video Grid Columns | `explore/page.tsx` | S | None | ✅ `VideoGrid` uses `useWindowDimensions` — <400px→1col, <700px→2col, <1000px→3col, ≥1000px→4col. `FlatList key` changes with column count to force re-render. |
+| 8.3 | Settings Sidebar Width Cap | `settings/index.tsx` | S | None | ✅ Sidebar capped at `Min(256, width * 0.4)`. Falls back to narrow mode when detail pane <320px. Uses `style={{ width }}` instead of `w-64`. |
+| 8.4 | Drawer Width Cap | `HamburgerDrawer.tsx` | S | None | ✅ Drawer capped at `Min(256, screenWidth * 0.6)`. `DrawerContent` accepts new `drawerWidth` prop; removed hardcoded `w-64` from `dialog.tsx`. |
+| 8.5 | Wide-Screen Content Max-Width | Explore, Search, etc. | M | None | ✅ Created `<PageContainer>` component in `components/layout/`. Applied to 15 screens (explore, search, music, watch-history, tv-shows, live-tv, channel-detail, saved-words, dictionary, review, notes-reader, web-reader, docs, profile, go-pro). Uses `max-w-3xl self-center` on wide screens; renders as pass-through on narrow screens. Screens intentionally excluded: watch, EPUB, local-media, settings detail, tokenizer. |
 
-**Goal:** App looks polished at every iPad window size — 1/3 split view (~320px), 50/50 split (~438px), full-screen portrait (820px), full-screen landscape (1180px), and Slide Over (~320px). See [SPEC-020](../../docs/specs/020-ipad-responsive-layout.md).
+**Goal:** ✅ App looks polished at every iPad window size — 1/3 split view (~320px), 50/50 split (~438px), full-screen portrait (820px), full-screen landscape (1180px), and Slide Over (~320px). See [SPEC-020](../../docs/specs/020-ipad-responsive-layout.md).
 
 ---
 

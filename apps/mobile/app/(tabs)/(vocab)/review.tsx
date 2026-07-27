@@ -14,6 +14,7 @@ import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { CheckCircle2, BookOpen, Trash2, Undo2 } from 'lucide-react-native';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import type { DictionaryEntry } from '@langplayer/shared';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 
@@ -400,6 +401,7 @@ export default function ReviewScreen() {
 
   return (
     <View className="flex-1 bg-background">
+      <PageContainer>
       {/* Header with card counts */}
       <View className="flex-row items-center justify-between px-4 py-4">
         <View>
@@ -561,6 +563,7 @@ export default function ReviewScreen() {
           ))}
         </View>
       )}
+    </PageContainer>
     </View>
   );
 }

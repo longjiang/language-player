@@ -7,6 +7,7 @@ import { useVideos } from '@langplayer/api-client';
 import { useProgress } from '@/hooks/use-progress';
 import { VideoGrid } from '@/components/video/VideoGrid';
 import { LevelFilter } from '@/components/video/LevelFilter';
+import { PageContainer } from '@/components/layout/PageContainer';
 import type { YouTubeVideo } from '@langplayer/shared';
 
 export default function ExploreScreen() {
@@ -65,20 +66,22 @@ export default function ExploreScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <LevelFilter level={level} onSelect={setLevel} l2Code={l2Lang.code} />
-      {error && videos.length === 0 && (
-        <View className="mx-4 mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
-          <Text className="text-sm text-destructive">{t(error as any)}</Text>
-        </View>
-      )}
-      <VideoGrid
-        videos={videos}
-        loading={loading}
-        hasMore={hasMore}
-        onLoadMore={handleLoadMore}
-        onRefresh={handleRefresh}
-        refreshing={refreshing}
-      />
+      <PageContainer>
+        <LevelFilter level={level} onSelect={setLevel} l2Code={l2Lang.code} />
+        {error && videos.length === 0 && (
+          <View className="mx-4 mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
+            <Text className="text-sm text-destructive">{t(error as any)}</Text>
+          </View>
+        )}
+        <VideoGrid
+          videos={videos}
+          loading={loading}
+          hasMore={hasMore}
+          onLoadMore={handleLoadMore}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
+        />
+      </PageContainer>
     </View>
   );
 }
