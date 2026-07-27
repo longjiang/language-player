@@ -8,6 +8,8 @@ import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
+import { useSavedWords } from '@/hooks/use-saved-words';
+import { useProgressLevel } from '@/hooks/use-progress-level';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { configureLayoutAnimation } from '@/lib/animations';
 import { bulkLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
@@ -20,6 +22,40 @@ const lemmatizeCache = new Map<string, LemmatizedToken[]>();
 // In-flight request deduplication — prevents thundering herd when many
 // TokenizedText instances mount simultaneously and all hit the fallback.
 const lemmatizeInflight = new Map<string, Promise<LemmatizedToken[]>>();
+
+// ── Word difficulty helpers for hardWords filter ──────────────────
+
+type WordDifficulty =
+  | { kind: 'not_cached' }
+  | { kind: 'unclassified' }
+  | { kind: 'classified'; value: number };
+
+/** Get the lowest difficulty value for a word from its cached dictionary entries.
+ *  Checks both `levels[].numeric` and `frequencyLevel`, returns the minimum. */
+function getWordDifficulty(l2Code: string, lemmas: LemmatizedToken['lemmas']): WordDifficulty {
+  let hasEntry = false;
+  let lowest: number | null = null;
+  for (const lemma of lemmas) {
+    const entries = getCachedEntries(l2Code, lemma.lemma);
+    if (!entries) continue;
+    hasEntry = true;
+    for (const entry of entries) {
+      if (entry.levels) {
+        for (const l of entry.levels) {
+          if (typeof l.numeric === 'number' && l.numeric >= 1 && l.numeric <= 7) {
+            if (lowest === null || l.numeric < lowest) lowest = l.numeric;
+          }
+        }
+      }
+      if (typeof entry.frequencyLevel === 'number' && entry.frequencyLevel >= 1 && entry.frequencyLevel <= 7) {
+        if (lowest === null || entry.frequencyLevel < lowest) lowest = entry.frequencyLevel;
+      }
+    }
+  }
+  if (!hasEntry) return { kind: 'not_cached' };
+  if (lowest === null) return { kind: 'unclassified' };
+  return { kind: 'classified', value: lowest };
+}
 
 export interface TokenizedTextProps {
   text: string;
@@ -70,17 +106,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const quizMode = tokenSettings.mode === 'quiz';
   const showDefinition = l2Settings.tokenSpan.definition.show;
 
-  // ── Settings read but not yet fully implemented (see SPEC-015 Phase 5B) ──
-  // TODO(G7): quickGloss — show dictionary snippet below saved words.
-  //   Needs useSavedWords() context + dictionary definition data per token.
-  //   Web: token-span.tsx:121 checks isSaved && quickGloss → renders firstDef.
+  // ── hardWords filter + quickGloss (Phase 2: SPEC-019) ──
   const quickGlossEnabled = tokenSettings.quickGloss;
-
-  // TODO(G9): phonetics.conditions — filter by hard/easy words.
-  //   Needs user proficiency level + per-token dictionary CEFR/HSK lookup.
-  //   Currently always shows phonetics when enabled (same as 'always').
-  //   Web: token-span.tsx:158 checks conditions === 'hardWords' → compares levels.
   const phoneticsConditions = phonetics.conditions;
+  const userLevel = useProgressLevel(l2Code);
+  const { savedWords } = useSavedWords();
 
   // TODO(G11): display.traditional — simplified ↔ traditional character switch.
   //   Needs character conversion utility (OpenCC or equivalent shared module).
@@ -113,6 +143,30 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
     return style;
   }, [tokenSettings.zoom, tokenSettings.typeFace]);
+
+  // ── Quick lookup set for saved word forms (quickGloss) ──
+  const savedFormSet = useMemo(() => {
+    const words = savedWords[l2Code] ?? [];
+    const forms = new Set<string>();
+    for (const w of words) {
+      if (w.head) forms.add(w.head.toLowerCase());
+      if (w.forms) for (const f of w.forms) forms.add(f.toLowerCase());
+      if (w.context?.form) forms.add((w.context.form as string).toLowerCase());
+    }
+    return forms;
+  }, [savedWords, l2Code]);
+
+  // ── Phonetics filter: per-token hardWords check ──
+  const shouldShowPhonetics = useCallback((token: LemmatizedToken): boolean => {
+    if (token.lemmas.length === 0) return false;
+    if (phoneticsConditions === 'always') return true;
+    // hardWords — only show if word difficulty ≥ user level
+    if (!userLevel || userLevel < 1) return true; // no level set → show all
+    const diff = getWordDifficulty(l2Code, token.lemmas);
+    if (diff.kind === 'not_cached') return false; // wait for async bulk lookup
+    if (diff.kind === 'unclassified') return true; // unknown → treat as hard
+    return diff.value >= userLevel;
+  }, [phoneticsConditions, userLevel, l2Code]);
 
   // ── Preloaded tokens: use directly ──
   useEffect(() => {
@@ -322,9 +376,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const showGloss = showDefinition && firstLemma && firstLemma !== word;
               const { byeonggiText, firstDef } = getTokenEntryData(token);
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
-              const showQuickGloss = quickGlossEnabled && !!firstDef;
+              const showTokenPhonetics = shouldShowPhonetics(token);
+              const isSaved = savedFormSet.has(token.text.toLowerCase());
+              const showQuickGloss = isSaved && quickGlossEnabled && !!firstDef && !isHighlighted;
 
-              const hasRuby = token.pronunciation && token.pronunciation !== token.text;
+              const hasRuby = showTokenPhonetics && token.pronunciation && token.pronunciation !== token.text;
               const rubySegs: RubySegment[] = hasRuby
                 ? buildRuby(token.text, token.pronunciation!, l2Code)
                 : [{ text: token.text }];
@@ -360,6 +416,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                       {showGloss && j === rubySegs.length - 1 && (
                         <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{firstLemma}</Text>
                       )}
+                      {showQuickGloss && j === rubySegs.length - 1 && (
+                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{firstDef}</Text>
+                      )}
                     </View>
                   ))}
                 </React.Fragment>
@@ -370,7 +429,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
           /* Word-replace or no-phonetics mode: plain inline Text */
           <Text style={textStyle} className="text-foreground">
             {tokens.map((token, i) => {
-              const displayText = replaceWithPhonetics && isWord(token) && token.pronunciation
+              const displayText = replaceWithPhonetics && isWord(token) && shouldShowPhonetics(token) && token.pronunciation
                 ? token.pronunciation
                 : token.text;
               const word = token.text;
@@ -381,7 +440,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const showGloss = showDefinition && firstLemma && firstLemma !== word;
               const { byeonggiText, firstDef } = getTokenEntryData(token);
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
-              const showQuickGloss = quickGlossEnabled && !!firstDef;
+              const isSaved = savedFormSet.has(token.text.toLowerCase());
+              const showQuickGloss = isSaved && quickGlossEnabled && !!firstDef && !isHighlighted;
 
               const handlePress = () => {
                 if (quizMode) {
@@ -403,6 +463,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   {showByeonggi ? `${byeonggiText} ` : ''}
                   {isBlanked ? '▯' : displayText}
                   {showGloss ? ` ·${firstLemma}` : ''}
+                  {showQuickGloss ? ` ${firstDef}` : ''}
                 </Text>
               );
             })}
