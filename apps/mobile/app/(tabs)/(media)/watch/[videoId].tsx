@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -196,6 +196,42 @@ export default function WatchScreen() {
   const handleStateChange = useCallback((state: string) => {
     setPaused(state !== 'playing');
   }, []);
+
+  // ── Auto-pause: pause video when active subtitle line's duration elapses ──
+  const autoPausedLineRef = useRef<number>(-1);
+
+  // Reset paused-line tracker when the active line changes
+  const activeLineIndex = useMemo(() => {
+    if (subtitleStartTimes.length === 0) return -1;
+    let idx = -1;
+    for (let i = 0; i < subtitleStartTimes.length; i++) {
+      if (subtitleStartTimes[i]! <= currentTime) idx = i;
+      else break;
+    }
+    return idx;
+  }, [currentTime, subtitleStartTimes]);
+
+  useEffect(() => {
+    autoPausedLineRef.current = -1;
+  }, [activeLineIndex]);
+
+  useEffect(() => {
+    if (!playback.autoPause || activeLineIndex < 0) return;
+    if (autoPausedLineRef.current === activeLineIndex) return; // already paused this line
+
+    const line = subtitleLines[activeLineIndex];
+    if (!line) return;
+
+    const lineDuration = subtitleStartTimes[activeLineIndex + 1]
+      ? subtitleStartTimes[activeLineIndex + 1]! - line.starttime
+      : 5;
+    const elapsed = currentTime - line.starttime;
+
+    if (lineDuration > 0 && elapsed >= lineDuration && !paused) {
+      autoPausedLineRef.current = activeLineIndex;
+      playerRef.current?.pause();
+    }
+  }, [currentTime, activeLineIndex, subtitleLines, subtitleStartTimes, playback.autoPause, paused]);
 
   const handlePauseToggle = useCallback(() => {
     if (paused) {
