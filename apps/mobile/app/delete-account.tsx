@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useT } from '@/hooks/use-t';
 import { DIRECTUS_URL } from '@/lib/api-url';
@@ -19,8 +20,6 @@ export default function DeleteAccountScreen() {
     setErrorMsg(null);
 
     try {
-      // Retrieve the auth token from SecureStore
-      const SecureStore = require('expo-secure-store');
       const authToken = await SecureStore.getItemAsync('authToken');
 
       if (!authToken || !user?.id) {
