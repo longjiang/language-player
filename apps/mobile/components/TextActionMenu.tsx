@@ -158,6 +158,8 @@ export function TextActionMenu(props: TextActionMenuProps) {
       {/* Content row with action button */}
       <View className="flex-row items-start gap-1">
         <View className="flex-1 min-w-0">
+          {/* as any: @types/react ReactNode includes bigint; RN's View expects RN's ReactNode (excludes it).
+              This is the standard workaround for the type mismatch in RN projects with @types/react installed. */}
           {children as any}
         </View>
         <ContextMenu
