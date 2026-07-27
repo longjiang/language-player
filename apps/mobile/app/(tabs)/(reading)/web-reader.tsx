@@ -11,7 +11,7 @@ import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
 import { parseMarkdownBlocks, type ContentBlock } from '@/lib/parse-markdown';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
-import { Globe, StickyNote, Plus, Trash2, BookOpen } from 'lucide-react-native';
+import { Globe, StickyNote, Plus, Trash2 } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
@@ -61,11 +61,20 @@ export default function WebReaderScreen() {
     }
   }, [url, t]);
 
-  // Notes rename
+  // Notes rename — tracks original title to skip no-op API calls
+  const [originalTitle, setOriginalTitle] = useState('');
   const handleRenameSubmit = async () => {
     if (renameId !== null && renameText.trim()) {
-      await notes.renameNote(renameId, renameText.trim());
-      setRenameId(null);
+      if (renameText.trim() === originalTitle.trim()) {
+        setRenameId(null);
+        return;
+      }
+      try {
+        await notes.renameNote(renameId, renameText.trim());
+        setRenameId(null);
+      } catch {
+        Alert.alert(t('error.occurred'));
+      }
     }
   };
 
@@ -94,6 +103,8 @@ export default function WebReaderScreen() {
           <Pressable
             onPress={() => setSidebarOpen(!sidebarOpen)}
             className="rounded p-1.5 active:bg-muted"
+            accessibilityLabel={t('title.notes')}
+            accessibilityRole="button"
           >
             <StickyNote size={18} color={ICON_MUTED} />
           </Pressable>
@@ -259,6 +270,7 @@ export default function WebReaderScreen() {
                       onLongPress={() => {
                         setRenameId(n.id);
                         setRenameText(n.title ?? '');
+                        setOriginalTitle(n.title ?? '');
                       }}
                       className={`flex-row items-center gap-2 px-3 py-2 active:bg-muted ${notes.currentNoteId === n.id ? 'bg-primary/10' : ''}`}
                     >

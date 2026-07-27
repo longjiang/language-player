@@ -76,13 +76,17 @@ export function TextActionMenu(props: TextActionMenuProps) {
     if (isSpeaking) {
       stopTts();
     } else {
-      speakTts(text, l2Code);
+      try {
+        speakTts(text, l2Code);
+      } catch {
+        Alert.alert(t('error.occurred'));
+      }
     }
-  }, [text, l2Code, speakTts, stopTts, isSpeaking]);
+  }, [text, l2Code, speakTts, stopTts, isSpeaking, t]);
 
   const handleExplain = useCallback(() => {
     setActiveAction('explain');
-    const l1Name = l1Lang.name;
+    const l1Name = l1Lang?.name ?? '';
     const header = t('prompt.explain_block_header', { l2Code });
     const item1 = t('prompt.explain_block_item1', { l1Name });
     const item2 = t('prompt.explain_block_item2');
@@ -94,7 +98,7 @@ export function TextActionMenu(props: TextActionMenuProps) {
     }
     lines.push('', `${textLabel}: ${text}`);
     streamExplain(lines.join('\n'));
-  }, [text, l2Code, context, l1Lang.name, t, streamExplain]);
+  }, [text, l2Code, context, l1Lang, t, streamExplain]);
 
   const handleTranslate = useCallback(async () => {
     setActiveAction('translate');
@@ -109,7 +113,8 @@ export function TextActionMenu(props: TextActionMenuProps) {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setTranslateResult(data?.translated_text ?? data?.translation ?? data?.text ?? JSON.stringify(data));
+      const raw = data?.translated_text ?? data?.translation ?? data?.text;
+      setTranslateResult(raw ?? (typeof data === 'string' ? data : JSON.stringify(data).slice(0, 200)));
     } catch (err: any) {
       setTranslateError(err?.message ?? t('error.occurred'));
     } finally {
