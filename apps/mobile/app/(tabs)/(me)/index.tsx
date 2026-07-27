@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useT } from '@/hooks/use-t';
 import { Settings, User, LogOut, Star, CreditCard, Download, Crown } from 'lucide-react-native';
-import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_PRIMARY, ICON_WARNING } from '@/lib/theme-colors';
 
 export default function MeScreen() {
   const { user, logout } = useAuth();
@@ -45,7 +45,7 @@ export default function MeScreen() {
         </Text>
         {isPro && (
           <View className="mt-2 flex-row items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900 px-3 py-1">
-            <Crown size={14} color="#f59e0b" />
+            <Crown size={14} color={ICON_WARNING} />
             <Text className="text-xs font-semibold text-amber-800 dark:text-amber-200">
               {isLifetime ? `${t('subscription.lifetime_cap')} 🎉` : t('label.pro')}
             </Text>

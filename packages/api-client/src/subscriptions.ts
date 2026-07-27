@@ -1,6 +1,21 @@
 import { apiClient } from './client';
 import type { SubscriptionRecord } from '@langplayer/shared';
 
+// NOTE: These functions are designed for the Next.js web app, which proxies
+// through its own API routes. The React Native mobile app calls the Flask
+// backend directly via fetch() to PYTHON_API_URL and does not use these.
+
+/** Type guard: check if a value is a valid SubscriptionRecord. */
+function isSubscriptionRecord(data: unknown): data is SubscriptionRecord {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'id' in data &&
+    'owner' in data &&
+    'type' in data
+  );
+}
+
 /** Fetch the user's current subscription from the backend.
  *  GET /user-subscription?user_id=X
  *  Returns null when the user has no subscription or the fetch fails. */
@@ -8,11 +23,11 @@ export async function getUserSubscription(
   userId: string,
 ): Promise<SubscriptionRecord | null> {
   try {
-    const data = await apiClient.get<SubscriptionRecord>(
+    const data = await apiClient.get<unknown>(
       '/user-subscription',
       { params: { user_id: userId } },
     );
-    return (data as any)?.id ? data : null;
+    return isSubscriptionRecord(data) ? data : null;
   } catch {
     return null;
   }
@@ -51,7 +66,7 @@ export async function validateIapReceipt(
   receipt: string,
 ): Promise<{ type: string; message?: string }> {
   return apiClient.post<{ type: string; message?: string }>(
-    `${apiClient.instance.defaults.baseURL}/in_app_purchase_success`,
+    '/in_app_purchase_success',
     { user_id: userId, receipt },
   );
 }

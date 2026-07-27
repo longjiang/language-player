@@ -14,3 +14,6 @@ export const PLACEHOLDER_COLOR = hslToHex(darkSemantic.mutedForeground);
 
 /** Destructive/error color. */
 export const ICON_DESTRUCTIVE = hslToHex(darkSemantic.destructive);
+
+/** Warning/amber color (pro badges, attention indicators). */
+export const ICON_WARNING = hslToHex(darkSemantic.warning);
