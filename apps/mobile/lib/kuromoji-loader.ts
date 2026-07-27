@@ -75,7 +75,13 @@ async function readAndDecompress(
   }
 
   // Gzip decompression using pako (pure JS, works in RN)
-  return pako.ungzip(compressed).buffer as ArrayBuffer;
+  // Safe slice: pako's Uint8Array may be a view over a larger buffer,
+  // and TypedArray constructors (Int32Array, etc.) use the full .buffer.
+  const decompressed = pako.ungzip(compressed);
+  return decompressed.buffer.slice(
+    decompressed.byteOffset,
+    decompressed.byteOffset + decompressed.byteLength,
+  );
 }
 
 // ── Public API ──────────────────────────────────────────────────────
@@ -126,8 +132,11 @@ export async function loadKuromoji(dicPath: string): Promise<any> {
   ]);
 
   // Dynamic require of kuromoji internal classes (CommonJS modules).
-  // These deep imports work with Metro bundler since the files exist
-  // in node_modules/kuromoji/src/.
+  // ⚠️ Fragile: kuromoji (unmaintained, last published 2018) does not
+  //    expose src/ in its package.json exports map. These deep imports
+  //    work with Metro bundler's resolution but may break on kuromoji
+  //    version bumps or Metro config changes. Consider vendoring the
+  //    two needed files if this becomes a recurring issue.
   // @ts-ignore - kuromoji is a CJS module without TS types
   const DynamicDictionaries = (await import('kuromoji/src/dict/DynamicDictionaries')).default;
   // @ts-ignore - kuromoji is a CJS module without TS types
