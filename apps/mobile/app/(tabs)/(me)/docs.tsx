@@ -78,8 +78,8 @@ export default function DocsScreen() {
     const isRootDoc = !selectedDoc.path.includes('/');
     const headings = extractHeadings(selectedDoc.content);
     return (
-      <ScrollView className="flex-1 bg-background px-4 py-5">
-        <View className="self-center w-full max-w-3xl">
+      <PageContainer>
+        <ScrollView className="flex-1 px-4 py-5">
         <Pressable onPress={() => setSelectedDoc(null)} className="mb-4">
           <Text className="text-sm text-primary">← {t('action.go_back')}</Text>
         </Pressable>
@@ -110,15 +110,15 @@ export default function DocsScreen() {
         <View className="rounded-xl border border-border bg-card p-4">
           <MarkdownText>{selectedDoc.content}</MarkdownText>
         </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </PageContainer>
     );
   }
 
   // ── Doc listing view ──
   return (
-    <ScrollView className="flex-1 bg-background px-4 py-5">
-      <View className="self-center w-full max-w-3xl">
+    <PageContainer>
+      <ScrollView className="flex-1 px-4 py-5">
       <Text className="text-2xl font-bold text-foreground mb-1">{t('title.docs')}</Text>
 
       {/* Search */}
@@ -180,7 +180,7 @@ export default function DocsScreen() {
           ))}
         </>
       )}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </PageContainer>
   );
 }

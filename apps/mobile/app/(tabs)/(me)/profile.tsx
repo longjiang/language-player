@@ -172,8 +172,8 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View className="self-center w-full max-w-3xl">
+    <PageContainer>
+      <ScrollView className="flex-1">
       {/* ── Account header ── */}
       <View className="flex-row items-center gap-4 mx-4 mt-4 mb-8">
         <View className="w-14 h-14 rounded-full bg-primary/10 items-center justify-center">
@@ -406,7 +406,7 @@ export default function ProfileScreen() {
       <Pressable onPress={logout} className="mx-4 mb-8 py-3 items-center border-t border-border">
         <Text className="text-sm text-destructive">{t('action.logout')}</Text>
       </Pressable>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </PageContainer>
   );
 }

@@ -23,8 +23,7 @@ export default function MusicScreen() {
   }, [l2Lang.code]);
 
   return (
-    <View className="flex-1 bg-background px-4">
-      <PageContainer>
+    <PageContainer>
       <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.music_and_entertainment')}</Text>
       {loading ? (
         <View className="flex-1 items-center justify-center"><ActivityIndicator size="large" className="text-primary" /></View>
@@ -40,6 +39,5 @@ export default function MusicScreen() {
         />
       )}
     </PageContainer>
-    </View>
   );
 }

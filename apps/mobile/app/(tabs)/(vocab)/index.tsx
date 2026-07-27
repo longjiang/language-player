@@ -50,8 +50,7 @@ export default function DictionaryScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      <PageContainer>
+    <PageContainer>
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.dictionary')}</Text>
       </View>
@@ -158,6 +157,5 @@ export default function DictionaryScreen() {
         />
       )}
     </PageContainer>
-    </View>
   );
 }

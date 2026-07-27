@@ -189,21 +189,20 @@ export default function TvShowsScreen() {
   // ── Error ──
   if (error) {
     return (
-      <View className="flex-1 bg-background px-4 py-8">
-        <View className="flex-1 self-center w-full max-w-3xl">
+      <PageContainer>
+        <View className="px-4 py-8 flex-1">
         <Text className="text-2xl font-bold text-foreground mb-4">{t('title.tv_shows')}</Text>
         <View className="flex-row items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2">
           <AlertCircle size={16} className="text-destructive" />
           <Text className="text-sm text-destructive">{error}</Text>
         </View>
         </View>
-      </View>
+      </PageContainer>
     );
   }
 
   return (
-    <View className="flex-1 bg-background">
-      <PageContainer>
+    <PageContainer>
       {/* Header */}
       <View className="px-4 pt-5 pb-2">
         <Text className="text-2xl font-bold text-foreground">{t('title.tv_shows')}</Text>
@@ -312,6 +311,5 @@ export default function TvShowsScreen() {
         />
       )}
     </PageContainer>
-    </View>
   );
 }

@@ -187,8 +187,7 @@ export default function LiveTvScreen() {
   }
 
   return (
-    <View className="flex-1 bg-background">
-      <PageContainer>
+    <PageContainer>
       <Text className="px-4 py-5 mb-4 text-xl font-bold text-foreground">{t('title.live_tv')}</Text>
       {/* Player section */}
       {selectedChannel && (
@@ -306,6 +305,5 @@ export default function LiveTvScreen() {
         )}
       />
     </PageContainer>
-    </View>
   );
 }

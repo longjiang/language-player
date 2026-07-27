@@ -72,8 +72,7 @@ export default function ReaderScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
-      <PageContainer>
+    <PageContainer>
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.notes_reader')}</Text>
       </View>
@@ -225,6 +224,5 @@ export default function ReaderScreen() {
         )}
       </View>
     </PageContainer>
-    </View>
   );
 }

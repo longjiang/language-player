@@ -96,8 +96,8 @@ export default function ChannelPage() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 32 }}>
-      <View className="self-center w-full max-w-3xl">
+    <PageContainer>
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
       <View className="px-4 py-5">
         {/* Channel header */}
         {channel && (
@@ -193,7 +193,7 @@ export default function ChannelPage() {
           )}
         </>
       )}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </PageContainer>
   );
 }

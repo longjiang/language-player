@@ -85,8 +85,7 @@ export default function SearchScreen() {
   const hasResults = results && results.length > 0;
 
   return (
-    <View className="flex-1 bg-background">
-      <PageContainer>
+    <PageContainer>
       <View className="px-4 py-5">
         <Text className="text-xl font-bold text-foreground">{t('title.search')}</Text>
       </View>
@@ -192,6 +191,5 @@ export default function SearchScreen() {
         />
       )}
     </PageContainer>
-    </View>
   );
 }
