@@ -5,6 +5,8 @@ import * as Tabs from '@/components/ui/tabs';
 export interface TabDef {
   key: string;
   label: string;
+  /** Render prop for an icon. Called inline inside the tab button. */
+  icon?: () => React.ReactElement;
 }
 
 interface TabbedPanelProps {
@@ -33,13 +35,16 @@ export function TabbedPanel({ tabs, defaultTab, children }: TabbedPanelProps) {
               activeTab === tab.key ? 'border-b-2 border-primary' : ''
             }`}
           >
-            <Text
-              className={`text-xs font-medium ${
-                activeTab === tab.key ? 'text-primary' : 'text-muted-foreground'
-              }`}
-            >
-              {tab.label}
-            </Text>
+            <View className="flex-row items-center gap-1.5">
+              {tab.icon ? (tab.icon() as any) : null}
+              <Text
+                className={`text-xs font-medium ${
+                  activeTab === tab.key ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                {tab.label}
+              </Text>
+            </View>
           </Pressable>
         ))}
       </Tabs.List>

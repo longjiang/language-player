@@ -94,7 +94,7 @@
 | Dictionary Search | `(tabs)/(vocab)/index.tsx` | ✅ | `[l1]/[l2]/dictionary/page.tsx` | Search + recent searches + results cards |
 | Saved Words | `(tabs)/(vocab)/saved-words.tsx` | ✅ | `[l1]/[l2]/saved-words/page.tsx` | Filter + sort + remove + export all work. Exports all saved words as JSON via native share sheet. Inline definitions (pronunciation + part-of-speech + definition) shown beneath each headword via lazy enrichment. Source attribution (video/article title + date) shown for words saved from context. |
 | SRS Review | `(tabs)/(vocab)/review.tsx` | ✅ | `[l1]/[l2]/review/page.tsx` | Full SM-2 algorithm, due card computation, 4 ratings (again/hard/good/easy), undo, daily new card limit, "no cards due" & "all done" states, entry preloading |
-| Word Detail | `(tabs)/(vocab)/word/[entryId].tsx` | ✅ | `dictionary/entry/...` | Definitions, examples, inflections, AI explanation |
+| Word Detail | `(tabs)/(vocab)/word/[entryId].tsx` | ✅ | `dictionary/entry/...` | ADR 0007 two-panel: definitions card (classifiers, study materials, han script, phonetic extras, Google Images, match_type, SpeakButton) + tabs panel (examples, inflections, AI explanation) with icons |
 
 ### Dictionary Components
 
@@ -109,6 +109,8 @@
 | Inline Definition | `components/dictionary/InlineDefinition.tsx` | ✅ | Inline pronunciation + part-of-speech + first definition from lazily enriched canonicalEntry |
 | Saved Word Source | `components/dictionary/SavedWordSource.tsx` | ✅ | Video/article source attribution with icon + title + date |
 | Offline Banner | `components/dictionary/OfflineBanner.tsx` | ✅ | Offline availability status banner |
+| Dictionary Definitions Panel | `components/dictionary/DictionaryDefinitionsPanel.tsx` | ✅ | Full definitions panel (classifiers, study materials, han script, phonetic extras, Google Images, match_type, SpeakButton, SaveButton). Ported from web. |
+| Speak Button | `components/dictionary/SpeakButton.tsx` | ✅ | TTS button using expo-speech via useSpeech hook |
 
 ---
 
@@ -287,7 +289,7 @@
 |---|---|---|---|---|---|
 | 6.1 | Interaction Primitives (@rn-primitives) | — | L | None (incremental adoption) | ✅ Dialog, Select, Switch, Tabs, Portal, Drawer all wrapped in `components/ui/` with NativeWind + shared design tokens. `HamburgerDrawer` now uses `Dialog.Overlay` + `Dialog.DrawerContent` (slide-from-right). Mirrors web's `@base-ui/react` adoption. See [ADR-0014](../../docs/adr/0014-rn-primitives-interaction-primitives.md). |
 | 6.2 | Local Tokenizer | — | XL | Offline dictionary downloads (SPEC-013) | Offline tokenization via local model/WebAssembly. Currently all tokenization requires a round-trip to the Python backend (`POST /dictionary/tokenize`). See [SPEC-016](../../docs/specs/016-mobile-local-tokenization.md). |
-| 6.3 | Dictionary Entry Detail (full page) | `dictionary/entry/[dictionaryId]/[entryId]/page.tsx` | M | None | Deep link target — current mobile word detail covers ~80% of the web page. Full entry page at `word/[entryId]`. |
+| 6.3 | Dictionary Entry Detail (full page) | `dictionary/entry/[dictionaryId]/[entryId]/page.tsx` | M | None | ✅ Full parity with web's `DictionaryDefinitionsPanel` — classifiers (measure words/gender/noun class), study material coverage (textbook appearances), han script detail (simplified/traditional), phonetic detail extras, Google Images link, match_type badge, tab icons (Film/Binary/Sparkles). Adopts ADR 0007 two-panel layout: definitions card + tabs panel (no more "Definitions" tab). New `SpeakButton` (expo-speech TTS), `DictionaryDefinitionsPanel` component. |
 
 **Goal:** Architecture improvements and deep linking support. Local tokenizer is the largest remaining feature — enables fully offline reading.
 
