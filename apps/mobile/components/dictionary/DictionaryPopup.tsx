@@ -107,6 +107,7 @@ export function DictionaryPopup({
                     entry={entry}
                     variant="compact"
                     onPress={onViewDetail ? (e) => onViewDetail(e, results ?? []) : undefined}
+                    l2Code={l2Lang.code}
                   />
                 </View>
                 <SaveButton entry={entry} size={18} />

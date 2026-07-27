@@ -153,6 +153,7 @@
 | TokenizedText | `components/TokenizedText.tsx` | ✅ | Core lemmatized text rendering across all screens |
 | TabbedPanel | `components/TabbedPanel.tsx` | ✅ | Used by WordDetailScreen and Settings |
 | AI Explanation | `components/AiExplanation.tsx` | ✅ | DeepSeek SSE streaming |
+| PitchAccent | `components/PitchAccent.tsx` | ✅ | Japanese kana with ↑↓ pitch accent markers via `@langplayer/utils` |
 | Inflection Table | `components/InflectionTable.tsx` | ✅ | Multi-language inflection support |
 | MarkdownText | `components/MarkdownText.tsx` | ✅ | Basic markdown rendering |
 | VoicePicker | `components/VoicePicker.tsx` | ✅ | TTS voice selector with rate control |
@@ -268,14 +269,14 @@
 
 ---
 
-### Phase 5: CJK Language Support 🔵
+### Phase 5: CJK Language Support 🔵 ✅
 
 | # | Feature | Web Source | Effort | Dependencies | Notes |
 |---|---|---|---|---|---|
-| 5.1 | Script Preference | `use-script-preference.ts` | S | None | Shows alternate script form next to headwords (simplified↔traditional Chinese, chữ Hán for VI, hanja for KO). Pure display logic — reads existing settings. |
-| 5.2 | Pitch Accent Display | `pitch-accent.tsx` | S | None | Japanese kana with pitch accent markings (morae splitting + accent kernel). `@langplayer/utils` already exports `splitIntoMoras` + `applyPitchAccent`. |
+| 5.1 | Script Preference | `use-script-preference.ts` | S | None | ✅ `useScriptPreference` hook ported to mobile (reads `getL2().display.traditional` from SettingsContext). Integrated into `DictionaryEntryCard` — shows alternate script (traditional↔simplified Chinese, chữ Hán for VI, hanja for KO) next to headword. |
+| 5.2 | Pitch Accent Display | `pitch-accent.tsx` | S | None | ✅ `PitchAccent` component renders kana with ↑↓ markers using `@langplayer/utils` (`splitIntoMoras` + `applyPitchAccent`). Shown in `DictionaryEntryCard` for Japanese entries with `phonetic_detail.pitch_accent` data. |
 
-**Goal:** Critical display features for Chinese, Japanese, Korean, and Vietnamese learners. Both are small, self-contained components.
+**Goal:** ✅ Chinese/VI/KO entries show alternate script; Japanese entries show pitch accent markings. Both read from existing `DictionaryEntry` fields — no new data fetching needed. |
 
 ---
 
