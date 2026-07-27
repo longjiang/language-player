@@ -48,6 +48,7 @@
     "fflate": "^0.8.3",
     "jszip": "^3.10.1",
     "kuromoji": "^0.1.2",
+    "kuromoji-ko": "^1.0.8",
     "lucide-react-native": "^1.25.0",
     "marked": "^18.0.7",
     "nativewind": "^4.0.0",

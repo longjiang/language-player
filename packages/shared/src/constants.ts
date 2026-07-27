@@ -233,6 +233,10 @@ export const TOKENIZER_CONFIG: Record<string, TokenizerConfig> = {
   // Japanese: requires IPADIC dictionary data pack download (~3 MB)
   ja: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsKuromoji: true, tokenizerDataSize: 3_000_000 },
 
+  // ── Phase 2d: kuromoji-ko (full morphological analysis) ──
+  // Korean: requires mecab-ko-dic data pack download (~2 MB pruned)
+  ko: { snowballCode: null, hasLemmaTable: false, lemmaTableSize: 0, needsKuromoji: true, tokenizerDataSize: 2_000_000 },
+
   // ── Snowball + Lemma Table (both available, 13 languages) ──
   // ── Snowball + Lemma Table (both available, 13 languages) ──
   ca: { snowballCode: 'catalan', hasLemmaTable: true, lemmaTableSize: 200_000 },
