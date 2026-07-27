@@ -21,6 +21,7 @@
     "@langplayer/utils": "*",
     "@react-native-community/slider": "^5.2.0",
     "@rn-primitives/dialog": "^1.5.2",
+    "@rn-primitives/portal": "^1.5.2",
     "@rn-primitives/select": "^1.5.2",
     "@rn-primitives/switch": "^1.5.2",
     "@rn-primitives/tabs": "^1.5.2",
