@@ -501,7 +501,7 @@ async function getKuromojiTokenizer(l2: string): Promise<any | null> {
       const { loadKuromoji } = await import('@/lib/kuromoji-loader');
       return await loadKuromoji(dicPath);
     } catch (e) {
-      console.warn(`[Tokenizer] kuromoji (${l2}) init error:`, e);
+      if (__DEV__) console.warn(`[Tokenizer] kuromoji (${l2}) init error:`, e);
       return null;
     }
   })();
@@ -568,7 +568,7 @@ async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null>
       ...(t.reading ? { pronunciation: t.reading } : {}),
     }));
   } catch (e) {
-    console.warn('[Tokenizer] kuromoji tokenize error:', e);
+    if (__DEV__) console.warn('[Tokenizer] kuromoji tokenize error:', e);
     return null;
   }
 }
@@ -637,7 +637,7 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
       };
     });
   } catch (e) {
-    console.warn('[Tokenizer] kuromoji-ko tokenize error:', e);
+    if (__DEV__) console.warn('[Tokenizer] kuromoji-ko tokenize error:', e);
     return null;
   }
 }
