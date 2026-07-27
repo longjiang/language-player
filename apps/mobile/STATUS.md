@@ -60,7 +60,8 @@
 | Subtitles Mode Band | `components/video/SubtitlesModeBand.tsx` | ✅ | Overlay/non-overlay band with line nav, TokenizedText, overlay on wide screens |
 | Transcript Queue Panel | `components/video/TranscriptQueuePanel.tsx` | ✅ | Transcript / queue / info tab wrapper |
 | Video Queue List | `components/video/VideoQueueList.tsx` | ✅ | Queue list with TV show episode headers |
-| YouTube Channel Card | `components/video/YouTubeChannelCard.tsx` | ✅ | Channel thumbnail, title, external link, channel page link |
+| YouTube Channel Card | `components/video/YouTubeChannelCard.tsx` | ✅ | Channel thumbnail, title, external link, channel page link, channel actions menu |
+| Channel Actions Menu | `components/video/ChannelActionsMenu.tsx` | ✅ | Subscribe/unsubscribe/not-interested bottom sheet. Reusable — appears on VideoCard (both layouts) and YouTubeChannelCard |
 | Video Meta | `components/video/VideoMeta.tsx` | ✅ | Title, views/likes/comments/date, difficulty badge, locale/category |
 
 ---
@@ -257,13 +258,13 @@
 
 ---
 
-### Phase 4: Content Discovery 🟠
+### Phase 4: Content Discovery 🟠 ✅
 
 | # | Feature | Web Source | Effort | Dependencies | Notes |
 |---|---|---|---|---|---|
-| 4.1 | Channel Subscribe/Actions | `channel-actions-menu.tsx` + `use-channel-preference.ts` | M | `use-channel-preference` hook | Subscribe, unsubscribe, "not interested" per-channel preferences. Reusable menu component — appears on watch page and channel cards. Affects video recommendations. |
+| 4.1 | Channel Subscribe/Actions | `channel-actions-menu.tsx` + `use-channel-preference.ts` | M | `use-channel-preference` hook | ✅ `useChannelPreference` hook mirrors web's shared-cache pattern (deduplicates N concurrent fetches). `ChannelActionsMenu` bottom sheet with subscribe/unsubscribe/not-interested options. Integrated into `YouTubeChannelCard` and `VideoCard` (both card + list layouts). |
 
-**Goal:** Channel preferences influence content recommendations and let users curate their feed.
+**Goal:** ✅ Channel preferences influence content recommendations and let users curate their feed.
 
 ---
 
