@@ -27,14 +27,14 @@ export default function DeleteAccountScreen() {
         throw new Error(t('error.login_required') || 'Not authenticated');
       }
 
-      // Delete account via Flask proxy (uses admin token server-side)
+      // Delete account via Flask proxy — user ID is extracted from JWT token server-side.
+      // No request body needed; the Authorization header identifies the user.
       const res = await fetch(`${PYTHON_API_URL}/auth/delete-account`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ userId: user.id }),
       });
 
       if (!res.ok) {

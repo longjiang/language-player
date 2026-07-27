@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import type { YouTubeVideo } from '@langplayer/shared';
+import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
 import type { SyncedLine } from '@/lib/subtitle-csv';
+import { parseCSVSubtitles } from '@/lib/subtitle-csv';
 
 const PYTHON_API_URL = process.env.PYTHON_API_URL ?? 'http://127.0.0.1:5001';
 
@@ -38,25 +39,19 @@ export async function GET(
       return NextResponse.json({ error: 'Video not found' }, { status: 404 });
     }
 
-    // Parse L2 subtitles from Directus CSV (subs_l2 field) — or use lines if present
-    let l2Lines: { starttime: number; duration: number; line: string }[] = [];
+    // Parse L2 subtitles — prefer Flask-parsed lines, fall back to CSV parsing
+    let l2Lines: SubtitleLine[] = [];
 
     if (flaskData?.lines && Array.isArray(flaskData.lines)) {
-      l2Lines = flaskData.lines;
+      // Normalize Flask line shapes (YouTube fallback: {starttime, line};
+      // /videos/subtitles: {starttime, duration, l1Line, l2Line})
+      l2Lines = flaskData.lines.map((l: any) => ({
+        starttime: l.starttime ?? 0,
+        duration: l.duration,
+        line: l.l2Line ?? l.line ?? '',
+      }));
     } else if (item.subs_l2 && typeof item.subs_l2 === 'string') {
-      // Parse CSV from Flask response
-      const lines = item.subs_l2.split('\n').slice(1); // skip header
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        const parts = line.split(',');
-        if (parts.length >= 3) {
-          l2Lines.push({
-            starttime: parseFloat(parts[0]),
-            duration: parseFloat(parts[1]),
-            line: parts.slice(2).join(','),
-          });
-        }
-      }
+      l2Lines = parseCSVSubtitles(item.subs_l2);
     }
 
     // Wrap L2 lines as SyncedLine with empty L1 (translations come later via /translate_array)
@@ -73,7 +68,7 @@ export async function GET(
       id: String(item.id ?? ''),
       title: item.title || 'YouTube Video',
       difficulty: typeof item.difficulty === 'number' ? item.difficulty : undefined,
-      duration: parseDuration(item.duration) ?? item.duration,
+      duration: parseDuration(item.duration),
       views: typeof item.views === 'number' ? item.views : undefined,
       likes: typeof item.likes === 'number' ? item.likes : undefined,
       comments: typeof item.comments === 'number' ? item.comments : undefined,
