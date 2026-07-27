@@ -1,20 +1,23 @@
 import { useState, useCallback } from 'react';
 import {
   View, Text, TextInput, Pressable, ScrollView,
-  ActivityIndicator,
+  ActivityIndicator, Alert,
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
+import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
 import { parseMarkdownBlocks, type ContentBlock } from '@/lib/parse-markdown';
 import { TokenizedText } from '@/components/TokenizedText';
-import { Globe } from 'lucide-react-native';
+import { TextActionMenu } from '@/components/TextActionMenu';
+import { Globe, StickyNote, Plus, Trash2, BookOpen } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 export default function WebReaderScreen() {
-  const { l2Lang } = useLanguage();
+  const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
+  const notes = useReaderNotes(l2Lang.code);
 
   const [url, setUrl] = useState('');
   const [text, setText] = useState('');
@@ -22,6 +25,9 @@ export default function WebReaderScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [blocks, setBlocks] = useState<ContentBlock[] | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [renameId, setRenameId] = useState<number | null>(null);
+  const [renameText, setRenameText] = useState('');
 
   const handleLoad = useCallback(async (loadUrl?: string) => {
     const targetUrl = loadUrl || url;
@@ -54,9 +60,28 @@ export default function WebReaderScreen() {
     }
   }, [url, t]);
 
+  // Notes rename
+  const handleRenameSubmit = async () => {
+    if (renameId !== null && renameText.trim()) {
+      await notes.renameNote(renameId, renameText.trim());
+      setRenameId(null);
+    }
+  };
+
+  // Notes delete
+  const handleDelete = (noteId: number) => {
+    Alert.alert(t('action.delete'), t('msg.confirm_delete_note'), [
+      { text: t('action.cancel'), style: 'cancel' },
+      { text: t('action.delete'), style: 'destructive', onPress: () => notes.deleteNote(noteId) },
+    ]);
+  };
+
   return (
     <View className="flex-1 bg-background">
-      <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
+      {/* Main content row */}
+      <View className="flex-1 flex-row">
+        <View className="flex-1">
+          <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         {/* ── Header ── */}
         <View className="px-4 pt-5 pb-3 flex-row items-center gap-3">
           <Globe size={24} color={ICON_MUTED} />
@@ -65,6 +90,12 @@ export default function WebReaderScreen() {
               {title || t('title.web_reader')}
             </Text>
           </View>
+          <Pressable
+            onPress={() => setSidebarOpen(!sidebarOpen)}
+            className="rounded p-1.5 active:bg-muted"
+          >
+            <StickyNote size={18} color={ICON_MUTED} />
+          </Pressable>
         </View>
 
         {/* ── URL input ── */}
@@ -127,29 +158,35 @@ export default function WebReaderScreen() {
                   </Text>
                 )}
                 {block.type === 'paragraph' && (
-                  <TokenizedText
-                    text={block.text}
-                    l2Code={l2Lang.code}
-                  />
-                )}
-                {block.type === 'blockquote' && (
-                  <View className="border-l-2 border-muted-foreground/30 pl-3">
+                  <TextActionMenu text={block.text} l2Code={l2Lang.code}>
                     <TokenizedText
                       text={block.text}
                       l2Code={l2Lang.code}
                     />
-                  </View>
+                  </TextActionMenu>
                 )}
-                {block.type === 'list-item' && (
-                  <View className="flex-row">
-                    <Text className="mr-2 text-muted-foreground">•</Text>
-                    <View className="flex-1">
+                {block.type === 'blockquote' && (
+                  <TextActionMenu text={block.text} l2Code={l2Lang.code}>
+                    <View className="border-l-2 border-muted-foreground/30 pl-3">
                       <TokenizedText
                         text={block.text}
                         l2Code={l2Lang.code}
                       />
                     </View>
-                  </View>
+                  </TextActionMenu>
+                )}
+                {block.type === 'list-item' && (
+                  <TextActionMenu text={block.text} l2Code={l2Lang.code}>
+                    <View className="flex-row">
+                      <Text className="mr-2 text-muted-foreground">•</Text>
+                      <View className="flex-1">
+                        <TokenizedText
+                          text={block.text}
+                          l2Code={l2Lang.code}
+                        />
+                      </View>
+                    </View>
+                  </TextActionMenu>
                 )}
               </View>
             )})}
@@ -175,8 +212,77 @@ export default function WebReaderScreen() {
             </Text>
           </View>
         )}
-      </ScrollView>
+          </ScrollView>
+        </View>
 
+        {/* ── Notes Sidebar ── */}
+        {sidebarOpen && (
+          <View className="w-56 border-l border-border bg-card">
+            <View className="border-b border-border px-3 py-2">
+              <Text className="text-sm font-semibold text-foreground">{t('title.notes')}</Text>
+            </View>
+            <Pressable
+              onPress={() => notes.createNote()}
+              className="mx-3 my-2 flex-row items-center gap-1.5 rounded-lg border border-border px-3 py-2 active:bg-muted"
+            >
+              <Plus size={14} color={ICON_MUTED} />
+              <Text className="text-xs text-foreground">{t('action.new_note')}</Text>
+            </Pressable>
+
+            <ScrollView className="flex-1">
+              {notes.notesLoading && (
+                <ActivityIndicator size="small" color={ICON_MUTED} style={{ marginTop: 20 }} />
+              )}
+              {notes.notesError && (
+                <Text className="px-3 py-4 text-xs text-red-500">{notes.notesError}</Text>
+              )}
+              {!notes.notesLoading && notes.notes.length === 0 && (
+                <Text className="px-3 py-4 text-xs text-muted-foreground">{t('msg.no_notes_yet')}</Text>
+              )}
+              {notes.notes.map((n) => (
+                <View key={n.id}>
+                  {renameId === n.id ? (
+                    <View className="flex-row items-center px-2 py-1">
+                      <TextInput
+                        className="flex-1 rounded border border-border px-2 py-1 text-xs text-foreground"
+                        value={renameText}
+                        onChangeText={setRenameText}
+                        onSubmitEditing={handleRenameSubmit}
+                        onBlur={handleRenameSubmit}
+                        autoFocus
+                      />
+                    </View>
+                  ) : (
+                    <Pressable
+                      onPress={() => notes.selectNote(n.id)}
+                      onLongPress={() => {
+                        setRenameId(n.id);
+                        setRenameText(n.title ?? '');
+                      }}
+                      className={`flex-row items-center gap-2 px-3 py-2 active:bg-muted ${notes.currentNoteId === n.id ? 'bg-primary/10' : ''}`}
+                    >
+                      <StickyNote size={14} color={ICON_MUTED} />
+                      <View className="flex-1">
+                        <Text className={`text-sm truncate ${notes.currentNoteId === n.id ? 'font-medium text-primary' : 'text-foreground'}`} numberOfLines={1}>
+                          {n.title ?? t('msg.untitled_note')}
+                        </Text>
+                        {n.created_on && (
+                          <Text className="text-xs text-muted-foreground">
+                            {new Date(n.created_on).toLocaleDateString()}
+                          </Text>
+                        )}
+                      </View>
+                      <Pressable onPress={() => handleDelete(n.id)} className="rounded p-1 active:bg-muted">
+                        <Trash2 size={12} color={ICON_MUTED} />
+                      </Pressable>
+                    </Pressable>
+                  )}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
