@@ -40,7 +40,7 @@ export function SubtitleDisplay({
   highlightTerms,
 }: SubtitleDisplayProps) {
   const { l1Lang, l2Lang } = useLanguage();
-  const { display } = useSettingsContext();
+  const { display, playback } = useSettingsContext();
   const t = useT();
   const router = useRouter();
   const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
@@ -125,15 +125,28 @@ export function SubtitleDisplay({
     return idx;
   }, [currentTime, l2Lines]);
 
+  // ── Scroll throttle for smoothScroll mode ──
+  const lastScrollTime = useRef(0);
+  const THROTTLE_MS = 2000;
+
   // Keep state in sync with computed value; scroll when it changes
   useEffect(() => {
     if (computedActiveIdx !== activeIdx) {
       setActiveIdx(computedActiveIdx);
       if (computedActiveIdx >= 0 && scrollRef.current) {
-        scrollRef.current.scrollToIndex({ index: computedActiveIdx, animated: true, viewPosition: 0.5 });
+        const now = Date.now();
+        const isThrottled = playback.smoothScroll && (now - lastScrollTime.current < THROTTLE_MS);
+        if (!isThrottled) {
+          lastScrollTime.current = now;
+          scrollRef.current.scrollToIndex({
+            index: computedActiveIdx,
+            animated: playback.smoothScroll,
+            viewPosition: 0.5,
+          });
+        }
       }
     }
-  }, [computedActiveIdx]);
+  }, [computedActiveIdx, playback.smoothScroll]);
 
   if (loadingSubs) {
     return (
