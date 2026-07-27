@@ -179,7 +179,21 @@ export function useEpubPagination({
           return next;
         });
       })
-      .catch(() => {})
+      .catch(async () => {
+        // Offline fallback: lemmatizeText() has server-first-then-local chain.
+        // lemmatizeInflight dedup handles concurrent calls for identical text.
+        if (tokenLoadGenRef.current !== gen) return;
+        const { lemmatizeText } = await import('@/lib/tokenizer');
+        const results = await Promise.all(
+          missing.map(m => lemmatizeText(m.text, l2Code)),
+        );
+        if (tokenLoadGenRef.current !== gen) return;
+        setTokenCache(prev => {
+          const next = { ...prev };
+          missing.forEach((m, i) => { if (results[i]) next[m.idx] = results[i]!; });
+          return next;
+        });
+      })
       .finally(() => { if (tokenLoadGenRef.current === gen) setLoadingTokens(false); });
   }, [hasMeasured, page, blocks, pageBreaks, visibleBlocks, tokenCache, l2Code]);
 
