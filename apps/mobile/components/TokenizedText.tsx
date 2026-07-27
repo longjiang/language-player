@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, Text, Platform } from 'react-native';
-import { PYTHON_API_URL } from '@/lib/api-url';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
+import { lemmatizeText } from '@/lib/tokenizer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
@@ -14,15 +14,6 @@ import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { configureLayoutAnimation } from '@/lib/animations';
 import { bulkLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
 import { getConverter } from '@/lib/chinese-script';
-
-// ── Shared in-memory lemmatize cache ──────────────────
-// All TokenizedText instances share this Map, so if two components
-// render the same text, only one API call is made.
-const lemmatizeCache = new Map<string, LemmatizedToken[]>();
-
-// In-flight request deduplication — prevents thundering herd when many
-// TokenizedText instances mount simultaneously and all hit the fallback.
-const lemmatizeInflight = new Map<string, Promise<LemmatizedToken[]>>();
 
 // ── Word difficulty helpers for hardWords filter ──────────────────
 
@@ -75,18 +66,18 @@ export interface TokenizedTextProps {
 }
 
 /**
- * Renders text as tappable word tokens with server-side lemmatization.
+ * Renders text as tappable word tokens with lemmatization via `lemmatizeText()`.
  *
- * When `tokens` is provided, uses those directly (pre-lemmatized).
- * Otherwise, auto-fetches from `POST /lemmatize-normalized`, checking:
- *   1. Video token cache (if `tokenCache` provided)
- *   2. Shared in-memory cache (cross-component dedup)
- *   3. Server API call
+ * Lemma resolution pipeline (SPEC-018):
+ *   1. Pre-computed `tokens` prop (skip all resolution)
+ *   2. Video token cache (`tokenCache` prop, for playback optimization)
+ *   3. `lemmatizeText()` — server-first (POST /lemmatize-normalized, 3s timeout),
+ *      falls back to local regex split + surface-as-lemma / arabic-stem
  *
  * Includes a built-in dictionary popup — tapping any word opens the
  * dictionary lookup. No `onWordPress` prop needed (matches Next.js).
  *
- * While loading or on error, shows plain undivided text.
+ * While loading, shows plain undivided text.
  */
 export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
@@ -235,24 +226,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     if (tc) {
       const cached = tc.get(effectiveText);
       if (cached && cached.length > 0) {
-        lemmatizeCache.set(cacheKey, cached);
         setTokens(cached);
         setLoading(false);
         return;
       }
     }
-
-    // 2. Check shared in-memory cache
-    const memCached = lemmatizeCache.get(cacheKey);
-    if (memCached && memCached.length > 0) {
-      setTokens(memCached);
-      setLoading(false);
-      return;
-    }
-
-    // Prevent concurrent fetches for the same text within this instance
-    if (loadingRef.current) return;
-    loadingRef.current = true;
 
     // Cancel previous in-flight request
     abortRef.current?.abort();
@@ -262,48 +240,17 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     let cancelled = false;
     setLoading(true);
 
-    const fetchTokens = async () => {
-      try {
-        // 3. Fall back to per-line API call — with in-flight deduplication
-        //    so that concurrent TokenizedText instances for the same text
-        //    share a single request instead of each launching their own.
-        let inflight = lemmatizeInflight.get(cacheKey);
-        if (!inflight) {
-          inflight = fetch(`${PYTHON_API_URL}/lemmatize-normalized`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: effectiveText, l2: l2Code }),
-            signal: controller.signal,
-          }).then(async (response) => {
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data = await response.json();
-            const serverTokens = data.tokens ?? [];
-            lemmatizeCache.set(cacheKey, serverTokens);
-            return serverTokens;
-          }).finally(() => {
-            lemmatizeInflight.delete(cacheKey);
-          });
-          lemmatizeInflight.set(cacheKey, inflight);
-        }
-
-        const serverTokens = await inflight;
-
-        if (!cancelled) {
-          setTokens(serverTokens);
-          setLoading(false);
-          loadingRef.current = false;
-        }
-      } catch (err: any) {
-        if (err.name === 'AbortError') { loadingRef.current = false; return; }
-        if (!cancelled) {
-          console.warn('[TokenizedText] Tokenization failed, using fallback:', err.message);
-          setLoading(false);
-          loadingRef.current = false;
-        }
+    // 2. Server-first, local-fallback pipeline (SPEC-018 Phase 1)
+    //    - Tries POST /lemmatize-normalized first (3s timeout)
+    //    - Falls back to regex split + surface-as-lemma (or arabic-stem for ar)
+    //    - Handles in-memory cache + in-flight dedup internally
+    lemmatizeText(effectiveText, l2Code, controller.signal).then((result) => {
+      if (!cancelled) {
+        setTokens(result);
+        setLoading(false);
+        loadingRef.current = false;
       }
-    };
-
-    fetchTokens();
+    });
 
     return () => {
       cancelled = true;
