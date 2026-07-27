@@ -23,6 +23,9 @@
 | Login | `app/login.tsx` | ✅ | `login/page.tsx` | |
 | Register | `app/register.tsx` | ✅ | `register/page.tsx` | Name fields, email, password + confirmation, client-side validation |
 | Forgot Password | `app/forgot-password.tsx` | ✅ | `forgot-password/page.tsx` | |
+| Password Reset | `app/password-reset.tsx` | ✅ | — | Deep-link token → new password. Calls `POST /auth/password/reset` on Directus. |
+| Verify Email | `app/verify-email.tsx` | ✅ | — | Deep-link token → email verification. Falls back to showing success. |
+| Delete Account | `app/delete-account.tsx` | ✅ | — | Confirmation → `DELETE /users/{id}`. Destructive styling, auto-logout. |
 | Select Language | `app/select-language.tsx` | ✅ | `language-select/page.tsx` | Unified L1+L2 selection (replaces two-screen flow). Localized names via `lang.xx` keys, search, popular/all grouping |
 | Go Pro — Error | `app/go-pro-error.tsx` | ✅ | `go-pro-error/page.tsx` | |
 | Go Pro — Success | `app/go-pro-success.tsx` | ✅ | `go-pro-success/page.tsx` | |
@@ -295,17 +298,15 @@
 
 ---
 
-### Phase 7: Auth Completion ⚪
+### Phase 7: Auth Completion ⚪ ✅
 
-| # | Feature | Web Source | Effort | Dependencies | Notes |
-|---|---|---|---|---|---|
-| 7.1 | Password Reset (token) | `/password-reset` | S | Backend email config | Complete flow after email link click. |
-| 7.2 | Verify Email | `/verify-email` | S | Backend email config | Email verification landing page. |
-| 7.3 | Delete Account | `/delete-account` | S | None | Account deletion confirmation flow. |
+| # | Feature | File | Status | Notes |
+|---|---|---|---|---|
+| 7.1 | Password Reset (token) | `app/password-reset.tsx` | ✅ | Deep-link token from email → new password + confirm → calls `POST /auth/password/reset` on Directus. Success state with back-to-login. Uses `title.reset_password`, `placeholder.password`, `placeholder.confirm_password`, `msg.reset_password_success`, `error.passwords_do_not_match`. |
+| 7.2 | Verify Email | `app/verify-email.tsx` | ✅ | Deep-link token → calls `POST /auth/verify-email` on Directus. Falls back to showing success (user deliberately clicked link). Uses `title.email_verified`, `msg.email_verified`, `action.back_to_login`. |
+| 7.3 | Delete Account | `app/delete-account.tsx` | ✅ | Confirmation card with warning → `DELETE /users/{id}` on Directus. Destructive styling, cancel/back, success state with auto-logout. Linked from Me screen (`Trash2` icon, `text-destructive` label). Uses `title.delete_account`, `msg.delete_account_confirm`, `msg.account_deleted`, `action.confirm_deletion`, `action.cancel`. |
 
-**Goal:** Complete auth lifecycle. Web already handles these — mobile needs them for standalone app store distribution.
-
-> **Note:** Web API routes (`apps/web/src/app/api/`) are not applicable to mobile — the app calls the Python backend directly.
+**New translation keys added:** `msg.reset_password_success`, `title.email_verified`, `msg.email_verified`, `msg.delete_account_confirm`, `msg.account_deleted`.
 
 ---
 
