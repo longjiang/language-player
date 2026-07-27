@@ -336,157 +336,201 @@ Test both online (server responds) and offline (airplane mode) to confirm the fa
 | Dictionary search component | Replace direct `fetch(POST /lemmatize-normalized)` with `lemmatizeText()` call |
 | `apps/mobile/package.json` | Add `arabic-stem` dependency |
 
-### Phase 2 — Bundled Engines + Downloaded Data
+### Phase 2 — Language-Specific Lemmatizers
 
-There are two kinds of assets needed for local tokenization, and they follow fundamentally different distribution models:
-
-| Asset Type | Examples | Distribution | Why |
-|---|---|---|---|
-| **JS engines** | kuromoji.js, kuromoji-ko, snowball-stemmers (~450 KB for all 15 languages) | **Bundled at build time** as npm dependencies | React Native cannot dynamically load npm packages at runtime. These are small without their dictionaries. |
-| **Data/dictionary files** | IPADIC dict (~3 MB pruned), mecab-ko-dic (~2 MB pruned), lemma tables (~100–500 KB each) | **Downloaded at runtime** alongside offline dictionary download, stored in device filesystem or SQLite | These are the bulk of the size. They're pure data — no executable code. |
-
-**Total engine bundle size**: ~850 KB (kuromoji + kuromoji-ko + snowball-stemmers). Downloaded data is incremental per language.
+Implemented in subphases ordered by effort and risk. Each subphase adds one lemmatizer type; the `lemmatizeText()` fallback chain is extended incrementally. See [ARCH-018](../arch/018-local-tokenization-strategy.md) for the full per-language taxonomy.
 
 #### React Native Compatibility ⚠️
 
-These JS NLP libraries were written for Node.js and may use `fs` (file system) or `zlib` (compression) — neither exists in React Native's JavaScript runtime (Hermes/JSC). Each library needs a different strategy:
+JS NLP libraries written for Node.js may use `fs` or `zlib` — neither exists in RN. Each library needs a different strategy:
 
 | Library | Node APIs Used | RN Solution |
 |---|---|---|
-| **kuromoji** | `fs`, `zlib` (Node) — but ships a separate `BrowserDictionaryLoader.js` that uses `XMLHttpRequest` + JS inflate | ✅ **Use the browser build.** Provide a custom `loader` function that reads dict files from device storage via `expo-file-system` instead of XHR. The browser build already includes a pure-JS zlib implementation (pako). |
-| **kuromoji-ko** | Same architecture as kuromoji. Has a documented `loader` option for custom file loading. Browser usage is officially supported (CDN example in README). | ✅ **Use the browser-compatible build with a custom loader.** Same pattern as kuromoji. |
-| **nlptoolkit-morphologicalanalysis** | `fs` via `nlptoolkit-dictionary` to read `turkish_dictionary.txt` and `turkish_finite_state_machine.xml`. No browser build exists. Only Node.js is listed as a requirement. | ❌ **Dropped for Phase 2.** No browser/RN support. Use `snowball-stemmers` (Turkish Snowball, ~50 KB, pure JS) as the primary Turkish lemmatizer instead. |
-| **snowball-stemmers** | None — pure algorithmic code, no file I/O | ✅ **Works natively.** No Node APIs used. |
-| **arabic-stem** | None — pure algorithmic code | ✅ Already working in Phase 1. |
-
-> **Custom loader pattern**: For kuromoji/kuromoji-ko, we provide a loader object that implements `load(path, callback)` using `expo-file-system.readAsStringAsync()` or `fetch()` to read local `.dat.gz` files as `ArrayBuffer`, then decompress with a pure-JS inflate (pako or the browser build's built-in inflate). This is the same pattern the browser build uses except targeting device storage URLs instead of HTTP URLs.
-
-#### Engine npm Dependencies (bundled)
-
-```bash
-cd apps/mobile && npm install kuromoji kuromoji-ko snowball-stemmers
-```
-
-These packages contain only the JS logic — not the large dictionaries. For kuromoji and kuromoji-ko, we provide a custom loader that reads dictionary `.dat` files from device storage (see [React Native Compatibility](#react-native-compatibility-) above). For snowball-stemmers, each stemmer is pure algorithmic code with no data files. **nlptoolkit is excluded** — it uses Node `fs` internally with no browser fallback; we use the Turkish Snowball stemmer instead.
-
-#### Downloaded Data (per language, triggered by SPEC-013 dict download)
-
-| Data Pack | Language(s) | Size | JS Engine | Downloaded With |
-|---|---|---|---|---|
-| IPADIC dict (pruned top 30K, `.dat.gz` files) | Japanese | ~3 MB | `kuromoji` (browser build + custom loader) | Japanese offline dictionary |
-| mecab-ko-dic (pruned top 30K, `.dat` files) | Korean | ~2 MB | `kuromoji-ko` (browser build + custom loader) | Korean offline dictionary |
-| Turkish Snowball stemmer | Turkish | 0 KB | `snowball-stemmers` (pure JS, no data needed) | Already bundled — no download |
-| Persian lemma table (Hazm export, JSON) | Persian | ~80 KB | `lemmatizeText()` fallback chain (lookup, no engine) | Persian offline dictionary |
-| Pre-built lemma tables (JSON) | ca, cs, cy, gl, gv, sk, sl, uk, bg, el, et, is, la, lv, lt, nn, pl, sq, hr, ru, ka, sw, ast | ~100–500 KB each | `lemmatizeText()` fallback chain (lookup, no engine) | Respective offline dictionary |
-
-#### Data Preparation & Wiring
-
-Each engine exposes a constructor or builder option for loading dictionary files from a custom local path. We extract the dictionary files from the npm packages, host them on the Python server as downloadable zip archives, and download + extract them to the device filesystem alongside the offline dictionary.
-
-**kuromoji (Japanese)** — 12 IPADIC `.dat.gz` files from `node_modules/kuromoji/dict/`:
-
-| File | Purpose |
-|---|---|
-| `base.dat.gz` | Base form dictionary |
-| `cc.dat.gz` | Connection costs (Viterbi) |
-| `check.dat.gz` | Spell-check dictionary |
-| `tid.dat.gz` | Token ID mapping |
-| `tid_map.dat.gz` | Token ID → surface map |
-| `tid_pos.dat.gz` | Token ID → POS map |
-| `unk.dat.gz` | Unknown word dictionary |
-| `unk_char.dat.gz` | Unknown character types |
-| `unk_compat.dat.gz` | Unknown word compatibility |
-| `unk_invoke.dat.gz` | Unknown word invocation |
-| `unk_map.dat.gz` | Unknown word category map |
-| `unk_pos.dat.gz` | Unknown word POS estimation |
-
-**Preparation**: Copy from `node_modules/kuromoji/dict/` into a zip archive, prune by frequency (keep top 30K entries per `.dat`), host at `GET /lemmatization/download?l2=ja`. Total: ~3 MB gzipped.
-
-**Wiring**: `kuromoji.builder({ dicPath: '/data/tokenizers/ja/' })` — reads `.dat.gz` files from directory, decompresses internally.
+| **kuromoji** | `fs`, `zlib` (Node) — but ships a `BrowserDictionaryLoader.js` using `XMLHttpRequest` + JS inflate | ✅ Use browser build with custom loader via `expo-file-system` |
+| **kuromoji-ko** | Same architecture; documented `loader` option; official browser/CDN support | ✅ Same pattern as kuromoji |
+| **nlptoolkit** | `fs` via `nlptoolkit-dictionary`; no browser build | ❌ Dropped — use snowball-stemmers Turkish |
+| **snowball-stemmers** | None — pure algorithmic | ✅ Works natively |
+| **arabic-stem** | None | ✅ Working in Phase 1 |
 
 ---
 
-**kuromoji-ko (Korean)** — requires a one-time build step on the server:
+#### Phase 2a: Snowball Stemmers + Lemma Tables
 
+**Goal**: Add offline lemmatization for ~40 languages at zero data-download cost. Snowball stemmers are pure JS (~30 KB each) bundled as one npm package. Lemma tables are small JSON files downloaded silently alongside the offline dictionary.
+
+**Languages covered**: de, en, es, fr, it, pt, ro, sv, da, nb, nl, hu, fi, hy, tr (Snowball, 15 languages) + ca, cs, cy, gl, gv, sk, sl, uk, bg, el, et, is, la, lv, lt, nn, pl, sq, hr, ru, ka, sw, ast, fa (lemma tables, 24 languages).
+
+**npm dependency** (bundled at build time, ~450 KB for all 15 stemmers):
+```bash
+cd apps/mobile && npm install snowball-stemmers
+```
+
+**Snowball stemmers** — pure algorithmic, no data files:
+```typescript
+import Snowball from 'snowball-stemmers';
+
+const stemmers = new Map<string, (word: string) => string>();
+function getSnowballStemmer(lang: string): (word: string) => string {
+  if (!stemmers.has(lang)) stemmers.set(lang, Snowball.stemmer(lang));
+  return stemmers.get(lang)!;
+}
+// Usage: getSnowballStemmer('de')('besser') → 'bess' (stem, not lemma — serves lookup)
+```
+
+**Lemma tables** — JSON `{surface: [lemma]}` downloaded on dict download, stored in SQLite:
+```
+GET /lemmatization/export?l2=de&format=json
+→ { "table": { "ging": ["gehen"], "lief": ["laufen"], "besser": ["gut"], ... } }
+```
+
+The server reads LemmatizationList TSV files (`data/lemmatization-lists/lemmatization-{code}.txt`) and Simplemma Python dictionaries, merges, filters by frequency, and returns as compressed JSON. On the device, the JSON is stored in SQLite and queried via a simple `surface → [lemmas]` lookup.
+
+**Fallback chain order**: Snowball stemmer (if available for the language) → downloaded lemma table lookup → regex + surface-as-lemma.
+
+**Files touched**:
+
+| File | Change |
+|---|---|
+| `apps/mobile/package.json` | Add `snowball-stemmers` |
+| `apps/mobile/lib/tokenizer.ts` | Add `getSnowballStemmer()`, lemma table SQLite lookup |
+| `zerotohero-python-server/` | New endpoint: `GET /lemmatization/export?l2=X&format=json` |
+
+---
+
+#### Phase 2b: Chinese Segmentation (Dict Max-Matching)
+
+**Goal**: Add word segmentation for Chinese (and fallback for Thai, Khmer, Burmese, Lao) using the offline dictionary's own headword list. No npm dependencies, no data download — reuses the existing SPEC-013 offline dictionary.
+
+**How it works**: The offline dictionary SQLite table already contains all headwords for a language. We extract them with `SELECT DISTINCT head FROM dict_{l2}` and build a `Set<string>`. A forward maximum matching algorithm segments text by finding the longest dictionary match at each position. For unknown characters, emit single-character tokens.
+
+```typescript
+function maxMatchSegment(text: string, wordSet: Set<string>, maxWordLen: number): string[] {
+  const result: string[] = [];
+  let i = 0;
+  while (i < text.length) {
+    let longestMatch = text[i];
+    for (let len = Math.min(maxWordLen, text.length - i); len >= 1; len--) {
+      const candidate = text.slice(i, i + len);
+      if (wordSet.has(candidate) || len === 1) {
+        longestMatch = candidate;
+        break;
+      }
+    }
+    result.push(longestMatch);
+    i += longestMatch.length;
+  }
+  return result;
+}
+```
+
+**Accuracy**: ~90% for Chinese (cedict, 30K entries). ~80-88% for Thai/Khmer/Burmese (varies by dictionary coverage). Chinese characters are always their own lemma (no inflection), so surface-as-lemma is correct.
+
+> **Why not jieba?** jieba is the standard Chinese tokenizer (Python). Its core algorithm IS dictionary-based maximum matching plus an HMM layer for unknown words (~+5% accuracy). JS jieba ports exist (`nodejieba`, `@node-rs/jieba`) but are C++/Rust native bindings — not RN-compatible. WASM ports (`jieba-wasm`) require `expo-webassembly` (experimental). Our dict max-matching approach achieves ~90% accuracy with zero additional dependencies by reusing the existing offline dictionary. If the missing ~5% from HMM proves insufficient in testing, we can explore WASM jieba or implement a lightweight HMM in pure JS using bigram frequencies.
+
+**Languages covered**: `zh`, `cmn`, `nan`, `hak`, `lzh`, `gan`, `hsn`, `wuu`, `cjy`, `cpx`, `yue` (Chinese varieties) + `th`, `km`, `lo`, `my`, `bo` as fallback when Intl.Segmenter is unavailable.
+
+**Files touched**:
+
+| File | Change |
+|---|---|
+| `apps/mobile/lib/tokenizer.ts` | Add `maxMatchSegment()`, integrate into fallback chain for CJK/SEA languages |
+| Offline dictionary SQLite | Query `SELECT DISTINCT head FROM dict_{l2}` to build word set |
+
+---
+
+#### Phase 2c: Japanese (kuromoji)
+
+**Goal**: Full morphological analysis (segmentation + lemmatization) for Japanese using kuromoji with a downloaded IPADIC dictionary. This is the highest-complexity subphase — it requires a custom RN file loader.
+
+**npm dependency** (bundled at build time, ~200 KB engine):
+```bash
+cd apps/mobile && npm install kuromoji
+```
+
+**Downloaded data**: 12 IPADIC `.dat.gz` files from `node_modules/kuromoji/dict/`, pruned to top 30K entries (~3 MB). Hosted at `GET /lemmatization/download?l2=ja`. See [ARCH-018](../arch/018-local-tokenization-strategy.md#japanese-kuromoji) for the full file inventory.
+
+**Custom loader**: kuromoji's browser build uses `XMLHttpRequest` to fetch `.dat.gz` files. In React Native, we provide a custom `loader` object that reads from device storage via `expo-file-system` and decompresses with the browser build's built-in inflate (pako):
+
+```typescript
+import kuromoji from 'kuromoji';
+
+const jaTokenizer = await new Promise((resolve, reject) => {
+  kuromoji.builder({
+    dicPath: '/data/tokenizers/ja/',
+    // Custom loader for RN: read .dat.gz from local filesystem, not XHR
+    loader: createRNLoader(),  // uses expo-file-system + pako inflate
+  }).build((err, t) => {
+    err ? reject(err) : resolve(t);
+  });
+});
+
+const tokens = jaTokenizer.tokenize('食べたくなかった');
+// tokens[0].surface_form = '食べ', tokens[0].basic_form = '食べる'
+```
+
+**Files touched**:
+
+| File | Change |
+|---|---|
+| `apps/mobile/package.json` | Add `kuromoji` |
+| `apps/mobile/lib/tokenizer.ts` | Add `getJaTokenizer()`, custom RN loader, integrate into fallback chain |
+| `apps/mobile/lib/tokenizer-db.ts` | **NEW** — track downloaded dict data, provide path to engine |
+| `apps/mobile/contexts/DictionaryContext.tsx` | After JP dict download, download IPADIC data pack |
+| `packages/shared/src/constants.ts` | Add JP entry to `TOKENIZER_CONFIG` |
+
+---
+
+#### Phase 2d: Korean (kuromoji-ko)
+
+**Goal**: Full morphological analysis for Korean using kuromoji-ko with a downloaded mecab-ko-dic dictionary. Same custom-loader pattern as Japanese.
+
+**npm dependency** (bundled at build time, ~200 KB engine):
+```bash
+cd apps/mobile && npm install kuromoji-ko
+```
+
+**Downloaded data**: mecab-ko-dic pre-built binary `.dat` files (~2 MB pruned). Requires a one-time server-side build step:
 ```bash
 npm run build:dict -- ./mecab-ko-dic ./dict
 ```
+Zip the output and host at `GET /lemmatization/download?l2=ko`.
 
-This compiles mecab-ko-dic source into binary `.dat` files. Zip the output directory and host at `GET /lemmatization/download?l2=ko`.
+**Custom loader**: Same pattern as kuromoji — `kuromojiKo.builder({ dicPath, loader: createRNLoader() })`.
 
-**Wiring**: `kuromoji.builder({ dicPath: '/data/tokenizers/ko/' })` or `MeCab.create({ engine: 'ko', dictPath: '/data/tokenizers/ko/' })`.
+```typescript
+const koTokenizer = await kuromojiKo.builder({
+  dicPath: '/data/tokenizers/ko/',
+  loader: createRNLoader(),
+}).build();
+
+const tokens = koTokenizer.tokenize('먹었겠습니다');
+// tokens[0].surface_form = '먹', tokens[0].basic_form = '먹다' (via expression decomposition)
+```
+
+**Files touched**:
+
+| File | Change |
+|---|---|
+| `apps/mobile/package.json` | Add `kuromoji-ko` |
+| `apps/mobile/lib/tokenizer.ts` | Add `getKoTokenizer()`, integrate into fallback chain |
+| `apps/mobile/contexts/DictionaryContext.tsx` | After KO dict download, download mecab-ko-dic data pack |
+| `packages/shared/src/constants.ts` | Add KO entry to `TOKENIZER_CONFIG` |
 
 ---
 
-**nlptoolkit (Turkish)** — dropped. Node-only (`fs` dependency, no browser build). Use `snowball-stemmers` Turkish stemmer (~50 KB, pure JS, zero data files) instead. Always available once the npm package is bundled. No download needed.
-
----
-
-**Lemma tables** (Persian, LemmatizationList, Simplemma) — JSON key-value files exported by `GET /lemmatization/export?l2=de&format=json`. Downloaded JSON is stored in SQLite for fast lookup. No engine needed.
-
-**snowball-stemmers** — pure algorithmic stemmers with no data files. Nothing to download. Always available once the npm package is bundled.
-
-#### Download Flow
+#### Download Flow (all data-download subphases)
 
 When the user downloads an offline dictionary (SPEC-013):
 
-1. Dictionary download starts (user-visible progress)
-2. After dictionary completes, check `TOKENIZER_CONFIG[l2]` for a data pack URL
-3. If a data pack exists, download it silently to the device filesystem (not SQLite — kuromoji needs `.dat` files on disk)
-4. Store a metadata row in the existing offline dictionary SQLite table: `tokenizer_ready = 1`, `tokenizer_path = '/data/...'`
-5. On next `lemmatizeText()` call, the tokenizer engine loads the dictionary from the local path and uses it for segmentation/lemmatization
+1. Dictionary download completes (user-visible)
+2. Check `TOKENIZER_CONFIG[l2]` for a data pack URL
+3. If a data pack exists, download silently to device filesystem (kuromoji needs `.dat` on disk; lemma tables go to SQLite)
+4. Store metadata in the offline dictionary SQLite row: `tokenizer_ready = 1`, `tokenizer_path = '/data/...'`
+5. On next `lemmatizeText()` call, the engine loads from local path
 
-If the data pack download fails, the dictionary still works — tokenization falls back to Phase 1 regex + surface-as-lemma.
+If data download fails, tokenization falls back to Phase 1 regex + surface-as-lemma. Dictionary still works.
 
-#### Engine Initialization
-
-Each tokenizer engine is initialized lazily on first use (not at app startup). Engines are bundled as npm dependencies; they load their dictionary data from downloaded local paths. See [Data Preparation & Wiring](#data-preparation--wiring) above for what files each engine expects.
-
-```typescript
-// apps/mobile/lib/tokenizer.ts — Phase 2 additions
-
-import kuromoji from 'kuromoji';
-import kuromojiKo from 'kuromoji-ko';
-import Snowball from 'snowball-stemmers';
-
-// Lazy singletons — initialized only when dict data is on disk
-let jaTokenizer: kuromoji.Tokenizer<kuromoji.IpadicFeatures> | null = null;
-let koTokenizer: Awaited<ReturnType<typeof kuromojiKo.builder().build>> | null = null;
-const snowballStemmers = new Map<string, (word: string) => string>();
-
-// Japanese — kuromoji loads .dat.gz files from a directory path
-async function getJaTokenizer(dictPath: string): Promise<kuromoji.Tokenizer<kuromoji.IpadicFeatures>> {
-  if (jaTokenizer) return jaTokenizer;
-  jaTokenizer = await new Promise((resolve, reject) => {
-    kuromoji.builder({ dicPath: dictPath }).build((err, t) => {
-      err ? reject(err) : resolve(t);
-    });
-  });
-  return jaTokenizer;
-}
-
-// Korean — kuromoji-ko loads pre-built .dat files from a directory
-async function getKoTokenizer(dictPath: string) {
-  if (koTokenizer) return koTokenizer;
-  koTokenizer = await kuromojiKo.builder({ dicPath: dictPath }).build();
-  return koTokenizer;
-}
-
-// Snowball stemmers — pure algorithmic, no data files, instant init
-function getSnowballStemmer(lang: string): (word: string) => string {
-  if (!snowballStemmers.has(lang)) {
-    snowballStemmers.set(lang, Snowball.stemmer(lang));
-  }
-  return snowballStemmers.get(lang)!;
-}
-
-// Turkish — Snowball stemmer, no separate engine needed
-// (nlptoolkit dropped: Node-only, uses fs internally, no browser/RN support)
-```
-
-#### Updated Fallback Chain in `lemmatizeText()`
-
-After Phase 2, the local fallback chain in `lemmatizeText()` checks for downloaded data before falling back to regex:
+#### Final Fallback Chain (after all subphases)
 
 ```
 lemmatizeText(text, l2)
@@ -494,40 +538,34 @@ lemmatizeText(text, l2)
   ├─ 1. In-memory cache
   ├─ 2. POST /lemmatize-normalized (server, 3s timeout)
   │
-  ├─ 3. Local fallback (ordered by accuracy):
-  │      ├─ kuromoji + downloaded IPADIC dict (ja) ──→ segmented + lemmatized
-  │      ├─ kuromoji-ko + downloaded mecab-ko-dic (ko) ──→ segmented + lemmatized
-  │      ├─ snowball-stemmers (tr, de, en, es, fr, it, pt, ...) ──→ stemmed
-  │      ├─ downloaded lemma table lookup ──→ lemmatized
+  ├─ 3. Local fallback (checked in order, first available wins):
+  │      ├─ kuromoji + IPADIC dict (ja) ──────→ segmented + lemmatized
+  │      ├─ kuromoji-ko + mecab-ko-dic (ko) ──→ segmented + lemmatized
+  │      ├─ dict max-matching (zh, th, km, lo, my, bo) ──→ segmented
+  │      ├─ snowball stemmer (de, en, es, fr, ...) ──→ stemmed
+  │      ├─ lemma table lookup (ca, cs, ru, ...) ──→ lemmatized
   │      ├─ arabic-stem (ar) ──→ stemmed
   │      └─ regex word-split + surface-as-lemma ──→ baseline (always works)
   │
   └─ 4. Return result
 ```
 
-**Files to create/modify**:
+#### Files to Create/Modify (cumulative)
 
 | File | Change |
 |---|---|
-| `apps/mobile/package.json` | Add `kuromoji`, `kuromoji-ko`, `snowball-stemmers` dependencies |
-| `apps/mobile/lib/tokenizer.ts` | Add engine initialization, custom file loaders for kuromoji/kuromoji-ko, downloaded-data lookup to fallback chain |
-| `apps/mobile/lib/tokenizer-db.ts` | **NEW** — check for downloaded data, provide dict paths to engines |
-| `apps/mobile/contexts/DictionaryContext.tsx` | After dict download completes, check `TOKENIZER_CONFIG` and download data pack if available |
-| `packages/shared/src/constants.ts` | Add `TOKENIZER_CONFIG` map: language → data pack URL + size |
+| `apps/mobile/package.json` | Add `snowball-stemmers`, `kuromoji`, `kuromoji-ko` |
+| `apps/mobile/lib/tokenizer.ts` | Add all engine singletons, custom RN loaders, max-matching segmenter, lemma lookup, extended fallback chain |
+| `apps/mobile/lib/tokenizer-db.ts` | **NEW** — track downloaded dict data, provide paths to engines |
+| `apps/mobile/contexts/DictionaryContext.tsx` | After dict download, check `TOKENIZER_CONFIG` and download data pack if available |
+| `packages/shared/src/constants.ts` | Add `TOKENIZER_CONFIG` map: language → subphase + data pack URL + size |
+| `zerotohero-python-server/` | New endpoint: `GET /lemmatization/export?l2=X&format=json`; host dict zip archives |
 
-### Phase 3 — Advanced Tokenization
+#### Deferred
 
-Higher-effort improvements, deferred until Phase 1–2 accuracy is evaluated:
-
-1. Integrate `Intl.Segmenter` with `@formatjs/intl-segmenter` polyfill for CJK + Thai + Khmer + Burmese
-2. Dictionary-based max matching as fallback using offline dictionary word lists
-3. Consider `kuromoji` (pruned dictionary) or `tiny-segmenter` for Japanese
-4. Consider `jieba-js` WASM for Chinese only if accuracy of dict-based max matching proves insufficient
-
-**Defer**:
-- WASM-based tokenizers (`jieba-js`, etc.) — evaluate if Phase 1–2 accuracy is good enough first
-- Stemming rules for agglutinative languages — pre-built tables are simpler and more accurate
-- Native module tokenizers — avoid unless pure JS proves too slow
+- **Intl.Segmenter** with `@formatjs/intl-segmenter` polyfill — evaluate after dict max-matching accuracy is measured
+- **WASM tokenizers** (`jieba-js`, etc.) — evaluate if max-matching accuracy proves insufficient
+- **Native module tokenizers** — avoid unless pure JS proves too slow
 
 ---
 
