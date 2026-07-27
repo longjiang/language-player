@@ -3,7 +3,7 @@ import { View, Text, Platform } from 'react-native';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
-import { buildRuby } from '@langplayer/utils';
+import { buildRuby, baseCode, toTraditional } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import type { LemmatizedToken } from '@langplayer/shared';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -112,10 +112,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const userLevel = useProgressLevel(l2Code);
   const { savedWords } = useSavedWords();
 
-  // TODO(G11): display.traditional — simplified ↔ traditional character switch.
-  //   Needs character conversion utility (OpenCC or equivalent shared module).
-  //   Currently renders text as-is regardless of the setting.
-  const useTraditional = l2Settings.display.traditional;
+  // ── Chinese script conversion (Phase 3: SPEC-019) ──
+  const isChinese = baseCode(l2Code) === 'zh';
+  const useTraditional = isChinese && l2Settings.display.traditional;
 
   // TODO(G12): display.byeonggi — hanja / hán tự lookup.
   //   Needs dictionary cache lookup per token for hanja/hán tự characters.
@@ -369,6 +368,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               }
 
               const word = token.text;
+              const displayText = useTraditional ? toTraditional(word) : word;
               const isHighlighted = highlightTerms?.some((t) => t === word);
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed;
@@ -377,13 +377,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const { byeonggiText, firstDef } = getTokenEntryData(token);
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
               const showTokenPhonetics = shouldShowPhonetics(token);
-              const isSaved = savedFormSet.has(token.text.toLowerCase());
+              const isSaved = savedFormSet.has(word.toLowerCase());
               const showQuickGloss = isSaved && quickGlossEnabled && !!firstDef && !isHighlighted;
 
-              const hasRuby = showTokenPhonetics && token.pronunciation && token.pronunciation !== token.text;
+              const hasRuby = showTokenPhonetics && token.pronunciation && token.pronunciation !== word;
               const rubySegs: RubySegment[] = hasRuby
-                ? buildRuby(token.text, token.pronunciation!, l2Code)
-                : [{ text: token.text }];
+                ? buildRuby(displayText, token.pronunciation!, l2Code)
+                : [{ text: displayText }];
 
               const handlePress = () => {
                 if (quizMode) {
@@ -429,10 +429,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
           /* Word-replace or no-phonetics mode: plain inline Text */
           <Text style={textStyle} className="text-foreground">
             {tokens.map((token, i) => {
+              const word = token.text;
+              const tokenDisplayText = useTraditional ? toTraditional(word) : word;
               const displayText = replaceWithPhonetics && isWord(token) && shouldShowPhonetics(token) && token.pronunciation
                 ? token.pronunciation
-                : token.text;
-              const word = token.text;
+                : tokenDisplayText;
               const isHighlighted = highlightTerms?.some((t) => t === word);
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed;
@@ -440,7 +441,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const showGloss = showDefinition && firstLemma && firstLemma !== word;
               const { byeonggiText, firstDef } = getTokenEntryData(token);
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
-              const isSaved = savedFormSet.has(token.text.toLowerCase());
+              const isSaved = savedFormSet.has(word.toLowerCase());
               const showQuickGloss = isSaved && quickGlossEnabled && !!firstDef && !isHighlighted;
 
               const handlePress = () => {
