@@ -18,7 +18,7 @@ interface SimpleSubsForDebugProps {
 
 export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine }: SimpleSubsForDebugProps) {
   const { l1Lang, l2Lang } = useLanguage();
-  const { playback } = useSettingsContext();
+  const { display, playback } = useSettingsContext();
   const flatListRef = useRef<FlatList>(null);
 
   // Convert SyncedLine[] → SubtitleLine[] for the translation hook
@@ -27,15 +27,17 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
     [lines],
   );
 
-  const { translatedLines, loading, progress } = useSubtitleTranslation(subtitleLines, l1Lang.code, l2Lang.code, true);
+  const showTranslation = display.translation;
+
+  const { translatedLines, loading, progress } = useSubtitleTranslation(subtitleLines, l1Lang.code, l2Lang.code, showTranslation);
 
   // Merge translations into SyncedLine shape
   const displayLines = useMemo(
     () => lines.map((l, i) => ({
       ...l,
-      l1Line: translatedLines[i]?.line ?? '',
+      l1Line: showTranslation ? (translatedLines[i]?.line ?? '') : '',
     })),
-    [lines, translatedLines],
+    [lines, translatedLines, showTranslation],
   );
 
   // ── Batch lemmatization ──
@@ -88,7 +90,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
     <View className="flex-1 bg-background">
       {loading || loadingBatch ? (
         <Text className="px-4 py-1 text-xs text-muted-foreground">
-          {loading ? `Translating… ${progress}/${lines.length}` : ''}
+          {showTranslation && loading ? `Translating… ${progress}/${lines.length}` : ''}
           {loadingBatch ? ' Making words interactive…' : ''}
         </Text>
       ) : null}
