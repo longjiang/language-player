@@ -36,12 +36,17 @@ appId: ca.zerotohero.app
       # Tap the first video card
       - tapOn:
           id: "video-card-first"
-      # ── Assert watch screen renders ───────────────────────────────
-      # The watch screen may show a loading spinner or the video player.
-      # Either means navigation succeeded. testID is set on loading,
-      # error, and content views so it's visible immediately.
+      # ── Verify navigation happened ──────────────────────────────
+      # react-native-screens + Fabric blocks testID propagation on
+      # pushed screens. Instead of asserting a testID on the watch
+      # screen, verify we left Explore (explore-screen disappears)
+      # and the header is still visible (we're on a valid tab screen).
+      - extendedWaitUntil:
+          notVisible:
+            id: "explore-screen"
+          timeout: 10000
       - assertVisible:
-          id: "watch-screen"
+          id: "header-logo"
 
 # ── Return to Explore for sequencer chainability ────────────────────
 - tapOn:
