@@ -744,6 +744,20 @@ Before shipping the E2E testing pipeline:
   maestro test apps/mobile/e2e/screens/auth/login-happy-path.yaml
   ```
   A sequencer file (`screens/auth.yaml`) runs them in order via `runFlow`.
+- **`scrollUntilVisible` scrolls FIRST, then checks**: Maestro's `scrollUntilVisible` with `direction: DOWN` starts scrolling immediately, then checks if the element is visible. If the element is already at the top of a list (e.g., "English" in a language picker's first section), the first scroll moves it out of view and the command fails with "No visible element found." Fix: wrap in `runFlow` → `when: notVisible` so scrolling only happens when the element isn't already on screen. **CRITICAL**: `notVisible` takes an element selector **object** (e.g., `notVisible: { text: "English" }`), NOT a bare string (`notVisible: "English"`). A bare string is invalid YAML for Maestro's `when` condition and causes the guard to always trigger:
+  ```yaml
+  - runFlow:
+      when:
+        notVisible:
+          text: "English"   # ✅ object syntax
+      commands:
+        - scrollUntilVisible:
+            element:
+              text: "English"
+            direction: DOWN
+  - tapOn:
+      text: "English"
+  ```
 
 ### Phase 3: Media Tab (Week 4)
 - Write media suite (Tier 2: M1-M16) as Maestro YAML flows
