@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, Pressable, ActivityIndicator, Keyboard } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
@@ -16,6 +16,7 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
+    Keyboard.dismiss();
     setError(null);
     setLoading(true);
     try {
@@ -85,7 +86,7 @@ export default function LoginScreen() {
         )}
       </Pressable>
 
-      <Pressable onPress={() => router.push('/register')}>
+      <Pressable onPress={() => { Keyboard.dismiss(); router.push('/register'); }}>
         <Text className="text-primary text-center text-sm">
           {t('msg.dont_have_account')}
         </Text>
