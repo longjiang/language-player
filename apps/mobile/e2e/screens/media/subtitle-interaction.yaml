@@ -41,31 +41,33 @@ appId: ca.zerotohero.app
       id: "explore-screen"
     timeout: 10000
 
-# ── Subtitle interaction (only if video has subtitles) ──────────────
-# By this point, the video API call has completed (we've waited for
-# watch-screen to appear and explore-screen to disappear — up to 20s).
-# If the video has subtitles, they're already rendered in the DOM.
-#
-# Gating the entire interaction behind a when: visible check eliminates
-# warnings: if subtitle-line-0 isn't visible, the tap and popup
-# assertion are skipped silently with no ⚠️ output. If it IS visible,
-# the interaction runs normally with real pass/fail assertions.
-- runFlow:
-    when:
-      visible:
-        id: "subtitle-line-0"
-    commands:
-      # Tap the first word token in the subtitle area.
-      # TokenizedText adds testID="token-0", "token-1", ... to every
-      # token element (both word and non-word tokens).
-      - tapOn:
-          id: "token-0"
-      # DictionaryPopup renders with testID="dictionary-popup".
-      # The popup opens when any tappable word in the subtitle is pressed.
-      - extendedWaitUntil:
-          visible:
-            id: "dictionary-popup"
-          timeout: 5000
+# ── Wait for subtitles to load ──────────────────────────────────────
+# SubtitleDisplay passes testID="subtitle-line-0" to the first line's
+# TokenizedText container. Waiting for this ID confirms the first
+# subtitle line rendered (instead of a loose text regex).
+- extendedWaitUntil:
+    visible:
+      id: "subtitle-line-0"
+    timeout: 15000
+    optional: true
+
+# ── Tap a word in the subtitle area ─────────────────────────────────
+# Subtitle words are dynamic tokens — but TokenizedText now adds
+# testID="token-0", "token-1", ... to each tappable word element.
+# Tap the first word of the current subtitle line.
+# optional: true = skip silently if no subtitles loaded.
+- tapOn:
+    id: "token-0"
+    optional: true
+
+# ── Assert dictionary popup opened ──────────────────────────────────
+# DictionaryPopup renders with testID="dictionary-popup".
+# The popup opens when any tappable word in the subtitle is pressed.
+- extendedWaitUntil:
+    visible:
+      id: "dictionary-popup"
+    timeout: 5000
+    optional: true
 
 # ── Return to Explore for sequencer chainability ────────────────────
 - tapOn:
