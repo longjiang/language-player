@@ -47,7 +47,7 @@ export default function ForgotPasswordScreen() {
           </Text>
           <Pressable
             className="mt-6 border border-border rounded-lg px-6 py-3"
-            onPress={() => router.replace('/login')}
+            onPress={() => router.back()}
             {...e2e('forgot-back-to-login-button')}
           >
             <Text className="text-foreground font-medium text-sm">
