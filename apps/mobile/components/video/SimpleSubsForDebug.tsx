@@ -5,16 +5,10 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { TokenizedText } from '../TokenizedText';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import type { SubtitleLine, TokenCache, LemmatizedToken } from '@langplayer/shared';
-
-interface SyncedLine {
-  starttime: number;
-  l2Line: string;
-  l1Line: string;
-}
+import type { SubtitleLine, SubtitleSyncedLine, TokenCache, LemmatizedToken } from '@langplayer/shared';
 
 interface SimpleSubsForDebugProps {
-  lines: SyncedLine[];
+  lines: SubtitleSyncedLine[];
   activeLineIndex: number;
   currentTime: number;
   tokenCache?: TokenCache;

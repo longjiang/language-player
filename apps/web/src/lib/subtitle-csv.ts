@@ -1,4 +1,4 @@
-import type { SubtitleLine } from '@langplayer/shared';
+import type { SubtitleLine, SubtitleSyncedLine } from '@langplayer/shared';
 import { parseSubtitleCSV } from '@langplayer/utils';
 
 // ── HTML entity decoding ─────────────────────────────────────────────────
@@ -39,12 +39,9 @@ export function parseCSVSubtitles(csv: string): SubtitleLine[] {
 
 // ── Subtitle line synchronization ────────────────────────────────────────
 
-export interface SyncedLine {
-  starttime: number;
-  duration?: number;
-  l1Line: string;
-  l2Line: string;
-}
+// Re-export from shared package — single source of truth.
+// SubtitleSyncedLine is identical to the former local SyncedLine interface.
+export type { SubtitleSyncedLine as SyncedLine } from '@langplayer/shared';
 
 /**
  * Sync L1 and L2 subtitle lines by closest starttime using greedy
@@ -62,11 +59,11 @@ export interface SyncedLine {
 export function syncLines(
   l1Lines: SubtitleLine[],
   l2Lines: SubtitleLine[],
-): SyncedLine[] {
+): SubtitleSyncedLine[] {
   const l1Sorted = [...l1Lines].sort((a, b) => a.starttime - b.starttime);
   const l2Sorted = [...l2Lines].sort((a, b) => a.starttime - b.starttime);
 
-  const synced: SyncedLine[] = [];
+  const synced: SubtitleSyncedLine[] = [];
   const used = new Set<number>();
 
   for (const l1 of l1Sorted) {
