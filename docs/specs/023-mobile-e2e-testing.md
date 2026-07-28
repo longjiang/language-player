@@ -655,17 +655,24 @@ Before shipping the E2E testing pipeline:
 
    > **2026-07-27 test run results:**
    > - S1 (login screen visible) — ✅ Passed
-   > - S2 (login → tabs) — ◐ Partial: login succeeded, "Save Password" dismissed.
-   >   `header-logo` found. Hamburger drawer opened but content offscreen —
-   >   "Media" assertion failed.
-   > - S3/S4 — 🔲 Not reached.
+   > - S2 (login → tabs) — ✅ Passed: login succeeded, "Save Password" dismissed,
+   >   hamburger drawer opens with "Media"/"Reading"/"Vocab" visible.
+   > - S3 (language state) — ✅ Passed: `me-logout-button` visible on profile page.
+   > - S4 (logout) — ✅ Passed: logout navigates to login screen.
    >
-   > **Issues found:**
-   > - Hamburger drawer renders at wrong position (content offscreen)
-   > - "Save Password" iOS dialog still appears despite mitigations
-   > - `config.yaml` env vars not inherited by child flows (now worked around)
+   > **Bugs fixed during tests:**
+   > - Hamburger drawer: replaced Dialog portal (Zustand-based) with React Native
+   >   `<Modal>` — the portal's async re-mounting caused the drawer panel to render
+   >   offscreen. Modal renders at the native layer with reliable positioning.
+   > - Logout navigation: `logout()` cleared the token but didn't redirect to login,
+   >   leaving the user on the Me tab showing the guest state. Added
+   >   `router.replace('/login')` after logout.
+   > - "Save Password" dialog: added `repeat: 3` + `waitToSettleTimeoutMs` to handle
+   >   timing variance in iOS dialog appearance.
+   > - `label.guest` → `label.guest_user`: translation key didn't exist in CSV, so
+   >   the raw key was displayed after logout. Added key with 31 locale translations.
    >
-   > Status: ◐ Partial — login flow works. Blocked by hamburger drawer layout bug.
+   > Status: ✅ All 4 smoke tests pass.
 
 8. **Document the local workflow** — Create `apps/mobile/e2e/README.md` with:
    - Prerequisites (Maestro installed, dev build built)
@@ -679,9 +686,11 @@ Before shipping the E2E testing pipeline:
 
 | Bug | Component | Description | Severity | Status |
 |---|---|---|---|---|
-| Hamburger drawer renders offscreen | `HamburgerDrawer.tsx` | After tapping `header-hamburger-button`, the drawer opens but its content ("Media", "Reading", "Vocab", "Me") is not visible in the viewport. The "X" close button is visible, indicating the drawer overlay is present but positioned wrong. Likely a layout calculation issue with `drawerWidth` or screen dimension computation under Fabric. | 🔴 Blocks E2E | Unconfirmed |
-| "Save Password" dialog persists on iOS 26.5 | `login.tsx` | The iOS system "Save Password?" dialog appears after sign-in despite `textContentType="none"` and `autoComplete="off"` on the password TextInput. Maestro's `tapOn: "Not Now" optional: true` fallback works but adds a timing hazard. | 🟡 Medium | Mitigated (optional tap) |
-| Maestro `config.yaml` env vars not inherited | `e2e/` flows | `${VAR}` references in flow step `inputText` do not resolve from the `config.yaml` `env:` block when config is in a separate file. Credentials must be inlined or passed via `--env-file`. | 🟡 Medium | Workaround (inlined credentials) |
+| Hamburger drawer renders offscreen | `HamburgerDrawer.tsx` | Dialog portal (Zustand-based) re-mounted children asynchronously when `open` changed, placing the panel offscreen. Fixed by replacing with React Native `<Modal>`. | 🔴 Blocks E2E | ✅ Fixed |
+| Logout doesn't navigate to login | `index.tsx` | `logout()` cleared token/user but left user on the Me tab showing guest state. Fixed by adding `router.replace('/login')` after logout. | 🔴 Blocks E2E | ✅ Fixed |
+| "Save Password" dialog persists on iOS 26.5 | `login.tsx` | iOS system dialog appears after sign-in despite `textContentType="none"` and `autoComplete="off"`. Maestro mitigation uses `repeat: 3` + `waitToSettleTimeoutMs`. | 🟡 Medium | ✅ Mitigated |
+| `label.guest` key not in translations.csv | — | Raw translation key displayed after logout. Added `label.guest_user` with 31 locale translations. | 🟡 Medium | ✅ Fixed |
+| Maestro `config.yaml` env vars not inherited | `e2e/` flows | `${VAR}` references in flow step `inputText` do not resolve from `config.yaml` `env:` block. Credentials inlined as workaround. | 🟡 Medium | Workaround |
 
 ### Phase 2: Auth + Navigation (Week 3)
 
