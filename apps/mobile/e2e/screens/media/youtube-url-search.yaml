@@ -6,13 +6,9 @@ appId: ca.zerotohero.app
 # Login → search → paste a known YouTube URL → assert navigation
 # to the watch screen.
 
-# ── Preflight: ensure login screen ──────────────────────────────────
+# ── Ensure on Explore screen (login if needed) ──────────────────────
 - runFlow:
-    file: ../../flows/preflight-check.yaml
-
-# ── Login ──────────────────────────────────────────────────────────
-- runFlow:
-    file: ../../flows/login.yaml
+    file: ../../flows/ensure-explore.yaml
 
 # ── Navigate to search ─────────────────────────────────────────────
 - tapOn:
@@ -34,3 +30,7 @@ appId: ca.zerotohero.app
 # The YouTube URL extraction navigates directly to the player.
 - assertVisible:
     id: "watch-screen"
+
+# ── Return to Explore for sequencer chainability ────────────────────
+- tapOn:
+    id: "header-logo"

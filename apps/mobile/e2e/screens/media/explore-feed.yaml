@@ -6,13 +6,9 @@ appId: ca.zerotohero.app
 # Login → land on Media tab (default) → wait for videos or loading
 # state to appear.
 
-# ── Preflight: ensure login screen ──────────────────────────────────
+# ── Ensure on Explore screen (login if needed) ──────────────────────
 - runFlow:
-    file: ../../flows/preflight-check.yaml
-
-# ── Login ──────────────────────────────────────────────────────────
-- runFlow:
-    file: ../../flows/login.yaml
+    file: ../../flows/ensure-explore.yaml
 
 # ── Assert feed is loading or has content ───────────────────────────
 # After login, the Explore screen loads recommendations.
@@ -34,3 +30,7 @@ appId: ca.zerotohero.app
       # The presence of the explore screen itself confirms the feed loaded.
       - assertVisible:
           id: "explore-screen"
+
+# ── Return to Explore for sequencer chainability ────────────────────
+- tapOn:
+    id: "header-logo"

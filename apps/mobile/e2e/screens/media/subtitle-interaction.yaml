@@ -10,17 +10,9 @@ appId: ca.zerotohero.app
 # video has no subtitles, the test assertion may fail gracefully.
 # Mitigation: use `optional: true` on subtitle-dependent assertions.
 
-# ── Preflight: ensure login screen ──────────────────────────────────
+# ── Ensure on Explore screen (login if needed) ──────────────────────
 - runFlow:
-    file: ../../flows/preflight-check.yaml
-
-# ── Login ──────────────────────────────────────────────────────────
-- runFlow:
-    file: ../../flows/login.yaml
-
-# ── Wait for feed ──────────────────────────────────────────────────
-- assertVisible:
-    id: "explore-screen"
+    file: ../../flows/ensure-explore.yaml
 
 # ── Tap first video card ───────────────────────────────────────────
 - runFlow:
@@ -56,3 +48,7 @@ appId: ca.zerotohero.app
       - assertVisible:
           text: ".*"
           optional: true
+
+# ── Return to Explore for sequencer chainability ────────────────────
+- tapOn:
+    id: "header-logo"

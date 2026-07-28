@@ -1,0 +1,53 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# Reusable flow: ensure user is logged in and on the Explore screen.
+#
+# Handles both states:
+#  1. Login screen visible → log in with Mary's credentials
+#  2. Already authenticated (anywhere in the app) → navigate to Explore
+#
+# Postcondition: user is on the Explore screen (explore-screen visible).
+#
+# Usage from individual test files:
+#   - runFlow: { file: ../../flows/ensure-explore.yaml }
+# Usage from sequencers:
+#   - runFlow: { file: ../flows/ensure-explore.yaml }
+# ════════════════════════════════════════════════════════════════════
+
+# ── State 1: Login screen visible → log in ─────────────────────────
+- runFlow:
+    when:
+      visible:
+        id: "login-email-input"
+    commands:
+      - runFlow:
+          file: login.yaml
+      # Handle "Save Password" iOS dialog
+      - tapOn:
+          text: "Not Now"
+          optional: true
+          repeat: 3
+          waitToSettleTimeoutMs: 1000
+      # Login lands on Explore (first tab). Give it time to render.
+      - extendedWaitUntil:
+          visible:
+            id: "explore-screen"
+          timeout: 10000
+
+# ── State 2: Already authenticated → navigate to Explore ───────────
+- runFlow:
+    when:
+      notVisible:
+        id: "login-email-input"
+    commands:
+      # Tap the header logo to go to the Explore (Media) tab root.
+      # optional: true handles edge cases where header-logo isn't
+      # present (e.g., deep-link screens like password-reset).
+      - tapOn:
+          id: "header-logo"
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: "explore-screen"
+          timeout: 5000

@@ -6,17 +6,9 @@ appId: ca.zerotohero.app
 # Login → Media tab → tap the first video card → verify the watch
 # screen loads (video meta, subtitle area, or loading spinner visible).
 
-# ── Preflight: ensure login screen ──────────────────────────────────
+# ── Ensure on Explore screen (login if needed) ──────────────────────
 - runFlow:
-    file: ../../flows/preflight-check.yaml
-
-# ── Login ──────────────────────────────────────────────────────────
-- runFlow:
-    file: ../../flows/login.yaml
-
-# ── Wait for feed to load ──────────────────────────────────────────
-- assertVisible:
-    id: "explore-screen"
+    file: ../../flows/ensure-explore.yaml
 
 # ── Tap the first video card ───────────────────────────────────────
 # Video cards use testID "video-card-{youtube_id}". We can't know the
@@ -43,3 +35,7 @@ appId: ca.zerotohero.app
       # Either means navigation succeeded.
       - assertVisible:
           id: "watch-screen"
+
+# ── Return to Explore for sequencer chainability ────────────────────
+- tapOn:
+    id: "header-logo"

@@ -6,13 +6,9 @@ appId: ca.zerotohero.app
 # Login → Media tab → scroll down the video grid → verify the
 # screen doesn't crash and more content loads (or end-of-list).
 
-# ── Preflight: ensure login screen ──────────────────────────────────
+# ── Ensure on Explore screen (login if needed) ──────────────────────
 - runFlow:
-    file: ../../flows/preflight-check.yaml
-
-# ── Login ──────────────────────────────────────────────────────────
-- runFlow:
-    file: ../../flows/login.yaml
+    file: ../../flows/ensure-explore.yaml
 
 # ── Wait for feed ──────────────────────────────────────────────────
 - assertVisible:
@@ -35,3 +31,7 @@ appId: ca.zerotohero.app
 # ── Assert screen is still visible (no crash, no error) ─────────────
 - assertVisible:
     id: "explore-screen"
+
+# ── Return to Explore for sequencer chainability ────────────────────
+- tapOn:
+    id: "header-logo"

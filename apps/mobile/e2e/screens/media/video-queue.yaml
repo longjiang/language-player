@@ -6,17 +6,9 @@ appId: ca.zerotohero.app
 # Login → Media tab → tap video → tap the queue tab in the panel →
 # assert queue renders (may be empty — that's valid for a fresh session).
 
-# ── Preflight: ensure login screen ──────────────────────────────────
+# ── Ensure on Explore screen (login if needed) ──────────────────────
 - runFlow:
-    file: ../../flows/preflight-check.yaml
-
-# ── Login ──────────────────────────────────────────────────────────
-- runFlow:
-    file: ../../flows/login.yaml
-
-# ── Wait for feed ──────────────────────────────────────────────────
-- assertVisible:
-    id: "explore-screen"
+    file: ../../flows/ensure-explore.yaml
 
 # ── Tap first video card ───────────────────────────────────────────
 - runFlow:
@@ -39,3 +31,7 @@ appId: ca.zerotohero.app
       # ── Assert watch screen is still visible ─────────────────────
       - assertVisible:
           id: "watch-screen"
+
+# ── Return to Explore for sequencer chainability ────────────────────
+- tapOn:
+    id: "header-logo"
