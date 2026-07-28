@@ -736,11 +736,9 @@ Before shipping the E2E testing pipeline:
   ```
 - **Nested `runFlow` paths are relative to the containing file**, not the root test file. A flow in `flows/preflight-check.yaml` that calls `flows/logout.yaml` must use `file: logout.yaml` (relative to `flows/`), not `file: flows/logout.yaml`.
 - **Each test should clean up after itself**: Register validation tests (A5, A6, A7) leave the app on the register screen after asserting the error. Add a teardown step tapping `register-back-to-login` so individual runs don't leave a mess for the next test. The preflight handles getting to login, but doesn't clean up after.
-- **Server-side cleanup via `runScript` + shell script**: For tests that create persistent server state (users, saved words), use `runScript` in the YAML to call a shell script before the test runs. Example — `register-and-onboard.yaml` deletes the test user before each run:
-  ```yaml
-  - runScript: ../scripts/cleanup-test-user.sh
-  ```
-  The script curls Flask's `DELETE /auth/test-cleanup` (admin token). The endpoint is gated behind `ENABLE_TEST_ENDPOINTS=true` so it 404s in production. The script exits 0 even if Flask isn't running or the user doesn't exist.
+- **Server-side idempotency > client-side cleanup**: Maestro `runScript` runs JavaScript in GraalJS — which has no `fetch()`, no top-level `await` (wrap in async IIFE), and accesses flow `env` vars as direct globals (`MY_VAR` not `env.MY_VAR`). This makes HTTP-based cleanup scripts unworkable from Maestro flows. Instead, make the Flask endpoint itself handle dedup: the register endpoint auto-deletes existing `e2e.*` users before creating new ones when `ENABLE_TEST_ENDPOINTS=true`. This keeps the YAML simple and works in any Maestro version.
+- **Directus 8 `/users/me` is permission-gated**: The authenticate response already includes the full user profile — don't make a separate `/users/me` call. Non-admin roles get "Unauthorized request" on that endpoint. Use `auth_data.get("user", {})` from the `/auth/authenticate` response directly.
+- **`runScript` paths are relative to the YAML file**: Same as `runFlow` — `screens/auth/` needs `../../scripts/` to reach `e2e/scripts/`. The Maestro docs example uses `../scripts/` because their flow is only one level deep (`flows/test.yaml`).
 - **Split tests into individual files for faster debugging**: Instead of one monolithic auth.yaml, split into per-test files (`screens/auth/login-invalid-credentials.yaml`, etc.). Each can be run independently:
   ```bash
   maestro test apps/mobile/e2e/screens/auth/login-happy-path.yaml
