@@ -23,6 +23,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
   const flatListRef = useRef<FlatList>(null);
   const userScrolledUntil = useRef(0);
   const lastScrolledIdx = useRef(-1);
+  const lastAutoScrollTime = useRef(0);
 
   // Convert SyncedLine[] → SubtitleLine[] for the translation hook
   const subtitleLines: SubtitleLine[] = useMemo(
@@ -89,15 +90,20 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
   useEffect(() => {
     if (activeLineIndex < 0) return;
 
+    const now = Date.now();
     const idxDelta = Math.abs(activeLineIndex - lastScrolledIdx.current);
     const isSeek = idxDelta > SCROLL.SEEK_INDEX_DELTA;
     // Treat as fully-out when we haven't scrolled yet and line is far ahead
     const isFullyOut = lastScrolledIdx.current === -1 && activeLineIndex > 0;
 
+    // Throttle: skip if we scrolled too recently (unless seek or fully-out)
+    if (!isSeek && !isFullyOut && now - lastAutoScrollTime.current < SCROLL.THROTTLE_MS) return;
+
     // Bypass cooldown on seek or when line is far out of view
-    if (!isSeek && !isFullyOut && Date.now() < userScrolledUntil.current) return;
+    if (!isSeek && !isFullyOut && now < userScrolledUntil.current) return;
 
     lastScrolledIdx.current = activeLineIndex;
+    lastAutoScrollTime.current = now;
     flatListRef.current?.scrollToIndex({
       index: activeLineIndex,
       animated: !isSeek && !isFullyOut,
