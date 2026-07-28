@@ -1,7 +1,4 @@
 appId: ca.zerotohero.app
-env:
-  EMAIL: ${FREE_EMAIL}
-  PASS: ${FREE_PASS}
 ---
 # ── Smoke (Tier 0) ─────────────────────────────────────────────────
 - runFlow:
@@ -10,9 +7,6 @@ env:
 # ── Auth (Tier 1) ──────────────────────────────────────────────────
 - runFlow:
     file: screens/auth.yaml
-    env:
-      EMAIL: ${FREE_EMAIL}
-      PASS: ${FREE_PASS}
 
 # ── Placeholder for future tiers ───────────────────────────────────
 # Tier 2 — Media Tab (when implemented)

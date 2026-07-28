@@ -1,23 +1,19 @@
 appId: ca.zerotohero.app
-env:
-  EMAIL: ${FREE_EMAIL}
-  PASS: ${FREE_PASS}
 ---
 # ── Preflight: ensure we're on the login screen ──
-# If a previous test left the app logged in (iOS Keychain survives
-# app deletion), log out before running auth tests.
 - runFlow:
     file: flows/logout.yaml
     when:
       notVisible:
         id: "login-email-input"
+    optional: true
 
 # ── A1: Login — happy path (already covered by smoke)
 # ── A2: Login — invalid credentials ────────────────────────────────
 - tapOn:
     id: "login-email-input"
 - eraseText
-- inputText: ${EMAIL}
+- inputText: "tester.mary@zerotohero.ca"
 - tapOn:
     id: "login-password-input"
 - eraseText
@@ -79,7 +75,7 @@ env:
 - tapOn:
     id: "forgot-email-input"
     optional: true
-- inputText: ${EMAIL}
+- inputText: "tester.mary@zerotohero.ca"
 - tapOn:
     id: "forgot-send-button"
     optional: true
