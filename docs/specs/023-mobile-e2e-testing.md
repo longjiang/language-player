@@ -539,21 +539,35 @@ Before shipping the E2E testing pipeline:
 
 ### Phase 1: Foundation (Weeks 1-2)
 
-> **⚠️ Phase 1 is BLOCKED — the dev build cannot complete.** As of the latest
-> attempt (2026-07-27), all 13 rebuilds have failed with the same
-> `EXEventEmitterService.h` error from `expo-in-app-purchases`. A successful
-> debug build was produced once (commit `6208fea7`) by manually stubbing the
-> missing header in `ios/Pods/`, but that fix is lost on every rebuild because
-> `pod install` regenerates the Pods directory. Steps 1-3 below (spike, helper,
-> testIDs) can proceed in parallel while the build issue is resolved. Until a
-> Podfile `post_install` hook is implemented, subsequent phases requiring a new
-> native build cannot begin.
+> **Phase 1 is now unblocked.** The build issue (see step 4) was resolved
+> by adding a Podfile `post_install` hook that stubs the missing
+> `EXEventEmitterService.h` header. Steps 1-3, 6, and 8 are complete or in
+> progress. See each step for current status.
 
 1. **Maestro + New Architecture spike** (Day 1) — Build a dev build with `newArchEnabled: true`, write one Maestro flow (login + tap 4 tabs), verify element discovery works under Fabric renderer.
 
    **Pass/fail criterion**: Maestro can find and tap the email input, password input, sign-in button, and all 4 tab bar items via `testID`. Include one element from each RN primitive type used (Pressable, TextInput, Switch from `@rn-primitives/*`, and a list item) to de-risk primitive compatibility early. If elements are missing, budget time to add `accessibilityLabel` as a fallback alongside `testID`.
 
-   > Status: ◐ Partial — spike attempted, login elements discovered, but build cannot be reproduced.
+   > **Findings from the 2026-07-27 test run:**
+   > - **Login elements**: All 3 login testIDs discovered and tappable ✅
+   > - **Login success**: Login with Mary's credentials succeeded; profile page rendered ✅
+   > - **Tab bar items**: Not reached — flow failed at hamburger drawer step
+   > - **Hamburger drawer**: `header-hamburger-button` was tappable, but the drawer
+   >   rendered offscreen/wrong position. "X" close button appeared but "Media",
+   >   "Reading", "Vocab" text was not in the viewport. Likely a layout bug in
+   >   `HamburgerDrawer.tsx` — see Bugs section.
+   > - **"Save Password" dialog**: Still appears on iOS 26.5 despite
+   >   `textContentType="none"` + `autoComplete="off"` on the password input.
+   >   `tapOn: "Not Now" optional: true` fallback works to dismiss it.
+   > - **Maestro env vars**: `${VAR}` references in flow steps do not resolve from
+   >   `config.yaml`'s `env:` block. Credentials must be inlined directly in
+   >   `inputText` steps or passed via `--env-file`.
+   >
+   > **Not verified**: Switch from `@rn-primitives/*`, Dialog, Tabs primitives.
+   > Login screen discovered but drawer prevents tab navigation.
+   >
+   > Status: ◐ Partial — login elements work. Hamburger drawer layout broken
+   > (blocking S3-S4). Primitive compatibility not tested.
 
 2. **Create `lib/e2e.ts` helper** (Day 1) — Reusable `e2e(id)` helper that returns `{ testID: id }` only in `__DEV__`.
 
@@ -609,6 +623,10 @@ Before shipping the E2E testing pipeline:
    > - **After attempt 9 (stubs proved the fix), 4 more attempts were needed to accept that
    >   `ios/Pods/` is ephemeral.** The manual edit succeeded once, then attempts 10–13
    >   re-confirmed what was already known. The Podfile hook should have been written immediately.
+   > - **Attempt 14 proved the Podfile hook works.** One build attempt, no manual
+   >   stubs needed. The hook survives `pod install`.
+   >
+   > | 14 | ~19:00 | `npx expo run:ios` (debug) | After Podfile `post_install` hook added | **Debug** | Erased + rebooted | Podfile hook creates `EXEventEmitterService.h` stub in `Pods/Headers/Public/ExpoModulesCore/` | ✅ **Succeeded** |
    >
    > **Root cause**: `expo-in-app-purchases` imports `EXEventEmitterService.h` from
    > `ExpoModulesCore`, which was removed in Expo SDK 57. Each `npx expo run:ios`
@@ -616,9 +634,10 @@ Before shipping the E2E testing pipeline:
    > `ios/Pods/` directory, wiping any ad-hoc header stubs placed there. The fix is to
    > add the missing header stubs via the **Podfile `post_install` hook** (not by editing
    > `ios/Pods/` directly), so they survive rebuilds. See commit `6208fea7` for the
-   > initial workaround and `docs/adr/XXXX` for the permanent Podfile hook solution.
+   > initial workaround and the `post_install` hook in `apps/mobile/ios/Podfile`.
    >
-   > Status: ❌ BLOCKED — all 13 rebuilds fail with the same header error.
+   > Status: ✅ Done — build succeeds with Podfile `post_install` hook.
+   > Attempt 14 was the first and only attempt with the hook in place.
 
 5. **Seed test data on the staging backend** (Days 3-5) — Build `scripts/setup-e2e-env.sh` that calls Flask endpoints (`POST /auth/register`, etc.) against the staging server to create test accounts (`e2e.free`, `e2e.pro`, `e2e.unverified`, `e2e.new`) and seed initial data (saved words, SRS cards, watch history for the pro user).
 
@@ -634,7 +653,19 @@ Before shipping the E2E testing pipeline:
    ```
    Fix any element discovery issues before progressing.
 
-   > Status: ❌ BLOCKED — depends on build (step 4).
+   > **2026-07-27 test run results:**
+   > - S1 (login screen visible) — ✅ Passed
+   > - S2 (login → tabs) — ◐ Partial: login succeeded, "Save Password" dismissed.
+   >   `header-logo` found. Hamburger drawer opened but content offscreen —
+   >   "Media" assertion failed.
+   > - S3/S4 — 🔲 Not reached.
+   >
+   > **Issues found:**
+   > - Hamburger drawer renders at wrong position (content offscreen)
+   > - "Save Password" iOS dialog still appears despite mitigations
+   > - `config.yaml` env vars not inherited by child flows (now worked around)
+   >
+   > Status: ◐ Partial — login flow works. Blocked by hamburger drawer layout bug.
 
 8. **Document the local workflow** — Create `apps/mobile/e2e/README.md` with:
    - Prerequisites (Maestro installed, dev build built)
@@ -643,6 +674,14 @@ Before shipping the E2E testing pipeline:
    - Troubleshooting common issues
 
    > Status: ✅ Done — `apps/mobile/e2e/README.md` covers prereqs, running tests, preflight checklist, and troubleshooting.
+
+### Bugs Discovered During Testing
+
+| Bug | Component | Description | Severity | Status |
+|---|---|---|---|---|
+| Hamburger drawer renders offscreen | `HamburgerDrawer.tsx` | After tapping `header-hamburger-button`, the drawer opens but its content ("Media", "Reading", "Vocab", "Me") is not visible in the viewport. The "X" close button is visible, indicating the drawer overlay is present but positioned wrong. Likely a layout calculation issue with `drawerWidth` or screen dimension computation under Fabric. | 🔴 Blocks E2E | Unconfirmed |
+| "Save Password" dialog persists on iOS 26.5 | `login.tsx` | The iOS system "Save Password?" dialog appears after sign-in despite `textContentType="none"` and `autoComplete="off"` on the password TextInput. Maestro's `tapOn: "Not Now" optional: true` fallback works but adds a timing hazard. | 🟡 Medium | Mitigated (optional tap) |
+| Maestro `config.yaml` env vars not inherited | `e2e/` flows | `${VAR}` references in flow step `inputText` do not resolve from the `config.yaml` `env:` block when config is in a separate file. Credentials must be inlined or passed via `--env-file`. | 🟡 Medium | Workaround (inlined credentials) |
 
 ### Phase 2: Auth + Navigation (Week 3)
 
