@@ -8,7 +8,7 @@ import { useProgress } from '@/hooks/use-progress';
 import { useT } from '@/hooks/use-t';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { baseCode } from '@langplayer/utils';
-import { SCALES, primaryScale, formatNumericLevel } from '@langplayer/shared';
+import { primaryScale, getLevelLabelWithFallback } from '@langplayer/shared';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { User, Mail, Clock, BookOpen, Crown, Play, Star, ArrowRight, Check, ChevronDown } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -37,22 +37,24 @@ const PLANS = [
   { nameKey: 'subscription.lifetime_cap' as const, price: '$169', interval: '', planKey: 'lifetime' },
 ];
 
-/** Language level selector — picks from 1–7 scale with exam-specific labels. */
+/** Language level selector — shows all 7 levels (1–7).
+ *  Falls back to CEFR labels when the language's primary exam scale does not
+ *  cover a level (e.g. JLPT has no N1+ level → level 7 shows "CEFR C2"). */
 function LevelPicker({ l2Code, value, onChange, t }: {
   l2Code: string; value: number | undefined; onChange: (level: number) => void; t: (key: string) => string;
 }) {
   const [open, setOpen] = useState(false);
   const scaleId = primaryScale(l2Code);
-  const scale = SCALES[scaleId];
 
   const options = useMemo(() => {
-    const entries = Object.entries(scale.labels).map(([numStr, label]) => {
-      const num = Number(numStr);
-      return { value: num, label: `${scale.shortPrefix} ${label}` };
-    });
-    // Only show levels that have labels in this scale
-    return entries.filter((o) => o.label.trim() !== scale.shortPrefix + ' ');
-  }, [scale]);
+    // Show all 7 levels, using CEFR fallback for levels missing from the primary scale
+    const result = [];
+    for (let num = 1; num <= 7; num++) {
+      const { label, prefix } = getLevelLabelWithFallback(num, scaleId);
+      result.push({ value: num, label: `${prefix} ${label}` });
+    }
+    return result;
+  }, [scaleId]);
 
   const selectedLabel = value ? options.find((o) => o.value === value)?.label : null;
 

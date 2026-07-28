@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { LEVELS } from '@/lib/level-mapping';
-import { primaryScale } from '@langplayer/shared';
+import { primaryScale, getLevelLabelWithFallback } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
@@ -12,44 +12,31 @@ interface LanguageLevelSelectProps {
   onChange: (level: number) => void;
 }
 
-function examName(l2Code: string, t: (key: string) => string): string {
-  const key = primaryScale(l2Code);
-  const map: Record<string, string> = {
-    hsk_2010: 'level.exam_hsk',
-    hsk_2025: 'level.exam_hsk',
-    jlpt: 'level.exam_jlpt',
-    topik: 'level.exam_topik',
-    ielts: 'level.exam_ielts',
-    cefr: 'level.exam_cefr',
-  };
-  return t(map[key] ?? 'level.exam_cefr');
-}
-
 /**
  * Dropdown for selecting the user's language proficiency level.
  *
- * Renders exam-specific labels:
- *   Chinese → "HSK 3 — Beginner III"
- *   Japanese → "JLPT N4 — Beginner III"
+ * Shows all 7 levels (1–7). When the language's primary exam scale does not
+ * cover a level, it falls back to CEFR labels. For example:
+ *   Chinese → "HSK 3 — Beginner III" / "CEFR C2 — Advanced II" (level 7)
+ *   Japanese → "JLPT N4 — Beginner III" / "CEFR C2 — Advanced II" (level 7)
  *   Korean → "TOPIK 2 — Beginner III"
  *   Others → "CEFR A2 — Beginner III"
  */
 export function LanguageLevelSelect({ l2Code, value, onChange }: LanguageLevelSelectProps) {
   const t = useT();
-  const key = primaryScale(l2Code);
+  const scaleId = primaryScale(l2Code);
 
   const options = useMemo(() => {
     return Object.entries(LEVELS).map(([numericStr, info]) => {
       const numeric = Number(numericStr);
-      // Map ScaleId back to the flat key used in LEVELS (hsk_2010 → hsk, etc.)
-      const flatKey = key.startsWith('hsk') ? 'hsk' : key;
-      const examValue = info[flatKey as keyof typeof info];
-      const label = examValue
-        ? `${examName(l2Code, t)} ${examValue} — ${info.category}`
-        : `${info.category}`;
+      const { label: examLabel, prefix, sourceScaleId } = getLevelLabelWithFallback(
+        numeric,
+        scaleId,
+      );
+      const label = `${prefix} ${examLabel} — ${info.category}`;
       return { value: numeric, label };
     });
-  }, [key, l2Code, t]);
+  }, [scaleId]);
 
   const currentLabel = options.find((o) => o.value === value)?.label;
 
