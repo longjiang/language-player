@@ -37,16 +37,21 @@ appId: ca.zerotohero.app
       - tapOn:
           id: "video-card-first"
       # ── Verify navigation happened ──────────────────────────────
-      # react-native-screens + Fabric blocks testID propagation on
-      # pushed screens. Instead of asserting a testID on the watch
-      # screen, verify we left Explore (explore-screen disappears)
-      # and the header is still visible (we're on a valid tab screen).
+      # react-native-screens + Fabric blocks testID (id:) propagation
+      # on pushed screens. Verify by: (a) explore-screen disappeared,
+      # (b) header still visible, (c) accessibilityLabel with text:
+      # may work where testID doesn't.
       - extendedWaitUntil:
           notVisible:
             id: "explore-screen"
           timeout: 10000
       - assertVisible:
           id: "header-logo"
+      # Try accessibilityLabel — may work through react-native-screens
+      # where testID/accessibilityIdentifier does not.
+      - assertVisible:
+          text: "watch screen"
+          optional: true
 
 # ── Return to Explore for sequencer chainability ────────────────────
 - tapOn:
