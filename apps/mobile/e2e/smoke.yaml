@@ -14,30 +14,33 @@ env:
 # ── S2: Login → see tabs ──────────────────────────────────────────
 - tapOn:
     id: "login-email-input"
+- eraseText
 - inputText: ${EMAIL}
 - tapOn:
     id: "login-password-input"
+- eraseText
 - inputText: ${PASS}
 - tapOn:
     id: "login-signin-button"
 
+# Dismiss iOS "Save Password?" dialog if it appears
+- tapOn:
+    text: "Not Now"
+    optional: true
+
 # Wait for tabs to appear (header logo visible means logged in)
-- waitFor:
+- assertVisible:
     id: "header-logo"
-    timeout: ${TIMEOUT}
 
 # Verify hamburger menu opens
 - tapOn:
     id: "header-hamburger-button"
 - assertVisible:
-    text: ".*Media.*"
-    regex: true
+    text: "Media"
 - assertVisible:
-    text: ".*Reading.*"
-    regex: true
+    text: "Reading"
 - assertVisible:
-    text: ".*Vocab.*"
-    regex: true
+    text: "Vocab"
 
 # Close drawer by tapping the overlay.
 # NOTE: 10%,50% assumes the drawer ≤ 10% of screen width. On iPad
@@ -50,11 +53,9 @@ env:
 - tapOn:
     id: "header-hamburger-button"
 - tapOn:
-    text: ".*Me.*"
-    regex: true
-- waitFor:
+    text: "Me"
+- assertVisible:
     id: "me-logout-button"
-    timeout: ${TIMEOUT}
 
 # ── S4: Logout ─────────────────────────────────────────────────────
 - tapOn:

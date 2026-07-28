@@ -4,13 +4,19 @@ appId: ca.zerotohero.app
     id: "login-email-input"
 - tapOn:
     id: "login-email-input"
+- eraseText
 - inputText: ${EMAIL}
 - tapOn:
     id: "login-password-input"
+- eraseText
 - inputText: ${PASS}
 - tapOn:
     id: "login-signin-button"
-- waitFor:
-    notVisible:
-      id: "login-signin-button"
-    timeout: ${TIMEOUT}
+
+# Dismiss iOS "Save Password?" dialog if it appears
+- tapOn:
+    text: "Not Now"
+    optional: true
+
+- assertNotVisible:
+    id: "login-signin-button"

@@ -54,6 +54,8 @@ export default function LoginScreen() {
         placeholder={t('placeholder.password')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         secureTextEntry
+        textContentType="none"
+        autoComplete="off"
         value={password}
         onChangeText={setPassword}
         {...e2e('login-password-input')}

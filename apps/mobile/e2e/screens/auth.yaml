@@ -16,21 +16,21 @@ env:
 # ── A2: Login — invalid credentials ────────────────────────────────
 - tapOn:
     id: "login-email-input"
+- eraseText
 - inputText: ${EMAIL}
 - tapOn:
     id: "login-password-input"
+- eraseText
 - inputText: wrongpassword123
 - tapOn:
     id: "login-signin-button"
 - assertVisible:
-    text: ".*(?:Invalid|incorrect|error).*"
-    regex: true
+    text: "Invalid"
     optional: true
 
 # ── A5: Register — password mismatch ───────────────────────────────
 - tapOn:
-    text: ".*Create.*Account.*"
-    regex: true
+    text: "Create Account"
     optional: true
 - tapOn:
     id: "register-firstname-input"
@@ -51,8 +51,7 @@ env:
 - tapOn:
     id: "register-create-button"
 - assertVisible:
-    text: ".*(?:match|not match|do not match).*"
-    regex: true
+    text: "not match"
     optional: true
 
 # ── A6: Register — weak password ───────────────────────────────────
@@ -70,14 +69,12 @@ env:
 - tapOn:
     id: "register-create-button"
 - assertVisible:
-    text: ".*(?:8|character|short).*"
-    regex: true
+    text: "8"
     optional: true
 
 # ── A8: Forgot Password ────────────────────────────────────────────
 - tapOn:
-    text: ".*Back.*Login.*|.*Forgot.*Password.*|.*Already.*account.*"
-    regex: true
+    text: "Back"
     optional: true
 - tapOn:
     id: "forgot-email-input"
@@ -87,8 +84,7 @@ env:
     id: "forgot-send-button"
     optional: true
 - assertVisible:
-    text: ".*Check.*email.*|.*sent.*"
-    regex: true
+    text: "Check"
     optional: true
 
 # Navigate back to login
