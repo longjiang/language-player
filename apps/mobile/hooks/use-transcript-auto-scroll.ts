@@ -2,8 +2,6 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import type { FlatList, NativeSyntheticEvent, NativeScrollEvent, LayoutChangeEvent } from 'react-native';
 import { decideAutoScroll, SCROLL, type AutoScrollState } from '@langplayer/shared';
 
-const ESTIMATED_ITEM_HEIGHT = 48;
-
 // ── Types ──────────────────────────────────────
 
 export interface UseTranscriptAutoScrollOptions {
@@ -13,6 +11,8 @@ export interface UseTranscriptAutoScrollOptions {
   flatListRef: React.RefObject<FlatList<any> | null>;
   /** Whether smoothScroll is enabled (from playback settings). */
   smoothScrollEnabled: boolean;
+  /** Estimated height of each subtitle item in pixels. Use ~100 with translations, ~56 without. Default 48. */
+  estimatedItemHeight?: number;
 }
 
 export interface UseTranscriptAutoScrollReturn {
@@ -36,6 +36,7 @@ export function useTranscriptAutoScroll({
   activeIndex,
   flatListRef,
   smoothScrollEnabled,
+  estimatedItemHeight = 48,
 }: UseTranscriptAutoScrollOptions): UseTranscriptAutoScrollReturn {
   // ── Refs ──
   const lastAutoScrollTime = useRef(0);
@@ -52,17 +53,20 @@ export function useTranscriptAutoScroll({
 
   const computeFirstVisible = useCallback(() => {
     if (containerHeight <= 0) return -1;
-    return Math.floor(scrollYRef.current / ESTIMATED_ITEM_HEIGHT);
-  }, [containerHeight]);
+    return Math.floor(scrollYRef.current / estimatedItemHeight);
+  }, [containerHeight, estimatedItemHeight]);
 
   const computeVisibleCount = useCallback(() => {
     if (containerHeight <= 0) return 0;
-    return Math.max(1, Math.floor(containerHeight / ESTIMATED_ITEM_HEIGHT));
-  }, [containerHeight]);
+    return Math.max(1, Math.floor(containerHeight / estimatedItemHeight));
+  }, [containerHeight, estimatedItemHeight]);
 
   const onScroll = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
       scrollYRef.current = e.nativeEvent.contentOffset.y;
+      // Don't bump epoch during user cooldown — prevents auto-scroll
+      // from fighting the user's manual scroll.
+      if (Date.now() < userScrolledUntil.current) return;
       const newFirst = computeFirstVisible();
       // Only bump epoch when firstVisible actually changes (debounce)
       if (newFirst !== -1 && newFirst !== lastFirstVisible) {
@@ -76,7 +80,7 @@ export function useTranscriptAutoScroll({
     (e: LayoutChangeEvent) => {
       const h = e.nativeEvent.layout.height;
       if (h > 0 && h !== containerHeight) {
-        console.log(`[auto-scroll] 📏 container height: ${h}px (≈${Math.floor(h / ESTIMATED_ITEM_HEIGHT)} items)`);
+        console.log(`[auto-scroll] 📏 container height: ${h}px (≈${Math.floor(h / estimatedItemHeight)} items)`);
         setContainerHeight(h);
       }
     },
@@ -112,21 +116,27 @@ export function useTranscriptAutoScroll({
     const isFullyOut = !isVisible;
     const isNearEdge = isVisible && (activeIndex === firstVisible || activeIndex === lastVisible);
 
+    // If user recently scrolled, don't treat "fully out" as an emergency —
+    // the user deliberately scrolled away from the active line. Respect cooldown.
+    const now = Date.now();
+    const inUserCooldown = now < userScrolledUntil.current;
+    const effectiveFullyOut = inUserCooldown ? false : isFullyOut;
+
     const state: AutoScrollState = {
       activeIndex,
       prevScrolledIndex: lastScrolledIdx.current,
-      isFullyOut,
+      isFullyOut: effectiveFullyOut,
       isNearEdge,
       lastAutoScrollTime: lastAutoScrollTime.current,
       userScrolledUntil: userScrolledUntil.current,
       smoothScrollEnabled,
       isInitialLoad: isInitialLoad.current,
-      now: Date.now(),
+      now,
     };
 
     const decision = decideAutoScroll(state);
 
-    console.log(`[auto-scroll] 🧠 decision: activeIdx=${activeIndex} range=[${firstVisible},${lastVisible}] (scrollY=${scrollYRef.current}px h=${containerHeight}px) isFullyOut=${isFullyOut} isNearEdge=${isNearEdge} isInit=${isInitialLoad.current} prevScrolled=${lastScrolledIdx.current} shouldScroll=${decision.shouldScroll} reason=${decision.reason} animated=${decision.animated}`);
+    console.log(`[auto-scroll] 🧠 decision: activeIdx=${activeIndex} range=[${firstVisible},${lastVisible}] (scrollY=${scrollYRef.current}px h=${containerHeight}px itemH=${estimatedItemHeight}) isFullyOut=${isFullyOut} effOut=${effectiveFullyOut} isNearEdge=${isNearEdge} userCooldown=${inUserCooldown} isInit=${isInitialLoad.current} prevScrolled=${lastScrolledIdx.current} shouldScroll=${decision.shouldScroll} reason=${decision.reason} animated=${decision.animated}`);
 
     if (!decision.shouldScroll) return;
 

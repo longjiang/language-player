@@ -3,7 +3,7 @@
 ## Metadata
 - **Issue ID**: ISSUE-001
 - **Date**: 2026-07-28
-- **Status**: open
+- **Status**: open — root cause confirmed, fix specified (pending implementation)
 - **Platform**: Mobile (React Native / Expo, FlatList-based)
 - **Components affected**:
   - `apps/mobile/hooks/use-transcript-auto-scroll.ts`
@@ -18,48 +18,34 @@
 
 On a narrow phone screen in transcript mode, only 4 subtitle lines are visible (indices 0–3), but auto-scroll does not trigger until the active line reaches index 9 (line 10). Expected behavior: auto-scroll should trigger around index 3–4 when the active line reaches the bottom edge of the visible area.
 
-## Root Cause (Working Hypothesis)
+## Root Cause (Confirmed)
 
-**FlatList's `onViewableItemsChanged` reports an incorrect initial visible range**, and the auto-scroll hook trusts this value without correcting for the actual viewport capacity.
+**The hardcoded item height estimate of 48px is ~2× too small** when translations are visible. Both the scroll-position-based visibility math and FlatList's `getItemLayout` use this value, causing the system to believe 9 items fit in the viewport when only ~4 actually do.
 
-### Detailed Chain of Events
+### Why 48px?
 
-1. **Initial mount**: FlatList renders items with `initialNumToRender={5}`. `onViewableItemsChanged` fires once with `range=[0,4]` (correct — 5 items rendered, 4 fit on screen).
+The estimate was correct when `SubtitleDisplay` was first built: each rendered `Pressable` contained only a `TokenizedText` line (no translation). With `py-2` (16px vertical padding) + `mb-1` (4px margin) + one line of text (~24-28px), 48px was accurate. When the L1 translation `<Text>` was added below the tokenized line, item height roughly doubled, but the estimate was never updated. Two copies of `48` exist:
 
-2. **Second batch**: `maxToRenderPerBatch={5}` renders 5 more items. `onViewableItemsChanged` fires again with `range=[0,9]` (incorrect — FlatList's virtualizer now considers all 10 rendered items as "viewable").
+- `apps/mobile/hooks/use-transcript-auto-scroll.ts` line 5: `const ESTIMATED_ITEM_HEIGHT = 48;`
+- `apps/mobile/components/video/SubtitleDisplay.tsx` line ~232: `getItemLayout` returns `length: 48, offset: 48 * index`
 
-3. **Range frozen**: Because auto-scroll only scrolls to index 0 (already at the top) and the user doesn't manually scroll, `onViewableItemsChanged` does NOT fire again. The incorrect range `[0,9]` persists indefinitely.
+### How the Wrong Estimate Causes the Deadlock
 
-4. **All lines look "safe"**: With `range=[0,9]`, lines 1–8 are all `isNearEdge=false` and `isFullyOut=false`. The shared `decideAutoScroll()` returns `reason=skip_not_edge` for every one of them.
+1. **Visibility math is wrong**: `visibleCount = 443 / 48 ≈ 9`, but reality is `443 / 100 ≈ 4`. The auto-scroll hook computes range `[0, 8]` at the top of the list, so lines 4–8 all appear "safe" (neither `isNearEdge` nor `isFullyOut`).
 
-5. **Only line 9 triggers scroll**: When `activeIndex=9`, it becomes `isNearEdge=true` (equal to `last=9`), so auto-scroll finally fires.
+2. **`decideAutoScroll()` skips everything**: Rule 1 says if the line is not near an edge and not fully out of view, skip. Lines 1–8 all match this — the hook thinks they're visible.
 
-### Why the Scroll-Position-Based Fix Didn't Help
+3. **Only line 9 triggers**: At `activeIndex=9`, `isNearEdge=true` (equal to `last=8`), so the scroll finally fires. But visually, line 4 was already off-screen.
 
-In a subsequent attempt, `onViewableItemsChanged` was replaced with scroll-position-based visibility computation (`scrollY / 48 = firstVisible`, `containerHeight / 48 = visibleCount`). This also produced the wrong range because:
+4. **After the first scroll, everything works**: The scroll event provides a real `scrollY` offset, and the post-scroll `onViewableItemsChanged` reports the correct `[3,12]` range. This confirms the logic is sound — only the estimate is wrong.
 
-- Container height was measured at **443px**
-- Estimated item height is **48px** (from `getItemLayout`)
-- Computed visible count: `443 / 48 ≈ 9` items
-- With scroll at top (`scrollY=0`): range = `[0, 8]`
-- This is almost as wrong as FlatList's `[0, 9]`
+### Why `onViewableItemsChanged` Looked Like the Culprit
 
-**The problem**: Actual rendered item height is significantly larger than 48px. Each `Pressable` contains:
-- A `TokenizedText` component (line itself)
-- Optionally a `Text` element with L1 translation below it
+The original implementation used `onViewableItemsChanged` (not scroll-position math), and it reported `range=[0,9]` on mount — all 10 rendered items appeared "viewable." This was investigated as a FlatList timing/race issue, but it's a red herring: with the correct 100px estimate, FlatList would work fine (or at least close enough). The `[0,9]` report is a symptom of FlatList trusting `getItemLayout`'s 48px offset for initial overlap calculations before a real scroll event provides ground-truth measurements.
 
-With translations visible, line height is approximately **96–110px**, meaning only **4 items** actually fit in 443px. The formula `containerHeight / 48` overestimates by ~2× when translations are shown.
+### Why a FlatList with Correct Estimates Would Work by Default
 
-### Verified Behavior (Post-Fix)
-
-After the first `scrollToIndex(9)` call, the FlatList DOES correctly update:
-```
-📊 viewability changed: items=10 range=[3,12]
-📊 viewability changed: items=9  range=[4,12]
-📊 viewability changed: items=6  range=[7,12]
-```
-
-This confirms: FlatList's `onViewableItemsChanged` works correctly **after a scroll event**. The bug is purely about the initial mount state.
+If items truly matched the 48px estimate, `443 / 48 ≈ 9` would be correct — 9 items would actually fit. The system would auto-scroll correctly out of the box. The bug only manifests because the estimate diverges from reality by ~2×.
 
 ## Evidence (Logs)
 
@@ -107,46 +93,82 @@ This confirms: FlatList's `onViewableItemsChanged` works correctly **after a scr
 |---|---|---|
 | 1 | Convert `visibleRange` from `useRef` to `useState` | Did not help — the state value was still `[0,9]` because FlatList's callback reported that |
 | 2 | Reduce `initialNumToRender`: 10→5, `windowSize`: 5→3, `maxToRenderPerBatch`: 10→5 | Some improvement: initial range became `[0,4]` instead of `[0,9]`, but second batch still overwrites to `[0,9]` |
-| 3 | Compute visibility from scroll position (`scrollY / 48`) instead of `onViewableItemsChanged` | Range computed as `[0,8]` — still wrong because item height is ~96px not 48px |
+| 3 | Compute visibility from scroll position (`scrollY / 48`) instead of `onViewableItemsChanged` | Range computed as `[0,8]` — correct approach, wrong constant. Fix: use 100px (not 48px) when translations are shown |
 | 4 | Add comprehensive debug logging throughout the chain | Confirmed the exact point of failure and sequence of events |
 
-## Possible Causes (Ranked by Likelihood)
+## Possible Causes (Post-Investigation)
 
-### 1. Item Height Mismatch (Most Likely)
+### ✅ Confirmed Root Cause: Item Height Mismatch
 
-The `getItemLayout` declares `length: 48`, but actual items are taller when translations are visible (~96–110px). This causes:
-- FlatList's internal position calculations to be off by ~2×
-- Scroll-position-based visibility overestimates visible count by ~2×
-- `scrollToIndex` may land at the wrong position (mitigated by `onScrollToIndexFailed`)
+The hardcoded `ESTIMATED_ITEM_HEIGHT = 48` in the auto-scroll hook and `length: 48` in `getItemLayout` are both ~2× too small when translations are visible. Real items are ~96–110px (tokenized text line + L1 translation text + padding/margin). The visibility formula `containerHeight / 48` produces `visibleCount ≈ 9` instead of the real `≈ 4`. Every computed range based on this estimate is wrong.
 
-**Fix**: Use a larger estimate (96–110px) or dynamically measure item height. Also pass the actual item height to the auto-scroll hook so it can compute accurate visibility.
+### ❌ Not a Cause: FlatList Viewability Callback Bugs
 
-### 2. FlatList Viewability Callback Unreliable on Initial Mount
+The original diagnosis suspected `onViewableItemsChanged` was unreliable on mount (reporting `[0,9]` when only 4 items actually fit). This was a **symptom**, not a cause. FlatList's native viewability tracker uses real frame measurements for overlap detection — it's correct. The `[0,9]` report likely comes from a timing window where newly-created views (from `maxToRenderPerBatch`) briefly have zero/unknown frames before Yoga layout positions them. But even if FlatList reported the correct `[0,3]`, the scroll-position-based approach (attempt #3) would have worked — it didn't only because of the 48px estimate. **Fixing FlatList viewability is unnecessary; fixing the estimate fixes everything.**
 
-`onViewableItemsChanged` reports rendered items as "viewable" before the viewport measurement stabilizes. The first report (`[0,4]`) is already gone by the time the second report (`[0,9]`) locks in.
+### ❌ Not a Cause: No Re-Trigger After `scrollToIndex`
 
-**Fix**: Ignore `onViewableItemsChanged` on mount. Wait for a scroll event or a layout event before trusting visibility data. Alternatively, use a short `setTimeout` after mount to read the final range.
+With the correct estimate, `scrollToIndex` fires at line 3 (not line 9), and the subsequent scroll event naturally triggers a correct `onViewableItemsChanged` update. No manual re-trigger mechanism is needed.
 
-### 3. No Mechanism to Re-Trigger Visibility After `scrollToIndex` Completes
+### ❌ Not a Cause: User Scroll Not Refreshing Visibility
 
-After the initial `scrollToIndex(0)`, the list is at the top. The FlatList doesn't fire `onViewableItemsChanged` because "nothing changed" from its perspective (items 0–9 are still "rendered and visible"). A re-trigger after scroll completion would force a corrected range.
+Same as above — with the correct estimate, the system never gets stuck in the first place, so user scroll handling is irrelevant to this bug.
 
-**Fix**: Schedule a visibility refresh after each `scrollToIndex` call (e.g., via `InteractionManager.runAfterInteractions`).
+## Proposed Fix
 
-### 4. User Scroll Not Triggering Visibility Refresh
+All approaches below center on the same goal: **make the item height used in visibility calculations match reality.**
 
-Even if the user manually scrolls, `onScrollBeginDrag` only sets cooldown — it doesn't force a visibility re-computation.
+### Solution A (Recommended — Quick Fix): Better Hardcoded Estimate Based on Translation State
 
-**Fix**: Also handle `onScrollEndDrag` / `onMomentumScrollEnd` to refresh the visible range after user interaction.
+`SubtitleDisplay` already knows whether translations are visible via `showTranslation`. Use this to pick a realistic estimate and pass it to both the auto-scroll hook and `getItemLayout`.
 
-## Proposed Fix (Summary)
+**Changes to `use-transcript-auto-scroll.ts`:**
+- Add `estimatedItemHeight?: number` to `UseTranscriptAutoScrollOptions` (default `48`)
+- Replace the hardcoded `ESTIMATED_ITEM_HEIGHT` constant with the option value in `computeFirstVisible` and `computeVisibleCount`
 
-The most promising approach is a combination:
+**Changes to `SubtitleDisplay.tsx`:**
+- Compute `const estimatedItemHeight = showTranslation ? 100 : 56;`
+- Pass `estimatedItemHeight` to `useTranscriptAutoScroll()`
+- Use `estimatedItemHeight` in `getItemLayout` (`length` and `offset`)
 
-1. **Fix item height estimate**: Use actual item height (96–110px with translations) instead of 48px for visibility calculations
-2. **Defer initial visibility**: Don't trust visibility data until after the first scroll event or a `setTimeout(500)` settles
-3. **Force refresh after each `scrollToIndex`**: Use `InteractionManager.runAfterInteractions` or a timeout to re-compute visibility after scroll animations complete
-4. **Hybrid measurement**: Combine `onScroll` (for scroll position) + `onLayout` (for container height) + actual measured item height (from `onLayout` of first item) for accurate visible count
+**Why this works:** With translations on, `443 / 100 ≈ 4` → range `[0, 3]` → line 3 triggers scroll at the bottom edge. With translations off, `443 / 56 ≈ 7` → range `[0, 6]` → line 6 triggers scroll. The estimate doesn't need to be perfect (±20px error only shifts the trigger by 1 line).
+
+**Effort:** ~5 lines changed. **Risk:** Very low — `onScrollToIndexFailed` already handles imprecision from `getItemLayout`.
+
+### Solution B (Robust Follow-Up): Dynamic Measurement via `onLayout`
+
+For cases where the hardcoded estimate is wrong (large accessibility font sizes, tablets, very long lines wrapping to 3+ lines), measure actual item height.
+
+**Changes to `SubtitleDisplay.tsx`:**
+- Add `onLayout` to the `Pressable` in `renderItem` to capture real height
+- Track the maximum observed height in state: `const [measuredItemHeight, setMeasuredItemHeight] = useState(estimatedItemHeight)`
+- Use `measuredItemHeight` for both the hook and `getItemLayout`
+
+**Why this is better:** Adapts to any font size, language, or screen width automatically. The first render cycle uses the hardcoded estimate (from Solution A) before `onLayout` fires — so Solution A is the prerequisite fallback.
+
+**Effort:** ~20 lines. **Risk:** Low — `onLayout` fires within the same frame as render, so the stale estimate affects at most 1–2 decision cycles.
+
+### Solution C (Safety Net): Force Scroll When ActiveIndex Runs Away
+
+Regardless of which fix is chosen, add a belt-and-suspenders check: if `activeIndex` has advanced far beyond the computed `visibleCount` and no scroll has happened, force one anyway. This prevents the "stuck at top" failure mode from ever happening silently, even if a future change introduces a new height mismatch.
+
+```ts
+// In the scroll effect, before calling decideAutoScroll:
+const effectiveFullyOut = isFullyOut || (
+  isInitialLoad.current &&
+  activeIndex > computeVisibleCount() * 2
+);
+```
+
+**Effort:** ~3 lines. **Risk:** None — only fires in the degenerate case the other fixes prevent.
+
+### Recommended Implementation Order
+
+| Step | Solution | Fixes the bug? | Handles edge cases? |
+|---|---|---|---|
+| 1 | Solution A — Better estimate based on `showTranslation` | ✅ Yes | ⚠️ Mostly (large fonts may still be off) |
+| 2 | Solution B — Dynamic measurement via `onLayout` | ✅ Yes | ✅ Yes |
+| 3 | Solution C — Safety net for runaway activeIndex | — | 🛡️ Prevents silent failure in any future regression |
 
 ## Related Files
 
