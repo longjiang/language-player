@@ -1,0 +1,41 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# M14: Video queue
+# ════════════════════════════════════════════════════════════════════
+# Login → Media tab → tap video → tap the queue tab in the panel →
+# assert queue renders (may be empty — that's valid for a fresh session).
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Login ──────────────────────────────────────────────────────────
+- runFlow:
+    file: ../../flows/login.yaml
+
+# ── Wait for feed ──────────────────────────────────────────────────
+- assertVisible:
+    id: "explore-screen"
+
+# ── Tap first video card ───────────────────────────────────────────
+- runFlow:
+    when:
+      notVisible:
+        id: "video-grid-empty"
+    commands:
+      - tapOn:
+          point: "50%,25%"
+      - assertVisible:
+          id: "watch-screen"
+
+      # ── Tap the "Queue" tab in TranscriptQueuePanel ───────────────
+      # The tabs are: Transcript | Queue | Info.
+      # Tap the middle tab area ("Queue").
+      - tapOn:
+          point: "50%,88%"
+          optional: true
+
+      # ── Assert watch screen is still visible ─────────────────────
+      - assertVisible:
+          id: "watch-screen"

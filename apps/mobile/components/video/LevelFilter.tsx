@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { formatNumericLevel, primaryScale } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
+import { e2e } from '@/lib/e2e';
 
 interface LevelFilterProps {
   level: number | undefined;
@@ -26,6 +27,7 @@ export function LevelFilter({ level, onSelect, l2Code }: LevelFilterProps) {
       <Pressable
         onPress={() => onSelect(undefined)}
         className={`rounded-full px-3 py-1 ${level === undefined ? 'bg-primary' : 'bg-muted'}`}
+        {...e2e('level-filter-all')}
       >
         <Text className={`text-xs font-bold ${level === undefined ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
           {t('filter.all')}
@@ -38,6 +40,7 @@ export function LevelFilter({ level, onSelect, l2Code }: LevelFilterProps) {
             key={l}
             onPress={() => onSelect(active ? undefined : l)}
             className={`rounded-full px-3 py-1 ${active ? 'bg-primary' : 'bg-muted'}`}
+            {...e2e(`level-filter-${l}`)}
           >
             <Text className={`text-xs font-bold ${active ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
               {labels[i]}

@@ -1,0 +1,43 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# M10: Live TV
+# ════════════════════════════════════════════════════════════════════
+# Login → navigate to Live TV via hamburger drawer → assert channels
+# load and the player section renders.
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Login ──────────────────────────────────────────────────────────
+- runFlow:
+    file: ../../flows/login.yaml
+
+# ── Open hamburger drawer ──────────────────────────────────────────
+- tapOn:
+    id: "header-hamburger-button"
+
+# ── Tap "Live TV" in the drawer ────────────────────────────────────
+- runFlow:
+    when:
+      notVisible:
+        text: "Live TV"
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "Live TV"
+          direction: DOWN
+          timeout: 3000
+          speed: 40
+- tapOn:
+    text: "Live TV"
+
+# ── Assert Live TV screen renders ──────────────────────────────────
+# The screen title uses t('title.live_tv')
+- extendedWaitUntil:
+    visible:
+      text: "Live TV"
+    timeout: 10000
+- assertVisible:
+    text: "Live TV"

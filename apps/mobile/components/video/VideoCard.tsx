@@ -3,6 +3,7 @@ import { View, Text, Pressable, Image } from 'react-native';
 import { router } from 'expo-router';
 import type { YouTubeVideo } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
+import { e2e } from '@/lib/e2e';
 import { ChannelActionsMenu } from './ChannelActionsMenu';
 
 interface VideoCardProps {
@@ -48,6 +49,7 @@ export function VideoCard({ video, layout = 'card', isActive = false }: VideoCar
       <Pressable
         onPress={handlePress}
         className={`flex-row items-center gap-3 rounded-lg border px-3 py-2 active:bg-muted ${isActive ? 'border-primary bg-primary/5' : 'border-border'}`}
+        {...e2e(`video-card-${video.youtube_id}`)}
       >
         <Image source={{ uri: thumbnail }} className="h-14 w-24 rounded-md" />
         <View className="flex-1">
@@ -70,7 +72,11 @@ export function VideoCard({ video, layout = 'card', isActive = false }: VideoCar
   }
 
   return (
-    <Pressable onPress={handlePress} className="mb-3 overflow-hidden rounded-lg border border-border bg-card active:bg-muted">
+    <Pressable
+      onPress={handlePress}
+      className="mb-3 overflow-hidden rounded-lg border border-border bg-card active:bg-muted"
+      {...e2e(`video-card-${video.youtube_id}`)}
+    >
       <View className="relative">
         <Image source={{ uri: thumbnail }} className="aspect-video w-full" />
         {duration ? (

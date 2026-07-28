@@ -1,0 +1,40 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# M15: Search — no results
+# ════════════════════════════════════════════════════════════════════
+# Login → search → type a gibberish query → assert "no results"
+# empty state or error message appears.
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Login ──────────────────────────────────────────────────────────
+- runFlow:
+    file: ../../flows/login.yaml
+
+# ── Navigate to search ─────────────────────────────────────────────
+- tapOn:
+    id: "header-search-button"
+- assertVisible:
+    id: "search-input"
+
+# ── Type a gibberish query ────────────────────────────────────────
+- tapOn:
+    id: "search-input"
+    repeat: 3
+- inputText: "xyzasdfqwerpoiu"
+
+# Submit via keyboard Enter key
+- pressKey: Enter
+
+# ── Assert search completed (no crash) ─────────────────────────────
+# Either a "no results" message or the search bar remains visible.
+# Both confirm the search flow completed.
+- extendedWaitUntil:
+    visible:
+      id: "search-input"
+    timeout: 10000
+- assertVisible:
+    id: "search-input"

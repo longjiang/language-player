@@ -1,0 +1,36 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# M8: YouTube URL search
+# ════════════════════════════════════════════════════════════════════
+# Login → search → paste a known YouTube URL → assert navigation
+# to the watch screen.
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Login ──────────────────────────────────────────────────────────
+- runFlow:
+    file: ../../flows/login.yaml
+
+# ── Navigate to search ─────────────────────────────────────────────
+- tapOn:
+    id: "header-search-button"
+- assertVisible:
+    id: "search-input"
+
+# ── Paste a known YouTube URL ──────────────────────────────────────
+# Use a well-known video that should always be available.
+- tapOn:
+    id: "search-input"
+    repeat: 3
+- inputText: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+# Submit via keyboard Enter key
+- pressKey: Enter
+
+# ── Assert watch screen opens ──────────────────────────────────────
+# The YouTube URL extraction navigates directly to the player.
+- assertVisible:
+    id: "watch-screen"
