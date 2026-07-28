@@ -736,6 +736,11 @@ Before shipping the E2E testing pipeline:
   ```
 - **Nested `runFlow` paths are relative to the containing file**, not the root test file. A flow in `flows/preflight-check.yaml` that calls `flows/logout.yaml` must use `file: logout.yaml` (relative to `flows/`), not `file: flows/logout.yaml`.
 - **Each test should clean up after itself**: Register validation tests (A5, A6, A7) leave the app on the register screen after asserting the error. Add a teardown step tapping `register-back-to-login` so individual runs don't leave a mess for the next test. The preflight handles getting to login, but doesn't clean up after.
+- **Server-side cleanup via `runScript` + shell script**: For tests that create persistent server state (users, saved words), use `runScript` in the YAML to call a shell script before the test runs. Example — `register-and-onboard.yaml` deletes the test user before each run:
+  ```yaml
+  - runScript: ../scripts/cleanup-test-user.sh
+  ```
+  The script curls Flask's `DELETE /auth/test-cleanup` (admin token). The endpoint is gated behind `ENABLE_TEST_ENDPOINTS=true` so it 404s in production. The script exits 0 even if Flask isn't running or the user doesn't exist.
 - **Split tests into individual files for faster debugging**: Instead of one monolithic auth.yaml, split into per-test files (`screens/auth/login-invalid-credentials.yaml`, etc.). Each can be run independently:
   ```bash
   maestro test apps/mobile/e2e/screens/auth/login-happy-path.yaml

@@ -3,6 +3,10 @@ env:
   FLOW: "A4-A12"
   REGISTER_EMAIL: "e2e.register.test@zerotohero.ca"
 ---
+# ── Cleanup: delete test user from previous run ────────────────────
+# Calls Flask /auth/test-cleanup (admin token, ENABLE_TEST_ENDPOINTS=true).
+# The script exits 0 even if Flask isn't running or user doesn't exist.
+- runScript: ../scripts/cleanup-test-user.sh
 # ════════════════════════════════════════════════════════════════════
 # A4 + A12: Register — happy path → Select Language (new user)
 #
