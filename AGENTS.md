@@ -89,6 +89,8 @@ npm run build:check -w apps/web  # Safe build check (uses isolated .next-check/,
 
 **⚠️ Never run build commands.** This includes `npx expo run:ios`, `npx expo run:android`, `npx expo prebuild`, `npx turbo build`, `npm run build`, `npx next build`, and any other command that triggers a native or production build. Builds take 15–20+ minutes and block the user's machine. When a build is needed, tell the user the command to run and wait for them to confirm it succeeded.
 
+**⚠️ Always use `python3.10` for Python commands.** The Flask backend and all Python scripts require Python 3.10. Never use bare `python`, `python3`, or a different version. Example: `python3.10 app.py`, `python3.10 -c "..."`, `python3.10 script.py`.
+
 **⚠️ Build vs dev**: `npx turbo build` and `npm run build` both run `rm -rf .next` which kills the dev server. Use `npm run build:check -w apps/web` instead — it builds into an isolated `.next-check/` directory (created and cleaned up automatically).
 
 **⚠️ Always use `npx turbo` from the repo root** — it handles working directories automatically. If you must run a package script directly (e.g., `npx next build`), `cd` into that package's directory first. Running `npx next build apps/web` from the root will fail with misleading CSS/webpack errors because Next.js interprets the path argument as the project root, not a subdirectory.
