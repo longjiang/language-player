@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { View, Text, ActivityIndicator, FlatList, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -15,6 +15,7 @@ import { VideoControlBar } from '@/components/video/VideoControlBar';
 import { SubtitleDisplay } from '@/components/video/SubtitleDisplay';
 import { SubtitlesModeBand } from '@/components/video/SubtitlesModeBand';
 import { TranscriptQueuePanel } from '@/components/video/TranscriptQueuePanel';
+import { SimpleSubsForDebug } from '@/components/video/SimpleSubsForDebug';
 import { VideoQueueList } from '@/components/video/VideoQueueList';
 import { VideoMeta } from '@/components/video/VideoMeta';
 import { YouTubeChannelCard } from '@/components/video/YouTubeChannelCard';
@@ -389,9 +390,10 @@ export default function WatchScreen() {
         />
       </View>
 
-      {/* Tabbed panel: transcript / queue / info */}
+      {/* Tabbed panel: video / transcript / queue / info */}
       <View className="flex-1 min-h-0">
         <TranscriptQueuePanel
+          video={<SimpleSubsForDebug lines={subtitleLines} activeLineIndex={activeLineIndex} onSeekToLine={handleSeekToLine} />}
           transcript={
             <SubtitleDisplay
               youtubeId={v.youtube_id}
