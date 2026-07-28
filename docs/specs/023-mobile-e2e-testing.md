@@ -711,6 +711,15 @@ Before shipping the E2E testing pipeline:
   ```
   All 13 flows pass sequentially from a clean simulator state (~5min)
 
+#### Phase 2 Learnings
+
+- `eraseText` is unreliable with React Native TextInput under Fabric — it doesn't always clear the field. Use `tapOn repeat: 3` (triple-tap) instead, which selects all text, so `inputText` replaces rather than appends.
+- Maestro has no `clearState` on iOS — Keychain persists across runs, but the "Not Now" dialog means autofill isn't the culprit. The login screen component stays alive in Expo Router's modal stack, so `useState` values persist between navigations.
+- All text assertions must match the actual English output of `t('key')` from `translations.csv`, not guessed strings.
+- Flask API error messages (`"Invalid credentials"`, `"Registration failed"`) are not from translations — they come from the server.
+- Env vars (`${VAR}`) in Maestro YAML need a default in the file header's `env:` block, not bash-style `${VAR:-default}`.
+- RunFlow paths in `screens/` subdirectory must be relative to that directory — use `../flows/` prefix for flows in the parent `e2e/flows/` directory.
+
 ### Phase 3: Media Tab (Week 4)
 - Write media suite (Tier 2: M1-M16) as Maestro YAML flows
 - Add testIDs for: video cards, search bar, filter pills, player controls

@@ -1,11 +1,16 @@
 appId: ca.zerotohero.app
 ---
-# Verify we're on the login screen; if not, log out first.
+# ════════════════════════════════════════════════════════════════════
+# Preflight Check
+#
+# Ensures the app is on the login screen before running tests.
 # iOS Keychain tokens survive app relaunch, so this handles the case
 # where a previous test left a logged-in session behind.
 #
 # Runs flows/logout.yaml conditionally — only when the login screen
 # is NOT visible (i.e., a stale auth token keeps the user logged in).
+# When the login screen IS visible, the flow is skipped entirely.
+# ════════════════════════════════════════════════════════════════════
 - runFlow:
     file: flows/logout.yaml
     when:

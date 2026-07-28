@@ -50,7 +50,7 @@ export default function VerifyEmailScreen() {
     return (
       <View className="flex-1 justify-center bg-background p-6 items-center">
         <ActivityIndicator size="large" />
-        <Text className="text-muted-foreground text-sm mt-4">
+        <Text className="text-muted-foreground text-sm mt-4" {...e2e('verify-verifying-text')}>
           {t('action.verify_email')}
         </Text>
       </View>
