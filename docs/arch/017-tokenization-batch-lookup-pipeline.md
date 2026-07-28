@@ -1,11 +1,11 @@
 # Tokenization & Batch Lookup Pipeline
 
 ## Metadata
-- **Arch ID**: ARCH-017
+- **ARch ID**: ARCH-017
 - **Feature**: Lemmatization, dictionary batch lookup, and request optimization strategies
-- **Status**: draft
+- **Status**: active (maintained)
 - **Created**: 2026-07-26
-- **Updated**: 2026-07-26 — mobile gaps extracted to SPEC-019
+- **Updated**: 2026-07-28 — mobile gap status updated; video lemmatization flow documented; server-side normalizer chain detailed
 - **ROADMAP Phase**: Cross-cutting (all phases)
 - **Scope**: Web (Next.js), Mobile (React Native/Expo), Python (Flask)
 - **See also**: [SPEC-019: Mobile Tokenization & Batch Lookup Completion](../specs/019-mobile-tokenization-batch-lookup-completion.md) — mobile gap closure plan
@@ -50,17 +50,62 @@ The challenge is doing this efficiently at scale — a single video transcript c
 | `/lemmatize-normalized/batch` | POST | `{ texts[], l2 }` | `{ results: LemmatizedToken[][] }` | EPUB reader (per-page blocks) |
 | `/lemmatize-video-normalized` | GET | `?video_id=X&lang=Y` | `{ md5_hash: { tokens } }` | Video subtitle pre-cache |
 
-**Lemmatizer dispatch:** `lemmatize_unified.lemmatize()` routes to language-specific lemmatizers:
-- `zh`/`yue` → Jieba (Chinese segmentation + pinyin/jyutping)
-- `ja` → MeCab (morphological analysis + kana readings)
-- `ko` → OKT (Korean morphological analysis)
-- `hr` → spaCy
-- Most European languages → Simplemma
-- `ca`/`de`/`en`/`es`/`fr`/`it`/`pt`/`ro`/`sv`/`uk` → LemmatizationLists (static dictionaries)
+**Lemmatizer dispatch:** `lemmatize_unified.lemmatize()` routes to language-specific lemmatizers via `LEMMATIZER_REGISTRY`:
+
+| Language(s) | Module | Engine | Output format |
+|---|---|---|---|
+| `zh`, `yue` | `lemmatize_chinese` | Jieba (dict.txt.big) | `[{word, pos, pronunciation}]` |
+| `ja` | `lemmatize_japanese` | MeCab + IPADIC | `[{word, lemma, pos, pronunciation}]` |
+| `ko` | `lemmatize_korean` | OKT (Open Korean Text) | `[{text, stem, pos}]` |
+| `ru` | `lemmatize_russian` | pymorphy2 | `[{word, lemmas: [{lemma, pos, morphologies}]}]` |
+| `ar` | `lemmatize_arabic` | Qalsadi | `[[{word, lemma, pos, pronunciation}]]` (nested) |
+| `fa`, `tr`, `my` | `lemmatize_persian` / `_turkish` / `_burmese` | Language-specific | Flat `[{word, lemma, pos}]` |
+| `ca`, `de`, `en`, `es`, `fr`, `it`, `pt`, `ro`, `sv`, `uk` | `lemmatize_lemmatization_lists` | Static lookup tables (zero runtime cost) | `[{text, lemma, pos}]` |
+| `da`, `el`, `fi`, `lt`, `mk`, `nb`, `nl`, `pl`, … | `lemmatize_simple` | Simplemma (lightweight dictionary) | `[{text, lemma, pos}]` |
+| `hr` (Croatian) | `lemmatize_spacy` | spaCy (last resort — no lighter alternative) | `[{word, lemma, pos}]` |
+| Any other | — | Space-split fallback | Surface = lemma |
+
+Each lemmatizer returns a module-specific raw format. `_normalize_*()` converters unify these into the standard `{ tokens: LemmatizedToken[] }` shape:
+
+- `_normalize_mecab()` — MeCab `{word, lemma, pos, pronunciation}` → `LemmatizedToken`
+- `_normalize_okt()` — OKT `{text, stem, pos}` → `LemmatizedToken` (adds romanized pronunciation)
+- `_normalize_jieba()` — Jieba `{word, pos, pronunciation}` → `LemmatizedToken`
+- `_normalize_pymorphy()` — pymorphy2 nested `{lemmas: […]}` → `LemmatizedToken`
+- `_normalize_qalsadi()` — Qalsadi nested group `[[…]]` → `LemmatizedToken`
+- `_normalize_spacy()` / `_normalize_simple()` / `_normalize_lemmatization_list()` — flat formats → `LemmatizedToken`
+- `_normalize_flat()` — generic fallback for unknown lemmatizers
 
 **Post-processing:** `_recover_spaces()` reconstructs whitespace tokens from the original text. `_romanize_if_needed()` adds pronunciation via the `romanize` module (language-specific romanizers for Cyrillic, Greek, Thai, etc.).
 
-**Video cache storage:** `/lemmatize-video-normalized` caches results on disk via `utils_cache.py` (`load_from_lemmatized_subs_cache` / `save_to_lemmatized_subs_cache`). Keys are MD5 hashes of original subtitle lines. This wraps the legacy `/lemmatize-video` endpoint and normalizes output via `normalize_by_lang()`.
+**Video cache storage:** `/lemmatize-video-normalized` accepts a video's subtitle CSV, lemmatizes every line, and returns an MD5-keyed map:
+
+```
+GET /lemmatize-video-normalized?video_id=123&lang=ja
+
+Response:
+{
+  "d41d8cd98f00b204e9800998ecf8427e": { "tokens": [{ "text": "今日", ... }, ...] },
+  "e99a18c428cb38d5f260853678922e03": { "tokens": [{ "text": "天気", ... }, ...] },
+  ...
+}
+```
+
+**Server-side flow:**
+1. Fetch subtitle CSV from Directus `youtube_videos.subs_l2` or YouTube transcript API
+2. Parse CSV into individual subtitle lines
+3. For each line, compute `MD5(line_text)` as the cache key
+4. Call `lemmatize_unified.lemmatize(line_text, l2)` → `LemmatizedToken[]`
+5. Store on disk via `utils_cache.py` (`save_to_lemmatized_subs_cache`)
+6. Return `{ md5_hash: { tokens: LemmatizedToken[] } }` to client
+
+**Client-side flow (both platforms):**
+1. `useVideoTokenCache(videoId, l2Code)` calls `GET /lemmatize-video-normalized`
+2. Response loaded into `TokenCache` (md5-keyed `Map<string, LemmatizedToken[]>`)
+3. `TokenCache.get(text)` computes `md5(text)` and returns cached tokens — O(1) per line
+4. Passed as `tokenCache` prop through `SubtitleDisplay` → `TokenizedText`
+5. `TokenizedText` checks the cache before falling back to per-line `POST /lemmatize-normalized`
+
+The MD5 key scheme means two subtitle lines with identical text share one cache entry across the entire transcript. On the server, `load_from_lemmatized_subs_cache` / `save_to_lemmatized_subs_cache` persist results to disk so subsequent requests for the same video are instant.
 
 ### Response Shape
 
@@ -337,17 +382,18 @@ TokenizedText (single file, ~360 lines)
 
 | Area | Web | Mobile | Status |
 |---|---|---|---|
-| **Lazy loading** | IntersectionObserver 200px margin | Not implemented | ⬜ Gap — mobile fetches all tokens immediately |
-| **In-flight dedup** | `lemmatizeInflight` Map | Only `loadingRef.current` guard | ⬜ Gap — can have duplicate requests |
-| **Traditional Chinese** | OpenCC per-token in TokenSpan (ADR-0019) | TODO (G11) | ⬜ Feature gap — needs TokenSpan port |
-| **hardWords filter** | `getWordDifficulty()` | TODO (G9) | ⬜ Feature gap |
-| **quickGloss** | `QuickGloss` for saved words | TODO (G7) | ⬜ Feature gap |
-| **byeonggi** | Per-token `useMemo` from cache | ✅ `getTokenEntryData()` | ✅ Done |
-| **Quiz mode** | TokenSpan per-word blanking | ✅ `revealedTokens` Set | ✅ Done |
-| **Interlinear gloss** | Via definition.show | ✅ First lemma below/beside word | ✅ Done |
+| **Lazy loading** | IntersectionObserver 200px margin | Not implemented (no browser API) | ⬜ Open — FlatList viewability config possible |
+| **In-flight lemmatize dedup** | `lemmatizeInflight` Map | `lemmatizeInflight` Map in `tokenizer.ts` | ✅ Done — same pattern, different file |
+| **Traditional Chinese** | OpenCC per-token in TokenSpan (ADR-0019) | Pre-converted at TokenizedText level via `getConverter()` | ✅ Done — batch conversion of unique texts, same OpenCC lib |
+| **hardWords filter** | `getWordDifficulty()` in TokenSpan | `getWordDifficulty()` + `shouldShowPhonetics()` in TokenizedText | ✅ Done |
+| **quickGloss** | `QuickGloss` component for saved words | Inline `savedFormSet` + `firstDef` from dict cache | ✅ Done — rendered as small muted text after word |
+| **byeonggi** | Per-token `useMemo` from cache | `getTokenEntryData()` per token | ✅ Done |
+| **Quiz mode** | TokenSpan per-word blanking | `revealedTokens` Set | ✅ Done |
+| **Interlinear gloss** | Via `definition.show` in TokenSpan | First lemma below/beside word | ✅ Done |
 | **Batch dict lookup** | `bulkLookupWords()` + `cacheVersion` | Same pattern | ✅ Done |
-| **Video token cache** | Passed to SubtitleDisplay → TokenizedText | Fetched but NOT passed to SubtitleDisplay | ❌ Bug |
-| **Ruby rendering** | HTML `<ruby>` + `<rt>` | Custom View-based flex row | ✅ Different render, same concept |
+| **Video token cache** | Passed through to TokenizedText | Passed through to TokenizedText (fixed 2026-07-28) | ✅ Done |
+| **Ruby rendering** | HTML `<ruby>` + `<rt>` | Custom View-based flex row via `buildRuby()` | ✅ Different render, same logic |
+| **TokenSpan child component** | Separate `token-span.tsx` (260 lines) | Inline rendering in `TokenizedText.tsx` | Architectural difference — mobile uses a single-file approach |
 
 ### Mobile Ruby Rendering
 
@@ -364,7 +410,48 @@ The mobile app cannot use HTML `<ruby>` tags (React Native has no native ruby an
 
 Each character group is a `<View className="items-center mx-px">`. The ruby, byeonggi, and gloss text use the same `readingSize` (max(8, round(baseSize × 0.55))).
 
+### Mobile Local Tokenization Chain
+
+When the server is unreachable (offline, timeout), mobile falls back to a local chain via `lemmatizeText()` in `apps/mobile/lib/tokenizer.ts`:
+
+```
+1. IN-MEMORY CACHE (LRU, max 2000 entries) — keyed by "l2:text"
+     │
+     miss
+     ▼
+2. POST /lemmatize-normalized (server, 3s timeout) — best accuracy
+     │
+     fail/timeout
+     ▼
+3. kuromoji / kuromoji-ko (ja, ko only) — full morphological analysis
+   Requires downloaded data pack (~3 MB IPADIC / ~2 MB mecab-ko-dic)
+   Falls through to generic path if data pack not downloaded
+     │
+     not ja/ko, or kuromoji unavailable
+     ▼
+4. DICT-BASED SEGMENTATION (CJK + SEA scriptio continua languages)
+   Loads headwords from offline dictionary SQLite
+   Forward maximum matching (same algorithm as Jieba core)
+   Falls through to regex if dict not downloaded
+     │
+     ▼
+5. REGEX WORD-SPLIT (all other languages)
+     │
+     ▼
+6. LEMMA RESOLUTION (per-word fallback chain):
+   a) Lemma table SQLite lookup (if `hasLemmaTable`)
+   b) Snowball stemmer (if `snowballCode` configured)
+   c) arabic-stem (Arabic only, ~85% coverage)
+   d) Surface form as lemma (always available)
+```
+
+**In-flight dedup:** A module-level `lemmatizeInflight` Map ensures concurrent `lemmatizeText()` calls for the same `l2:text` key share one Promise — matching the web's `lemmatizeInflight` pattern exactly.
+
+**Background download:** On first local fallback for a language with `hasLemmaTable`, a fire-and-forget download of the lemma table is triggered. Failed downloads are retried after 5 minutes.
+
 ### Mobile Batch Lookup Flow
+
+After tokens are loaded (via any path — server, local, video cache, or preloaded prop):
 
 ```
 1. Tokens loaded (via preloaded prop, video cache, in-memory cache, or API)
@@ -406,22 +493,28 @@ Watch page
 
 **Translation strategy:** `use-subtitle-translation.ts` translates in chunks of 5 lines, prioritizing the active line and expanding outward (±3 chunks). If a chunk fails, the loop stops immediately (no hammering the server). This means the user sees translations for nearby lines but not for the entire 500+ line transcript at once.
 
-### Mobile: Missing Video Cache Wiring
+### Mobile: Video Cache Wiring (2026-07-28 Fix)
+
+The video token cache IS wired through to `TokenizedText` on both platforms. The props flow:
 
 ```
 Watch page
   │
   ├── useVideoTokenCache(videoId, l2Code)  ← GET /lemmatize-video-normalized
-  │   └── TokenCache (populated but NOT passed down)
+  │   └── { cache: TokenCache, loaded: boolean }
   │
-  └── SubtitleDisplay
-      └── TokenizedText × N
-          └── No tokenCache prop! ← falls back to per-line API calls
+  ├── SubtitleDisplay
+  │   └── tokenCache={tokenCache}  tokenCacheLoaded={tokenCacheLoaded}
+  │
+  └── TokenizedText × N
+      ├── Checks tokenCache.get(text) first (O(1) MD5 lookup)
+      ├── Falls through to lemmatizeText() on cache miss
+      └── Uses AbortController for cleanup
 ```
 
-**Bug:** The mobile watch page fetches `tokenCache` and `tokenCacheLoaded` from `useVideoTokenCache()` but does not pass them to `SubtitleDisplay` → `TokenizedText`. This means every subtitle line triggers a separate `POST /lemmatize-normalized` call (mitigated somewhat by the shared in-memory lemmatize cache after the first line is tokenized, but still wasteful for the initial pass).
+**Previous bug (fixed 2026-07-28):** The cache WAS wired through, but a stale-placeholder issue prevented actual tokenization. When `tokenCacheLoaded` was `false`, `TokenizedText` set a placeholder `[{ text, lemmas: [] }]`. When `tokenCacheLoaded` flipped to `true`, a skip-guard that checked `tokens.length > 0` (the placeholder has length 1) caused the effect to return early without ever checking the now-populated cache or calling `lemmatizeText()`. The fix changed the guard to check for *real* tokens (those with lemmas) rather than just any token count.
 
-**Fix plan:** See [SPEC-019 Phase 1](../specs/019-mobile-tokenization-batch-lookup-completion.md#phase-1-quick-wins-o1--critical-bug).
+**`useVideoTokenCache` hook** (`apps/mobile/hooks/use-video-token-cache.ts`): Creates a `TokenCache` ref, fetches on `videoId` change, uses `AbortController` for cancellation. Resets cache and `loaded` state when `videoId` changes to avoid stale data from previous videos.
 
 ### TokenCache Class (Shared)
 
@@ -461,7 +554,7 @@ export class TokenCache implements ITokenCache {
 |---|---|---|
 | **Video token cache** | `GET /lemmatize-video-normalized` | Pre-compute all subtitle tokens server-side. One request per video instead of N per line. |
 | **In-memory lemmatize cache** | `lemmatizeCache` Map (module-level, shared across all instances) | Same text tokenized once, reused by all TokenizedText instances |
-| **In-flight lemmatize dedup** | `lemmatizeInflight` Map (web only) | Concurrent requests for same text share one API call |
+| **In-flight lemmatize dedup** | `lemmatizeInflight` Map (both platforms — web in `tokenized-text.tsx`, mobile in `tokenizer.ts`) | Concurrent requests for same text share one API call |
 | **IntersectionObserver** | Web only, rootMargin: 200px | Don't tokenize off-screen lines at all until they approach viewport |
 | **In-memory dictionary cache** | `dictionary-cache.ts` (both platforms) | Same word looked up once, reused by all TokenSpan instances |
 | **In-flight dict dedup** | `_inflightRequests` Map (both platforms) | Concurrent bulkLookupWords calls share one API call |
@@ -472,27 +565,21 @@ export class TokenCache implements ITokenCache {
 
 ### Request Count Example
 
-For a video transcript with 500 subtitle lines, unique 200 lemmas:
+For a video transcript with 500 subtitle lines, 200 unique lemmas:
 
 | Scenario | API Calls | Notes |
 |---|---|---|
 | **Naive** (no caching) | 500 tokenize + 500 dict lookup = 1,000 | Per-line, per-word |
 | **Web optimized** | 1 video cache + 0 tokenize + 1 batch dict = 2 | IntersectionObserver prevents off-screen lines from even trying |
-| **Mobile current** | 1 video cache + 500 tokenize + 1 batch dict = 502 | Video cache fetched but not wired through; in-memory cache mitigates after first line. See [SPEC-019](../specs/019-mobile-tokenization-batch-lookup-completion.md) for fix plan. |
-| **Mobile Phase 1** (planned) | 1 video cache + 0 tokenize + 1 batch dict = 2 | Same as web after wiring video cache + in-flight dedup |
+| **Mobile (current)** | 1 video cache + 0 tokenize + 1 batch dict = 2 | Same as web — video cache wired, in-flight dedup in place, LRU cache + server-first pipeline |
 
 ### Known Gaps (Mobile)
 
-The mobile implementation has several gaps compared to web. These are tracked and planned in [SPEC-019: Mobile Tokenization & Batch Lookup Completion](../specs/019-mobile-tokenization-batch-lookup-completion.md). Key areas:
+The only remaining structural gap between web and mobile is **lazy loading**. React Native has no `IntersectionObserver`. Possible approaches: FlatList `viewabilityConfig`, scroll-position-based visibility tracking, or `onLayout`-based container measurement. All other gaps (in-flight dedup, hardWords, quickGloss, Chinese script conversion, video cache wiring) are now implemented.
 
-| # | Gap | Spec Ref |
+| # | Gap | Status |
 |---|---|---|
-| 1 | Video token cache not passed to SubtitleDisplay → TokenizedText | SPEC-019 Phase 1 |
-| 2 | No in-flight lemmatize dedup | SPEC-019 Phase 1 (O1) |
-| 3 | No lazy loading (IntersectionObserver not available in RN) | SPEC-019 Phase 4 (O2) |
-| 4 | `hardWords` phonetics filter not implemented | SPEC-019 Phase 2 (F1) |
-| 5 | Chinese script conversion not ported | SPEC-019 Phase 3 (F3) |
-| 6 | `quickGloss` not rendered | SPEC-019 Phase 2 (F2) |
+| 1 | Lazy loading / viewport-based tokenization | ⬜ Open — needs React Native-specific approach |
 
 ---
 
@@ -501,8 +588,13 @@ The mobile implementation has several gaps compared to web. These are tracked an
 | File | Platform | Lines | Purpose |
 |---|---|---|---|
 | `packages/shared/src/types.ts` | Shared | — | `LemmatizedToken`, `Lemma`, `DictionaryEntry`, `LexicalEntry` types |
-| `packages/utils/src/token-cache.ts` | Shared | 48 | `TokenCache` class (md5-keyed) |
-| `zerotohero-python-server/routes/text_routes.py` | Backend | ~200 | `/lemmatize-normalized`, `/lemmatize-video-normalized` endpoints |
+| `packages/utils/src/token-cache.ts` | Shared | 48 | `TokenCache` class (md5-keyed, used by both platforms) |
+| `packages/utils/src/furigana.ts` | Shared | ~330 | `buildRuby()`, `matchHiragana()` — language-aware ruby segmentation |
+| `zerotohero-python-server/lemmatize_unified.py` | Backend | ~350 | Unified lemmatizer dispatch: registry, normalizers, space recovery, romanization |
+| `zerotohero-python-server/lemmatize_japanese.py` | Backend | ~70 | MeCab + IPADIC lemmatizer for Japanese |
+| `zerotohero-python-server/lemmatize_korean.py` | Backend | ~60 | OKT lemmatizer for Korean |
+| `zerotohero-python-server/lemmatize_chinese.py` | Backend | ~80 | Jieba lemmatizer for Chinese (with dict.txt.big) |
+| `zerotohero-python-server/routes/text_routes.py` | Backend | ~200 | `/lemmatize-normalized`, `/lemmatize-video-normalized`, `/lemmatize-normalized/batch` |
 | `zerotohero-python-server/routes/dictionary.py` | Backend | ~200 | `/dictionary/lookup-batch` endpoint |
 | `apps/web/src/components/tokenized-text.tsx` | Web | ~375 | Container: lazy loading, caching, batch lookup (conversion moved to TokenSpan per ADR-0019) |
 | `apps/web/src/components/token-span.tsx` | Web | ~290 | Individual token: ruby, Chinese script conversion, byeonggi, quiz, gloss, hardWords, karaoke |
@@ -510,8 +602,12 @@ The mobile implementation has several gaps compared to web. These are tracked an
 | `apps/web/src/hooks/use-subtitle-translation.ts` | Web | 209 | Chunked L1 translation for video subtitles |
 | `apps/web/src/hooks/use-video-token-cache.ts` | Web | ~30 | Fetch + populate TokenCache from /lemmatize-video-normalized |
 | `apps/web/src/lib/chinese-script.ts` | Web | ~50 | OpenCC Simplified→Traditional conversion |
-| `apps/web/src/lib/video-token-cache.ts` | Web | ~20 | API client wrapper for video token cache |
-| `apps/mobile/components/TokenizedText.tsx` | Mobile | ~370 | Single-file tokenization + rendering + batch lookup |
+| `apps/mobile/components/TokenizedText.tsx` | Mobile | ~550 | Single-file: lemmatization, caching, batch lookup, inline token rendering (no TokenSpan) |
+| `apps/mobile/lib/tokenizer.ts` | Mobile | ~780 | `lemmatizeText()` — server-first, local-fallback pipeline: kuromoji, dict segmentation, lemma tables, snowball, arabic-stem |
 | `apps/mobile/lib/dictionary-cache.ts` | Mobile | 83 | Identical to web — shared cache + `bulkLookupWords()` |
+| `apps/mobile/lib/chinese-script.ts` | Mobile | ~50 | OpenCC simplified→traditional (same lib, RN-compatible) |
 | `apps/mobile/hooks/use-epub-pagination.ts` | Mobile | ~200 | EPUB reader batch lemmatization via `/lemmatize-normalized/batch` |
-| `apps/mobile/hooks/use-video-token-cache.ts` | Mobile | ~30 | Same as web — fetches token cache (but not wired through to subtitles) |
+| `apps/mobile/hooks/use-video-token-cache.ts` | Mobile | ~45 | Fetch + populate TokenCache, AbortController-based, resets on videoId change |
+| `apps/mobile/lib/kuromoji-loader.ts` | Mobile | ~60 | Custom RN loader for kuromoji data pack from device filesystem |
+| `apps/mobile/lib/kuromoji-ko-loader.ts` | Mobile | ~60 | Custom RN loader for kuromoji-ko (Korean) data pack |
+| `apps/mobile/lib/tokenizer-db.ts` | Mobile | ~200 | SQLite-backed: lemma table storage/lookup, kuromoji data pack management |

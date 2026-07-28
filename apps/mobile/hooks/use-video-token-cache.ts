@@ -25,21 +25,29 @@ export function useVideoTokenCache(videoId: string, l2Code: string) {
   const { getVideoTokenCache } = useVideos();
   const cache = useRef(new TokenCache());
   const [loaded, setLoaded] = useState(false);
-  const fetching = useRef(false);
 
   useEffect(() => {
-    if (!videoId || !l2Code || fetching.current) return;
-    fetching.current = true;
+    if (!videoId || !l2Code) return;
+
+    // Reset for new video — clear stale cache and mark as loading.
+    cache.current = new TokenCache();
+    setLoaded(false);
+
+    const controller = new AbortController();
 
     getVideoTokenCache(videoId, l2Code)
       .then((data) => {
+        if (controller.signal.aborted) return;
         if (data && typeof data === 'object') cache.current.load(data);
         setLoaded(true);
       })
       .catch((err) => {
+        if (controller.signal.aborted) return;
         console.warn('[VideoTokenCache] Failed to load:', err);
-        setLoaded(true);
+        setLoaded(true); // still mark loaded so TokenizedText falls through to lemmatizeText()
       });
+
+    return () => controller.abort();
   }, [videoId, l2Code]);
 
   return useMemo(() => ({ cache: cache.current, loaded }), [loaded]);
