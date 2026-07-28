@@ -36,7 +36,6 @@ appId: ca.zerotohero.app
     visible:
       id: "watch-screen"
     timeout: 10000
-    optional: true
 - extendedWaitUntil:
     notVisible:
       id: "explore-screen"
