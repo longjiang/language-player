@@ -164,8 +164,6 @@ export function useLanguagePicker(options: UseLanguagePickerOptions): UseLanguag
   const setSelectedL1 = useCallback(
     (code: string) => {
       _setSelectedL1(code);
-      // Auto-advance to L2 tab on narrow layout (ADR-0017)
-      setActiveTab('l2');
     },
     [],
   );
