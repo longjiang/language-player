@@ -21,6 +21,7 @@ export default function ReaderScreen() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [renameId, setRenameId] = useState<number | null>(null);
   const [renameText, setRenameText] = useState('');
+  const [showTranslation, setShowTranslation] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // When current note changes, load its text
@@ -35,7 +36,7 @@ export default function ReaderScreen() {
     text,
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
-    showTranslation: false, // notes reader doesn't show translation inline
+    showTranslation,
     resetKey: notes.currentNoteId !== null ? String(notes.currentNoteId) : null,
   });
 
@@ -141,7 +142,10 @@ export default function ReaderScreen() {
               handleMeasureBlock={pagination.handleMeasureBlock}
               contentWidth={pagination.contentWidth}
               l2Code={l2Lang.code}
-              showTranslation={false}
+              l1Code={l1Lang.code}
+              showTranslation={showTranslation}
+              onToggleTranslation={() => setShowTranslation(s => !s)}
+              showTextActions
               t={t}
             />
           )}

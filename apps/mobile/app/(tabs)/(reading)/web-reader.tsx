@@ -9,8 +9,7 @@ import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
 import { parseMarkdownBlocks, type ContentBlock } from '@/lib/parse-markdown';
-import { TokenizedText } from '@/components/TokenizedText';
-import { TextActionMenu } from '@/components/TextActionMenu';
+import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { Globe, StickyNote, Plus, Trash2 } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -153,55 +152,17 @@ export default function WebReaderScreen() {
           </View>
         )}
 
-        {/* ── Content: parsed blocks — TokenizedText handles its own tokenization ── */}
+        {/* ── Content: parsed blocks → PaginatedReader (scroll mode) ── */}
         {blocks && (
-          <View className="px-4 pb-8">
-            {blocks.map((block, bi) => {
-              if (block.kind !== 'text') return null;
-              return (
-              <View key={bi} className="mb-3">
-                {block.type === 'heading' && (
-                  <Text
-                    className={`mb-2 font-bold text-foreground ${
-                      block.depth === 1 ? 'text-xl' : block.depth === 2 ? 'text-lg' : 'text-base'
-                    }`}
-                  >
-                    {block.text}
-                  </Text>
-                )}
-                {block.type === 'paragraph' && (
-                  <TextActionMenu text={block.text} l2Code={l2Lang.code}>
-                    <TokenizedText
-                      text={block.text}
-                      l2Code={l2Lang.code}
-                    />
-                  </TextActionMenu>
-                )}
-                {block.type === 'blockquote' && (
-                  <TextActionMenu text={block.text} l2Code={l2Lang.code}>
-                    <View className="border-l-2 border-muted-foreground/30 pl-3">
-                      <TokenizedText
-                        text={block.text}
-                        l2Code={l2Lang.code}
-                      />
-                    </View>
-                  </TextActionMenu>
-                )}
-                {block.type === 'list-item' && (
-                  <TextActionMenu text={block.text} l2Code={l2Lang.code}>
-                    <View className="flex-row">
-                      <Text className="mr-2 text-muted-foreground">•</Text>
-                      <View className="flex-1">
-                        <TokenizedText
-                          text={block.text}
-                          l2Code={l2Lang.code}
-                        />
-                      </View>
-                    </View>
-                  </TextActionMenu>
-                )}
-              </View>
-            )})}
+          <View className="flex-1">
+            <PaginatedReader
+              blocks={blocks}
+              l2Code={l2Lang.code}
+              l1Code={l1Lang.code}
+              scrollMode
+              showTextActions
+              t={t}
+            />
           </View>
         )}
 
