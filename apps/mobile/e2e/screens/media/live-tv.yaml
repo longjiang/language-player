@@ -6,13 +6,9 @@ appId: ca.zerotohero.app
 # Login → navigate to Live TV via hamburger drawer → assert channels
 # load and the player section renders.
 
-# ── Preflight: ensure login screen ──────────────────────────────────
+# ── Ensure on Explore screen (login if needed) ──────────────────────
 - runFlow:
-    file: ../../flows/preflight-check.yaml
-
-# ── Login ──────────────────────────────────────────────────────────
-- runFlow:
-    file: ../../flows/login.yaml
+    file: ../../flows/ensure-explore.yaml
 
 # ── Open hamburger drawer ──────────────────────────────────────────
 - tapOn:
@@ -41,3 +37,7 @@ appId: ca.zerotohero.app
     timeout: 10000
 - assertVisible:
     text: "Live TV"
+
+# ── Return to Explore for sequencer chainability ────────────────────
+- tapOn:
+    id: "header-logo"

@@ -10,17 +10,9 @@ appId: ca.zerotohero.app
 # If the tapped video has no channel, the menu icon won't appear.
 # The test gracefully passes if the menu isn't found.
 
-# ── Preflight: ensure login screen ──────────────────────────────────
+# ── Ensure on Explore screen (login if needed) ──────────────────────
 - runFlow:
-    file: ../../flows/preflight-check.yaml
-
-# ── Login ──────────────────────────────────────────────────────────
-- runFlow:
-    file: ../../flows/login.yaml
-
-# ── Wait for feed ──────────────────────────────────────────────────
-- assertVisible:
-    id: "explore-screen"
+    file: ../../flows/ensure-explore.yaml
 
 # ── Tap first video card to open player ────────────────────────────
 - runFlow:
@@ -50,3 +42,7 @@ appId: ca.zerotohero.app
       # ── Assert watch screen is still visible ─────────────────────
       - assertVisible:
           id: "watch-screen"
+
+# ── Return to Explore for sequencer chainability ────────────────────
+- tapOn:
+    id: "header-logo"

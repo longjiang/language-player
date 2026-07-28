@@ -6,13 +6,9 @@ appId: ca.zerotohero.app
 # Login → tap a level filter pill (e.g., L2/B1) → assert pill is
 # visually selected (bg-primary class) and feed refreshes.
 
-# ── Preflight: ensure login screen ──────────────────────────────────
+# ── Ensure on Explore screen (login if needed) ──────────────────────
 - runFlow:
-    file: ../../flows/preflight-check.yaml
-
-# ── Login ──────────────────────────────────────────────────────────
-- runFlow:
-    file: ../../flows/login.yaml
+    file: ../../flows/ensure-explore.yaml
 
 # ── Wait for feed to load ──────────────────────────────────────────
 - assertVisible:
@@ -36,3 +32,7 @@ appId: ca.zerotohero.app
     id: "level-filter-all"
 - assertVisible:
     id: "explore-screen"
+
+# ── Return to Explore for sequencer chainability ────────────────────
+- tapOn:
+    id: "header-logo"
