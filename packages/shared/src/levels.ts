@@ -118,24 +118,48 @@ export function formatLevel(level: { scale: string; value: number | string; nume
 
 /** Format a 1–7 numeric level for a given scale (primary direction — DB → display). */
 export function formatNumericLevel(numeric: number, scaleId: ScaleId): FormattedLevel {
-  const scale = SCALES[scaleId];
-  const label = scale?.labels[numeric];
-
-  if (!scale || label === undefined) {
-    return {
-      short: `Level ${numeric}`,
-      long: `Level ${numeric}`,
-      numeric,
-      hexColor: LEVEL_HEX_COLORS[numeric] ?? '#6b7280',
-    };
-  }
+  const { label, prefix, sourceScaleId } = getLevelLabelWithFallback(numeric, scaleId);
+  const scale = SCALES[sourceScaleId];
 
   return {
-    short: `${scale.shortPrefix} ${label}`,
-    long: `${scale.longPrefix} ${label}`,
+    short: `${prefix} ${label}`,
+    long: `${scale?.longPrefix ?? 'CEFR'} ${label}`,
     numeric,
     hexColor: LEVEL_HEX_COLORS[numeric] ?? '#6b7280',
   };
+}
+
+/**
+ * Get the display label for a numeric level (1–7) in a given scale.
+ *
+ * If the scale does not have a label for this level, falls back to the CEFR
+ * label. This ensures every language shows all 7 levels — even when the
+ * primary exam only covers a subset (e.g. JLPT only has N5–N1 → levels 2–6,
+ * so level 7 shows "C2").
+ *
+ * @returns `{ label, prefix, sourceScaleId }` — sourceScaleId is the scale
+ *   that actually provided the label (may differ from scaleId on fallback).
+ */
+export function getLevelLabelWithFallback(
+  numeric: number,
+  scaleId: ScaleId,
+): { label: string; prefix: string; sourceScaleId: ScaleId } {
+  const scale = SCALES[scaleId];
+  const label = scale?.labels[numeric];
+
+  if (label !== undefined) {
+    return { label, prefix: scale.shortPrefix, sourceScaleId: scaleId };
+  }
+
+  // Fall back to CEFR
+  const cefrScale = SCALES.cefr;
+  const cefrLabel = cefrScale.labels[numeric];
+  if (cefrLabel !== undefined) {
+    return { label: cefrLabel, prefix: cefrScale.shortPrefix, sourceScaleId: 'cefr' };
+  }
+
+  // Ultimate fallback (should never happen for valid 1–7)
+  return { label: String(numeric), prefix: 'Level', sourceScaleId: 'cefr' };
 }
 
 /** Which scale is the primary exam for a given language? */

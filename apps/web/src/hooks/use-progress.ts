@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useUserData } from '@langplayer/api-client';
+import { useCloudUserData } from '@/providers/user-data-provider';
 import type { ProgressStore, L2Progress } from '@langplayer/shared';
 
 const STORAGE_KEY = 'zthProgress'; // match Classic for migration compatibility
@@ -67,7 +68,7 @@ export function useProgressLevel(l2Code: string): number | undefined {
  */
 export function useProgress(l2Code: string) {
   const { status } = useSession();
-  const { getUserData, syncProgress } = useUserData();
+  const { syncProgress } = useUserData();
   const [progress, setProgress] = useState<L2Progress>({});
   const [loaded, setLoaded] = useState(false);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -105,47 +106,53 @@ export function useProgress(l2Code: string) {
   }, [l2Code]);
 
   // ── On login, load from cloud and merge ──
+  // Reads progress from UserDataContext (fetched once by UserDataProvider)
+  // instead of making an independent /user-data call.
+  const { data: cloudUserData, loaded: cloudLoaded2 } = useCloudUserData();
+
   useEffect(() => {
     if (status !== 'authenticated' || cloudLoaded.current) return;
+    // Wait for UserDataProvider to finish its fetch
+    if (!cloudLoaded2) return;
 
-    const loadFromCloud = async () => {
-      try {
-        const data = await getUserData();
-        if (!data?.progress) return;
-
-        const cloud: ProgressStore = JSON.parse(data.progress);
-        const entry = cloud[l2Code];
-        if (!entry) return;
-
-        // Merge cloud data into localStorage (cloud wins for level, local wins for time)
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const local: ProgressStore = raw ? JSON.parse(raw) : {};
-
-        const merged: ProgressStore = { ...local };
-        for (const [code, cloudEntry] of Object.entries(cloud)) {
-          if (!cloudEntry) continue;
-          const localEntry = local[code];
-          merged[code] = {
-            level: parseLevel(cloudEntry.level) ?? (localEntry ? parseLevel(localEntry.level) : undefined),
-            time: Math.max(cloudEntry.time ?? 0, localEntry?.time ?? 0),
-            weeklyHours: cloudEntry.weeklyHours ?? localEntry?.weeklyHours,
-          };
-        }
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-
-        // Update state for current L2
-        const currentEntry = merged[l2Code];
-        if (currentEntry) {
-          setProgress({ ...currentEntry, level: parseLevel(currentEntry.level) });
-        }
-      } catch (err) {
-        console.warn('[progress] Could not load from cloud:', err);
-      }
+    const cloudProgressStr = cloudUserData?.progress;
+    if (!cloudProgressStr) {
       cloudLoaded.current = true;
-    };
-    loadFromCloud();
-  }, [status, l2Code, getUserData]);
+      return;
+    }
+
+    try {
+      const cloud: ProgressStore = JSON.parse(cloudProgressStr);
+      const entry = cloud[l2Code];
+      if (!entry) { cloudLoaded.current = true; return; }
+
+      // Merge cloud data into localStorage (cloud wins for level, local wins for time)
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const local: ProgressStore = raw ? JSON.parse(raw) : {};
+
+      const merged: ProgressStore = { ...local };
+      for (const [code, cloudEntry] of Object.entries(cloud)) {
+        if (!cloudEntry) continue;
+        const localEntry = local[code];
+        merged[code] = {
+          level: parseLevel(cloudEntry.level) ?? (localEntry ? parseLevel(localEntry.level) : undefined),
+          time: Math.max(cloudEntry.time ?? 0, localEntry?.time ?? 0),
+          weeklyHours: cloudEntry.weeklyHours ?? localEntry?.weeklyHours,
+        };
+      }
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+
+      // Update state for current L2
+      const currentEntry = merged[l2Code];
+      if (currentEntry) {
+        setProgress({ ...currentEntry, level: parseLevel(currentEntry.level) });
+      }
+    } catch (err) {
+      console.warn('[progress] Could not load from cloud:', err);
+    }
+    cloudLoaded.current = true;
+  }, [status, l2Code, cloudUserData, cloudLoaded2]);
 
   // ── Persist to localStorage + schedule cloud sync ──
   const persist = useCallback(
