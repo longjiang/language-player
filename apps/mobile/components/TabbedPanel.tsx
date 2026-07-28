@@ -30,6 +30,7 @@ export function TabbedPanel({ tabs, defaultTab, children }: TabbedPanelProps) {
         {tabs.map((tab) => (
           <Pressable
             key={tab.key}
+            testID={`tab-${tab.key}`}
             onPress={() => setActiveTab(tab.key)}
             className={`flex-1 items-center px-2 py-2.5 ${
               activeTab === tab.key ? 'border-b-2 border-primary' : ''

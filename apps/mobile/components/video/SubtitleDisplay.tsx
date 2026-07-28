@@ -201,6 +201,7 @@ export function SubtitleDisplay({
             className={`rounded-lg px-3 py-2 mb-1 ${isActive ? 'bg-primary/10 border border-primary/30' : ''}`}
           >
             <TokenizedText
+              testID={`subtitle-line-${i}`}
               text={line.line}
               l2Code={l2Lang.code}
               highlightTerms={highlightTerms}

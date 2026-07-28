@@ -13,24 +13,38 @@ appId: ca.zerotohero.app
 # ── Tap first video card ───────────────────────────────────────────
 - runFlow:
     when:
+      visible:
+        id: "video-grid-empty"
+    commands:
+      - assertVisible:
+          id: "video-grid-empty"
+- runFlow:
+    when:
       notVisible:
         id: "video-grid-empty"
     commands:
+      - extendedWaitUntil:
+          visible:
+            id: "video-card-first"
+          timeout: 15000
       - tapOn:
-          point: "50%,25%"
-      - assertVisible:
-          id: "watch-screen"
+          id: "video-card-first"
 
-      # ── Tap the "Queue" tab in TranscriptQueuePanel ───────────────
-      # The tabs are: Transcript | Queue | Info.
-      # Tap the middle tab area ("Queue").
-      - tapOn:
-          point: "50%,88%"
-          optional: true
+# ── Verify watch screen rendered ────────────────────────────────────
+- extendedWaitUntil:
+    visible:
+      id: "watch-screen"
+    timeout: 10000
 
-      # ── Assert watch screen is still visible ─────────────────────
-      - assertVisible:
-          id: "watch-screen"
+# ── Tap the "Queue" tab in TranscriptQueuePanel ────────────────────
+# The tabs are: Transcript | Queue | Info.
+- tapOn:
+    id: "tab-queue"
+    optional: true
+
+# ── Assert watch screen is still visible ────────────────────────────
+- assertVisible:
+    id: "watch-screen"
 
 # ── Return to Explore for sequencer chainability ────────────────────
 - tapOn:

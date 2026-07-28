@@ -3,51 +3,71 @@ appId: ca.zerotohero.app
 # ════════════════════════════════════════════════════════════════════
 # M5: Subtitle interaction — tap a word in subtitles
 # ════════════════════════════════════════════════════════════════════
-# Login → Media tab → tap video → wait for subtitles to load →
-# tap a word token → assert dictionary popup opens.
+# Login → Media tab → tap first video → wait for subtitles to load →
+# tap a word token in the subtitle area → assert dictionary popup opens.
 #
 # ⚠️  This test requires a video WITH subtitles. If the selected
-# video has no subtitles, the test assertion may fail gracefully.
-# Mitigation: use `optional: true` on subtitle-dependent assertions.
+# video has no subtitles, the popup assertion is optional.
 
 # ── Ensure on Explore screen (login if needed) ──────────────────────
 - runFlow:
     file: ../../flows/ensure-explore.yaml
 
-# ── Tap first video card ───────────────────────────────────────────
+# ── Tap first video card → verify watch screen ─────────────────────
+- runFlow:
+    when:
+      visible:
+        id: "video-grid-empty"
+    commands:
+      - assertVisible:
+          id: "video-grid-empty"
 - runFlow:
     when:
       notVisible:
         id: "video-grid-empty"
     commands:
-      - tapOn:
-          point: "50%,25%"
-      - assertVisible:
-          id: "watch-screen"
-
-      # ── Wait for subtitles to load ────────────────────────────────
-      # The subtitle display renders TokenizedText with tappable words.
-      # Give the Flask server time to return subs (up to 15s timeout).
       - extendedWaitUntil:
           visible:
-            text: ".*"
+            id: "video-card-first"
           timeout: 15000
-          optional: true
-
-      # ── Tap a word token ─────────────────────────────────────────
-      # The subtitle area is below the player. The first tokenized word
-      # should be tappable. We tap in the subtitle region.
       - tapOn:
-          point: "30%,65%"
-          optional: true
+          id: "video-card-first"
+- extendedWaitUntil:
+    visible:
+      id: "watch-screen"
+    timeout: 10000
+- extendedWaitUntil:
+    notVisible:
+      id: "explore-screen"
+    timeout: 10000
 
-      # ── Assert dictionary popup opened ────────────────────────────
-      # The DictionaryPopup shows a card with definition text.
-      # If the word tap didn't trigger a popup (no subtitles / timing),
-      # this assertion is optional.
-      - assertVisible:
-          text: ".*"
-          optional: true
+# ── Wait for subtitles to load ──────────────────────────────────────
+# SubtitleDisplay passes testID="subtitle-line-0" to the first line's
+# TokenizedText container. Waiting for this ID confirms the first
+# subtitle line rendered (instead of a loose text regex).
+- extendedWaitUntil:
+    visible:
+      id: "subtitle-line-0"
+    timeout: 15000
+    optional: true
+
+# ── Tap a word in the subtitle area ─────────────────────────────────
+# Subtitle words are dynamic tokens — but TokenizedText now adds
+# testID="token-0", "token-1", ... to each tappable word element.
+# Tap the first word of the current subtitle line.
+# optional: true = skip silently if no subtitles loaded.
+- tapOn:
+    id: "token-0"
+    optional: true
+
+# ── Assert dictionary popup opened ──────────────────────────────────
+# DictionaryPopup renders with testID="dictionary-popup".
+# The popup opens when any tappable word in the subtitle is pressed.
+- extendedWaitUntil:
+    visible:
+      id: "dictionary-popup"
+    timeout: 5000
+    optional: true
 
 # ── Return to Explore for sequencer chainability ────────────────────
 - tapOn:
