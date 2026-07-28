@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, ScrollView, Image } from 'react-native';
+import { View, Text, ScrollView, Image, Pressable } from 'react-native';
 import Constants from 'expo-constants';
-import { Package, Calendar, Globe } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import { Package, Calendar, Globe, Wrench } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { useT } from '@/hooks/use-t';
 
@@ -39,6 +40,7 @@ function InfoRow({ icon: Icon, label, value }: InfoRowProps) {
 
 export default function AboutScreen() {
   const t = useT();
+  const router = useRouter();
   const version = Constants.expoConfig?.version ?? '0.0.0';
   const environment = __DEV__ ? 'development' : 'production';
   const buildDate = new Date().toISOString();
@@ -66,6 +68,19 @@ export default function AboutScreen() {
             <InfoRow icon={Calendar} label={t('label.build_date')} value={formatDate(buildDate)} />
             <InfoRow icon={Globe} label={t('label.environment')} value={environment} />
           </View>
+
+          {/* Dev tools link */}
+          {__DEV__ && (
+            <Pressable
+              onPress={() => router.push('/(tabs)/(me)/tokenizer' as any)}
+              className="mt-3 rounded-xl border border-border bg-card px-5 py-3.5 active:bg-muted"
+            >
+              <View className="flex-row items-center gap-2.5">
+                <Wrench size={16} color={ICON_MUTED} />
+                <Text className="text-sm text-foreground">Tokenizer Test Page</Text>
+              </View>
+            </Pressable>
+          )}
 
           {/* Footer */}
           <View className="mt-6 items-center">
