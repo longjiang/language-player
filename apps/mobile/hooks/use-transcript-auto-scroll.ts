@@ -1,6 +1,8 @@
-import { useRef, useEffect, useCallback, useMemo } from 'react';
-import type { FlatList } from 'react-native';
-import { decideAutoScroll, SCROLL, VIEWABILITY_ITEM_THRESHOLD, type AutoScrollState } from '@langplayer/shared';
+import { useRef, useEffect, useCallback, useState } from 'react';
+import type { FlatList, NativeSyntheticEvent, NativeScrollEvent, LayoutChangeEvent } from 'react-native';
+import { decideAutoScroll, SCROLL, type AutoScrollState } from '@langplayer/shared';
+
+const ESTIMATED_ITEM_HEIGHT = 48;
 
 // ── Types ──────────────────────────────────────
 
@@ -14,10 +16,10 @@ export interface UseTranscriptAutoScrollOptions {
 }
 
 export interface UseTranscriptAutoScrollReturn {
-  /** Pass to FlatList's `onViewableItemsChanged` prop. */
-  onViewableItemsChanged: (info: { viewableItems: Array<{ index: number | null }> }) => void;
-  /** Pass to FlatList's `viewabilityConfig` prop. */
-  viewabilityConfig: { itemVisiblePercentThreshold: number };
+  /** Pass to FlatList's `onScroll` prop. */
+  onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  /** Pass to FlatList's `onLayout` prop. */
+  onLayout: (e: LayoutChangeEvent) => void;
   /** Pass to FlatList's `onScrollBeginDrag` prop to detect user manual scrolling. */
   onScrollBeginDrag: () => void;
 }
@@ -27,17 +29,8 @@ export interface UseTranscriptAutoScrollReturn {
 /**
  * Auto-scroll a FlatList to keep the active subtitle line visible.
  *
- * Port of the web `useTranscriptAutoScroll` hook — same decision logic
- * via `@langplayer/shared`, adapted for React Native's FlatList API.
- *
- * Features:
- * - Visibility-gated: only scrolls when the active line is near the edge
- *   or fully out of view (via `onViewableItemsChanged`).
- * - Seek bypass: large index jumps bypass throttle and user cooldown.
- * - User cooldown: manual scrolling suppresses auto-scroll for 3s.
- * - Throttle: max one auto-scroll every 2s (bypassed on seek / fully-out).
- * - Initial load: first active line jumps instantly (no animation).
- * - Respects `playback.smoothScroll` setting for animation.
+ * Visibility is computed from scroll position and container height
+ * (NOT from `onViewableItemsChanged`, which is unreliable during mount).
  */
 export function useTranscriptAutoScroll({
   activeIndex,
@@ -49,26 +42,45 @@ export function useTranscriptAutoScroll({
   const lastScrolledIdx = useRef(-1);
   const isInitialLoad = useRef(true);
   const userScrolledUntil = useRef(0);
-  // visibleRange is mutated by onViewableItemsChanged (callback, not render)
-  const visibleRange = useRef({ first: -1, last: -1 });
 
-  // ── Track visible items (RN equivalent of DOM getBoundingClientRect) ──
-  const onViewableItemsChanged = useCallback(
-    (info: { viewableItems: Array<{ index: number | null }> }) => {
-      const items = info.viewableItems;
-      if (items.length > 0) {
-        visibleRange.current = {
-          first: items[0]!.index ?? -1,
-          last: items[items.length - 1]!.index ?? -1,
-        };
+  // ── Scroll-position-based visibility ──
+  const scrollYRef = useRef(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+  // Epoch bumps whenever scrollY changes enough to change firstVisible,
+  // causing the scroll effect to re-evaluate visibility.
+  const [lastFirstVisible, setLastFirstVisible] = useState(-1);
+
+  const computeFirstVisible = useCallback(() => {
+    if (containerHeight <= 0) return -1;
+    return Math.floor(scrollYRef.current / ESTIMATED_ITEM_HEIGHT);
+  }, [containerHeight]);
+
+  const computeVisibleCount = useCallback(() => {
+    if (containerHeight <= 0) return 0;
+    return Math.max(1, Math.floor(containerHeight / ESTIMATED_ITEM_HEIGHT));
+  }, [containerHeight]);
+
+  const onScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      scrollYRef.current = e.nativeEvent.contentOffset.y;
+      const newFirst = computeFirstVisible();
+      // Only bump epoch when firstVisible actually changes (debounce)
+      if (newFirst !== -1 && newFirst !== lastFirstVisible) {
+        setLastFirstVisible(newFirst);
       }
     },
-    [],
+    [computeFirstVisible, lastFirstVisible],
   );
 
-  const viewabilityConfig = useMemo(
-    () => ({ itemVisiblePercentThreshold: VIEWABILITY_ITEM_THRESHOLD }),
-    [],
+  const onLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      const h = e.nativeEvent.layout.height;
+      if (h > 0 && h !== containerHeight) {
+        console.log(`[auto-scroll] 📏 container height: ${h}px (≈${Math.floor(h / ESTIMATED_ITEM_HEIGHT)} items)`);
+        setContainerHeight(h);
+      }
+    },
+    [containerHeight],
   );
 
   // ── Detect user manual scrolling ──
@@ -79,21 +91,26 @@ export function useTranscriptAutoScroll({
   // ── Reset state on video change (activeIndex → -1) ──
   useEffect(() => {
     if (activeIndex === -1) {
+      console.log('[auto-scroll] 🔄 reset: video changed');
       isInitialLoad.current = true;
       lastScrolledIdx.current = -1;
       lastAutoScrollTime.current = 0;
-      visibleRange.current = { first: -1, last: -1 };
+      scrollYRef.current = 0;
     }
   }, [activeIndex]);
 
   // ── Main scroll logic ──
   useEffect(() => {
     if (activeIndex < 0) return;
+    if (containerHeight <= 0) return;
 
-    const { first, last } = visibleRange.current;
-    const isVisible = activeIndex >= first && activeIndex <= last;
+    const firstVisible = computeFirstVisible();
+    const visibleCount = computeVisibleCount();
+    const lastVisible = firstVisible >= 0 ? firstVisible + visibleCount - 1 : -1;
+
+    const isVisible = firstVisible >= 0 && activeIndex >= firstVisible && activeIndex <= lastVisible;
     const isFullyOut = !isVisible;
-    const isNearEdge = isVisible && (activeIndex === first || activeIndex === last);
+    const isNearEdge = isVisible && (activeIndex === firstVisible || activeIndex === lastVisible);
 
     const state: AutoScrollState = {
       activeIndex,
@@ -109,6 +126,8 @@ export function useTranscriptAutoScroll({
 
     const decision = decideAutoScroll(state);
 
+    console.log(`[auto-scroll] 🧠 decision: activeIdx=${activeIndex} range=[${firstVisible},${lastVisible}] (scrollY=${scrollYRef.current}px h=${containerHeight}px) isFullyOut=${isFullyOut} isNearEdge=${isNearEdge} isInit=${isInitialLoad.current} prevScrolled=${lastScrolledIdx.current} shouldScroll=${decision.shouldScroll} reason=${decision.reason} animated=${decision.animated}`);
+
     if (!decision.shouldScroll) return;
 
     // Execute
@@ -116,12 +135,14 @@ export function useTranscriptAutoScroll({
     lastScrolledIdx.current = activeIndex;
     isInitialLoad.current = false;
 
+    console.log(`[auto-scroll] 🚀 EXECUTE scrollToIndex: index=${activeIndex} animated=${decision.animated} reason=${decision.reason}`);
+
     flatListRef.current?.scrollToIndex({
       index: activeIndex,
       animated: decision.animated,
       viewPosition: 0.5,
     });
-  }, [activeIndex, smoothScrollEnabled, flatListRef]);
+  }, [activeIndex, containerHeight, lastFirstVisible, smoothScrollEnabled, flatListRef, computeFirstVisible, computeVisibleCount]);
 
-  return { onViewableItemsChanged, viewabilityConfig, onScrollBeginDrag };
+  return { onScroll, onLayout, onScrollBeginDrag };
 }

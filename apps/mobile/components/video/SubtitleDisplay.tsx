@@ -168,8 +168,8 @@ export function SubtitleDisplay({
 
   // ── Auto-scroll: visibility-gated, throttled, seek-aware ──
   const {
-    onViewableItemsChanged,
-    viewabilityConfig,
+    onScroll: autoScrollOnScroll,
+    onLayout: autoScrollOnLayout,
     onScrollBeginDrag,
   } = useTranscriptAutoScroll({
     activeIndex: computedActiveIdx,
@@ -203,9 +203,9 @@ export function SubtitleDisplay({
       ref={scrollRef}
       data={l2Lines}
       keyExtractor={(line) => String(line.starttime)}
-      initialNumToRender={10}
-      windowSize={5}
-      maxToRenderPerBatch={10}
+      initialNumToRender={5}
+      windowSize={3}
+      maxToRenderPerBatch={5}
       getItemLayout={(_, index) => ({
         // Estimated item height (py-2 + mb-1 + text-base + optional translation).
         // Variable-height lines cause occasional onScrollToIndexFailed (handled below).
@@ -214,8 +214,8 @@ export function SubtitleDisplay({
         index,
       })}
       contentContainerStyle={{ paddingHorizontal: 12 }}
-      onViewableItemsChanged={onViewableItemsChanged}
-      viewabilityConfig={viewabilityConfig}
+      onScroll={autoScrollOnScroll}
+      onLayout={autoScrollOnLayout}
       onScrollBeginDrag={onScrollBeginDrag}
       onScrollToIndexFailed={() => {
         // Fallback: approximate scroll by offset (lines may be variable height)
