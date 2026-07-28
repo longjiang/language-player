@@ -571,20 +571,44 @@ Before shipping the E2E testing pipeline:
    Rebuild only when native dependencies or Podfile.lock changes.
 
    > **⚠️ Expect the first build to fail and require many retries.** In practice, the first
-   > successful dev build took **13 attempts** over **~3–4 hours of cumulative build time**.
-   > Here is the actual build history from this session:
+   > successful dev build took **13 attempts** over **~3–4 hours of cumulative build time**
+   > (wall-clock: ~14:00–18:30 on 2026-07-27, with roughly 10 hours between first and last
+   > commit due to concurrent spec documentation). Here is the actual build history:
    >
-   > | # | Command | Why | Mitigation tried | Result |
-   > |---|---|---|---|---|
-   > | 1 | `npx expo run:ios --configuration Release` | Initial build attempt | Searched error, found `EXEventEmitterService.h` removed in SDK 57 | ❌ `EXEventEmitterService.h` not found |
-   > | 2-4 | `npx expo run:ios --configuration Release` | Retries (hoping transient) | Checked if `expo-in-app-purchases` version bump could fix it | ❌ Same error |
-   > | 5 | `npx expo run:ios --configuration Release` | After bumping `expo-in-app-purchases` to v14.6.0 | Inspected Pods/ headers to confirm the header was truly missing from ExpoModulesCore | ❌ Same error (version ≠ fix) |
-   > | 6-8 | `npx expo run:ios --configuration Release` | More retries after version bump | Researched Podfile `post_install` hook approach | ❌ Same error |
-   > | 9 | `npx expo run:ios --configuration Release` | After creating Pods header stubs manually | Manually created `EXEventEmitterService.h` + umbrella header entry in `ios/Pods/`; built successfully | ✅ **Succeeded** (debug build, 17:52) |
-   > | 10 | `npx expo run:ios` (debug, no `--configuration Release`) | Verify testIDs with Metro | No mitigation needed — reused existing build artifacts | ✅ Succeeded (used existing build) |
-   > | 11 | `npx expo run:ios` | Rebuild after JS changes — `pod install` regenerated `ios/Pods/`, wiping stubs | Re-created stubs in Pods/ manually again | ❌ Same error (stubs lost again) |
-   > | 12 | `npx expo run:ios` | Retry | Investigated why `ios/Pods/` headers are overwritten; confirmed `post_install` is the right fix | ❌ Same error |
-   > | 13 | `npx expo run:ios` | Latest attempt | Decided permanent fix is Podfile `post_install` hook — deferred | ❌ Same error |
+   > | # | Time (approx) | Command | Why | Build type | Sim state | Mitigation tried | Result |
+   > |---|---|---|---|---|---|---|---|
+   > | 1 | ~14:05 | `npx expo run:ios --configuration Release` | Initial build attempt | Release | Already booted | Searched error, found `EXEventEmitterService.h` removed in SDK 57 | ❌ |
+   > | 2-4 | ~14:25–15:05 | `npx expo run:ios --configuration Release` | Retries (hoping transient) | Release | Stayed booted | Checked if `expo-in-app-purchases` version bump could fix it | ❌ Same error |
+   > | 5 | ~15:25 | `npx expo run:ios --configuration Release` | After bumping `expo-in-app-purchases` to v14.6.0 | Release | Stayed booted | Inspected Pods/ headers to confirm missing from ExpoModulesCore | ❌ (version ≠ fix) |
+   > | 6-8 | ~15:45–16:25 | `npx expo run:ios --configuration Release` | More retries after version bump | Release | Stayed booted | Researched Podfile `post_install` hook approach | ❌ Same error |
+   > | 9 | ~16:50–17:10 | `npx expo run:ios --configuration Release` | After creating Pods header stubs manually | Release | Stayed booted | Manually created `EXEventEmitterService.h` + umbrella header entry | ✅ **Succeeded** |
+   > | 10 | ~17:20 | `npx expo run:ios` (debug) | Verify testIDs with Metro | **Debug** | Stayed booted | No mitigation — reused existing build artifacts | ✅ Succeeded |
+   > | 11 | ~17:35 | `npx expo run:ios` (debug) | Rebuild after JS changes — `pod install` regenerated `ios/Pods/`, wiping stubs | **Debug** | Stayed booted | Re-created stubs in Pods/ manually again | ❌ Stubs lost |
+   > | 12 | ~17:55 | `npx expo run:ios` (debug) | Retry | **Debug** | Stayed booted | Investigated why `ios/Pods/` is ephemeral; confirmed `post_install` is the fix | ❌ Same error |
+   > | 13 | ~18:15 | `npx expo run:ios` (debug) | Latest attempt | **Debug** | Stayed booted | Deferred permanent fix — need Podfile `post_install` hook | ❌ Same error |
+   >
+   > **Key observations from the review:**
+   >
+   > - **Attempts 2–4 were wasted (~1h).** Compile errors don't heal themselves — the missing
+   >   header couldn't resolve without code changes. Three full rebuild cycles were spent
+   >   hoping a transient that had no mechanism to occur.
+   > - **Attempt 5 tested the wrong hypothesis.** A minor version bump of the *dependent*
+   >   (`expo-in-app-purchases`) cannot restore a header removed from the *dependency*
+   >   (`ExpoModulesCore`). The correct diagnosis (`grep -r` in `node_modules/`) would have
+   >   taken ~5 minutes instead of ~20 minutes for a rebuild.
+   > - **Attempts 6–8 had the right answer but rebuilt to find it.** Podfile `post_install`
+   >   research doesn't require a build. Pattern: *try → rebuild → observe → think → rebuild*.
+   >   Faster: *diagnose fully → fix → rebuild once*.
+   > - **`--configuration Release` added ~5 min/attempt with no benefit.** E2E testing on a
+   >   simulator doesn't need compiler optimizations. Switching to debug after attempt 9
+   >   saved ~25 min over the remaining 4 attempts. All 13 should have been debug builds.
+   > - **The "can we remove the dependency?" question was never asked.** `expo-in-app-purchases`
+   >   is only needed for payment flows (SPEC-025), which are explicitly excluded from SPEC-023
+   >   E2E tests. A dev build for E2E could exclude it — either by removing from `package.json`
+   >   or adding a conditional in the Podfile. A ~2-minute investigation vs. ~4 hours of rebuilds.
+   > - **After attempt 9 (stubs proved the fix), 4 more attempts were needed to accept that
+   >   `ios/Pods/` is ephemeral.** The manual edit succeeded once, then attempts 10–13
+   >   re-confirmed what was already known. The Podfile hook should have been written immediately.
    >
    > **Root cause**: `expo-in-app-purchases` imports `EXEventEmitterService.h` from
    > `ExpoModulesCore`, which was removed in Expo SDK 57. Each `npx expo run:ios`
