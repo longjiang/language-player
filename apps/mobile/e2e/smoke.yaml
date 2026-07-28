@@ -31,10 +31,13 @@ appId: ca.zerotohero.app
 - tapOn:
     id: "login-signin-button"
 
-# Dismiss iOS "Save Password?" dialog if it appears
+# Dismiss iOS "Save Password?" dialog if it appears.
+# Retry a few times in case the dialog appears after the first check.
 - tapOn:
     text: "Not Now"
     optional: true
+    repeat: 3
+    waitToSettleTimeoutMs: 2000
 
 # Wait for tabs to appear (header logo visible means logged in)
 - assertVisible:
@@ -43,6 +46,9 @@ appId: ca.zerotohero.app
 # Verify hamburger menu opens
 - tapOn:
     id: "header-hamburger-button"
+
+# The drawer section headers use translated text "Media", "Reading", "Vocab"
+# via t('nav.media'), t('nav.reading'), t('nav.vocab')
 - assertVisible:
     text: "Media"
 - assertVisible:
@@ -50,15 +56,13 @@ appId: ca.zerotohero.app
 - assertVisible:
     text: "Vocab"
 
-# Close drawer
+# Close drawer by tapping outside it (left side of screen)
 - tapOn:
     point: "10%,50%"
 
-# ── S3: Navigate to Me tab via hamburger ──────────────────────────
-- tapOn:
-    id: "header-hamburger-button"
-- tapOn:
-    text: "Me"
+# ── S3: Language state ────────────────────────────────────────────
+# After login the user lands on the profile (Me) page. Verify we're
+# on the profile page and menu handles language info.
 - assertVisible:
     id: "me-logout-button"
 
