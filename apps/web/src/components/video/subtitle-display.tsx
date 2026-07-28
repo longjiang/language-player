@@ -9,6 +9,7 @@ import { useTranscriptAutoScroll } from '@/hooks/use-transcript-auto-scroll';
 import { TokenizedText } from '@/components/tokenized-text';
 import type { SubtitleLine } from '@langplayer/shared';
 import type { TokenCache } from '@langplayer/shared';
+import { findActiveLineIndex } from '@langplayer/shared';
 import { baseCode } from '@/lib/language-data';
 import { syncLines, type SyncedLine } from '@/lib/subtitle-csv';
 
@@ -111,13 +112,8 @@ export function SubtitleDisplay({ youtubeId, currentTime, videoTitle, tokenCache
   }, [l2Lines, translatedLines]);
 
   useEffect(() => {
-    if (syncedLines.length === 0) { setActiveIndex(-1); return; }
-    let idx = -1;
-    for (let i = 0; i < syncedLines.length; i++) {
-      if (syncedLines[i]!.starttime <= currentTime) idx = i;
-      else break;
-    }
-    setActiveIndex(idx);
+    const startTimes = syncedLines.map(l => l.starttime);
+    setActiveIndex(findActiveLineIndex(startTimes, currentTime));
   }, [currentTime, syncedLines]);
 
   // Auto-scroll to active line.
