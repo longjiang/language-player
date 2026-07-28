@@ -52,10 +52,10 @@ export function DictionaryPopup({
   return (
     <Dialog.Root open={visible} onOpenChange={(v) => { if (!v) onClose(); }}>
       <Dialog.Portal>
-        <Dialog.SheetContent>
+        <Dialog.SheetContent testID="dictionary-popup">
           {/* Header */}
           <View className="mb-3 flex-row items-center justify-between">
-            <Text className="text-lg font-bold text-foreground" numberOfLines={1}>
+            <Text className="text-lg font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
               {word}
             </Text>
             <Dialog.Close className="rounded-full bg-muted p-1.5">

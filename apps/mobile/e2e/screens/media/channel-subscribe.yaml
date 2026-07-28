@@ -17,31 +17,39 @@ appId: ca.zerotohero.app
 # ── Tap first video card to open player ────────────────────────────
 - runFlow:
     when:
+      visible:
+        id: "video-grid-empty"
+    commands:
+      - assertVisible:
+          id: "video-grid-empty"
+- runFlow:
+    when:
       notVisible:
         id: "video-grid-empty"
     commands:
-      - tapOn:
-          point: "50%,25%"
-      - assertVisible:
-          id: "watch-screen"
-
-      # ── Wait for video metadata to load ───────────────────────────
       - extendedWaitUntil:
           visible:
-            id: "watch-screen"
-          timeout: 10000
-
-      # ── Navigate to the "Info" tab in TranscriptQueuePanel ────────
-      # The panel has tabs: Transcript | Queue | Info.
-      # Tap "Info" to see VideoMeta + YouTubeChannelCard.
-      # The tab labels use translated text. We tap the third tab area.
+            id: "video-card-first"
+          timeout: 15000
       - tapOn:
-          point: "85%,88%"
-          optional: true
+          id: "video-card-first"
 
-      # ── Assert watch screen is still visible ─────────────────────
-      - assertVisible:
-          id: "watch-screen"
+# ── Verify watch screen rendered ────────────────────────────────────
+- extendedWaitUntil:
+    visible:
+      id: "watch-screen"
+    timeout: 10000
+
+# ── Navigate to the "Info" tab in TranscriptQueuePanel ──────────────
+# The panel has tabs: Transcript | Queue | Info.
+# Tap "Info" to see VideoMeta + YouTubeChannelCard.
+- tapOn:
+    id: "tab-info"
+    optional: true
+
+# ── Assert watch screen is still visible ────────────────────────────
+- assertVisible:
+    id: "watch-screen"
 
 # ── Return to Explore for sequencer chainability ────────────────────
 - tapOn:

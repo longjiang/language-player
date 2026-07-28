@@ -63,6 +63,8 @@ export interface TokenizedTextProps {
   /** Karaoke progress for the active subtitle line: 0 (start) to 1 (end).
    *  When undefined, karaoke is off. */
   karaokeProgress?: number;
+  /** testID for the outermost container — enables E2E selectors like "subtitle-line-0". */
+  testID?: string;
 }
 
 /**
@@ -79,7 +81,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, testID }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -339,7 +341,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       <>
         {/* Ruby mode: View-based flex row for readings-above-characters layout */}
         {showPhonetics && phonetics.show === 'ruby' ? (
-          <View className="flex-row flex-wrap items-end">
+          <View testID={testID} className="flex-row flex-wrap items-end">
             {(() => {
               let wordIndexSoFar = 0;
               return tokens.map((token, i) => {
@@ -396,6 +398,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                         <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{byeonggiText}</Text>
                       )}
                       <Text
+                        testID={`token-${i}`}
                         style={[textStyle, { lineHeight: baseLeading }]}
                         className={isHighlighted ? 'font-bold text-primary' : 'text-foreground'}
                         onPress={handlePress}
@@ -417,7 +420,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
           </View>
         ) : (
           /* Word-replace or no-phonetics mode: plain inline Text */
-          <Text style={textStyle} className="text-foreground">
+          <Text testID={testID} style={textStyle} className="text-foreground">
             {(() => {
               let wordIndexSoFar = 0;
               return tokens.map((token, i) => {
@@ -455,6 +458,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               return (
                 <Text
                   key={i}
+                  testID={`token-${i}`}
                   onPress={handlePress}
                   className={isHighlighted ? 'font-bold text-primary' : ''}
                   style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}
@@ -482,5 +486,5 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   }
 
   // ── Loading / no tokens: show plain undivided text (matches Next.js) ──
-  return <Text className="text-base leading-relaxed text-foreground">{text}</Text>;
+  return <Text testID={testID} className="text-base leading-relaxed text-foreground">{text}</Text>;
 }
