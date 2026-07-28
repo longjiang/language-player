@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import { invalidateLevelCache } from './use-progress-level';
 
 const STORAGE_KEY = 'zthProgress';
 
@@ -41,8 +42,11 @@ export function useProgress(l2Code: string) {
   }, [l2Code]);
 
   const setLevel = useCallback((level: number | undefined) => {
-    if (level !== undefined) persist({ level });
-  }, [persist]);
+    if (level !== undefined) {
+      invalidateLevelCache(l2Code);
+      persist({ level });
+    }
+  }, [persist, l2Code]);
 
   const setTime = useCallback((time: number) => persist({ time }), [persist]);
 

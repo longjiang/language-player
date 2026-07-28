@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 
 const STORAGE_KEY = 'zthProgress';
@@ -9,6 +9,20 @@ const STORAGE_KEY = 'zthProgress';
  *  Level changes are rare — user must navigate to settings and back,
  *  which causes a full page remount and fresh cache reads. */
 const levelCache = new Map<string, number | undefined>();
+/** Incremented on invalidation so all useProgressLevel hooks re-read SecureStore. */
+let cacheGeneration = 0;
+
+/** Clear the module-level cache for the given l2Code (or all if omitted).
+ *  Call this after writing a new proficiency level so that future
+ *  useProgressLevel() calls re-read from SecureStore. */
+export function invalidateLevelCache(l2Code?: string): void {
+  cacheGeneration++;
+  if (l2Code) {
+    levelCache.delete(l2Code);
+  } else {
+    levelCache.clear();
+  }
+}
 
 /** Parse raw level value (number or numeric string) into a number, or undefined. */
 function parseLevel(raw: unknown): number | undefined {
@@ -31,15 +45,17 @@ function parseLevel(raw: unknown): number | undefined {
  * Cloud sync is handled separately by useProgress() at the page/layout level.
  */
 export function useProgressLevel(l2Code: string): number | undefined {
+  const cacheGenRef = useRef(cacheGeneration);
   const [level, setLevel] = useState<number | undefined>(
     () => levelCache.get(l2Code), // try cache synchronously
   );
 
   useEffect(() => {
-    // Already cached — skip the async read
-    if (levelCache.has(l2Code)) return;
+    // Only skip if cache is populated AND generation hasn't changed
+    if (levelCache.has(l2Code) && cacheGenRef.current === cacheGeneration) return;
 
     let cancelled = false;
+    cacheGenRef.current = cacheGeneration;
     (async () => {
       try {
         const raw = await SecureStore.getItemAsync(STORAGE_KEY);
