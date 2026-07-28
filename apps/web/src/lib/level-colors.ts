@@ -13,7 +13,7 @@ const BG_CLASSES: Record<number, string> = {
   4: 'bg-red-700',
   5: 'bg-blue-900',
   6: 'bg-purple-700',
-  7: 'bg-rose-600',
+  7: 'bg-sky-500',
 };
 
 /** Map 1–7 numeric level → Tailwind subtle badge classes (bg/10 + text). */
@@ -24,7 +24,7 @@ const SUBTLE_CLASSES: Record<number, string> = {
   4: 'bg-red-700/10 text-red-400',
   5: 'bg-blue-900/10 text-blue-400',
   6: 'bg-purple-700/10 text-purple-400',
-  7: 'bg-rose-600/10 text-rose-400',
+  7: 'bg-sky-500/10 text-sky-400',
 };
 
 /** Tailwind `data-[state=on]:` classes for toggle pill buttons. */
@@ -35,7 +35,7 @@ const PILL_CLASSES: Record<number, string> = {
   4: 'data-[state=on]:bg-red-700 data-[state=on]:text-white',
   5: 'data-[state=on]:bg-blue-900 data-[state=on]:text-white',
   6: 'data-[state=on]:bg-purple-700 data-[state=on]:text-white',
-  7: 'data-[state=on]:bg-rose-600 data-[state=on]:text-white',
+  7: 'data-[state=on]:bg-sky-500 data-[state=on]:text-white',
 };
 
 const FALLBACK_CLASS = 'bg-gray-500';
