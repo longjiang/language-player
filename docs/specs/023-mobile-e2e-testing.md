@@ -553,9 +553,15 @@ Before shipping the E2E testing pipeline:
 
    **Pass/fail criterion**: Maestro can find and tap the email input, password input, sign-in button, and all 4 tab bar items via `testID`. Include one element from each RN primitive type used (Pressable, TextInput, Switch from `@rn-primitives/*`, and a list item) to de-risk primitive compatibility early. If elements are missing, budget time to add `accessibilityLabel` as a fallback alongside `testID`.
 
+   > Status: ◐ Partial — spike attempted, login elements discovered, but build cannot be reproduced.
+
 2. **Create `lib/e2e.ts` helper** (Day 1) — Reusable `e2e(id)` helper that returns `{ testID: id }` only in `__DEV__`.
 
+   > Status: ✅ Done — `apps/mobile/lib/e2e.ts` exists.
+
 3. **Add `testID` props** (Days 2-4) — Login form fields, tab bar items, main CTA buttons, search bar, save button. ~15-20 testIDs across ~10 files.
+
+   > Status: ◐ Partial — 3 testIDs added to `login.tsx` (`login-email-input`, `login-password-input`, `login-signin-button`). Remaining screens need testIDs as they are ported.
 
 4. **Build dev build** (one time, ~15-20 min on your Mac):
    ```bash
@@ -573,10 +579,16 @@ Before shipping the E2E testing pipeline:
    > add the missing header stubs via the **Podfile `post_install` hook** (not by editing
    > `ios/Pods/` directly), so they survive rebuilds. See commit `6208fea7` for the
    > initial workaround and `docs/adr/XXXX` for the permanent Podfile hook solution.
+   >
+   > Status: ❌ BLOCKED — all 13 rebuilds fail with the same header error.
 
 5. **Seed test data on the staging backend** (Days 3-5) — Build `scripts/setup-e2e-env.sh` that calls Flask endpoints (`POST /auth/register`, etc.) against the staging server to create test accounts (`e2e.free`, `e2e.pro`, `e2e.unverified`, `e2e.new`) and seed initial data (saved words, SRS cards, watch history for the pro user).
 
+   > Status: ◐ Partial — `scripts/setup-e2e-env.sh` exists, but Directus SQL errors (`directus_activity` table) prevent account creation from completing.
+
 6. **Create `apps/mobile/e2e/` scaffold** — `config.yaml`, `flows/auth.yaml`, `flows/preflight-check.yaml`, `smoke.yaml`.
+
+   > Status: ✅ Done — `smoke.yaml`, `flows/login.yaml`, `flows/logout.yaml`, `flows/preflight-check.yaml`, `screens/auth.yaml`, `config.yaml`, `regression.yaml`, `README.md` all exist.
 
 7. **Run smoke test** — Verify the scaffold works against the dev build on the simulator:
    ```bash
@@ -584,11 +596,15 @@ Before shipping the E2E testing pipeline:
    ```
    Fix any element discovery issues before progressing.
 
+   > Status: ❌ BLOCKED — depends on build (step 4).
+
 8. **Document the local workflow** — Create `apps/mobile/e2e/README.md` with:
    - Prerequisites (Maestro installed, dev build built)
    - Running individual screen tests, full regression, smoke
    - Preflight checklist before running tests
    - Troubleshooting common issues
+
+   > Status: ✅ Done — `apps/mobile/e2e/README.md` covers prereqs, running tests, preflight checklist, and troubleshooting.
 
 ### Phase 2: Auth + Navigation (Week 3)
 
