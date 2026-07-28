@@ -1,0 +1,47 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# Language Selection (Onboarding)
+#
+# Used by A12 (select language after registration) and can be reused
+# by any flow that needs to set the user's language preferences.
+#
+# Prerequisite: LanguagePicker is visible with L1 tab active.
+# Postcondition: user is on main tabs (me-logout-button visible).
+#
+# Selects English (en) as L1 and Spanish (es) as L2.
+# ════════════════════════════════════════════════════════════════════
+
+# Select English (en) as L1
+- scrollUntilVisible:
+    element:
+      text: "English"
+    direction: DOWN
+    timeout: 5000
+    speed: 40
+- tapOn:
+    text: "English"
+
+# Tap "Next" to go to L2 tab
+- assertVisible:
+    id: "picker-next-button"
+- tapOn:
+    id: "picker-next-button"
+
+# Select Spanish (es) as L2
+- assertVisible:
+    id: "picker-l2-tab"
+- scrollUntilVisible:
+    element:
+      text: "Spanish"
+    direction: DOWN
+    timeout: 5000
+    speed: 40
+- tapOn:
+    text: "Spanish"
+
+# Tap "Confirm" to finish onboarding
+- assertVisible:
+    id: "picker-confirm-button"
+- tapOn:
+    id: "picker-confirm-button"

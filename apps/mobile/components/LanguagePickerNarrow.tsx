@@ -18,6 +18,7 @@ import {
 import { X, Search } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { PLACEHOLDER_COLOR, ICON_MUTED } from '@/lib/theme-colors';
+import { e2e } from '@/lib/e2e';
 import type {
   LanguageSection,
   UseLanguagePickerReturn,
@@ -164,6 +165,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
               className={`flex-1 py-2 items-center rounded-md ${
                 activeTab === tab ? 'bg-card' : ''
               }`}
+              {...e2e(`picker-${tab}-tab`)}
             >
               <Text
                 className={`text-sm font-semibold ${
@@ -193,6 +195,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
               onChangeText={setSearch}
               autoCapitalize="none"
               autoFocus={false}
+              {...e2e('picker-search-input')}
             />
           </View>
         </View>
@@ -264,6 +267,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
             <Pressable
               onPress={() => setActiveTab('l2')}
               className="bg-primary px-4 py-2 rounded-lg"
+              {...e2e('picker-next-button')}
             >
               <Text className="text-primary-foreground font-bold text-sm">
                 {t('action.next')}
@@ -276,6 +280,7 @@ export function LanguagePickerNarrow(props: LanguagePickerNarrowProps) {
             <Pressable
               onPress={onConfirm}
               className="bg-accent px-4 py-2 rounded-lg"
+              {...e2e('picker-confirm-button')}
             >
               <Text className="text-accent-foreground font-bold text-sm">
                 {t('action.confirm')}

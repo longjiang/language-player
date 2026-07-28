@@ -1,5 +1,19 @@
 appId: ca.zerotohero.app
 ---
+# ════════════════════════════════════════════════════════════════════
+# Tier 0 — Smoke Test (pre-commit gate, ~30s)
+# ════════════════════════════════════════════════════════════════════
+#
+# S1: App launch → login screen visible
+# S2: Login → tabs render, hamburger drawer opens
+# S3: Language state → Me screen shows logout button
+# S4: Logout → returns to login screen
+#
+# ⚠️  Run from a CLEAN simulator state for reliable results:
+#   xcrun simctl uninstall booted ca.zerotohero.app
+#   xcrun simctl install booted <path>/ZeroToHero.app
+# ════════════════════════════════════════════════════════════════════
+
 # ── Preflight: if app is already logged in from a previous run,
 # log out first. On a fresh install this condition is false and
 # the flow is skipped. Marked optional so unknown app state
@@ -20,30 +34,10 @@ appId: ca.zerotohero.app
     id: "login-signin-button"
 
 # ── S2: Login → see tabs ──────────────────────────────────────────
-- tapOn:
-    id: "login-email-input"
-- eraseText
-- inputText: "tester.mary@zerotohero.ca"
-- tapOn:
-    id: "login-password-input"
-- eraseText
-- inputText: "pc8qm8LBZeGuBno"
-- tapOn:
-    id: "login-signin-button"
+- runFlow:
+    file: flows/login.yaml
 
-# Dismiss iOS "Save Password?" dialog if it appears.
-# Retry a few times in case the dialog appears after the first check.
-- tapOn:
-    text: "Not Now"
-    optional: true
-    repeat: 3
-    waitToSettleTimeoutMs: 2000
-
-# Wait for tabs to appear (header logo visible means logged in)
-- assertVisible:
-    id: "header-logo"
-
-# Verify hamburger menu opens
+# Verify hamburger menu opens and shows nav sections
 - tapOn:
     id: "header-hamburger-button"
 
@@ -61,8 +55,7 @@ appId: ca.zerotohero.app
     point: "10%,50%"
 
 # ── S3: Language state ────────────────────────────────────────────
-# After login the user lands on the profile (Me) page. Verify we're
-# on the profile page and menu handles language info.
+# Verify we're on the Me screen with logout button visible.
 - assertVisible:
     id: "me-logout-button"
 

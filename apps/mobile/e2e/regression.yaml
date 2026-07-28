@@ -1,21 +1,45 @@
 appId: ca.zerotohero.app
 ---
-# ── Smoke (Tier 0) ─────────────────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════
+# Full Regression Suite
+# ════════════════════════════════════════════════════════════════════
+#
+# Run locally:
+#   maestro test apps/mobile/e2e/regression.yaml
+#
+# ⚠️  Must run from a CLEAN simulator state:
+#   xcrun simctl uninstall booted ca.zerotohero.app
+#   xcrun simctl install booted <path>/ZeroToHero.app
+#
+# ⚠️  Tests are ORDER-DEPENDENT. The auth suite creates a new user
+# account and logs in, establishing state that subsequent suites
+# depend on. Do not reorder without updating preflight checks.
+# ════════════════════════════════════════════════════════════════════
+
+# ── Tier 0: Smoke (pre-commit gate, ~30s) ─────────────────────────
 - runFlow:
     file: smoke.yaml
 
-# ── Auth (Tier 1) ──────────────────────────────────────────────────
+# ── Tier 1: Auth & Onboarding (~5min) ──────────────────────────────
 - runFlow:
     file: screens/auth.yaml
 
-# ── Placeholder for future tiers ───────────────────────────────────
-# Tier 2 — Media Tab (when implemented)
-# - runFlow: screens/media.yaml
-# Tier 3 — Dictionary & Vocab (when implemented)
-# - runFlow: screens/dictionary.yaml
-# Tier 4 — SRS Review (when implemented)
-# - runFlow: screens/review.yaml
-# Tier 5 — Reading Tab (when implemented)
-# - runFlow: screens/reading.yaml
-# Tier 6 — Settings & Profile (when implemented)
-# - runFlow: screens/settings.yaml
+# ── Tier 2: Media Tab (~10min) — not yet implemented ───────────────
+# - runFlow:
+#     file: screens/explore.yaml
+
+# ── Tier 3: Dictionary & Vocab (~10min) — not yet implemented ──────
+# - runFlow:
+#     file: screens/dictionary.yaml
+
+# ── Tier 4: SRS Review (~5min) — not yet implemented ───────────────
+# - runFlow:
+#     file: screens/review.yaml
+
+# ── Tier 5: Reading Tab (~8min) — not yet implemented ──────────────
+# - runFlow:
+#     file: screens/reading.yaml
+
+# ── Tier 6: Settings & Profile (~5min) — not yet implemented ───────
+# - runFlow:
+#     file: screens/settings.yaml

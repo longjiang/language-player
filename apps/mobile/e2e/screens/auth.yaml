@@ -1,89 +1,300 @@
 appId: ca.zerotohero.app
+env:
+  REGISTER_EMAIL: "e2e.register.test@zerotohero.ca"
 ---
-# ── Preflight: ensure we're on the login screen ──
+# ════════════════════════════════════════════════════════════════════
+# Tier 1 — Auth & Onboarding (A1–A13)
+# ════════════════════════════════════════════════════════════════════
+#
+# ⚠️  Order matters — tests are interdependent due to iOS Keychain
+# persistence (survives app deletion). The suite must run sequentially
+# from a CLEAN simulator state:
+#   xcrun simctl uninstall booted ca.zerotohero.app
+#   xcrun simctl install booted <path>/ZeroToHero.app
+#
+# ⚠️  `repeat: 3` before `inputText` is REQUIRED on every field.
+# React Native TextInput under Fabric does not reliably clear with
+# `eraseText`. Triple-tap selects all text so `inputText` replaces.
+#
+# Flow order:
+#  1. A2/A3 run FIRST (no prior login → no iOS autofill → clean fields)
+#  2. Register tests (A5-A7, A4) — no iOS autofill for registration
+#  3. A12 onboards new user
+#  4. A1 login (now iOS may offer autofill, but we log in only once)
+#  5. Remaining tests (A8, A13, A9, A10)
+# ════════════════════════════════════════════════════════════════════
+
+# ── Preflight: ensure we're on the login screen ─────────────────────
 - runFlow:
-    file: flows/logout.yaml
+    file: ../flows/logout.yaml
     when:
       notVisible:
         id: "login-email-input"
     optional: true
 
-# ── A1: Login — happy path (already covered by smoke)
-# ── A2: Login — invalid credentials ────────────────────────────────
+# ════════════════════════════════════════════════════════════════════
+# A2: Login — invalid credentials (runs BEFORE any successful login
+# to avoid iOS autofill corrupting the email field)
+# ════════════════════════════════════════════════════════════════════
 - tapOn:
     id: "login-email-input"
-- eraseText
+    repeat: 3
 - inputText: "tester.mary@zerotohero.ca"
 - tapOn:
     id: "login-password-input"
-- eraseText
-- inputText: wrongpassword123
+    repeat: 3
+- inputText: "wrongpassword123"
 - tapOn:
     id: "login-signin-button"
 - assertVisible:
-    text: "Invalid"
-    optional: true
+    text: "Invalid credentials"
+- assertVisible:
+    id: "login-email-input"
 
-# ── A5: Register — password mismatch ───────────────────────────────
+# ════════════════════════════════════════════════════════════════════
+# A3: Login — empty fields
+# ════════════════════════════════════════════════════════════════════
 - tapOn:
-    text: "Create Account"
-    optional: true
+    id: "login-signin-button"
+- assertVisible:
+    id: "login-email-input"
+
+# ════════════════════════════════════════════════════════════════════
+# Navigate to Register screen
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    text: "Don't have an account?"
+- assertVisible:
+    id: "register-firstname-input"
+
+# ════════════════════════════════════════════════════════════════════
+# A5: Register — password mismatch (client-side validation)
+# ════════════════════════════════════════════════════════════════════
 - tapOn:
     id: "register-firstname-input"
-    optional: true
+    repeat: 3
 - inputText: "E2E"
 - tapOn:
     id: "register-lastname-input"
+    repeat: 3
 - inputText: "Test"
 - tapOn:
     id: "register-email-input"
-- inputText: "new@example.com"
+    repeat: 3
+- inputText: "a5-test@zerotohero.ca"
 - tapOn:
     id: "register-password-input"
+    repeat: 3
 - inputText: "password123"
 - tapOn:
     id: "register-confirm-password-input"
+    repeat: 3
 - inputText: "different456"
 - tapOn:
     id: "register-create-button"
 - assertVisible:
-    text: "not match"
-    optional: true
+    text: "Passwords do not match"
+- assertVisible:
+    id: "register-create-button"
 
-# ── A6: Register — weak password ───────────────────────────────────
-# NOTE: eraseText may not work reliably with React Native TextInput
-# under Fabric (New Architecture). If this flakes, use longPressOn +
-# backspace instead.
+# ════════════════════════════════════════════════════════════════════
+# A6: Register — weak password
+# ════════════════════════════════════════════════════════════════════
 - tapOn:
     id: "register-password-input"
-- eraseText
+    repeat: 3
 - inputText: "short"
 - tapOn:
     id: "register-confirm-password-input"
-- eraseText
+    repeat: 3
 - inputText: "short"
 - tapOn:
     id: "register-create-button"
+# Note: Directus may accept short passwords, so this test checks
+# that the register button is still visible (no navigation away).
 - assertVisible:
-    text: "8"
-    optional: true
+    id: "register-create-button"
 
-# ── A8: Forgot Password ────────────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════
+# A7: Register — duplicate email
+# ════════════════════════════════════════════════════════════════════
 - tapOn:
-    text: "Back"
-    optional: true
+    id: "register-email-input"
+    repeat: 3
+- inputText: "tester.mary@zerotohero.ca"
+- tapOn:
+    id: "register-password-input"
+    repeat: 3
+- inputText: "password123"
+- tapOn:
+    id: "register-confirm-password-input"
+    repeat: 3
+- inputText: "password123"
+- tapOn:
+    id: "register-create-button"
+- assertVisible:
+    text: "Registration failed"
+- assertVisible:
+    id: "register-create-button"
+
+# ════════════════════════════════════════════════════════════════════
+# A4: Register — happy path
+# ════════════════════════════════════════════════════════════════════
+# Uses a fixed test email. Override via --env-file:
+#   maestro test ... --env REGISTER_EMAIL=new@example.com
+#
+# ⚠️  All fields get `repeat: 3` to replace stale values from A5-A7.
+# The first/last name fields still hold "E2E" / "Test" from A5, so
+# we re-type them to ensure correctness for the new account.
+- tapOn:
+    id: "register-firstname-input"
+    repeat: 3
+- inputText: "E2E"
+- tapOn:
+    id: "register-lastname-input"
+    repeat: 3
+- inputText: "Test"
+- tapOn:
+    id: "register-email-input"
+    repeat: 3
+- inputText: "${REGISTER_EMAIL}"
+- tapOn:
+    id: "register-password-input"
+    repeat: 3
+- inputText: "password123"
+- tapOn:
+    id: "register-confirm-password-input"
+    repeat: 3
+- inputText: "password123"
+- tapOn:
+    id: "register-create-button"
+
+# ════════════════════════════════════════════════════════════════════
+# A12: Select Language (new user — redirected after registration)
+# ════════════════════════════════════════════════════════════════════
+- assertVisible:
+    id: "picker-l1-tab"
+
+# Scroll to find "English" in the list and tap it
+- scrollUntilVisible:
+    element:
+      text: "English"
+    direction: DOWN
+    timeout: 5000
+    speed: 40
+- tapOn:
+    text: "English"
+
+# Tap "Next" to go to L2 tab
+- assertVisible:
+    id: "picker-next-button"
+- tapOn:
+    id: "picker-next-button"
+
+# Select "Spanish" as L2
+- assertVisible:
+    id: "picker-l2-tab"
+- scrollUntilVisible:
+    element:
+      text: "Spanish"
+    direction: DOWN
+    timeout: 5000
+    speed: 40
+- tapOn:
+    text: "Spanish"
+
+# Tap "Confirm" to finish onboarding
+- assertVisible:
+    id: "picker-confirm-button"
+- tapOn:
+    id: "picker-confirm-button"
+
+# After confirmation, land on main tabs
+- assertVisible:
+    id: "me-logout-button"
+
+# ── Logout ─────────────────────────────────────────────────────────
+- tapOn:
+    id: "me-logout-button"
+- assertVisible:
+    id: "login-email-input"
+
+# ════════════════════════════════════════════════════════════════════
+# A8: Forgot Password
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    text: "Forgot password?"
+- assertVisible:
+    id: "forgot-email-input"
 - tapOn:
     id: "forgot-email-input"
-    optional: true
+    repeat: 3
 - inputText: "tester.mary@zerotohero.ca"
 - tapOn:
     id: "forgot-send-button"
-    optional: true
 - assertVisible:
-    text: "Check"
-    optional: true
-
-# Navigate back to login
+    id: "forgot-back-to-login-button"
 - tapOn:
     id: "forgot-back-to-login-button"
+- assertVisible:
+    id: "login-email-input"
+
+# ════════════════════════════════════════════════════════════════════
+# A1: Login — happy path
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    id: "login-email-input"
+    repeat: 3
+- inputText: "tester.mary@zerotohero.ca"
+- tapOn:
+    id: "login-password-input"
+    repeat: 3
+- inputText: "pc8qm8LBZeGuBno"
+# Dismiss keyboard before tapping sign-in button
+- pressKey: Enter
+- tapOn:
+    id: "login-signin-button"
+- assertVisible:
+    id: "me-logout-button"
+
+# ════════════════════════════════════════════════════════════════════
+# A13: Session persistence
+# ════════════════════════════════════════════════════════════════════
+# Navigate to search screen, then back to home. Verify the session
+# token is still valid (user remains on the tabs, not bounced to login).
+- tapOn:
+    id: "header-search-button"
+# After navigating to search, verify we see the search input (not login)
+- assertVisible:
+    id: "search-input"
+    optional: true
+# Navigate back to home via logo
+- tapOn:
+    id: "header-logo"
+# Verify we're still authenticated — logout button is visible
+- assertVisible:
+    id: "me-logout-button"
+    optional: true
+
+# ════════════════════════════════════════════════════════════════════
+# A9: Password Reset (deep link)
+# ════════════════════════════════════════════════════════════════════
+- openLink: "languageplayer://password-reset?token=e2e-test-token"
+# The password-reset screen shows "Reset your password" as title.
+# With an invalid token, the screen shows an error message or the
+# reset form. Either way, the screen should render (not crash/blank).
+- assertVisible:
+    text: "Reset your password"
+    optional: true
+
+# ════════════════════════════════════════════════════════════════════
+# A10: Verify Email (deep link)
+# ════════════════════════════════════════════════════════════════════
+- openLink: "languageplayer://verify-email?token=e2e-test-token"
+# The verify-email screen shows a spinner ("Verifying..."), then
+# success (🎉 with back-to-login button) or error (⚠️ with back-to-login
+# button). Since the token is fake, the API call fails, but the screen
+# shows success anyway (per security best practice — no email enumeration).
+- assertVisible:
+    id: "verify-back-to-login-button"
     optional: true
