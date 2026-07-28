@@ -106,7 +106,7 @@ env:
 
 # After confirmation, land on main tabs
 - assertVisible:
-    id: "me-logout-button"
+    id: "header-logo"
 
 # ── Logout to restore clean state ─────────────────────────────────
 - runFlow:

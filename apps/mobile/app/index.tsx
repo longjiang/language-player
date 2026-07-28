@@ -24,9 +24,9 @@ export default function Index() {
       // Not authenticated → show login
       router.replace('/login');
     } else {
-      // Authenticated → show main tabs
+      // Authenticated → show Explore (first tab)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      router.replace('/(tabs)' as any);
+      router.replace('/(tabs)/(media)' as any);
     }
   }, [user, authLoading]);
 

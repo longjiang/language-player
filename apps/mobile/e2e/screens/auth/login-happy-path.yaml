@@ -43,9 +43,9 @@ env:
     repeat: 3
     waitToSettleTimeoutMs: 1000
 
-# Verify we're authenticated — logout button is visible
+# Verify we're authenticated — header logo visible
 - assertVisible:
-    id: "me-logout-button"
+    id: "header-logo"
 
 # Verify hamburger menu opens and shows nav sections
 - tapOn:

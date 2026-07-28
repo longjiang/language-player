@@ -3,14 +3,17 @@ appId: ca.zerotohero.app
 # ════════════════════════════════════════════════════════════════════
 # Reusable logout flow.
 #
-# Prerequisite: user is authenticated (me-logout-button visible).
+# Prerequisite: user is authenticated (header-logo visible).
 # Postcondition: login screen visible (login-email-input).
 #
-# If the login screen is already visible, the tapOn is skipped
-# (optional: true), and assertVisible confirms we're logged out.
+# Opens the user menu and taps Logout. Both steps are optional: true
+# so the flow gracefully skips if already logged out.
 # ════════════════════════════════════════════════════════════════════
 - tapOn:
-    id: "me-logout-button"
+    id: "header-user-menu"
+    optional: true
+- tapOn:
+    id: "header-user-menu-logout"
     optional: true
 - assertVisible:
     id: "login-email-input"

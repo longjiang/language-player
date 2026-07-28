@@ -7,7 +7,7 @@ appId: ca.zerotohero.app
 # by any flow that needs to set the user's language preferences.
 #
 # Prerequisite: LanguagePicker is visible with L1 tab active.
-# Postcondition: user is on main tabs (me-logout-button visible).
+# Postcondition: user is on main tabs (header-logo visible).
 #
 # Selects English (en) as L1 and Spanish (es) as L2.
 # ════════════════════════════════════════════════════════════════════

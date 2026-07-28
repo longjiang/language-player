@@ -55,12 +55,15 @@ appId: ca.zerotohero.app
     point: "10%,50%"
 
 # ── S3: Language state ────────────────────────────────────────────
-# Verify we're on the Me screen with logout button visible.
+# Verify we're authenticated — header is visible with logo.
 - assertVisible:
-    id: "me-logout-button"
+    id: "header-logo"
 
 # ── S4: Logout ─────────────────────────────────────────────────────
+# Open user menu in header → tap Logout
 - tapOn:
-    id: "me-logout-button"
+    id: "header-user-menu"
+- tapOn:
+    id: "header-user-menu-logout"
 - assertVisible:
     id: "login-email-input"
