@@ -23,6 +23,25 @@ export const SCROLL = {
   ANIMATION_DURATION_MS: 3000,
 } as const;
 
+/**
+ * Fraction of viewport height used as the "edge zone."
+ * Web: line within this fraction of top/bottom triggers scroll.
+ * Mobile: not used (binary visibility model).
+ */
+export const EDGE_MARGIN = 0.1;
+
+/**
+ * Fraction of viewport height used as the "critical zone."
+ * Web: line this close to invisible bypasses throttle + cooldown.
+ * Mobile: approximated by !isVisible (fully out of view).
+ */
+export const CRITICAL_MARGIN = 0.05;
+
+/**
+ * Percent threshold for FlatList itemVisiblePercentThreshold (mobile only).
+ */
+export const VIEWABILITY_ITEM_THRESHOLD = 10;
+
 // ── Types ──────────────────────────────────────
 
 export interface AutoScrollState {
