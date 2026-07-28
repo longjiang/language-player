@@ -11,9 +11,10 @@ appId: ca.zerotohero.app
     file: ../../flows/ensure-explore.yaml
 
 # ── Tap the first video card ───────────────────────────────────────
-# Video cards use testID "video-card-{youtube_id}". We can't know the
-# ID in advance, so we use a point-based tap on the first card area.
-# Alternative: if no cards render (empty feed), the test is skipped.
+# VideoGrid has three states: loading (spinner), empty ("No videos"),
+# and populated (VideoCard list). We need to wait for the cards to
+# appear before tapping. Fabric doesn't reliably deliver point-based
+# taps, so we use the id-based "video-card-first" (set on grid item 0).
 - runFlow:
     when:
       visible:
@@ -27,7 +28,12 @@ appId: ca.zerotohero.app
       notVisible:
         id: "video-grid-empty"
     commands:
-      # Tap the first video card (uses testID="video-card-first" on grid item 0)
+      # Wait for video cards to render (may still be loading spinner)
+      - extendedWaitUntil:
+          visible:
+            id: "video-card-first"
+          timeout: 15000
+      # Tap the first video card
       - tapOn:
           id: "video-card-first"
       # ── Assert watch screen renders ───────────────────────────────
