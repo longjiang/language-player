@@ -26,7 +26,7 @@ export default function Index() {
     } else {
       // Authenticated → show tokenizer test page (for debugging)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      router.replace('/(tabs)/(me)/tokenizer' as any);
+      router.replace('/(tabs)/(media)');
     }
   }, [user, authLoading]);
 
