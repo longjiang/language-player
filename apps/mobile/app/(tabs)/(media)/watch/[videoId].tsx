@@ -393,7 +393,7 @@ export default function WatchScreen() {
       {/* Tabbed panel: video / transcript / queue / info */}
       <View className="flex-1 min-h-0">
         <TranscriptQueuePanel
-          video={<SimpleSubsForDebug lines={subtitleLines} activeLineIndex={activeLineIndex} onSeekToLine={handleSeekToLine} />}
+          video={<SimpleSubsForDebug lines={subtitleLines} activeLineIndex={activeLineIndex} currentTime={currentTime} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} onSeekToLine={handleSeekToLine} />}
           transcript={
             <SubtitleDisplay
               youtubeId={v.youtube_id}
