@@ -34,6 +34,12 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
 
   const showTranslation = display.translation;
 
+  // ── Scroll-position-based visibility ──
+  const scrollYRef = useRef(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+  // Conservative item height estimate for visibility math
+  const estimatedItemHeight = showTranslation ? 100 : 56;
+
   const { translatedLines, loading, progress } = useSubtitleTranslation(subtitleLines, l1Lang.code, l2Lang.code, showTranslation);
 
   // Merge translations into SyncedLine shape
@@ -84,6 +90,16 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
       });
   }, [lines, l2Lang.code, tokenCache, tokenCacheLoaded]);
 
+  const onLayout = useCallback(
+    (e: any) => {
+      const h = e.nativeEvent.layout.height;
+      if (h > 0 && h !== containerHeight) {
+        setContainerHeight(h);
+      }
+    },
+    [containerHeight],
+  );
+
   const onScrollBeginDrag = useCallback(() => {
     userScrolledUntil.current = Date.now() + SCROLL.USER_COOLDOWN_MS;
   }, []);
@@ -94,8 +110,18 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
     const now = Date.now();
     const idxDelta = Math.abs(activeLineIndex - lastScrolledIdx.current);
     const isSeek = idxDelta > SCROLL.SEEK_INDEX_DELTA;
-    // Treat as fully-out when we haven't scrolled yet and line is far ahead
-    const isFullyOut = lastScrolledIdx.current === -1 && activeLineIndex > 0;
+
+    // Compute isFullyOut from scroll position if containerHeight is known
+    let isFullyOut = false;
+    if (containerHeight > 0 && estimatedItemHeight > 0) {
+      const visibleCount = Math.floor(containerHeight / estimatedItemHeight);
+      const firstVisible = Math.floor(scrollYRef.current / estimatedItemHeight);
+      const lastVisible = firstVisible + visibleCount - 1;
+      isFullyOut = activeLineIndex < firstVisible || activeLineIndex > lastVisible;
+    } else {
+      // Fallback: treat initial load as fully-out
+      isFullyOut = lastScrolledIdx.current === -1 && activeLineIndex > 0;
+    }
 
     // Throttle: skip if we scrolled too recently (unless seek or fully-out)
     if (!isSeek && !isFullyOut && now - lastAutoScrollTime.current < SCROLL.THROTTLE_MS) return;
@@ -111,7 +137,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
       viewPosition: 0.5,
     });
     isInitialLoad.current = false;
-  }, [activeLineIndex]);
+  }, [activeLineIndex, containerHeight, estimatedItemHeight]);
 
   return (
     <View className="flex-1 bg-background">
@@ -125,6 +151,8 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
         ref={flatListRef}
         data={displayLines}
         keyExtractor={(_, i) => String(i)}
+        onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+        onLayout={onLayout}
         onScrollBeginDrag={onScrollBeginDrag}
         onScrollToIndexFailed={(info) => {
           flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
