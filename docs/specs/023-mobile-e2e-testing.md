@@ -554,6 +554,16 @@ Before shipping the E2E testing pipeline:
    ```
    Rebuild only when native dependencies or Podfile.lock changes.
 
+   > **⚠️ Expect the first build to fail and require many retries.** In practice, the first
+   > successful dev build took **13 attempts** over **~3–4 hours of cumulative build time**.
+   > The root cause was **`expo-in-app-purchases`** importing `EXEventEmitterService.h`
+   > from `ExpoModulesCore`, which was removed in Expo SDK 57. Each `npx expo run:ios`
+   > invocation triggers a full `pod install` step (~15–20 min) that regenerates the
+   > `ios/Pods/` directory, wiping any ad-hoc header stubs placed there. The fix is to
+   > add the missing header stubs via the **Podfile `post_install` hook** (not by editing
+   > `ios/Pods/` directly), so they survive rebuilds. See commit `6208fea7` for the
+   > initial workaround and `docs/adr/XXXX` for the permanent Podfile hook solution.
+
 5. **Seed test data on the staging backend** (Days 3-5) — Build `scripts/setup-e2e-env.sh` that calls Flask endpoints (`POST /auth/register`, etc.) against the staging server to create test accounts (`e2e.free`, `e2e.pro`, `e2e.unverified`, `e2e.new`) and seed initial data (saved words, SRS cards, watch history for the pro user).
 
 6. **Create `apps/mobile/e2e/` scaffold** — `config.yaml`, `flows/auth.yaml`, `flows/preflight-check.yaml`, `smoke.yaml`.
