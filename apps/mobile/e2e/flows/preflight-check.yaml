@@ -3,16 +3,34 @@ appId: ca.zerotohero.app
 # ════════════════════════════════════════════════════════════════════
 # Preflight Check
 #
-# Ensures the app is on the login screen before running tests.
-# iOS Keychain tokens survive app relaunch, so this handles the case
-# where a previous test left a logged-in session behind.
+# Ensures the app is on the login screen before running tests, from
+# any starting state:
 #
-# Runs flows/logout.yaml conditionally — only when the login screen
-# is NOT visible (i.e., a stale auth token keeps the user logged in).
-# When the login screen IS visible, the flow is skipped entirely.
+# 1. Register screen visible → tap iOS navigation back button (top-left)
+# 2. Authenticated (tabs visible) → run logout flow
+# 3. Login screen visible → proceed (no action needed)
+#
+# iOS Keychain tokens survive app relaunch, so this handles stale
+# auth tokens from a previous test run.
 # ════════════════════════════════════════════════════════════════════
+
+# ── Handle register screen: tap iOS back button ─────────────────
+# If a register test left us on the register screen, tap the top-left
+# area where Expo Router's stack navigator places the back chevron.
 - runFlow:
-    file: flows/logout.yaml
+    when:
+      visible:
+        id: "register-firstname-input"
+    commands:
+      - tapOn:
+          point: "3%,6%"
+      - waitForAnimationToEnd
+
+# ── Handle authenticated state: log out ─────────────────────────
+- runFlow:
     when:
       notVisible:
         id: "login-email-input"
+    commands:
+      - runFlow:
+          file: logout.yaml

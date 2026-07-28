@@ -1,0 +1,22 @@
+appId: ca.zerotohero.app
+env:
+  FLOW: "A3"
+---
+# ════════════════════════════════════════════════════════════════════
+# A3: Login — empty fields
+#
+# Test that tapping Sign In with empty fields stays on the login
+# screen (no crash, no unexpected navigation).
+# ════════════════════════════════════════════════════════════════════
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Tap sign-in with empty fields ──────────────────────────────────
+- tapOn:
+    id: "login-signin-button"
+
+# ── Assert: still on login screen ──────────────────────────────────
+- assertVisible:
+    id: "login-email-input"
