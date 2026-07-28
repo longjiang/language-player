@@ -11,6 +11,8 @@ import { useT } from '@/hooks/use-t';
 interface DictionaryPopupProps {
   visible: boolean;
   word: string;
+  /** Lemma (dictionary form) to prioritize in lookup. Falls back to `word` if not set. */
+  lemma?: string;
   context?: string;
   translatedContext?: string;
   onClose: () => void;
@@ -20,6 +22,7 @@ interface DictionaryPopupProps {
 export function DictionaryPopup({
   visible,
   word,
+  lemma,
   context,
   translatedContext,
   onClose,
@@ -31,6 +34,7 @@ export function DictionaryPopup({
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lookedUpLemma, setLookedUpLemma] = useState(false);
 
   // Look up the word when the popup opens
   React.useEffect(() => {
@@ -39,25 +43,55 @@ export function DictionaryPopup({
     setError(null);
     setResults(null);
 
-    dict.lookup(word, l2Lang.code, l1Lang.code)
-      .then((res) => {
-        setResults(res.results ?? []);
-      })
-      .catch((e) => {
+    const l2 = l2Lang.code;
+    const l1 = l1Lang.code;
+    const lookupWord = lemma && lemma !== word ? lemma : word;
+    const alsoLookupSurface = lookupWord !== word;
+
+    (async () => {
+      try {
+        // Primary: lookup by lemma
+        const primaryRes = await dict.lookup(lookupWord, l2, l1);
+        const primaryResults = primaryRes.results ?? [];
+
+        if (!alsoLookupSurface) {
+          setResults(primaryResults);
+          return;
+        }
+
+        // Secondary: also lookup surface form, merge deduplicated
+        setLookedUpLemma(true);
+        const surfaceRes = await dict.lookup(word, l2, l1);
+        const surfaceResults = (surfaceRes.results ?? []).filter(
+          (entry: DictionaryEntry) => !primaryResults.some((p: DictionaryEntry) => p.id === entry.id),
+        );
+        setResults([...primaryResults, ...surfaceResults]);
+      } catch (e: any) {
         setError(e?.message ?? t('error.general'));
-      })
-      .finally(() => setLoading(false));
-  }, [visible, word, l2Lang.code, l1Lang.code]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [visible, word, lemma, l2Lang.code, l1Lang.code]);
+
+  const lemmaForm = lemma && lemma !== word ? lemma : null;
 
   return (
     <Dialog.Root open={visible} onOpenChange={(v) => { if (!v) onClose(); }}>
       <Dialog.Portal>
         <Dialog.SheetContent testID="dictionary-popup">
-          {/* Header */}
+          {/* Header — surface form as headline, lemma below when different (matches web) */}
           <View className="mb-3 flex-row items-center justify-between">
-            <Text className="text-lg font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
-              {word}
-            </Text>
+            <View className="flex-1 mr-2">
+              <Text className="text-lg font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
+                {word}
+              </Text>
+              {lemmaForm && (
+                <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                  lemma: {lemmaForm}
+                </Text>
+              )}
+            </View>
             <Dialog.Close className="rounded-full bg-muted p-1.5">
               <Text className="text-base text-muted-foreground">✕</Text>
             </Dialog.Close>
