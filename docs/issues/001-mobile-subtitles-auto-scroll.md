@@ -3,7 +3,7 @@
 ## Metadata
 - **Issue ID**: ISSUE-001
 - **Date**: 2026-07-28
-- **Status**: open — root cause confirmed, fix specified (pending implementation)
+- **Status**: open — root cause confirmed, partial fix applied, remaining issues documented below
 - **Platform**: Mobile (React Native / Expo, FlatList-based)
 - **Components affected**:
   - `apps/mobile/hooks/use-transcript-auto-scroll.ts`
@@ -169,6 +169,43 @@ const effectiveFullyOut = isFullyOut || (
 | 1 | Solution A — Better estimate based on `showTranslation` | ✅ Yes | ⚠️ Mostly (large fonts may still be off) |
 | 2 | Solution B — Dynamic measurement via `onLayout` | ✅ Yes | ✅ Yes |
 | 3 | Solution C — Safety net for runaway activeIndex | — | 🛡️ Prevents silent failure in any future regression |
+
+## Implementation Notes (2026-07-28)
+
+### What Was Implemented
+
+**Commit `b5b35cac`** applied Solutions A + B together:
+
+1. **Removed `ESTIMATED_ITEM_HEIGHT = 48`** from the hook; it now accepts `estimatedItemHeight` as an option parameter (default 48).
+2. **Dynamic measurement via `onLayout`**: each `Pressable` in `SubtitleDisplay` reports its real rendered height. The maximum observed height is used for both `getItemLayout` and the auto-scroll hook. Falls back to `showTranslation ? 100 : 56` until the first measurement arrives.
+3. **User cooldown protection**: two changes to prevent auto-scroll from fighting manual scrolling:
+   - `onScroll` does not update `lastFirstVisible` (the effect trigger) while the user is in cooldown
+   - `isFullyOut` is suppressed to `false` during cooldown before passing to `decideAutoScroll`, preventing the "fully out = emergency" bypass from overriding user intent
+4. **Debug display**: each subtitle line shows `#i · y≈Xpx` in `__DEV__` mode. The hook's debug log now includes `itemH`, `effOut`, and `userCooldown` fields.
+
+### What Works ✅
+
+- Auto-scroll now fires at the **correct line**. With translations visible, the active line triggers a scroll around index 3–4 (when it reaches the bottom of the visible 4-line viewport), rather than waiting until index 9.
+- The item height measurement via `onLayout` works correctly — `measuredItemHeight` converges to the actual rendered height within the first few frames.
+- Visibility math is now accurate: `containerHeight / actualItemHeight ≈ actual visible count`.
+
+### What Does NOT Work ❌
+
+**Problem 1: Aggressive / runaway scrolling.** After the initial scroll fires correctly, the list begins scrolling too frequently. After several scrolls, the active line ends up **above the viewport** (negative y-offset relative to the visible area). This suggests the `lastFirstVisible` epoch mechanism is causing repeated re-evaluations that drive the scroll position past the correct target.
+
+**Hypothesis**: `scrollToIndex` with `viewPosition: 0.5` centers the active line, but `computeFirstVisible()` (using `scrollY / itemHeight`) may compute a `firstVisible` that still shows the line at the edge, triggering another scroll. Combined with `isFullyOut` bypassing throttle when the line appears to be "out of view" (due to the math discrepancy between `getItemLayout` positions and real positions), this creates a feedback loop.
+
+**Problem 2: Snap-back on user scroll still occurs.** Despite the cooldown protection, there are scenarios where user scroll is overridden. This may happen when `activeIndex` advances (video playing) during user scroll — the effect triggered by the `activeIndex` dependency uses `scrollYRef.current` (which reflects the user's manual scroll position), finds `isFullyOut=true`, and `effectiveFullyOut` is correctly suppressed. But if the effect also fires due to `lastFirstVisible` changing from a prior auto-scroll event, the timing may still cause a snap-back.
+
+**Problem 3: `getItemLayout` / real position mismatch.** Items have variable heights (different line lengths, some with wrapped text). `getItemLayout` uses a uniform `measuredItemHeight` (the maximum observed height), so computed offsets don't match real cumulative positions. This causes `scrollToIndex` to land at slightly wrong positions (mitigated by `onScrollToIndexFailed`, but the error accumulates across multiple scrolls).
+
+### What To Try Next
+
+1. **Investigate the `lastFirstVisible` feedback loop**: add logging to track how many times the scroll effect fires per activeIndex advance, and whether `lastFirstVisible` changes are causing redundant re-evaluations.
+2. **Consider ditching `lastFirstVisible` as an effect dependency**: the scroll effect should only fire on `activeIndex` changes. Scroll-position-based visibility should be read from refs (not state) inside the effect, so scroll events don't trigger re-evaluation.
+3. **Try `viewPosition: 0` (top-align)** instead of `0.5` (center). Top-aligning means the active line is always at the top edge, which gives more predictable `isNearEdge` behavior.
+4. **Consider using `scrollToOffset` with a computed target** instead of `scrollToIndex`, to avoid the `getItemLayout` vs real-position mismatch.
+5. **Revisit whether `onViewableItemsChanged` could work now** that item heights are correct. With accurate `getItemLayout`, FlatList's native viewability tracker should report correct ranges — the original mount-time race condition may no longer be an issue.
 
 ## Related Files
 
