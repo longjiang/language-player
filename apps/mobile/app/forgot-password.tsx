@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, Pressable, ActivityIndicator, Keyboard } from 'react-native';
 import { router } from 'expo-router';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
 import { ICON_ON_PRIMARY } from '@/lib/theme-colors';
@@ -15,6 +15,7 @@ export default function ForgotPasswordScreen() {
   const [sent, setSent] = useState(false);
 
   const handleRequestReset = async () => {
+    Keyboard.dismiss();
     setError(null);
     setLoading(true);
     try {
