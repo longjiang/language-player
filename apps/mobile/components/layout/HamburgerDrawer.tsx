@@ -1,8 +1,10 @@
-import React from 'react';
-import { View, Text, Pressable, ScrollView, useWindowDimensions } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import {
+  View, Text, Pressable, ScrollView, useWindowDimensions,
+  Modal, Animated,
+} from 'react-native';
 import { router } from 'expo-router';
 import { useT } from '@/hooks/use-t';
-import * as Dialog from '@/components/ui/dialog';
 import {
   Compass, Music, Tv, Clapperboard, History, Upload,
   FileText, BookMarked, Bookmark, RotateCcw, Globe, BookOpen,
@@ -85,38 +87,76 @@ export function HamburgerDrawer({ open, onClose, headerHeight }: HamburgerDrawer
   const { width: screenWidth } = useWindowDimensions();
   const drawerWidth = Math.min(256, screenWidth * 0.6);
 
-  return (
-    <Dialog.Root open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <Dialog.Portal forceMount overlay={false}>
-        {/* Overlay — fades in/out behind the drawer */}
-        <Dialog.Overlay open={open} className="bg-black/20" closeOnPress />
+  // Animated value for slide-in from the right
+  const translateX = useRef(new Animated.Value(drawerWidth)).current;
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
 
-        {/* Drawer panel — slides in from the right below the header */}
-        <Dialog.DrawerContent open={open} topOffset={headerHeight} drawerWidth={drawerWidth}>
-          <ScrollView className="flex-1">
-            {NAV_GROUPS.map((group) => (
-              <View key={group.label} className="mb-4">
-                <Text className="mb-1 px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  {t(`nav.${group.label.toLowerCase()}` as any)}
-                </Text>
-                {group.links.map((link) => (
-                  <Pressable
-                    key={link.href}
-                    className="flex-row items-center gap-3 rounded-lg px-3 py-2 active:bg-muted"
-                    onPress={() => {
-                      onClose();
-                      router.push(link.href as any);
-                    }}
-                  >
-                    <View className="opacity-100">{NAV_ICONS[iconKey(link.href)]}</View>
-                    <Text className="text-sm text-foreground">{t(link.key)}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            ))}
-          </ScrollView>
-        </Dialog.DrawerContent>
-      </Dialog.Portal>
-    </Dialog.Root>
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: open ? 0 : drawerWidth,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(overlayOpacity, {
+        toValue: open ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [open, translateX, overlayOpacity, drawerWidth]);
+
+  return (
+    <Modal
+      transparent
+      visible={open}
+      animationType="none"
+      onRequestClose={onClose}
+      supportedOrientations={['portrait', 'landscape']}
+    >
+      {/* Semi-transparent overlay — tap to close */}
+      <Animated.View
+        pointerEvents={open ? 'auto' : 'none'}
+        className="absolute inset-0 bg-black/20"
+        style={{ opacity: overlayOpacity }}
+      >
+        <Pressable className="flex-1" onPress={onClose} />
+      </Animated.View>
+
+      {/* Drawer panel — slides in from the right below the header */}
+      <Animated.View
+        className="absolute bg-background border-l border-border shadow-lg"
+        style={{
+          top: headerHeight,
+          bottom: 0,
+          right: 0,
+          width: drawerWidth,
+          transform: [{ translateX }],
+        }}
+      >
+        <ScrollView className="flex-1 p-4">
+          {NAV_GROUPS.map((group) => (
+            <View key={group.label} className="mb-4">
+              <Text className="mb-1 px-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {t(`nav.${group.label.toLowerCase()}` as any)}
+              </Text>
+              {group.links.map((link) => (
+                <Pressable
+                  key={link.href}
+                  className="flex-row items-center gap-3 rounded-lg px-3 py-2 active:bg-muted"
+                  onPress={() => {
+                    onClose();
+                    router.push(link.href as any);
+                  }}
+                >
+                  <View className="opacity-100">{NAV_ICONS[iconKey(link.href)]}</View>
+                  <Text className="text-sm text-foreground">{t(link.key)}</Text>
+                </Pressable>
+              ))}
+            </View>
+          ))}
+        </ScrollView>
+      </Animated.View>
+    </Modal>
   );
 }
