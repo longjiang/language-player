@@ -1,10 +1,11 @@
-import React, { useRef, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useRef, useEffect, useMemo, useState } from 'react';
 import { View, Text, FlatList, Pressable } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { TokenizedText } from '../TokenizedText';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { SCROLL } from '@langplayer/shared';
 import type { SubtitleLine, SubtitleSyncedLine, TokenCache, LemmatizedToken } from '@langplayer/shared';
 
 interface SimpleSubsForDebugProps {
@@ -20,6 +21,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
   const { l1Lang, l2Lang } = useLanguage();
   const { display, playback } = useSettingsContext();
   const flatListRef = useRef<FlatList>(null);
+  const userScrolledUntil = useRef(0);
 
   // Convert SyncedLine[] → SubtitleLine[] for the translation hook
   const subtitleLines: SubtitleLine[] = useMemo(
@@ -79,11 +81,14 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
       });
   }, [lines, l2Lang.code, tokenCache, tokenCacheLoaded]);
 
+  const onScrollBeginDrag = useCallback(() => {
+    userScrolledUntil.current = Date.now() + SCROLL.USER_COOLDOWN_MS;
+  }, []);
+
   useEffect(() => {
-    console.log(`[SimpleSubsForDebug] activeLineIndex: ${activeLineIndex}`);
-    if (activeLineIndex >= 0) {
-      flatListRef.current?.scrollToIndex({ index: activeLineIndex, animated: true, viewPosition: 0.5 });
-    }
+    if (activeLineIndex < 0) return;
+    if (Date.now() < userScrolledUntil.current) return;
+    flatListRef.current?.scrollToIndex({ index: activeLineIndex, animated: true, viewPosition: 0.5 });
   }, [activeLineIndex]);
 
   return (
@@ -98,6 +103,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
         ref={flatListRef}
         data={displayLines}
         keyExtractor={(_, i) => String(i)}
+        onScrollBeginDrag={onScrollBeginDrag}
         onScrollToIndexFailed={(info) => {
           flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
         }}
