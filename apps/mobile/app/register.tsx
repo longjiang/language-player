@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, Pressable, ActivityIndicator, Keyboard } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { PLACEHOLDER_COLOR } from '@/lib/theme-colors';
@@ -19,6 +19,7 @@ export default function RegisterScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const handleRegister = async () => {
+    Keyboard.dismiss();
     setError(null);
 
     if (password !== confirmPassword) {
@@ -78,6 +79,8 @@ export default function RegisterScreen() {
         placeholder={t('placeholder.email')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         autoCapitalize="none"
+        autoCorrect={false}
+        spellCheck={false}
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
@@ -89,6 +92,8 @@ export default function RegisterScreen() {
         placeholder={t('placeholder.password_min')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         secureTextEntry
+        textContentType="none"
+        autoComplete="new-password"
         value={password}
         onChangeText={setPassword}
         {...e2e('register-password-input')}
@@ -99,6 +104,8 @@ export default function RegisterScreen() {
         placeholder={t('placeholder.confirm_password')}
         placeholderTextColor={PLACEHOLDER_COLOR}
         secureTextEntry
+        textContentType="none"
+        autoComplete="new-password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         {...e2e('register-confirm-password-input')}
