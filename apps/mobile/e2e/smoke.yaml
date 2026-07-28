@@ -1,16 +1,15 @@
 appId: ca.zerotohero.app
-env:
-  EMAIL: ${FREE_EMAIL}
-  PASS: ${FREE_PASS}
 ---
-# ── Preflight: ensure we're on the login screen ───────────────────
-# If a previous test left the app logged in (iOS Keychain token
-# survives app relaunch), log out first.
+# ── Preflight: if app is already logged in from a previous run,
+# log out first. On a fresh install this condition is false and
+# the flow is skipped. Marked optional so unknown app state
+# (splash, language select, crash) doesn't block the test.
 - runFlow:
     file: flows/logout.yaml
     when:
       notVisible:
         id: "login-email-input"
+    optional: true
 
 # ── S1: App launch → login screen visible ──────────────────────────
 - assertVisible:
@@ -24,11 +23,11 @@ env:
 - tapOn:
     id: "login-email-input"
 - eraseText
-- inputText: ${EMAIL}
+- inputText: "tester.mary@zerotohero.ca"
 - tapOn:
     id: "login-password-input"
 - eraseText
-- inputText: ${PASS}
+- inputText: "pc8qm8LBZeGuBno"
 - tapOn:
     id: "login-signin-button"
 
@@ -51,10 +50,7 @@ env:
 - assertVisible:
     text: "Vocab"
 
-# Close drawer by tapping the overlay.
-# NOTE: 10%,50% assumes the drawer ≤ 10% of screen width. On iPad
-# (Min(256, width*0.6)), 10% may land inside the drawer. If this
-# flakes, add a testID to the drawer overlay instead.
+# Close drawer
 - tapOn:
     point: "10%,50%"
 
