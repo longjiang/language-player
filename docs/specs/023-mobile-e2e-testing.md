@@ -713,7 +713,7 @@ Before shipping the E2E testing pipeline:
 
 #### Phase 2 Learnings
 
-- `eraseText` is unreliable with React Native TextInput under Fabric — it doesn't always clear the field. Use `tapOn repeat: 3` (triple-tap) instead, which selects all text, so `inputText` replaces rather than appends.
+- `eraseText` works reliably with React Native TextInput under Fabric. Focus the input with `tapOn` first, then `eraseText` removes up to 50 characters via simulated backspace. No long-press or "Select All" needed — Fabric doesn't show the native iOS context menu. See [Maestro docs](https://docs.maestro.dev/reference/commands-available/erasetext.md).
 - Maestro has no `clearState` on iOS — Keychain persists across runs, but the "Not Now" dialog means autofill isn't the culprit. The login screen component stays alive in Expo Router's modal stack, so `useState` values persist between navigations.
 - All text assertions must match the actual English output of `t('key')` from `translations.csv`, not guessed strings.
 - Flask API error messages (`"Invalid credentials"`, `"Registration failed"`) are not from translations — they come from the server.
@@ -721,7 +721,7 @@ Before shipping the E2E testing pipeline:
 - RunFlow paths in `screens/` subdirectory must be relative to that directory — use `../flows/` prefix for flows in the parent `e2e/flows/` directory.
 - **Keyboard dismiss with Fabric**: Maestro's `hideKeyboard` command fails on React Native New Architecture (Fabric) — it returns "Couldn't hide the keyboard. This can happen if the app uses a custom input or doesn't expose a standard dismiss action." Several workarounds were tried:
   - `tapOn: point:` at the top of the screen — ❌ React Native `<Text>` elements aren't tappable by default, so the tap doesn't reach UIKit's `endEditing:`.
-  - `KeyboardAvoidingView` with `behavior="padding"` — ⚠️ caused layout shifts during `repeat: 3` triple-tap: the first tap opens the keyboard, the view shifts, taps 2-3 land on a different field.
+  - `KeyboardAvoidingView` with `behavior="padding"` — ⚠️ caused layout shifts: the first tap opens the keyboard, the view shifts, and the second `eraseText` land on the wrong position.
   - `Keyboard.dismiss()` in form submit handlers — ✅ works but only helps AFTER the button is tapped, not BEFORE (keyboard still obscures the button).
   - **Winner**: Wrapping the title `<Text>` in a `<Pressable onPress={() => Keyboard.dismiss()}>` with `testID="dismiss-keyboard"`. Maestro taps this by `id:` before every button tap, which reliably dismisses the keyboard through the native touch responder. No side effects, no layout shift. Document this pattern in `lib/e2e.ts` as the standard way to dismiss keyboard in tests.
 
