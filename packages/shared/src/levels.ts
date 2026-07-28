@@ -9,7 +9,7 @@ export const LEVEL_HEX_COLORS: Record<number, string> = {
   4: '#bb1718',  // HSK 4 — dark red
   5: '#1b3e76',  // HSK 5 — navy
   6: '#6a3669',  // HSK 6 — purple
-  7: '#e11d48',  // rose-600 (extends palette beyond HSK)
+  7: '#0ea5e9',  // sky-500 (was rose-600, confused with level 4's dark red)
 };
 
 // ── Scale Registry ────────────────────────────
