@@ -758,6 +758,7 @@ Before shipping the E2E testing pipeline:
   - tapOn:
       text: "English"
   ```
+- **Navigation stack corruption**: `router.replace('/login')` from a screen pushed within a modal (e.g., forgot-password pushed from the login modal) creates a nested duplicate login screen, corrupting `SafeAreaInsets`. The header shifts down ~100px and dropdown menus render offscreen. **Fix**: `router.back()` to pop back to the original login screen. This is safe: logout from tabs uses `replace` because it replaces the root Stack, not a modal.
 
 ### Phase 3: Media Tab (Week 4)
 - Write media suite (Tier 2: M1-M16) as Maestro YAML flows
