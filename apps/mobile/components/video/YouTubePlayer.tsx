@@ -64,18 +64,16 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const onStateChangeRef = useRef(onStateChange);
     onStateChangeRef.current = onStateChange;
 
-    // Time polling while playing
+    // Time polling while playing or paused (to catch seeks)
     useEffect(() => {
-      if (playerState === 'playing') {
-        pollRef.current = setInterval(async () => {
-          try {
-            const t = await playerRef.current?.getCurrentTime();
-            if (t != null) { timeRef.current = t; onTimeUpdateRef.current?.(t); }
-          } catch {}
-        }, 500);
-        return () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; } };
-      }
-    }, [playerState]);
+      pollRef.current = setInterval(async () => {
+        try {
+          const t = await playerRef.current?.getCurrentTime();
+          if (t != null) { timeRef.current = t; onTimeUpdateRef.current?.(t); }
+        } catch {}
+      }, 500);
+      return () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; } };
+    }, []);
 
     useImperativeHandle(ref, () => ({
       // No-op on iOS — programmatic play/pause doesn't reach the YouTube

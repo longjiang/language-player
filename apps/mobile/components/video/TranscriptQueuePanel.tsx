@@ -3,21 +3,24 @@ import { useT } from '@/hooks/use-t';
 import { TabbedPanel, type TabDef } from '../TabbedPanel';
 
 interface TranscriptQueuePanelProps {
+  video?: ReactNode;
   transcript: ReactNode;
   queue: ReactNode;
   info?: ReactNode;
-  defaultTab?: 'transcript' | 'queue' | 'info';
+  defaultTab?: 'video' | 'transcript' | 'queue' | 'info';
 }
 
 export function TranscriptQueuePanel({
+  video,
   transcript,
   queue,
   info,
-  defaultTab = 'transcript',
+  defaultTab = 'video',
 }: TranscriptQueuePanelProps) {
   const t = useT();
 
   const tabs: TabDef[] = [
+    { key: 'video', label: 'Video' },
     { key: 'transcript', label: t('title.transcript') },
     { key: 'queue', label: t('title.queue') },
   ];
@@ -27,6 +30,7 @@ export function TranscriptQueuePanel({
 
   return (
     <TabbedPanel tabs={tabs} defaultTab={defaultTab}>
+      {video}
       {transcript}
       {queue}
       {info}
