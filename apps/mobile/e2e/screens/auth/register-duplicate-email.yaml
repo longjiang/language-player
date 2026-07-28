@@ -1,0 +1,53 @@
+appId: ca.zerotohero.app
+env:
+  FLOW: "A7"
+---
+# ════════════════════════════════════════════════════════════════════
+# A7: Register — duplicate email
+#
+# Test that registering with an existing email shows an error and
+# the user stays on the register screen.
+# ════════════════════════════════════════════════════════════════════
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Navigate to register screen ────────────────────────────────────
+- runFlow:
+    file: ../../flows/navigate-to-register.yaml
+
+# ── Fill fields with existing email ────────────────────────────────
+- tapOn:
+    id: "register-firstname-input"
+- eraseText
+- inputText: "E2E"
+- tapOn:
+    id: "register-lastname-input"
+- eraseText
+- inputText: "Test"
+- tapOn:
+    id: "register-email-input"
+- eraseText
+- inputText: "tester.mary@zerotohero.ca"
+- tapOn:
+    id: "register-password-input"
+- eraseText
+- inputText: "password123"
+- tapOn:
+    id: "register-confirm-password-input"
+- eraseText
+- inputText: "password123"
+
+# Dismiss keyboard before tapping create button
+- tapOn:
+    id: "dismiss-keyboard"
+- tapOn:
+    id: "register-create-button"
+
+# ── Assert: error prevented navigation, stay on register screen ────
+# The server error message varies by Directus version (e.g., "Email
+# already exists"). The behavioral assertion is that we stay on the
+# register screen — the button is still visible.
+- assertVisible:
+    id: "register-create-button"

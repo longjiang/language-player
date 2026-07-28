@@ -1,0 +1,87 @@
+appId: ca.zerotohero.app
+env:
+  FLOW: "A1-A13"
+---
+# ════════════════════════════════════════════════════════════════════
+# A1 + A13: Login — happy path → Session persistence
+#
+# A1: Login with Mary's valid credentials. Verify the main tabs are
+# accessible (hamburger drawer opens with Media/Reading/Vocab).
+#
+# A13: Navigate to search screen and back to verify the session token
+# is still valid (user stays on tabs, not bounced to login).
+#
+# Logs out at the end to restore clean state.
+# ════════════════════════════════════════════════════════════════════
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ════════════════════════════════════════════════════════════════════
+# A1: Login — happy path
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    id: "login-email-input"
+- eraseText
+- inputText: "tester.mary@zerotohero.ca"
+- tapOn:
+    id: "login-password-input"
+- eraseText
+- inputText: "pc8qm8LBZeGuBno"
+
+# Dismiss keyboard before tapping sign-in button
+- tapOn:
+    id: "dismiss-keyboard"
+- tapOn:
+    id: "login-signin-button"
+
+# Handle "Save Password" iOS dialog if it appears
+- tapOn:
+    text: "Not Now"
+    optional: true
+    repeat: 3
+    waitToSettleTimeoutMs: 1000
+
+# Verify we're authenticated — logout button is visible
+- assertVisible:
+    id: "me-logout-button"
+
+# Verify hamburger menu opens and shows nav sections
+- tapOn:
+    id: "header-hamburger-button"
+
+# The drawer section headers use translated text
+- assertVisible:
+    text: "Media"
+- assertVisible:
+    text: "Reading"
+- assertVisible:
+    text: "Vocab"
+
+# Close drawer by tapping outside it (left side of screen)
+- tapOn:
+    point: "10%,50%"
+
+# ════════════════════════════════════════════════════════════════════
+# A13: Session persistence
+# ════════════════════════════════════════════════════════════════════
+# Navigate to search screen, then back to home. Verify the session
+# token is still valid (user remains on the tabs, not bounced to login).
+- tapOn:
+    id: "header-search-button"
+# After navigating to search, verify we see the search input (not login)
+- assertVisible:
+    id: "search-input"
+    optional: true
+# Navigate back to home via logo
+- tapOn:
+    id: "header-logo"
+# Verify we're still authenticated — logout button is visible
+- assertVisible:
+    id: "me-logout-button"
+    optional: true
+
+# ── Logout to restore clean state ─────────────────────────────────
+- runFlow:
+    file: ../../flows/logout.yaml

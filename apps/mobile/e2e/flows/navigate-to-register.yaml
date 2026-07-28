@@ -1,0 +1,13 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# Navigate from login screen to register screen.
+#
+# Prerequisite: login screen is visible (login-email-input).
+# Postcondition: register screen is visible (register-firstname-input).
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    text: "Don't have an account?"
+    optional: true
+- assertVisible:
+    id: "register-firstname-input"

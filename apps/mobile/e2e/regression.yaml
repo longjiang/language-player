@@ -23,6 +23,8 @@ appId: ca.zerotohero.app
 # ── Tier 1: Auth & Onboarding (~5min) ──────────────────────────────
 - runFlow:
     file: screens/auth.yaml
+    # Sequencer runs 10 individual test files in order.
+    # Run individually: maestro test e2e/screens/auth/<file>.yaml
 
 # ── Tier 2: Media Tab (~10min) — not yet implemented ───────────────
 # - runFlow:

@@ -3,9 +3,9 @@ appId: ca.zerotohero.app
 # ════════════════════════════════════════════════════════════════════
 # Reusable login flow using Mary's test credentials.
 #
-# ⚠️  `repeat: 3` before `inputText` selects all existing text so
-# the new value replaces rather than appends. Required because
-# `eraseText` is unreliable under Fabric.
+# `eraseText` clears the field before typing. Works reliably with
+# React Native TextInput under Fabric — focus with tapOn, then
+# eraseText (up to 50 chars via simulated backspace), then inputText.
 #
 # Prerequisite: login screen is visible (login-email-input).
 # Postcondition: user is authenticated, me-logout-button is visible.
@@ -14,11 +14,11 @@ appId: ca.zerotohero.app
     id: "login-email-input"
 - tapOn:
     id: "login-email-input"
-    repeat: 3
+- eraseText
 - inputText: "tester.mary@zerotohero.ca"
 - tapOn:
     id: "login-password-input"
-    repeat: 3
+- eraseText
 - inputText: "pc8qm8LBZeGuBno"
 # Dismiss keyboard before tapping sign-in button
 - tapOn:

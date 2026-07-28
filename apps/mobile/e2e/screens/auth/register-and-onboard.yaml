@@ -1,0 +1,101 @@
+appId: ca.zerotohero.app
+env:
+  FLOW: "A4-A12"
+  REGISTER_EMAIL: "e2e.register.test@zerotohero.ca"
+---
+# ════════════════════════════════════════════════════════════════════
+# A4 + A12: Register — happy path → Select Language (new user)
+#
+# A4: Creates a new account via the register form. After successful
+# registration, the app auto-navigates to language selection (A12).
+#
+# A12: Selects English as L1 and Spanish as L2, completes onboarding.
+# The user lands on the main tabs. Then logs out to restore clean state.
+#
+# Uses a fixed test email. Override via --env-file:
+#   maestro test ... --env REGISTER_EMAIL=new@example.com
+# ════════════════════════════════════════════════════════════════════
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Navigate to register screen ────────────────────────────────────
+- runFlow:
+    file: ../../flows/navigate-to-register.yaml
+
+# ── Fill all fields ────────────────────────────────────────────────
+- tapOn:
+    id: "register-firstname-input"
+- eraseText
+- inputText: "E2E"
+- tapOn:
+    id: "register-lastname-input"
+- eraseText
+- inputText: "Test"
+- tapOn:
+    id: "register-email-input"
+- eraseText
+- inputText: "${REGISTER_EMAIL}"
+- tapOn:
+    id: "register-password-input"
+- eraseText
+- inputText: "password123"
+- tapOn:
+    id: "register-confirm-password-input"
+- eraseText
+- inputText: "password123"
+
+# Dismiss keyboard before tapping create button
+- tapOn:
+    id: "dismiss-keyboard"
+- tapOn:
+    id: "register-create-button"
+
+# ════════════════════════════════════════════════════════════════════
+# A12: Select Language (new user — redirected after registration)
+# ════════════════════════════════════════════════════════════════════
+- assertVisible:
+    id: "picker-l1-tab"
+
+# Scroll to find "English" in the list and tap it
+- scrollUntilVisible:
+    element:
+      text: "English"
+    direction: DOWN
+    timeout: 5000
+    speed: 40
+- tapOn:
+    text: "English"
+
+# Tap "Next" to go to L2 tab
+- assertVisible:
+    id: "picker-next-button"
+- tapOn:
+    id: "picker-next-button"
+
+# Select "Spanish" as L2
+- assertVisible:
+    id: "picker-l2-tab"
+- scrollUntilVisible:
+    element:
+      text: "Spanish"
+    direction: DOWN
+    timeout: 5000
+    speed: 40
+- tapOn:
+    text: "Spanish"
+
+# Tap "Confirm" to finish onboarding
+- assertVisible:
+    id: "picker-confirm-button"
+- tapOn:
+    id: "picker-confirm-button"
+
+# After confirmation, land on main tabs
+- assertVisible:
+    id: "me-logout-button"
+
+# ── Logout to restore clean state ─────────────────────────────────
+- runFlow:
+    file: ../../flows/logout.yaml

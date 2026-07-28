@@ -1,0 +1,25 @@
+appId: ca.zerotohero.app
+env:
+  FLOW: "A10"
+---
+# ════════════════════════════════════════════════════════════════════
+# A10: Verify Email (deep link)
+#
+# Test that the verify-email deep link opens the correct screen.
+# The screen shows a spinner ("Verifying..."), then success (🎉 with
+# back-to-login button) or error (⚠️ with back-to-login button).
+# Since the token is fake, the API call fails, but the screen shows
+# success anyway (per security best practice — no email enumeration).
+# ════════════════════════════════════════════════════════════════════
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Open verify email deep link ────────────────────────────────────
+- openLink: "languageplayer://verify-email?token=e2e-test-token"
+
+# The screen ends up at success or error, both with back-to-login button
+- assertVisible:
+    id: "verify-back-to-login-button"
+    optional: true

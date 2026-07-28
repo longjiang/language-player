@@ -1,330 +1,63 @@
 appId: ca.zerotohero.app
-env:
-  REGISTER_EMAIL: "e2e.register.test@zerotohero.ca"
 ---
 # ════════════════════════════════════════════════════════════════════
 # Tier 1 — Auth & Onboarding (A1–A13)
-# ════════════════════════════════════════════════════════════════════
 #
-# ⚠️  Order matters — tests are interdependent due to iOS Keychain
-# persistence (survives app deletion). The suite must run sequentially
-# from a CLEAN simulator state:
-#   xcrun simctl uninstall booted ca.zerotohero.app
-#   xcrun simctl install booted <path>/ZeroToHero.app
+# Sequencer: runs each individual test file in order. Each test is
+# self-contained with its own preflight and cleanup, so they can also
+# be run independently:
 #
-# ⚠️  `repeat: 3` before `inputText` is REQUIRED on every field.
-# React Native TextInput under Fabric does not reliably clear with
-# `eraseText`. Triple-tap selects all text so `inputText` replaces.
+#   maestro test apps/mobile/e2e/screens/auth/login-happy-path.yaml
+#
+# ⚠️  Order-dependent for performance on sequential runs — earlier
+# tests set up state (register, login) that later tests reuse.
+# Each starts with preflight-check that handles any state.
 #
 # Flow order:
-#  1. A2/A3 run FIRST (no prior login → no iOS autofill → clean fields)
-#  2. Register tests (A5-A7, A4) — no iOS autofill for registration
-#  3. A12 onboards new user
-#  4. A1 login (now iOS may offer autofill, but we log in only once)
-#  5. Remaining tests (A8, A13, A9, A10)
+#  1. A2/A3 — validation before any login (clean fields)
+#  2. A5-A7 — register validation (no autofill interference)
+#  3. A4+A12 — happy path register + onboard new user, then logout
+#  4. A8 — forgot password
+#  5. A1+A13 — login happy path + session persistence, then logout
+#  6. A9, A10 — deep link tests
 # ════════════════════════════════════════════════════════════════════
 
-# ── Preflight: ensure we're on the login screen ─────────────────────
+# ── A2: Login — invalid credentials ─────────────────────────────────
 - runFlow:
-    file: ../flows/logout.yaml
-    when:
-      notVisible:
-        id: "login-email-input"
-    optional: true
+    file: auth/login-invalid-credentials.yaml
 
-# ════════════════════════════════════════════════════════════════════
-# A2: Login — invalid credentials (runs BEFORE any successful login
-# to avoid iOS autofill corrupting the email field)
-# ════════════════════════════════════════════════════════════════════
-- tapOn:
-    id: "login-email-input"
-    repeat: 3
-- inputText: "tester.mary@zerotohero.ca"
-- tapOn:
-    id: "login-password-input"
-    repeat: 3
-- inputText: "wrongpassword123"
-# Dismiss keyboard before tapping sign-in
-- tapOn:
-    id: "dismiss-keyboard"
-- tapOn:
-    id: "login-signin-button"
-- assertVisible:
-    text: "Invalid credentials"
-- assertVisible:
-    id: "login-email-input"
-# Dismiss keyboard before next test
-- tapOn:
-    id: "dismiss-keyboard"
+# ── A3: Login — empty fields ────────────────────────────────────────
+- runFlow:
+    file: auth/login-empty-fields.yaml
 
-# ════════════════════════════════════════════════════════════════════
-# A3: Login — empty fields
-# ════════════════════════════════════════════════════════════════════
-- tapOn:
-    id: "login-signin-button"
-- assertVisible:
-    id: "login-email-input"
-- tapOn:
-    id: "dismiss-keyboard"
+# ── A5: Register — password mismatch ────────────────────────────────
+- runFlow:
+    file: auth/register-password-mismatch.yaml
 
-# ════════════════════════════════════════════════════════════════════
-# Navigate to Register screen
-# ════════════════════════════════════════════════════════════════════
-- tapOn:
-    text: "Don't have an account?"
-- assertVisible:
-    id: "register-firstname-input"
+# ── A6: Register — weak password ───────────────────────────────────
+- runFlow:
+    file: auth/register-weak-password.yaml
 
-# ════════════════════════════════════════════════════════════════════
-# A5: Register — password mismatch (client-side validation)
-# ════════════════════════════════════════════════════════════════════
-- tapOn:
-    id: "register-firstname-input"
-    repeat: 3
-- inputText: "E2E"
-- tapOn:
-    id: "register-lastname-input"
-    repeat: 3
-- inputText: "Test"
-- tapOn:
-    id: "register-email-input"
-    repeat: 3
-- inputText: "a5-test@zerotohero.ca"
-- tapOn:
-    id: "register-password-input"
-    repeat: 3
-- inputText: "password123"
-- tapOn:
-    id: "register-confirm-password-input"
-    repeat: 3
-- inputText: "different456"
-# Dismiss keyboard before tapping create button
-- tapOn:
-    id: "dismiss-keyboard"
-- tapOn:
-    id: "register-create-button"
-- assertVisible:
-    text: "Passwords do not match"
-- assertVisible:
-    id: "register-create-button"
-- tapOn:
-    id: "dismiss-keyboard"
+# ── A7: Register — duplicate email ─────────────────────────────────
+- runFlow:
+    file: auth/register-duplicate-email.yaml
 
-# ════════════════════════════════════════════════════════════════════
-# A6: Register — weak password
-# ════════════════════════════════════════════════════════════════════
-- tapOn:
-    id: "register-password-input"
-    repeat: 3
-- inputText: "short"
-- tapOn:
-    id: "register-confirm-password-input"
-    repeat: 3
-- inputText: "short"
-# Dismiss keyboard before tapping create button
-- tapOn:
-    id: "dismiss-keyboard"
-- tapOn:
-    id: "register-create-button"
-# Note: Directus may accept short passwords, so this test checks
-# that the register button is still visible (no navigation away).
-- assertVisible:
-    id: "register-create-button"
-- tapOn:
-    id: "dismiss-keyboard"
+# ── A4 + A12: Register happy path + Select Language ─────────────────
+- runFlow:
+    file: auth/register-and-onboard.yaml
 
-# ════════════════════════════════════════════════════════════════════
-# A7: Register — duplicate email
-# ════════════════════════════════════════════════════════════════════
-- tapOn:
-    id: "register-email-input"
-    repeat: 3
-- inputText: "tester.mary@zerotohero.ca"
-- tapOn:
-    id: "register-password-input"
-    repeat: 3
-- inputText: "password123"
-- tapOn:
-    id: "register-confirm-password-input"
-    repeat: 3
-- inputText: "password123"
-# Dismiss keyboard before tapping create button
-- tapOn:
-    id: "dismiss-keyboard"
-- tapOn:
-    id: "register-create-button"
-- assertVisible:
-    text: "Registration failed"
-- assertVisible:
-    id: "register-create-button"
-- tapOn:
-    id: "dismiss-keyboard"
+# ── A8: Forgot Password ────────────────────────────────────────────
+- runFlow:
+    file: auth/forgot-password.yaml
 
-# ════════════════════════════════════════════════════════════════════
-# A4: Register — happy path
-# ════════════════════════════════════════════════════════════════════
-# Uses a fixed test email. Override via --env-file:
-#   maestro test ... --env REGISTER_EMAIL=new@example.com
-#
-# ⚠️  All fields get `repeat: 3` to replace stale values from A5-A7.
-# The first/last name fields still hold "E2E" / "Test" from A5, so
-# we re-type them to ensure correctness for the new account.
-- tapOn:
-    id: "register-firstname-input"
-    repeat: 3
-- inputText: "E2E"
-- tapOn:
-    id: "register-lastname-input"
-    repeat: 3
-- inputText: "Test"
-- tapOn:
-    id: "register-email-input"
-    repeat: 3
-- inputText: "${REGISTER_EMAIL}"
-- tapOn:
-    id: "register-password-input"
-    repeat: 3
-- inputText: "password123"
-- tapOn:
-    id: "register-confirm-password-input"
-    repeat: 3
-- inputText: "password123"
-# Dismiss keyboard before tapping create button
-- tapOn:
-    id: "dismiss-keyboard"
-- tapOn:
-    id: "register-create-button"
+# ── A1 + A13: Login happy path + Session persistence ────────────────
+- runFlow:
+    file: auth/login-happy-path.yaml
 
-# ════════════════════════════════════════════════════════════════════
-# A12: Select Language (new user — redirected after registration)
-# ════════════════════════════════════════════════════════════════════
-- assertVisible:
-    id: "picker-l1-tab"
+# ── A9: Password Reset (deep link) ──────────────────────────────────
+- runFlow:
+    file: auth/password-reset-deeplink.yaml
 
-# Scroll to find "English" in the list and tap it
-- scrollUntilVisible:
-    element:
-      text: "English"
-    direction: DOWN
-    timeout: 5000
-    speed: 40
-- tapOn:
-    text: "English"
-
-# Tap "Next" to go to L2 tab
-- assertVisible:
-    id: "picker-next-button"
-- tapOn:
-    id: "picker-next-button"
-
-# Select "Spanish" as L2
-- assertVisible:
-    id: "picker-l2-tab"
-- scrollUntilVisible:
-    element:
-      text: "Spanish"
-    direction: DOWN
-    timeout: 5000
-    speed: 40
-- tapOn:
-    text: "Spanish"
-
-# Tap "Confirm" to finish onboarding
-- assertVisible:
-    id: "picker-confirm-button"
-- tapOn:
-    id: "picker-confirm-button"
-
-# After confirmation, land on main tabs
-- assertVisible:
-    id: "me-logout-button"
-
-# ── Logout ─────────────────────────────────────────────────────────
-- tapOn:
-    id: "me-logout-button"
-- assertVisible:
-    id: "login-email-input"
-
-# ════════════════════════════════════════════════════════════════════
-# A8: Forgot Password
-# ════════════════════════════════════════════════════════════════════
-- tapOn:
-    text: "Forgot password?"
-- assertVisible:
-    id: "forgot-email-input"
-- tapOn:
-    id: "forgot-email-input"
-    repeat: 3
-- inputText: "tester.mary@zerotohero.ca"
-# Dismiss keyboard before tapping send button
-- tapOn:
-    id: "dismiss-keyboard"
-- tapOn:
-    id: "forgot-send-button"
-- assertVisible:
-    id: "forgot-back-to-login-button"
-- tapOn:
-    id: "forgot-back-to-login-button"
-- assertVisible:
-    id: "login-email-input"
-
-# ════════════════════════════════════════════════════════════════════
-# A1: Login — happy path
-# ════════════════════════════════════════════════════════════════════
-- tapOn:
-    id: "login-email-input"
-    repeat: 3
-- inputText: "tester.mary@zerotohero.ca"
-- tapOn:
-    id: "login-password-input"
-    repeat: 3
-- inputText: "pc8qm8LBZeGuBno"
-# Dismiss keyboard before tapping sign-in button
-- tapOn:
-    id: "dismiss-keyboard"
-- tapOn:
-    id: "login-signin-button"
-- assertVisible:
-    id: "me-logout-button"
-
-# ════════════════════════════════════════════════════════════════════
-# A13: Session persistence
-# ════════════════════════════════════════════════════════════════════
-# Navigate to search screen, then back to home. Verify the session
-# token is still valid (user remains on the tabs, not bounced to login).
-- tapOn:
-    id: "header-search-button"
-# After navigating to search, verify we see the search input (not login)
-- assertVisible:
-    id: "search-input"
-    optional: true
-# Navigate back to home via logo
-- tapOn:
-    id: "header-logo"
-# Verify we're still authenticated — logout button is visible
-- assertVisible:
-    id: "me-logout-button"
-    optional: true
-
-# ════════════════════════════════════════════════════════════════════
-# A9: Password Reset (deep link)
-# ════════════════════════════════════════════════════════════════════
-- openLink: "languageplayer://password-reset?token=e2e-test-token"
-# The password-reset screen shows "Reset your password" as title.
-# With an invalid token, the screen shows an error message or the
-# reset form. Either way, the screen should render (not crash/blank).
-- assertVisible:
-    text: "Reset your password"
-    optional: true
-
-# ════════════════════════════════════════════════════════════════════
-# A10: Verify Email (deep link)
-# ════════════════════════════════════════════════════════════════════
-- openLink: "languageplayer://verify-email?token=e2e-test-token"
-# The verify-email screen shows a spinner ("Verifying..."), then
-# success (🎉 with back-to-login button) or error (⚠️ with back-to-login
-# button). Since the token is fake, the API call fails, but the screen
-# shows success anyway (per security best practice — no email enumeration).
-- assertVisible:
-    id: "verify-back-to-login-button"
-    optional: true
+# ── A10: Verify Email (deep link) ──────────────────────────────────
+- runFlow:
+    file: auth/verify-email-deeplink.yaml
