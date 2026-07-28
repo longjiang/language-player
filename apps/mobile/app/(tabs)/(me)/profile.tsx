@@ -166,7 +166,7 @@ export default function ProfileScreen() {
   if (!user) {
     return (
       <View className="flex-1 items-center justify-center bg-background px-6 py-6">
-        <Text className="text-center text-sm text-muted-foreground">{t('label.guest')}</Text>
+        <Text className="text-center text-sm text-muted-foreground">{t('label.guest_user')}</Text>
       </View>
     );
   }

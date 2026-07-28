@@ -39,7 +39,7 @@ export default function MeScreen() {
         <Text className="text-lg font-bold text-foreground">
           {user
             ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
-            : t('label.guest')}
+            : t('label.guest_user')}
         </Text>
         {user?.email && (
           <Text className="text-sm text-muted-foreground mt-0.5">
