@@ -49,9 +49,10 @@ appId: ca.zerotohero.app
           id: "header-logo"
       # Try accessibilityLabel — may work through react-native-screens
       # where testID/accessibilityIdentifier does not.
-      - assertVisible:
-          text: "watch screen"
-          optional: true
+      - extendedWaitUntil:
+          visible:
+            text: "watch screen"
+          timeout: 10000
 
 # ── Return to Explore for sequencer chainability ────────────────────
 - tapOn:
