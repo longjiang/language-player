@@ -11,16 +11,11 @@ appId: ca.zerotohero.app
     file: ../../flows/ensure-explore.yaml
 
 # ── Tap the first video card ───────────────────────────────────────
-# VideoGrid has three states: loading (spinner), empty ("No videos"),
-# and populated (VideoCard list). We need to wait for the cards to
-# appear before tapping. Fabric doesn't reliably deliver point-based
-# taps, so we use the id-based "video-card-first" (set on grid item 0).
 - runFlow:
     when:
       visible:
         id: "video-grid-empty"
     commands:
-      # No videos available — skip this test gracefully
       - assertVisible:
           id: "video-grid-empty"
 - runFlow:
@@ -28,29 +23,26 @@ appId: ca.zerotohero.app
       notVisible:
         id: "video-grid-empty"
     commands:
-      # Wait for video cards to render (may still be loading spinner)
       - extendedWaitUntil:
           visible:
             id: "video-card-first"
           timeout: 15000
-      # Tap the first video card
       - tapOn:
           id: "video-card-first"
-      # ── Verify watch screen rendered ──────────────────────────
-      # testID was missing from subtitles-mode views (fixed).
-      # If Fabric blocks it on pushed screens, fall back to checking
-      # we left Explore + header is visible.
-      - extendedWaitUntil:
-          visible:
-            id: "watch-screen"
-          timeout: 10000
-          optional: true
-      - extendedWaitUntil:
-          notVisible:
-            id: "explore-screen"
-          timeout: 10000
-      - assertVisible:
-          id: "header-logo"
+
+# ── Verify watch screen rendered (top-level — visible in output) ───
+# optional: true = won't fail if Fabric blocks testIDs on pushed screens
+- extendedWaitUntil:
+    visible:
+      id: "watch-screen"
+    timeout: 10000
+    optional: true
+- extendedWaitUntil:
+    notVisible:
+      id: "explore-screen"
+    timeout: 10000
+- assertVisible:
+    id: "header-logo"
 
 # ── Return to Explore for sequencer chainability ────────────────────
 - tapOn:
