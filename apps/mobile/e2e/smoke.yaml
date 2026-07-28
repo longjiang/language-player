@@ -3,6 +3,15 @@ env:
   EMAIL: ${FREE_EMAIL}
   PASS: ${FREE_PASS}
 ---
+# ── Preflight: ensure we're on the login screen ───────────────────
+# If a previous test left the app logged in (iOS Keychain token
+# survives app relaunch), log out first.
+- runFlow:
+    file: flows/logout.yaml
+    when:
+      notVisible:
+        id: "login-email-input"
+
 # ── S1: App launch → login screen visible ──────────────────────────
 - assertVisible:
     id: "login-email-input"
