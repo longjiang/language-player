@@ -1,6 +1,13 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import {
+  SCROLL,
+  EDGE_MARGIN,
+  CRITICAL_MARGIN,
+  decideAutoScroll,
+  type AutoScrollState,
+} from '@langplayer/shared';
 
 // ── Types ──────────────────────────────────────
 
@@ -14,19 +21,6 @@ interface UseTranscriptAutoScrollOptions {
   /** Whether smoothScroll is enabled (from playback settings). */
   smoothScrollEnabled: boolean;
 }
-
-// ── Constants ──────────────────────────────────
-
-/** Minimum interval (ms) between consecutive auto-scrolls when smoothScroll is on. */
-const THROTTLE_MS = 2000;
-/** Duration (ms) of the ease-out scroll animation. */
-const ANIMATION_DURATION_MS = 3000;
-/** Fraction of the visible area used as the "edge zone." Line in this zone triggers scrolling. */
-const EDGE_MARGIN = 0.1;
-/** Fraction of the visible area used as the "critical zone." Line this close to invisible bypasses throttle. */
-const CRITICAL_MARGIN = 0.05;
-/** After the user manually scrolls, auto-scroll is paused for this duration (ms). */
-const USER_COOLDOWN_MS = 3000;
 
 // ── Easing ─────────────────────────────────────
 
@@ -90,7 +84,7 @@ function animateScrollTop(
     if (!state) return;
 
     const elapsed = timestamp - state.startTime;
-    const progress = Math.min(1, elapsed / ANIMATION_DURATION_MS);
+    const progress = Math.min(1, elapsed / SCROLL.ANIMATION_DURATION_MS);
     const eased = easeOutCubic(progress);
     container.scrollTop = state.startScroll + (state.targetScroll - state.startScroll) * eased;
 
@@ -105,6 +99,21 @@ function animateScrollTop(
   rafId.current = requestAnimationFrame(animate);
 }
 
+/**
+ * Compute the target scrollTop that centers the element vertically
+ * within the scroll container's visible area.
+ */
+function computeCenterTarget(
+  el: HTMLElement,
+  scrollContainer: HTMLElement,
+  visibleH: number,
+): number {
+  const elRect = el.getBoundingClientRect();
+  const scrollCtrRect = scrollContainer.getBoundingClientRect();
+  const elTopRelative = elRect.top - scrollCtrRect.top + scrollContainer.scrollTop;
+  return Math.max(0, elTopRelative - visibleH / 2 + elRect.height / 2);
+}
+
 // ── Hook ───────────────────────────────────────
 
 export function useTranscriptAutoScroll({
@@ -116,9 +125,9 @@ export function useTranscriptAutoScroll({
   // ── Refs ──
   const rafId = useRef(0);
   const lastAutoScrollTime = useRef(0);
+  const lastScrolledIdx = useRef(-1);
   const isInitialLoad = useRef(true);
   const userScrolledUntil = useRef(0);
-  const prevActiveIndex = useRef(activeIndex);
   const animRef = useRef<{
     startTime: number;
     startScroll: number;
@@ -129,7 +138,8 @@ export function useTranscriptAutoScroll({
   useEffect(() => {
     if (activeIndex === -1) {
       isInitialLoad.current = true;
-      prevActiveIndex.current = -1;
+      lastScrolledIdx.current = -1;
+      lastAutoScrollTime.current = 0;
       if (rafId.current) {
         cancelAnimationFrame(rafId.current);
         rafId.current = 0;
@@ -149,7 +159,7 @@ export function useTranscriptAutoScroll({
 
     const onUserScroll = () => {
       if (animRef.current) return; // scroll event from our own animation — ignore
-      userScrolledUntil.current = Date.now() + USER_COOLDOWN_MS;
+      userScrolledUntil.current = Date.now() + SCROLL.USER_COOLDOWN_MS;
     };
 
     target.addEventListener('scroll', onUserScroll, { passive: true });
@@ -169,7 +179,7 @@ export function useTranscriptAutoScroll({
     if (!el) return;
 
     // ═══════════════════════════════════════════════
-    //  VISIBILITY CHECK — uses the scroll container's visible area
+    //  MEASUREMENT — compute visibility booleans
     // ═══════════════════════════════════════════════
     const elRect = el.getBoundingClientRect();
     const containerRect = usePageScroll
@@ -187,29 +197,29 @@ export function useTranscriptAutoScroll({
     const isFullyOut = fullyOutTop || fullyOutBottom;
     const isNearEdge = nearTop || nearBottom;
 
-    prevActiveIndex.current = activeIndex;
-
-    if (!isNearEdge) return;
-
     // ═══════════════════════════════════════════════
-    //  MODE: smoothScroll DISABLED
+    //  DECISION — shared pure function
     // ═══════════════════════════════════════════════
-    if (!smoothScrollEnabled) {
-      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      return;
-    }
+    const state: AutoScrollState = {
+      activeIndex,
+      prevScrolledIndex: lastScrolledIdx.current,
+      isFullyOut,
+      isNearEdge,
+      lastAutoScrollTime: lastAutoScrollTime.current,
+      userScrolledUntil: userScrolledUntil.current,
+      smoothScrollEnabled,
+      isInitialLoad: isInitialLoad.current,
+      now: Date.now(),
+    };
 
-    // ═══════════════════════════════════════════════
-    //  MODE: smoothScroll ENABLED
-    // ═══════════════════════════════════════════════
+    const decision = decideAutoScroll(state);
 
-    const now = Date.now();
+    if (!decision.shouldScroll) return;
 
-    // User cooldown (bypassed if line is fully out of view)
-    if (!isFullyOut && now < userScrolledUntil.current) return;
-
-    // Throttle (bypassed if line is fully out of view)
-    if (!isFullyOut && now - lastAutoScrollTime.current < THROTTLE_MS) return;
+    // ── Update refs ──
+    lastAutoScrollTime.current = Date.now();
+    lastScrolledIdx.current = activeIndex;
+    isInitialLoad.current = false;
 
     // Cancel any in-flight animation
     if (rafId.current) {
@@ -217,30 +227,31 @@ export function useTranscriptAutoScroll({
       rafId.current = 0;
     }
 
-    // Page-scrolling mode → fall back to scrollIntoView
+    // ═══════════════════════════════════════════════
+    //  EXECUTION — platform-specific
+    // ═══════════════════════════════════════════════
+
+    // smoothScroll OFF → browser native smooth scroll
+    if (!smoothScrollEnabled) {
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      return;
+    }
+
+    // smoothScroll ON — page-scrolling fallback
     if (usePageScroll) {
       el.scrollIntoView({ block: 'center', behavior: 'smooth' });
       return;
     }
 
-    // Panel-scrolling mode → custom RAF animation
-    const scrollCtrRect = scrollContainer.getBoundingClientRect();
-    const elTopRelative = elRect.top - scrollCtrRect.top + scrollContainer.scrollTop;
-    const targetScrollTop = Math.max(
-      0,
-      elTopRelative - visibleH / 2 + elRect.height / 2,
-    );
+    // smoothScroll ON — panel-scrolling
+    const targetScrollTop = computeCenterTarget(el, scrollContainer, visibleH);
 
-    // Initial load → instant jump
-    if (isInitialLoad.current) {
+    if (decision.animated) {
+      animateScrollTop(scrollContainer, targetScrollTop, rafId, animRef);
+    } else {
+      // initial load → instant jump
       scrollContainer.scrollTo({ top: targetScrollTop, behavior: 'instant' as ScrollBehavior });
-      isInitialLoad.current = false;
-      lastAutoScrollTime.current = now;
-      return;
     }
-
-    lastAutoScrollTime.current = now;
-    animateScrollTop(scrollContainer, targetScrollTop, rafId, animRef);
   }, [activeIndex, smoothScrollEnabled, listRef, scrollContainerRef]);
 
   // ── Cleanup on unmount ──
