@@ -16,12 +16,17 @@ export default function MeScreen() {
   const router = useRouter();
   const t = useT();
 
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/login');
+  };
+
   const menuItems = [
     { icon: Settings, label: t('title.settings'), route: '/(tabs)/(me)/settings' },
     { icon: Star, label: t('title.saved_words'), route: '/(tabs)/(vocab)/saved-words' },
     { icon: Download, label: t('title.offline_dictionaries'), route: '/(tabs)/(me)/offline-dictionaries' },
     { icon: CreditCard, label: t('action.go_pro'), route: null },
-    { icon: LogOut, label: t('action.logout'), route: null, action: logout, testID: 'me-logout-button' },
+    { icon: LogOut, label: t('action.logout'), route: null, action: handleLogout, testID: 'me-logout-button' },
   ];
 
   return (
