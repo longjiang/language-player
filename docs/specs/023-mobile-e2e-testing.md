@@ -574,17 +574,17 @@ Before shipping the E2E testing pipeline:
    > successful dev build took **13 attempts** over **~3–4 hours of cumulative build time**.
    > Here is the actual build history from this session:
    >
-   > | # | Command | Why | Result |
-   > |---|---|---|---|
-   > | 1 | `npx expo run:ios --configuration Release` | Initial build attempt | ❌ `EXEventEmitterService.h` not found |
-   > | 2-4 | `npx expo run:ios --configuration Release` | Retries (hoping transient) | ❌ Same error |
-   > | 5 | `npx expo run:ios --configuration Release` | After bumping `expo-in-app-purchases` to v14.6.0 | ❌ Same error (version ≠ fix) |
-   > | 6-8 | `npx expo run:ios --configuration Release` | More retries after version bump | ❌ Same error |
-   > | 9 | `npx expo run:ios --configuration Release` | After creating Pods header stubs manually | ✅ **Succeeded** (debug build, 17:52) |
-   > | 10 | `npx expo run:ios` (debug, no `--configuration Release`) | Verify testIDs with Metro | ✅ Succeeded (used existing build) |
-   > | 11 | `npx expo run:ios` | Rebuild after changes — Pods regenerated, stubs wiped | ❌ Same error |
-   > | 12 | `npx expo run:ios` | Retry | ❌ Same error |
-   > | 13 | `npx expo run:ios` | Latest attempt | ❌ Same error |
+   > | # | Command | Why | Mitigation tried | Result |
+   > |---|---|---|---|---|
+   > | 1 | `npx expo run:ios --configuration Release` | Initial build attempt | Searched error, found `EXEventEmitterService.h` removed in SDK 57 | ❌ `EXEventEmitterService.h` not found |
+   > | 2-4 | `npx expo run:ios --configuration Release` | Retries (hoping transient) | Checked if `expo-in-app-purchases` version bump could fix it | ❌ Same error |
+   > | 5 | `npx expo run:ios --configuration Release` | After bumping `expo-in-app-purchases` to v14.6.0 | Inspected Pods/ headers to confirm the header was truly missing from ExpoModulesCore | ❌ Same error (version ≠ fix) |
+   > | 6-8 | `npx expo run:ios --configuration Release` | More retries after version bump | Researched Podfile `post_install` hook approach | ❌ Same error |
+   > | 9 | `npx expo run:ios --configuration Release` | After creating Pods header stubs manually | Manually created `EXEventEmitterService.h` + umbrella header entry in `ios/Pods/`; built successfully | ✅ **Succeeded** (debug build, 17:52) |
+   > | 10 | `npx expo run:ios` (debug, no `--configuration Release`) | Verify testIDs with Metro | No mitigation needed — reused existing build artifacts | ✅ Succeeded (used existing build) |
+   > | 11 | `npx expo run:ios` | Rebuild after JS changes — `pod install` regenerated `ios/Pods/`, wiping stubs | Re-created stubs in Pods/ manually again | ❌ Same error (stubs lost again) |
+   > | 12 | `npx expo run:ios` | Retry | Investigated why `ios/Pods/` headers are overwritten; confirmed `post_install` is the right fix | ❌ Same error |
+   > | 13 | `npx expo run:ios` | Latest attempt | Decided permanent fix is Podfile `post_install` hook — deferred | ❌ Same error |
    >
    > **Root cause**: `expo-in-app-purchases` imports `EXEventEmitterService.h` from
    > `ExpoModulesCore`, which was removed in Expo SDK 57. Each `npx expo run:ios`
