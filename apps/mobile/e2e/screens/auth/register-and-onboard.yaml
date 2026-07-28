@@ -58,15 +58,21 @@ env:
 - assertVisible:
     id: "picker-l1-tab"
 
-# Scroll to find "English" in the list and tap it
-- scrollUntilVisible:
-    element:
-      text: "English"
-    direction: DOWN
-    timeout: 5000
-    speed: 40
+# Only scroll if "English" is not already visible (SectionList may show it at top)
+# NOTE: Fabric combines name + code into "English, EN" — use exact accessibilityText
+- runFlow:
+    when:
+      notVisible:
+        text: "English, EN"
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "English, EN"
+          direction: DOWN
+          timeout: 5000
+          speed: 40
 - tapOn:
-    text: "English"
+    text: "English, EN"
 
 # Tap "Next" to go to L2 tab
 - assertVisible:
@@ -77,14 +83,20 @@ env:
 # Select "Spanish" as L2
 - assertVisible:
     id: "picker-l2-tab"
-- scrollUntilVisible:
-    element:
-      text: "Spanish"
-    direction: DOWN
-    timeout: 5000
-    speed: 40
+# Only scroll if "Spanish" is not already visible
+- runFlow:
+    when:
+      notVisible:
+        text: "Spanish, ES"
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "Spanish, ES"
+          direction: DOWN
+          timeout: 5000
+          speed: 40
 - tapOn:
-    text: "Spanish"
+    text: "Spanish, ES"
 
 # Tap "Confirm" to finish onboarding
 - assertVisible:
