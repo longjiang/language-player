@@ -539,6 +539,16 @@ Before shipping the E2E testing pipeline:
 
 ### Phase 1: Foundation (Weeks 1-2)
 
+> **⚠️ Phase 1 is BLOCKED — the dev build cannot complete.** As of the latest
+> attempt (2026-07-27), all 13 rebuilds have failed with the same
+> `EXEventEmitterService.h` error from `expo-in-app-purchases`. A successful
+> debug build was produced once (commit `6208fea7`) by manually stubbing the
+> missing header in `ios/Pods/`, but that fix is lost on every rebuild because
+> `pod install` regenerates the Pods directory. Steps 1-3 below (spike, helper,
+> testIDs) can proceed in parallel while the build issue is resolved. Until a
+> Podfile `post_install` hook is implemented, subsequent phases requiring a new
+> native build cannot begin.
+
 1. **Maestro + New Architecture spike** (Day 1) — Build a dev build with `newArchEnabled: true`, write one Maestro flow (login + tap 4 tabs), verify element discovery works under Fabric renderer.
 
    **Pass/fail criterion**: Maestro can find and tap the email input, password input, sign-in button, and all 4 tab bar items via `testID`. Include one element from each RN primitive type used (Pressable, TextInput, Switch from `@rn-primitives/*`, and a list item) to de-risk primitive compatibility early. If elements are missing, budget time to add `accessibilityLabel` as a fallback alongside `testID`.
