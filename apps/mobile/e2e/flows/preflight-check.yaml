@@ -6,7 +6,7 @@ appId: ca.zerotohero.app
 # Ensures the app is on the login screen before running tests, from
 # any starting state:
 #
-# 1. Register screen visible → tap iOS navigation back button (top-left)
+# 1. Register screen visible → tap "Already have an account?" link
 # 2. Authenticated (tabs visible) → run logout flow
 # 3. Login screen visible → proceed (no action needed)
 #
@@ -14,17 +14,17 @@ appId: ca.zerotohero.app
 # auth tokens from a previous test run.
 # ════════════════════════════════════════════════════════════════════
 
-# ── Handle register screen: tap iOS back button ─────────────────
-# If a register test left us on the register screen, tap the top-left
-# area where Expo Router's stack navigator places the back chevron.
+# ── Handle register screen: tap "Already have an account?" ──────
+# The register screen has a back-to-login link at the bottom.
+# More reliable than swiping or tapping the iOS navigation bar.
 - runFlow:
     when:
       visible:
         id: "register-firstname-input"
     commands:
       - tapOn:
-          point: "3%,6%"
-      - waitForAnimationToEnd
+          id: "register-back-to-login"
+          label: "Back to Login from register screen"
 
 # ── Handle authenticated state: log out ─────────────────────────
 - runFlow:
