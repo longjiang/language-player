@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,11 @@ import {
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
+import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { Sparkles } from 'lucide-react-native';
 import { TokenizedText } from '@/components/TokenizedText';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
-import { parseMarkdownBlocks } from '@/lib/parse-markdown';
 import { lemmatizeText } from '@/lib/tokenizer';
 import { getSampleText } from '@langplayer/shared';
 import type { LemmatizedToken } from '@langplayer/shared';
@@ -23,10 +23,16 @@ export default function TokenizerScreen() {
   const t = useT();
   const [customText, setCustomText] = useState('');
 
-  // ── Sample: parse markdown → blocks (PaginatedReader handles rendering) ──
+  // ── Sample: useEpubPagination for batch lemmatization + pagination ──
   const sample = getSampleText(l2Lang.code);
   const sampleMarkdown = sample?.text ?? '# Seoul\n\nSeoul is the capital of South Korea.';
-  const sampleBlocks = useMemo(() => parseMarkdownBlocks(sampleMarkdown), [sampleMarkdown]);
+  const samplePagination = useEpubPagination({
+    text: sampleMarkdown,
+    l1Code: l1Lang.code,
+    l2Code: l2Lang.code,
+    showTranslation: false,
+    resetKey: l2Lang.code,
+  });
 
   // ── Custom text tokenization (on demand) ──
   const [customTokens, setCustomTokens] = useState<LemmatizedToken[] | null>(null);
@@ -60,16 +66,26 @@ export default function TokenizerScreen() {
         {t('msg.tokenizer_desc', { l2: l2Lang.name })}
       </Text>
 
-      {/* ── Sample text (PaginatedReader in scroll mode) ── */}
+      {/* ── Sample text (paginated, like reader) ── */}
       <View className="mt-6 rounded-lg border border-border bg-card p-4">
         <Text className="mb-3 text-xs font-medium text-muted-foreground">
           {sample?.title ?? l2Lang.name} · Sample
         </Text>
         <PaginatedReader
-          blocks={sampleBlocks}
+          blocks={samplePagination.blocks}
+          visibleBlocks={samplePagination.visibleBlocks}
+          page={samplePagination.page}
+          totalPages={samplePagination.totalPages}
+          hasMeasured={samplePagination.hasMeasured}
+          loadingTokens={samplePagination.loadingTokens}
+          tokenCache={samplePagination.tokenCache}
+          blockTranslations={samplePagination.blockTranslations}
+          prevPage={samplePagination.prevPage}
+          nextPage={samplePagination.nextPage}
+          handleMeasureBlock={samplePagination.handleMeasureBlock}
+          contentWidth={samplePagination.contentWidth}
           l2Code={l2Lang.code}
           l1Code={l1Lang.code}
-          scrollMode
           showTextActions
           t={t}
         />
