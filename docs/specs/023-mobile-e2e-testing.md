@@ -724,6 +724,23 @@ Before shipping the E2E testing pipeline:
   - `KeyboardAvoidingView` with `behavior="padding"` — ⚠️ caused layout shifts: the first tap opens the keyboard, the view shifts, and the second `eraseText` land on the wrong position.
   - `Keyboard.dismiss()` in form submit handlers — ✅ works but only helps AFTER the button is tapped, not BEFORE (keyboard still obscures the button).
   - **Winner**: Wrapping the title `<Text>` in a `<Pressable onPress={() => Keyboard.dismiss()}>` with `testID="dismiss-keyboard"`. Maestro taps this by `id:` before every button tap, which reliably dismisses the keyboard through the native touch responder. No side effects, no layout shift. Document this pattern in `lib/e2e.ts` as the standard way to dismiss keyboard in tests.
+- **Fabric breaks Maestro gestures**: Neither `tapOn: point:` nor `swipe:` triggered iOS navigation bar back button or interactive pop gesture under New Architecture. Gesture-based navigation (swipe-back, coordinate taps) is unreliable on Fabric.
+- **Prefer real UI elements over coordinates**: Instead of guessing x/y for back navigation, add a `testID` to an existing link ("Already have an account?" in `register.tsx` calls `router.back()`) and tap it by `id:`. This works 100% reliably under Fabric because it goes through the standard React Native touch responder.
+- **`when` only works inside `runFlow` blocks**: Maestro's `when` condition cannot be attached to bare commands like `tapOn`. It must wrap the command in `runFlow` → `when` → `commands`. The correct pattern is:
+  ```yaml
+  - runFlow:
+      when:
+        visible: { id: "some-element" }
+      commands:
+        - tapOn: ...
+  ```
+- **Nested `runFlow` paths are relative to the containing file**, not the root test file. A flow in `flows/preflight-check.yaml` that calls `flows/logout.yaml` must use `file: logout.yaml` (relative to `flows/`), not `file: flows/logout.yaml`.
+- **Each test should clean up after itself**: Register validation tests (A5, A6, A7) leave the app on the register screen after asserting the error. Add a teardown step tapping `register-back-to-login` so individual runs don't leave a mess for the next test. The preflight handles getting to login, but doesn't clean up after.
+- **Split tests into individual files for faster debugging**: Instead of one monolithic auth.yaml, split into per-test files (`screens/auth/login-invalid-credentials.yaml`, etc.). Each can be run independently:
+  ```bash
+  maestro test apps/mobile/e2e/screens/auth/login-happy-path.yaml
+  ```
+  A sequencer file (`screens/auth.yaml`) runs them in order via `runFlow`.
 
 ### Phase 3: Media Tab (Week 4)
 - Write media suite (Tier 2: M1-M16) as Maestro YAML flows

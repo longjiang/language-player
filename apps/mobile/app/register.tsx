@@ -131,7 +131,7 @@ export default function RegisterScreen() {
         )}
       </Pressable>
 
-      <Pressable onPress={() => router.back()}>
+      <Pressable onPress={() => router.back()} {...e2e('register-back-to-login')}>
         <Text className="text-primary text-center text-sm">
           {t('msg.already_have_account')}
         </Text>
