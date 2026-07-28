@@ -36,16 +36,15 @@ appId: ca.zerotohero.app
       # Tap the first video card
       - tapOn:
           id: "video-card-first"
-      # ── Verify navigation happened ──────────────────────────────
-      # react-native-screens + Fabric blocks ALL accessibility
-      # properties (testID, accessibilityLabel, accessibilityIdentifier)
-      # on pushed screens. Verified 2026-07-28: neither id: nor
-      # text: selectors work on pushed-screen content.
-      #
-      # We verify navigation by: (a) explore-screen disappeared,
-      # (b) header-logo still visible (header is outside Stack nav).
-      # Video content verification requires a native-level solution
-      # (e.g., react-native-screens nativeID prop on the Screen itself).
+      # ── Verify watch screen rendered ──────────────────────────
+      # testID was missing from subtitles-mode views (fixed).
+      # If Fabric blocks it on pushed screens, fall back to checking
+      # we left Explore + header is visible.
+      - extendedWaitUntil:
+          visible:
+            id: "watch-screen"
+          timeout: 10000
+          optional: true
       - extendedWaitUntil:
           notVisible:
             id: "explore-screen"

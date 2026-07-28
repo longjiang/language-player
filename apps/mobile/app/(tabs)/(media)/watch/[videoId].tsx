@@ -310,7 +310,7 @@ export default function WatchScreen() {
   // ── Subtitles Mode: Wide (landscape) ──
   if (isSubtitles && isWide) {
     return (
-      <View className="flex-1 bg-black">
+      <View testID="watch-screen" className="flex-1 bg-black">
         <View className="relative flex-1">
           {playerElement}
           <SubtitlesModeBand
@@ -335,7 +335,7 @@ export default function WatchScreen() {
   // ── Subtitles Mode: Narrow (portrait) ──
   if (isSubtitles) {
     return (
-      <View className="flex-1 bg-background">
+      <View testID="watch-screen" className="flex-1 bg-background">
         <View>{playerElement}</View>
         <SubtitlesModeBand
           overlay={false}
