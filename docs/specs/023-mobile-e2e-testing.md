@@ -694,7 +694,7 @@ Before shipping the E2E testing pipeline:
 
 ### Phase 2: Auth + Navigation (Week 3) ✅ COMPLETED
 
-> ✅ **Phase 2 is complete.** All 12 of 13 Tier 1 flows written and passing. A11 (Delete Account) is deferred to a later phase — it requires teardown complexity (deleting the account mid-suite breaks all downstream tests that depend on that user being authenticated).
+> ✅ **Phase 2 is complete.** All 12 Tier 1 flows written and passing. A11 (Delete Account) deferred — deleting the test user mid-suite breaks downstream tests. The auth suite (`screens/auth.yaml`) uses a monolithic inline approach (~80 commands) which is acceptable for this tier's size, but future tiers use the [hierarchical `runFlow` sequencer pattern](#test-suite-architecture-runflow-sequencers-not-flat-inline) established in Phase 3.
 
 - ✅ Write full auth suite (Tier 1: A1-A13) as Maestro YAML flows — 10 individual test files in `screens/auth/`
 - ✅ Write language selection flow — embedded in `register-and-onboard.yaml` (A4 + A12)
@@ -702,7 +702,7 @@ Before shipping the E2E testing pipeline:
 - ✅ Add testIDs for auth screens — `login-*`, `register-*`, `forgot-*`, `dismiss-keyboard`, `picker-*`, `header-*`, `search-input`
 - ✅ Run each flow locally against the simulator
 - ✅ Run full auth suite end-to-end — `maestro test apps/mobile/e2e/screens/auth.yaml`
-- ⚠️ A11 (Delete Account) deferred — deletes the authenticated user, breaking all downstream tests in the regression suite. Will be addressed as a standalone teardown flow in a later phase.
+- ⚠️ A11 (Delete Account) deferred — deletes the authenticated user, breaking downstream tests
 
 #### Phase 2 Learnings
 
@@ -755,45 +755,16 @@ Before shipping the E2E testing pipeline:
 
 ### Phase 3: Media Tab (Week 4) ◐ IN PROGRESS
 
-> ◐ **Phase 3 is in progress.** All 15 auto-test YAML files written, testIDs added to Media components, sequencer created, regression.yaml updated. Tests need to be run against the simulator to verify.
+> ◐ **Phase 3 in progress.** All 15 test files written, sequencer restructured to use the [`runFlow`-based hierarchical pattern](#test-suite-architecture-runflow-sequencers-not-flat-inline). Tests need to be run against the simulator to verify. The initial flat-inline approach was refactored (commit `b4f2b964`) after discovering Maestro renders inline commands as a single undifferentiated list.
 
-- ✅ Write media suite (Tier 2: M1-M16) as Maestro YAML flows — 15 individual files in `screens/media/` + sequencer `screens/media.yaml`
-- ✅ Add testIDs for: video cards (`video-card-{youtube_id}`), level filter pills (`level-filter-{n}`, `level-filter-all`), video grid states (`video-grid-loading`, `video-grid-empty`), search tags (`search-tag-{tag}`), watch screen (`watch-screen`), explore screen (`explore-screen`)
-- ✅ Handle async video loading — tests use `extendedWaitUntil` with timeouts, `optional: true` for subtitle-dependent assertions, and graceful handling of empty feed states
-- ⬜ **Run each media flow locally** — write → `maestro test` → fix → re-run
-- ✅ **Update regression.yaml** — media suite uncommented and wired in
+- ✅ Write media suite (Tier 2: M1-M16) as Maestro YAML flows — 15 individual files in `screens/media/`
+- ✅ Add testIDs for: video cards, filter pills, search tags, watch screen, grid states
+- ✅ Restructure to `runFlow` sequencer — 19-line `screens/media.yaml` calls individual test files, shared `flows/ensure-explore.yaml` handles setup
+- ⬜ **Run each media flow locally** — `maestro test` each file, fix failures
+- ✅ **Update regression.yaml** — media suite wired in
 - ⬜ **Run combined regression** — auth + media suites pass sequentially (~17min)
 
-#### Phase 3 Test Files
-
-| File | Test | Description |
-|---|---|---|
-| `explore-feed.yaml` | M1 | Login → assert feed loads (video cards or loading state) |
-| `level-filter.yaml` | M2 | Tap level filter pill → assert feed refreshes |
-| `explore-pagination.yaml` | M3 | Scroll down → assert more content or end-of-list |
-| `video-player-open.yaml` | M4 | Tap video card → assert watch screen renders |
-| `subtitle-interaction.yaml` | M5 | Tap word in subtitles → assert dictionary popup area |
-| `video-search.yaml` | M7 | Type query → assert results or no-results state |
-| `youtube-url-search.yaml` | M8 | Paste YouTube URL → assert watch screen opens |
-| `tv-shows.yaml` | M9 | Navigate via drawer → assert TV Shows screen |
-| `live-tv.yaml` | M10 | Navigate via drawer → assert Live TV screen |
-| `music.yaml` | M11 | Navigate via drawer → assert Music screen |
-| `watch-history.yaml` | M12 | Navigate via drawer → assert Watch History screen |
-| `channel-subscribe.yaml` | M13 | Open video → tap Info tab → assert channel card area |
-| `video-queue.yaml` | M14 | Open video → tap Queue tab → assert queue area |
-| `search-no-results.yaml` | M15 | Search gibberish → assert search completes |
-| `search-tag-cloud.yaml` | M16 | Tap tag in cloud → assert results render |
-
-#### TestID Additions
-
-| Component | TestIDs Added |
-|---|---|
-| `VideoCard.tsx` | `video-card-{youtube_id}` on card Pressable (both card and list layouts) |
-| `LevelFilter.tsx` | `level-filter-all`, `level-filter-{1..7}` on filter pills |
-| `VideoGrid.tsx` | `video-grid-loading`, `video-grid-empty` on state views |
-| `search.tsx` | `search-tag-{tag}` on tag cloud Pressables |
-| `watch/[videoId].tsx` | `watch-screen` on main view container |
-| `explore/index.tsx` | `explore-screen` on PageContainer |
+> **Architecture rule**: Phase 3 established the [hierarchical `runFlow` sequencer pattern](#test-suite-architecture-runflow-sequencers-not-flat-inline). All future phases must follow this pattern: shared `ensure-<screen>.yaml` setup flow, individual test files, `runFlow`-based sequencer, chainable cleanup, and regression wiring.
 
 ### Phase 4: Dictionary + Vocab (Week 5)
 - Write dictionary suite (Tier 3: D1-D17) as Maestro YAML flows
@@ -803,6 +774,8 @@ Before shipping the E2E testing pipeline:
 - **Update regression.yaml** to include dictionary + SRS flows
 - **Run combined regression** — auth + media + dict + SRS pass (~32min)
 
+> ⚠️ Must follow the [hierarchical `runFlow` sequencer pattern](#test-suite-architecture-runflow-sequencers-not-flat-inline).
+
 ### Phase 5: Reading + Settings (Week 6)
 - Write reader suite (Tier 5: E1-E11) as Maestro YAML flows
 - Write settings suite (Tier 6: P1-P9) as Maestro YAML flows
@@ -810,6 +783,8 @@ Before shipping the E2E testing pipeline:
 - **Run each flow locally** — write → `maestro test` → fix → re-run
 - **Update regression.yaml** to include reading + settings flows
 - **Run combined regression** — all prior suites + reading + settings pass (~37min)
+
+> ⚠️ Must follow the [hierarchical `runFlow` sequencer pattern](#test-suite-architecture-runflow-sequencers-not-flat-inline).
 
 ### Phase 6: Offline (Week 7)
 - Write offline suite (Tier 7: O1-O6) as Maestro YAML flows
@@ -819,6 +794,8 @@ Before shipping the E2E testing pipeline:
 - **Update regression.yaml** to include offline flows
 - **Run combined regression** — all prior suites + offline pass (~45min)
 
+> ⚠️ Must follow the [hierarchical `runFlow` sequencer pattern](#test-suite-architecture-runflow-sequencers-not-flat-inline).
+
 ### Phase 7: iPad + Deep Links (Week 8)
 - Write auto deep link flows (Tier 9: L1-L4) — word entry, video, password reset, rapid language switch
 - Add testIDs for deep link screens (password-reset, verify-email)
@@ -827,6 +804,8 @@ Before shipping the E2E testing pipeline:
 - **Update regression.yaml** to include deep link flows
 - **Run combined regression** — all auto tests (78) pass (~50min)
 - **Perform human iPad checklist** manually on iPad simulator
+
+> ⚠️ Must follow the [hierarchical `runFlow` sequencer pattern](#test-suite-architecture-runflow-sequencers-not-flat-inline) for auto tests. Human iPad tests use a checklist, not Maestro YAML.
 
 ### Phase 8: Polish + Regression (Week 9)
 - **Run full regression locally** — `maestro test apps/mobile/e2e/regression.yaml` — all 78 auto tests pass from clean simulator state
@@ -963,3 +942,66 @@ sh scripts/setup-e2e-env.sh --validate
 This checks that all 4 test accounts exist and can authenticate. Run this whenever you suspect backend data may have changed (after a migration, server restart, or data reset).
 
 Without automated CI, there is no cron job — validation is a developer responsibility. To make it harder to forget, consider adding it as a pre-test step in your local workflow (see `apps/mobile/e2e/README.md`).
+
+### Test Suite Architecture: `runFlow` Sequencers (Not Flat Inline)
+
+**All test suites MUST use the hierarchical `runFlow`-based sequencer pattern, not flat inline commands.** This was discovered during Phase 3 when the initial `screens/media.yaml` inlined ~200 commands at the top level. Maestro rendered this as a single flat list — when one command failed, all remaining ~190 commands showed `🔲` (not reached), making debugging painful.
+
+#### The pattern
+
+Each tier gets a **sequencer file** at `screens/<tier>.yaml` that calls individual test files via `runFlow`:
+
+```yaml
+# screens/media.yaml — sequencer, not inline commands
+- runFlow:
+    file: ../flows/ensure-explore.yaml    # login once
+- runFlow:
+    file: media/explore-feed.yaml          # M1
+- runFlow:
+    file: media/level-filter.yaml          # M2
+- runFlow:
+    file: media/explore-pagination.yaml    # M3
+# ... each test is one collapsible line
+```
+
+Each individual test file in `screens/<tier>/<test-name>.yaml` is independently runnable and uses a shared `ensure-<start-screen>.yaml` flow for setup:
+
+```yaml
+# screens/media/level-filter.yaml — independently runnable
+- runFlow:
+    file: ../../flows/ensure-explore.yaml  # login if needed, land on Explore
+# ... test-specific commands ...
+- tapOn:
+    id: "header-logo"                      # return to start for sequencer chainability
+```
+
+#### Maestro output comparison
+
+| Approach | Output | Debuggability |
+|---|---|---|
+| **Flat inline** (old) | 200 commands at top level, one failure blocks everything | Must scroll through ~200 lines to find the failure |
+| **`runFlow` sequencer** (new) | 16 collapsible lines, each test is one entry | Expand only the failing test to see its ~5–10 commands |
+
+```
+# Flat (old) — painful
+║  ❌ Assert that id: explore-screen is visible
+║  🔲 Tap on id: level-filter-2
+║  🔲 Assert that id: explore-screen is visible
+║  🔲 ... (~190 more lines)
+
+# Hierarchical (new) — clean
+║  ✅ Run ../flows/ensure-explore.yaml
+║  ✅ Run media/explore-feed.yaml
+║  ❌ Run media/level-filter.yaml          ← expand ONLY this
+║  🔲 Run media/explore-pagination.yaml
+```
+
+#### Requirements for new suites
+
+When implementing future phases (Phase 4–9), every test suite must:
+
+1. **Shared setup flow** — Create an `ensure-<screen>.yaml` in `flows/` that handles both "need to log in" and "already authenticated" states, always landing on the correct starting screen.
+2. **Individual test files** — Each test in `screens/<tier>/<name>.yaml`, independently runnable via `maestro test e2e/screens/<tier>/<name>.yaml`.
+3. **Sequencer** — `screens/<tier>.yaml` calls individual files via `runFlow`, not inline commands.
+4. **Chainability** — Each test file ends by returning to the shared start screen (e.g., `tapOn: header-logo`) so the sequencer's next test starts clean.
+5. **Regression wiring** — Add the sequencer to `regression.yaml` as a single `runFlow` call.
