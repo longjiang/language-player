@@ -43,6 +43,15 @@ export interface SubtitleLine {
   duration?: number;
 }
 
+/** A subtitle line with its L1 translation, used in the Video tab and SubtitlesModeBand. */
+export interface SubtitleSyncedLine {
+  starttime: number;
+  /** Duration in seconds from the subtitle data. */
+  duration?: number;
+  l2Line: string;
+  l1Line: string;
+}
+
 /** A video result from the /subs-search endpoint. */
 export interface SubsSearchVideo {
   id: number;

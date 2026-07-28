@@ -23,7 +23,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 import { parseSubtitleCSV } from '@langplayer/utils';
 import { AlertCircle } from 'lucide-react-native';
-import type { YouTubeVideo } from '@langplayer/shared';
+import type { SubtitleSyncedLine, YouTubeVideo } from '@langplayer/shared';
 
 const WATCH_POS_PREFIX = 'lp-watch-pos-';
 const SAVE_POS_INTERVAL = 5000;
@@ -58,12 +58,6 @@ async function savePosition(videoId: string, time: number) {
   } catch { /* ignore */ }
 }
 
-interface SyncedLine {
-  starttime: number;
-  l2Line: string;
-  l1Line: string;
-}
-
 export default function WatchScreen() {
   const { videoId } = useLocalSearchParams<{ videoId: string }>();
   const { l2Lang } = useLanguage();
@@ -81,7 +75,7 @@ export default function WatchScreen() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(true);
-  const [subtitleLines, setSubtitleLines] = useState<SyncedLine[]>([]);
+  const [subtitleLines, setSubtitleLines] = useState<SubtitleSyncedLine[]>([]);
   const [subtitleStartTimes, setSubtitleStartTimes] = useState<number[]>([]);
 
   // Token cache — use Directus video ID (not YouTube ID)
@@ -178,7 +172,7 @@ export default function WatchScreen() {
         }
 
         if (lines.length > 0) {
-          const synced: SyncedLine[] = lines.map((l) => ({
+          const synced: SubtitleSyncedLine[] = lines.map((l) => ({
             starttime: l.starttime,
             l2Line: l.line,
             l1Line: '',
