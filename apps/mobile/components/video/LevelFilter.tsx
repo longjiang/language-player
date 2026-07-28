@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { Text, Pressable, ScrollView } from 'react-native';
 import { formatNumericLevel, primaryScale } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { e2e } from '@/lib/e2e';
@@ -24,7 +24,11 @@ export function LevelFilter({ level, onSelect, l2Code }: LevelFilterProps) {
   );
 
   return (
-    <View className="flex-row gap-1.5 px-4 py-2">
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8, gap: 6 }}
+    >
       <Pressable
         onPress={() => onSelect(undefined)}
         className={`rounded-full px-3 py-1 ${level === undefined ? 'bg-primary' : 'bg-muted'}`}
@@ -50,6 +54,6 @@ export function LevelFilter({ level, onSelect, l2Code }: LevelFilterProps) {
           </Pressable>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
