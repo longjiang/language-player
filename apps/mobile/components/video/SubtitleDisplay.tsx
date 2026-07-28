@@ -166,6 +166,15 @@ export function SubtitleDisplay({
   const startTimes = useMemo(() => l2Lines.map(l => l.starttime), [l2Lines]);
   const computedActiveIdx = useActiveLineIndex(startTimes, currentTime);
 
+  // ── Item height: start with a conservative estimate, then measure real height via onLayout ──
+  const estimatedFallback = showTranslation ? 100 : 56;
+  const [measuredItemHeight, setMeasuredItemHeight] = useState(estimatedFallback);
+
+  // Reset measurement when translation visibility changes
+  useEffect(() => {
+    setMeasuredItemHeight(estimatedFallback);
+  }, [estimatedFallback]);
+
   // ── Auto-scroll: visibility-gated, throttled, seek-aware ──
   const {
     onScroll: autoScrollOnScroll,
@@ -175,6 +184,7 @@ export function SubtitleDisplay({
     activeIndex: computedActiveIdx,
     flatListRef: scrollRef,
     smoothScrollEnabled: playback.smoothScroll,
+    estimatedItemHeight: measuredItemHeight,
   });
 
   // Keep state in sync with computed value (scroll is handled by useTranscriptAutoScroll)
@@ -207,10 +217,10 @@ export function SubtitleDisplay({
       windowSize={3}
       maxToRenderPerBatch={5}
       getItemLayout={(_, index) => ({
-        // Estimated item height (py-2 + mb-1 + text-base + optional translation).
+        // Estimated item height — refined by onLayout measurement on first render.
         // Variable-height lines cause occasional onScrollToIndexFailed (handled below).
-        length: 48,
-        offset: 48 * index,
+        length: measuredItemHeight,
+        offset: measuredItemHeight * index,
         index,
       })}
       contentContainerStyle={{ paddingHorizontal: 12 }}
@@ -246,8 +256,19 @@ export function SubtitleDisplay({
         return (
           <Pressable
             onPress={() => onSeekToLine?.(line.starttime)}
+            onLayout={(e) => {
+              const h = e.nativeEvent.layout.height;
+              if (h > measuredItemHeight) {
+                setMeasuredItemHeight(h);
+              }
+            }}
             className={`rounded-lg px-3 py-2 mb-1 ${isActive ? 'bg-primary/10 border border-primary/30' : ''}`}
           >
+            {__DEV__ && (
+              <Text className="text-[10px] text-muted-foreground/40 mb-0.5">
+                #{i} · y≈{measuredItemHeight * i}px
+              </Text>
+            )}
             <TokenizedText
               testID={`subtitle-line-${i}`}
               text={line.line}
