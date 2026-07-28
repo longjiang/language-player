@@ -3,6 +3,7 @@ import { View, Text, Pressable } from 'react-native';
 import { formatNumericLevel, primaryScale } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 import { e2e } from '@/lib/e2e';
+import { levelBadgeStyle } from '@/lib/level-colors';
 
 interface LevelFilterProps {
   level: number | undefined;
@@ -39,10 +40,11 @@ export function LevelFilter({ level, onSelect, l2Code }: LevelFilterProps) {
           <Pressable
             key={l}
             onPress={() => onSelect(active ? undefined : l)}
-            className={`rounded-full px-3 py-1 ${active ? 'bg-primary' : 'bg-muted'}`}
+            className={`rounded-full px-3 py-1 ${active ? '' : 'bg-muted'}`}
+            style={active ? levelBadgeStyle(l) : undefined}
             {...e2e(`level-filter-${l}`)}
           >
-            <Text className={`text-xs font-bold ${active ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
+            <Text className={`text-xs font-bold ${active ? 'text-white' : 'text-muted-foreground'}`}>
               {labels[i]}
             </Text>
           </Pressable>
