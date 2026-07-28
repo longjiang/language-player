@@ -37,22 +37,21 @@ appId: ca.zerotohero.app
       - tapOn:
           id: "video-card-first"
       # ── Verify navigation happened ──────────────────────────────
-      # react-native-screens + Fabric blocks testID (id:) propagation
-      # on pushed screens. Verify by: (a) explore-screen disappeared,
-      # (b) header still visible, (c) accessibilityLabel with text:
-      # may work where testID doesn't.
+      # react-native-screens + Fabric blocks ALL accessibility
+      # properties (testID, accessibilityLabel, accessibilityIdentifier)
+      # on pushed screens. Verified 2026-07-28: neither id: nor
+      # text: selectors work on pushed-screen content.
+      #
+      # We verify navigation by: (a) explore-screen disappeared,
+      # (b) header-logo still visible (header is outside Stack nav).
+      # Video content verification requires a native-level solution
+      # (e.g., react-native-screens nativeID prop on the Screen itself).
       - extendedWaitUntil:
           notVisible:
             id: "explore-screen"
           timeout: 10000
       - assertVisible:
           id: "header-logo"
-      # Try accessibilityLabel — may work through react-native-screens
-      # where testID/accessibilityIdentifier does not.
-      - extendedWaitUntil:
-          visible:
-            text: "watch screen"
-          timeout: 10000
 
 # ── Return to Explore for sequencer chainability ────────────────────
 - tapOn:
