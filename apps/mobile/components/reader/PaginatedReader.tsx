@@ -2,10 +2,11 @@ import React from 'react';
 import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
+import { Root as Switch } from '@/components/ui/switch';
 import type { ContentBlock, TextBlock } from '@/lib/parse-markdown';
 import type { LemmatizedToken } from '@langplayer/shared';
-import { ChevronLeft, ChevronRight, Loader2, Languages } from 'lucide-react-native';
-import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react-native';
+import { ICON_MUTED } from '@/lib/theme-colors';
 
 interface PaginatedReaderProps {
   blocks: ContentBlock[] | null;
@@ -60,18 +61,17 @@ export function PaginatedReader({
     if (!blocks) return null;
     return (
       <View className="flex-1">
-        {onToggleTranslation && (
-          <View className="flex-row justify-end px-4 pb-2">
-            <Pressable onPress={onToggleTranslation} className="rounded p-1 active:bg-muted">
-              <Languages size={18} color={showTranslation ? ICON_PRIMARY : ICON_MUTED} />
-            </Pressable>
-          </View>
-        )}
         <View className="px-4">
           {blocks.map((block, bi) =>
             renderBlock(block, bi, blocks, blocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions),
           )}
         </View>
+        {onToggleTranslation && (
+          <View className="flex-row items-center justify-end gap-2 border-t border-border px-4 py-2">
+            <Text className="text-xs text-muted-foreground">{t('action.translation')}</Text>
+            <Switch checked={showTranslation} onCheckedChange={onToggleTranslation} />
+          </View>
+        )}
       </View>
     );
   }
@@ -87,20 +87,13 @@ export function PaginatedReader({
 
       {blocks && hasMeasured && visibleBlocks && (
         <View className="flex-1 flex-col">
-          {/* Header row: translate toggle + loading indicator */}
-          <View className="flex-row items-center justify-end gap-2 px-4 py-1">
-            {loadingTokens && (
-              <View className="flex-row items-center gap-1">
-                <Loader2 size={12} color={ICON_MUTED} />
-                <Text className="text-xs text-muted-foreground">{t('msg.making_words_interactive')}</Text>
-              </View>
-            )}
-            {onToggleTranslation && (
-              <Pressable onPress={onToggleTranslation} className="rounded p-1 active:bg-muted">
-                <Languages size={18} color={showTranslation ? ICON_PRIMARY : ICON_MUTED} />
-              </Pressable>
-            )}
-          </View>
+          {/* Loading indicator */}
+          {loadingTokens && (
+            <View className="flex-row items-center justify-center gap-2 py-2">
+              <Loader2 size={12} color={ICON_MUTED} />
+              <Text className="text-xs text-muted-foreground">{t('msg.making_words_interactive')}</Text>
+            </View>
+          )}
 
           <View className="flex-1 px-4">
             {visibleBlocks.map((block, bi) =>
@@ -108,14 +101,28 @@ export function PaginatedReader({
             )}
           </View>
 
-          <View className="flex-shrink-0 flex-row items-center justify-center gap-4 border-t border-border py-2">
-            <Pressable onPress={prevPage} disabled={page === 0 || !prevPage} className={`rounded p-1 ${page === 0 || !prevPage ? 'opacity-30' : 'active:bg-muted'}`}>
-              <ChevronLeft size={18} color={ICON_MUTED} />
-            </Pressable>
-            <Text className="text-xs text-muted-foreground">{page + 1} / {totalPages}</Text>
-            <Pressable onPress={nextPage} disabled={page >= totalPages - 1 || !nextPage} className={`rounded p-1 ${page >= totalPages - 1 || !nextPage ? 'opacity-30' : 'active:bg-muted'}`}>
-              <ChevronRight size={18} color={ICON_MUTED} />
-            </Pressable>
+          {/* Page navigation + translation switch */}
+          <View className="flex-shrink-0 flex-row items-center justify-between border-t border-border px-4 py-2">
+            {/* Page nav (centered by flex tricks) */}
+            <View className="flex-1" />
+            <View className="flex-row items-center gap-3">
+              <Pressable onPress={prevPage} disabled={page === 0 || !prevPage} className={`rounded p-1 ${page === 0 || !prevPage ? 'opacity-30' : 'active:bg-muted'}`}>
+                <ChevronLeft size={18} color={ICON_MUTED} />
+              </Pressable>
+              <Text className="text-xs text-muted-foreground">{page + 1} / {totalPages}</Text>
+              <Pressable onPress={nextPage} disabled={page >= totalPages - 1 || !nextPage} className={`rounded p-1 ${page >= totalPages - 1 || !nextPage ? 'opacity-30' : 'active:bg-muted'}`}>
+                <ChevronRight size={18} color={ICON_MUTED} />
+              </Pressable>
+            </View>
+            {/* Translation switch — right-aligned */}
+            <View className="flex-1 flex-row items-center justify-end gap-2">
+              {onToggleTranslation && (
+                <>
+                  <Text className="text-xs text-muted-foreground">{t('action.translation')}</Text>
+                  <Switch checked={showTranslation} onCheckedChange={onToggleTranslation} />
+                </>
+              )}
+            </View>
           </View>
         </View>
       )}
