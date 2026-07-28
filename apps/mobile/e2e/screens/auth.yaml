@@ -50,6 +50,9 @@ env:
     text: "Invalid credentials"
 - assertVisible:
     id: "login-email-input"
+# Dismiss keyboard before next test (Keyboard.dismiss() in handleLogin does
+# this, but hideKeyboard ensures it on the Maestro side in case of race conditions)
+- hideKeyboard
 
 # ════════════════════════════════════════════════════════════════════
 # A3: Login — empty fields
@@ -58,6 +61,7 @@ env:
     id: "login-signin-button"
 - assertVisible:
     id: "login-email-input"
+- hideKeyboard
 
 # ════════════════════════════════════════════════════════════════════
 # Navigate to Register screen
@@ -96,6 +100,7 @@ env:
     text: "Passwords do not match"
 - assertVisible:
     id: "register-create-button"
+- hideKeyboard
 
 # ════════════════════════════════════════════════════════════════════
 # A6: Register — weak password
@@ -114,6 +119,7 @@ env:
 # that the register button is still visible (no navigation away).
 - assertVisible:
     id: "register-create-button"
+- hideKeyboard
 
 # ════════════════════════════════════════════════════════════════════
 # A7: Register — duplicate email
@@ -136,6 +142,7 @@ env:
     text: "Registration failed"
 - assertVisible:
     id: "register-create-button"
+- hideKeyboard
 
 # ════════════════════════════════════════════════════════════════════
 # A4: Register — happy path
@@ -251,7 +258,7 @@ env:
     repeat: 3
 - inputText: "pc8qm8LBZeGuBno"
 # Dismiss keyboard before tapping sign-in button
-- pressKey: Enter
+- hideKeyboard
 - tapOn:
     id: "login-signin-button"
 - assertVisible:

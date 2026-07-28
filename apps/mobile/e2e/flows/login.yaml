@@ -21,7 +21,7 @@ appId: ca.zerotohero.app
     repeat: 3
 - inputText: "pc8qm8LBZeGuBno"
 # Dismiss keyboard before tapping sign-in button
-- pressKey: Enter
+- hideKeyboard
 - tapOn:
     id: "login-signin-button"
 - assertVisible:
