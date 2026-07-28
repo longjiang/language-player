@@ -115,3 +115,31 @@ export function decideAutoScroll(s: AutoScrollState): AutoScrollDecision {
 
   return { shouldScroll: true, animated, reason: 'scroll' };
 }
+
+// ── Active line index ─────────────────────────
+
+/**
+ * Find the index of the last subtitle line whose start time ≤ currentTime.
+ *
+ * Pure function — platform-agnostic. Used by both web and mobile to
+ * determine which subtitle line is currently active during playback.
+ *
+ * @param startTimes  Array of start times (seconds), sorted ascending.
+ * @param currentTime Current playback position (seconds).
+ * @param defaultIndex Value returned when before the first subtitle.
+ *                     Use 0 for overlay mode (always show first line),
+ *                     -1 for transcript mode (no active line yet).
+ */
+export function findActiveLineIndex(
+  startTimes: number[],
+  currentTime: number,
+  defaultIndex = -1,
+): number {
+  if (startTimes.length === 0) return defaultIndex;
+  let idx = defaultIndex;
+  for (let i = 0; i < startTimes.length; i++) {
+    if (startTimes[i]! <= currentTime) idx = i;
+    else break;
+  }
+  return idx;
+}
