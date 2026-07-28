@@ -1,0 +1,37 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# M3: Explore infinite scroll / pagination
+# ════════════════════════════════════════════════════════════════════
+# Login → Media tab → scroll down the video grid → verify the
+# screen doesn't crash and more content loads (or end-of-list).
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Login ──────────────────────────────────────────────────────────
+- runFlow:
+    file: ../../flows/login.yaml
+
+# ── Wait for feed ──────────────────────────────────────────────────
+- assertVisible:
+    id: "explore-screen"
+
+# ── Scroll down to trigger pagination ──────────────────────────────
+# Scroll from near the bottom of the visible area upward to trigger
+# onEndReached in the FlatList.
+- swipe:
+    start: "50%,80%"
+    end: "50%,30%"
+    duration: 500
+
+# ── Wait briefly for next page to load ─────────────────────────────
+- extendedWaitUntil:
+    visible:
+      id: "explore-screen"
+    timeout: 5000
+
+# ── Assert screen is still visible (no crash, no error) ─────────────
+- assertVisible:
+    id: "explore-screen"

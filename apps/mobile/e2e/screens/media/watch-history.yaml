@@ -1,0 +1,44 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# M12: Watch history
+# ════════════════════════════════════════════════════════════════════
+# Login → navigate to Watch History via hamburger drawer → assert
+# the history list renders (or empty state). Whether items appear
+# depends on prior watch activity — both states are valid.
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Login ──────────────────────────────────────────────────────────
+- runFlow:
+    file: ../../flows/login.yaml
+
+# ── Open hamburger drawer ──────────────────────────────────────────
+- tapOn:
+    id: "header-hamburger-button"
+
+# ── Tap "Watch History" in the drawer ──────────────────────────────
+- runFlow:
+    when:
+      notVisible:
+        text: "Watch History"
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "Watch History"
+          direction: DOWN
+          timeout: 3000
+          speed: 40
+- tapOn:
+    text: "Watch History"
+
+# ── Assert Watch History screen renders ────────────────────────────
+# The screen title uses t('title.watch_history')
+- extendedWaitUntil:
+    visible:
+      text: "Watch History"
+    timeout: 10000
+- assertVisible:
+    text: "Watch History"

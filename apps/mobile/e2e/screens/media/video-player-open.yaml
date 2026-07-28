@@ -1,0 +1,45 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# M4: Video player — open from explore feed
+# ════════════════════════════════════════════════════════════════════
+# Login → Media tab → tap the first video card → verify the watch
+# screen loads (video meta, subtitle area, or loading spinner visible).
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Login ──────────────────────────────────────────────────────────
+- runFlow:
+    file: ../../flows/login.yaml
+
+# ── Wait for feed to load ──────────────────────────────────────────
+- assertVisible:
+    id: "explore-screen"
+
+# ── Tap the first video card ───────────────────────────────────────
+# Video cards use testID "video-card-{youtube_id}". We can't know the
+# ID in advance, so we use a point-based tap on the first card area.
+# Alternative: if no cards render (empty feed), the test is skipped.
+- runFlow:
+    when:
+      visible:
+        id: "video-grid-empty"
+    commands:
+      # No videos available — skip this test gracefully
+      - assertVisible:
+          id: "video-grid-empty"
+- runFlow:
+    when:
+      notVisible:
+        id: "video-grid-empty"
+    commands:
+      # Tap the first video card area (top-left of the grid, below the filter)
+      - tapOn:
+          point: "50%,25%"
+      # ── Assert watch screen renders ───────────────────────────────
+      # The watch screen may show a loading spinner or the video player.
+      # Either means navigation succeeded.
+      - assertVisible:
+          id: "watch-screen"

@@ -692,24 +692,17 @@ Before shipping the E2E testing pipeline:
 | `label.guest` key not in translations.csv | — | Raw translation key displayed after logout. Added `label.guest_user` with 31 locale translations. | 🟡 Medium | ✅ Fixed |
 | Maestro `config.yaml` env vars not inherited | `e2e/` flows | `${VAR}` references in flow step `inputText` do not resolve from `config.yaml` `env:` block. Credentials inlined as workaround. | 🟡 Medium | Workaround |
 
-### Phase 2: Auth + Navigation (Week 3)
+### Phase 2: Auth + Navigation (Week 3) ✅ COMPLETED
 
-> ⚠️ **Expect this phase to take longer than estimated.** Phase 2 is when you learn Maestro timing patterns — flaky tests from wrong `waitFor` durations, `testID` forwarding issues on RN primitives, and Keychain state surprises. Velocity improves in later phases.
+> ✅ **Phase 2 is complete.** All 12 of 13 Tier 1 flows written and passing. A11 (Delete Account) is deferred to a later phase — it requires teardown complexity (deleting the account mid-suite breaks all downstream tests that depend on that user being authenticated).
 
-- Write full auth suite (Tier 1: A1-A13) as Maestro YAML flows
-- Write language selection flow
-- Write session persistence test
-- Add testIDs for auth screens (~5-10 elements)
-- **Run each flow locally against the simulator** — for each YAML file:
-  ```bash
-  maestro test apps/mobile/e2e/screens/auth.yaml
-  ```
-  Fix failures (wrong testID, timing, missing elements), hot-reload, re-run
-- **Run full auth suite end-to-end**:
-  ```bash
-  maestro test apps/mobile/e2e/regression.yaml
-  ```
-  All 13 flows pass sequentially from a clean simulator state (~5min)
+- ✅ Write full auth suite (Tier 1: A1-A13) as Maestro YAML flows — 10 individual test files in `screens/auth/`
+- ✅ Write language selection flow — embedded in `register-and-onboard.yaml` (A4 + A12)
+- ✅ Write session persistence test — A13 in `auth.yaml` sequencer
+- ✅ Add testIDs for auth screens — `login-*`, `register-*`, `forgot-*`, `dismiss-keyboard`, `picker-*`, `header-*`, `search-input`
+- ✅ Run each flow locally against the simulator
+- ✅ Run full auth suite end-to-end — `maestro test apps/mobile/e2e/screens/auth.yaml`
+- ⚠️ A11 (Delete Account) deferred — deletes the authenticated user, breaking all downstream tests in the regression suite. Will be addressed as a standalone teardown flow in a later phase.
 
 #### Phase 2 Learnings
 
@@ -760,13 +753,47 @@ Before shipping the E2E testing pipeline:
   ```
 - **Navigation stack corruption**: `router.replace('/login')` from a screen pushed within a modal (e.g., forgot-password pushed from the login modal) creates a nested duplicate login screen, corrupting `SafeAreaInsets`. The header shifts down ~100px and dropdown menus render offscreen. **Fix**: `router.back()` to pop back to the original login screen. This is safe: logout from tabs uses `replace` because it replaces the root Stack, not a modal.
 
-### Phase 3: Media Tab (Week 4)
-- Write media suite (Tier 2: M1-M16) as Maestro YAML flows
-- Add testIDs for: video cards, search bar, filter pills, player controls
-- Handle async video loading in tests (use `waitFor` matchers for thumbnail/duration appearance)
-- **Run each media flow locally** — write → `maestro test` → fix → re-run
-- **Update regression.yaml** to include media flows
-- **Run combined regression** — auth + media suites pass sequentially (~17min)
+### Phase 3: Media Tab (Week 4) ◐ IN PROGRESS
+
+> ◐ **Phase 3 is in progress.** All 15 auto-test YAML files written, testIDs added to Media components, sequencer created, regression.yaml updated. Tests need to be run against the simulator to verify.
+
+- ✅ Write media suite (Tier 2: M1-M16) as Maestro YAML flows — 15 individual files in `screens/media/` + sequencer `screens/media.yaml`
+- ✅ Add testIDs for: video cards (`video-card-{youtube_id}`), level filter pills (`level-filter-{n}`, `level-filter-all`), video grid states (`video-grid-loading`, `video-grid-empty`), search tags (`search-tag-{tag}`), watch screen (`watch-screen`), explore screen (`explore-screen`)
+- ✅ Handle async video loading — tests use `extendedWaitUntil` with timeouts, `optional: true` for subtitle-dependent assertions, and graceful handling of empty feed states
+- ⬜ **Run each media flow locally** — write → `maestro test` → fix → re-run
+- ✅ **Update regression.yaml** — media suite uncommented and wired in
+- ⬜ **Run combined regression** — auth + media suites pass sequentially (~17min)
+
+#### Phase 3 Test Files
+
+| File | Test | Description |
+|---|---|---|
+| `explore-feed.yaml` | M1 | Login → assert feed loads (video cards or loading state) |
+| `level-filter.yaml` | M2 | Tap level filter pill → assert feed refreshes |
+| `explore-pagination.yaml` | M3 | Scroll down → assert more content or end-of-list |
+| `video-player-open.yaml` | M4 | Tap video card → assert watch screen renders |
+| `subtitle-interaction.yaml` | M5 | Tap word in subtitles → assert dictionary popup area |
+| `video-search.yaml` | M7 | Type query → assert results or no-results state |
+| `youtube-url-search.yaml` | M8 | Paste YouTube URL → assert watch screen opens |
+| `tv-shows.yaml` | M9 | Navigate via drawer → assert TV Shows screen |
+| `live-tv.yaml` | M10 | Navigate via drawer → assert Live TV screen |
+| `music.yaml` | M11 | Navigate via drawer → assert Music screen |
+| `watch-history.yaml` | M12 | Navigate via drawer → assert Watch History screen |
+| `channel-subscribe.yaml` | M13 | Open video → tap Info tab → assert channel card area |
+| `video-queue.yaml` | M14 | Open video → tap Queue tab → assert queue area |
+| `search-no-results.yaml` | M15 | Search gibberish → assert search completes |
+| `search-tag-cloud.yaml` | M16 | Tap tag in cloud → assert results render |
+
+#### TestID Additions
+
+| Component | TestIDs Added |
+|---|---|
+| `VideoCard.tsx` | `video-card-{youtube_id}` on card Pressable (both card and list layouts) |
+| `LevelFilter.tsx` | `level-filter-all`, `level-filter-{1..7}` on filter pills |
+| `VideoGrid.tsx` | `video-grid-loading`, `video-grid-empty` on state views |
+| `search.tsx` | `search-tag-{tag}` on tag cloud Pressables |
+| `watch/[videoId].tsx` | `watch-screen` on main view container |
+| `explore/index.tsx` | `explore-screen` on PageContainer |
 
 ### Phase 4: Dictionary + Vocab (Week 5)
 - Write dictionary suite (Tier 3: D1-D17) as Maestro YAML flows

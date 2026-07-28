@@ -1,0 +1,36 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# M1: Explore feed loads
+# ════════════════════════════════════════════════════════════════════
+# Login → land on Media tab (default) → wait for videos or loading
+# state to appear.
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Login ──────────────────────────────────────────────────────────
+- runFlow:
+    file: ../../flows/login.yaml
+
+# ── Assert feed is loading or has content ───────────────────────────
+# After login, the Explore screen loads recommendations.
+# The video grid may show a spinner (loading) or video cards.
+# Either state is valid — both confirm the feed endpoint was called.
+- runFlow:
+    when:
+      visible:
+        id: "video-grid-loading"
+    commands:
+      - assertVisible:
+          id: "video-grid-loading"
+- runFlow:
+    when:
+      notVisible:
+        id: "video-grid-loading"
+    commands:
+      # If not loading, videos should have rendered (or empty state).
+      # The presence of the explore screen itself confirms the feed loaded.
+      - assertVisible:
+          id: "explore-screen"

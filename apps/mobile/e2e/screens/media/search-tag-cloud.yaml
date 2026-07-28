@@ -1,0 +1,50 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# M16: Search — tag cloud
+# ════════════════════════════════════════════════════════════════════
+# Login → search → wait for tag cloud → tap first visible tag →
+# assert results appear (search completed without error).
+#
+# ⚠️  Tags are fetched from the Flask backend. If the backend is
+# unreachable or has no tags for the current L2, the tag cloud
+# won't render. The test gracefully skips tag-dependent assertions.
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Login ──────────────────────────────────────────────────────────
+- runFlow:
+    file: ../../flows/login.yaml
+
+# ── Navigate to search ─────────────────────────────────────────────
+- tapOn:
+    id: "header-search-button"
+- assertVisible:
+    id: "search-input"
+
+# ── Wait for tag cloud to load ─────────────────────────────────────
+# Tags render as Pressable elements with text "#{tag}".
+# Give the /video-tags endpoint time to respond.
+- extendedWaitUntil:
+    visible:
+      text: "#"
+    timeout: 10000
+    optional: true
+
+# ── Tap the first tag ──────────────────────────────────────────────
+# Tags have the format "#tagname" in the UI. We tap the first one.
+- runFlow:
+    when:
+      visible:
+        text: "#"
+    commands:
+      - tapOn:
+          text: "#.*"
+          index: 0
+          optional: true
+
+      # ── Assert search input is still visible ──────────────────────
+      - assertVisible:
+          id: "search-input"

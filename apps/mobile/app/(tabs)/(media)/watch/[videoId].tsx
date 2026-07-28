@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
+import { e2e } from '@/lib/e2e';
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useVideoTokenCache } from '@/hooks/use-video-token-cache';
@@ -363,7 +364,7 @@ export default function WatchScreen() {
   );
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-background" {...e2e('watch-screen')}>
       {/* Player */}
       <View>{playerElement}</View>
 

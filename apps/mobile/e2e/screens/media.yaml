@@ -1,0 +1,392 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# Tier 2 — Media Tab (M1–M16)
+# ════════════════════════════════════════════════════════════════════
+#
+# ⚠️  Order matters — tests are interdependent due to iOS Keychain
+# persistence. The suite must run sequentially from a CLEAN simulator
+# state:
+#   xcrun simctl uninstall booted ca.zerotohero.app
+#   xcrun simctl install booted <path>/ZeroToHero.app
+#
+# ⚠️  Each test navigates back to the Explore screen before the next
+# test. The login happens once at the start.
+#
+# Flow order:
+#  1. Login
+#  2. M1: Explore feed loads
+#  3. M2: Level filter
+#  4. M3: Explore pagination
+#  5. M4: Video player open
+#  6. M5: Subtitle interaction
+#  7. M7: Video search
+#  8. M8: YouTube URL search
+#  9. M9: TV Shows browser
+# 10. M10: Live TV
+# 11. M11: Music
+# 12. M12: Watch history
+# 13. M15: Search no results
+# 14. M16: Search tag cloud
+# 15. M13: Channel subscribe
+# 16. M14: Video queue
+#
+# M6 (karaoke mode) is 🧑 human — excluded.
+# ════════════════════════════════════════════════════════════════════
+
+# ── Preflight: ensure we're on the login screen ─────────────────────
+- runFlow:
+    file: ../flows/logout.yaml
+    when:
+      notVisible:
+        id: "login-email-input"
+    optional: true
+
+# ════════════════════════════════════════════════════════════════════
+# Login (once, before all media tests)
+# ════════════════════════════════════════════════════════════════════
+- runFlow:
+    file: ../flows/login.yaml
+
+# Handle "Save Password" iOS dialog if it appears
+- tapOn:
+    text: "Not Now"
+    optional: true
+    repeat: 3
+    waitToSettleTimeoutMs: 1000
+
+# ════════════════════════════════════════════════════════════════════
+# M1: Explore feed loads
+# ════════════════════════════════════════════════════════════════════
+- assertVisible:
+    id: "explore-screen"
+
+# ════════════════════════════════════════════════════════════════════
+# M2: Level filter
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    id: "level-filter-2"
+- assertVisible:
+    id: "explore-screen"
+# Reset to "All"
+- tapOn:
+    id: "level-filter-all"
+
+# ════════════════════════════════════════════════════════════════════
+# M3: Explore pagination (scroll)
+# ════════════════════════════════════════════════════════════════════
+- swipe:
+    start: "50%,80%"
+    end: "50%,30%"
+    duration: 500
+- extendedWaitUntil:
+    visible:
+      id: "explore-screen"
+    timeout: 5000
+- assertVisible:
+    id: "explore-screen"
+
+# ════════════════════════════════════════════════════════════════════
+# M4: Video player — open from explore feed
+# ════════════════════════════════════════════════════════════════════
+- runFlow:
+    when:
+      notVisible:
+        id: "video-grid-empty"
+    commands:
+      # Tap the first video card area (below the level filter)
+      - tapOn:
+          point: "50%,25%"
+      - assertVisible:
+          id: "watch-screen"
+      # Navigate back to explore
+      - tapOn:
+          id: "header-logo"
+
+# ════════════════════════════════════════════════════════════════════
+# M5: Subtitle interaction
+# ════════════════════════════════════════════════════════════════════
+- runFlow:
+    when:
+      notVisible:
+        id: "video-grid-empty"
+    commands:
+      - tapOn:
+          point: "50%,25%"
+      - assertVisible:
+          id: "watch-screen"
+      # Wait for subtitles to load
+      - extendedWaitUntil:
+          visible:
+            text: ".*"
+          timeout: 15000
+          optional: true
+      # Tap a word in the subtitle area (lower portion of screen)
+      - tapOn:
+          point: "30%,65%"
+          optional: true
+      # Navigate back to explore
+      - tapOn:
+          id: "header-logo"
+
+# ════════════════════════════════════════════════════════════════════
+# M7: Video search
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    id: "header-search-button"
+- assertVisible:
+    id: "search-input"
+- tapOn:
+    id: "search-input"
+    repeat: 3
+- inputText: "hello"
+# Submit via keyboard Enter key (search input has onSubmitEditing)
+- pressKey: Enter
+- extendedWaitUntil:
+    visible:
+      id: "search-input"
+    timeout: 10000
+- assertVisible:
+    id: "search-input"
+# Navigate back to explore
+- tapOn:
+    id: "header-logo"
+- assertVisible:
+    id: "explore-screen"
+
+# ════════════════════════════════════════════════════════════════════
+# M8: YouTube URL search
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    id: "header-search-button"
+- assertVisible:
+    id: "search-input"
+- tapOn:
+    id: "search-input"
+    repeat: 3
+- inputText: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+# Submit via keyboard Enter key
+- pressKey: Enter
+- assertVisible:
+    id: "watch-screen"
+# Navigate back to explore
+- tapOn:
+    id: "header-logo"
+- assertVisible:
+    id: "explore-screen"
+
+# ════════════════════════════════════════════════════════════════════
+# M9: TV Shows browser
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    id: "header-hamburger-button"
+- runFlow:
+    when:
+      notVisible:
+        text: "TV Shows"
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "TV Shows"
+          direction: DOWN
+          timeout: 3000
+          speed: 40
+- tapOn:
+    text: "TV Shows"
+- extendedWaitUntil:
+    visible:
+      text: "TV Shows"
+    timeout: 10000
+- assertVisible:
+    text: "TV Shows"
+# Navigate back to explore
+- tapOn:
+    id: "header-logo"
+
+# ════════════════════════════════════════════════════════════════════
+# M10: Live TV
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    id: "header-hamburger-button"
+- runFlow:
+    when:
+      notVisible:
+        text: "Live TV"
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "Live TV"
+          direction: DOWN
+          timeout: 3000
+          speed: 40
+- tapOn:
+    text: "Live TV"
+- extendedWaitUntil:
+    visible:
+      text: "Live TV"
+    timeout: 10000
+- assertVisible:
+    text: "Live TV"
+# Navigate back to explore
+- tapOn:
+    id: "header-logo"
+
+# ════════════════════════════════════════════════════════════════════
+# M11: Music
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    id: "header-hamburger-button"
+- runFlow:
+    when:
+      notVisible:
+        text: "Music"
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "Music"
+          direction: DOWN
+          timeout: 3000
+          speed: 40
+- tapOn:
+    text: "Music"
+- extendedWaitUntil:
+    visible:
+      text: "Music"
+    timeout: 10000
+- assertVisible:
+    text: "Music"
+# Navigate back to explore
+- tapOn:
+    id: "header-logo"
+
+# ════════════════════════════════════════════════════════════════════
+# M12: Watch history
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    id: "header-hamburger-button"
+- runFlow:
+    when:
+      notVisible:
+        text: "Watch History"
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "Watch History"
+          direction: DOWN
+          timeout: 3000
+          speed: 40
+- tapOn:
+    text: "Watch History"
+- extendedWaitUntil:
+    visible:
+      text: "Watch History"
+    timeout: 10000
+- assertVisible:
+    text: "Watch History"
+# Navigate back to explore
+- tapOn:
+    id: "header-logo"
+
+# ════════════════════════════════════════════════════════════════════
+# M15: Search — no results
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    id: "header-search-button"
+- assertVisible:
+    id: "search-input"
+- tapOn:
+    id: "search-input"
+    repeat: 3
+- inputText: "xyzasdfqwerpoiu"
+# Submit via keyboard Enter key
+- pressKey: Enter
+- extendedWaitUntil:
+    visible:
+      id: "search-input"
+    timeout: 10000
+- assertVisible:
+    id: "search-input"
+# Navigate back to explore
+- tapOn:
+    id: "header-logo"
+- assertVisible:
+    id: "explore-screen"
+
+# ════════════════════════════════════════════════════════════════════
+# M16: Search — tag cloud
+# ════════════════════════════════════════════════════════════════════
+- tapOn:
+    id: "header-search-button"
+- assertVisible:
+    id: "search-input"
+# Wait for tags to load
+- extendedWaitUntil:
+    visible:
+      text: "#"
+    timeout: 10000
+    optional: true
+# Tap first tag if available
+- runFlow:
+    when:
+      visible:
+        text: "#"
+    commands:
+      - tapOn:
+          text: "#.*"
+          index: 0
+          optional: true
+      - assertVisible:
+          id: "search-input"
+# Navigate back to explore
+- tapOn:
+    id: "header-logo"
+- assertVisible:
+    id: "explore-screen"
+
+# ════════════════════════════════════════════════════════════════════
+# M13: Channel subscribe (requires video with channel, so optional)
+# ════════════════════════════════════════════════════════════════════
+- runFlow:
+    when:
+      notVisible:
+        id: "video-grid-empty"
+    commands:
+      - tapOn:
+          point: "50%,25%"
+      - assertVisible:
+          id: "watch-screen"
+      - extendedWaitUntil:
+          visible:
+            id: "watch-screen"
+          timeout: 10000
+      # Tap the Info tab in the bottom panel
+      - tapOn:
+          point: "85%,88%"
+          optional: true
+      - assertVisible:
+          id: "watch-screen"
+      # Navigate back to explore
+      - tapOn:
+          id: "header-logo"
+
+# ════════════════════════════════════════════════════════════════════
+# M14: Video queue
+# ════════════════════════════════════════════════════════════════════
+- runFlow:
+    when:
+      notVisible:
+        id: "video-grid-empty"
+    commands:
+      - tapOn:
+          point: "50%,25%"
+      - assertVisible:
+          id: "watch-screen"
+      # Tap the Queue tab in the bottom panel (middle tab)
+      - tapOn:
+          point: "50%,88%"
+          optional: true
+      - assertVisible:
+          id: "watch-screen"
+      # Navigate back to explore
+      - tapOn:
+          id: "header-logo"

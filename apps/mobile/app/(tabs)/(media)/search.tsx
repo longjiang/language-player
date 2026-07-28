@@ -140,6 +140,7 @@ export default function SearchScreen() {
                     key={item.tag}
                     onPress={() => handleTagClick(item.tag)}
                     className="rounded-full border border-border bg-muted/50 px-3 py-1 active:bg-primary/10"
+                    {...e2e(`search-tag-${item.tag}`)}
                   >
                     <Text className="text-xs text-muted-foreground">#{item.tag}</Text>
                   </Pressable>

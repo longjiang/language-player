@@ -1,0 +1,44 @@
+appId: ca.zerotohero.app
+---
+# ════════════════════════════════════════════════════════════════════
+# M9: TV Shows browser
+# ════════════════════════════════════════════════════════════════════
+# Login → navigate to TV Shows via hamburger drawer → assert shows
+# list renders (loading, content, or empty — all valid).
+
+# ── Preflight: ensure login screen ──────────────────────────────────
+- runFlow:
+    file: ../../flows/preflight-check.yaml
+
+# ── Login ──────────────────────────────────────────────────────────
+- runFlow:
+    file: ../../flows/login.yaml
+
+# ── Open hamburger drawer ──────────────────────────────────────────
+- tapOn:
+    id: "header-hamburger-button"
+
+# ── Tap "TV Shows" in the drawer ───────────────────────────────────
+# The drawer nav item uses translated text from t('nav.tv_shows')
+- runFlow:
+    when:
+      notVisible:
+        text: "TV Shows"
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "TV Shows"
+          direction: DOWN
+          timeout: 3000
+          speed: 40
+- tapOn:
+    text: "TV Shows"
+
+# ── Assert TV Shows screen renders ─────────────────────────────────
+# The screen title uses t('title.tv_shows')
+- extendedWaitUntil:
+    visible:
+      text: "TV Shows"
+    timeout: 10000
+- assertVisible:
+    text: "TV Shows"
