@@ -2,7 +2,10 @@ import React from 'react';
 import { View, Text, Pressable, Image } from 'react-native';
 import { router } from 'expo-router';
 import type { YouTubeVideo } from '@langplayer/shared';
+import { getLevelFromDifficulty, formatNumericLevel, primaryScale, LEVEL_HEX_COLORS } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useDifficultyProfile } from '@/hooks/use-difficulty-profile';
 import { e2e } from '@/lib/e2e';
 import { ChannelActionsMenu } from './ChannelActionsMenu';
 
@@ -36,10 +39,13 @@ function youtubeThumbnail(id: string): string {
 
 export function VideoCard({ video, layout = 'card', isActive = false, testID: testIDOverride }: VideoCardProps) {
   const t = useT();
+  const { l2Lang } = useLanguage();
+  const profiles = useDifficultyProfile();
   const duration = formatDuration(video.duration);
   const views = formatViews(video.views);
-  const level = video.difficulty != null ? video.difficulty : null;
-  const levelText = level != null ? `L${Math.round(level)}` : null;
+  const level = getLevelFromDifficulty(video.difficulty, profiles?.[l2Lang.code]);
+  const levelLabel = level != null ? formatNumericLevel(level, primaryScale(l2Lang.code)).short : null;
+  const levelColor = level != null ? (LEVEL_HEX_COLORS[level] ?? '#6b7280') : undefined;
   const thumbnail = youtubeThumbnail(video.youtube_id);
   const testID = testIDOverride ?? `video-card-${video.youtube_id}`;
 
@@ -54,17 +60,19 @@ export function VideoCard({ video, layout = 'card', isActive = false, testID: te
         className={`flex-row items-center gap-3 rounded-lg border px-3 py-2 active:bg-muted ${isActive ? 'border-primary bg-primary/5' : 'border-border'}`}
         {...e2e(testID)}
       >
-        <Image source={{ uri: thumbnail }} className="h-14 w-24 rounded-md" />
+        <View className="relative h-14 w-24">
+          <Image source={{ uri: thumbnail }} className="h-14 w-24 rounded-md" />
+          {levelLabel && levelColor && (
+            <View className="absolute left-0.5 top-0.5 rounded px-1 py-0" style={{ backgroundColor: levelColor }}>
+              <Text className="text-[9px] font-bold text-white">{levelLabel}</Text>
+            </View>
+          )}
+        </View>
         <View className="flex-1">
           <Text className={`text-sm font-medium ${isActive ? 'text-primary' : 'text-foreground'}`} numberOfLines={2}>
             {video.title ?? ''}
           </Text>
           <View className="mt-1 flex-row items-center gap-2">
-            {levelText && (
-              <View className="rounded bg-primary/10 px-1.5 py-0.5">
-                <Text className="text-xs font-bold text-primary">{levelText}</Text>
-              </View>
-            )}
             {views ? <Text className="text-xs text-muted-foreground">{views}</Text> : null}
             {duration ? <Text className="text-xs text-muted-foreground">{duration}</Text> : null}
           </View>
@@ -82,6 +90,11 @@ export function VideoCard({ video, layout = 'card', isActive = false, testID: te
     >
       <View className="relative">
         <Image source={{ uri: thumbnail }} className="aspect-video w-full" />
+        {levelLabel && levelColor && (
+          <View className="absolute left-2 top-2 rounded px-1.5 py-0.5" style={{ backgroundColor: levelColor }}>
+            <Text className="text-xs font-bold text-white">{levelLabel}</Text>
+          </View>
+        )}
         {duration ? (
           <View className="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5">
             <Text className="text-xs text-white">{duration}</Text>
@@ -96,11 +109,6 @@ export function VideoCard({ video, layout = 'card', isActive = false, testID: te
           {video.channel_id ? <ChannelActionsMenu channelId={video.channel_id} /> : null}
         </View>
         <View className="mt-1.5 flex-row items-center gap-2">
-          {levelText && (
-            <View className="rounded bg-primary/10 px-1.5 py-0.5">
-              <Text className="text-xs font-bold text-primary">{levelText}</Text>
-            </View>
-          )}
           {views ? <Text className="text-xs text-muted-foreground">{t('label.views_count', { count: views })}</Text> : null}
         </View>
       </View>
