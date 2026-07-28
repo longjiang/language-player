@@ -719,6 +719,11 @@ Before shipping the E2E testing pipeline:
 - Flask API error messages (`"Invalid credentials"`, `"Registration failed"`) are not from translations — they come from the server.
 - Env vars (`${VAR}`) in Maestro YAML need a default in the file header's `env:` block, not bash-style `${VAR:-default}`.
 - RunFlow paths in `screens/` subdirectory must be relative to that directory — use `../flows/` prefix for flows in the parent `e2e/flows/` directory.
+- **Keyboard dismiss with Fabric**: Maestro's `hideKeyboard` command fails on React Native New Architecture (Fabric) — it returns "Couldn't hide the keyboard. This can happen if the app uses a custom input or doesn't expose a standard dismiss action." Several workarounds were tried:
+  - `tapOn: point:` at the top of the screen — ❌ React Native `<Text>` elements aren't tappable by default, so the tap doesn't reach UIKit's `endEditing:`.
+  - `KeyboardAvoidingView` with `behavior="padding"` — ⚠️ caused layout shifts during `repeat: 3` triple-tap: the first tap opens the keyboard, the view shifts, taps 2-3 land on a different field.
+  - `Keyboard.dismiss()` in form submit handlers — ✅ works but only helps AFTER the button is tapped, not BEFORE (keyboard still obscures the button).
+  - **Winner**: Wrapping the title `<Text>` in a `<Pressable onPress={() => Keyboard.dismiss()}>` with `testID="dismiss-keyboard"`. Maestro taps this by `id:` before every button tap, which reliably dismisses the keyboard through the native touch responder. No side effects, no layout shift. Document this pattern in `lib/e2e.ts` as the standard way to dismiss keyboard in tests.
 
 ### Phase 3: Media Tab (Week 4)
 - Write media suite (Tier 2: M1-M16) as Maestro YAML flows
