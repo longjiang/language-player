@@ -6,9 +6,9 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
+import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
-import { parseMarkdownBlocks, type ContentBlock } from '@/lib/parse-markdown';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import { Globe, StickyNote, Plus, Trash2 } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -24,10 +24,17 @@ export default function WebReaderScreen() {
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [blocks, setBlocks] = useState<ContentBlock[] | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [renameId, setRenameId] = useState<number | null>(null);
   const [renameText, setRenameText] = useState('');
+
+  const pagination = useEpubPagination({
+    text,
+    l1Code: l1Lang.code,
+    l2Code: l2Lang.code,
+    showTranslation: false,
+    resetKey: title || null,
+  });
 
   const handleLoad = useCallback(async (loadUrl?: string) => {
     const targetUrl = loadUrl || url;
@@ -35,7 +42,6 @@ export default function WebReaderScreen() {
 
     setLoading(true);
     setError(null);
-    setBlocks(null);
 
     try {
       const res = await fetch(`${PYTHON_API_URL}/proxy?url=${encodeURIComponent(targetUrl)}`);
@@ -45,14 +51,6 @@ export default function WebReaderScreen() {
       const extractedTitle = extractTitle(raw) || targetUrl;
       setTitle(extractedTitle);
       setText(md);
-
-      // Parse markdown for layout — TokenizedText handles its own tokenization
-      try {
-        const parsed = parseMarkdownBlocks(md);
-        setBlocks(parsed);
-      } catch {
-        setBlocks(null);
-      }
     } catch (e: any) {
       setError(e?.message || t('msg.failed_to_load_url'));
     } finally {
@@ -152,14 +150,24 @@ export default function WebReaderScreen() {
           </View>
         )}
 
-        {/* ── Content: parsed blocks → PaginatedReader (scroll mode) ── */}
-        {blocks && (
+        {/* ── Content: PaginatedReader ── */}
+        {text && pagination.blocks && (
           <View className="flex-1">
             <PaginatedReader
-              blocks={blocks}
+              blocks={pagination.blocks}
+              visibleBlocks={pagination.visibleBlocks}
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              hasMeasured={pagination.hasMeasured}
+              loadingTokens={pagination.loadingTokens}
+              tokenCache={pagination.tokenCache}
+              blockTranslations={pagination.blockTranslations}
+              prevPage={pagination.prevPage}
+              nextPage={pagination.nextPage}
+              handleMeasureBlock={pagination.handleMeasureBlock}
+              contentWidth={pagination.contentWidth}
               l2Code={l2Lang.code}
               l1Code={l1Lang.code}
-              scrollMode
               showTextActions
               t={t}
             />
