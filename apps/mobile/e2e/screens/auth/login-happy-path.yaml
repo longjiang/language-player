@@ -74,14 +74,20 @@ env:
 - assertVisible:
     id: "search-input"
     optional: true
-# Navigate back to home via logo
+# Navigate back to home via logo (Media tab)
 - tapOn:
     id: "header-logo"
-# Verify we're still authenticated — logout button is visible
+# Verify we're still authenticated — header elements visible on Media tab
 - assertVisible:
-    id: "me-logout-button"
-    optional: true
+    id: "header-search-button"
 
-# ── Logout to restore clean state ─────────────────────────────────
-- runFlow:
-    file: ../../flows/logout.yaml
+# ── Logout via UserMenu (works from any tab) ──────────────────────
+# Open the user menu (profile avatar in header)
+- tapOn:
+    id: "header-user-menu"
+# Tap logout in the dropdown
+- tapOn:
+    id: "header-user-menu-logout"
+# Verify we're back on the login screen
+- assertVisible:
+    id: "login-email-input"
