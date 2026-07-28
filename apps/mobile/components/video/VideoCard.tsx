@@ -10,6 +10,8 @@ interface VideoCardProps {
   video: YouTubeVideo;
   layout?: 'card' | 'list';
   isActive?: boolean;
+  /** Optional testID override. When set, this replaces the auto-generated video-card-{youtube_id}. */
+  testID?: string;
 }
 
 function formatDuration(seconds: number | string | undefined): string {
@@ -32,13 +34,14 @@ function youtubeThumbnail(id: string): string {
   return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
 }
 
-export function VideoCard({ video, layout = 'card', isActive = false }: VideoCardProps) {
+export function VideoCard({ video, layout = 'card', isActive = false, testID: testIDOverride }: VideoCardProps) {
   const t = useT();
   const duration = formatDuration(video.duration);
   const views = formatViews(video.views);
   const level = video.difficulty != null ? video.difficulty : null;
   const levelText = level != null ? `L${Math.round(level)}` : null;
   const thumbnail = youtubeThumbnail(video.youtube_id);
+  const testID = testIDOverride ?? `video-card-${video.youtube_id}`;
 
   const handlePress = () => {
     router.push(`/(tabs)/(media)/watch/${video.youtube_id}` as any);
@@ -49,7 +52,7 @@ export function VideoCard({ video, layout = 'card', isActive = false }: VideoCar
       <Pressable
         onPress={handlePress}
         className={`flex-row items-center gap-3 rounded-lg border px-3 py-2 active:bg-muted ${isActive ? 'border-primary bg-primary/5' : 'border-border'}`}
-        {...e2e(`video-card-${video.youtube_id}`)}
+        {...e2e(testID)}
       >
         <Image source={{ uri: thumbnail }} className="h-14 w-24 rounded-md" />
         <View className="flex-1">
@@ -75,7 +78,7 @@ export function VideoCard({ video, layout = 'card', isActive = false }: VideoCar
     <Pressable
       onPress={handlePress}
       className="mb-3 overflow-hidden rounded-lg border border-border bg-card active:bg-muted"
-      {...e2e(`video-card-${video.youtube_id}`)}
+      {...e2e(testID)}
     >
       <View className="relative">
         <Image source={{ uri: thumbnail }} className="aspect-video w-full" />

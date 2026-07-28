@@ -37,7 +37,12 @@ export function VideoGrid({ videos, loading, hasMore, onLoadMore, onRefresh, ref
     <FlatList
       data={videos}
       keyExtractor={(item) => item.youtube_id}
-      renderItem={({ item }) => <VideoCard video={item} />}
+      renderItem={({ item, index }) => (
+        <VideoCard
+          video={item}
+          testID={index === 0 ? 'video-card-first' : undefined}
+        />
+      )}
       key={`grid-${numColumns}`}
       numColumns={numColumns}
       columnWrapperStyle={numColumns > 1 ? { gap: 8, paddingHorizontal: 8 } : undefined}

@@ -27,12 +27,13 @@ appId: ca.zerotohero.app
       notVisible:
         id: "video-grid-empty"
     commands:
-      # Tap the first video card area (top-left of the grid, below the filter)
+      # Tap the first video card (uses testID="video-card-first" on grid item 0)
       - tapOn:
-          point: "50%,25%"
+          id: "video-card-first"
       # ── Assert watch screen renders ───────────────────────────────
       # The watch screen may show a loading spinner or the video player.
-      # Either means navigation succeeded.
+      # Either means navigation succeeded. testID is set on loading,
+      # error, and content views so it's visible immediately.
       - assertVisible:
           id: "watch-screen"
 
