@@ -8,7 +8,7 @@ appId: ca.zerotohero.app
 # eraseText (up to 50 chars via simulated backspace), then inputText.
 #
 # Prerequisite: login screen is visible (login-email-input).
-# Postcondition: user is authenticated, me-logout-button is visible.
+# Postcondition: user is authenticated, logged in (header-logo visible).
 # ════════════════════════════════════════════════════════════════════
 - assertVisible:
     id: "login-email-input"
@@ -26,4 +26,4 @@ appId: ca.zerotohero.app
 - tapOn:
     id: "login-signin-button"
 - assertVisible:
-    id: "me-logout-button"
+    id: "header-logo"

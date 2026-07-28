@@ -22,7 +22,7 @@ export default function LoginScreen() {
     try {
       await login(email.trim(), password);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      router.replace('/(tabs)' as any);
+      router.replace('/(tabs)/(media)' as any);
     } catch (e: any) {
       setError(e.message || t('error.login'));
     } finally {

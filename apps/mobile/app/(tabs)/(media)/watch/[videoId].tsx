@@ -277,7 +277,7 @@ export default function WatchScreen() {
   // ── Loading ──
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
+      <View className="flex-1 items-center justify-center bg-background" {...e2e('watch-screen')}>
         <ActivityIndicator size="large" color={ICON_MUTED} />
       </View>
     );
@@ -286,7 +286,7 @@ export default function WatchScreen() {
   // ── Error ──
   if (error || !video) {
     return (
-      <View className="flex-1 items-center justify-center bg-background px-8">
+      <View className="flex-1 items-center justify-center bg-background px-8" {...e2e('watch-screen')}>
         <AlertCircle size={48} color={ICON_DESTRUCTIVE} />
         <Text className="mt-4 text-xl font-bold text-foreground">{t('msg.video_unavailable')}</Text>
         {error ? <Text className="mt-2 text-center text-muted-foreground">{error}</Text> : null}
