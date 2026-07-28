@@ -24,6 +24,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
   const userScrolledUntil = useRef(0);
   const lastScrolledIdx = useRef(-1);
   const lastAutoScrollTime = useRef(0);
+  const isInitialLoad = useRef(true);
 
   // Convert SyncedLine[] → SubtitleLine[] for the translation hook
   const subtitleLines: SubtitleLine[] = useMemo(
@@ -106,9 +107,10 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
     lastAutoScrollTime.current = now;
     flatListRef.current?.scrollToIndex({
       index: activeLineIndex,
-      animated: !isSeek && !isFullyOut,
+      animated: !isInitialLoad.current && !isSeek && !isFullyOut,
       viewPosition: 0.5,
     });
+    isInitialLoad.current = false;
   }, [activeLineIndex]);
 
   return (
