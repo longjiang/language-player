@@ -7,7 +7,7 @@ import { useT } from '@/hooks/use-t';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SETTINGS_SEARCH_KEYS } from '@langplayer/shared';
-import { SearchBar } from './_components/SearchBar';
+import { SearchBar } from '@/components/settings/SearchBar';
 import { DisplaySettings } from './display';
 import { PlaybackSettings } from './playback';
 import { SpeechSettings } from './speech';
