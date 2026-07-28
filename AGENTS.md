@@ -91,6 +91,8 @@ npm run build:check -w apps/web  # Safe build check (uses isolated .next-check/,
 
 **⚠️ Always use `python3.10` for Python commands.** The Flask backend and all Python scripts require Python 3.10. Never use bare `python`, `python3`, or a different version. Example: `python3.10 app.py`, `python3.10 -c "..."`, `python3.10 script.py`.
 
+**⚠️ Never start or stop the Flask server.** The Flask server (`zerotohero-python-server/`) is the user's responsibility to manage — starting, stopping, restarting, and checking its status. If you need the server running for a test or endpoint call, ask the user to start it. If it appears to be down, tell the user rather than trying to restart it yourself. You may query the Flask API endpoints with `curl` or `fetch` to test behavior, but never manage the server process.
+
 **⚠️ Build vs dev**: `npx turbo build` and `npm run build` both run `rm -rf .next` which kills the dev server. Use `npm run build:check -w apps/web` instead — it builds into an isolated `.next-check/` directory (created and cleaned up automatically).
 
 **⚠️ Always use `npx turbo` from the repo root** — it handles working directories automatically. If you must run a package script directly (e.g., `npx next build`), `cd` into that package's directory first. Running `npx next build apps/web` from the root will fail with misleading CSS/webpack errors because Next.js interprets the path argument as the project root, not a subdirectory.
@@ -100,6 +102,8 @@ npm run build:check -w apps/web  # Safe build check (uses isolated .next-check/,
 cd apps/mobile && ./node_modules/.bin/tsc --noEmit
 cd apps/web && ./node_modules/.bin/tsc --noEmit
 ```
+
+**⚠️ Always check documentation for unfamiliar APIs, libraries, or CLI tools.** Do not guess syntax, parameters, or return types — verify against official docs. This applies to everything: Maestro YAML commands, Expo APIs, Directus endpoints, Flask decorators, etc. The `fetch_webpage` tool can retrieve live documentation pages.
 
 ### Test Credentials
 
