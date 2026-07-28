@@ -207,8 +207,14 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       return;
     }
 
-    // Skip if text hasn't changed
-    if (effectiveText === lastTextRef.current && tokens.length > 0) return;
+    // Skip if text hasn't changed AND we already have real tokens (not the
+    // placeholder set below while waiting for the video token cache to load).
+    // Placeholder tokens have lemmas: [] for the whole line — no word is
+    // interactive. When tokenCacheLoaded flips from false→true, this guard
+    // must NOT block re-processing so the now-populated cache (or
+    // lemmatizeText fallback) can replace the placeholder with real tokens.
+    const hasRealTokens = tokens.length > 0 && tokens.some(t => t.lemmas.length > 0);
+    if (effectiveText === lastTextRef.current && hasRealTokens) return;
     lastTextRef.current = effectiveText;
 
     // If a video-level token cache is provided but hasn't finished loading yet,
