@@ -2,7 +2,7 @@ import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
-import { SliderRow } from './_components/SliderRow';
+import { SliderRow } from '@/components/settings/SliderRow';
 
 export function ReviewSettings() {
   const { review, updateReview } = useSettingsContext();

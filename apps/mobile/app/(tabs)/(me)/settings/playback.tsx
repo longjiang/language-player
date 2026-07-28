@@ -2,9 +2,9 @@ import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
-import { SectionHeader } from './_components/SectionHeader';
-import { ToggleRow } from './_components/ToggleRow';
-import { SegmentedRow } from './_components/SegmentedRow';
+import { SectionHeader } from '@/components/settings/SectionHeader';
+import { ToggleRow } from '@/components/settings/ToggleRow';
+import { SegmentedRow } from '@/components/settings/SegmentedRow';
 
 export function PlaybackSettings() {
   const { playback, updatePlayback } = useSettingsContext();

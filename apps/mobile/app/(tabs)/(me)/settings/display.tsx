@@ -6,10 +6,10 @@ import { useT } from '@/hooks/use-t';
 import { getSampleSentence } from '@langplayer/shared';
 import { TokenizedText } from '@/components/TokenizedText';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { SectionHeader } from './_components/SectionHeader';
-import { ToggleRow } from './_components/ToggleRow';
-import { SliderRow } from './_components/SliderRow';
-import { SegmentedRow } from './_components/SegmentedRow';
+import { SectionHeader } from '@/components/settings/SectionHeader';
+import { ToggleRow } from '@/components/settings/ToggleRow';
+import { SliderRow } from '@/components/settings/SliderRow';
+import { SegmentedRow } from '@/components/settings/SegmentedRow';
 
 export function DisplaySettings() {
   const { l1Lang, l2Lang } = useLanguage();
