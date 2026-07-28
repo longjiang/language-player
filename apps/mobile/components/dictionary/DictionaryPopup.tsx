@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, Pressable, ScrollView, ActivityIndicator, Animated, useWindowDimensions } from 'react-native';
+import * as DialogPrimitive from '@rn-primitives/dialog';
 import { useDictionary } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { SaveButton } from '@/components/dictionary/SaveButton';
-import * as Dialog from '@/components/ui/dialog';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { useT } from '@/hooks/use-t';
 
@@ -31,13 +31,49 @@ export function DictionaryPopup({
   const { l1Lang, l2Lang } = useLanguage();
   const dict = useDictionary();
   const t = useT();
+  const { height: screenHeight } = useWindowDimensions();
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lookedUpLemma, setLookedUpLemma] = useState(false);
 
-  // Look up the word when the popup opens
-  React.useEffect(() => {
+  // ── Slide-up animation ──
+  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.parallel([
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 30,
+          stiffness: 300,
+          mass: 0.8,
+        }),
+        Animated.timing(overlayOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: screenHeight,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(overlayOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [visible, screenHeight, slideAnim, overlayOpacity]);
+
+  // ── Look up the word when the popup opens ──
+  useEffect(() => {
     if (!visible || !word) return;
     setLoading(true);
     setError(null);
@@ -60,7 +96,6 @@ export function DictionaryPopup({
         }
 
         // Secondary: also lookup surface form, merge deduplicated
-        setLookedUpLemma(true);
         const surfaceRes = await dict.lookup(word, l2, l1);
         const surfaceResults = (surfaceRes.results ?? []).filter(
           (entry: DictionaryEntry) => !primaryResults.some((p: DictionaryEntry) => p.id === entry.id),
@@ -76,80 +111,126 @@ export function DictionaryPopup({
 
   const lemmaForm = lemma && lemma !== word ? lemma : null;
 
+  // ── Force-mount so exit slide-down animation plays ──
+  const [wasVisible, setWasVisible] = useState(false);
+  useEffect(() => { if (visible) setWasVisible(true); }, [visible]);
+  if (!visible && !wasVisible) return null;
+
   return (
-    <Dialog.Root open={visible} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <Dialog.Portal>
-        <Dialog.SheetContent testID="dictionary-popup">
-          {/* Header — surface form as headline, lemma below when different (matches web) */}
-          <View className="mb-3 flex-row items-center justify-between">
-            <View className="flex-1 mr-2">
-              <Text className="text-lg font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
-                {word}
-              </Text>
-              {lemmaForm && (
-                <Text className="text-xs text-muted-foreground" numberOfLines={1}>
-                  lemma: {lemmaForm}
-                </Text>
-              )}
-            </View>
-            <Dialog.Close className="rounded-full bg-muted p-1.5">
-              <Text className="text-base text-muted-foreground">✕</Text>
-            </Dialog.Close>
-          </View>
+    <DialogPrimitive.Root open={visible} onOpenChange={(open) => { if (!open) setTimeout(onClose, 250); }}>
+      <DialogPrimitive.Portal>
+        {/* Overlay */}
+        <Animated.View
+          pointerEvents={visible ? 'auto' : 'none'}
+          className="absolute inset-0"
+          style={{ opacity: overlayOpacity }}
+        >
+          <DialogPrimitive.Overlay
+            className="absolute inset-0 bg-black/40"
+            onPress={onClose}
+          />
+        </Animated.View>
 
-          {/* Context */}
-          {context ? (
-            <View className="mt-2 rounded-lg bg-muted/50 p-2">
-              <Text className="text-sm text-foreground">{context}</Text>
-              {translatedContext ? (
-                <Text className="mt-1 text-sm text-muted-foreground">
-                  {translatedContext}
-                </Text>
-              ) : null}
-            </View>
-          ) : null}
-
-          {/* Results */}
-          <ScrollView className="pt-3">
-            {loading && (
-              <View className="items-center py-12">
-                <ActivityIndicator size="large" className="text-primary" />
-                <Text className="mt-3 text-sm text-muted-foreground">
-                  {t('msg.loading')}
-                </Text>
+        {/* Bottom sheet */}
+        <Animated.View
+          pointerEvents="box-none"
+          className="absolute inset-x-0 bottom-0"
+          style={{ transform: [{ translateY: slideAnim }] }}
+        >
+          <DialogPrimitive.Content
+            testID="dictionary-popup"
+            className="rounded-t-xl bg-background"
+            style={{
+              maxHeight: screenHeight * 0.75,
+              minHeight: screenHeight * 0.35,
+            }}
+          >
+            <View className="flex-1 px-4 pt-4 pb-8">
+              {/* Drag handle */}
+              <View className="mb-3 items-center">
+                <View className="h-1 w-10 rounded-full bg-muted-foreground/30" />
               </View>
-            )}
 
-            {error && (
-              <View className="rounded-lg border border-red-200 bg-red-50 p-3">
-                <Text className="text-sm text-red-700">{error}</Text>
-              </View>
-            )}
-
-            {results && results.length === 0 && !loading && (
-              <View className="items-center py-12">
-                <Text className="text-muted-foreground">
-                  {t('msg.no_results')}
-                </Text>
-              </View>
-            )}
-
-            {results?.map((entry) => (
-              <View key={entry.id} className="mb-2 flex-row items-start gap-2">
-                <View className="flex-1">
-                  <DictionaryEntryCard
-                    entry={entry}
-                    variant="compact"
-                    onPress={onViewDetail ? (e) => onViewDetail(e, results ?? []) : undefined}
-                    l2Code={l2Lang.code}
-                  />
+              {/* Header — surface form as headline, lemma below when different */}
+              <View className="mb-3 flex-row items-center justify-between">
+                <View className="flex-1 mr-2">
+                  <Text className="text-lg font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
+                    {word}
+                  </Text>
+                  {lemmaForm && (
+                    <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                      lemma: {lemmaForm}
+                    </Text>
+                  )}
                 </View>
-                <SaveButton entry={entry} size={18} />
+                <Pressable
+                  onPress={onClose}
+                  className="rounded-full bg-muted p-1.5 active:opacity-70"
+                  hitSlop={8}
+                >
+                  <Text className="text-base text-muted-foreground">✕</Text>
+                </Pressable>
               </View>
-            ))}
-          </ScrollView>
-        </Dialog.SheetContent>
-      </Dialog.Portal>
-    </Dialog.Root>
+
+              {/* Context */}
+              {context ? (
+                <View className="mb-2 rounded-lg bg-muted/50 p-2">
+                  <Text className="text-sm text-foreground">{context}</Text>
+                  {translatedContext ? (
+                    <Text className="mt-1 text-sm text-muted-foreground">
+                      {translatedContext}
+                    </Text>
+                  ) : null}
+                </View>
+              ) : null}
+
+              {/* Results */}
+              <ScrollView
+                className="flex-1"
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {loading && (
+                  <View className="items-center py-12">
+                    <ActivityIndicator size="large" className="text-primary" />
+                    <Text className="mt-3 text-sm text-muted-foreground">
+                      {t('msg.loading')}
+                    </Text>
+                  </View>
+                )}
+
+                {error && (
+                  <View className="rounded-lg border border-red-200 bg-red-50 p-3">
+                    <Text className="text-sm text-red-700">{error}</Text>
+                  </View>
+                )}
+
+                {results && results.length === 0 && !loading && (
+                  <View className="items-center py-12">
+                    <Text className="text-muted-foreground">
+                      {t('msg.no_results')}
+                    </Text>
+                  </View>
+                )}
+
+                {results?.map((entry) => (
+                  <View key={entry.id} className="mb-2 flex-row items-start gap-2">
+                    <View className="flex-1">
+                      <DictionaryEntryCard
+                        entry={entry}
+                        variant="compact"
+                        onPress={onViewDetail ? (e) => onViewDetail(e, results ?? []) : undefined}
+                        l2Code={l2Lang.code}
+                      />
+                    </View>
+                    <SaveButton entry={entry} size={18} />
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          </DialogPrimitive.Content>
+        </Animated.View>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
