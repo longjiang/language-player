@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useMemo } from 'react';
 import type { FlatList } from 'react-native';
-import { decideAutoScroll, SCROLL, type AutoScrollState } from '@langplayer/shared';
+import { decideAutoScroll, SCROLL, VIEWABILITY_ITEM_THRESHOLD, type AutoScrollState } from '@langplayer/shared';
 
 // ── Types ──────────────────────────────────────
 
@@ -67,7 +67,7 @@ export function useTranscriptAutoScroll({
   );
 
   const viewabilityConfig = useMemo(
-    () => ({ itemVisiblePercentThreshold: 10 }),
+    () => ({ itemVisiblePercentThreshold: VIEWABILITY_ITEM_THRESHOLD }),
     [],
   );
 
