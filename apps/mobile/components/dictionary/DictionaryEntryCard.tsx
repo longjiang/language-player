@@ -91,6 +91,24 @@ export function DictionaryEntryCard({ entry, variant = 'compact', onPress, l2Cod
         <Text className="mt-1 text-xs italic text-muted-foreground">{entry.part_of_speech}</Text>
       )}
 
+      {/* Dictionary source (e.g. "EDICT 2019", "HSK CEDICT", "AI-Generated") */}
+      {(() => {
+        const sourceName = entry.dictionary?.name ?? entry.source;
+        const displaySource = sourceName === 'AI-Generated' || sourceName === 'LLM'
+          ? t('label.ai_generated')
+          : entry.dictionary?.version
+            ? `${sourceName} ${entry.dictionary.version}`
+            : sourceName;
+        if (!displaySource) return null;
+        return (
+          <View className="mt-2 flex-row items-center gap-1">
+            <Text className="text-[10px] text-muted-foreground/50">
+              {displaySource}
+            </Text>
+          </View>
+        );
+      })()}
+
       {/* "See details" link (compact only) */}
       {variant === 'compact' && (entry.definitions?.length ?? 0) > 2 && (
         <Text className="mt-1 text-xs text-primary">{t('action.more')}</Text>

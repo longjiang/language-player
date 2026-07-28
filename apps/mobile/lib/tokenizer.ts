@@ -205,15 +205,14 @@ async function segmentText(text: string, l2: string, config: TokenizerConfig | u
   if (config?.needsDictSegmentation) {
     const dictData = await loadDictWordSet(l2);
     if (dictData) {
-      // Skip whitespace in scriptio continua — these languages don't use
-      // spaces between words, and the dict headwords won't include spaces.
-      // Preserve punctuation as standalone tokens (not found in dict).
+      if (__DEV__) console.log(`[lemmatize] 📖 DICT-SEG l2=${l2} words=${dictData.wordSet.size} maxLen=${dictData.maxWordLen}`);
       return maxMatchSegment(text, dictData.wordSet, dictData.maxWordLen);
     }
-    // Dict not downloaded — fall through to regex
+    if (__DEV__) console.log(`[lemmatize] 📖 DICT-MISS l2=${l2} → falling to regex`);
   }
 
   // Default: regex word-split (works for all space-separated languages)
+  if (__DEV__) console.log(`[lemmatize] 📝 REGEX-SPLIT l2=${l2} text="${text.slice(0, 50)}…"`);
   return tokenizeWords(text);
 }
 
@@ -307,8 +306,13 @@ async function lemmatizeLocal(
 ): Promise<LemmatizedToken[]> {
   // Fast path: no config at all → surface-as-lemma for everything
   if (!config) {
+    if (__DEV__) console.log(`[lemmatize] 🏷️ SURFACE-AS-LEMMA l2=${l2} words=${words.length} (no config)`);
     return surfaceAsLemma(words);
   }
+
+  // Track which strategy resolved each word (for logging)
+  let tableHits = 0;
+  let snowballHits = 0;
 
   // Check if lemma table is downloaded (non-blocking — if it's not ready
   // yet, we fall through to snowball/surface on this call).
@@ -343,9 +347,10 @@ async function lemmatizeLocal(
     : null;
 
   // Process each word through the fallback chain
-  return words.map((word) => {
+  const result = words.map((word) => {
     // 1. Lemma table
     if (lemmaMap?.has(word)) {
+      tableHits++;
       return {
         text: word,
         lemmas: lemmaMap.get(word)!.map((l) => ({ lemma: l })),
@@ -357,6 +362,7 @@ async function lemmatizeLocal(
       try {
         const stem = stemmer(word);
         if (stem && stem !== word) {
+          snowballHits++;
           return { text: word, lemmas: [{ lemma: stem }] };
         }
       } catch {
@@ -372,6 +378,15 @@ async function lemmatizeLocal(
     // 4. Surface as lemma
     return { text: word, lemmas: [{ lemma: word }] };
   });
+
+  if (__DEV__) {
+    const stemmed = result.filter(t => t.lemmas[0]?.lemma !== t.text).length;
+    const sample = result.filter(t => t.lemmas[0]?.lemma !== t.text).slice(0, 10)
+      .map(t => `${t.text}→${t.lemmas[0]?.lemma}`).join(', ');
+    console.log(`[lemmatize] 🏷️ LOCAL-DONE l2=${l2} words=${result.length} stemmed=${stemmed} table=${tableHits} snowball=${snowballHits} sample="${sample}"`);
+  }
+
+  return result;
 }
 
 // Track which languages we've already attempted background download for,
@@ -416,6 +431,9 @@ async function lemmatizeFromServer(
 ): Promise<LemmatizedToken[] | null> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 3000);
+  const shortText = text.length > 50 ? text.slice(0, 50) + '…' : text;
+
+  if (__DEV__) console.log(`[lemmatize] 🔵 REQ l2=${l2} text="${shortText}"`);
 
   try {
     const combinedSignal = signal
@@ -428,11 +446,25 @@ async function lemmatizeFromServer(
       body: JSON.stringify({ text, l2 }),
       signal: combinedSignal,
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      if (__DEV__) console.log(`[lemmatize] ❌ HTTP ${response.status} l2=${l2} text="${shortText}"`);
+      return null;
+    }
     const data = await response.json();
-    return (data.tokens ?? []) as LemmatizedToken[];
-  } catch {
-    return null; // network error or timeout → fall through to local
+    const tokens = (data.tokens ?? []) as LemmatizedToken[];
+    const wordTokens = tokens.filter(t => t.lemmas.length > 0);
+    const lemmaSample = wordTokens.slice(0, 10).map(t => `${t.text}→${t.lemmas[0]?.lemma}`).join(', ');
+    if (__DEV__) console.log(`[lemmatize] ✅ RES l2=${l2} total=${tokens.length} words=${wordTokens.length} lemmas="${lemmaSample}"`);
+    return tokens;
+  } catch (e: any) {
+    if (__DEV__) {
+      if (e?.name === 'AbortError') {
+        console.log(`[lemmatize] ⏰ TIMEOUT l2=${l2} text="${shortText}"`);
+      } else {
+        console.log(`[lemmatize] ❌ ERR l2=${l2} text="${shortText}"`, e?.message ?? e);
+      }
+    }
+    return null;
   } finally {
     clearTimeout(timeout);
   }
@@ -495,8 +527,12 @@ const kuromojiTokenizers = new Map<string, Promise<any | null>>();
  */
 async function getKuromojiTokenizer(l2: string): Promise<any | null> {
   const existing = kuromojiTokenizers.get(l2);
-  if (existing) return existing;
+  if (existing) {
+    if (__DEV__) console.log(`[lemmatize] 🤖 TOKENIZER-CACHED l2=${l2}`);
+    return existing;
+  }
 
+  if (__DEV__) console.log(`[lemmatize] 🤖 TOKENIZER-INIT l2=${l2} (loading data pack…)`);
   const promise = (async () => {
     try {
       const { hasKuromojiData, getKuromojiDataPath } = await import('@/lib/tokenizer-db');
@@ -512,7 +548,9 @@ async function getKuromojiTokenizer(l2: string): Promise<any | null> {
 
       // Default to kuromoji (Japanese)
       const { loadKuromoji } = await import('@/lib/kuromoji-loader');
-      return await loadKuromoji(dicPath);
+      const result = await loadKuromoji(dicPath);
+      if (__DEV__) console.log(`[lemmatize] 🤖 TOKENIZER-READY l2=${l2} loaded=${!!result}`);
+      return result;
     } catch (e) {
       if (__DEV__) console.warn(`[Tokenizer] kuromoji (${l2}) init error:`, e);
       return null;
@@ -561,8 +599,12 @@ export function resetKoTokenizer(): void {
  *   kuromoji is not available (data pack not downloaded / error)
  */
 async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null> {
+  if (__DEV__) console.log(`[lemmatize] 🤖 JA-TOKENIZE start text="${text.slice(0, 40)}…"`);
   const tokenizer = await getKuromojiTokenizer('ja');
-  if (!tokenizer) return null;
+  if (!tokenizer) {
+    if (__DEV__) console.log(`[lemmatize] 🤖 JA-NO-TOKENIZER`);
+    return null;
+  }
 
   try {
     const tokens = tokenizer.tokenize(text) as Array<{
@@ -583,6 +625,8 @@ async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null>
   } catch (e) {
     if (__DEV__) console.warn('[Tokenizer] kuromoji tokenize error:', e);
     return null;
+  } finally {
+    if (__DEV__) console.log(`[lemmatize] 🤖 JA-TOKENIZE done`);
   }
 }
 
@@ -602,8 +646,12 @@ async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null>
  *   kuromoji-ko is not available (data pack not downloaded / error)
  */
 async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
+  if (__DEV__) console.log(`[lemmatize] 🤖 KO-TOKENIZE start text="${text.slice(0, 40)}…"`);
   const tokenizer = await getKuromojiTokenizer('ko');
-  if (!tokenizer) return null;
+  if (!tokenizer) {
+    if (__DEV__) console.log(`[lemmatize] 🤖 KO-NO-TOKENIZER`);
+    return null;
+  }
 
   try {
     const tokens = tokenizer.tokenize(text) as Array<{
@@ -652,6 +700,8 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
   } catch (e) {
     if (__DEV__) console.warn('[Tokenizer] kuromoji-ko tokenize error:', e);
     return null;
+  } finally {
+    if (__DEV__) console.log(`[lemmatize] 🤖 KO-TOKENIZE done`);
   }
 }
 
@@ -682,23 +732,28 @@ export async function lemmatizeText(
 
   // 1. In-memory cache
   const cached = cacheGet(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    if (__DEV__) console.log(`[lemmatize] 💾 CACHE HIT l2=${l2} text="${text.slice(0, 50)}…"`);
+    return cached;
+  }
 
   // 2. Server (primary) — with in-flight deduplication so concurrent
   //    callers for the same text share one request.
   let inflight = lemmatizeInflight.get(cacheKey);
-  if (!inflight) {
-    inflight = lemmatizeFromServer(text, l2, signal)
+  if (inflight) {
+    if (__DEV__) console.log(`[lemmatize] 🔗 REUSE in-flight l2=${l2} text="${text.slice(0, 50)}…"`);
+    return inflight;
+  }
+
+  if (__DEV__) console.log(`[lemmatize] 🚀 DISPATCH l2=${l2} text="${text.slice(0, 50)}…"`);
+  inflight = lemmatizeFromServer(text, l2, signal)
       .then((serverTokens) => {
         if (serverTokens) {
           cacheSet(cacheKey, serverTokens);
           return serverTokens;
         }
         // 3. Local fallback — extended chain
-        //    Phase 1: regex split + surface/stem/arabic-stem
-        //    Phase 2a: snowball stemmers + lemma tables
-        //    Phase 2b: dict-based segmentation (CJK/SEA)
-        //    Phase 2c: kuromoji (Japanese, full morphological analysis)
+        if (__DEV__) console.log(`[lemmatize] 🔽 FALLBACK l2=${l2} text="${text.slice(0, 50)}…"`);
         const config = TOKENIZER_CONFIG[l2];
 
         // Background download for future calls (fire-and-forget)
@@ -712,12 +767,15 @@ export async function lemmatizeText(
         if (config?.needsKuromoji) {
           const tokenizeFn = l2 === 'ko' ? tokenizeKorean : l2 === 'ja' ? tokenizeJapanese : null;
           if (tokenizeFn) {
+            if (__DEV__) console.log(`[lemmatize] 🤖 KUPOMOJI l2=${l2} text="${text.slice(0, 50)}…"`);
             return tokenizeFn(text).then((kuromojiTokens) => {
               if (kuromojiTokens) {
+                if (__DEV__) console.log(`[lemmatize] ✅ KUPOMOJI OK l2=${l2} tokens=${kuromojiTokens.length}`);
                 cacheSet(cacheKey, kuromojiTokens);
                 return kuromojiTokens;
               }
               // Data pack not available — fall through to generic path
+              if (__DEV__) console.log(`[lemmatize] ⚠️ KUPOMOJI UNAVAIL l2=${l2} → falling to segment+local`);
               return segmentText(text, l2, config).then((words) =>
                 lemmatizeLocal(words, l2, config),
               ).then((tokens) => {
@@ -730,6 +788,7 @@ export async function lemmatizeText(
 
         // Phase 2b: Use dict-based segmentation for CJK/SEA languages
         // Falls back to regex word-split if dict not downloaded
+        if (__DEV__) console.log(`[lemmatize] 🔽 GENERIC-FALLBACK l2=${l2} (no kuromoji for this lang)`);
         return segmentText(text, l2, config).then((words) =>
           lemmatizeLocal(words, l2, config),
         ).then((tokens) => {
@@ -741,7 +800,6 @@ export async function lemmatizeText(
         lemmatizeInflight.delete(cacheKey);
       });
     lemmatizeInflight.set(cacheKey, inflight);
-  }
 
   return inflight;
 }

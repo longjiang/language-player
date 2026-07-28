@@ -85,6 +85,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  const [selectedLemma, setSelectedLemma] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false);
   const lastTextRef = useRef(text);
@@ -190,6 +191,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   // ── Preloaded tokens: use directly ──
   useEffect(() => {
     if (preloadedTokens) {
+      if (__DEV__ && preloadedTokens.length > 0) {
+        const wordTokens = preloadedTokens.filter(t => t.lemmas.length > 0);
+        const lemmaSample = wordTokens.slice(0, 10).map(t => `${t.text}→${t.lemmas[0]?.lemma}`).join(', ');
+        console.log(`[TokenizedText] 📥 PRELOADED l2=${l2Code} total=${preloadedTokens.length} words=${wordTokens.length} lemmas=\"${lemmaSample}\"`);
+      }
       setTokens(preloadedTokens);
       setLoading(false);
     }
@@ -390,6 +396,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 if (popupEnabled) {
                   configureLayoutAnimation();
                   setSelectedWord(word);
+                  setSelectedLemma(firstLemma || null);
                 }
               };
 
@@ -458,6 +465,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 if (popupEnabled && isWordToken) {
                   configureLayoutAnimation();
                   setSelectedWord(word);
+                  setSelectedLemma(firstLemma || null);
                 }
               };
 
@@ -484,7 +492,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
           <DictionaryPopup
             visible={!!selectedWord}
             word={selectedWord ?? ''}
-            onClose={() => { configureLayoutAnimation(); setSelectedWord(null); }}
+            lemma={selectedLemma ?? undefined}
+            onClose={() => { configureLayoutAnimation(); setSelectedWord(null); setSelectedLemma(null); }}
           />
         )}
       </>
