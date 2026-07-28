@@ -8,8 +8,8 @@ import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
 import { EpubCover } from '@/components/reader/EpubCover';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
-import { BookOpen, Upload, X, Languages } from 'lucide-react-native';
-import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { BookOpen, Upload, X } from 'lucide-react-native';
+import { ICON_MUTED } from '@/lib/theme-colors';
 
 export default function EpubReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -96,9 +96,6 @@ export default function EpubReaderScreen() {
         <Pressable onPress={epub.close} className="flex-row items-center gap-1 rounded px-2 py-1 active:bg-muted">
           <X size={14} color={ICON_MUTED} /><Text className="text-xs text-muted-foreground">{t('action.close')}</Text>
         </Pressable>
-        <Pressable onPress={() => updateDisplay({ translation: !display.translation })} className="rounded p-1 active:bg-muted">
-          <Languages size={20} color={display.translation ? ICON_PRIMARY : ICON_MUTED} />
-        </Pressable>
         <Pressable onPress={() => setSidebarOpen(!sidebarOpen)} className="rounded p-1 active:bg-muted">
           <BookOpen size={20} color={ICON_MUTED} />
         </Pressable>
@@ -119,7 +116,10 @@ export default function EpubReaderScreen() {
           handleMeasureBlock={pagination.handleMeasureBlock}
           contentWidth={pagination.contentWidth}
           l2Code={l2Lang.code}
+          l1Code={l1Lang.code}
           showTranslation={display.translation}
+          onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
+          showTextActions
           t={t}
         />
 
