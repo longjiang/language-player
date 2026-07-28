@@ -77,7 +77,7 @@ export default function AboutScreen() {
             >
               <View className="flex-row items-center gap-2.5">
                 <Wrench size={16} color={ICON_MUTED} />
-                <Text className="text-sm text-foreground">Tokenizer Test Page</Text>
+                <Text className="text-sm text-foreground">{t('title.tokenizer_test')}</Text>
               </View>
             </Pressable>
           )}
