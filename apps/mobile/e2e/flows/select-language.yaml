@@ -12,15 +12,21 @@ appId: ca.zerotohero.app
 # Selects English (en) as L1 and Spanish (es) as L2.
 # ════════════════════════════════════════════════════════════════════
 
-# Select English (en) as L1
-- scrollUntilVisible:
-    element:
-      text: "English"
-    direction: DOWN
-    timeout: 5000
-    speed: 40
+# Select English (en) as L1 — only scroll if not already visible at top
+# NOTE: Fabric combines name + code into "English, EN" — use exact accessibilityText
+- runFlow:
+    when:
+      notVisible:
+        text: "English, EN"
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "English, EN"
+          direction: DOWN
+          timeout: 5000
+          speed: 40
 - tapOn:
-    text: "English"
+    text: "English, EN"
 
 # Tap "Next" to go to L2 tab
 - assertVisible:
@@ -28,17 +34,22 @@ appId: ca.zerotohero.app
 - tapOn:
     id: "picker-next-button"
 
-# Select Spanish (es) as L2
+# Select Spanish (es) as L2 — only scroll if not already visible at top
 - assertVisible:
     id: "picker-l2-tab"
-- scrollUntilVisible:
-    element:
-      text: "Spanish"
-    direction: DOWN
-    timeout: 5000
-    speed: 40
+- runFlow:
+    when:
+      notVisible:
+        text: "Spanish, ES"
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: "Spanish, ES"
+          direction: DOWN
+          timeout: 5000
+          speed: 40
 - tapOn:
-    text: "Spanish"
+    text: "Spanish, ES"
 
 # Tap "Confirm" to finish onboarding
 - assertVisible:
