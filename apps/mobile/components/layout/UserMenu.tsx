@@ -8,6 +8,7 @@ import { useAnimatedBoolean } from '@/lib/animations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Settings, BookOpen, Info, LogOut, LogIn } from 'lucide-react-native';
 import { ICON_MUTED, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
+import { e2e } from '@/lib/e2e';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
@@ -28,7 +29,10 @@ export function UserMenu() {
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger className="h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+      <Dialog.Trigger
+        className="h-8 w-8 items-center justify-center rounded-full bg-primary/10"
+        {...e2e('header-user-menu')}
+      >
         <Text className="text-sm font-bold text-primary">{initial}</Text>
       </Dialog.Trigger>
 
@@ -76,6 +80,7 @@ export function UserMenu() {
               <Pressable
                 className="flex-row items-center gap-2.5 rounded-md px-3 py-2.5 active:bg-destructive/10"
                 onPress={handleLogout}
+                {...e2e('header-user-menu-logout')}
               >
                 <LogOut size={16} color={ICON_DESTRUCTIVE} />
                 <Text className="text-sm text-destructive">{t('action.log_out')}</Text>
