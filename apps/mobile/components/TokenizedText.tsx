@@ -348,7 +348,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               if (!isWord(token)) {
                 return (
                   <View key={i} className="items-center mx-px">
-                    <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">{token.text}</Text>
+                    <Text
+                      testID={`token-${i}`}
+                      style={[textStyle, { lineHeight: baseLeading }]}
+                      className="text-foreground"
+                    >{token.text}</Text>
                   </View>
                 );
               }
