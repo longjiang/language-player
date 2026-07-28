@@ -32,9 +32,14 @@ export default function LoginScreen() {
 
   return (
     <View className="flex-1 justify-center bg-background p-6">
-      <Text className="text-3xl font-bold text-foreground mb-8 text-center">
-        Language Player
-      </Text>
+      <Pressable
+        onPress={() => Keyboard.dismiss()}
+        {...e2e('dismiss-keyboard')}
+      >
+        <Text className="text-3xl font-bold text-foreground mb-8 text-center">
+          Language Player
+        </Text>
+      </Pressable>
 
       {error && (
         <Text className="text-destructive text-sm mb-4 text-center">{error}</Text>

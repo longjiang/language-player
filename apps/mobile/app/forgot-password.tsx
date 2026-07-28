@@ -61,12 +61,17 @@ export default function ForgotPasswordScreen() {
 
   return (
     <View className="flex-1 justify-center bg-background p-6">
-      <Text className="text-3xl font-bold text-foreground mb-2 text-center">
-        {t('title.reset_password')}
-      </Text>
-      <Text className="text-muted-foreground text-sm text-center mb-8">
-        {t('msg.enter_email_for_reset')}
-      </Text>
+      <Pressable
+        onPress={() => Keyboard.dismiss()}
+        {...e2e('dismiss-keyboard')}
+      >
+        <Text className="text-3xl font-bold text-foreground mb-2 text-center">
+          {t('title.reset_password')}
+        </Text>
+        <Text className="text-muted-foreground text-sm text-center mb-8">
+          {t('msg.enter_email_for_reset')}
+        </Text>
+      </Pressable>
 
       {error && (
         <Text className="text-destructive text-sm mb-4 text-center">{error}</Text>

@@ -44,15 +44,18 @@ env:
     id: "login-password-input"
     repeat: 3
 - inputText: "wrongpassword123"
+# Dismiss keyboard before tapping sign-in
+- tapOn:
+    id: "dismiss-keyboard"
 - tapOn:
     id: "login-signin-button"
 - assertVisible:
     text: "Invalid credentials"
 - assertVisible:
     id: "login-email-input"
-# Dismiss keyboard before next test (Keyboard.dismiss() in handleLogin does
-# this, but hideKeyboard ensures it on the Maestro side in case of race conditions)
-- hideKeyboard
+# Dismiss keyboard before next test
+- tapOn:
+    id: "dismiss-keyboard"
 
 # ════════════════════════════════════════════════════════════════════
 # A3: Login — empty fields
@@ -61,7 +64,8 @@ env:
     id: "login-signin-button"
 - assertVisible:
     id: "login-email-input"
-- hideKeyboard
+- tapOn:
+    id: "dismiss-keyboard"
 
 # ════════════════════════════════════════════════════════════════════
 # Navigate to Register screen
@@ -94,13 +98,17 @@ env:
     id: "register-confirm-password-input"
     repeat: 3
 - inputText: "different456"
+# Dismiss keyboard before tapping create button
+- tapOn:
+    id: "dismiss-keyboard"
 - tapOn:
     id: "register-create-button"
 - assertVisible:
     text: "Passwords do not match"
 - assertVisible:
     id: "register-create-button"
-- hideKeyboard
+- tapOn:
+    id: "dismiss-keyboard"
 
 # ════════════════════════════════════════════════════════════════════
 # A6: Register — weak password
@@ -113,13 +121,17 @@ env:
     id: "register-confirm-password-input"
     repeat: 3
 - inputText: "short"
+# Dismiss keyboard before tapping create button
+- tapOn:
+    id: "dismiss-keyboard"
 - tapOn:
     id: "register-create-button"
 # Note: Directus may accept short passwords, so this test checks
 # that the register button is still visible (no navigation away).
 - assertVisible:
     id: "register-create-button"
-- hideKeyboard
+- tapOn:
+    id: "dismiss-keyboard"
 
 # ════════════════════════════════════════════════════════════════════
 # A7: Register — duplicate email
@@ -136,13 +148,17 @@ env:
     id: "register-confirm-password-input"
     repeat: 3
 - inputText: "password123"
+# Dismiss keyboard before tapping create button
+- tapOn:
+    id: "dismiss-keyboard"
 - tapOn:
     id: "register-create-button"
 - assertVisible:
     text: "Registration failed"
 - assertVisible:
     id: "register-create-button"
-- hideKeyboard
+- tapOn:
+    id: "dismiss-keyboard"
 
 # ════════════════════════════════════════════════════════════════════
 # A4: Register — happy path
@@ -173,6 +189,9 @@ env:
     id: "register-confirm-password-input"
     repeat: 3
 - inputText: "password123"
+# Dismiss keyboard before tapping create button
+- tapOn:
+    id: "dismiss-keyboard"
 - tapOn:
     id: "register-create-button"
 
@@ -237,6 +256,9 @@ env:
     id: "forgot-email-input"
     repeat: 3
 - inputText: "tester.mary@zerotohero.ca"
+# Dismiss keyboard before tapping send button
+- tapOn:
+    id: "dismiss-keyboard"
 - tapOn:
     id: "forgot-send-button"
 - assertVisible:
@@ -258,7 +280,8 @@ env:
     repeat: 3
 - inputText: "pc8qm8LBZeGuBno"
 # Dismiss keyboard before tapping sign-in button
-- hideKeyboard
+- tapOn:
+    id: "dismiss-keyboard"
 - tapOn:
     id: "login-signin-button"
 - assertVisible:
