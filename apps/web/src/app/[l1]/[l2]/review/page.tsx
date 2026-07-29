@@ -19,7 +19,7 @@ import { PYTHON_API_URL } from '@/lib/api-url';
 import { Button } from '@/components/ui/button';
 import { TokenizedText } from '@/components/tokenized-text';
 import { TextActionMenu } from '@/components/text-action-menu';
-import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
+import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
 import { SavedWordSource } from '@/components/saved-word-source';
 import { useT } from '@/hooks/use-t';
 import { toast } from 'sonner';
@@ -702,11 +702,11 @@ export default function ReviewPage() {
           </Button>
         ) : (
           <div className="mt-4 w-full text-left space-y-3">
-            {/* Full dictionary entry card (hidden until reveal) */}
+            {/* Full dictionary entry card with tabs (hidden until reveal) */}
             {entry ? (
-              <DictionaryEntryCard
+              <DictionaryEntryTabs
                 entry={entry}
-                variant="full"
+                showDefinitionTab
                 embedded
                 l2Code={l2Code}
                 l1Code={baseCode(l1.code)}
@@ -718,7 +718,7 @@ export default function ReviewPage() {
                 }}
                 contextText={wordCtx.text}
                 contextForm={wordCtx.form}
-                onClick={(e) => {
+                onCardClick={(e) => {
                   const dictId = e.dictionary?.id ?? 'llm';
                   router.push(buildEntryRoute(l1.code, l2.code, dictId, e.id));
                 }}

@@ -9,13 +9,9 @@ import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
-import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
-import { Loader2, AlertCircle, BookOpen, Film, Binary, Sparkles } from 'lucide-react';
-import { TabbedPanel } from '@/components/tabbed-panel';
-import { SubsSearchResults } from '@/components/video/subs-search-results';
-import { InflectionTable } from '@/components/inflection-table';
-import { AiExplanation } from '@/components/ai-explanation';
-import { DictionaryDefinitionsPanel } from '@/components/dictionary/dictionary-definitions-panel';
+import { Loader2, AlertCircle, BookOpen } from 'lucide-react';
+import { DictionaryEntryCard } from '@/components/dictionary-entry-card';
+import { DictionaryEntryTabs } from '@/components/dictionary-entry-tabs';
 
 /**
  * Single dictionary or LLM entry page.
@@ -23,8 +19,8 @@ import { DictionaryDefinitionsPanel } from '@/components/dictionary/dictionary-d
  * Route: /[l1]/[l2]/dictionary/entry/[dictionaryId]/[entryId]
  *
  * Renders two sibling panels (ADR 0007):
- *   - Definitions panel (head, pronunciation, meanings, classifiers, source)
- *   - Tabs panel (Examples from Videos, Conjugations, DeepSeek)
+ *   - Definitions panel (head, pronunciation, meanings, classifiers, source) — DictionaryEntryCard
+ *   - Tabs panel (Examples from Videos, Conjugations, DeepSeek) — DictionaryEntryTabs
  *
  * On wide screens (≥ lg), they sit side-by-side.
  * On narrow screens, they stack vertically.
@@ -95,16 +91,6 @@ export default function DictionaryEntryPage() {
     textTitle: t('title.dictionary'),
   };
 
-  // Inflected search terms for the examples tab (hook requires valid entry shape)
-  const dummyEntry = { head: '', pronunciation: '' };
-  const entryForTerms = entry ?? dummyEntry;
-  const { allTerms, headTerm, formCount, loading: inflectionsLoading } = useInflectedSearchTerms(entryForTerms as any, l2.code);
-  const [exactMatch, setExactMatch] = useState(false);
-  // Don't pass multi-form term until inflections are resolved (avoids wasteful single-form fetch)
-  const searchTermString = exactMatch
-    ? headTerm
-    : (inflectionsLoading || !entry ? '' : allTerms.join(','));
-
   // ── Loading ──
   if (loading) {
     return (
@@ -138,15 +124,16 @@ export default function DictionaryEntryPage() {
     );
   }
 
-  // ── Entry detail: definitions panel + tabs panel (siblings) ──
+  // ── Entry detail: definitions card + tabs panel (siblings) ──
   return (
     <div>
       {/* Two-column on lg+, stacked on smaller */}
       <div className="flex flex-col lg:flex-row lg:gap-4 gap-4">
-        {/* Definitions panel */}
+        {/* Definitions card */}
         <div className="lg:flex-1 lg:min-w-0 rounded-xl border border-border bg-card p-6">
-          <DictionaryDefinitionsPanel
+          <DictionaryEntryCard
             entry={entry}
+            variant="full"
             l2Code={l2.code}
             l1Code={l1.code}
             levelLabel={levelLabel}
@@ -157,32 +144,15 @@ export default function DictionaryEntryPage() {
 
         {/* Tabs panel */}
         <div className="lg:flex-[2] lg:min-w-0 flex flex-col">
-          <TabbedPanel
-            tabs={[
-              { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
-              { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> },
-              { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
-            ]}
+          <DictionaryEntryTabs
+            entry={entry}
+            l2Code={l2.code}
+            l1Code={l1.code}
+            levelLabel={levelLabel}
+            showDefinitionTab={false}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            contentClassName="overflow-y-auto"
-          >
-            {activeTab === 'examples' && (
-              <SubsSearchResults
-                term={searchTermString}
-                exactMatch={exactMatch}
-                onExactToggle={setExactMatch}
-                formCount={formCount}
-                embedded
-              />
-            )}
-            {activeTab === 'inflections' && (
-              <InflectionTable head={entry.head} l2Code={l2.code} embedded />
-            )}
-            {activeTab === 'deepseek' && (
-              <AiExplanation word={entry.head} entryFound={true} autoLoad />
-            )}
-          </TabbedPanel>
+          />
         </div>
       </div>
     </div>

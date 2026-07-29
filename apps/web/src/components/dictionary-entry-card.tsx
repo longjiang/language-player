@@ -1,18 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { BookOpen, ExternalLink, Film, Binary, Sparkles } from 'lucide-react';
+import { BookOpen, ExternalLink } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
-import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
-import { TabbedPanel } from '@/components/tabbed-panel';
-import { SubsSearchResults } from '@/components/video/subs-search-results';
-import { InflectionTable } from '@/components/inflection-table';
-import { AiExplanation } from '@/components/ai-explanation';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
@@ -32,16 +26,10 @@ interface DictionaryEntryCardProps {
   l1Code?: string;
   /** WAI-ARIA heading level for the headword (full mode defaults to h1). */
   headingLevel?: 'h1' | 'h2' | 'h3';
-  /** When true, renders without card chrome (no shadow, border, or outer padding).
-   *  Use when embedding inside another card (e.g. review page). */
-  embedded?: boolean;
-  /** Optional surrounding text context for DeepSeek explanation. */
-  contextText?: string;
-  /** Optional inflected form of the word as it appears in contextText. */
-  contextForm?: string;
 }
 
-/** Renders a single dictionary lookup result — compact in popups, full on detail pages. */
+/** Renders the entry details for a dictionary lookup result — compact in popups, full on detail pages.
+ *  No tabs. Use DictionaryEntryTabs to wrap this card with tabbed sections (Examples, DeepSeek, etc.). */
 export function DictionaryEntryCard({
   entry,
   variant = 'compact',
@@ -52,21 +40,11 @@ export function DictionaryEntryCard({
   l2Code,
   l1Code,
   headingLevel = 'h1',
-  embedded = false,
-  contextText,
-  contextForm,
 }: DictionaryEntryCardProps) {
   const t = useT();
   const { apply, getAlternateScript } = useScriptPreference(l2Code ?? '');
   const { head, alternate } = apply(entry.head, entry.alternate);
   const isFull = variant === 'full';
-  const [tab, setTab] = useState<string>('word');
-
-  // ── Inflected search terms ──
-  const { allTerms, headTerm, formCount, loading: inflectionsLoading } = useInflectedSearchTerms(entry, l2Code ?? '');
-  const [exactMatch, setExactMatch] = useState(false);
-  // Don't pass multi-form term until inflections are resolved (avoids wasteful single-form fetch)
-  const searchTermString = exactMatch ? headTerm : (inflectionsLoading ? '' : allTerms.join(','));
 
   const levels = entry.levels ?? [];
   const levelTexts = levels.map((l) => levelLabel
@@ -81,21 +59,6 @@ export function DictionaryEntryCard({
   const displayAlternate = getAlternateScript({ ...entry, head, alternate });
 
   const studyMaterials = entry.studyMaterials;
-
-  // ── Study material indicator (compact) ──
-  const studyMaterialLine = studyMaterials && studyMaterials.length > 0 ? (
-    <div className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground">
-      <BookOpen className="h-3 w-3" />
-      <span>
-        {studyMaterials.map((m, i) => (
-          <span key={i}>
-            {t('label.study_material_format', { material: m.material, book: m.location?.book, lesson: m.location?.lesson })}
-            {i < studyMaterials.length - 1 ? ', ' : ''}
-          </span>
-        ))}
-      </span>
-    </div>
-  ) : null;
 
   // ── Shared: level + POS badges ──
   const badges = (
@@ -235,7 +198,7 @@ export function DictionaryEntryCard({
   // ── FULL variant ──
   const HeadTag = headingLevel;
 
-  const wordContent = (
+  return (
     <div
       className={onClick
         ? "cursor-pointer transition-all hover:shadow-md hover:border-primary/20"
@@ -243,7 +206,7 @@ export function DictionaryEntryCard({
       }
       onClick={() => onClick?.(entry)}
     >
-      {/* Header */}
+      {/* Header: head + pronunciation + badges */}
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -378,44 +341,13 @@ export function DictionaryEntryCard({
         </div>
       )}
 
-      {/* Footer */}
-      <div className="flex items-center gap-2">
-        {sourceLine}
+      {/* Footer source + save */}
+      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          {sourceLine}
+        </div>
+        {saveContext && saveBtn('default')}
       </div>
-    </div>
-  );
-
-  return (
-    <div onClick={(e) => e.stopPropagation()}>
-    <TabbedPanel
-      tabs={[
-        { key: 'word', label: t('title.dictionary'), icon: <BookOpen className="h-4 w-4" /> },
-        { key: 'examples', label: t('title.examples_from_videos'), icon: <Film className="h-4 w-4" /> },
-        { key: 'deepseek', label: t('action.let_ai_explain'), icon: <Sparkles className="h-4 w-4" /> },
-        { key: 'inflections', label: t('title.conjugations'), icon: <Binary className="h-4 w-4" /> },
-      ]}
-      activeTab={tab}
-      onTabChange={setTab}
-      className={embedded ? 'rounded-none border-0 bg-transparent' : 'shadow-sm'}
-      contentClassName={embedded ? 'px-0 pt-8' : 'p-6'}
-    >
-      {tab === 'word' && wordContent}
-      {tab === 'examples' && (
-        <SubsSearchResults
-          term={searchTermString}
-          exactMatch={exactMatch}
-          onExactToggle={setExactMatch}
-          formCount={formCount}
-          embedded
-        />
-      )}
-      {tab === 'deepseek' && (
-        <AiExplanation word={head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
-      )}
-      {tab === 'inflections' && (
-        <InflectionTable head={head} l2Code={l2Code ?? ''} embedded />
-      )}
-    </TabbedPanel>
     </div>
   );
 }
