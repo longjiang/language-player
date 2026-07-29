@@ -53,9 +53,13 @@ export function TabbedPanel<T extends string = string>({
       <Tabs value={activeTab} onValueChange={(v) => onTabClick ? onTabClick(v as T) : onTabChange(v as T)} className="flex-1 min-h-0 flex-col">
         <TabsList className="border-b border-border w-full">
           {tabs.map((tab) => (
-            <TabsTrigger key={tab.key} value={tab.key} className="flex-1">
+            <TabsTrigger key={tab.key} value={tab.key} className="flex-1 group/tab">
               {tab.icon && <span className="flex-shrink-0">{tab.icon}</span>}
-              <span className="truncate">{tab.label}</span>
+              {/* On narrow screens (< sm), only the active tab shows the text label.
+                  Others collapse to icon-only. On wider screens, all show text. */}
+              <span className="truncate max-sm:hidden group-data-[active]/tab:max-sm:inline">
+                {tab.label}
+              </span>
             </TabsTrigger>
           ))}
         </TabsList>
