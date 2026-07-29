@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { marked } from 'marked';
 import type { Token, Tokens } from 'marked';
 
@@ -11,42 +11,52 @@ function hasTokens(t: Token): t is Token & { tokens: Token[] } {
   return 'tokens' in t && Array.isArray((t as any).tokens);
 }
 
+/**
+ * Renders markdown as a series of block-level elements (View wrappers with
+ * margin-bottom), so paragraphs, headings, lists, etc. don't run together
+ * into one blob of text. Inline formatting (bold, italic, links) is rendered
+ * via nested <Text> elements.
+ */
 export function MarkdownText({ children }: MarkdownTextProps) {
   const tokens = marked.lexer(children);
 
   return (
-    <Text className="text-foreground">
+    <View>
       {tokens.map((token, i) => {
         if (token.type === 'paragraph' && hasTokens(token)) {
-          return <Text key={i}>{renderInline(token.tokens)}</Text>;
+          return <View key={i} className="mb-2"><Text className="text-foreground">{renderInline(token.tokens)}</Text></View>;
         }
         if (token.type === 'heading' && hasTokens(token)) {
           const h = token as Tokens.Heading;
           const s = h.depth === 1 ? 'text-lg' : h.depth === 2 ? 'text-base' : 'text-sm';
-          return <Text key={i} className={`font-bold ${s} text-foreground`}>{renderInline(h.tokens)}</Text>;
+          return <View key={i} className="mb-1"><Text className={`font-bold ${s} text-foreground`}>{renderInline(h.tokens)}</Text></View>;
         }
         if (token.type === 'list') {
           const list = token as Tokens.List;
           return (
-            <React.Fragment key={i}>
+            <View key={i} className="mb-2">
               {list.items.map((item, j) => (
                 <Text key={j} className="text-foreground">{'  • '}{renderInline(item.tokens ?? [])}</Text>
               ))}
-            </React.Fragment>
+            </View>
           );
         }
         if (token.type === 'blockquote' && hasTokens(token)) {
-          return <Text key={i} className="italic text-muted-foreground">{renderInline(token.tokens)}</Text>;
+          return <View key={i} className="mb-2"><Text className="italic text-muted-foreground">{renderInline(token.tokens)}</Text></View>;
         }
         if (token.type === 'code') {
-          return <Text key={i} className="font-mono text-xs text-foreground">{(token as Tokens.Code).text}</Text>;
+          const code = token as Tokens.Code;
+          return <View key={i} className="mb-2"><Text className="font-mono text-xs text-foreground">{code.text}</Text></View>;
+        }
+        if (token.type === 'space') {
+          return <View key={i} className="h-2" />;
         }
         if (hasTokens(token)) {
-          return <Text key={i}>{renderInline(token.tokens)}</Text>;
+          return <View key={i} className="mb-2"><Text className="text-foreground">{renderInline(token.tokens)}</Text></View>;
         }
-        return <Text key={i}>{'text' in token ? (token as any).text : ''}</Text>;
+        return <View key={i} className="mb-2"><Text className="text-foreground">{'text' in token ? (token as any).text : ''}</Text></View>;
       })}
-    </Text>
+    </View>
   );
 
   function renderInline(tokens: Token[]) {
