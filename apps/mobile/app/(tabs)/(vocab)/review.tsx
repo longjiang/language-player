@@ -402,9 +402,9 @@ export default function ReviewScreen() {
         </View>
       </View>
 
-      {/* Flashcard — flex so it shares space with rating buttons */}
-      <View className="flex-1 px-4 mb-2">
-        <View className="flex-1 rounded-xl border border-border bg-card p-4">
+      {/* Flashcard — only as tall as content, max height fills remaining space */}
+      <View className="px-4 mb-2 flex-1">
+        <View className="max-h-full rounded-xl border border-border bg-card p-4">
           <ScrollView>
             {/* Context sentence — always visible, tokenized/interactive */}
           {(wordCtx as any)?.text ? (
