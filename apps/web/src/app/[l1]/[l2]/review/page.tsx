@@ -9,10 +9,9 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { useCloudUserData } from '@/providers/user-data-provider';
 import { useSrs } from '@/hooks/use-srs';
 import { useSpeech } from '@/hooks/use-speech';
-import { sm2, newCard, remainingNewCardsToday } from '@langplayer/utils';
+import { sm2, newCard, remainingNewCardsToday, baseCode, useEntryCache } from '@langplayer/utils';
 import type { SrsFields, DictionaryEntry, SavedLexicalItemRecord } from '@langplayer/shared';
 import { normalizeInstances } from '@/hooks/use-saved-words';
-import { baseCode } from '@/lib/language-data';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { buildEntryRoute } from '@/lib/entry-route';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -82,12 +81,8 @@ export default function ReviewPage() {
   const [initializing, setInitializing] = useState(false);
   /** True when the user just finished reviewing the last due card. */
   const [justCompleted, setJustCompleted] = useState(false);
-  /** Cache of fetched dictionary entries keyed by saved word ID. */
-  const [entriesCache, setEntriesCache] = useState<Record<string, DictionaryEntry | null>>({});
   /** Auto-translated context text (fetched on-demand when no saved translation exists). */
   const [contextTranslation, setContextTranslation] = useState<string | null>(null);
-  /** Track which fetch batch we're on so we can ignore stale results. */
-  const fetchGenerationRef = useRef(0);
   /** Track the current card's word ID to detect unsave-triggered card changes. */
   const lastCardIdRef = useRef<string | null>(null);
   /** Previous card SRS state saved before a rating, used by the Undo action. */
@@ -120,7 +115,7 @@ export default function ReviewPage() {
     }
   }, [srsLoaded, wordsLoaded, l2SavedWords, store, l2Code, dailyLimit, updateCard]);
 
-  // ── Compute due cards (without entries — entries merged below) ──
+  // ── Compute due cards ──
   const dueCards = useMemo((): Omit<ReviewCard, 'entry'>[] => {
     const now = Date.now();
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
@@ -142,80 +137,20 @@ export default function ReviewPage() {
       }));
   }, [l2SavedWords, store, l2Code]);
 
-  // ── Merge due cards with cached entries ──
+  // ── Derive entry for the current card from the reactive cache ──
+  const currentDueCard = dueCards[currentIndex];
+  const wordForm = currentDueCard?.word.forms[0] || currentDueCard?.word.id || '';
+  const currentEntry = useEntryCache(l2Code, wordForm)
+    ?.find((e) => e.id === currentDueCard?.word.id) ?? null;
+
+  // ── Merge due cards with the reactive entry ──
   const cards: ReviewCard[] = useMemo(
     () => dueCards.map((dc) => ({
       ...dc,
-      entry: entriesCache[dc.word.id] ?? null,
+      entry: dc.word.id === currentDueCard?.word.id ? currentEntry : null,
     })),
-    [dueCards, entriesCache],
+    [dueCards, currentDueCard?.word.id, currentEntry],
   );
-
-  // ── Fetch dictionary entries for the current card + a small lookahead ──
-  const ENTRY_LOOKAHEAD = 2;
-
-  useEffect(() => {
-    if (dueCards.length === 0 || fetchingEntries || initializing) return;
-
-    // Only fetch entries within a sliding window around the current card
-    const windowEnd = Math.min(currentIndex + ENTRY_LOOKAHEAD, dueCards.length - 1);
-    const uncachedInWindow: string[] = [];
-    for (let i = currentIndex; i <= windowEnd; i++) {
-      const id = dueCards[i]?.word.id;
-      if (id && !(id in entriesCache)) {
-        uncachedInWindow.push(id);
-      }
-    }
-
-    if (uncachedInWindow.length === 0) return;
-
-    const generation = ++fetchGenerationRef.current;
-
-    const fetchEntries = async () => {
-      setFetchingEntries(true);
-      const controller = new AbortController();
-      const newEntries: Record<string, DictionaryEntry | null> = {};
-
-      const results = await Promise.all(
-        uncachedInWindow.map(async (id) => {
-          const card = dueCards.find((dc) => dc.word.id === id);
-          if (!card) return { id, entry: null };
-          try {
-            const res = await fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                text: card.word.forms[0] || card.word.id,
-                l2: l2Code,
-                l1: baseCode(l1.code),
-              }),
-              signal: controller.signal,
-            });
-            if (!res.ok) return { id, entry: null };
-            const data = await res.json();
-            const entries: DictionaryEntry[] = data.results ?? [];
-            const match =
-              entries.find((e) => e.id === card.word.id) ||
-              entries.find((e) => e.head === card.word.forms[0]) ||
-              entries[0];
-            return { id, entry: match || null };
-          } catch {
-            return { id, entry: null };
-          }
-        })
-      );
-
-      if (!controller.signal.aborted && generation === fetchGenerationRef.current) {
-        for (const r of results) {
-          newEntries[r.id] = r.entry;
-        }
-        setEntriesCache((prev) => ({ ...prev, ...newEntries }));
-        setFetchingEntries(false);
-      }
-    };
-
-    fetchEntries();
-  }, [dueCards, currentIndex, fetchingEntries, initializing]);
 
   // ── Handlers ──
 
@@ -355,7 +290,6 @@ export default function ReviewPage() {
   useEffect(() => {
     setJustCompleted(false);
     setCurrentIndex(0);
-    setEntriesCache({});
   }, [l2Code]);
 
   // ── Keyboard shortcuts (after reveal: rate with 1-4, Space/Enter = Good) ──
@@ -593,7 +527,6 @@ export default function ReviewPage() {
   if (!currentCard) return null;
 
   const entry = currentCard.entry;
-  const wordForm = currentCard.word.forms[0] || entry?.head || currentCard.word.id;
   const wordCtx = currentCard.word.context ?? { form: wordForm, text: '', textTitle: '' };
   const srs = currentCard.srs;
 
