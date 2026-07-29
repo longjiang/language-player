@@ -4,7 +4,7 @@ import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
-import type { LemmatizedToken, TokenSource } from '@langplayer/shared';
+import type { LemmatizedToken } from '@langplayer/shared';
 import { lemmatizeText } from '@/lib/tokenizer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -94,20 +94,23 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   const { l1Lang } = useLanguage();
 
-  // ── Debug: colored underlines per token source (SPEC-018) ──
-  // Only active in __DEV__. Maps source to a color level:
-  //   Level 1 (green)  — server / kuromoji (best accuracy)
-  //   Level 2 (yellow) — dict-seg / lemma-table / snowball / arabic-stem (medium)
-  //   Level 3 (red)    — surface (last resort)
-  const TOKEN_SOURCE_COLORS: Record<TokenSource, string> = __DEV__ ? {
-    server:       '#22c55e', // green-500
-    'ja-kuromoji':'#22c55e',
-    'ko-kuromoji':'#22c55e',
-    'dict-seg':   '#eab308', // yellow-500
-    'lemma-table':'#eab308',
-    'snowball':   '#eab308',
-    'arabic-stem':'#eab308',
-    surface:      '#ef4444', // red-500
+  // ── Debug: colored underlines per token source ──
+  // Only active in __DEV__.
+  // Tracks how tokens were obtained, separate from each token's own `source`:
+  //   'preloaded' — passed via `tokens` prop (e.g. tokenizer-test screen)
+  //   'cache'     — from video-level token cache (batch pre-fetch)
+  //   'server'    — fresh POST /lemmatize-normalized
+  //   'local'     — lemmatizeText local fallback chain
+  //   'placeholder' — synthesized placeholder while waiting for cache
+  // Color: green = no call, yellow = server call, red = local fallback
+  type TokenRoute = 'preloaded' | 'cache' | 'server' | 'local' | 'placeholder';
+  const [tokenRoute, setTokenRoute] = useState<TokenRoute>('preloaded');
+  const TOKEN_ROUTE_COLORS: Record<TokenRoute, string> = __DEV__ ? {
+    preloaded:   '#22c55e', // green  — already cached, no call
+    cache:       '#22c55e', // green  — already cached, no call
+    server:      '#eab308', // yellow — fresh server call
+    local:       '#ef4444', // red    — local fallback
+    placeholder: '#888888', // grey   — waiting
   } : ({} as any);
 
   // ── Settings (matches Next.js) ──
@@ -213,6 +216,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
         console.log(`[TokenizedText] 📥 PRELOADED l2=${l2Code} total=${preloadedTokens.length} words=${wordTokens.length} lemmas=\"${lemmaSample}\"`);
       }
       setTokens(preloadedTokens);
+      setTokenRoute('preloaded');
       setLoading(false);
     }
   }, [preloadedTokens]);
@@ -245,6 +249,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     // now-populated cache.
     if (tokenCacheRef.current && tokenCacheLoaded === false) {
       setTokens([{ text: effectiveText, lemmas: [] }]);
+      setTokenRoute('placeholder');
       setLoading(false);
       return;
     }
@@ -257,6 +262,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       const cached = tc.get(effectiveText);
       if (cached && cached.length > 0) {
         setTokens(cached);
+        setTokenRoute('cache');
         setLoading(false);
         return;
       }
@@ -277,6 +283,10 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
     lemmatizeText(effectiveText, l2Code, controller.signal).then((result) => {
       if (!cancelled) {
         setTokens(result);
+        // Infer route: if any token has a local source, it's 'local'.
+        // Otherwise all are 'server'.
+        const isLocal = result.some(t => t.source && t.source !== 'server');
+        setTokenRoute(isLocal ? 'local' : 'server');
         setLoading(false);
         loadingRef.current = false;
       }
@@ -416,9 +426,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 }
               };
 
-              // Debug: colored underline matching token source level (SPEC-018)
-              const debugUnderline = __DEV__ && token.source && TOKEN_SOURCE_COLORS[token.source]
-                ? { borderBottomWidth: 2, borderBottomColor: TOKEN_SOURCE_COLORS[token.source] }
+              // Debug: colored underline matching token route (preloaded/server/local)
+              const debugUnderline = __DEV__ && TOKEN_ROUTE_COLORS[tokenRoute]
+                ? { borderBottomWidth: 2, borderBottomColor: TOKEN_ROUTE_COLORS[tokenRoute] }
                 : undefined;
 
               return (
@@ -490,9 +500,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 }
               };
 
-              // Debug: colored underline matching token source level (SPEC-018)
-              const debugUnderline = __DEV__ && token.source && TOKEN_SOURCE_COLORS[token.source]
-                ? { textDecorationLine: 'underline' as const, textDecorationColor: TOKEN_SOURCE_COLORS[token.source] }
+              // Debug: colored underline matching token route (preloaded/server/local)
+              const debugUnderline = __DEV__ && TOKEN_ROUTE_COLORS[tokenRoute]
+                ? { textDecorationLine: 'underline' as const, textDecorationColor: TOKEN_ROUTE_COLORS[tokenRoute] }
                 : undefined;
 
               return (
