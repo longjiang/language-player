@@ -412,8 +412,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const showInterlinear = showDefinition && !!trimmedDef && !isBlanked;
 
               // Ruby only in actual ruby mode (not when View-based is triggered by showDefinition alone)
+              // Suppress ruby for the highlighted (target) word — its pronunciation is shown elsewhere.
               const isRubyMode = showPhonetics && phonetics.show === 'ruby';
-              const hasRuby = isRubyMode && showTokenPhonetics && token.pronunciation && token.pronunciation !== word;
+              const hasRuby = isRubyMode && showTokenPhonetics && token.pronunciation && token.pronunciation !== word && !isHighlighted;
               const rubySegs: RubySegment[] = hasRuby
                 ? buildRuby(displayText, token.pronunciation!, l2Code)
                 : [{ text: displayText }];
