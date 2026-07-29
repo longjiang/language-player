@@ -13,6 +13,9 @@
     "papaparse": "^5.4.1",
     "spark-md5": "^3.0.2"
   },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
   "devDependencies": {
     "typescript": "^5.5.0"
   }

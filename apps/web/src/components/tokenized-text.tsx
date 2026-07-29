@@ -265,7 +265,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       l1Code: l1.code,
     }));
 
-    bulkLookupWords(words).then(() => setCacheVersion(v => v + 1));
+    bulkLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
   }, [tokens, loading, error, l2Code, l1.code]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken) => {

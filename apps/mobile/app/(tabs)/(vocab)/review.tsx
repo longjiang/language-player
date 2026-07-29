@@ -231,7 +231,7 @@ export default function ReviewScreen() {
     }
 
     if (texts.length > 0) {
-      bulkLookupWords(texts).then(() => setCacheVersion(v => v + 1));
+      bulkLookupWords(texts, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
     }
   }, [dueCards, currentIndex, l2Code, l1Lang.code]);
 

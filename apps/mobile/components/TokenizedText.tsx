@@ -12,6 +12,7 @@ import { useSavedWords } from '@/hooks/use-saved-words';
 import { useProgressLevel } from '@/hooks/use-progress-level';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
 import { configureLayoutAnimation } from '@/lib/animations';
+import { PYTHON_API_URL } from '@/lib/api-url';
 import { bulkLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
 import { getConverter } from '@/lib/chinese-script';
 
@@ -313,7 +314,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       l1Code: l1Lang?.code ?? 'en',
     }));
 
-    bulkLookupWords(words).then(() => setCacheVersion(v => v + 1));
+    bulkLookupWords(words, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
   }, [tokens, loading, l2Code, l1Lang?.code]);
 
   // ── Per-token data from dictionary cache (byeonggi, gloss, levels) ──

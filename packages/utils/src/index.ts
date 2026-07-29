@@ -1,3 +1,11 @@
+export {
+  getCachedEntries,
+  setCachedEntries,
+  getCacheVersion,
+  subscribeToCache,
+  bulkLookupWords,
+} from './dictionary-cache';
+export { useEntryCache } from './use-entry-cache';
 export { formatDuration, formatNumber, formatRelativeDate } from './format';
 export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhoneticsEligible } from './language';
 export { clampDifficulty, levelFromHours, hoursFromLevel } from './difficulty';
