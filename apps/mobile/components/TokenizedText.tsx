@@ -435,7 +435,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
               return (
                 <View key={i} className="items-center mx-px" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
-                  <View className="flex-row">
+                  {/* Segment row + quick gloss: items-end so the gloss (no furigana)
+                      baseline-aligns with the word text at the bottom of the segment columns. */}
+                  <View className="flex-row items-end">
                     {rubySegs.map((seg, j) => (
                       <View key={j} className="items-center">
                         {seg.reading && (
@@ -463,13 +465,18 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                           {showByeonggi && j === 0 ? (
                             <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
                           ) : null}
-                          {/* Quick gloss: inline after byeonggi/word, with single quotes (matching web's QuickGloss component) */}
-                          {showQuickGloss && j === rubySegs.length - 1 ? (
-                            <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> '{firstDef}'</Text>
-                          ) : null}
                         </Text>
                       </View>
                     ))}
+                    {/* Quick gloss: peer of the segment columns, not inside any segment.
+                        Placed after all segments so furigana centers over just the word,
+                        not the word + gloss combined width. items-end keeps the gloss on
+                        the same baseline as the word text. */}
+                    {showQuickGloss && (
+                      <Text style={[textStyle, { lineHeight: baseLeading }]} onPress={handlePress}>
+                        <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70">'{firstDef}'</Text>
+                      </Text>
+                    )}
                   </View>
                   {/* Universal definition slot: when showDefinition is on, every token
                       gets a slot of the same height. Tokens without a definition get
