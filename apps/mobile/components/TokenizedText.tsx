@@ -434,10 +434,10 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
 
               return (
-                <View key={i} className="items-center" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
+                <View key={i} className="items-center mx-px" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
                   <View className="flex-row">
                     {rubySegs.map((seg, j) => (
-                      <View key={j} className="items-center mx-px">
+                      <View key={j} className="items-center">
                         {seg.reading && (
                           <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
                         )}
@@ -449,10 +449,16 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                         <Text
                           testID={`token-${i}`}
                           style={[textStyle, { lineHeight: baseLeading }]}
-                          className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}
                           onPress={handlePress}
                         >
-                          {isBlanked ? '▯' : seg.text}
+                          {isBlanked ? (
+                            <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">▯</Text>
+                          ) : (
+                            <Text style={[textStyle, { lineHeight: baseLeading }]}
+                              className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}>
+                              {seg.text}
+                            </Text>
+                          )}
                           {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
                           {showByeonggi && j === 0 ? (
                             <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
@@ -527,10 +533,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   key={i}
                   testID={`token-${i}`}
                   onPress={handlePress}
-                  className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}
                   style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}
                 >
-                  {isBlanked ? '▯' : displayText}
+                  {isBlanked ? (
+                    <Text className="text-foreground">▯</Text>
+                  ) : (
+                    <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
+                  )}
                   {showByeonggi ? ` ${byeonggiText}` : ''}
                   {showQuickGloss ? ` '${firstDef}'` : ''}
                 </Text>
