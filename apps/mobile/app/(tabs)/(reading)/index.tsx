@@ -111,8 +111,8 @@ export default function ReaderScreen() {
         </Pressable>
       </View>
 
-      {/* Main content */}
-      <View className="flex-1 flex-row">
+      {/* Main content — sidebar overlays content when open */}
+      <View className="flex-1">
         {/* Editor / Reader */}
         <View className="flex-1">
           {activeTab === 'edit' && (
@@ -162,9 +162,9 @@ export default function ReaderScreen() {
           )}
         </View>
 
-        {/* Notes sidebar */}
+        {/* Notes sidebar — overlay */}
         {sidebarOpen && (
-          <View className="w-56 border-l border-border bg-card">
+          <View className="absolute right-0 top-0 bottom-0 w-56 z-10 border-l border-border bg-card shadow-lg" style={{ elevation: 8 }}>
             <View className="border-b border-border px-3 py-2">
               <Text className="text-sm font-semibold text-foreground">{t('title.notes')}</Text>
             </View>

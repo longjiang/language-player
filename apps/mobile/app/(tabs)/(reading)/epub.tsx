@@ -101,7 +101,8 @@ export default function EpubReaderScreen() {
         </Pressable>
       </View>
 
-      <View className="flex-1 flex-row">
+      {/* Content — sidebar overlays when open */}
+      <View className="flex-1">
         <PaginatedReader
           blocks={pagination.blocks}
           visibleBlocks={pagination.visibleBlocks}
@@ -124,6 +125,7 @@ export default function EpubReaderScreen() {
         />
 
         {sidebarOpen && (
+          <View className="absolute right-0 top-0 bottom-0 z-10" style={{ elevation: 8 }}>
           <EpubChapterSidebar
             toc={epub.toc} chapterHref={epub.chapterHref}
             prevHref={epub.prevHref} nextHref={epub.nextHref}
@@ -131,6 +133,7 @@ export default function EpubReaderScreen() {
             onPrev={epub.prevChapter} onNext={epub.nextChapter}
             onClose={() => setSidebarOpen(false)}
           />
+          </View>
         )}
       </View>
     </View>
