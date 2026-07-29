@@ -141,12 +141,6 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
 
   return (
     <View className="flex-1 bg-background">
-      {loading || loadingBatch ? (
-        <Text className="px-4 py-1 text-xs text-muted-foreground">
-          {showTranslation && loading ? `Translating… ${progress}/${lines.length}` : ''}
-          {loadingBatch ? ' Making words interactive…' : ''}
-        </Text>
-      ) : null}
       <FlatList
         ref={flatListRef}
         data={displayLines}
@@ -157,6 +151,14 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
         onScrollToIndexFailed={(info) => {
           flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
         }}
+        ListHeaderComponent={loading || loadingBatch ? (
+          <View className="py-1">
+            <Text className="text-xs text-muted-foreground">
+              {showTranslation && loading ? `Translating… ${progress}/${lines.length}` : ''}
+              {loadingBatch ? ' Making words interactive…' : ''}
+            </Text>
+          </View>
+        ) : null}
         renderItem={({ item, index }) => {
           const isActive = index === activeLineIndex;
           const preloadedTokens = batchTokens[index];
@@ -174,11 +176,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
           return (
             <Pressable
               onPress={() => onSeekToLine?.(item.starttime)}
-              className={`px-4 py-2 ${
-                isActive
-                  ? 'mx-2 rounded-xl border-2 border-primary'
-                  : 'mx-2 rounded-xl border border-border'
-              }`}
+              className={`rounded-lg px-3 py-2 mb-1 ${isActive ? 'bg-primary/10 border border-primary/30' : ''}`}
             >
               <Text className="text-xs tabular-nums text-muted-foreground">{item.starttime}s</Text>
               <TokenizedText
@@ -190,7 +188,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
                 karaokeProgress={karaokeProgress}
               />
               {item.l1Line ? (
-                <Text className="mt-0.5 text-sm text-muted-foreground">{item.l1Line}</Text>
+                <Text className="mt-1 text-sm text-muted-foreground">{item.l1Line}</Text>
               ) : null}
             </Pressable>
           );
