@@ -4,29 +4,54 @@ import '@/lib/intl-polyfills';
 import React from 'react';
 import { Stack } from 'expo-router';
 import { View, Text, ScrollView, Pressable } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PortalHost } from '@rn-primitives/portal';
 import Toast, { InfoToast, type ToastConfigParams } from 'react-native-toast-message';
 
 // ── Custom toast config ──
 
+const TOAST_BG_COLORS: Record<string, string> = {
+  again: '#dc2626',
+  hard: '#f97316',
+  good: '#16a34a',
+  easy: '#2563eb',
+};
+
+const TOAST_BORDER_COLORS: Record<string, string> = {
+  again: '#b91c1c',
+  hard: '#ea580c',
+  good: '#15803d',
+  easy: '#1d4ed8',
+};
+
 const toastConfig = {
   /*
     Info toast with Undo button for rating feedback.
-    Consumes custom props: { label: { label, hint }, handleUndo }
+    Consumes custom props: { quality, label: { label, hint }, handleUndo, undoLabel }
+    Styled to match the web review page: colored background, Undo button trailing.
   */
-  info: (params: ToastConfigParams<{ label?: { label: string; hint: string }; handleUndo?: () => void }>) => {
-    const { label, handleUndo } = params.props ?? {};
+  info: (params: ToastConfigParams<{ quality?: string; label?: { label: string; hint: string }; handleUndo?: () => void; undoLabel?: string }>) => {
+    const { quality, label, handleUndo, undoLabel } = params.props ?? {};
+    const bgColor = TOAST_BG_COLORS[quality ?? ''] ?? '#16a34a';
+    const borderColor = TOAST_BORDER_COLORS[quality ?? ''] ?? '#15803d';
     return (
       <InfoToast
         text1={label?.label}
         text2={label?.hint}
         onPress={params.onPress}
+        style={{
+          borderLeftColor: borderColor,
+          backgroundColor: bgColor,
+          borderRadius: 12,
+        }}
+        text1Style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}
+        text2Style={{ color: '#ffffffcc', fontSize: 12 }}
         renderTrailingIcon={() => handleUndo ? (
           <Pressable
             onPress={handleUndo}
             className="mr-3 rounded-lg border border-white/60 px-4 py-1.5"
           >
-            <Text className="text-sm font-medium text-white">Undo</Text>
+            <Text className="text-sm font-medium text-white">{undoLabel ?? 'Undo'}</Text>
           </Pressable>
         ) : null}
       />
@@ -75,6 +100,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
 }
 
 export default function RootLayout() {
+  const insets = useSafeAreaInsets();
 
   return (
     <ErrorBoundary>
@@ -97,7 +123,7 @@ export default function RootLayout() {
                       <Stack.Screen name="go-pro-success" />
                     </Stack>
                     <PortalHost />
-                    <Toast config={toastConfig} />
+                    <Toast config={toastConfig} topOffset={insets.top + 8} />
                     </SubscriptionProvider>
                   </VideoPlayerProvider>
                 </DictionaryProvider>

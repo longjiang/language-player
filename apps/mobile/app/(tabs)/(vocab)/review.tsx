@@ -169,8 +169,8 @@ export default function ReviewScreen() {
       Toast.show({
         type: 'info',
         visibilityTime: 3000,
-        position: 'bottom',
-        props: { quality, label, handleUndo: () => handleUndo() },
+        position: 'top',
+        props: { quality, label, undoLabel: t('action.undo'), handleUndo: () => handleUndo() },
       });
     }
 
