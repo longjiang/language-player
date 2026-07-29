@@ -127,7 +127,7 @@ export default function ReaderScreen() {
         <View className="flex-1">
           {activeTab === 'edit' && (
             <TextInput
-              className="flex-1 p-4 text-sm text-foreground"
+              className="flex-1 px-5 pt-4 pb-20 text-sm text-foreground"
               placeholder={t('placeholder.search_dots') ?? 'Type or paste text here…'}
               placeholderTextColor={ICON_MUTED}
               value={text}
