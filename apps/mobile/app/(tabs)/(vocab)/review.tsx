@@ -7,12 +7,15 @@ import { useSavedWords } from '@/hooks/use-saved-words';
 import { useSrs } from '@/hooks/use-srs';
 import { useDictionary } from '@langplayer/api-client';
 import { decomposeWordId } from '@langplayer/shared';
-import { sm2, newCard, remainingNewCardsToday } from '@langplayer/utils';
+import { sm2, newCard, remainingNewCardsToday, baseCode } from '@langplayer/utils';
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { CheckCircle2, BookOpen, Trash2, Undo2 } from 'lucide-react-native';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
+import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
+import { TokenizedText } from '@/components/TokenizedText';
+import { TextActionMenu } from '@/components/TextActionMenu';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 
@@ -61,7 +64,7 @@ export default function ReviewScreen() {
 
   const { savedWords, loaded: wordsLoaded, removeWord } = useSavedWords();
   const { store, loaded: srsLoaded, updateCard, removeCard } = useSrs();
-  const { review } = useSettingsContext();
+  const { review, display } = useSettingsContext();
   const dailyNewLimit = review.dailyNewLimit;
   const dict = useDictionary();
 
@@ -439,16 +442,23 @@ export default function ReviewScreen() {
             }
           }}
         >
-          {/* Context sentence — always visible */}
+          {/* Context sentence — always visible, tokenized/interactive */}
           {(wordCtx as any)?.text ? (
             <View className="mb-4 rounded-lg bg-muted/50 p-3">
               <Text className="mb-1 text-xs font-medium text-muted-foreground">{t('review.context_label')}</Text>
-              <Text className="text-sm text-foreground" numberOfLines={4}>
-                {(wordCtx as any).text}
-              </Text>
-              {(wordCtx as any).videoTitle && (
-                <Text className="mt-1 text-xs text-muted-foreground/70" numberOfLines={1}>
-                  📺 {(wordCtx as any).videoTitle}
+              <TextActionMenu text={(wordCtx as any).text} l2Code={l2Code} l1Code={baseCode(l1Lang.code)}>
+                <TokenizedText
+                  text={(wordCtx as any).text}
+                  l2Code={l2Code}
+                  highlightTerms={[wordForm]}
+                />
+              </TextActionMenu>
+              <View className="mt-1">
+                <SavedWordSource context={wordCtx as any} date={currentCard.word.date ?? 0} />
+              </View>
+              {showDefinition && display.translation && ((wordCtx as any).translation) && (
+                <Text className="mt-2 text-sm italic text-muted-foreground border-t border-border pt-2">
+                  {(wordCtx as any).translation}
                 </Text>
               )}
             </View>
@@ -468,9 +478,12 @@ export default function ReviewScreen() {
               <Text className="text-center text-2xl font-bold text-foreground">
                 {getDisplayName(currentCard.word)}
               </Text>
-              <Text className="mt-4 text-center text-xs text-muted-foreground">
-                {t('action.tap_to_reveal')}
-              </Text>
+              <Pressable
+                onPress={handleReveal}
+                className="mt-4 rounded-lg border border-border px-6 py-2"
+              >
+                <Text className="text-sm text-muted-foreground">{t('review.show_definition')}</Text>
+              </Pressable>
             </View>
           ) : !rated ? (
             <View>
