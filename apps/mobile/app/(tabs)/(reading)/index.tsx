@@ -131,7 +131,7 @@ export default function ReaderScreen() {
           {activeTab === 'edit' && (
             <TextInput
               className="flex-1 px-5 pt-4 pb-20 text-sm text-foreground"
-              placeholder={t('placeholder.search_dots') ?? 'Type or paste text here…'}
+              placeholder={t('placeholder.enter_text', { l2: l2Lang.name }) ?? 'Enter text in {l2}…'}
               placeholderTextColor={ICON_MUTED}
               value={text}
               onChangeText={handleTextChange}
