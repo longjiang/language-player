@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
 import { formatPronunciation } from '@langplayer/utils';
@@ -39,6 +40,7 @@ export function DictionaryEntryCard({
   saveContext,
   pronunciation: pronunciationOverride,
 }: DictionaryEntryCardProps) {
+  const router = useRouter();
   const t = useT();
   const { apply, getAlternateScript } = useScriptPreference(l2Code);
   const { head, alternate } = apply(entry.head, entry.alternate);
@@ -143,13 +145,22 @@ export function DictionaryEntryCard({
   // ── FULL variant ──
   return (
     <View>
-      {/* Head + alt script */}
-      <View className="flex-row items-baseline gap-3">
+      {/* Head + alt script — tappable to navigate to entry detail page */}
+      <Pressable
+        onPress={() => {
+          if (onPress) {
+            onPress(entry);
+          } else {
+            router.push(`/(tabs)/(vocab)/word/${encodeURIComponent(entry.id)}` as any);
+          }
+        }}
+        className="flex-row items-baseline gap-3 active:opacity-70"
+      >
         <Text className="text-3xl font-bold text-foreground" lang={l2Code}>{head}</Text>
         {displayAlternate && (
           <Text className="text-base text-muted-foreground" lang={l2Code}>{displayAlternate}</Text>
         )}
-      </View>
+      </Pressable>
 
       {/* Pronunciation + badges row */}
       <View className="mt-2 flex-row flex-wrap items-center gap-2">
