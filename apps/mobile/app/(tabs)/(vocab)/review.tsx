@@ -17,6 +17,7 @@ import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 
@@ -52,10 +53,6 @@ function useRatingLabels() {
   ];
 }
 
-function getDisplayName(word: { head?: string; forms?: string[]; id: string }): string {
-  return word.head || word.forms?.[0] || word.id;
-}
-
 export default function ReviewScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { user } = useAuth();
@@ -78,6 +75,8 @@ export default function ReviewScreen() {
   const [initializing, setInitializing] = useState(false);
   const [fetchingEntries, setFetchingEntries] = useState(false);
   const [entriesCache, setEntriesCache] = useState<Record<string, DictionaryEntry | null>>({});
+  /** Auto-translated context text (fetched on-demand when no saved translation exists). */
+  const [contextTranslation, setContextTranslation] = useState<string | null>(null);
 
   /** Previous card SRS state saved before a rating, used by the Undo action. */
   const undoRef = useRef<UndoState | null>(null);
@@ -269,6 +268,43 @@ export default function ReviewScreen() {
     }
   }, [cards.length, justCompleted]);
 
+  // ── Clear stale context translation when card changes ──
+  useEffect(() => {
+    setContextTranslation(null);
+  }, [cards[currentIndex]?.word.id]);
+
+  // ── Auto-translate context text (if no saved translation) ──
+  useEffect(() => {
+    if (!display.translation) return;
+
+    const card = cards[currentIndex];
+    const ctxText = card?.word.context?.text;
+    const savedTranslation = card?.word.context?.translation;
+    if (!ctxText || savedTranslation) {
+      setContextTranslation(null);
+      return;
+    }
+
+    let cancelled = false;
+    const fetchTranslation = async () => {
+      try {
+        const res = await fetch(`${PYTHON_API_URL}/translate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: ctxText, l1: baseCode(l1Lang.code), l2: l2Code }),
+        });
+        if (cancelled) return;
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) {
+          setContextTranslation(data?.translated_text ?? data?.translation ?? data?.text ?? null);
+        }
+      } catch { /* network error — silently ignore */ }
+    };
+    fetchTranslation();
+    return () => { cancelled = true; };
+  }, [cards, currentIndex, l2Code, l1Lang.code, display.translation]);
+
   // ── Reset session state when language changes ──
   useEffect(() => {
     setJustCompleted(false);
@@ -440,9 +476,9 @@ export default function ReviewScreen() {
               <View className="mt-1">
                 <SavedWordSource context={wordCtx as any} date={currentCard.word.date ?? 0} />
               </View>
-              {display.translation && ((wordCtx as any).translation) && (
+              {display.translation && ((wordCtx as any).translation || contextTranslation) && (
                 <Text className="mt-2 text-sm italic text-muted-foreground border-t border-border pt-2">
-                  {(wordCtx as any).translation}
+                  {(wordCtx as any).translation || contextTranslation}
                 </Text>
               )}
             </View>
@@ -456,20 +492,6 @@ export default function ReviewScreen() {
             )}
           </Text>
 
-          {/* Word */}
-          {!rated ? (
-            <View className="items-center py-4">
-              <Text className="text-center text-2xl font-bold text-foreground">
-                {getDisplayName(currentCard.word)}
-              </Text>
-            </View>
-          ) : (
-            <View className="items-center justify-center py-4">
-              <Text className="text-center text-2xl font-bold text-foreground">
-                {getDisplayName(currentCard.word)}
-              </Text>
-            </View>
-          )}
         </Pressable>
 
         {/* Undo + Remove row */}
