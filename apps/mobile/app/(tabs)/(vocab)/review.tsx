@@ -145,7 +145,6 @@ export default function ReviewScreen() {
 
     const windowEnd = Math.min(currentIndex + ENTRY_LOOKAHEAD, dueCards.length - 1);
     const uncachedInWindow: { id: string; text: string }[] = [];
-    const newCacheHits: Record<string, DictionaryEntry | null> = {};
     for (let i = currentIndex; i <= windowEnd; i++) {
       const word = dueCards[i];
       if (!word) continue;
@@ -160,17 +159,12 @@ export default function ReviewScreen() {
             cached.find((e) => e.head === word.forms?.[0]) ||
             cached[0];
           if (match) {
-            newCacheHits[id] = match;
+            setEntriesCache((prev) => ({ ...prev, [id]: match }));
             continue;
           }
         }
         uncachedInWindow.push({ id, text: searchText });
       }
-    }
-
-    // Apply cache hits immutably
-    if (Object.keys(newCacheHits).length > 0) {
-      setEntriesCache((prev) => ({ ...prev, ...newCacheHits }));
     }
 
     // If cache hits resolved all cards in the window, nothing more to fetch
