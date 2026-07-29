@@ -1,8 +1,10 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useStreamingExplanation } from '@langplayer/api-client';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
+import { baseCode } from '@langplayer/utils';
 import { MarkdownText } from '@/components/MarkdownText';
 import { Sparkles, RefreshCw, Lock, Loader2 } from 'lucide-react-native';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
@@ -10,6 +12,8 @@ import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 interface AiExplanationProps {
   /** The word being looked up (surface form). */
   word: string;
+  /** The inflected form as it appears in context (may differ from word). */
+  contextForm?: string;
   /** The surrounding context sentence. */
   contextText?: string;
   /** Whether a dictionary entry was found (affects prompt wording). */
@@ -25,16 +29,45 @@ interface AiExplanationProps {
  * - Free users see an upgrade prompt
  * - Pro users get a streaming AI explanation of the word in context
  */
-export function AiExplanation({ word, contextText, entryFound, autoLoad = false }: AiExplanationProps) {
+export function AiExplanation({ word, contextForm, contextText, entryFound, autoLoad = false }: AiExplanationProps) {
   const { isPro, loaded: subLoaded } = useSubscription();
+  const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
   const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
   const [showAi, setShowAi] = useState(false);
+  const l1NameRef = useRef(l1Lang.name);
+  const l2NameRef = useRef(l2Lang.name);
+  const l2CodeRef = useRef(l2Lang.code);
+  l1NameRef.current = l1Lang.name;
+  l2NameRef.current = l2Lang.name;
+  l2CodeRef.current = l2Lang.code;
+
+  const buildPrompt = useCallback((): string => {
+    const l1Name = l1NameRef.current;
+    const l2Name = l2NameRef.current;
+    const code = l2CodeRef.current;
+
+    let prompt: string;
+    if (contextText && contextForm && contextForm !== word) {
+      prompt = t('prompt.explain_word_context_form', { l1Name, l2Name, code, word, contextForm, context: contextText });
+    } else if (contextText) {
+      prompt = t('prompt.explain_word_context', { l1Name, l2Name, code, word, context: contextText });
+    } else {
+      prompt = t('prompt.explain_word', { l1Name, l2Name, code, word });
+    }
+
+    // Languages that don't inflect don't need the morphology prompt
+    const nonInflecting = ['zh', 'vi', 'th', 'lo', 'km'];
+    if (!nonInflecting.includes(code)) {
+      prompt += ' ' + t('prompt.explain_morphology');
+    }
+
+    return prompt;
+  }, [t, word, contextText, contextForm]);
 
   const fetchExplanation = useCallback(() => {
-    const prompt = buildPrompt(word, contextText, entryFound);
-    stream(prompt);
-  }, [word, contextText, entryFound, stream]);
+    stream(buildPrompt());
+  }, [stream, buildPrompt]);
 
   // Fetch when `showAi` is toggled, or when autoLoad + Pro resolve
   useEffect(() => {
@@ -121,25 +154,4 @@ export function AiExplanation({ word, contextText, entryFound, autoLoad = false 
   }
 
   return null;
-}
-
-/**
- * Build the prompt sent to DeepSeek, matching the web's AiExplanation prompt logic.
- */
-function buildPrompt(word: string, contextText?: string, _entryFound?: boolean): string {
-  // The prompt construction uses translation keys from the CSV,
-  // but the streaming endpoint just takes a plain text prompt.
-  // We construct it here in English (the server handles translations).
-  let prompt = `Provide a clear analysis of the following text in the target language. Include:
-
-1. A concise explanation of the word "${word}" in context
-2. How its meaning relates to the surrounding text`;
-
-  if (contextText) {
-    prompt += `\n\nContext: ${contextText}`;
-  }
-
-  prompt += `\n\nWord: ${word}`;
-
-  return prompt;
 }
