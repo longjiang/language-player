@@ -205,7 +205,11 @@ export function TextActionMenu(props: TextActionMenuProps) {
                 <View className={contextExpanded ? '' : 'max-h-[4.5rem] overflow-hidden'}>
                   <TokenizedText text={text} l2Code={l2Code} />
                 </View>
-                {!contextExpanded && (
+                {contextExpanded ? (
+                  <Pressable onPress={() => setContextExpanded(false)} className="mt-1">
+                    <Text className="text-xs font-medium text-primary">{t('action.show_less')}</Text>
+                  </Pressable>
+                ) : (
                   <Pressable onPress={() => setContextExpanded(true)} className="mt-1">
                     <Text className="text-xs font-medium text-primary">{t('action.show_more')}</Text>
                   </Pressable>
