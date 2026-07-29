@@ -145,7 +145,7 @@ export function DictionaryPopup({
           className="absolute inset-x-0 bottom-0"
           style={{ transform: [{ translateY: slideAnim }] }}
         >
-          <DialogPrimitive.Content
+          <View
             testID="dictionary-popup"
             className="rounded-t-xl bg-background"
             style={{
@@ -255,7 +255,7 @@ export function DictionaryPopup({
                 ))}
               </ScrollView>
             </View>
-          </DialogPrimitive.Content>
+          </View>
         </Animated.View>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
