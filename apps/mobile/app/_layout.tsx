@@ -49,7 +49,7 @@ const toastConfig = {
         renderTrailingIcon={() => handleUndo ? (
           <Pressable
             onPress={handleUndo}
-            className="mr-3 rounded-lg border border-white/60 px-4 py-1.5"
+            className="mr-4 my-2.5 items-center justify-center rounded-md border border-white/60 px-3"
           >
             <Text className="text-sm font-medium text-white">{undoLabel ?? 'Undo'}</Text>
           </Pressable>
