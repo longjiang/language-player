@@ -109,7 +109,7 @@ export function SaveButton({
         className={`p-1 rounded transition-colors ${
           saved
             ? 'text-amber-500 hover:text-amber-600'
-            : 'text-muted-foreground hover:text-amber-500'
+            : 'text-amber-500/70 hover:text-amber-500'
         }`}
         title={saved ? t('action.remove_from_saved') : t('action.save_word')}
       >
