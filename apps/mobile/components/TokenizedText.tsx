@@ -396,14 +396,12 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const showTokenPhonetics = shouldShowPhonetics(token);
               const isSaved = savedFormSet.has(word.toLowerCase());
 
-              // Trim the interlinear definition to roughly the word's display width + ~2em.
-              // Latin chars = 1 unit, CJK chars = 2 units (roughly double width).
-              // widthBudget = word unit-length + 4 (~2em slack).
-              // Definition chars are ~0.55x font size, so they're ~1.8x more chars per unit.
+              // Trim the interlinear definition to the word's length + 2 chars
+              // (one extra character on each side), scaled up because definition
+              // text is ~0.55x font size (so ~1.8x more chars fit per unit width).
               const trimmedDef = (() => {
                 if (!firstDef) return null;
-                const wordLen = [...displayText].reduce((sum, c) => sum + (c.length === 1 && /[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/.test(c) ? 2 : 1), 0);
-                const maxDefChars = Math.max(8, Math.round((wordLen + 4) * 1.8));
+                const maxDefChars = Math.round((displayText.length + 2) * 1.8);
                 return firstDef.length > maxDefChars ? firstDef.slice(0, maxDefChars - 1) + '…' : firstDef;
               })();
 
