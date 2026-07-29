@@ -57,11 +57,13 @@ export function TextActionMenu(props: TextActionMenuProps) {
   const [translateResult, setTranslateResult] = useState<string | null>(null);
   const [translateLoading, setTranslateLoading] = useState(false);
   const [translateError, setTranslateError] = useState<string | null>(null);
+  const [contextExpanded, setContextExpanded] = useState(false);
 
   const closeAction = useCallback(() => {
     setActiveAction(null);
     setTranslateResult(null);
     setTranslateError(null);
+    setContextExpanded(false);
     resetExplain();
   }, [resetExplain]);
 
@@ -198,9 +200,16 @@ export function TextActionMenu(props: TextActionMenuProps) {
 
             {/* Body */}
             <ScrollView className="px-5 py-4">
-              {/* Original text — tokenized */}
+              {/* Original text — tokenized, collapsible to 4 lines */}
               <View className="mb-4 rounded-lg border border-border bg-muted/30 p-3">
-                <TokenizedText text={text} l2Code={l2Code} />
+                <View className={contextExpanded ? '' : 'max-h-[4.5rem] overflow-hidden'}>
+                  <TokenizedText text={text} l2Code={l2Code} />
+                </View>
+                {!contextExpanded && (
+                  <Pressable onPress={() => setContextExpanded(true)} className="mt-1">
+                    <Text className="text-xs font-medium text-primary">{t('action.show_more')}</Text>
+                  </Pressable>
+                )}
               </View>
 
               {/* DeepSeek breakdown */}
