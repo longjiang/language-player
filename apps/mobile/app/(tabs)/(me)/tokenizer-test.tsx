@@ -84,6 +84,7 @@ export default function TokenizerScreen() {
           blockTranslations={samplePagination.blockTranslations}
           prevPage={samplePagination.prevPage}
           nextPage={samplePagination.nextPage}
+          goToPage={samplePagination.goToPage}
           handleMeasureBlock={samplePagination.handleMeasureBlock}
           contentWidth={samplePagination.contentWidth}
           l2Code={l2Lang.code}

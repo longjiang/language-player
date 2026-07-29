@@ -167,6 +167,7 @@ export default function WebReaderScreen() {
               blockTranslations={pagination.blockTranslations}
               prevPage={pagination.prevPage}
               nextPage={pagination.nextPage}
+              goToPage={pagination.goToPage}
               handleMeasureBlock={pagination.handleMeasureBlock}
               contentWidth={pagination.contentWidth}
               l2Code={l2Lang.code}
