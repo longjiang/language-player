@@ -24,16 +24,46 @@ export type ContentBlock = TextBlock | ImageBlock | TableBlock;
 /** Regex matching [IMG:uri] markers injected by use-epub for inline EPUB images. */
 const IMG_MARKER_RE = /\[IMG:([^\]]+)\]/;
 
+/** Regex matching markdown syntax at line start or inline patterns. */
+const MD_PATTERN = /^(#{1,6}\s|[*\-\+] |\d+\. |> |---+|\|)|```|\[.*\]\(.*\)|!\[.*\]\(.*\)|<[a-z][\s\S]*>/m;
+
+/**
+ * Detect if text is plain (no markdown markers). When the user pastes plain
+ * text with single line breaks (e.g. from an email or document), each line
+ * should become a separate paragraph. Markdown text is left untouched.
+ */
+function isPlainText(text: string): boolean {
+  if (!text.trim()) return true;
+  return !MD_PATTERN.test(text);
+}
+
+/**
+ * Normalize single \n to \n\n for plain text only, without doubling existing
+ * \n\n. Handles \r\n, \n\r, and \n consistently.
+ */
+function normalizeNewlines(text: string): string {
+  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  return normalized.replace(/(?<!\n)\n(?!\n)/g, '\n\n');
+}
+
 /**
  * Parse text (with optional [IMG:...] markers) into content blocks.
  * Splits on image markers before markdown parsing, so EPUB-injected images
  * are preserved as standalone ImageBlock entries in their original positions.
  * Falls back to standard markdown parsing for non-EPUB content.
+ *
+ * If the text is plain (no markdown markers), single line breaks are
+ * normalized to double line breaks so each line renders as a separate
+ * paragraph block. The original text is not modified — this only affects
+ * how blocks are computed for display.
  */
 export function parseMarkdownBlocks(md: string): ContentBlock[] {
+  // Normalize single line breaks for plain text (without modifying the source)
+  const normalized = isPlainText(md) ? normalizeNewlines(md) : md;
+
   // EPUB image markers: split first, then parse each text segment as markdown
-  if (IMG_MARKER_RE.test(md)) {
-    const parts = md.split(/(\[IMG:[^\]]+\])/);
+  if (IMG_MARKER_RE.test(normalized)) {
+    const parts = normalized.split(/(\[IMG:[^\]]+\])/);
     const blocks: ContentBlock[] = [];
 
     for (const part of parts) {
@@ -49,7 +79,7 @@ export function parseMarkdownBlocks(md: string): ContentBlock[] {
   }
 
   // Standard markdown parsing (handles markdown-native ![alt](url) images)
-  return parseMarkdownOnly(md);
+  return parseMarkdownOnly(normalized);
 }
 
 /**
