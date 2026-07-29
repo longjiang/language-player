@@ -85,6 +85,42 @@ export function DictionaryEntryTabs({
         { key: 'deepseek', label: t('action.let_ai_explain'), icon: () => <Sparkles size={14} color={ICON_MUTED} /> },
       ];
 
+  // Tab content panels — order must match the tabs array above
+  const wordPanel = (
+    <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
+      <DictionaryEntryCard
+        entry={entry}
+        variant="full"
+        l2Code={l2Code}
+        l1Code={l1Code}
+        saveContext={saveContext}
+        onPress={onCardPress}
+      />
+    </View>
+  );
+  const examplesPanel = (
+    <SubsSearchResults
+      term={searchTermString}
+      exactMatch={exactMatch}
+      onExactToggle={setExactMatch}
+      formCount={formCount}
+    />
+  );
+  const deepseekPanel = (
+    <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
+      <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
+    </View>
+  );
+  const inflectionsPanel = (
+    <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
+      <InflectionTable head={entry.head} l2Code={l2Code} embedded />
+    </View>
+  );
+
+  const children = showDefinitionTab
+    ? [wordPanel, examplesPanel, deepseekPanel, inflectionsPanel]
+    : [examplesPanel, inflectionsPanel, deepseekPanel];
+
   return (
     <TabbedPanel
       tabs={tabs}
@@ -93,36 +129,7 @@ export function DictionaryEntryTabs({
       className={embedded ? '' : 'rounded-xl border border-border bg-card'}
       contentClassName=""
     >
-      {tab === 'word' && (
-        <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
-          <DictionaryEntryCard
-            entry={entry}
-            variant="full"
-            l2Code={l2Code}
-            l1Code={l1Code}
-            saveContext={saveContext}
-            onPress={onCardPress}
-          />
-        </View>
-      )}
-      {tab === 'examples' && (
-        <SubsSearchResults
-          term={searchTermString}
-          exactMatch={exactMatch}
-          onExactToggle={setExactMatch}
-          formCount={formCount}
-        />
-      )}
-      {tab === 'deepseek' && (
-        <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
-          <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
-        </View>
-      )}
-      {tab === 'inflections' && (
-        <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
-          <InflectionTable head={entry.head} l2Code={l2Code} embedded />
-        </View>
-      )}
+      {children}
     </TabbedPanel>
   );
 }
