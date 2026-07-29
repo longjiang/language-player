@@ -24,9 +24,9 @@ export default function Index() {
       // Not authenticated → show login
       router.replace('/login');
     } else {
-      // Authenticated → tokenizer test page (debug)
+      // Authenticated → notes reader
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      router.replace('/(tabs)/(me)/tokenizer-test' as any);
+      router.replace('/(tabs)/(reading)' as any);
     }
   }, [user, authLoading]);
 
