@@ -22,12 +22,19 @@ export default function ReaderScreen() {
   const [renameText, setRenameText] = useState('');
   const [showTranslation, setShowTranslation] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const justCreatedRef = useRef(false);
 
   // When current note changes, load its text
   useEffect(() => {
     if (notes.currentNote) {
       setText(notes.currentNote.text ?? '');
-      setActiveTab('read');
+      // If we just created a new note, stay in edit mode instead of switching to read
+      if (justCreatedRef.current) {
+        justCreatedRef.current = false;
+        setActiveTab('edit');
+      } else {
+        setActiveTab('read');
+      }
     }
   }, [notes.currentNoteId]);
 
@@ -169,7 +176,7 @@ export default function ReaderScreen() {
               <Text className="text-sm font-semibold text-foreground">{t('title.notes')}</Text>
             </View>
             <Pressable
-              onPress={() => notes.createNote()}
+              onPress={() => { justCreatedRef.current = true; notes.createNote(); setSidebarOpen(false); }}
               className="mx-3 my-2 flex-row items-center gap-1.5 rounded-lg border border-border px-3 py-2 active:bg-muted"
             >
               <Plus size={14} color={ICON_MUTED} />
