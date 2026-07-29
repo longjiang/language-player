@@ -6,7 +6,7 @@ import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
 import type { NoteListItem } from '@langplayer/shared';
-import { BookOpen, PenLine, Plus, Trash2, StickyNote } from 'lucide-react-native';
+import { BookOpen, PenLine, Plus, Trash2, PanelRightOpen, PanelRightClose, StickyNote } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
@@ -104,7 +104,11 @@ export default function ReaderScreen() {
           onPress={() => setSidebarOpen(!sidebarOpen)}
           className="rounded p-1.5 active:bg-muted"
         >
-          <StickyNote size={18} color={ICON_MUTED} />
+          {sidebarOpen ? (
+            <PanelRightClose size={18} color={ICON_MUTED} />
+          ) : (
+            <PanelRightOpen size={18} color={ICON_MUTED} />
+          )}
         </Pressable>
       </View>
 
