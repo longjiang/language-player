@@ -105,7 +105,6 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   const replaceWithPhonetics = phonetics.show === 'word';
   const popupEnabled = tokenSettings.enabled;
   const quizMode = tokenSettings.mode === 'quiz';
-  const showDefinition = l2Settings.tokenSpan.definition.show;
 
   // ── hardWords filter + quickGloss (Phase 2: SPEC-019) ──
   const quickGlossEnabled = tokenSettings.quickGloss;
@@ -379,7 +378,6 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed;
               const firstLemma = token.lemmas[0]?.lemma;
-              const showGloss = showDefinition && firstLemma && firstLemma !== word;
               const { byeonggiText, firstDef } = getTokenEntryData(token);
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
               const showTokenPhonetics = shouldShowPhonetics(token);
@@ -404,6 +402,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 }
               };
 
+              const isSavedWord = isSaved && !isHighlighted && !isBlanked;
+
               return (
                 <React.Fragment key={i}>
                   {rubySegs.map((seg, j) => (
@@ -417,14 +417,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                       <Text
                         testID={`token-${i}`}
                         style={[textStyle, { lineHeight: baseLeading }]}
-                        className={isHighlighted ? 'font-bold text-primary' : 'text-foreground'}
+                        className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}
                         onPress={handlePress}
                       >
                         {isBlanked ? '▯' : seg.text}
                       </Text>
-                      {showGloss && j === rubySegs.length - 1 && (
-                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{firstLemma}</Text>
-                      )}
                       {showQuickGloss && j === rubySegs.length - 1 && (
                         <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{firstDef}</Text>
                       )}
@@ -455,11 +452,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed;
               const firstLemma = token.lemmas[0]?.lemma;
-              const showGloss = showDefinition && firstLemma && firstLemma !== word;
               const { byeonggiText, firstDef } = getTokenEntryData(token);
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
               const isSaved = savedFormSet.has(word.toLowerCase());
               const showQuickGloss = isSaved && quickGlossEnabled && !!firstDef && !isHighlighted;
+              const isSavedWord = isSaved && !isHighlighted && !isBlanked;
 
               const handlePress = () => {
                 if (quizMode) {
@@ -479,12 +476,11 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   key={i}
                   testID={`token-${i}`}
                   onPress={handlePress}
-                  className={isHighlighted ? 'font-bold text-primary' : ''}
+                  className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}
                   style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}
                 >
                   {showByeonggi ? `${byeonggiText} ` : ''}
                   {isBlanked ? '▯' : displayText}
-                  {showGloss ? ` ·${firstLemma}` : ''}
                   {showQuickGloss ? ` ${firstDef}` : ''}
                 </Text>
               );
