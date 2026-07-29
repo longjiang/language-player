@@ -13,6 +13,7 @@ import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { CheckCircle2, BookOpen, Undo2 } from 'lucide-react-native';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
+import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import type { DictionaryEntry } from '@langplayer/shared';
@@ -531,32 +532,19 @@ export default function ReviewScreen() {
             )}
           </Text>
 
-          {/* Entry IDs */}
-          <View className="mb-2 rounded-lg bg-muted/30 p-2">
-            <Text className="text-[10px] font-mono text-muted-foreground">
-              {'Saved word ID: ' + currentCard.word.id}
-{'\n'}
-              {'Cached entry IDs: [' + (getCachedEntries(l2Code, wordForm) ?? []).map(e => e.id).join(', ') + ']'}
-{'\n'}
-              {'Contains saved: ' + ((getCachedEntries(l2Code, wordForm) ?? []).some(e => e.id === currentCard.word.id) ? 'Matched entry IDs [' + (getCachedEntries(l2Code, wordForm) ?? []).filter(e => e.id === currentCard.word.id).map(e => e.id).join(', ') + ']' : 'NO')}
-            </Text>
-          </View>
-
-          {/* Matched entry JSON */}
+          {/* Matched entry card — full, embedded (no double border inside card) */}
           {(getCachedEntries(l2Code, wordForm) ?? []).filter(e => e.id === currentCard.word.id).length > 0 && (
-            <View className="mb-2 rounded-lg bg-muted/30 p-2">
-              <Text className="text-[10px] font-mono text-muted-foreground">
-                {JSON.stringify((getCachedEntries(l2Code, wordForm) ?? []).find(e => e.id === currentCard.word.id), null, 2)}
-              </Text>
+            <View className="mb-2">
+              <DictionaryEntryCard
+                entry={(getCachedEntries(l2Code, wordForm) ?? []).find(e => e.id === currentCard.word.id)!}
+                variant="full"
+                embedded
+                l2Code={l2Lang.code}
+                contextText={(wordCtx as any)?.text}
+                contextForm={wordForm}
+              />
             </View>
           )}
-
-          {/* Cached entries as raw JSON */}
-          <View className="mt-2 rounded-lg bg-muted/30 p-2">
-            <Text className="text-[10px] font-mono text-muted-foreground">
-              {JSON.stringify(getCachedEntries(l2Code, wordForm) ?? [], null, 2)}
-            </Text>
-          </View>
           </ScrollView>
         </View>
 
