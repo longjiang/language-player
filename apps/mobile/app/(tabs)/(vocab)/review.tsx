@@ -73,6 +73,7 @@ export default function ReviewScreen() {
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showDefinition, setShowDefinition] = useState(false);
   const [rated, setRated] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
   const [initializing, setInitializing] = useState(false);
@@ -251,6 +252,9 @@ export default function ReviewScreen() {
     const wasLastCard = currentIndex >= cards.length - 1;
     undoRef.current = { wordId: card.word.id, prevSrs: { ...card.srs }, wasLastCard };
 
+    // Hide definition for next card
+    setShowDefinition(false);
+
     // Apply SM-2 algorithm
     const sm2Quality = RATING_MAP[quality];
     const updated = sm2(card.srs, sm2Quality);
@@ -282,9 +286,14 @@ export default function ReviewScreen() {
 
     // Reset currentIndex so the undone card reappears at the top
     setCurrentIndex(0);
+    setShowDefinition(false);
     setRated(false);
     undoRef.current = null;
   }, [l2Code, updateCard]);
+
+  const handleReveal = useCallback(() => {
+    setShowDefinition(true);
+  }, []);
 
   // ── Clamp currentIndex if it exceeds the cards array (cards shrunk after removal) ──
   useEffect(() => {
@@ -293,14 +302,17 @@ export default function ReviewScreen() {
     }
   }, [cards.length, currentIndex]);
 
-  // ── When card changes without a rating (e.g. unsave) ──
+  // ── When card changes without a rating (e.g. unsave), reset to front ──
   useEffect(() => {
     const card = cards[currentIndex];
     const currentId = card?.word.id ?? null;
     if (currentId && currentId !== lastCardIdRef.current) {
       lastCardIdRef.current = currentId;
+      if (showDefinition && !rated) {
+        setShowDefinition(false);
+      }
     }
-  }, [cards, currentIndex, rated]);
+  }, [cards, currentIndex, showDefinition, rated]);
 
   // ── Reset justCompleted when new cards become due ──
   useEffect(() => {
@@ -315,14 +327,14 @@ export default function ReviewScreen() {
     setContextTranslation(null);
   }, [cards[currentIndex]?.word.id]);
 
-  // ── Auto-translate context text (if no saved translation) ──
+  // ── Auto-translate context text when back is revealed (if no saved translation) ──
   useEffect(() => {
     if (!display.translation) return;
 
     const card = cards[currentIndex];
     const ctxText = card?.word.context?.text;
     const savedTranslation = card?.word.context?.translation;
-    if (!ctxText || savedTranslation) {
+    if (!ctxText || savedTranslation || !showDefinition) {
       setContextTranslation(null);
       return;
     }
@@ -345,12 +357,13 @@ export default function ReviewScreen() {
     };
     fetchTranslation();
     return () => { cancelled = true; };
-  }, [cards, currentIndex, l2Code, l1Lang.code, display.translation]);
+  }, [showDefinition, cards, currentIndex, l2Code, l1Lang.code, display.translation]);
 
   // ── Reset session state when language changes ──
   useEffect(() => {
     setJustCompleted(false);
     setCurrentIndex(0);
+    setShowDefinition(false);
     setEntriesCache({});
     undoRef.current = null;
   }, [l2Code]);
@@ -516,7 +529,7 @@ export default function ReviewScreen() {
               <View className="mt-1">
                 <SavedWordSource context={wordCtx as any} date={currentCard.word.date ?? 0} />
               </View>
-              {display.translation && ((wordCtx as any).translation || contextTranslation) && (
+              {showDefinition && display.translation && ((wordCtx as any).translation || contextTranslation) && (
                 <Text className="mt-2 text-sm italic text-muted-foreground border-t border-border pt-2">
                   {(wordCtx as any).translation || contextTranslation}
                 </Text>
@@ -532,24 +545,40 @@ export default function ReviewScreen() {
             )}
           </Text>
 
-          {/* Matched entry card — full with tabs (no double border inside card) */}
-          {(getCachedEntries(l2Code, wordForm) ?? []).filter(e => e.id === currentCard.word.id).length > 0 && (
-            <View className="mb-2">
-              <DictionaryEntryTabs
-                entry={(getCachedEntries(l2Code, wordForm) ?? []).find(e => e.id === currentCard.word.id)!}
-                showDefinitionTab
-                embedded
-                l2Code={l2Lang.code}
-                contextText={(wordCtx as any)?.text}
-                contextForm={wordForm}
-              />
+          {/* Front of card — Show Definition button */}
+          {!showDefinition ? (
+            <View className="items-center py-8">
+              <Pressable
+                onPress={handleReveal}
+                className="rounded-xl border border-border bg-muted px-8 py-4"
+              >
+                <Text className="text-base font-medium text-foreground">{t('review.show_definition')}</Text>
+              </Pressable>
             </View>
+          ) : (
+            /* Back of card — dictionary entry with tabs (hidden until reveal) */
+            (getCachedEntries(l2Code, wordForm) ?? []).filter(e => e.id === currentCard.word.id).length > 0 ? (
+              <View className="mb-2">
+                <DictionaryEntryTabs
+                  entry={(getCachedEntries(l2Code, wordForm) ?? []).find(e => e.id === currentCard.word.id)!}
+                  showDefinitionTab
+                  embedded
+                  l2Code={l2Lang.code}
+                  contextText={(wordCtx as any)?.text}
+                  contextForm={wordForm}
+                />
+              </View>
+            ) : (
+              <Text className="py-4 text-center text-sm italic text-muted-foreground">
+                {t('review.no_definition_available')}
+              </Text>
+            )
           )}
           </ScrollView>
         </View>
 
-        {/* Undo button */}
-        {!rated && undoRef.current && (
+        {/* Undo button — only visible after reveal */}
+        {showDefinition && !rated && undoRef.current && (
           <View className="mt-3 w-full max-w-sm items-center">
             <Pressable
               onPress={handleUndo}
@@ -562,8 +591,8 @@ export default function ReviewScreen() {
         )}
       </View>
 
-      {/* Rating buttons — pinned to bottom with safe area */}
-      {!rated && (
+      {/* Rating buttons — pinned to bottom with safe area (only after reveal) */}
+      {showDefinition && !rated && (
         <View className="flex-row gap-2 px-4" style={{ paddingBottom: insets.bottom + 8 }}>
           {RATING_LABELS.map((r) => (
             <Pressable
