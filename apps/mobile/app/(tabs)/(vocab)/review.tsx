@@ -11,7 +11,7 @@ import { sm2, newCard, remainingNewCardsToday, baseCode } from '@langplayer/util
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { CheckCircle2, BookOpen, Trash2, Undo2 } from 'lucide-react-native';
+import { CheckCircle2, BookOpen, Undo2 } from 'lucide-react-native';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
@@ -235,15 +235,6 @@ export default function ReviewScreen() {
     undoRef.current = null;
   }, [l2Code, updateCard]);
 
-  /** Remove this word from saved words and SRS. */
-  const handleRemove = useCallback(() => {
-    const card = cards[currentIndex];
-    if (!card) return;
-    removeWord(l2Code, card.word.id);
-    removeCard(l2Code, card.word.id);
-    setRated(false);
-  }, [cards, currentIndex, l2Code, removeWord, removeCard]);
-
   // ── Clamp currentIndex if it exceeds the cards array (cards shrunk after removal) ──
   useEffect(() => {
     if (cards.length > 0 && currentIndex >= cards.length) {
@@ -457,10 +448,9 @@ export default function ReviewScreen() {
       </View>
 
       {/* Flashcard */}
-      <View className="flex-1 items-center justify-center px-6">
+      <View className="px-4">
         <Pressable
-          className="w-full max-w-sm rounded-xl border border-border bg-card p-8"
-          style={{ minHeight: 240 }}
+          className="rounded-xl border border-border bg-card p-4"
         >
           {/* Context sentence — always visible, tokenized/interactive */}
           {(wordCtx as any)?.text ? (
@@ -494,26 +484,15 @@ export default function ReviewScreen() {
 
         </Pressable>
 
-        {/* Undo + Remove row */}
-        {!rated && (
-          <View className="mt-3 w-full max-w-sm flex-row justify-between">
-            {undoRef.current ? (
-              <Pressable
-                onPress={handleUndo}
-                className="flex-row items-center gap-1 rounded-lg border border-border px-3 py-1.5"
-              >
-                <Undo2 size={14} color={ICON_MUTED} />
-                <Text className="text-xs text-muted-foreground">{t('action.undo')}</Text>
-              </Pressable>
-            ) : (
-              <View />
-            )}
+        {/* Undo button */}
+        {!rated && undoRef.current && (
+          <View className="mt-3 w-full max-w-sm items-center">
             <Pressable
-              onPress={handleRemove}
+              onPress={handleUndo}
               className="flex-row items-center gap-1 rounded-lg border border-border px-3 py-1.5"
             >
-              <Trash2 size={14} color={ICON_MUTED} />
-              <Text className="text-xs text-muted-foreground">{t('action.delete')}</Text>
+              <Undo2 size={14} color={ICON_MUTED} />
+              <Text className="text-xs text-muted-foreground">{t('action.undo')}</Text>
             </Pressable>
           </View>
         )}
@@ -521,7 +500,7 @@ export default function ReviewScreen() {
 
       {/* Rating buttons */}
       {!rated && (
-        <View className="flex-row gap-2 px-4 pb-8">
+        <View className="flex-row gap-2 px-4 pb-4">
           {RATING_LABELS.map((r) => (
             <Pressable
               key={r.key}
