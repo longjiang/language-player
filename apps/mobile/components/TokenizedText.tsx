@@ -389,11 +389,23 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
               const showTokenPhonetics = shouldShowPhonetics(token);
               const isSaved = savedFormSet.has(word.toLowerCase());
+
+              // Trim the interlinear definition to roughly the word's display width + ~2em.
+              // Latin chars = 1 unit, CJK chars = 2 units (roughly double width).
+              // widthBudget = word unit-length + 4 (~2em slack).
+              // Definition chars are ~0.55x font size, so they're ~1.8x more chars per unit.
+              const trimmedDef = (() => {
+                if (!firstDef) return null;
+                const wordLen = [...displayText].reduce((sum, c) => sum + (c.length === 1 && /[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/.test(c) ? 2 : 1), 0);
+                const maxDefChars = Math.max(8, Math.round((wordLen + 4) * 1.8));
+                return firstDef.length > maxDefChars ? firstDef.slice(0, maxDefChars - 1) + '…' : firstDef;
+              })();
+
               // Quick gloss and interlinear definition coexist (matching web).
               // Quick gloss: 'def' marker inline after saved words.
               // Interlinear: definition stacked below all words.
               const showQuickGloss = isSaved && quickGlossEnabled && !!firstDef && !isHighlighted;
-              const showInterlinear = showDefinition && !!firstDef && !isBlanked;
+              const showInterlinear = showDefinition && !!trimmedDef && !isBlanked;
 
               // Ruby only in actual ruby mode (not when View-based is triggered by showDefinition alone)
               const isRubyMode = showPhonetics && phonetics.show === 'ruby';
@@ -424,9 +436,6 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                       {seg.reading && (
                         <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
                       )}
-                      {showByeonggi && j === 0 && (
-                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{byeonggiText}</Text>
-                      )}
                       <Text
                         testID={`token-${i}`}
                         style={[textStyle, { lineHeight: baseLeading }]}
@@ -434,12 +443,18 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                         onPress={handlePress}
                       >
                         {isBlanked ? '▯' : seg.text}
+                        {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
+                        {showByeonggi && j === 0 ? (
+                          <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
+                        ) : null}
+                        {/* Quick gloss: inline after byeonggi/word, with single quotes (matching web's QuickGloss component) */}
+                        {showQuickGloss && j === rubySegs.length - 1 ? (
+                          <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> '{firstDef}'</Text>
+                        ) : null}
                       </Text>
-                      {showQuickGloss && j === rubySegs.length - 1 && (
-                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{firstDef}</Text>
-                      )}
+                      {/* Interlinear definition: stacked below the word (separate from inline annotations) */}
                       {showInterlinear && j === rubySegs.length - 1 && (
-                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground/60">{firstDef}</Text>
+                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground/60">{trimmedDef}</Text>
                       )}
                     </View>
                   ))}
@@ -495,9 +510,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}
                   style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}
                 >
-                  {showByeonggi ? `${byeonggiText} ` : ''}
                   {isBlanked ? '▯' : displayText}
-                  {showQuickGloss ? ` ${firstDef}` : ''}
+                  {showByeonggi ? ` ${byeonggiText}` : ''}
+                  {showQuickGloss ? ` '${firstDef}'` : ''}
                 </Text>
               );
             });
