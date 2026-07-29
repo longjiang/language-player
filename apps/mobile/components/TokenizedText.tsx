@@ -4,7 +4,7 @@ import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
-import type { LemmatizedToken } from '@langplayer/shared';
+import type { LemmatizedToken, TokenSource } from '@langplayer/shared';
 import { lemmatizeText } from '@/lib/tokenizer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -93,6 +93,22 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   tokenCacheRef.current = tokenCache;
 
   const { l1Lang } = useLanguage();
+
+  // ── Debug: colored underlines per token source (SPEC-018) ──
+  // Only active in __DEV__. Maps source to a color level:
+  //   Level 1 (green)  — server / kuromoji (best accuracy)
+  //   Level 2 (yellow) — dict-seg / lemma-table / snowball / arabic-stem (medium)
+  //   Level 3 (red)    — surface (last resort)
+  const TOKEN_SOURCE_COLORS: Record<TokenSource, string> = __DEV__ ? {
+    server:       '#22c55e', // green-500
+    'ja-kuromoji':'#22c55e',
+    'ko-kuromoji':'#22c55e',
+    'dict-seg':   '#eab308', // yellow-500
+    'lemma-table':'#eab308',
+    'snowball':   '#eab308',
+    'arabic-stem':'#eab308',
+    surface:      '#ef4444', // red-500
+  } : ({} as any);
 
   // ── Settings (matches Next.js) ──
   const { getL2, tokenizedText: tokenSettings } = useSettingsContext();
@@ -400,10 +416,15 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 }
               };
 
+              // Debug: colored underline matching token source level (SPEC-018)
+              const debugUnderline = __DEV__ && token.source && TOKEN_SOURCE_COLORS[token.source]
+                ? { borderBottomWidth: 2, borderBottomColor: TOKEN_SOURCE_COLORS[token.source] }
+                : undefined;
+
               return (
                 <React.Fragment key={i}>
                   {rubySegs.map((seg, j) => (
-                    <View key={j} className="items-center mx-px" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
+                    <View key={j} className="items-center mx-px" style={[isKaraokeDimmed ? { opacity: 0.4 } : undefined, debugUnderline]}>
                       {seg.reading && (
                         <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
                       )}
@@ -469,13 +490,18 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 }
               };
 
+              // Debug: colored underline matching token source level (SPEC-018)
+              const debugUnderline = __DEV__ && token.source && TOKEN_SOURCE_COLORS[token.source]
+                ? { textDecorationLine: 'underline' as const, textDecorationColor: TOKEN_SOURCE_COLORS[token.source] }
+                : undefined;
+
               return (
                 <Text
                   key={i}
                   testID={`token-${i}`}
                   onPress={handlePress}
                   className={isHighlighted ? 'font-bold text-primary' : ''}
-                  style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}
+                  style={[isKaraokeDimmed ? { opacity: 0.4 } : undefined, debugUnderline]}
                 >
                   {showByeonggi ? `${byeonggiText} ` : ''}
                   {isBlanked ? '▯' : displayText}
