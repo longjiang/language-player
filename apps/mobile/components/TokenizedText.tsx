@@ -501,8 +501,10 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
           })()}
           </View>
         ) : (
-          /* Word-replace or no-phonetics mode: plain inline Text */
-          <Text testID={testID} style={textStyle} className="text-foreground">
+          /* Word-replace or no-phonetics mode: plain inline Text.
+             lineHeight uses a snug ratio (1.375) applied to the base fontSize —
+             this gives the content tighter line spacing within wrapped lines. */
+          <Text testID={testID} style={[textStyle, { lineHeight: Math.round(textStyle.fontSize! * 1.625) }]} className="text-foreground">
             {(() => {
               let wordIndexSoFar = 0;
               return tokens.map((token, i) => {
