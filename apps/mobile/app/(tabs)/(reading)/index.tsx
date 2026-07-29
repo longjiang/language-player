@@ -201,7 +201,7 @@ export default function ReaderScreen() {
                     </View>
                   ) : (
                     <Pressable
-                      onPress={() => notes.selectNote(n.id)}
+                      onPress={() => { notes.selectNote(n.id); setSidebarOpen(false); }}
                       onLongPress={() => {
                         setRenameId(n.id);
                         setRenameText(n.title ?? '');
