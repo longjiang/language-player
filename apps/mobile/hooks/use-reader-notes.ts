@@ -400,7 +400,7 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
     if (user) loadNotes();
   }, [user, l2Code, loadNotes]);
 
-  // ── Restore saved active note on mount ────────────────
+  // ── Restore saved active note — once after initial load ──
 
   const restoredRef = useRef(false);
 
@@ -414,7 +414,9 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
         await selectNote(savedId);
       }
     })();
-  }, [user, notes, l2Code, selectNote]);
+    // Intentionally only run once when notes loads from empty→non-empty.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notes.length > 0]);
 
   return {
     notes, notesLoading, notesError,
