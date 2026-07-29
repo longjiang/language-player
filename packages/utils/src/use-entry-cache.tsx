@@ -20,5 +20,6 @@ export function useEntryCache(l2Code: string, text: string): DictionaryEntry[] |
   return useSyncExternalStore(
     subscribeToCache,
     () => getCachedEntries(l2Code, text),
+    () => undefined, // getServerSnapshot — no cached data during SSR
   );
 }
