@@ -112,7 +112,7 @@ export default function ReaderScreen() {
       </View>
 
       {/* Main content — sidebar overlays content when open */}
-      <View className="flex-1">
+      <View className="flex-1 pt-2">
         {/* Editor / Reader */}
         <View className="flex-1">
           {activeTab === 'edit' && (

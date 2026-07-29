@@ -86,7 +86,7 @@ export default function WebReaderScreen() {
   return (
     <PageContainer>
       {/* Main content — sidebar overlays content when open */}
-      <View className="flex-1">
+      <View className="flex-1 pt-2">
         <View className="flex-1">
           <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         {/* ── Header ── */}
