@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, Image, ActivityIndicator, ScrollView } from 'react-native';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { Root as Switch } from '@/components/ui/switch';
@@ -95,11 +95,11 @@ export function PaginatedReader({
             </View>
           )}
 
-          <View className="flex-1 px-4">
+          <ScrollView className="flex-1 px-4">
             {visibleBlocks.map((block, bi) =>
               renderBlock(block, bi, blocks, visibleBlocks, tokenCache, blockTranslations, showTranslation, l2Code, l1Code, contentWidth, showTextActions),
             )}
-          </View>
+          </ScrollView>
 
           {/* Page navigation + translation switch */}
           <View className="flex-shrink-0 flex-row items-center justify-between border-t border-border px-4 py-2">
