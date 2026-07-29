@@ -11,6 +11,7 @@ import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
+import { saveUrlAnchor, getUrlAnchor } from '@/lib/reader-storage';
 import { Globe, Plus, MoreHorizontal, PenLine, Trash2, Check, PanelRightOpen } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
@@ -30,6 +31,11 @@ export default function WebReaderScreen() {
   const [renameId, setRenameId] = useState<number | null>(null);
   const [renameText, setRenameText] = useState('');
   const [menuNoteId, setMenuNoteId] = useState<number | null>(null);
+  const [initialAnchor, setInitialAnchor] = useState<string | null>(null);
+
+  const handleAnchorChange = useCallback((anchor: string) => {
+    saveUrlAnchor(url || title, anchor);
+  }, [url, title]);
 
   const pagination = useEpubPagination({
     text,
@@ -37,6 +43,8 @@ export default function WebReaderScreen() {
     l2Code: l2Lang.code,
     showTranslation: display.translation,
     resetKey: title || null,
+    initialAnchor,
+    onAnchorChange: handleAnchorChange,
   });
 
   const handleLoad = useCallback(async (loadUrl?: string) => {
@@ -54,6 +62,9 @@ export default function WebReaderScreen() {
       const extractedTitle = extractTitle(raw) || targetUrl;
       setTitle(extractedTitle);
       setText(md);
+      // Load saved anchor for this URL
+      const savedAnchor = await getUrlAnchor(targetUrl);
+      setInitialAnchor(savedAnchor);
     } catch (e: any) {
       setError(e?.message || t('msg.failed_to_load_url'));
     } finally {

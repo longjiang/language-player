@@ -6,6 +6,7 @@ import { useT } from '@/hooks/use-t';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
+import { saveNoteAnchor, getNoteAnchor } from '@/lib/reader-storage';
 import { BookOpen, PenLine, Plus, PanelRightOpen, PanelRightClose, Cloud, Check, MoreHorizontal, Trash2 } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
@@ -23,23 +24,37 @@ export default function ReaderScreen() {
   const [renameId, setRenameId] = useState<number | null>(null);
   const [renameText, setRenameText] = useState('');
   const [menuNoteId, setMenuNoteId] = useState<number | null>(null);
+  const [initialAnchor, setInitialAnchor] = useState<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const justCreatedRef = useRef(false);
 
-  // When current note changes, load its text
+  // When current note changes, load its text and saved anchor
   useEffect(() => {
     if (notes.currentNote) {
       setText(notes.currentNote.text ?? '');
       if (justCreatedRef.current) {
-        // Newly created — stay in edit mode
+        // Newly created — stay in edit mode, no anchor to restore
         justCreatedRef.current = false;
         setActiveTab('edit');
+        setInitialAnchor(null);
       } else if (!notes.currentNote.text?.trim()) {
         // Empty note — open in edit mode
         setActiveTab('edit');
+        setInitialAnchor(null);
       } else {
         setActiveTab('read');
+        // Load saved anchor for this note
+        (async () => {
+          const anchor = notes.currentNoteId != null ? await getNoteAnchor(notes.currentNoteId) : null;
+          setInitialAnchor(anchor);
+        })();
       }
+    }
+  }, [notes.currentNoteId]);
+
+  const handleAnchorChange = useCallback((anchor: string) => {
+    if (notes.currentNoteId != null) {
+      saveNoteAnchor(notes.currentNoteId, anchor);
     }
   }, [notes.currentNoteId]);
 
@@ -49,6 +64,8 @@ export default function ReaderScreen() {
     l2Code: l2Lang.code,
     showTranslation: display.translation,
     resetKey: notes.currentNoteId !== null ? String(notes.currentNoteId) : null,
+    initialAnchor,
+    onAnchorChange: handleAnchorChange,
   });
 
   // Auto-save with 2s debounce
