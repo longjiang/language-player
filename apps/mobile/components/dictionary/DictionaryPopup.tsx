@@ -5,6 +5,7 @@ import { useDictionary } from '@langplayer/api-client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { SaveButton } from '@/components/dictionary/SaveButton';
+import { AiExplanation } from '@/components/dictionary/AiExplanation';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { useRouter } from 'expo-router';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
@@ -193,6 +194,13 @@ export function DictionaryPopup({
                   ) : null}
                 </View>
               ) : null}
+
+              {/* AI Explanation — above results, matching web + Classic */}
+              <AiExplanation
+                word={word}
+                contextText={context}
+                entryFound={(results?.length ?? 0) > 0}
+              />
 
               {/* Results */}
               <ScrollView
