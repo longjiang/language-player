@@ -19,7 +19,7 @@ export function MarkdownText({ children }: MarkdownTextProps) {
         body: {
           color: 'rgb(248 250 252)',
           fontSize: 14,
-          lineHeight: 20,
+          lineHeight: 21,
         },
         paragraph: {
           marginBottom: 12,
