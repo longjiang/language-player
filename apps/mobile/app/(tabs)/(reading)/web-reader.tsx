@@ -85,8 +85,8 @@ export default function WebReaderScreen() {
 
   return (
     <PageContainer>
-      {/* Main content row */}
-      <View className="flex-1 flex-row">
+      {/* Main content — sidebar overlays content when open */}
+      <View className="flex-1">
         <View className="flex-1">
           <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         {/* ── Header ── */}
@@ -196,9 +196,9 @@ export default function WebReaderScreen() {
           </ScrollView>
         </View>
 
-        {/* ── Notes Sidebar ── */}
+        {/* ── Notes Sidebar — overlay ── */}
         {sidebarOpen && (
-          <View className="w-56 border-l border-border bg-card">
+          <View className="absolute right-0 top-0 bottom-0 w-56 z-10 border-l border-border bg-card shadow-lg" style={{ elevation: 8 }}>
             <View className="border-b border-border px-3 py-2">
               <Text className="text-sm font-semibold text-foreground">{t('title.notes')}</Text>
             </View>
