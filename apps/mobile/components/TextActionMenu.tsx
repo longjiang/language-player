@@ -180,10 +180,10 @@ export function TextActionMenu(props: TextActionMenuProps) {
         animationType="fade"
         onRequestClose={closeAction}
       >
-        <Pressable className="flex-1 bg-black/50 justify-center px-4" onPress={closeAction}>
-          <Pressable
-            onPress={() => {}}
-            className="max-h-[80%] min-h-[40%] rounded-xl bg-card flex-col"
+        <Pressable className="flex-1 bg-black/50 justify-end" onPress={closeAction}>
+          <View
+            onStartShouldSetResponder={() => true}
+            className="max-h-[85%] rounded-t-xl bg-card flex-col"
           >
             {/* Header */}
             <View className="flex-shrink-0 flex-row items-center justify-between border-b border-border px-5 py-3">
@@ -198,7 +198,7 @@ export function TextActionMenu(props: TextActionMenuProps) {
               </Pressable>
             </View>
 
-            {/* Body — flex-1 ensures ScrollView fills remaining card height and scrolls */}
+            {/* Body — flex-1 fills remaining space; ScrollView scrolls when content overflows */}
             <ScrollView className="flex-1 px-5 py-4">
               {/* Original text — tokenized, collapsible to 4 lines */}
               <View className="mb-4 rounded-lg border border-border bg-muted/30 p-3">
@@ -226,7 +226,7 @@ export function TextActionMenu(props: TextActionMenuProps) {
                 <Text className="mt-2 text-xs text-destructive">{explainError}</Text>
               ) : null}
             </ScrollView>
-          </Pressable>
+          </View>
         </Pressable>
       </Modal>
 
