@@ -145,6 +145,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
         ref={flatListRef}
         data={displayLines}
         keyExtractor={(_, i) => String(i)}
+        contentContainerStyle={{ paddingHorizontal: 12 }}
         onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
         onLayout={onLayout}
         onScrollBeginDrag={onScrollBeginDrag}
@@ -178,7 +179,6 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
               onPress={() => onSeekToLine?.(item.starttime)}
               className={`rounded-lg px-3 py-2 mb-1 ${isActive ? 'bg-primary/10 border border-primary/30' : ''}`}
             >
-              <Text className="text-xs tabular-nums text-muted-foreground">{item.starttime}s</Text>
               <TokenizedText
                 text={item.l2Line}
                 l2Code={l2Lang.code}
