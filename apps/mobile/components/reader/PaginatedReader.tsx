@@ -156,17 +156,16 @@ function renderBlock(
     );
   }
 
+  const globalIdx = allBlocks.indexOf(block);
+
   if (block.kind === 'table') {
-    const colWidths = block.header.length > 0
-      ? block.header.map(() => Math.floor(100 / block.header.length))
-      : [];
     return (
       <View key={bi} className="mb-3 overflow-hidden rounded-lg border border-border">
         {/* Header row */}
         <View className="flex-row bg-muted/50">
           {block.header.map((cell, ci) => (
-            <View key={ci} className={`${ci < block.header.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
-              <Text className="px-2 py-1.5 text-xs font-semibold text-foreground">{cell}</Text>
+            <View key={ci} className={`px-2 py-1.5 ${ci < block.header.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
+              <Text className="text-xs font-semibold text-foreground"><TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} /></Text>
             </View>
           ))}
         </View>
@@ -174,8 +173,8 @@ function renderBlock(
         {block.rows.map((row, ri) => (
           <View key={ri} className={`flex-row ${ri < block.rows.length - 1 ? 'border-b border-border' : ''}`}>
             {row.map((cell, ci) => (
-              <View key={ci} className={`${ci < row.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
-                <Text className="px-2 py-1.5 text-xs text-foreground">{cell}</Text>
+              <View key={ci} className={`px-2 py-1.5 ${ci < row.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
+                <TokenizedText text={cell} l2Code={l2Code} tokens={tokenCache[globalIdx] ? tokenCache[globalIdx] : undefined} />
               </View>
             ))}
           </View>
@@ -189,7 +188,6 @@ function renderBlock(
   );
   const localIdx = visibleTextBlocks.indexOf(block as TextBlock);
   const translation = localIdx >= 0 ? blockTranslations[localIdx] : undefined;
-  const globalIdx = allBlocks.indexOf(block);
   const cachedTokens = tokenCache[globalIdx];
 
   // ── Body block content (tokenized text + optional translation) ──
