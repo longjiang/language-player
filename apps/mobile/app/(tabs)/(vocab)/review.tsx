@@ -13,7 +13,7 @@ import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { CheckCircle2, BookOpen, Undo2 } from 'lucide-react-native';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
-import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
+import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import type { DictionaryEntry } from '@langplayer/shared';
@@ -532,12 +532,12 @@ export default function ReviewScreen() {
             )}
           </Text>
 
-          {/* Matched entry card — full, embedded (no double border inside card) */}
+          {/* Matched entry card — full with tabs (no double border inside card) */}
           {(getCachedEntries(l2Code, wordForm) ?? []).filter(e => e.id === currentCard.word.id).length > 0 && (
             <View className="mb-2">
-              <DictionaryEntryCard
+              <DictionaryEntryTabs
                 entry={(getCachedEntries(l2Code, wordForm) ?? []).find(e => e.id === currentCard.word.id)!}
-                variant="full"
+                showDefinitionTab
                 embedded
                 l2Code={l2Lang.code}
                 contextText={(wordCtx as any)?.text}

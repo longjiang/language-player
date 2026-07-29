@@ -1,24 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatLevel } from '@langplayer/shared';
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
-import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
 import { PitchAccent } from '@/components/PitchAccent';
-import { TabbedPanel } from '@/components/TabbedPanel';
-import { SubsSearchResults } from '@/components/video/SubsSearchResults';
-import { InflectionTable } from '@/components/InflectionTable';
-import { AiExplanation } from '@/components/dictionary/AiExplanation';
-import { BookOpen, Film, Binary, Sparkles } from 'lucide-react-native';
+import { BookOpen } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
-  /** 'compact' = popup/list view; 'full' = detail page view with tabs */
+  /** 'compact' = popup/list view; 'full' = detail page view */
   variant?: 'compact' | 'full';
-  /** Called when the card is tapped (navigates to entry detail page). Compact only. */
+  /** Called when the card is tapped (navigates to entry detail page). */
   onPress?: (entry: DictionaryEntry) => void;
   /** ISO 639-1 code of the target language (for script preference + pitch accent). */
   l2Code?: string;
@@ -26,18 +21,14 @@ interface DictionaryEntryCardProps {
   l1Code?: string;
   /** Optional save button to render at the top-right of the card. */
   saveButton?: React.ReactNode;
-  /** Context for save/bookmark button. When provided, save button is shown in full mode. */
+  /** Context for save/bookmark button. */
   saveContext?: SavedWordContext;
-  /** When true (full mode), renders without card chrome for embedding inside another card. */
-  embedded?: boolean;
-  /** Optional surrounding text context for DeepSeek explanation. */
-  contextText?: string;
-  /** Optional inflected form of the word as it appears in contextText. */
-  contextForm?: string;
   /** Pre-formatted pronunciation override. Uses formatPronunciation if omitted. */
   pronunciation?: string | null;
 }
 
+/** Renders the entry details for a dictionary lookup result — compact in popups, full on detail pages.
+ *  No tabs. Use DictionaryEntryTabs to wrap this card with tabbed sections (Examples, DeepSeek, etc.). */
 export function DictionaryEntryCard({
   entry,
   variant = 'compact',
@@ -46,9 +37,6 @@ export function DictionaryEntryCard({
   l1Code,
   saveButton,
   saveContext,
-  embedded = false,
-  contextText,
-  contextForm,
   pronunciation: pronunciationOverride,
 }: DictionaryEntryCardProps) {
   const t = useT();
@@ -58,11 +46,6 @@ export function DictionaryEntryCard({
 
   const formattedLevels = (entry.levels ?? []).map((l) => formatLevel({ scale: l.scale, value: l.value }));
   const isFull = variant === 'full';
-
-  // ── Inflected search terms (for Examples tab) ──
-  const { allTerms, headTerm, formCount } = useInflectedSearchTerms(entry, l2Code);
-  const [exactMatch, setExactMatch] = useState(false);
-  const searchTermString = exactMatch ? headTerm : allTerms.join(',');
 
   const formattedPron = pronunciationOverride !== undefined
     ? pronunciationOverride
@@ -158,10 +141,8 @@ export function DictionaryEntryCard({
   }
 
   // ── FULL variant ──
-
-  // Word content — the "dictionary" tab content
-  const wordContent = (
-    <View className={embedded ? '' : 'px-4 pt-4'}>
+  return (
+    <View>
       {/* Head + alt script */}
       <View className="flex-row items-baseline gap-3">
         <Text className="text-3xl font-bold text-foreground" lang={l2Code}>{head}</Text>
@@ -282,28 +263,5 @@ export function DictionaryEntryCard({
         {sourceLine}
       </View>
     </View>
-  );
-
-  return (
-    <TabbedPanel
-      tabs={[
-        { key: 'word', label: t('title.dictionary'), icon: () => <BookOpen size={14} color={ICON_MUTED} /> },
-        { key: 'examples', label: t('title.examples_from_videos'), icon: () => <Film size={14} color={ICON_MUTED} /> },
-        { key: 'deepseek', label: t('action.let_ai_explain'), icon: () => <Sparkles size={14} color={ICON_MUTED} /> },
-        { key: 'inflections', label: t('title.conjugations'), icon: () => <Binary size={14} color={ICON_MUTED} /> },
-      ]}
-      className={embedded ? '' : 'rounded-xl border border-border bg-card'}
-      contentClassName={embedded ? 'px-0 pt-4' : 'p-4'}
-    >
-      {wordContent}
-      {<SubsSearchResults
-        term={searchTermString}
-        exactMatch={exactMatch}
-        onExactToggle={setExactMatch}
-        formCount={formCount}
-      />}
-      {<AiExplanation word={head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />}
-      {<InflectionTable head={head} l2Code={l2Code} embedded />}
-    </TabbedPanel>
   );
 }

@@ -1,17 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { Film, Binary, Sparkles } from 'lucide-react-native';
 import { useT } from '@/hooks/use-t';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useDictionary } from '@langplayer/api-client';
-import { SubsSearchResults } from '@/components/video/SubsSearchResults';
-import { InflectionTable } from '@/components/InflectionTable';
-import { AiExplanation } from '@/components/AiExplanation';
-import { TabbedPanel } from '@/components/TabbedPanel';
-import { DictionaryDefinitionsPanel } from '@/components/dictionary/DictionaryDefinitionsPanel';
-import { useInflectedSearchTerms } from '@/hooks/use-inflected-search-terms';
+import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
+import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { decomposeWordId } from '@langplayer/shared';
@@ -84,11 +79,6 @@ export default function WordDetailScreen() {
     }
   }, [entry?.head, setDetailHead]);
 
-  // Inflected search terms for subs-search (head + alternate forms)
-  const { allTerms, headTerm, formCount } = useInflectedSearchTerms(entry, l2Lang.code);
-  const [exactMatch, setExactMatch] = useState(false);
-  const searchTermString = exactMatch ? headTerm : allTerms.join(',');
-
   // ── Loading ──
   if (loading) {
     return (
@@ -120,42 +110,25 @@ export default function WordDetailScreen() {
     );
   }
 
-  // ── Entry detail: definitions panel + tabs panel (siblings, ADR 0007) ──
+  // ── Entry detail: definitions card + tabs panel (siblings, ADR 0007) ──
   return (
     <ScrollView className="flex-1 bg-background">
-      {/* Definitions panel — card at the top (like web's left panel on lg+) */}
+      {/* Definitions card at the top (like web's left panel on lg+) */}
       <View className="mx-4 mt-4 rounded-xl border border-border bg-card p-6">
-        <DictionaryDefinitionsPanel
+        <DictionaryEntryCard
           entry={entry}
+          variant="full"
           l2Code={l2Lang.code}
         />
       </View>
 
       {/* Tabs panel: Examples, Conjugations, DeepSeek (matches web right panel) */}
       <View className="mx-4 mt-4 mb-8">
-        <TabbedPanel
-          tabs={[
-            { key: 'examples', label: t('title.examples_from_videos'), icon: () => <Film size={16} color={ICON_MUTED} /> },
-            { key: 'conjugations', label: t('title.conjugations'), icon: () => <Binary size={16} color={ICON_MUTED} /> },
-            { key: 'deepseek', label: t('action.let_ai_explain'), icon: () => <Sparkles size={16} color={ICON_MUTED} /> },
-          ]}
-          defaultTab="examples"
-        >
-          <ScrollView>
-            <SubsSearchResults
-              term={searchTermString}
-              exactMatch={exactMatch}
-              onExactToggle={setExactMatch}
-              formCount={formCount}
-            />
-          </ScrollView>
-
-          <ScrollView className="px-4 pt-3">
-            <InflectionTable head={entry.head} l2Code={l2Lang.code} embedded />
-          </ScrollView>
-
-          <AiExplanation word={entry.head} entryFound={true} autoLoad />
-        </TabbedPanel>
+        <DictionaryEntryTabs
+          entry={entry}
+          l2Code={l2Lang.code}
+          showDefinitionTab={false}
+        />
       </View>
     </ScrollView>
   );
