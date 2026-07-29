@@ -6,8 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useSrs } from '@/hooks/use-srs';
-import { sm2, newCard, remainingNewCardsToday, baseCode } from '@langplayer/utils';
-import { getCachedEntries, setCachedEntries, bulkLookupWords } from '@/lib/dictionary-cache';
+import { sm2, newCard, remainingNewCardsToday, baseCode, useEntryCache } from '@langplayer/utils';
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
@@ -66,8 +65,6 @@ export default function ReviewScreen() {
   const insets = useSafeAreaInsets();
 
   const RATING_LABELS = useRatingLabels();
-  /** Dictionary cache version — incremented when new entries are cached via bulkLookupWords. */
-  const [cacheVersion, setCacheVersion] = useState(0);
 
   const l2Code = l2Lang.code;
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
@@ -76,15 +73,11 @@ export default function ReviewScreen() {
   const [rated, setRated] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
   const [initializing, setInitializing] = useState(false);
-  const [fetchingEntries, setFetchingEntries] = useState(false);
-  const [entriesCache, setEntriesCache] = useState<Record<string, DictionaryEntry | null>>({});
   /** Auto-translated context text (fetched on-demand when no saved translation exists). */
   const [contextTranslation, setContextTranslation] = useState<string | null>(null);
 
   /** Previous card SRS state saved before a rating, used by the Undo action. */
   const undoRef = useRef<UndoState | null>(null);
-  /** Track which fetch batch we're on so we can ignore stale results. */
-  const fetchGenerationRef = useRef(0);
   /** Track the current card's word ID to detect unsave-triggered card changes. */
   const lastCardIdRef = useRef<string | null>(null);
 
@@ -111,7 +104,7 @@ export default function ReviewScreen() {
     }
   }, [srsLoaded, wordsLoaded, l2SavedWords, store, l2Code, dailyNewLimit, updateCard]);
 
-  // ── Compute due cards (without entries — entries merged below) ──
+  // ── Compute due cards ──
   const dueCards = useMemo(() => {
     const now = Date.now();
     const langCards: Record<string, SrsFields> = store.cards[l2Code] ?? {};
@@ -129,111 +122,18 @@ export default function ReviewScreen() {
       });
   }, [l2SavedWords, store, l2Code]);
 
-  // ── Merge due cards with cached entries ──
+  // ── Derive entry for the current card from the reactive cache ──
+  const currentDueCard = dueCards[currentIndex];
+  const wordForm = currentDueCard?.forms?.[0] || currentDueCard?.head || currentDueCard?.id || '';
+  const currentEntry = useEntryCache(l2Code, wordForm)
+    ?.find((e) => e.id === currentDueCard?.id) ?? null;
+
+  // ── Merge due cards with the reactive entry ──
   const cards = useMemo(() => dueCards.map((word) => ({
     word,
     srs: (store.cards[l2Code] ?? {})[word.id] || newCard(),
-    entry: entriesCache[word.id] ?? null,
-  })), [dueCards, entriesCache, store, l2Code]);
-
-  // ── Fetch dictionary entries for the current card + a small lookahead ──
-  const ENTRY_LOOKAHEAD = 2;
-
-  useEffect(() => {
-    if (dueCards.length === 0 || fetchingEntries || initializing) return;
-
-    const windowEnd = Math.min(currentIndex + ENTRY_LOOKAHEAD, dueCards.length - 1);
-    const uncachedInWindow: { id: string; text: string }[] = [];
-    for (let i = currentIndex; i <= windowEnd; i++) {
-      const word = dueCards[i];
-      if (!word) continue;
-      const id = word.id;
-      if (id && !(id in entriesCache)) {
-        // Check the shared dictionary-cache first (populated by TokenizedText)
-        const searchText = word.forms?.[0] || word.head || word.id;
-        const cached = getCachedEntries(l2Code, searchText);
-        if (cached && cached.length > 0) {
-          const match =
-            cached.find((e) => e.id === id) ||
-            cached.find((e) => e.head === word.forms?.[0]) ||
-            cached[0];
-          if (match) {
-            entriesCache[id] = match;
-            continue;
-          }
-        }
-        uncachedInWindow.push({ id, text: searchText });
-      }
-    }
-
-    // If cache hits resolved all cards in the window, nothing more to fetch
-    if (uncachedInWindow.length === 0) return;
-
-    const generation = ++fetchGenerationRef.current;
-    let cancelled = false;
-
-    const fetchEntries = async () => {
-      setFetchingEntries(true);
-      const newEntries: Record<string, DictionaryEntry | null> = {};
-
-      const results = await Promise.all(
-        uncachedInWindow.map(async ({ id, text }) => {
-          try {
-            const res = await fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                text,
-                l2: l2Code,
-                l1: baseCode(l1Lang.code),
-              }),
-            });
-            if (!res.ok) return { id, entry: null };
-            const data = await res.json();
-            const entries: DictionaryEntry[] = data.results ?? [];
-            const match =
-              entries.find((e) => e.id === id) ||
-              entries.find((e) => e.head === text) ||
-              entries[0];
-            return { id, entry: match || null };
-          } catch {
-            return { id, entry: null };
-          }
-        })
-      );
-
-      if (!cancelled && generation === fetchGenerationRef.current) {
-        for (const r of results) {
-          newEntries[r.id] = r.entry;
-        }
-        setEntriesCache((prev) => ({ ...prev, ...newEntries }));
-        setFetchingEntries(false);
-      }
-    };
-
-    fetchEntries();
-    return () => { cancelled = true; };
-  }, [dueCards, currentIndex, fetchingEntries, initializing, cacheVersion]);
-
-  // ── Pre-warm the shared cache via bulkLookupWords for upcoming cards ──
-  useEffect(() => {
-    if (dueCards.length === 0) return;
-
-    const windowEnd = Math.min(currentIndex + ENTRY_LOOKAHEAD + 3, dueCards.length - 1);
-    const texts: { text: string; l2Code: string; l1Code: string }[] = [];
-    for (let i = currentIndex; i <= windowEnd; i++) {
-      const word = dueCards[i];
-      if (!word) continue;
-      const searchText = word.forms?.[0] || word.head || word.id;
-      if (!getCachedEntries(l2Code, searchText)) {
-        texts.push({ text: searchText, l2Code, l1Code: baseCode(l1Lang.code) });
-      }
-    }
-
-    if (texts.length > 0) {
-      bulkLookupWords(texts, PYTHON_API_URL).then(() => setCacheVersion(v => v + 1));
-    }
-  }, [dueCards, currentIndex, l2Code, l1Lang.code]);
+    entry: word.id === currentDueCard?.id ? currentEntry : null,
+  })), [dueCards, store, l2Code, currentDueCard?.id, currentEntry]);
 
   // ── Handlers ──
 
@@ -351,7 +251,6 @@ export default function ReviewScreen() {
   useEffect(() => {
     setJustCompleted(false);
     setCurrentIndex(0);
-    setEntriesCache({});
     undoRef.current = null;
   }, [l2Code]);
 
@@ -463,8 +362,7 @@ export default function ReviewScreen() {
   const currentCard = cards[currentIndex];
   if (!currentCard) return null;
 
-  const entry = currentCard.entry;
-  const wordForm = currentCard.word.head || currentCard.word.forms?.[0] || entry?.head || currentCard.word.id;
+  const entry = currentEntry;
   const wordCtx = currentCard.word.context ?? {};
   const srs = currentCard.srs;
 
