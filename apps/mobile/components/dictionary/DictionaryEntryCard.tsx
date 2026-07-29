@@ -70,7 +70,7 @@ export function DictionaryEntryCard({ entry, variant = 'compact', onPress, l2Cod
 
       {/* Part of speech + numbered definitions (e.g. "*adj.* **1** surrealistic **2** bizarre; fantastic") */}
       {(entry.part_of_speech || definitions.length > 0) && (
-        <Text className="mt-2 text-sm leading-5 text-muted-foreground" numberOfLines={isFull ? undefined : 4}>
+        <Text className="mt-2 text-sm leading-snug text-muted-foreground" numberOfLines={isFull ? undefined : 4}>
           {entry.part_of_speech && (
             <Text className="italic">{entry.part_of_speech}{'  '}</Text>
           )}

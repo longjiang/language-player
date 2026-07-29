@@ -153,7 +153,7 @@ export function DictionaryPopup({
             }}
           >
             <View
-              className="px-4 pt-6 pb-8"
+              className="px-4 pt-4 pb-8"
               style={{ height: screenHeight * 0.75 }}
             >
               {/* Header — surface form as headline, lemma below when different */}
@@ -164,12 +164,12 @@ export function DictionaryPopup({
                       {word}
                     </Text>
                     {tokenPron && (
-                      <Text className="text-sm text-muted-foreground">{tokenPron}</Text>
+                      <Text className="text-sm text-muted-foreground">[{tokenPron}]</Text>
                     )}
                   </View>
                   {lemmaForm && (
                     <Text className="text-xs text-muted-foreground" numberOfLines={1}>
-                      lemma: {lemmaForm}
+                      {t('label.lemma')}: {lemmaForm}
                     </Text>
                   )}
                 </View>
