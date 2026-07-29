@@ -169,20 +169,25 @@ export function DisplaySettings() {
             <View className="mb-5">
               <SectionHeader title={t('setting.word_level_display')} />
               <ToggleRow
+                label={t('label.show_interlinear_gloss')}
+                desc={t('msg.show_definition_desc')}
+                value={l2Settings.tokenSpan.definition.show}
+                onValueChange={(v) => {
+                  updateL2(l2Lang.code, {
+                    tokenSpan: { ...l2Settings.tokenSpan, definition: { ...l2Settings.tokenSpan.definition, show: v } },
+                  });
+                  // Interlinear makes quick gloss redundant — force it off
+                  if (v && tokenizedText.quickGloss) {
+                    updateTokenizedText({ quickGloss: false });
+                  }
+                }}
+              />
+              <ToggleRow
                 label={t('label.show_gloss_saved')}
                 desc={t('msg.show_gloss_saved_desc')}
                 value={tokenizedText.quickGloss}
                 onValueChange={(v) => updateTokenizedText({ quickGloss: v })}
-              />
-              <ToggleRow
-                label={t('label.show_interlinear_gloss')}
-                desc={t('msg.show_definition_desc')}
-                value={l2Settings.tokenSpan.definition.show}
-                onValueChange={(v) =>
-                  updateL2(l2Lang.code, {
-                    tokenSpan: { ...l2Settings.tokenSpan, definition: { ...l2Settings.tokenSpan.definition, show: v } },
-                  })
-                }
+                disabled={l2Settings.tokenSpan.definition.show}
               />
               {isChinese && (
                 <>
