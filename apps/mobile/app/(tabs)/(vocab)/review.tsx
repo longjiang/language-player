@@ -397,7 +397,6 @@ export default function ReviewScreen() {
   const wordForm = currentCard.word.head || currentCard.word.forms?.[0] || entry?.head || currentCard.word.id;
   const wordCtx = currentCard.word.context ?? {};
   const srs = currentCard.srs;
-  const progress = cards.length > 0 ? (currentIndex + 1) / cards.length : 0;
 
   return (
     <PageContainer>
@@ -405,9 +404,6 @@ export default function ReviewScreen() {
       <View className="flex-row items-center justify-between px-4 py-4">
         <View>
           <Text className="text-xl font-bold text-foreground">{t('title.review')}</Text>
-          <Text className="mt-0.5 text-xs text-muted-foreground">
-            {t('review.progress', { done: currentIndex, remaining: cards.length - currentIndex })}
-          </Text>
         </View>
         {/* Anki-style colored dots */}
         <View className="flex-row items-center gap-3">
@@ -431,16 +427,6 @@ export default function ReviewScreen() {
           )}
         </View>
       </View>
-
-      {/* Progress bar */}
-      <View className="mx-4 h-1 rounded-full bg-muted">
-        <View className="h-full rounded-full bg-primary" style={{ width: `${Math.min(progress * 100, 100)}%` }} />
-      </View>
-
-      {/* Card counter */}
-      <Text className="mt-2 px-4 text-xs text-muted-foreground">
-        {currentIndex + 1} / {cards.length}
-      </Text>
 
       {/* Flashcard */}
       <View className="flex-1 items-center justify-center px-6">
