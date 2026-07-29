@@ -129,7 +129,7 @@ export default function EpubReaderScreen() {
           <EpubChapterSidebar
             toc={epub.toc} chapterHref={epub.chapterHref}
             prevHref={epub.prevHref} nextHref={epub.nextHref}
-            onSelect={(href) => epub.loadChapter(href)}
+            onSelect={(href) => { epub.loadChapter(href); setSidebarOpen(false); }}
             onPrev={epub.prevChapter} onNext={epub.nextChapter}
             onClose={() => setSidebarOpen(false)}
           />
