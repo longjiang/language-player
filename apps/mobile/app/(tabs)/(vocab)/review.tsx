@@ -10,7 +10,7 @@ import { sm2, newCard, remainingNewCardsToday, baseCode, useEntryCache } from '@
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { CheckCircle2, BookOpen, Undo2 } from 'lucide-react-native';
+import { CheckCircle2, BookOpen, Undo2, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { TokenizedText } from '@/components/TokenizedText';
@@ -75,6 +75,7 @@ export default function ReviewScreen() {
   const [initializing, setInitializing] = useState(false);
   /** Auto-translated context text (fetched on-demand when no saved translation exists). */
   const [contextTranslation, setContextTranslation] = useState<string | null>(null);
+  const [showTabs, setShowTabs] = useState(false);
 
   /** Previous card SRS state saved before a rating, used by the Undo action. */
   const undoRef = useRef<UndoState | null>(null);
@@ -430,8 +431,23 @@ export default function ReviewScreen() {
             )}
           </Text>
 
+          {/* Toggle button for definition tabs (matches web "Show Definition") */}
+          <Pressable
+            onPress={() => setShowTabs((p) => !p)}
+            className="mb-2 flex-row items-center justify-center gap-1 rounded-lg border border-border py-1.5 active:bg-muted"
+          >
+            {showTabs ? (
+              <ChevronUp size={14} color={ICON_MUTED} />
+            ) : (
+              <ChevronDown size={14} color={ICON_MUTED} />
+            )}
+            <Text className="text-xs text-muted-foreground">
+              {t('review.show_definition')}
+            </Text>
+          </Pressable>
+
           {/* Matched entry card — full with tabs (no double border inside card) */}
-          {entry && (
+          {entry && showTabs && (
             <View className="mb-2">
               <DictionaryEntryTabs
                 entry={entry}
