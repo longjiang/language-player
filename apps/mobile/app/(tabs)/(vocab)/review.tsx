@@ -418,7 +418,7 @@ export default function ReviewScreen() {
                 <SavedWordSource context={wordCtx as any} date={currentCard.word.date ?? 0} />
               </View>
               {showTabs && display.translation && ((wordCtx as any).translation || contextTranslation) && (
-                <Text className="mt-2 text-sm italic text-muted-foreground border-t border-border pt-2">
+                <Text className="mt-2 text-xs leading-relaxed text-muted-foreground border-t border-border pt-2">
                   {(wordCtx as any).translation || contextTranslation}
                 </Text>
               )}
@@ -446,16 +446,22 @@ export default function ReviewScreen() {
           )}
 
           {/* Matched entry card — full with tabs (no double border inside card) */}
-          {entry && showTabs && (
+          {showTabs && (
             <View className="mb-2">
-              <DictionaryEntryTabs
-                entry={entry}
-                showDefinitionTab
-                embedded
-                l2Code={l2Lang.code}
-                contextText={(wordCtx as any)?.text}
-                contextForm={wordForm}
-              />
+              {entry ? (
+                <DictionaryEntryTabs
+                  entry={entry}
+                  showDefinitionTab
+                  embedded
+                  l2Code={l2Lang.code}
+                  contextText={(wordCtx as any)?.text}
+                  contextForm={wordForm}
+                />
+              ) : (
+                <View className="items-center justify-center py-8">
+                  <ActivityIndicator size="small" color={ICON_MUTED} />
+                </View>
+              )}
             </View>
           )}
           </ScrollView>
