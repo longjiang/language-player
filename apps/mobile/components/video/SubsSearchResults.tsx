@@ -236,6 +236,7 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
       {/* Subtitle */}
       <View className="h-32">
         <SimpleSubsForDebug
+          singleLine
           lines={subtitleInitialLines}
           activeLineIndex={activeLineIndex}
           currentTime={currentTime}
