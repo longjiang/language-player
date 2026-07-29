@@ -17,6 +17,8 @@ interface SimpleSubsForDebugProps {
   tokenCache?: TokenCache;
   tokenCacheLoaded?: boolean;
   onSeekToLine?: (time: number) => void;
+  /** Terms to highlight in the subtitle text. */
+  highlightTerms?: string[];
   /** When true, shows only the active line (single-line subtitle mode). Default false (full transcript list). */
   singleLine?: boolean;
   /** Called when user taps the transcript-mode toggle (singleLine mode only). */
@@ -31,7 +33,7 @@ interface SimpleSubsForDebugProps {
   hasNextVideo?: boolean;
 }
 
-export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, singleLine = false, onSwitchToTranscriptMode, onPrevVideo, onNextVideo, hasPrevVideo = false, hasNextVideo = false }: SimpleSubsForDebugProps) {
+export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, highlightTerms, singleLine = false, onSwitchToTranscriptMode, onPrevVideo, onNextVideo, hasPrevVideo = false, hasNextVideo = false }: SimpleSubsForDebugProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, playback } = useSettingsContext();
   const flatListRef = useRef<FlatList>(null);
@@ -291,6 +293,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
                   tokenCacheLoaded={tokenCacheLoaded}
                   tokens={activeTokens}
                   karaokeProgress={karaokeProgress}
+                  highlightTerms={highlightTerms}
                 />
               </View>
               {showTranslation && activeLine.l1Line ? (
@@ -355,6 +358,7 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
                 tokenCacheLoaded={tokenCacheLoaded}
                 tokens={preloadedTokens}
                 karaokeProgress={karaokeProgress}
+                highlightTerms={highlightTerms}
               />
               {item.l1Line ? (
                 <Text className="mt-1 text-sm text-muted-foreground">{item.l1Line}</Text>

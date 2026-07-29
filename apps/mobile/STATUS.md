@@ -54,7 +54,7 @@
 |---|---|---|---|
 | YouTube Player | `components/video/YouTubePlayer.tsx` | ✅ | Users tap the YouTube iframe directly to play/pause (programmatic `play` prop was broken on iOS — removed; `seekTo`/`getCurrentTime` work on both platforms) |
 | Video Control Bar | `components/video/VideoControlBar.tsx` | ✅ | Play/pause, line nav, speed toggle, progress, queue nav |
-| Subtitle Display | `components/video/SubtitleDisplay.tsx` | ✅ | Dual-line L2 + L1, active highlighting, auto-scroll, TokenizedText |
+| Subtitle Display | `components/video/SimpleSubsForDebug.tsx` | ✅ | Dual-mode: `singleLine` (centered active line + prev/next nav + video queue controls) and full transcript FlatList with Animated.timing auto-scroll. TokenizedText, batch lemmatization, karaoke, translations, highlightTerms |
 | Video Card | `components/video/VideoCard.tsx` | ✅ | Thumbnail, title, duration, views, difficulty badge |
 | Video Grid | `components/video/VideoGrid.tsx` | ✅ | 2-column FlatList with pagination, pull-to-refresh |
 | Level Filter | `components/video/LevelFilter.tsx` | ✅ | CEFR/HSK/JLPT pill filter |
