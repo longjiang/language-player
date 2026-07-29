@@ -5,10 +5,9 @@ import { useT } from '@/hooks/use-t';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
-import type { NoteListItem } from '@langplayer/shared';
-import { BookOpen, PenLine, Plus, Trash2, PanelRightOpen, PanelRightClose, StickyNote } from 'lucide-react-native';
+import { BookOpen, PenLine, Plus, Trash2, PanelRightOpen, PanelRightClose, Cloud, Check } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
 export default function ReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -209,7 +208,13 @@ export default function ReaderScreen() {
                       }}
                       className={`flex-row items-center gap-2 px-3 py-2 active:bg-muted ${notes.currentNoteId === n.id ? 'bg-primary/10' : ''}`}
                     >
-                      <StickyNote size={14} color={ICON_MUTED} />
+                      {n._syncStatus === 'synced' ? (
+                        <Check size={14} color={ICON_PRIMARY} />
+                      ) : n._syncStatus === 'error' ? (
+                        <Cloud size={14} color={ICON_DESTRUCTIVE} />
+                      ) : (
+                        <Cloud size={14} color={ICON_MUTED} />
+                      )}
                       <View className="flex-1">
                         <Text className={`text-sm truncate ${notes.currentNoteId === n.id ? 'font-medium text-primary' : 'text-foreground'}`} numberOfLines={1}>
                           {n.title ?? t('msg.untitled_note')}
