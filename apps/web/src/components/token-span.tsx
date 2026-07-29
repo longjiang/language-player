@@ -270,7 +270,7 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     onClick();
   };
 
-  // ── Wrapper that combines wordContent + byeonggi for both layout variants ──
+  // ── Wrapper that combines wordContent + byeonggi + optional quick gloss for both layout variants ──
   const annotatedWord = (
     <>
       {wordContent}
@@ -278,12 +278,21 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     </>
   );
 
-  // ── Interlinear definition: word stacked above definition, centered ──
+  // Quick gloss and interlinear definition coexist — quick gloss shows the 'def'
+  // marker for saved words, while interlinear shows the definition below every word.
+  const wordWithGloss = (
+    <>
+      {annotatedWord}
+      {quickGlossDef && !isQuizBlanking && <QuickGloss def={quickGlossDef} />}
+    </>
+  );
+
+  // ── Interlinear definition: word (with optional quick gloss) stacked above definition, centered ──
   if (interlinearDef && !isQuizBlanking) {
     return (
       <span onClick={(e) => { e.stopPropagation(); handleClick(); }} className={wrapperClass} title={title}>
         <span className="inline-flex flex-col items-center">
-          {annotatedWord}
+          {wordWithGloss}
           <span className="text-[0.55em] text-muted-foreground/60 font-normal select-none leading-none">
             {interlinearDef}
           </span>
@@ -292,11 +301,10 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
     );
   }
 
-  // ── Inline layout: word with optional byeonggi + quick gloss alongside ──
+  // ── Inline layout: word with optional quick gloss (no definition below) ──
   return (
     <span onClick={(e) => { e.stopPropagation(); handleClick(); }} className={wrapperClass} title={title}>
-      {annotatedWord}
-      {quickGlossDef && !isQuizBlanking && <QuickGloss def={quickGlossDef} />}
+      {wordWithGloss}
     </span>
   );
 };
