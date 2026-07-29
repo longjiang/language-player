@@ -29,9 +29,12 @@ export default function ReaderScreen() {
   useEffect(() => {
     if (notes.currentNote) {
       setText(notes.currentNote.text ?? '');
-      // If we just created a new note, stay in edit mode instead of switching to read
       if (justCreatedRef.current) {
+        // Newly created — stay in edit mode
         justCreatedRef.current = false;
+        setActiveTab('edit');
+      } else if (!notes.currentNote.text?.trim()) {
+        // Empty note — open in edit mode
         setActiveTab('edit');
       } else {
         setActiveTab('read');
