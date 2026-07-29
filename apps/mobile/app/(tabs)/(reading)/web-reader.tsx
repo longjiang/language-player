@@ -4,6 +4,7 @@ import {
   ActivityIndicator, Alert,
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
@@ -16,6 +17,7 @@ import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
 export default function WebReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
+  const { display, updateDisplay } = useSettingsContext();
   const t = useT();
   const notes = useReaderNotes(l2Lang.code);
 
@@ -33,7 +35,7 @@ export default function WebReaderScreen() {
     text,
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
-    showTranslation: false,
+    showTranslation: display.translation,
     resetKey: title || null,
   });
 
@@ -169,6 +171,8 @@ export default function WebReaderScreen() {
               contentWidth={pagination.contentWidth}
               l2Code={l2Lang.code}
               l1Code={l1Lang.code}
+              showTranslation={display.translation}
+              onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
               showTextActions
               t={t}
             />

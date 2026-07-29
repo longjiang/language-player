@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
@@ -11,6 +12,7 @@ import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
 export default function ReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
+  const { display, updateDisplay } = useSettingsContext();
   const t = useT();
   const notes = useReaderNotes(l2Lang.code);
 
@@ -20,7 +22,6 @@ export default function ReaderScreen() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [renameId, setRenameId] = useState<number | null>(null);
   const [renameText, setRenameText] = useState('');
-  const [showTranslation, setShowTranslation] = useState(false);
   const [menuNoteId, setMenuNoteId] = useState<number | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const justCreatedRef = useRef(false);
@@ -46,7 +47,7 @@ export default function ReaderScreen() {
     text,
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
-    showTranslation,
+    showTranslation: display.translation,
     resetKey: notes.currentNoteId !== null ? String(notes.currentNoteId) : null,
   });
 
@@ -159,8 +160,8 @@ export default function ReaderScreen() {
               contentWidth={pagination.contentWidth}
               l2Code={l2Lang.code}
               l1Code={l1Lang.code}
-              showTranslation={showTranslation}
-              onToggleTranslation={() => setShowTranslation(s => !s)}
+              showTranslation={display.translation}
+              onToggleTranslation={() => updateDisplay({ translation: !display.translation })}
               showTextActions
               t={t}
             />
