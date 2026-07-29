@@ -5,7 +5,7 @@ import { useT } from '@/hooks/use-t';
 import { useReaderNotes } from '@/hooks/use-reader-notes';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
-import { BookOpen, PenLine, Plus, Trash2, PanelRightOpen, PanelRightClose, Cloud, Check } from 'lucide-react-native';
+import { BookOpen, PenLine, Plus, PanelRightOpen, PanelRightClose, Cloud, Check, MoreHorizontal, Trash2 } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
@@ -21,6 +21,7 @@ export default function ReaderScreen() {
   const [renameId, setRenameId] = useState<number | null>(null);
   const [renameText, setRenameText] = useState('');
   const [showTranslation, setShowTranslation] = useState(false);
+  const [menuNoteId, setMenuNoteId] = useState<number | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const justCreatedRef = useRef(false);
 
@@ -211,10 +212,6 @@ export default function ReaderScreen() {
                   ) : (
                     <Pressable
                       onPress={() => { notes.selectNote(n.id); setSidebarOpen(false); }}
-                      onLongPress={() => {
-                        setRenameId(n.id);
-                        setRenameText(n.title ?? '');
-                      }}
                       className={`flex-row items-center gap-2 px-3 py-2 active:bg-muted ${notes.currentNoteId === n.id ? 'bg-primary/10' : ''}`}
                     >
                       {n._syncStatus === 'synced' ? (
@@ -234,13 +231,43 @@ export default function ReaderScreen() {
                           </Text>
                         )}
                       </View>
-                      <Pressable onPress={() => handleDelete(n.id)} className="rounded p-1 active:bg-muted">
-                        <Trash2 size={12} color={ICON_MUTED} />
+                      <Pressable
+                        onPress={() => setMenuNoteId(menuNoteId === n.id ? null : n.id)}
+                        className="rounded p-1 active:bg-muted"
+                      >
+                        <MoreHorizontal size={14} color={ICON_MUTED} />
                       </Pressable>
                     </Pressable>
                   )}
+
+                  {/* Context menu */}
+                  {menuNoteId === n.id && (
+                    <View className="absolute right-2 top-10 z-20 min-w-[120px] rounded-lg border border-border bg-card py-1 shadow-lg" style={{ elevation: 8 }}>
+                      <Pressable
+                        onPress={() => { setMenuNoteId(null); setRenameId(n.id); setRenameText(n.title ?? ''); }}
+                        className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
+                      >
+                        <PenLine size={12} color={ICON_MUTED} />
+                        <Text className="text-xs text-foreground">{t('action.rename')}</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => { setMenuNoteId(null); handleDelete(n.id); }}
+                        className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
+                      >
+                        <Trash2 size={12} color={ICON_DESTRUCTIVE} />
+                        <Text className="text-xs text-red-500">{t('action.delete')}</Text>
+                      </Pressable>
+                    </View>
+                  )}
                 </View>
               ))}
+              {/* Tappable backdrop to close menu */}
+              {menuNoteId !== null && (
+                <Pressable
+                  onPress={() => setMenuNoteId(null)}
+                  className="absolute inset-0 z-10"
+                />
+              )}
             </ScrollView>
           </View>
         )}
