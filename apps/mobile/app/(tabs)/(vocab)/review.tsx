@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { View, Text, Pressable, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -12,7 +12,6 @@ import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
 import { CheckCircle2, BookOpen, Trash2, Undo2 } from 'lucide-react-native';
-import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
@@ -457,35 +456,15 @@ export default function ReviewScreen() {
             )}
           </Text>
 
-          {/* Card face */}
+          {/* Word */}
           {!rated ? (
-            <View>
-              <View className="flex-row">
-                {/* Left half → Again */}
-                <Pressable onPress={() => handleRate('again')} className="h-32 flex-1" />
-                {/* Center content */}
-                <View className="flex-[2] items-center">
-                  <Text className="text-center text-2xl font-bold text-foreground">
-                    {getDisplayName(currentCard.word)}
-                  </Text>
-                  <ScrollView className="mt-4 max-h-96 w-full border-t border-border pt-4">
-                    {fetchingEntries && !entry ? (
-                      <ActivityIndicator size="small" color={ICON_MUTED} />
-                    ) : entry ? (
-                      <DictionaryEntryCard entry={entry} variant="full" l2Code={l2Lang.code} />
-                    ) : (
-                      <Text className="text-center text-sm italic text-muted-foreground">
-                        {t('review.no_definition_available')}
-                      </Text>
-                    )}
-                  </ScrollView>
-                </View>
-                {/* Right half → Good */}
-                <Pressable onPress={() => handleRate('good')} className="h-32 flex-1" />
-              </View>
+            <View className="items-center py-4">
+              <Text className="text-center text-2xl font-bold text-foreground">
+                {getDisplayName(currentCard.word)}
+              </Text>
             </View>
           ) : (
-            <View className="items-center justify-center">
+            <View className="items-center justify-center py-4">
               <Text className="text-center text-2xl font-bold text-foreground">
                 {getDisplayName(currentCard.word)}
               </Text>
