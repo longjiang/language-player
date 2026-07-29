@@ -60,7 +60,7 @@ export function AiExplanation({ word, contextText, entryFound, autoLoad = false 
   // Not yet toggled — show the button (skip when autoLoad)
   if (!showAi && !autoLoad) {
     return (
-      <View className="mt-4">
+      <View className="mt-4 pb-1">
         <Pressable
           onPress={() => setShowAi(true)}
           className="flex-row items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 active:bg-muted"
