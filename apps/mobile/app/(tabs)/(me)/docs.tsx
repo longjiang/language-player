@@ -81,7 +81,7 @@ export default function DocsScreen() {
       <PageContainer>
         <ScrollView className="flex-1 px-4 py-5">
         <Pressable onPress={() => setSelectedDoc(null)} className="mb-4">
-          <Text className="text-sm text-primary">← {t('action.go_back')}</Text>
+          <Text className="text-sm text-primary">← {t('action.back')}</Text>
         </Pressable>
 
         <Text className="text-xl font-bold text-foreground mb-2">{selectedDoc.title}</Text>
