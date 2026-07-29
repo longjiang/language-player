@@ -471,9 +471,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                     {/* Quick gloss: peer of the segment columns, not inside any segment.
                         Placed after all segments so furigana centers over just the word,
                         not the word + gloss combined width. items-end keeps the gloss on
-                        the same baseline as the word text. */}
+                        the same baseline as the word text.
+                        Uses readingSize for fontSize (both outer and inner) — when furigana is
+                        off, the outer wrapper must not inherit the word's full textStyle,
+                        otherwise the word's large lineHeight applies to the gloss text too,
+                        creating a tall invisible box that breaks baseline alignment. */}
                     {showQuickGloss && (
-                      <Text style={[textStyle, { lineHeight: baseLeading }]} onPress={handlePress}>
+                      <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} onPress={handlePress}>
                         <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70">'{firstDef}'</Text>
                       </Text>
                     )}
@@ -548,7 +552,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                     <Text className={`${isHighlighted ? 'font-bold text-primary' : ''} ${isSavedWord ? 'bg-yellow-200/20' : ''}`}>{displayText}</Text>
                   )}
                   {showByeonggi ? ` ${byeonggiText}` : ''}
-                  {showQuickGloss ? ` '${firstDef}'` : ''}
+                  {showQuickGloss ? <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> '{firstDef}'</Text> : ''}
                 </Text>
               );
             });
