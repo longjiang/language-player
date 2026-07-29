@@ -9,7 +9,8 @@ import { parseSubsL2, findMatchLine } from '@langplayer/utils';
 import type { SubsSearchVideo, SubtitleLine } from '@langplayer/shared';
 import { YouTubePlayer, type YouTubePlayerHandle } from './YouTubePlayer';
 import { useAnimatedBoolean } from '@/lib/animations';
-import { SubtitleDisplay } from './SubtitleDisplay';
+import { SimpleSubsForDebug } from './SimpleSubsForDebug';
+import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { List, X, Play, Pause, SkipBack, SkipForward, ChevronUp, ChevronDown } from 'lucide-react-native';
 
@@ -56,15 +57,23 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
     [term],
   );
 
-  // Pre-parsed subtitle lines for SubtitleDisplay
+  // Pre-parsed subtitle lines for SimpleSubsForDebug
   const subtitleInitialLines = useMemo(
     () =>
       currentVideo?.subs_l2.map((l) => ({
         starttime: l.starttime,
         l2Line: l.line,
+        l1Line: '',
       })) ?? [],
     [currentVideo?.id, currentVideo?.subs_l2],
   );
+
+  // Compute active line index from currentTime
+  const subtitleStartTimes = useMemo(
+    () => subtitleInitialLines.map((l) => l.starttime),
+    [subtitleInitialLines],
+  );
+  const activeLineIndex = useActiveLineIndex(subtitleStartTimes, currentTime);
 
   // ── Fetch ──
   useEffect(() => {
@@ -226,10 +235,12 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
 
       {/* Subtitle */}
       <View className="h-32">
-        <SubtitleDisplay
+        <SimpleSubsForDebug
+          lines={subtitleInitialLines}
+          activeLineIndex={activeLineIndex}
           currentTime={currentTime}
-          initialLines={subtitleInitialLines}
           highlightTerms={highlightTerms}
+          onSeekToLine={(t) => playerRef.current?.seekTo(t)}
         />
       </View>
 

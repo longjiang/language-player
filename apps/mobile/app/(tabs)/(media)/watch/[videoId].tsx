@@ -12,7 +12,6 @@ import { useWatchHistoryRecorder } from '@/hooks/use-watch-history-recorder';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { YouTubePlayer, type YouTubePlayerHandle } from '@/components/video/YouTubePlayer';
 import { VideoControlBar } from '@/components/video/VideoControlBar';
-import { SubtitleDisplay } from '@/components/video/SubtitleDisplay';
 import { TranscriptQueuePanel } from '@/components/video/TranscriptQueuePanel';
 import { SimpleSubsForDebug } from '@/components/video/SimpleSubsForDebug';
 import { VideoQueueList } from '@/components/video/VideoQueueList';
@@ -390,15 +389,13 @@ export default function WatchScreen() {
         <TranscriptQueuePanel
           video={<SimpleSubsForDebug lines={subtitleLines} activeLineIndex={activeLineIndex} currentTime={currentTime} tokenCache={tokenCache} tokenCacheLoaded={tokenCacheLoaded} onSeekToLine={handleSeekToLine} />}
           transcript={
-            <SubtitleDisplay
-              youtubeId={v.youtube_id}
-              videoTitle={v.title}
+            <SimpleSubsForDebug
+              lines={subtitleLines}
+              activeLineIndex={activeLineIndex}
+              currentTime={currentTime}
               tokenCache={tokenCache}
               tokenCacheLoaded={tokenCacheLoaded}
-              currentTime={currentTime}
-              onLinesLoaded={setSubtitleStartTimes}
               onSeekToLine={handleSeekToLine}
-              initialLines={subtitleLines.length > 0 ? subtitleLines : undefined}
             />
           }
           queue={<VideoQueueList currentYoutubeId={v.youtube_id} />}
