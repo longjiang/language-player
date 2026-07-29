@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { View, Text, Image, Pressable, FlatList, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { View, Text, Image, Pressable, FlatList, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
 import * as Dialog from '@/components/ui/dialog';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -38,7 +38,8 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
   const videosApi = useVideos();
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const { width: screenWidth } = useWindowDimensions();
-  const videoHeight = (screenWidth / 16) * 9;
+  const [containerWidth, setContainerWidth] = useState(screenWidth);
+  const videoHeight = (containerWidth / 16) * 9;
 
   const [videos, setVideos] = useState<SubsSearchVideo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -200,7 +201,10 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
 
   // ── Render ──
   return (
-    <View className="my-4">
+    <View
+      className="my-4"
+      onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
+    >
       {/* Header */}
       <View className="mb-2 flex-row items-center justify-between px-4">
         <Text className="text-xs text-muted-foreground">
@@ -224,12 +228,13 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
       </View>
 
       {/* Player */}
-      <View style={{ width: screenWidth, height: videoHeight }} className="bg-black">
+      <View style={{ width: containerWidth, height: videoHeight }} className="bg-black">
         <YouTubePlayer
           ref={playerRef}
           youtubeId={currentVideo!.youtube_id}
           onTimeUpdate={handleTimeUpdate}
           onStateChange={handleStateChange}
+          containerWidth={containerWidth}
         />
       </View>
 
