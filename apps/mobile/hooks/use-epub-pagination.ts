@@ -30,6 +30,7 @@ interface UseEpubPaginationReturn {
   isTranslating: boolean;
   prevPage: () => void;
   nextPage: () => void;
+  goToPage: (page: number) => void;
   handleMeasureBlock: (index: number, height: number) => void;
   contentWidth: number;
 }
@@ -246,6 +247,13 @@ export function useEpubPagination({
     setBlockTranslations({});
   }, [page, totalPages]);
 
+  const goToPage = useCallback((target: number) => {
+    const clamped = Math.max(0, Math.min(target, totalPages - 1));
+    if (clamped === page) return;
+    setPage(clamped);
+    setBlockTranslations({});
+  }, [page, totalPages]);
+
   // ── Report anchor on page change (matches web ReaderPanel) ──
   useEffect(() => {
     if (prevPageRef.current === page || !onAnchorChange) return;
@@ -259,6 +267,6 @@ export function useEpubPagination({
   return {
     blocks, visibleBlocks, page, totalPages, hasMeasured,
     loadingTokens, tokenCache, blockTranslations, isTranslating,
-    prevPage, nextPage, handleMeasureBlock, contentWidth,
+    prevPage, nextPage, goToPage, handleMeasureBlock, contentWidth,
   };
 }

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Pressable, Image, ActivityIndicator, ScrollView } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, Text, Pressable, Image, ActivityIndicator, ScrollView, Alert, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
@@ -39,6 +39,7 @@ interface PaginatedReaderProps {
   blockTranslations?: Record<number, string>;
   prevPage?: () => void;
   nextPage?: () => void;
+  goToPage?: (page: number) => void;
   handleMeasureBlock?: (index: number, height: number) => void;
   contentWidth?: number;
 }
@@ -47,11 +48,27 @@ export function PaginatedReader({
   blocks, visibleBlocks: visibleBlocksProp, page = 0, totalPages = 1,
   hasMeasured: hasMeasuredProp, loadingTokens: loadingTokensProp,
   tokenCache = {}, blockTranslations = {},
-  prevPage, nextPage, handleMeasureBlock,
+  prevPage, nextPage, goToPage, handleMeasureBlock,
   contentWidth: contentWidthProp = 300,
   l2Code, l1Code, showTranslation = false, onToggleTranslation,
   showTextActions = false, scrollMode = false, t,
 }: PaginatedReaderProps) {
+  const handlePageNumberTap = useCallback(() => {
+    if (!goToPage) return;
+    if (Platform.OS === 'ios') {
+      Alert.prompt(
+        t('action.go_to_page'),
+        '',
+        (value) => {
+          const n = parseInt(value, 10);
+          if (!isNaN(n) && n >= 1) goToPage(n - 1);
+        },
+        'plain-text',
+        '',
+        'number-pad',
+      );
+    }
+  }, [goToPage, t]);
   const visibleBlocks = scrollMode ? blocks : visibleBlocksProp;
   const hasMeasured = scrollMode ? true : hasMeasuredProp;
   const contentWidth = scrollMode ? 300 : contentWidthProp;
@@ -108,7 +125,9 @@ export function PaginatedReader({
             <Pressable onPress={prevPage} disabled={page === 0 || !prevPage} className={`rounded p-1 ${page === 0 || !prevPage ? 'opacity-30' : 'active:bg-muted'}`}>
               <ChevronLeft size={18} color={ICON_MUTED} />
             </Pressable>
-            <Text className="text-xs text-muted-foreground">{page + 1} / {totalPages}</Text>
+            <Pressable onPress={handlePageNumberTap} disabled={!goToPage} className={`rounded px-2 py-0.5 ${!goToPage ? 'opacity-50' : 'active:bg-muted'}`}>
+              <Text className="text-xs text-muted-foreground">{page + 1} / {totalPages}</Text>
+            </Pressable>
             <Pressable onPress={nextPage} disabled={page >= totalPages - 1 || !nextPage} className={`rounded p-1 ${page >= totalPages - 1 || !nextPage ? 'opacity-30' : 'active:bg-muted'}`}>
               <ChevronRight size={18} color={ICON_MUTED} />
             </Pressable>
