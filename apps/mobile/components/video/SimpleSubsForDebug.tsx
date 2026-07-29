@@ -5,6 +5,8 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
 import { TokenizedText } from '../TokenizedText';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { ICON_MUTED } from '@/lib/theme-colors';
+import { SkipBack, SkipForward, ChevronLeft, ChevronRight, PanelRightOpen } from 'lucide-react-native';
 import { SCROLL } from '@langplayer/shared';
 import type { SubtitleLine, SubtitleSyncedLine, TokenCache, LemmatizedToken } from '@langplayer/shared';
 
@@ -15,9 +17,21 @@ interface SimpleSubsForDebugProps {
   tokenCache?: TokenCache;
   tokenCacheLoaded?: boolean;
   onSeekToLine?: (time: number) => void;
+  /** When true, shows only the active line (single-line subtitle mode). Default false (full transcript list). */
+  singleLine?: boolean;
+  /** Called when user taps the transcript-mode toggle (singleLine mode only). */
+  onSwitchToTranscriptMode?: () => void;
+  /** Called when user taps previous video (singleLine mode only). */
+  onPrevVideo?: () => void;
+  /** Called when user taps next video (singleLine mode only). */
+  onNextVideo?: () => void;
+  /** Whether there is a previous video in queue. */
+  hasPrevVideo?: boolean;
+  /** Whether there is a next video in queue. */
+  hasNextVideo?: boolean;
 }
 
-export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine }: SimpleSubsForDebugProps) {
+export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenCache, tokenCacheLoaded, onSeekToLine, singleLine = false, onSwitchToTranscriptMode, onPrevVideo, onNextVideo, hasPrevVideo = false, hasNextVideo = false }: SimpleSubsForDebugProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, playback } = useSettingsContext();
   const flatListRef = useRef<FlatList>(null);
@@ -187,6 +201,113 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
     isInitialLoad.current = false;
   }, [activeLineIndex, containerHeight, estimatedItemHeight, playback.smoothScroll, animateToOffset]);
 
+  // ── Single-line subtitle mode ──
+  if (singleLine) {
+    const activeLine = activeLineIndex >= 0 ? displayLines[activeLineIndex] : undefined;
+    const activeTokens = activeLineIndex >= 0 ? batchTokens[activeLineIndex] : undefined;
+    const isFirstLine = activeLineIndex <= 0;
+    const isLastLine = activeLineIndex >= lines.length - 1;
+
+    // Karaoke progress for the active line
+    let karaokeProgress: number | undefined;
+    if (activeLine && playback.karaokeMode && activeLineIndex >= 0) {
+      const nextStart = lines[activeLineIndex + 1]?.starttime;
+      const lineDuration = nextStart ? nextStart - activeLine.starttime : 5;
+      karaokeProgress = lineDuration > 0
+        ? Math.min(1, Math.max(0, (currentTime - activeLine.starttime) / lineDuration))
+        : 0;
+    }
+
+    const btnColor = ICON_MUTED;
+
+    return (
+      <View className="flex-1 bg-card border-t border-border">
+        {/* Control row */}
+        <View className="flex-row items-center gap-0.5 px-2 py-1">
+          <Pressable
+            onPress={onPrevVideo}
+            disabled={!hasPrevVideo}
+            className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+          >
+            <SkipBack size={18} color={btnColor} />
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              if (!isFirstLine) {
+                const prev = lines[activeLineIndex - 1];
+                if (prev) onSeekToLine?.(prev.starttime);
+              }
+            }}
+            disabled={isFirstLine}
+            className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+          >
+            <ChevronLeft size={20} color={btnColor} />
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              if (!isLastLine) {
+                const next = lines[activeLineIndex + 1];
+                if (next) onSeekToLine?.(next.starttime);
+              }
+            }}
+            disabled={isLastLine}
+            className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+          >
+            <ChevronRight size={20} color={btnColor} />
+          </Pressable>
+          <Pressable
+            onPress={onNextVideo}
+            disabled={!hasNextVideo}
+            className="rounded p-1.5 active:bg-muted disabled:opacity-30"
+          >
+            <SkipForward size={18} color={btnColor} />
+          </Pressable>
+          <View className="flex-1" />
+          {onSwitchToTranscriptMode ? (
+            <Pressable
+              onPress={onSwitchToTranscriptMode}
+              className="rounded p-1.5 active:bg-muted"
+            >
+              <PanelRightOpen size={18} color={btnColor} />
+            </Pressable>
+          ) : null}
+        </View>
+
+        {/* Separator */}
+        <View className="mx-3 border-t border-border" />
+
+        {/* Active line */}
+        <Pressable
+          className="flex-1 flex-col items-center justify-center px-4 py-2 min-h-0"
+          onPress={() => { if (activeLine) onSeekToLine?.(activeLine.starttime); }}
+        >
+          {activeLine ? (
+            <>
+              <View className="items-center">
+                <TokenizedText
+                  text={activeLine.l2Line}
+                  l2Code={l2Lang.code}
+                  tokenCache={tokenCache}
+                  tokenCacheLoaded={tokenCacheLoaded}
+                  tokens={activeTokens}
+                  karaokeProgress={karaokeProgress}
+                />
+              </View>
+              {showTranslation && activeLine.l1Line ? (
+                <Text className="text-sm text-center mt-0.5 text-muted-foreground">
+                  {activeLine.l1Line}
+                </Text>
+              ) : null}
+            </>
+          ) : (
+            <Text className="text-sm text-muted-foreground">...</Text>
+          )}
+        </Pressable>
+      </View>
+    );
+  }
+
+  // ── Full transcript list mode ──
   return (
     <View className="flex-1 bg-background">
       <FlatList
