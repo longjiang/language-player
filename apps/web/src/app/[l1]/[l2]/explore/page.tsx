@@ -31,9 +31,10 @@ export default function ExplorePage() {
     }
   }, [progressLoaded, savedLevel]);
 
-  // Defer the video fetch until progress is loaded so we know the user's
-  // saved level and can fetch with the right filter from the start.
-  const deferFetch = !progressLoaded;
+  // Defer the video fetch until progress is loaded AND the level filter
+  // has been seeded, so we don't fire two requests (once without level,
+  // once with the saved level).
+  const deferFetch = !progressLoaded || (savedLevel !== undefined && level === undefined);
 
   const { videos, loading, error, hasMore, loadMore, retry } = useVideos({
     l2: baseCode(l2.code),

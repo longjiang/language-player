@@ -33,7 +33,7 @@ function cacheKey(l2: string, level: number | undefined, endpoint: string): stri
   return endpoint === '/api/videos/recommend' ? base : `${endpoint}:${base}`;
 }
 
-export function useVideos({ l2, level, pageSize = 24, cache, defer, endpoint = '/api/videos/recommend' }: UseVideosOptions): UseVideosResult {
+export function useVideos({ l2, level, pageSize = 12, cache, defer, endpoint = '/api/videos/recommend' }: UseVideosOptions): UseVideosResult {
   const key = cacheKey(l2, level, endpoint);
 
   // Restore from cache on mount / level change if available
