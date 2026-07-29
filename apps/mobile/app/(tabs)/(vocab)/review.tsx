@@ -159,7 +159,7 @@ export default function ReviewScreen() {
             cached.find((e) => e.head === word.forms?.[0]) ||
             cached[0];
           if (match) {
-            setEntriesCache((prev) => ({ ...prev, [id]: match }));
+            entriesCache[id] = match;
             continue;
           }
         }
