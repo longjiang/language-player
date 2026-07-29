@@ -436,12 +436,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
 
               return (
-                /* Word token: wrap all ruby segments in a row, with the
-                   interlinear definition stacked below the entire word unit.
-                   This matches web's inline-flex flex-col layout — the
-                   definition is centered under the full word, not just the
-                   last segment. */
-                <View key={i} style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
+                <View key={i} className="items-center" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
                   <View className="flex-row">
                     {rubySegs.map((seg, j) => (
                       <View key={j} className="items-center mx-px">
