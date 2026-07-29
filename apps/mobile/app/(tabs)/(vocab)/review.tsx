@@ -212,9 +212,10 @@ export default function ReviewScreen() {
     }
   }, [cards.length, justCompleted]);
 
-  // ── Clear stale context translation when card changes ──
+  // ── Reset state when card changes ──
   useEffect(() => {
     setContextTranslation(null);
+    setShowTabs(false);
   }, [cards[currentIndex]?.word.id]);
 
   // ── Auto-translate context text (if no saved translation) ──
