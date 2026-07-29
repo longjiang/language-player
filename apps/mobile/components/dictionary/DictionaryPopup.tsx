@@ -6,6 +6,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { SaveButton } from '@/components/dictionary/SaveButton';
 import type { DictionaryEntry } from '@langplayer/shared';
+import { useRouter } from 'expo-router';
+import { useDictionaryContext } from '@/contexts/DictionaryContext';
 import { useT } from '@/hooks/use-t';
 
 interface DictionaryPopupProps {
@@ -13,6 +15,8 @@ interface DictionaryPopupProps {
   word: string;
   /** Lemma (dictionary form) to prioritize in lookup. Falls back to `word` if not set. */
   lemma?: string;
+  /** Pronunciation from the lemmatizer, shown in [brackets] next to the headword. */
+  tokenPron?: string | null;
   context?: string;
   translatedContext?: string;
   onClose: () => void;
@@ -23,6 +27,7 @@ export function DictionaryPopup({
   visible,
   word,
   lemma,
+  tokenPron,
   context,
   translatedContext,
   onClose,
@@ -31,6 +36,8 @@ export function DictionaryPopup({
   const { l1Lang, l2Lang } = useLanguage();
   const dict = useDictionary();
   const t = useT();
+  const router = useRouter();
+  const { setDetailHead, setSidebarSource, setCameFromSearch } = useDictionaryContext();
   const { height: screenHeight } = useWindowDimensions();
   const [results, setResults] = useState<DictionaryEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -145,18 +152,21 @@ export function DictionaryPopup({
               minHeight: screenHeight * 0.35,
             }}
           >
-            <View className="flex-1 px-4 pt-4 pb-8">
-              {/* Drag handle */}
-              <View className="mb-3 items-center">
-                <View className="h-1 w-10 rounded-full bg-muted-foreground/30" />
-              </View>
-
+            <View
+              className="px-4 pt-6 pb-8"
+              style={{ height: screenHeight * 0.75 }}
+            >
               {/* Header — surface form as headline, lemma below when different */}
               <View className="mb-3 flex-row items-center justify-between">
                 <View className="flex-1 mr-2">
-                  <Text className="text-lg font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
-                    {word}
-                  </Text>
+                  <View className="flex-row items-baseline gap-2 flex-wrap">
+                    <Text className="text-lg font-bold text-foreground" numberOfLines={1} testID="dictionary-popup-word">
+                      {word}
+                    </Text>
+                    {tokenPron && (
+                      <Text className="text-sm text-muted-foreground">{tokenPron}</Text>
+                    )}
+                  </View>
                   {lemmaForm && (
                     <Text className="text-xs text-muted-foreground" numberOfLines={1}>
                       lemma: {lemmaForm}
@@ -214,16 +224,25 @@ export function DictionaryPopup({
                 )}
 
                 {results?.map((entry) => (
-                  <View key={entry.id} className="mb-2 flex-row items-start gap-2">
-                    <View className="flex-1">
-                      <DictionaryEntryCard
-                        entry={entry}
-                        variant="compact"
-                        onPress={onViewDetail ? (e) => onViewDetail(e, results ?? []) : undefined}
-                        l2Code={l2Lang.code}
-                      />
-                    </View>
-                    <SaveButton entry={entry} size={18} />
+                  <View key={entry.id} className="mb-2">
+                    <DictionaryEntryCard
+                      entry={entry}
+                      variant="compact"
+                      onPress={(e) => {
+                        if (onViewDetail) {
+                          onViewDetail(e, results ?? []);
+                        } else {
+                          const safeId = e.id.replace(/,/g, '~');
+                          setDetailHead(e.head);
+                          setSidebarSource({ kind: 'results', items: results ?? [] });
+                          setCameFromSearch(true);
+                          onClose();
+                          router.push(`/word/${safeId}` as any);
+                        }
+                      }}
+                      l2Code={l2Lang.code}
+                      saveButton={<SaveButton entry={entry} size={20} />}
+                    />
                   </View>
                 ))}
               </ScrollView>

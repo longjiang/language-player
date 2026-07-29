@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Pressable } from 'react-native';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
+import { ICON_SAVED, ICON_UNSAVED } from '@/lib/theme-colors';
 import { Bookmark } from 'lucide-react-native';
 import type { DictionaryEntry } from '@langplayer/shared';
 
@@ -40,8 +40,8 @@ export function SaveButton({ entry, size = 22 }: SaveButtonProps) {
     <Pressable onPress={handlePress} className="p-1" hitSlop={8}>
       <Bookmark
         size={size}
-        color={saved ? ICON_PRIMARY : ICON_MUTED}
-        fill={saved ? ICON_PRIMARY : 'none'}
+        color={saved ? ICON_SAVED : ICON_UNSAVED}
+        fill={saved ? ICON_SAVED : 'none'}
       />
     </Pressable>
   );

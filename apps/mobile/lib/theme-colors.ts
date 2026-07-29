@@ -17,3 +17,9 @@ export const ICON_DESTRUCTIVE = hslToHex(darkSemantic.destructive);
 
 /** Warning/amber color (pro badges, attention indicators). */
 export const ICON_WARNING = hslToHex(darkSemantic.warning);
+
+/** Saved word bookmark — amber-500 filled. */
+export const ICON_SAVED = hslToHex(darkSemantic.warning);
+
+/** Unsaved word bookmark — amber-500 wireframe (no fill). */
+export const ICON_UNSAVED = hslToHex(darkSemantic.warning);
