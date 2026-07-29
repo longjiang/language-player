@@ -180,12 +180,14 @@ export function TextActionMenu(props: TextActionMenuProps) {
         animationType="fade"
         onRequestClose={closeAction}
       >
-        <View className="flex-1 bg-black/50 justify-end">
-          {/* Backdrop tap — uses Pressable so only taps on the backdrop close the modal */}
+        <View className="flex-1 bg-black/50 justify-center px-4">
+          {/* Backdrop: absolute overlay for tap-to-close, doesn't block scroll */}
           <Pressable className="absolute inset-0" onPress={closeAction} />
-          <View className="max-h-[85%] rounded-t-xl bg-card flex-col" style={{ height: '80%' }}>
+          <View
+            className="max-h-[80%] rounded-xl bg-card"
+          >
             {/* Header */}
-            <View className="flex-shrink-0 flex-row items-center justify-between border-b border-border px-5 py-3">
+            <View className="flex-row items-center justify-between border-b border-border px-5 py-3">
               <View className="flex-row items-center gap-2">
                 <Text className="text-sm font-semibold text-foreground">
                   {t('action.let_ai_explain')}
@@ -197,8 +199,8 @@ export function TextActionMenu(props: TextActionMenuProps) {
               </Pressable>
             </View>
 
-            {/* Body — ScrollView scrolls when content overflows */}
-            <ScrollView className="flex-1 px-5 py-4">
+            {/* Body */}
+            <ScrollView className="px-5 py-4">
               {/* Original text — tokenized, collapsible to 4 lines */}
               <View className="mb-4 rounded-lg border border-border bg-muted/30 p-3">
                 <View className={contextExpanded ? '' : 'max-h-[4.5rem] overflow-hidden'}>
@@ -219,7 +221,9 @@ export function TextActionMenu(props: TextActionMenuProps) {
               {explainError && !explainText ? (
                 <Text className="text-sm text-destructive">{explainError}</Text>
               ) : (
-                <MarkdownText>{explainText || ''}</MarkdownText>
+                <View>
+                  <MarkdownText>{explainText || ''}</MarkdownText>
+                </View>
               )}
               {explainError && explainText ? (
                 <Text className="mt-2 text-xs text-destructive">{explainError}</Text>
