@@ -91,17 +91,19 @@ export function DictionaryEntryTabs({
       activeTab={tab}
       onTabChange={handleTabChange}
       className={embedded ? '' : 'rounded-xl border border-border bg-card'}
-      contentClassName={embedded ? 'px-0 pt-4' : 'p-4'}
+      contentClassName=""
     >
       {tab === 'word' && (
-        <DictionaryEntryCard
-          entry={entry}
-          variant="full"
-          l2Code={l2Code}
-          l1Code={l1Code}
-          saveContext={saveContext}
-          onPress={onCardPress}
-        />
+        <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
+          <DictionaryEntryCard
+            entry={entry}
+            variant="full"
+            l2Code={l2Code}
+            l1Code={l1Code}
+            saveContext={saveContext}
+            onPress={onCardPress}
+          />
+        </View>
       )}
       {tab === 'examples' && (
         <SubsSearchResults
@@ -112,10 +114,14 @@ export function DictionaryEntryTabs({
         />
       )}
       {tab === 'deepseek' && (
-        <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
+        <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
+          <AiExplanation word={entry.head} contextText={contextText} contextForm={contextForm} entryFound={true} autoLoad />
+        </View>
       )}
       {tab === 'inflections' && (
-        <InflectionTable head={entry.head} l2Code={l2Code} embedded />
+        <View className={embedded ? 'px-0 pt-4' : 'p-4'}>
+          <InflectionTable head={entry.head} l2Code={l2Code} embedded />
+        </View>
       )}
     </TabbedPanel>
   );

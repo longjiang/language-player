@@ -35,6 +35,8 @@ interface YouTubePlayerProps {
   onDuration?: (duration: number) => void;
   onStateChange?: (state: string) => void;
   onError?: (error: Error) => void;
+  /** Width of the parent container. When provided, overrides useWindowDimensions to prevent overflow. */
+  containerWidth?: number;
 }
 
 export interface YouTubePlayerHandle {
@@ -46,7 +48,7 @@ export interface YouTubePlayerHandle {
 }
 
 export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>(
-  function YouTubePlayer({ youtubeId, startTime, onTimeUpdate, onDuration, onStateChange, onError }, ref) {
+  function YouTubePlayer({ youtubeId, startTime, onTimeUpdate, onDuration, onStateChange, onError, containerWidth }, ref) {
     const playerRef = useRef<YoutubeIframeRef>(null);
     const [ready, setReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -54,7 +56,8 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
     const [playbackRate, setPlaybackRateState] = useState(1);
     const t = useT();
     const { width: screenWidth } = useWindowDimensions();
-    const videoHeight = (screenWidth / 16) * 9;
+    const playerWidth = containerWidth ?? screenWidth;
+    const videoHeight = (playerWidth / 16) * 9;
     const timeRef = useRef(0);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -102,7 +105,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
 
     if (error) {
       return (
-        <View className="w-full items-center justify-center bg-muted p-4" style={{ height: videoHeight }}>
+        <View style={{ width: playerWidth, height: videoHeight }} className="items-center justify-center bg-muted p-4">
           <Text className="text-center text-sm text-destructive">{error}</Text>
         </View>
       );
@@ -118,7 +121,7 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
         <YoutubePlayer
           ref={playerRef}
           height={videoHeight}
-          width={screenWidth}
+          width={playerWidth}
           videoId={youtubeId}
           playbackRate={playbackRate}
           initialPlayerParams={{ start: startTime, controls: false }}
