@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, Alert, useWindowDimensions } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
@@ -11,11 +11,15 @@ import { BookOpen, PenLine, Plus, PanelRightOpen, PanelRightClose, Cloud, Check,
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
+const SIDEBAR_MAX_WIDTH = 400;
+
 export default function ReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
   const { display, updateDisplay } = useSettingsContext();
   const t = useT();
   const notes = useReaderNotes(l2Lang.code);
+  const { width: screenWidth } = useWindowDimensions();
+  const sidebarWidth = Math.min(screenWidth - 32, SIDEBAR_MAX_WIDTH);
 
   const [text, setText] = useState('');
   const [activeTab, setActiveTab] = useState<'edit' | 'read'>('edit');
@@ -203,7 +207,7 @@ export default function ReaderScreen() {
 
         {/* Notes sidebar — overlay */}
         {sidebarOpen && (
-          <View className="absolute right-0 top-0 bottom-0 w-56 z-10 border-l border-border bg-card shadow-lg" style={{ elevation: 8 }}>
+          <View className="absolute right-0 top-0 bottom-0 z-10 border-l border-border bg-card shadow-lg" style={{ width: sidebarWidth, elevation: 8 }}>
             <View className="border-b border-border px-3 py-2">
               <Text className="text-sm font-semibold text-foreground">{t('title.notes')}</Text>
             </View>
