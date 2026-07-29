@@ -167,7 +167,7 @@ export default function ReaderScreen() {
           {activeTab === 'read' && !text.trim() && (
             <View className="flex-1 items-center justify-center px-6 pb-12">
               <BookOpen size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
-              <Text className="text-center text-sm text-muted-foreground">{t('msg.reader_empty_state', { l2: l2Lang.name })}</Text>
+              <Text className="text-center text-sm leading-relaxed text-muted-foreground">{t('msg.reader_empty_state', { l2: l2Lang.name })}</Text>
             </View>
           )}
         </View>
