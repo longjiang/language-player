@@ -183,10 +183,10 @@ export function TextActionMenu(props: TextActionMenuProps) {
         <Pressable className="flex-1 bg-black/50 justify-center px-4" onPress={closeAction}>
           <Pressable
             onPress={() => {}}
-            className="max-h-[80%] rounded-xl bg-card"
+            className="max-h-[80%] min-h-[40%] rounded-xl bg-card flex-col"
           >
             {/* Header */}
-            <View className="flex-row items-center justify-between border-b border-border px-5 py-3">
+            <View className="flex-shrink-0 flex-row items-center justify-between border-b border-border px-5 py-3">
               <View className="flex-row items-center gap-2">
                 <Text className="text-sm font-semibold text-foreground">
                   {t('action.let_ai_explain')}
@@ -198,8 +198,8 @@ export function TextActionMenu(props: TextActionMenuProps) {
               </Pressable>
             </View>
 
-            {/* Body */}
-            <ScrollView className="px-5 py-4">
+            {/* Body — flex-1 ensures ScrollView fills remaining card height and scrolls */}
+            <ScrollView className="flex-1 px-5 py-4">
               {/* Original text — tokenized, collapsible to 4 lines */}
               <View className="mb-4 rounded-lg border border-border bg-muted/30 p-3">
                 <View className={contextExpanded ? '' : 'max-h-[4.5rem] overflow-hidden'}>
@@ -220,9 +220,7 @@ export function TextActionMenu(props: TextActionMenuProps) {
               {explainError && !explainText ? (
                 <Text className="text-sm text-destructive">{explainError}</Text>
               ) : (
-                <View>
-                  <MarkdownText>{explainText || ''}</MarkdownText>
-                </View>
+                <MarkdownText>{explainText || ''}</MarkdownText>
               )}
               {explainError && explainText ? (
                 <Text className="mt-2 text-xs text-destructive">{explainError}</Text>
