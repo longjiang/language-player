@@ -207,10 +207,52 @@ const effectiveFullyOut = isFullyOut || (
 4. **Consider using `scrollToOffset` with a computed target** instead of `scrollToIndex`, to avoid the `getItemLayout` vs real-position mismatch.
 5. **Revisit whether `onViewableItemsChanged` could work now** that item heights are correct. With accurate `getItemLayout`, FlatList's native viewability tracker should report correct ranges — the original mount-time race condition may no longer be an issue.
 
+## Resolution (2026-07-28): Replaced `SubtitleDisplay` with `SimpleSubsForDebug`
+
+After multiple attempts to fix the auto-scroll behavior in `SubtitleDisplay` (see attempts 1–5 above, plus the `lastFirstVisible` feedback loop investigation), we concluded that patching the existing component was not the right path. The problems ran deeper than a single mis-estimate:
+
+- **Feedback loops** between `scrollToIndex`, `onScroll`, and effect re-fires were difficult to isolate and reproduce consistently.
+- **`getItemLayout` uniform-height mismatch** with variable-height lines caused cumulative positioning errors across multiple scrolls.
+- **Shared `useTranscriptAutoScroll` hook** added indirection that made debugging harder — every change to the hook risked subtly affecting the web implementation.
+
+### What we did
+
+We built **`SimpleSubsForDebug`** as a fresh component with its own inline auto-scroll logic — no shared hook, no `getItemLayout`, no `onViewableItemsChanged`. Instead it uses:
+
+- **`Animated.Value` + `Animated.timing`** (3-second ease-out) for smooth scroll, driven frame-by-frame via `scrollToOffset` — avoiding `scrollToIndex`/`getItemLayout` entirely.
+- **Scroll-position-based visibility** computed inline from `scrollY / estimatedItemHeight` — simple, direct, debuggable.
+- **User-cooldown detection** via `onScrollBeginDrag` + `scrollAnim.stopAnimation()` — no fighting with FlatList callbacks.
+- **Dual-mode**: `singleLine` (centered active line, replaces `SubtitlesModeBand`) and full transcript FlatList (replaces `SubtitleDisplay`).
+
+### What was removed
+
+- **`SubtitlesModeBand.tsx`** — deleted; single-line subtitle mode is now `SimpleSubsForDebug singleLine`.
+- **`SubtitleDisplay.tsx`** — deleted; full transcript mode is now `SimpleSubsForDebug` (default).
+- The **shared `useTranscriptAutoScroll` hook** is no longer used by mobile. Web continues to use its own `useTranscriptAutoScroll` hook in `apps/web/src/hooks/`.
+
+### Code sharing impact
+
+The shared `decideAutoScroll()` function in `packages/shared/src/transcript-scroll.ts` is also no longer consumed by mobile. The web hook uses it, the mobile component does not. This is not ideal for long-term maintainability:
+
+- **Platform differences** (DOM `getBoundingClientRect` vs FlatList `scrollToIndex`/`scrollToOffset`, RAF vs `Animated.timing`, `overflow-y: auto` vs native scroll gestures) mean the decision logic *should* be shared, but the measurement and execution layers are inherently platform-specific.
+- **Debugging difficulty**: when mobile and web shared a hook, a fix for one platform could silently break the other. Keeping them separate for now reduces regression risk.
+- **Future work**: once the mobile implementation stabilizes in production, we should extract the platform-agnostic parts (decision rules, throttle/cooldown constants) back into `@langplayer/shared` and refactor both hooks to consume a common core, while keeping measurement and execution platform-specific.
+
+### Status
+
+| Component | Status |
+|---|---|
+| `SubtitlesModeBand.tsx` | Deleted |
+| `SubtitleDisplay.tsx` | Deleted |
+| `SimpleSubsForDebug.tsx` | Active — dual-mode: `singleLine` + transcript FlatList with inline auto-scroll |
+| `useTranscriptAutoScroll` (mobile) | Orphaned — still exists but no longer imported by any component |
+| `useTranscriptAutoScroll` (web) | Unchanged — continues to use `decideAutoScroll()` from shared |
+| `decideAutoScroll()` (shared) | Unchanged — still consumed by web; mobile duplicated the decision logic inline |
+
 ## Related Files
 
-- `apps/mobile/hooks/use-transcript-auto-scroll.ts` — auto-scroll logic
-- `apps/mobile/hooks/use-active-line-index.ts` — active line detection
-- `apps/mobile/components/video/SubtitleDisplay.tsx` — FlatList, item rendering, `getItemLayout`
-- `packages/shared/src/transcript-scroll.ts` — shared `decideAutoScroll()` function
+- `apps/mobile/components/video/SimpleSubsForDebug.tsx` — current subtitle component (replaces both `SubtitleDisplay` and `SubtitlesModeBand`)
+- `apps/mobile/hooks/use-transcript-auto-scroll.ts` — orphaned mobile hook (no longer imported)
+- `apps/web/src/hooks/use-transcript-auto-scroll.ts` — web auto-scroll hook (unchanged)
+- `packages/shared/src/transcript-scroll.ts` — shared `decideAutoScroll()` + `SCROLL` constants (still used by web, duplicated inline in mobile)
 - `docs/specs/026-unified-transcript-autoscroll.md` — architecture spec
