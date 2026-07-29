@@ -195,19 +195,19 @@ export function DictionaryPopup({
                 </View>
               ) : null}
 
-              {/* AI Explanation — above results, matching web + Classic */}
-              <AiExplanation
-                word={word}
-                contextText={context}
-                entryFound={(results?.length ?? 0) > 0}
-              />
-
               {/* Results */}
               <ScrollView
                 className="flex-1"
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
               >
+                {/* AI Explanation — inside scrollable area, matching web + Classic */}
+                <AiExplanation
+                  word={word}
+                  contextText={context}
+                  entryFound={(results?.length ?? 0) > 0}
+                />
+
                 {loading && (
                   <View className="items-center py-12">
                     <ActivityIndicator size="large" className="text-primary" />
