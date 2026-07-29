@@ -184,6 +184,7 @@ export function TextActionMenu(props: TextActionMenuProps) {
           <View
             onStartShouldSetResponder={() => true}
             className="max-h-[85%] rounded-t-xl bg-card flex-col"
+            style={{ height: '80%' }}
           >
             {/* Header */}
             <View className="flex-shrink-0 flex-row items-center justify-between border-b border-border px-5 py-3">
