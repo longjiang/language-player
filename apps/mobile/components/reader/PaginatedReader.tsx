@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, Image, ActivityIndicator, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { Root as Switch } from '@/components/ui/switch';
@@ -55,6 +56,7 @@ export function PaginatedReader({
   const hasMeasured = scrollMode ? true : hasMeasuredProp;
   const contentWidth = scrollMode ? 300 : contentWidthProp;
   const loadingTokens = scrollMode ? false : (loadingTokensProp ?? false);
+  const insets = useSafeAreaInsets();
 
   // ── Scroll mode: simple block list ──
   if (scrollMode) {
@@ -67,7 +69,7 @@ export function PaginatedReader({
           )}
         </View>
         {onToggleTranslation && (
-          <View className="flex-row items-center justify-end gap-2 border-t border-border px-4 py-2">
+          <View className="flex-row items-center justify-end gap-2 border-t border-border px-4" style={{ paddingBottom: insets.bottom, paddingTop: 8 }}>
             <Text className="text-xs text-muted-foreground">{t('action.translation')}</Text>
             <Switch checked={showTranslation} onCheckedChange={onToggleTranslation} />
           </View>
@@ -101,28 +103,21 @@ export function PaginatedReader({
             )}
           </ScrollView>
 
-          {/* Page navigation + translation switch */}
-          <View className="flex-shrink-0 flex-row items-center justify-between border-t border-border px-4 py-2">
-            {/* Page nav (centered by flex tricks) */}
-            <View className="flex-1" />
-            <View className="flex-row items-center gap-3">
-              <Pressable onPress={prevPage} disabled={page === 0 || !prevPage} className={`rounded p-1 ${page === 0 || !prevPage ? 'opacity-30' : 'active:bg-muted'}`}>
-                <ChevronLeft size={18} color={ICON_MUTED} />
-              </Pressable>
-              <Text className="text-xs text-muted-foreground">{page + 1} / {totalPages}</Text>
-              <Pressable onPress={nextPage} disabled={page >= totalPages - 1 || !nextPage} className={`rounded p-1 ${page >= totalPages - 1 || !nextPage ? 'opacity-30' : 'active:bg-muted'}`}>
-                <ChevronRight size={18} color={ICON_MUTED} />
-              </Pressable>
-            </View>
-            {/* Translation switch — right-aligned */}
-            <View className="flex-1 flex-row items-center justify-end gap-2">
-              {onToggleTranslation && (
-                <>
-                  <Text className="text-xs text-muted-foreground">{t('action.translation')}</Text>
-                  <Switch checked={showTranslation} onCheckedChange={onToggleTranslation} />
-                </>
-              )}
-            </View>
+          {/* Page navigation + translation switch, with safe area padding */}
+          <View className="flex-shrink-0 flex-row items-center justify-center border-t border-border px-4 gap-3" style={{ paddingBottom: insets.bottom, paddingTop: 8 }}>
+            <Pressable onPress={prevPage} disabled={page === 0 || !prevPage} className={`rounded p-1 ${page === 0 || !prevPage ? 'opacity-30' : 'active:bg-muted'}`}>
+              <ChevronLeft size={18} color={ICON_MUTED} />
+            </Pressable>
+            <Text className="text-xs text-muted-foreground">{page + 1} / {totalPages}</Text>
+            <Pressable onPress={nextPage} disabled={page >= totalPages - 1 || !nextPage} className={`rounded p-1 ${page >= totalPages - 1 || !nextPage ? 'opacity-30' : 'active:bg-muted'}`}>
+              <ChevronRight size={18} color={ICON_MUTED} />
+            </Pressable>
+            {onToggleTranslation && (
+              <View className="flex-row items-center gap-1.5 ml-3 pl-3 border-l border-border">
+                <Text className="text-xs text-muted-foreground">{t('action.translation')}</Text>
+                <Switch checked={showTranslation} onCheckedChange={onToggleTranslation} />
+              </View>
+            )}
           </View>
         </View>
       )}
