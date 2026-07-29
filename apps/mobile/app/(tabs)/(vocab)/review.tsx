@@ -74,7 +74,6 @@ export default function ReviewScreen() {
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showDefinition, setShowDefinition] = useState(false);
   const [rated, setRated] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
   const [initializing, setInitializing] = useState(false);
@@ -192,7 +191,6 @@ export default function ReviewScreen() {
   const handleRate = useCallback((quality: Rating) => {
     if (rated) return;
     setRated(true);
-    setShowDefinition(false);
 
     const card = cards[currentIndex];
     if (!card) {
@@ -239,17 +237,12 @@ export default function ReviewScreen() {
     undoRef.current = null;
   }, [l2Code, updateCard]);
 
-  const handleReveal = useCallback(() => {
-    setShowDefinition(true);
-  }, []);
-
   /** Remove this word from saved words and SRS. */
   const handleRemove = useCallback(() => {
     const card = cards[currentIndex];
     if (!card) return;
     removeWord(l2Code, card.word.id);
     removeCard(l2Code, card.word.id);
-    setShowDefinition(false);
     setRated(false);
   }, [cards, currentIndex, l2Code, removeWord, removeCard]);
 
@@ -260,17 +253,14 @@ export default function ReviewScreen() {
     }
   }, [cards.length, currentIndex]);
 
-  // ── When card changes without a rating (e.g. unsave), reset to front ──
+  // ── When card changes without a rating (e.g. unsave) ──
   useEffect(() => {
     const card = cards[currentIndex];
     const currentId = card?.word.id ?? null;
     if (currentId && currentId !== lastCardIdRef.current) {
       lastCardIdRef.current = currentId;
-      if (showDefinition && !rated) {
-        setShowDefinition(false);
-      }
     }
-  }, [cards, currentIndex, showDefinition, rated]);
+  }, [cards, currentIndex, rated]);
 
   // ── Reset justCompleted when new cards become due ──
   useEffect(() => {
@@ -436,11 +426,6 @@ export default function ReviewScreen() {
         <Pressable
           className="w-full max-w-sm rounded-xl border border-border bg-card p-8"
           style={{ minHeight: 240 }}
-          onPress={(e) => {
-            if (!showDefinition && !rated) {
-              handleReveal();
-            }
-          }}
         >
           {/* Context sentence — always visible, tokenized/interactive */}
           {(wordCtx as any)?.text ? (
@@ -456,7 +441,7 @@ export default function ReviewScreen() {
               <View className="mt-1">
                 <SavedWordSource context={wordCtx as any} date={currentCard.word.date ?? 0} />
               </View>
-              {showDefinition && display.translation && ((wordCtx as any).translation) && (
+              {display.translation && ((wordCtx as any).translation) && (
                 <Text className="mt-2 text-sm italic text-muted-foreground border-t border-border pt-2">
                   {(wordCtx as any).translation}
                 </Text>
@@ -473,19 +458,7 @@ export default function ReviewScreen() {
           </Text>
 
           {/* Card face */}
-          {!showDefinition ? (
-            <View className="items-center">
-              <Text className="text-center text-2xl font-bold text-foreground">
-                {getDisplayName(currentCard.word)}
-              </Text>
-              <Pressable
-                onPress={handleReveal}
-                className="mt-4 rounded-lg border border-border px-6 py-2"
-              >
-                <Text className="text-sm text-muted-foreground">{t('review.show_definition')}</Text>
-              </Pressable>
-            </View>
-          ) : !rated ? (
+          {!rated ? (
             <View>
               <View className="flex-row">
                 {/* Left half → Again */}
@@ -521,7 +494,7 @@ export default function ReviewScreen() {
         </Pressable>
 
         {/* Undo + Remove row */}
-        {showDefinition && !rated && (
+        {!rated && (
           <View className="mt-3 w-full max-w-sm flex-row justify-between">
             {undoRef.current ? (
               <Pressable
@@ -545,8 +518,8 @@ export default function ReviewScreen() {
         )}
       </View>
 
-      {/* Rating buttons (only visible after reveal) */}
-      {showDefinition && !rated && (
+      {/* Rating buttons */}
+      {!rated && (
         <View className="flex-row gap-2 px-4 pb-8">
           {RATING_LABELS.map((r) => (
             <Pressable
