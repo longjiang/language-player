@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { View, Text, Image, Pressable, FlatList, ActivityIndicator, useWindowDimensions, LayoutChangeEvent } from 'react-native';
 import * as Dialog from '@/components/ui/dialog';
-import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useT } from '@/hooks/use-t';
 import { useVideos } from '@langplayer/api-client';
@@ -12,7 +11,7 @@ import { useAnimatedBoolean } from '@/lib/animations';
 import { SimpleSubsForDebug } from './SimpleSubsForDebug';
 import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { ICON_MUTED } from '@/lib/theme-colors';
-import { List, X, Play, Pause, SkipBack, SkipForward, ChevronUp, ChevronDown } from 'lucide-react-native';
+import { List, X } from 'lucide-react-native';
 
 function youtubeThumbnail(id: string): string {
   return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
@@ -34,7 +33,6 @@ function formatTime(seconds: number): string {
 export function SubsSearchResults({ term, exactMatch = false, onExactToggle, formCount = 0 }: SubsSearchResultsProps) {
   const { l1Lang, l2Lang } = useLanguage();
   const t = useT();
-  const router = useRouter();
   const videosApi = useVideos();
   const playerRef = useRef<YouTubePlayerHandle>(null);
   const { width: screenWidth } = useWindowDimensions();
@@ -46,7 +44,6 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [listOpen, setListOpen] = useAnimatedBoolean();
 
   const currentVideo = videos[currentIndex] ?? null;
@@ -133,39 +130,6 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
 
   // ── Player callbacks ──
   const handleTimeUpdate = useCallback((time: number) => setCurrentTime(time), []);
-  const handleStateChange = useCallback((state: string) => {
-    setPaused(state === 'paused' || state === 'ended');
-  }, []);
-
-  const handlePlayPause = () => {
-    if (paused) { playerRef.current?.play(); setPaused(false); }
-    else { playerRef.current?.pause(); setPaused(true); }
-  };
-
-  const goToPrev = () => { if (currentIndex > 0) setCurrentIndex((i) => i - 1); };
-  const goToNext = () => { if (currentIndex < videos.length - 1) setCurrentIndex((i) => i + 1); };
-
-  const goToPrevLine = () => {
-    if (!currentVideo) return;
-    const subs = currentVideo.subs_l2;
-    for (let i = subs.length - 1; i >= 0; i--) {
-      if (subs[i]!.starttime < currentTime - 0.3) {
-        playerRef.current?.seekTo(subs[i]!.starttime);
-        return;
-      }
-    }
-  };
-
-  const goToNextLine = () => {
-    if (!currentVideo) return;
-    const subs = currentVideo.subs_l2;
-    for (let i = 0; i < subs.length; i++) {
-      if (subs[i]!.starttime > currentTime + 0.3) {
-        playerRef.current?.seekTo(subs[i]!.starttime);
-        return;
-      }
-    }
-  };
 
   const selectFromList = (idx: number) => {
     setCurrentIndex(idx);
@@ -233,7 +197,6 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
           ref={playerRef}
           youtubeId={currentVideo!.youtube_id}
           onTimeUpdate={handleTimeUpdate}
-          onStateChange={handleStateChange}
           containerWidth={containerWidth}
         />
       </View>
@@ -249,35 +212,6 @@ export function SubsSearchResults({ term, exactMatch = false, onExactToggle, for
           onSeekToLine={(t) => playerRef.current?.seekTo(t)}
         />
       </View>
-
-      {/* Controls */}
-      <View className="flex-row items-center justify-center gap-2 px-4 py-2">
-        <Pressable onPress={goToPrevLine} className="rounded-full bg-muted p-2">
-          <ChevronUp size={18} color={ICON_MUTED} />
-        </Pressable>
-        <Pressable onPress={goToPrev} className="rounded-full bg-muted p-2">
-          <SkipBack size={18} color={ICON_MUTED} />
-        </Pressable>
-        <Pressable onPress={handlePlayPause} className="rounded-full bg-primary p-3">
-          {paused ? <Play size={20} color="#fff" /> : <Pause size={20} color="#fff" />}
-        </Pressable>
-        <Pressable onPress={goToNext} className="rounded-full bg-muted p-2">
-          <SkipForward size={18} color={ICON_MUTED} />
-        </Pressable>
-        <Pressable onPress={goToNextLine} className="rounded-full bg-muted p-2">
-          <ChevronDown size={18} color={ICON_MUTED} />
-        </Pressable>
-      </View>
-
-      {/* Watch full video link */}
-      {currentVideo && (
-        <Pressable
-          onPress={() => router.push(`/(tabs)/(media)/watch/${currentVideo.youtube_id}`)}
-          className="mx-4 mt-1 rounded-lg border border-border px-4 py-2 active:bg-muted"
-        >
-          <Text className="text-center text-sm text-primary">{t('action.watch')}</Text>
-        </Pressable>
-      )}
 
       {/* ── Video List Dialog ── */}
       <Dialog.Root open={listOpen} onOpenChange={setListOpen}>
