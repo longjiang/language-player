@@ -108,6 +108,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   // ── hardWords filter + quickGloss (Phase 2: SPEC-019) ──
   const quickGlossEnabled = tokenSettings.quickGloss;
+  const showDefinition = l2Settings.tokenSpan.definition.show;
   const phoneticsConditions = phonetics.conditions;
   const userLevel = useProgressLevel(l2Code);
   const { savedWords } = useSavedWords();
@@ -353,8 +354,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
     return (
       <>
-        {/* Ruby mode: View-based flex row for readings-above-characters layout */}
-        {showPhonetics && phonetics.show === 'ruby' ? (
+        {/* View-based flex row: used for ruby readings-above-characters or interlinear definitions */}
+        {(showPhonetics && phonetics.show === 'ruby') || showDefinition ? (
           <View testID={testID} className="flex-row flex-wrap items-end">
             {(() => {
               let wordIndexSoFar = 0;
@@ -373,7 +374,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isKaraokeDimmed = isKaraokeSpoken === false;
 
               const word = token.text;
-              const displayText = useTraditional ? (convertedTexts.get(word) ?? word) : word;
+              const traditionalText = useTraditional ? (convertedTexts.get(word) ?? word) : word;
+              // In word-replace phonetics mode, use pronunciation as the display text.
+              // When interlinear definition is on, always show the original word
+              // (with optional ruby) — matching web's token-span.tsx behavior.
+              const displayText = replaceWithPhonetics && !showDefinition && shouldShowPhonetics(token) && token.pronunciation
+                ? token.pronunciation
+                : traditionalText;
               const isHighlighted = highlightTerms?.some((t) => t === word);
               const isRevealed = revealedTokens.has(i);
               const isBlanked = quizMode && !isRevealed;
@@ -382,9 +389,15 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const showByeonggi = byeonggiEnabled && !!byeonggiText;
               const showTokenPhonetics = shouldShowPhonetics(token);
               const isSaved = savedFormSet.has(word.toLowerCase());
+              // Quick gloss and interlinear definition coexist (matching web).
+              // Quick gloss: 'def' marker inline after saved words.
+              // Interlinear: definition stacked below all words.
               const showQuickGloss = isSaved && quickGlossEnabled && !!firstDef && !isHighlighted;
+              const showInterlinear = showDefinition && !!firstDef && !isBlanked;
 
-              const hasRuby = showTokenPhonetics && token.pronunciation && token.pronunciation !== word;
+              // Ruby only in actual ruby mode (not when View-based is triggered by showDefinition alone)
+              const isRubyMode = showPhonetics && phonetics.show === 'ruby';
+              const hasRuby = isRubyMode && showTokenPhonetics && token.pronunciation && token.pronunciation !== word;
               const rubySegs: RubySegment[] = hasRuby
                 ? buildRuby(displayText, token.pronunciation!, l2Code)
                 : [{ text: displayText }];
@@ -424,6 +437,9 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                       </Text>
                       {showQuickGloss && j === rubySegs.length - 1 && (
                         <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{firstDef}</Text>
+                      )}
+                      {showInterlinear && j === rubySegs.length - 1 && (
+                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground/60">{firstDef}</Text>
                       )}
                     </View>
                   ))}
