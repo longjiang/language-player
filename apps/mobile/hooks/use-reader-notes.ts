@@ -34,7 +34,7 @@ export interface UseReaderNotesReturn {
   currentNoteId: number | null;
   loadNotes: () => Promise<void>;
   selectNote: (noteId: number) => Promise<void>;
-  createNote: () => Promise<number>;
+  createNote: (defaultTitle?: string) => Promise<number>;
   renameNote: (noteId: number, title: string) => Promise<void>;
   deleteNote: (noteId: number) => Promise<void>;
   saveNote: (noteId: number, text: string, translation: string) => Promise<void>;
@@ -176,14 +176,15 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
 
   // ── Create note ───────────────────────────────────────
 
-  const createNote = useCallback(async (): Promise<number> => {
+  const createNote = useCallback(async (defaultTitle?: string): Promise<number> => {
+    const title = defaultTitle ?? 'Untitled';
     const online = await checkOnline();
 
     if (online) {
       // Happy path: create on server
       try {
         const created = await apiClient.post<Note>('/user-notes', {
-          title: 'Untitled',
+          title,
           text: '',
           translation: '',
           l2: l2Code,
@@ -216,7 +217,7 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
     const now = new Date().toISOString();
     const localNote: Note = {
       id: tempId,
-      title: 'Untitled',
+      title,
       text: '',
       translation: '',
       l2: 0, // placeholder — filled on sync
@@ -227,20 +228,20 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
     await cacheNote(localNote);
     await patchCachedNotesList(l2Code, 'create', {
       id: tempId,
-      title: 'Untitled',
+      title,
       created_on: now,
     });
     await enqueue({
       action: 'create',
       tempId,
-      payload: { title: 'Untitled', text: '', translation: '', l2: l2Code },
+      payload: { title, text: '', translation: '', l2: l2Code },
       l2Code,
     });
 
     if (mountedRef.current) {
       setNotes(prev => [{
         id: tempId,
-        title: 'Untitled',
+        title,
         created_on: now,
         _syncStatus: 'pending',
       }, ...prev]);

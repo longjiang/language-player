@@ -178,7 +178,7 @@ export default function ReaderScreen() {
               <Text className="text-sm font-semibold text-foreground">{t('title.notes')}</Text>
             </View>
             <Pressable
-              onPress={() => { justCreatedRef.current = true; notes.createNote(); setSidebarOpen(false); }}
+              onPress={() => { justCreatedRef.current = true; notes.createNote(t('msg.untitled_note')); setSidebarOpen(false); }}
               className="mx-3 my-2 flex-row items-center gap-1.5 rounded-lg border border-border px-3 py-2 active:bg-muted"
             >
               <Plus size={14} color={ICON_MUTED} />
