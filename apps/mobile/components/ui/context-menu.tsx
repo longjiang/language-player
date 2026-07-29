@@ -150,8 +150,7 @@ export function ContextMenu({
           className="flex-1 bg-black/40 justify-end"
           onPress={closeMenu}
         >
-          <Pressable
-            onPress={() => {}}
+          <View
             className="rounded-t-2xl bg-card px-4 pb-8 pt-2"
           >
             {/* Handle bar */}
@@ -185,7 +184,7 @@ export function ContextMenu({
                 </Pressable>
               );
             })}
-          </Pressable>
+          </View>
         </Pressable>
       </Modal>
     </>
