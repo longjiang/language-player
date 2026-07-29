@@ -11,7 +11,8 @@ import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { CheckCircle2, BookOpen, Undo2 } from 'lucide-react-native';
+import Toast from 'react-native-toast-message';
+import { CheckCircle2, BookOpen } from 'lucide-react-native';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { TokenizedText } from '@/components/TokenizedText';
@@ -162,14 +163,25 @@ export default function ReviewScreen() {
       setJustCompleted(true);
     }
 
-    // Auto-advance after a brief pause (shows undo opportunity)
+    // Show toast with undo button (matches web behavior)
+    const label = RATING_LABELS.find((r) => r.key === quality);
+    if (label) {
+      Toast.show({
+        type: 'info',
+        visibilityTime: 3000,
+        position: 'bottom',
+        props: { quality, label, handleUndo: () => handleUndo() },
+      });
+    }
+
+    // Auto-advance after a brief pause
     setTimeout(() => {
       setRated(false);
       if (!wasLastCard) {
         setCurrentIndex((i) => i + 1);
       }
     }, 600);
-  }, [cards, currentIndex, rated, updateCard, l2Code]);
+  }, [cards, currentIndex, rated, updateCard, l2Code, t]);
 
   /** Undo the most recent rating — restores the card's previous SRS state. */
   const handleUndo = useCallback(() => {
@@ -316,15 +328,6 @@ export default function ReviewScreen() {
             <>{' '}{t('msg.next_review')}: {new Date(nextDue.nextReview).toLocaleDateString()}.</>
           )}
         </Text>
-        {undoRef.current && (
-          <Pressable
-            onPress={handleUndo}
-            className="mb-3 flex-row items-center gap-1.5 rounded-lg border border-border px-4 py-2"
-          >
-            <Undo2 size={14} color={ICON_MUTED} />
-            <Text className="text-sm text-muted-foreground">{t('action.undo')}</Text>
-          </Pressable>
-        )}
       </View>
     );
   }
@@ -466,19 +469,6 @@ export default function ReviewScreen() {
           )}
           </ScrollView>
         </View>
-
-        {/* Undo button */}
-        {!rated && undoRef.current && (
-          <View className="mt-3 w-full max-w-sm items-center">
-            <Pressable
-              onPress={handleUndo}
-              className="flex-row items-center gap-1 rounded-lg border border-border px-3 py-1.5"
-            >
-              <Undo2 size={14} color={ICON_MUTED} />
-              <Text className="text-xs text-muted-foreground">{t('action.undo')}</Text>
-            </Pressable>
-          </View>
-        )}
       </View>
 
       {/* Rating buttons — pinned to bottom with safe area */}

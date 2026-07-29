@@ -3,8 +3,37 @@ import '@/lib/intl-polyfills';
 
 import React from 'react';
 import { Stack } from 'expo-router';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { PortalHost } from '@rn-primitives/portal';
+import Toast, { InfoToast, type ToastConfigParams } from 'react-native-toast-message';
+
+// ── Custom toast config ──
+
+const toastConfig = {
+  /*
+    Info toast with Undo button for rating feedback.
+    Consumes custom props: { label: { label, hint }, handleUndo }
+  */
+  info: (params: ToastConfigParams<{ label?: { label: string; hint: string }; handleUndo?: () => void }>) => {
+    const { label, handleUndo } = params.props ?? {};
+    return (
+      <InfoToast
+        text1={label?.label}
+        text2={label?.hint}
+        onPress={params.onPress}
+        renderTrailingIcon={() => handleUndo ? (
+          <Pressable
+            onPress={handleUndo}
+            className="mr-3 rounded-lg border border-white/60 px-4 py-1.5"
+          >
+            <Text className="text-sm font-medium text-white">Undo</Text>
+          </Pressable>
+        ) : null}
+      />
+    );
+  },
+};
+
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { IntlProviderWrapper } from '@/contexts/IntlProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -68,6 +97,7 @@ export default function RootLayout() {
                       <Stack.Screen name="go-pro-success" />
                     </Stack>
                     <PortalHost />
+                    <Toast config={toastConfig} />
                     </SubscriptionProvider>
                   </VideoPlayerProvider>
                 </DictionaryProvider>
