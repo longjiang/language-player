@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useEffect, useMemo, useState } from 'react';
-import { View, Text, FlatList, Pressable } from 'react-native';
+import { View, Text, FlatList, Pressable, Animated, Easing } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSubtitleTranslation } from '@/hooks/use-subtitle-translation';
@@ -25,6 +25,12 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
   const lastScrolledIdx = useRef(-1);
   const lastAutoScrollTime = useRef(0);
   const isInitialLoad = useRef(true);
+
+  // ── Animated scroll offset (used when smoothScroll is enabled) ──
+  const scrollAnim = useRef(new Animated.Value(0)).current;
+  const scrollPosRef = useRef(0);
+  const targetOffsetRef = useRef(0);
+  const isAnimatingRef = useRef(false);
 
   // Convert SyncedLine[] → SubtitleLine[] for the translation hook
   const subtitleLines: SubtitleLine[] = useMemo(
@@ -90,6 +96,36 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
       });
   }, [lines, l2Lang.code, tokenCache, tokenCacheLoaded]);
 
+  // ── Drive FlatList scroll from Animated.Value when smoothScroll is on ──
+  useEffect(() => {
+    const listenerId = scrollAnim.addListener(({ value }) => {
+      flatListRef.current?.scrollToOffset({ offset: value, animated: false });
+    });
+    return () => scrollAnim.removeListener(listenerId);
+  }, [scrollAnim]);
+
+  // ── Smooth scroll helper: timed animation over 3 seconds ──
+  const animateToOffset = useCallback(
+    (offset: number) => {
+      if (isAnimatingRef.current) return;
+      isAnimatingRef.current = true;
+      targetOffsetRef.current = offset;
+      Animated.timing(scrollAnim, {
+        toValue: offset,
+        duration: 3000,
+        useNativeDriver: false,
+        easing: Easing.out(Easing.cubic), // ease-out: starts fast, slows near end
+      }).start(() => {
+        isAnimatingRef.current = false;
+        // If another scroll was requested while animating, resume
+        if (targetOffsetRef.current !== offset) {
+          animateToOffset(targetOffsetRef.current);
+        }
+      });
+    },
+    [scrollAnim],
+  );
+
   const onLayout = useCallback(
     (e: any) => {
       const h = e.nativeEvent.layout.height;
@@ -102,7 +138,10 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
 
   const onScrollBeginDrag = useCallback(() => {
     userScrolledUntil.current = Date.now() + SCROLL.USER_COOLDOWN_MS;
-  }, []);
+    // Stop any in-progress animated scroll; let the user take over
+    scrollAnim.stopAnimation();
+    isAnimatingRef.current = false;
+  }, [scrollAnim]);
 
   useEffect(() => {
     if (activeLineIndex < 0) return;
@@ -131,13 +170,22 @@ export function SimpleSubsForDebug({ lines, activeLineIndex, currentTime, tokenC
 
     lastScrolledIdx.current = activeLineIndex;
     lastAutoScrollTime.current = now;
-    flatListRef.current?.scrollToIndex({
-      index: activeLineIndex,
-      animated: !isInitialLoad.current && !isSeek && !isFullyOut,
-      viewPosition: 0.5,
-    });
+
+    const targetOffset = activeLineIndex * estimatedItemHeight - (containerHeight - estimatedItemHeight) / 2;
+
+    if (playback.smoothScroll && !isInitialLoad.current && !isSeek && !isFullyOut) {
+      // Smooth: use Animated.spring driven by scrollAnim
+      animateToOffset(targetOffset);
+    } else {
+      // Instant: jump directly
+      flatListRef.current?.scrollToIndex({
+        index: activeLineIndex,
+        animated: false,
+        viewPosition: 0.5,
+      });
+    }
     isInitialLoad.current = false;
-  }, [activeLineIndex, containerHeight, estimatedItemHeight]);
+  }, [activeLineIndex, containerHeight, estimatedItemHeight, playback.smoothScroll, animateToOffset]);
 
   return (
     <View className="flex-1 bg-background">
