@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useSrs } from '@/hooks/use-srs';
@@ -56,7 +55,6 @@ function useRatingLabels() {
 
 export default function ReviewScreen() {
   const { l1Lang, l2Lang } = useLanguage();
-  const { user } = useAuth();
   const t = useT();
 
   const { savedWords, loaded: wordsLoaded, removeWord } = useSavedWords();
@@ -545,8 +543,8 @@ export default function ReviewScreen() {
             )}
           </Text>
 
-          {/* Front of card — Show Definition button */}
-          {!showDefinition ? (
+          {/* Front of card — Show Definition button (visible when not revealed) */}
+          {!showDefinition && (
             <View className="items-center py-8">
               <Pressable
                 onPress={handleReveal}
@@ -555,9 +553,13 @@ export default function ReviewScreen() {
                 <Text className="text-base font-medium text-foreground">{t('review.show_definition')}</Text>
               </Pressable>
             </View>
-          ) : (
-            /* Back of card — dictionary entry with tabs (hidden until reveal) */
-            entry ? (
+          )}
+
+          {/* Back of card — dictionary entry with tabs.
+              Always rendered so DictionaryEntryTabs stays mounted across reveal (avoids
+              @rn-primitives/tabs mount flicker). Visually hidden until revealed. */}
+          <View style={!showDefinition && { display: 'none', height: 0, overflow: 'hidden' }}>
+            {entry ? (
               <View className="mb-2">
                 <DictionaryEntryTabs
                   entry={entry}
@@ -572,8 +574,8 @@ export default function ReviewScreen() {
               <Text className="py-4 text-center text-sm italic text-muted-foreground">
                 {t('review.no_definition_available')}
               </Text>
-            )
-          )}
+            )}
+          </View>
           </ScrollView>
         </View>
 
