@@ -13,7 +13,13 @@ export interface ImageBlock {
   alt?: string;
 }
 
-export type ContentBlock = TextBlock | ImageBlock;
+export interface TableBlock {
+  kind: 'table';
+  header: string[];
+  rows: string[][];
+}
+
+export type ContentBlock = TextBlock | ImageBlock | TableBlock;
 
 /** Regex matching [IMG:uri] markers injected by use-epub for inline EPUB images. */
 const IMG_MARKER_RE = /\[IMG:([^\]]+)\]/;
@@ -109,6 +115,19 @@ function parseMarkdownOnly(md: string): ContentBlock[] {
           alt: (token as any).text ?? '',
         });
         break;
+
+      case 'table': {
+        const header = token.header.map((cell: any) =>
+          typeof cell === 'string' ? cell : plainText({ tokens: cell.tokens ?? [] }),
+        );
+        const rows = token.rows.map((row: any) =>
+          row.map((cell: any) =>
+            typeof cell === 'string' ? cell : plainText({ tokens: cell.tokens ?? [] }),
+          ),
+        );
+        blocks.push({ kind: 'table', header, rows });
+        break;
+      }
     }
   }
 

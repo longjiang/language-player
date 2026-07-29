@@ -156,6 +156,34 @@ function renderBlock(
     );
   }
 
+  if (block.kind === 'table') {
+    const colWidths = block.header.length > 0
+      ? block.header.map(() => Math.floor(100 / block.header.length))
+      : [];
+    return (
+      <View key={bi} className="mb-3 overflow-hidden rounded-lg border border-border">
+        {/* Header row */}
+        <View className="flex-row bg-muted/50">
+          {block.header.map((cell, ci) => (
+            <View key={ci} className={`${ci < block.header.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
+              <Text className="px-2 py-1.5 text-xs font-semibold text-foreground">{cell}</Text>
+            </View>
+          ))}
+        </View>
+        {/* Data rows */}
+        {block.rows.map((row, ri) => (
+          <View key={ri} className={`flex-row ${ri < block.rows.length - 1 ? 'border-b border-border' : ''}`}>
+            {row.map((cell, ci) => (
+              <View key={ci} className={`${ci < row.length - 1 ? 'border-r border-border' : ''}`} style={{ flex: 1 }}>
+                <Text className="px-2 py-1.5 text-xs text-foreground">{cell}</Text>
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+    );
+  }
+
   const visibleTextBlocks = visibleBlocks.filter(
     (b): b is TextBlock => b.kind === 'text' && (b.type === 'paragraph' || b.type === 'blockquote' || b.type === 'list-item'),
   );
@@ -228,6 +256,25 @@ function renderMeasuringBlock(
     return (
       <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height)} className="mb-3">
         <Image source={{ uri: block.uri }} style={{ width: contentWidth, height: contentWidth * 0.6 }} resizeMode="contain" />
+      </View>
+    );
+  }
+
+  if (block.kind === 'table') {
+    // Approximate height: header + rows * rowHeight
+    const rowCount = block.rows.length + 1;
+    const estimatedHeight = rowCount * 32 + 16;
+    return (
+      <View key={`m-${bi}`} onLayout={(e) => handleMeasureBlock(bi, e.nativeEvent.layout.height)} className="mb-3">
+        <View className="rounded-lg border border-border">
+          <View className="flex-row bg-muted/50">
+            {block.header.map((cell, ci) => (
+              <View key={ci} style={{ flex: 1 }}>
+                <Text className="px-2 py-1.5 text-xs">{cell}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
       </View>
     );
   }
