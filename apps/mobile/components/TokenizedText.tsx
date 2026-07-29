@@ -364,6 +364,12 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 return (
                   <View key={i} className="items-center mx-px">
                     <Text style={[textStyle, { lineHeight: baseLeading }]} className="text-foreground">{token.text}</Text>
+                    {/* Universal definition slot: when showDefinition is on, every token
+                        gets a slot of the same height so all word texts share a baseline.
+                        Punctuation gets an empty spacer. */}
+                    {showDefinition && (
+                      <View style={{ height: readingSize + 2 }} />
+                    )}
                   </View>
                 );
               }
@@ -430,35 +436,56 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
               const isSavedWord = isSaved && !isHighlighted && !isBlanked;
 
               return (
-                <React.Fragment key={i}>
-                  {rubySegs.map((seg, j) => (
-                    <View key={j} className="items-center mx-px" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
-                      {seg.reading && (
-                        <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
-                      )}
-                      <Text
-                        testID={`token-${i}`}
-                        style={[textStyle, { lineHeight: baseLeading }]}
-                        className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}
-                        onPress={handlePress}
-                      >
-                        {isBlanked ? '▯' : seg.text}
-                        {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
-                        {showByeonggi && j === 0 ? (
-                          <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
-                        ) : null}
-                        {/* Quick gloss: inline after byeonggi/word, with single quotes (matching web's QuickGloss component) */}
-                        {showQuickGloss && j === rubySegs.length - 1 ? (
-                          <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> '{firstDef}'</Text>
-                        ) : null}
-                      </Text>
-                      {/* Interlinear definition: stacked below the word (separate from inline annotations) */}
-                      {showInterlinear && j === rubySegs.length - 1 && (
+                /* Word token: wrap all ruby segments in a row, with the
+                   interlinear definition stacked below the entire word unit.
+                   This matches web's inline-flex flex-col layout — the
+                   definition is centered under the full word, not just the
+                   last segment. */
+                <View key={i} style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
+                  <View className="flex-row">
+                    {rubySegs.map((seg, j) => (
+                      <View key={j} className="items-center mx-px">
+                        {seg.reading && (
+                          <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
+                        )}
+                        {/* Spacer: align kana-only segments with kanji segments that have ruby above.
+                            Matches the reading text's lineHeight so base texts share a baseline. */}
+                        {hasRuby && !seg.reading && (
+                          <View style={{ height: readingSize + 2 }} />
+                        )}
+                        <Text
+                          testID={`token-${i}`}
+                          style={[textStyle, { lineHeight: baseLeading }]}
+                          className={`${isHighlighted ? 'font-bold text-primary' : 'text-foreground'} ${isSavedWord ? 'bg-yellow-200/20 rounded' : ''}`}
+                          onPress={handlePress}
+                        >
+                          {isBlanked ? '▯' : seg.text}
+                          {/* Byeonggi: inline after the word, smaller size, muted (matching web's token-span.tsx) */}
+                          {showByeonggi && j === 0 ? (
+                            <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> {byeonggiText}</Text>
+                          ) : null}
+                          {/* Quick gloss: inline after byeonggi/word, with single quotes (matching web's QuickGloss component) */}
+                          {showQuickGloss && j === rubySegs.length - 1 ? (
+                            <Text style={{ fontSize: readingSize }} className="text-muted-foreground/70"> '{firstDef}'</Text>
+                          ) : null}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                  {/* Universal definition slot: when showDefinition is on, every token
+                      gets a slot of the same height. Tokens without a definition get
+                      an empty spacer — this keeps all word texts on the same baseline
+                      regardless of which tokens have interlinear glosses. */}
+                  {showDefinition && (
+                    <View style={{ height: readingSize + 2, justifyContent: 'flex-start', alignItems: 'center' }}>
+                      {showInterlinear ? (
                         <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground/60">{trimmedDef}</Text>
+                      ) : (
+                        <View style={{ height: readingSize + 2 }} />
                       )}
                     </View>
-                  ))}
-                </React.Fragment>
+                  )}
+                </View>
               );
             });
           })()}
