@@ -10,9 +10,9 @@ import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { htmlToMarkdown, extractTitle } from '@/lib/html-to-markdown';
 import { PaginatedReader } from '@/components/reader/PaginatedReader';
-import { Globe, StickyNote, Plus, Trash2 } from 'lucide-react-native';
+import { Globe, Plus, MoreHorizontal, PenLine, Trash2, Check, PanelRightOpen } from 'lucide-react-native';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { ICON_MUTED } from '@/lib/theme-colors';
+import { ICON_MUTED, ICON_PRIMARY, ICON_DESTRUCTIVE } from '@/lib/theme-colors';
 
 export default function WebReaderScreen() {
   const { l1Lang, l2Lang } = useLanguage();
@@ -27,6 +27,7 @@ export default function WebReaderScreen() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [renameId, setRenameId] = useState<number | null>(null);
   const [renameText, setRenameText] = useState('');
+  const [menuNoteId, setMenuNoteId] = useState<number | null>(null);
 
   const pagination = useEpubPagination({
     text,
@@ -103,7 +104,7 @@ export default function WebReaderScreen() {
             accessibilityLabel={t('title.notes')}
             accessibilityRole="button"
           >
-            <StickyNote size={18} color={ICON_MUTED} />
+            <PanelRightOpen size={18} color={ICON_MUTED} />
           </Pressable>
         </View>
 
@@ -236,14 +237,9 @@ export default function WebReaderScreen() {
                   ) : (
                     <Pressable
                       onPress={() => { notes.selectNote(n.id); setSidebarOpen(false); }}
-                      onLongPress={() => {
-                        setRenameId(n.id);
-                        setRenameText(n.title ?? '');
-                        setOriginalTitle(n.title ?? '');
-                      }}
                       className={`flex-row items-center gap-2 px-3 py-2 active:bg-muted ${notes.currentNoteId === n.id ? 'bg-primary/10' : ''}`}
                     >
-                      <StickyNote size={14} color={ICON_MUTED} />
+                      <Check size={14} color={ICON_PRIMARY} />
                       <View className="flex-1">
                         <Text className={`text-sm truncate ${notes.currentNoteId === n.id ? 'font-medium text-primary' : 'text-foreground'}`} numberOfLines={1}>
                           {n.title ?? t('msg.untitled_note')}
@@ -254,13 +250,43 @@ export default function WebReaderScreen() {
                           </Text>
                         )}
                       </View>
-                      <Pressable onPress={() => handleDelete(n.id)} className="rounded p-1 active:bg-muted">
-                        <Trash2 size={12} color={ICON_MUTED} />
+                      <Pressable
+                        onPress={() => setMenuNoteId(menuNoteId === n.id ? null : n.id)}
+                        className="rounded p-1 active:bg-muted"
+                      >
+                        <MoreHorizontal size={14} color={ICON_MUTED} />
                       </Pressable>
                     </Pressable>
                   )}
+
+                  {/* Context menu */}
+                  {menuNoteId === n.id && (
+                    <View className="absolute right-2 top-10 z-20 min-w-[120px] rounded-lg border border-border bg-card py-1 shadow-lg" style={{ elevation: 8 }}>
+                      <Pressable
+                        onPress={() => { setMenuNoteId(null); setRenameId(n.id); setRenameText(n.title ?? ''); setOriginalTitle(n.title ?? ''); }}
+                        className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
+                      >
+                        <PenLine size={12} color={ICON_MUTED} />
+                        <Text className="text-xs text-foreground">{t('action.rename')}</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => { setMenuNoteId(null); handleDelete(n.id); }}
+                        className="flex-row items-center gap-2 px-3 py-2 active:bg-muted"
+                      >
+                        <Trash2 size={12} color={ICON_DESTRUCTIVE} />
+                        <Text className="text-xs text-red-500">{t('action.delete')}</Text>
+                      </Pressable>
+                    </View>
+                  )}
                 </View>
               ))}
+              {/* Tappable backdrop to close menu */}
+              {menuNoteId !== null && (
+                <Pressable
+                  onPress={() => setMenuNoteId(null)}
+                  className="absolute inset-0 z-10"
+                />
+              )}
             </ScrollView>
           </View>
         )}
