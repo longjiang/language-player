@@ -180,12 +180,10 @@ export function TextActionMenu(props: TextActionMenuProps) {
         animationType="fade"
         onRequestClose={closeAction}
       >
-        <Pressable className="flex-1 bg-black/50 justify-end" onPress={closeAction}>
-          <View
-            onStartShouldSetResponder={() => true}
-            className="max-h-[85%] rounded-t-xl bg-card flex-col"
-            style={{ height: '80%' }}
-          >
+        <View className="flex-1 bg-black/50 justify-end">
+          {/* Backdrop tap — uses Pressable so only taps on the backdrop close the modal */}
+          <Pressable className="absolute inset-0" onPress={closeAction} />
+          <View className="max-h-[85%] rounded-t-xl bg-card flex-col" style={{ height: '80%' }}>
             {/* Header */}
             <View className="flex-shrink-0 flex-row items-center justify-between border-b border-border px-5 py-3">
               <View className="flex-row items-center gap-2">
@@ -199,7 +197,7 @@ export function TextActionMenu(props: TextActionMenuProps) {
               </Pressable>
             </View>
 
-            {/* Body — flex-1 fills remaining space; ScrollView scrolls when content overflows */}
+            {/* Body — ScrollView scrolls when content overflows */}
             <ScrollView className="flex-1 px-5 py-4">
               {/* Original text — tokenized, collapsible to 4 lines */}
               <View className="mb-4 rounded-lg border border-border bg-muted/30 p-3">
@@ -228,7 +226,7 @@ export function TextActionMenu(props: TextActionMenuProps) {
               ) : null}
             </ScrollView>
           </View>
-        </Pressable>
+        </View>
       </Modal>
 
       {/* ── Translate Result Modal ── */}
