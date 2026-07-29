@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useT } from '@/hooks/use-t';
 import { useEpubPagination } from '@/hooks/use-epub-pagination';
 import { ICON_MUTED } from '@/lib/theme-colors';
@@ -20,6 +21,7 @@ import type { LemmatizedToken } from '@langplayer/shared';
 
 export default function TokenizerScreen() {
   const { l1Lang, l2Lang } = useLanguage();
+  const { display, updateDisplay } = useSettingsContext();
   const t = useT();
   const [customText, setCustomText] = useState('');
 
@@ -30,7 +32,7 @@ export default function TokenizerScreen() {
     text: sampleMarkdown,
     l1Code: l1Lang.code,
     l2Code: l2Lang.code,
-    showTranslation: false,
+    showTranslation: display.translation,
     resetKey: l2Lang.code,
   });
 
