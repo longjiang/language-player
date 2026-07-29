@@ -102,7 +102,7 @@ export default function EpubReaderScreen() {
       </View>
 
       {/* Content — sidebar overlays when open */}
-      <View className="flex-1">
+      <View className="flex-1 pt-2">
         <PaginatedReader
           blocks={pagination.blocks}
           visibleBlocks={pagination.visibleBlocks}
