@@ -168,6 +168,13 @@ export default function ReaderScreen() {
             <View className="flex-1 items-center justify-center px-6 pb-12">
               <BookOpen size={48} color={ICON_MUTED} style={{ marginBottom: 16 }} />
               <Text className="text-center text-sm leading-relaxed text-muted-foreground">{t('msg.reader_empty_state', { l2: l2Lang.name })}</Text>
+              <Pressable
+                onPress={() => setActiveTab('edit')}
+                className="mt-4 flex-row items-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 active:bg-muted"
+              >
+                <PenLine size={14} color={ICON_MUTED} />
+                <Text className="text-xs text-foreground">{t('action.edit')}</Text>
+              </Pressable>
             </View>
           )}
         </View>
