@@ -1,13 +1,13 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useSrs } from '@/hooks/use-srs';
-import { useDictionary } from '@langplayer/api-client';
-import { decomposeWordId } from '@langplayer/shared';
 import { sm2, newCard, remainingNewCardsToday, baseCode } from '@langplayer/utils';
+import { getCachedEntries, setCachedEntries, bulkLookupWords } from '@/lib/dictionary-cache';
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
@@ -62,9 +62,11 @@ export default function ReviewScreen() {
   const { store, loaded: srsLoaded, updateCard, removeCard } = useSrs();
   const { review, display } = useSettingsContext();
   const dailyNewLimit = review.dailyNewLimit;
-  const dict = useDictionary();
+  const insets = useSafeAreaInsets();
 
   const RATING_LABELS = useRatingLabels();
+  /** Dictionary cache version — incremented when new entries are cached via bulkLookupWords. */
+  const [cacheVersion, setCacheVersion] = useState(0);
 
   const l2Code = l2Lang.code;
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
@@ -140,14 +142,30 @@ export default function ReviewScreen() {
     if (dueCards.length === 0 || fetchingEntries || initializing) return;
 
     const windowEnd = Math.min(currentIndex + ENTRY_LOOKAHEAD, dueCards.length - 1);
-    const uncachedInWindow: string[] = [];
+    const uncachedInWindow: { id: string; text: string }[] = [];
     for (let i = currentIndex; i <= windowEnd; i++) {
-      const id = dueCards[i]?.id;
+      const word = dueCards[i];
+      if (!word) continue;
+      const id = word.id;
       if (id && !(id in entriesCache)) {
-        uncachedInWindow.push(id);
+        // Check the shared dictionary-cache first (populated by TokenizedText)
+        const searchText = word.forms?.[0] || word.head || word.id;
+        const cached = getCachedEntries(l2Code, searchText);
+        if (cached && cached.length > 0) {
+          const match =
+            cached.find((e) => e.id === id) ||
+            cached.find((e) => e.head === word.forms?.[0]) ||
+            cached[0];
+          if (match) {
+            entriesCache[id] = match;
+            continue;
+          }
+        }
+        uncachedInWindow.push({ id, text: searchText });
       }
     }
 
+    // If cache hits resolved all cards in the window, nothing more to fetch
     if (uncachedInWindow.length === 0) return;
 
     const generation = ++fetchGenerationRef.current;
@@ -158,13 +176,25 @@ export default function ReviewScreen() {
       const newEntries: Record<string, DictionaryEntry | null> = {};
 
       const results = await Promise.all(
-        uncachedInWindow.map(async (id) => {
+        uncachedInWindow.map(async ({ id, text }) => {
           try {
-            const decomposed = decomposeWordId(id, l2Code);
-            if (!decomposed) return { id, entry: null };
-            const { dict: dictId, id: scopedId } = decomposed;
-            const res = await dict.getEntry(l2Code, dictId, scopedId, l1Lang.code);
-            return { id, entry: (res as any)?.entry ?? null };
+            const res = await fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text,
+                l2: l2Code,
+                l1: baseCode(l1Lang.code),
+              }),
+            });
+            if (!res.ok) return { id, entry: null };
+            const data = await res.json();
+            const entries: DictionaryEntry[] = data.results ?? [];
+            const match =
+              entries.find((e) => e.id === id) ||
+              entries.find((e) => e.head === text) ||
+              entries[0];
+            return { id, entry: match || null };
           } catch {
             return { id, entry: null };
           }
@@ -182,7 +212,27 @@ export default function ReviewScreen() {
 
     fetchEntries();
     return () => { cancelled = true; };
-  }, [dueCards, currentIndex, fetchingEntries, initializing]);
+  }, [dueCards, currentIndex, fetchingEntries, initializing, cacheVersion]);
+
+  // ── Pre-warm the shared cache via bulkLookupWords for upcoming cards ──
+  useEffect(() => {
+    if (dueCards.length === 0) return;
+
+    const windowEnd = Math.min(currentIndex + ENTRY_LOOKAHEAD + 3, dueCards.length - 1);
+    const texts: { text: string; l2Code: string; l1Code: string }[] = [];
+    for (let i = currentIndex; i <= windowEnd; i++) {
+      const word = dueCards[i];
+      if (!word) continue;
+      const searchText = word.forms?.[0] || word.head || word.id;
+      if (!getCachedEntries(l2Code, searchText)) {
+        texts.push({ text: searchText, l2Code, l1Code: baseCode(l1Lang.code) });
+      }
+    }
+
+    if (texts.length > 0) {
+      bulkLookupWords(texts).then(() => setCacheVersion(v => v + 1));
+    }
+  }, [dueCards, currentIndex, l2Code, l1Lang.code]);
 
   // ── Handlers ──
 
@@ -447,12 +497,11 @@ export default function ReviewScreen() {
         </View>
       </View>
 
-      {/* Flashcard */}
-      <View className="px-4">
-        <Pressable
-          className="rounded-xl border border-border bg-card p-4"
-        >
-          {/* Context sentence — always visible, tokenized/interactive */}
+      {/* Flashcard — flex so it shares space with rating buttons */}
+      <View className="flex-1 px-4 mb-2">
+        <View className="flex-1 rounded-xl border border-border bg-card p-4">
+          <ScrollView>
+            {/* Context sentence — always visible, tokenized/interactive */}
           {(wordCtx as any)?.text ? (
             <View className="mb-4 rounded-lg bg-muted/50 p-3">
               <Text className="mb-1 text-xs font-medium text-muted-foreground">{t('review.context_label')}</Text>
@@ -482,7 +531,34 @@ export default function ReviewScreen() {
             )}
           </Text>
 
-        </Pressable>
+          {/* Entry IDs */}
+          <View className="mb-2 rounded-lg bg-muted/30 p-2">
+            <Text className="text-[10px] font-mono text-muted-foreground">
+              {'Saved word ID: ' + currentCard.word.id}
+{'\n'}
+              {'Cached entry IDs: [' + (getCachedEntries(l2Code, wordForm) ?? []).map(e => e.id).join(', ') + ']'}
+{'\n'}
+              {'Contains saved: ' + ((getCachedEntries(l2Code, wordForm) ?? []).some(e => e.id === currentCard.word.id) ? 'Matched entry IDs [' + (getCachedEntries(l2Code, wordForm) ?? []).filter(e => e.id === currentCard.word.id).map(e => e.id).join(', ') + ']' : 'NO')}
+            </Text>
+          </View>
+
+          {/* Matched entry JSON */}
+          {(getCachedEntries(l2Code, wordForm) ?? []).filter(e => e.id === currentCard.word.id).length > 0 && (
+            <View className="mb-2 rounded-lg bg-muted/30 p-2">
+              <Text className="text-[10px] font-mono text-muted-foreground">
+                {JSON.stringify((getCachedEntries(l2Code, wordForm) ?? []).find(e => e.id === currentCard.word.id), null, 2)}
+              </Text>
+            </View>
+          )}
+
+          {/* Cached entries as raw JSON */}
+          <View className="mt-2 rounded-lg bg-muted/30 p-2">
+            <Text className="text-[10px] font-mono text-muted-foreground">
+              {JSON.stringify(getCachedEntries(l2Code, wordForm) ?? [], null, 2)}
+            </Text>
+          </View>
+          </ScrollView>
+        </View>
 
         {/* Undo button */}
         {!rated && undoRef.current && (
@@ -498,9 +574,9 @@ export default function ReviewScreen() {
         )}
       </View>
 
-      {/* Rating buttons */}
+      {/* Rating buttons — pinned to bottom with safe area */}
       {!rated && (
-        <View className="flex-row gap-2 px-4 pb-4">
+        <View className="flex-row gap-2 px-4" style={{ paddingBottom: insets.bottom + 8 }}>
           {RATING_LABELS.map((r) => (
             <Pressable
               key={r.key}
