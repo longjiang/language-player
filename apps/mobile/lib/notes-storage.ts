@@ -15,6 +15,39 @@ import type { Note, NoteListItem } from '@langplayer/shared';
 const LIST_PREFIX = 'notes_list_';
 const NOTE_PREFIX = 'note_';
 
+/** Persisted active note ID (scoped to l2Code). */
+const ACTIVE_NOTE_KEY = 'notes_active_note';
+
+// ── Active note persistence ──────────────────────────────
+
+export interface SavedActiveNote {
+  noteId: number;
+  l2Code: string;
+}
+
+export async function saveActiveNote(noteId: number | null, l2Code: string): Promise<void> {
+  try {
+    if (noteId == null) {
+      await AsyncStorage.removeItem(ACTIVE_NOTE_KEY);
+    } else {
+      await AsyncStorage.setItem(ACTIVE_NOTE_KEY, JSON.stringify({ noteId, l2Code }));
+    }
+  } catch {
+    // non-critical
+  }
+}
+
+export async function getSavedActiveNote(l2Code: string): Promise<number | null> {
+  try {
+    const raw = await AsyncStorage.getItem(ACTIVE_NOTE_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw) as SavedActiveNote;
+    return saved.l2Code === l2Code ? saved.noteId : null;
+  } catch {
+    return null;
+  }
+}
+
 // ── List cache ────────────────────────────────────────────
 
 export async function cacheNotesList(l2Code: string, notes: NoteListItem[]): Promise<void> {

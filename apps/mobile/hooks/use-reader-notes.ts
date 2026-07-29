@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiClient } from '@langplayer/api-client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { NoteListItem, Note } from '@langplayer/shared';
@@ -9,6 +10,8 @@ import {
   cacheNote,
   removeCachedNote,
   patchCachedNotesList,
+  saveActiveNote,
+  getSavedActiveNote,
 } from '@/lib/notes-storage';
 import {
   checkOnline,
@@ -166,7 +169,10 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
       }
       // If we had cached data, keep showing it
     }
-  }, []);
+
+    // Persist selection
+    await saveActiveNote(noteId, l2Code);
+  }, [l2Code]);
 
   // ── Create note ───────────────────────────────────────
 
@@ -198,6 +204,7 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
           setCurrentNote(created);
           setCurrentNoteId(created.id);
         }
+        await saveActiveNote(created.id, l2Code);
         return created.id;
       } catch {
         // Fall through to offline path
@@ -240,6 +247,7 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
       setCurrentNote(localNote);
       setCurrentNoteId(tempId);
     }
+    await saveActiveNote(tempId, l2Code);
     await refreshPendingCount();
     return tempId;
   }, [l2Code, refreshPendingCount]);
@@ -303,6 +311,7 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
     if (currentNoteId === noteId) {
       setCurrentNote(null);
       setCurrentNoteId(null);
+      await saveActiveNote(null, l2Code);
     }
     await removeCachedNote(noteId);
     await patchCachedNotesList(l2Code, 'delete', { id: noteId, title: '' });
@@ -390,6 +399,22 @@ export function useReaderNotes(l2Code: string): UseReaderNotesReturn {
   useEffect(() => {
     if (user) loadNotes();
   }, [user, l2Code, loadNotes]);
+
+  // ── Restore saved active note on mount ────────────────
+
+  const restoredRef = useRef(false);
+
+  useEffect(() => {
+    if (!user || notes.length === 0 || restoredRef.current) return;
+    restoredRef.current = true;
+
+    (async () => {
+      const savedId = await getSavedActiveNote(l2Code);
+      if (savedId != null && notes.some(n => n.id === savedId)) {
+        await selectNote(savedId);
+      }
+    })();
+  }, [user, notes, l2Code, selectNote]);
 
   return {
     notes, notesLoading, notesError,
