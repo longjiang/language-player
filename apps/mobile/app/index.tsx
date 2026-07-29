@@ -24,9 +24,9 @@ export default function Index() {
       // Not authenticated → show login
       router.replace('/login');
     } else {
-      // Authenticated → navigate to a specific video for debugging
+      // Authenticated → tokenizer test page (debug)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      router.replace('/(tabs)/(media)/watch/4QesgADu8gM' as any);
+      router.replace('/(tabs)/(me)/tokenizer-test' as any);
     }
   }, [user, authLoading]);
 

@@ -229,6 +229,7 @@ function surfaceAsLemma(tokens: string[]): LemmatizedToken[] {
   return tokens.map((t) => ({
     text: t,
     lemmas: [{ lemma: t }],
+    source: 'surface',
   }));
 }
 
@@ -247,9 +248,10 @@ function lemmatizeArabic(words: string[]): LemmatizedToken[] {
         text: t,
         lemmas: [{ lemma: stem || t }],
         pronunciation: result.normalized !== t ? result.normalized : undefined,
+        source: 'arabic-stem',
       };
     } catch {
-      return { text: t, lemmas: [{ lemma: t }] };
+      return { text: t, lemmas: [{ lemma: t }], source: 'arabic-stem' };
     }
   });
 }
@@ -354,6 +356,7 @@ async function lemmatizeLocal(
       return {
         text: word,
         lemmas: lemmaMap.get(word)!.map((l) => ({ lemma: l })),
+        source: 'lemma-table' as const,
       };
     }
 
@@ -363,7 +366,7 @@ async function lemmatizeLocal(
         const stem = stemmer(word);
         if (stem && stem !== word) {
           snowballHits++;
-          return { text: word, lemmas: [{ lemma: stem }] };
+          return { text: word, lemmas: [{ lemma: stem }], source: 'snowball' as const };
         }
       } catch {
         // Stemmer error — fall through
@@ -376,7 +379,7 @@ async function lemmatizeLocal(
     }
 
     // 4. Surface as lemma
-    return { text: word, lemmas: [{ lemma: word }] };
+    return { text: word, lemmas: [{ lemma: word }], source: 'surface' as const };
   });
 
   if (__DEV__) {
@@ -455,7 +458,7 @@ async function lemmatizeFromServer(
     const wordTokens = tokens.filter(t => t.lemmas.length > 0);
     const lemmaSample = wordTokens.slice(0, 10).map(t => `${t.text}→${t.lemmas[0]?.lemma}`).join(', ');
     if (__DEV__) console.log(`[lemmatize] ✅ RES l2=${l2} total=${tokens.length} words=${wordTokens.length} lemmas="${lemmaSample}"`);
-    return tokens;
+    return tokens.map((t) => ({ ...t, source: 'server' as const }));
   } catch (e: any) {
     if (__DEV__) {
       if (e?.name === 'AbortError') {
@@ -621,6 +624,7 @@ async function tokenizeJapanese(text: string): Promise<LemmatizedToken[] | null>
       // Include reading if available (kuromoji provides this for most
       // tokens, useful for furigana rendering in the UI)
       ...(t.reading ? { pronunciation: t.reading } : {}),
+      source: 'ja-kuromoji' as const,
     }));
   } catch (e) {
     if (__DEV__) console.warn('[Tokenizer] kuromoji tokenize error:', e);
@@ -695,6 +699,7 @@ async function tokenizeKorean(text: string): Promise<LemmatizedToken[] | null> {
         lemmas: [{ lemma }],
         // Include reading if available
         ...(t.reading && t.reading !== '*' ? { pronunciation: t.reading } : {}),
+        source: 'ko-kuromoji' as const,
       };
     });
   } catch (e) {
@@ -779,8 +784,12 @@ export async function lemmatizeText(
               return segmentText(text, l2, config).then((words) =>
                 lemmatizeLocal(words, l2, config),
               ).then((tokens) => {
-                cacheSet(cacheKey, tokens);
-                return tokens;
+                // If dict segmentation was used, override source for all word tokens
+                const annotated = config?.needsDictSegmentation
+                  ? tokens.map(t => t.lemmas.length > 0 ? { ...t, source: 'dict-seg' as const } : t)
+                  : tokens;
+                cacheSet(cacheKey, annotated);
+                return annotated;
               });
             });
           }
@@ -792,8 +801,12 @@ export async function lemmatizeText(
         return segmentText(text, l2, config).then((words) =>
           lemmatizeLocal(words, l2, config),
         ).then((tokens) => {
-          cacheSet(cacheKey, tokens);
-          return tokens;
+          // If dict segmentation was used, override source for all word tokens
+          const annotated = config?.needsDictSegmentation
+            ? tokens.map(t => t.lemmas.length > 0 ? { ...t, source: 'dict-seg' as const } : t)
+            : tokens;
+          cacheSet(cacheKey, annotated);
+          return annotated;
         });
       })
       .finally(() => {

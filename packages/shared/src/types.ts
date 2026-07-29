@@ -151,7 +151,36 @@ export interface LemmatizedToken {
    *     others don't, confusing learners.
    */
   pronunciation?: string;
+  /**
+   * Debugging aid: identifies which lemmatization pipeline stage
+   * produced this token. Maps to the lemmatizeText() fallback chain
+   * (SPEC-018). Only non-null when processed by the mobile tokenizer
+   * (apps/mobile/lib/tokenizer.ts).
+   *
+   * Values:
+   *   'server'        — POST /lemmatize-normalized (best accuracy)
+   *   'ja-kuromoji'   — kuromoji + IPADIC (Japanese)
+   *   'ko-kuromoji'   — kuromoji-ko + mecab-ko-dic (Korean)
+   *   'dict-seg'      — dict-based max-matching (CJK/SEA)
+   *   'lemma-table'   — downloaded lemma table SQLite
+   *   'snowball'      — snowball-stemmers pure JS stemmer
+   *   'arabic-stem'   — arabic-stem pure JS stemmer
+   *   'surface'       — regex word-split + surface-as-lemma (last resort)
+   */
+  source?: TokenSource;
 }
+
+/** Identifies which lemmatization pipeline stage produced a token.
+ *  See SPEC-018 Phase 1-3 for the full fallback chain. */
+export type TokenSource =
+  | 'server'
+  | 'ja-kuromoji'
+  | 'ko-kuromoji'
+  | 'dict-seg'
+  | 'lemma-table'
+  | 'snowball'
+  | 'arabic-stem'
+  | 'surface';
 
 export interface LemmatizeResponse {
   tokens: LemmatizedToken[];
