@@ -72,7 +72,7 @@ export default function AboutScreen() {
           {/* Dev tools link */}
           {__DEV__ && (
             <Pressable
-              onPress={() => router.push('/(tabs)/(me)/tokenizer' as any)}
+              onPress={() => router.push('/(tabs)/(me)/tokenizer-test' as any)}
               className="mt-3 rounded-xl border border-border bg-card px-5 py-3.5 active:bg-muted"
             >
               <View className="flex-row items-center gap-2.5">

@@ -4,7 +4,7 @@ import type { TokenCache } from '@langplayer/shared';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { buildRuby, baseCode } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
-import type { LemmatizedToken, TokenSource } from '@langplayer/shared';
+import type { LemmatizedToken } from '@langplayer/shared';
 import { lemmatizeText } from '@/lib/tokenizer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettingsContext } from '@/contexts/SettingsContext';
@@ -94,22 +94,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
   const { l1Lang } = useLanguage();
 
-  // ── Debug: colored underlines per token source ──
-  // Only active in __DEV__. Each token's `source` is set once by
-  // lemmatizeText() in tokenizer.ts and never changes.
-  //   green  (#22c55e) = server / kuromoji / kuromoji-ko (online lookup)
-  //   yellow (#eab308) = dict-seg / lemma-table / snowball / arabic-stem
-  //   red    (#ef4444) = surface (regex, last resort)
-  const TOKEN_SOURCE_COLORS: Record<TokenSource, string> = __DEV__ ? {
-    server:       '#22c55e', // green  — server lookup
-    'ja-kuromoji':'#22c55e', // green  — kuromoji (+ lemmatizer)
-    'ko-kuromoji':'#22c55e', // green  — kuromoji-ko (+ lemmatizer)
-    'dict-seg':   '#eab308', // yellow — dict-based segmentation
-    'lemma-table':'#eab308', // yellow — lemma table SQLite
-    'snowball':   '#eab308', // yellow — snowball stemmer
-    'arabic-stem':'#eab308', // yellow — arabic stemmer
-    surface:      '#ef4444', // red    — regex split, no lemmatization
-  } : ({} as any);
+
 
   // ── Settings (matches Next.js) ──
   const { getL2, tokenizedText: tokenSettings } = useSettingsContext();
@@ -417,15 +402,10 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 }
               };
 
-              // Debug: colored underline per-token source (set once, never changes)
-              const debugUnderline = __DEV__ && token.source && TOKEN_SOURCE_COLORS[token.source]
-                ? { borderBottomWidth: 2, borderBottomColor: TOKEN_SOURCE_COLORS[token.source] }
-                : undefined;
-
               return (
                 <React.Fragment key={i}>
                   {rubySegs.map((seg, j) => (
-                    <View key={j} className="items-center mx-px" style={[isKaraokeDimmed ? { opacity: 0.4 } : undefined, debugUnderline]}>
+                    <View key={j} className="items-center mx-px" style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}>
                       {seg.reading && (
                         <Text style={{ fontSize: readingSize, lineHeight: readingSize + 2 }} className="text-muted-foreground">{seg.reading}</Text>
                       )}
@@ -491,18 +471,13 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                 }
               };
 
-              // Debug: colored underline per-token source (set once, never changes)
-              const debugUnderline = __DEV__ && token.source && TOKEN_SOURCE_COLORS[token.source]
-                ? { textDecorationLine: 'underline' as const, textDecorationColor: TOKEN_SOURCE_COLORS[token.source] }
-                : undefined;
-
               return (
                 <Text
                   key={i}
                   testID={`token-${i}`}
                   onPress={handlePress}
                   className={isHighlighted ? 'font-bold text-primary' : ''}
-                  style={[isKaraokeDimmed ? { opacity: 0.4 } : undefined, debugUnderline]}
+                  style={isKaraokeDimmed ? { opacity: 0.4 } : undefined}
                 >
                   {showByeonggi ? `${byeonggiText} ` : ''}
                   {isBlanked ? '▯' : displayText}
