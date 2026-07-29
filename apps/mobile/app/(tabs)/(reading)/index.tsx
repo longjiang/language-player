@@ -81,7 +81,9 @@ export default function ReaderScreen() {
   return (
     <PageContainer>
       <View className="px-4 py-5">
-        <Text className="text-xl font-bold text-foreground">{t('title.notes_reader')}</Text>
+        <Text className="text-xl font-bold text-foreground" numberOfLines={1}>
+          {notes.currentNote ? notes.currentNote.title : t('title.notes_reader')}
+        </Text>
       </View>
 
       {/* Tab bar + actions */}
