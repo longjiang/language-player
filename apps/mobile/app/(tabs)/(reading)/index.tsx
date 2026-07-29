@@ -79,39 +79,7 @@ export default function ReaderScreen() {
     }, 2000);
   }, [notes]);
 
-  /**
-   * Detect if text looks like plain text (no markdown markers).
-   * Checks for common markdown syntax at line starts or inline patterns.
-   */
-  const isPlainText = (text: string): boolean => {
-    if (!text.trim()) return true;
-    const mdPattern = /^(#{1,6}\s|[*\-\+] |\d+\. |> |---+|\|)|```|\[.*\]\(.*\)|!\[.*\]\(.*\)|<[a-z][\s\S]*>/m;
-    return !mdPattern.test(text);
-  };
-
-  /**
-   * Normalize single line breaks to double line breaks, but don't double-up
-   * existing double line breaks. Handles \r\n, \n\r, and \n consistently.
-   */
-  const normalizeLineBreaks = (text: string): string => {
-    // Normalize all line endings to \n
-    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-    // Replace single \n (not preceded by \n) with \n\n
-    // Regex: \n not preceded by \n → double it
-    return normalized.replace(/(?<!\n)\n(?!\n)/g, '\n\n');
-  };
-
   const handleTextChange = (newText: string) => {
-    // Detect paste by checking if text grew significantly (typical paste > 20 chars)
-    // Normalize line breaks only for plain text
-    if (isPlainText(newText) && newText.length > text.length + 20) {
-      const normalized = normalizeLineBreaks(newText);
-      if (normalized !== newText) {
-        setText(normalized);
-        autoSave(normalized);
-        return;
-      }
-    }
     setText(newText);
     autoSave(newText);
   };
