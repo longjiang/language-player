@@ -45,7 +45,7 @@
 | Music | `(tabs)/(media)/music.tsx` | ✅ | `[l1]/[l2]/music/page.tsx` | Basic video grid. |
 | Live TV | `(tabs)/(media)/live-tv.tsx` | ✅ | `[l1]/[l2]/live-tv/page.tsx` | Channel list + player + filters. **Missing**: URL-based channel restore (`tvgID` param). Web also lacks favorites/EPG/"now playing" — not mobile-specific gaps |
 | Local Media | `(tabs)/(media)/local-media.tsx` | ✅ | `[l1]/[l2]/local-media/page.tsx` | Upload + player works. Audio-only mode renders 🎵 card (no VideoView). Subtitle sync offset missing in both web and mobile |
-| Video Player | `(tabs)/(media)/watch/[videoId].tsx` | ✅ | `[l1]/[l2]/watch/[videoId]/page.tsx` | Full split-personality layout: transcript mode (tabs: transcript/queue/info) + subtitles mode (overlay band). VideoMeta, YouTubeChannelCard, VideoQueueList, SubtitlesModeBand, watch history, position save/restore, video token cache. Playback features wired: `smoothScroll` (animated spring + 2s throttle), `karaokeMode` (word-by-word opacity dimming in both transcript and overlay), `autoPause` (pauses on line complete). **Known**: programmatic play (iOS) not available — users tap iframe directly |
+| Video Player | `(tabs)/(media)/watch/[videoId].tsx` | ✅ | `[l1]/[l2]/watch/[videoId]/page.tsx` | Full split-personality layout: transcript mode (tabs: video/transcript/queue/info) + subtitles mode (single-line overlay). VideoMeta, YouTubeChannelCard, VideoQueueList, SimpleSubsForDebug, watch history, position save/restore, video token cache. Playback features wired: `smoothScroll` (Animated.timing 3s ease-out in transcript, instant in single-line), `karaokeMode` (word-by-word opacity dimming in both modes), `autoPause` (pauses on line complete). **Known**: programmatic play (iOS) not available — users tap iframe directly |
 | Channel Detail | `(tabs)/(media)/channel/[channelId].tsx` | ✅ | `[l1]/[l2]/channel/[channelId]/page.tsx` | Channel header, video grid, pagination. At parity with web — channel description/subscribe/stats also missing from web channel page (subscribe lives on watch page via `YouTubeChannelCard` + `ChannelActionsMenu`) |
 
 ### Video Components
@@ -60,7 +60,7 @@
 | Level Filter | `components/video/LevelFilter.tsx` | ✅ | CEFR/HSK/JLPT pill filter |
 | Live TV Player | `components/video/LiveTVPlayer.tsx` | ✅ | expo-video based, mute toggle, buffering, channel switching |
 | Subs Search Results | `components/video/SubsSearchResults.tsx` | ✅ | Word-in-context results with in-line player |
-| Subtitles Mode Band | `components/video/SubtitlesModeBand.tsx` | ✅ | Overlay/non-overlay band with line nav, TokenizedText, overlay on wide screens |
+| Subtitle Display | `components/video/SimpleSubsForDebug.tsx` | ✅ | Dual-mode: `singleLine` (centered active line + prev/next nav + video queue controls) and full transcript FlatList with Animated.timing auto-scroll. TokenizedText, batch lemmatization, karaoke, translations |
 | Transcript Queue Panel | `components/video/TranscriptQueuePanel.tsx` | ✅ | Transcript / queue / info tab wrapper |
 | Video Queue List | `components/video/VideoQueueList.tsx` | ✅ | Queue list with TV show episode headers |
 | YouTube Channel Card | `components/video/YouTubeChannelCard.tsx` | ✅ | Channel thumbnail, title, external link, channel page link, channel actions menu |
