@@ -13,7 +13,6 @@ import { useActiveLineIndex } from '@/hooks/use-active-line-index';
 import { YouTubePlayer, type YouTubePlayerHandle } from '@/components/video/YouTubePlayer';
 import { VideoControlBar } from '@/components/video/VideoControlBar';
 import { SubtitleDisplay } from '@/components/video/SubtitleDisplay';
-import { SubtitlesModeBand } from '@/components/video/SubtitlesModeBand';
 import { TranscriptQueuePanel } from '@/components/video/TranscriptQueuePanel';
 import { SimpleSubsForDebug } from '@/components/video/SimpleSubsForDebug';
 import { VideoQueueList } from '@/components/video/VideoQueueList';
@@ -308,20 +307,22 @@ export default function WatchScreen() {
       <View testID="watch-screen" className="flex-1 bg-black">
         <View className="relative flex-1">
           {playerElement}
-          <SubtitlesModeBand
-            overlay
-            subtitleLines={subtitleLines}
-            currentTime={currentTime}
-            onSeekToLine={handleSeekToLine}
-            onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
-            hasPrevVideo={hasPrevious}
-            hasNextVideo={hasNext}
-            onPrevVideo={playPrevious}
-            onNextVideo={playNext}
-            tokenCache={tokenCache}
-            tokenCacheLoaded={tokenCacheLoaded}
-            videoTitle={v.title}
-          />
+          <View className="absolute bottom-0 left-0 right-0 z-10 rounded-t-xl bg-black/70">
+            <SimpleSubsForDebug
+              singleLine
+              lines={subtitleLines}
+              activeLineIndex={activeLineIndex}
+              currentTime={currentTime}
+              tokenCache={tokenCache}
+              tokenCacheLoaded={tokenCacheLoaded}
+              onSeekToLine={handleSeekToLine}
+              onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
+              hasPrevVideo={hasPrevious}
+              hasNextVideo={hasNext}
+              onPrevVideo={playPrevious}
+              onNextVideo={playNext}
+            />
+          </View>
         </View>
       </View>
     );
@@ -332,19 +333,19 @@ export default function WatchScreen() {
     return (
       <View testID="watch-screen" className="flex-1 bg-background">
         <View>{playerElement}</View>
-        <SubtitlesModeBand
-          overlay={false}
-          subtitleLines={subtitleLines}
+        <SimpleSubsForDebug
+          singleLine
+          lines={subtitleLines}
+          activeLineIndex={activeLineIndex}
           currentTime={currentTime}
+          tokenCache={tokenCache}
+          tokenCacheLoaded={tokenCacheLoaded}
           onSeekToLine={handleSeekToLine}
           onSwitchToTranscriptMode={handleSwitchToTranscriptMode}
           hasPrevVideo={hasPrevious}
           hasNextVideo={hasNext}
           onPrevVideo={playPrevious}
           onNextVideo={playNext}
-          tokenCache={tokenCache}
-          tokenCacheLoaded={tokenCacheLoaded}
-          videoTitle={v.title}
         />
       </View>
     );
