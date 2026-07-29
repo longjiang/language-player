@@ -10,7 +10,7 @@ import { sm2, newCard, remainingNewCardsToday, baseCode, useEntryCache } from '@
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
-import { CheckCircle2, BookOpen, Undo2, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { CheckCircle2, BookOpen, Undo2 } from 'lucide-react-native';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { TokenizedText } from '@/components/TokenizedText';
@@ -415,7 +415,7 @@ export default function ReviewScreen() {
               <View className="mt-1">
                 <SavedWordSource context={wordCtx as any} date={currentCard.word.date ?? 0} />
               </View>
-              {display.translation && ((wordCtx as any).translation || contextTranslation) && (
+              {showTabs && display.translation && ((wordCtx as any).translation || contextTranslation) && (
                 <Text className="mt-2 text-sm italic text-muted-foreground border-t border-border pt-2">
                   {(wordCtx as any).translation || contextTranslation}
                 </Text>
@@ -431,20 +431,17 @@ export default function ReviewScreen() {
             )}
           </Text>
 
-          {/* Toggle button for definition tabs (matches web "Show Definition") */}
-          <Pressable
-            onPress={() => setShowTabs((p) => !p)}
-            className="mb-2 flex-row items-center justify-center gap-1 rounded-lg border border-border py-1.5 active:bg-muted"
-          >
-            {showTabs ? (
-              <ChevronUp size={14} color={ICON_MUTED} />
-            ) : (
-              <ChevronDown size={14} color={ICON_MUTED} />
-            )}
-            <Text className="text-xs text-muted-foreground">
-              {t('review.show_definition')}
-            </Text>
-          </Pressable>
+          {/* Toggle button for definition + translation — hidden once shown */}
+          {!showTabs && (
+            <Pressable
+              onPress={() => setShowTabs(true)}
+              className="mb-2 rounded-lg border border-border py-1.5 active:bg-muted"
+            >
+              <Text className="text-center text-xs text-muted-foreground">
+                {t('review.show_definition')}
+              </Text>
+            </Pressable>
+          )}
 
           {/* Matched entry card — full with tabs (no double border inside card) */}
           {entry && showTabs && (
