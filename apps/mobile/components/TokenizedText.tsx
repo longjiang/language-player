@@ -400,6 +400,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   configureLayoutAnimation();
                   setSelectedWord(word);
                   setSelectedLemma(firstLemma || null);
+                  setSelectedTokenPron(token.pronunciation ?? null);
                 }
               };
 
@@ -469,6 +470,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
                   configureLayoutAnimation();
                   setSelectedWord(word);
                   setSelectedLemma(firstLemma || null);
+                  setSelectedTokenPron(token.pronunciation ?? null);
                 }
               };
 
