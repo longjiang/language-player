@@ -60,7 +60,7 @@ export function AiExplanation({ word, contextText, entryFound, autoLoad = false 
   // Not yet toggled — show the button (skip when autoLoad)
   if (!showAi && !autoLoad) {
     return (
-      <View className="mt-4 pb-1">
+      <View className="mt-4 pb-2">
         <Pressable
           onPress={() => setShowAi(true)}
           className="flex-row items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 active:bg-muted"
@@ -100,7 +100,7 @@ export function AiExplanation({ word, contextText, entryFound, autoLoad = false 
   // Streaming or complete
   if (explanation || loading || error) {
     return (
-      <View className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
+      <View className="mt-4 mb-2 rounded-lg border border-border bg-muted/30 p-4">
         <View className="mb-2 flex-row items-center gap-2">
           <Sparkles size={12} color={ICON_MUTED} />
           <Text className="text-xs text-muted-foreground">{t('label.ai_says')}</Text>
