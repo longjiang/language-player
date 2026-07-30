@@ -197,7 +197,6 @@ export default function EpubPage() {
               translating={false}
               blocks={blocks}
               ctx={ctx}
-              showTabs={false}
               onTextChange={() => {}}
               onTabChange={() => {}}
               onTokenize={() => {}}

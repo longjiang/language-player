@@ -11,7 +11,6 @@ import { TextActionMenu } from '@/components/text-action-menu';
 import { Button } from '@/components/ui/button';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { getSampleText } from '@/lib/sample-texts';
-import { TabbedPanel } from '@/components/tabbed-panel';
 import {
   BookOpen, Loader2, FileText, Sparkles,
   ChevronLeft, ChevronRight,
@@ -84,8 +83,6 @@ export interface ReaderPanelProps {
   onAnchorChange?: (anchor: string) => void;
   /** If set, seek to the page containing this anchor text after blocks load. */
   initialAnchor?: string | null;
-  /** Show edit/read tabs. True for Notes Reader, false for EPUB/Web reader. */
-  showTabs?: boolean;
 }
 
 export function ReaderPanel({
@@ -101,7 +98,6 @@ export function ReaderPanel({
   onLemmatize,
   onAnchorChange,
   initialAnchor,
-  showTabs = true,
 }: ReaderPanelProps) {
   const t = useT();
   const { display, updateDisplay } = useSettingsContext();
@@ -305,11 +301,6 @@ export function ReaderPanel({
     return () => window.removeEventListener('keydown', onKey);
   }, [activeTab, prevPage, nextPage]);
 
-  const readerTabs = [
-    { key: 'edit', label: t('action.edit'), icon: <FileText className="h-4 w-4" /> },
-    { key: 'read', label: t('action.read'), icon: <BookOpen className="h-4 w-4" /> },
-  ] as const;
-
   const innerContent = (
     <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col">
           {/* Edit mode */}
@@ -478,11 +469,9 @@ export function ReaderPanel({
               <p className="mt-1 max-w-md text-sm text-muted-foreground">
                 {t('msg.reader_empty_state', { l2: l2.name })}
               </p>
-              {showTabs && (
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => onTabChange('edit')}>
-                  <FileText className="mr-1 h-4 w-4" />{t('action.start_writing')}
-                </Button>
-              )}
+              <Button variant="outline" size="sm" className="mt-4" onClick={() => onTabChange('edit')}>
+                <FileText className="mr-1 h-4 w-4" />{t('action.start_writing')}
+              </Button>
             </div>
           )}
         </div>
@@ -490,22 +479,37 @@ export function ReaderPanel({
 
   return (
     <div className="min-w-0 flex-1 flex flex-col min-h-0">
-      {showTabs ? (
-        <TabbedPanel
-          tabs={readerTabs}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          onTabClick={(key) => key === 'read' ? onTokenize() : onTabChange(key)}
-          className="flex-1 min-h-0"
-          contentClassName="p-4"
+      {/* Mode toggle buttons */}
+      <div className="flex gap-1 border-b border-border p-1">
+        <button
+          onClick={() => activeTab === 'read' ? onTabChange('edit') : undefined}
+          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            activeTab === 'edit'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
         >
-          {innerContent}
-        </TabbedPanel>
-      ) : (
-        <div className="flex-1 min-h-0 p-4 flex flex-col">
-          {innerContent}
-        </div>
-      )}
+          <FileText className="h-4 w-4" />
+          {t('action.edit')}
+        </button>
+        <button
+          onClick={() => {
+            if (activeTab === 'read') return;
+            onTokenize();
+          }}
+          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            activeTab === 'read'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <BookOpen className="h-4 w-4" />
+          {t('action.read')}
+        </button>
+      </div>
+      <div className="flex-1 min-h-0 flex flex-col">
+        {innerContent}
+      </div>
     </div>
   );
 }
