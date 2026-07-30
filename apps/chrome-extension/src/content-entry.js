@@ -1342,6 +1342,10 @@ async function init() {
   await loadSavedLanguagePreferences();
   // Load UI locale to match saved L1, then populate selectors with endonyms
   await setLocale(L1_CODE);
+  // Refresh UI with the correct locale (initial mountTranscript happened
+  // before preferences loaded, so L1_CODE was still 'en')
+  refreshUILabels();
+  renderTranscript();
   populateL1Selector();
   populateL2Selector();
   setupKeyboard();
