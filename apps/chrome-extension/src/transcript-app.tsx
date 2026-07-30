@@ -6,15 +6,16 @@
  * clickable words, furigana/pinyin ruby text, and lemma tooltips.
  */
 
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { LemmatizedToken } from '@langplayer/shared';
-import { buildRuby, baseCode } from '@langplayer/utils';
+import { buildRuby } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { DictionaryCard } from './components/DictionaryCard';
 import { Markdown } from './components/Markdown';
 import { SavedWordsProvider, useSavedWords } from './components/SavedWordsProvider';
 import { useTranslateLines } from './use-translate-lines';
+import { useBatchLemmatize } from './use-batch-lemmatize';
 import { useSubscription } from './use-subscription';
 import type { SubCue } from './use-translate-lines';
 import { t } from './i18n';
@@ -39,13 +40,7 @@ interface TranscriptAppProps {
 // Re-export SubCue type for content-entry.js
 export type { SubCue };
 
-// ── In-memory token cache ──────────────────────────────────────────────────
-
-const tokenCache = new Map<string, LemmatizedToken[]>();
-
-/** Production Python API URL — used when running on primevideo.com.
- *  Localhost won't work from an injected content script on a third-party domain. */
-const API_BASE = 'https://pythonvps.zerotohero.ca';
+// ── Note: token cache lives in use-batch-lemmatize.ts ──────────────────────
 
 // ── Tokenized Line Component ───────────────────────────────────────────────
 
@@ -59,25 +54,22 @@ interface TokenizedLineProps {
 
 const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
   ({ text, l2Code, isActive, onClickLine, onTokenClick }) => {
-    const [tokens, setTokens] = useState<LemmatizedToken[] | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);
-    const [hasBeenVisible, setHasBeenVisible] = useState(false);
-    const aborterRef = useRef<AbortController | null>(null);
+    const [visible, setVisible] = useState(false);
     const containerRef = useRef<HTMLSpanElement>(null);
+    const { getTokens } = useBatchLemmatize();
 
-    const base = baseCode(l2Code);
+    const tokens = visible ? getTokens(text, l2Code) : null;
 
-    // ── Lazy tokenization: only fetch when visible (IntersectionObserver) ──
+    // ── Lazy visibility: show raw text until scrolled near viewport ──
     useEffect(() => {
-      if (hasBeenVisible) return;
+      if (visible) return;
       const el = containerRef.current;
       if (!el) return;
 
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry?.isIntersecting) {
-            setHasBeenVisible(true);
+            setVisible(true);
             observer.disconnect();
           }
         },
@@ -86,56 +78,7 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
 
       observer.observe(el);
       return () => observer.disconnect();
-    }, [hasBeenVisible]);
-
-    // ── Fetch tokens (only when visible) ──
-    useEffect(() => {
-      if (!hasBeenVisible) return;
-
-      let cancelled = false;
-
-      const cacheKey = `${base}:${text}`;
-      const cached = tokenCache.get(cacheKey);
-      if (cached) {
-        setTokens(cached);
-        return;
-      }
-
-      setLoading(true);
-
-      const controller = new AbortController();
-      aborterRef.current = controller;
-
-      fetch(`${API_BASE}/lemmatize-normalized`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, l2: base }),
-        signal: controller.signal,
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.json();
-        })
-        .then((data) => {
-          if (!cancelled) {
-            tokenCache.set(cacheKey, data.tokens);
-            setTokens(data.tokens);
-            setLoading(false);
-          }
-        })
-        .catch((err) => {
-          if (err.name !== 'AbortError' && !cancelled) {
-            console.warn('[LPV] Tokenization failed for:', text, err);
-            setError(true);
-            setLoading(false);
-          }
-        });
-
-      return () => {
-        cancelled = true;
-        controller.abort();
-      };
-    }, [text, base, hasBeenVisible]);
+    }, [visible]);
 
     // ── Render: three visual states ──
     return (
@@ -144,7 +87,7 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
         className={`lpv-cue-text ${isActive ? 'lpv-active-text' : ''}`}
         onClick={(e) => { e.stopPropagation(); onClickLine(); }}
       >
-        {tokens && !error ? (
+        {tokens ? (
           tokens.map((token, i) => (
             <TokenSpan
               key={i}
@@ -155,10 +98,8 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
               onTokenClick={onTokenClick}
             />
           ))
-        ) : loading ? (
-          <span className="lpv-cue-loading">{text}</span>
         ) : (
-          text
+          <span className="lpv-cue-loading">{text}</span>
         )}
       </span>
     );
