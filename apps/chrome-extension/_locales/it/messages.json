@@ -48,7 +48,7 @@
     "message": "Lingua dell'interfaccia"
   },
   "popularLanguages": {
-    "message": "Popolari"
+    "message": "Popolare"
   },
   "allLanguages": {
     "message": "Tutti"
@@ -127,7 +127,7 @@
     "message": "Esci"
   },
   "popupChecking": {
-    "message": "Verifica…"
+    "message": "Checking…"
   },
   "popupShowTranscript": {
     "message": "Mostra trascrizione"

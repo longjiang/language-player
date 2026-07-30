@@ -48,7 +48,7 @@
     "message": "Γλώσσα διεπαφής"
   },
   "popularLanguages": {
-    "message": "Δημοφιλείς"
+    "message": "Δημοφιλή"
   },
   "allLanguages": {
     "message": "Όλα"
@@ -127,7 +127,7 @@
     "message": "Αποσύνδεση"
   },
   "popupChecking": {
-    "message": "Έλεγχος…"
+    "message": "Checking…"
   },
   "popupShowTranscript": {
     "message": "Εμφάνιση απομαγνητοφώνησης"

@@ -127,7 +127,7 @@
     "message": "Tancar sessió"
   },
   "popupChecking": {
-    "message": "S'està comprovant…"
+    "message": "Checking…"
   },
   "popupShowTranscript": {
     "message": "Mostra la transcripció"

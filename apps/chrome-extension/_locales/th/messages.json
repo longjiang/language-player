@@ -48,7 +48,7 @@
     "message": "ภาษาส่วนติดต่อ"
   },
   "popularLanguages": {
-    "message": "ยอดนิยม"
+    "message": "เป็นที่นิยม"
   },
   "allLanguages": {
     "message": "ทั้งหมด"
@@ -127,7 +127,7 @@
     "message": "ออกจากระบบ"
   },
   "popupChecking": {
-    "message": "กำลังตรวจสอบ…"
+    "message": "Checking…"
   },
   "popupShowTranscript": {
     "message": "แสดงบทถอดความ"
