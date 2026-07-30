@@ -153,7 +153,6 @@ export default function WebReaderPage() {
           translating={false}
           blocks={blocks}
           ctx={ctx}
-          showTabs={false}
           onTextChange={() => {}}
           onTabChange={() => {}}
           onTokenize={handleTokenize}
