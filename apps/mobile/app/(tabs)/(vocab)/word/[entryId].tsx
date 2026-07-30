@@ -8,6 +8,7 @@ import { useDictionary } from '@langplayer/api-client';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { getCachedEntryById, setCachedEntryById } from '@/lib/dictionary-cache';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { decomposeWordId } from '@langplayer/shared';
 
@@ -46,10 +47,18 @@ export default function WordDetailScreen() {
     return null;
   }, [entryId, results, sidebarSource]);
 
-  // Deep-link fallback: fetch entry from API when not found in context.
+  // Deep-link fallback: check ID cache first, then fetch from API.
   useEffect(() => {
     if (contextEntry || !entryId) return;
     const l2 = l2Lang.code;
+
+    // Check ID cache first (populated by bulkLookupWords or previous fetches)
+    const cached = getCachedEntryById(l2, entryId);
+    if (cached) {
+      setApiEntry(cached);
+      return;
+    }
+
     const decomposed = decomposeWordId(entryId, l2);
     if (!decomposed) {
       setApiError('Unrecognized entry ID format');
@@ -60,6 +69,7 @@ export default function WordDetailScreen() {
     setApiError(null);
     dict.getEntry(l2, dictId, scopedId)
       .then((res) => {
+        setCachedEntryById(l2, res.entry);
         setApiEntry(res.entry);
       })
       .catch((e) => {

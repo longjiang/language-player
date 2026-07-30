@@ -1,9 +1,10 @@
 /**
  * Shared dictionary entry cache.
  *
- * A reactive, app-wide cache of dictionary entries keyed by `l2Code:text`.
- * Pre-populated by TokenizedText after lemmatization via /dictionary/lookup-batch,
- * so DictionaryPopup opens instantly without a loading spinner.
+ * A reactive, app-wide cache of dictionary entries keyed by both `l2Code:text`
+ * and `entryId`. Pre-populated by TokenizedText after lemmatization via
+ * /dictionary/lookup-batch, so DictionaryPopup and word detail pages open
+ * instantly without a loading spinner.
  *
  * Both web and mobile import from this module directly.
  * The platform-specific files (apps/web/src/lib/dictionary-cache.ts, etc.)
@@ -12,9 +13,12 @@
 
 import type { DictionaryEntry } from '@langplayer/shared';
 
-// ── Cache ──
+// ── Dual-indexed cache ──
+// textCache:  key = `${l2Code}:${text}`    → entries[]
+// idCache:    key = `${l2Code}:${entryId}`  → single entry
 
-const cache = new Map<string, DictionaryEntry[]>();
+const textCache = new Map<string, DictionaryEntry[]>();
+const idCache = new Map<string, DictionaryEntry>();
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
@@ -27,12 +31,32 @@ export function getCacheVersion(): number {
 }
 
 export function getCachedEntries(l2Code: string, text: string): DictionaryEntry[] | undefined {
-  return cache.get(`${l2Code}:${text}`);
+  return textCache.get(`${l2Code}:${text}`);
 }
 
 export function setCachedEntries(l2Code: string, text: string, entries: DictionaryEntry[]): void {
   if (entries.length > 0) {
-    cache.set(`${l2Code}:${text}`, entries);
+    textCache.set(`${l2Code}:${text}`, entries);
+    // Also index each entry by its ID
+    for (const entry of entries) {
+      if (entry.id) {
+        idCache.set(`${l2Code}:${entry.id}`, entry);
+      }
+    }
+    _cacheVersion++;
+    notify();
+  }
+}
+
+/** Look up a single entry by its ID (e.g. "cedict-59845"). */
+export function getCachedEntryById(l2Code: string, entryId: string): DictionaryEntry | undefined {
+  return idCache.get(`${l2Code}:${entryId}`);
+}
+
+/** Store a single entry by its ID (for deep-link fetches). */
+export function setCachedEntryById(l2Code: string, entry: DictionaryEntry): void {
+  if (entry.id) {
+    idCache.set(`${l2Code}:${entry.id}`, entry);
     _cacheVersion++;
     notify();
   }
@@ -64,7 +88,7 @@ export async function bulkLookupWords(
   apiUrl: string,
 ): Promise<void> {
   // Filter out words already in cache
-  const uncached = words.filter((w) => !cache.has(`${w.l2Code}:${w.text}`));
+  const uncached = words.filter((w) => !textCache.has(`${w.l2Code}:${w.text}`));
   if (uncached.length === 0) return;
 
   // Deduplicate: if an identical batch is already in-flight, reuse its promise.
@@ -101,7 +125,12 @@ async function _doBulkLookup(
     for (const [text, entries] of Object.entries(results)) {
       const l2 = uncached[0]?.l2Code ?? '';
       if (entries.length > 0) {
-        cache.set(`${l2}:${text}`, entries);
+        textCache.set(`${l2}:${text}`, entries);
+        for (const entry of entries) {
+          if (entry.id) {
+            idCache.set(`${l2}:${entry.id}`, entry);
+          }
+        }
         _cacheVersion++;
         notify();
       }

@@ -4,6 +4,8 @@ export {
   getCacheVersion,
   subscribeToCache,
   bulkLookupWords,
+  getCachedEntryById,
+  setCachedEntryById,
 } from './dictionary-cache';
 export { formatDuration, formatNumber, formatRelativeDate } from './format';
 export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhoneticsEligible } from './language';

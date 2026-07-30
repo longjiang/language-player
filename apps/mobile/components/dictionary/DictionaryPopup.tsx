@@ -6,6 +6,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { DictionaryEntryCard } from '@/components/dictionary/DictionaryEntryCard';
 import { SaveButton } from '@/components/dictionary/SaveButton';
 import { AiExplanation } from '@/components/dictionary/AiExplanation';
+import { getCachedEntries, setCachedEntries, setCachedEntryById, bulkLookupWords } from '@/lib/dictionary-cache';
+import { PYTHON_API_URL } from '@/lib/api-url';
 import type { DictionaryEntry } from '@langplayer/shared';
 import { useRouter } from 'expo-router';
 import { useDictionaryContext } from '@/contexts/DictionaryContext';
@@ -80,10 +82,9 @@ export function DictionaryPopup({
     }
   }, [visible, screenHeight, slideAnim, overlayOpacity]);
 
-  // ── Look up the word when the popup opens ──
+  // ── Look up the word when the popup opens (cache-first) ──
   useEffect(() => {
     if (!visible || !word) return;
-    setLoading(true);
     setError(null);
     setResults(null);
 
@@ -91,24 +92,58 @@ export function DictionaryPopup({
     const l1 = l1Lang.code;
     const lookupWord = lemma && lemma !== word ? lemma : word;
     const alsoLookupSurface = lookupWord !== word;
+    const textBatch = alsoLookupSurface ? [lookupWord, word] : [lookupWord];
 
+    // Check cache first — show instantly if all texts are cached
+    const allCached = textBatch.every((t) => getCachedEntries(l2, t) !== undefined);
+    if (allCached) {
+      const primaryResults = getCachedEntries(l2, lookupWord) ?? [];
+      if (!alsoLookupSurface) {
+        setResults(primaryResults);
+        return;
+      }
+      const surfaceResults = (getCachedEntries(l2, word) ?? []).filter(
+        (entry: DictionaryEntry) => !primaryResults.some((p: DictionaryEntry) => p.id === entry.id),
+      );
+      const merged = [...primaryResults, ...surfaceResults];
+      // Index by ID for the detail page cache
+      for (const e of merged) if (e.id) setCachedEntryById(l2, e);
+      setResults(merged);
+      return;
+    }
+
+    // Cache miss — fetch from server
+    setLoading(true);
     (async () => {
       try {
-        // Primary: lookup by lemma
-        const primaryRes = await dict.lookup(lookupWord, l2, l1);
-        const primaryResults = primaryRes.results ?? [];
+        // Use bulkLookupWords to populate cache, then read from cache
+        await bulkLookupWords(
+          textBatch.map((text) => ({ text, l2Code: l2, l1Code: l1 })),
+          PYTHON_API_URL,
+        );
 
-        if (!alsoLookupSurface) {
-          setResults(primaryResults);
-          return;
+        const primaryResults = getCachedEntries(l2, lookupWord) ?? [];
+
+        // Also individually fetch the surface form if it wasn't in the batch
+        let surfaceResults: DictionaryEntry[] = [];
+        if (alsoLookupSurface) {
+          const surfaceCached = getCachedEntries(l2, word);
+          if (surfaceCached) {
+            surfaceResults = surfaceCached;
+          } else {
+            const surfaceRes = await dict.lookup(word, l2, l1);
+            surfaceResults = surfaceRes.results ?? [];
+            setCachedEntries(l2, word, surfaceResults);
+          }
+          surfaceResults = surfaceResults.filter(
+            (entry: DictionaryEntry) => !primaryResults.some((p: DictionaryEntry) => p.id === entry.id),
+          );
         }
 
-        // Secondary: also lookup surface form, merge deduplicated
-        const surfaceRes = await dict.lookup(word, l2, l1);
-        const surfaceResults = (surfaceRes.results ?? []).filter(
-          (entry: DictionaryEntry) => !primaryResults.some((p: DictionaryEntry) => p.id === entry.id),
-        );
-        setResults([...primaryResults, ...surfaceResults]);
+        const merged = [...primaryResults, ...surfaceResults];
+        // Index by ID for the detail page cache
+        for (const e of merged) if (e.id) setCachedEntryById(l2, e);
+        setResults(merged);
       } catch (e: any) {
         setError(e?.message ?? t('error.general'));
       } finally {
