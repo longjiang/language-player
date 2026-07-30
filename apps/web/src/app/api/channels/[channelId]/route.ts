@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { YouTubeVideo } from '@langplayer/shared';
-
-const PYTHON_API_URL = process.env.PYTHON_API_URL ?? 'http://127.0.0.1:5001';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 /**
  * GET /api/channels/[channelId]?l2=zh&page=1&page_size=24

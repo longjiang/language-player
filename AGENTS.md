@@ -37,6 +37,8 @@ The **active development** happens in:
 
 6. **Use semantic design tokens, not hardcoded colors.** Never use hex values (`#fff`, `#94a3b8`, `#888`) or named colors (`"white"`, `"black"`) in components. Use NativeWind/Tailwind semantic classes like `text-foreground`, `text-muted-foreground`, `text-primary-foreground`, `bg-background`, `bg-card`, `border-border`. For React Native props that don't accept classes (e.g., `placeholderTextColor`, lucide icon `color`), import from `@/lib/theme-colors` which derives hex values from `packages/shared/tokens.ts`. Both apps share the same design tokens — colors, typography, spacing — from a single source of truth.
 
+7. **Always import `PYTHON_API_URL` from `@/lib/api-url`**, never from `process.env`. The shared module is the single source of truth — it reads `NEXT_PUBLIC_API_URL` with a localhost fallback. Using `process.env.PYTHON_API_URL` directly in server code will silently fall back to `http://127.0.0.1:5001` in production if only `NEXT_PUBLIC_API_URL` is set in the deployment environment, breaking login, video/channel APIs, and subtitle fetching.
+
 ### Before Implementing Any Feature
 
 1. Check if `@langplayer/shared` already has the types you need
