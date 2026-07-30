@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "Leertaal"
   },
+  "interfaceLanguage": {
+    "message": "Koppelvlaktaal"
+  },
   "popularLanguages": {
     "message": "Gewild"
   },

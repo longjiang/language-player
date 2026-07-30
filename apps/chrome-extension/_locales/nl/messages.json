@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "Leertaal"
   },
+  "interfaceLanguage": {
+    "message": "Interface-taal"
+  },
   "popularLanguages": {
     "message": "Populair"
   },

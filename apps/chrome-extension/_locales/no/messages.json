@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "Læringsspråk"
   },
+  "interfaceLanguage": {
+    "message": "Grensesnittspråk"
+  },
   "popularLanguages": {
     "message": "Populært"
   },

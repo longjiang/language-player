@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "Γλώσσα εκμάθησης"
   },
+  "interfaceLanguage": {
+    "message": "Γλώσσα διεπαφής"
+  },
   "popularLanguages": {
     "message": "Δημοφιλείς"
   },

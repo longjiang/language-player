@@ -130,6 +130,17 @@ const MANUAL = {
     'sw': 'Inapakia manukuu ya $lang$…', 'th': 'กำลังโหลดคำบรรยาย $lang$…',
     'tr': '$lang$ altyazıları yükleniyor…', 'vi': 'Đang tải phụ đề $lang$…',
   },
+  'interfaceLanguage': {
+    'af': 'Koppelvlaktaal', 'ar': 'لغة الواجهة', 'ca': 'Idioma de la interfície',
+    'de': 'Oberflächensprache', 'el': 'Γλώσσα διεπαφής', 'es': 'Idioma de interfaz',
+    'fi': 'Käyttöliittymäkieli', 'ga': 'Teanga comhéadain', 'hi': 'इंटरफ़ेस भाषा',
+    'hr': 'Jezik sučelja', 'hu': 'Felület nyelve', 'id': 'Bahasa antarmuka',
+    'it': 'Lingua dell\'interfaccia', 'ko': '인터페이스 언어', 'nl': 'Interface-taal',
+    'no': 'Grensesnittspråk', 'pl': 'Język interfejsu', 'pt': 'Idioma da interface',
+    'ro': 'Limba interfeței', 'ru': 'Язык интерфейса', 'sr': 'Jezik interfejsa',
+    'sv': 'Gränssnittsspråk', 'sw': 'Lugha ya kiolesura', 'th': 'ภาษาส่วนติดต่อ',
+    'tr': 'Arayüz dili', 'vi': 'Ngôn ngữ giao diện',
+  },
   'learningLanguage': {
     'af': 'Leertaal', 'ar': 'لغة التعلم', 'ca': 'Idioma d\'aprenentatge',
     'de': 'Lernsprache', 'el': 'Γλώσσα εκμάθησης', 'es': 'Idioma de aprendizaje',

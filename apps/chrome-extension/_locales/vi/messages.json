@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "Ngôn ngữ đang học"
   },
+  "interfaceLanguage": {
+    "message": "Ngôn ngữ giao diện"
+  },
   "popularLanguages": {
     "message": "Phổ biến"
   },

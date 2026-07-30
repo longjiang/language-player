@@ -29,6 +29,9 @@
   "learningLanguage": {
     "message": "学習言語"
   },
+  "interfaceLanguage": {
+    "message": "UI言語"
+  },
   "popularLanguages": {
     "message": "人気"
   },

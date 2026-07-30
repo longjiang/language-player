@@ -29,6 +29,9 @@
   "learningLanguage": {
     "message": "Langue d'apprentissage"
   },
+  "interfaceLanguage": {
+    "message": "Langue de l'interface"
+  },
   "popularLanguages": {
     "message": "Populaires"
   },

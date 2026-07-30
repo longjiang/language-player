@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "Tanult nyelv"
   },
+  "interfaceLanguage": {
+    "message": "Felület nyelve"
+  },
   "popularLanguages": {
     "message": "Népszerű"
   },

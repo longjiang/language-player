@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "Bahasa pembelajaran"
   },
+  "interfaceLanguage": {
+    "message": "Bahasa antarmuka"
+  },
   "popularLanguages": {
     "message": "Populer"
   },
