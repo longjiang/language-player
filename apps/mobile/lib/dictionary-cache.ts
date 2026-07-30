@@ -15,4 +15,6 @@ export {
   bulkLookupWords,
   getCachedEntryById,
   setCachedEntryById,
+  getIdCacheKeys,
+  getTextCacheKeys,
 } from '@langplayer/utils';
