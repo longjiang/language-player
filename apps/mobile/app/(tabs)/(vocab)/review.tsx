@@ -17,9 +17,10 @@ import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
-import type { DictionaryEntry } from '@langplayer/shared';
+import type { DictionaryEntry, LemmatizedToken } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { lemmatizeText } from '@/lib/tokenizer';
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 
@@ -286,6 +287,30 @@ export default function ReviewScreen() {
     return { newCount, againCount, reviewCount };
   }, [cards]);
 
+  // ── Pre-tokenize upcoming cards' context sentences ──
+  // TokenizedText accepts a `tokens` prop that skips all API calls.
+  // We eagerly lemmatize the next 3 cards' context texts so they're
+  // ready when the user advances — no loading flash on the next card.
+  // Also pre-warms the dictionary cache via TokenizedText's batch lookup.
+  const PRE_WINDOW = 3;
+  const preTokenizedTexts = useRef<Map<string, LemmatizedToken[]>>(new Map());
+  useEffect(() => {
+    for (let offset = 1; offset <= PRE_WINDOW; offset++) {
+      const card = cards[currentIndex + offset];
+      if (!card) break;
+      const insts = card.word.instances ?? (card.word.context ? [{ timestamp: card.word.date, form: card.word.forms?.[0] ?? '', context: card.word.context }] : []);
+      for (const inst of insts) {
+        const text = inst.context?.text;
+        if (!text || preTokenizedTexts.current.has(text)) continue;
+        lemmatizeText(text, l2Code).then((tokens) => {
+          preTokenizedTexts.current.set(text, tokens);
+        }).catch(() => {
+          // swallow — TokenizedText will fall through to its own lemmatizeText
+        });
+      }
+    }
+  }, [cards, currentIndex, l2Code]);
+
   // ── Render states ──
 
   const isLoading = !wordsLoaded || !srsLoaded || initializing;
@@ -420,6 +445,7 @@ export default function ReviewScreen() {
                   text={inst.context.text}
                   l2Code={l2Code}
                   highlightTerms={[inst.form]}
+                  tokens={preTokenizedTexts.current.get(inst.context.text)}
                 />
               </TextActionMenu>
               <View className="mt-1">
