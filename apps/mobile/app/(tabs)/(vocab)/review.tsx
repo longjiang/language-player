@@ -17,10 +17,11 @@ import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
 import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs';
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
-import type { DictionaryEntry, LemmatizedToken } from '@langplayer/shared';
+import { lemmatizeText } from '@/lib/tokenizer';
+import { bulkLookupWords } from '@/lib/dictionary-cache';
+import type { DictionaryEntry, LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
-import { lemmatizeText } from '@/lib/tokenizer';
 
 type Rating = 'again' | 'hard' | 'good' | 'easy';
 
@@ -263,6 +264,36 @@ export default function ReviewScreen() {
     return () => { cancelled = true; };
   }, [cards, currentIndex, l2Code, l1Lang.code, display.translation]);
 
+  // ── Pre-tokenize + pre-lookup the next card's context sentence(s) ──
+  useEffect(() => {
+    const nextCard = cards[currentIndex + 1];
+    if (!nextCard) return;
+
+    const nextInstances = ((nextCard.word as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined) ?? (
+      nextCard.word.context
+        ? [{ timestamp: nextCard.word.date ?? 0, form: nextCard.word.forms?.[0] ?? '', context: nextCard.word.context as unknown as SavedWordContext }]
+        : []
+    );
+
+    for (const inst of nextInstances) {
+      if (!inst.context?.text) continue;
+
+      // Step 1: pre-tokenize (populates the in-memory lemmatizeText cache)
+      lemmatizeText(inst.context.text, l2Code).then((tokens: LemmatizedToken[]) => {
+        // Step 2: pre-lookup definitions for all unique lemmas
+        const uniqueLemmas = [...new Set(
+          tokens.flatMap(t => t.lemmas.map(l => l.lemma).filter(Boolean))
+        )];
+        if (uniqueLemmas.length > 0) {
+          bulkLookupWords(
+            uniqueLemmas.map(text => ({ text, l2Code, l1Code: l1Lang.code })),
+            PYTHON_API_URL,
+          );
+        }
+      });
+    }
+  }, [currentIndex, cards, l2Code, l1Lang.code]);
+
   // ── Reset session state when language changes ──
   useEffect(() => {
     setJustCompleted(false);
@@ -286,30 +317,6 @@ export default function ReviewScreen() {
     }
     return { newCount, againCount, reviewCount };
   }, [cards]);
-
-  // ── Pre-tokenize upcoming cards' context sentences ──
-  // TokenizedText accepts a `tokens` prop that skips all API calls.
-  // We eagerly lemmatize the next 3 cards' context texts so they're
-  // ready when the user advances — no loading flash on the next card.
-  // Also pre-warms the dictionary cache via TokenizedText's batch lookup.
-  const PRE_WINDOW = 3;
-  const preTokenizedTexts = useRef<Map<string, LemmatizedToken[]>>(new Map());
-  useEffect(() => {
-    for (let offset = 1; offset <= PRE_WINDOW; offset++) {
-      const card = cards[currentIndex + offset];
-      if (!card) break;
-      const insts = card.word.instances ?? (card.word.context ? [{ timestamp: card.word.date, form: card.word.forms?.[0] ?? '', context: card.word.context }] : []);
-      for (const inst of insts) {
-        const text = inst.context?.text;
-        if (!text || preTokenizedTexts.current.has(text)) continue;
-        lemmatizeText(text, l2Code).then((tokens) => {
-          preTokenizedTexts.current.set(text, tokens);
-        }).catch(() => {
-          // swallow — TokenizedText will fall through to its own lemmatizeText
-        });
-      }
-    }
-  }, [cards, currentIndex, l2Code]);
 
   // ── Render states ──
 
@@ -395,7 +402,8 @@ export default function ReviewScreen() {
 
   const entry = currentEntry;
   const savedWord = currentCard.word;
-  const instances = savedWord.instances ?? (savedWord.context ? [{ timestamp: savedWord.date, form: savedWord.forms?.[0] ?? '', context: savedWord.context }] : []);
+  const savedWordInstances = (savedWord as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined;
+  const instances = savedWordInstances ?? (savedWord.context ? [{ timestamp: savedWord.date ?? 0, form: savedWord.forms?.[0] ?? '', context: savedWord.context as unknown as SavedWordContext }] : []);
   const srs = currentCard.srs;
 
   return (
@@ -445,7 +453,6 @@ export default function ReviewScreen() {
                   text={inst.context.text}
                   l2Code={l2Code}
                   highlightTerms={[inst.form]}
-                  tokens={preTokenizedTexts.current.get(inst.context.text)}
                 />
               </TextActionMenu>
               <View className="mt-1">
