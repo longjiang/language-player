@@ -19,6 +19,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, relative, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
+import { readCSV } from './lib/csv-utils.mjs';
 
 // Node 18's experimental fetch can't resolve localhost — require >= 20
 const major = parseInt(process.version.slice(1).split('.')[0]);
@@ -36,36 +37,17 @@ const API_URL = process.env.PYTHON_API_URL || 'http://localhost:5001';
 
 // ── Parse CSV ──────────────────────────────────────────────────────────
 
-function parseCSVLine(line) {
-  const cols = [];
-  let col = '';
-  let inQuote = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"' && !inQuote) { inQuote = true; }
-    else if (ch === '"' && inQuote && line[i + 1] === '"') { col += '"'; i++; }
-    else if (ch === '"' && inQuote) { inQuote = false; }
-    else if (ch === ',' && !inQuote) { cols.push(col); col = ''; }
-    else { col += ch; }
-  }
-  cols.push(col);
-  return cols;
-}
-
 function parseCSV() {
-  const raw = readFileSync(CSV_PATH, 'utf-8').replace(/\r/g, '');
-  const lines = raw.trim().split('\n');
-  const headers = parseCSVLine(lines[0]);
+  const { header, rows } = readCSV(CSV_PATH, { readFileSync });
   const map = {};
-  for (let i = 1; i < lines.length; i++) {
-    const cols = parseCSVLine(lines[i]);
+  for (const cols of rows) {
     const key = cols[0];
     if (!key) continue;
     const entry = {};
-    for (let j = 0; j < headers.length; j++) entry[headers[j]] = cols[j] ?? '';
+    for (let j = 0; j < header.length; j++) entry[header[j]] = cols[j] ?? '';
     map[key] = entry;
   }
-  return { map, headers };
+  return { map, headers: header };
 }
 
 // ── Key resolution ─────────────────────────────────────────────────────

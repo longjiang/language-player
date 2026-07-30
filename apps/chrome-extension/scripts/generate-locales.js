@@ -10,16 +10,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const Papa = require('papaparse');
 
 const CSV_PATH = path.resolve(__dirname, '../../../translations.csv');
 const LOCALES_DIR = path.resolve(__dirname, '../_locales');
-
-// CSV columns (index → locale name used in _locales/ dir)
-const CSV_COLUMNS = [
-  'key', 'en', 'zh-Hans', 'zh-Hant', 'af', 'ar', 'ca', 'de', 'el', 'es', 'fi',
-  'fr', 'ga', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko', 'nl', 'no', 'pl',
-  'pt', 'ro', 'ru', 'sr', 'sv', 'sw', 'th', 'tr', 'vi',
-];
 
 // CSV → Chrome locale code mapping (zh-Hans → zh_CN, etc.)
 const CSV_TO_CHROME = {
@@ -500,41 +494,15 @@ const MANUAL = {
 
 // ── CSV Parser ────────────────────────────────────────────────────────────
 
-function parseCSVLine(line) {
-  const result = [];
-  let current = '';
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (inQuotes) {
-      if (ch === '"') {
-        if (i + 1 < line.length && line[i + 1] === '"') {
-          current += '"';
-          i++;
-        } else {
-          inQuotes = false;
-        }
-      } else {
-        current += ch;
-      }
-    } else {
-      if (ch === '"') { inQuotes = true; }
-      else if (ch === ',') { result.push(current); current = ''; }
-      else { current += ch; }
-    }
-  }
-  result.push(current);
-  return result;
-}
-
 function loadCSV() {
   const text = fs.readFileSync(CSV_PATH, 'utf-8');
-  const lines = text.split(/\r?\n/).filter(Boolean);
-  const header = parseCSVLine(lines[0]);
+  const result = Papa.parse(text, { header: false, skipEmptyLines: true });
+  const header = result.data[0] || [];
   const data = {};
-  for (let i = 1; i < lines.length; i++) {
-    const cells = parseCSVLine(lines[i]);
+  for (let i = 1; i < result.data.length; i++) {
+    const cells = result.data[i];
     const key = cells[0];
+    if (!key) continue;
     const entry = {};
     for (let j = 1; j < cells.length && j < header.length; j++) {
       entry[header[j]] = cells[j];

@@ -28,37 +28,11 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
+import Papa from 'papaparse';
+import { csvParseLine, csvEscape, readCSV, writeCSV } from './lib/csv-utils.mjs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const CSV_PATH = resolve(__dirname, '..', 'translations.csv');
-
-// ── CSV helpers (inline to keep script self-contained) ──
-
-function csvParseLine(line) {
-  const fields = [];
-  let curr = '', inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { curr += '"'; i++; }
-      else { inQuotes = !inQuotes; }
-    } else if (ch === ',' && !inQuotes) {
-      fields.push(curr); curr = '';
-    } else {
-      curr += ch;
-    }
-  }
-  fields.push(curr);
-  return fields;
-}
-
-function csvEscape(val) {
-  const s = String(val ?? '');
-  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-    return `"${s.replace(/"/g, '""')}"`;
-  }
-  return s;
-}
 
 // ── Main ─────────────────────────────────────
 
@@ -109,7 +83,7 @@ if (arg === '--stdin') {
  * Validate CSV integrity before adding a key.
  * Prints warnings for non-critical issues; fails on critical ones.
  */
-function checkCsvIntegrity(csvText) {
+function checkCsvIntegrity(csvText, header) {
   const issues = [];
 
   // 1. Check for CRLF line endings
@@ -117,25 +91,23 @@ function checkCsvIntegrity(csvText) {
     issues.push('CRLF line endings detected — will be stripped automatically.');
   }
 
-  // 2. Parse all rows with proper CSV handling
-  const rawLines = csvText.trim().replace(/\r/g, '').split('\n');
-  const header = csvParseLine(rawLines[0]);
+  const result = Papa.parse(csvText, { header: false, skipEmptyLines: true });
   const expectedCols = header.length;
 
   if (expectedCols < 3) {
     fail(`CSV header has only ${expectedCols} columns — expected at least 3 (key + en + 1 locale).`);
   }
 
-  const rows = [];
-  const colMismatchRows = [];
-  for (let i = 1; i < rawLines.length; i++) {
-    const row = csvParseLine(rawLines[i]);
-    if (row.length !== expectedCols) {
-      colMismatchRows.push({ line: i + 1, key: row[0], cols: row.length });
-    }
-    rows.push(row);
-  }
+  // Skip header row: result.data[0] is header, rest is data
+  const rows = result.data.slice(1);
 
+  // 2. Check column count mismatches
+  const colMismatchRows = [];
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].length !== expectedCols) {
+      colMismatchRows.push({ line: i + 2, key: rows[i][0], cols: rows[i].length });
+    }
+  }
   if (colMismatchRows.length > 0) {
     const sample = colMismatchRows.slice(0, 5).map(r => `  line ${r.line}: "${r.key}" (${r.cols} cols, expected ${expectedCols})`).join('\n');
     issues.push(`${colMismatchRows.length} row(s) have wrong column count:\n${sample}${colMismatchRows.length > 5 ? `\n  ... and ${colMismatchRows.length - 5} more` : ''}`);
@@ -184,11 +156,9 @@ function processPayload(payload) {
   }
 
   // 2. Read CSV
+  const { header, rows } = readCSV(CSV_PATH, { readFileSync });
   const csvText = readFileSync(CSV_PATH, 'utf-8');
-  checkCsvIntegrity(csvText);
-  // Strip \\r to handle CRLF line endings
-  const lines = csvText.trim().replace(/\r/g, '').split('\n');
-  const header = csvParseLine(lines[0]);
+  checkCsvIntegrity(csvText, header);
 
   // Header should be: key, en, zh-Hans, zh-Hant, af, ar, ...
   const localeCols = header.slice(1); // all columns except 'key'
@@ -210,13 +180,7 @@ function processPayload(payload) {
     fail(msg);
   }
 
-  // 4. Parse all rows
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    rows.push(csvParseLine(lines[i]));
-  }
-
-  // 5. Check if key already exists
+  // 4. Check if key already exists
   const existingIdx = rows.findIndex(r => r[0] === payload.key);
   let updated = false;
 
@@ -250,13 +214,8 @@ function processPayload(payload) {
     console.log(`✓ Added new key "${payload.key}" at row ${insertIdx + 2} (category: ${category})`);
   }
 
-  // 6. Write CSV
-  const output = [
-    header.map(csvEscape).join(','),
-    ...rows.map(r => r.map(csvEscape).join(',')),
-  ].join('\n') + '\n';
-
-  writeFileSync(CSV_PATH, output);
+  // 5. Write CSV
+  writeCSV(CSV_PATH, header, rows, { writeFileSync });
 
   const verb = updated ? 'Updated' : 'Added';
   console.log(`✓ ${verb} in ${CSV_PATH}`);

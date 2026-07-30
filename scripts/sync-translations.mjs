@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { csvEscape, csvParseLine } from './lib/csv-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -63,34 +64,6 @@ function flattenKeys(data) {
     }
   }
   return [...keys].sort();
-}
-
-/** Minimal CSV escape: wrap in quotes if contains comma, quote, or newline */
-function csvEscape(val) {
-  const s = String(val ?? '');
-  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-    return `"${s.replace(/"/g, '""')}"`;
-  }
-  return s;
-}
-
-/** Parse a CSV line into fields (handles quoted fields) */
-function csvParseLine(line) {
-  const fields = [];
-  let curr = '', inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { curr += '"'; i++; }
-      else { inQuotes = !inQuotes; }
-    } else if (ch === ',' && !inQuotes) {
-      fields.push(curr); curr = '';
-    } else {
-      curr += ch;
-    }
-  }
-  fields.push(curr);
-  return fields;
 }
 
 // ── Commands ────────────────────────────────

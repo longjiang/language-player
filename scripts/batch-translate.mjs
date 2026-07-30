@@ -16,6 +16,7 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { readCSV, writeCSV } from './lib/csv-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -23,35 +24,6 @@ const CSV_PATH = resolve(ROOT, 'translations.csv');
 const API_URL = process.env.API_URL || 'http://127.0.0.1:5001';
 const BATCH_SIZE = 15;
 const DELAY_MS = 2000; // between batches
-
-// ── Helpers ─────────────────────────────────
-
-/** Parse a CSV line into fields (handles quoted values) */
-function parseCSVLine(line) {
-  const fields = [];
-  let curr = '', inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { curr += '"'; i++; }
-      else { inQuotes = !inQuotes; }
-    } else if (ch === ',' && !inQuotes) {
-      fields.push(curr); curr = '';
-    } else {
-      curr += ch;
-    }
-  }
-  fields.push(curr);
-  return fields;
-}
-
-function csvEscape(val) {
-  const s = String(val ?? '');
-  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-    return `"${s.replace(/"/g, '""')}"`;
-  }
-  return s;
-}
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -78,20 +50,12 @@ async function translateBatch(texts, l2) {
 
 // ── CSV operations ──────────────────────────
 
-function readCSV() {
-  const text = readFileSync(CSV_PATH, 'utf-8');
-  const lines = text.trim().split('\n');
-  const header = parseCSVLine(lines[0]);
-  const rows = lines.slice(1).map(parseCSVLine);
-  return { header, rows };
+function readCSVFile() {
+  return readCSV(CSV_PATH, { readFileSync });
 }
 
-function writeCSV(header, rows) {
-  const lines = [
-    header.map(csvEscape).join(','),
-    ...rows.map(r => r.map(csvEscape).join(',')),
-  ];
-  writeFileSync(CSV_PATH, lines.join('\n') + '\n');
+function writeCSVFile(header, rows) {
+  writeCSV(CSV_PATH, header, rows, { writeFileSync });
 }
 
 // ── Main ────────────────────────────────────
@@ -101,7 +65,7 @@ async function main() {
   const dryRun = args.includes('--dry-run');
   const localeFilter = args.find(a => a.startsWith('--locale='))?.split('=')[1];
 
-  const { header, rows } = readCSV();
+  const { header, rows } = readCSVFile();
   const enIdx = header.indexOf('en');
   if (enIdx === -1) { console.error('en column not found'); process.exit(1); }
 
@@ -189,7 +153,7 @@ async function main() {
       }
 
       // Save progress after each batch
-      writeCSV(header, rows);
+      writeCSVFile(header, rows);
 
       if (b < w.batches.length - 1) {
         await sleep(DELAY_MS);
@@ -200,7 +164,7 @@ async function main() {
   }
 
   // Final save
-  writeCSV(header, rows);
+  writeCSVFile(header, rows);
   console.log('\n✓ All translations complete. CSV saved.');
   console.log('Run: node scripts/sync-translations.mjs csv-to-json');
 }

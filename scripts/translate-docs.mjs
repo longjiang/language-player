@@ -16,6 +16,7 @@
 import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync } from 'fs';
 import { resolve, join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { readCSV } from './lib/csv-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -26,48 +27,22 @@ const CSV_PATH = resolve(ROOT, 'translations.csv');
 // ── Parse CSV ──────────────────────────────────────────────────────────
 
 function parseCSV() {
-  const raw = readFileSync(CSV_PATH, 'utf-8');
-  const lines = raw.trim().split('\n');
-  const headers = lines[0].split(',');
-
+  const { header, rows } = readCSV(CSV_PATH, { readFileSync });
   // Map: key → { en: '...', 'zh-Hans': '...', ... }
   /** @type {Record<string, Record<string, string>>} */
   const map = {};
-  for (let i = 1; i < lines.length; i++) {
-    const cols = parseCSVLine(lines[i]);
+  for (const cols of rows) {
     const key = cols[0];
     if (!key) continue;
     /** @type {Record<string, string>} */
     const entry = {};
-    for (let j = 0; j < headers.length; j++) {
-      entry[headers[j]] = cols[j] ?? '';
+    for (let j = 0; j < header.length; j++) {
+      entry[header[j]] = cols[j] ?? '';
     }
     map[key] = entry;
   }
   return map;
 }
-
-/** Naive CSV line parser — handles quoted fields containing commas. */
-function parseCSVLine(line) {
-  const cols = [];
-  let col = '';
-  let inQuote = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"' && !inQuote) {
-      inQuote = true;
-    } else if (ch === '"' && inQuote && line[i + 1] === '"') {
-      col += '"';
-      i++;
-    } else if (ch === '"' && inQuote) {
-      inQuote = false;
-    } else if (ch === ',' && !inQuote) {
-      cols.push(col);
-      col = '';
-    } else {
-      col += ch;
-    }
-  }
   cols.push(col);
   return cols;
 }

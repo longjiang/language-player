@@ -12,6 +12,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const Papa = require('papaparse');
 
 const CSV_PATH = path.resolve(__dirname, '../../../translations.csv');
 const OUT_PATH = path.resolve(__dirname, '../dist/lang-names.json');
@@ -52,49 +53,17 @@ const COLUMN_TO_CHROME = {
   'vi': 'vi',
 };
 
-function parseCSVLine(line) {
-  const result = [];
-  let current = '';
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (inQuotes) {
-      if (ch === '"') {
-        if (i + 1 < line.length && line[i + 1] === '"') {
-          current += '"';
-          i++;
-        } else {
-          inQuotes = false;
-        }
-      } else {
-        current += ch;
-      }
-    } else {
-      if (ch === '"') {
-        inQuotes = true;
-      } else if (ch === ',') {
-        result.push(current);
-        current = '';
-      } else {
-        current += ch;
-      }
-    }
-  }
-  result.push(current);
-  return result;
-}
-
 function main() {
   const csvText = fs.readFileSync(CSV_PATH, 'utf-8');
-  const lines = csvText.split(/\r?\n/).filter(Boolean);
+  const parsed = Papa.parse(csvText, { header: false, skipEmptyLines: true });
 
-  if (lines.length === 0) {
+  if (parsed.data.length === 0) {
     console.error('CSV is empty');
     process.exit(1);
   }
 
   // Parse header
-  const header = parseCSVLine(lines[0]);
+  const header = parsed.data[0];
   // Map: CSV column index → chrome locale code
   const colMap = [];
   for (let i = 0; i < header.length; i++) {
@@ -104,12 +73,12 @@ function main() {
 
   const result = {};
 
-  for (let i = 1; i < lines.length; i++) {
-    const cells = parseCSVLine(lines[i]);
+  for (let i = 1; i < parsed.data.length; i++) {
+    const cells = parsed.data[i];
     const key = cells[0];
 
     // Only process lang.* keys
-    if (!key.startsWith('lang.')) continue;
+    if (!key || !key.startsWith('lang.')) continue;
 
     const langCode = key.slice('lang.'.length);
     if (!langCode) continue;
@@ -118,7 +87,7 @@ function main() {
     for (let j = 1; j < cells.length && j < colMap.length; j++) {
       const chromeLocale = colMap[j];
       if (!chromeLocale) continue;
-      const value = cells[j].trim();
+      const value = (cells[j] || '').trim();
       if (value) {
         entry[chromeLocale] = value;
       }
