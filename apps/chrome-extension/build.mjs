@@ -1,11 +1,11 @@
 /**
- * Build script for the Prime Video Subtitle extension.
+ * Build script for the Language Player browser extension.
  *
  * Uses esbuild to bundle React + shared packages into a single content script.
  * Run from the monorepo root:
- *   node extensions/prime-video-subtitles/build.mjs
+ *   node apps/chrome-extension/build.mjs
  *
- * Output: extensions/prime-video-subtitles/dist/content.js
+ * Output: apps/chrome-extension/dist/content.js
  */
 
 import * as esbuild from 'esbuild';
