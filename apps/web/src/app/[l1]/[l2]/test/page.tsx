@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { TabbedPanel } from '@/components/tabbed-panel';
+import { type TabDef } from '@/components/tabbed-panel';
+import { SampleTabbedContent } from '@/components/sample-tabbed-content';
 
 const latinText = Array.from(
   { length: 10 },
@@ -35,31 +35,25 @@ const chineseText = `
 const tabs = [
   { key: 'latin', label: 'Latin' },
   { key: 'chinese', label: '中文' },
-] as const;
+] as const satisfies readonly TabDef[];
 
 export default function TestPage() {
-  const [activeTab, setActiveTab] = useState('latin');
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-8">
-      <TabbedPanel
+      <SampleTabbedContent
         tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        className="h-[80vh] w-full max-w-3xl"
-        contentClassName="overflow-y-auto p-6"
-      >
-        {activeTab === 'latin' && (
-          <p className="whitespace-pre-line text-sm leading-relaxed text-card-foreground">
-            {latinText}
-          </p>
-        )}
-        {activeTab === 'chinese' && (
-          <p className="whitespace-pre-line text-base leading-relaxed text-card-foreground">
-            {chineseText}
-          </p>
-        )}
-      </TabbedPanel>
+        renderContent={(activeTab) =>
+          activeTab === 'latin' ? (
+            <p className="whitespace-pre-line text-sm leading-relaxed text-card-foreground">
+              {latinText}
+            </p>
+          ) : (
+            <p className="whitespace-pre-line text-base leading-relaxed text-card-foreground">
+              {chineseText}
+            </p>
+          )
+        }
+      />
     </div>
   );
 }
