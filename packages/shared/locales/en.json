@@ -1,11 +1,4 @@
 {
-    "2": {
-        " Analizę fraza po frazie wyjaśniającą": "jak tekst jest zbudowany",
-        " Eine phraseweise Aufschlüsselung": "die erklärt",
-        " Kifejezésenkénti bontás": "amely elmagyarázza a szöveg felépítését",
-        " Lausekohtainen erittely": "joka selittää tekstin rakenteen",
-        " Пофразовый разбор": "объясняющий"
-    },
     "a11y": {
         "channel_preferences": "Channel preferences",
         "click_to_seek": "Click to seek",
@@ -899,8 +892,6 @@
         "features_title": "Pro Features"
     },
     "prompt": {
-        "explain_block": "Provide a clear breakdown of the following {l2Code} text. Include:",
-        "explain_block_context": "Provide a clear breakdown of the following {l2Code} text. Include:",
         "explain_block_header": "Provide a clear breakdown of the following {l2Code} text. Include:",
         "explain_block_item1": "Its overall meaning in {l1Name}",
         "explain_block_item2": "A phrase-by-phrase breakdown explaining how the text is constructed",
@@ -932,7 +923,6 @@
     "setting": {
         "all_words": "All Words",
         "appearance": "Appearance",
-        "auto_pronounce": "Auto Pronounce",
         "bigger": "Bigger",
         "captions": "Captions",
         "dark": "Dark",
@@ -960,10 +950,6 @@
         "review": "Review",
         "romanization": "Romanization",
         "ruby": "Ruby",
-        "saved_words_blanks": "Saved Words as Blanks",
-        "show_gloss_saved": "Show Gloss for Saved",
-        "show_phonetics": "Show Phonetics",
-        "show_translation": "Show Translation",
         "simplified": "简体 Simplified",
         "slow": "Slow",
         "smaller": "Smaller",
@@ -973,7 +959,6 @@
         "text_appearance": "Text Appearance",
         "theme": "Theme",
         "traditional": "繁體 Traditional",
-        "use_traditional": "Use Traditional",
         "word_level_display": "Word-Level Display"
     },
     "sort": {
@@ -1004,10 +989,8 @@
         "me": "Me"
     },
     "time": {
-        "days": "{count",
         "hours": "hours",
         "min": "min",
-        "months": "{count",
         "months_and_days": "{months} and {days}",
         "sec": "sec"
     },
