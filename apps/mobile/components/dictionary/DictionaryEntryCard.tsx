@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
-import { formatLevel } from '@langplayer/shared';
+import { formatNumericLevel, primaryScale } from '@langplayer/shared';
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
@@ -46,7 +46,10 @@ export function DictionaryEntryCard({
   const { head, alternate } = apply(entry.head, entry.alternate);
   const displayAlternate = getAlternateScript({ ...entry, head, alternate });
 
-  const formattedLevels = (entry.levels ?? []).map((l) => formatLevel({ scale: l.scale, value: l.value }));
+  const scale = primaryScale(l2Code);
+  const formattedLevels = (entry.levels ?? [])
+    .filter((l) => l.numeric != null)
+    .map((l) => formatNumericLevel(l.numeric, scale));
   const isFull = variant === 'full';
 
   const formattedPron = pronunciationOverride !== undefined
