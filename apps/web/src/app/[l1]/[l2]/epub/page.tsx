@@ -149,7 +149,7 @@ export default function EpubPage() {
       {/* ── Content row: sidebar first (right on wide, top on narrow) ── */}
       <div className="flex gap-4 flex-1 min-h-0 flex-row-reverse max-lg:flex-col">
         {/* Chapter sidebar — on the right (wide) or top (narrow) */}
-        <ReaderSidebar sidebarOpen={sidebarOpen && epub.toc.length > 0}>
+        <ReaderSidebar sidebarOpen={sidebarOpen && epub.toc.length > 0} onClose={() => setSidebarOpen(false)}>
           <EpubChapterSidebar
             toc={epub.toc}
             currentChapterHref={epub.chapterHref}

@@ -276,9 +276,9 @@ export default function ReaderPage() {
         </button>
       </div>
 
-      {/* ── Content row: sidebar first (right on wide, top on narrow) ── */}
-      <div className="flex gap-4 flex-1 min-h-0 flex-row-reverse max-lg:flex-col">
-        <ReaderSidebar sidebarOpen={sidebarOpen}>
+      {/* ── Content row: sidebar first (right on wide, overlay on narrow) ── */}
+      <div className="flex gap-4 flex-1 min-h-0 flex-row-reverse">
+        <ReaderSidebar sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)}>
           <NotesSidebar
             notes={notes} notesLoading={notesLoading} notesError={notesError}
             currentNoteId={currentNoteId} session={session}
