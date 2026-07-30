@@ -103,6 +103,16 @@ npm run build:check -w apps/web  # Safe build check (uses isolated .next-check/,
 
 This applies to all source files in `apps/chrome-extension/`, `apps/web/`, and `apps/mobile/`. Do not use bare prefixes like `[LanguagePlayer]`, `[LPV]`, or no prefix at all — the bracketed app identifier is mandatory and must come first.
 
+**⚠️ All logging must be gated by an app-wide switch.** Every app must have a single flag that controls whether logging is enabled or disabled, so all logs can be turned off in production or turned on for debugging without modifying individual callsites.
+
+| App | Where |
+|---|---|
+| Chrome Extension | `src/i18n.js` — `LOG_LEVEL` constant (0=off, 1=errors, 2=warnings, 3=verbose) |
+| Web (Next.js) | TBD |
+| Mobile (Expo/RN) | TBD |
+
+Use a simple pattern — export `log()`, `logwarn()`, `logerr()` helpers that check the flag internally. Never call `console.log` directly in application code.
+
 **⚠️ Never start or stop the Flask server.** The Flask server (`zerotohero-python-server/`) is the user's responsibility to manage — starting, stopping, restarting, and checking its status. If you need the server running for a test or endpoint call, ask the user to start it. If it appears to be down, tell the user rather than trying to restart it yourself. You may query the Flask API endpoints with `curl` or `fetch` to test behavior, but never manage the server process.
 
 **⚠️ Always rebuild the Chrome extension after editing source.** The extension at `apps/chrome-extension/` uses esbuild to bundle `src/content-entry.js` (plus React, shared packages) into `dist/content.js`. After any edit to `apps/chrome-extension/src/`, run:
