@@ -96,7 +96,7 @@
           );
 
           console.log(
-            '[LanguagePlayer] MAIN: intercepted ' + trackList.length + ' tracks for movieId ' + movieId
+            '[LP Extension] MAIN: intercepted ' + trackList.length + ' tracks for movieId ' + movieId
           );
         }
       }
@@ -105,5 +105,5 @@
     return data;
   };
 
-  console.log('[LanguagePlayer] MAIN: JSON.parse monkeypatch active (sync injection, persistent)');
+  console.log('[LP Extension] MAIN: JSON.parse monkeypatch active (sync injection, persistent)');
 })();

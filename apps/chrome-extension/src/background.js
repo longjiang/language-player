@@ -225,14 +225,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                                 tracks: trackList,
                             }, '*');
 
-                            console.log('[LanguagePlayer] MAIN: intercepted ' + trackList.length + ' Netflix tracks, JSON.parse restored');
+                            console.log('[LP Extension] MAIN: intercepted ' + trackList.length + ' Netflix tracks, JSON.parse restored');
                         }
                     }
 
                     return data;
                 };
 
-                console.log('[LanguagePlayer] MAIN: JSON.parse monkeypatch active');
+                console.log('[LP Extension] MAIN: JSON.parse monkeypatch active');
             },
             world: 'MAIN',
         }).then(() => {

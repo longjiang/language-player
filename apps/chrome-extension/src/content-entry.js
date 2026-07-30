@@ -28,7 +28,7 @@ const isHBOMax = /max\.com|hbonow\.com|hbomax\.com/.test(location.hostname);
 
 /** Trace logging helper — labels each step with a unique phase tag so
  *  you can follow the full pipeline from subtitle fetch to rendered tokens.
- *  Usage: trace('TOKENS_LOADED', '120 texts enqueued') → "[LanguagePlayer] [FETCH] ..."
+ *  Usage: trace('TOKENS_LOADED', '120 texts enqueued') → "[LP Extension] [FETCH] ..."
  */
 const TRACE_PHASES = {
   FETCH:    'FETCH',
@@ -318,7 +318,7 @@ async function fetchAndParseSubtitles(url) {
     // Disney+ VTT segments: merge into existing cues
     if (isDisneySegment && STATE.cues.length > 0) {
       cues = mergeCues(STATE.cues, cues);
-      console.log('[LanguagePlayer] Merged Disney+ segment, total cues:', cues.length);
+      log('Merged Disney+ segment, total cues:', cues.length);
     }
 
     STATE.cues = cues;
@@ -341,7 +341,7 @@ async function fetchAndParseSubtitles(url) {
       }
     }
   } catch (err) {
-    console.error('[LanguagePlayer] Failed to fetch/parse subtitles:', err);
+    logerr('Failed to fetch/parse subtitles:', err);
     updateStatus(t('failedToLoadSubtitles'));
   } finally {
     STATE.loading = false;
@@ -510,11 +510,11 @@ function extractInnertubeApiKey() {
 async function fetchInnerTubeTracks(videoId) {
   const apiKey = extractInnertubeApiKey();
   if (!apiKey) {
-    console.log('[LanguagePlayer] No INNERTUBE_API_KEY found');
+    log('No INNERTUBE_API_KEY found');
     return [];
   }
 
-  console.log('[LanguagePlayer] InnerTube API key:', apiKey.substring(0, 8) + '...');
+  log('InnerTube API key:', apiKey.substring(0, 8) + '...');
 
   try {
     const res = await fetch(`https://www.youtube.com/youtubei/v1/player?key=${apiKey}`, {
@@ -532,14 +532,14 @@ async function fetchInnerTubeTracks(videoId) {
     });
 
     if (!res.ok) {
-      console.log('[LanguagePlayer] InnerTube HTTP', res.status);
+      log('InnerTube HTTP', res.status);
       return [];
     }
 
     const data = await res.json();
     const captions = data?.captions?.playerCaptionsTracklistRenderer;
     if (!captions?.captionTracks) {
-      console.log('[LanguagePlayer] InnerTube: no caption tracks');
+      log('InnerTube: no caption tracks');
       return [];
     }
 
@@ -550,12 +550,12 @@ async function fetchInnerTubeTracks(videoId) {
       name: t.name?.runs?.[0]?.text || t.name?.simpleText || '',
     }));
 
-    console.log('[LanguagePlayer] InnerTube found', tracks.length, 'tracks:',
+    log('InnerTube found', tracks.length, 'tracks:',
       tracks.map(t => `${t.languageCode}${t.kind === 'asr' ? ' (auto)' : ''}`).join(', '));
 
     return tracks;
   } catch (err) {
-    console.error('[LanguagePlayer] InnerTube fetch failed:', err?.message);
+    logerr('InnerTube fetch failed:', err?.message);
     return [];
   }
 }
@@ -593,11 +593,11 @@ async function fetchYTTrack(track) {
     if (url.startsWith('//')) url = 'https:' + url;
     else if (url.startsWith('/')) url = 'https://www.youtube.com' + url;
 
-    console.log('[LanguagePlayer] MAIN fetching:', url.substring(0, 100));
+    log('MAIN fetching:', url.substring(0, 100));
 
     let text = await mainWorldFetch(url);
-    console.log('[LanguagePlayer] MAIN response:', text.length, 'chars');
-    if (text.length < 1000) console.log('[LanguagePlayer] Response preview:', text.substring(0, 500));
+    log('MAIN response:', text.length, 'chars');
+    if (text.length < 1000) log('Response preview:', text.substring(0, 500));
 
     let cues;
 
@@ -606,9 +606,9 @@ async function fetchYTTrack(track) {
       const videoId = getYTVideoId();
       const lang = track.languageCode || 'en';
       text = await mainWorldFetch(`https://www.youtube.com/api/timedtext?v=${videoId}&lang=${lang}&fmt=json3`);
-      console.log('[LanguagePlayer] Fallback MAIN response:', text.length, 'chars');
+      log('Fallback MAIN response:', text.length, 'chars');
       if (!text || text.length === 0) {
-        console.log('[LanguagePlayer] MAIN also returned empty');
+        log('MAIN also returned empty');
         return;
       }
       cues = parseYTJSON3(text);
@@ -618,7 +618,7 @@ async function fetchYTTrack(track) {
       try { cues = parseYTJSON3(text); } catch { cues = parseYTTimedText(text); }
     }
 
-    console.log('[LanguagePlayer] Parsed', cues.length, 'cues');
+    log('Parsed', cues.length, 'cues');
 
     STATE.cues = cues;
     STATE.subtitleUrl = track.baseUrl;
@@ -644,7 +644,7 @@ async function fetchYTTrack(track) {
     setBadge(true);
     updateStatus(t('subtitleEntriesLoaded', [cues.length.toString()]));
   } catch (err) {
-    console.error('[LanguagePlayer] Failed to fetch YouTube subtitles:', err);
+    logerr('Failed to fetch YouTube subtitles:', err);
     updateStatus(t('failedToLoadSubtitles'));
   }
 }
@@ -653,11 +653,11 @@ async function fetchYTTrack(track) {
 async function loadYouTubeSubtitles() {
   const videoId = getYTVideoId();
   if (!videoId) {
-    console.log('[LanguagePlayer] No YouTube video ID found in URL');
+    log('No YouTube video ID found in URL');
     return;
   }
 
-  console.log('[LanguagePlayer] Looking for caption data...');
+  log('Looking for caption data...');
 
   // Try InnerTube API first (mimics ANDROID client)
   let tracks = await fetchInnerTubeTracks(videoId);
@@ -680,7 +680,7 @@ async function loadYouTubeSubtitles() {
   ytCaptionTracks = tracks;
 
   if (tracks.length === 0) {
-    console.log('[LanguagePlayer] No caption tracks found');
+    log('No caption tracks found');
     return;
   }
 
@@ -697,7 +697,7 @@ async function loadYouTubeSubtitles() {
   }
 
   if (best) {
-    console.log('[LanguagePlayer] Loading track:', best.languageCode, best.kind === 'asr' ? '(auto)' : '');
+    log('Loading track:', best.languageCode, best.kind === 'asr' ? '(auto)' : '');
     await fetchYTTrack(best);
   }
 }
@@ -806,7 +806,7 @@ async function onL1Change(newCode) {
   // Refresh all static UI labels that were set during createPanelUI()
   refreshUILabels();
 
-  console.log('[LanguagePlayer] L1 changed to:', newCode);
+  log('L1 changed to:', newCode);
   // Re-render transcript with new L1 (re-triggers translation with new l1Code)
   renderTranscript();
 }
@@ -817,11 +817,11 @@ async function loadSavedLanguagePreferences() {
     const result = await chrome.storage.local.get(['l2Language', 'l1Language']);
     if (result.l2Language && SUPPORTED_L2S.includes(result.l2Language)) {
       detectedL2Code = result.l2Language;
-      console.log('[LanguagePlayer] Loaded saved L2 preference:', detectedL2Code);
+      log('Loaded saved L2 preference:', detectedL2Code);
     }
     if (result.l1Language && UI_LANGUAGES.includes(result.l1Language)) {
       L1_CODE = result.l1Language;
-      console.log('[LanguagePlayer] Loaded saved L1 preference:', L1_CODE);
+      log('Loaded saved L1 preference:', L1_CODE);
     }
   } catch {}
 }
@@ -949,7 +949,7 @@ function createPanelUI() {
   closeBtn.innerHTML = '✕';
   closeBtn.title = t('closePanel');
   closeBtn.addEventListener('click', () => {
-    console.log('[LanguagePlayer] User closed the transcript panel with ✕');
+    log('User closed the transcript panel with ✕');
     chrome.storage.sync.set({ autoOpenPanel: false });
     setPanelVisible(false);
   });
@@ -1036,7 +1036,7 @@ function onTimeUpdate() {
         const trimmed = trimDistantCues(STATE.cues, t);
         if (trimmed.length < STATE.cues.length) {
           STATE.cues = trimmed;
-          console.log('[LanguagePlayer] Trimmed cues:', trimmed.length, '(was', STATE.cues.length + trimmed.length + ')');
+          log('Trimmed cues:', trimmed.length, '(was', STATE.cues.length + ')');
         }
       }
       updateActiveCue(getCurrentTime());
@@ -1085,7 +1085,7 @@ function setupNetflixInterceptor() {
     if (event.data?.source !== 'lpv-netflix') return;
 
     if (event.data.type === 'netflixTracks') {
-      console.log('[LanguagePlayer] Received Netflix tracks from MAIN world:', event.data.tracks.length);
+      log('Received Netflix tracks from MAIN world:', event.data.tracks.length);
       handleNetflixSubs(event.data.tracks);
     }
   });
@@ -1095,7 +1095,7 @@ function setupNetflixInterceptor() {
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('dist/netflix-main-world.js');
   (document.head || document.documentElement).appendChild(script);
-  console.log('[LanguagePlayer] Netflix interceptor injected via <script src>');
+  log('Netflix interceptor injected via <script src>');
 }
 
 /**
@@ -1125,7 +1125,7 @@ function observeNetflixSubtitleChanges() {
     const activeLang = await detectNetflixActiveSubtitle();
     if (activeLang && activeLang !== lastActiveLang && cachedNetflixTracks[activeLang]) {
       lastActiveLang = activeLang;
-      console.log('[LanguagePlayer] Netflix subtitle changed to:', activeLang);
+      log('Netflix subtitle changed to:', activeLang);
       await loadNetflixTrackForLanguage(activeLang);
     }
   }, 3000);
@@ -1145,13 +1145,13 @@ async function loadNetflixTrackForLanguage(langCode) {
     || null;
 
   if (!bestKey) {
-    console.log('[LanguagePlayer] No cached Netflix track for language:', langCode);
+    log('No cached Netflix track for language:', langCode);
     return;
   }
 
   const track = cachedNetflixTracks[bestKey];
   const gen = ++fetchGen;
-  console.log('[LanguagePlayer] Loading Netflix track:', bestKey, track.format);
+  log('Loading Netflix track:', bestKey, track.format);
 
   // Clear old cues and show spinner
   STATE.cues = [];
@@ -1173,7 +1173,7 @@ async function loadNetflixTrackForLanguage(langCode) {
       cues = parseTTML(text);
     }
 
-    console.log('[LanguagePlayer] Netflix parsed', cues.length, 'cues');
+    log('Netflix parsed', cues.length, 'cues');
 
     STATE.cues = cues;
     detectedL2Code = track.languageCode || detectedL2Code;
@@ -1196,7 +1196,7 @@ async function loadNetflixTrackForLanguage(langCode) {
     setBadge(true);
     updateStatus(t('subtitleEntriesLoaded', [cues.length.toString()]));
   } catch (err) {
-    console.error('[LanguagePlayer] Failed to fetch Netflix subtitles:', err);
+    logerr('Failed to fetch Netflix subtitles:', err);
     updateStatus(t('failedToLoadSubtitles'));
   }
 }
@@ -1220,12 +1220,12 @@ async function handleNetflixSubs(tracks) {
   // Cache all tracks for later language switching
   cachedNetflixTracks = subs;
 
-  console.log('[LanguagePlayer] Netflix subtitle tracks:',
+  log('Netflix subtitle tracks:',
     Object.keys(subs).map(k => `${k} (${subs[k].languageCode})`).join(', '));
 
   // Detect which subtitle Netflix is currently showing via video.textTracks
   const activeLang = await detectNetflixActiveSubtitle();
-  console.log('[LanguagePlayer] Detected Netflix active subtitle:', activeLang || '(none found)');
+  log('Detected Netflix active subtitle:', activeLang || '(none found)');
 
   if (activeLang) {
     await loadNetflixTrackForLanguage(activeLang);
@@ -1286,7 +1286,7 @@ function waitForPlayer() {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'subtitleDetected') {
     const { url, fileName } = message;
-    console.log('[LanguagePlayer] Subtitle detected:', fileName, url);
+    log('Subtitle detected:', fileName, url);
     fetchAndParseSubtitles(url);
   }
 
@@ -1305,7 +1305,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.action === 'showTranscript') {
-    console.log('[LanguagePlayer] Opening transcript panel via popup — enabling auto-open');
+    log('Opening transcript panel via popup — enabling auto-open');
     chrome.storage.sync.set({ autoOpenPanel: true });
     setPanelVisible(true);
     sendResponse({ success: true });
@@ -1348,7 +1348,7 @@ function setupKeyboard() {
 // ── Init ─────────────────────────────────────────────────────────────────
 
 async function init() {
-  console.log('[LanguagePlayer] Content script loaded');
+  log('Content script loaded');
 
   detectL2Code();
 
@@ -1361,7 +1361,7 @@ async function init() {
   }
 
   const playerEl = await waitForPlayer();
-  console.log('[LanguagePlayer] Player found');
+  log('Player found');
 
   // Load saved L1/L2 preferences and locale BEFORE creating the UI,
   // so the panel renders in the correct language from the start.
@@ -1385,7 +1385,7 @@ async function init() {
     // Cues may have already been loaded while we were waiting for the player.
     // If so, render them now that the panel exists.
     if (STATE.cues.length > 0) {
-      console.log('[LanguagePlayer] Rendering pre-loaded cues:', STATE.cues.length);
+      log('Rendering pre-loaded cues:', STATE.cues.length);
       STATE.activeCueIdx = -1;
       renderTranscript();
       if (!STATE.panelVisible) {
