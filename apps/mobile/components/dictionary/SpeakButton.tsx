@@ -18,7 +18,7 @@ export function SpeakButton({ text, l2Code, size = 18 }: SpeakButtonProps) {
   const { speak } = useSpeech();
 
   return (
-    <Pressable onPress={() => speak(text, l2Code)} className="p-1" hitSlop={8}>
+    <Pressable onPress={() => speak(text, l2Code)} hitSlop={8}>
       <Volume2 size={size} color={ICON_MUTED} />
     </Pressable>
   );
