@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "학습 언어"
   },
+  "interfaceLanguage": {
+    "message": "인터페이스 언어"
+  },
   "popularLanguages": {
     "message": "인기"
   },

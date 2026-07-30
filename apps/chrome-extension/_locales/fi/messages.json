@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "Opiskelukieli"
   },
+  "interfaceLanguage": {
+    "message": "Käyttöliittymäkieli"
+  },
   "popularLanguages": {
     "message": "Suositut"
   },

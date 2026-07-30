@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "لغة التعلم"
   },
+  "interfaceLanguage": {
+    "message": "لغة الواجهة"
+  },
   "popularLanguages": {
     "message": "شائع"
   },

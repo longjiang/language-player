@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "Teanga foghlama"
   },
+  "interfaceLanguage": {
+    "message": "Teanga comhéadain"
+  },
   "popularLanguages": {
     "message": "Coitianta"
   },

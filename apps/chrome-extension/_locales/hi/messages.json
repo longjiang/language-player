@@ -44,6 +44,9 @@
   "learningLanguage": {
     "message": "सीखने की भाषा"
   },
+  "interfaceLanguage": {
+    "message": "इंटरफ़ेस भाषा"
+  },
   "popularLanguages": {
     "message": "लोकप्रिय"
   },

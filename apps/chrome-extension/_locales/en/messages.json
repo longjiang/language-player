@@ -44,6 +44,10 @@
     "message": "Learning language",
     "description": "Tooltip for the L2 language dropdown"
   },
+  "interfaceLanguage": {
+    "message": "UI Language",
+    "description": "Tooltip for the L1 (interface/native) language dropdown"
+  },
   "popularLanguages": {
     "message": "Popular",
     "description": "Optgroup label for popular languages"

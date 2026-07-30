@@ -35,6 +35,9 @@
   "learningLanguage": {
     "message": "学习语言"
   },
+  "interfaceLanguage": {
+    "message": "界面语言"
+  },
   "popularLanguages": {
     "message": "常用"
   },

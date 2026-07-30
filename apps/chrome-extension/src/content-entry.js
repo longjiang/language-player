@@ -51,13 +51,14 @@ let fetchGen = 0;
 let panelRoot = null;
 let panelContent = null;
 let statusEl = null;
+let l1SelectEl = null;
 let l2SelectEl = null;
 
 // ── L2 language detection ────────────────────────────────────────────────
 let detectedL2Code = 'en';
 
-/** The user's native / UI language. Defaults to 'en'. */
-const L1_CODE = 'en';
+/** The user's native / UI language. Defaults to 'en'. Changed via L1 dropdown. */
+let L1_CODE = 'en';
 
 /** YouTube caption tracks cache (for L2 switcher) */
 let ytCaptionTracks = [];
@@ -709,13 +710,61 @@ function populateL2Selector() {
   l2SelectEl.disabled = false;
 }
 
-/** Load the user's saved L2 language preference from storage */
-async function loadSavedL2Preference() {
+/** UI languages for the L1 (interface) dropdown.
+ *  These are the 31 Chrome locales supported by the extension. */
+const UI_LANGUAGES = [
+  'en', 'zh-Hans', 'zh-Hant', 'af', 'ar', 'ca', 'de', 'el', 'es', 'fi',
+  'fr', 'ga', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko', 'nl', 'no', 'pl',
+  'pt', 'ro', 'ru', 'sr', 'sv', 'sw', 'th', 'tr', 'vi',
+];
+
+/** Populate the L1 (interface/native) language dropdown */
+function populateL1Selector() {
+  if (!l1SelectEl) return;
+  l1SelectEl.innerHTML = '';
+
+  // Sort alphabetically by the language's own name... but we show translated
+  // names using languageName() which uses lang-names. For UI languages, just
+  // show the localized name as well.
+  const sorted = [...UI_LANGUAGES].sort((a, b) => languageName(a).localeCompare(languageName(b)));
+
+  for (const code of sorted) {
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = languageName(code);
+    if (code === L1_CODE) opt.selected = true;
+    l1SelectEl.appendChild(opt);
+  }
+
+  l1SelectEl.disabled = false;
+}
+
+/** Handle L1 (interface) language change from the dropdown */
+async function onL1Change(newCode) {
+  if (newCode === L1_CODE) return;
+  L1_CODE = newCode;
+
+  // Persist user preference
   try {
-    const result = await chrome.storage.local.get(['l2Language']);
+    chrome.storage.local.set({ l1Language: newCode });
+  } catch {}
+
+  console.log('[LanguagePlayer] L1 changed to:', newCode);
+  // Re-render transcript with new L1 (re-triggers translation with new l1Code)
+  renderTranscript();
+}
+
+/** Load the user's saved language preferences from storage */
+async function loadSavedLanguagePreferences() {
+  try {
+    const result = await chrome.storage.local.get(['l2Language', 'l1Language']);
     if (result.l2Language && SUPPORTED_L2S.includes(result.l2Language)) {
       detectedL2Code = result.l2Language;
       console.log('[LanguagePlayer] Loaded saved L2 preference:', detectedL2Code);
+    }
+    if (result.l1Language && UI_LANGUAGES.includes(result.l1Language)) {
+      L1_CODE = result.l1Language;
+      console.log('[LanguagePlayer] Loaded saved L1 preference:', L1_CODE);
     }
   } catch {}
 }
@@ -819,7 +868,15 @@ function createPanelUI() {
 
   title.appendChild(logoImg);
 
-  // L2 language selector
+  // L1 (interface/native) language selector
+  l1SelectEl = document.createElement('select');
+  l1SelectEl.id = 'lpv-l1-select';
+  l1SelectEl.title = t('interfaceLanguage');
+  l1SelectEl.addEventListener('change', () => {
+    onL1Change(l1SelectEl.value);
+  });
+
+  // L2 (learning) language selector
   l2SelectEl = document.createElement('select');
   l2SelectEl.id = 'lpv-l2-select';
   l2SelectEl.title = t('learningLanguage');
@@ -840,6 +897,7 @@ function createPanelUI() {
     setPanelVisible(false);
   });
 
+  headerRight.appendChild(l1SelectEl);
   headerRight.appendChild(l2SelectEl);
   headerRight.appendChild(closeBtn);
 
@@ -1225,9 +1283,6 @@ async function init() {
 
   detectL2Code();
 
-  // Load saved language preference for ALL platforms
-  await loadSavedL2Preference();
-
   // Netflix: inject the JSON.parse monkeypatch IMMEDIATELY, before waiting
   // for the player. Netflix loads its playback manifest early in the page
   // lifecycle — if we wait for the player first, the manifest JSON has
@@ -1240,6 +1295,8 @@ async function init() {
   console.log('[LanguagePlayer] Player found');
 
   createPanelUI();
+  await loadSavedLanguagePreferences();
+  populateL1Selector();
   populateL2Selector();
   setupKeyboard();
 
