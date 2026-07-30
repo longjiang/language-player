@@ -9,6 +9,8 @@
  * the cache is populated (e.g. by bulkLookupWords or setCachedEntries).
  */
 
+'use client';
+
 import { useSyncExternalStore } from 'react';
 import { getCachedEntries, getCachedEntryById, subscribeToCache } from './dictionary-cache';
 import type { DictionaryEntry } from '@langplayer/shared';
