@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
 import type { SyncedLine } from '@/lib/subtitle-csv';
 import { parseCSVSubtitles } from '@/lib/subtitle-csv';
-
-const PYTHON_API_URL = process.env.PYTHON_API_URL ?? 'http://127.0.0.1:5001';
+import { PYTHON_API_URL } from '@/lib/api-url';
 
 /** Parse ISO 8601 duration string (PT1H23M45S) into seconds. */
 function parseDuration(iso: string | undefined): number | undefined {
