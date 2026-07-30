@@ -1,8 +1,4 @@
 {
-    "2": {
-        " Eine phraseweise Aufschlüsselung": "wie der Text aufgebaut ist",
-        " Пофразовый разбор": "как построен текст"
-    },
     "a11y": {
         "channel_preferences": "频道偏好",
         "click_to_seek": "点击跳转",
@@ -953,10 +949,8 @@
         "me": "我的"
     },
     "time": {
-        "days": "plural",
         "hours": "小时",
         "min": "分钟",
-        "months": "plural",
         "sec": "秒"
     },
     "title": {

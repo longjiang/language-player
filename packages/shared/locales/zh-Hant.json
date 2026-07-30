@@ -921,10 +921,8 @@
         "me": "我的"
     },
     "time": {
-        "days": "one {# day} other {# days}}",
         "hours": "小時",
         "min": "分鐘",
-        "months": "one {# month} other {# months}}",
         "sec": "秒"
     },
     "title": {
@@ -937,11 +935,8 @@
         "app_settings": "APP設定",
         "best_value": "最超值",
         "cancellation_failed": "取消失敗",
-        "channel": "頻道",
-        "channels": "頻道",
         "check_email": "查看您的電子郵件",
         "choose_language": "選擇語言",
-        "choose_script": "選擇文字",
         "choose_your_plan": "選擇你的方案",
         "confirm_in_app_purchase": "確認您的應用內購買",
         "conjugations": "變位",
@@ -1016,9 +1011,7 @@
         "speech": "語音",
         "start_learning": "開始學習囉",
         "subscription_cancelled": "訂閱已取消",
-        "subscription_required": "需要訂閱",
         "tags": "標籤",
-        "tokenizer": "分詞器",
         "transcript": "逐字稿",
         "trial": "試用",
         "tv_show": "電視節目",
@@ -1033,7 +1026,6 @@
         "web_reader": "網頁閱讀器",
         "welcome": "歡迎來到 Language Player",
         "welcome_back": "歡迎回來",
-        "word": "單字",
         "your_current_plan": "你目前的方案"
     },
     "video": {
