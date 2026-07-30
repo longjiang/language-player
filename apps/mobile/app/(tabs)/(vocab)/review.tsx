@@ -264,35 +264,44 @@ export default function ReviewScreen() {
     return () => { cancelled = true; };
   }, [cards, currentIndex, l2Code, l1Lang.code, display.translation]);
 
-  // ── Pre-tokenize + pre-lookup the next card's context sentence(s) ──
+  // ── Pre-tokenize + pre-lookup the next 3 cards' context sentence(s) ──
+  const preWarmInstances = useMemo(() => {
+    const result: Array<{ text: string; l2Code: string; l1Code: string }> = [];
+    for (let i = 1; i <= 3; i++) {
+      const card = cards[currentIndex + i];
+      if (!card) break;
+      const cardInstances = ((card.word as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined) ?? (
+        card.word.context
+          ? [{ timestamp: card.word.date ?? 0, form: card.word.forms?.[0] ?? '', context: card.word.context as unknown as SavedWordContext }]
+          : []
+      );
+      for (const inst of cardInstances) {
+        if (inst.context?.text) {
+          result.push({ text: inst.context.text, l2Code, l1Code: l1Lang.code });
+        }
+      }
+    }
+    return result;
+  }, [currentIndex, cards, l2Code, l1Lang.code]);
+
+  // ── Pre-warm tokenization + dictionary cache for upcoming cards ──
   useEffect(() => {
-    const nextCard = cards[currentIndex + 1];
-    if (!nextCard) return;
-
-    const nextInstances = ((nextCard.word as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined) ?? (
-      nextCard.word.context
-        ? [{ timestamp: nextCard.word.date ?? 0, form: nextCard.word.forms?.[0] ?? '', context: nextCard.word.context as unknown as SavedWordContext }]
-        : []
-    );
-
-    for (const inst of nextInstances) {
-      if (!inst.context?.text) continue;
-
+    for (const ctx of preWarmInstances) {
       // Step 1: pre-tokenize (populates the in-memory lemmatizeText cache)
-      lemmatizeText(inst.context.text, l2Code).then((tokens: LemmatizedToken[]) => {
+      lemmatizeText(ctx.text, ctx.l2Code).then((tokens: LemmatizedToken[]) => {
         // Step 2: pre-lookup definitions for all unique lemmas
         const uniqueLemmas = [...new Set(
           tokens.flatMap(t => t.lemmas.map(l => l.lemma).filter(Boolean))
         )];
         if (uniqueLemmas.length > 0) {
           bulkLookupWords(
-            uniqueLemmas.map(text => ({ text, l2Code, l1Code: l1Lang.code })),
+            uniqueLemmas.map(text => ({ text, l2Code: ctx.l2Code, l1Code: ctx.l1Code })),
             PYTHON_API_URL,
           );
         }
       });
     }
-  }, [currentIndex, cards, l2Code, l1Lang.code]);
+  }, [preWarmInstances]);
 
   // ── Reset session state when language changes ──
   useEffect(() => {
