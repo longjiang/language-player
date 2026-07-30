@@ -15,7 +15,7 @@ import {
   parseTTML, parseWebVTTLike, parseSRT,
   parseYTTimedText, parseYTJSON3, tryDetectL2FromCues,
 } from './subtitle-parsers';
-import { t } from './i18n';
+import { t, setLocale } from './i18n';
 import langNames from '../dist/lang-names.json';
 
 // ── Site detection ───────────────────────────────────────────────────────
@@ -710,6 +710,31 @@ function populateL2Selector() {
   l2SelectEl.disabled = false;
 }
 
+/** CSV-style locale → Chrome _locales/ directory name.
+ *  Used to look up endonyms in lang-names.json. */
+const CSV_TO_CHROME_LOCALE = {
+  'en': 'en', 'zh-Hans': 'zh_CN', 'zh-Hant': 'zh_TW', 'af': 'af', 'ar': 'ar',
+  'ca': 'ca', 'de': 'de', 'el': 'el', 'es': 'es', 'fi': 'fi', 'fr': 'fr',
+  'ga': 'ga', 'hi': 'hi', 'hr': 'hr', 'hu': 'hu', 'id': 'id', 'it': 'it',
+  'ja': 'ja', 'ko': 'ko', 'nl': 'nl', 'no': 'no', 'pl': 'pl', 'pt': 'pt',
+  'ro': 'ro', 'ru': 'ru', 'sr': 'sr', 'sv': 'sv', 'sw': 'sw', 'th': 'th',
+  'tr': 'tr', 'vi': 'vi',
+};
+
+/**
+ * Get a language's name in that language (its endonym/autonym).
+ * E.g. Français for fr, Deutsch for de, 日本語 for ja, 简体中文 for zh-Hans.
+ */
+function languageEndonym(code) {
+  const entry = getLangEntry(code);
+  if (!entry) return code.toUpperCase();
+  const chromeLocale = CSV_TO_CHROME_LOCALE[code];
+  if (chromeLocale && entry[chromeLocale]) return entry[chromeLocale];
+  // Fallback: try first non-English value
+  const first = Object.values(entry).find(v => v);
+  return first || code.toUpperCase();
+}
+
 /** UI languages for the L1 (interface) dropdown.
  *  These are the 31 Chrome locales supported by the extension. */
 const UI_LANGUAGES = [
@@ -723,15 +748,15 @@ function populateL1Selector() {
   if (!l1SelectEl) return;
   l1SelectEl.innerHTML = '';
 
-  // Sort alphabetically by the language's own name... but we show translated
-  // names using languageName() which uses lang-names. For UI languages, just
-  // show the localized name as well.
-  const sorted = [...UI_LANGUAGES].sort((a, b) => languageName(a).localeCompare(languageName(b)));
+  // Sort alphabetically by endonym (language's own name, e.g. Deutsch, Français)
+  const sorted = [...UI_LANGUAGES].sort((a, b) =>
+    languageEndonym(a).localeCompare(languageEndonym(b))
+  );
 
   for (const code of sorted) {
     const opt = document.createElement('option');
     opt.value = code;
-    opt.textContent = languageName(code);
+    opt.textContent = languageEndonym(code);
     if (code === L1_CODE) opt.selected = true;
     l1SelectEl.appendChild(opt);
   }
@@ -748,6 +773,12 @@ async function onL1Change(newCode) {
   try {
     chrome.storage.local.set({ l1Language: newCode });
   } catch {}
+
+  // Load locale messages for UI translation (panel labels, tooltips, status)
+  await setLocale(newCode);
+
+  // Refresh all static UI labels that were set during createPanelUI()
+  refreshUILabels();
 
   console.log('[LanguagePlayer] L1 changed to:', newCode);
   // Re-render transcript with new L1 (re-triggers translation with new l1Code)
@@ -920,6 +951,18 @@ function createPanelUI() {
 
   // Initial empty render
   mountTranscript(panelContent, [], -1, detectedL2Code, L1_CODE, seekTo);
+}
+
+/** Refresh all static UI labels after a locale change.
+ *  Called by onL1Change() after setLocale() loads the new messages. */
+function refreshUILabels() {
+  if (l1SelectEl) l1SelectEl.title = t('interfaceLanguage');
+  if (l2SelectEl) l2SelectEl.title = t('learningLanguage');
+  if (statusEl && STATE.cues.length === 0) {
+    statusEl.textContent = t('waitingForSubtitles');
+  }
+  // Close button is just '✕' (no text), no update needed
+  // L1/L2 dropdown options are endonyms, handled by populateL1Selector/populateL2Selector
 }
 
 function setPanelVisible(visible) {
@@ -1296,6 +1339,8 @@ async function init() {
 
   createPanelUI();
   await loadSavedLanguagePreferences();
+  // Load UI locale to match saved L1, then populate selectors with endonyms
+  await setLocale(L1_CODE);
   populateL1Selector();
   populateL2Selector();
   setupKeyboard();
