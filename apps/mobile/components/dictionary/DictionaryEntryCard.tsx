@@ -45,7 +45,7 @@ export function DictionaryEntryCard({
   const router = useRouter();
   const t = useT();
   const { l2Lang } = useLanguage();
-  const { hasWord, savedWords, saveWord, removeWord } = useSavedWords();
+  const { hasWord, savedWords, saveWord, removeWord } = useSavedWords(l2Lang.code);
   const [wordSaved, setWordSaved] = React.useState(false);
 
   // Sync wordSaved with the async SecureStore load

@@ -66,6 +66,7 @@ import { UserDataProvider } from '@/contexts/UserDataContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { DictionaryProvider } from '@/contexts/DictionaryContext';
+import { SavedWordsProvider } from '@/contexts/SavedWordsContext';
 import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 import '../global.css';
@@ -111,21 +112,23 @@ export default function RootLayout() {
             <SettingsProvider>
               <ThemeProvider>
                 <DictionaryProvider>
-                  <VideoPlayerProvider>
-                    <SubscriptionProvider>
-                    <Stack screenOptions={{ headerShown: false }}>
-                      <Stack.Screen name="index" />
-                      <Stack.Screen name="(tabs)" />
-                      <Stack.Screen name="login" options={{ presentation: 'modal' }} />
-                      <Stack.Screen name="register" options={{ presentation: 'modal' }} />
-                      <Stack.Screen name="select-language" options={{ presentation: 'modal' }} />
-                      <Stack.Screen name="go-pro-error" />
-                      <Stack.Screen name="go-pro-success" />
-                    </Stack>
-                    <PortalHost />
-                    <Toast config={toastConfig} topOffset={insets.top + 8} />
-                    </SubscriptionProvider>
-                  </VideoPlayerProvider>
+                  <SavedWordsProvider>
+                    <VideoPlayerProvider>
+                      <SubscriptionProvider>
+                      <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="index" />
+                        <Stack.Screen name="(tabs)" />
+                        <Stack.Screen name="login" options={{ presentation: 'modal' }} />
+                        <Stack.Screen name="register" options={{ presentation: 'modal' }} />
+                        <Stack.Screen name="select-language" options={{ presentation: 'modal' }} />
+                        <Stack.Screen name="go-pro-error" />
+                        <Stack.Screen name="go-pro-success" />
+                      </Stack>
+                      <PortalHost />
+                      <Toast config={toastConfig} topOffset={insets.top + 8} />
+                      </SubscriptionProvider>
+                    </VideoPlayerProvider>
+                  </SavedWordsProvider>
                 </DictionaryProvider>
               </ThemeProvider>
             </SettingsProvider>
