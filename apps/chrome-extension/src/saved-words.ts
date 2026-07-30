@@ -25,7 +25,7 @@ export async function fetchSavedWords(): Promise<SavedLexicalItemStore> {
   });
 
   if (!res.ok) {
-    console.warn('[LPV] Failed to fetch saved words:', res.status);
+    console.warn('[LanguagePlayer] Failed to fetch saved words:', res.status);
     return {};
   }
 
@@ -34,7 +34,7 @@ export async function fetchSavedWords(): Promise<SavedLexicalItemStore> {
     try {
       return JSON.parse(data.saved_words) as SavedLexicalItemStore;
     } catch {
-      console.warn('[LPV] Failed to parse saved_words JSON');
+      console.warn('[LanguagePlayer] Failed to parse saved_words JSON');
       return {};
     }
   }
@@ -59,7 +59,7 @@ export async function syncSavedWords(store: SavedLexicalItemStore): Promise<void
   });
 
   if (!res.ok) {
-    console.warn('[LPV] Failed to sync saved words:', res.status);
+    console.warn('[LanguagePlayer] Failed to sync saved words:', res.status);
   }
 }
 
