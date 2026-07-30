@@ -75,7 +75,7 @@ async function flushQueue() {
   _queue.clear();
   _timer = null;
 
-  console.log(`[LPV] [TOKENIZE] Flushing ${batchSize} queued texts`);
+  console.log(`[LanguagePlayer] [TOKENIZE] Flushing ${batchSize} queued texts`);
 
   // Group queued cache keys by language code
   const byLang = new Map<string, string[]>();
@@ -137,7 +137,7 @@ export function useBatchLemmatize(): UseBatchLemmatizeResult {
     // Skip if already queued or in-flight
     if (!_queue.has(cacheKey) && !inflightMap.has(cacheKey)) {
       _queue.add(cacheKey);
-      console.log(`[LPV] [TOKENIZE] Enqueued: "${text.substring(0, 40)}" (l2=${base})`);
+      console.log(`[LanguagePlayer] [TOKENIZE] Enqueued: "${text.substring(0, 40)}" (l2=${base})`);
     }
     scheduleFlush();
     return null;
@@ -187,7 +187,7 @@ async function sendBatch(texts: string[], lang: string): Promise<void> {
   const textsToSend = toFetch.map(t => t.text);
 
   // Create a single shared promise for all texts in this batch
-  console.log(`[LPV] [TOKENIZE] POST /lemmatize-normalized/batch (${textsToSend.length} texts, l2=${lang})`);
+  console.log(`[LanguagePlayer] [TOKENIZE] POST /lemmatize-normalized/batch (${textsToSend.length} texts, l2=${lang})`);
   const batchPromise = (async () => {
     try {
       const res = await fetch(`${API_BASE}/lemmatize-normalized/batch`, {
@@ -199,7 +199,7 @@ async function sendBatch(texts: string[], lang: string): Promise<void> {
       const data = await res.json();
       const results: LemmatizedToken[][] = data.results ?? [];
 
-      console.log(`[LPV] [TOKENIZE] Response: ${results.length} tokenized texts for l2=${lang}`);
+      console.log(`[LanguagePlayer] [TOKENIZE] Response: ${results.length} tokenized texts for l2=${lang}`);
 
       // Populate cache: results[i] corresponds to textsToSend[i]
       for (let i = 0; i < results.length; i++) {
@@ -207,7 +207,7 @@ async function sendBatch(texts: string[], lang: string): Promise<void> {
         cacheSet(key, results[i]);
       }
     } catch (err) {
-      console.warn('[LPV] Batch lemmatization failed:', err);
+      console.warn('[LanguagePlayer] Batch lemmatization failed:', err);
     } finally {
       // Clean up inflight entries
       for (const { key } of toFetch) {

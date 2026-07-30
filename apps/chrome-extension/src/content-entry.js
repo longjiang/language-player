@@ -28,7 +28,7 @@ const isHBOMax = /max\.com|hbonow\.com|hbomax\.com/.test(location.hostname);
 
 /** Trace logging helper — labels each step with a unique phase tag so
  *  you can follow the full pipeline from subtitle fetch to rendered tokens.
- *  Usage: trace('TOKENS_LOADED', '120 texts enqueued') → "[LPV] [FETCH] ..."
+ *  Usage: trace('TOKENS_LOADED', '120 texts enqueued') → "[LanguagePlayer] [FETCH] ..."
  */
 const TRACE_PHASES = {
   FETCH:    'FETCH',
@@ -39,7 +39,7 @@ const TRACE_PHASES = {
   RENDER:   'RENDER',
 };
 function trace(phase, msg) {
-  console.log(`[LPV] [${phase}] ${msg}`);
+  console.log(`[LanguagePlayer] [${phase}] ${msg}`);
 }
 
 /** Popular languages shown first in the L2 dropdown */

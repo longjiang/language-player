@@ -48,7 +48,7 @@ export function useTranslateLines(
     setProgress(0);
     setTranslated(new Map());
 
-    console.log(`[LPV] [TRANSLATE] Starting batch translation: ${cues.length} lines, l1=${l1Code}, l2=${l2Code}`);
+    console.log(`[LanguagePlayer] [TRANSLATE] Starting batch translation: ${cues.length} lines, l1=${l1Code}, l2=${l2Code}`);
 
     const lines = cues.map(c => c.text);
     const total = lines.length;
@@ -69,7 +69,7 @@ export function useTranslateLines(
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const translatedTexts: string[] = data.translated_texts ?? [];
-        console.log(`[LPV] [TRANSLATE] Chunk ${start}-${end}/${total}: ${translatedTexts.length} translations`);
+        console.log(`[LanguagePlayer] [TRANSLATE] Chunk ${start}-${end}/${total}: ${translatedTexts.length} translations`);
         for (let i = 0; i < translatedTexts.length; i++) {
           result.set(start + i, translatedTexts[i]!);
         }
@@ -77,7 +77,7 @@ export function useTranslateLines(
         setProgress(Math.min(end, total));
       } catch (err: any) {
         if (err.name === 'AbortError' || controller.signal.aborted) break;
-        console.warn('[LPV] Translation chunk failed:', err);
+        console.warn('[LanguagePlayer] Translation chunk failed:', err);
         break;
       }
     }
@@ -86,7 +86,7 @@ export function useTranslateLines(
       setLoading(false);
       setProgress(total);
       doneRef.current = true;
-      console.log(`[LPV] [TRANSLATE] Complete: ${total}/${total} lines`);
+      console.log(`[LanguagePlayer] [TRANSLATE] Complete: ${total}/${total} lines`);
     }
   }, [cues, l1Code, l2Code, enabled]);
 
