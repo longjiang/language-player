@@ -1,46 +1,4 @@
 key,en,zh-Hans,zh-Hant,af,ar,ca,de,el,es,fi,fr,ga,hi,hr,hu,id,it,ja,ko,nl,no,pl,pt,ro,ru,sr,sv,sw,th,tr,vi
-"Maandishi: {text},ให้การวิเคราะห์ที่ชัดเจนของข้อความ{l2Code}ต่อไปนี้ รวมถึง:"
-"Maandishi: {text},ให้การวิเคราะห์ที่ชัดเจนของข้อความ{l2Code}ต่อไปนี้ รวมถึง:"
-"Metin: {text},Cung cấp phân tích rõ ràng về văn bản {l2Code} sau đây. Bao gồm:"
-"Metin: {text},Cung cấp phân tích rõ ràng về văn bản {l2Code} sau đây. Bao gồm:"
-"Szöveg: {text},Berikan uraian yang jelas tentang teks {l2Code} berikut. Sertakan:"
-"Szöveg: {text},Berikan uraian yang jelas tentang teks {l2Code} berikut. Sertakan:"
-"Teks: {text},قدم تحليلاً واضحاً للنص التالي باللغة {l2Code}. يشمل:"
-"Teks: {text},Fornisci una chiara analisi del seguente testo in {l2Code}. Includi:"
-"Teks: {text},قدم تحليلاً واضحاً للنص التالي باللغة {l2Code}. يشمل:"
-"Teks: {text},Fornisci una chiara analisi del seguente testo in {l2Code}. Includi:"
-"Tekst: {text},Adj világos elemzést a következő {l2Code} szövegről. Tartalmazza:"
-"Tekst: {text},Gi en tydelig oversikt over følgende {l2Code} tekst. Inkluder:"
-"Tekst: {text},Przedstaw jasną analizę następującego tekstu w języku {l2Code}. Uwzględnij:"
-"Tekst: {text},Fornece uma análise clara do seguinte texto em {l2Code}. Inclui:"
-"Tekst: {text},Ge en tydlig genomgång av följande {l2Code} text. Inkludera:"
-"Tekst: {text},Adj világos elemzést a következő {l2Code} szövegről. Tartalmazza:"
-"Tekst: {text},Gi en tydelig oversikt over følgende {l2Code} tekst. Inkluder:"
-"Tekst: {text},Przedstaw jasną analizę następującego tekstu w języku {l2Code}. Uwzględnij:"
-"Tekst: {text},Fornece uma análise clara do seguinte texto em {l2Code}. Inclui:"
-"Tekst: {text},Ge en tydlig genomgång av följande {l2Code} text. Inkludera:"
-"Teksti: {text},Fournis une analyse claire du texte suivant en {l2Code}. Inclut :"
-"Teksti: {text},Fournis une analyse claire du texte suivant en {l2Code}. Inclut :"
-"Testo: {text},次の{l2Code}テキストについて明確な分析を提供してください。含める内容："
-"Testo: {text},次の{l2Code}テキストについて明確な分析を提供してください。含める内容："
-"Text: {text},请对以下{l2Code}文本进行清晰的分析。包括："
-"Text: {text},请对以下{l2Code}文本进行清晰的分析。包括："
-"Text: {text},Gib eine klare Aufschlüsselung des folgenden {l2Code}-Textes. Enthalten:"
-"Text: {text},Δώσε μια σαφή ανάλυση του παρακάτω κειμένου στα {l2Code}. Περιλαμβάνει:"
-"Text: {text},Предоставь чёткий разбор следующего текста на {l2Code}. Включи:"
-"Text: {text},Toa uchambuzi wazi wa maandishi yafuatayo ya {l2Code}. Jumuisha:"
-"Text: {text},Gib eine klare Aufschlüsselung des folgenden {l2Code}-Textes. Enthalten:"
-"Text: {text},Δώσε μια σαφή ανάλυση του παρακάτω κειμένου στα {l2Code}. Περιλαμβάνει:"
-"Text: {text},Предоставь чёткий разбор следующего текста на {l2Code}. Включи:"
-"Text: {text},Toa uchambuzi wazi wa maandishi yafuatayo ya {l2Code}. Jumuisha:"
-"Texte : {text},Tabhair miondealú soiléir ar an téacs {l2Code} seo a leanas. San áireamh:"
-"Texte : {text},Tabhair miondealú soiléir ar an téacs {l2Code} seo a leanas. San áireamh:"
-"Texto: {text},Anna selkeä erittely seuraavasta {l2Code}-tekstistä. Sisältää:"
-"Texto: {text},Oferă o analiză clară a următorului text în {l2Code}. Include:"
-"Texto: {text},Anna selkeä erittely seuraavasta {l2Code}-tekstistä. Sisältää:"
-"Texto: {text},Oferă o analiză clară a următorului text în {l2Code}. Include:"
-"Téacs: {text},निम्नलिखित {l2Code} पाठ का स्पष्ट विश्लेषण प्रदान करें। शामिल करें:"
-"Téacs: {text},निम्नलिखित {l2Code} पाठ का स्पष्ट विश्लेषण प्रदान करें। शामिल करें:"
 action.change_language,Change language,切换语言,切換語言,Verander taal,تغيير اللغة,Canviar d'idioma,Sprache ändern,Αλλαγή γλώσσας,Cambiar idioma,Vaihda kieltä,Changer de langue,Athraigh teanga,भाषा बदलें,Promijeni jezik,Nyelv váltása,Ganti bahasa,Cambia lingua,言語を変更,언어 변경,Taal wijzigen,Bytt språk,Zmień język,Mudar idioma,Schimbă limba,Сменить язык,Промени језик,Byt språk,Badilisha lugha,เปลี่ยนภาษา,Dili değiştir,Đổi ngôn ngữ
 action.confirm,Confirm,确认,確認,Bevestig,تأكيد,Confirma,Bestätigen,Επιβεβαίωση,Confirmar,Vahvista,Confirmer,Deimhnigh,पुष्टि करें,Potvrdi,Megerősítés,Konfirmasi,Conferma,確認,확인,Bevestigen,Bekreft,Potwierdź,Confirmar,Confirmă,Подтвердить,Потврди,Bekräfta,Thibitisha,ยืนยัน,Onayla,Xác nhận
 action.delete_all,Delete All,删除全部,刪除全部,Vee alles uit,حذف الكل,Suprimeix-ho tot,Alle löschen,Διαγραφή όλων,Eliminar todo,Poista kaikki,Tout supprimer,Scrios Gach,सभी हटाएं,Izbriši sve,Összes törlése,Hapus Semua,Elimina tutto,すべて削除,모두 삭제,Alles verwijderen,Slett alle,Usuń wszystko,Excluir Tudo,Șterge tot,Удалить всё,Обриши све,Ta bort alla,Futa Zote,ลบทั้งหมด,Tümünü Sil,Xóa tất cả
@@ -155,172 +113,6 @@ title.info,Info,信息,資訊,Inligting,معلومات,Informació,Info,Πληρ
 title.offline_dictionaries,Offline Dictionaries,离线词典,離線詞典,Vanlynwoordeboeke,قواميس بدون اتصال,Diccionaris fora de línia,Offline-Wörterbücher,Λεξικά εκτός σύνδεσης,Diccionarios sin conexión,Offline-sanakirjat,Dictionnaires hors ligne,Foclóirí as líne,ऑफ़लाइन शब्दकोश,Rječnici izvan mreže,Offline szótárak,Kamus Luring,Dizionari offline,オフライン辞書,오프라인 사전,Offlinewoordenboeken,Ordbøker uten nett,Słowniki offline,Dicionários offline,Dicționare offline,Офлайн-словари,Речници ван мреже,Offline-ordböcker,Kamusi za nje ya mtandao,พจนานุกรมออฟไลน์,Çevrimdışı Sözlükler,Từ điển ngoại tuyến
 title.playback,Playback,播放,播放,Terugspeel,التشغيل,Reproducció,Wiedergabe,Αναπαραγωγή,Reproducción,Toisto,Lecture,Athsheinm,प्लेबैक,Reprodukcija,Lejátszás,Pemutaran,Riproduzione,再生,재생,Afspelen,Avspilling,Odtwarzanie,Reprodução,Redare,Воспроизведение,Репродукција,Uppspelning,Uchezaji,การเล่น,Oynatma,Phát lại
 title.speech,Speech,语音,語音,Spraak,الكلام,Veu,Sprache,Ομιλία,Voz,Puhe,Parole,Urlabhra,भाषण,Govor,Beszéd,Ucapan,Voce,音声,음성,Spraak,Tale,Mowa,Voz,Vorbire,Речь,Говор,Tal,Matamshi,คำพูด,Konuşma,Giọng nói
-"Κείμενο: {text},Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:"
-"Κείμενο: {text},Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:"
-"Текст: {text},Pruži jasnu analizu sledećeg teksta na {l2Code}. Uključi:"
-"Текст: {text},Pruži jasnu analizu sledećeg teksta na {l2Code}. Uključi:"
-"النص: {text},Proporciona un desglossament clar del següent text en {l2Code}. Inclou:"
-"النص: {text},Proporciona un desglossament clar del següent text en {l2Code}. Inclou:"
-"पाठ: {text},Pruži jasnu raščlambu sljedećeg teksta na {l2Code}. Uključi:"
-"पाठ: {text},Pruži jasnu raščlambu sljedećeg teksta na {l2Code}. Uključi:"
-"ข้อความ: {text},Aşağıdaki {l2Code} metninin net bir dökümünü sağla. İçerik:"
-"ข้อความ: {text},Aşağıdaki {l2Code} metninin net bir dökümünü sağla. İçerik:"
-"テキスト：{text},다음 {l2Code} 텍스트에 대한 명확한 분석을 제공하세요. 포함할 내용:"
-"テキスト：{text},다음 {l2Code} 텍스트에 대한 명확한 분석을 제공하세요. 포함할 내용:"
-"文本：{text},請對以下{l2Code}文本進行清晰的分析。包括："
-"文本：{text},Verskaf 'n duidelike uiteensetting van die volgende {l2Code} teks. Sluit in:"
-"文本：{text},請對以下{l2Code}文本進行清晰的分析。包括："
-"文本：{text},Verskaf 'n duidelike uiteensetting van die volgende {l2Code} teks. Sluit in:"
-"텍스트: {text},Geef een duidelijke uitsplitsing van de volgende {l2Code} tekst. Inclusief:"
-"텍스트: {text},Geef een duidelijke uitsplitsing van de volgende {l2Code} tekst. Inclusief:"
-1. A bhrí iomlán i {l1Name}
-1. A bhrí iomlán i {l1Name}
-1. De algemene betekenis in het {l1Name}
-1. De algemene betekenis in het {l1Name}
-1. Den overordnede betydningen på {l1Name}
-1. Den overordnede betydningen på {l1Name}
-1. Dess övergripande betydelse på {l1Name}
-1. Dess övergripande betydelse på {l1Name}
-1. Die algehele betekenis daarvan in {l1Name}
-1. Die algehele betekenis daarvan in {l1Name}
-1. El seu significat general en {l1Name}
-1. El seu significat general en {l1Name}
-1. Il suo significato complessivo in {l1Name}
-1. Il suo significato complessivo in {l1Name}
-1. Its overall meaning in {l1Name}
-1. Its overall meaning in {l1Name}
-1. Jego ogólne znaczenie w języku {l1Name}
-1. Jego ogólne znaczenie w języku {l1Name}
-1. Maana yake kwa jumla katika {l1Name}
-1. Maana yake kwa jumla katika {l1Name}
-1. Makna keseluruhannya dalam {l1Name}
-1. Makna keseluruhannya dalam {l1Name}
-1. Njegovo ukupno značenje na {l1Name}
-1. Njegovo ukupno značenje na {l1Name}
-1. Njegovo ukupno značenje na {l1Name}
-1. Njegovo ukupno značenje na {l1Name}
-1. O seu significado geral em {l1Name}
-1. O seu significado geral em {l1Name}
-1. Sa signification globale en {l1Name}
-1. Sa signification globale en {l1Name}
-1. Seine Gesamtbedeutung auf {l1Name}
-1. Seine Gesamtbedeutung auf {l1Name}
-1. Sen yleinen merkitys kielellä {l1Name}
-1. Sen yleinen merkitys kielellä {l1Name}
-1. Sensul său general în {l1Name}
-1. Sensul său general în {l1Name}
-1. Su significado general en {l1Name}
-1. Su significado general en {l1Name}
-1. {l1Name} dilinde genel anlamı
-1. {l1Name} dilinde genel anlamı
-1. {l1Name} में इसका समग्र अर्थ
-1. {l1Name} में इसका समग्र अर्थ
-1. {l1Name}での全体的な意味
-1. {l1Name}での全体的な意味
-1. {l1Name}에서의 전체적인 의미
-1. {l1Name}에서의 전체적인 의미
-1. Átfogó jelentése {l1Name} nyelven
-1. Átfogó jelentése {l1Name} nyelven
-1. Ý nghĩa tổng thể của nó trong {l1Name}
-1. Ý nghĩa tổng thể của nó trong {l1Name}
-1. Τη συνολική του σημασία στα {l1Name}
-1. Τη συνολική του σημασία στα {l1Name}
-1. Его общее значение на {l1Name}
-1. Его общее значение на {l1Name}
-1. معناه العام في {l1Name}
-1. معناه العام في {l1Name}
-1. ความหมายโดยรวมใน{l1Name}
-1. ความหมายโดยรวมใน{l1Name}
-1. 其在{l1Name}中的整体含义
-1. 其在{l1Name}中的整体含义
-1. 其在{l1Name}中的整體含義
-1. 其在{l1Name}中的整體含義
-2. 'n Frase-vir-frase uiteensetting wat verduidelik hoe die teks saamgestel is
-2. 'n Frase-vir-frase uiteensetting wat verduidelik hoe die teks saamgestel is
-2. A phrase-by-phrase breakdown explaining how the text is constructed
-2. A phrase-by-phrase breakdown explaining how the text is constructed
-2. Analizu frazu po frazu koja objašnjava kako je tekst sastavljen
-2. Analizu frazu po frazu koja objašnjava kako je tekst sastavljen
-2. Analizę fraza po frazie wyjaśniającą, jak tekst jest zbudowany
-2. Analizę fraza po frazie wyjaśniającą, jak tekst jest zbudowany
-2. Een frase-voor-frase uitsplitsing die uitlegt hoe de tekst is opgebouwd
-2. Een frase-voor-frase uitsplitsing die uitlegt hoe de tekst is opgebouwd
-2. Eine phraseweise Aufschlüsselung, die erklärt, wie der Text aufgebaut ist
-2. Eine phraseweise Aufschlüsselung, die erklärt, wie der Text aufgebaut ist
-2. En fras-för-fras-genomgång som förklarar hur texten är uppbyggd
-2. En fras-för-fras-genomgång som förklarar hur texten är uppbyggd
-2. En frase-for-frase oversikt som forklarer hvordan teksten er bygget opp
-2. En frase-for-frase oversikt som forklarer hvordan teksten er bygget opp
-2. Kifejezésenkénti bontás, amely elmagyarázza a szöveg felépítését
-2. Kifejezésenkénti bontás, amely elmagyarázza a szöveg felépítését
-2. Lausekohtainen erittely, joka selittää tekstin rakenteen
-2. Lausekohtainen erittely, joka selittää tekstin rakenteen
-2. Metnin nasıl oluşturulduğunu açıklayan ifade ifade döküm
-2. Metnin nasıl oluşturulduğunu açıklayan ifade ifade döküm
-2. Miondealú frása ar fhrása a mhíníonn conas atá an téacs tógtha
-2. Miondealú frása ar fhrása a mhíníonn conas atá an téacs tógtha
-2. O analiză frază cu frază care explică modul în care este construit textul
-2. O analiză frază cu frază care explică modul în care este construit textul
-2. Phân tích từng cụm từ giải thích cách văn bản được xây dựng
-2. Phân tích từng cụm từ giải thích cách văn bản được xây dựng
-2. Raščlambu frazu po frazu koja objašnjava kako je tekst sastavljen
-2. Raščlambu frazu po frazu koja objašnjava kako je tekst sastavljen
-2. Uchambuzi wa kifungu kwa kifungu unaoelezea jinsi maandishi yalivyojengwa
-2. Uchambuzi wa kifungu kwa kifungu unaoelezea jinsi maandishi yalivyojengwa
-2. Uma análise frase por frase explicando como o texto é construído
-2. Uma análise frase por frase explicando como o texto é construído
-2. Un desglose frase por frase que explica cómo está construido el texto
-2. Un desglose frase por frase que explica cómo está construido el texto
-2. Un desglossament frase per frase que explica com està construït el text
-2. Un desglossament frase per frase que explica com està construït el text
-2. Un'analisi frase per frase che spiega come è costruito il testo
-2. Un'analisi frase per frase che spiega come è costruito il testo
-2. Une analyse phrase par phrase expliquant comment le texte est construit
-2. Une analyse phrase par phrase expliquant comment le texte est construit
-2. Uraian frasa demi frasa yang menjelaskan bagaimana teks disusun
-2. Uraian frasa demi frasa yang menjelaskan bagaimana teks disusun
-2. Μια ανάλυση φράση προς φράση που εξηγεί πώς είναι δομημένο το κείμενο
-2. Μια ανάλυση φράση προς φράση που εξηγεί πώς είναι δομημένο το κείμενο
-2. Пофразовый разбор, объясняющий, как построен текст
-2. Пофразовый разбор, объясняющий, как построен текст
-2. تحليل عبارة بعبارة يشرح كيفية تركيب النص
-2. تحليل عبارة بعبارة يشرح كيفية تركيب النص
-2. वाक्यांश-दर-वाक्यांश विश्लेषण जो बताए कि पाठ कैसे बना है
-2. वाक्यांश-दर-वाक्यांश विश्लेषण जो बताए कि पाठ कैसे बना है
-2. การวิเคราะห์ทีละวลีที่อธิบายว่าข้อความถูกสร้างขึ้นอย่างไร
-2. การวิเคราะห์ทีละวลีที่อธิบายว่าข้อความถูกสร้างขึ้นอย่างไร
-2. テキストがどのように構成されているかを説明するフレーズごとの分析
-2. テキストがどのように構成されているかを説明するフレーズごとの分析
-2. 逐句分析文本的构成方式
-2. 逐句分析文本的构成方式
-2. 逐句分析文本的構成方式
-2. 逐句分析文本的構成方式
-2. 텍스트가 어떻게 구성되었는지 설명하는 구문별 분석
-2. 텍스트가 어떻게 구성되었는지 설명하는 구문별 분석
-Bağlam: {context}
-Comhthéacs: {context}
-Con texte : {context}
-Contesto: {context}
-Context: {context}
-Context: {context}
-Context: {context}
-Context: {context}
-Contexto: {context}
-Contexto: {context}
-Kon teks: {context}
-Kon teksti: {context}
-Kon text: {context}
-Konteks: {context}
-Kontekst: {context}
-Kontekst: {context}
-Kontekst: {context}
-Kontekst: {context}
-Kontext: {context}
-Kontextus: {context}
-Muktadha: {context}
-Ngữ cảnh: {context}
-Văn bản: {text}
-Văn bản: {text}
 a11y.channel_preferences,Channel preferences,频道偏好,頻道偏好,Kanaalvoorkeure,تفضيلات القناة,Preferències del canal,Kanaleinstellungen,Προτιμήσεις καναλιού,Preferencias de canal,Kanava-asetukset,Préférences de la chaîne,Roghanna cainéil,चैनल प्राथमिकताएँ,Postavke kanala,Csatorna beállítások,Preferensi saluran,Preferenze del canale,チャンネル設定,채널 설정,Kanaalvoorkeuren,Kanalpreferanser,Preferencje kanału,Preferências de canal,Preferințe canal,Настройки канала,Postavke kanala,Kanalinställningar,Mapendeleo ya kituo,การตั้งค่าช่อง,Kanal tercihleri,Tùy chọn kênh
 a11y.click_to_seek,Click to seek,点击跳转,點擊跳轉,Klik om te soek,انقر للانتقال,Fes clic per cercar,Klicken zum Suchen,Κλικ για αναζήτηση,Clic para buscar,Klikkaa siirtyäksesi,Cliquer pour chercher,Cliceáil le cuardach,खोजने के लिए क्लिक करें,Klikni za traženje,Kattintson a kereséshez,Klik untuk mencari,Clicca per cercare,クリックで移動,클릭하여 탐색,Klik om te scrollen,Klikk for å søke,"Kliknij, aby przewinąć",Clique para avançar,Apasă pentru a căuta,Нажмите для перемотки,Kliknite za pretraživanje,Klicka för att söka,Bofya kutafuta,คลิกเพื่อค้นหา,Atlamak için tıkla,Nhấp để tua
 a11y.menu,Menu,菜单,選單,Kieslys,القائمة,Menú,Menü,Μενού,Menú,Valikko,Menu,Roghchlár,मेनू,Izbornik,Menü,Menu,Menu,メニュー,메뉴,Menu,Meny,Menu,Menu,Meniu,Меню,Meni,Meny,Menyu,เมนู,Menü,Menu
@@ -1092,8 +884,6 @@ placeholder.verification_code,Verification code,验证码,驗證碼,Verifikasiek
 price.annual,${price}/yr,${price}/年,${price}/年,${price}/jr,${price}/سنة,${price}/any,${price}/Jahr,${price}/έτος,${price}/año,${price}/vuosi,${price}/an,${price}/bliain,${price}/वर्ष,${price}/god,${price}/év,${price}/tahun,${price}/anno,${price}/年,${price}/년,${price}/jaar,${price}/år,${price}/rok,${price}/ano,${price}/an,${price}/год,${price}/год,${price}/år,${price}/mwaka,${price}/ปี,${price}/yıl,${price}/năm
 price.lifetime,${price}/lifetime,${price}/终身,${price}/終身,${price}/leeftyd,${price}/مدى الحياة,${price}/per vida,${price}/lebenslang,${price}/εφ' όρου ζωής,${price}/de por vida,${price}/elinikäinen,${price}/à vie,${price}/ar feadh an tsaoil,${price}/आजीवन,${price}/doživotno,${price}/életre szóló,${price}/seumur hidup,${price}/a vita,${price}/生涯,${price}/평생,${price}/levenslang,${price}/livstid,${price}/dożywotnio,${price}/vitalício,${price}/pe viață,${price}/пожизненно,${price}/доживотно,${price}/livstid,${price}/maisha,${price}/ตลอดชีพ,${price}/ömür boyu,${price}/trọn đời
 price.monthly,${price}/mo,${price}/月,${price}/月,${price}/md,${price}/شهر,${price}/mes,${price}/Monat,${price}/μήνα,${price}/mes,${price}/kk,${price}/mois,${price}/mí,${price}/माह,${price}/mj,${price}/hó,${price}/bulan,${price}/mese,${price}/月,${price}/월,${price}/mnd,${price}/mnd,${price}/mies,${price}/mês,${price}/lună,${price}/мес,${price}/мес,${price}/mån,${price}/mwezi,${price}/เดือน,${price}/ay,${price}/tháng
-prompt.explain_block,Provide a clear breakdown of the following {l2Code} text. Include:
-prompt.explain_block_context,Provide a clear breakdown of the following {l2Code} text. Include:
 prompt.explain_block_header,Provide a clear breakdown of the following {l2Code} text. Include:,请对以下{l2Code}文本进行清晰的分析。包括：,請對以下{l2Code}文本進行清晰的分析。包括：,Verskaf 'n duidelike uiteensetting van die volgende {l2Code} teks. Sluit in:,قدم تحليلاً واضحاً للنص التالي باللغة {l2Code}. يشمل:,Proporciona un desglossament clar del següent text en {l2Code}. Inclou:,Gib eine klare Aufschlüsselung des folgenden {l2Code}-Textes. Enthalten:,Δώσε μια σαφή ανάλυση του παρακάτω κειμένου στα {l2Code}. Περιλαμβάνει:,Proporciona un desglose claro del siguiente texto en {l2Code}. Incluye:,Anna selkeä erittely seuraavasta {l2Code}-tekstistä. Sisältää:,Fournis une analyse claire du texte suivant en {l2Code}. Inclut :,Tabhair miondealú soiléir ar an téacs {l2Code} seo a leanas. San áireamh:,निम्नलिखित {l2Code} पाठ का स्पष्ट विश्लेषण प्रदान करें। शामिल करें:,Pruži jasnu raščlambu sljedećeg teksta na {l2Code}. Uključi:,Adj világos elemzést a következő {l2Code} szövegről. Tartalmazza:,Berikan uraian yang jelas tentang teks {l2Code} berikut. Sertakan:,Fornisci una chiara analisi del seguente testo in {l2Code}. Includi:,次の{l2Code}テキストについて明確な分析を提供してください。含める内容：,다음 {l2Code} 텍스트에 대한 명확한 분석을 제공하세요. 포함할 내용:,Geef een duidelijke uitsplitsing van de volgende {l2Code} tekst. Inclusief:,Gi en tydelig oversikt over følgende {l2Code} tekst. Inkluder:,Przedstaw jasną analizę następującego tekstu w języku {l2Code}. Uwzględnij:,Fornece uma análise clara do seguinte texto em {l2Code}. Inclui:,Oferă o analiză clară a următorului text în {l2Code}. Include:,Предоставь чёткий разбор следующего текста на {l2Code}. Включи:,Pruži jasnu analizu sledećeg teksta na {l2Code}. Uključi:,Ge en tydlig genomgång av följande {l2Code} text. Inkludera:,Toa uchambuzi wazi wa maandishi yafuatayo ya {l2Code}. Jumuisha:,ให้การวิเคราะห์ที่ชัดเจนของข้อความ{l2Code}ต่อไปนี้ รวมถึง:,Aşağıdaki {l2Code} metninin net bir dökümünü sağla. İçerik:,Cung cấp phân tích rõ ràng về văn bản {l2Code} sau đây. Bao gồm:
 prompt.explain_block_item1,Its overall meaning in {l1Name},其在{l1Name}中的整体含义,其在{l1Name}中的整體含義,Die algehele betekenis daarvan in {l1Name},معناه العام في {l1Name},El seu significat general en {l1Name},Seine Gesamtbedeutung auf {l1Name},Τη συνολική του σημασία στα {l1Name},Su significado general en {l1Name},Sen yleinen merkitys kielellä {l1Name},Sa signification globale en {l1Name},A bhrí iomlán i {l1Name},{l1Name} में इसका समग्र अर्थ,Njegovo ukupno značenje na {l1Name},Átfogó jelentése {l1Name} nyelven,Makna keseluruhannya dalam {l1Name},Il suo significato complessivo in {l1Name},{l1Name}での全体的な意味,{l1Name}에서의 전체적인 의미,De algemene betekenis in het {l1Name},Den overordnede betydningen på {l1Name},Jego ogólne znaczenie w języku {l1Name},O seu significado geral em {l1Name},Sensul său general în {l1Name},Его общее значение на {l1Name},Njegovo ukupno značenje na {l1Name},Dess övergripande betydelse på {l1Name},Maana yake kwa jumla katika {l1Name},ความหมายโดยรวมใน{l1Name},{l1Name} dilinde genel anlamı,Ý nghĩa tổng thể của nó trong {l1Name}
 prompt.explain_block_item2,A phrase-by-phrase breakdown explaining how the text is constructed,逐句分析文本的构成方式,逐句分析文本的構成方式,'n Frase-vir-frase uiteensetting wat verduidelik hoe die teks saamgestel is,تحليل عبارة بعبارة يشرح كيفية تركيب النص,Un desglossament frase per frase que explica com està construït el text,"Eine phraseweise Aufschlüsselung, die erklärt, wie der Text aufgebaut ist",Μια ανάλυση φράση προς φράση που εξηγεί πώς είναι δομημένο το κείμενο,Un desglose frase por frase que explica cómo está construido el texto,"Lausekohtainen erittely, joka selittää tekstin rakenteen",Une analyse phrase par phrase expliquant comment le texte est construit,Miondealú frása ar fhrása a mhíníonn conas atá an téacs tógtha,वाक्यांश-दर-वाक्यांश विश्लेषण जो बताए कि पाठ कैसे बना है,Raščlambu frazu po frazu koja objašnjava kako je tekst sastavljen,"Kifejezésenkénti bontás, amely elmagyarázza a szöveg felépítését",Uraian frasa demi frasa yang menjelaskan bagaimana teks disusun,Un'analisi frase per frase che spiega come è costruito il testo,テキストがどのように構成されているかを説明するフレーズごとの分析,텍스트가 어떻게 구성되었는지 설명하는 구문별 분석,Een frase-voor-frase uitsplitsing die uitlegt hoe de tekst is opgebouwd,En frase-for-frase oversikt som forklarer hvordan teksten er bygget opp,"Analizę fraza po frazie wyjaśniającą, jak tekst jest zbudowany",Uma análise frase por frase explicando como o texto é construído,O analiză frază cu frază care explică modul în care este construit textul,"Пофразовый разбор, объясняющий, как построен текст",Analizu frazu po frazu koja objašnjava kako je tekst sastavljen,En fras-för-fras-genomgång som förklarar hur texten är uppbyggd,Uchambuzi wa kifungu kwa kifungu unaoelezea jinsi maandishi yalivyojengwa,การวิเคราะห์ทีละวลีที่อธิบายว่าข้อความถูกสร้างขึ้นอย่างไร,Metnin nasıl oluşturulduğunu açıklayan ifade ifade döküm,Phân tích từng cụm từ giải thích cách văn bản được xây dựng
@@ -1118,7 +908,6 @@ review.show_definition,Show Definition,显示释义,,Wys Definisie,إظهار ا
 review.srs_new,new,新,,nuut,جديد,nou,neu,νέο,nuevo,uusi,nouveau,nua,नया,novo,új,baru,nuovo,新しい,새로 배우기,nieuw,ny,nowy,novo,nou,новый,novo,ny,mpya,ใหม่,yeni,mới
 review.srs_review,"{count, plural, one {reviewed once} other {reviewed # times}}","{count, plural, other {已复习 # 次}}","{count, plural, other {已複習 # 次}}","{count, plural, one {# keer hersien} other {# keer hersien}}","{count, plural, one {تمت المراجعة مرة واحدة} two {تمت المراجعة مرتين} few {تمت المراجعة # مرات} other {تمت المراجعة # مرة}}","{count, plural, one {revisat 1 cop} other {revisat # cops}}","{count, plural, one {1 Mal wiederholt} other {# Mal wiederholt}}","{count, plural, one {επαναλήφθηκε 1 φορά} other {επαναλήφθηκε # φορές}}","{count, plural, one {revisado 1 vez} other {revisado # veces}}","{count, plural, one {kerrattu 1 kerran} other {kerrattu # kertaa}}","{count, plural, one {révisé # fois} other {révisé # fois}}","{count, plural, one {athbhreithnithe 1 uair} two {athbhreithnithe 2 uair} other {athbhreithnithe # uair}}","{count, plural, one {1 बार समीक्षित} other {# बार समीक्षित}}","{count, plural, one {pregledano 1 put} few {pregledano # puta} other {pregledano # puta}}","{count, plural, one {1 alkalommal áttekintve} other {# alkalommal áttekintve}}","{count, plural, other {diulas # kali}}","{count, plural, one {revisionato 1 volta} other {revisionato # volte}}","{count, plural, other {# 回復習済み}}","{count, plural, other {#회 복습함}}","{count, plural, one {1 keer herhaald} other {# keer herhaald}}","{count, plural, one {gjennomgått 1 gang} other {gjennomgått # ganger}}","{count, plural, one {przejrzane 1 raz} few {przejrzane # razy} many {przejrzane # razy} other {przejrzane # razy}}","{count, plural, one {revisado 1 vez} other {revisado # vezes}}","{count, plural, one {recenzat 1 dată} few {recenzat # ori} other {recenzat # ori}}","{count, plural, one {повторено 1 раз} few {повторено # раза} many {повторено # раз} other {повторено # раз}}","{count, plural, one {pregledano 1 put} few {pregledano # puta} other {pregledano # puta}}","{count, plural, one {granskad 1 gång} other {granskad # gånger}}","{count, plural, one {imekaguliwa mara 1} other {imekaguliwa mara #}}","{count, plural, other {ทบทวนแล้ว # ครั้ง}}","{count, plural, one {# kez gözden geçirildi} other {# kez gözden geçirildi}}","{count, plural, other {đã ôn tập # lần}}"
 setting.all_words,All Words,所有单词,所有單字,Alle Woorde,كل الكلمات,Totes les paraules,Alle Wörter,Όλες οι λέξεις,Todas las palabras,Kaikki sanat,Tous les mots,Gach focal,सभी शब्द,Sve riječi,Minden szó,Semua kata,Tutte le parole,すべての単語,모든 단어,Alle woorden,Alle ord,Wszystkie słowa,Todas as palavras,Toate cuvintele,Все слова,Све речи,Alla ord,Maneno yote,ทุกคำ,Tüm Kelimeler,Tất cả các từ
-setting.auto_pronounce,Auto Pronounce,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 setting.bigger,Bigger,更大,更大,Groter,أكبر,Més gran,Größer,Μεγαλύτερο,Más grande,Suurempi,Plus grand,Níos mó,बड़ा,Veće,Nagyobb,Lebih besar,Più grande,大きく,더 크게,Groter,Større,Większy,Maior,Mai mare,Больше,Веће,Större,Kubwa,ใหญ่ขึ้น,Daha Büyük,Lớn hơn
 setting.captions,Captions,字幕,字幕,Onderskrifte,التسميات التوضيحية,Subtítols,Untertitel,Υπότιτλοι,Subtítulos,Tekstitykset,Sous-titres,Fotheidil,कैप्शन,Titlovi,Feliratok,Teks,Didascalie,字幕,자막,Ondertitels,Teksting,Napisy,Legendas,Subtitrări,Субтитры,Титлови,Undertexter,Manukuu,คำบรรยาย,Altyazılar,Phụ đề
 setting.dark,Dark,深色,深色,Donker,داكن,Fosc,Dunkel,Σκοτεινό,Oscuro,Tumma,Sombre,Dorcha,डार्क,Tamno,Sötét,Gelap,Scuro,ダーク,다크,Donker,Mørk,Ciemny,Escuro,Întunecat,Тёмная,Тамно,Mörk,Giza,มืด,Koyu,Tối
@@ -1145,10 +934,6 @@ setting.quiz_mode,Quiz Mode,测验模式,測驗模式,Vasvra-modus,وضع الا
 setting.review,Review,复习,,Hersiening,مراجعة,Revisió,Wiederholen,Επανάληψη,Revisión,Kertaus,Révision,Athbhreithniú,समीक्षा,Pregled,Áttekintés,Tinjau,Revisione,復習,복습,Herhaling,Gjennomgang,Przegląd,Revisar,Recenzie,Повторение,Pregled,Granska,Hakiki,ทบทวน,Gözden Geçir,Ôn tập
 setting.romanization,Romanization,罗马化,羅馬化,Romanisering,الرومنة,Romanització,Romanisierung,Λατινική μεταγραφή,Romanización,Latinisaatio,Romanisation,Rómhánú,रोमनीकरण,Romanizacija,Latin betűs átírás,Romanisasi,Romanizzazione,ローマ字,로마자 표기,Romanisatie,Romanisering,Romanizacja,Romanização,Romanizare,Романизация,Романизација,Romanisering,Urumi,การถอดเป็นอักษรโรมัน,Romanizasyon,La tinh hóa
 setting.ruby,Ruby,注音,注音,Ruby,روبي,Ruby,Ruby,Ρούμπι,Ruby,Ruby,Ruby,Rúibí,रूबी,Ruby,Ruby,Ruby,Ruby,ルビ,루비,Ruby,Ruby,Ruby,Ruby,Ruby,Руби,Ruby,Ruby,Rubi,รูบี้,Ruby,Ruby
-setting.saved_words_blanks,Saved Words as Blanks,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-setting.show_gloss_saved,Show Gloss for Saved,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-setting.show_phonetics,Show Phonetics,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-setting.show_translation,Show Translation,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 setting.simplified,简体 Simplified,简体 Simplified,,简体 Vereenvoudig,简体 مبسطة,简体 Simplificat,简体 Vereinfacht,Απλοποιημένα,简体 Simplificado,Yksinkertaistettu,简体 Simplifié,简体 Simplithe,सरलीकृत चीनी,简体 Pojednostavljeno,Egyszerűsített kínai,简体 Sederhana,简体 Semplificato,簡体字,간체,Vereenvoudigd Chinees,简体 Forenklet,Uproszczony,简体 Simplificado,简体 Simplificat,Упрощённый,简体 Pojednostavljeno,简体 Förenklad,简体 Kirahisi,简体 ตัวย่อ,简体 Basitleştirilmiş,Giản thể
 setting.slow,Slow,慢,,Stadig,بطيء,Lent,Langsam,Αργή,Lento,Hidas,Lent,Mall,धीमा,Sporo,Lassú,Lambat,Lento,遅い,느리게,Langzaam,Sakte,Wolno,Lento,Lent,Медленно,Sporo,Långsam,Polepole,ช้า,Yavaş,Chậm
 setting.smaller,Smaller,更小,更小,Kleiner,أصغر,Més petit,Kleiner,Μικρότερο,Más pequeño,Pienempi,Plus petit,Níos lú,छोटा,Manje,Kisebb,Lebih kecil,Più piccolo,小さく,더 작게,Kleiner,Mindre,Mniejszy,Menor,Mai mic,Меньше,Мање,Mindre,Ndogo,เล็กลง,Daha Küçük,Nhỏ hơn
@@ -1157,7 +942,6 @@ setting.system,System,系统,系統,Stelsel,النظام,Sistema,System,Σύστ
 setting.text_appearance,Text Appearance,文字外观,文字外觀,Teksvoorkoms,مظهر النص,Aparença del text,Textdarstellung,Εμφάνιση κειμένου,Apariencia del texto,Tekstin ulkoasu,Apparence du texte,Dealramh an téacs,पाठ की उपस्थिति,Izgled teksta,Szöveg megjelenése,Tampilan teks,Aspetto del testo,テキストの外観,텍스트 모양,Tekstweergave,Tekstutseende,Wygląd tekstu,Aparência do texto,Aspect text,Вид текста,Изглед текста,Textutseende,Mwonekano wa maandishi,ลักษณะข้อความ,Metin Görünümü,Giao diện văn bản
 setting.theme,Theme,主题,主題,Tema,المظهر,Tema,Design,Θέμα,Tema,Teema,Thème,Téama,थीम,Tema,Téma,Tema,Tema,テーマ,테마,Thema,Tema,Motyw,Tema,Temă,Тема,Тема,Tema,Mandhari,ธีม,Tema,Chủ đề
 setting.traditional,繁體 Traditional,繁體 Traditional,,繁體 Tradisioneel,繁體 تقليدية,繁體 Tradicional,繁體 Traditionell,Παραδοσιακά,繁體 Tradicional,Perinteinen,繁體 Traditionnel,繁体 Traidisiúnta,पारंपरिक चीनी,繁體 Tradicionalno,Hagyományos kínai,繁體 Tradisional,繁體 Tradizionale,繁体字,번체,Traditioneel Chinees,繁體 Tradisjonell,Tradycyjny,繁體 Tradicional,繁體 Tradițional,Традиционный,繁體 Tradicionalno,繁體 Traditionell,繁體 Kiasili,繁體 ตัวเต็ม,繁體 Geleneksel,Phồn thể
-setting.use_traditional,Use Traditional,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 setting.word_level_display,Word-Level Display,单词级显示,單字級顯示,Woordvlak-vertoon,عرض على مستوى الكلمة,Visualització per paraula,Wortebene-Anzeige,Εμφάνιση σε επίπεδο λέξης,Visualización por palabra,Sanatason näyttö,Affichage par mot,Taispeáint de réir focail,शब्द-स्तरीय प्रदर्शन,Prikaz na razini riječi,Szószintű megjelenítés,Tampilan per kata,Visualizzazione a livello di parola,単語レベルの表示,단어 수준 표시,Weergave op woordniveau,Ordnivåvisning,Wyświetlanie na poziomie słowa,Exibição por palavra,Afișare la nivel de cuvânt,Отображение на уровне слова,Приказ на нивоу речи,Ordnivåvisning,Onyesho la kiwango cha neno,การแสดงผลระดับคำ,Kelime Düzeyinde Görüntüleme,Hiển thị cấp độ từ
 sort.most_viewed,Most Viewed,最多观看,最多觀看,Meeste gekyk,الأكثر مشاهدة,Més vistos,Meistgesehen,Με τις περισσότερες προβολές,Más vistos,Katsotuimmat,Les plus vus,Is mó a breathnaíodh,सबसे अधिक देखा गया,Najgledanije,Legnézettebb,Paling Banyak Dilihat,Più visti,最も視聴された,가장 많이 본,Meest bekeken,Mest sett,Najczęściej oglądane,Mais vistos,Cele mai vizionate,Самые просматриваемые,Највише прегледано,Mest sedda,Yaliyoangaliwa zaidi,ดูมากที่สุด,En Çok İzlenen,Xem nhiều nhất
 sort.title,Title,标题,標題,Titel,العنوان,Títol,Titel,Τίτλος,Título,Otsikko,Titre,Teideal,शीर्षक,Naslov,Cím,Judul,Titolo,タイトル,제목,Titel,Tittel,Tytuł,Título,Titlu,Название,Наслов,Titel,Kichwa,ชื่อเรื่อง,Başlık,Tiêu đề
@@ -1174,10 +958,8 @@ subtitle.translation_off,Translation off,翻译已关闭,翻譯已關閉,Vertali
 subtitle.translation_on,Translation on,翻译已开启,翻譯已開啟,Vertaling aan,الترجمة مفعلة,Traducció activada,Übersetzung ein,Μετάφραση ενεργή,Traducción activada,Käännös päällä,Traduction activée,Aistriúchán ar siúl,अनुवाद चालू,Prijevod uključen,Fordítás be,Terjemahan aktif,Traduzione attiva,翻訳オン,번역 켜짐,Vertaling aan,Oversettelse på,Tłumaczenie włączone,Tradução ativada,Traducere activată,Перевод включён,Превод укључен,Översättning på,Tafsiri imewashwa,เปิดการแปล,Çeviri açık,Bật dịch
 success.code_resent,Verification code resent to your email.,验证码已重新发送到您的邮箱。,驗證碼已經重新寄到你的信箱囉。,Verifikasiekode is weer na jou e-pos gestuur.,تم إعادة إرسال رمز التحقق إلى بريدك الإلكتروني.,Codi de verificació reenviat al teu correu electrònic.,Verifizierungscode erneut an Ihre E-Mail gesendet.,Ο κωδικός επαλήθευσης επαναστάλθηκε στο email σας.,Código de verificación reenviado a tu correo electrónico.,Vahvistuskoodi lähetetty uudelleen sähköpostiisi.,Code de vérification renvoyé à votre email.,Cód fíoraithe athsheoladh chuig do ríomhphost.,सत्यापन कोड आपके ईमेल पर पुनः भेजा गया।,Verifikacijski kod ponovno poslan na tvoj e-mail.,Az ellenőrző kód újra lett küldve az e-mail címére.,Kode verifikasi dikirim ulang ke email Anda.,Codice di verifica reinviato alla tua email.,確認コードがメールに再送信されました。,인증 코드가 이메일로 다시 전송되었습니다.,Verificatiecode opnieuw naar je e-mail verzonden.,Verifikasjonskoden er sendt på nytt til e-posten din.,Kod weryfikacyjny został ponownie wysłany na Twój e-mail.,Código de verificação reenviado para o seu e-mail.,Codul de verificare a fost retrimis pe emailul tău.,Код подтверждения повторно отправлен на вашу электронную почту.,Verifikacioni kod je ponovo poslat na tvoju e-poštu.,Verifieringskod skickad igen till din e-post.,Msimbo wa uthibitisho umetumwa tena kwa barua pepe yako.,ส่งรหัสยืนยันไปยังอีเมลของคุณอีกครั้งแล้ว,Doğrulama kodu e-postanıza yeniden gönderildi.,Đã gửi lại mã xác minh đến email của bạn.
 tab.me,Me,我的,我的,Ek,أنا,Jo,Ich,Εγώ,Yo,Minä,Moi,Mise,मैं,Ja,Én,Saya,Io,私,나,Ik,Meg,Ja,Eu,Eu,Я,Ја,Jag,Mimi,ฉัน,Ben,Tôi
-time.days,{count, plural, one {# day} other {# days}},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 time.hours,hours,小时,小時,ure,ساعات,hores,Stunden,ώρες,horas,tuntia,heures,uair,घंटे,sati,óra,jam,ore,時間,시간,uur,timer,godz.,horas,ore,часы,sati,timmar,saa,ชั่วโมง,saat,giờ
 time.min,min,分钟,分鐘,min,دقيقة,min,Min,λεπτό,min,min,min,nóim,मिनट,min,perc,menit,min,分,분,min,min,min,min,min,мин,min,min,dakika,นาที,dakika,phút
-time.months,{count, plural, one {# month} other {# months}},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 time.months_and_days,{months} and {days},,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 time.sec,sec,秒,秒,sek,ثانية,seg,Sek,δεύτερο,seg,sek,sec,soic,सेकंड,sek,mp,detik,sec,秒,초,sec,sek,sek,seg,sec,сек,sek,sek,sekunde,วินาที,saniye,giây
 title.about,About,关于,關於,Meer oor,حول,Quant a,Über,Σχετικά,Acerca de,Tietoja,À propos,Eolas,के बारे में,O aplikaciji,Névjegy,Tentang,Informazioni,このアプリについて,정보,Over,Om,O aplikacji,Sobre,Despre,О приложении,O aplikaciji,Om,Kuhusu,เกี่ยวกับ,Hakkında,Giới thiệu
@@ -1189,12 +971,9 @@ title.app_name,Language Player,Language Player,Language Player,Language Player,L
 title.app_settings,App Settings,应用设置,APP設定,Toepassinginstellings,إعدادات التطبيق,Configuració de l'aplicació,App-Einstellungen,Ρυθμίσεις εφαρμογής,Configuración de la aplicación,Sovelluksen asetukset,Paramètres de l'application,Socruithe aipe,ऐप सेटिंग्स,Postavke aplikacije,Alkalmazás beállításai,Pengaturan Aplikasi,Impostazioni app,アプリ設定,앱 설정,App-instellingen,App-innstillinger,Ustawienia aplikacji,Configurações do Aplicativo,Setări aplicație,Настройки приложения,Podešavanja aplikacije,App-inställningar,Mipangilio ya Programu,การตั้งค่าแอป,Uygulama Ayarları,Cài đặt ứng dụng
 title.best_value,Best Value,最佳价值,最超值,Beste waarde,أفضل قيمة,Millor valor,Bester Wert,Καλύτερη αξία,Mejor valor,Paras arvo,Meilleure valeur,An luach is fearr,सर्वश्रेष्ठ मूल्य,Najbolja vrijednost,Legjobb érték,Nilai Terbaik,Miglior valore,最良の価値,최고의 가치,Beste waarde,Beste verdi,Najlepsza wartość,Melhor Valor,Cea mai bună valoare,Лучшая стоимость,Najbolja vrednost,Bästa värde,Thamani Bora,คุ้มค่าที่สุด,En İyi Değer,Giá trị tốt nhất
 title.cancellation_failed,Cancellation Failed,取消失败,取消失敗,Kansellasie misluk,فشل الإلغاء,Error en la cancel·lació,Stornierung fehlgeschlagen,Η ακύρωση απέτυχε,Cancelación fallida,Peruutus epäonnistui,Échec de l'annulation,Theip ar an gCealú,रद्दीकरण विफल रहा,Otkazivanje nije uspjelo,A lemondás sikertelen,Pembatalan Gagal,Cancellazione fallita,キャンセルに失敗しました,취소 실패,Annulering mislukt,Kansellering mislyktes,Anulowanie nie powiodło się,Falha no cancelamento,Anulare eșuată,Ошибка отмены,Отказивање није успело,Avbrytning misslyckades,Kughairi kumeshindwa,การยกเลิกล้มเหลว,İptal Başarısız Oldu,Hủy không thành công
-title.channel,,,頻道,Kanaal,قناة,,,,,,,,,,,,,,,,,,,,,,,,,,
-title.channels,,,頻道,Kanale,قنوات,,,,,,,,,,,,,,,,,,,,,,,,,,
 title.check_email,Check your email,查看您的邮箱,查看您的電子郵件,Gaan jou e-pos na,تحقق من بريدك الإلكتروني,Revisa el teu correu,Überprüfen Sie Ihre E-Mail,Ελέγξτε το email σας,Revisa tu correo,Tarkista sähköpostisi,Vérifiez votre e-mail,Seiceáil do ríomhphost,अपना ईमेल जांचें,Provjerite svoju e-poštu,Ellenőrizze az e-mailjét,Periksa email Anda,Controlla la tua email,メールを確認してください,이메일을 확인하세요,Controleer uw e-mail,Sjekk e-posten din,Sprawdź swoją skrzynkę e-mail,Verifique seu e-mail,Verifică-ți emailul,Проверьте почту,Проверите своју е-пошту,Kontrollera din e-post,Angalia barua pepe yako,ตรวจสอบอีเมลของคุณ,E-postanızı kontrol edin,Kiểm tra email của bạn
 title.choose_language,Choose Language,选择语言,選擇語言,Kies taal,اختر اللغة,Triar idioma,Sprache wählen,Επιλέξτε γλώσσα,Elegir idioma,Valitse kieli,Choisir la langue,Roghnaigh teanga,भाषा का चयन करें,Odaberi jezik,Nyelv választása,Pilih Bahasa,Scegli lingua,言語を選択してください,언어 선택,Kies taal,Velg språk,Wybierz język,Escolha um Idioma,Alege limba,Выберите язык,Izaberi jezik,Välj språk,Chagua Lugha,เลือกภาษา,Dil Seçin,Chọn ngôn ngữ
 title.choose_payment_method,Choose payment method,选择支付方式,,Kies betaalmetode,اختر طريقة الدفع,Trieu el mètode de pagament,Zahlungsmethode wählen,Επιλέξτε τρόπο πληρωμής,Elige el método de pago,Valitse maksutapa,Choisissez le mode de paiement,Roghnaigh modh íocaíochta,भुगतान विधि चुनें,Odaberite način plaćanja,Fizetési mód kiválasztása,Pilih metode pembayaran,Scegli il metodo di pagamento,支払い方法を選択,결제 수단 선택,Kies betaalmethode,Velg betalingsmetode,Wybierz metodę płatności,Escolha o método de pagamento,Alege metoda de plată,Выберите способ оплаты,Izaberite način plaćanja,Välj betalningsmetod,Chagua njia ya malipo,เลือกวิธีชำระเงิน,Ödeme yöntemi seçin,Chọn phương thức thanh toán
-title.choose_script,,,選擇文字,Kies skrif,اختر الكتابة,,,,,,,,,,,,,,,,,,,,,,,,,,
 title.choose_your_plan,Choose Your Plan,选择您的计划,選擇你的方案,Kies jou plan,اختر خطتك,Tria el teu pla,Wählen Sie Ihren Plan,Επιλέξτε το πλάνο σας,Elige tu plan,Valitse suunnitelmasi,Choisissez votre plan,Roghnaigh do phlean,अपनी योजना चुनें,Odaberi svoj plan,Válassza ki a tervét,Pilih Rencana Anda,Scegli il tuo piano,プランを選択してください,플랜 선택,Kies je abonnement,Velg planen din,Wybierz swój plan,Escolha o Seu Plano,Alege planul tău,Выберите свой план,Izaberi svoj plan,Välj din plan,Chagua Mpango Wako,เลือกแผนของคุณ,Planınızı Seçin,Chọn gói của bạn
 title.classifiers,Classifiers,分类词,,Klassifiseerders,مصنفات,Classificadors,Klassifikatoren,Ταξινομητές,Clasificadores,Luokittelijat,Classificateurs,Aicmitheoirí,वर्गीकरणकर्ता,Klasifikatori,Osztályozók,Pengklasifikasi,Classificatori,分類詞,분류사,Classificaties,Klassifiserere,Klasyfikatory,Classificadores,Clasificatori,Классификаторы,Klasifikatori,Klassificerare,Viainisho,คำลักษณนาม,Sınıflandırıcılar,Danh từ chỉ loại
 title.confirm_in_app_purchase,Confirm Your In-App Purchase,确认您的应用内购买,確認您的應用內購買,Bevestig jou inprogram-aankoop,تأكيد الشراء داخل التطبيق,Confirma la teva compra dins de l'app,In-App-Kauf bestätigen,Επιβεβαιώστε την αγορά εντός εφαρμογής,Confirmar tu compra en la aplicación,Vahvista sovelluksen sisäinen ostoksesi,Confirmer votre achat intégré,Deimhnigh do cheannachán in-app,अपनी इन-ऐप खरीदारी की पुष्टि करें,Potvrdite kupnju unutar aplikacije,Erősítse meg az alkalmazáson belüli vásárlást,Konfirmasi Pembelian Dalam Aplikasi Anda,Conferma il tuo acquisto in-app,アプリ内購入を確認,인앱 구매 확인,Bevestig uw in-app aankoop,Bekreft kjøpet ditt i appen,Potwierdź zakup w aplikacji,Confirmar sua compra no app,Confirmați achiziția în aplicație,Подтвердите встроенную покупку,Потврдите куповину унутар апликације,Bekräfta ditt köp i appen,Thibitisha ununuzi wako wa ndani ya programu,ยืนยันการซื้อในแอปของคุณ,Uygulama İçi Satın Almanızı Onaylayın,Xác nhận mua trong ứng dụng
@@ -1269,10 +1048,8 @@ title.sort_by,SORT BY,排序方式,排序方式,SORTEER VOLGENS,ترتيب حس�
 title.start_learning,Start Learning,开始学习,開始學習囉,Begin leer,ابدأ التعلم,Començar a aprendre,Lernen beginnen,Ξεκινήστε την εκμάθηση,Comenzar a aprender,Aloita oppiminen,Commencer à apprendre,Tosaigh ag foghlaim,सीखना प्रारंभ करें,Započni učenje,Tanulás megkezdése,Mulai Belajar,Inizia a imparare,学習を開始する,학습 시작,Begin met leren,Start læring,Rozpocznij naukę,Começar a Aprender,Începe să înveți,Начать обучение,Počni da učiš,Börja lära dig,Anza Kujifunza,เริ่มเรียนรู้,Öğrenmeye Başla,Bắt đầu học
 title.subscription,Subscription,订阅,,Intekening,اشتراك,Subscripció,Abonnement,Συνδρομή,Suscripción,Tilaus,Abonnement,Síntiús,सदस्यता,Pretplata,Előfizetés,Langganan,Abbonamento,サブスクリプション,구독,Abonnement,Abonnement,Subskrypcja,Assinatura,Abonament,Подписка,Pretplata,Prenumeration,Usajili,การสมัครสมาชิก,Abonelik,Gói đăng ký
 title.subscription_cancelled,Subscription Cancelled,订阅已取消,訂閱已取消,Intekening gekanselleer,تم إلغاء الاشتراك,Subscripció cancel·lada,Abonnement gekündigt,Η συνδρομή ακυρώθηκε,Suscripción cancelada,Tilaus peruutettu,Abonnement annulé,Síntiús Cealaithe,सदस्यता रद्द की गई,Pretplata otkazana,Előfizetés lemondva,Langganan Dibatalkan,Abbonamento annullato,サブスクリプションがキャンセルされました,구독이 취소되었습니다,Abonnement geannuleerd,Abonnement kansellert,Subskrypcja anulowana,Assinatura cancelada,Abonament anulat,Подписка отменена,Претплата отказана,Prenumeration avbruten,Usajili umeghairiwa,ยกเลิกการสมัครสมาชิกแล้ว,Abonelik İptal Edildi,Đã hủy đăng ký
-title.subscription_required,,,需要訂閱,Intekening vereis,الاشتراك مطلوب,,,,,,,,,,,,,,,,,,,,,,,,,,
 title.tags,Tags,标签,標籤,Merkers,وسوم,Etiquetes,Tags,Ετικέτες,Etiquetas,Tunnisteet,Étiquettes,Clibeanna,टैग,Oznake,Címkék,Tag,Tag,タグ,태그,Tags,Tagger,Tagi,Tags,Etichete,Теги,Ознаке,Taggar,Lebo,แท็ก,Etiketler,Thẻ
 title.textbook_appearances,Textbook Appearances,教材收录,,Handboekvoorkomste,ظهور في الكتب المدرسية,Aparicions al llibre de text,Vorkommen im Lehrbuch,Εμφανίσεις στο Βιβλίο,Apariciones en el libro de texto,Oppikirjaesiintymät,Apparitions dans le manuel,Láithrithe Téacsleabhair,पाठ्यपुस्तक में उपस्थिति,Pojavljivanja u udžbeniku,Tankönyvi előfordulások,Kemunculan di Buku Teks,Comparse nei libri di testo,教科書での登場,교재 출현,Tekstboekverschijningen,Lærebokforekomster,Wystąpienia w podręczniku,Aparições em livros didáticos,Apariții în manuale,Появления в учебниках,Pojavljivanja u udžbeniku,Läroboksförekomster,Muonekano wa Vitabu vya Kiada,การปรากฏในตำราเรียน,Ders Kitabı Görünümleri,Xuất hiện trong sách giáo khoa
-title.tokenizer,,,分詞器,Tokeniseerder,مجزئ النص,,,,,,,,,,,,,,,,,,,,,,,,,,
 title.tokenizer_test,Tokenizer Test,分词测试,,Tokeniseerdertoets,اختبار التجزئة,Prova de tokenització,Tokenisierer-Test,Δοκιμή Tokenizer,Prueba del Tokenizador,Tokenisaattoritesti,Test du tokenizer,Tástáil Thócaireora,टोकनाइज़र परीक्षण,Tokenizer test,Tokenizáló teszt,Uji Tokenisasi,Test di tokenizzazione,トークナイザーテスト,토크나이저 테스트,Tokenizer Test,Tokeniser-test,Test tokenizacji,Teste do Tokenizador,Test tokenizator,Тест токенизатора,Test tokenizatora,Tokeniserartest,Jaribio la Kitenganisha Maneno,การทดสอบตัวแบ่งโทเค็น,Tokenizer Testi,Kiểm tra Tokenizer
 title.transcript,Transcript,字幕文本,逐字稿,Transkripsie,النص الكامل,Transcripció,Transkript,Απομαγνητοφώνηση,Transcripción,Transkriptio,Transcription,Athscríbhinn,प्रतिलिपि,Transkript,Átirat,Transkrip,Trascrizione,トランスクリプト,대본,Transcript,Transkripsjon,Transkrypt,Transcrição,Transcriere,Стенограмма,Transkript,Transkript,Nakala,บทถอดความ,Transkript,Bảng điểm
 title.trial,Trial,试用,試用,Proeftydperk,تجريبي,Prova,Testversion,Δοκιμή,Prueba,Kokeilu,Essai,Triail,परीक्षण,Probno razdoblje,Próba,Percobaan,Prova,試用,체험판,Proefversie,Prøve,Wersja próbna,Teste,Probă,Пробный,Proba,Testa,Jaribio,ทดลองใช้,Deneme,Dùng thử
@@ -1289,7 +1066,6 @@ title.watch_history,Watch History,观看历史,觀看紀錄,Kykgeskiedenis,سج�
 title.web_reader,Web Reader,网页阅读器,網頁閱讀器,Webleser,قارئ الويب,Lector web,Web-Reader,Αναγνώστης ιστού,Lector web,Verkkosivulukija,Lecteur web,Léitheoir gréasáin,वेब रीडर,Web čitač,Webolvasó,Pembaca web,Lettore web,ウェブリーダー,웹 리더,Weblezer,Nettleser,Czytnik stron,Leitor web,Cititor web,Веб-читатель,Веб читач,Webbläsare,Kisoma wavuti,โปรแกรมอ่านเว็บ,Web Okuyucu,Trình đọc web
 title.welcome,Welcome to Language Player,欢迎来到 Language Player,歡迎來到 Language Player,Welkom by Language Player,مرحبًا بك في Language Player,Benvingut a Language Player,Willkommen bei Language Player,Καλώς ήρθατε στο Language Player,Bienvenido a Language Player,Tervetuloa Language Playeriin,Bienvenue sur Language Player,Fáilte go Language Player,Language Player में आपका स्वागत है,Dobrodošli u Language Player,Üdvözöljük a Language Playerben,Selamat datang di Language Player,Benvenuto su Language Player,Language Player へようこそ,Language Player에 오신 것을 환영합니다,Welkom bij Language Player,Velkommen til Language Player,Witaj w Language Player,Bem-vindo ao Language Player,Bun venit la Language Player,Добро пожаловать в Language Player,Добродошли у Language Player,Välkommen till Language Player,Karibu kwenye Language Player,ยินดีต้อนรับสู่ Language Player,Language Player'a hoş geldiniz,Chào mừng đến với Language Player
 title.welcome_back,Welcome back,欢迎回来,歡迎回來,Welkom terug,مرحبًا بعودتك,Benvingut de nou,Willkommen zurück,Καλώς ήρθατε ξανά,Bienvenido de nuevo,Tervetuloa takaisin,Bon retour,Fáilte ar ais,वापसी पर स्वागत है,Dobrodošli natrag,Üdvözöljük újra,Selamat datang kembali,Bentornato,おかえりなさい,다시 오신 것을 환영합니다,Welkom terug,Velkommen tilbake,Witaj z powrotem,Bem-vindo de volta,Bine ai revenit,С возвращением,Добродошли назад,Välkommen tillbaka,Karibu tena,ยินดีต้อนรับกลับ,Tekrar hoş geldiniz,Chào mừng trở lại
-title.word,,,單字,Woord,كلمة,,,,,,,,,,,,,,,,,,,,,,,,,,
 title.your_current_plan,Your Current Plan,您当前的计划,你目前的方案,Jou huidige plan,خطتك الحالية,El teu pla actual,Ihr aktueller Plan,Το τρέχον πλάνο σας,Tu plan actual,Nykyinen suunnitelmasi,Votre plan actuel,Do phlean reatha,आपकी वर्तमान योजना,Tvoj trenutni plan,Jelenlegi terv,Rencana Anda Saat Ini,Il tuo piano attuale,現在のプラン,현재 플랜,Je huidige abonnement,Din nåværende plan,Twój aktualny plan,Seu Plano Atual,Planul tău curent,Ваш текущий план,Tvoj trenutni plan,Din nuvarande plan,Mpango wako wa sasa,แผนปัจจุบันของคุณ,Mevcut Planınız,Gói hiện tại của bạn
 video.comments,Comments,评论,留言,Kommentaar,التعليقات,Comentaris,Kommentare,Σχόλια,Comentarios,Kommentit,Commentaires,Tráchtanna,टिप्पणियाँ,Komentari,Hozzászólások,Komentar,Commenti,コメント,댓글,Reacties,Kommentarer,Komentarze,Comentários,Comentarii,Комментарии,Komentari,Kommentarer,Maoni,ความคิดเห็น,Yorumlar,Bình luận
 video.likes,Likes,点赞,讚,Hou van,الإعجابات,M'agrada,Likes,Μου αρέσει,Me gusta,Tykkäykset,J'aime,Is maith liom,लाइक्स,Sviđanja,Kedvelések,Suka,Mi piace,いいね,좋아요,Likes,Liker,Polubienia,Curtidas,Aprecieri,Лайки,Sviđanja,Gillar,Anapenda,ถูกใจ,Beğeniler,Lượt thích
@@ -1297,12 +1073,3 @@ video.views,Views,观看次数,觀看次數,Kere gekyk,المشاهدات,Visual
 word.hanja,Hanja,汉字,漢字,Hanja,هانجا,Hanja,Hanja,Hanja,Hanja,Hanja,Hanja,Hanja,हंजा,Hanja,Hanja,Hanja,Hanja,漢字,한자,Hanja,Hanja,Hanja,Hanja,Hanja,Ханджа,Hanja,Hanja,Hanja,ฮันจา,Hanja,Hanja
 word.kana,Kana,假名,假名,Kana,كانا,Kana,Kana,Kana,Kana,Kana,Kana,Kana,काना,Kana,Kana,Kana,Kana,仮名,가나,Kana,Kana,Kana,Kana,Kana,Кана,Kana,Kana,Kana,คานะ,Kana,Kana
 word.pinyin,Pinyin,拼音,拼音,Pinyin,بينيين,Pinyin,Pinyin,Pinyin,Pinyin,Pinyin,Pinyin,Pinyin,पिनयिन,Pinyin,Pinyin,Pinyin,Pinyin,ピンイン,병음,Pinyin,Pinyin,Pinyin,Pinyin,Pinyin,Пиньинь,Pinyin,Pinyin,Pinyin,พินอิน,Pinyin,Pinyin
-Συμφραζόμενα: {context}
-Контекст: {context}
-السياق: {context}
-संदर्भ: {context}
-บริบท: {context}
-上下文：{context}
-上下文：{context}
-文脈：{context}
-문맥: {context}
