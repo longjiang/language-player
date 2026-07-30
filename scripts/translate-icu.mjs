@@ -4,25 +4,7 @@
  * ICU keywords (one, other, plural, #) MUST be preserved exactly.
  */
 import { readFileSync, writeFileSync } from 'fs';
-
-function csvParseLine(line) {
-  const fields = []; let curr = '', inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') { if (inQuotes && line[i + 1] === '"') { curr += '"'; i++; } else inQuotes = !inQuotes; }
-    else if (ch === ',' && !inQuotes) { fields.push(curr); curr = ''; }
-    else curr += ch;
-  }
-  fields.push(curr); return fields;
-}
-
-function csvEscape(val) {
-  if (typeof val !== 'string') return String(val ?? '');
-  if (val.includes(',') || val.includes('"') || val.includes('\n')) {
-    return '"' + val.replace(/"/g, '""') + '"';
-  }
-  return val;
-}
+import { csvParseLine, csvEscape } from './lib/csv-utils.mjs';
 
 // ── Manual ICU translations ──────────────────
 // Format: translations[locale] = { key: translation }

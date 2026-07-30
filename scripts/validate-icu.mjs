@@ -15,26 +15,9 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { parse } from '@formatjs/icu-messageformat-parser';
 import { fileURLToPath } from 'url';
+import Papa from 'papaparse';
 
 const __dirname = new URL('.', import.meta.url).pathname;
-
-function csvParseLine(line) {
-  const fields = [];
-  let curr = '', inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { curr += '"'; i++; }
-      else { inQuotes = !inQuotes; }
-    } else if (ch === ',' && !inQuotes) {
-      fields.push(curr); curr = '';
-    } else {
-      curr += ch;
-    }
-  }
-  fields.push(curr);
-  return fields;
-}
 
 const args = process.argv.slice(2);
 const csvPath = args[0] ? resolve(args[0]) : resolve(process.cwd(), 'translations.csv');
@@ -49,11 +32,12 @@ try {
   process.exit(1);
 }
 
-const lines = csvText.trim().replace(/\r/g, '').split('\n');
-const header = csvParseLine(lines[0]);
+const result = Papa.parse(csvText, { header: false, skipEmptyLines: true });
+const header = result.data[0] || [];
+const rows = result.data.slice(1);
 
-for (let lineIdx = 1; lineIdx < lines.length; lineIdx++) {
-  const row = csvParseLine(lines[lineIdx]);
+for (let lineIdx = 0; lineIdx < rows.length; lineIdx++) {
+  const row = rows[lineIdx];
   if (!row[0]) continue;
   const key = row[0].trim();
 
