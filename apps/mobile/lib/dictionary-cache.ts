@@ -13,4 +13,6 @@ export {
   getCacheVersion,
   subscribeToCache,
   bulkLookupWords,
+  getCachedEntryById,
+  setCachedEntryById,
 } from '@langplayer/utils';
