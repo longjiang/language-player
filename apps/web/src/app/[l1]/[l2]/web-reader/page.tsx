@@ -136,7 +136,7 @@ export default function WebReaderPage() {
 
       {/* ── Content row: sidebar first (right on wide, top on narrow) ── */}
       <div className="flex gap-4 flex-1 min-h-0 flex-row-reverse max-lg:flex-col">
-        <ReaderSidebar sidebarOpen={sidebarOpen}>
+        <ReaderSidebar sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)}>
           <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
             <h3 className="text-sm font-semibold">{t('title.notes')}</h3>
           </div>
