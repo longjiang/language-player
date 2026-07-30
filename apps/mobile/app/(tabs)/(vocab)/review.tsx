@@ -7,7 +7,7 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useSrs } from '@/hooks/use-srs';
 import { sm2, newCard, remainingNewCardsToday, baseCode } from '@langplayer/utils';
-import { useEntryCache } from '@langplayer/utils/src/use-entry-cache';
+import { useEntryCache, useEntryByIdCache } from '@langplayer/utils/src/use-entry-cache';
 import type { SrsFields } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { ICON_MUTED, ICON_PRIMARY } from '@/lib/theme-colors';
@@ -127,11 +127,10 @@ export default function ReviewScreen() {
       });
   }, [l2SavedWords, store, l2Code]);
 
-  // ── Derive entry for the current card from the reactive cache ──
+  // ── Derive entry for the current card from the reactive ID cache ──
   const currentDueCard = dueCards[currentIndex];
   const wordForm = currentDueCard?.forms?.[0] || currentDueCard?.head || currentDueCard?.id || '';
-  const currentEntry = useEntryCache(l2Code, wordForm)
-    ?.find((e) => e.id === currentDueCard?.id) ?? null;
+  const currentEntry = useEntryByIdCache(l2Code, currentDueCard?.id ?? '') ?? null;
 
   // ── Merge due cards with the reactive entry ──
   const cards = useMemo(() => dueCards.map((word) => ({
@@ -264,21 +263,12 @@ export default function ReviewScreen() {
     return () => { cancelled = true; };
   }, [cards, currentIndex, l2Code, l1Lang.code, display.translation]);
 
-  // ── Pre-warm the next 3 cards' context + target word entries ──
-  const preWarmWords = useMemo(() => {
-    const targetWords: Array<{ text: string; l2Code: string; l1Code: string }> = [];
-    const contextTexts: Array<{ text: string; l2Code: string; l1Code: string }> = [];
+  // ── Pre-tokenize + pre-lookup the next 3 cards' context sentence(s) ──
+  const preWarmInstances = useMemo(() => {
+    const result: Array<{ text: string; l2Code: string; l1Code: string }> = [];
     for (let i = 1; i <= 3; i++) {
       const card = cards[currentIndex + i];
       if (!card) break;
-
-      // Pre-warm the target word entry so useEntryCache resolves instantly
-      const targetForm = card.word.forms?.[0] || card.word.head || card.word.id || '';
-      if (targetForm) {
-        targetWords.push({ text: targetForm, l2Code, l1Code: l1Lang.code });
-      }
-
-      // Pre-warm context sentence lemmas
       const cardInstances = ((card.word as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined) ?? (
         card.word.context
           ? [{ timestamp: card.word.date ?? 0, form: card.word.forms?.[0] ?? '', context: card.word.context as unknown as SavedWordContext }]
@@ -286,25 +276,19 @@ export default function ReviewScreen() {
       );
       for (const inst of cardInstances) {
         if (inst.context?.text) {
-          contextTexts.push({ text: inst.context.text, l2Code, l1Code: l1Lang.code });
+          result.push({ text: inst.context.text, l2Code, l1Code: l1Lang.code });
         }
       }
     }
-    return { targetWords, contextTexts };
+    return result;
   }, [currentIndex, cards, l2Code, l1Lang.code]);
 
   // ── Pre-warm tokenization + dictionary cache for upcoming cards ──
   useEffect(() => {
-    const { targetWords, contextTexts } = preWarmWords;
-
-    // Pre-warm target word entries directly (skip tokenization — single words)
-    if (targetWords.length > 0) {
-      bulkLookupWords(targetWords, PYTHON_API_URL);
-    }
-
-    // Pre-warm context sentence tokenization + lemma lookups
-    for (const ctx of contextTexts) {
+    for (const ctx of preWarmInstances) {
+      // Step 1: pre-tokenize (populates the in-memory lemmatizeText cache)
       lemmatizeText(ctx.text, ctx.l2Code).then((tokens: LemmatizedToken[]) => {
+        // Step 2: pre-lookup definitions for all unique lemmas
         const uniqueLemmas = [...new Set(
           tokens.flatMap(t => t.lemmas.map(l => l.lemma).filter(Boolean))
         )];
@@ -316,7 +300,7 @@ export default function ReviewScreen() {
         }
       });
     }
-  }, [preWarmWords]);
+  }, [preWarmInstances]);
 
   // ── Reset session state when language changes ──
   useEffect(() => {
