@@ -294,7 +294,10 @@ const EmptyState: React.FC<{ loadingL2?: string }> = ({ loadingL2 }) => (
 
 // ── Transcript App ────────────────────────────────────────────────────────
 
-/** Number of cues ahead of the active cue to pre-fetch tokens for. */
+/** Number of cues ahead of the visible area to pre-fetch tokens for.
+ *  The pre-fetch window extends from activeCueIdx through the last fully
+ *  visible cue + this many additional lines, ensuring that all lines the
+ *  user can see (plus a buffer) are always cached. */
 const PRE_FETCH_LOOKAHEAD = 15;
 
 const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
@@ -371,8 +374,10 @@ Text: ${cue.text}`;
     setExplainError(null);
   }, []);
 
-  // ── Pre-fetch window: only fire when activeCueIdx enters a new "page" ──
-  // Throttles pre-fetch to avoid a batch call on every timeupdate (~250ms).
+  // ── Pre-fetch window: viewport-aware ──
+  // Pre-fetches from activeCueIdx through the last visible cue + a lookahead
+  // buffer. Throttles to ~every 7 cues to avoid a batch call on every
+  // timeupdate (~250ms).
   const prefectWindowRef = useRef(-1);
 
   useEffect(() => {
@@ -386,16 +391,32 @@ Text: ${cue.text}`;
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // Only pre-fetch when the active cue crosses into a new window boundary.
-    // Window size = PRE_FETCH_LOOKAHEAD / 2 so we re-fetch roughly when
-    // the "next 15" window has advanced by ~7-8 cues.
+    // ── Find the last fully visible cue in the scroll container ──
+    let lastVisibleIdx = activeCueIdx;
+    const container = listRef.current;
+    if (container) {
+      const containerBottom = container.scrollTop + container.clientHeight;
+      for (const child of container.children) {
+        const idx = (child as HTMLElement).dataset.index;
+        if (idx !== undefined) {
+          const rect = child.getBoundingClientRect();
+          const childBottom = rect.top - container.getBoundingClientRect().top + rect.height;
+          if (childBottom <= containerBottom) {
+            lastVisibleIdx = Math.max(lastVisibleIdx, Number(idx));
+          }
+        }
+      }
+    }
+
+    // ── Throttle: pre-fetch only when crossing a new window boundary ──
     const windowSize = Math.max(1, Math.floor(PRE_FETCH_LOOKAHEAD / 2));
     const windowIdx = Math.floor(activeCueIdx / windowSize);
     if (windowIdx === prefectWindowRef.current) return;
     prefectWindowRef.current = windowIdx;
 
+    // Pre-fetch from activeCueIdx through the last visible cue + lookahead
     const start = Math.max(0, activeCueIdx);
-    const end = Math.min(cues.length, activeCueIdx + PRE_FETCH_LOOKAHEAD);
+    const end = Math.min(cues.length, lastVisibleIdx + PRE_FETCH_LOOKAHEAD);
     const texts: string[] = [];
     for (let i = start; i < end; i++) {
       texts.push(cues[i].text);
