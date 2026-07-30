@@ -179,12 +179,12 @@ export default function ReviewScreen() {
       });
     }
 
-    // Auto-advance after a brief pause
+    // Brief pause so the user sees the settled card before buttons reappear.
+    // No index advancement needed — updateCard mutates the store, which
+    // recomputes dueCards with the rated card filtered out. The array
+    // shifts left, so currentIndex naturally points to the next card.
     setTimeout(() => {
       setRated(false);
-      if (!wasLastCard) {
-        setCurrentIndex((i) => i + 1);
-      }
     }, 600);
   }, [cards, currentIndex, rated, updateCard, l2Code, t]);
 
