@@ -26,6 +26,75 @@ const API_BASE = 'https://pythonvps.zerotohero.ca';
 /** Max texts per batch request. Prevents overly large POST bodies. */
 const BATCH_MAX_SIZE = 50;
 
+/** Max cached entries before LRU eviction. Prevents unbounded memory growth. */
+const CACHE_MAX_SIZE = 500;
+
+/**
+ * Set a cache entry with LRU tracking.
+ * Evicts the oldest entry when the cache exceeds CACHE_MAX_SIZE.
+ * Since Map preserves insertion order, deleting and re-inserting
+ * the entry moves it to the end (most recently used).
+ */
+function cacheSet(key: string, value: LemmatizedToken[]): void {
+  if (tokenCache.has(key)) {
+    tokenCache.delete(key);
+  } else if (tokenCache.size >= CACHE_MAX_SIZE) {
+    // Evict oldest (first key in insertion order)
+    const oldest = tokenCache.keys().next();
+    if (!oldest.done && oldest.value !== undefined) {
+      tokenCache.delete(oldest.value);
+    }
+  }
+  tokenCache.set(key, value);
+}
+
+// ── Module-level batch queue (shared across all hook instances) ────────────
+// All TokenizedLine components share one queue + timer so that lines rendered
+// in the same frame coalesce into a single batch request.
+
+const _queue = new Set<string>();
+let _timer: ReturnType<typeof setTimeout> | null = null;
+let _onFlush: (() => void) | null = null;
+
+/** Debounce delay: 32ms ≈ 2 frames at 60fps — enough time for all visible
+ *  TokenizedLine components in a single render pass to enqueue their texts. */
+const FLUSH_DEBOUNCE_MS = 32;
+
+function scheduleFlush() {
+  if (_timer) return;
+  _timer = setTimeout(() => {
+    _timer = null;
+    flushQueue();
+  }, FLUSH_DEBOUNCE_MS);
+}
+
+async function flushQueue() {
+  const queue = _queue;
+  if (queue.size === 0) return;
+  _queue.clear();
+  _timer = null;
+
+  // Group queued cache keys by language code
+  const byLang = new Map<string, string[]>();
+  for (const cacheKey of queue) {
+    const colonIdx = cacheKey.indexOf(':');
+    const lang = cacheKey.slice(0, colonIdx);
+    const text = cacheKey.slice(colonIdx + 1);
+    if (!byLang.has(lang)) byLang.set(lang, []);
+    byLang.get(lang)!.push(text);
+  }
+
+  // Fire one batch request per language
+  const promises: Promise<void>[] = [];
+  for (const [lang, texts] of byLang) {
+    promises.push(sendBatch(texts, lang));
+  }
+  await Promise.allSettled(promises);
+
+  // Notify all hook instances to re-render
+  if (_onFlush) _onFlush();
+}
+
 // ── Hook ───────────────────────────────────────────────────────────────────
 
 interface UseBatchLemmatizeResult {
@@ -39,59 +108,12 @@ interface UseBatchLemmatizeResult {
 
 export function useBatchLemmatize(): UseBatchLemmatizeResult {
   const [, forceUpdate] = useState(0);
-  const queueRef = useRef<Set<string>>(new Set());
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /** Flush the pending queue: send all queued texts in one batch request. */
-  const flush = useCallback(async () => {
-    const queue = queueRef.current;
-    if (queue.size === 0) return;
-    queueRef.current = new Set();
-    timerRef.current = null;
-
-    // Group queued cache keys by language code
-    const byLang = new Map<string, string[]>();
-    for (const cacheKey of queue) {
-      const colonIdx = cacheKey.indexOf(':');
-      const lang = cacheKey.slice(0, colonIdx);
-      const text = cacheKey.slice(colonIdx + 1);
-      if (!byLang.has(lang)) byLang.set(lang, []);
-      byLang.get(lang)!.push(text);
-    }
-
-    // Fire one batch request per language
-    const promises: Promise<void>[] = [];
-    for (const [lang, texts] of byLang) {
-      promises.push(sendBatch(texts, lang));
-    }
-    await Promise.allSettled(promises);
-    forceUpdate(n => n + 1);
-  }, []);
-
-  /** Enqueue a cache key for batch fetching. Debounced via microtask. */
-  const enqueue = useCallback((cacheKey: string) => {
-    if (tokenCache.has(cacheKey) || inflightMap.has(cacheKey)) return;
-
-    queueRef.current.add(cacheKey);
-
-    // Debounce: if queue reaches batch size, flush immediately
-    if (queueRef.current.size >= BATCH_MAX_SIZE) {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      flush();
-      return;
-    }
-
-    // Otherwise flush on next microtask
-    if (!timerRef.current) {
-      timerRef.current = setTimeout(() => flush(), 0);
-    }
-  }, [flush]);
-
-  // Cleanup on unmount
+  // Register/deregister the re-render callback on mount/unmount
   useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+    const prev = _onFlush;
+    _onFlush = () => forceUpdate(n => n + 1);
+    return () => { _onFlush = prev; };
   }, []);
 
   /** Synchronous cache lookup. Enqueues if missing. */
@@ -102,9 +124,13 @@ export function useBatchLemmatize(): UseBatchLemmatizeResult {
     const cached = tokenCache.get(cacheKey);
     if (cached) return cached;
 
-    enqueue(cacheKey);
+    // Skip if already queued or in-flight
+    if (!_queue.has(cacheKey) && !inflightMap.has(cacheKey)) {
+      _queue.add(cacheKey);
+    }
+    scheduleFlush();
     return null;
-  }, [enqueue]);
+  }, []);
 
   /** Pre-fetch a batch of texts immediately (skips the queue). */
   const preFetch = useCallback((texts: string[], l2: string) => {
@@ -124,7 +150,7 @@ export function useBatchLemmatize(): UseBatchLemmatizeResult {
     }
   }, []);
 
-  return { getTokens, queueSize: queueRef.current.size, preFetch };
+  return { getTokens, queueSize: _queue.size, preFetch };
 }
 
 // ── Batch sender (module-level, not exported) ─────────────────────────────
@@ -164,7 +190,7 @@ async function sendBatch(texts: string[], lang: string): Promise<void> {
       // Populate cache: results[i] corresponds to textsToSend[i]
       for (let i = 0; i < results.length; i++) {
         const key = `${lang}:${textsToSend[i]}`;
-        tokenCache.set(key, results[i]);
+        cacheSet(key, results[i]);
       }
     } catch (err) {
       console.warn('[LPV] Batch lemmatization failed:', err);
@@ -190,4 +216,9 @@ async function sendBatch(texts: string[], lang: string): Promise<void> {
 export function clearTokenCache(): void {
   tokenCache.clear();
   inflightMap.clear();
+}
+
+/** @internal Get cache size for debugging. */
+export function getCacheSize(): number {
+  return tokenCache.size;
 }

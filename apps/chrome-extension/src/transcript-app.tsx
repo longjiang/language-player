@@ -294,6 +294,9 @@ const EmptyState: React.FC<{ loadingL2?: string }> = ({ loadingL2 }) => (
 
 // ── Transcript App ────────────────────────────────────────────────────────
 
+/** Number of cues ahead of the active cue to pre-fetch tokens for. */
+const PRE_FETCH_LOOKAHEAD = 15;
+
 const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   cues,
   activeCueIdx,
@@ -312,6 +315,7 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   const [explainCue, setExplainCue] = useState<SubtitleCue | null>(null);
 
   const { isPro } = useSubscription();
+  const { preFetch } = useBatchLemmatize();
 
   const { translated, loading: translating, progress } = useTranslateLines(
     cues,
@@ -367,6 +371,10 @@ Text: ${cue.text}`;
     setExplainError(null);
   }, []);
 
+  // ── Pre-fetch window: only fire when activeCueIdx enters a new "page" ──
+  // Throttles pre-fetch to avoid a batch call on every timeupdate (~250ms).
+  const prefectWindowRef = useRef(-1);
+
   useEffect(() => {
     if (activeCueIdx === prevActiveRef.current) return;
     prevActiveRef.current = activeCueIdx;
@@ -377,7 +385,25 @@ Text: ${cue.text}`;
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [activeCueIdx]);
+
+    // Only pre-fetch when the active cue crosses into a new window boundary.
+    // Window size = PRE_FETCH_LOOKAHEAD / 2 so we re-fetch roughly when
+    // the "next 15" window has advanced by ~7-8 cues.
+    const windowSize = Math.max(1, Math.floor(PRE_FETCH_LOOKAHEAD / 2));
+    const windowIdx = Math.floor(activeCueIdx / windowSize);
+    if (windowIdx === prefectWindowRef.current) return;
+    prefectWindowRef.current = windowIdx;
+
+    const start = Math.max(0, activeCueIdx);
+    const end = Math.min(cues.length, activeCueIdx + PRE_FETCH_LOOKAHEAD);
+    const texts: string[] = [];
+    for (let i = start; i < end; i++) {
+      texts.push(cues[i].text);
+    }
+    if (texts.length > 0) {
+      preFetch(texts, l2Code);
+    }
+  }, [activeCueIdx, cues, l2Code, preFetch]);
 
   if (cues.length === 0) {
     return <EmptyState loadingL2={loadingL2} />;
