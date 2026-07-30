@@ -487,16 +487,6 @@ export default function ReviewScreen() {
             </View>
           ))}
 
-          {/* Debug: show saved word as JSON (dev only) */}
-          {__DEV__ && (
-            <View className="mb-4 rounded-lg bg-gray-900/10 dark:bg-gray-100/10 p-3">
-              <Text className="mb-1 text-xs font-medium text-muted-foreground">SavedWord (debug)</Text>
-              <Text className="font-mono text-[10px] leading-tight text-foreground/70" selectable>
-                {JSON.stringify(currentCard.word, null, 2)}
-              </Text>
-            </View>
-          )}
-
           {/* SRS info (compact) */}
           <Text className="mb-4 text-center text-xs text-muted-foreground">
             {srs.interval > 0 ? `${srs.interval}d` : t('review.srs_new')}
