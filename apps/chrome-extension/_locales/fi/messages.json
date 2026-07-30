@@ -48,7 +48,7 @@
     "message": "Käyttöliittymäkieli"
   },
   "popularLanguages": {
-    "message": "Suositut"
+    "message": "Suosittu"
   },
   "allLanguages": {
     "message": "Kaikki"
@@ -127,7 +127,7 @@
     "message": "Kirjaudu ulos"
   },
   "popupChecking": {
-    "message": "Tarkistetaan…"
+    "message": "Checking…"
   },
   "popupShowTranscript": {
     "message": "Näytä transkriptio"

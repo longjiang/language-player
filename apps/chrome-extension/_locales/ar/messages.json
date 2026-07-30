@@ -127,7 +127,7 @@
     "message": "تسجيل الخروج"
   },
   "popupChecking": {
-    "message": "جارٍ التحقق…"
+    "message": "Checking…"
   },
   "popupShowTranscript": {
     "message": "إظهار النص"

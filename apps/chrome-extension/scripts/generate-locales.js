@@ -40,6 +40,8 @@ const CSV_LOOKUP = {
   'close': 'action.close',
   'popupLoginBtn': 'action.log_in',
   'popupLogoutBtn': 'action.log_out',
+  'popularLanguages': 'msg.popular_languages',
+  'popupChecking': 'msg.checking',
 };
 
 // Built-in translations for extension-specific keys without CSV equivalents.
@@ -146,17 +148,7 @@ const MANUAL = {
     'sv': 'Språk att lära sig', 'sw': 'Lugha ya kujifunza', 'th': 'ภาษาที่เรียน',
     'tr': 'Öğrenilen dil', 'vi': 'Ngôn ngữ đang học',
   },
-  'popularLanguages': {
-    'af': 'Gewild', 'ar': 'شائع', 'ca': 'Populars',
-    'de': 'Beliebt', 'el': 'Δημοφιλείς', 'es': 'Populares',
-    'fi': 'Suositut', 'ga': 'Coitianta', 'hi': 'लोकप्रिय',
-    'hr': 'Popularno', 'hu': 'Népszerű', 'id': 'Populer',
-    'it': 'Popolari', 'ko': '인기', 'nl': 'Populair',
-    'no': 'Populært', 'pl': 'Popularne', 'pt': 'Populares',
-    'ro': 'Populare', 'ru': 'Популярные', 'sr': 'Popularno',
-    'sv': 'Populära', 'sw': 'Maarufu', 'th': 'ยอดนิยม',
-    'tr': 'Popüler', 'vi': 'Phổ biến',
-  },
+
   'translating': {
     'af': 'Vertaal… $progress$/$total$', 'ar': 'جارٍ الترجمة… $progress$/$total$',
     'ca': 'S\'està traduint… $progress$/$total$', 'de': 'Übersetze… $progress$/$total$',
@@ -313,17 +305,7 @@ const MANUAL = {
     'sv': 'Lösenord', 'sw': 'Nenosiri', 'th': 'รหัสผ่าน',
     'tr': 'Şifre', 'vi': 'Mật khẩu',
   },
-  'popupChecking': {
-    'af': 'Kontroleer…', 'ar': 'جارٍ التحقق…', 'ca': 'S\'està comprovant…',
-    'de': 'Überprüfe…', 'el': 'Έλεγχος…', 'es': 'Comprobando…',
-    'fi': 'Tarkistetaan…', 'ga': 'Á sheiceáil…', 'hi': 'जाँच हो रही है…',
-    'hr': 'Provjeravanje…', 'hu': 'Ellenőrzés…', 'id': 'Memeriksa…',
-    'it': 'Verifica…', 'ko': '확인 중…', 'nl': 'Controleren…',
-    'no': 'Sjekker…', 'pl': 'Sprawdzanie…', 'pt': 'Verificando…',
-    'ro': 'Se verifică…', 'ru': 'Проверка…', 'sr': 'Proveravanje…',
-    'sv': 'Kontrollerar…', 'sw': 'Inakagua…', 'th': 'กำลังตรวจสอบ…',
-    'tr': 'Kontrol ediliyor…', 'vi': 'Đang kiểm tra…',
-  },
+
   'popupShowTranscript': {
     'af': 'Wys Transkripsie', 'ar': 'إظهار النص', 'ca': 'Mostra la transcripció',
     'de': 'Transkript anzeigen', 'el': 'Εμφάνιση απομαγνητοφώνησης', 'es': 'Mostrar transcripción',

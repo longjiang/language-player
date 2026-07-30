@@ -48,7 +48,7 @@
     "message": "Limba interfeței"
   },
   "popularLanguages": {
-    "message": "Populare"
+    "message": "Popular"
   },
   "allLanguages": {
     "message": "Toate"
@@ -127,7 +127,7 @@
     "message": "Deconectare"
   },
   "popupChecking": {
-    "message": "Se verifică…"
+    "message": "Checking…"
   },
   "popupShowTranscript": {
     "message": "Afișează transcrierea"

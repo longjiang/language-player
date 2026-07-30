@@ -48,7 +48,7 @@
     "message": "Язык интерфейса"
   },
   "popularLanguages": {
-    "message": "Популярные"
+    "message": "Популярное"
   },
   "allLanguages": {
     "message": "All"
@@ -127,7 +127,7 @@
     "message": "Выйти"
   },
   "popupChecking": {
-    "message": "Проверка…"
+    "message": "Checking…"
   },
   "popupShowTranscript": {
     "message": "Показать транскрипт"
