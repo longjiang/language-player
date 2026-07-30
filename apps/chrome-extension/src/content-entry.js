@@ -1338,10 +1338,12 @@ async function init() {
   const playerEl = await waitForPlayer();
   console.log('[LanguagePlayer] Player found');
 
-  createPanelUI();
+  // Load saved L1/L2 preferences and locale BEFORE creating the UI,
+  // so the panel renders in the correct language from the start.
   await loadSavedLanguagePreferences();
-  // Load UI locale to match saved L1, then populate selectors with endonyms
   await setLocale(L1_CODE);
+
+  createPanelUI();
   populateL1Selector();
   populateL2Selector();
   setupKeyboard();
