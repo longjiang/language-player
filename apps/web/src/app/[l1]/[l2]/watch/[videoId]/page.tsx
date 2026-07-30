@@ -52,11 +52,11 @@ export default function WatchPage() {
   const videoId = params.videoId;
 
   const [video, setVideo] = useState<YouTubeVideo | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [dataError, setDataError] = useState<string | null>(null);
   const [startTime] = useState(() => getSavedPosition(videoId));
 
   const { cache: tokenCache, loaded: tokenCacheLoaded } = useVideoTokenCache(video?.id, baseCode(l2.code));
-  const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -130,13 +130,13 @@ export default function WatchPage() {
           setSubtitleStartTimes(data.lines.map((l: any) => l.starttime));
         }
       } catch (err: any) {
-        setError(err.message ?? 'Failed to load video');
+        setDataError(err.message ?? 'Failed to load video');
       } finally {
-        setLoading(false);
+        setDataLoaded(true);
       }
     };
     fetchVideo();
-  }, [videoId]);
+  }, [videoId, l1, l2]);
 
   const handleTimeUpdate = useCallback((time: number) => { setCurrentTime(time); }, []);
   const handleDuration = useCallback((d: number) => { setDuration(d); }, []);
@@ -235,39 +235,16 @@ export default function WatchPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handlePauseToggle, handlePreviousLine, handleNextLine, handleRewindToLine, hasPrevious, hasNext, playPrevious, playNext]);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  // Use videoId as the YouTube ID optimistically, update from API response if different.
+  // This avoids a player destroy+recreate when data arrives (youtube_id rarely differs).
+  const effectiveYoutubeId = video?.youtube_id ?? videoId;
 
-  if (error) {
-    return (
-      <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-        <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
-        <h1 className="mt-4 text-2xl font-bold">{t('msg.video_unavailable')}</h1>
-        <p className="mt-2 text-muted-foreground">{error}</p>
-      </div>
-    );
-  }
-  if (!video) {
-    return (
-      <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-        <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
-        <h1 className="mt-4 text-2xl font-bold">{t('msg.video_unavailable')}</h1>
-        <p className="mt-2 text-muted-foreground">{t('msg.video_unavailable')}</p>
-      </div>
-    );
-  }
-
-  const v = video;
-
+  // Render the player once with a stable identity — React preserves the DOM/iframe
+  // across loading→loaded transitions since the element stays at the same position.
   const playerElement = (
     <YouTubePlayer
       ref={playerRef}
-      youtubeId={v.youtube_id}
+      youtubeId={effectiveYoutubeId}
       autoplay
       startTime={startTime}
       onTimeUpdate={handleTimeUpdate}
@@ -275,6 +252,34 @@ export default function WatchPage() {
       onStateChange={handleStateChange}
     />
   );
+
+  // ── Error state ──
+  if (dataError && !video) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-12 text-center">
+        <AlertCircle className="mx-auto h-12 w-12 text-destructive" />
+        <h1 className="mt-4 text-2xl font-bold">{t('msg.video_unavailable')}</h1>
+        <p className="mt-2 text-muted-foreground">{dataError}</p>
+      </div>
+    );
+  }
+
+  // ── Loading state: show player chrome immediately, subtitles/data come later ──
+  if (!dataLoaded) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-6 h-[calc(100vh-5rem)] overflow-hidden">
+        <div className="h-full">
+          <div ref={videoWrapperRef} className="pb-2">
+            {playerElement}
+          </div>
+          <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>{t('msg.loading')}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── Subtitles Mode: Wide ──
   if (isSubtitles && isWide) {
@@ -294,7 +299,7 @@ export default function WatchPage() {
             onNextVideo={playNext}
             tokenCache={tokenCache}
             tokenCacheLoaded={tokenCacheLoaded}
-            videoTitle={video.title}
+            videoTitle={video!.title}
           />
         </div>
       </div>
@@ -320,11 +325,13 @@ export default function WatchPage() {
           onNextVideo={playNext}
           tokenCache={tokenCache}
           tokenCacheLoaded={tokenCacheLoaded}
-          videoTitle={video.title}
+          videoTitle={video!.title}
         />
       </div>
     );
   }
+
+  const v = video!;
 
   // ── Transcript Mode: Narrow ──
   // The viewport is split into two regions:

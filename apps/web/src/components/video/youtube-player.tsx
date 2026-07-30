@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardRef } from 'react';
+import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardRef, useId } from 'react';
 
 interface YouTubePlayerProps {
   youtubeId: string;
@@ -70,7 +70,8 @@ export const YouTubePlayer = forwardRef<YouTubePlayerHandle, YouTubePlayerProps>
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayerInstance | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const playerIdRef = useRef(`yt-player-${Math.random().toString(36).slice(2, 9)}`);
+  const uid = useId();
+  const playerIdRef = useRef(`yt-player-${uid}`);
   const startAppliedRef = useRef(false);
   const [apiReady, setApiReady] = useState(false);
   const [playerError, setPlayerError] = useState<string | null>(null);
