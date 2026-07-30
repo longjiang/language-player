@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Pressable, Linking } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatNumericLevel, primaryScale } from '@langplayer/shared';
@@ -11,6 +11,7 @@ import { ICON_MUTED } from '@/lib/theme-colors';
 import { SpeakButton } from '@/components/dictionary/SpeakButton';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { WebViewSheet } from '@/components/WebViewSheet';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
@@ -45,6 +46,7 @@ export function DictionaryEntryCard({
   const router = useRouter();
   const t = useT();
   const { l2Lang } = useLanguage();
+  const [showImageSearch, setShowImageSearch] = useState(false);
   const { hasWord, savedWords, saveWord, removeWord } = useSavedWords(l2Lang.code);
   const [wordSaved, setWordSaved] = React.useState(false);
 
@@ -111,7 +113,7 @@ export function DictionaryEntryCard({
         )}
       </Text>
       <Pressable
-        onPress={() => Linking.openURL(googleImagesUrl)}
+        onPress={() => setShowImageSearch(true)}
         className="flex-row items-center gap-0.5"
       >
         <ExternalLink size={10} color={ICON_MUTED} />
@@ -310,6 +312,14 @@ export function DictionaryEntryCard({
           <Text className={`text-xs ${wordSaved ? 'text-white' : 'text-amber-500/80'}`}>{wordSaved ? t('label.saved') : t('action.save_word')}</Text>
         </Pressable>
       </View>
+
+      {/* Image Search Sheet */}
+      <WebViewSheet
+        visible={showImageSearch}
+        url={googleImagesUrl}
+        title={t('action.search_images')}
+        onClose={() => setShowImageSearch(false)}
+      />
     </View>
   );
 }
