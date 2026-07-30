@@ -79,15 +79,10 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
 
       observer.observe(el);
       return () => observer.disconnect();
-    }, [visible]);
+    }, [visible, text]);
 
     // ── Render: three visual states ──
     const renderState = tokens ? 'TOKENS' : visible ? 'LOADING' : 'HIDDEN';
-    if (renderState === 'TOKENS') {
-      console.log(`[LP Extension] [RENDER] Tokenized line: "${text.substring(0, 40)}" (${tokens.length} tokens)`);
-    } else if (renderState === 'LOADING') {
-      console.log(`[LP Extension] [RENDER] Waiting for tokens: "${text.substring(0, 40)}"`);
-    }
     return (
       <span
         ref={containerRef}
@@ -384,6 +379,12 @@ Text: ${cue.text}`;
   // ── Pre-fetch window: only fire when activeCueIdx enters a new "page" ──
   // Throttles pre-fetch to avoid a batch call on every timeupdate (~250ms).
   const prefectWindowRef = useRef(-1);
+
+  // Reset the pre-fetch window when cues change (e.g., video navigation)
+  // so the first visible cue of the new video triggers a fresh batch.
+  useEffect(() => {
+    prefectWindowRef.current = -1;
+  }, [cues]);
 
   useEffect(() => {
     if (activeCueIdx === prevActiveRef.current) return;
