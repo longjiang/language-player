@@ -38,6 +38,7 @@ export {
   circledPattern,
 } from './pitch-accent';
 export { md5 } from './md5';
+export { useEntryCache, useEntryByIdCache } from './use-entry-cache';
 export { TokenCache } from './token-cache';
 export { parseSubtitles, detectSubtitleFormat } from './subtitle-parser';
 export { QueueManager, getGlobalQueueManager } from './queue-manager';

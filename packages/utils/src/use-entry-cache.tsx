@@ -1,25 +1,30 @@
 /**
- * React hook that reactively subscribes to the shared dictionary entry cache.
+ * React hooks that reactively subscribe to the shared dictionary entry cache.
  *
- * When TokenizedText's bulkLookupWords populates the cache for the given
- * (l2Code, text) key, this hook triggers a re-render so the component
- * gets the fresh data without polling or manual state management.
+ * Two variants:
+ * - `useEntryCache(l2Code, text)` — looks up by text (returns all entries for a word).
+ * - `useEntryByIdCache(l2Code, entryId)` — looks up by entry ID (returns single entry).
  *
- * Usage:
- * ```tsx
- * const entries = useEntryCache(l2Code, wordForm);
- * const entry = entries?.find(e => e.id === targetId) ?? null;
- * ```
+ * Both use `useSyncExternalStore` so components re-render automatically when
+ * the cache is populated (e.g. by bulkLookupWords or setCachedEntries).
  */
 
 import { useSyncExternalStore } from 'react';
-import { getCachedEntries, subscribeToCache } from './dictionary-cache';
+import { getCachedEntries, getCachedEntryById, subscribeToCache } from './dictionary-cache';
 import type { DictionaryEntry } from '@langplayer/shared';
 
 export function useEntryCache(l2Code: string, text: string): DictionaryEntry[] | undefined {
   return useSyncExternalStore(
     subscribeToCache,
     () => getCachedEntries(l2Code, text),
+    () => undefined, // getServerSnapshot — no cached data during SSR
+  );
+}
+
+export function useEntryByIdCache(l2Code: string, entryId: string): DictionaryEntry | undefined {
+  return useSyncExternalStore(
+    subscribeToCache,
+    () => getCachedEntryById(l2Code, entryId),
     () => undefined, // getServerSnapshot — no cached data during SSR
   );
 }
