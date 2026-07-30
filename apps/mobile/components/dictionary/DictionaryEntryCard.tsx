@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
 import { formatNumericLevel, primaryScale } from '@langplayer/shared';
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
-import { BookOpen, Bookmark } from 'lucide-react-native';
+import { BookOpen, Bookmark, ExternalLink } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { SpeakButton } from '@/components/dictionary/SpeakButton';
 import { useSavedWords } from '@/hooks/use-saved-words';
@@ -101,13 +101,23 @@ export function DictionaryEntryCard({
   const displaySource = sourceName === 'AI-Generated' || sourceName === 'LLM'
     ? t('label.ai_generated')
     : sourceName;
+  const googleImagesUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(entry.head)}`;
   const sourceLine = (
-    <Text className="text-[10px] text-muted-foreground/50">
-      {displaySource}
-      {entry.match_type && entry.match_type !== 'exact' && (
-        <Text className="text-[10px] text-amber-600"> · {entry.match_type}</Text>
-      )}
-    </Text>
+    <View className="flex-row items-center gap-2">
+      <Text className="text-[10px] text-muted-foreground/50">
+        {displaySource}
+        {entry.match_type && entry.match_type !== 'exact' && (
+          <Text className="text-[10px] text-amber-600"> · {entry.match_type}</Text>
+        )}
+      </Text>
+      <Pressable
+        onPress={() => Linking.openURL(googleImagesUrl)}
+        className="flex-row items-center gap-0.5"
+      >
+        <ExternalLink size={10} color={ICON_MUTED} />
+        <Text className="text-[10px] text-muted-foreground/50 underline">{t('action.search_images')}</Text>
+      </Pressable>
+    </View>
   );
 
   // ── COMPACT variant ──
@@ -152,7 +162,7 @@ export function DictionaryEntryCard({
           {/* Source + save */}
           {displaySource || saveButton ? (
             <View className="mt-2 flex-row items-center justify-between">
-              {displaySource ? <Text className="text-[10px] text-muted-foreground/50 flex-1">{displaySource}</Text> : <View className="flex-1" />}
+              {displaySource ? <View className="flex-1">{sourceLine}</View> : <View className="flex-1" />}
               {saveButton ? <View className="-mr-1">{saveButton as any}</View> : null}
             </View>
           ) : null}
