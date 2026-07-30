@@ -95,6 +95,12 @@ npm run build:check -w apps/web  # Safe build check (uses isolated .next-check/,
 
 **⚠️ Never start or stop the Flask server.** The Flask server (`zerotohero-python-server/`) is the user's responsibility to manage — starting, stopping, restarting, and checking its status. If you need the server running for a test or endpoint call, ask the user to start it. If it appears to be down, tell the user rather than trying to restart it yourself. You may query the Flask API endpoints with `curl` or `fetch` to test behavior, but never manage the server process.
 
+**⚠️ Always rebuild the Chrome extension after editing source.** The extension at `apps/chrome-extension/` uses esbuild to bundle `src/content-entry.js` (plus React, shared packages) into `dist/content.js`. After any edit to `apps/chrome-extension/src/`, run:
+```bash
+node apps/chrome-extension/build.mjs
+```
+Then go to `chrome://extensions` → refresh Language Player → reload the video page. The build auto-bumps the patch version in `manifest.json`. Note that `content.css`, `popup.html`, `popup.css`, `_locales/`, and `icons/` are NOT bundled — they are loaded directly by the extension runtime, so changes to those files only need a Chrome extension refresh (no build step).
+
 **⚠️ Build vs dev**: `npx turbo build` and `npm run build` both run `rm -rf .next` which kills the dev server. Use `npm run build:check -w apps/web` instead — it builds into an isolated `.next-check/` directory (created and cleaned up automatically).
 
 **⚠️ Always use `npx turbo` from the repo root** — it handles working directories automatically. If you must run a package script directly (e.g., `npx next build`), `cd` into that package's directory first. Running `npx next build apps/web` from the root will fail with misleading CSS/webpack errors because Next.js interprets the path argument as the project root, not a subdirectory.
