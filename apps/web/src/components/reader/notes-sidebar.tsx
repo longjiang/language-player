@@ -7,7 +7,7 @@ import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-  Loader2, Plus, StickyNote, PenLine, Trash2,
+  Loader2, Plus, PenLine, Trash2,
   MoreHorizontal,
 } from 'lucide-react';
 
@@ -93,7 +93,6 @@ export function NotesSidebar({
                 )}
                 onClick={() => onSelectNote(note.id)}
               >
-                <StickyNote className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
                   <div className="truncate">{note.title || t('msg.untitled_note')}</div>
                   {note.created_on && (
