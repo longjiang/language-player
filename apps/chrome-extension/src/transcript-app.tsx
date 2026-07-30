@@ -82,6 +82,12 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
     }, [visible]);
 
     // ── Render: three visual states ──
+    const renderState = tokens ? 'TOKENS' : visible ? 'LOADING' : 'HIDDEN';
+    if (renderState === 'TOKENS') {
+      console.log(`[LPV] [RENDER] Tokenized line: "${text.substring(0, 40)}" (${tokens.length} tokens)`);
+    } else if (renderState === 'LOADING') {
+      console.log(`[LPV] [RENDER] Waiting for tokens: "${text.substring(0, 40)}"`);
+    }
     return (
       <span
         ref={containerRef}

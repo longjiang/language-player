@@ -26,6 +26,22 @@ const isDisneyPlus = /disneyplus\.com/.test(location.hostname);
 const isHulu = /hulu\.com/.test(location.hostname);
 const isHBOMax = /max\.com|hbonow\.com|hbomax\.com/.test(location.hostname);
 
+/** Trace logging helper — labels each step with a unique phase tag so
+ *  you can follow the full pipeline from subtitle fetch to rendered tokens.
+ *  Usage: trace('TOKENS_LOADED', '120 texts enqueued') → "[LPV] [FETCH] ..."
+ */
+const TRACE_PHASES = {
+  FETCH:    'FETCH',
+  PARSE:    'PARSE',
+  REACT:    'REACT',
+  TOKENIZE: 'TOKENIZE',
+  TRANSLATE:'TRANSLATE',
+  RENDER:   'RENDER',
+};
+function trace(phase, msg) {
+  console.log(`[LPV] [${phase}] ${msg}`);
+}
+
 /** Popular languages shown first in the L2 dropdown */
 const POPULAR_L2S = [
   'en', 'zh', 'zh-Hans', 'zh-Hant', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru',
@@ -197,6 +213,8 @@ function seekTo(timeSec) {
 
 function renderTranscript(loadingL2) {
   if (!panelContent) return;
+  const cueCount = STATE.cues.length;
+  trace('REACT', `mountTranscript(${cueCount} cues, activeIdx=${STATE.activeCueIdx})`);
   mountTranscript(
     panelContent,
     STATE.cues,
@@ -261,6 +279,8 @@ async function fetchAndParseSubtitles(url) {
   STATE.subtitleUrl = url;
   STATE.loading = true;
 
+  trace('FETCH', `URL detected: ${url.substring(0, 120)}`);
+
   // For Disney+: don't clear existing cues — we're loading a VTT segment
   // that covers only part of the timeline. Merge it in instead.
   const isDisneySegment = isDisneyPlus && /\.vtt(\?|$)/i.test(url);
@@ -302,6 +322,8 @@ async function fetchAndParseSubtitles(url) {
     }
 
     STATE.cues = cues;
+
+    trace('PARSE', `${cues.length} cues parsed from subtitle text`);
 
     // Try to detect language from subtitle content
     tryDetectL2FromCues(cues, (v) => { detectedL2Code = v; });
@@ -563,6 +585,7 @@ function mainWorldFetch(url) {
 /** Fetch YouTube subtitles from a track and render */
 async function fetchYTTrack(track) {
   try {
+    trace('FETCH', `YouTube track: ${track.languageCode} (kind=${track.kind || 'manual'})`);
     updateStatus(t('loadingSubtitles', ['en']));
 
     // Ensure URL is absolute
@@ -599,6 +622,8 @@ async function fetchYTTrack(track) {
 
     STATE.cues = cues;
     STATE.subtitleUrl = track.baseUrl;
+
+    trace('PARSE', `${cues.length} YouTube cues parsed`);
 
     if (track.languageCode) {
       detectedL2Code = track.languageCode.split('-')[0];
