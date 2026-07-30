@@ -817,10 +817,7 @@ function createPanelUI() {
   logoImg.width = 24;
   logoImg.height = 24;
 
-  const titleText = document.createTextNode(t('appName'));
-
   title.appendChild(logoImg);
-  title.appendChild(titleText);
 
   // L2 language selector
   l2SelectEl = document.createElement('select');
