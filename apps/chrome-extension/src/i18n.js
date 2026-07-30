@@ -10,6 +10,14 @@
 /** Cache of messages loaded from _locales/{locale}/messages.json */
 let runtimeMessages = null;
 
+/** Monotonic counter bumped on every setLocale() call.
+ *  React components use this to force re-render when the UI language changes. */
+let _localeVersion = 0;
+
+export function getLocaleVersion() {
+  return _localeVersion;
+}
+
 /** Mapping from CSV-style locale codes to Chrome _locales/ directory names */
 const CSV_TO_CHROME = {
   'en': 'en', 'zh-Hans': 'zh_CN', 'zh-Hant': 'zh_TW', 'af': 'af', 'ar': 'ar',
@@ -36,6 +44,7 @@ export async function setLocale(localeCode) {
     console.warn(`[LanguagePlayer] Failed to load locale "${chromeLocale}":`, err?.message);
     runtimeMessages = null;
   }
+  _localeVersion++;
 }
 
 /**

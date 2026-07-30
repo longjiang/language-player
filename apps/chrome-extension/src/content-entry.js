@@ -15,7 +15,7 @@ import {
   parseTTML, parseWebVTTLike, parseSRT,
   parseYTTimedText, parseYTJSON3, tryDetectL2FromCues,
 } from './subtitle-parsers';
-import { t, setLocale } from './i18n';
+import { t, setLocale, getLocaleVersion } from './i18n';
 import langNames from '../dist/lang-names.json';
 
 // ── Site detection ───────────────────────────────────────────────────────
@@ -205,6 +205,7 @@ function renderTranscript(loadingL2) {
     L1_CODE,
     seekTo,
     loadingL2,
+    getLocaleVersion(),
   );
 }
 
@@ -306,7 +307,7 @@ async function fetchAndParseSubtitles(url) {
     tryDetectL2FromCues(cues, (v) => { detectedL2Code = v; });
 
     if (cues.length === 0) {
-      mountTranscript(panelContent, [], -1, detectedL2Code, L1_CODE, seekTo);
+      mountTranscript(panelContent, [], -1, detectedL2Code, L1_CODE, seekTo, undefined, getLocaleVersion());
     } else {
       STATE.activeCueIdx = -1;
       renderTranscript();
@@ -950,7 +951,7 @@ function createPanelUI() {
   STATE.panelReady = true;
 
   // Initial empty render
-  mountTranscript(panelContent, [], -1, detectedL2Code, L1_CODE, seekTo);
+  mountTranscript(panelContent, [], -1, detectedL2Code, L1_CODE, seekTo, undefined, getLocaleVersion());
 }
 
 /** Refresh all static UI labels after a locale change.
