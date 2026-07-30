@@ -6,11 +6,33 @@
 - **Status**: draft
 - **Created**: 2026-07-30
 - **See also**:
-  - `apps/chrome-extension/src/content.js` — content script (panel creation, subtitle detection, rendering)
+  - `apps/chrome-extension/src/content-entry.js` — entry point bundled by esbuild (panel creation, subtitle detection, rendering, all platform logic)
+  - `apps/chrome-extension/build.mjs` — esbuild build script (bundles `content-entry.js` → `dist/content.js`, copies `content.css` and `netflix-main-world.js`)
   - `apps/chrome-extension/src/background.js` — service worker (subtitle HTTP interception)
   - `apps/chrome-extension/src/popup.js` — extension popup ("Show Transcript" button)
   - `apps/chrome-extension/src/popup.html` — popup UI
   - `apps/chrome-extension/manifest.json` — extension manifest
+
+### Build Process
+
+The extension uses **esbuild** to bundle the content script. Source files use ES module syntax (`import`/`export`), which Chrome doesn't support in content scripts, so they must be bundled into a single IIFE.
+
+**To compile after making changes:**
+
+```bash
+cd /Users/longjiang/Projects/language-player
+node apps/chrome-extension/build.mjs
+```
+
+This runs `esbuild` on `src/content-entry.js`, resolving workspace packages (`@langplayer/shared`, `@langplayer/utils`) from the monorepo, and outputs a single bundle at `dist/content.js`. It also copies `src/content.css` → `dist/content.css` and `src/netflix-main-world.js` → `dist/netflix-main-world.js`.
+
+**To reload in Chrome after building:**
+1. Go to `chrome://extensions`
+2. Find **Language Player**
+3. Click the refresh/reload icon on the extension card
+4. Reload the video page
+
+> The old `src/content.js` (vanilla JS, non-React) is **not** used by the build. All development happens in `src/content-entry.js`.
 
 ---
 

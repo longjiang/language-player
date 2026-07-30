@@ -1,4 +1,15 @@
 /**
+ * ⚠️  THIS FILE IS NOT USED.
+ *
+ * The active content script is content-entry.js, bundled by esbuild into
+ * dist/content.js. See build.mjs for the build process.
+ *
+ * This file is the original vanilla JS prototype (Prime Video only).
+ * It is NOT referenced by manifest.json, build.mjs, or any other file.
+ * Keep it for reference only — do not edit.
+ *
+ * --- Original header below ---
+ *
  * Prime Video Subtitle Viewer — Content Script
  *
  * Injects a collapsible transcript panel alongside the Prime Video player.

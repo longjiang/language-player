@@ -310,11 +310,14 @@ async function fetchAndParseSubtitles(url) {
       STATE.activeCueIdx = -1;
       renderTranscript();
       if (!STATE.panelVisible) {
-        setPanelVisible(true);
+        const { autoOpenPanel: pref } = await chrome.storage.sync.get('autoOpenPanel');
+        if (pref !== false) {
+          setPanelVisible(true);
+        }
       }
     }
   } catch (err) {
-    console.error('[PrimeVideoSubs] Failed to fetch/parse subtitles:', err);
+    console.error('[LanguagePlayer] Failed to fetch/parse subtitles:', err);
     updateStatus(t('failedToLoadSubtitles'));
   } finally {
     STATE.loading = false;
@@ -604,7 +607,12 @@ async function fetchYTTrack(track) {
     if (cues.length > 0) {
       STATE.activeCueIdx = -1;
       renderTranscript();
-      if (!STATE.panelVisible) setPanelVisible(true);
+      if (!STATE.panelVisible) {
+        const { autoOpenPanel: pref } = await chrome.storage.sync.get('autoOpenPanel');
+        if (pref !== false) {
+          setPanelVisible(true);
+        }
+      }
     }
     setBadge(true);
     updateStatus(t('subtitleEntriesLoaded', [cues.length.toString()]));
@@ -829,7 +837,11 @@ function createPanelUI() {
   closeBtn.id = 'lpv-close-btn';
   closeBtn.innerHTML = '✕';
   closeBtn.title = t('closePanel');
-  closeBtn.addEventListener('click', () => setPanelVisible(false));
+  closeBtn.addEventListener('click', () => {
+    console.log('[LanguagePlayer] User closed the transcript panel with ✕');
+    chrome.storage.sync.set({ autoOpenPanel: false });
+    setPanelVisible(false);
+  });
 
   headerRight.appendChild(l2SelectEl);
   headerRight.appendChild(closeBtn);
@@ -1050,7 +1062,12 @@ async function loadNetflixTrackForLanguage(langCode) {
     if (cues.length > 0) {
       STATE.activeCueIdx = -1;
       renderTranscript();
-      if (!STATE.panelVisible) setPanelVisible(true);
+      if (!STATE.panelVisible) {
+        const { autoOpenPanel: pref } = await chrome.storage.sync.get('autoOpenPanel');
+        if (pref !== false) {
+          setPanelVisible(true);
+        }
+      }
     }
     setBadge(true);
     updateStatus(t('subtitleEntriesLoaded', [cues.length.toString()]));
@@ -1164,6 +1181,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.action === 'showTranscript') {
+    console.log('[LanguagePlayer] Opening transcript panel via popup — enabling auto-open');
+    chrome.storage.sync.set({ autoOpenPanel: true });
     setPanelVisible(true);
     sendResponse({ success: true });
   }
@@ -1242,7 +1261,12 @@ async function init() {
       console.log('[LanguagePlayer] Rendering pre-loaded cues:', STATE.cues.length);
       STATE.activeCueIdx = -1;
       renderTranscript();
-      if (!STATE.panelVisible) setPanelVisible(true);
+      if (!STATE.panelVisible) {
+        const { autoOpenPanel: pref } = await chrome.storage.sync.get('autoOpenPanel');
+        if (pref !== false) {
+          setPanelVisible(true);
+        }
+      }
       setBadge(true);
       updateStatus(t('subtitleEntriesLoaded', [String(STATE.cues.length)]));
     }

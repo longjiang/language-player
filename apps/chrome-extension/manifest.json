@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_appName__",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "default_locale": "en",
   "description": "__MSG_extensionDescription__",
   "permissions": [
@@ -16,22 +16,58 @@
   ],
   "content_scripts": [
     {
-      "matches": ["*://*.netflix.com/*"],
-      "js": ["dist/content.js"],
-      "css": ["dist/content.css"],
+      "matches": [
+        "*://*.netflix.com/*"
+      ],
+      "js": [
+        "dist/content.js"
+      ],
+      "css": [
+        "dist/content.css"
+      ],
       "run_at": "document_start"
     },
     {
-      "matches": ["https://*.primevideo.com/*", "https://*.amazon.com/*", "https://*.amazon.co.uk/*", "https://*.amazon.de/*", "https://*.amazon.co.jp/*", "*://*.youtube.com/*", "*://*.disneyplus.com/*", "*://*.hulu.com/*", "*://*.max.com/*", "*://play.max.com/*"],
-      "js": ["dist/content.js"],
-      "css": ["dist/content.css"],
+      "matches": [
+        "https://*.primevideo.com/*",
+        "https://*.amazon.com/*",
+        "https://*.amazon.co.uk/*",
+        "https://*.amazon.de/*",
+        "https://*.amazon.co.jp/*",
+        "*://*.youtube.com/*",
+        "*://*.disneyplus.com/*",
+        "*://*.hulu.com/*",
+        "*://*.max.com/*",
+        "*://play.max.com/*"
+      ],
+      "js": [
+        "dist/content.js"
+      ],
+      "css": [
+        "dist/content.css"
+      ],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/language-player-logo-64.png", "dist/netflix-main-world.js"],
-      "matches": ["https://*.primevideo.com/*", "https://*.amazon.com/*", "https://*.amazon.co.uk/*", "https://*.amazon.de/*", "https://*.amazon.co.jp/*", "*://*.youtube.com/*", "*://*.netflix.com/*", "*://*.disneyplus.com/*", "*://*.hulu.com/*", "*://*.max.com/*", "*://play.max.com/*"]
+      "resources": [
+        "src/language-player-logo-64.png",
+        "dist/netflix-main-world.js"
+      ],
+      "matches": [
+        "https://*.primevideo.com/*",
+        "https://*.amazon.com/*",
+        "https://*.amazon.co.uk/*",
+        "https://*.amazon.de/*",
+        "https://*.amazon.co.jp/*",
+        "*://*.youtube.com/*",
+        "*://*.netflix.com/*",
+        "*://*.disneyplus.com/*",
+        "*://*.hulu.com/*",
+        "*://*.max.com/*",
+        "*://play.max.com/*"
+      ]
     }
   ],
   "action": {
