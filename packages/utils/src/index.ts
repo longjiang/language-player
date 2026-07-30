@@ -6,6 +6,8 @@ export {
   bulkLookupWords,
   getCachedEntryById,
   setCachedEntryById,
+  getIdCacheKeys,
+  getTextCacheKeys,
 } from './dictionary-cache';
 export { formatDuration, formatNumber, formatRelativeDate } from './format';
 export { languageNameFromCode, baseCode, isRTL, getLanguageDirection, isPhoneticsEligible } from './language';

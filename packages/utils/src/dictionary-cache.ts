@@ -62,6 +62,30 @@ export function setCachedEntryById(l2Code: string, entry: DictionaryEntry): void
   }
 }
 
+// ── Debug helpers ──
+
+/** List all ID cache keys (for debugging). */
+export function getIdCacheKeys(l2Code?: string): string[] {
+  const keys: string[] = [];
+  for (const key of idCache.keys()) {
+    if (!l2Code || key.startsWith(`${l2Code}:`)) {
+      keys.push(key);
+    }
+  }
+  return keys.sort();
+}
+
+/** List all text cache keys (for debugging). */
+export function getTextCacheKeys(l2Code?: string): string[] {
+  const keys: string[] = [];
+  for (const key of textCache.keys()) {
+    if (!l2Code || key.startsWith(`${l2Code}:`)) {
+      keys.push(key);
+    }
+  }
+  return keys.sort();
+}
+
 // ── Subscriptions (for reactive hooks) ──
 
 export function subscribeToCache(listener: Listener): () => void {

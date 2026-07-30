@@ -18,7 +18,8 @@ import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { lemmatizeText } from '@/lib/tokenizer';
-import { bulkLookupWords } from '@/lib/dictionary-cache';
+import { bulkLookupWords, getCachedEntryById, getCachedEntries, getCacheVersion, getIdCacheKeys, getTextCacheKeys } from '@/lib/dictionary-cache';
+import { decomposeWordId } from '@langplayer/shared';
 import type { DictionaryEntry, LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -130,7 +131,20 @@ export default function ReviewScreen() {
   // ── Derive entry for the current card from the reactive ID cache ──
   const currentDueCard = dueCards[currentIndex];
   const wordForm = currentDueCard?.forms?.[0] || currentDueCard?.head || currentDueCard?.id || '';
-  const currentEntry = useEntryByIdCache(l2Code, currentDueCard?.id ?? '') ?? null;
+  // Compose the full entry ID from dictionaryId + scoped id (ADR 0006).
+  // SavedWordMeta.id is the scoped numeric ID (e.g. "73458"), but the
+  // dictionary entry's id is prefixed (e.g. "edict-73458"). The ID cache
+  // keys by the full entry id. When dictionaryId is missing, use
+  // decomposeWordId to infer it from the raw ID + language.
+  const fullEntryId = (() => {
+    const rawId = currentDueCard?.id;
+    if (!rawId) return '';
+    const dictId = currentDueCard?.dictionaryId;
+    if (dictId) return `${dictId}-${rawId}`;
+    const decomposed = decomposeWordId(rawId, l2Code);
+    return decomposed ? `${decomposed.dict}-${decomposed.id}` : rawId;
+  })();
+  const currentEntry = useEntryByIdCache(l2Code, fullEntryId) ?? null;
 
   // ── Merge due cards with the reactive entry ──
   const cards = useMemo(() => dueCards.map((word) => ({
@@ -282,6 +296,15 @@ export default function ReviewScreen() {
     }
     return result;
   }, [currentIndex, cards, l2Code, l1Lang.code]);
+
+  // ── Pre-warm the current card's dictionary entry ──
+  useEffect(() => {
+    if (!wordForm) return;
+    bulkLookupWords(
+      [{ text: wordForm, l2Code, l1Code: baseCode(l1Lang.code) }],
+      PYTHON_API_URL,
+    );
+  }, [currentIndex, l2Code, l1Lang.code, wordForm]);
 
   // ── Pre-warm tokenization + dictionary cache for upcoming cards ──
   useEffect(() => {
@@ -474,12 +497,27 @@ export default function ReviewScreen() {
             </View>
           ))}
 
-          {/* Debug: show saved word as JSON */}
+          {/* Debug: comprehensive cache + entry state */}
           {__DEV__ && (
             <View className="mb-4 rounded-lg bg-gray-900/10 dark:bg-gray-100/10 p-3">
-              <Text className="mb-1 text-xs font-medium text-muted-foreground">SavedWord (debug)</Text>
+              <Text className="mb-1 text-xs font-medium text-muted-foreground">Debug Info</Text>
               <Text className="font-mono text-[10px] leading-tight text-foreground/70" selectable>
-                {JSON.stringify(currentCard.word, null, 2)}
+                {`entryId (raw): ${currentDueCard?.id ?? '(null)'}
+entryId (full): ${fullEntryId}
+dictId: ${currentDueCard?.dictionaryId ?? `decomposed->${(() => { const d = decomposeWordId(currentDueCard?.id ?? '', l2Code); return d ? d.dict : 'null'; })()}`}
+wordForm: ${wordForm}
+currentEntry: ${currentEntry ? 'found' : 'null'}
+cacheVersion: ${getCacheVersion()}
+idCache (full): ${JSON.stringify(getCachedEntryById(l2Code, fullEntryId) ?? '(not found)').slice(0, 200)}
+idCache (raw): ${JSON.stringify(getCachedEntryById(l2Code, currentDueCard?.id ?? '') ?? '(not found)').slice(0, 200)}
+all idCache keys (this l2): ${JSON.stringify(getIdCacheKeys(l2Code))}
+textCache (wordForm): ${JSON.stringify(getCachedEntries(l2Code, wordForm) ?? '(not found)').slice(0, 200)}
+currentIndex: ${currentIndex}
+cards.length: ${cards.length}
+showTabs: ${showTabs}
+currentDueCard?.forms: ${JSON.stringify(currentDueCard?.forms)}
+currentDueCard?.head: ${currentDueCard?.head ?? '(none)'}
+`}
               </Text>
             </View>
           )}
