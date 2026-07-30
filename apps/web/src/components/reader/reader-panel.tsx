@@ -305,12 +305,12 @@ export function ReaderPanel({
     <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col">
           {/* Edit mode */}
           {activeTab === 'edit' && (
-            <div className="space-y-3">
+            <div className="flex min-h-0 flex-1 flex-col gap-3">
               <textarea value={text} onChange={(e) => onTextChange(e.target.value)}
                 placeholder={t('placeholder.paste_l2_text', { l2: l2.name })}
-                className="min-h-[40vh] w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                className="min-h-0 flex-1 w-full rounded-lg border border-border bg-background p-4 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
                 dir={l2.direction === 'rtl' ? 'rtl' : 'ltr'} lang={l2.code} />
-              <div className="flex gap-2">
+              <div className="flex-shrink-0 flex gap-2">
                 {getSampleText(l2.code) && (
                   <Button variant="outline" size="sm" className="flex-1"
                     onClick={() => {
