@@ -93,6 +93,16 @@ npm run build:check -w apps/web  # Safe build check (uses isolated .next-check/,
 
 **⚠️ Always use `python3.10` for Python commands.** The Flask backend and all Python scripts require Python 3.10. Never use bare `python`, `python3`, or a different version. Example: `python3.10 app.py`, `python3.10 -c "..."`, `python3.10 script.py`.
 
+**⚠️ All console.log must identify the app with a bracketed prefix.** Every `console.log` / `console.warn` / `console.error` call must start with one of these prefixes so developers can filter logs by app in a shared console:
+
+| App | Prefix | Example |
+|---|---|---|
+| Chrome Extension | `[LP Extension]` | `console.log('[LP Extension] Panel created')` |
+| Web (Next.js) | `[LP Web]` | `console.log('[LP Web] Video loaded')` |
+| Mobile (Expo/RN) | `[LP Mobile]` | `console.log('[LP Mobile] Subtitle fetched')` |
+
+This applies to all source files in `apps/chrome-extension/`, `apps/web/`, and `apps/mobile/`. Do not use bare prefixes like `[LanguagePlayer]`, `[LPV]`, or no prefix at all — the bracketed app identifier is mandatory and must come first.
+
 **⚠️ Never start or stop the Flask server.** The Flask server (`zerotohero-python-server/`) is the user's responsibility to manage — starting, stopping, restarting, and checking its status. If you need the server running for a test or endpoint call, ask the user to start it. If it appears to be down, tell the user rather than trying to restart it yourself. You may query the Flask API endpoints with `curl` or `fetch` to test behavior, but never manage the server process.
 
 **⚠️ Always rebuild the Chrome extension after editing source.** The extension at `apps/chrome-extension/` uses esbuild to bundle `src/content-entry.js` (plus React, shared packages) into `dist/content.js`. After any edit to `apps/chrome-extension/src/`, run:
