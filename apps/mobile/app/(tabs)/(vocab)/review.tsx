@@ -264,12 +264,21 @@ export default function ReviewScreen() {
     return () => { cancelled = true; };
   }, [cards, currentIndex, l2Code, l1Lang.code, display.translation]);
 
-  // ── Pre-tokenize + pre-lookup the next 3 cards' context sentence(s) ──
-  const preWarmInstances = useMemo(() => {
-    const result: Array<{ text: string; l2Code: string; l1Code: string }> = [];
+  // ── Pre-warm the next 3 cards' context + target word entries ──
+  const preWarmWords = useMemo(() => {
+    const targetWords: Array<{ text: string; l2Code: string; l1Code: string }> = [];
+    const contextTexts: Array<{ text: string; l2Code: string; l1Code: string }> = [];
     for (let i = 1; i <= 3; i++) {
       const card = cards[currentIndex + i];
       if (!card) break;
+
+      // Pre-warm the target word entry so useEntryCache resolves instantly
+      const targetForm = card.word.forms?.[0] || card.word.head || card.word.id || '';
+      if (targetForm) {
+        targetWords.push({ text: targetForm, l2Code, l1Code: l1Lang.code });
+      }
+
+      // Pre-warm context sentence lemmas
       const cardInstances = ((card.word as any).instances as Array<{ timestamp: number; form: string; context: SavedWordContext }> | undefined) ?? (
         card.word.context
           ? [{ timestamp: card.word.date ?? 0, form: card.word.forms?.[0] ?? '', context: card.word.context as unknown as SavedWordContext }]
@@ -277,19 +286,25 @@ export default function ReviewScreen() {
       );
       for (const inst of cardInstances) {
         if (inst.context?.text) {
-          result.push({ text: inst.context.text, l2Code, l1Code: l1Lang.code });
+          contextTexts.push({ text: inst.context.text, l2Code, l1Code: l1Lang.code });
         }
       }
     }
-    return result;
+    return { targetWords, contextTexts };
   }, [currentIndex, cards, l2Code, l1Lang.code]);
 
   // ── Pre-warm tokenization + dictionary cache for upcoming cards ──
   useEffect(() => {
-    for (const ctx of preWarmInstances) {
-      // Step 1: pre-tokenize (populates the in-memory lemmatizeText cache)
+    const { targetWords, contextTexts } = preWarmWords;
+
+    // Pre-warm target word entries directly (skip tokenization — single words)
+    if (targetWords.length > 0) {
+      bulkLookupWords(targetWords, PYTHON_API_URL);
+    }
+
+    // Pre-warm context sentence tokenization + lemma lookups
+    for (const ctx of contextTexts) {
       lemmatizeText(ctx.text, ctx.l2Code).then((tokens: LemmatizedToken[]) => {
-        // Step 2: pre-lookup definitions for all unique lemmas
         const uniqueLemmas = [...new Set(
           tokens.flatMap(t => t.lemmas.map(l => l.lemma).filter(Boolean))
         )];
@@ -301,7 +316,7 @@ export default function ReviewScreen() {
         }
       });
     }
-  }, [preWarmInstances]);
+  }, [preWarmWords]);
 
   // ── Reset session state when language changes ──
   useEffect(() => {
