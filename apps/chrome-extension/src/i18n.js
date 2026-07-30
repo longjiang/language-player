@@ -5,7 +5,35 @@
  * Supports runtime locale switching: when L1 changes, messages for the new
  * locale are loaded from _locales/{locale}/messages.json into a cache so
  * all subsequent t() calls use the selected language.
+ *
+ * Logging: exports log() / logwarn() / logerr() helpers gated by LOG_LEVEL.
+ * Set LOG_LEVEL = 0 to disable all extension logs, 1 for errors only,
+ * 2 for warnings+errors, 3 for everything (default).
  */
+
+// ── Logging ────────────────────────────────────────────────────────────────
+
+/** Log level: 0=off, 1=errors, 2=warnings, 3=verbose (default). */
+const LOG_LEVEL = 3;
+
+const PREFIX = '[LP Extension]';
+
+/** Verbose trace log — only shown at LOG_LEVEL >= 3 */
+export function log(...args) {
+  if (LOG_LEVEL >= 3) console.log(PREFIX, ...args);
+}
+
+/** Warning — shown at LOG_LEVEL >= 2 */
+export function logwarn(...args) {
+  if (LOG_LEVEL >= 2) console.warn(PREFIX, ...args);
+}
+
+/** Error — shown at LOG_LEVEL >= 1 */
+export function logerr(...args) {
+  if (LOG_LEVEL >= 1) console.error(PREFIX, ...args);
+}
+
+// ── i18n ───────────────────────────────────────────────────────────────────
 
 /** Cache of messages loaded from _locales/{locale}/messages.json */
 let runtimeMessages = null;
@@ -41,7 +69,7 @@ export async function setLocale(localeCode) {
     const messages = await res.json();
     runtimeMessages = messages;
   } catch (err) {
-    console.warn(`[LanguagePlayer] Failed to load locale "${chromeLocale}":`, err?.message);
+    logwarn(`Failed to load locale "${chromeLocale}":`, err?.message);
     runtimeMessages = null;
   }
   _localeVersion++;

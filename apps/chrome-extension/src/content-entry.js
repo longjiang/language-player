@@ -15,7 +15,7 @@ import {
   parseTTML, parseWebVTTLike, parseSRT,
   parseYTTimedText, parseYTJSON3, tryDetectL2FromCues,
 } from './subtitle-parsers';
-import { t, setLocale, getLocaleVersion } from './i18n';
+import { t, setLocale, getLocaleVersion, log, logwarn, logerr } from './i18n';
 import langNames from '../dist/lang-names.json';
 
 // ── Site detection ───────────────────────────────────────────────────────
@@ -39,7 +39,7 @@ const TRACE_PHASES = {
   RENDER:   'RENDER',
 };
 function trace(phase, msg) {
-  console.log(`[LanguagePlayer] [${phase}] ${msg}`);
+  log(`[${phase}] ${msg}`);
 }
 
 /** Popular languages shown first in the L2 dropdown */
@@ -186,7 +186,7 @@ function seekTo(timeSec) {
     // Netflix: must use player API (M7375 DRM error on direct currentTime)
     chrome.runtime.sendMessage({ action: 'netflixSeek', timeSec })
       .then((res) => {
-        console.log('[LanguagePlayer] Netflix seek result:', res?.method || res?.error);
+        log('Netflix seek result:', res?.method || res?.error);
       })
       .catch(() => {});
   } else if (isDisneyPlus) {
