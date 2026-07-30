@@ -369,7 +369,8 @@ export default function ReviewScreen() {
   if (!currentCard) return null;
 
   const entry = currentEntry;
-  const wordCtx = currentCard.word.context ?? {};
+  const savedWord = currentCard.word;
+  const instances = savedWord.instances ?? (savedWord.context ? [{ timestamp: savedWord.date, form: savedWord.forms?.[0] ?? '', context: savedWord.context }] : []);
   const srs = currentCard.srs;
 
   return (
@@ -406,27 +407,41 @@ export default function ReviewScreen() {
       <View className="px-4 mb-2 flex-1">
         <View className="max-h-full rounded-xl border border-border bg-card p-4">
           <ScrollView>
-            {/* Context sentence — always visible, tokenized/interactive */}
-          {(wordCtx as any)?.text ? (
-            <View className="mb-4 rounded-lg bg-muted/50 p-3">
-              <Text className="mb-1 text-xs font-medium text-muted-foreground">{t('review.context_label')}</Text>
-              <TextActionMenu text={(wordCtx as any).text} l2Code={l2Code} l1Code={baseCode(l1Lang.code)}>
+            {/* Context sentences — loop over saved word instances */}
+          {instances.map((inst, idx) => (
+            <View key={inst.timestamp?.toString() ?? idx} className="mb-3 rounded-lg bg-muted/50 p-3">
+              {instances.length > 1 && (
+                <Text className="mb-1 text-[10px] font-medium text-muted-foreground/70">
+                  {t('review.context_label')} {idx + 1}
+                </Text>
+              )}
+              <TextActionMenu text={inst.context.text} l2Code={l2Code} l1Code={baseCode(l1Lang.code)}>
                 <TokenizedText
-                  text={(wordCtx as any).text}
+                  text={inst.context.text}
                   l2Code={l2Code}
-                  highlightTerms={[wordForm]}
+                  highlightTerms={[inst.form]}
                 />
               </TextActionMenu>
               <View className="mt-1">
-                <SavedWordSource context={wordCtx as any} date={currentCard.word.date ?? 0} />
+                <SavedWordSource context={inst.context} date={inst.timestamp ?? savedWord.date} />
               </View>
-              {showTabs && display.translation && ((wordCtx as any).translation || contextTranslation) && (
+              {showTabs && display.translation && inst.context.translation && (
                 <Text className="mt-2 text-xs leading-relaxed text-muted-foreground border-t border-border pt-2">
-                  {(wordCtx as any).translation || contextTranslation}
+                  {inst.context.translation}
                 </Text>
               )}
             </View>
-          ) : null}
+          ))}
+
+          {/* Debug: show saved word as JSON */}
+          {__DEV__ && (
+            <View className="mb-4 rounded-lg bg-gray-900/10 dark:bg-gray-100/10 p-3">
+              <Text className="mb-1 text-xs font-medium text-muted-foreground">SavedWord (debug)</Text>
+              <Text className="font-mono text-[10px] leading-tight text-foreground/70" selectable>
+                {JSON.stringify(currentCard.word, null, 2)}
+              </Text>
+            </View>
+          )}
 
           {/* SRS info (compact) */}
           <Text className="mb-4 text-center text-xs text-muted-foreground">
@@ -457,7 +472,7 @@ export default function ReviewScreen() {
                   showDefinitionTab
                   embedded
                   l2Code={l2Lang.code}
-                  contextText={(wordCtx as any)?.text}
+                  contextText={instances[0]?.context?.text}
                   contextForm={wordForm}
                 />
               ) : (
