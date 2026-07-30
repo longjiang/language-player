@@ -18,7 +18,7 @@ import { DictionaryEntryTabs } from '@/components/dictionary/DictionaryEntryTabs
 import { TokenizedText } from '@/components/TokenizedText';
 import { TextActionMenu } from '@/components/TextActionMenu';
 import { lemmatizeText } from '@/lib/tokenizer';
-import { bulkLookupWords, getCachedEntryById, getCachedEntries, getCacheVersion, getIdCacheKeys, getTextCacheKeys } from '@/lib/dictionary-cache';
+import { bulkLookupWords } from '@/lib/dictionary-cache';
 import type { DictionaryEntry, LemmatizedToken, SavedWordContext } from '@langplayer/shared';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -487,24 +487,12 @@ export default function ReviewScreen() {
             </View>
           ))}
 
-          {/* Debug: comprehensive cache + entry state */}
+          {/* Debug: show saved word as JSON (dev only) */}
           {__DEV__ && (
             <View className="mb-4 rounded-lg bg-gray-900/10 dark:bg-gray-100/10 p-3">
-              <Text className="mb-1 text-xs font-medium text-muted-foreground">Debug Info</Text>
+              <Text className="mb-1 text-xs font-medium text-muted-foreground">SavedWord (debug)</Text>
               <Text className="font-mono text-[10px] leading-tight text-foreground/70" selectable>
-                {`entryId (raw): ${currentDueCard?.id ?? '(null)'}
-wordForm: ${wordForm}
-currentEntry: ${currentEntry ? 'found' : 'null'}
-cacheVersion: ${getCacheVersion()}
-idCache: ${JSON.stringify(getCachedEntryById(l2Code, currentDueCard?.id ?? '') ?? '(not found)').slice(0, 200)}
-all idCache keys (this l2): ${JSON.stringify(getIdCacheKeys(l2Code))}
-textCache (wordForm): ${JSON.stringify(getCachedEntries(l2Code, wordForm) ?? '(not found)').slice(0, 200)}
-currentIndex: ${currentIndex}
-cards.length: ${cards.length}
-showTabs: ${showTabs}
-currentDueCard?.forms: ${JSON.stringify(currentDueCard?.forms)}
-currentDueCard?.head: ${currentDueCard?.head ?? '(none)'}
-`}
+                {JSON.stringify(currentCard.word, null, 2)}
               </Text>
             </View>
           )}
