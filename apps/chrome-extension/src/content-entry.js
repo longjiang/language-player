@@ -885,6 +885,7 @@ function setupYouTubeNavigationObserver() {
     const currentId = getYTVideoId();
     if (currentId && currentId !== lastVideoId) {
       lastVideoId = currentId;
+      log(`Navigated to video: ${currentId}`);
       ytCaptionTracks = [];
       ytPlayerResponse = null;
       setTimeout(() => loadYouTubeSubtitles(), 1500);

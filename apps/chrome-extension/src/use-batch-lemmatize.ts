@@ -77,8 +77,6 @@ async function flushQueue() {
   _queue.clear();
   _timer = null;
 
-  log(`[TOKENIZE] Flushing ${batchSize} queued texts`);
-
   // Group queued cache keys by language code
   const byLang = new Map<string, string[]>();
   for (const cacheKey of queue) {
@@ -139,7 +137,6 @@ export function useBatchLemmatize(): UseBatchLemmatizeResult {
     // Skip if already queued or in-flight
     if (!_queue.has(cacheKey) && !inflightMap.has(cacheKey)) {
       _queue.add(cacheKey);
-      log(`[TOKENIZE] Enqueued: "${text.substring(0, 40)}" (l2=${base})`);
     }
     scheduleFlush();
     return null;
