@@ -18,7 +18,7 @@ import { useTranslateLines } from './use-translate-lines';
 import { useBatchLemmatize } from './use-batch-lemmatize';
 import { useSubscription } from './use-subscription';
 import type { SubCue } from './use-translate-lines';
-import { t } from './i18n';
+import { t, getLocaleVersion } from './i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -35,6 +35,7 @@ interface TranscriptAppProps {
   l1Code: string;
   onSeekTo: (timeSec: number) => void;
   loadingL2?: string;
+  localeVersion?: number;
 }
 
 // Re-export SubCue type for content-entry.js
@@ -185,10 +186,12 @@ interface CueLineProps {
   showTranslation: boolean;
   onExplainLine: (cue: SubtitleCue) => void;
   explainLoading: boolean;
+  /** Changes on locale switch to force React.memo re-render */
+  localeVersion?: number;
 }
 
 const CueLine: React.FC<CueLineProps> = React.memo(
-  ({ cue, index, isActive, l2Code, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading }) => {
+  ({ cue, index, isActive, l2Code, onSeekTo, onTokenClick, translation, showTranslation, onExplainLine, explainLoading, localeVersion }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -304,6 +307,7 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   l1Code,
   onSeekTo,
   loadingL2,
+  localeVersion,
 }) => {
   const listRef = useRef<HTMLDivElement>(null);
   const prevActiveRef = useRef(activeCueIdx);
@@ -443,6 +447,7 @@ Text: ${cue.text}`;
             showTranslation={showTranslation}
             onExplainLine={handleExplainLine}
             explainLoading={explainLoading}
+            localeVersion={localeVersion}
           />
         ))}
       </div>
@@ -501,6 +506,7 @@ export function mountTranscript(
   l1Code: string,
   onSeekTo: (timeSec: number) => void,
   loadingL2?: string,
+  localeVersion?: number,
 ): void {
   if (!root) {
     root = createRoot(container);
@@ -514,6 +520,7 @@ export function mountTranscript(
         l1Code={l1Code}
         onSeekTo={onSeekTo}
         loadingL2={loadingL2}
+        localeVersion={localeVersion}
       />
     </SavedWordsProvider>,
   );
