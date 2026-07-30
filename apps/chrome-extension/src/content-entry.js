@@ -2,9 +2,10 @@
  * Language Player — Content Script (React edition)
  *
  * Injects a collapsible transcript panel alongside the video player.
- * Supports Prime Video (TTML/XML via webRequest) and YouTube (timedtext via page data).
- * Parses subtitles, displays time-synced transcript entries with tokenized,
- * clickable text, dictionary lookup, word saving, and AI explanations.
+ * Supports Prime Video, YouTube, Netflix, Disney+, Hulu, and Max.
+ * Parses subtitles (TTML, WebVTT, SRT, YouTube timedtext/JSON3),
+ * displays time-synced transcript entries with tokenized, clickable text,
+ * dictionary lookup, word saving, and AI explanations.
  */
 
 import { mountTranscript, unmountTranscript } from './transcript-app';
