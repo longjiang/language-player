@@ -54,7 +54,7 @@ function cacheSet(key: string, value: LemmatizedToken[]): void {
 
 const _queue = new Set<string>();
 let _timer: ReturnType<typeof setTimeout> | null = null;
-let _onFlush: (() => void) | null = null;
+const _flushListeners: Array<() => void> = [];
 
 /** Debounce delay: 32ms ≈ 2 frames at 60fps — enough time for all visible
  *  TokenizedLine components in a single render pass to enqueue their texts. */
@@ -91,8 +91,10 @@ async function flushQueue() {
   }
   await Promise.allSettled(promises);
 
-  // Notify all hook instances to re-render
-  if (_onFlush) _onFlush();
+  // Notify ALL hook instances to re-render
+  for (const listener of _flushListeners) {
+    listener();
+  }
 }
 
 // ── Hook ───────────────────────────────────────────────────────────────────
@@ -109,11 +111,16 @@ interface UseBatchLemmatizeResult {
 export function useBatchLemmatize(): UseBatchLemmatizeResult {
   const [, forceUpdate] = useState(0);
 
-  // Register/deregister the re-render callback on mount/unmount
+  // Register/deregister the re-render callback on mount/unmount.
+  // Uses an array so ALL hook instances are notified when a batch resolves,
+  // not just the last-mounted one.
   useEffect(() => {
-    const prev = _onFlush;
-    _onFlush = () => forceUpdate(n => n + 1);
-    return () => { _onFlush = prev; };
+    const listener = () => forceUpdate(n => n + 1);
+    _flushListeners.push(listener);
+    return () => {
+      const idx = _flushListeners.indexOf(listener);
+      if (idx !== -1) _flushListeners.splice(idx, 1);
+    };
   }, []);
 
   /** Synchronous cache lookup. Enqueues if missing. */
