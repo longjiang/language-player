@@ -102,5 +102,12 @@ export function useTranslateLines(
     }
   }, [enabled]);
 
+  // Reset translation state when cues change (e.g. YouTube SPA navigation
+  // to a new video). Without this, doneRef.current stays true from the
+  // previous video and start() bails out immediately.
+  useEffect(() => {
+    reset();
+  }, [cues]);
+
   return { translated, loading, progress, start, reset };
 }
