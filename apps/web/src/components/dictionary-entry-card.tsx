@@ -1,6 +1,7 @@
 'use client';
 
 import type { DictionaryEntry, SavedWordContext } from '@langplayer/shared';
+import { formatNumericLevel, primaryScale } from '@langplayer/shared';
 import { BookOpen, ExternalLink } from 'lucide-react';
 import { SaveButton } from './save-button';
 import { SpeakButton } from './speak-button';
@@ -46,11 +47,15 @@ export function DictionaryEntryCard({
   const { head, alternate } = apply(entry.head, entry.alternate);
   const isFull = variant === 'full';
 
+  const scale = primaryScale(l2Code ?? '');
   const levels = entry.levels ?? [];
-  const levelTexts = levels.map((l) => levelLabel
-    ? levelLabel(l.scale, l.value)
-    : `${l.scale.replace('_', ' ').toUpperCase()}: ${l.value}`
-  );
+  const levelTexts = levels
+    .filter((l) => l.numeric != null)
+    .map((l) => {
+      if (levelLabel) return levelLabel(l.scale, l.value);
+      const formatted = formatNumericLevel(l.numeric, scale);
+      return formatted.short;
+    });
 
   const formattedPron = pronunciation !== undefined
     ? pronunciation
@@ -208,31 +213,25 @@ export function DictionaryEntryCard({
     >
       {/* Header: head + pronunciation + badges */}
       <div className="mb-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex items-baseline gap-3">
-              <HeadTag className="text-4xl font-bold" lang={l2Code}>
-                {head}
-              </HeadTag>
-              {displayAlternate && (
-                <span className="text-xl text-muted-foreground" lang={l2Code}>
-                  {displayAlternate}
-                </span>
-              )}
-            </div>
+        <div className="flex items-baseline gap-3">
+          <HeadTag className="text-4xl font-bold" lang={l2Code}>
+            {head}
+          </HeadTag>
+          {displayAlternate && (
+            <span className="text-xl text-muted-foreground" lang={l2Code}>
+              {displayAlternate}
+            </span>
+          )}
+        </div>
 
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              {formattedPron && (
-                <span className="flex items-center gap-1 text-lg text-muted-foreground" lang={l2Code}>
-                  <SpeakButton text={entry.head} l2Code={l2Code ?? ''} size="default" />
-                  {formattedPron}
-                </span>
-              )}
-              {badges}
-            </div>
-          </div>
-
-          {saveContext && saveBtn('default')}
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          {formattedPron && (
+            <span className="flex items-center gap-1 text-lg text-muted-foreground" lang={l2Code}>
+              <SpeakButton text={entry.head} l2Code={l2Code ?? ''} size="default" />
+              {formattedPron}
+            </span>
+          )}
+          {badges}
         </div>
       </div>
 

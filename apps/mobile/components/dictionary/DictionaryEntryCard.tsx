@@ -6,9 +6,11 @@ import { formatNumericLevel, primaryScale } from '@langplayer/shared';
 import { formatPronunciation } from '@langplayer/utils';
 import { useT } from '@/hooks/use-t';
 import { useScriptPreference } from '@/hooks/use-script-preference';
-import { BookOpen } from 'lucide-react-native';
+import { BookOpen, Bookmark } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
 import { SpeakButton } from '@/components/dictionary/SpeakButton';
+import { useSavedWords } from '@/hooks/use-saved-words';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DictionaryEntryCardProps {
   entry: DictionaryEntry;
@@ -42,6 +44,29 @@ export function DictionaryEntryCard({
 }: DictionaryEntryCardProps) {
   const router = useRouter();
   const t = useT();
+  const { l2Lang } = useLanguage();
+  const { hasWord, savedWords, saveWord, removeWord } = useSavedWords();
+  const [wordSaved, setWordSaved] = React.useState(false);
+
+  // Sync wordSaved with the async SecureStore load
+  React.useEffect(() => {
+    setWordSaved(hasWord(l2Lang.code, entry.id));
+  }, [hasWord, savedWords, l2Lang.code, entry.id]);
+
+  const toggleSave = React.useCallback(() => {
+    if (wordSaved) {
+      removeWord(l2Lang.code, entry.id);
+      setWordSaved(false);
+    } else {
+      saveWord(l2Lang.code, {
+        id: entry.id,
+        head: entry.head,
+        dictionaryId: entry.dictionary?.id ?? '',
+        entryId: entry.id,
+      });
+      setWordSaved(true);
+    }
+  }, [wordSaved, l2Lang.code, entry.id, entry.head, entry.dictionary?.id, saveWord, removeWord]);
   const { apply, getAlternateScript } = useScriptPreference(l2Code);
   const { head, alternate } = apply(entry.head, entry.alternate);
   const displayAlternate = getAlternateScript({ ...entry, head, alternate });
@@ -264,9 +289,16 @@ export function DictionaryEntryCard({
         </View>
       )}
 
-      {/* Source line */}
-      <View className="mt-4">
+      {/* Source line + save button */}
+      <View className="mt-4 flex-row items-center justify-between">
         {sourceLine}
+        <Pressable
+          onPress={toggleSave}
+          className={`flex-row items-center rounded-md border px-2 py-1 ${wordSaved ? 'border-amber-500 bg-amber-500' : 'border-amber-500/50'}`}
+        >
+          <Bookmark size={14} color={wordSaved ? '#fff' : '#f59e0b'} fill={wordSaved ? '#fff' : 'none'} style={{ marginRight: 4 }} />
+          <Text className={`text-xs ${wordSaved ? 'text-white' : 'text-amber-500/80'}`}>{wordSaved ? t('label.saved') : t('action.save_word')}</Text>
+        </Pressable>
       </View>
     </View>
   );
