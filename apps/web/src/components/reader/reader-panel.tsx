@@ -480,7 +480,7 @@ export function ReaderPanel({
   return (
     <div className="min-w-0 flex-1 flex flex-col min-h-0">
       {/* Mode toggle buttons */}
-      <div className="flex gap-1 border-b border-border p-1">
+      <div className="flex gap-1 border-b border-border px-1 pt-1 pb-[10px] mb-2">
         <button
           onClick={() => activeTab === 'read' ? onTabChange('edit') : undefined}
           className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
