@@ -15,6 +15,7 @@ import { useSavedWords } from './SavedWordsProvider';
 import { fetchInflectedForms } from '../saved-words';
 import { useSubscription } from '../use-subscription';
 import { Markdown } from './Markdown';
+import { log, logerr } from '../i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -181,7 +182,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     setLoading(true);
     setError(null);
 
-    console.log('[LanguagePlayer] Dictionary lookup for:', token.text, token.lemmas.map(l => l.lemma));
+    log('Dictionary lookup for:', token.text, token.lemmas.map(l => l.lemma));
 
     const search = async () => {
       const searchTerms = [
@@ -216,7 +217,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
           seen.add(e.id);
           return true;
         });
-        console.log('[LanguagePlayer] Dictionary results:', deduped.length, 'entries');
+        log('Dictionary results:', deduped.length, 'entries');
         setEntries(deduped);
         setLoading(false);
       }
@@ -224,7 +225,7 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
 
     search().catch((err) => {
       if (!cancelled && err.name !== 'AbortError') {
-        console.error('[LanguagePlayer] Dictionary lookup error:', err);
+        logerr('Dictionary lookup error:', err);
         setError(err?.message ?? 'Lookup failed');
         setLoading(false);
       }

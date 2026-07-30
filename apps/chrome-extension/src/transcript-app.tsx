@@ -18,7 +18,7 @@ import { useTranslateLines } from './use-translate-lines';
 import { useBatchLemmatize } from './use-batch-lemmatize';
 import { useSubscription } from './use-subscription';
 import type { SubCue } from './use-translate-lines';
-import { t, getLocaleVersion } from './i18n';
+import { t, getLocaleVersion, log } from './i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -84,9 +84,9 @@ const TokenizedLine: React.FC<TokenizedLineProps> = React.memo(
     // ── Render: three visual states ──
     const renderState = tokens ? 'TOKENS' : visible ? 'LOADING' : 'HIDDEN';
     if (renderState === 'TOKENS') {
-      console.log(`[LanguagePlayer] [RENDER] Tokenized line: "${text.substring(0, 40)}" (${tokens.length} tokens)`);
+      console.log(`[LP Extension] [RENDER] Tokenized line: "${text.substring(0, 40)}" (${tokens.length} tokens)`);
     } else if (renderState === 'LOADING') {
-      console.log(`[LanguagePlayer] [RENDER] Waiting for tokens: "${text.substring(0, 40)}"`);
+      console.log(`[LP Extension] [RENDER] Waiting for tokens: "${text.substring(0, 40)}"`);
     }
     return (
       <span
@@ -340,7 +340,7 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   }, [onSeekTo]);
 
   const handleTokenClick = useCallback((token: LemmatizedToken) => {
-    console.log('[LanguagePlayer] Token clicked:', token.text, token.lemmas.map(l => l.lemma));
+    log('Token clicked:', token.text, token.lemmas.map(l => l.lemma));
     setSelectedToken(token);
     setExplainCue(null);
   }, []);
