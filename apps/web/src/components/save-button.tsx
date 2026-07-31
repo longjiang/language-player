@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Bookmark, BookmarkCheck, Loader2 } from 'lucide-react';
 import type { SavedWordContext } from '@langplayer/shared';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
-import { useSrs } from '@/hooks/use-srs';
+import { removeCardFromStorage } from '@/hooks/use-srs';
 import { useLanguage } from '@/providers/language-provider';
 import { useT } from '@/hooks/use-t';
 import { isWordSaved } from '@langplayer/shared';
@@ -75,7 +75,6 @@ export function SaveButton({
   size = 'icon',
 }: SaveButtonProps) {
   const { hasSavedWord, saveWord, removeSavedWord } = useSavedWordsContext();
-  const { removeCard } = useSrs();
   const { l2 } = useLanguage();
   const t = useT();
   const l2Code = l2.code;
@@ -85,7 +84,7 @@ export function SaveButton({
   const handleToggle = async () => {
     if (saved) {
       removeSavedWord(l2Code, wordId);
-      removeCard(l2Code, wordId);
+      removeCardFromStorage(l2Code, wordId);
       return;
     }
     setSaving(true);
