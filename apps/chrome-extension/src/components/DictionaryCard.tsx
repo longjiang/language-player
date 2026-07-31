@@ -23,7 +23,14 @@ interface DictionaryCardProps {
   token: LemmatizedToken;
   l1Code: string;
   l2Code: string;
+  /** The full subtitle line text — used as save context. */
   contextText?: string;
+  /** Start time of the cue (seconds), used as save context. */
+  cueStartTime?: number;
+  /** Video/page title, used as save context. */
+  videoTitle?: string;
+  /** Page URL, used to extract platform/video ID for save context. */
+  pageUrl?: string;
   onClose: () => void;
 }
 
@@ -61,9 +68,18 @@ interface EntryRowProps {
   l2Code: string;
   tokenForm: string;
   contextText?: string;
+  cueStartTime?: number;
+  videoTitle?: string;
+  pageUrl?: string;
 }
 
-const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, tokenForm, contextText }) => {
+/** Extract a YouTube video ID from a URL if present. */
+function extractYoutubeId(url: string): string | undefined {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m?.[1];
+}
+
+const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl }) => {
   const { savedWords, saveWord, removeSavedWord, isLoggedIn } = useSavedWords();
   const [saving, setSaving] = useState(false);
 
@@ -83,6 +99,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
         removeSavedWord(l2Code, entry.id);
       } else {
         const allForms = await fetchInflectedForms(entry.head, l2Code);
+        const youtubeId = pageUrl ? extractYoutubeId(pageUrl) : undefined;
         saveWord(l2Code, {
           id: entry.id,
           forms: allForms,
@@ -90,6 +107,9 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
           context: {
             form: tokenForm,
             text: contextText || tokenForm,
+            starttime: cueStartTime,
+            youtube_id: youtubeId,
+            videoTitle,
           },
           instances: [{
             timestamp: Date.now(),
@@ -97,6 +117,9 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
             context: {
               form: tokenForm,
               text: contextText || tokenForm,
+              starttime: cueStartTime,
+              youtube_id: youtubeId,
+              videoTitle,
             },
           }],
         });
@@ -104,7 +127,7 @@ const EntryRow: React.FC<EntryRowProps> = React.memo(({ entry, l1Code, l2Code, t
     } finally {
       setSaving(false);
     }
-  }, [entry, isLoggedIn, isSaved, l2Code, tokenForm, contextText, saveWord, removeSavedWord]);
+  }, [entry, isLoggedIn, isSaved, l2Code, tokenForm, contextText, cueStartTime, videoTitle, pageUrl, saveWord, removeSavedWord]);
 
   return (
     <div className="lpv-dict-entry-row">
@@ -161,6 +184,9 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   l1Code,
   l2Code,
   contextText,
+  cueStartTime,
+  videoTitle,
+  pageUrl,
   onClose,
 }) => {
   const [entries, setEntries] = useState<DictionaryEntry[]>([]);
@@ -369,7 +395,17 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
         {!loading && !error && entries.length > 0 && (
           <>
             {entries.map((entry) => (
-              <EntryRow key={entry.id} entry={entry} l1Code={l1Code} l2Code={l2Code} />
+              <EntryRow
+                key={entry.id}
+                entry={entry}
+                l1Code={l1Code}
+                l2Code={l2Code}
+                tokenForm={token.text}
+                contextText={contextText}
+                cueStartTime={cueStartTime}
+                videoTitle={videoTitle}
+                pageUrl={pageUrl}
+              />
             ))}
           </>
         )}

@@ -36,6 +36,10 @@ interface TranscriptAppProps {
   onSeekTo: (timeSec: number) => void;
   loadingL2?: string;
   localeVersion?: number;
+  /** Video/page title (document.title), used for word-saving context. */
+  videoTitle?: string;
+  /** Page URL, used to extract platform/video ID for word-saving context. */
+  pageUrl?: string;
 }
 
 // Re-export SubCue type for content-entry.js
@@ -180,7 +184,7 @@ interface CueLineProps {
   isActive: boolean;
   l2Code: string;
   onSeekTo: (timeSec: number) => void;
-  onTokenClick: (token: LemmatizedToken) => void;
+  onTokenClick: (token: LemmatizedToken, cue: SubtitleCue) => void;
   /** L1 translation text (empty string if not available/disabled) */
   translation: string;
   /** Whether translation is enabled (shows toggle state) */
@@ -230,6 +234,10 @@ const CueLine: React.FC<CueLineProps> = React.memo(
     const minutes = Math.floor(cue.start / 60);
     const seconds = Math.floor(cue.start % 60);
 
+    const handleTokenClickWithCue = useCallback((token: LemmatizedToken) => {
+      onTokenClick(token, cue);
+    }, [cue, onTokenClick]);
+
     return (
       <div
         className={`lpv-cue ${isActive ? 'lpv-active' : ''}`}
@@ -242,7 +250,7 @@ const CueLine: React.FC<CueLineProps> = React.memo(
             l2Code={l2Code}
             isActive={isActive}
             onClickLine={handleClick}
-            onTokenClick={onTokenClick}
+            onTokenClick={handleTokenClickWithCue}
           />
           {showTranslation && translation && (
             <div className="lpv-cue-translation">{translation}</div>
@@ -302,10 +310,14 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
   onSeekTo,
   loadingL2,
   localeVersion,
+  videoTitle,
+  pageUrl,
 }) => {
   const listRef = useRef<HTMLDivElement>(null);
   const prevActiveRef = useRef(activeCueIdx);
   const [selectedToken, setSelectedToken] = useState<LemmatizedToken | null>(null);
+  /** The cue from which the selectedToken was clicked — used for save context. */
+  const [selectedCue, setSelectedCue] = useState<SubtitleCue | null>(null);
   const [showTranslation, setShowTranslation] = useState(false);
   const [explainLoading, setExplainLoading] = useState(false);
   const [explainText, setExplainText] = useState<string | null>(null);
@@ -324,12 +336,14 @@ const TranscriptAppInner: React.FC<TranscriptAppProps> = ({
 
   const handleSeekTo = useCallback((timeSec: number) => {
     setSelectedToken(null);
+    setSelectedCue(null);
     onSeekTo(timeSec);
   }, [onSeekTo]);
 
-  const handleTokenClick = useCallback((token: LemmatizedToken) => {
+  const handleTokenClick = useCallback((token: LemmatizedToken, cue: SubtitleCue) => {
     log('Token clicked:', token.text, token.lemmas.map(l => l.lemma));
     setSelectedToken(token);
+    setSelectedCue(cue);
     setExplainCue(null);
   }, []);
 
@@ -459,7 +473,11 @@ Text: ${cue.text}`;
             token={selectedToken}
             l1Code={l1Code}
             l2Code={l2Code}
-            onClose={() => setSelectedToken(null)}
+            contextText={selectedCue?.text}
+            cueStartTime={selectedCue?.start}
+            videoTitle={videoTitle}
+            pageUrl={pageUrl}
+            onClose={() => { setSelectedToken(null); setSelectedCue(null); }}
           />
         </div>
       )}
@@ -508,6 +526,8 @@ export function mountTranscript(
   onSeekTo: (timeSec: number) => void,
   loadingL2?: string,
   localeVersion?: number,
+  videoTitle?: string,
+  pageUrl?: string,
 ): void {
   if (!root) {
     root = createRoot(container);
@@ -522,6 +542,8 @@ export function mountTranscript(
         onSeekTo={onSeekTo}
         loadingL2={loadingL2}
         localeVersion={localeVersion}
+        videoTitle={videoTitle}
+        pageUrl={pageUrl}
       />
     </SavedWordsProvider>,
   );
