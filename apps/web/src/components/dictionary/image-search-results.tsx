@@ -9,6 +9,7 @@ import { AlertCircle, ImageOff, Loader2 } from 'lucide-react';
 
 const OPENVERSE_IMAGES_URL = 'https://api.openverse.org/v1/images/';
 const PAGE_SIZE = 20;
+const THUMBNAIL_TIMEOUT_MS = 5000;
 
 // ── Logging (gated by a single flag — per AGENTS.md) ──
 // Logs in dev so the actual Openverse search terms are visible; never in prod.
@@ -46,6 +47,38 @@ const NON_LATIN_RE = /[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u
 function buildImageQuery(term: string, l2Code: string): string {
   if (baseCode(l2Code) === 'en' || NON_LATIN_RE.test(term)) return term;
   return `${term} ${languageName(l2Code)}`;
+}
+
+/**
+ * 404 sniffing: verify a thumbnail actually returns an image before rendering.
+ * Uses HEAD so it's cheap and parallel. Hosts that block CORS are kept as-is —
+ * an <img> tag can still load them even when fetch can't inspect the response.
+ */
+async function sniffThumbnail(
+  img: OpenverseImage,
+  signal: AbortSignal,
+): Promise<OpenverseImage | null> {
+  const target = img.thumbnail ?? img.url;
+  if (!target) return img;
+
+  const timedOut: Promise<null> = new Promise((resolve) => {
+    setTimeout(() => resolve(null), THUMBNAIL_TIMEOUT_MS);
+  });
+
+  try {
+    const res = await Promise.race([
+      fetch(target, { method: 'HEAD', signal }),
+      timedOut,
+    ]);
+    if (res === null) return img; // timed out — keep rather than risk a false drop
+    if (res.status === 404 || res.status === 410) {
+      log('Thumbnail dead, filtered:', img.title, target);
+      return null;
+    }
+    return img;
+  } catch {
+    return img; // CORS/network error — can't verify, keep (img tag may still load it)
+  }
 }
 
 export function ImageSearchResults({
@@ -138,7 +171,11 @@ export function ImageSearchResults({
         if (merged.length === 0 && failures > 0 && failures >= searchQueries.length) {
           setError('Openverse request failed');
         } else {
-          setImages(merged);
+          // Prune dead thumbnails before showing the grid.
+          const pruned = (
+            await Promise.all(merged.map((img) => sniffThumbnail(img, controller.signal)))
+          ).filter((img): img is OpenverseImage => img !== null);
+          if (!cancelled) setImages(pruned);
         }
       }
     };
