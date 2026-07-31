@@ -9,13 +9,14 @@ import type { LemmatizedToken, SavedWordContext, NoteListItem, Note } from '@lan
 import { apiClient } from '@langplayer/api-client';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
+import { cn } from '@/lib/utils';
 import {
   Loader2, BookOpen, PenLine,
   PanelRightClose, PanelRight,
 } from 'lucide-react';
 import { ReaderPanel } from '@/components/reader/reader-panel';
-import { ReaderSidebar } from '@/components/reader/reader-sidebar';
 import { NotesSidebar } from '@/components/reader/notes-sidebar';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 // Lazy-load turndown for HTML→markdown conversion
 let _turndown: any = null;
@@ -80,6 +81,7 @@ export default function ReaderPage() {
   const [notesLoading, setNotesLoading] = useState(false);
   const [notesError, setNotesError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [currentNoteId, setCurrentNoteId] = useState<number | null>(
     noteIdParam ? Number(noteIdParam) : null,
   );
@@ -115,6 +117,7 @@ export default function ReaderPage() {
 
   // Select a note
   const handleSelectNote = useCallback(async (noteId: number) => {
+    setMobileSidebarOpen(false);
     setLoading(true); setError(null);
     try {
       const note = await apiClient.get<Note>(`/user-notes/${noteId}`);
@@ -128,6 +131,7 @@ export default function ReaderPage() {
   // New note
   const handleNewNote = useCallback(async () => {
     if (!session) return;
+    setMobileSidebarOpen(false);
     setLoading(true); setError(null);
     try {
       const created = await apiClient.post<Note>('/user-notes', { title: t('msg.untitled_note'), text: '', translation: '', l2: l2.code });
@@ -227,6 +231,24 @@ export default function ReaderPage() {
 
   const ctx: Partial<SavedWordContext> = { text: stripMarkdown(text).slice(0, 200), textTitle: title || 'Reader' };
 
+  // Shared sidebar panel — rendered in the desktop aside and the mobile sheet.
+  const renderSidebarPanel = (onClose?: () => void) => (
+    <div className="rounded-xl border border-border bg-card h-full flex flex-col overflow-hidden">
+      <NotesSidebar
+        notes={notes}
+        notesLoading={notesLoading}
+        notesError={notesError}
+        currentNoteId={currentNoteId}
+        session={session}
+        onClose={onClose}
+        onSelectNote={handleSelectNote}
+        onNewNote={handleNewNote}
+        onRenameNote={handleRenameNote}
+        onDeleteNote={handleDeleteNote}
+      />
+    </div>
+  );
+
   if (loading && !text) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -266,28 +288,27 @@ export default function ReaderPage() {
             </div>
           )}
         </div>
-        {/* Collapse toggle — top right */}
+        {/* Sidebar toggle — mobile: opens the slide-in sheet */}
+        <button
+          onClick={() => setMobileSidebarOpen(true)}
+          className="lg:hidden flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          aria-label={t('action.show_sidebar')}
+        >
+          <PanelRight className="h-5 w-5" />
+        </button>
+
+        {/* Sidebar toggle — desktop: collapses the persistent panel */}
         <button
           onClick={() => setSidebarOpen(o => !o)}
-          className="flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          className="hidden lg:flex flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
         >
           {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
         </button>
       </div>
 
-      {/* ── Content row: sidebar first (right on wide, overlay on narrow) ── */}
-      <div className="flex gap-4 flex-1 min-h-0 flex-row-reverse">
-        <ReaderSidebar sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)}>
-          <NotesSidebar
-            notes={notes} notesLoading={notesLoading} notesError={notesError}
-            currentNoteId={currentNoteId} session={session}
-            onSelectNote={handleSelectNote}
-            onNewNote={handleNewNote}
-            onRenameNote={handleRenameNote}
-            onDeleteNote={handleDeleteNote}
-          />
-        </ReaderSidebar>
+      {/* ── Content row ── */}
+      <div className="flex gap-4 flex-1 min-h-0">
         <div className="min-w-0 flex-1 flex flex-col min-h-0">
         <ReaderPanel
             l2={l2} l1={l1}
@@ -328,7 +349,28 @@ export default function ReaderPage() {
             }}
           />
         </div>
+
+        {/* Sidebar — persistent panel on desktop */}
+        <aside
+          className={cn(
+            'hidden lg:flex flex-shrink-0 transition-all duration-200',
+            sidebarOpen ? 'w-64 ml-3' : 'lg:w-0 overflow-hidden',
+          )}
+        >
+          {renderSidebarPanel()}
+        </aside>
       </div>
+
+      {/* Mobile: sidebar as a slide-in sheet overlay */}
+      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+        <SheetContent
+          side="right"
+          className="w-80 max-w-[85vw] p-0 border-l-0 ring-0"
+          showCloseButton={false}
+        >
+          {renderSidebarPanel(() => setMobileSidebarOpen(false))}
+        </SheetContent>
+      </Sheet>
 
       {error && (
         <div className="flex-shrink-0 mt-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 shadow-lg">{error}</div>

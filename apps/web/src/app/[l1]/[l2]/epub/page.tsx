@@ -6,11 +6,12 @@ import { useT } from '@/hooks/use-t';
 import type { SavedWordContext } from '@langplayer/shared';
 import { parseMarkdown, type ReaderBlock, type TextBlock } from '@/lib/parse-markdown';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { cn } from '@/lib/utils';
 import { ReaderPanel } from '@/components/reader/reader-panel';
 import { EpubUpload } from '@/components/reader/epub-upload';
 import { EpubChapterSidebar } from '@/components/reader/epub-chapter-sidebar';
-import { ReaderSidebar } from '@/components/reader/reader-sidebar';
 import { useEpub } from '@/hooks/use-epub';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import {
   BookOpen, Loader2, PanelRightClose, PanelRight, X,
 } from 'lucide-react';
@@ -33,16 +34,10 @@ export default function EpubPage() {
 
   const [text, setText] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [blocks, setBlocks] = useState<ReaderBlock[] | null>(null);
   const [initialized, setInitialized] = useState(false);
   const anchorRef = useRef<string | null>(null);
-
-  // On small screens, close sidebar by default
-  useEffect(() => {
-    if (window.innerWidth < 1024) {
-      setSidebarOpen(false);
-    }
-  }, []);
 
   // Restore from IndexedDB on mount
   useEffect(() => {
@@ -59,6 +54,7 @@ export default function EpubPage() {
 
   // Load chapter text into state and tokenize
   const handleLoadChapter = useCallback(async (href: string) => {
+    setMobileSidebarOpen(false);
     const md = await epub.loadChapter(href);
     setText(md);
     setBlocks(null);
@@ -103,6 +99,23 @@ export default function EpubPage() {
     textTitle: epub.chapterTitle || epub.fileName || 'EPUB Reader',
   };
 
+  // Shared sidebar panel — rendered in the desktop aside and the mobile sheet.
+  const renderSidebarPanel = (onClose?: () => void) => (
+    <div className="rounded-xl border border-border bg-card h-full flex flex-col overflow-hidden">
+      <EpubChapterSidebar
+        toc={epub.toc}
+        currentChapterHref={epub.chapterHref}
+        loading={epub.loading}
+        onClose={onClose}
+        onLoadChapter={handleLoadChapter}
+        onPrevChapter={epub.prevChapter}
+        onNextChapter={epub.nextChapter}
+        hasPrevChapter={!!epub.prevHref}
+        hasNextChapter={!!epub.nextHref}
+      />
+    </div>
+  );
+
   // Loading state while restoring from storage
   if (!initialized) {
     return (
@@ -134,33 +147,29 @@ export default function EpubPage() {
             {t('action.close')}
           </button>
         )}
-        {/* Collapse toggle — top right, only when EPUB loaded */}
+        {/* Sidebar toggles — only when EPUB loaded */}
         {epub.toc.length > 0 && (
-          <button
-            onClick={() => setSidebarOpen(o => !o)}
-            className="flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
-          >
-            {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
-          </button>
+          <>
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="lg:hidden flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              aria-label={t('action.show_sidebar')}
+            >
+              <PanelRight className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setSidebarOpen(o => !o)}
+              className="hidden lg:flex flex-shrink-0 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title={sidebarOpen ? t('action.collapse_sidebar') : t('action.expand_sidebar')}
+            >
+              {sidebarOpen ? <PanelRightClose className="h-5 w-5" /> : <PanelRight className="h-5 w-5" />}
+            </button>
+          </>
         )}
       </div>
 
-      {/* ── Content row: sidebar first (right on wide, top on narrow) ── */}
-      <div className="flex gap-4 flex-1 min-h-0 flex-row-reverse max-lg:flex-col">
-        {/* Chapter sidebar — on the right (wide) or top (narrow) */}
-        <ReaderSidebar sidebarOpen={sidebarOpen && epub.toc.length > 0} onClose={() => setSidebarOpen(false)}>
-          <EpubChapterSidebar
-            toc={epub.toc}
-            currentChapterHref={epub.chapterHref}
-            loading={epub.loading}
-            onLoadChapter={handleLoadChapter}
-            onPrevChapter={epub.prevChapter}
-            onNextChapter={epub.nextChapter}
-            hasPrevChapter={!!epub.prevHref}
-            hasNextChapter={!!epub.nextHref}
-          />
-        </ReaderSidebar>
+      {/* ── Content row ── */}
+      <div className="flex gap-4 flex-1 min-h-0">
 
         {/* Content area */}
         <div className="min-w-0 flex-1 flex flex-col min-h-0">
@@ -240,7 +249,32 @@ export default function EpubPage() {
             </div>
           ) : null}
         </div>
+
+        {/* Sidebar — persistent panel on desktop */}
+        {epub.toc.length > 0 && (
+          <aside
+            className={cn(
+              'hidden lg:flex flex-shrink-0 transition-all duration-200',
+              sidebarOpen ? 'w-64 ml-3' : 'lg:w-0 overflow-hidden',
+            )}
+          >
+            {renderSidebarPanel()}
+          </aside>
+        )}
       </div>
+
+      {/* Mobile: sidebar as a slide-in sheet overlay */}
+      {epub.toc.length > 0 && (
+        <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+          <SheetContent
+            side="right"
+            className="w-80 max-w-[85vw] p-0 border-l-0 ring-0"
+            showCloseButton={false}
+          >
+            {renderSidebarPanel(() => setMobileSidebarOpen(false))}
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
   Loader2, Plus, PenLine, Trash2,
-  MoreHorizontal,
+  MoreHorizontal, X,
 } from 'lucide-react';
 
 export interface NotesSidebarProps {
@@ -17,6 +17,8 @@ export interface NotesSidebarProps {
   notesError: string | null;
   currentNoteId: number | null;
   session: any;
+  /** Shown on narrow screens to close the sidebar overlay sheet. */
+  onClose?: () => void;
   onSelectNote: (noteId: number) => void;
   onNewNote: () => void;
   onRenameNote: (noteId: number, newTitle: string) => Promise<void>;
@@ -29,6 +31,7 @@ export function NotesSidebar({
   notesError,
   currentNoteId,
   session,
+  onClose,
   onSelectNote,
   onNewNote,
   onRenameNote,
@@ -56,6 +59,15 @@ export function NotesSidebar({
     <>
       <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
         <h3 className="text-sm font-semibold">{t('title.notes')}</h3>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="ml-auto rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label={t('action.close')}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
       <div className="px-3 py-2">
         <Button
