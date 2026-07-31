@@ -68,7 +68,7 @@ export default function ReviewPage() {
   const { data: session, status } = useSession();
   const { l1, l2 } = useLanguage();
   const { savedWords, loaded: wordsLoaded, removeSavedWord } = useSavedWordsContext();
-  const { store, loaded: srsLoaded, updateCard, removeCard, dailyNewLimit: dailyLimit } = useSrs();
+  const { store, loaded: srsLoaded, updateCard, removeCard, pruneOrphans, dailyNewLimit: dailyLimit } = useSrs();
   const { loaded: cloudLoaded } = useCloudUserData();
   const { speak } = useSpeech();
   const { display } = useSettingsContext();
@@ -122,6 +122,22 @@ export default function ReviewPage() {
       }
     }
   }, [srsLoaded, wordsLoaded, l2SavedWords, store, l2Code, dailyLimit, updateCard]);
+
+  // ── Prune orphaned SRS cards ──
+  // An SRS card is only meaningful for a word that's still saved. When a word
+  // is unsaved through any path (bookmark toggle, saved list, dictionary popup),
+  // its card can linger in srs_progress and later "come back" as a stale "new"
+  // card if the word is re-encountered. This effect removes cards for words that
+  // are no longer in the saved list, keeping the deck in sync with savedWords.
+  useEffect(() => {
+    if (!srsLoaded || !wordsLoaded) return;
+    if (l2SavedWords.length === 0) {
+      // No saved words at all → purge the entire language deck.
+      pruneOrphans(l2Code, new Set<string>());
+      return;
+    }
+    pruneOrphans(l2Code, new Set(l2SavedWords.map((sw) => sw.id)));
+  }, [srsLoaded, wordsLoaded, l2SavedWords, l2Code, pruneOrphans]);
 
   // ── Compute due cards ──
   const dueCards = useMemo((): Omit<ReviewCard, 'entry'>[] => {
