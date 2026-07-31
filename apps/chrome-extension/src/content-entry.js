@@ -237,6 +237,16 @@ function getDuration() {
 }
 
 function seekTo(timeSec) {
+  // Immediately highlight the target cue — don't wait for video to catch up
+  const targetIdx = findActiveCueIndex(timeSec);
+  if (targetIdx >= 0) {
+    STATE.activeCueIdx = targetIdx;
+  }
+
+  // Lock time-based updates for 400ms to prevent seek/timeupdate race
+  // where the video reports slightly-off currentTime and causes jumping
+  seekLockUntil = Date.now() + 400;
+
   if (isNetflix) {
     // Netflix: must use player API (M7375 DRM error on direct currentTime)
     chrome.runtime.sendMessage({ action: 'netflixSeek', timeSec })
@@ -1039,8 +1049,13 @@ function updateStatus(message) {
 // ── Time Tracking ────────────────────────────────────────────────────────
 
 let timeUpdateRaf = null;
+/** Timestamp (Date.now()) until which time-based active-cue updates are suppressed.
+ *  Set by seekTo() to prevent racing between seek completion and timeupdate events. */
+let seekLockUntil = 0;
 
 function updateActiveCue(timeSec) {
+  // Skip time-based updates during the seek lock window
+  if (Date.now() < seekLockUntil) return;
   const newIdx = findActiveCueIndex(timeSec);
   if (newIdx === STATE.activeCueIdx) return;
   STATE.activeCueIdx = newIdx;

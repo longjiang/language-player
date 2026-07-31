@@ -24,6 +24,10 @@ interface DictionaryCardProps {
   token: LemmatizedToken;
   l1Code: string;
   l2Code: string;
+  /** Human-readable L1 name (e.g., "English", "日本語") */
+  l1Name?: string;
+  /** Human-readable L2 name (e.g., "Japanese", "français") */
+  l2Name?: string;
   /** The full subtitle line text — used as save context. */
   contextText?: string;
   /** Start time of the cue (seconds), used as save context. */
@@ -184,6 +188,8 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
   token,
   l1Code,
   l2Code,
+  l1Name,
+  l2Name,
   contextText,
   cueStartTime,
   videoTitle,
@@ -278,24 +284,27 @@ export const DictionaryCard: React.FC<DictionaryCardProps> = ({
     setExplainError(null);
 
     try {
-      // Build prompt matching the web app's AiExplanation component
-      const l1Name = l1Code.toUpperCase();
-      const l2Name = l2Code.toUpperCase();
       const code = l2Code;
+      const l1Name = (props as any).l1Name || l1Code.toUpperCase();
+      const l2Name = (props as any).l2Name || l2Code.toUpperCase();
+      const lemma = token.lemmas[0]?.lemma || token.text;
+      const hasContext = !!contextText;
+      const hasInflectedForm = hasContext && token.text !== lemma;
 
+      // Build prompt using translated CSV keys (matches web app's AiExplanation)
       let prompt: string;
-      if (contextText && token.text !== token.lemmas[0]?.lemma) {
-        prompt = `Succinctly explain using ${l1Name}, what the ${l2Name} (${code}) word ${token.lemmas[0]?.lemma || token.text} (inflected form: ${token.text}) means in the phrase: ${contextText}.`;
-      } else if (contextText) {
-        prompt = `Succinctly explain using ${l1Name}, what the ${l2Name} (${code}) word ${token.text} means in the phrase: ${contextText}.`;
+      if (hasInflectedForm) {
+        prompt = t('explainWordContextForm', [l1Name, l2Name, code, lemma, token.text, contextText!]);
+      } else if (hasContext) {
+        prompt = t('explainWordContext', [l1Name, l2Name, code, token.text, contextText!]);
       } else {
-        prompt = `Succinctly explain using ${l1Name}, what the ${l2Name} (${code}) word ${token.text} means.`;
+        prompt = t('explainWord', [l1Name, l2Name, code, token.text]);
       }
 
       // Add morphology for inflecting languages
       const nonInflecting = ['zh', 'vi', 'th', 'lo', 'km'];
       if (!nonInflecting.includes(code)) {
-        prompt += ' Give its pronunciation and morphology (or etymology if appropriate). If inflected, give its lemma and inflection; otherwise do not mention inflection or lemma.';
+        prompt += t('explainMorphology');
       }
 
       const res = await fetch(`${API_BASE}/chatgpt`, {

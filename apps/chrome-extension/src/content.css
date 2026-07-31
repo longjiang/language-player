@@ -263,7 +263,7 @@ body.lpv-panel-open disney-web-player-ui {
 /* ── Cue Text ──────────────────────────────────────────────────────────── */
 
 .lpv-cue-text {
-  font-size: 14px;
+  font-size: calc(14px * var(--lpv-font-scale, 1));
   color: #bbb;
   flex: 1;
 }
@@ -325,7 +325,7 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-cue-text {
-  font-size: 14px;
+  font-size: calc(14px * var(--lpv-font-scale, 1));
   color: #bbb;
   line-height: 1.8; /* extra space for ruby text */
 }
@@ -351,7 +351,7 @@ body.lpv-panel-open disney-web-player-ui {
 }
 
 .lpv-cue-translation {
-  font-size: 12px;
+  font-size: calc(12px * var(--lpv-font-scale, 1));
   color: #777;
   margin-top: 2px;
   line-height: 1.5;

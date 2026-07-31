@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "Search languages…"
+  },
+  "showPhonetics": {
+    "message": "Arată fonetica"
+  },
+  "explainWord": {
+    "message": "Explică succint în $l1Name$ ce înseamnă cuvântul $l2Name$ ($code$) $word$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "Explică succint în $l1Name$ ce înseamnă cuvântul $l2Name$ ($code$) $word$ în expresia: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "Explică succint în $l1Name$ ce înseamnă cuvântul $l2Name$ ($code$) $word$ (forma flexionată: $contextForm$) în expresia: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "Oferă pronunția și morfologia (sau etimologia dacă este cazul). Dacă este flexionat, oferă lema și flexiunea; altfel, nu menționa flexiunea sau lema."
   }
 }

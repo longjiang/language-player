@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "Search languages…"
+  },
+  "showPhonetics": {
+    "message": "Onyesha fonetiki"
+  },
+  "explainWord": {
+    "message": "Eleza kwa ufupi kwa kutumia $l1Name$, nini maana ya neno la $l2Name$ ($code$) $word$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "Eleza kwa ufupi kwa kutumia $l1Name$, nini maana ya neno la $l2Name$ ($code$) $word$ katika kifungu: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "Eleza kwa ufupi kwa kutumia $l1Name$, neno $l2Name$ ($code$) $word$ (umbo lililonyambulika: $contextForm$) linamaanisha nini katika kirai: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "Toa matamshi yake na mofolojia (au etimolojia ikiwa inafaa). Ikiwa imenyambulika, toa lemma na unyambulishaji wake; vinginevyo, usitaje unyambulishaji wala lemma."
   }
 }

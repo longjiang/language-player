@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "Search languages…"
+  },
+  "showPhonetics": {
+    "message": "Mostra fonètica"
+  },
+  "explainWord": {
+    "message": "Explica breument en $l1Name$ què significa la paraula $l2Name$ ($code$) $word$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "Explica breument en $l1Name$ què significa la paraula $l2Name$ ($code$) $word$ en la frase: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "Explica breument en $l1Name$ què significa la paraula $l2Name$ ($code$) $word$ (forma flexionada: $contextForm$) en la frase: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "Dona la pronunciació i la morfologia (o etimologia si escau). Si està flexionada, dona el lema i la flexió; altrament, no esmentis la flexió ni el lema."
   }
 }

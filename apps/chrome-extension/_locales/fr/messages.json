@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "Search languages…"
+  },
+  "showPhonetics": {
+    "message": "Afficher la phonétique"
+  },
+  "explainWord": {
+    "message": "Explique succinctement en $l1Name$ ce que signifie le mot $l2Name$ ($code$) $word$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "Explique succinctement en $l1Name$ ce que signifie le mot $l2Name$ ($code$) $word$ dans la phrase : $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "Explique succinctement en $l1Name$ ce que signifie le mot $l2Name$ ($code$) $word$ (forme fléchie : $contextForm$) dans la phrase : $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "Donne sa prononciation et sa morphologie (ou son étymologie si approprié). S'il est fléchi, donne son lemme et sa flexion ; sinon, ne mentionne ni flexion ni lemme."
   }
 }

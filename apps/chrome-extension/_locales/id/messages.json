@@ -161,5 +161,71 @@
   },
   "searchLanguages": {
     "message": "Search languages…"
+  },
+  "showPhonetics": {
+    "message": "Tampilkan fonetik"
+  },
+  "explainWord": {
+    "message": "Jelaskan secara singkat dalam $l1Name$ apa arti kata $l2Name$ ($code$) $word$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      }
+    }
+  },
+  "explainWordContext": {
+    "message": "Jelaskan secara singkat dalam $l1Name$ apa arti kata $l2Name$ ($code$) $word$ dalam frasa: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "context": {
+        "content": "$5"
+      }
+    }
+  },
+  "explainWordContextForm": {
+    "message": "Jelaskan secara singkat dalam $l1Name$ apa arti kata $l2Name$ ($code$) $word$ (bentuk infleksi: $contextForm$) dalam frasa: $context$.",
+    "placeholders": {
+      "l1Name": {
+        "content": "$1"
+      },
+      "l2Name": {
+        "content": "$2"
+      },
+      "code": {
+        "content": "$3"
+      },
+      "word": {
+        "content": "$4"
+      },
+      "contextForm": {
+        "content": "$5"
+      },
+      "context": {
+        "content": "$6"
+      }
+    }
+  },
+  "explainMorphology": {
+    "message": "Berikan pengucapan dan morfologinya (atau etimologi jika sesuai). Jika berinfleksi, berikan lemma dan infleksinya; jika tidak, jangan sebutkan infleksi atau lemma."
   }
 }
