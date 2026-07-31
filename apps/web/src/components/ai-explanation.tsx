@@ -74,6 +74,12 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     stream(prompt);
   }, [stream, buildPrompt]);
 
+  const handleRegenerate = useCallback(() => {
+    const prompt = buildPrompt();
+    console.log('[LP Web] AI regenerate prompt:', prompt);
+    stream(prompt, { regenerate: true });
+  }, [stream, buildPrompt]);
+
   // Fetch when "show AI" is toggled on, or when autoLoad + Pro status resolve
   useEffect(() => {
     if ((showAi || autoLoad) && isPro && subLoaded && !explanation && !loading) {
@@ -169,7 +175,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
         )}
         {!loading && (
           <div className="mt-3 flex gap-2">
-            <Button variant="ghost" size="sm" onClick={fetchExplanation}>
+            <Button variant="ghost" size="sm" onClick={handleRegenerate}>
               <RefreshCw className="mr-1 h-3 w-3" /> {t('action.regenerate')}
             </Button>
             <Button variant="ghost" size="sm" onClick={openInReader}>

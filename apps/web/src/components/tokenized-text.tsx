@@ -32,6 +32,11 @@ export interface TokenizedTextProps {
   textScale?: number;
   /** Font family override: 'default' (inherit), 'serif', or 'sans-serif'. */
   typeFace?: 'default' | 'serif' | 'sans-serif';
+  /**
+   * Line-height (leading) for tokenized text. Defaults to 'relaxed' (1.625×).
+   * Pass 'none' to inherit from the parent container.
+   */
+  leading?: 'relaxed' | 'normal' | 'tight' | 'snug' | 'loose' | 'none';
   /** Contextual info for word saving (subtitle line, video title, etc.) */
   context?: Partial<SavedWordContext>;
   /** Pre-populated token cache from /lemmatize-video-normalized */
@@ -58,11 +63,21 @@ export interface TokenizedTextProps {
 /** Map zoom index (0–7) to rem values: 1rem (16px) to 2.25rem (36px). */
 const ZOOM_TO_REM = [1, 1.125, 1.25, 1.375, 1.5, 1.75, 2, 2.25] as const;
 
+/** Leading prop → Tailwind class. 'none' = inherit from parent (no class applied). */
+const LEADING_CLASS: Record<string, string> = {
+  relaxed: 'leading-relaxed',
+  normal: 'leading-normal',
+  tight: 'leading-tight',
+  snug: 'leading-snug',
+  loose: 'leading-loose',
+};
+
 export const TokenizedText: React.FC<TokenizedTextProps> = ({
   text,
   l2Code,
   textScale,
   typeFace = 'default',
+  leading = 'relaxed',
   context: externalContext,
   tokenCache,
   tokenCacheLoaded,
@@ -75,6 +90,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   const fontClass =
     typeFace === 'serif' ? 'font-serif' :
     typeFace === 'sans-serif' ? 'font-sans' : '';
+  const leadingClass = LEADING_CLASS[leading] ?? '';
   const { l1 } = useLanguage();
   const { savedWords } = useSavedWordsContext();
   const { getL2, tokenizedText: settingsTokenizedText } = useSettingsContext();
@@ -290,7 +306,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
   // ── Pre-visible: plain text, no tokenization yet ──
   if (!hasBeenVisible && !preloadedTokens) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground/80 ${fontClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground/80 ${fontClass} ${leadingClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
         {text}
       </span>
     );
@@ -298,7 +314,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (loading) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground animate-pulse ${fontClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground animate-pulse ${fontClass} ${leadingClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
         {text}
       </span>
     );
@@ -306,7 +322,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   if (error && tokens.length <= 1) {
     return (
-      <span ref={containerRef} className={`text-muted-foreground ${fontClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
+      <span ref={containerRef} className={`text-muted-foreground ${fontClass} ${leadingClass}`} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
         {text}
       </span>
     );
@@ -314,7 +330,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
 
   return (
     <span ref={containerRef} className={fontClass}>
-      <span className="leading-relaxed" style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
+      <span className={leadingClass} style={effectiveScale ? { fontSize: `${effectiveScale}rem` } : undefined}>
         {/* Precompute karaoke word count once, outside the per-token loop */}
         {(() => {
           let wordCount = 0;

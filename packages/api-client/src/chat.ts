@@ -8,8 +8,9 @@ export interface StreamState {
 }
 
 export interface StreamActions {
-  /** Start streaming a DeepSeek explanation for the given prompt. */
-  stream: (prompt: string) => Promise<void>;
+  /** Start streaming a DeepSeek explanation for the given prompt.
+   *  Pass { regenerate: true } to bypass server-side cache and get a fresh response. */
+  stream: (prompt: string, options?: { regenerate?: boolean }) => Promise<void>;
   /** Reset state and abort any in-flight request. */
   reset: () => void;
   /** Abort the current stream without resetting accumulated text. */
@@ -40,7 +41,7 @@ export function useStreamingExplanation(): StreamState & StreamActions {
     setLoading(false);
   }, []);
 
-  const stream = useCallback(async (prompt: string) => {
+  const stream = useCallback(async (prompt: string, options?: { regenerate?: boolean }) => {
     abort();
     setLoading(true);
     setError(null);
@@ -51,10 +52,14 @@ export function useStreamingExplanation(): StreamState & StreamActions {
 
     try {
       const baseURL = apiClient.instance.defaults.baseURL ?? '';
+      const body: Record<string, unknown> = { prompt };
+      if (options?.regenerate) {
+        body.regenerate = true;
+      }
       const res = await fetch(`${baseURL}/chatgpt/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify(body),
         signal: controller.signal,
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

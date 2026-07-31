@@ -69,6 +69,10 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
     stream(buildPrompt());
   }, [stream, buildPrompt]);
 
+  const handleRegenerate = useCallback(() => {
+    stream(buildPrompt(), { regenerate: true });
+  }, [stream, buildPrompt]);
+
   // Fetch when `showAi` is toggled, or when autoLoad + Pro resolve
   useEffect(() => {
     if ((showAi || autoLoad) && isPro && subLoaded && !explanation && !loading) {
@@ -144,7 +148,7 @@ export function AiExplanation({ word, contextForm, contextText, entryFound, auto
           <Text className="mt-2 text-xs text-red-600">{error}</Text>
         ) : null}
         {!loading && (
-          <Pressable onPress={fetchExplanation} className="mt-3 flex-row items-center gap-1">
+          <Pressable onPress={handleRegenerate} className="mt-3 flex-row items-center gap-1">
             <RefreshCw size={14} color={ICON_PRIMARY} />
             <Text className="text-sm text-primary">{t('action.regenerate')}</Text>
           </Pressable>

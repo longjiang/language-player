@@ -65,6 +65,11 @@ export interface TokenizedTextProps {
   /** Karaoke progress for the active subtitle line: 0 (start) to 1 (end).
    *  When undefined, karaoke is off. */
   karaokeProgress?: number;
+  /**
+   * Line-height (leading) for tokenized text. Defaults to 'relaxed' (1.625×).
+   * Pass 'none' to inherit from the parent container.
+   */
+  leading?: 'relaxed' | 'normal' | 'tight' | 'snug' | 'loose' | 'none';
   /** testID for the outermost container — enables E2E selectors like "subtitle-line-0". */
   testID?: string;
 }
@@ -83,7 +88,7 @@ export interface TokenizedTextProps {
  *
  * While loading, shows plain undivided text.
  */
-export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, testID }: TokenizedTextProps) {
+export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedTokens, tokenCache, tokenCacheLoaded, karaokeProgress, leading = 'relaxed', testID }: TokenizedTextProps) {
   const [tokens, setTokens] = useState<LemmatizedToken[]>(preloadedTokens ?? []);
   const [loading, setLoading] = useState(!preloadedTokens);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -168,6 +173,16 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
 
     return style;
   }, [tokenSettings.zoom, tokenSettings.typeFace]);
+
+  // ── Leading ratio from prop (default: relaxed = 1.625) ──
+  const LEADING_RATIOS: Record<string, number> = {
+    relaxed: 1.625,
+    normal: 1.5,
+    tight: 1.25,
+    snug: 1.375,
+    loose: 2,
+  };
+  const leadingRatio: number | undefined = leading === 'none' ? undefined : (LEADING_RATIOS[leading] ?? 1.625);
 
   // ── Quick lookup set for saved word forms (quickGloss) ──
   const savedFormSet = useMemo(() => {
@@ -343,7 +358,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   if (tokens.length > 0) {
     const isWord = (t: LemmatizedToken) => t.lemmas.length > 0;
     const readingSize = Math.max(8, Math.round(textStyle.fontSize! * 0.55));
-    const baseLeading = textStyle.fontSize! + 6;
+    const baseLeading = leadingRatio ? Math.round(textStyle.fontSize! * leadingRatio) : undefined;
 
     // ── Karaoke: precompute spoken word count ──
     let wordCount = 0;
@@ -504,9 +519,8 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
           </View>
         ) : (
           /* Word-replace or no-phonetics mode: plain inline Text.
-             lineHeight uses a snug ratio (1.375) applied to the base fontSize —
-             this gives the content tighter line spacing within wrapped lines. */
-          <Text testID={testID} style={[textStyle, { lineHeight: Math.round(textStyle.fontSize! * 1.625) }]} className="text-foreground">
+             Line-height is controlled by the `leading` prop (default: relaxed). */
+          <Text testID={testID} style={[textStyle, leadingRatio ? { lineHeight: Math.round(textStyle.fontSize! * leadingRatio) } : undefined]} className="text-foreground">
             {(() => {
               let wordIndexSoFar = 0;
               return tokens.map((token, i) => {
@@ -578,5 +592,6 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
   }
 
   // ── Loading / no tokens: show plain undivided text (matches Next.js) ──
-  return <Text testID={testID} className="text-base leading-relaxed text-foreground">{text}</Text>;
+  const fallbackStyle = leadingRatio ? { lineHeight: Math.round(16 * leadingRatio) } : undefined;
+  return <Text testID={testID} className="text-base text-foreground" style={fallbackStyle}>{text}</Text>;
 }
