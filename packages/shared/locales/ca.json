@@ -917,6 +917,7 @@
         "explain_context_label": "Context",
         "explain_morphology": "Dona la pronunciació i la morfologia (o etimologia si escau). Si està flexionada, dona el lema i la flexió; altrament, no esmentis la flexió ni el lema.",
         "explain_text_label": "Text",
+        "explain_ticks": "Envolta cada paraula, frase o frase sencera en {l2Name} amb cometes invertides simples (`). Envolta les frases d'exemple senceres com un sol bloc, p. ex. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, no només la paraula objectiu. No nidis cometes.",
         "explain_word": "Explica en {l1Name} què significa la paraula {l2Name} \"{word}\". Dona la pronunciació. Si està flexionada o conjugada, esmenta la forma del diccionari i la flexió; en cas contrari, no esmentis la flexió.",
         "explain_word_context": "Explica en {l1Name} què significa la paraula {l2Name} \"{word}\" en la frase: \"{context}\". Dona la pronunciació. Si està flexionada o conjugada, esmenta la forma del diccionari i la flexió; en cas contrari, no esmentis la flexió.",
         "explain_word_context_form": "Explica en {l1Name} què significa la paraula {l2Name} \"{word}\" (forma flexionada: {contextForm}) en la frase: \"{context}\". Dona la pronunciació. Esmenta la forma del diccionari i la flexió.",

@@ -917,6 +917,7 @@
         "explain_context_label": "Context",
         "explain_morphology": "Oferă pronunția și morfologia (sau etimologia dacă este cazul). Dacă este flexionat, oferă lema și flexiunea; altfel, nu menționa flexiunea sau lema.",
         "explain_text_label": "Text",
+        "explain_ticks": "Încadrează fiecare cuvânt, expresie sau propoziție întreagă în {l2Name} între backtick-uri simple (`). Încadrează propozițiile exemplu întregi ca un singur bloc, de ex. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, nu doar cuvântul țintă. Nu îmbrica backtick-urile.",
         "explain_word": "Explică în {l1Name} ce înseamnă cuvântul {l2Name} \"{word}\". Dă pronunția. Dacă este flexionat sau conjugat, menționează forma de dicționar și flexiunea; altfel, nu menționa flexiunea.",
         "explain_word_context": "Explică în {l1Name} ce înseamnă cuvântul {l2Name} \"{word}\" în expresia: \"{context}\". Dă pronunția. Dacă este flexionat sau conjugat, menționează forma de dicționar și flexiunea; altfel, nu menționa flexiunea.",
         "explain_word_context_form": "Explică în {l1Name} ce înseamnă cuvântul {l2Name} \"{word}\" (formă flexionată: {contextForm}) în expresia: \"{context}\". Dă pronunția. Menționează forma de dicționar și flexiunea.",

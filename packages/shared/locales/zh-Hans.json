@@ -879,6 +879,7 @@
         "explain_context_label": "上下文",
         "explain_morphology": "给出其发音。如果是屈折或变位形式，给出其原形并说明屈折变化。如果不是屈折形式，则不要提及屈折或词元。",
         "explain_text_label": "文本",
+        "explain_ticks": "将每个{l2Name}单词、短语或整个句子都用单个反引号（`）括起来。整个例句要作为一个反引号整体，例如`その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`，而不是只括目标词。不要嵌套反引号。",
         "explain_word": "用{l1Name}解释{l2Name}单词\"{word}\"的含义。给出其发音。如果是屈折或变位形式，提及原形和屈折变化；如果不是，不要提及屈折或词元。",
         "explain_word_context": "用{l1Name}解释{l2Name}单词\"{word}\"在\"{context}\"这段话中的含义。给出其发音。如果是屈折或变位形式，提及原形和屈折变化；如果不是，不要提及屈折或词元。",
         "explain_word_context_form": "用{l1Name}解释{l2Name}单词\"{word}\"（屈折形式：{contextForm}）在\"{context}\"这段话中的含义。给出其发音。提及原形和屈折变化。",

@@ -917,6 +917,7 @@
         "explain_context_label": "Kontekst",
         "explain_morphology": "Navedi izgovor i morfologiju (ili etimologiju ako je prikladno). Ako je flektirano, navedi lemu i fleksiju; inače ne pominji fleksiju ni lemu.",
         "explain_text_label": "Tekst",
+        "explain_ticks": "Стави сваку {l2Name} реч, фразу или целу реченицу у појединачна назад коса цртице (`). Стави целе примере реченица као један блок, нпр. `その劇団は、古典を現代的に解釈するという新機軸を打ち出して、若い観客を魅了した`, не само циљану реч. Не угњеждавај назад косе цртице.",
         "explain_word": "Objasni na {l1Name} šta znači {l2Name} reč \"{word}\". Navedi izgovor. Ako je flektirana ili konjugirana, navedi rečnički oblik i fleksiju; inače ne pominji fleksiju.",
         "explain_word_context": "Objasni na {l1Name} šta znači {l2Name} reč \"{word}\" u izrazu: \"{context}\". Navedi izgovor. Ako je flektirana ili konjugirana, navedi rečnički oblik i fleksiju; inače ne pominji fleksiju.",
         "explain_word_context_form": "Objasni na {l1Name} šta znači {l2Name} reč \"{word}\" (flektirani oblik: {contextForm}) u izrazu: \"{context}\". Navedi izgovor. Navedi rečnički oblik i fleksiju.",
