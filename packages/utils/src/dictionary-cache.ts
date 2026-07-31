@@ -104,11 +104,15 @@ const _inflightRequests = new Map<string, Promise<void>>();
 // ── Bulk lookup ──
 
 /**
- * Bulk-lookup dictionary entries for a list of (text, l2Code, l1Code) tuples.
+ * Bulk-lookup dictionary entries for a list of (text, l2Code) tuples.
  * Results are stored in the shared cache. Already-cached words are skipped.
+ *
+ * DESIGN: No l1 parameter — the batch endpoint returns English definitions
+ * only, for speed. Callers that need L1-translated definitions should use
+ * the single-word /dictionary/lookup endpoint with an l1 param.
  */
 export async function bulkLookupWords(
-  words: { text: string; l2Code: string; l1Code: string }[],
+  words: { text: string; l2Code: string }[],
   apiUrl: string,
 ): Promise<void> {
   // Filter out words already in cache
@@ -131,7 +135,7 @@ export async function bulkLookupWords(
 }
 
 async function _doBulkLookup(
-  uncached: { text: string; l2Code: string; l1Code: string }[],
+  uncached: { text: string; l2Code: string }[],
   apiUrl: string,
 ): Promise<void> {
   try {
@@ -139,7 +143,7 @@ async function _doBulkLookup(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        words: uncached.map((w) => ({ text: w.text, l2: w.l2Code, l1: w.l1Code })),
+        words: uncached.map((w) => ({ text: w.text, l2: w.l2Code })),
       }),
     });
     if (!res.ok) return;

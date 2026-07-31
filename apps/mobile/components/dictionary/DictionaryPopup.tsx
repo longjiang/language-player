@@ -118,7 +118,7 @@ export function DictionaryPopup({
       try {
         // Use bulkLookupWords to populate cache, then read from cache
         await bulkLookupWords(
-          textBatch.map((text) => ({ text, l2Code: l2, l1Code: l1 })),
+          textBatch.map((text) => ({ text, l2Code: l2 })),
           PYTHON_API_URL,
         );
 

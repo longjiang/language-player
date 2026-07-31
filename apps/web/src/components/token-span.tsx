@@ -1,12 +1,21 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import type { LemmatizedToken } from '@langplayer/shared';
+import type { LemmatizedToken, DictionaryEntry } from '@langplayer/shared';
 import { buildRuby, katakanaToHiragana } from '@langplayer/utils';
 import type { RubySegment } from '@langplayer/utils';
 import { getCachedEntries } from '@/lib/dictionary-cache';
 import { useSettingsContext } from '@/providers/settings-provider';
 import { baseCode } from '@/lib/language-data';
+import { PYTHON_API_URL } from '@/lib/api-url';
+
+// ── Module-level L1 definition cache ──
+// Key: `${l2Code}:${text}:${l1Code}` → first definition in the user's L1.
+// Populated by per-word /dictionary/lookup calls when L1 ≠ English.
+// Avoids duplicate fetches when the same word appears multiple times on screen.
+const _l1DefCache = new Map<string, string>();
+/** In-flight per-word L1 lookup promises (dedup). */
+const _l1DefInflight = new Map<string, Promise<string | null>>();
 
 /** Word difficulty result from the local dictionary cache.
  *
@@ -50,6 +59,9 @@ function getWordDifficulty(l2Code: string, lemmas: LemmatizedToken['lemmas']): W
 export interface TokenSpanProps {
   token: LemmatizedToken;
   l2Code: string;
+  /** User's native language code. Used for per-word L1 definition lookup
+   *  when L1 ≠ English (batch lookup returns English-only definitions). */
+  l1Code: string;
   /** Phonetics display mode: 'ruby' (above), 'word' (replace text), or false (hidden). */
   phoneticsMode: 'ruby' | 'word' | false;
   /** Phonetics filter: 'always' or 'hardWords' (only words above user level). */
@@ -81,6 +93,7 @@ export interface TokenSpanProps {
 export const TokenSpan: React.FC<TokenSpanProps> = ({
   token,
   l2Code,
+  l1Code,
   phoneticsMode,
   phoneticsConditions,
   userLevel,
@@ -97,6 +110,63 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
 }) => {
   // ── Quiz mode: toggle blank reveal per-word ──
   const [quizRevealed, setQuizRevealed] = useState(false);
+
+  // ── L1-translated quick gloss (fetched per-word for non-English L1 users) ──
+  // Batch lookup returns English-only definitions for speed. For saved words
+  // with quick gloss enabled, fetch the L1-translated definition individually.
+  const [l1GlossDef, setL1GlossDef] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Only fetch when all conditions are met:
+    //   - Word is saved + quick gloss is on
+    //   - L1 is not English (English defs are already in cache from batch lookup)
+    //   - Word is not currently highlighted (don't compete with review page)
+    if (!isSaved || !quickGloss || isHighlighted || l1Code === 'en') {
+      setL1GlossDef(null);
+      return;
+    }
+
+    // Try each lemma and surface form to find the best cache key
+    const lookupText = token.lemmas[0]?.lemma || token.text;
+    const cacheKey = `${l2Code}:${lookupText}:${l1Code}`;
+
+    // Already cached at module level?
+    const cached = _l1DefCache.get(cacheKey);
+    if (cached !== undefined) {
+      setL1GlossDef(cached);
+      return;
+    }
+
+    // Already in flight?
+    const inflight = _l1DefInflight.get(cacheKey);
+    if (inflight) {
+      let cancelled = false;
+      inflight.then((def) => { if (!cancelled) setL1GlossDef(def); });
+      return () => { cancelled = true; };
+    }
+
+    // Fetch from server
+    let cancelled = false;
+    const promise = fetch(`${PYTHON_API_URL}/dictionary/lookup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: lookupText, l2: l2Code, l1: l1Code }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        const results = (data.results ?? []) as DictionaryEntry[];
+        const firstDef = results[0]?.definitions?.[0] ?? null;
+        _l1DefCache.set(cacheKey, firstDef ?? '');
+        return firstDef;
+      })
+      .catch(() => null)
+      .finally(() => { _l1DefInflight.delete(cacheKey); });
+
+    _l1DefInflight.set(cacheKey, promise);
+    promise.then((def) => { if (!cancelled) setL1GlossDef(def); });
+
+    return () => { cancelled = true; };
+  }, [isSaved, quickGloss, isHighlighted, l1Code, l2Code, token.lemmas, token.text]);
 
   // ── Quiz blanking state — computed early since byeonggiNode, wrapperClass, etc. depend on it ──
   const isQuizBlanking = mode === 'quiz' && isSaved && !quizRevealed;
@@ -140,8 +210,9 @@ export const TokenSpan: React.FC<TokenSpanProps> = ({
   }, [l2Code, token.text, token.lemmas]);
 
   // ── Quick gloss: only for saved words with gloss enabled.
-  //    Suppressed for highlighted words (e.g. the term being tested on the review page). ──
-  const quickGlossDef = (isSaved && quickGloss && !isHighlighted) ? firstDef : null;
+  //    Suppressed for highlighted words (e.g. the term being tested on the review page).
+  //    Prefer L1-translated definition (fetched per-word) over cached English def. ──
+  const quickGlossDef = (isSaved && quickGloss && !isHighlighted) ? (l1GlossDef ?? firstDef) : null;
   // ── Interlinear definition: for all words (when enabled) ──
   const interlinearDef = showDefinition ? firstDef : null;
 
