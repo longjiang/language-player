@@ -10,6 +10,29 @@ import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
 const STORAGE_KEY = 'zthSrsProgress';
 const SYNC_DEBOUNCE_MS = 3000;
 
+/**
+ * Remove a single SRS card from localStorage directly, without needing the
+ * full useSrs() hook. This is a lightweight operation — just reads the store,
+ * deletes the card, and writes back. It does NOT sync to cloud (that will
+ * happen during the next normal useSrs sync cycle, and pruneOrphans serves
+ * as the safety net).
+ *
+ * Use this in components that only need to delete cards (SavedWordRow,
+ * SaveButton, dictionary-popup) instead of calling useSrs() which creates
+ * a full state machine with cloud sync timers per instance.
+ */
+export function removeCardFromStorage(l2Code: string, wordId: string): void {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const store = JSON.parse(raw);
+    if (store?.cards?.[l2Code]?.[wordId]) {
+      delete store.cards[l2Code][wordId];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    }
+  } catch { /* ignore */ }
+}
+
 // ── Logging (gated by a single flag — per AGENTS.md) ──
 const LOG_ENABLED = false; // Toggle to true for debugging SRS issues
 function log(msg: string, ...args: unknown[]) {
@@ -207,9 +230,13 @@ export function useSrs() {
     });
   }, []);
 
-  /** Remove a card for a language. */
+  /** Remove a card for a language. Updates local state + localStorage. */
   const removeCard = useCallback((l2Code: string, wordId: string) => {
     log('removeCard: l2=%s wordId=%s', l2Code, wordId);
+    // Write through to localStorage immediately so non-useSrs consumers
+    // (SavedWordRow, SaveButton) see the removal even if this component
+    // hasn't synced yet.
+    removeCardFromStorage(l2Code, wordId);
     setStore((prev) => {
       const langCards = { ...(prev.cards[l2Code] ?? {}) };
       delete langCards[wordId];
