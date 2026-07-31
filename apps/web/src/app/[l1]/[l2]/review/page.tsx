@@ -88,6 +88,8 @@ export default function ReviewPage() {
   const lastCardIdRef = useRef<string | null>(null);
   /** Previous card SRS state saved before a rating, used by the Undo action. */
   const undoRef = useRef<UndoState | null>(null);
+  /** Toast ID of the most recent rating toast, so undo can dismiss it. */
+  const ratingToastIdRef = useRef<string | number | null>(null);
 
   const l2Code = baseCode(l2.code);
   const l2SavedWords = useMemo(() => savedWords[l2Code] ?? [], [savedWords, l2Code]);
@@ -181,14 +183,20 @@ export default function ReviewPage() {
     // Visual feedback via toast — matches button color, includes Undo
     const label = RATING_LABELS.find((r) => r.key === quality);
     if (label) {
-      toast(
+      ratingToastIdRef.current = toast(
         <div className="flex items-center justify-between gap-4 w-full">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-white">{label.label}</p>
             <p className="text-xs text-white/80 truncate">{label.hint}</p>
           </div>
           <button
-            onClick={() => handleUndo()}
+            onClick={() => {
+              if (ratingToastIdRef.current != null) {
+                toast.dismiss(ratingToastIdRef.current);
+                ratingToastIdRef.current = null;
+              }
+              handleUndo();
+            }}
             className="shrink-0 rounded-lg border border-white/60 px-4 py-1.5 text-sm font-medium text-white hover:bg-white/10 transition-colors"
           >
             {t('action.undo')}
@@ -229,11 +237,9 @@ export default function ReviewPage() {
     setCurrentIndex(0);
     undoRef.current = null;
 
-    toast(t('action.undo'), {
-      duration: 2000,
-      className: '!bg-card !text-foreground !border-border',
-    });
-  }, [l2Code, updateCard, t]);
+    // No toast here — the undo action within the rating toast is
+    // feedback enough, and a second toast would be redundant.
+  }, [l2Code, updateCard]);
 
   const handleReveal = useCallback(() => {
     setShowDefinition(true);

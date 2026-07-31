@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/providers/language-provider';
-import { useSubscription } from '@/hooks/use-subscription';
+import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useStreamingExplanation } from '@langplayer/api-client';
 import { useT } from '@/hooks/use-t';
 import { Button } from '@/components/ui/button';
@@ -38,7 +38,7 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
   const router = useRouter();
   const { l1, l2 } = useLanguage();
   const t = useT();
-  const { isPro, loaded: subLoaded } = useSubscription();
+  const { isPro, loaded: subLoaded } = useSubscriptionContext();
 
   const [showAi, setShowAi] = useState(false);
   const { text: explanation, error, loading, stream, reset } = useStreamingExplanation();
@@ -84,11 +84,8 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     }
   }, [showAi, autoLoad, isPro, subLoaded, explanation, loading, stream, buildPrompt]);
 
-  // Pro gate — still loading
-  if (!subLoaded) return null;
-
-  // Pro gate — free user
-  if (!isPro) {
+  // Pro gate — free user (skip the gate while still loading — show the button optimistically)
+  if (subLoaded && !isPro && (showAi || autoLoad)) {
     return (
       <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-center dark:border-amber-800 dark:bg-amber-950">
         <p className="text-sm text-amber-700 dark:text-amber-300">
@@ -99,7 +96,19 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
     );
   }
 
-  // Not yet toggled — show the button (skip when autoLoad)
+  // Waiting for subscription check after user clicked — show spinner
+  if (!subLoaded && (showAi || autoLoad)) {
+    return (
+      <div className="mt-4 rounded-lg border bg-muted/30 p-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          {t('msg.getting_ai_response')}
+        </div>
+      </div>
+    );
+  }
+
+  // Not yet toggled — always show the button (don't wait for subscription check)
   if (!showAi && !autoLoad) {
     return (
       <div className="mt-4">
