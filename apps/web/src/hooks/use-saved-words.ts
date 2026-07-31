@@ -26,32 +26,38 @@ export function useSavedWords() {
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSyncing = useRef(false);
 
-  // ── On mount: load from localStorage if not logged in, else load from cloud ──
+  // ── On mount: load from localStorage (offline-first, both anonymous & authed) ──
+  // LocalStorage is always read first so that the latest local changes (saves,
+  // unsaves) survive an immediate refresh — including the unsave-not-yet-synced
+  // case, where cloud still holds a word the user just deleted. Cloud data is
+  // then merged in (see below) without resurrecting locally-deleted words.
   useEffect(() => {
     if (loaded) return;
-    // Don't touch localStorage while session is still loading — we don't know
-    // which user (if any) is logged in yet.  Cloud load handles the logged-in path.
-    if (status === 'loading') return;
-    if (status !== 'authenticated') {
-      // Not logged in — load from localStorage (anonymous mode)
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (typeof parsed === 'object' && parsed !== null) {
-            sanitizeStore(parsed);
-            setSavedWords(parsed);
-          }
+    if (status === 'loading') return; // still loading auth state
+
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed === 'object' && parsed !== null) {
+          sanitizeStore(parsed);
+          setSavedWords(parsed);
         }
-      } catch { /* corrupted data */ }
-    }
-    // Logged in — localStorage is skipped; cloud load (next effect) will hydrate
+      }
+    } catch { /* corrupted data */ }
+
     setLoaded(true);
   }, [status, loaded]);
 
-  // ── On cloud load, hydrate from cloud data ──
-  // Cloud is the source of truth. For authenticated users, prev is always {}
-  // (localStorage is skipped on mount), so replacement is safe.
+  // ── On cloud load, merge cloud data (local deletes win) ──
+  // Cloud is a source of truth for words saved on OTHER devices, but it must
+  // not resurrect a word the user deleted locally. We merge by only adding cloud
+  // words that are not already present in local state (keyed by `id`). This
+  // preserves local unsaves across a refresh while still importing new saves.
+  //
+  // Note: a cross-device delete where BOTH devices still have the word in
+  // memory is a known limitation (addressed by the debounced sync updating
+  // cloud). This prioritizes the far more common single-device refresh case.
   useEffect(() => {
     if (status !== 'authenticated' || !loaded || !cloudLoaded) return;
     if (!cloudData) return;
@@ -61,8 +67,25 @@ export function useSavedWords() {
         ? (JSON.parse(cloudData.saved_words) as SavedLexicalItemStore)
         : {};
       sanitizeStore(cloud);
-      setSavedWords(cloud);
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cloud)); } catch {}
+
+      setSavedWords((prev) => {
+        // Build the merged store, preserving locally-deleted words by never
+        // re-adding a cloud word whose id already exists in local state.
+        const next: SavedLexicalItemStore = { ...prev };
+        for (const [l2, cloudWords] of Object.entries(cloud)) {
+          const merged = [...(prev[l2] ?? [])];
+          const localIds = new Set(merged.map((w) => w.id));
+          for (const cw of cloudWords) {
+            if (!localIds.has(cw.id)) {
+              merged.push(cw);
+              localIds.add(cw.id);
+            }
+          }
+          next[l2] = merged;
+        }
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+        return next;
+      });
     } catch (err) {
       console.warn('[savedWords] Could not parse cloud data:', err);
     }
@@ -81,7 +104,13 @@ export function useSavedWords() {
       try {
         await syncSavedWords(JSON.stringify(words));
       } catch (err) {
-        console.warn('[savedWords] Sync failed:', err);
+        console.warn('[savedWords] Sync failed — will retry:', err);
+        // Retry after a delay so a transient failure doesn't silently drop a
+        // save/unsave (which would let an unsaved word come back on refresh).
+        syncTimer.current = setTimeout(() => {
+          isSyncing.current = false;
+          scheduleSync(words);
+        }, 10_000);
       } finally {
         isSyncing.current = false;
       }

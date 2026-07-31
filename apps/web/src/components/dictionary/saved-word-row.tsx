@@ -6,6 +6,7 @@ import { WordListItem } from '@/components/dictionary/word-list';
 import { InlineDefinition } from '@/components/dictionary/inline-definition';
 import { SavedWordSource } from '@/components/saved-word-source';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
+import { useSrs } from '@/hooks/use-srs';
 import { useT } from '@/hooks/use-t';
 import { normalizeInstances } from '@/hooks/use-saved-words';
 import type { SavedLexicalItemRecord } from '@langplayer/shared';
@@ -36,6 +37,7 @@ export function SavedWordRow({
 }: SavedWordRowProps) {
   const t = useT();
   const { removeSavedWord } = useSavedWordsContext();
+  const { removeCard } = useSrs();
   const insts = normalizeInstances(word);
   const latest = insts[insts.length - 1];
 
@@ -51,6 +53,7 @@ export function SavedWordRow({
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
     removeSavedWord(l2Code, word.id);
+    removeCard(l2Code, word.id);
   };
 
   const contextForm = safeCtx?.form !== headForm ? safeCtx?.form : undefined;

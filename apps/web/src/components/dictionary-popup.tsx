@@ -11,6 +11,7 @@ import { AiExplanation } from './ai-explanation';
 import { SaveButton } from './save-button';
 import { useT } from '@/hooks/use-t';
 import { useSavedWordsContext } from '@/providers/saved-words-provider';
+import { useSrs } from '@/hooks/use-srs';
 import { baseCode } from '@/lib/language-data';
 import { formatPronunciation } from '@langplayer/utils';
 import { PYTHON_API_URL } from '@/lib/api-url';
@@ -44,6 +45,7 @@ export function DictionaryPopup({
   const [error, setError] = useState<string | null>(null);
 
   const { savedWords, removeSavedWord } = useSavedWordsContext();
+  const { removeCard } = useSrs();
   const [dialogOpen, setDialogOpen] = useState(true);
 
   const lookupWord = useCallback(async (text: string, signal: AbortSignal) => {
@@ -274,7 +276,10 @@ export function DictionaryPopup({
                   </p>
                   <div className="mt-2">
                     <button
-                      onClick={() => removeSavedWord(l2Code, sw.id)}
+                      onClick={() => {
+                        removeSavedWord(l2Code, sw.id);
+                        removeCard(l2Code, sw.id);
+                      }}
                       className="inline-flex items-center gap-1 rounded bg-amber-200 px-2 py-1 text-xs font-medium text-amber-800 hover:bg-amber-300 dark:bg-amber-800 dark:text-amber-200 dark:hover:bg-amber-700 transition-colors"
                     >
                       {t('action.remove_and_resave')}
