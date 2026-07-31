@@ -80,6 +80,16 @@ export default function middleware(req: NextRequest) {
 
   // 2. On public/auth pages, set NEXT_LOCALE from existing l1 cookie, or detect from browser
   if (isPublic || pathname === '/') {
+    // Redirect authenticated users from root directly into the app
+    if (pathname === '/' && isAuthenticated) {
+      const l1Cookie = req.cookies.get('l1');
+      const l2Cookie = req.cookies.get('l2');
+      if (l1Cookie?.value && l2Cookie?.value) {
+        return NextResponse.redirect(new URL(`/${l1Cookie.value}/${l2Cookie.value}`, req.url));
+      }
+      return NextResponse.redirect(new URL('/language-select', req.url));
+    }
+
     const l1Cookie = req.cookies.get('l1');
     const response = NextResponse.next();
     if (l1Cookie?.value && SUPPORTED_L1S.includes(l1Cookie.value as any)) {
@@ -142,16 +152,6 @@ export default function middleware(req: NextRequest) {
     if (!SUPPORTED_L1S.includes(l1 as any) || !SUPPORTED_L2S.includes(l2 as any)) {
       return NextResponse.rewrite(new URL('/_not-found', req.url));
     }
-  }
-
-  // 5. Redirect root for authenticated users
-  if (pathname === '/' && isAuthenticated) {
-    const l1Cookie = req.cookies.get('l1');
-    const l2Cookie = req.cookies.get('l2');
-    if (l1Cookie?.value && l2Cookie?.value) {
-      return NextResponse.redirect(new URL(`/${l1Cookie.value}/${l2Cookie.value}`, req.url));
-    }
-    return NextResponse.redirect(new URL('/language-select', req.url));
   }
 
   return NextResponse.next();
