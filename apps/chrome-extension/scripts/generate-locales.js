@@ -393,6 +393,10 @@ function main() {
         translated = enMessages[key].message; // fallback to English
       }
 
+      // Convert CSV {name} placeholders to Chrome $name$ format
+      // e.g., "Loading {lang} subtitles…" → "Loading $lang$ subtitles…"
+      translated = translated.replace(/\{(\w+)\}/g, '$$$1$');
+
       // Build the messages.json entry
       const entry = { message: translated };
       // Preserve placeholders from English template
