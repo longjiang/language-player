@@ -912,11 +912,11 @@
         "explain_block_item1": "Its overall meaning in {l1Name}",
         "explain_block_item2": "A phrase-by-phrase breakdown explaining how the text is constructed",
         "explain_context_label": "Context",
-        "explain_morphology": "Give its pronunciation and morphology (or etymology if appropriate). If inflected, give its lemma and inflection; otherwise do not mention inflection or lemma.",
+        "explain_morphology": "Give its pronunciation. If it is an inflected or conjugated form, state its dictionary form and explain the inflection. If it is not inflected, do not mention inflection or lemma.",
         "explain_text_label": "Text",
-        "explain_word": "Succinctly explain using {l1Name}, what the {l2Name} ({code}) word {word} means.",
-        "explain_word_context": "Succinctly explain using {l1Name}, what the {l2Name} ({code}) word {word} means in the phrase: {context}.",
-        "explain_word_context_form": "Succinctly explain using {l1Name}, what the {l2Name} ({code}) word {word} (inflected form: {contextForm}) means in the phrase: {context}."
+        "explain_word": "Explain using {l1Name}, what the {l2Name} word \"{word}\" means. Give its pronunciation. If it is inflected or conjugated, mention its dictionary form and the inflection; otherwise do not mention inflection.",
+        "explain_word_context": "Explain using {l1Name}, what the {l2Name} word \"{word}\" means in the phrase: \"{context}\". Give its pronunciation. If it is inflected or conjugated, mention its dictionary form and the inflection; otherwise do not mention inflection.",
+        "explain_word_context_form": "Explain using {l1Name}, what the {l2Name} word \"{word}\" (inflected form: {contextForm}) means in the phrase: \"{context}\". Give its pronunciation. Mention its dictionary form and the inflection."
     },
     "review": {
         "again": "Again",
