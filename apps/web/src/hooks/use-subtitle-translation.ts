@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import type { SubtitleLine } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { logwarn } from '@/lib/logger';
 
 const PYTHON_URL = PYTHON_API_URL;
 const CHUNK_SIZE = 5;
@@ -88,7 +89,7 @@ export function useSubtitleTranslation(
       // Guard against malformed server responses — don't mark the chunk
       // as done if we got fewer translations than lines in the chunk.
       if (translated.length < chunk.length) {
-        console.warn(
+        logwarn(
           `Translation chunk ${chunkIdx}: expected ${chunk.length} results, got ${translated.length}. Retrying next cycle.`,
         );
         return 'error';

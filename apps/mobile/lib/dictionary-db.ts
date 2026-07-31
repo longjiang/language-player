@@ -14,6 +14,7 @@
 
 import * as SQLite from 'expo-sqlite';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
+import { log } from '@/lib/logger';
 
 // ── Constants ────────────────────────────────
 
@@ -100,7 +101,7 @@ async function _cleanupOrphanedDicts(db: SQLite.SQLiteDatabase): Promise<void> {
       // Extract l2 from table name: dict_ja → ja
       const l2 = t.name.slice(5);
       if (!validL2s.has(l2)) {
-        console.log('[DictDB] 🧹 cleaning up orphaned table:', t.name, '(no dict_meta entry — likely crashed mid-download)');
+        log('[DictDB] 🧹 cleaning up orphaned table:', t.name, '(no dict_meta entry — likely crashed mid-download)');
         await db.execAsync(`DROP TABLE IF EXISTS ${t.name}`);
       }
     }
@@ -242,7 +243,7 @@ export async function bulkInsertEntries(
   const table = dictTableName(l2);
   const totalChunks = Math.ceil(entries.length / CHUNK_SIZE);
 
-  console.log('[DictDB] bulkInsertEntries — l2:', l2, 'entries:', entries.length, 'chunks:', totalChunks);
+  log('[DictDB] bulkInsertEntries — l2:', l2, 'entries:', entries.length, 'chunks:', totalChunks);
 
   // Log WAL/journal status before insert
   try {
@@ -250,7 +251,7 @@ export async function bulkInsertEntries(
     const wc = await db.getFirstAsync<{ busy: number; log: number; checkpointed: number }>(
       'PRAGMA wal_checkpoint'
     );
-    console.log('[DictDB] 📊 journal:', jm?.journal_mode ?? '?',
+    log('[DictDB] 📊 journal:', jm?.journal_mode ?? '?',
       'WAL pages — log:', wc?.log ?? '?', 'checkpointed:', wc?.checkpointed ?? '?');
   } catch {}
 
@@ -287,7 +288,7 @@ export async function bulkInsertEntries(
     // Log every chunk for first 10, then every 10th, then every 20th
     const shouldLog = chunkNum <= 10 || chunkNum % 10 === 0 || chunkNum === totalChunks;
     if (shouldLog) {
-      console.log('[DictDB] chunk', chunkNum, '/', totalChunks, `(${pct}%)`,
+      log('[DictDB] chunk', chunkNum, '/', totalChunks, `(${pct}%)`,
         '— json:', serializeMs, 'ms tx:', txMs, 'ms total:', chunkMs, 'ms',
         '—', ((Date.now() - startTime) / 1000).toFixed(1), 's elapsed');
     }
@@ -300,12 +301,12 @@ export async function bulkInsertEntries(
     await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
-  console.log('[DictDB] bulkInsertEntries complete — l2:', l2, '— total time:', ((Date.now() - startTime) / 1000).toFixed(1), 's');
+  log('[DictDB] bulkInsertEntries complete — l2:', l2, '— total time:', ((Date.now() - startTime) / 1000).toFixed(1), 's');
 
   // Flush WAL to keep future inserts fast
-  console.log('[DictDB] 🧹 WAL checkpoint after bulk insert — l2:', l2);
+  log('[DictDB] 🧹 WAL checkpoint after bulk insert — l2:', l2);
   try { await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
-  console.log('[DictDB] ✅ WAL checkpoint done — l2:', l2);
+  log('[DictDB] ✅ WAL checkpoint done — l2:', l2);
 }
 
 // ── Dictionary metadata ───────────────────────
@@ -371,9 +372,9 @@ export async function deleteDictionary(
   try {
     await db.execAsync(`DROP TABLE IF EXISTS ${table}`);
     // Flush WAL to recover space and prevent slowdown on re-download
-    console.log('[DictDB] 🧹 WAL checkpoint after DROP — l2:', l2);
+    log('[DictDB] 🧹 WAL checkpoint after DROP — l2:', l2);
     await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)');
-    console.log('[DictDB] ✅ WAL checkpoint done — l2:', l2);
+    log('[DictDB] ✅ WAL checkpoint done — l2:', l2);
   } catch {
     // Table may not exist — that's fine
   }
@@ -406,9 +407,9 @@ export async function deleteAllDictionaries(
   await db.execAsync('DELETE FROM llm_cache');
   await db.execAsync('DELETE FROM dict_meta');
   // Flush WAL to recover space
-  console.log('[DictDB] 🧹 WAL checkpoint after delete-all');
+  log('[DictDB] 🧹 WAL checkpoint after delete-all');
   try { await db.execAsync('PRAGMA wal_checkpoint(TRUNCATE)'); } catch {}
-  console.log('[DictDB] ✅ WAL checkpoint done');
+  log('[DictDB] ✅ WAL checkpoint done');
 }
 
 // ── Storage usage ─────────────────────────────

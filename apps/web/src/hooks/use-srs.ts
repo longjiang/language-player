@@ -6,6 +6,7 @@ import { useUserData } from '@langplayer/api-client';
 import { useCloudUserData } from '@/providers/user-data-provider';
 import { createSrsStore, getLanguageCards } from '@langplayer/utils';
 import type { SrsFields, SrsProgressStore } from '@langplayer/shared';
+import { log, logwarn } from '@/lib/logger';
 
 const STORAGE_KEY = 'zthSrsProgress';
 const SYNC_DEBOUNCE_MS = 3000;
@@ -31,15 +32,6 @@ export function removeCardFromStorage(l2Code: string, wordId: string): void {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
     }
   } catch { /* ignore */ }
-}
-
-// ── Logging (gated by a single flag — per AGENTS.md) ──
-const LOG_ENABLED = false; // Toggle to true for debugging SRS issues
-function log(msg: string, ...args: unknown[]) {
-  if (LOG_ENABLED) console.log('[LP Web] [SRS]', msg, ...args);
-}
-function logWarn(msg: string, ...args: unknown[]) {
-  if (LOG_ENABLED) console.warn('[LP Web] [SRS]', msg, ...args);
 }
 
 /**
@@ -103,7 +95,7 @@ export function useSrs() {
             settings: { ...createSrsStore().settings, ...(parsed.settings ?? {}) },
             cards: parsed.cards ?? {},
           };
-          log('Loaded %d language(s) from localStorage', Object.keys(restored.cards).length);
+          log('[SRS] Loaded %d language(s) from localStorage', Object.keys(restored.cards).length);
           setStore(restored);
         }
       }
@@ -119,7 +111,7 @@ export function useSrs() {
 
     try {
       const cloud: SrsProgressStore = JSON.parse(cloudData.srs_progress);
-      log('Cloud data arrived — merging with local (cloud has %d languages)',
+      log('[SRS] Cloud data arrived — merging with local (cloud has %d languages)',
         Object.keys(cloud.cards ?? {}).length);
 
       setStore((prev) => {
@@ -129,7 +121,7 @@ export function useSrs() {
           mergedCards[l2] = mergeSrsCards(prev.cards[l2] ?? {}, cloudLangCards);
           const after = Object.keys(mergedCards[l2] ?? {}).length;
           if (before !== after) {
-            log('Cloud merge: l2=%s added %d card(s) from cloud', l2, after - before);
+            log('[SRS] Cloud merge: l2=%s added %d card(s) from cloud', l2, after - before);
           }
         }
         const merged: SrsProgressStore = {
@@ -139,7 +131,7 @@ export function useSrs() {
         return merged;
       });
     } catch (err) {
-      logWarn('Could not parse cloud SRS data:', err);
+      logwarn('[SRS] Could not parse cloud SRS data:', err);
     }
   }, [status, loaded, cloudLoaded, cloudData]);
 
@@ -165,12 +157,12 @@ export function useSrs() {
           }
           toSync = { settings: latest.settings, cards: mergedCards };
         }
-        log('Syncing SRS to cloud (%d languages, %d total cards)',
+        log('[SRS] Syncing SRS to cloud (%d languages, %d total cards)',
           Object.keys(toSync.cards).length,
           Object.values(toSync.cards).reduce((sum, c) => sum + Object.keys(c).length, 0));
         await syncSrsProgress(JSON.stringify(toSync));
       } catch (err) {
-        logWarn('Cloud sync failed — will retry on next change:', err);
+        logwarn('[SRS] Cloud sync failed — will retry on next change:', err);
         // Retry after a delay in case of transient network error
         syncTimer.current = setTimeout(() => {
           isSyncing.current = false;
@@ -209,7 +201,7 @@ export function useSrs() {
 
   /** Update a single card for a language. */
   const updateCard = useCallback((l2Code: string, wordId: string, fields: SrsFields) => {
-    log('updateCard: l2=%s wordId=%s reps=%d nextReview=%s',
+    log('[SRS] updateCard: l2=%s wordId=%s reps=%d nextReview=%s',
       l2Code, wordId, fields.repetitions,
       new Date(fields.nextReview).toISOString().slice(0, 16));
     setStore((prev) => {
@@ -223,7 +215,7 @@ export function useSrs() {
       };
       // Detect potential data loss: a card going from reviewed → new
       if (prevCard && prevCard.repetitions > 0 && fields.repetitions === 0) {
-        logWarn('Card %s/%s reset from reps=%d to 0 — possible data loss!',
+        logwarn('[SRS] Card %s/%s reset from reps=%d to 0 — possible data loss!',
           l2Code, wordId, prevCard.repetitions);
       }
       return next;
@@ -232,7 +224,7 @@ export function useSrs() {
 
   /** Remove a card for a language. Updates local state + localStorage. */
   const removeCard = useCallback((l2Code: string, wordId: string) => {
-    log('removeCard: l2=%s wordId=%s', l2Code, wordId);
+    log('[SRS] removeCard: l2=%s wordId=%s', l2Code, wordId);
     // Write through to localStorage immediately so non-useSrs consumers
     // (SavedWordRow, SaveButton) see the removal even if this component
     // hasn't synced yet.
@@ -275,7 +267,7 @@ export function useSrs() {
           removed++;
         }
       }
-      log('pruneOrphans: l2=%s removed %d orphaned card(s)', l2Code, removed);
+      log('[SRS] pruneOrphans: l2=%s removed %d orphaned card(s)', l2Code, removed);
       const next: SrsProgressStore = {
         settings: { ...prev.settings },
         cards: { ...prev.cards, [l2Code]: prunedCards },
@@ -315,4 +307,3 @@ export function useSrs() {
     updateSettings,
   };
 }
-

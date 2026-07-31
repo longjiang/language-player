@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCloudUserData } from '@/contexts/UserDataContext';
+import { logwarn } from '@/lib/logger';
 import {
   createSettingsV2,
   L2_DEFAULTS,
@@ -87,7 +88,7 @@ export function useSettings() {
         }
         await apiClient.post('/user-data/sync', { settings_v2: JSON.stringify(s) });
       } catch (err) {
-        console.warn('[settings] Cloud sync failed:', err);
+        logwarn('[settings] Cloud sync failed:', err);
       } finally {
         isSyncing.current = false;
       }

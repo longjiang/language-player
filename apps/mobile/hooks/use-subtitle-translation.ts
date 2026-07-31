@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import type { SubtitleLine } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { logerr } from '@/lib/logger';
 
 const CHUNK_SIZE = 5;
 
@@ -62,7 +63,7 @@ export function useSubtitleTranslation(
         setProgress(Math.min(end, total));
       } catch (err: any) {
         if (err?.name === 'AbortError' || controller.signal.aborted) break;
-        console.error('Translation chunk failed:', err);
+        logerr('Translation chunk failed:', err);
         break;
       }
     }

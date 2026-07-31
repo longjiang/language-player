@@ -6,6 +6,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { saveEpub, loadEpub, updateEpubMeta, deleteEpub } from '@/lib/epub-store';
 import type { TocItem } from '@/components/reader/epub-upload';
+import { logerr } from '@/lib/logger';
 
 let _turndown: any = null;
 async function getTurndown() {
@@ -133,7 +134,7 @@ export function useEpub(): UseEpubReturn {
       }
       return { flatToc: flat, firstChapterHref: null };
     } catch (err) {
-      console.error('Error loading EPUB:', err);
+      logerr('Error loading EPUB:', err);
       setError('msg.epub_parse_error');
     }
     return null;
@@ -236,7 +237,7 @@ export function useEpub(): UseEpubReturn {
 
       return md;
     } catch (err) {
-      console.error('Error loading chapter:', err);
+      logerr('Error loading chapter:', err);
       setError('msg.epub_chapter_error');
       return '';
     } finally {

@@ -10,6 +10,7 @@ import React, {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDictionary } from '@langplayer/api-client';
 import type { DictionaryEntry, DictMeta } from '@langplayer/shared';
+import { log } from '@/lib/logger';
 import {
   openDictionaryDB,
   lookupOffline,
@@ -123,9 +124,9 @@ async function saveRecent(l2Code: string, term: string) {
     const filtered = prev.filter((t) => t !== term);
     filtered.unshift(term);
     const items = filtered.slice(0, MAX_RECENT);
-    console.log('[Dict] saveRecent — l2:', l2Code, 'term:', term, 'items:', items.length);
+    log('[Dict] saveRecent — l2:', l2Code, 'term:', term, 'items:', items.length);
     await storageSet(`${RECENT_STORAGE_KEY}:${l2Code}`, JSON.stringify(items));
-  } catch (e) { console.log('[Dict] saveRecent failed:', e); }
+  } catch (e) { log('[Dict] saveRecent failed:', e); }
 }
 
 export function DictionaryProvider({ children }: { children: ReactNode }) {
@@ -188,7 +189,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       // ── Tier 1: Memory cache ──
       const cached = sessionCache.get(cacheKey);
       if (cached) {
-        console.log('[Dict] memory cache hit —', trimmed);
+        log('[Dict] memory cache hit —', trimmed);
         setResults(cached);
         setLoading(false);
         await saveRecent(l2Code, trimmed);
@@ -200,7 +201,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       if (dbRef.current) {
         const offline = await lookupOffline(dbRef.current, trimmed, l2Code);
         if (offline && offline.length > 0) {
-          console.log('[Dict] offline hit —', trimmed, `(${offline.length} entries)`);
+          log('[Dict] offline hit —', trimmed, `(${offline.length} entries)`);
           sessionCache.set(cacheKey, offline);
           setResults(offline);
           setLoading(false);
@@ -214,7 +215,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       if (dbRef.current) {
         const llmCached = await lookupLLMCache(dbRef.current, trimmed, l1Lang.code, l2Code);
         if (llmCached && llmCached.length > 0) {
-          console.log('[Dict] LLM cache hit —', trimmed);
+          log('[Dict] LLM cache hit —', trimmed);
           sessionCache.set(cacheKey, llmCached);
           setResults(llmCached);
           setLoading(false);
@@ -227,7 +228,7 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
       // ── Tier 4: Online lookup ──
       const res = await dict.lookup(trimmed, l2Code, l1Lang.code);
       const entries = res.results ?? [];
-      console.log('[Dict] online lookup —', trimmed, `(${entries.length} entries)`);
+      log('[Dict] online lookup —', trimmed, `(${entries.length} entries)`);
 
       // Cache in memory
       sessionCache.set(cacheKey, entries);
@@ -283,12 +284,12 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const startDownload = useCallback(async (l2: string) => {
-    console.log('[DictContext] 📥 startDownload — l2:', l2, '— timestamp:', Date.now());
+    log('[DictContext] 📥 startDownload — l2:', l2, '— timestamp:', Date.now());
 
     if (!dbRef.current) {
-      console.log('[DictContext] DB not open, opening...');
+      log('[DictContext] DB not open, opening...');
       try { dbRef.current = await openDictionaryDB(); } catch (e) {
-        console.log('[DictContext] ❌ Failed to open DB:', e);
+        log('[DictContext] ❌ Failed to open DB:', e);
         return;
       }
     }
@@ -305,20 +306,20 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
     setDownloadStatesVersion((v) => v + 1);
 
     try {
-      console.log('[DictContext] 🌐 GET /dictionary/download — l2:', l2, 'l1:', l1Lang.code);
+      log('[DictContext] 🌐 GET /dictionary/download — l2:', l2, 'l1:', l1Lang.code);
       const res = await dict.downloadDictionary(l2, l1Lang.code);
       const { entries, total, version } = res;
-      console.log('[DictContext] ✅ download response — entries:', entries.length, 'total:', total, 'version:', version.slice(0, 12));
+      log('[DictContext] ✅ download response — entries:', entries.length, 'total:', total, 'version:', version.slice(0, 12));
 
       // Check cancellation before starting insert
       if (cancelMap.get(l2)) {
-        console.log('[DictContext] 🛑 Cancelled before insert — l2:', l2);
+        log('[DictContext] 🛑 Cancelled before insert — l2:', l2);
         stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
         setDownloadStatesVersion((v) => v + 1);
         throw new Error('Download cancelled');
       }
 
-      console.log('[DictContext] 💾 bulkInsertEntries starting — l2:', l2, 'count:', entries.length);
+      log('[DictContext] 💾 bulkInsertEntries starting — l2:', l2, 'count:', entries.length);
       const insertStart = Date.now();
 
       await bulkInsertEntries(db, l2, entries, (pct) => {
@@ -334,11 +335,11 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         setDownloadStatesVersion((v) => v + 1);
       });
 
-      console.log('[DictContext] 💾 bulkInsertEntries done — l2:', l2, '— took', Date.now() - insertStart, 'ms');
+      log('[DictContext] 💾 bulkInsertEntries done — l2:', l2, '— took', Date.now() - insertStart, 'ms');
 
       // Check cancellation after insert
       if (cancelMap.get(l2)) {
-        console.log('[DictContext] 🛑 Cancelled after insert, cleaning up — l2:', l2);
+        log('[DictContext] 🛑 Cancelled after insert, cleaning up — l2:', l2);
         await deleteDictDB(db, l2);
         stateMap.set(l2, { status: 'idle', progress: 0, downloaded: 0, total: 0 });
         setDownloadStatesVersion((v) => v + 1);
@@ -355,35 +356,35 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         version,
       };
       await saveDictMeta(db, meta);
-      console.log('[DictContext] 💾 dict_meta saved — l2:', l2, 'meta:', JSON.stringify(meta).slice(0, 120));
+      log('[DictContext] 💾 dict_meta saved — l2:', l2, 'meta:', JSON.stringify(meta).slice(0, 120));
 
       // ── SPEC-018 Phase 2a: Download lemma table as sidecar ──
       const tokenConfig = TOKENIZER_CONFIG[l2];
       if (tokenConfig?.hasLemmaTable) {
-        console.log('[DictContext] 📥 downloading lemma table — l2:', l2, 'size:', tokenConfig.lemmaTableSize);
+        log('[DictContext] 📥 downloading lemma table — l2:', l2, 'size:', tokenConfig.lemmaTableSize);
         try {
           const ok = await downloadLemmaTable(l2, PYTHON_API_URL, 50000);
-          console.log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' lemma table — l2:', l2, ok ? 'downloaded' : 'unavailable');
+          log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' lemma table — l2:', l2, ok ? 'downloaded' : 'unavailable');
         } catch (e: any) {
-          console.log('[DictContext] ⚠️ lemma table download failed (non-fatal) — l2:', l2, e?.message ?? e);
+          log('[DictContext] ⚠️ lemma table download failed (non-fatal) — l2:', l2, e?.message ?? e);
         }
       }
 
       // ── SPEC-018 Phase 2c/2d: Download kuromoji/kuromoji-ko data pack ──
       // Japanese (ja): kuromoji + IPADIC dict, Korean (ko): kuromoji-ko + mecab-ko-dic
       if (tokenConfig?.needsKuromoji) {
-        if (__DEV__) console.log('[DictContext] 📥 downloading kuromoji data pack — l2:', l2, 'size:', tokenConfig.tokenizerDataSize);
+        log('[DictContext] 📥 downloading kuromoji data pack — l2:', l2, 'size:', tokenConfig.tokenizerDataSize);
         try {
           const { downloadKuromojiData } = await import('@/lib/tokenizer-db');
           const ok = await downloadKuromojiData(l2, PYTHON_API_URL);
-          if (__DEV__) console.log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' kuromoji data — l2:', l2, ok ? 'downloaded' : 'unavailable');
+          log('[DictContext] ' + (ok ? '✅' : '⚠️') + ' kuromoji data — l2:', l2, ok ? 'downloaded' : 'unavailable');
           if (ok) {
             // Reset the tokenizer singleton so next lemmatizeText() reloads
             const { resetTokenizer } = await import('@/lib/tokenizer');
             resetTokenizer(l2);
           }
         } catch (e: any) {
-          if (__DEV__) console.log('[DictContext] ⚠️ kuromoji data download failed (non-fatal) — l2:', l2, e?.message ?? e);
+          log('[DictContext] ⚠️ kuromoji data download failed (non-fatal) — l2:', l2, e?.message ?? e);
         }
       }
 
@@ -394,10 +395,10 @@ export function DictionaryProvider({ children }: { children: ReactNode }) {
         total: entries.length,
       });
       setDownloadStatesVersion((v) => v + 1);
-      console.log('[DictContext] 🎉 download complete — l2:', l2, 'total entries:', entries.length);
+      log('[DictContext] 🎉 download complete — l2:', l2, 'total entries:', entries.length);
 
     } catch (e: any) {
-      console.log('[DictContext] ❌ download failed — l2:', l2, 'error:', e?.message ?? e);
+      log('[DictContext] ❌ download failed — l2:', l2, 'error:', e?.message ?? e);
       // Clean up partial data on failure
       try { await deleteDictDB(db, l2); } catch {}
 

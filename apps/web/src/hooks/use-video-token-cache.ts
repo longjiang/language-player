@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useVideos } from '@langplayer/api-client';
 import { TokenCache } from '@langplayer/utils';
+import { logwarn } from '@/lib/logger';
 
 /**
  * Fetches the pre-computed token cache for a video and makes it available
@@ -29,7 +30,7 @@ export function useVideoTokenCache(videoId: string | undefined, l2Code: string) 
         setLoaded(true);
       })
       .catch((err) => {
-        console.warn('[VideoTokenCache] Failed to load:', err);
+        logwarn('[VideoTokenCache] Failed to load:', err);
         setLoaded(true);
       });
   }, [videoId, l2Code]);

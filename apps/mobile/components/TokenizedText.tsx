@@ -12,6 +12,7 @@ import { useSettingsContext } from '@/contexts/SettingsContext';
 import { useSavedWords } from '@/hooks/use-saved-words';
 import { useProgressLevel } from '@/hooks/use-progress-level';
 import { DictionaryPopup } from '@/components/dictionary/DictionaryPopup';
+import { log } from '@/lib/logger';
 import { configureLayoutAnimation } from '@/lib/animations';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { bulkLookupWords, getCachedEntries, getCacheVersion } from '@/lib/dictionary-cache';
@@ -214,7 +215,7 @@ export function TokenizedText({ text, l2Code, highlightTerms, tokens: preloadedT
       if (__DEV__ && preloadedTokens.length > 0) {
         const wordTokens = preloadedTokens.filter(t => t.lemmas.length > 0);
         const lemmaSample = wordTokens.slice(0, 10).map(t => `${t.text}→${t.lemmas[0]?.lemma}`).join(', ');
-        console.log(`[TokenizedText] 📥 PRELOADED l2=${l2Code} total=${preloadedTokens.length} words=${wordTokens.length} lemmas=\"${lemmaSample}\"`);
+        log(`[TokenizedText] 📥 PRELOADED l2=${l2Code} total=${preloadedTokens.length} words=${wordTokens.length} lemmas=\"${lemmaSample}\"`);
       }
       setTokens(preloadedTokens);
       setLoading(false);

@@ -7,6 +7,7 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PortalHost } from '@rn-primitives/portal';
 import Toast, { InfoToast, type ToastConfigParams } from 'react-native-toast-message';
+import { logerr } from '@/lib/logger';
 
 // ── Custom toast config ──
 
@@ -81,7 +82,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error('[ROOT ERROR BOUNDARY]', error.message, '\n', error.stack, '\nComponent stack:', info.componentStack);
+    logerr('[ROOT ERROR BOUNDARY]', error.message, '\n', error.stack, '\nComponent stack:', info.componentStack);
   }
 
   render() {

@@ -8,6 +8,7 @@ import { languageName } from '@/lib/language-data';
 import { useSubscriptionContext } from '@/providers/subscription-provider';
 import { useStreamingExplanation } from '@langplayer/api-client';
 import { useT } from '@/hooks/use-t';
+import { log } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { MarkdownExplanation } from '@/components/markdown-explanation';
 import { Sparkles, Loader2, AlertCircle, RefreshCw, BookOpen } from 'lucide-react';
@@ -79,13 +80,12 @@ export function AiExplanation({ word, contextText, contextForm, entryFound, auto
 
   const fetchExplanation = useCallback(() => {
     const prompt = buildPrompt();
-    console.log('[LP Web] AI explain prompt:', prompt);
     stream(prompt);
   }, [stream, buildPrompt]);
 
   const handleRegenerate = useCallback(() => {
     const prompt = buildPrompt();
-    console.log('[LP Web] AI regenerate prompt:', prompt);
+    log('AI regenerate prompt:', prompt);
     stream(prompt, { regenerate: true });
   }, [stream, buildPrompt]);
 

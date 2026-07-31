@@ -10,6 +10,7 @@ import { useT } from '@/hooks/use-t';
 import { decomposeWordId, type SavedWordContext } from '@langplayer/shared';
 import { BookmarkCheck, BookOpen, Search, ArrowUpDown, Clock, ArrowDownAZ, Trash2, Download } from 'lucide-react-native';
 import { ICON_MUTED } from '@/lib/theme-colors';
+import { logwarn } from '@/lib/logger';
 import { InlineDefinition } from '@/components/dictionary/InlineDefinition';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { SavedWordSource } from '@/components/dictionary/SavedWordSource';
@@ -115,7 +116,7 @@ export default function SavedWordsScreen() {
         UTI: 'public.json',
       });
     } catch (err) {
-      console.warn('[SavedWords] export failed:', err);
+      logwarn('[SavedWords] export failed:', err);
       Alert.alert(t('error.general'), t('error.something_went_wrong'));
     } finally {
       setExporting(false);

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useT } from '@/hooks/use-t';
+import { logerr } from '@/lib/logger';
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -16,7 +17,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   const router = useRouter();
 
   useEffect(() => {
-    console.error('[route-error]', error);
+    logerr('[route-error]', error);
   }, [error]);
 
   return (

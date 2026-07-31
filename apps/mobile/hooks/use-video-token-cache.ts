@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useVideos } from '@langplayer/api-client';
+import { logwarn } from '@/lib/logger';
 
 class TokenCache {
   private _cache = new Map<string, any>();
@@ -43,7 +44,7 @@ export function useVideoTokenCache(videoId: string, l2Code: string) {
       })
       .catch((err) => {
         if (controller.signal.aborted) return;
-        console.warn('[VideoTokenCache] Failed to load:', err);
+        logwarn('[VideoTokenCache] Failed to load:', err);
         setLoaded(true); // still mark loaded so TokenizedText falls through to lemmatizeText()
       });
 

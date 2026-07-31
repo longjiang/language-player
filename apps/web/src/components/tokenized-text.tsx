@@ -8,6 +8,7 @@ import { useSavedWordsContext } from '@/providers/saved-words-provider';
 import { baseCode } from '@/lib/language-data';
 import { PYTHON_API_URL } from '@/lib/api-url';
 import { useSettingsContext } from '@/providers/settings-provider';
+import { logerr } from '@/lib/logger';
 import { useProgressLevel } from '@/hooks/use-progress';
 import type { TokenCache } from '@langplayer/shared';
 import { bulkLookupWords } from '@/lib/dictionary-cache';
@@ -235,7 +236,7 @@ export const TokenizedText: React.FC<TokenizedTextProps> = ({
       } catch (err: any) {
         if (err.name === 'AbortError') { loadingRef.current = false; return; }
         if (!cancelled) {
-          console.error('Tokenization error:', err);
+          logerr('Tokenization error:', err);
           setError(err?.message ?? 'Tokenization failed');
           setTokens([{ text: effectiveText, lemmas: [] }]);
           setLoading(false);

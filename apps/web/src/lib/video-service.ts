@@ -5,6 +5,7 @@
 
 import type { YouTubeVideo, SubtitleLine } from '@langplayer/shared';
 import { PYTHON_API_URL } from '@/lib/api-url';
+import { logerr } from '@/lib/logger';
 
 const PYTHON_URL = PYTHON_API_URL;
 
@@ -47,7 +48,7 @@ export async function getRecommendedVideos(
     });
 
     if (!res.ok) {
-      console.error('Python backend error:', res.status, await res.text().catch(() => ''));
+      logerr('Python backend error:', res.status, await res.text().catch(() => ''));
       throw new Error(`Failed to fetch videos: ${res.status}`);
     }
 
@@ -61,7 +62,7 @@ export async function getRecommendedVideos(
       hasMore: videos.length >= pageSize,
     };
   } catch (error) {
-    console.error('getRecommendedVideos error:', error);
+    logerr('getRecommendedVideos error:', error);
     return { videos: [], total: 0, page: 1, hasMore: false };
   }
 }
@@ -87,7 +88,7 @@ export async function getRecommendedMusicEntertainment(
     });
 
     if (!res.ok) {
-      console.error('Python backend error:', res.status, await res.text().catch(() => ''));
+      logerr('Python backend error:', res.status, await res.text().catch(() => ''));
       throw new Error(`Failed to fetch music videos: ${res.status}`);
     }
 
@@ -95,7 +96,7 @@ export async function getRecommendedMusicEntertainment(
     const videos: YouTubeVideo[] = Array.isArray(data) ? data : data?.data ?? [];
     return { videos, total: videos.length, page, hasMore: videos.length >= pageSize };
   } catch (error) {
-    console.error('getRecommendedMusicEntertainment error:', error);
+    logerr('getRecommendedMusicEntertainment error:', error);
     return { videos: [], total: 0, page: 1, hasMore: false };
   }
 }
